@@ -362,7 +362,8 @@ namespace Google.ProtocolBuffers
 
             try
             {
-                input.ReadBytes();
+                ByteString bytes = null;
+                input.ReadBytes(ref bytes);
                 Assert.Fail("Should have thrown an exception!");
             }
             catch (InvalidProtocolBufferException)
@@ -506,7 +507,8 @@ namespace Google.ProtocolBuffers
 
             Assert.IsTrue(input.ReadTag(out testtag, out ignored));
             Assert.AreEqual(tag, testtag);
-            string text = input.ReadString();
+            string text = null;
+            input.ReadString(ref text);
             Assert.AreEqual('\ufffd', text[0]);
         }
 

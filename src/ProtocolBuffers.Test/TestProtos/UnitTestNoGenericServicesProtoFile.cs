@@ -264,11 +264,11 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 8: {
-              A = input.ReadInt32();
+              result.hasA |= input.ReadInt32(ref result.a_);
               break;
             }
           }

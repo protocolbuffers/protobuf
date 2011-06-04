@@ -450,14 +450,33 @@ namespace Google.ProtocolBuffers
                 switch (WireFormat.GetTagWireType(tag))
                 {
                     case WireFormat.WireType.Varint:
-                        GetFieldBuilder(number).AddVarint(input.ReadUInt64());
-                        return true;
+                        {
+                            ulong uint64 = 0;
+                            if(input.ReadUInt64(ref uint64))
+                                GetFieldBuilder(number).AddVarint(uint64);
+                            return true;
+                        }
+                    case WireFormat.WireType.Fixed32:
+                        {
+                            uint uint32 = 0;
+                            if (input.ReadFixed32(ref uint32))
+                                GetFieldBuilder(number).AddFixed32(uint32);
+                            return true;
+                        }
                     case WireFormat.WireType.Fixed64:
-                        GetFieldBuilder(number).AddFixed64(input.ReadFixed64());
-                        return true;
+                        {
+                            ulong uint64 = 0;
+                            if (input.ReadFixed64(ref uint64))
+                                GetFieldBuilder(number).AddFixed64(uint64);
+                            return true;
+                        }
                     case WireFormat.WireType.LengthDelimited:
-                        GetFieldBuilder(number).AddLengthDelimited(input.ReadBytes());
-                        return true;
+                        {
+                            ByteString bytes = null;
+                            if (input.ReadBytes(ref bytes))
+                                GetFieldBuilder(number).AddLengthDelimited(bytes);
+                            return true;
+                        }
                     case WireFormat.WireType.StartGroup:
                         {
                             Builder subBuilder = CreateBuilder();
@@ -469,9 +488,6 @@ namespace Google.ProtocolBuffers
                         }
                     case WireFormat.WireType.EndGroup:
                         return false;
-                    case WireFormat.WireType.Fixed32:
-                        GetFieldBuilder(number).AddFixed32(input.ReadFixed32());
-                        return true;
                     default:
                         throw InvalidProtocolBufferException.InvalidWireType();
                 }
@@ -598,7 +614,7 @@ namespace Google.ProtocolBuffers
                         break;
                     }
 
-                    if (!MergeFieldFrom(input, extensionRegistry, builder, tag))
+                    if (!MergeFieldFrom(input, extensionRegistry, builder, tag, name))
                     {
                         // end group tag
                         break;
@@ -616,7 +632,7 @@ namespace Google.ProtocolBuffers
             /// <param name="tag">The tag, which should already have been read from the input</param>
             /// <returns>true unless the tag is an end-group tag</returns>
             internal bool MergeFieldFrom(CodedInputStream input,
-                                         ExtensionRegistry extensionRegistry, IBuilder builder, uint tag)
+                                         ExtensionRegistry extensionRegistry, IBuilder builder, uint tag, string fieldName)
             {
                 MessageDescriptor type = builder.DescriptorForType;
                 if (type.Options.MessageSetWireFormat && tag == WireFormat.MessageSetTag.ItemStart)
@@ -655,92 +671,81 @@ namespace Google.ProtocolBuffers
                     return MergeFieldFrom(tag, input);
                 }
 
-                if (field.IsPacked)
+                switch (field.FieldType)
                 {
-                    int length = (int) input.ReadRawVarint32();
-                    int limit = input.PushLimit(length);
-                    if (field.FieldType == FieldType.Enum)
-                    {
-                        while (!input.ReachedLimit)
+                    case FieldType.Group:
+                    case FieldType.Message:
                         {
-                            int rawValue = input.ReadEnum();
-                            object value = field.EnumType.FindValueByNumber(rawValue);
-                            if (value == null)
+                            IBuilderLite subBuilder = (defaultFieldInstance != null) ? defaultFieldInstance.WeakCreateBuilderForType() : builder.CreateBuilderForField(field);
+                            if (!field.IsRepeated)
                             {
-                                // If the number isn't recognized as a valid value for this
-                                // enum, drop it (don't even add it to unknownFields).
+                                subBuilder.WeakMergeFrom((IMessageLite)builder[field]);
+                                if (field.FieldType == FieldType.Group)
+                                    input.ReadGroup(field.FieldNumber, subBuilder, extensionRegistry);
+                                else
+                                    input.ReadMessage(subBuilder, extensionRegistry);
+                                builder[field] = subBuilder.WeakBuild();
+                            }
+                            else
+                            {
+                                List<IMessageLite> list = new List<IMessageLite>();
+                                if (field.FieldType == FieldType.Group)
+                                    input.ReadGroupArray(tag, fieldName, list, subBuilder.WeakDefaultInstanceForType, extensionRegistry);
+                                else
+                                    input.ReadMessageArray(tag, fieldName, list, subBuilder.WeakDefaultInstanceForType, extensionRegistry);
+
+                                foreach (IMessageLite m in list)
+                                    builder.WeakAddRepeatedField(field, m);
                                 return true;
                             }
-                            builder.WeakAddRepeatedField(field, value);
-                        }
-                    }
-                    else
-                    {
-                        while (!input.ReachedLimit)
-                        {
-                            Object value = input.ReadPrimitiveField(field.FieldType);
-                            builder.WeakAddRepeatedField(field, value);
-                        }
-                    }
-                    input.PopLimit(limit);
-                }
-                else
-                {
-                    object value;
-                    switch (field.FieldType)
-                    {
-                        case FieldType.Group:
-                        case FieldType.Message:
-                            {
-                                IBuilderLite subBuilder;
-                                if (defaultFieldInstance != null)
-                                {
-                                    subBuilder = defaultFieldInstance.WeakCreateBuilderForType();
-                                }
-                                else
-                                {
-                                    subBuilder = builder.CreateBuilderForField(field);
-                                }
-                                if (!field.IsRepeated)
-                                {
-                                    subBuilder.WeakMergeFrom((IMessageLite) builder[field]);
-                                }
-                                if (field.FieldType == FieldType.Group)
-                                {
-                                    input.ReadGroup(field.FieldNumber, subBuilder, extensionRegistry);
-                                }
-                                else
-                                {
-                                    input.ReadMessage(subBuilder, extensionRegistry);
-                                }
-                                value = subBuilder.WeakBuild();
-                                break;
-                            }
-                        case FieldType.Enum:
-                            {
-                                int rawValue = input.ReadEnum();
-                                value = field.EnumType.FindValueByNumber(rawValue);
-                                // If the number isn't recognized as a valid value for this enum,
-                                // drop it.
-                                if (value == null)
-                                {
-                                    MergeVarintField(fieldNumber, (ulong) rawValue);
-                                    return true;
-                                }
-                                break;
-                            }
-                        default:
-                            value = input.ReadPrimitiveField(field.FieldType);
                             break;
-                    }
-                    if (field.IsRepeated)
-                    {
-                        builder.WeakAddRepeatedField(field, value);
-                    }
-                    else
-                    {
-                        builder[field] = value;
-                    }
+                        }
+                    case FieldType.Enum:
+                        {
+                            if (!field.IsRepeated)
+                            {
+                                object unknown;
+                                IEnumLite value = null;
+                                if (input.ReadEnum(ref value, out unknown, field.EnumType))
+                                    builder[field] = value;
+                                else if(unknown is int)
+                                    MergeVarintField(fieldNumber, (ulong)(int)unknown);
+                            }
+                            else
+                            {
+                                ICollection<object> unknown;
+                                List<IEnumLite> list = new List<IEnumLite>();
+                                input.ReadEnumArray(tag, fieldName, list, out unknown, field.EnumType);
+                                
+                                foreach (IEnumLite en in list)
+                                    builder.WeakAddRepeatedField(field, en);
+
+                                if (unknown != null)
+                                {
+                                    foreach (object oval in unknown)
+                                        if (oval is int)
+                                            MergeVarintField(fieldNumber, (ulong)(int)oval);
+                                }
+                            }
+                            break;
+                        }
+                    default:
+                        {
+                            if (!field.IsRepeated)
+                            {
+                                object value = null;
+                                if (input.ReadPrimitiveField(field.FieldType, ref value))
+                                    builder[field] = value;
+                            }
+                            else
+                            {
+                                List<object> list = new List<object>();
+                                input.ReadPrimitiveArray(field.FieldType, tag, fieldName, list);
+                                foreach (object oval in list)
+                                    builder.WeakAddRepeatedField(field, oval);
+                            }
+                            break;
+                        }
                 }
                 return true;
             }
@@ -787,9 +792,9 @@ namespace Google.ProtocolBuffers
 
                     if (tag == WireFormat.MessageSetTag.TypeID)
                     {
-                        typeId = input.ReadInt32();
+                        typeId = 0;
                         // Zero is not a valid type ID.
-                        if (typeId != 0)
+                        if (input.ReadInt32(ref typeId) && typeId != 0)
                         {
                             ExtensionInfo extension = extensionRegistry[type, typeId];
                             if (extension != null)
@@ -824,22 +829,20 @@ namespace Google.ProtocolBuffers
                     }
                     else if (tag == WireFormat.MessageSetTag.Message)
                     {
-                        if (typeId == 0)
-                        {
-                            // We haven't seen a type ID yet, so we have to store the raw bytes for now.
-                            rawBytes = input.ReadBytes();
-                        }
-                        else if (subBuilder == null)
-                        {
-                            // We don't know how to parse this.  Ignore it.
-                            MergeField(typeId,
-                                       UnknownField.CreateBuilder().AddLengthDelimited(input.ReadBytes()).Build());
-                        }
-                        else
+                        if(subBuilder != null)
                         {
                             // We already know the type, so we can parse directly from the input
                             // with no copying.  Hooray!
                             input.ReadMessage(subBuilder, extensionRegistry);
+                        }
+                        else if (input.ReadBytes(ref rawBytes))
+                        {
+                            if (typeId != 0)
+                            {
+                                // We don't know how to parse this.  Ignore it.
+                                MergeField(typeId,
+                                           UnknownField.CreateBuilder().AddLengthDelimited(rawBytes).Build());
+                            }
                         }
                     }
                     else

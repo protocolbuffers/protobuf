@@ -70,6 +70,7 @@ namespace Google.ProtocolBuffers
     {
         bool IsValidValue(IEnumLite value);
         IEnumLite FindValueByNumber(int number);
+        IEnumLite FindValueByName(string name);
     }
 
     public class EnumLiteMap<TEnum> : IEnumLiteMap<IEnumLite>
@@ -123,6 +124,14 @@ namespace Google.ProtocolBuffers
         {
             IEnumLite val;
             return items.TryGetValue(number, out val) ? val : null;
+        }
+
+        public IEnumLite FindValueByName(string name)
+        {
+            IEnumLite val;
+            if(Enum.IsDefined(typeof(TEnum), name))
+                return items.TryGetValue((int)Enum.Parse(typeof(TEnum), name, false), out val) ? val : null;
+            return null;
         }
 
         public bool IsValidValue(IEnumLite value)

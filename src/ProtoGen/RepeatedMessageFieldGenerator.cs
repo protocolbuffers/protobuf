@@ -34,6 +34,7 @@
 
 #endregion
 
+using System;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoGen
@@ -121,16 +122,18 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         public void GenerateParsingCode(TextGenerator writer)
         {
-            writer.WriteLine("{0}.Builder subBuilder = {0}.CreateBuilder();", TypeName);
-            if (Descriptor.FieldType == FieldType.Group)
-            {
-                writer.WriteLine("input.ReadGroup({0}, subBuilder, extensionRegistry);", Number);
-            }
-            else
-            {
-                writer.WriteLine("input.ReadMessage(subBuilder, extensionRegistry);");
-            }
-            writer.WriteLine("Add{0}(subBuilder.BuildPartial());", PropertyName);
+            writer.WriteLine("input.Read{0}Array(tag, field_name, result.{1}_, {2}.DefaultInstance, extensionRegistry);", MessageOrGroup, Name, TypeName);
+      
+            //writer.WriteLine("{0}.Builder subBuilder = {0}.CreateBuilder();", TypeName);
+            //if (Descriptor.FieldType == FieldType.Group)
+            //{
+            //    writer.WriteLine("input.ReadGroup({0}, subBuilder, extensionRegistry);", Number);
+            //}
+            //else
+            //{
+            //    writer.WriteLine("input.ReadMessage(subBuilder, extensionRegistry);");
+            //}
+            //writer.WriteLine("Add{0}(subBuilder.BuildPartial());", PropertyName);
         }
 
         public void GenerateSerializationCode(TextGenerator writer)

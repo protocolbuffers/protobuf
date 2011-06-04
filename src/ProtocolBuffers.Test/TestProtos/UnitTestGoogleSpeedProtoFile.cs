@@ -1086,51 +1086,51 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              Field1 = input.ReadString();
+              result.hasField1 |= input.ReadString(ref result.field1_);
               break;
             }
             case 16: {
-              Field2 = input.ReadInt32();
+              result.hasField2 |= input.ReadInt32(ref result.field2_);
               break;
             }
             case 24: {
-              Field3 = input.ReadInt32();
+              result.hasField3 |= input.ReadInt32(ref result.field3_);
               break;
             }
             case 34: {
-              Field4 = input.ReadString();
+              result.hasField4 |= input.ReadString(ref result.field4_);
               break;
             }
             case 41: {
-              AddField5(input.ReadFixed64());
+              input.ReadPrimitiveArray(pbd::FieldType.Fixed64, tag, field_name, result.field5_);
               break;
             }
             case 48: {
-              Field6 = input.ReadInt32();
+              result.hasField6 |= input.ReadInt32(ref result.field6_);
               break;
             }
             case 58: {
-              Field7 = input.ReadString();
+              result.hasField7 |= input.ReadString(ref result.field7_);
               break;
             }
             case 74: {
-              Field9 = input.ReadString();
+              result.hasField9 |= input.ReadString(ref result.field9_);
               break;
             }
             case 96: {
-              Field12 = input.ReadBool();
+              result.hasField12 |= input.ReadBool(ref result.field12_);
               break;
             }
             case 104: {
-              Field13 = input.ReadBool();
+              result.hasField13 |= input.ReadBool(ref result.field13_);
               break;
             }
             case 112: {
-              Field14 = input.ReadBool();
+              result.hasField14 |= input.ReadBool(ref result.field14_);
               break;
             }
             case 122: {
@@ -1143,119 +1143,119 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 128: {
-              Field16 = input.ReadInt32();
+              result.hasField16 |= input.ReadInt32(ref result.field16_);
               break;
             }
             case 136: {
-              Field17 = input.ReadBool();
+              result.hasField17 |= input.ReadBool(ref result.field17_);
               break;
             }
             case 146: {
-              Field18 = input.ReadString();
+              result.hasField18 |= input.ReadString(ref result.field18_);
               break;
             }
             case 176: {
-              Field22 = input.ReadInt64();
+              result.hasField22 |= input.ReadInt64(ref result.field22_);
               break;
             }
             case 184: {
-              Field23 = input.ReadInt32();
+              result.hasField23 |= input.ReadInt32(ref result.field23_);
               break;
             }
             case 192: {
-              Field24 = input.ReadBool();
+              result.hasField24 |= input.ReadBool(ref result.field24_);
               break;
             }
             case 200: {
-              Field25 = input.ReadInt32();
+              result.hasField25 |= input.ReadInt32(ref result.field25_);
               break;
             }
             case 232: {
-              Field29 = input.ReadInt32();
+              result.hasField29 |= input.ReadInt32(ref result.field29_);
               break;
             }
             case 240: {
-              Field30 = input.ReadBool();
+              result.hasField30 |= input.ReadBool(ref result.field30_);
               break;
             }
             case 472: {
-              Field59 = input.ReadBool();
+              result.hasField59 |= input.ReadBool(ref result.field59_);
               break;
             }
             case 480: {
-              Field60 = input.ReadInt32();
+              result.hasField60 |= input.ReadInt32(ref result.field60_);
               break;
             }
             case 536: {
-              Field67 = input.ReadInt32();
+              result.hasField67 |= input.ReadInt32(ref result.field67_);
               break;
             }
             case 544: {
-              Field68 = input.ReadInt32();
+              result.hasField68 |= input.ReadInt32(ref result.field68_);
               break;
             }
             case 624: {
-              Field78 = input.ReadBool();
+              result.hasField78 |= input.ReadBool(ref result.field78_);
               break;
             }
             case 640: {
-              Field80 = input.ReadBool();
+              result.hasField80 |= input.ReadBool(ref result.field80_);
               break;
             }
             case 648: {
-              Field81 = input.ReadBool();
+              result.hasField81 |= input.ReadBool(ref result.field81_);
               break;
             }
             case 800: {
-              Field100 = input.ReadInt32();
+              result.hasField100 |= input.ReadInt32(ref result.field100_);
               break;
             }
             case 808: {
-              Field101 = input.ReadInt32();
+              result.hasField101 |= input.ReadInt32(ref result.field101_);
               break;
             }
             case 818: {
-              Field102 = input.ReadString();
+              result.hasField102 |= input.ReadString(ref result.field102_);
               break;
             }
             case 826: {
-              Field103 = input.ReadString();
+              result.hasField103 |= input.ReadString(ref result.field103_);
               break;
             }
             case 832: {
-              Field104 = input.ReadInt32();
+              result.hasField104 |= input.ReadInt32(ref result.field104_);
               break;
             }
             case 1024: {
-              Field128 = input.ReadInt32();
+              result.hasField128 |= input.ReadInt32(ref result.field128_);
               break;
             }
             case 1034: {
-              Field129 = input.ReadString();
+              result.hasField129 |= input.ReadString(ref result.field129_);
               break;
             }
             case 1040: {
-              Field130 = input.ReadInt32();
+              result.hasField130 |= input.ReadInt32(ref result.field130_);
               break;
             }
             case 1048: {
-              Field131 = input.ReadInt32();
+              result.hasField131 |= input.ReadInt32(ref result.field131_);
               break;
             }
             case 1200: {
-              Field150 = input.ReadInt32();
+              result.hasField150 |= input.ReadInt32(ref result.field150_);
               break;
             }
             case 2168: {
-              Field271 = input.ReadInt32();
+              result.hasField271 |= input.ReadInt32(ref result.field271_);
               break;
             }
             case 2176: {
-              Field272 = input.ReadInt32();
+              result.hasField272 |= input.ReadInt32(ref result.field272_);
               break;
             }
             case 2240: {
-              Field280 = input.ReadInt32();
+              result.hasField280 |= input.ReadInt32(ref result.field280_);
               break;
             }
           }
@@ -2599,87 +2599,87 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 8: {
-              Field1 = input.ReadInt32();
+              result.hasField1 |= input.ReadInt32(ref result.field1_);
               break;
             }
             case 16: {
-              Field2 = input.ReadInt32();
+              result.hasField2 |= input.ReadInt32(ref result.field2_);
               break;
             }
             case 24: {
-              Field3 = input.ReadInt32();
+              result.hasField3 |= input.ReadInt32(ref result.field3_);
               break;
             }
             case 96: {
-              Field12 = input.ReadBool();
+              result.hasField12 |= input.ReadBool(ref result.field12_);
               break;
             }
             case 104: {
-              Field13 = input.ReadInt64();
+              result.hasField13 |= input.ReadInt64(ref result.field13_);
               break;
             }
             case 112: {
-              Field14 = input.ReadInt64();
+              result.hasField14 |= input.ReadInt64(ref result.field14_);
               break;
             }
             case 122: {
-              Field15 = input.ReadString();
+              result.hasField15 |= input.ReadString(ref result.field15_);
               break;
             }
             case 128: {
-              Field16 = input.ReadInt32();
+              result.hasField16 |= input.ReadInt32(ref result.field16_);
               break;
             }
             case 152: {
-              Field19 = input.ReadInt32();
+              result.hasField19 |= input.ReadInt32(ref result.field19_);
               break;
             }
             case 160: {
-              Field20 = input.ReadBool();
+              result.hasField20 |= input.ReadBool(ref result.field20_);
               break;
             }
             case 169: {
-              Field21 = input.ReadFixed64();
+              result.hasField21 |= input.ReadFixed64(ref result.field21_);
               break;
             }
             case 176: {
-              Field22 = input.ReadInt32();
+              result.hasField22 |= input.ReadInt32(ref result.field22_);
               break;
             }
             case 184: {
-              Field23 = input.ReadBool();
+              result.hasField23 |= input.ReadBool(ref result.field23_);
               break;
             }
             case 224: {
-              Field28 = input.ReadBool();
+              result.hasField28 |= input.ReadBool(ref result.field28_);
               break;
             }
             case 1629: {
-              Field203 = input.ReadFixed32();
+              result.hasField203 |= input.ReadFixed32(ref result.field203_);
               break;
             }
             case 1632: {
-              Field204 = input.ReadInt32();
+              result.hasField204 |= input.ReadInt32(ref result.field204_);
               break;
             }
             case 1642: {
-              Field205 = input.ReadString();
+              result.hasField205 |= input.ReadString(ref result.field205_);
               break;
             }
             case 1648: {
-              Field206 = input.ReadBool();
+              result.hasField206 |= input.ReadBool(ref result.field206_);
               break;
             }
             case 1656: {
-              Field207 = input.ReadUInt64();
+              result.hasField207 |= input.ReadUInt64(ref result.field207_);
               break;
             }
             case 2400: {
-              Field300 = input.ReadUInt64();
+              result.hasField300 |= input.ReadUInt64(ref result.field300_);
               break;
             }
           }
@@ -3593,63 +3593,63 @@ namespace Google.ProtocolBuffers.TestProtos {
                   if (unknownFields == null) {
                     unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                   }
-                  ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 40: {
-                  Field5 = input.ReadInt32();
+                  result.hasField5 |= input.ReadInt32(ref result.field5_);
                   break;
                 }
                 case 93: {
-                  Field11 = input.ReadFloat();
+                  result.hasField11 |= input.ReadFloat(ref result.field11_);
                   break;
                 }
                 case 98: {
-                  Field12 = input.ReadString();
+                  result.hasField12 |= input.ReadString(ref result.field12_);
                   break;
                 }
                 case 106: {
-                  Field13 = input.ReadString();
+                  result.hasField13 |= input.ReadString(ref result.field13_);
                   break;
                 }
                 case 114: {
-                  AddField14(input.ReadString());
+                  input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.field14_);
                   break;
                 }
                 case 120: {
-                  Field15 = input.ReadUInt64();
+                  result.hasField15 |= input.ReadUInt64(ref result.field15_);
                   break;
                 }
                 case 130: {
-                  Field16 = input.ReadString();
+                  result.hasField16 |= input.ReadString(ref result.field16_);
                   break;
                 }
                 case 160: {
-                  Field20 = input.ReadInt32();
+                  result.hasField20 |= input.ReadInt32(ref result.field20_);
                   break;
                 }
                 case 178: {
-                  AddField22(input.ReadString());
+                  input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.field22_);
                   break;
                 }
                 case 194: {
-                  Field24 = input.ReadString();
+                  result.hasField24 |= input.ReadString(ref result.field24_);
                   break;
                 }
                 case 213: {
-                  Field26 = input.ReadFloat();
+                  result.hasField26 |= input.ReadFloat(ref result.field26_);
                   break;
                 }
                 case 218: {
-                  Field27 = input.ReadString();
+                  result.hasField27 |= input.ReadString(ref result.field27_);
                   break;
                 }
                 case 224: {
-                  Field28 = input.ReadInt32();
+                  result.hasField28 |= input.ReadInt32(ref result.field28_);
                   break;
                 }
                 case 234: {
-                  Field29 = input.ReadString();
+                  result.hasField29 |= input.ReadString(ref result.field29_);
                   break;
                 }
                 case 250: {
@@ -3662,7 +3662,7 @@ namespace Google.ProtocolBuffers.TestProtos {
                   break;
                 }
                 case 584: {
-                  AddField73(input.ReadInt32());
+                  input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.field73_);
                   break;
                 }
               }
@@ -4762,129 +4762,127 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              Field1 = input.ReadString();
+              result.hasField1 |= input.ReadString(ref result.field1_);
               break;
             }
             case 18: {
-              Field2 = input.ReadBytes();
+              result.hasField2 |= input.ReadBytes(ref result.field2_);
               break;
             }
             case 24: {
-              Field3 = input.ReadInt64();
+              result.hasField3 |= input.ReadInt64(ref result.field3_);
               break;
             }
             case 32: {
-              Field4 = input.ReadInt64();
+              result.hasField4 |= input.ReadInt64(ref result.field4_);
               break;
             }
             case 50: {
-              Field6 = input.ReadString();
+              result.hasField6 |= input.ReadString(ref result.field6_);
               break;
             }
             case 83: {
-              global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Types.Group1.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Types.Group1.CreateBuilder();
-              input.ReadGroup(10, subBuilder, extensionRegistry);
-              AddGroup1(subBuilder.BuildPartial());
+              input.ReadGroupArray(tag, field_name, result.group1_, global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Types.Group1.DefaultInstance, extensionRegistry);
               break;
             }
             case 168: {
-              Field21 = input.ReadInt32();
+              result.hasField21 |= input.ReadInt32(ref result.field21_);
               break;
             }
             case 205: {
-              Field25 = input.ReadFloat();
+              result.hasField25 |= input.ReadFloat(ref result.field25_);
               break;
             }
             case 240: {
-              Field30 = input.ReadInt64();
+              result.hasField30 |= input.ReadInt64(ref result.field30_);
               break;
             }
             case 504: {
-              Field63 = input.ReadInt32();
+              result.hasField63 |= input.ReadInt32(ref result.field63_);
               break;
             }
             case 568: {
-              Field71 = input.ReadInt32();
+              result.hasField71 |= input.ReadInt32(ref result.field71_);
               break;
             }
             case 600: {
-              Field75 = input.ReadBool();
+              result.hasField75 |= input.ReadBool(ref result.field75_);
               break;
             }
             case 872: {
-              Field109 = input.ReadInt32();
+              result.hasField109 |= input.ReadInt32(ref result.field109_);
               break;
             }
             case 1018: {
-              AddField127(input.ReadString());
+              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.field127_);
               break;
             }
             case 1026: {
-              AddField128(input.ReadString());
+              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.field128_);
               break;
             }
             case 1032: {
-              Field129 = input.ReadInt32();
+              result.hasField129 |= input.ReadInt32(ref result.field129_);
               break;
             }
             case 1040: {
-              AddField130(input.ReadInt64());
+              input.ReadPrimitiveArray(pbd::FieldType.Int64, tag, field_name, result.field130_);
               break;
             }
             case 1048: {
-              Field131 = input.ReadInt64();
+              result.hasField131 |= input.ReadInt64(ref result.field131_);
               break;
             }
             case 1640: {
-              Field205 = input.ReadBool();
+              result.hasField205 |= input.ReadBool(ref result.field205_);
               break;
             }
             case 1648: {
-              Field206 = input.ReadBool();
+              result.hasField206 |= input.ReadBool(ref result.field206_);
               break;
             }
             case 1680: {
-              Field210 = input.ReadInt32();
+              result.hasField210 |= input.ReadInt32(ref result.field210_);
               break;
             }
             case 1688: {
-              Field211 = input.ReadInt32();
+              result.hasField211 |= input.ReadInt32(ref result.field211_);
               break;
             }
             case 1696: {
-              Field212 = input.ReadInt32();
+              result.hasField212 |= input.ReadInt32(ref result.field212_);
               break;
             }
             case 1704: {
-              Field213 = input.ReadInt32();
+              result.hasField213 |= input.ReadInt32(ref result.field213_);
               break;
             }
             case 1728: {
-              Field216 = input.ReadInt32();
+              result.hasField216 |= input.ReadInt32(ref result.field216_);
               break;
             }
             case 1736: {
-              Field217 = input.ReadInt32();
+              result.hasField217 |= input.ReadInt32(ref result.field217_);
               break;
             }
             case 1744: {
-              Field218 = input.ReadInt32();
+              result.hasField218 |= input.ReadInt32(ref result.field218_);
               break;
             }
             case 1760: {
-              Field220 = input.ReadInt32();
+              result.hasField220 |= input.ReadInt32(ref result.field220_);
               break;
             }
             case 1768: {
-              Field221 = input.ReadInt32();
+              result.hasField221 |= input.ReadInt32(ref result.field221_);
               break;
             }
             case 1781: {
-              Field222 = input.ReadFloat();
+              result.hasField222 |= input.ReadFloat(ref result.field222_);
               break;
             }
           }
@@ -5867,51 +5865,51 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 13: {
-              Field1 = input.ReadFloat();
+              result.hasField1 |= input.ReadFloat(ref result.field1_);
               break;
             }
             case 21: {
-              Field2 = input.ReadFloat();
+              result.hasField2 |= input.ReadFloat(ref result.field2_);
               break;
             }
             case 29: {
-              Field3 = input.ReadFloat();
+              result.hasField3 |= input.ReadFloat(ref result.field3_);
               break;
             }
             case 32: {
-              Field4 = input.ReadBool();
+              result.hasField4 |= input.ReadBool(ref result.field4_);
               break;
             }
             case 40: {
-              Field5 = input.ReadBool();
+              result.hasField5 |= input.ReadBool(ref result.field5_);
               break;
             }
             case 48: {
-              Field6 = input.ReadBool();
+              result.hasField6 |= input.ReadBool(ref result.field6_);
               break;
             }
             case 56: {
-              Field7 = input.ReadBool();
+              result.hasField7 |= input.ReadBool(ref result.field7_);
               break;
             }
             case 69: {
-              Field8 = input.ReadFloat();
+              result.hasField8 |= input.ReadFloat(ref result.field8_);
               break;
             }
             case 72: {
-              Field9 = input.ReadBool();
+              result.hasField9 |= input.ReadBool(ref result.field9_);
               break;
             }
             case 85: {
-              Field10 = input.ReadFloat();
+              result.hasField10 |= input.ReadFloat(ref result.field10_);
               break;
             }
             case 88: {
-              Field11 = input.ReadInt64();
+              result.hasField11 |= input.ReadInt64(ref result.field11_);
               break;
             }
           }

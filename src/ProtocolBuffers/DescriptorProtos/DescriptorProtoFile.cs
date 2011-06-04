@@ -417,13 +417,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddFile(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.file_, global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto.DefaultInstance, extensionRegistry);
               break;
             }
           }
@@ -831,43 +829,35 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              Name = input.ReadString();
+              result.hasName |= input.ReadString(ref result.name_);
               break;
             }
             case 18: {
-              Package = input.ReadString();
+              result.hasPackage |= input.ReadString(ref result.package_);
               break;
             }
             case 26: {
-              AddDependency(input.ReadString());
+              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.dependency_);
               break;
             }
             case 34: {
-              global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddMessageType(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.messageType_, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.DefaultInstance, extensionRegistry);
               break;
             }
             case 42: {
-              global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddEnumType(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.enumType_, global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.DefaultInstance, extensionRegistry);
               break;
             }
             case 50: {
-              global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddService(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.service_, global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto.DefaultInstance, extensionRegistry);
               break;
             }
             case 58: {
-              global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddExtension(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.extension_, global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.DefaultInstance, extensionRegistry);
               break;
             }
             case 66: {
@@ -1381,15 +1371,15 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
                   if (unknownFields == null) {
                     unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                   }
-                  ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 8: {
-                  Start = input.ReadInt32();
+                  result.hasStart |= input.ReadInt32(ref result.start_);
                   break;
                 }
                 case 16: {
-                  End = input.ReadInt32();
+                  result.hasEnd |= input.ReadInt32(ref result.end_);
                   break;
                 }
               }
@@ -1749,41 +1739,31 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              Name = input.ReadString();
+              result.hasName |= input.ReadString(ref result.name_);
               break;
             }
             case 18: {
-              global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddField(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.field_, global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.DefaultInstance, extensionRegistry);
               break;
             }
             case 26: {
-              global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddNestedType(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.nestedType_, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.DefaultInstance, extensionRegistry);
               break;
             }
             case 34: {
-              global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddEnumType(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.enumType_, global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto.DefaultInstance, extensionRegistry);
               break;
             }
             case 42: {
-              global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddExtensionRange(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.extensionRange_, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange.DefaultInstance, extensionRegistry);
               break;
             }
             case 50: {
-              global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddExtension(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.extension_, global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.DefaultInstance, extensionRegistry);
               break;
             }
             case 58: {
@@ -2414,51 +2394,51 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              Name = input.ReadString();
+              result.hasName |= input.ReadString(ref result.name_);
               break;
             }
             case 18: {
-              Extendee = input.ReadString();
+              result.hasExtendee |= input.ReadString(ref result.extendee_);
               break;
             }
             case 24: {
-              Number = input.ReadInt32();
+              result.hasNumber |= input.ReadInt32(ref result.number_);
               break;
             }
             case 32: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Types.Label), rawValue)) {
+              object unknown;
+              if(input.ReadEnum(ref result.label_, out unknown)) {
+                result.hasLabel = true;
+              } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(4, (ulong) rawValue);
-              } else {
-                Label = (global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Types.Label) rawValue;
+                unknownFields.MergeVarintField(4, (ulong)(int)unknown);
               }
               break;
             }
             case 40: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Types.Type), rawValue)) {
+              object unknown;
+              if(input.ReadEnum(ref result.type_, out unknown)) {
+                result.hasType = true;
+              } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(5, (ulong) rawValue);
-              } else {
-                Type = (global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto.Types.Type) rawValue;
+                unknownFields.MergeVarintField(5, (ulong)(int)unknown);
               }
               break;
             }
             case 50: {
-              TypeName = input.ReadString();
+              result.hasTypeName |= input.ReadString(ref result.typeName_);
               break;
             }
             case 58: {
-              DefaultValue = input.ReadString();
+              result.hasDefaultValue |= input.ReadString(ref result.defaultValue_);
               break;
             }
             case 66: {
@@ -2882,17 +2862,15 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              Name = input.ReadString();
+              result.hasName |= input.ReadString(ref result.name_);
               break;
             }
             case 18: {
-              global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddValue(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.value_, global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto.DefaultInstance, extensionRegistry);
               break;
             }
             case 26: {
@@ -3237,15 +3215,15 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              Name = input.ReadString();
+              result.hasName |= input.ReadString(ref result.name_);
               break;
             }
             case 16: {
-              Number = input.ReadInt32();
+              result.hasNumber |= input.ReadInt32(ref result.number_);
               break;
             }
             case 26: {
@@ -3576,17 +3554,15 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              Name = input.ReadString();
+              result.hasName |= input.ReadString(ref result.name_);
               break;
             }
             case 18: {
-              global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddMethod(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.method_, global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto.DefaultInstance, extensionRegistry);
               break;
             }
             case 26: {
@@ -3950,19 +3926,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              Name = input.ReadString();
+              result.hasName |= input.ReadString(ref result.name_);
               break;
             }
             case 18: {
-              InputType = input.ReadString();
+              result.hasInputType |= input.ReadString(ref result.inputType_);
               break;
             }
             case 26: {
-              OutputType = input.ReadString();
+              result.hasOutputType |= input.ReadString(ref result.outputType_);
               break;
             }
             case 34: {
@@ -4426,49 +4402,47 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              JavaPackage = input.ReadString();
+              result.hasJavaPackage |= input.ReadString(ref result.javaPackage_);
               break;
             }
             case 66: {
-              JavaOuterClassname = input.ReadString();
+              result.hasJavaOuterClassname |= input.ReadString(ref result.javaOuterClassname_);
               break;
             }
             case 72: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode), rawValue)) {
+              object unknown;
+              if(input.ReadEnum(ref result.optimizeFor_, out unknown)) {
+                result.hasOptimizeFor = true;
+              } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(9, (ulong) rawValue);
-              } else {
-                OptimizeFor = (global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode) rawValue;
+                unknownFields.MergeVarintField(9, (ulong)(int)unknown);
               }
               break;
             }
             case 80: {
-              JavaMultipleFiles = input.ReadBool();
+              result.hasJavaMultipleFiles |= input.ReadBool(ref result.javaMultipleFiles_);
               break;
             }
             case 128: {
-              CcGenericServices = input.ReadBool();
+              result.hasCcGenericServices |= input.ReadBool(ref result.ccGenericServices_);
               break;
             }
             case 136: {
-              JavaGenericServices = input.ReadBool();
+              result.hasJavaGenericServices |= input.ReadBool(ref result.javaGenericServices_);
               break;
             }
             case 144: {
-              PyGenericServices = input.ReadBool();
+              result.hasPyGenericServices |= input.ReadBool(ref result.pyGenericServices_);
               break;
             }
             case 7994: {
-              global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddUninterpretedOption(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.uninterpretedOption_, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.DefaultInstance, extensionRegistry);
               break;
             }
           }
@@ -4885,21 +4859,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 8: {
-              MessageSetWireFormat = input.ReadBool();
+              result.hasMessageSetWireFormat |= input.ReadBool(ref result.messageSetWireFormat_);
               break;
             }
             case 16: {
-              NoStandardDescriptorAccessor = input.ReadBool();
+              result.hasNoStandardDescriptorAccessor |= input.ReadBool(ref result.noStandardDescriptorAccessor_);
               break;
             }
             case 7994: {
-              global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddUninterpretedOption(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.uninterpretedOption_, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.DefaultInstance, extensionRegistry);
               break;
             }
           }
@@ -5278,37 +5250,35 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 8: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.Types.CType), rawValue)) {
+              object unknown;
+              if(input.ReadEnum(ref result.ctype_, out unknown)) {
+                result.hasCtype = true;
+              } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(1, (ulong) rawValue);
-              } else {
-                Ctype = (global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.Types.CType) rawValue;
+                unknownFields.MergeVarintField(1, (ulong)(int)unknown);
               }
               break;
             }
             case 16: {
-              Packed = input.ReadBool();
+              result.hasPacked |= input.ReadBool(ref result.packed_);
               break;
             }
             case 24: {
-              Deprecated = input.ReadBool();
+              result.hasDeprecated |= input.ReadBool(ref result.deprecated_);
               break;
             }
             case 74: {
-              ExperimentalMapKey = input.ReadString();
+              result.hasExperimentalMapKey |= input.ReadString(ref result.experimentalMapKey_);
               break;
             }
             case 7994: {
-              global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddUninterpretedOption(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.uninterpretedOption_, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.DefaultInstance, extensionRegistry);
               break;
             }
           }
@@ -5632,13 +5602,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 7994: {
-              global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddUninterpretedOption(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.uninterpretedOption_, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.DefaultInstance, extensionRegistry);
               break;
             }
           }
@@ -5889,13 +5857,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 7994: {
-              global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddUninterpretedOption(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.uninterpretedOption_, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.DefaultInstance, extensionRegistry);
               break;
             }
           }
@@ -6146,13 +6112,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 7994: {
-              global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddUninterpretedOption(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.uninterpretedOption_, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.DefaultInstance, extensionRegistry);
               break;
             }
           }
@@ -6403,13 +6367,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 7994: {
-              global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddUninterpretedOption(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.uninterpretedOption_, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.DefaultInstance, extensionRegistry);
               break;
             }
           }
@@ -6700,15 +6662,15 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
                   if (unknownFields == null) {
                     unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                   }
-                  ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 10: {
-                  NamePart_ = input.ReadString();
+                  result.hasNamePart_ |= input.ReadString(ref result.namePart_);
                   break;
                 }
                 case 16: {
-                  IsExtension = input.ReadBool();
+                  result.hasIsExtension |= input.ReadBool(ref result.isExtension_);
                   break;
                 }
               }
@@ -7027,33 +6989,31 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 18: {
-              global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddName(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.name_, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart.DefaultInstance, extensionRegistry);
               break;
             }
             case 26: {
-              IdentifierValue = input.ReadString();
+              result.hasIdentifierValue |= input.ReadString(ref result.identifierValue_);
               break;
             }
             case 32: {
-              PositiveIntValue = input.ReadUInt64();
+              result.hasPositiveIntValue |= input.ReadUInt64(ref result.positiveIntValue_);
               break;
             }
             case 40: {
-              NegativeIntValue = input.ReadInt64();
+              result.hasNegativeIntValue |= input.ReadInt64(ref result.negativeIntValue_);
               break;
             }
             case 49: {
-              DoubleValue = input.ReadDouble();
+              result.hasDoubleValue |= input.ReadDouble(ref result.doubleValue_);
               break;
             }
             case 58: {
-              StringValue = input.ReadBytes();
+              result.hasStringValue |= input.ReadBytes(ref result.stringValue_);
               break;
             }
           }

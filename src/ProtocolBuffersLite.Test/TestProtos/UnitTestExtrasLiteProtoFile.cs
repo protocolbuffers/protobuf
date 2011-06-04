@@ -258,18 +258,18 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
                 return this;
               }
-              ParseUnknownField(input, extensionRegistry, tag);
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
               break;
             }
             case 8: {
-              D = input.ReadInt32();
+              result.hasD |= input.ReadInt32(ref result.d_);
               break;
             }
             case 16: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ExtraEnum), rawValue)) {
-              } else {
-                En = (global::Google.ProtocolBuffers.TestProtos.ExtraEnum) rawValue;
+              object unknown;
+              if(input.ReadEnum(ref result.en_, out unknown)) {
+                result.hasEn = true;
+              } else if(unknown is int) {
               }
               break;
             }
@@ -555,18 +555,18 @@ namespace Google.ProtocolBuffers.TestProtos {
                   if (pb::WireFormat.IsEndGroupTag(tag)) {
                     return this;
                   }
-                  ParseUnknownField(input, extensionRegistry, tag);
+                  ParseUnknownField(input, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 10: {
-                  Number = input.ReadString();
+                  result.hasNumber |= input.ReadString(ref result.number_);
                   break;
                 }
                 case 16: {
-                  int rawValue = input.ReadEnum();
-                  if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneType), rawValue)) {
-                  } else {
-                    Type = (global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneType) rawValue;
+                  object unknown;
+                  if(input.ReadEnum(ref result.type_, out unknown)) {
+                    result.hasType = true;
+                  } else if(unknown is int) {
                   }
                   break;
                 }
@@ -893,27 +893,27 @@ namespace Google.ProtocolBuffers.TestProtos {
                   if (pb::WireFormat.IsEndGroupTag(tag)) {
                     return this;
                   }
-                  ParseUnknownField(input, extensionRegistry, tag);
+                  ParseUnknownField(input, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 10: {
-                  Address = input.ReadString();
+                  result.hasAddress |= input.ReadString(ref result.address_);
                   break;
                 }
                 case 18: {
-                  Address2 = input.ReadString();
+                  result.hasAddress2 |= input.ReadString(ref result.address2_);
                   break;
                 }
                 case 26: {
-                  City = input.ReadString();
+                  result.hasCity |= input.ReadString(ref result.city_);
                   break;
                 }
                 case 34: {
-                  State = input.ReadString();
+                  result.hasState |= input.ReadString(ref result.state_);
                   break;
                 }
                 case 45: {
-                  Zip = input.ReadFixed32();
+                  result.hasZip |= input.ReadFixed32(ref result.zip_);
                   break;
                 }
               }
@@ -1341,40 +1341,31 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
                 return this;
               }
-              ParseUnknownField(input, extensionRegistry, tag);
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              Name = input.ReadString();
+              result.hasName |= input.ReadString(ref result.name_);
               break;
             }
             case 16: {
-              Id = input.ReadInt32();
+              result.hasId |= input.ReadInt32(ref result.id_);
               break;
             }
             case 26: {
-              Email = input.ReadString();
+              result.hasEmail |= input.ReadString(ref result.email_);
               break;
             }
             case 34: {
-              global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneNumber.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneNumber.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddPhone(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.phone_, global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneNumber.DefaultInstance, extensionRegistry);
               break;
             }
             case 43: {
-              global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.Addresses.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.Addresses.CreateBuilder();
-              input.ReadGroup(5, subBuilder, extensionRegistry);
-              AddAddresses(subBuilder.BuildPartial());
+              input.ReadGroupArray(tag, field_name, result.addresses_, global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.Addresses.DefaultInstance, extensionRegistry);
               break;
             }
             case 82: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddCodes(input.ReadInt32());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.codes_);
               break;
             }
           }
@@ -1729,11 +1720,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
                 return this;
               }
-              ParseUnknownField(input, extensionRegistry, tag);
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              Number = input.ReadString();
+              result.hasNumber |= input.ReadString(ref result.number_);
               break;
             }
           }

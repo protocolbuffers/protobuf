@@ -99,7 +99,7 @@ namespace Google.ProtocolBuffers
         /// <returns>true unless the tag is an end-group tag</returns>
         [CLSCompliant(false)]
         protected virtual bool ParseUnknownField(CodedInputStream input,
-                                                 ExtensionRegistry extensionRegistry, uint tag)
+                                                 ExtensionRegistry extensionRegistry, uint tag, string fieldName)
         {
             return input.SkipField();
         }

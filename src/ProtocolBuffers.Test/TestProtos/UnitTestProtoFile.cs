@@ -1246,11 +1246,11 @@ namespace Google.ProtocolBuffers.TestProtos {
                   if (unknownFields == null) {
                     unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                   }
-                  ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 8: {
-                  Bb = input.ReadInt32();
+                  result.hasBb |= input.ReadInt32(ref result.bb_);
                   break;
                 }
               }
@@ -1470,11 +1470,11 @@ namespace Google.ProtocolBuffers.TestProtos {
                   if (unknownFields == null) {
                     unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                   }
-                  ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 136: {
-                  A = input.ReadInt32();
+                  result.hasA |= input.ReadInt32(ref result.a_);
                   break;
                 }
               }
@@ -1694,11 +1694,11 @@ namespace Google.ProtocolBuffers.TestProtos {
                   if (unknownFields == null) {
                     unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                   }
-                  ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 376: {
-                  A = input.ReadInt32();
+                  result.hasA |= input.ReadInt32(ref result.a_);
                   break;
                 }
               }
@@ -3349,67 +3349,67 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 8: {
-              OptionalInt32 = input.ReadInt32();
+              result.hasOptionalInt32 |= input.ReadInt32(ref result.optionalInt32_);
               break;
             }
             case 16: {
-              OptionalInt64 = input.ReadInt64();
+              result.hasOptionalInt64 |= input.ReadInt64(ref result.optionalInt64_);
               break;
             }
             case 24: {
-              OptionalUint32 = input.ReadUInt32();
+              result.hasOptionalUint32 |= input.ReadUInt32(ref result.optionalUint32_);
               break;
             }
             case 32: {
-              OptionalUint64 = input.ReadUInt64();
+              result.hasOptionalUint64 |= input.ReadUInt64(ref result.optionalUint64_);
               break;
             }
             case 40: {
-              OptionalSint32 = input.ReadSInt32();
+              result.hasOptionalSint32 |= input.ReadSInt32(ref result.optionalSint32_);
               break;
             }
             case 48: {
-              OptionalSint64 = input.ReadSInt64();
+              result.hasOptionalSint64 |= input.ReadSInt64(ref result.optionalSint64_);
               break;
             }
             case 61: {
-              OptionalFixed32 = input.ReadFixed32();
+              result.hasOptionalFixed32 |= input.ReadFixed32(ref result.optionalFixed32_);
               break;
             }
             case 65: {
-              OptionalFixed64 = input.ReadFixed64();
+              result.hasOptionalFixed64 |= input.ReadFixed64(ref result.optionalFixed64_);
               break;
             }
             case 77: {
-              OptionalSfixed32 = input.ReadSFixed32();
+              result.hasOptionalSfixed32 |= input.ReadSFixed32(ref result.optionalSfixed32_);
               break;
             }
             case 81: {
-              OptionalSfixed64 = input.ReadSFixed64();
+              result.hasOptionalSfixed64 |= input.ReadSFixed64(ref result.optionalSfixed64_);
               break;
             }
             case 93: {
-              OptionalFloat = input.ReadFloat();
+              result.hasOptionalFloat |= input.ReadFloat(ref result.optionalFloat_);
               break;
             }
             case 97: {
-              OptionalDouble = input.ReadDouble();
+              result.hasOptionalDouble |= input.ReadDouble(ref result.optionalDouble_);
               break;
             }
             case 104: {
-              OptionalBool = input.ReadBool();
+              result.hasOptionalBool |= input.ReadBool(ref result.optionalBool_);
               break;
             }
             case 114: {
-              OptionalString = input.ReadString();
+              result.hasOptionalString |= input.ReadString(ref result.optionalString_);
               break;
             }
             case 122: {
-              OptionalBytes = input.ReadBytes();
+              result.hasOptionalBytes |= input.ReadBytes(ref result.optionalBytes_);
               break;
             }
             case 131: {
@@ -3449,279 +3449,274 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 168: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum), rawValue)) {
+              object unknown;
+              if(input.ReadEnum(ref result.optionalNestedEnum_, out unknown)) {
+                result.hasOptionalNestedEnum = true;
+              } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(21, (ulong) rawValue);
-              } else {
-                OptionalNestedEnum = (global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum) rawValue;
+                unknownFields.MergeVarintField(21, (ulong)(int)unknown);
               }
               break;
             }
             case 176: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ForeignEnum), rawValue)) {
+              object unknown;
+              if(input.ReadEnum(ref result.optionalForeignEnum_, out unknown)) {
+                result.hasOptionalForeignEnum = true;
+              } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(22, (ulong) rawValue);
-              } else {
-                OptionalForeignEnum = (global::Google.ProtocolBuffers.TestProtos.ForeignEnum) rawValue;
+                unknownFields.MergeVarintField(22, (ulong)(int)unknown);
               }
               break;
             }
             case 184: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ImportEnum), rawValue)) {
+              object unknown;
+              if(input.ReadEnum(ref result.optionalImportEnum_, out unknown)) {
+                result.hasOptionalImportEnum = true;
+              } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(23, (ulong) rawValue);
-              } else {
-                OptionalImportEnum = (global::Google.ProtocolBuffers.TestProtos.ImportEnum) rawValue;
+                unknownFields.MergeVarintField(23, (ulong)(int)unknown);
               }
               break;
             }
             case 194: {
-              OptionalStringPiece = input.ReadString();
+              result.hasOptionalStringPiece |= input.ReadString(ref result.optionalStringPiece_);
               break;
             }
             case 202: {
-              OptionalCord = input.ReadString();
+              result.hasOptionalCord |= input.ReadString(ref result.optionalCord_);
               break;
             }
             case 248: {
-              AddRepeatedInt32(input.ReadInt32());
+              input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.repeatedInt32_);
               break;
             }
             case 256: {
-              AddRepeatedInt64(input.ReadInt64());
+              input.ReadPrimitiveArray(pbd::FieldType.Int64, tag, field_name, result.repeatedInt64_);
               break;
             }
             case 264: {
-              AddRepeatedUint32(input.ReadUInt32());
+              input.ReadPrimitiveArray(pbd::FieldType.UInt32, tag, field_name, result.repeatedUint32_);
               break;
             }
             case 272: {
-              AddRepeatedUint64(input.ReadUInt64());
+              input.ReadPrimitiveArray(pbd::FieldType.UInt64, tag, field_name, result.repeatedUint64_);
               break;
             }
             case 280: {
-              AddRepeatedSint32(input.ReadSInt32());
+              input.ReadPrimitiveArray(pbd::FieldType.SInt32, tag, field_name, result.repeatedSint32_);
               break;
             }
             case 288: {
-              AddRepeatedSint64(input.ReadSInt64());
+              input.ReadPrimitiveArray(pbd::FieldType.SInt64, tag, field_name, result.repeatedSint64_);
               break;
             }
             case 301: {
-              AddRepeatedFixed32(input.ReadFixed32());
+              input.ReadPrimitiveArray(pbd::FieldType.Fixed32, tag, field_name, result.repeatedFixed32_);
               break;
             }
             case 305: {
-              AddRepeatedFixed64(input.ReadFixed64());
+              input.ReadPrimitiveArray(pbd::FieldType.Fixed64, tag, field_name, result.repeatedFixed64_);
               break;
             }
             case 317: {
-              AddRepeatedSfixed32(input.ReadSFixed32());
+              input.ReadPrimitiveArray(pbd::FieldType.SFixed32, tag, field_name, result.repeatedSfixed32_);
               break;
             }
             case 321: {
-              AddRepeatedSfixed64(input.ReadSFixed64());
+              input.ReadPrimitiveArray(pbd::FieldType.SFixed64, tag, field_name, result.repeatedSfixed64_);
               break;
             }
             case 333: {
-              AddRepeatedFloat(input.ReadFloat());
+              input.ReadPrimitiveArray(pbd::FieldType.Float, tag, field_name, result.repeatedFloat_);
               break;
             }
             case 337: {
-              AddRepeatedDouble(input.ReadDouble());
+              input.ReadPrimitiveArray(pbd::FieldType.Double, tag, field_name, result.repeatedDouble_);
               break;
             }
             case 344: {
-              AddRepeatedBool(input.ReadBool());
+              input.ReadPrimitiveArray(pbd::FieldType.Bool, tag, field_name, result.repeatedBool_);
               break;
             }
             case 354: {
-              AddRepeatedString(input.ReadString());
+              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedString_);
               break;
             }
             case 362: {
-              AddRepeatedBytes(input.ReadBytes());
+              input.ReadPrimitiveArray(pbd::FieldType.Bytes, tag, field_name, result.repeatedBytes_);
               break;
             }
             case 371: {
-              global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup.CreateBuilder();
-              input.ReadGroup(46, subBuilder, extensionRegistry);
-              AddRepeatedGroup(subBuilder.BuildPartial());
+              input.ReadGroupArray(tag, field_name, result.repeatedGroup_, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.RepeatedGroup.DefaultInstance, extensionRegistry);
               break;
             }
             case 386: {
-              global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddRepeatedNestedMessage(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.repeatedNestedMessage_, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance, extensionRegistry);
               break;
             }
             case 394: {
-              global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddRepeatedForeignMessage(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.repeatedForeignMessage_, global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance, extensionRegistry);
               break;
             }
             case 402: {
-              global::Google.ProtocolBuffers.TestProtos.ImportMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ImportMessage.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddRepeatedImportMessage(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.repeatedImportMessage_, global::Google.ProtocolBuffers.TestProtos.ImportMessage.DefaultInstance, extensionRegistry);
               break;
             }
             case 408: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum), rawValue)) {
+              scg::ICollection<object> unknownItems;
+              input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum>(tag, field_name, result.repeatedNestedEnum_, out unknownItems);
+              if (unknownItems != null) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(51, (ulong) rawValue);
-              } else {
-                AddRepeatedNestedEnum((global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum) rawValue);
+                foreach (object rawValue in unknownItems)
+                  if (rawValue is int)
+                    unknownFields.MergeVarintField(51, (ulong)(int)rawValue);
               }
               break;
             }
             case 416: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ForeignEnum), rawValue)) {
+              scg::ICollection<object> unknownItems;
+              input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>(tag, field_name, result.repeatedForeignEnum_, out unknownItems);
+              if (unknownItems != null) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(52, (ulong) rawValue);
-              } else {
-                AddRepeatedForeignEnum((global::Google.ProtocolBuffers.TestProtos.ForeignEnum) rawValue);
+                foreach (object rawValue in unknownItems)
+                  if (rawValue is int)
+                    unknownFields.MergeVarintField(52, (ulong)(int)rawValue);
               }
               break;
             }
             case 424: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ImportEnum), rawValue)) {
+              scg::ICollection<object> unknownItems;
+              input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.ImportEnum>(tag, field_name, result.repeatedImportEnum_, out unknownItems);
+              if (unknownItems != null) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(53, (ulong) rawValue);
-              } else {
-                AddRepeatedImportEnum((global::Google.ProtocolBuffers.TestProtos.ImportEnum) rawValue);
+                foreach (object rawValue in unknownItems)
+                  if (rawValue is int)
+                    unknownFields.MergeVarintField(53, (ulong)(int)rawValue);
               }
               break;
             }
             case 434: {
-              AddRepeatedStringPiece(input.ReadString());
+              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedStringPiece_);
               break;
             }
             case 442: {
-              AddRepeatedCord(input.ReadString());
+              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedCord_);
               break;
             }
             case 488: {
-              DefaultInt32 = input.ReadInt32();
+              result.hasDefaultInt32 |= input.ReadInt32(ref result.defaultInt32_);
               break;
             }
             case 496: {
-              DefaultInt64 = input.ReadInt64();
+              result.hasDefaultInt64 |= input.ReadInt64(ref result.defaultInt64_);
               break;
             }
             case 504: {
-              DefaultUint32 = input.ReadUInt32();
+              result.hasDefaultUint32 |= input.ReadUInt32(ref result.defaultUint32_);
               break;
             }
             case 512: {
-              DefaultUint64 = input.ReadUInt64();
+              result.hasDefaultUint64 |= input.ReadUInt64(ref result.defaultUint64_);
               break;
             }
             case 520: {
-              DefaultSint32 = input.ReadSInt32();
+              result.hasDefaultSint32 |= input.ReadSInt32(ref result.defaultSint32_);
               break;
             }
             case 528: {
-              DefaultSint64 = input.ReadSInt64();
+              result.hasDefaultSint64 |= input.ReadSInt64(ref result.defaultSint64_);
               break;
             }
             case 541: {
-              DefaultFixed32 = input.ReadFixed32();
+              result.hasDefaultFixed32 |= input.ReadFixed32(ref result.defaultFixed32_);
               break;
             }
             case 545: {
-              DefaultFixed64 = input.ReadFixed64();
+              result.hasDefaultFixed64 |= input.ReadFixed64(ref result.defaultFixed64_);
               break;
             }
             case 557: {
-              DefaultSfixed32 = input.ReadSFixed32();
+              result.hasDefaultSfixed32 |= input.ReadSFixed32(ref result.defaultSfixed32_);
               break;
             }
             case 561: {
-              DefaultSfixed64 = input.ReadSFixed64();
+              result.hasDefaultSfixed64 |= input.ReadSFixed64(ref result.defaultSfixed64_);
               break;
             }
             case 573: {
-              DefaultFloat = input.ReadFloat();
+              result.hasDefaultFloat |= input.ReadFloat(ref result.defaultFloat_);
               break;
             }
             case 577: {
-              DefaultDouble = input.ReadDouble();
+              result.hasDefaultDouble |= input.ReadDouble(ref result.defaultDouble_);
               break;
             }
             case 584: {
-              DefaultBool = input.ReadBool();
+              result.hasDefaultBool |= input.ReadBool(ref result.defaultBool_);
               break;
             }
             case 594: {
-              DefaultString = input.ReadString();
+              result.hasDefaultString |= input.ReadString(ref result.defaultString_);
               break;
             }
             case 602: {
-              DefaultBytes = input.ReadBytes();
+              result.hasDefaultBytes |= input.ReadBytes(ref result.defaultBytes_);
               break;
             }
             case 648: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum), rawValue)) {
+              object unknown;
+              if(input.ReadEnum(ref result.defaultNestedEnum_, out unknown)) {
+                result.hasDefaultNestedEnum = true;
+              } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(81, (ulong) rawValue);
-              } else {
-                DefaultNestedEnum = (global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum) rawValue;
+                unknownFields.MergeVarintField(81, (ulong)(int)unknown);
               }
               break;
             }
             case 656: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ForeignEnum), rawValue)) {
+              object unknown;
+              if(input.ReadEnum(ref result.defaultForeignEnum_, out unknown)) {
+                result.hasDefaultForeignEnum = true;
+              } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(82, (ulong) rawValue);
-              } else {
-                DefaultForeignEnum = (global::Google.ProtocolBuffers.TestProtos.ForeignEnum) rawValue;
+                unknownFields.MergeVarintField(82, (ulong)(int)unknown);
               }
               break;
             }
             case 664: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ImportEnum), rawValue)) {
+              object unknown;
+              if(input.ReadEnum(ref result.defaultImportEnum_, out unknown)) {
+                result.hasDefaultImportEnum = true;
+              } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(83, (ulong) rawValue);
-              } else {
-                DefaultImportEnum = (global::Google.ProtocolBuffers.TestProtos.ImportEnum) rawValue;
+                unknownFields.MergeVarintField(83, (ulong)(int)unknown);
               }
               break;
             }
             case 674: {
-              DefaultStringPiece = input.ReadString();
+              result.hasDefaultStringPiece |= input.ReadString(ref result.defaultStringPiece_);
               break;
             }
             case 682: {
-              DefaultCord = input.ReadString();
+              result.hasDefaultCord |= input.ReadString(ref result.defaultCord_);
               break;
             }
           }
@@ -5511,11 +5506,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 8: {
-              DeprecatedInt32 = input.ReadInt32();
+              result.hasDeprecatedInt32 |= input.ReadInt32(ref result.deprecatedInt32_);
               break;
             }
           }
@@ -5735,11 +5730,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 8: {
-              C = input.ReadInt32();
+              result.hasC |= input.ReadInt32(ref result.c_);
               break;
             }
           }
@@ -5945,7 +5940,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
           }
@@ -6147,11 +6142,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 136: {
-              A = input.ReadInt32();
+              result.hasA |= input.ReadInt32(ref result.a_);
               break;
             }
           }
@@ -6371,11 +6366,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 376: {
-              A = input.ReadInt32();
+              result.hasA |= input.ReadInt32(ref result.a_);
               break;
             }
           }
@@ -6578,7 +6573,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
           }
@@ -7395,139 +7390,139 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 8: {
-              A = input.ReadInt32();
+              result.hasA |= input.ReadInt32(ref result.a_);
               break;
             }
             case 16: {
-              Dummy2 = input.ReadInt32();
+              result.hasDummy2 |= input.ReadInt32(ref result.dummy2_);
               break;
             }
             case 24: {
-              B = input.ReadInt32();
+              result.hasB |= input.ReadInt32(ref result.b_);
               break;
             }
             case 32: {
-              Dummy4 = input.ReadInt32();
+              result.hasDummy4 |= input.ReadInt32(ref result.dummy4_);
               break;
             }
             case 40: {
-              Dummy5 = input.ReadInt32();
+              result.hasDummy5 |= input.ReadInt32(ref result.dummy5_);
               break;
             }
             case 48: {
-              Dummy6 = input.ReadInt32();
+              result.hasDummy6 |= input.ReadInt32(ref result.dummy6_);
               break;
             }
             case 56: {
-              Dummy7 = input.ReadInt32();
+              result.hasDummy7 |= input.ReadInt32(ref result.dummy7_);
               break;
             }
             case 64: {
-              Dummy8 = input.ReadInt32();
+              result.hasDummy8 |= input.ReadInt32(ref result.dummy8_);
               break;
             }
             case 72: {
-              Dummy9 = input.ReadInt32();
+              result.hasDummy9 |= input.ReadInt32(ref result.dummy9_);
               break;
             }
             case 80: {
-              Dummy10 = input.ReadInt32();
+              result.hasDummy10 |= input.ReadInt32(ref result.dummy10_);
               break;
             }
             case 88: {
-              Dummy11 = input.ReadInt32();
+              result.hasDummy11 |= input.ReadInt32(ref result.dummy11_);
               break;
             }
             case 96: {
-              Dummy12 = input.ReadInt32();
+              result.hasDummy12 |= input.ReadInt32(ref result.dummy12_);
               break;
             }
             case 104: {
-              Dummy13 = input.ReadInt32();
+              result.hasDummy13 |= input.ReadInt32(ref result.dummy13_);
               break;
             }
             case 112: {
-              Dummy14 = input.ReadInt32();
+              result.hasDummy14 |= input.ReadInt32(ref result.dummy14_);
               break;
             }
             case 120: {
-              Dummy15 = input.ReadInt32();
+              result.hasDummy15 |= input.ReadInt32(ref result.dummy15_);
               break;
             }
             case 128: {
-              Dummy16 = input.ReadInt32();
+              result.hasDummy16 |= input.ReadInt32(ref result.dummy16_);
               break;
             }
             case 136: {
-              Dummy17 = input.ReadInt32();
+              result.hasDummy17 |= input.ReadInt32(ref result.dummy17_);
               break;
             }
             case 144: {
-              Dummy18 = input.ReadInt32();
+              result.hasDummy18 |= input.ReadInt32(ref result.dummy18_);
               break;
             }
             case 152: {
-              Dummy19 = input.ReadInt32();
+              result.hasDummy19 |= input.ReadInt32(ref result.dummy19_);
               break;
             }
             case 160: {
-              Dummy20 = input.ReadInt32();
+              result.hasDummy20 |= input.ReadInt32(ref result.dummy20_);
               break;
             }
             case 168: {
-              Dummy21 = input.ReadInt32();
+              result.hasDummy21 |= input.ReadInt32(ref result.dummy21_);
               break;
             }
             case 176: {
-              Dummy22 = input.ReadInt32();
+              result.hasDummy22 |= input.ReadInt32(ref result.dummy22_);
               break;
             }
             case 184: {
-              Dummy23 = input.ReadInt32();
+              result.hasDummy23 |= input.ReadInt32(ref result.dummy23_);
               break;
             }
             case 192: {
-              Dummy24 = input.ReadInt32();
+              result.hasDummy24 |= input.ReadInt32(ref result.dummy24_);
               break;
             }
             case 200: {
-              Dummy25 = input.ReadInt32();
+              result.hasDummy25 |= input.ReadInt32(ref result.dummy25_);
               break;
             }
             case 208: {
-              Dummy26 = input.ReadInt32();
+              result.hasDummy26 |= input.ReadInt32(ref result.dummy26_);
               break;
             }
             case 216: {
-              Dummy27 = input.ReadInt32();
+              result.hasDummy27 |= input.ReadInt32(ref result.dummy27_);
               break;
             }
             case 224: {
-              Dummy28 = input.ReadInt32();
+              result.hasDummy28 |= input.ReadInt32(ref result.dummy28_);
               break;
             }
             case 232: {
-              Dummy29 = input.ReadInt32();
+              result.hasDummy29 |= input.ReadInt32(ref result.dummy29_);
               break;
             }
             case 240: {
-              Dummy30 = input.ReadInt32();
+              result.hasDummy30 |= input.ReadInt32(ref result.dummy30_);
               break;
             }
             case 248: {
-              Dummy31 = input.ReadInt32();
+              result.hasDummy31 |= input.ReadInt32(ref result.dummy31_);
               break;
             }
             case 256: {
-              Dummy32 = input.ReadInt32();
+              result.hasDummy32 |= input.ReadInt32(ref result.dummy32_);
               break;
             }
             case 264: {
-              C = input.ReadInt32();
+              result.hasC |= input.ReadInt32(ref result.c_);
               break;
             }
           }
@@ -8370,7 +8365,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
@@ -8383,13 +8378,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 18: {
-              global::Google.ProtocolBuffers.TestProtos.TestRequired.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestRequired.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddRepeatedMessage(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.repeatedMessage_, global::Google.ProtocolBuffers.TestProtos.TestRequired.DefaultInstance, extensionRegistry);
               break;
             }
             case 24: {
-              Dummy = input.ReadInt32();
+              result.hasDummy |= input.ReadInt32(ref result.dummy_);
               break;
             }
           }
@@ -8683,7 +8676,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
@@ -8911,7 +8904,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
           }
@@ -9099,7 +9092,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
           }
@@ -9289,7 +9282,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
           }
@@ -9510,15 +9503,15 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 8: {
-              A = input.ReadInt32();
+              result.hasA |= input.ReadInt32(ref result.a_);
               break;
             }
             case 2147483640: {
-              Bb = input.ReadInt32();
+              result.hasBb |= input.ReadInt32(ref result.bb_);
               break;
             }
           }
@@ -9775,7 +9768,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
@@ -9788,7 +9781,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 16: {
-              I = input.ReadInt32();
+              result.hasI |= input.ReadInt32(ref result.i_);
               break;
             }
           }
@@ -10044,7 +10037,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
@@ -10310,7 +10303,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
@@ -10323,7 +10316,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 16: {
-              OptionalInt32 = input.ReadInt32();
+              result.hasOptionalInt32 |= input.ReadInt32(ref result.optionalInt32_);
               break;
             }
           }
@@ -10609,11 +10602,11 @@ namespace Google.ProtocolBuffers.TestProtos {
                   if (unknownFields == null) {
                     unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                   }
-                  ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 8: {
-                  A = input.ReadInt32();
+                  result.hasA |= input.ReadInt32(ref result.a_);
                   break;
                 }
               }
@@ -10833,11 +10826,11 @@ namespace Google.ProtocolBuffers.TestProtos {
                   if (unknownFields == null) {
                     unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                   }
-                  ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 8: {
-                  A = input.ReadInt32();
+                  result.hasA |= input.ReadInt32(ref result.a_);
                   break;
                 }
               }
@@ -11073,11 +11066,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 8: {
-              A = input.ReadInt32();
+              result.hasA |= input.ReadInt32(ref result.a_);
               break;
             }
             case 19: {
@@ -11447,17 +11440,15 @@ namespace Google.ProtocolBuffers.TestProtos {
                   if (unknownFields == null) {
                     unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                   }
-                  ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 8: {
-                  AddNestedmessageRepeatedInt32(input.ReadInt32());
+                  input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.nestedmessageRepeatedInt32_);
                   break;
                 }
                 case 18: {
-                  global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder();
-                  input.ReadMessage(subBuilder, extensionRegistry);
-                  AddNestedmessageRepeatedForeignmessage(subBuilder.BuildPartial());
+                  input.ReadMessageArray(tag, field_name, result.nestedmessageRepeatedForeignmessage_, global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance, extensionRegistry);
                   break;
                 }
               }
@@ -11701,7 +11692,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
@@ -12202,26 +12193,26 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 8: {
-              PrimitiveField = input.ReadInt32();
+              result.hasPrimitiveField |= input.ReadInt32(ref result.primitiveField_);
               break;
             }
             case 18: {
-              StringField = input.ReadString();
+              result.hasStringField |= input.ReadString(ref result.stringField_);
               break;
             }
             case 24: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ForeignEnum), rawValue)) {
+              object unknown;
+              if(input.ReadEnum(ref result.enumField_, out unknown)) {
+                result.hasEnumField = true;
+              } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(3, (ulong) rawValue);
-              } else {
-                EnumField = (global::Google.ProtocolBuffers.TestProtos.ForeignEnum) rawValue;
+                unknownFields.MergeVarintField(3, (ulong)(int)unknown);
               }
               break;
             }
@@ -12235,45 +12226,44 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 42: {
-              StringPieceField = input.ReadString();
+              result.hasStringPieceField |= input.ReadString(ref result.stringPieceField_);
               break;
             }
             case 50: {
-              CordField = input.ReadString();
+              result.hasCordField |= input.ReadString(ref result.cordField_);
               break;
             }
             case 56: {
-              AddRepeatedPrimitiveField(input.ReadInt32());
+              input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.repeatedPrimitiveField_);
               break;
             }
             case 66: {
-              AddRepeatedStringField(input.ReadString());
+              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedStringField_);
               break;
             }
             case 72: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ForeignEnum), rawValue)) {
+              scg::ICollection<object> unknownItems;
+              input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>(tag, field_name, result.repeatedEnumField_, out unknownItems);
+              if (unknownItems != null) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(9, (ulong) rawValue);
-              } else {
-                AddRepeatedEnumField((global::Google.ProtocolBuffers.TestProtos.ForeignEnum) rawValue);
+                foreach (object rawValue in unknownItems)
+                  if (rawValue is int)
+                    unknownFields.MergeVarintField(9, (ulong)(int)rawValue);
               }
               break;
             }
             case 82: {
-              global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddRepeatedMessageField(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.repeatedMessageField_, global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance, extensionRegistry);
               break;
             }
             case 90: {
-              AddRepeatedStringPieceField(input.ReadString());
+              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedStringPieceField_);
               break;
             }
             case 98: {
-              AddRepeatedCordField(input.ReadString());
+              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedCordField_);
               break;
             }
           }
@@ -12822,19 +12812,19 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 8: {
-              MyInt = input.ReadInt64();
+              result.hasMyInt |= input.ReadInt64(ref result.myInt_);
               break;
             }
             case 90: {
-              MyString = input.ReadString();
+              result.hasMyString |= input.ReadString(ref result.myString_);
               break;
             }
             case 813: {
-              MyFloat = input.ReadFloat();
+              result.hasMyFloat |= input.ReadFloat(ref result.myFloat_);
               break;
             }
           }
@@ -13435,83 +13425,83 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              EscapedBytes = input.ReadBytes();
+              result.hasEscapedBytes |= input.ReadBytes(ref result.escapedBytes_);
               break;
             }
             case 16: {
-              LargeUint32 = input.ReadUInt32();
+              result.hasLargeUint32 |= input.ReadUInt32(ref result.largeUint32_);
               break;
             }
             case 24: {
-              LargeUint64 = input.ReadUInt64();
+              result.hasLargeUint64 |= input.ReadUInt64(ref result.largeUint64_);
               break;
             }
             case 32: {
-              SmallInt32 = input.ReadInt32();
+              result.hasSmallInt32 |= input.ReadInt32(ref result.smallInt32_);
               break;
             }
             case 40: {
-              SmallInt64 = input.ReadInt64();
+              result.hasSmallInt64 |= input.ReadInt64(ref result.smallInt64_);
               break;
             }
             case 50: {
-              Utf8String = input.ReadString();
+              result.hasUtf8String |= input.ReadString(ref result.utf8String_);
               break;
             }
             case 61: {
-              ZeroFloat = input.ReadFloat();
+              result.hasZeroFloat |= input.ReadFloat(ref result.zeroFloat_);
               break;
             }
             case 69: {
-              OneFloat = input.ReadFloat();
+              result.hasOneFloat |= input.ReadFloat(ref result.oneFloat_);
               break;
             }
             case 77: {
-              SmallFloat = input.ReadFloat();
+              result.hasSmallFloat |= input.ReadFloat(ref result.smallFloat_);
               break;
             }
             case 85: {
-              NegativeOneFloat = input.ReadFloat();
+              result.hasNegativeOneFloat |= input.ReadFloat(ref result.negativeOneFloat_);
               break;
             }
             case 93: {
-              NegativeFloat = input.ReadFloat();
+              result.hasNegativeFloat |= input.ReadFloat(ref result.negativeFloat_);
               break;
             }
             case 101: {
-              LargeFloat = input.ReadFloat();
+              result.hasLargeFloat |= input.ReadFloat(ref result.largeFloat_);
               break;
             }
             case 109: {
-              SmallNegativeFloat = input.ReadFloat();
+              result.hasSmallNegativeFloat |= input.ReadFloat(ref result.smallNegativeFloat_);
               break;
             }
             case 113: {
-              InfDouble = input.ReadDouble();
+              result.hasInfDouble |= input.ReadDouble(ref result.infDouble_);
               break;
             }
             case 121: {
-              NegInfDouble = input.ReadDouble();
+              result.hasNegInfDouble |= input.ReadDouble(ref result.negInfDouble_);
               break;
             }
             case 129: {
-              NanDouble = input.ReadDouble();
+              result.hasNanDouble |= input.ReadDouble(ref result.nanDouble_);
               break;
             }
             case 141: {
-              InfFloat = input.ReadFloat();
+              result.hasInfFloat |= input.ReadFloat(ref result.infFloat_);
               break;
             }
             case 149: {
-              NegInfFloat = input.ReadFloat();
+              result.hasNegInfFloat |= input.ReadFloat(ref result.negInfFloat_);
               break;
             }
             case 157: {
-              NanFloat = input.ReadFloat();
+              result.hasNanFloat |= input.ReadFloat(ref result.nanFloat_);
               break;
             }
           }
@@ -14061,11 +14051,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              Data = input.ReadString();
+              result.hasData |= input.ReadString(ref result.data_);
               break;
             }
           }
@@ -14286,11 +14276,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              Data = input.ReadBytes();
+              result.hasData |= input.ReadBytes(ref result.data_);
               break;
             }
           }
@@ -14921,141 +14911,72 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 722: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedInt32(input.ReadInt32());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.packedInt32_);
               break;
             }
             case 730: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedInt64(input.ReadInt64());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.Int64, tag, field_name, result.packedInt64_);
               break;
             }
             case 738: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedUint32(input.ReadUInt32());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.UInt32, tag, field_name, result.packedUint32_);
               break;
             }
             case 746: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedUint64(input.ReadUInt64());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.UInt64, tag, field_name, result.packedUint64_);
               break;
             }
             case 754: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedSint32(input.ReadSInt32());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.SInt32, tag, field_name, result.packedSint32_);
               break;
             }
             case 762: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedSint64(input.ReadSInt64());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.SInt64, tag, field_name, result.packedSint64_);
               break;
             }
             case 770: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedFixed32(input.ReadFixed32());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.Fixed32, tag, field_name, result.packedFixed32_);
               break;
             }
             case 778: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedFixed64(input.ReadFixed64());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.Fixed64, tag, field_name, result.packedFixed64_);
               break;
             }
             case 786: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedSfixed32(input.ReadSFixed32());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.SFixed32, tag, field_name, result.packedSfixed32_);
               break;
             }
             case 794: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedSfixed64(input.ReadSFixed64());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.SFixed64, tag, field_name, result.packedSfixed64_);
               break;
             }
             case 802: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedFloat(input.ReadFloat());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.Float, tag, field_name, result.packedFloat_);
               break;
             }
             case 810: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedDouble(input.ReadDouble());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.Double, tag, field_name, result.packedDouble_);
               break;
             }
             case 818: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedBool(input.ReadBool());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.Bool, tag, field_name, result.packedBool_);
               break;
             }
             case 826: {
-              int length = input.ReadInt32();
-              int oldLimit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                int rawValue = input.ReadEnum();
-                if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ForeignEnum), rawValue)) {
-                  if (unknownFields == null) {
-                    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-                  }
-                  unknownFields.MergeVarintField(103, (ulong) rawValue);
-                } else {
-                  AddPackedEnum((global::Google.ProtocolBuffers.TestProtos.ForeignEnum) rawValue);
+              scg::ICollection<object> unknownItems;
+              input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>(tag, field_name, result.packedEnum_, out unknownItems);
+              if (unknownItems != null) {
+                if (unknownFields == null) {
+                  unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
+                foreach (object rawValue in unknownItems)
+                  if (rawValue is int)
+                    unknownFields.MergeVarintField(103, (ulong)(int)rawValue);
               }
-              input.PopLimit(oldLimit);
               break;
             }
           }
@@ -15996,70 +15917,71 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 720: {
-              AddUnpackedInt32(input.ReadInt32());
+              input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.unpackedInt32_);
               break;
             }
             case 728: {
-              AddUnpackedInt64(input.ReadInt64());
+              input.ReadPrimitiveArray(pbd::FieldType.Int64, tag, field_name, result.unpackedInt64_);
               break;
             }
             case 736: {
-              AddUnpackedUint32(input.ReadUInt32());
+              input.ReadPrimitiveArray(pbd::FieldType.UInt32, tag, field_name, result.unpackedUint32_);
               break;
             }
             case 744: {
-              AddUnpackedUint64(input.ReadUInt64());
+              input.ReadPrimitiveArray(pbd::FieldType.UInt64, tag, field_name, result.unpackedUint64_);
               break;
             }
             case 752: {
-              AddUnpackedSint32(input.ReadSInt32());
+              input.ReadPrimitiveArray(pbd::FieldType.SInt32, tag, field_name, result.unpackedSint32_);
               break;
             }
             case 760: {
-              AddUnpackedSint64(input.ReadSInt64());
+              input.ReadPrimitiveArray(pbd::FieldType.SInt64, tag, field_name, result.unpackedSint64_);
               break;
             }
             case 773: {
-              AddUnpackedFixed32(input.ReadFixed32());
+              input.ReadPrimitiveArray(pbd::FieldType.Fixed32, tag, field_name, result.unpackedFixed32_);
               break;
             }
             case 777: {
-              AddUnpackedFixed64(input.ReadFixed64());
+              input.ReadPrimitiveArray(pbd::FieldType.Fixed64, tag, field_name, result.unpackedFixed64_);
               break;
             }
             case 789: {
-              AddUnpackedSfixed32(input.ReadSFixed32());
+              input.ReadPrimitiveArray(pbd::FieldType.SFixed32, tag, field_name, result.unpackedSfixed32_);
               break;
             }
             case 793: {
-              AddUnpackedSfixed64(input.ReadSFixed64());
+              input.ReadPrimitiveArray(pbd::FieldType.SFixed64, tag, field_name, result.unpackedSfixed64_);
               break;
             }
             case 805: {
-              AddUnpackedFloat(input.ReadFloat());
+              input.ReadPrimitiveArray(pbd::FieldType.Float, tag, field_name, result.unpackedFloat_);
               break;
             }
             case 809: {
-              AddUnpackedDouble(input.ReadDouble());
+              input.ReadPrimitiveArray(pbd::FieldType.Double, tag, field_name, result.unpackedDouble_);
               break;
             }
             case 816: {
-              AddUnpackedBool(input.ReadBool());
+              input.ReadPrimitiveArray(pbd::FieldType.Bool, tag, field_name, result.unpackedBool_);
               break;
             }
             case 824: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ForeignEnum), rawValue)) {
+              scg::ICollection<object> unknownItems;
+              input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>(tag, field_name, result.unpackedEnum_, out unknownItems);
+              if (unknownItems != null) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(103, (ulong) rawValue);
-              } else {
-                AddUnpackedEnum((global::Google.ProtocolBuffers.TestProtos.ForeignEnum) rawValue);
+                foreach (object rawValue in unknownItems)
+                  if (rawValue is int)
+                    unknownFields.MergeVarintField(103, (ulong)(int)rawValue);
               }
               break;
             }
@@ -16632,7 +16554,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
           }
@@ -16872,11 +16794,11 @@ namespace Google.ProtocolBuffers.TestProtos {
                   if (unknownFields == null) {
                     unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                   }
-                  ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 16800: {
-                  DynamicField = input.ReadInt32();
+                  result.hasDynamicField |= input.ReadInt32(ref result.dynamicField_);
                   break;
                 }
               }
@@ -17209,34 +17131,34 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 16005: {
-              ScalarExtension = input.ReadFixed32();
+              result.hasScalarExtension |= input.ReadFixed32(ref result.scalarExtension_);
               break;
             }
             case 16008: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ForeignEnum), rawValue)) {
+              object unknown;
+              if(input.ReadEnum(ref result.enumExtension_, out unknown)) {
+                result.hasEnumExtension = true;
+              } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(2001, (ulong) rawValue);
-              } else {
-                EnumExtension = (global::Google.ProtocolBuffers.TestProtos.ForeignEnum) rawValue;
+                unknownFields.MergeVarintField(2001, (ulong)(int)unknown);
               }
               break;
             }
             case 16016: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicEnumType), rawValue)) {
+              object unknown;
+              if(input.ReadEnum(ref result.dynamicEnumExtension_, out unknown)) {
+                result.hasDynamicEnumExtension = true;
+              } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                 }
-                unknownFields.MergeVarintField(2002, (ulong) rawValue);
-              } else {
-                DynamicEnumExtension = (global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicEnumType) rawValue;
+                unknownFields.MergeVarintField(2002, (ulong)(int)unknown);
               }
               break;
             }
@@ -17259,16 +17181,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 16042: {
-              AddRepeatedExtension(input.ReadString());
+              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedExtension_);
               break;
             }
             case 16050: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedExtension(input.ReadSInt32());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.SInt32, tag, field_name, result.packedExtension_);
               break;
             }
           }
@@ -17795,31 +17712,31 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 101: {
-              AddRepeatedFixed32(input.ReadFixed32());
+              input.ReadPrimitiveArray(pbd::FieldType.Fixed32, tag, field_name, result.repeatedFixed32_);
               break;
             }
             case 104: {
-              AddRepeatedInt32(input.ReadInt32());
+              input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.repeatedInt32_);
               break;
             }
             case 16369: {
-              AddRepeatedFixed64(input.ReadFixed64());
+              input.ReadPrimitiveArray(pbd::FieldType.Fixed64, tag, field_name, result.repeatedFixed64_);
               break;
             }
             case 16376: {
-              AddRepeatedInt64(input.ReadInt64());
+              input.ReadPrimitiveArray(pbd::FieldType.Int64, tag, field_name, result.repeatedInt64_);
               break;
             }
             case 2097141: {
-              AddRepeatedFloat(input.ReadFloat());
+              input.ReadPrimitiveArray(pbd::FieldType.Float, tag, field_name, result.repeatedFloat_);
               break;
             }
             case 2097144: {
-              AddRepeatedUint64(input.ReadUInt64());
+              input.ReadPrimitiveArray(pbd::FieldType.UInt64, tag, field_name, result.repeatedUint64_);
               break;
             }
           }
@@ -18173,7 +18090,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
           }
@@ -18356,7 +18273,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
           }
@@ -18539,7 +18456,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
           }
@@ -18722,7 +18639,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
           }

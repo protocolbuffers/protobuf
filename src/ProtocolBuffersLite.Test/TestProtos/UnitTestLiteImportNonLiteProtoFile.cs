@@ -207,7 +207,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
                 return this;
               }
-              ParseUnknownField(input, extensionRegistry, tag);
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {

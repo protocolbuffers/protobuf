@@ -97,7 +97,7 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         public void GenerateParsingCode(TextGenerator writer)
         {
-            writer.WriteLine("{0} = input.Read{1}();", PropertyName, CapitalizedTypeName);
+            writer.WriteLine("result.has{0} |= input.Read{1}(ref result.{2}_);", PropertyName, CapitalizedTypeName, Name);
         }
 
         public void GenerateSerializationCode(TextGenerator writer)

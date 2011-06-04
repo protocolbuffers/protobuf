@@ -304,22 +304,22 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
                   if (unknownFields == null) {
                     unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                   }
-                  ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 10: {
-                  Number = input.ReadString();
+                  result.hasNumber |= input.ReadString(ref result.number_);
                   break;
                 }
                 case 16: {
-                  int rawValue = input.ReadEnum();
-                  if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType), rawValue)) {
+                  object unknown;
+                  if(input.ReadEnum(ref result.type_, out unknown)) {
+                    result.hasType = true;
+                  } else if(unknown is int) {
                     if (unknownFields == null) {
                       unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                     }
-                    unknownFields.MergeVarintField(2, (ulong) rawValue);
-                  } else {
-                    Type = (global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType) rawValue;
+                    unknownFields.MergeVarintField(2, (ulong)(int)unknown);
                   }
                   break;
                 }
@@ -602,25 +602,23 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              Name = input.ReadString();
+              result.hasName |= input.ReadString(ref result.name_);
               break;
             }
             case 16: {
-              Id = input.ReadInt32();
+              result.hasId |= input.ReadInt32(ref result.id_);
               break;
             }
             case 26: {
-              Email = input.ReadString();
+              result.hasEmail |= input.ReadString(ref result.email_);
               break;
             }
             case 34: {
-              global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Builder subBuilder = global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddPhone(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.phone_, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.DefaultInstance, extensionRegistry);
               break;
             }
           }
@@ -922,13 +920,11 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              global::Google.ProtocolBuffers.Examples.AddressBook.Person.Builder subBuilder = global::Google.ProtocolBuffers.Examples.AddressBook.Person.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddPerson(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.person_, global::Google.ProtocolBuffers.Examples.AddressBook.Person.DefaultInstance, extensionRegistry);
               break;
             }
           }

@@ -269,11 +269,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              AddCriteria(input.ReadString());
+              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.criteria_);
               break;
             }
           }
@@ -553,15 +553,15 @@ namespace Google.ProtocolBuffers.TestProtos {
                   if (unknownFields == null) {
                     unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
                   }
-                  ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 10: {
-                  Url = input.ReadString();
+                  result.hasUrl |= input.ReadString(ref result.url_);
                   break;
                 }
                 case 18: {
-                  Name = input.ReadString();
+                  result.hasName |= input.ReadString(ref result.name_);
                   break;
                 }
               }
@@ -785,13 +785,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              global::Google.ProtocolBuffers.TestProtos.SearchResponse.Types.ResultItem.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.SearchResponse.Types.ResultItem.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddResults(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.results_, global::Google.ProtocolBuffers.TestProtos.SearchResponse.Types.ResultItem.DefaultInstance, extensionRegistry);
               break;
             }
           }
@@ -1060,11 +1058,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              AddCriteria(input.ReadString());
+              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.criteria_);
               break;
             }
             case 18: {

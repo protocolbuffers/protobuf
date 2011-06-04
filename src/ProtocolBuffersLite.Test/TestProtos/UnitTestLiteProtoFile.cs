@@ -1261,11 +1261,11 @@ namespace Google.ProtocolBuffers.TestProtos {
                   if (pb::WireFormat.IsEndGroupTag(tag)) {
                     return this;
                   }
-                  ParseUnknownField(input, extensionRegistry, tag);
+                  ParseUnknownField(input, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 8: {
-                  Bb = input.ReadInt32();
+                  result.hasBb |= input.ReadInt32(ref result.bb_);
                   break;
                 }
               }
@@ -1479,11 +1479,11 @@ namespace Google.ProtocolBuffers.TestProtos {
                   if (pb::WireFormat.IsEndGroupTag(tag)) {
                     return this;
                   }
-                  ParseUnknownField(input, extensionRegistry, tag);
+                  ParseUnknownField(input, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 136: {
-                  A = input.ReadInt32();
+                  result.hasA |= input.ReadInt32(ref result.a_);
                   break;
                 }
               }
@@ -1697,11 +1697,11 @@ namespace Google.ProtocolBuffers.TestProtos {
                   if (pb::WireFormat.IsEndGroupTag(tag)) {
                     return this;
                   }
-                  ParseUnknownField(input, extensionRegistry, tag);
+                  ParseUnknownField(input, extensionRegistry, tag, field_name);
                   break;
                 }
                 case 376: {
-                  A = input.ReadInt32();
+                  result.hasA |= input.ReadInt32(ref result.a_);
                   break;
                 }
               }
@@ -3627,67 +3627,67 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
                 return this;
               }
-              ParseUnknownField(input, extensionRegistry, tag);
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
               break;
             }
             case 8: {
-              OptionalInt32 = input.ReadInt32();
+              result.hasOptionalInt32 |= input.ReadInt32(ref result.optionalInt32_);
               break;
             }
             case 16: {
-              OptionalInt64 = input.ReadInt64();
+              result.hasOptionalInt64 |= input.ReadInt64(ref result.optionalInt64_);
               break;
             }
             case 24: {
-              OptionalUint32 = input.ReadUInt32();
+              result.hasOptionalUint32 |= input.ReadUInt32(ref result.optionalUint32_);
               break;
             }
             case 32: {
-              OptionalUint64 = input.ReadUInt64();
+              result.hasOptionalUint64 |= input.ReadUInt64(ref result.optionalUint64_);
               break;
             }
             case 40: {
-              OptionalSint32 = input.ReadSInt32();
+              result.hasOptionalSint32 |= input.ReadSInt32(ref result.optionalSint32_);
               break;
             }
             case 48: {
-              OptionalSint64 = input.ReadSInt64();
+              result.hasOptionalSint64 |= input.ReadSInt64(ref result.optionalSint64_);
               break;
             }
             case 61: {
-              OptionalFixed32 = input.ReadFixed32();
+              result.hasOptionalFixed32 |= input.ReadFixed32(ref result.optionalFixed32_);
               break;
             }
             case 65: {
-              OptionalFixed64 = input.ReadFixed64();
+              result.hasOptionalFixed64 |= input.ReadFixed64(ref result.optionalFixed64_);
               break;
             }
             case 77: {
-              OptionalSfixed32 = input.ReadSFixed32();
+              result.hasOptionalSfixed32 |= input.ReadSFixed32(ref result.optionalSfixed32_);
               break;
             }
             case 81: {
-              OptionalSfixed64 = input.ReadSFixed64();
+              result.hasOptionalSfixed64 |= input.ReadSFixed64(ref result.optionalSfixed64_);
               break;
             }
             case 93: {
-              OptionalFloat = input.ReadFloat();
+              result.hasOptionalFloat |= input.ReadFloat(ref result.optionalFloat_);
               break;
             }
             case 97: {
-              OptionalDouble = input.ReadDouble();
+              result.hasOptionalDouble |= input.ReadDouble(ref result.optionalDouble_);
               break;
             }
             case 104: {
-              OptionalBool = input.ReadBool();
+              result.hasOptionalBool |= input.ReadBool(ref result.optionalBool_);
               break;
             }
             case 114: {
-              OptionalString = input.ReadString();
+              result.hasOptionalString |= input.ReadString(ref result.optionalString_);
               break;
             }
             case 122: {
-              OptionalBytes = input.ReadBytes();
+              result.hasOptionalBytes |= input.ReadBytes(ref result.optionalBytes_);
               break;
             }
             case 131: {
@@ -3727,243 +3727,226 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 168: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum), rawValue)) {
-              } else {
-                OptionalNestedEnum = (global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum) rawValue;
+              object unknown;
+              if(input.ReadEnum(ref result.optionalNestedEnum_, out unknown)) {
+                result.hasOptionalNestedEnum = true;
+              } else if(unknown is int) {
               }
               break;
             }
             case 176: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite), rawValue)) {
-              } else {
-                OptionalForeignEnum = (global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite) rawValue;
+              object unknown;
+              if(input.ReadEnum(ref result.optionalForeignEnum_, out unknown)) {
+                result.hasOptionalForeignEnum = true;
+              } else if(unknown is int) {
               }
               break;
             }
             case 184: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ImportEnumLite), rawValue)) {
-              } else {
-                OptionalImportEnum = (global::Google.ProtocolBuffers.TestProtos.ImportEnumLite) rawValue;
+              object unknown;
+              if(input.ReadEnum(ref result.optionalImportEnum_, out unknown)) {
+                result.hasOptionalImportEnum = true;
+              } else if(unknown is int) {
               }
               break;
             }
             case 194: {
-              OptionalStringPiece = input.ReadString();
+              result.hasOptionalStringPiece |= input.ReadString(ref result.optionalStringPiece_);
               break;
             }
             case 202: {
-              OptionalCord = input.ReadString();
+              result.hasOptionalCord |= input.ReadString(ref result.optionalCord_);
               break;
             }
             case 248: {
-              AddRepeatedInt32(input.ReadInt32());
+              input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.repeatedInt32_);
               break;
             }
             case 256: {
-              AddRepeatedInt64(input.ReadInt64());
+              input.ReadPrimitiveArray(pbd::FieldType.Int64, tag, field_name, result.repeatedInt64_);
               break;
             }
             case 264: {
-              AddRepeatedUint32(input.ReadUInt32());
+              input.ReadPrimitiveArray(pbd::FieldType.UInt32, tag, field_name, result.repeatedUint32_);
               break;
             }
             case 272: {
-              AddRepeatedUint64(input.ReadUInt64());
+              input.ReadPrimitiveArray(pbd::FieldType.UInt64, tag, field_name, result.repeatedUint64_);
               break;
             }
             case 280: {
-              AddRepeatedSint32(input.ReadSInt32());
+              input.ReadPrimitiveArray(pbd::FieldType.SInt32, tag, field_name, result.repeatedSint32_);
               break;
             }
             case 288: {
-              AddRepeatedSint64(input.ReadSInt64());
+              input.ReadPrimitiveArray(pbd::FieldType.SInt64, tag, field_name, result.repeatedSint64_);
               break;
             }
             case 301: {
-              AddRepeatedFixed32(input.ReadFixed32());
+              input.ReadPrimitiveArray(pbd::FieldType.Fixed32, tag, field_name, result.repeatedFixed32_);
               break;
             }
             case 305: {
-              AddRepeatedFixed64(input.ReadFixed64());
+              input.ReadPrimitiveArray(pbd::FieldType.Fixed64, tag, field_name, result.repeatedFixed64_);
               break;
             }
             case 317: {
-              AddRepeatedSfixed32(input.ReadSFixed32());
+              input.ReadPrimitiveArray(pbd::FieldType.SFixed32, tag, field_name, result.repeatedSfixed32_);
               break;
             }
             case 321: {
-              AddRepeatedSfixed64(input.ReadSFixed64());
+              input.ReadPrimitiveArray(pbd::FieldType.SFixed64, tag, field_name, result.repeatedSfixed64_);
               break;
             }
             case 333: {
-              AddRepeatedFloat(input.ReadFloat());
+              input.ReadPrimitiveArray(pbd::FieldType.Float, tag, field_name, result.repeatedFloat_);
               break;
             }
             case 337: {
-              AddRepeatedDouble(input.ReadDouble());
+              input.ReadPrimitiveArray(pbd::FieldType.Double, tag, field_name, result.repeatedDouble_);
               break;
             }
             case 344: {
-              AddRepeatedBool(input.ReadBool());
+              input.ReadPrimitiveArray(pbd::FieldType.Bool, tag, field_name, result.repeatedBool_);
               break;
             }
             case 354: {
-              AddRepeatedString(input.ReadString());
+              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedString_);
               break;
             }
             case 362: {
-              AddRepeatedBytes(input.ReadBytes());
+              input.ReadPrimitiveArray(pbd::FieldType.Bytes, tag, field_name, result.repeatedBytes_);
               break;
             }
             case 371: {
-              global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.RepeatedGroup.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.RepeatedGroup.CreateBuilder();
-              input.ReadGroup(46, subBuilder, extensionRegistry);
-              AddRepeatedGroup(subBuilder.BuildPartial());
+              input.ReadGroupArray(tag, field_name, result.repeatedGroup_, global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.RepeatedGroup.DefaultInstance, extensionRegistry);
               break;
             }
             case 386: {
-              global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddRepeatedNestedMessage(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.repeatedNestedMessage_, global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage.DefaultInstance, extensionRegistry);
               break;
             }
             case 394: {
-              global::Google.ProtocolBuffers.TestProtos.ForeignMessageLite.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ForeignMessageLite.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddRepeatedForeignMessage(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.repeatedForeignMessage_, global::Google.ProtocolBuffers.TestProtos.ForeignMessageLite.DefaultInstance, extensionRegistry);
               break;
             }
             case 402: {
-              global::Google.ProtocolBuffers.TestProtos.ImportMessageLite.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ImportMessageLite.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddRepeatedImportMessage(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.repeatedImportMessage_, global::Google.ProtocolBuffers.TestProtos.ImportMessageLite.DefaultInstance, extensionRegistry);
               break;
             }
             case 408: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum), rawValue)) {
-              } else {
-                AddRepeatedNestedEnum((global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum) rawValue);
-              }
+              scg::ICollection<object> unknownItems;
+              input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum>(tag, field_name, result.repeatedNestedEnum_, out unknownItems);
               break;
             }
             case 416: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite), rawValue)) {
-              } else {
-                AddRepeatedForeignEnum((global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite) rawValue);
-              }
+              scg::ICollection<object> unknownItems;
+              input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(tag, field_name, result.repeatedForeignEnum_, out unknownItems);
               break;
             }
             case 424: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ImportEnumLite), rawValue)) {
-              } else {
-                AddRepeatedImportEnum((global::Google.ProtocolBuffers.TestProtos.ImportEnumLite) rawValue);
-              }
+              scg::ICollection<object> unknownItems;
+              input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.ImportEnumLite>(tag, field_name, result.repeatedImportEnum_, out unknownItems);
               break;
             }
             case 434: {
-              AddRepeatedStringPiece(input.ReadString());
+              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedStringPiece_);
               break;
             }
             case 442: {
-              AddRepeatedCord(input.ReadString());
+              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedCord_);
               break;
             }
             case 488: {
-              DefaultInt32 = input.ReadInt32();
+              result.hasDefaultInt32 |= input.ReadInt32(ref result.defaultInt32_);
               break;
             }
             case 496: {
-              DefaultInt64 = input.ReadInt64();
+              result.hasDefaultInt64 |= input.ReadInt64(ref result.defaultInt64_);
               break;
             }
             case 504: {
-              DefaultUint32 = input.ReadUInt32();
+              result.hasDefaultUint32 |= input.ReadUInt32(ref result.defaultUint32_);
               break;
             }
             case 512: {
-              DefaultUint64 = input.ReadUInt64();
+              result.hasDefaultUint64 |= input.ReadUInt64(ref result.defaultUint64_);
               break;
             }
             case 520: {
-              DefaultSint32 = input.ReadSInt32();
+              result.hasDefaultSint32 |= input.ReadSInt32(ref result.defaultSint32_);
               break;
             }
             case 528: {
-              DefaultSint64 = input.ReadSInt64();
+              result.hasDefaultSint64 |= input.ReadSInt64(ref result.defaultSint64_);
               break;
             }
             case 541: {
-              DefaultFixed32 = input.ReadFixed32();
+              result.hasDefaultFixed32 |= input.ReadFixed32(ref result.defaultFixed32_);
               break;
             }
             case 545: {
-              DefaultFixed64 = input.ReadFixed64();
+              result.hasDefaultFixed64 |= input.ReadFixed64(ref result.defaultFixed64_);
               break;
             }
             case 557: {
-              DefaultSfixed32 = input.ReadSFixed32();
+              result.hasDefaultSfixed32 |= input.ReadSFixed32(ref result.defaultSfixed32_);
               break;
             }
             case 561: {
-              DefaultSfixed64 = input.ReadSFixed64();
+              result.hasDefaultSfixed64 |= input.ReadSFixed64(ref result.defaultSfixed64_);
               break;
             }
             case 573: {
-              DefaultFloat = input.ReadFloat();
+              result.hasDefaultFloat |= input.ReadFloat(ref result.defaultFloat_);
               break;
             }
             case 577: {
-              DefaultDouble = input.ReadDouble();
+              result.hasDefaultDouble |= input.ReadDouble(ref result.defaultDouble_);
               break;
             }
             case 584: {
-              DefaultBool = input.ReadBool();
+              result.hasDefaultBool |= input.ReadBool(ref result.defaultBool_);
               break;
             }
             case 594: {
-              DefaultString = input.ReadString();
+              result.hasDefaultString |= input.ReadString(ref result.defaultString_);
               break;
             }
             case 602: {
-              DefaultBytes = input.ReadBytes();
+              result.hasDefaultBytes |= input.ReadBytes(ref result.defaultBytes_);
               break;
             }
             case 648: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum), rawValue)) {
-              } else {
-                DefaultNestedEnum = (global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum) rawValue;
+              object unknown;
+              if(input.ReadEnum(ref result.defaultNestedEnum_, out unknown)) {
+                result.hasDefaultNestedEnum = true;
+              } else if(unknown is int) {
               }
               break;
             }
             case 656: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite), rawValue)) {
-              } else {
-                DefaultForeignEnum = (global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite) rawValue;
+              object unknown;
+              if(input.ReadEnum(ref result.defaultForeignEnum_, out unknown)) {
+                result.hasDefaultForeignEnum = true;
+              } else if(unknown is int) {
               }
               break;
             }
             case 664: {
-              int rawValue = input.ReadEnum();
-              if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ImportEnumLite), rawValue)) {
-              } else {
-                DefaultImportEnum = (global::Google.ProtocolBuffers.TestProtos.ImportEnumLite) rawValue;
+              object unknown;
+              if(input.ReadEnum(ref result.defaultImportEnum_, out unknown)) {
+                result.hasDefaultImportEnum = true;
+              } else if(unknown is int) {
               }
               break;
             }
             case 674: {
-              DefaultStringPiece = input.ReadString();
+              result.hasDefaultStringPiece |= input.ReadString(ref result.defaultStringPiece_);
               break;
             }
             case 682: {
-              DefaultCord = input.ReadString();
+              result.hasDefaultCord |= input.ReadString(ref result.defaultCord_);
               break;
             }
           }
@@ -5747,11 +5730,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
                 return this;
               }
-              ParseUnknownField(input, extensionRegistry, tag);
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
               break;
             }
             case 8: {
-              C = input.ReadInt32();
+              result.hasC |= input.ReadInt32(ref result.c_);
               break;
             }
           }
@@ -6456,137 +6439,64 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
                 return this;
               }
-              ParseUnknownField(input, extensionRegistry, tag);
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
               break;
             }
             case 722: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedInt32(input.ReadInt32());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.packedInt32_);
               break;
             }
             case 730: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedInt64(input.ReadInt64());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.Int64, tag, field_name, result.packedInt64_);
               break;
             }
             case 738: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedUint32(input.ReadUInt32());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.UInt32, tag, field_name, result.packedUint32_);
               break;
             }
             case 746: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedUint64(input.ReadUInt64());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.UInt64, tag, field_name, result.packedUint64_);
               break;
             }
             case 754: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedSint32(input.ReadSInt32());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.SInt32, tag, field_name, result.packedSint32_);
               break;
             }
             case 762: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedSint64(input.ReadSInt64());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.SInt64, tag, field_name, result.packedSint64_);
               break;
             }
             case 770: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedFixed32(input.ReadFixed32());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.Fixed32, tag, field_name, result.packedFixed32_);
               break;
             }
             case 778: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedFixed64(input.ReadFixed64());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.Fixed64, tag, field_name, result.packedFixed64_);
               break;
             }
             case 786: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedSfixed32(input.ReadSFixed32());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.SFixed32, tag, field_name, result.packedSfixed32_);
               break;
             }
             case 794: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedSfixed64(input.ReadSFixed64());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.SFixed64, tag, field_name, result.packedSfixed64_);
               break;
             }
             case 802: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedFloat(input.ReadFloat());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.Float, tag, field_name, result.packedFloat_);
               break;
             }
             case 810: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedDouble(input.ReadDouble());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.Double, tag, field_name, result.packedDouble_);
               break;
             }
             case 818: {
-              int length = input.ReadInt32();
-              int limit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                AddPackedBool(input.ReadBool());
-              }
-              input.PopLimit(limit);
+              input.ReadPrimitiveArray(pbd::FieldType.Bool, tag, field_name, result.packedBool_);
               break;
             }
             case 826: {
-              int length = input.ReadInt32();
-              int oldLimit = input.PushLimit(length);
-              while (!input.ReachedLimit) {
-                int rawValue = input.ReadEnum();
-                if (!global::System.Enum.IsDefined(typeof(global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite), rawValue)) {
-                } else {
-                  AddPackedEnum((global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite) rawValue);
-                }
-              }
-              input.PopLimit(oldLimit);
+              scg::ICollection<object> unknownItems;
+              input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(tag, field_name, result.packedEnum_, out unknownItems);
               break;
             }
           }
@@ -7152,7 +7062,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
                 return this;
               }
-              ParseUnknownField(input, extensionRegistry, tag);
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
               break;
             }
           }
@@ -7348,11 +7258,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
                 return this;
               }
-              ParseUnknownField(input, extensionRegistry, tag);
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
               break;
             }
             case 136: {
-              A = input.ReadInt32();
+              result.hasA |= input.ReadInt32(ref result.a_);
               break;
             }
           }
@@ -7566,11 +7476,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
                 return this;
               }
-              ParseUnknownField(input, extensionRegistry, tag);
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
               break;
             }
             case 376: {
-              A = input.ReadInt32();
+              result.hasA |= input.ReadInt32(ref result.a_);
               break;
             }
           }
@@ -7770,7 +7680,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
                 return this;
               }
-              ParseUnknownField(input, extensionRegistry, tag);
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
               break;
             }
           }
@@ -7946,7 +7856,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
                 return this;
               }
-              ParseUnknownField(input, extensionRegistry, tag);
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
               break;
             }
           }
@@ -8142,11 +8052,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (pb::WireFormat.IsEndGroupTag(tag)) {
                 return this;
               }
-              ParseUnknownField(input, extensionRegistry, tag);
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
               break;
             }
             case 8: {
-              DeprecatedField = input.ReadInt32();
+              result.hasDeprecatedField |= input.ReadInt32(ref result.deprecatedField_);
               break;
             }
           }

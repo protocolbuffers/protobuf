@@ -134,7 +134,7 @@ namespace Google.ProtocolBuffers
         /// <returns>true unless the tag is an end-group tag</returns>
         [CLSCompliant(false)]
         protected override bool ParseUnknownField(CodedInputStream input,
-                                                  ExtensionRegistry extensionRegistry, uint tag)
+                                                  ExtensionRegistry extensionRegistry, uint tag, string fieldName)
         {
             FieldSet extensions = MessageBeingBuilt.Extensions;
 
@@ -142,119 +142,81 @@ namespace Google.ProtocolBuffers
             int fieldNumber = WireFormat.GetTagFieldNumber(tag);
             IGeneratedExtensionLite extension = extensionRegistry[DefaultInstanceForType, fieldNumber];
 
-            bool unknown = false;
-            bool packed = false;
-            if (extension == null)
-            {
-                unknown = true; // Unknown field.
-            }
-            else if (wireType ==
-                     FieldMappingAttribute.WireTypeFromFieldType(extension.Descriptor.FieldType, false /* isPacked */))
-            {
-                packed = false; // Normal, unpacked value.
-            }
-            else if (extension.Descriptor.IsRepeated &&
-                     //?? just returns true ?? extension.Descriptor.type.isPackable() &&
-                     wireType ==
-                     FieldMappingAttribute.WireTypeFromFieldType(extension.Descriptor.FieldType, true /* isPacked */))
-            {
-                packed = true; // Packed value.
-            }
-            else
-            {
-                unknown = true; // Wrong wire type.
-            }
-
-            if (unknown)
-            {
-                // Unknown field or wrong wire type.  Skip.
+            if (extension == null)//unknown field
                 return input.SkipField();
-            }
 
-            if (packed)
+            IFieldDescriptorLite field = extension.Descriptor;
+            if (!field.IsRepeated && wireType != WireFormat.GetWireType(field.FieldType)) //invalid wire type
+                return input.SkipField();
+
+            switch (field.FieldType)
             {
-                int length = (int) Math.Min(int.MaxValue, input.ReadRawVarint32());
-                int limit = input.PushLimit(length);
-                if (extension.Descriptor.FieldType == FieldType.Enum)
-                {
-                    while (!input.ReachedLimit)
+                case FieldType.Group:
+                case FieldType.Message:
                     {
-                        int rawValue = input.ReadEnum();
-                        Object value =
-                            extension.Descriptor.EnumType.FindValueByNumber(rawValue);
-                        if (value == null)
+                        if (!field.IsRepeated)
                         {
-                            // If the number isn't recognized as a valid value for this
-                            // enum, drop it (don't even add it to unknownFields).
-                            return true;
-                        }
-                        extensions.AddRepeatedField(extension.Descriptor, value);
-                    }
-                }
-                else
-                {
-                    while (!input.ReachedLimit)
-                    {
-                        Object value = input.ReadPrimitiveField(extension.Descriptor.FieldType);
-                        extensions.AddRepeatedField(extension.Descriptor, value);
-                    }
-                }
-                input.PopLimit(limit);
-            }
-            else
-            {
-                Object value;
-                switch (extension.Descriptor.MappedType)
-                {
-                    case MappedType.Message:
-                        {
-                            IBuilderLite subBuilder = null;
-                            if (!extension.Descriptor.IsRepeated)
-                            {
-                                IMessageLite existingValue = extensions[extension.Descriptor] as IMessageLite;
-                                if (existingValue != null)
-                                {
-                                    subBuilder = existingValue.WeakToBuilder();
-                                }
-                            }
-                            if (subBuilder == null)
-                            {
-                                subBuilder = extension.MessageDefaultInstance.WeakCreateBuilderForType();
-                            }
-                            if (extension.Descriptor.FieldType == FieldType.Group)
-                            {
-                                input.ReadGroup(extension.Number, subBuilder, extensionRegistry);
-                            }
+                            IMessageLite message = extensions[extension.Descriptor] as IMessageLite;
+                            IBuilderLite subBuilder = (message ?? extension.MessageDefaultInstance).WeakToBuilder();
+
+                            if (field.FieldType == FieldType.Group)
+                                input.ReadGroup(field.FieldNumber, subBuilder, extensionRegistry);
                             else
-                            {
                                 input.ReadMessage(subBuilder, extensionRegistry);
-                            }
-                            value = subBuilder.WeakBuild();
-                            break;
+                            
+                            extensions[field] = subBuilder.WeakBuild();
                         }
-                    case MappedType.Enum:
-                        int rawValue = input.ReadEnum();
-                        value = extension.Descriptor.EnumType.FindValueByNumber(rawValue);
-                        // If the number isn't recognized as a valid value for this enum,
-                        // drop it.
-                        if (value == null)
+                        else
                         {
+                            List<IMessageLite> list = new List<IMessageLite>();
+                            if (field.FieldType == FieldType.Group)
+                                input.ReadGroupArray(tag, fieldName, list, extension.MessageDefaultInstance, extensionRegistry);
+                            else
+                                input.ReadMessageArray(tag, fieldName, list, extension.MessageDefaultInstance, extensionRegistry);
+
+                            foreach (IMessageLite m in list)
+                                extensions.AddRepeatedField(field, m);
                             return true;
                         }
                         break;
-                    default:
-                        value = input.ReadPrimitiveField(extension.Descriptor.FieldType);
-                        break;
-                }
+                    }
+                case FieldType.Enum:
+                    {
+                        if (!field.IsRepeated)
+                        {
+                            object unknown;
+                            IEnumLite value = null;
+                            if (input.ReadEnum(ref value, out unknown, field.EnumType))
+                                extensions[field] = value;
+                        }
+                        else
+                        {
+                            ICollection<object> unknown;
+                            List<IEnumLite> list = new List<IEnumLite>();
+                            input.ReadEnumArray(tag, fieldName, list, out unknown, field.EnumType);
 
-                if (extension.Descriptor.IsRepeated)
-                {
-                    extensions.AddRepeatedField(extension.Descriptor, value);
-                }
-                else
-                {
-                    extensions[extension.Descriptor] = value;
-                }
+                            foreach (IEnumLite en in list)
+                                extensions.AddRepeatedField(field, en);
+                        }
+                        break;
+                    }
+                default:
+                    {
+                        if (!field.IsRepeated)
+                        {
+                            object value = null;
+                            if (input.ReadPrimitiveField(field.FieldType, ref value))
+                                extensions[field] = value;
+                        }
+                        else
+                        {
+                            List<object> list = new List<object>();
+                            input.ReadPrimitiveArray(field.FieldType, tag, fieldName, list);
+                            foreach (object oval in list)
+                                extensions.AddRepeatedField(field, oval);
+                        }
+                        break;
+                    }
             }
 
             return true;

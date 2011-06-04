@@ -98,6 +98,10 @@ namespace Google.ProtocolBuffers.Descriptors
         {
             return FindValueByNumber(number);
         }
+        IEnumLite IEnumLiteMap.FindValueByName(string name)
+        {
+            return FindValueByName(name);
+        }
 
         /// <summary>
         /// Finds an enum value by name.

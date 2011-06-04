@@ -276,19 +276,19 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
-              Normal = input.ReadString();
+              result.hasNormal |= input.ReadString(ref result.normal_);
               break;
             }
             case 18: {
-              OptionsMessage_ = input.ReadString();
+              result.hasOptionsMessage_ |= input.ReadString(ref result.optionsMessage_);
               break;
             }
             case 26: {
-              CustomName = input.ReadString();
+              result.hasCustomName |= input.ReadString(ref result.customized_);
               break;
             }
           }

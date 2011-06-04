@@ -201,88 +201,100 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Read a double field from the stream.
         /// </summary>
-        public double ReadDouble()
+        public bool ReadDouble(ref double value)
         {
 #if SILVERLIGHT2 || COMPACT_FRAMEWORK_35
-            byte[] bytes = ReadRawBytes(8);
-            return BitConverter.ToDouble(bytes, 0);
+            byte[] rawBytes = ReadRawBytes(8);
+            if (!BitConverter.IsLittleEndian) 
+                Array.Reverse(rawBytes);
+            value = BitConverter.ToDouble(rawBytes, 0);
+            return true;
 #else
-      return BitConverter.Int64BitsToDouble((long) ReadRawLittleEndian64());
+            value = BitConverter.Int64BitsToDouble((long) ReadRawLittleEndian64());
+            return true;
 #endif
         }
 
         /// <summary>
         /// Read a float field from the stream.
         /// </summary>
-        public float ReadFloat()
+        public bool ReadFloat(ref float value)
         {
-            // TODO(jonskeet): Test this on different endiannesses
-            uint raw = ReadRawLittleEndian32();
-            byte[] rawBytes = BitConverter.GetBytes(raw);
-            return BitConverter.ToSingle(rawBytes, 0);
+            byte[] rawBytes = ReadRawBytes(4);
+            if (!BitConverter.IsLittleEndian)
+                Array.Reverse(rawBytes);
+            value = BitConverter.ToSingle(rawBytes, 0);
+            return true;
         }
 
         /// <summary>
         /// Read a uint64 field from the stream.
         /// </summary>
         [CLSCompliant(false)]
-        public ulong ReadUInt64()
+        public bool ReadUInt64(ref ulong value)
         {
-            return ReadRawVarint64();
+            value = ReadRawVarint64();
+            return true;
         }
 
         /// <summary>
         /// Read an int64 field from the stream.
         /// </summary>
-        public long ReadInt64()
+        public bool ReadInt64(ref long value)
         {
-            return (long) ReadRawVarint64();
+            value = (long) ReadRawVarint64();
+            return true;
         }
 
         /// <summary>
         /// Read an int32 field from the stream.
         /// </summary>
-        public int ReadInt32()
+        public bool ReadInt32(ref int value)
         {
-            return (int) ReadRawVarint32();
+            value = (int)ReadRawVarint32();
+            return true;
         }
 
         /// <summary>
         /// Read a fixed64 field from the stream.
         /// </summary>
         [CLSCompliant(false)]
-        public ulong ReadFixed64()
+        public bool ReadFixed64(ref ulong value)
         {
-            return ReadRawLittleEndian64();
+            value = ReadRawLittleEndian64();
+            return true;
         }
 
         /// <summary>
         /// Read a fixed32 field from the stream.
         /// </summary>
         [CLSCompliant(false)]
-        public uint ReadFixed32()
+        public bool ReadFixed32(ref uint value)
         {
-            return ReadRawLittleEndian32();
+            value = ReadRawLittleEndian32();
+            return true;
         }
 
         /// <summary>
         /// Read a bool field from the stream.
         /// </summary>
-        public bool ReadBool()
+        public bool ReadBool(ref bool value)
         {
-            return ReadRawVarint32() != 0;
+            value = ReadRawVarint32() != 0;
+            return true;
         }
 
         /// <summary>
         /// Reads a string field from the stream.
         /// </summary>
-        public String ReadString()
+        public bool ReadString(ref string value)
         {
             int size = (int) ReadRawVarint32();
             // No need to read any data for an empty string.
             if (size == 0)
             {
-                return "";
+                value = "";
+                return true;
             }
             if (size <= bufferSize - bufferPos)
             {
@@ -290,10 +302,12 @@ namespace Google.ProtocolBuffers
                 //   just copy directly from it.
                 String result = Encoding.UTF8.GetString(buffer, bufferPos, size);
                 bufferPos += size;
-                return result;
+                value = result;
+                return true;
             }
             // Slow path: Build a byte array first then copy it.
-            return Encoding.UTF8.GetString(ReadRawBytes(size), 0, size);
+            value = Encoding.UTF8.GetString(ReadRawBytes(size), 0, size);
+            return true;
         }
 
         /// <summary>
@@ -350,7 +364,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Reads a bytes field value from the stream.
         /// </summary>   
-        public ByteString ReadBytes()
+        public bool ReadBytes(ref ByteString value)
         {
             int size = (int) ReadRawVarint32();
             if (size < bufferSize - bufferPos && size > 0)
@@ -359,12 +373,14 @@ namespace Google.ProtocolBuffers
                 //   just copy directly from it.
                 ByteString result = ByteString.CopyFrom(buffer, bufferPos, size);
                 bufferPos += size;
-                return result;
+                value = result;
+                return true;
             }
             else
             {
                 // Slow path:  Build a byte array first then copy it.
-                return ByteString.AttachBytes(ReadRawBytes(size));
+                value = ByteString.AttachBytes(ReadRawBytes(size));
+                return true;
             }
         }
 
@@ -372,90 +388,358 @@ namespace Google.ProtocolBuffers
         /// Reads a uint32 field value from the stream.
         /// </summary>   
         [CLSCompliant(false)]
-        public uint ReadUInt32()
+        public bool ReadUInt32(ref uint value)
         {
-            return ReadRawVarint32();
+            value = ReadRawVarint32();
+            return true;
         }
 
         /// <summary>
         /// Reads an enum field value from the stream. The caller is responsible
         /// for converting the numeric value to an actual enum.
         /// </summary>   
-        public int ReadEnum()
+        public bool ReadEnum(ref IEnumLite value, out object unknown, IEnumLiteMap mapping)
         {
-            return (int) ReadRawVarint32();
+            int rawValue = (int)ReadRawVarint32();
+            
+            value = mapping.FindValueByNumber(rawValue);
+            if (value != null)
+            {
+                unknown = null;
+                return true;
+            }
+            unknown = rawValue;
+            return false;
+        }
+
+        /// <summary>
+        /// Reads an enum field value from the stream. If the enum is valid for type T,
+        /// then the ref value is set and it returns true.  Otherwise the unkown output
+        /// value is set and this method returns false.
+        /// </summary>   
+        [CLSCompliant(false)]
+        public bool ReadEnum<T>(ref T value, out object unknown)
+            where T : struct, IComparable, IFormattable, IConvertible
+        {
+            int number = (int)ReadRawVarint32();
+            if (Enum.IsDefined(typeof(T), number))
+            {
+                unknown = null;
+                value = (T)(object)number;
+                return true;
+            }
+            unknown = number;
+            return false;
         }
 
         /// <summary>
         /// Reads an sfixed32 field value from the stream.
         /// </summary>   
-        public int ReadSFixed32()
+        public bool ReadSFixed32(ref int value)
         {
-            return (int) ReadRawLittleEndian32();
+            value = (int)ReadRawLittleEndian32();
+            return true;
         }
 
         /// <summary>
         /// Reads an sfixed64 field value from the stream.
         /// </summary>   
-        public long ReadSFixed64()
+        public bool ReadSFixed64(ref long value)
         {
-            return (long) ReadRawLittleEndian64();
+            value = (long)ReadRawLittleEndian64();
+            return true;
         }
 
         /// <summary>
         /// Reads an sint32 field value from the stream.
         /// </summary>   
-        public int ReadSInt32()
+        public bool ReadSInt32(ref int value)
         {
-            return DecodeZigZag32(ReadRawVarint32());
+            value = DecodeZigZag32(ReadRawVarint32());
+            return true;
         }
 
         /// <summary>
         /// Reads an sint64 field value from the stream.
         /// </summary>   
-        public long ReadSInt64()
+        public bool ReadSInt64(ref long value)
         {
-            return DecodeZigZag64(ReadRawVarint64());
+            value = DecodeZigZag64(ReadRawVarint64());
+            return true;
+        }
+
+        [CLSCompliant(false)]
+        public void ReadPrimitiveArray<T>(FieldType fieldType, uint fieldTag, string fieldName, ICollection<T> list)
+        {
+            WireFormat.WireType normal = WireFormat.GetWireType(fieldType);
+            WireFormat.WireType wformat = WireFormat.GetTagWireType(fieldTag);
+            
+            // 2.3 allows packed form even if the field is not declared packed.
+            if(normal != wformat && wformat == WireFormat.WireType.LengthDelimited)
+            {
+                int length = (int)(ReadRawVarint32() & int.MaxValue);
+                int limit = PushLimit(length);
+                while (!ReachedLimit)
+                {
+                    Object value = null;
+                    if(ReadPrimitiveField(fieldType, ref value))
+                        list.Add((T)value);
+                }
+                PopLimit(limit);
+            }
+            else
+            {
+                Object value = null;
+                if (ReadPrimitiveField(fieldType, ref value))
+                    list.Add((T)value);
+            }
+        }
+
+        [CLSCompliant(false)]
+        public void ReadEnumArray(uint fieldTag, string fieldName, ICollection<IEnumLite> list, out ICollection<object> unknown, IEnumLiteMap mapping)
+        {
+            unknown = null;
+            object unkval;
+            IEnumLite value = null;
+            WireFormat.WireType wformat = WireFormat.GetTagWireType(fieldTag);
+
+            // 2.3 allows packed form even if the field is not declared packed.
+            if (wformat == WireFormat.WireType.LengthDelimited)
+            {
+                int length = (int)(ReadRawVarint32() & int.MaxValue);
+                int limit = PushLimit(length);
+                while (!ReachedLimit)
+                {
+                    if (ReadEnum(ref value, out unkval, mapping))
+                        list.Add(value);
+                    else
+                    {
+                        if (unknown == null)
+                            unknown = new List<object>();
+                        unknown.Add(unkval);
+                    }
+                }
+                PopLimit(limit);
+            }
+            else
+            {
+                if (ReadEnum(ref value, out unkval, mapping))
+                    list.Add(value);
+                else
+                    unknown = new object[] { unkval };
+            }
+        }
+
+        [CLSCompliant(false)]
+        public void ReadEnumArray<T>(uint fieldTag, string fieldName, ICollection<T> list, out ICollection<object> unknown)
+            where T : struct, IComparable, IFormattable, IConvertible
+        {
+            unknown = null;
+            object unkval;
+            T value = default(T);
+            WireFormat.WireType wformat = WireFormat.GetTagWireType(fieldTag);
+
+            // 2.3 allows packed form even if the field is not declared packed.
+            if (wformat == WireFormat.WireType.LengthDelimited)
+            {
+                int length = (int)(ReadRawVarint32() & int.MaxValue);
+                int limit = PushLimit(length);
+                while (!ReachedLimit)
+                {
+                    if (ReadEnum<T>(ref value, out unkval))
+                        list.Add(value);
+                    else
+                    {
+                        if (unknown == null)
+                            unknown = new List<object>();
+                        unknown.Add(unkval);
+                    }
+                }
+                PopLimit(limit);
+            }
+            else
+            {
+                if (ReadEnum(ref value, out unkval))
+                    list.Add(value);
+                else
+                    unknown = new object[] { unkval };
+            }
+        }
+
+        [CLSCompliant(false)]
+        public void ReadMessageArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType, ExtensionRegistry registry) where T : IMessageLite
+        {
+            IBuilderLite builder = messageType.WeakCreateBuilderForType();
+            ReadMessage(builder, registry);
+            list.Add((T)builder.WeakBuildPartial());
+        }
+
+        [CLSCompliant(false)]
+        public void ReadGroupArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType, ExtensionRegistry registry) where T : IMessageLite
+        {
+            IBuilderLite builder = messageType.WeakCreateBuilderForType();
+            ReadGroup(WireFormat.GetTagFieldNumber(fieldTag), builder, registry);
+            list.Add((T)builder.WeakBuildPartial());
         }
 
         /// <summary>
         /// Reads a field of any primitive type. Enums, groups and embedded
         /// messages are not handled by this method.
         /// </summary>
-        public object ReadPrimitiveField(FieldType fieldType)
+        public bool ReadPrimitiveField(FieldType fieldType, ref object value)
         {
             switch (fieldType)
             {
                 case FieldType.Double:
-                    return ReadDouble();
+                    {
+                        double tmp = 0;
+                        if (ReadDouble(ref tmp))
+                        {
+                            value = tmp;
+                            return true;
+                        }
+                        return false;
+                    }
                 case FieldType.Float:
-                    return ReadFloat();
+                    {
+                        float tmp = 0;
+                        if (ReadFloat(ref tmp))
+                        {
+                            value = tmp;
+                            return true;
+                        }
+                        return false;
+                    }
                 case FieldType.Int64:
-                    return ReadInt64();
+                    {
+                        long tmp = 0;
+                        if (ReadInt64(ref tmp))
+                        {
+                            value = tmp;
+                            return true;
+                        }
+                        return false;
+                    }
                 case FieldType.UInt64:
-                    return ReadUInt64();
+                    {
+                        ulong tmp = 0;
+                        if (ReadUInt64(ref tmp))
+                        {
+                            value = tmp;
+                            return true;
+                        }
+                        return false;
+                    }
                 case FieldType.Int32:
-                    return ReadInt32();
+                    {
+                        int tmp = 0;
+                        if (ReadInt32(ref tmp))
+                        {
+                            value = tmp;
+                            return true;
+                        }
+                        return false;
+                    }
                 case FieldType.Fixed64:
-                    return ReadFixed64();
+                    {
+                        ulong tmp = 0;
+                        if (ReadFixed64(ref tmp))
+                        {
+                            value = tmp;
+                            return true;
+                        }
+                        return false;
+                    }
                 case FieldType.Fixed32:
-                    return ReadFixed32();
+                    {
+                        uint tmp = 0;
+                        if (ReadFixed32(ref tmp))
+                        {
+                            value = tmp;
+                            return true;
+                        }
+                        return false;
+                    }
                 case FieldType.Bool:
-                    return ReadBool();
+                    {
+                        bool tmp = false;
+                        if (ReadBool(ref tmp))
+                        {
+                            value = tmp;
+                            return true;
+                        }
+                        return false;
+                    }
                 case FieldType.String:
-                    return ReadString();
+                    {
+                        string tmp = null;
+                        if (ReadString(ref tmp))
+                        {
+                            value = tmp;
+                            return true;
+                        }
+                        return false;
+                    }
                 case FieldType.Bytes:
-                    return ReadBytes();
+                    {
+                        ByteString tmp = null;
+                        if (ReadBytes(ref tmp))
+                        {
+                            value = tmp;
+                            return true;
+                        }
+                        return false;
+                    }
                 case FieldType.UInt32:
-                    return ReadUInt32();
+                    {
+                        uint tmp = 0;
+                        if (ReadUInt32(ref tmp))
+                        {
+                            value = tmp;
+                            return true;
+                        }
+                        return false;
+                    }
                 case FieldType.SFixed32:
-                    return ReadSFixed32();
+                    {
+                        int tmp = 0;
+                        if (ReadSFixed32(ref tmp))
+                        {
+                            value = tmp;
+                            return true;
+                        }
+                        return false;
+                    }
                 case FieldType.SFixed64:
-                    return ReadSFixed64();
+                    {
+                        long tmp = 0;
+                        if (ReadSFixed64(ref tmp))
+                        {
+                            value = tmp;
+                            return true;
+                        }
+                        return false;
+                    }
                 case FieldType.SInt32:
-                    return ReadSInt32();
+                    {
+                        int tmp = 0;
+                        if (ReadSInt32(ref tmp))
+                        {
+                            value = tmp;
+                            return true;
+                        }
+                        return false;
+                    }
                 case FieldType.SInt64:
-                    return ReadSInt64();
+                    {
+                        long tmp = 0;
+                        if (ReadSInt64(ref tmp))
+                        {
+                            value = tmp;
+                            return true;
+                        }
+                        return false;
+                    }
                 case FieldType.Group:
                     throw new ArgumentException("ReadPrimitiveField() cannot handle nested groups.");
                 case FieldType.Message:
@@ -1047,7 +1331,7 @@ namespace Google.ProtocolBuffers
             switch (WireFormat.GetTagWireType(tag))
             {
                 case WireFormat.WireType.Varint:
-                    ReadInt32();
+                    ReadRawVarint64();
                     return true;
                 case WireFormat.WireType.Fixed64:
                     ReadRawLittleEndian64();

@@ -95,19 +95,32 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         public void GenerateParsingCode(TextGenerator writer)
         {
-            // TODO(jonskeet): Make a more efficient way of doing this
-            writer.WriteLine("int rawValue = input.ReadEnum();");
-            writer.WriteLine("if (!global::System.Enum.IsDefined(typeof({0}), rawValue)) {{", TypeName);
+            writer.WriteLine("object unknown;");
+            writer.WriteLine("if(input.ReadEnum(ref result.{0}_, out unknown)) {{", Name);
+            writer.WriteLine("  result.has{0} = true;", PropertyName);
+            writer.WriteLine("} else if(unknown is int) {");
             if (!UseLiteRuntime)
             {
                 writer.WriteLine("  if (unknownFields == null) {"); // First unknown field - create builder now
                 writer.WriteLine("    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
                 writer.WriteLine("  }");
-                writer.WriteLine("  unknownFields.MergeVarintField({0}, (ulong) rawValue);", Number);
+                writer.WriteLine("  unknownFields.MergeVarintField({0}, (ulong)(int)unknown);", Number);
             }
-            writer.WriteLine("} else {");
-            writer.WriteLine("  {0} = ({1}) rawValue;", PropertyName, TypeName);
             writer.WriteLine("}");
+
+            // TO DO(jonskeet): Make a more efficient way of doing this
+            //writer.WriteLine("int rawValue = input.ReadEnum();");
+            //writer.WriteLine("if (!global::System.Enum.IsDefined(typeof({0}), rawValue)) {{", TypeName);
+            //if (!UseLiteRuntime)
+            //{
+            //    writer.WriteLine("  if (unknownFields == null) {"); // First unknown field - create builder now
+            //    writer.WriteLine("    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
+            //    writer.WriteLine("  }");
+            //    writer.WriteLine("  unknownFields.MergeVarintField({0}, (ulong) rawValue);", Number);
+            //}
+            //writer.WriteLine("} else {");
+            //writer.WriteLine("  {0} = ({1}) rawValue;", PropertyName, TypeName);
+            //writer.WriteLine("}");
         }
 
         public void GenerateSerializationCode(TextGenerator writer)

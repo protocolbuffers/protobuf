@@ -112,36 +112,50 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         public void GenerateParsingCode(TextGenerator writer)
         {
-            // If packed, set up the while loop
-            if (Descriptor.IsPacked)
-            {
-                writer.WriteLine("int length = input.ReadInt32();");
-                writer.WriteLine("int oldLimit = input.PushLimit(length);");
-                writer.WriteLine("while (!input.ReachedLimit) {");
-                writer.Indent();
-            }
-
-            // Read and store the enum
-            // TODO(jonskeet): Make a more efficient way of doing this
-            writer.WriteLine("int rawValue = input.ReadEnum();");
-            writer.WriteLine("if (!global::System.Enum.IsDefined(typeof({0}), rawValue)) {{", TypeName);
+            writer.WriteLine("scg::ICollection<object> unknownItems;");
+            writer.WriteLine("input.ReadEnumArray<{0}>(tag, field_name, result.{1}_, out unknownItems);", TypeName, Name);
             if (!UseLiteRuntime)
             {
-                writer.WriteLine("  if (unknownFields == null) {"); // First unknown field - create builder now
+                writer.WriteLine("if (unknownItems != null) {");
+                writer.WriteLine("  if (unknownFields == null) {");
                 writer.WriteLine("    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
                 writer.WriteLine("  }");
-                writer.WriteLine("  unknownFields.MergeVarintField({0}, (ulong) rawValue);", Number);
-            }
-            writer.WriteLine("} else {");
-            writer.WriteLine("  Add{0}(({1}) rawValue);", PropertyName, TypeName);
-            writer.WriteLine("}");
-
-            if (Descriptor.IsPacked)
-            {
-                writer.Outdent();
+                writer.WriteLine("  foreach (object rawValue in unknownItems)");
+                writer.WriteLine("    if (rawValue is int)");
+                writer.WriteLine("      unknownFields.MergeVarintField({0}, (ulong)(int)rawValue);", Number);
                 writer.WriteLine("}");
-                writer.WriteLine("input.PopLimit(oldLimit);");
             }
+
+            //// If packed, set up the while loop
+            //if (Descriptor.IsPacked)
+            //{
+            //    writer.WriteLine("int length = input.ReadInt32();");
+            //    writer.WriteLine("int oldLimit = input.PushLimit(length);");
+            //    writer.WriteLine("while (!input.ReachedLimit) {");
+            //    writer.Indent();
+            //}
+
+            //// Read and store the enum
+            //// TO DO(jonskeet): Make a more efficient way of doing this
+            //writer.WriteLine("int rawValue = input.ReadEnum();");
+            //writer.WriteLine("if (!global::System.Enum.IsDefined(typeof({0}), rawValue)) {{", TypeName);
+            //if (!UseLiteRuntime)
+            //{
+            //    writer.WriteLine("  if (unknownFields == null) {"); // First unknown field - create builder now
+            //    writer.WriteLine("    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
+            //    writer.WriteLine("  }");
+            //    writer.WriteLine("  unknownFields.MergeVarintField({0}, (ulong) rawValue);", Number);
+            //}
+            //writer.WriteLine("} else {");
+            //writer.WriteLine("  Add{0}(({1}) rawValue);", PropertyName, TypeName);
+            //writer.WriteLine("}");
+
+            //if (Descriptor.IsPacked)
+            //{
+            //    writer.Outdent();
+            //    writer.WriteLine("}");
+            //    writer.WriteLine("input.PopLimit(oldLimit);");
+            //}
         }
 
         public void GenerateSerializationCode(TextGenerator writer)

@@ -121,19 +121,20 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         public void GenerateParsingCode(TextGenerator writer)
         {
-            if (Descriptor.IsPacked)
-            {
-                writer.WriteLine("int length = input.ReadInt32();");
-                writer.WriteLine("int limit = input.PushLimit(length);");
-                writer.WriteLine("while (!input.ReachedLimit) {");
-                writer.WriteLine("  Add{0}(input.Read{1}());", PropertyName, CapitalizedTypeName);
-                writer.WriteLine("}");
-                writer.WriteLine("input.PopLimit(limit);");
-            }
-            else
-            {
-                writer.WriteLine("Add{0}(input.Read{1}());", PropertyName, CapitalizedTypeName);
-            }
+            writer.WriteLine("input.ReadPrimitiveArray(pbd::FieldType.{1}, tag, field_name, result.{0}_);", Name, Descriptor.FieldType);
+            //if (Descriptor.IsPacked)
+            //{
+            //    writer.WriteLine("int length = input.ReadInt32();");
+            //    writer.WriteLine("int limit = input.PushLimit(length);");
+            //    writer.WriteLine("while (!input.ReachedLimit) {");
+            //    writer.WriteLine("  Add{0}(input.Read{1}());", PropertyName, CapitalizedTypeName);
+            //    writer.WriteLine("}");
+            //    writer.WriteLine("input.PopLimit(limit);");
+            //}
+            //else
+            //{
+            //    writer.WriteLine("Add{0}(input.Read{1}());", PropertyName, CapitalizedTypeName);
+            //}
         }
 
         public void GenerateSerializationCode(TextGenerator writer)

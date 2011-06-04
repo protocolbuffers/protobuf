@@ -270,7 +270,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               if (unknownFields == null) {
                 unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
               }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag);
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
             case 10: {
@@ -283,9 +283,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 18: {
-              global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.CreateBuilder();
-              input.ReadMessage(subBuilder, extensionRegistry);
-              AddRepeatedMessage(subBuilder.BuildPartial());
+              input.ReadMessageArray(tag, field_name, result.repeatedMessage_, global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.DefaultInstance, extensionRegistry);
               break;
             }
           }

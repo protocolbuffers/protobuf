@@ -647,7 +647,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                 writer.WriteLine("    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
                 writer.WriteLine("  }");
             }
-            writer.WriteLine("  ParseUnknownField(input, {0}extensionRegistry, tag);",
+            writer.WriteLine("  ParseUnknownField(input, {0}extensionRegistry, tag, field_name);",
                              UseLiteRuntime ? "" : "unknownFields, ");
             writer.WriteLine("  break;");
             writer.WriteLine("}");
