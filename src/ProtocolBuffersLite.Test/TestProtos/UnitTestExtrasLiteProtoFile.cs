@@ -1364,7 +1364,8 @@ namespace Google.ProtocolBuffers.TestProtos {
               input.ReadGroupArray(tag, field_name, result.addresses_, global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.Addresses.DefaultInstance, extensionRegistry);
               break;
             }
-            case 82: {
+            case 82:
+            case 80: {
               input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.codes_);
               break;
             }

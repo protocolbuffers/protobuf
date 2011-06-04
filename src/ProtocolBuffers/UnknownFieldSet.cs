@@ -666,9 +666,24 @@ namespace Google.ProtocolBuffers
                 }
 
                 // Unknown field or wrong wire type. Skip.
-                if (field == null || wireType != WireFormat.GetWireType(field))
+                if (field == null)
                 {
                     return MergeFieldFrom(tag, input);
+                }
+                if (wireType != WireFormat.GetWireType(field))
+                {
+                    WireFormat.WireType expectedType = WireFormat.GetWireType(field.FieldType);
+                    if (wireType == expectedType)
+                    {
+                        //Allowed as of 2.3, this is unpacked data for a packed array
+                    }
+                    else if (field.IsRepeated && wireType == WireFormat.WireType.LengthDelimited &&
+                        (expectedType == WireFormat.WireType.Varint || expectedType == WireFormat.WireType.Fixed32 || expectedType == WireFormat.WireType.Fixed64))
+                    {
+                        //Allowed as of 2.3, this is packed data for an unpacked array
+                    }
+                    else
+                        return MergeFieldFrom(tag, input);
                 }
 
                 switch (field.FieldType)

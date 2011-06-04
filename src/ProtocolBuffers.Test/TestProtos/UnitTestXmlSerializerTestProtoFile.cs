@@ -340,6 +340,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
               break;
             }
+            case 26:
             case 24: {
               scg::ICollection<object> unknownItems;
               input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.EnumOptions>(tag, field_name, result.options_, out unknownItems);
@@ -846,6 +847,7 @@ namespace Google.ProtocolBuffers.TestProtos {
                   ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
                   break;
                 }
+                case 26:
                 case 24: {
                   scg::ICollection<object> unknownItems;
                   input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.EnumOptions>(tag, field_name, result.options_, out unknownItems);
@@ -1235,6 +1237,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               Child = subBuilder.BuildPartial();
               break;
             }
+            case 18:
             case 16: {
               input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.numbers_);
               break;

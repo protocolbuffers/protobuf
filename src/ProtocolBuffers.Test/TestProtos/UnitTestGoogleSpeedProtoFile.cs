@@ -1105,6 +1105,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               result.hasField4 |= input.ReadString(ref result.field4_);
               break;
             }
+            case 42:
             case 41: {
               input.ReadPrimitiveArray(pbd::FieldType.Fixed64, tag, field_name, result.field5_);
               break;
@@ -3661,6 +3662,7 @@ namespace Google.ProtocolBuffers.TestProtos {
                   Field31 = subBuilder.BuildPartial();
                   break;
                 }
+                case 586:
                 case 584: {
                   input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.field73_);
                   break;
@@ -4829,6 +4831,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               result.hasField129 |= input.ReadInt32(ref result.field129_);
               break;
             }
+            case 1042:
             case 1040: {
               input.ReadPrimitiveArray(pbd::FieldType.Int64, tag, field_name, result.field130_);
               break;

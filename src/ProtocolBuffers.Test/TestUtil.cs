@@ -1558,6 +1558,55 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(false, message.GetPackedBool(1));
             Assert.AreEqual(ForeignEnum.FOREIGN_BAZ, message.GetPackedEnum(1));
         }
+        /// <summary>
+        /// Asserts that all the fields of the specified message are set to the values assigned
+        /// in SetPackedFields.
+        /// </summary>
+        public static void AssertUnpackedFieldsSet(TestUnpackedTypes message)
+        {
+            Assert.AreEqual(2, message.UnpackedInt32Count);
+            Assert.AreEqual(2, message.UnpackedInt64Count);
+            Assert.AreEqual(2, message.UnpackedUint32Count);
+            Assert.AreEqual(2, message.UnpackedUint64Count);
+            Assert.AreEqual(2, message.UnpackedSint32Count);
+            Assert.AreEqual(2, message.UnpackedSint64Count);
+            Assert.AreEqual(2, message.UnpackedFixed32Count);
+            Assert.AreEqual(2, message.UnpackedFixed64Count);
+            Assert.AreEqual(2, message.UnpackedSfixed32Count);
+            Assert.AreEqual(2, message.UnpackedSfixed64Count);
+            Assert.AreEqual(2, message.UnpackedFloatCount);
+            Assert.AreEqual(2, message.UnpackedDoubleCount);
+            Assert.AreEqual(2, message.UnpackedBoolCount);
+            Assert.AreEqual(2, message.UnpackedEnumCount);
+            Assert.AreEqual(601, message.GetUnpackedInt32(0));
+            Assert.AreEqual(602, message.GetUnpackedInt64(0));
+            Assert.AreEqual(603, message.GetUnpackedUint32(0));
+            Assert.AreEqual(604, message.GetUnpackedUint64(0));
+            Assert.AreEqual(605, message.GetUnpackedSint32(0));
+            Assert.AreEqual(606, message.GetUnpackedSint64(0));
+            Assert.AreEqual(607, message.GetUnpackedFixed32(0));
+            Assert.AreEqual(608, message.GetUnpackedFixed64(0));
+            Assert.AreEqual(609, message.GetUnpackedSfixed32(0));
+            Assert.AreEqual(610, message.GetUnpackedSfixed64(0));
+            Assert.AreEqual(611, message.GetUnpackedFloat(0), 0.0);
+            Assert.AreEqual(612, message.GetUnpackedDouble(0), 0.0);
+            Assert.AreEqual(true, message.GetUnpackedBool(0));
+            Assert.AreEqual(ForeignEnum.FOREIGN_BAR, message.GetUnpackedEnum(0));
+            Assert.AreEqual(701, message.GetUnpackedInt32(1));
+            Assert.AreEqual(702, message.GetUnpackedInt64(1));
+            Assert.AreEqual(703, message.GetUnpackedUint32(1));
+            Assert.AreEqual(704, message.GetUnpackedUint64(1));
+            Assert.AreEqual(705, message.GetUnpackedSint32(1));
+            Assert.AreEqual(706, message.GetUnpackedSint64(1));
+            Assert.AreEqual(707, message.GetUnpackedFixed32(1));
+            Assert.AreEqual(708, message.GetUnpackedFixed64(1));
+            Assert.AreEqual(709, message.GetUnpackedSfixed32(1));
+            Assert.AreEqual(710, message.GetUnpackedSfixed64(1));
+            Assert.AreEqual(711, message.GetUnpackedFloat(1), 0.0);
+            Assert.AreEqual(712, message.GetUnpackedDouble(1), 0.0);
+            Assert.AreEqual(false, message.GetUnpackedBool(1));
+            Assert.AreEqual(ForeignEnum.FOREIGN_BAZ, message.GetUnpackedEnum(1));
+        }
 
         public static void SetPackedExtensions(TestPackedExtensions.Builder message)
         {
@@ -1637,6 +1686,53 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(712D, message.GetExtension(UnitTestProtoFile.PackedDoubleExtension, 1));
             Assert.AreEqual(false, message.GetExtension(UnitTestProtoFile.PackedBoolExtension, 1));
             Assert.AreEqual(ForeignEnum.FOREIGN_BAZ, message.GetExtension(UnitTestProtoFile.PackedEnumExtension, 1));
+        }
+
+        public static void AssertUnpackedExtensionsSet(TestUnpackedExtensions message)
+        {
+            Assert.AreEqual(2, message.GetExtensionCount(UnitTestProtoFile.UnpackedInt32Extension));
+            Assert.AreEqual(2, message.GetExtensionCount(UnitTestProtoFile.UnpackedInt64Extension));
+            Assert.AreEqual(2, message.GetExtensionCount(UnitTestProtoFile.UnpackedUint32Extension));
+            Assert.AreEqual(2, message.GetExtensionCount(UnitTestProtoFile.UnpackedUint64Extension));
+            Assert.AreEqual(2, message.GetExtensionCount(UnitTestProtoFile.UnpackedSint32Extension));
+            Assert.AreEqual(2, message.GetExtensionCount(UnitTestProtoFile.UnpackedSint64Extension));
+            Assert.AreEqual(2, message.GetExtensionCount(UnitTestProtoFile.UnpackedFixed32Extension));
+            Assert.AreEqual(2, message.GetExtensionCount(UnitTestProtoFile.UnpackedFixed64Extension));
+            Assert.AreEqual(2, message.GetExtensionCount(UnitTestProtoFile.UnpackedSfixed32Extension));
+            Assert.AreEqual(2, message.GetExtensionCount(UnitTestProtoFile.UnpackedSfixed64Extension));
+            Assert.AreEqual(2, message.GetExtensionCount(UnitTestProtoFile.UnpackedFloatExtension));
+            Assert.AreEqual(2, message.GetExtensionCount(UnitTestProtoFile.UnpackedDoubleExtension));
+            Assert.AreEqual(2, message.GetExtensionCount(UnitTestProtoFile.UnpackedBoolExtension));
+            Assert.AreEqual(2, message.GetExtensionCount(UnitTestProtoFile.UnpackedEnumExtension));
+            Assert.AreEqual(601, message.GetExtension(UnitTestProtoFile.UnpackedInt32Extension, 0));
+            Assert.AreEqual(602L, message.GetExtension(UnitTestProtoFile.UnpackedInt64Extension, 0));
+            Assert.AreEqual(603, message.GetExtension(UnitTestProtoFile.UnpackedUint32Extension, 0));
+            Assert.AreEqual(604L, message.GetExtension(UnitTestProtoFile.UnpackedUint64Extension, 0));
+            Assert.AreEqual(605, message.GetExtension(UnitTestProtoFile.UnpackedSint32Extension, 0));
+            Assert.AreEqual(606L, message.GetExtension(UnitTestProtoFile.UnpackedSint64Extension, 0));
+            Assert.AreEqual(607, message.GetExtension(UnitTestProtoFile.UnpackedFixed32Extension, 0));
+            Assert.AreEqual(608L, message.GetExtension(UnitTestProtoFile.UnpackedFixed64Extension, 0));
+            Assert.AreEqual(609, message.GetExtension(UnitTestProtoFile.UnpackedSfixed32Extension, 0));
+            Assert.AreEqual(610L, message.GetExtension(UnitTestProtoFile.UnpackedSfixed64Extension, 0));
+            Assert.AreEqual(611F, message.GetExtension(UnitTestProtoFile.UnpackedFloatExtension, 0));
+            Assert.AreEqual(612D, message.GetExtension(UnitTestProtoFile.UnpackedDoubleExtension, 0));
+            Assert.AreEqual(true, message.GetExtension(UnitTestProtoFile.UnpackedBoolExtension, 0));
+            Assert.AreEqual(ForeignEnum.FOREIGN_BAR,
+                            message.GetExtension(UnitTestProtoFile.UnpackedEnumExtension, 0));
+            Assert.AreEqual(701, message.GetExtension(UnitTestProtoFile.UnpackedInt32Extension, 1));
+            Assert.AreEqual(702L, message.GetExtension(UnitTestProtoFile.UnpackedInt64Extension, 1));
+            Assert.AreEqual(703, message.GetExtension(UnitTestProtoFile.UnpackedUint32Extension, 1));
+            Assert.AreEqual(704L, message.GetExtension(UnitTestProtoFile.UnpackedUint64Extension, 1));
+            Assert.AreEqual(705, message.GetExtension(UnitTestProtoFile.UnpackedSint32Extension, 1));
+            Assert.AreEqual(706L, message.GetExtension(UnitTestProtoFile.UnpackedSint64Extension, 1));
+            Assert.AreEqual(707, message.GetExtension(UnitTestProtoFile.UnpackedFixed32Extension, 1));
+            Assert.AreEqual(708L, message.GetExtension(UnitTestProtoFile.UnpackedFixed64Extension, 1));
+            Assert.AreEqual(709, message.GetExtension(UnitTestProtoFile.UnpackedSfixed32Extension, 1));
+            Assert.AreEqual(710L, message.GetExtension(UnitTestProtoFile.UnpackedSfixed64Extension, 1));
+            Assert.AreEqual(711F, message.GetExtension(UnitTestProtoFile.UnpackedFloatExtension, 1));
+            Assert.AreEqual(712D, message.GetExtension(UnitTestProtoFile.UnpackedDoubleExtension, 1));
+            Assert.AreEqual(false, message.GetExtension(UnitTestProtoFile.UnpackedBoolExtension, 1));
+            Assert.AreEqual(ForeignEnum.FOREIGN_BAZ, message.GetExtension(UnitTestProtoFile.UnpackedEnumExtension, 1));
         }
 
         private static ByteString goldenPackedFieldsMessage = null;

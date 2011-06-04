@@ -36,6 +36,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Google.ProtocolBuffers.Descriptors;
 using NUnit.Framework;
 using Google.ProtocolBuffers.TestProtos;
@@ -100,7 +101,43 @@ namespace Google.ProtocolBuffers
         {
             AbstractMessageWrapper.Builder builder = new AbstractMessageWrapper.Builder(TestPackedTypes.CreateBuilder());
             AbstractMessageWrapper message = builder.MergeFrom(TestUtil.GetPackedSet().ToByteString()).Build();
-            TestUtil.AssertPackedFieldsSet((TestPackedTypes) message.WrappedMessage);
+            TestUtil.AssertPackedFieldsSet((TestPackedTypes)message.WrappedMessage);
+        }
+
+        [Test]
+        public void UnpackedParsingOfPackedInput()
+        {
+            byte[] bytes = TestUtil.GetPackedSet().ToByteArray();
+            TestUnpackedTypes message = TestUnpackedTypes.ParseFrom(bytes);
+            TestUtil.AssertUnpackedFieldsSet(message);
+        }
+
+        [Test]
+        public void PackedParsingOfUnpackedInput()
+        {
+            byte[] bytes = TestUnpackedTypes.ParseFrom(TestUtil.GetPackedSet().ToByteArray()).ToByteArray();
+            TestPackedTypes message = TestPackedTypes.ParseFrom(bytes);
+            TestUtil.AssertPackedFieldsSet(message);
+        }
+
+        [Test]
+        public void UnpackedParsingOfPackedInputExtensions()
+        {
+            byte[] bytes = TestUtil.GetPackedSet().ToByteArray();
+            ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
+            UnitTestProtoFile.RegisterAllExtensions(registry);
+            TestUnpackedExtensions message = TestUnpackedExtensions.ParseFrom(bytes, registry);
+            TestUtil.AssertUnpackedExtensionsSet(message);
+        }
+
+        [Test]
+        public void PackedParsingOfUnpackedInputExtensions()
+        {
+            byte[] bytes = TestUnpackedTypes.ParseFrom(TestUtil.GetPackedSet().ToByteArray()).ToByteArray();
+            ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
+            UnitTestProtoFile.RegisterAllExtensions(registry);
+            TestPackedExtensions message = TestPackedExtensions.ParseFrom(bytes, registry);
+            TestUtil.AssertPackedExtensionsSet(message);
         }
 
         [Test]

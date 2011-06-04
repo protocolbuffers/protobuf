@@ -3758,54 +3758,67 @@ namespace Google.ProtocolBuffers.TestProtos {
               result.hasOptionalCord |= input.ReadString(ref result.optionalCord_);
               break;
             }
+            case 250:
             case 248: {
               input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.repeatedInt32_);
               break;
             }
+            case 258:
             case 256: {
               input.ReadPrimitiveArray(pbd::FieldType.Int64, tag, field_name, result.repeatedInt64_);
               break;
             }
+            case 266:
             case 264: {
               input.ReadPrimitiveArray(pbd::FieldType.UInt32, tag, field_name, result.repeatedUint32_);
               break;
             }
+            case 274:
             case 272: {
               input.ReadPrimitiveArray(pbd::FieldType.UInt64, tag, field_name, result.repeatedUint64_);
               break;
             }
+            case 282:
             case 280: {
               input.ReadPrimitiveArray(pbd::FieldType.SInt32, tag, field_name, result.repeatedSint32_);
               break;
             }
+            case 290:
             case 288: {
               input.ReadPrimitiveArray(pbd::FieldType.SInt64, tag, field_name, result.repeatedSint64_);
               break;
             }
+            case 298:
             case 301: {
               input.ReadPrimitiveArray(pbd::FieldType.Fixed32, tag, field_name, result.repeatedFixed32_);
               break;
             }
+            case 306:
             case 305: {
               input.ReadPrimitiveArray(pbd::FieldType.Fixed64, tag, field_name, result.repeatedFixed64_);
               break;
             }
+            case 314:
             case 317: {
               input.ReadPrimitiveArray(pbd::FieldType.SFixed32, tag, field_name, result.repeatedSfixed32_);
               break;
             }
+            case 322:
             case 321: {
               input.ReadPrimitiveArray(pbd::FieldType.SFixed64, tag, field_name, result.repeatedSfixed64_);
               break;
             }
+            case 330:
             case 333: {
               input.ReadPrimitiveArray(pbd::FieldType.Float, tag, field_name, result.repeatedFloat_);
               break;
             }
+            case 338:
             case 337: {
               input.ReadPrimitiveArray(pbd::FieldType.Double, tag, field_name, result.repeatedDouble_);
               break;
             }
+            case 346:
             case 344: {
               input.ReadPrimitiveArray(pbd::FieldType.Bool, tag, field_name, result.repeatedBool_);
               break;
@@ -3834,16 +3847,19 @@ namespace Google.ProtocolBuffers.TestProtos {
               input.ReadMessageArray(tag, field_name, result.repeatedImportMessage_, global::Google.ProtocolBuffers.TestProtos.ImportMessageLite.DefaultInstance, extensionRegistry);
               break;
             }
+            case 410:
             case 408: {
               scg::ICollection<object> unknownItems;
               input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum>(tag, field_name, result.repeatedNestedEnum_, out unknownItems);
               break;
             }
+            case 418:
             case 416: {
               scg::ICollection<object> unknownItems;
               input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(tag, field_name, result.repeatedForeignEnum_, out unknownItems);
               break;
             }
+            case 426:
             case 424: {
               scg::ICollection<object> unknownItems;
               input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.ImportEnumLite>(tag, field_name, result.repeatedImportEnum_, out unknownItems);
@@ -6442,59 +6458,73 @@ namespace Google.ProtocolBuffers.TestProtos {
               ParseUnknownField(input, extensionRegistry, tag, field_name);
               break;
             }
-            case 722: {
+            case 722:
+            case 720: {
               input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.packedInt32_);
               break;
             }
-            case 730: {
+            case 730:
+            case 728: {
               input.ReadPrimitiveArray(pbd::FieldType.Int64, tag, field_name, result.packedInt64_);
               break;
             }
-            case 738: {
+            case 738:
+            case 736: {
               input.ReadPrimitiveArray(pbd::FieldType.UInt32, tag, field_name, result.packedUint32_);
               break;
             }
-            case 746: {
+            case 746:
+            case 744: {
               input.ReadPrimitiveArray(pbd::FieldType.UInt64, tag, field_name, result.packedUint64_);
               break;
             }
-            case 754: {
+            case 754:
+            case 752: {
               input.ReadPrimitiveArray(pbd::FieldType.SInt32, tag, field_name, result.packedSint32_);
               break;
             }
-            case 762: {
+            case 762:
+            case 760: {
               input.ReadPrimitiveArray(pbd::FieldType.SInt64, tag, field_name, result.packedSint64_);
               break;
             }
-            case 770: {
+            case 770:
+            case 773: {
               input.ReadPrimitiveArray(pbd::FieldType.Fixed32, tag, field_name, result.packedFixed32_);
               break;
             }
-            case 778: {
+            case 778:
+            case 777: {
               input.ReadPrimitiveArray(pbd::FieldType.Fixed64, tag, field_name, result.packedFixed64_);
               break;
             }
-            case 786: {
+            case 786:
+            case 789: {
               input.ReadPrimitiveArray(pbd::FieldType.SFixed32, tag, field_name, result.packedSfixed32_);
               break;
             }
-            case 794: {
+            case 794:
+            case 793: {
               input.ReadPrimitiveArray(pbd::FieldType.SFixed64, tag, field_name, result.packedSfixed64_);
               break;
             }
-            case 802: {
+            case 802:
+            case 805: {
               input.ReadPrimitiveArray(pbd::FieldType.Float, tag, field_name, result.packedFloat_);
               break;
             }
-            case 810: {
+            case 810:
+            case 809: {
               input.ReadPrimitiveArray(pbd::FieldType.Double, tag, field_name, result.packedDouble_);
               break;
             }
-            case 818: {
+            case 818:
+            case 816: {
               input.ReadPrimitiveArray(pbd::FieldType.Bool, tag, field_name, result.packedBool_);
               break;
             }
-            case 826: {
+            case 826:
+            case 824: {
               scg::ICollection<object> unknownItems;
               input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(tag, field_name, result.packedEnum_, out unknownItems);
               break;

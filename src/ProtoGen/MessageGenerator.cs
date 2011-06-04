@@ -653,7 +653,12 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("}");
             foreach (FieldDescriptor field in sortedFields)
             {
-                uint tag = WireFormat.MakeTag(field);
+                WireFormat.WireType wt = WireFormat.GetWireType(field.FieldType);
+                uint tag = WireFormat.MakeTag(field.FieldNumber, wt);
+
+                if(field.IsRepeated && (wt == WireFormat.WireType.Varint || wt == WireFormat.WireType.Fixed32 || wt == WireFormat.WireType.Fixed64))
+                    writer.WriteLine("case {0}:", WireFormat.MakeTag(field.FieldNumber, WireFormat.WireType.LengthDelimited));
+
                 writer.WriteLine("case {0}: {{", tag);
                 writer.Indent();
                 SourceGenerators.CreateFieldGenerator(field).GenerateParsingCode(writer);

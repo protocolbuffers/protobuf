@@ -146,6 +146,31 @@ namespace Google.ProtocolBuffers
                 return input.SkipField();
 
             IFieldDescriptorLite field = extension.Descriptor;
+
+
+            // Unknown field or wrong wire type. Skip.
+            if (field == null)
+            {
+                return input.SkipField();
+            }
+            WireFormat.WireType expectedType = field.IsPacked 
+                ? WireFormat.WireType.LengthDelimited 
+                : WireFormat.GetWireType(field.FieldType);
+            if (wireType != expectedType)
+            {
+                expectedType = WireFormat.GetWireType(field.FieldType);
+                if (wireType == expectedType)
+                {
+                    //Allowed as of 2.3, this is unpacked data for a packed array
+                }
+                else if (field.IsRepeated && wireType == WireFormat.WireType.LengthDelimited &&
+                    (expectedType == WireFormat.WireType.Varint || expectedType == WireFormat.WireType.Fixed32 || expectedType == WireFormat.WireType.Fixed64))
+                {
+                    //Allowed as of 2.3, this is packed data for an unpacked array
+                }
+                else
+                    return input.SkipField();
+            }
             if (!field.IsRepeated && wireType != WireFormat.GetWireType(field.FieldType)) //invalid wire type
                 return input.SkipField();
 
