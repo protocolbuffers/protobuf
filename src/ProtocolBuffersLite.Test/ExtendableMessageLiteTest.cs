@@ -258,48 +258,42 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(123u, copy.GetExtension(UnitTestLiteProtoFile.RepeatedUint64ExtensionLite, 0));
         }
 
-        [Test]
-        public void ExtensionWriterTestPacked()
+        private TestPackedExtensionsLite BuildPackedExtensions()
         {
             TestPackedExtensionsLite.Builder builder = TestPackedExtensionsLite.CreateBuilder()
-                .AddExtension(UnitTestLiteProtoFile.PackedBoolExtensionLite, true)
-                .AddExtension(UnitTestLiteProtoFile.PackedDoubleExtensionLite, 123)
-                .AddExtension(UnitTestLiteProtoFile.PackedFixed32ExtensionLite, 123u)
-                .AddExtension(UnitTestLiteProtoFile.PackedFixed64ExtensionLite, 123u)
-                .AddExtension(UnitTestLiteProtoFile.PackedFloatExtensionLite, 123)
-                .AddExtension(UnitTestLiteProtoFile.PackedInt32ExtensionLite, 123)
-                .AddExtension(UnitTestLiteProtoFile.PackedInt64ExtensionLite, 123)
-                .AddExtension(UnitTestLiteProtoFile.PackedSfixed32ExtensionLite, 123)
-                .AddExtension(UnitTestLiteProtoFile.PackedSfixed64ExtensionLite, 123)
-                .AddExtension(UnitTestLiteProtoFile.PackedSint32ExtensionLite, 123)
-                .AddExtension(UnitTestLiteProtoFile.PackedSint64ExtensionLite, 123)
-                .AddExtension(UnitTestLiteProtoFile.PackedUint32ExtensionLite, 123u)
-                .AddExtension(UnitTestLiteProtoFile.PackedUint64ExtensionLite, 123u)
-                .AddExtension(UnitTestLiteProtoFile.PackedBoolExtensionLite, true)
-                .AddExtension(UnitTestLiteProtoFile.PackedDoubleExtensionLite, 123)
-                .AddExtension(UnitTestLiteProtoFile.PackedFixed32ExtensionLite, 123u)
-                .AddExtension(UnitTestLiteProtoFile.PackedFixed64ExtensionLite, 123u)
-                .AddExtension(UnitTestLiteProtoFile.PackedFloatExtensionLite, 123)
-                .AddExtension(UnitTestLiteProtoFile.PackedInt32ExtensionLite, 123)
-                .AddExtension(UnitTestLiteProtoFile.PackedInt64ExtensionLite, 123)
-                .AddExtension(UnitTestLiteProtoFile.PackedSfixed32ExtensionLite, 123)
-                .AddExtension(UnitTestLiteProtoFile.PackedSfixed64ExtensionLite, 123)
-                .AddExtension(UnitTestLiteProtoFile.PackedSint32ExtensionLite, 123)
-                .AddExtension(UnitTestLiteProtoFile.PackedSint64ExtensionLite, 123)
-                .AddExtension(UnitTestLiteProtoFile.PackedUint32ExtensionLite, 123u)
-                .AddExtension(UnitTestLiteProtoFile.PackedUint64ExtensionLite, 123u);
+                   .AddExtension(UnitTestLiteProtoFile.PackedBoolExtensionLite, true)
+                   .AddExtension(UnitTestLiteProtoFile.PackedDoubleExtensionLite, 123)
+                   .AddExtension(UnitTestLiteProtoFile.PackedFixed32ExtensionLite, 123u)
+                   .AddExtension(UnitTestLiteProtoFile.PackedFixed64ExtensionLite, 123u)
+                   .AddExtension(UnitTestLiteProtoFile.PackedFloatExtensionLite, 123)
+                   .AddExtension(UnitTestLiteProtoFile.PackedInt32ExtensionLite, 123)
+                   .AddExtension(UnitTestLiteProtoFile.PackedInt64ExtensionLite, 123)
+                   .AddExtension(UnitTestLiteProtoFile.PackedSfixed32ExtensionLite, 123)
+                   .AddExtension(UnitTestLiteProtoFile.PackedSfixed64ExtensionLite, 123)
+                   .AddExtension(UnitTestLiteProtoFile.PackedSint32ExtensionLite, 123)
+                   .AddExtension(UnitTestLiteProtoFile.PackedSint64ExtensionLite, 123)
+                   .AddExtension(UnitTestLiteProtoFile.PackedUint32ExtensionLite, 123u)
+                   .AddExtension(UnitTestLiteProtoFile.PackedUint64ExtensionLite, 123u)
+                   .AddExtension(UnitTestLiteProtoFile.PackedBoolExtensionLite, true)
+                   .AddExtension(UnitTestLiteProtoFile.PackedDoubleExtensionLite, 123)
+                   .AddExtension(UnitTestLiteProtoFile.PackedFixed32ExtensionLite, 123u)
+                   .AddExtension(UnitTestLiteProtoFile.PackedFixed64ExtensionLite, 123u)
+                   .AddExtension(UnitTestLiteProtoFile.PackedFloatExtensionLite, 123)
+                   .AddExtension(UnitTestLiteProtoFile.PackedInt32ExtensionLite, 123)
+                   .AddExtension(UnitTestLiteProtoFile.PackedInt64ExtensionLite, 123)
+                   .AddExtension(UnitTestLiteProtoFile.PackedSfixed32ExtensionLite, 123)
+                   .AddExtension(UnitTestLiteProtoFile.PackedSfixed64ExtensionLite, 123)
+                   .AddExtension(UnitTestLiteProtoFile.PackedSint32ExtensionLite, 123)
+                   .AddExtension(UnitTestLiteProtoFile.PackedSint64ExtensionLite, 123)
+                   .AddExtension(UnitTestLiteProtoFile.PackedUint32ExtensionLite, 123u)
+                   .AddExtension(UnitTestLiteProtoFile.PackedUint64ExtensionLite, 123u);
 
             TestPackedExtensionsLite msg = builder.Build();
+            return msg;
+        }
 
-            ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestLiteProtoFile.RegisterAllExtensions(registry);
-
-            TestPackedExtensionsLite.Builder copyBuilder =
-                TestPackedExtensionsLite.CreateBuilder().MergeFrom(msg.ToByteArray(), registry);
-            TestPackedExtensionsLite copy = copyBuilder.Build();
-
-            Assert.AreEqual(msg.ToByteArray(), copy.ToByteArray());
-
+        private void AssertPackedExtensions(TestPackedExtensionsLite copy)
+        {
             Assert.AreEqual(true, copy.GetExtension(UnitTestLiteProtoFile.PackedBoolExtensionLite, 0));
             Assert.AreEqual(123, copy.GetExtension(UnitTestLiteProtoFile.PackedDoubleExtensionLite, 0));
             Assert.AreEqual(123u, copy.GetExtension(UnitTestLiteProtoFile.PackedFixed32ExtensionLite, 0));
@@ -327,6 +321,57 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(123, copy.GetExtension(UnitTestLiteProtoFile.PackedSint64ExtensionLite, 1));
             Assert.AreEqual(123u, copy.GetExtension(UnitTestLiteProtoFile.PackedUint32ExtensionLite, 1));
             Assert.AreEqual(123u, copy.GetExtension(UnitTestLiteProtoFile.PackedUint64ExtensionLite, 1));
+        }
+
+        [Test]
+        public void ExtensionWriterTestPacked()
+        {
+            TestPackedExtensionsLite msg = BuildPackedExtensions();
+
+            ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
+            UnitTestLiteProtoFile.RegisterAllExtensions(registry);
+
+            TestPackedExtensionsLite.Builder copyBuilder =
+                TestPackedExtensionsLite.CreateBuilder().MergeFrom(msg.ToByteArray(), registry);
+            TestPackedExtensionsLite copy = copyBuilder.Build();
+
+            Assert.AreEqual(msg.ToByteArray(), copy.ToByteArray());
+
+            AssertPackedExtensions(copy);
+        }
+
+        [Test]
+        public void TestUnpackedAndPackedExtensions()
+        {
+            TestPackedExtensionsLite original = BuildPackedExtensions();
+            AssertPackedExtensions(original);
+
+            ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
+            UnitTestLiteProtoFile.RegisterAllExtensions(registry);
+
+            TestUnpackedExtensionsLite unpacked = TestUnpackedExtensionsLite.ParseFrom(original.ToByteArray(), registry);
+
+            TestPackedExtensionsLite packed = TestPackedExtensionsLite.ParseFrom(unpacked.ToByteArray(), registry);
+
+            Assert.AreEqual(original, packed);
+            Assert.AreEqual(original.ToByteArray(), packed.ToByteArray());
+            AssertPackedExtensions(packed);
+        }
+
+        [Test]
+        public void TestUnpackedFromPackedInput()
+        {
+            byte[] packedData = BuildPackedExtensions().ToByteArray();
+
+            TestUnpackedTypesLite unpacked = TestUnpackedTypesLite.ParseFrom(packedData);
+            TestPackedTypesLite packed = TestPackedTypesLite.ParseFrom(unpacked.ToByteArray());
+            Assert.AreEqual(packedData, packed.ToByteArray());
+            
+            unpacked = TestUnpackedTypesLite.ParseFrom(packed.ToByteArray());
+
+            ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
+            UnitTestLiteProtoFile.RegisterAllExtensions(registry);
+            AssertPackedExtensions(TestPackedExtensionsLite.ParseFrom(unpacked.ToByteArray(), registry));
         }
     }
 }

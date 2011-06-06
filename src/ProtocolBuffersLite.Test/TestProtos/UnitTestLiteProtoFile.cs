@@ -95,6 +95,20 @@ namespace Google.ProtocolBuffers.TestProtos {
       registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedDoubleExtensionLite);
       registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedBoolExtensionLite);
       registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedEnumExtensionLite);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedInt32ExtensionLite);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedInt64ExtensionLite);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedUint32ExtensionLite);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedUint64ExtensionLite);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedSint32ExtensionLite);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedSint64ExtensionLite);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedFixed32ExtensionLite);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedFixed64ExtensionLite);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedSfixed32ExtensionLite);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedSfixed64ExtensionLite);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedFloatExtensionLite);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedDoubleExtensionLite);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedBoolExtensionLite);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedEnumExtensionLite);
       registry.Add(global::Google.ProtocolBuffers.TestProtos.TestNestedExtensionLite.NestedExtension);
     }
     #endregion
@@ -279,6 +293,38 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, bool> PackedBoolExtensionLite;
     public const int PackedEnumExtensionLiteFieldNumber = 103;
     public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestPackedExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite> PackedEnumExtensionLite;
+    public const int UnpackedInt32ExtensionLiteFieldNumber = 90;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, int> UnpackedInt32ExtensionLite;
+    public const int UnpackedInt64ExtensionLiteFieldNumber = 91;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, long> UnpackedInt64ExtensionLite;
+    public const int UnpackedUint32ExtensionLiteFieldNumber = 92;
+    [global::System.CLSCompliant(false)]
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, uint> UnpackedUint32ExtensionLite;
+    public const int UnpackedUint64ExtensionLiteFieldNumber = 93;
+    [global::System.CLSCompliant(false)]
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, ulong> UnpackedUint64ExtensionLite;
+    public const int UnpackedSint32ExtensionLiteFieldNumber = 94;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, int> UnpackedSint32ExtensionLite;
+    public const int UnpackedSint64ExtensionLiteFieldNumber = 95;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, long> UnpackedSint64ExtensionLite;
+    public const int UnpackedFixed32ExtensionLiteFieldNumber = 96;
+    [global::System.CLSCompliant(false)]
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, uint> UnpackedFixed32ExtensionLite;
+    public const int UnpackedFixed64ExtensionLiteFieldNumber = 97;
+    [global::System.CLSCompliant(false)]
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, ulong> UnpackedFixed64ExtensionLite;
+    public const int UnpackedSfixed32ExtensionLiteFieldNumber = 98;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, int> UnpackedSfixed32ExtensionLite;
+    public const int UnpackedSfixed64ExtensionLiteFieldNumber = 99;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, long> UnpackedSfixed64ExtensionLite;
+    public const int UnpackedFloatExtensionLiteFieldNumber = 100;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, float> UnpackedFloatExtensionLite;
+    public const int UnpackedDoubleExtensionLiteFieldNumber = 101;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, double> UnpackedDoubleExtensionLite;
+    public const int UnpackedBoolExtensionLiteFieldNumber = 102;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, bool> UnpackedBoolExtensionLite;
+    public const int UnpackedEnumExtensionLiteFieldNumber = 103;
+    public static pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite> UnpackedEnumExtensionLite;
     #endregion
     
     #region Static variables
@@ -1034,6 +1080,132 @@ namespace Google.ProtocolBuffers.TestProtos {
           global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.PackedEnumExtensionLiteFieldNumber,
           pbd::FieldType.Enum,
           true);
+      global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedInt32ExtensionLite = 
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, int>(
+          "protobuf_unittest.unpacked_int32_extension_lite",
+          global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite.DefaultInstance,
+          null,
+          null,
+          global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedInt32ExtensionLiteFieldNumber,
+          pbd::FieldType.Int32,
+          false);
+      global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedInt64ExtensionLite = 
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, long>(
+          "protobuf_unittest.unpacked_int64_extension_lite",
+          global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite.DefaultInstance,
+          null,
+          null,
+          global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedInt64ExtensionLiteFieldNumber,
+          pbd::FieldType.Int64,
+          false);
+      global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedUint32ExtensionLite = 
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, uint>(
+          "protobuf_unittest.unpacked_uint32_extension_lite",
+          global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite.DefaultInstance,
+          null,
+          null,
+          global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedUint32ExtensionLiteFieldNumber,
+          pbd::FieldType.UInt32,
+          false);
+      global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedUint64ExtensionLite = 
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, ulong>(
+          "protobuf_unittest.unpacked_uint64_extension_lite",
+          global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite.DefaultInstance,
+          null,
+          null,
+          global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedUint64ExtensionLiteFieldNumber,
+          pbd::FieldType.UInt64,
+          false);
+      global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedSint32ExtensionLite = 
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, int>(
+          "protobuf_unittest.unpacked_sint32_extension_lite",
+          global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite.DefaultInstance,
+          null,
+          null,
+          global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedSint32ExtensionLiteFieldNumber,
+          pbd::FieldType.SInt32,
+          false);
+      global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedSint64ExtensionLite = 
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, long>(
+          "protobuf_unittest.unpacked_sint64_extension_lite",
+          global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite.DefaultInstance,
+          null,
+          null,
+          global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedSint64ExtensionLiteFieldNumber,
+          pbd::FieldType.SInt64,
+          false);
+      global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedFixed32ExtensionLite = 
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, uint>(
+          "protobuf_unittest.unpacked_fixed32_extension_lite",
+          global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite.DefaultInstance,
+          null,
+          null,
+          global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedFixed32ExtensionLiteFieldNumber,
+          pbd::FieldType.Fixed32,
+          false);
+      global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedFixed64ExtensionLite = 
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, ulong>(
+          "protobuf_unittest.unpacked_fixed64_extension_lite",
+          global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite.DefaultInstance,
+          null,
+          null,
+          global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedFixed64ExtensionLiteFieldNumber,
+          pbd::FieldType.Fixed64,
+          false);
+      global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedSfixed32ExtensionLite = 
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, int>(
+          "protobuf_unittest.unpacked_sfixed32_extension_lite",
+          global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite.DefaultInstance,
+          null,
+          null,
+          global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedSfixed32ExtensionLiteFieldNumber,
+          pbd::FieldType.SFixed32,
+          false);
+      global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedSfixed64ExtensionLite = 
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, long>(
+          "protobuf_unittest.unpacked_sfixed64_extension_lite",
+          global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite.DefaultInstance,
+          null,
+          null,
+          global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedSfixed64ExtensionLiteFieldNumber,
+          pbd::FieldType.SFixed64,
+          false);
+      global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedFloatExtensionLite = 
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, float>(
+          "protobuf_unittest.unpacked_float_extension_lite",
+          global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite.DefaultInstance,
+          null,
+          null,
+          global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedFloatExtensionLiteFieldNumber,
+          pbd::FieldType.Float,
+          false);
+      global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedDoubleExtensionLite = 
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, double>(
+          "protobuf_unittest.unpacked_double_extension_lite",
+          global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite.DefaultInstance,
+          null,
+          null,
+          global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedDoubleExtensionLiteFieldNumber,
+          pbd::FieldType.Double,
+          false);
+      global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedBoolExtensionLite = 
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, bool>(
+          "protobuf_unittest.unpacked_bool_extension_lite",
+          global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite.DefaultInstance,
+          null,
+          null,
+          global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedBoolExtensionLiteFieldNumber,
+          pbd::FieldType.Bool,
+          false);
+      global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedEnumExtensionLite = 
+        new pb::GeneratedRepeatExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite, global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(
+          "protobuf_unittest.unpacked_enum_extension_lite",
+          global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite.DefaultInstance,
+          null,
+          new EnumLiteMap<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(),
+          global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.UnpackedEnumExtensionLiteFieldNumber,
+          pbd::FieldType.Enum,
+          false);
     }
     #endregion
     
@@ -6928,6 +7100,1093 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+  public sealed partial class TestUnpackedTypesLite : pb::GeneratedMessageLite<TestUnpackedTypesLite, TestUnpackedTypesLite.Builder> {
+    private static readonly TestUnpackedTypesLite defaultInstance = new Builder().BuildPartial();
+    public static TestUnpackedTypesLite DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override TestUnpackedTypesLite DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override TestUnpackedTypesLite ThisMessage {
+      get { return this; }
+    }
+    
+    public const int UnpackedInt32FieldNumber = 90;
+    private pbc::PopsicleList<int> unpackedInt32_ = new pbc::PopsicleList<int>();
+    public scg::IList<int> UnpackedInt32List {
+      get { return pbc::Lists.AsReadOnly(unpackedInt32_); }
+    }
+    public int UnpackedInt32Count {
+      get { return unpackedInt32_.Count; }
+    }
+    public int GetUnpackedInt32(int index) {
+      return unpackedInt32_[index];
+    }
+    
+    public const int UnpackedInt64FieldNumber = 91;
+    private pbc::PopsicleList<long> unpackedInt64_ = new pbc::PopsicleList<long>();
+    public scg::IList<long> UnpackedInt64List {
+      get { return pbc::Lists.AsReadOnly(unpackedInt64_); }
+    }
+    public int UnpackedInt64Count {
+      get { return unpackedInt64_.Count; }
+    }
+    public long GetUnpackedInt64(int index) {
+      return unpackedInt64_[index];
+    }
+    
+    public const int UnpackedUint32FieldNumber = 92;
+    private pbc::PopsicleList<uint> unpackedUint32_ = new pbc::PopsicleList<uint>();
+    [global::System.CLSCompliant(false)]
+    public scg::IList<uint> UnpackedUint32List {
+      get { return pbc::Lists.AsReadOnly(unpackedUint32_); }
+    }
+    public int UnpackedUint32Count {
+      get { return unpackedUint32_.Count; }
+    }
+    [global::System.CLSCompliant(false)]
+    public uint GetUnpackedUint32(int index) {
+      return unpackedUint32_[index];
+    }
+    
+    public const int UnpackedUint64FieldNumber = 93;
+    private pbc::PopsicleList<ulong> unpackedUint64_ = new pbc::PopsicleList<ulong>();
+    [global::System.CLSCompliant(false)]
+    public scg::IList<ulong> UnpackedUint64List {
+      get { return pbc::Lists.AsReadOnly(unpackedUint64_); }
+    }
+    public int UnpackedUint64Count {
+      get { return unpackedUint64_.Count; }
+    }
+    [global::System.CLSCompliant(false)]
+    public ulong GetUnpackedUint64(int index) {
+      return unpackedUint64_[index];
+    }
+    
+    public const int UnpackedSint32FieldNumber = 94;
+    private pbc::PopsicleList<int> unpackedSint32_ = new pbc::PopsicleList<int>();
+    public scg::IList<int> UnpackedSint32List {
+      get { return pbc::Lists.AsReadOnly(unpackedSint32_); }
+    }
+    public int UnpackedSint32Count {
+      get { return unpackedSint32_.Count; }
+    }
+    public int GetUnpackedSint32(int index) {
+      return unpackedSint32_[index];
+    }
+    
+    public const int UnpackedSint64FieldNumber = 95;
+    private pbc::PopsicleList<long> unpackedSint64_ = new pbc::PopsicleList<long>();
+    public scg::IList<long> UnpackedSint64List {
+      get { return pbc::Lists.AsReadOnly(unpackedSint64_); }
+    }
+    public int UnpackedSint64Count {
+      get { return unpackedSint64_.Count; }
+    }
+    public long GetUnpackedSint64(int index) {
+      return unpackedSint64_[index];
+    }
+    
+    public const int UnpackedFixed32FieldNumber = 96;
+    private pbc::PopsicleList<uint> unpackedFixed32_ = new pbc::PopsicleList<uint>();
+    [global::System.CLSCompliant(false)]
+    public scg::IList<uint> UnpackedFixed32List {
+      get { return pbc::Lists.AsReadOnly(unpackedFixed32_); }
+    }
+    public int UnpackedFixed32Count {
+      get { return unpackedFixed32_.Count; }
+    }
+    [global::System.CLSCompliant(false)]
+    public uint GetUnpackedFixed32(int index) {
+      return unpackedFixed32_[index];
+    }
+    
+    public const int UnpackedFixed64FieldNumber = 97;
+    private pbc::PopsicleList<ulong> unpackedFixed64_ = new pbc::PopsicleList<ulong>();
+    [global::System.CLSCompliant(false)]
+    public scg::IList<ulong> UnpackedFixed64List {
+      get { return pbc::Lists.AsReadOnly(unpackedFixed64_); }
+    }
+    public int UnpackedFixed64Count {
+      get { return unpackedFixed64_.Count; }
+    }
+    [global::System.CLSCompliant(false)]
+    public ulong GetUnpackedFixed64(int index) {
+      return unpackedFixed64_[index];
+    }
+    
+    public const int UnpackedSfixed32FieldNumber = 98;
+    private pbc::PopsicleList<int> unpackedSfixed32_ = new pbc::PopsicleList<int>();
+    public scg::IList<int> UnpackedSfixed32List {
+      get { return pbc::Lists.AsReadOnly(unpackedSfixed32_); }
+    }
+    public int UnpackedSfixed32Count {
+      get { return unpackedSfixed32_.Count; }
+    }
+    public int GetUnpackedSfixed32(int index) {
+      return unpackedSfixed32_[index];
+    }
+    
+    public const int UnpackedSfixed64FieldNumber = 99;
+    private pbc::PopsicleList<long> unpackedSfixed64_ = new pbc::PopsicleList<long>();
+    public scg::IList<long> UnpackedSfixed64List {
+      get { return pbc::Lists.AsReadOnly(unpackedSfixed64_); }
+    }
+    public int UnpackedSfixed64Count {
+      get { return unpackedSfixed64_.Count; }
+    }
+    public long GetUnpackedSfixed64(int index) {
+      return unpackedSfixed64_[index];
+    }
+    
+    public const int UnpackedFloatFieldNumber = 100;
+    private pbc::PopsicleList<float> unpackedFloat_ = new pbc::PopsicleList<float>();
+    public scg::IList<float> UnpackedFloatList {
+      get { return pbc::Lists.AsReadOnly(unpackedFloat_); }
+    }
+    public int UnpackedFloatCount {
+      get { return unpackedFloat_.Count; }
+    }
+    public float GetUnpackedFloat(int index) {
+      return unpackedFloat_[index];
+    }
+    
+    public const int UnpackedDoubleFieldNumber = 101;
+    private pbc::PopsicleList<double> unpackedDouble_ = new pbc::PopsicleList<double>();
+    public scg::IList<double> UnpackedDoubleList {
+      get { return pbc::Lists.AsReadOnly(unpackedDouble_); }
+    }
+    public int UnpackedDoubleCount {
+      get { return unpackedDouble_.Count; }
+    }
+    public double GetUnpackedDouble(int index) {
+      return unpackedDouble_[index];
+    }
+    
+    public const int UnpackedBoolFieldNumber = 102;
+    private pbc::PopsicleList<bool> unpackedBool_ = new pbc::PopsicleList<bool>();
+    public scg::IList<bool> UnpackedBoolList {
+      get { return pbc::Lists.AsReadOnly(unpackedBool_); }
+    }
+    public int UnpackedBoolCount {
+      get { return unpackedBool_.Count; }
+    }
+    public bool GetUnpackedBool(int index) {
+      return unpackedBool_[index];
+    }
+    
+    public const int UnpackedEnumFieldNumber = 103;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite> unpackedEnum_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>();
+    public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite> UnpackedEnumList {
+      get { return pbc::Lists.AsReadOnly(unpackedEnum_); }
+    }
+    public int UnpackedEnumCount {
+      get { return unpackedEnum_.Count; }
+    }
+    public global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite GetUnpackedEnum(int index) {
+      return unpackedEnum_[index];
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::ICodedOutputStream output) {
+      int size = SerializedSize;
+      if (unpackedInt32_.Count > 0) {
+        output.WriteArray(pbd::FieldType.Int32, 90, "unpacked_int32", unpackedInt32_);
+      }
+      if (unpackedInt64_.Count > 0) {
+        output.WriteArray(pbd::FieldType.Int64, 91, "unpacked_int64", unpackedInt64_);
+      }
+      if (unpackedUint32_.Count > 0) {
+        output.WriteArray(pbd::FieldType.UInt32, 92, "unpacked_uint32", unpackedUint32_);
+      }
+      if (unpackedUint64_.Count > 0) {
+        output.WriteArray(pbd::FieldType.UInt64, 93, "unpacked_uint64", unpackedUint64_);
+      }
+      if (unpackedSint32_.Count > 0) {
+        output.WriteArray(pbd::FieldType.SInt32, 94, "unpacked_sint32", unpackedSint32_);
+      }
+      if (unpackedSint64_.Count > 0) {
+        output.WriteArray(pbd::FieldType.SInt64, 95, "unpacked_sint64", unpackedSint64_);
+      }
+      if (unpackedFixed32_.Count > 0) {
+        output.WriteArray(pbd::FieldType.Fixed32, 96, "unpacked_fixed32", unpackedFixed32_);
+      }
+      if (unpackedFixed64_.Count > 0) {
+        output.WriteArray(pbd::FieldType.Fixed64, 97, "unpacked_fixed64", unpackedFixed64_);
+      }
+      if (unpackedSfixed32_.Count > 0) {
+        output.WriteArray(pbd::FieldType.SFixed32, 98, "unpacked_sfixed32", unpackedSfixed32_);
+      }
+      if (unpackedSfixed64_.Count > 0) {
+        output.WriteArray(pbd::FieldType.SFixed64, 99, "unpacked_sfixed64", unpackedSfixed64_);
+      }
+      if (unpackedFloat_.Count > 0) {
+        output.WriteArray(pbd::FieldType.Float, 100, "unpacked_float", unpackedFloat_);
+      }
+      if (unpackedDouble_.Count > 0) {
+        output.WriteArray(pbd::FieldType.Double, 101, "unpacked_double", unpackedDouble_);
+      }
+      if (unpackedBool_.Count > 0) {
+        output.WriteArray(pbd::FieldType.Bool, 102, "unpacked_bool", unpackedBool_);
+      }
+      if (unpackedEnum_.Count > 0) {
+        output.WriteArray(pbd::FieldType.Enum, 103, "unpacked_enum", unpackedEnum_);
+      }
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        {
+          int dataSize = 0;
+          foreach (int element in UnpackedInt32List) {
+            dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * unpackedInt32_.Count;
+        }
+        {
+          int dataSize = 0;
+          foreach (long element in UnpackedInt64List) {
+            dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * unpackedInt64_.Count;
+        }
+        {
+          int dataSize = 0;
+          foreach (uint element in UnpackedUint32List) {
+            dataSize += pb::CodedOutputStream.ComputeUInt32SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * unpackedUint32_.Count;
+        }
+        {
+          int dataSize = 0;
+          foreach (ulong element in UnpackedUint64List) {
+            dataSize += pb::CodedOutputStream.ComputeUInt64SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * unpackedUint64_.Count;
+        }
+        {
+          int dataSize = 0;
+          foreach (int element in UnpackedSint32List) {
+            dataSize += pb::CodedOutputStream.ComputeSInt32SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * unpackedSint32_.Count;
+        }
+        {
+          int dataSize = 0;
+          foreach (long element in UnpackedSint64List) {
+            dataSize += pb::CodedOutputStream.ComputeSInt64SizeNoTag(element);
+          }
+          size += dataSize;
+          size += 2 * unpackedSint64_.Count;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 4 * unpackedFixed32_.Count;
+          size += dataSize;
+          size += 2 * unpackedFixed32_.Count;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 8 * unpackedFixed64_.Count;
+          size += dataSize;
+          size += 2 * unpackedFixed64_.Count;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 4 * unpackedSfixed32_.Count;
+          size += dataSize;
+          size += 2 * unpackedSfixed32_.Count;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 8 * unpackedSfixed64_.Count;
+          size += dataSize;
+          size += 2 * unpackedSfixed64_.Count;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 4 * unpackedFloat_.Count;
+          size += dataSize;
+          size += 2 * unpackedFloat_.Count;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 8 * unpackedDouble_.Count;
+          size += dataSize;
+          size += 2 * unpackedDouble_.Count;
+        }
+        {
+          int dataSize = 0;
+          dataSize = 1 * unpackedBool_.Count;
+          size += dataSize;
+          size += 2 * unpackedBool_.Count;
+        }
+        {
+          int dataSize = 0;
+          if (unpackedEnum_.Count > 0) {
+            foreach (global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite element in unpackedEnum_) {
+              dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+            }
+            size += dataSize;
+            size += 2 * unpackedEnum_.Count;
+          }
+        }
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      foreach(int i in unpackedInt32_)
+        hash ^= i.GetHashCode();
+      foreach(long i in unpackedInt64_)
+        hash ^= i.GetHashCode();
+      foreach(uint i in unpackedUint32_)
+        hash ^= i.GetHashCode();
+      foreach(ulong i in unpackedUint64_)
+        hash ^= i.GetHashCode();
+      foreach(int i in unpackedSint32_)
+        hash ^= i.GetHashCode();
+      foreach(long i in unpackedSint64_)
+        hash ^= i.GetHashCode();
+      foreach(uint i in unpackedFixed32_)
+        hash ^= i.GetHashCode();
+      foreach(ulong i in unpackedFixed64_)
+        hash ^= i.GetHashCode();
+      foreach(int i in unpackedSfixed32_)
+        hash ^= i.GetHashCode();
+      foreach(long i in unpackedSfixed64_)
+        hash ^= i.GetHashCode();
+      foreach(float i in unpackedFloat_)
+        hash ^= i.GetHashCode();
+      foreach(double i in unpackedDouble_)
+        hash ^= i.GetHashCode();
+      foreach(bool i in unpackedBool_)
+        hash ^= i.GetHashCode();
+      foreach(global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite i in unpackedEnum_)
+        hash ^= i.GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      TestUnpackedTypesLite other = obj as TestUnpackedTypesLite;
+      if (other == null) return false;
+      if(unpackedInt32_.Count != other.unpackedInt32_.Count) return false;
+      for(int ix=0; ix < unpackedInt32_.Count; ix++)
+        if(!unpackedInt32_[ix].Equals(other.unpackedInt32_[ix])) return false;
+      if(unpackedInt64_.Count != other.unpackedInt64_.Count) return false;
+      for(int ix=0; ix < unpackedInt64_.Count; ix++)
+        if(!unpackedInt64_[ix].Equals(other.unpackedInt64_[ix])) return false;
+      if(unpackedUint32_.Count != other.unpackedUint32_.Count) return false;
+      for(int ix=0; ix < unpackedUint32_.Count; ix++)
+        if(!unpackedUint32_[ix].Equals(other.unpackedUint32_[ix])) return false;
+      if(unpackedUint64_.Count != other.unpackedUint64_.Count) return false;
+      for(int ix=0; ix < unpackedUint64_.Count; ix++)
+        if(!unpackedUint64_[ix].Equals(other.unpackedUint64_[ix])) return false;
+      if(unpackedSint32_.Count != other.unpackedSint32_.Count) return false;
+      for(int ix=0; ix < unpackedSint32_.Count; ix++)
+        if(!unpackedSint32_[ix].Equals(other.unpackedSint32_[ix])) return false;
+      if(unpackedSint64_.Count != other.unpackedSint64_.Count) return false;
+      for(int ix=0; ix < unpackedSint64_.Count; ix++)
+        if(!unpackedSint64_[ix].Equals(other.unpackedSint64_[ix])) return false;
+      if(unpackedFixed32_.Count != other.unpackedFixed32_.Count) return false;
+      for(int ix=0; ix < unpackedFixed32_.Count; ix++)
+        if(!unpackedFixed32_[ix].Equals(other.unpackedFixed32_[ix])) return false;
+      if(unpackedFixed64_.Count != other.unpackedFixed64_.Count) return false;
+      for(int ix=0; ix < unpackedFixed64_.Count; ix++)
+        if(!unpackedFixed64_[ix].Equals(other.unpackedFixed64_[ix])) return false;
+      if(unpackedSfixed32_.Count != other.unpackedSfixed32_.Count) return false;
+      for(int ix=0; ix < unpackedSfixed32_.Count; ix++)
+        if(!unpackedSfixed32_[ix].Equals(other.unpackedSfixed32_[ix])) return false;
+      if(unpackedSfixed64_.Count != other.unpackedSfixed64_.Count) return false;
+      for(int ix=0; ix < unpackedSfixed64_.Count; ix++)
+        if(!unpackedSfixed64_[ix].Equals(other.unpackedSfixed64_[ix])) return false;
+      if(unpackedFloat_.Count != other.unpackedFloat_.Count) return false;
+      for(int ix=0; ix < unpackedFloat_.Count; ix++)
+        if(!unpackedFloat_[ix].Equals(other.unpackedFloat_[ix])) return false;
+      if(unpackedDouble_.Count != other.unpackedDouble_.Count) return false;
+      for(int ix=0; ix < unpackedDouble_.Count; ix++)
+        if(!unpackedDouble_[ix].Equals(other.unpackedDouble_[ix])) return false;
+      if(unpackedBool_.Count != other.unpackedBool_.Count) return false;
+      for(int ix=0; ix < unpackedBool_.Count; ix++)
+        if(!unpackedBool_[ix].Equals(other.unpackedBool_[ix])) return false;
+      if(unpackedEnum_.Count != other.unpackedEnum_.Count) return false;
+      for(int ix=0; ix < unpackedEnum_.Count; ix++)
+        if(!unpackedEnum_[ix].Equals(other.unpackedEnum_[ix])) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+      PrintField("unpacked_int32", unpackedInt32_, writer);
+      PrintField("unpacked_int64", unpackedInt64_, writer);
+      PrintField("unpacked_uint32", unpackedUint32_, writer);
+      PrintField("unpacked_uint64", unpackedUint64_, writer);
+      PrintField("unpacked_sint32", unpackedSint32_, writer);
+      PrintField("unpacked_sint64", unpackedSint64_, writer);
+      PrintField("unpacked_fixed32", unpackedFixed32_, writer);
+      PrintField("unpacked_fixed64", unpackedFixed64_, writer);
+      PrintField("unpacked_sfixed32", unpackedSfixed32_, writer);
+      PrintField("unpacked_sfixed64", unpackedSfixed64_, writer);
+      PrintField("unpacked_float", unpackedFloat_, writer);
+      PrintField("unpacked_double", unpackedDouble_, writer);
+      PrintField("unpacked_bool", unpackedBool_, writer);
+      PrintField("unpacked_enum", unpackedEnum_, writer);
+    }
+    #endregion
+    
+    public static TestUnpackedTypesLite ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestUnpackedTypesLite ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestUnpackedTypesLite ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestUnpackedTypesLite ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestUnpackedTypesLite ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestUnpackedTypesLite ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static TestUnpackedTypesLite ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static TestUnpackedTypesLite ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static TestUnpackedTypesLite ParseFrom(pb::ICodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestUnpackedTypesLite ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(TestUnpackedTypesLite prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+    public sealed partial class Builder : pb::GeneratedBuilderLite<TestUnpackedTypesLite, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      TestUnpackedTypesLite result = new TestUnpackedTypesLite();
+      
+      protected override TestUnpackedTypesLite MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new TestUnpackedTypesLite();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override TestUnpackedTypesLite DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestUnpackedTypesLite.DefaultInstance; }
+      }
+      
+      public override TestUnpackedTypesLite BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
+        result.unpackedInt32_.MakeReadOnly();
+        result.unpackedInt64_.MakeReadOnly();
+        result.unpackedUint32_.MakeReadOnly();
+        result.unpackedUint64_.MakeReadOnly();
+        result.unpackedSint32_.MakeReadOnly();
+        result.unpackedSint64_.MakeReadOnly();
+        result.unpackedFixed32_.MakeReadOnly();
+        result.unpackedFixed64_.MakeReadOnly();
+        result.unpackedSfixed32_.MakeReadOnly();
+        result.unpackedSfixed64_.MakeReadOnly();
+        result.unpackedFloat_.MakeReadOnly();
+        result.unpackedDouble_.MakeReadOnly();
+        result.unpackedBool_.MakeReadOnly();
+        result.unpackedEnum_.MakeReadOnly();
+        TestUnpackedTypesLite returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessageLite other) {
+        if (other is TestUnpackedTypesLite) {
+          return MergeFrom((TestUnpackedTypesLite) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(TestUnpackedTypesLite other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestUnpackedTypesLite.DefaultInstance) return this;
+        if (other.unpackedInt32_.Count != 0) {
+          base.AddRange(other.unpackedInt32_, result.unpackedInt32_);
+        }
+        if (other.unpackedInt64_.Count != 0) {
+          base.AddRange(other.unpackedInt64_, result.unpackedInt64_);
+        }
+        if (other.unpackedUint32_.Count != 0) {
+          base.AddRange(other.unpackedUint32_, result.unpackedUint32_);
+        }
+        if (other.unpackedUint64_.Count != 0) {
+          base.AddRange(other.unpackedUint64_, result.unpackedUint64_);
+        }
+        if (other.unpackedSint32_.Count != 0) {
+          base.AddRange(other.unpackedSint32_, result.unpackedSint32_);
+        }
+        if (other.unpackedSint64_.Count != 0) {
+          base.AddRange(other.unpackedSint64_, result.unpackedSint64_);
+        }
+        if (other.unpackedFixed32_.Count != 0) {
+          base.AddRange(other.unpackedFixed32_, result.unpackedFixed32_);
+        }
+        if (other.unpackedFixed64_.Count != 0) {
+          base.AddRange(other.unpackedFixed64_, result.unpackedFixed64_);
+        }
+        if (other.unpackedSfixed32_.Count != 0) {
+          base.AddRange(other.unpackedSfixed32_, result.unpackedSfixed32_);
+        }
+        if (other.unpackedSfixed64_.Count != 0) {
+          base.AddRange(other.unpackedSfixed64_, result.unpackedSfixed64_);
+        }
+        if (other.unpackedFloat_.Count != 0) {
+          base.AddRange(other.unpackedFloat_, result.unpackedFloat_);
+        }
+        if (other.unpackedDouble_.Count != 0) {
+          base.AddRange(other.unpackedDouble_, result.unpackedDouble_);
+        }
+        if (other.unpackedBool_.Count != 0) {
+          base.AddRange(other.unpackedBool_, result.unpackedBool_);
+        }
+        if (other.unpackedEnum_.Count != 0) {
+          base.AddRange(other.unpackedEnum_, result.unpackedEnum_);
+        }
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
+          switch (tag) {
+            case 0: {
+              throw pb::InvalidProtocolBufferException.InvalidTag();
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                return this;
+              }
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              break;
+            }
+            case 722:
+            case 720: {
+              input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.unpackedInt32_);
+              break;
+            }
+            case 730:
+            case 728: {
+              input.ReadPrimitiveArray(pbd::FieldType.Int64, tag, field_name, result.unpackedInt64_);
+              break;
+            }
+            case 738:
+            case 736: {
+              input.ReadPrimitiveArray(pbd::FieldType.UInt32, tag, field_name, result.unpackedUint32_);
+              break;
+            }
+            case 746:
+            case 744: {
+              input.ReadPrimitiveArray(pbd::FieldType.UInt64, tag, field_name, result.unpackedUint64_);
+              break;
+            }
+            case 754:
+            case 752: {
+              input.ReadPrimitiveArray(pbd::FieldType.SInt32, tag, field_name, result.unpackedSint32_);
+              break;
+            }
+            case 762:
+            case 760: {
+              input.ReadPrimitiveArray(pbd::FieldType.SInt64, tag, field_name, result.unpackedSint64_);
+              break;
+            }
+            case 770:
+            case 773: {
+              input.ReadPrimitiveArray(pbd::FieldType.Fixed32, tag, field_name, result.unpackedFixed32_);
+              break;
+            }
+            case 778:
+            case 777: {
+              input.ReadPrimitiveArray(pbd::FieldType.Fixed64, tag, field_name, result.unpackedFixed64_);
+              break;
+            }
+            case 786:
+            case 789: {
+              input.ReadPrimitiveArray(pbd::FieldType.SFixed32, tag, field_name, result.unpackedSfixed32_);
+              break;
+            }
+            case 794:
+            case 793: {
+              input.ReadPrimitiveArray(pbd::FieldType.SFixed64, tag, field_name, result.unpackedSfixed64_);
+              break;
+            }
+            case 802:
+            case 805: {
+              input.ReadPrimitiveArray(pbd::FieldType.Float, tag, field_name, result.unpackedFloat_);
+              break;
+            }
+            case 810:
+            case 809: {
+              input.ReadPrimitiveArray(pbd::FieldType.Double, tag, field_name, result.unpackedDouble_);
+              break;
+            }
+            case 818:
+            case 816: {
+              input.ReadPrimitiveArray(pbd::FieldType.Bool, tag, field_name, result.unpackedBool_);
+              break;
+            }
+            case 826:
+            case 824: {
+              scg::ICollection<object> unknownItems;
+              input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite>(tag, field_name, result.unpackedEnum_, out unknownItems);
+              break;
+            }
+          }
+        }
+        
+        return this;
+      }
+      
+      
+      public pbc::IPopsicleList<int> UnpackedInt32List {
+        get { return result.unpackedInt32_; }
+      }
+      public int UnpackedInt32Count {
+        get { return result.UnpackedInt32Count; }
+      }
+      public int GetUnpackedInt32(int index) {
+        return result.GetUnpackedInt32(index);
+      }
+      public Builder SetUnpackedInt32(int index, int value) {
+        result.unpackedInt32_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedInt32(int value) {
+        result.unpackedInt32_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedInt32(scg::IEnumerable<int> values) {
+        base.AddRange(values, result.unpackedInt32_);
+        return this;
+      }
+      public Builder ClearUnpackedInt32() {
+        result.unpackedInt32_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<long> UnpackedInt64List {
+        get { return result.unpackedInt64_; }
+      }
+      public int UnpackedInt64Count {
+        get { return result.UnpackedInt64Count; }
+      }
+      public long GetUnpackedInt64(int index) {
+        return result.GetUnpackedInt64(index);
+      }
+      public Builder SetUnpackedInt64(int index, long value) {
+        result.unpackedInt64_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedInt64(long value) {
+        result.unpackedInt64_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedInt64(scg::IEnumerable<long> values) {
+        base.AddRange(values, result.unpackedInt64_);
+        return this;
+      }
+      public Builder ClearUnpackedInt64() {
+        result.unpackedInt64_.Clear();
+        return this;
+      }
+      
+      [global::System.CLSCompliant(false)]
+      public pbc::IPopsicleList<uint> UnpackedUint32List {
+        get { return result.unpackedUint32_; }
+      }
+      public int UnpackedUint32Count {
+        get { return result.UnpackedUint32Count; }
+      }
+      [global::System.CLSCompliant(false)]
+      public uint GetUnpackedUint32(int index) {
+        return result.GetUnpackedUint32(index);
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder SetUnpackedUint32(int index, uint value) {
+        result.unpackedUint32_[index] = value;
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddUnpackedUint32(uint value) {
+        result.unpackedUint32_.Add(value);
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddRangeUnpackedUint32(scg::IEnumerable<uint> values) {
+        base.AddRange(values, result.unpackedUint32_);
+        return this;
+      }
+      public Builder ClearUnpackedUint32() {
+        result.unpackedUint32_.Clear();
+        return this;
+      }
+      
+      [global::System.CLSCompliant(false)]
+      public pbc::IPopsicleList<ulong> UnpackedUint64List {
+        get { return result.unpackedUint64_; }
+      }
+      public int UnpackedUint64Count {
+        get { return result.UnpackedUint64Count; }
+      }
+      [global::System.CLSCompliant(false)]
+      public ulong GetUnpackedUint64(int index) {
+        return result.GetUnpackedUint64(index);
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder SetUnpackedUint64(int index, ulong value) {
+        result.unpackedUint64_[index] = value;
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddUnpackedUint64(ulong value) {
+        result.unpackedUint64_.Add(value);
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddRangeUnpackedUint64(scg::IEnumerable<ulong> values) {
+        base.AddRange(values, result.unpackedUint64_);
+        return this;
+      }
+      public Builder ClearUnpackedUint64() {
+        result.unpackedUint64_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<int> UnpackedSint32List {
+        get { return result.unpackedSint32_; }
+      }
+      public int UnpackedSint32Count {
+        get { return result.UnpackedSint32Count; }
+      }
+      public int GetUnpackedSint32(int index) {
+        return result.GetUnpackedSint32(index);
+      }
+      public Builder SetUnpackedSint32(int index, int value) {
+        result.unpackedSint32_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedSint32(int value) {
+        result.unpackedSint32_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedSint32(scg::IEnumerable<int> values) {
+        base.AddRange(values, result.unpackedSint32_);
+        return this;
+      }
+      public Builder ClearUnpackedSint32() {
+        result.unpackedSint32_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<long> UnpackedSint64List {
+        get { return result.unpackedSint64_; }
+      }
+      public int UnpackedSint64Count {
+        get { return result.UnpackedSint64Count; }
+      }
+      public long GetUnpackedSint64(int index) {
+        return result.GetUnpackedSint64(index);
+      }
+      public Builder SetUnpackedSint64(int index, long value) {
+        result.unpackedSint64_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedSint64(long value) {
+        result.unpackedSint64_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedSint64(scg::IEnumerable<long> values) {
+        base.AddRange(values, result.unpackedSint64_);
+        return this;
+      }
+      public Builder ClearUnpackedSint64() {
+        result.unpackedSint64_.Clear();
+        return this;
+      }
+      
+      [global::System.CLSCompliant(false)]
+      public pbc::IPopsicleList<uint> UnpackedFixed32List {
+        get { return result.unpackedFixed32_; }
+      }
+      public int UnpackedFixed32Count {
+        get { return result.UnpackedFixed32Count; }
+      }
+      [global::System.CLSCompliant(false)]
+      public uint GetUnpackedFixed32(int index) {
+        return result.GetUnpackedFixed32(index);
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder SetUnpackedFixed32(int index, uint value) {
+        result.unpackedFixed32_[index] = value;
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddUnpackedFixed32(uint value) {
+        result.unpackedFixed32_.Add(value);
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddRangeUnpackedFixed32(scg::IEnumerable<uint> values) {
+        base.AddRange(values, result.unpackedFixed32_);
+        return this;
+      }
+      public Builder ClearUnpackedFixed32() {
+        result.unpackedFixed32_.Clear();
+        return this;
+      }
+      
+      [global::System.CLSCompliant(false)]
+      public pbc::IPopsicleList<ulong> UnpackedFixed64List {
+        get { return result.unpackedFixed64_; }
+      }
+      public int UnpackedFixed64Count {
+        get { return result.UnpackedFixed64Count; }
+      }
+      [global::System.CLSCompliant(false)]
+      public ulong GetUnpackedFixed64(int index) {
+        return result.GetUnpackedFixed64(index);
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder SetUnpackedFixed64(int index, ulong value) {
+        result.unpackedFixed64_[index] = value;
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddUnpackedFixed64(ulong value) {
+        result.unpackedFixed64_.Add(value);
+        return this;
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder AddRangeUnpackedFixed64(scg::IEnumerable<ulong> values) {
+        base.AddRange(values, result.unpackedFixed64_);
+        return this;
+      }
+      public Builder ClearUnpackedFixed64() {
+        result.unpackedFixed64_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<int> UnpackedSfixed32List {
+        get { return result.unpackedSfixed32_; }
+      }
+      public int UnpackedSfixed32Count {
+        get { return result.UnpackedSfixed32Count; }
+      }
+      public int GetUnpackedSfixed32(int index) {
+        return result.GetUnpackedSfixed32(index);
+      }
+      public Builder SetUnpackedSfixed32(int index, int value) {
+        result.unpackedSfixed32_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedSfixed32(int value) {
+        result.unpackedSfixed32_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedSfixed32(scg::IEnumerable<int> values) {
+        base.AddRange(values, result.unpackedSfixed32_);
+        return this;
+      }
+      public Builder ClearUnpackedSfixed32() {
+        result.unpackedSfixed32_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<long> UnpackedSfixed64List {
+        get { return result.unpackedSfixed64_; }
+      }
+      public int UnpackedSfixed64Count {
+        get { return result.UnpackedSfixed64Count; }
+      }
+      public long GetUnpackedSfixed64(int index) {
+        return result.GetUnpackedSfixed64(index);
+      }
+      public Builder SetUnpackedSfixed64(int index, long value) {
+        result.unpackedSfixed64_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedSfixed64(long value) {
+        result.unpackedSfixed64_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedSfixed64(scg::IEnumerable<long> values) {
+        base.AddRange(values, result.unpackedSfixed64_);
+        return this;
+      }
+      public Builder ClearUnpackedSfixed64() {
+        result.unpackedSfixed64_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<float> UnpackedFloatList {
+        get { return result.unpackedFloat_; }
+      }
+      public int UnpackedFloatCount {
+        get { return result.UnpackedFloatCount; }
+      }
+      public float GetUnpackedFloat(int index) {
+        return result.GetUnpackedFloat(index);
+      }
+      public Builder SetUnpackedFloat(int index, float value) {
+        result.unpackedFloat_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedFloat(float value) {
+        result.unpackedFloat_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedFloat(scg::IEnumerable<float> values) {
+        base.AddRange(values, result.unpackedFloat_);
+        return this;
+      }
+      public Builder ClearUnpackedFloat() {
+        result.unpackedFloat_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<double> UnpackedDoubleList {
+        get { return result.unpackedDouble_; }
+      }
+      public int UnpackedDoubleCount {
+        get { return result.UnpackedDoubleCount; }
+      }
+      public double GetUnpackedDouble(int index) {
+        return result.GetUnpackedDouble(index);
+      }
+      public Builder SetUnpackedDouble(int index, double value) {
+        result.unpackedDouble_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedDouble(double value) {
+        result.unpackedDouble_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedDouble(scg::IEnumerable<double> values) {
+        base.AddRange(values, result.unpackedDouble_);
+        return this;
+      }
+      public Builder ClearUnpackedDouble() {
+        result.unpackedDouble_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<bool> UnpackedBoolList {
+        get { return result.unpackedBool_; }
+      }
+      public int UnpackedBoolCount {
+        get { return result.UnpackedBoolCount; }
+      }
+      public bool GetUnpackedBool(int index) {
+        return result.GetUnpackedBool(index);
+      }
+      public Builder SetUnpackedBool(int index, bool value) {
+        result.unpackedBool_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedBool(bool value) {
+        result.unpackedBool_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedBool(scg::IEnumerable<bool> values) {
+        base.AddRange(values, result.unpackedBool_);
+        return this;
+      }
+      public Builder ClearUnpackedBool() {
+        result.unpackedBool_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite> UnpackedEnumList {
+        get { return result.unpackedEnum_; }
+      }
+      public int UnpackedEnumCount {
+        get { return result.UnpackedEnumCount; }
+      }
+      public global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite GetUnpackedEnum(int index) {
+        return result.GetUnpackedEnum(index);
+      }
+      public Builder SetUnpackedEnum(int index, global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite value) {
+        result.unpackedEnum_[index] = value;
+        return this;
+      }
+      public Builder AddUnpackedEnum(global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite value) {
+        result.unpackedEnum_.Add(value);
+        return this;
+      }
+      public Builder AddRangeUnpackedEnum(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite> values) {
+        base.AddRange(values, result.unpackedEnum_);
+        return this;
+      }
+      public Builder ClearUnpackedEnum() {
+        result.unpackedEnum_.Clear();
+        return this;
+      }
+    }
+    static TestUnpackedTypesLite() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.Descriptor, null);
+    }
+  }
+  
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestAllExtensionsLite : pb::ExtendableMessageLite<TestAllExtensionsLite, TestAllExtensionsLite.Builder> {
     private static readonly TestAllExtensionsLite defaultInstance = new Builder().BuildPartial();
     public static TestAllExtensionsLite DefaultInstance {
@@ -7721,6 +8980,188 @@ namespace Google.ProtocolBuffers.TestProtos {
       
     }
     static TestPackedExtensionsLite() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.Descriptor, null);
+    }
+  }
+  
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+  public sealed partial class TestUnpackedExtensionsLite : pb::ExtendableMessageLite<TestUnpackedExtensionsLite, TestUnpackedExtensionsLite.Builder> {
+    private static readonly TestUnpackedExtensionsLite defaultInstance = new Builder().BuildPartial();
+    public static TestUnpackedExtensionsLite DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override TestUnpackedExtensionsLite DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override TestUnpackedExtensionsLite ThisMessage {
+      get { return this; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        if (!ExtensionsAreInitialized) return false;
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::ICodedOutputStream output) {
+      int size = SerializedSize;
+      pb::ExtendableMessageLite<TestUnpackedExtensionsLite, TestUnpackedExtensionsLite.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
+      extensionWriter.WriteUntil(536870912, output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        size += ExtensionsSerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      hash ^= base.GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      TestUnpackedExtensionsLite other = obj as TestUnpackedExtensionsLite;
+      if (other == null) return false;
+      if (!base.Equals(other)) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+      base.PrintTo(writer);
+    }
+    #endregion
+    
+    public static TestUnpackedExtensionsLite ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestUnpackedExtensionsLite ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestUnpackedExtensionsLite ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static TestUnpackedExtensionsLite ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static TestUnpackedExtensionsLite ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestUnpackedExtensionsLite ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static TestUnpackedExtensionsLite ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static TestUnpackedExtensionsLite ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static TestUnpackedExtensionsLite ParseFrom(pb::ICodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static TestUnpackedExtensionsLite ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(TestUnpackedExtensionsLite prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+    public sealed partial class Builder : pb::ExtendableBuilderLite<TestUnpackedExtensionsLite, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      TestUnpackedExtensionsLite result = new TestUnpackedExtensionsLite();
+      
+      protected override TestUnpackedExtensionsLite MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new TestUnpackedExtensionsLite();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override TestUnpackedExtensionsLite DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite.DefaultInstance; }
+      }
+      
+      public override TestUnpackedExtensionsLite BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
+        TestUnpackedExtensionsLite returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessageLite other) {
+        if (other is TestUnpackedExtensionsLite) {
+          return MergeFrom((TestUnpackedExtensionsLite) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(TestUnpackedExtensionsLite other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.TestUnpackedExtensionsLite.DefaultInstance) return this;
+          this.MergeExtensionFields(other);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
+          switch (tag) {
+            case 0: {
+              throw pb::InvalidProtocolBufferException.InvalidTag();
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                return this;
+              }
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              break;
+            }
+          }
+        }
+        
+        return this;
+      }
+      
+    }
+    static TestUnpackedExtensionsLite() {
       object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.Descriptor, null);
     }
   }
