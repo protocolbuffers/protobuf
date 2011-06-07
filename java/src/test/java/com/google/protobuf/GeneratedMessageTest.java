@@ -775,8 +775,11 @@ public class GeneratedMessageTest extends TestCase {
     TestUtil.setAllFields(builder);
     TestAllTypes expected = builder.build();
     ObjectOutputStream out = new ObjectOutputStream(baos);
-    out.writeObject(expected);
-    out.close();
+    try {
+      out.writeObject(expected);
+    } finally {
+      out.close();
+    }
     ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
     ObjectInputStream in = new ObjectInputStream(bais);
     TestAllTypes actual = (TestAllTypes) in.readObject();
@@ -788,8 +791,11 @@ public class GeneratedMessageTest extends TestCase {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TestAllTypes expected = builder.buildPartial();
     ObjectOutputStream out = new ObjectOutputStream(baos);
-    out.writeObject(expected);
-    out.close();
+    try {
+      out.writeObject(expected);
+    } finally {
+      out.close();
+    }
     ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
     ObjectInputStream in = new ObjectInputStream(bais);
     TestAllTypes actual = (TestAllTypes) in.readObject();

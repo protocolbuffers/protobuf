@@ -129,8 +129,11 @@ public class LiteTest extends TestCase {
                           TestAllTypesLite.NestedMessage.newBuilder().setBb(7))
                       .build();
     ObjectOutputStream out = new ObjectOutputStream(baos);
-    out.writeObject(expected);
-    out.close();
+    try {
+      out.writeObject(expected);
+    } finally {
+      out.close();
+    }
     ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
     ObjectInputStream in = new ObjectInputStream(bais);
     TestAllTypesLite actual = (TestAllTypesLite) in.readObject();
