@@ -1099,10 +1099,12 @@ static PyObject* CMessage_AssignRepeatedScalar(CMessage* self, PyObject* args) {
   PyObject* next;
   while ((next = PyIter_Next(iter)) != NULL) {
     if (InternalAddRepeatedScalar(
-        message, cfield_descriptor->descriptor, next) == NULL) {
+            message, cfield_descriptor->descriptor, next) == NULL) {
+      Py_DECREF(next);
       Py_DECREF(iter);
       return NULL;
     }
+    Py_DECREF(next);
   }
   Py_DECREF(iter);
   Py_RETURN_NONE;
