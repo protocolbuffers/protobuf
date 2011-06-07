@@ -70,8 +70,11 @@ class AddPerson {
     // Read the existing address book.
     try {
       FileInputStream input = new FileInputStream(args[0]);
-      addressBook.mergeFrom(input);
-      input.close();
+      try {
+        addressBook.mergeFrom(input);
+      } finally {
+        try { input.close(); } catch (Throwable ignore) {}
+      }
     } catch (FileNotFoundException e) {
       System.out.println(args[0] + ": File not found.  Creating a new file.");
     }
@@ -83,7 +86,10 @@ class AddPerson {
 
     // Write the new address book back to disk.
     FileOutputStream output = new FileOutputStream(args[0]);
-    addressBook.build().writeTo(output);
-    output.close();
+    try {
+      addressBook.build().writeTo(output);
+    } finally {
+      output.close();
+    }
   }
 }
