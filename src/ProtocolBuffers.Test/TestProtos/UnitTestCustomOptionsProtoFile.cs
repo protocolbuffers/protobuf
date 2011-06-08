@@ -452,7 +452,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasField1) {
+      if (hasField1) {
         output.WriteString(1, "field1", Field1);
       }
       UnknownFields.WriteTo(output);
@@ -465,7 +465,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasField1) {
+        if (hasField1) {
           size += pb::CodedOutputStream.ComputeStringSize(1, Field1);
         }
         size += UnknownFields.SerializedSize;
@@ -611,7 +611,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasField1 {
-        get { return result.HasField1; }
+        get { return result.hasField1; }
       }
       public string Field1 {
         get { return result.Field1; }
@@ -2361,13 +2361,13 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessage<ComplexOptionType1, ComplexOptionType1.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
-      if (HasFoo) {
+      if (hasFoo) {
         output.WriteInt32(1, "foo", Foo);
       }
-      if (HasFoo2) {
+      if (hasFoo2) {
         output.WriteInt32(2, "foo2", Foo2);
       }
-      if (HasFoo3) {
+      if (hasFoo3) {
         output.WriteInt32(3, "foo3", Foo3);
       }
       extensionWriter.WriteUntil(536870912, output);
@@ -2381,13 +2381,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasFoo) {
+        if (hasFoo) {
           size += pb::CodedOutputStream.ComputeInt32Size(1, Foo);
         }
-        if (HasFoo2) {
+        if (hasFoo2) {
           size += pb::CodedOutputStream.ComputeInt32Size(2, Foo2);
         }
-        if (HasFoo3) {
+        if (hasFoo3) {
           size += pb::CodedOutputStream.ComputeInt32Size(3, Foo3);
         }
         size += ExtensionsSerializedSize;
@@ -2549,7 +2549,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasFoo {
-        get { return result.HasFoo; }
+        get { return result.hasFoo; }
       }
       public int Foo {
         get { return result.Foo; }
@@ -2567,7 +2567,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasFoo2 {
-        get { return result.HasFoo2; }
+        get { return result.hasFoo2; }
       }
       public int Foo2 {
         get { return result.Foo2; }
@@ -2585,7 +2585,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasFoo3 {
-        get { return result.HasFoo3; }
+        get { return result.hasFoo3; }
       }
       public int Foo3 {
         get { return result.Foo3; }
@@ -2682,7 +2682,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
-          if (HasWaldo) {
+          if (hasWaldo) {
             output.WriteInt32(1, "waldo", Waldo);
           }
           UnknownFields.WriteTo(output);
@@ -2695,7 +2695,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             if (size != -1) return size;
             
             size = 0;
-            if (HasWaldo) {
+            if (hasWaldo) {
               size += pb::CodedOutputStream.ComputeInt32Size(1, Waldo);
             }
             size += UnknownFields.SerializedSize;
@@ -2841,7 +2841,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           
           
           public bool HasWaldo {
-            get { return result.HasWaldo; }
+            get { return result.hasWaldo; }
           }
           public int Waldo {
             get { return result.Waldo; }
@@ -2909,13 +2909,13 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessage<ComplexOptionType2, ComplexOptionType2.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
-      if (HasBar) {
+      if (hasBar) {
         output.WriteMessage(1, "bar", Bar);
       }
-      if (HasBaz) {
+      if (hasBaz) {
         output.WriteInt32(2, "baz", Baz);
       }
-      if (HasFred) {
+      if (hasFred) {
         output.WriteMessage(3, "fred", Fred);
       }
       extensionWriter.WriteUntil(536870912, output);
@@ -2929,13 +2929,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasBar) {
+        if (hasBar) {
           size += pb::CodedOutputStream.ComputeMessageSize(1, Bar);
         }
-        if (HasBaz) {
+        if (hasBaz) {
           size += pb::CodedOutputStream.ComputeInt32Size(2, Baz);
         }
-        if (HasFred) {
+        if (hasFred) {
           size += pb::CodedOutputStream.ComputeMessageSize(3, Fred);
         }
         size += ExtensionsSerializedSize;
@@ -3076,7 +3076,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 10: {
               global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.CreateBuilder();
-              if (HasBar) {
+              if (result.hasBar) {
                 subBuilder.MergeFrom(Bar);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -3089,7 +3089,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 26: {
               global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.CreateBuilder();
-              if (HasFred) {
+              if (result.hasFred) {
                 subBuilder.MergeFrom(Fred);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -3107,7 +3107,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasBar {
-       get { return result.HasBar; }
+       get { return result.hasBar; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1 Bar {
         get { return result.Bar; }
@@ -3127,7 +3127,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeBar(global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1 value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasBar &&
+        if (result.hasBar &&
             result.bar_ != global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.DefaultInstance) {
             result.bar_ = global::Google.ProtocolBuffers.TestProtos.ComplexOptionType1.CreateBuilder(result.bar_).MergeFrom(value).BuildPartial();
         } else {
@@ -3143,7 +3143,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasBaz {
-        get { return result.HasBaz; }
+        get { return result.hasBaz; }
       }
       public int Baz {
         get { return result.Baz; }
@@ -3161,7 +3161,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasFred {
-       get { return result.HasFred; }
+       get { return result.hasFred; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4 Fred {
         get { return result.Fred; }
@@ -3181,7 +3181,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeFred(global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4 value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasFred &&
+        if (result.hasFred &&
             result.fred_ != global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.DefaultInstance) {
             result.fred_ = global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.CreateBuilder(result.fred_).MergeFrom(value).BuildPartial();
         } else {
@@ -3274,7 +3274,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
-          if (HasPlugh) {
+          if (hasPlugh) {
             output.WriteInt32(3, "plugh", Plugh);
           }
           UnknownFields.WriteTo(output);
@@ -3287,7 +3287,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             if (size != -1) return size;
             
             size = 0;
-            if (HasPlugh) {
+            if (hasPlugh) {
               size += pb::CodedOutputStream.ComputeInt32Size(3, Plugh);
             }
             size += UnknownFields.SerializedSize;
@@ -3433,7 +3433,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           
           
           public bool HasPlugh {
-            get { return result.HasPlugh; }
+            get { return result.hasPlugh; }
           }
           public int Plugh {
             get { return result.Plugh; }
@@ -3486,10 +3486,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasQux) {
+      if (hasQux) {
         output.WriteInt32(1, "qux", Qux);
       }
-      if (HasComplexOptionType5) {
+      if (hasComplexOptionType5) {
         output.WriteGroup(2, "complexoptiontype5", ComplexOptionType5);
       }
       UnknownFields.WriteTo(output);
@@ -3502,10 +3502,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasQux) {
+        if (hasQux) {
           size += pb::CodedOutputStream.ComputeInt32Size(1, Qux);
         }
-        if (HasComplexOptionType5) {
+        if (hasComplexOptionType5) {
           size += pb::CodedOutputStream.ComputeGroupSize(2, ComplexOptionType5);
         }
         size += UnknownFields.SerializedSize;
@@ -3645,7 +3645,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 19: {
               global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.CreateBuilder();
-              if (HasComplexOptionType5) {
+              if (result.hasComplexOptionType5) {
                 subBuilder.MergeFrom(ComplexOptionType5);
               }
               input.ReadGroup(2, subBuilder, extensionRegistry);
@@ -3663,7 +3663,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasQux {
-        get { return result.HasQux; }
+        get { return result.hasQux; }
       }
       public int Qux {
         get { return result.Qux; }
@@ -3681,7 +3681,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasComplexOptionType5 {
-       get { return result.HasComplexOptionType5; }
+       get { return result.hasComplexOptionType5; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5 ComplexOptionType5 {
         get { return result.ComplexOptionType5; }
@@ -3701,7 +3701,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeComplexOptionType5(global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5 value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasComplexOptionType5 &&
+        if (result.hasComplexOptionType5 &&
             result.complexOptionType5_ != global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.DefaultInstance) {
             result.complexOptionType5_ = global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3.Types.ComplexOptionType5.CreateBuilder(result.complexOptionType5_).MergeFrom(value).BuildPartial();
         } else {
@@ -3764,7 +3764,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasXyzzy) {
+      if (hasXyzzy) {
         output.WriteInt32(7593951, "xyzzy", Xyzzy);
       }
       UnknownFields.WriteTo(output);
@@ -3777,7 +3777,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasXyzzy) {
+        if (hasXyzzy) {
           size += pb::CodedOutputStream.ComputeInt32Size(7593951, Xyzzy);
         }
         size += UnknownFields.SerializedSize;
@@ -3923,7 +3923,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasXyzzy {
-        get { return result.HasXyzzy; }
+        get { return result.hasXyzzy; }
       }
       public int Xyzzy {
         get { return result.Xyzzy; }

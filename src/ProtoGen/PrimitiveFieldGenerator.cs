@@ -62,7 +62,7 @@ namespace Google.ProtocolBuffers.ProtoGen
         public void GenerateBuilderMembers(TextGenerator writer)
         {
             writer.WriteLine("public bool Has{0} {{", PropertyName);
-            writer.WriteLine("  get {{ return result.Has{0}; }}", PropertyName);
+            writer.WriteLine("  get {{ return result.has{0}; }}", PropertyName);
             writer.WriteLine("}");
             AddClsComplianceCheck(writer);
             writer.WriteLine("public {0} {1} {{", TypeName, PropertyName);
@@ -102,14 +102,14 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         public void GenerateSerializationCode(TextGenerator writer)
         {
-            writer.WriteLine("if (Has{0}) {{", PropertyName);
+            writer.WriteLine("if (has{0}) {{", PropertyName);
             writer.WriteLine("  output.Write{0}({1}, \"{3}\", {2});", CapitalizedTypeName, Number, PropertyName, Descriptor.Name);
             writer.WriteLine("}");
         }
 
         public void GenerateSerializedSizeCode(TextGenerator writer)
         {
-            writer.WriteLine("if (Has{0}) {{", PropertyName);
+            writer.WriteLine("if (has{0}) {{", PropertyName);
             writer.WriteLine("  size += pb::CodedOutputStream.Compute{0}Size({1}, {2});",
                              CapitalizedTypeName, Number, PropertyName);
             writer.WriteLine("}");

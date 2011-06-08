@@ -120,7 +120,7 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessage<TestMessage, TestMessage.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
-      if (HasA) {
+      if (hasA) {
         output.WriteInt32(1, "a", A);
       }
       extensionWriter.WriteUntil(536870912, output);
@@ -134,7 +134,7 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
         if (size != -1) return size;
         
         size = 0;
-        if (HasA) {
+        if (hasA) {
           size += pb::CodedOutputStream.ComputeInt32Size(1, A);
         }
         size += ExtensionsSerializedSize;
@@ -282,7 +282,7 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
       
       
       public bool HasA {
-        get { return result.HasA; }
+        get { return result.hasA; }
       }
       public int A {
         get { return result.A; }

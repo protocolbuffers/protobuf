@@ -61,7 +61,7 @@ namespace Google.ProtocolBuffers.ProtoGen
         public void GenerateBuilderMembers(TextGenerator writer)
         {
             writer.WriteLine("public bool Has{0} {{", PropertyName);
-            writer.WriteLine(" get {{ return result.Has{0}; }}", PropertyName);
+            writer.WriteLine(" get {{ return result.has{0}; }}", PropertyName);
             writer.WriteLine("}");
             AddClsComplianceCheck(writer);
             writer.WriteLine("public {0} {1} {{", TypeName, PropertyName);
@@ -125,14 +125,14 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         public void GenerateSerializationCode(TextGenerator writer)
         {
-            writer.WriteLine("if (Has{0}) {{", PropertyName);
+            writer.WriteLine("if (has{0}) {{", PropertyName);
             writer.WriteLine("  output.WriteEnum({0}, \"{2}\", (int) {1}, {1}.ToString());", Number, PropertyName, Descriptor.Name);
             writer.WriteLine("}");
         }
 
         public void GenerateSerializedSizeCode(TextGenerator writer)
         {
-            writer.WriteLine("if (Has{0}) {{", PropertyName);
+            writer.WriteLine("if (has{0}) {{", PropertyName);
             writer.WriteLine("  size += pb::CodedOutputStream.ComputeEnumSize({0}, (int) {1});", Number, PropertyName);
             writer.WriteLine("}");
         }

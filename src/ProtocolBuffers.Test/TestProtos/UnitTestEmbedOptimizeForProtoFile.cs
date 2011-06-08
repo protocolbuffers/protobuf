@@ -119,7 +119,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasOptionalMessage) {
+      if (hasOptionalMessage) {
         output.WriteMessage(1, "optional_message", OptionalMessage);
       }
       if (repeatedMessage_.Count > 0) {
@@ -135,7 +135,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasOptionalMessage) {
+        if (hasOptionalMessage) {
           size += pb::CodedOutputStream.ComputeMessageSize(1, OptionalMessage);
         }
         foreach (global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize element in RepeatedMessageList) {
@@ -275,7 +275,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 10: {
               global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.CreateBuilder();
-              if (HasOptionalMessage) {
+              if (result.hasOptionalMessage) {
                 subBuilder.MergeFrom(OptionalMessage);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -297,7 +297,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasOptionalMessage {
-       get { return result.HasOptionalMessage; }
+       get { return result.hasOptionalMessage; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize OptionalMessage {
         get { return result.OptionalMessage; }
@@ -317,7 +317,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeOptionalMessage(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasOptionalMessage &&
+        if (result.hasOptionalMessage &&
             result.optionalMessage_ != global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.DefaultInstance) {
             result.optionalMessage_ = global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.CreateBuilder(result.optionalMessage_).MergeFrom(value).BuildPartial();
         } else {

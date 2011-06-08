@@ -1197,7 +1197,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
-          if (HasBb) {
+          if (hasBb) {
             output.WriteInt32(1, "bb", Bb);
           }
           UnknownFields.WriteTo(output);
@@ -1210,7 +1210,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             if (size != -1) return size;
             
             size = 0;
-            if (HasBb) {
+            if (hasBb) {
               size += pb::CodedOutputStream.ComputeInt32Size(1, Bb);
             }
             size += UnknownFields.SerializedSize;
@@ -1356,7 +1356,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           
           
           public bool HasBb {
-            get { return result.HasBb; }
+            get { return result.hasBb; }
           }
           public int Bb {
             get { return result.Bb; }
@@ -1421,7 +1421,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
-          if (HasA) {
+          if (hasA) {
             output.WriteInt32(17, "a", A);
           }
           UnknownFields.WriteTo(output);
@@ -1434,7 +1434,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             if (size != -1) return size;
             
             size = 0;
-            if (HasA) {
+            if (hasA) {
               size += pb::CodedOutputStream.ComputeInt32Size(17, A);
             }
             size += UnknownFields.SerializedSize;
@@ -1580,7 +1580,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           
           
           public bool HasA {
-            get { return result.HasA; }
+            get { return result.hasA; }
           }
           public int A {
             get { return result.A; }
@@ -1645,7 +1645,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
-          if (HasA) {
+          if (hasA) {
             output.WriteInt32(47, "a", A);
           }
           UnknownFields.WriteTo(output);
@@ -1658,7 +1658,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             if (size != -1) return size;
             
             size = 0;
-            if (HasA) {
+            if (hasA) {
               size += pb::CodedOutputStream.ComputeInt32Size(47, A);
             }
             size += UnknownFields.SerializedSize;
@@ -1804,7 +1804,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           
           
           public bool HasA {
-            get { return result.HasA; }
+            get { return result.hasA; }
           }
           public int A {
             get { return result.A; }
@@ -2581,76 +2581,76 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasOptionalInt32) {
+      if (hasOptionalInt32) {
         output.WriteInt32(1, "optional_int32", OptionalInt32);
       }
-      if (HasOptionalInt64) {
+      if (hasOptionalInt64) {
         output.WriteInt64(2, "optional_int64", OptionalInt64);
       }
-      if (HasOptionalUint32) {
+      if (hasOptionalUint32) {
         output.WriteUInt32(3, "optional_uint32", OptionalUint32);
       }
-      if (HasOptionalUint64) {
+      if (hasOptionalUint64) {
         output.WriteUInt64(4, "optional_uint64", OptionalUint64);
       }
-      if (HasOptionalSint32) {
+      if (hasOptionalSint32) {
         output.WriteSInt32(5, "optional_sint32", OptionalSint32);
       }
-      if (HasOptionalSint64) {
+      if (hasOptionalSint64) {
         output.WriteSInt64(6, "optional_sint64", OptionalSint64);
       }
-      if (HasOptionalFixed32) {
+      if (hasOptionalFixed32) {
         output.WriteFixed32(7, "optional_fixed32", OptionalFixed32);
       }
-      if (HasOptionalFixed64) {
+      if (hasOptionalFixed64) {
         output.WriteFixed64(8, "optional_fixed64", OptionalFixed64);
       }
-      if (HasOptionalSfixed32) {
+      if (hasOptionalSfixed32) {
         output.WriteSFixed32(9, "optional_sfixed32", OptionalSfixed32);
       }
-      if (HasOptionalSfixed64) {
+      if (hasOptionalSfixed64) {
         output.WriteSFixed64(10, "optional_sfixed64", OptionalSfixed64);
       }
-      if (HasOptionalFloat) {
+      if (hasOptionalFloat) {
         output.WriteFloat(11, "optional_float", OptionalFloat);
       }
-      if (HasOptionalDouble) {
+      if (hasOptionalDouble) {
         output.WriteDouble(12, "optional_double", OptionalDouble);
       }
-      if (HasOptionalBool) {
+      if (hasOptionalBool) {
         output.WriteBool(13, "optional_bool", OptionalBool);
       }
-      if (HasOptionalString) {
+      if (hasOptionalString) {
         output.WriteString(14, "optional_string", OptionalString);
       }
-      if (HasOptionalBytes) {
+      if (hasOptionalBytes) {
         output.WriteBytes(15, "optional_bytes", OptionalBytes);
       }
-      if (HasOptionalGroup) {
+      if (hasOptionalGroup) {
         output.WriteGroup(16, "optionalgroup", OptionalGroup);
       }
-      if (HasOptionalNestedMessage) {
+      if (hasOptionalNestedMessage) {
         output.WriteMessage(18, "optional_nested_message", OptionalNestedMessage);
       }
-      if (HasOptionalForeignMessage) {
+      if (hasOptionalForeignMessage) {
         output.WriteMessage(19, "optional_foreign_message", OptionalForeignMessage);
       }
-      if (HasOptionalImportMessage) {
+      if (hasOptionalImportMessage) {
         output.WriteMessage(20, "optional_import_message", OptionalImportMessage);
       }
-      if (HasOptionalNestedEnum) {
+      if (hasOptionalNestedEnum) {
         output.WriteEnum(21, "optional_nested_enum", (int) OptionalNestedEnum, OptionalNestedEnum.ToString());
       }
-      if (HasOptionalForeignEnum) {
+      if (hasOptionalForeignEnum) {
         output.WriteEnum(22, "optional_foreign_enum", (int) OptionalForeignEnum, OptionalForeignEnum.ToString());
       }
-      if (HasOptionalImportEnum) {
+      if (hasOptionalImportEnum) {
         output.WriteEnum(23, "optional_import_enum", (int) OptionalImportEnum, OptionalImportEnum.ToString());
       }
-      if (HasOptionalStringPiece) {
+      if (hasOptionalStringPiece) {
         output.WriteString(24, "optional_string_piece", OptionalStringPiece);
       }
-      if (HasOptionalCord) {
+      if (hasOptionalCord) {
         output.WriteString(25, "optional_cord", OptionalCord);
       }
       if (repeatedInt32_.Count > 0) {
@@ -2725,64 +2725,64 @@ namespace Google.ProtocolBuffers.TestProtos {
       if (repeatedCord_.Count > 0) {
         output.WriteArray(pbd::FieldType.String, 55, "repeated_cord", repeatedCord_);
       }
-      if (HasDefaultInt32) {
+      if (hasDefaultInt32) {
         output.WriteInt32(61, "default_int32", DefaultInt32);
       }
-      if (HasDefaultInt64) {
+      if (hasDefaultInt64) {
         output.WriteInt64(62, "default_int64", DefaultInt64);
       }
-      if (HasDefaultUint32) {
+      if (hasDefaultUint32) {
         output.WriteUInt32(63, "default_uint32", DefaultUint32);
       }
-      if (HasDefaultUint64) {
+      if (hasDefaultUint64) {
         output.WriteUInt64(64, "default_uint64", DefaultUint64);
       }
-      if (HasDefaultSint32) {
+      if (hasDefaultSint32) {
         output.WriteSInt32(65, "default_sint32", DefaultSint32);
       }
-      if (HasDefaultSint64) {
+      if (hasDefaultSint64) {
         output.WriteSInt64(66, "default_sint64", DefaultSint64);
       }
-      if (HasDefaultFixed32) {
+      if (hasDefaultFixed32) {
         output.WriteFixed32(67, "default_fixed32", DefaultFixed32);
       }
-      if (HasDefaultFixed64) {
+      if (hasDefaultFixed64) {
         output.WriteFixed64(68, "default_fixed64", DefaultFixed64);
       }
-      if (HasDefaultSfixed32) {
+      if (hasDefaultSfixed32) {
         output.WriteSFixed32(69, "default_sfixed32", DefaultSfixed32);
       }
-      if (HasDefaultSfixed64) {
+      if (hasDefaultSfixed64) {
         output.WriteSFixed64(70, "default_sfixed64", DefaultSfixed64);
       }
-      if (HasDefaultFloat) {
+      if (hasDefaultFloat) {
         output.WriteFloat(71, "default_float", DefaultFloat);
       }
-      if (HasDefaultDouble) {
+      if (hasDefaultDouble) {
         output.WriteDouble(72, "default_double", DefaultDouble);
       }
-      if (HasDefaultBool) {
+      if (hasDefaultBool) {
         output.WriteBool(73, "default_bool", DefaultBool);
       }
-      if (HasDefaultString) {
+      if (hasDefaultString) {
         output.WriteString(74, "default_string", DefaultString);
       }
-      if (HasDefaultBytes) {
+      if (hasDefaultBytes) {
         output.WriteBytes(75, "default_bytes", DefaultBytes);
       }
-      if (HasDefaultNestedEnum) {
+      if (hasDefaultNestedEnum) {
         output.WriteEnum(81, "default_nested_enum", (int) DefaultNestedEnum, DefaultNestedEnum.ToString());
       }
-      if (HasDefaultForeignEnum) {
+      if (hasDefaultForeignEnum) {
         output.WriteEnum(82, "default_foreign_enum", (int) DefaultForeignEnum, DefaultForeignEnum.ToString());
       }
-      if (HasDefaultImportEnum) {
+      if (hasDefaultImportEnum) {
         output.WriteEnum(83, "default_import_enum", (int) DefaultImportEnum, DefaultImportEnum.ToString());
       }
-      if (HasDefaultStringPiece) {
+      if (hasDefaultStringPiece) {
         output.WriteString(84, "default_string_piece", DefaultStringPiece);
       }
-      if (HasDefaultCord) {
+      if (hasDefaultCord) {
         output.WriteString(85, "default_cord", DefaultCord);
       }
       UnknownFields.WriteTo(output);
@@ -2795,76 +2795,76 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasOptionalInt32) {
+        if (hasOptionalInt32) {
           size += pb::CodedOutputStream.ComputeInt32Size(1, OptionalInt32);
         }
-        if (HasOptionalInt64) {
+        if (hasOptionalInt64) {
           size += pb::CodedOutputStream.ComputeInt64Size(2, OptionalInt64);
         }
-        if (HasOptionalUint32) {
+        if (hasOptionalUint32) {
           size += pb::CodedOutputStream.ComputeUInt32Size(3, OptionalUint32);
         }
-        if (HasOptionalUint64) {
+        if (hasOptionalUint64) {
           size += pb::CodedOutputStream.ComputeUInt64Size(4, OptionalUint64);
         }
-        if (HasOptionalSint32) {
+        if (hasOptionalSint32) {
           size += pb::CodedOutputStream.ComputeSInt32Size(5, OptionalSint32);
         }
-        if (HasOptionalSint64) {
+        if (hasOptionalSint64) {
           size += pb::CodedOutputStream.ComputeSInt64Size(6, OptionalSint64);
         }
-        if (HasOptionalFixed32) {
+        if (hasOptionalFixed32) {
           size += pb::CodedOutputStream.ComputeFixed32Size(7, OptionalFixed32);
         }
-        if (HasOptionalFixed64) {
+        if (hasOptionalFixed64) {
           size += pb::CodedOutputStream.ComputeFixed64Size(8, OptionalFixed64);
         }
-        if (HasOptionalSfixed32) {
+        if (hasOptionalSfixed32) {
           size += pb::CodedOutputStream.ComputeSFixed32Size(9, OptionalSfixed32);
         }
-        if (HasOptionalSfixed64) {
+        if (hasOptionalSfixed64) {
           size += pb::CodedOutputStream.ComputeSFixed64Size(10, OptionalSfixed64);
         }
-        if (HasOptionalFloat) {
+        if (hasOptionalFloat) {
           size += pb::CodedOutputStream.ComputeFloatSize(11, OptionalFloat);
         }
-        if (HasOptionalDouble) {
+        if (hasOptionalDouble) {
           size += pb::CodedOutputStream.ComputeDoubleSize(12, OptionalDouble);
         }
-        if (HasOptionalBool) {
+        if (hasOptionalBool) {
           size += pb::CodedOutputStream.ComputeBoolSize(13, OptionalBool);
         }
-        if (HasOptionalString) {
+        if (hasOptionalString) {
           size += pb::CodedOutputStream.ComputeStringSize(14, OptionalString);
         }
-        if (HasOptionalBytes) {
+        if (hasOptionalBytes) {
           size += pb::CodedOutputStream.ComputeBytesSize(15, OptionalBytes);
         }
-        if (HasOptionalGroup) {
+        if (hasOptionalGroup) {
           size += pb::CodedOutputStream.ComputeGroupSize(16, OptionalGroup);
         }
-        if (HasOptionalNestedMessage) {
+        if (hasOptionalNestedMessage) {
           size += pb::CodedOutputStream.ComputeMessageSize(18, OptionalNestedMessage);
         }
-        if (HasOptionalForeignMessage) {
+        if (hasOptionalForeignMessage) {
           size += pb::CodedOutputStream.ComputeMessageSize(19, OptionalForeignMessage);
         }
-        if (HasOptionalImportMessage) {
+        if (hasOptionalImportMessage) {
           size += pb::CodedOutputStream.ComputeMessageSize(20, OptionalImportMessage);
         }
-        if (HasOptionalNestedEnum) {
+        if (hasOptionalNestedEnum) {
           size += pb::CodedOutputStream.ComputeEnumSize(21, (int) OptionalNestedEnum);
         }
-        if (HasOptionalForeignEnum) {
+        if (hasOptionalForeignEnum) {
           size += pb::CodedOutputStream.ComputeEnumSize(22, (int) OptionalForeignEnum);
         }
-        if (HasOptionalImportEnum) {
+        if (hasOptionalImportEnum) {
           size += pb::CodedOutputStream.ComputeEnumSize(23, (int) OptionalImportEnum);
         }
-        if (HasOptionalStringPiece) {
+        if (hasOptionalStringPiece) {
           size += pb::CodedOutputStream.ComputeStringSize(24, OptionalStringPiece);
         }
-        if (HasOptionalCord) {
+        if (hasOptionalCord) {
           size += pb::CodedOutputStream.ComputeStringSize(25, OptionalCord);
         }
         {
@@ -3031,64 +3031,64 @@ namespace Google.ProtocolBuffers.TestProtos {
           size += dataSize;
           size += 2 * repeatedCord_.Count;
         }
-        if (HasDefaultInt32) {
+        if (hasDefaultInt32) {
           size += pb::CodedOutputStream.ComputeInt32Size(61, DefaultInt32);
         }
-        if (HasDefaultInt64) {
+        if (hasDefaultInt64) {
           size += pb::CodedOutputStream.ComputeInt64Size(62, DefaultInt64);
         }
-        if (HasDefaultUint32) {
+        if (hasDefaultUint32) {
           size += pb::CodedOutputStream.ComputeUInt32Size(63, DefaultUint32);
         }
-        if (HasDefaultUint64) {
+        if (hasDefaultUint64) {
           size += pb::CodedOutputStream.ComputeUInt64Size(64, DefaultUint64);
         }
-        if (HasDefaultSint32) {
+        if (hasDefaultSint32) {
           size += pb::CodedOutputStream.ComputeSInt32Size(65, DefaultSint32);
         }
-        if (HasDefaultSint64) {
+        if (hasDefaultSint64) {
           size += pb::CodedOutputStream.ComputeSInt64Size(66, DefaultSint64);
         }
-        if (HasDefaultFixed32) {
+        if (hasDefaultFixed32) {
           size += pb::CodedOutputStream.ComputeFixed32Size(67, DefaultFixed32);
         }
-        if (HasDefaultFixed64) {
+        if (hasDefaultFixed64) {
           size += pb::CodedOutputStream.ComputeFixed64Size(68, DefaultFixed64);
         }
-        if (HasDefaultSfixed32) {
+        if (hasDefaultSfixed32) {
           size += pb::CodedOutputStream.ComputeSFixed32Size(69, DefaultSfixed32);
         }
-        if (HasDefaultSfixed64) {
+        if (hasDefaultSfixed64) {
           size += pb::CodedOutputStream.ComputeSFixed64Size(70, DefaultSfixed64);
         }
-        if (HasDefaultFloat) {
+        if (hasDefaultFloat) {
           size += pb::CodedOutputStream.ComputeFloatSize(71, DefaultFloat);
         }
-        if (HasDefaultDouble) {
+        if (hasDefaultDouble) {
           size += pb::CodedOutputStream.ComputeDoubleSize(72, DefaultDouble);
         }
-        if (HasDefaultBool) {
+        if (hasDefaultBool) {
           size += pb::CodedOutputStream.ComputeBoolSize(73, DefaultBool);
         }
-        if (HasDefaultString) {
+        if (hasDefaultString) {
           size += pb::CodedOutputStream.ComputeStringSize(74, DefaultString);
         }
-        if (HasDefaultBytes) {
+        if (hasDefaultBytes) {
           size += pb::CodedOutputStream.ComputeBytesSize(75, DefaultBytes);
         }
-        if (HasDefaultNestedEnum) {
+        if (hasDefaultNestedEnum) {
           size += pb::CodedOutputStream.ComputeEnumSize(81, (int) DefaultNestedEnum);
         }
-        if (HasDefaultForeignEnum) {
+        if (hasDefaultForeignEnum) {
           size += pb::CodedOutputStream.ComputeEnumSize(82, (int) DefaultForeignEnum);
         }
-        if (HasDefaultImportEnum) {
+        if (hasDefaultImportEnum) {
           size += pb::CodedOutputStream.ComputeEnumSize(83, (int) DefaultImportEnum);
         }
-        if (HasDefaultStringPiece) {
+        if (hasDefaultStringPiece) {
           size += pb::CodedOutputStream.ComputeStringSize(84, DefaultStringPiece);
         }
-        if (HasDefaultCord) {
+        if (hasDefaultCord) {
           size += pb::CodedOutputStream.ComputeStringSize(85, DefaultCord);
         }
         size += UnknownFields.SerializedSize;
@@ -3506,7 +3506,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 131: {
               global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.CreateBuilder();
-              if (HasOptionalGroup) {
+              if (result.hasOptionalGroup) {
                 subBuilder.MergeFrom(OptionalGroup);
               }
               input.ReadGroup(16, subBuilder, extensionRegistry);
@@ -3515,7 +3515,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 146: {
               global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.CreateBuilder();
-              if (HasOptionalNestedMessage) {
+              if (result.hasOptionalNestedMessage) {
                 subBuilder.MergeFrom(OptionalNestedMessage);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -3524,7 +3524,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 154: {
               global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder();
-              if (HasOptionalForeignMessage) {
+              if (result.hasOptionalForeignMessage) {
                 subBuilder.MergeFrom(OptionalForeignMessage);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -3533,7 +3533,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 162: {
               global::Google.ProtocolBuffers.TestProtos.ImportMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ImportMessage.CreateBuilder();
-              if (HasOptionalImportMessage) {
+              if (result.hasOptionalImportMessage) {
                 subBuilder.MergeFrom(OptionalImportMessage);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -3838,7 +3838,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasOptionalInt32 {
-        get { return result.HasOptionalInt32; }
+        get { return result.hasOptionalInt32; }
       }
       public int OptionalInt32 {
         get { return result.OptionalInt32; }
@@ -3856,7 +3856,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalInt64 {
-        get { return result.HasOptionalInt64; }
+        get { return result.hasOptionalInt64; }
       }
       public long OptionalInt64 {
         get { return result.OptionalInt64; }
@@ -3874,7 +3874,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalUint32 {
-        get { return result.HasOptionalUint32; }
+        get { return result.hasOptionalUint32; }
       }
       [global::System.CLSCompliant(false)]
       public uint OptionalUint32 {
@@ -3894,7 +3894,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalUint64 {
-        get { return result.HasOptionalUint64; }
+        get { return result.hasOptionalUint64; }
       }
       [global::System.CLSCompliant(false)]
       public ulong OptionalUint64 {
@@ -3914,7 +3914,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalSint32 {
-        get { return result.HasOptionalSint32; }
+        get { return result.hasOptionalSint32; }
       }
       public int OptionalSint32 {
         get { return result.OptionalSint32; }
@@ -3932,7 +3932,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalSint64 {
-        get { return result.HasOptionalSint64; }
+        get { return result.hasOptionalSint64; }
       }
       public long OptionalSint64 {
         get { return result.OptionalSint64; }
@@ -3950,7 +3950,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalFixed32 {
-        get { return result.HasOptionalFixed32; }
+        get { return result.hasOptionalFixed32; }
       }
       [global::System.CLSCompliant(false)]
       public uint OptionalFixed32 {
@@ -3970,7 +3970,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalFixed64 {
-        get { return result.HasOptionalFixed64; }
+        get { return result.hasOptionalFixed64; }
       }
       [global::System.CLSCompliant(false)]
       public ulong OptionalFixed64 {
@@ -3990,7 +3990,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalSfixed32 {
-        get { return result.HasOptionalSfixed32; }
+        get { return result.hasOptionalSfixed32; }
       }
       public int OptionalSfixed32 {
         get { return result.OptionalSfixed32; }
@@ -4008,7 +4008,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalSfixed64 {
-        get { return result.HasOptionalSfixed64; }
+        get { return result.hasOptionalSfixed64; }
       }
       public long OptionalSfixed64 {
         get { return result.OptionalSfixed64; }
@@ -4026,7 +4026,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalFloat {
-        get { return result.HasOptionalFloat; }
+        get { return result.hasOptionalFloat; }
       }
       public float OptionalFloat {
         get { return result.OptionalFloat; }
@@ -4044,7 +4044,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalDouble {
-        get { return result.HasOptionalDouble; }
+        get { return result.hasOptionalDouble; }
       }
       public double OptionalDouble {
         get { return result.OptionalDouble; }
@@ -4062,7 +4062,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalBool {
-        get { return result.HasOptionalBool; }
+        get { return result.hasOptionalBool; }
       }
       public bool OptionalBool {
         get { return result.OptionalBool; }
@@ -4080,7 +4080,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalString {
-        get { return result.HasOptionalString; }
+        get { return result.hasOptionalString; }
       }
       public string OptionalString {
         get { return result.OptionalString; }
@@ -4099,7 +4099,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalBytes {
-        get { return result.HasOptionalBytes; }
+        get { return result.hasOptionalBytes; }
       }
       public pb::ByteString OptionalBytes {
         get { return result.OptionalBytes; }
@@ -4118,7 +4118,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalGroup {
-       get { return result.HasOptionalGroup; }
+       get { return result.hasOptionalGroup; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup OptionalGroup {
         get { return result.OptionalGroup; }
@@ -4138,7 +4138,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeOptionalGroup(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasOptionalGroup &&
+        if (result.hasOptionalGroup &&
             result.optionalGroup_ != global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.DefaultInstance) {
             result.optionalGroup_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.OptionalGroup.CreateBuilder(result.optionalGroup_).MergeFrom(value).BuildPartial();
         } else {
@@ -4154,7 +4154,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalNestedMessage {
-       get { return result.HasOptionalNestedMessage; }
+       get { return result.hasOptionalNestedMessage; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage OptionalNestedMessage {
         get { return result.OptionalNestedMessage; }
@@ -4174,7 +4174,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeOptionalNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasOptionalNestedMessage &&
+        if (result.hasOptionalNestedMessage &&
             result.optionalNestedMessage_ != global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance) {
             result.optionalNestedMessage_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.CreateBuilder(result.optionalNestedMessage_).MergeFrom(value).BuildPartial();
         } else {
@@ -4190,7 +4190,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalForeignMessage {
-       get { return result.HasOptionalForeignMessage; }
+       get { return result.hasOptionalForeignMessage; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ForeignMessage OptionalForeignMessage {
         get { return result.OptionalForeignMessage; }
@@ -4210,7 +4210,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeOptionalForeignMessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasOptionalForeignMessage &&
+        if (result.hasOptionalForeignMessage &&
             result.optionalForeignMessage_ != global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance) {
             result.optionalForeignMessage_ = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder(result.optionalForeignMessage_).MergeFrom(value).BuildPartial();
         } else {
@@ -4226,7 +4226,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalImportMessage {
-       get { return result.HasOptionalImportMessage; }
+       get { return result.hasOptionalImportMessage; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ImportMessage OptionalImportMessage {
         get { return result.OptionalImportMessage; }
@@ -4246,7 +4246,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeOptionalImportMessage(global::Google.ProtocolBuffers.TestProtos.ImportMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasOptionalImportMessage &&
+        if (result.hasOptionalImportMessage &&
             result.optionalImportMessage_ != global::Google.ProtocolBuffers.TestProtos.ImportMessage.DefaultInstance) {
             result.optionalImportMessage_ = global::Google.ProtocolBuffers.TestProtos.ImportMessage.CreateBuilder(result.optionalImportMessage_).MergeFrom(value).BuildPartial();
         } else {
@@ -4262,7 +4262,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalNestedEnum {
-       get { return result.HasOptionalNestedEnum; }
+       get { return result.hasOptionalNestedEnum; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum OptionalNestedEnum {
         get { return result.OptionalNestedEnum; }
@@ -4280,7 +4280,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalForeignEnum {
-       get { return result.HasOptionalForeignEnum; }
+       get { return result.hasOptionalForeignEnum; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ForeignEnum OptionalForeignEnum {
         get { return result.OptionalForeignEnum; }
@@ -4298,7 +4298,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalImportEnum {
-       get { return result.HasOptionalImportEnum; }
+       get { return result.hasOptionalImportEnum; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ImportEnum OptionalImportEnum {
         get { return result.OptionalImportEnum; }
@@ -4316,7 +4316,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalStringPiece {
-        get { return result.HasOptionalStringPiece; }
+        get { return result.hasOptionalStringPiece; }
       }
       public string OptionalStringPiece {
         get { return result.OptionalStringPiece; }
@@ -4335,7 +4335,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalCord {
-        get { return result.HasOptionalCord; }
+        get { return result.hasOptionalCord; }
       }
       public string OptionalCord {
         get { return result.OptionalCord; }
@@ -5054,7 +5054,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultInt32 {
-        get { return result.HasDefaultInt32; }
+        get { return result.hasDefaultInt32; }
       }
       public int DefaultInt32 {
         get { return result.DefaultInt32; }
@@ -5072,7 +5072,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultInt64 {
-        get { return result.HasDefaultInt64; }
+        get { return result.hasDefaultInt64; }
       }
       public long DefaultInt64 {
         get { return result.DefaultInt64; }
@@ -5090,7 +5090,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultUint32 {
-        get { return result.HasDefaultUint32; }
+        get { return result.hasDefaultUint32; }
       }
       [global::System.CLSCompliant(false)]
       public uint DefaultUint32 {
@@ -5110,7 +5110,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultUint64 {
-        get { return result.HasDefaultUint64; }
+        get { return result.hasDefaultUint64; }
       }
       [global::System.CLSCompliant(false)]
       public ulong DefaultUint64 {
@@ -5130,7 +5130,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultSint32 {
-        get { return result.HasDefaultSint32; }
+        get { return result.hasDefaultSint32; }
       }
       public int DefaultSint32 {
         get { return result.DefaultSint32; }
@@ -5148,7 +5148,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultSint64 {
-        get { return result.HasDefaultSint64; }
+        get { return result.hasDefaultSint64; }
       }
       public long DefaultSint64 {
         get { return result.DefaultSint64; }
@@ -5166,7 +5166,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultFixed32 {
-        get { return result.HasDefaultFixed32; }
+        get { return result.hasDefaultFixed32; }
       }
       [global::System.CLSCompliant(false)]
       public uint DefaultFixed32 {
@@ -5186,7 +5186,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultFixed64 {
-        get { return result.HasDefaultFixed64; }
+        get { return result.hasDefaultFixed64; }
       }
       [global::System.CLSCompliant(false)]
       public ulong DefaultFixed64 {
@@ -5206,7 +5206,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultSfixed32 {
-        get { return result.HasDefaultSfixed32; }
+        get { return result.hasDefaultSfixed32; }
       }
       public int DefaultSfixed32 {
         get { return result.DefaultSfixed32; }
@@ -5224,7 +5224,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultSfixed64 {
-        get { return result.HasDefaultSfixed64; }
+        get { return result.hasDefaultSfixed64; }
       }
       public long DefaultSfixed64 {
         get { return result.DefaultSfixed64; }
@@ -5242,7 +5242,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultFloat {
-        get { return result.HasDefaultFloat; }
+        get { return result.hasDefaultFloat; }
       }
       public float DefaultFloat {
         get { return result.DefaultFloat; }
@@ -5260,7 +5260,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultDouble {
-        get { return result.HasDefaultDouble; }
+        get { return result.hasDefaultDouble; }
       }
       public double DefaultDouble {
         get { return result.DefaultDouble; }
@@ -5278,7 +5278,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultBool {
-        get { return result.HasDefaultBool; }
+        get { return result.hasDefaultBool; }
       }
       public bool DefaultBool {
         get { return result.DefaultBool; }
@@ -5296,7 +5296,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultString {
-        get { return result.HasDefaultString; }
+        get { return result.hasDefaultString; }
       }
       public string DefaultString {
         get { return result.DefaultString; }
@@ -5315,7 +5315,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultBytes {
-        get { return result.HasDefaultBytes; }
+        get { return result.hasDefaultBytes; }
       }
       public pb::ByteString DefaultBytes {
         get { return result.DefaultBytes; }
@@ -5334,7 +5334,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultNestedEnum {
-       get { return result.HasDefaultNestedEnum; }
+       get { return result.hasDefaultNestedEnum; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum DefaultNestedEnum {
         get { return result.DefaultNestedEnum; }
@@ -5352,7 +5352,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultForeignEnum {
-       get { return result.HasDefaultForeignEnum; }
+       get { return result.hasDefaultForeignEnum; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ForeignEnum DefaultForeignEnum {
         get { return result.DefaultForeignEnum; }
@@ -5370,7 +5370,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultImportEnum {
-       get { return result.HasDefaultImportEnum; }
+       get { return result.hasDefaultImportEnum; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ImportEnum DefaultImportEnum {
         get { return result.DefaultImportEnum; }
@@ -5388,7 +5388,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultStringPiece {
-        get { return result.HasDefaultStringPiece; }
+        get { return result.hasDefaultStringPiece; }
       }
       public string DefaultStringPiece {
         get { return result.DefaultStringPiece; }
@@ -5407,7 +5407,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDefaultCord {
-        get { return result.HasDefaultCord; }
+        get { return result.hasDefaultCord; }
       }
       public string DefaultCord {
         get { return result.DefaultCord; }
@@ -5473,7 +5473,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasDeprecatedInt32) {
+      if (hasDeprecatedInt32) {
         output.WriteInt32(1, "deprecated_int32", DeprecatedInt32);
       }
       UnknownFields.WriteTo(output);
@@ -5486,7 +5486,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasDeprecatedInt32) {
+        if (hasDeprecatedInt32) {
           size += pb::CodedOutputStream.ComputeInt32Size(1, DeprecatedInt32);
         }
         size += UnknownFields.SerializedSize;
@@ -5632,7 +5632,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasDeprecatedInt32 {
-        get { return result.HasDeprecatedInt32; }
+        get { return result.hasDeprecatedInt32; }
       }
       public int DeprecatedInt32 {
         get { return result.DeprecatedInt32; }
@@ -5697,7 +5697,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasC) {
+      if (hasC) {
         output.WriteInt32(1, "c", C);
       }
       UnknownFields.WriteTo(output);
@@ -5710,7 +5710,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasC) {
+        if (hasC) {
           size += pb::CodedOutputStream.ComputeInt32Size(1, C);
         }
         size += UnknownFields.SerializedSize;
@@ -5856,7 +5856,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasC {
-        get { return result.HasC; }
+        get { return result.hasC; }
       }
       public int C {
         get { return result.C; }
@@ -6109,7 +6109,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasA) {
+      if (hasA) {
         output.WriteInt32(17, "a", A);
       }
       UnknownFields.WriteTo(output);
@@ -6122,7 +6122,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasA) {
+        if (hasA) {
           size += pb::CodedOutputStream.ComputeInt32Size(17, A);
         }
         size += UnknownFields.SerializedSize;
@@ -6268,7 +6268,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasA {
-        get { return result.HasA; }
+        get { return result.hasA; }
       }
       public int A {
         get { return result.A; }
@@ -6333,7 +6333,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasA) {
+      if (hasA) {
         output.WriteInt32(47, "a", A);
       }
       UnknownFields.WriteTo(output);
@@ -6346,7 +6346,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasA) {
+        if (hasA) {
           size += pb::CodedOutputStream.ComputeInt32Size(47, A);
         }
         size += UnknownFields.SerializedSize;
@@ -6492,7 +6492,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasA {
-        get { return result.HasA; }
+        get { return result.hasA; }
       }
       public int A {
         get { return result.A; }
@@ -7069,103 +7069,103 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasA) {
+      if (hasA) {
         output.WriteInt32(1, "a", A);
       }
-      if (HasDummy2) {
+      if (hasDummy2) {
         output.WriteInt32(2, "dummy2", Dummy2);
       }
-      if (HasB) {
+      if (hasB) {
         output.WriteInt32(3, "b", B);
       }
-      if (HasDummy4) {
+      if (hasDummy4) {
         output.WriteInt32(4, "dummy4", Dummy4);
       }
-      if (HasDummy5) {
+      if (hasDummy5) {
         output.WriteInt32(5, "dummy5", Dummy5);
       }
-      if (HasDummy6) {
+      if (hasDummy6) {
         output.WriteInt32(6, "dummy6", Dummy6);
       }
-      if (HasDummy7) {
+      if (hasDummy7) {
         output.WriteInt32(7, "dummy7", Dummy7);
       }
-      if (HasDummy8) {
+      if (hasDummy8) {
         output.WriteInt32(8, "dummy8", Dummy8);
       }
-      if (HasDummy9) {
+      if (hasDummy9) {
         output.WriteInt32(9, "dummy9", Dummy9);
       }
-      if (HasDummy10) {
+      if (hasDummy10) {
         output.WriteInt32(10, "dummy10", Dummy10);
       }
-      if (HasDummy11) {
+      if (hasDummy11) {
         output.WriteInt32(11, "dummy11", Dummy11);
       }
-      if (HasDummy12) {
+      if (hasDummy12) {
         output.WriteInt32(12, "dummy12", Dummy12);
       }
-      if (HasDummy13) {
+      if (hasDummy13) {
         output.WriteInt32(13, "dummy13", Dummy13);
       }
-      if (HasDummy14) {
+      if (hasDummy14) {
         output.WriteInt32(14, "dummy14", Dummy14);
       }
-      if (HasDummy15) {
+      if (hasDummy15) {
         output.WriteInt32(15, "dummy15", Dummy15);
       }
-      if (HasDummy16) {
+      if (hasDummy16) {
         output.WriteInt32(16, "dummy16", Dummy16);
       }
-      if (HasDummy17) {
+      if (hasDummy17) {
         output.WriteInt32(17, "dummy17", Dummy17);
       }
-      if (HasDummy18) {
+      if (hasDummy18) {
         output.WriteInt32(18, "dummy18", Dummy18);
       }
-      if (HasDummy19) {
+      if (hasDummy19) {
         output.WriteInt32(19, "dummy19", Dummy19);
       }
-      if (HasDummy20) {
+      if (hasDummy20) {
         output.WriteInt32(20, "dummy20", Dummy20);
       }
-      if (HasDummy21) {
+      if (hasDummy21) {
         output.WriteInt32(21, "dummy21", Dummy21);
       }
-      if (HasDummy22) {
+      if (hasDummy22) {
         output.WriteInt32(22, "dummy22", Dummy22);
       }
-      if (HasDummy23) {
+      if (hasDummy23) {
         output.WriteInt32(23, "dummy23", Dummy23);
       }
-      if (HasDummy24) {
+      if (hasDummy24) {
         output.WriteInt32(24, "dummy24", Dummy24);
       }
-      if (HasDummy25) {
+      if (hasDummy25) {
         output.WriteInt32(25, "dummy25", Dummy25);
       }
-      if (HasDummy26) {
+      if (hasDummy26) {
         output.WriteInt32(26, "dummy26", Dummy26);
       }
-      if (HasDummy27) {
+      if (hasDummy27) {
         output.WriteInt32(27, "dummy27", Dummy27);
       }
-      if (HasDummy28) {
+      if (hasDummy28) {
         output.WriteInt32(28, "dummy28", Dummy28);
       }
-      if (HasDummy29) {
+      if (hasDummy29) {
         output.WriteInt32(29, "dummy29", Dummy29);
       }
-      if (HasDummy30) {
+      if (hasDummy30) {
         output.WriteInt32(30, "dummy30", Dummy30);
       }
-      if (HasDummy31) {
+      if (hasDummy31) {
         output.WriteInt32(31, "dummy31", Dummy31);
       }
-      if (HasDummy32) {
+      if (hasDummy32) {
         output.WriteInt32(32, "dummy32", Dummy32);
       }
-      if (HasC) {
+      if (hasC) {
         output.WriteInt32(33, "c", C);
       }
       UnknownFields.WriteTo(output);
@@ -7178,103 +7178,103 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasA) {
+        if (hasA) {
           size += pb::CodedOutputStream.ComputeInt32Size(1, A);
         }
-        if (HasDummy2) {
+        if (hasDummy2) {
           size += pb::CodedOutputStream.ComputeInt32Size(2, Dummy2);
         }
-        if (HasB) {
+        if (hasB) {
           size += pb::CodedOutputStream.ComputeInt32Size(3, B);
         }
-        if (HasDummy4) {
+        if (hasDummy4) {
           size += pb::CodedOutputStream.ComputeInt32Size(4, Dummy4);
         }
-        if (HasDummy5) {
+        if (hasDummy5) {
           size += pb::CodedOutputStream.ComputeInt32Size(5, Dummy5);
         }
-        if (HasDummy6) {
+        if (hasDummy6) {
           size += pb::CodedOutputStream.ComputeInt32Size(6, Dummy6);
         }
-        if (HasDummy7) {
+        if (hasDummy7) {
           size += pb::CodedOutputStream.ComputeInt32Size(7, Dummy7);
         }
-        if (HasDummy8) {
+        if (hasDummy8) {
           size += pb::CodedOutputStream.ComputeInt32Size(8, Dummy8);
         }
-        if (HasDummy9) {
+        if (hasDummy9) {
           size += pb::CodedOutputStream.ComputeInt32Size(9, Dummy9);
         }
-        if (HasDummy10) {
+        if (hasDummy10) {
           size += pb::CodedOutputStream.ComputeInt32Size(10, Dummy10);
         }
-        if (HasDummy11) {
+        if (hasDummy11) {
           size += pb::CodedOutputStream.ComputeInt32Size(11, Dummy11);
         }
-        if (HasDummy12) {
+        if (hasDummy12) {
           size += pb::CodedOutputStream.ComputeInt32Size(12, Dummy12);
         }
-        if (HasDummy13) {
+        if (hasDummy13) {
           size += pb::CodedOutputStream.ComputeInt32Size(13, Dummy13);
         }
-        if (HasDummy14) {
+        if (hasDummy14) {
           size += pb::CodedOutputStream.ComputeInt32Size(14, Dummy14);
         }
-        if (HasDummy15) {
+        if (hasDummy15) {
           size += pb::CodedOutputStream.ComputeInt32Size(15, Dummy15);
         }
-        if (HasDummy16) {
+        if (hasDummy16) {
           size += pb::CodedOutputStream.ComputeInt32Size(16, Dummy16);
         }
-        if (HasDummy17) {
+        if (hasDummy17) {
           size += pb::CodedOutputStream.ComputeInt32Size(17, Dummy17);
         }
-        if (HasDummy18) {
+        if (hasDummy18) {
           size += pb::CodedOutputStream.ComputeInt32Size(18, Dummy18);
         }
-        if (HasDummy19) {
+        if (hasDummy19) {
           size += pb::CodedOutputStream.ComputeInt32Size(19, Dummy19);
         }
-        if (HasDummy20) {
+        if (hasDummy20) {
           size += pb::CodedOutputStream.ComputeInt32Size(20, Dummy20);
         }
-        if (HasDummy21) {
+        if (hasDummy21) {
           size += pb::CodedOutputStream.ComputeInt32Size(21, Dummy21);
         }
-        if (HasDummy22) {
+        if (hasDummy22) {
           size += pb::CodedOutputStream.ComputeInt32Size(22, Dummy22);
         }
-        if (HasDummy23) {
+        if (hasDummy23) {
           size += pb::CodedOutputStream.ComputeInt32Size(23, Dummy23);
         }
-        if (HasDummy24) {
+        if (hasDummy24) {
           size += pb::CodedOutputStream.ComputeInt32Size(24, Dummy24);
         }
-        if (HasDummy25) {
+        if (hasDummy25) {
           size += pb::CodedOutputStream.ComputeInt32Size(25, Dummy25);
         }
-        if (HasDummy26) {
+        if (hasDummy26) {
           size += pb::CodedOutputStream.ComputeInt32Size(26, Dummy26);
         }
-        if (HasDummy27) {
+        if (hasDummy27) {
           size += pb::CodedOutputStream.ComputeInt32Size(27, Dummy27);
         }
-        if (HasDummy28) {
+        if (hasDummy28) {
           size += pb::CodedOutputStream.ComputeInt32Size(28, Dummy28);
         }
-        if (HasDummy29) {
+        if (hasDummy29) {
           size += pb::CodedOutputStream.ComputeInt32Size(29, Dummy29);
         }
-        if (HasDummy30) {
+        if (hasDummy30) {
           size += pb::CodedOutputStream.ComputeInt32Size(30, Dummy30);
         }
-        if (HasDummy31) {
+        if (hasDummy31) {
           size += pb::CodedOutputStream.ComputeInt32Size(31, Dummy31);
         }
-        if (HasDummy32) {
+        if (hasDummy32) {
           size += pb::CodedOutputStream.ComputeInt32Size(32, Dummy32);
         }
-        if (HasC) {
+        if (hasC) {
           size += pb::CodedOutputStream.ComputeInt32Size(33, C);
         }
         size += UnknownFields.SerializedSize;
@@ -7644,7 +7644,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasA {
-        get { return result.HasA; }
+        get { return result.hasA; }
       }
       public int A {
         get { return result.A; }
@@ -7662,7 +7662,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy2 {
-        get { return result.HasDummy2; }
+        get { return result.hasDummy2; }
       }
       public int Dummy2 {
         get { return result.Dummy2; }
@@ -7680,7 +7680,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasB {
-        get { return result.HasB; }
+        get { return result.hasB; }
       }
       public int B {
         get { return result.B; }
@@ -7698,7 +7698,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy4 {
-        get { return result.HasDummy4; }
+        get { return result.hasDummy4; }
       }
       public int Dummy4 {
         get { return result.Dummy4; }
@@ -7716,7 +7716,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy5 {
-        get { return result.HasDummy5; }
+        get { return result.hasDummy5; }
       }
       public int Dummy5 {
         get { return result.Dummy5; }
@@ -7734,7 +7734,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy6 {
-        get { return result.HasDummy6; }
+        get { return result.hasDummy6; }
       }
       public int Dummy6 {
         get { return result.Dummy6; }
@@ -7752,7 +7752,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy7 {
-        get { return result.HasDummy7; }
+        get { return result.hasDummy7; }
       }
       public int Dummy7 {
         get { return result.Dummy7; }
@@ -7770,7 +7770,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy8 {
-        get { return result.HasDummy8; }
+        get { return result.hasDummy8; }
       }
       public int Dummy8 {
         get { return result.Dummy8; }
@@ -7788,7 +7788,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy9 {
-        get { return result.HasDummy9; }
+        get { return result.hasDummy9; }
       }
       public int Dummy9 {
         get { return result.Dummy9; }
@@ -7806,7 +7806,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy10 {
-        get { return result.HasDummy10; }
+        get { return result.hasDummy10; }
       }
       public int Dummy10 {
         get { return result.Dummy10; }
@@ -7824,7 +7824,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy11 {
-        get { return result.HasDummy11; }
+        get { return result.hasDummy11; }
       }
       public int Dummy11 {
         get { return result.Dummy11; }
@@ -7842,7 +7842,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy12 {
-        get { return result.HasDummy12; }
+        get { return result.hasDummy12; }
       }
       public int Dummy12 {
         get { return result.Dummy12; }
@@ -7860,7 +7860,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy13 {
-        get { return result.HasDummy13; }
+        get { return result.hasDummy13; }
       }
       public int Dummy13 {
         get { return result.Dummy13; }
@@ -7878,7 +7878,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy14 {
-        get { return result.HasDummy14; }
+        get { return result.hasDummy14; }
       }
       public int Dummy14 {
         get { return result.Dummy14; }
@@ -7896,7 +7896,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy15 {
-        get { return result.HasDummy15; }
+        get { return result.hasDummy15; }
       }
       public int Dummy15 {
         get { return result.Dummy15; }
@@ -7914,7 +7914,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy16 {
-        get { return result.HasDummy16; }
+        get { return result.hasDummy16; }
       }
       public int Dummy16 {
         get { return result.Dummy16; }
@@ -7932,7 +7932,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy17 {
-        get { return result.HasDummy17; }
+        get { return result.hasDummy17; }
       }
       public int Dummy17 {
         get { return result.Dummy17; }
@@ -7950,7 +7950,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy18 {
-        get { return result.HasDummy18; }
+        get { return result.hasDummy18; }
       }
       public int Dummy18 {
         get { return result.Dummy18; }
@@ -7968,7 +7968,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy19 {
-        get { return result.HasDummy19; }
+        get { return result.hasDummy19; }
       }
       public int Dummy19 {
         get { return result.Dummy19; }
@@ -7986,7 +7986,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy20 {
-        get { return result.HasDummy20; }
+        get { return result.hasDummy20; }
       }
       public int Dummy20 {
         get { return result.Dummy20; }
@@ -8004,7 +8004,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy21 {
-        get { return result.HasDummy21; }
+        get { return result.hasDummy21; }
       }
       public int Dummy21 {
         get { return result.Dummy21; }
@@ -8022,7 +8022,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy22 {
-        get { return result.HasDummy22; }
+        get { return result.hasDummy22; }
       }
       public int Dummy22 {
         get { return result.Dummy22; }
@@ -8040,7 +8040,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy23 {
-        get { return result.HasDummy23; }
+        get { return result.hasDummy23; }
       }
       public int Dummy23 {
         get { return result.Dummy23; }
@@ -8058,7 +8058,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy24 {
-        get { return result.HasDummy24; }
+        get { return result.hasDummy24; }
       }
       public int Dummy24 {
         get { return result.Dummy24; }
@@ -8076,7 +8076,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy25 {
-        get { return result.HasDummy25; }
+        get { return result.hasDummy25; }
       }
       public int Dummy25 {
         get { return result.Dummy25; }
@@ -8094,7 +8094,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy26 {
-        get { return result.HasDummy26; }
+        get { return result.hasDummy26; }
       }
       public int Dummy26 {
         get { return result.Dummy26; }
@@ -8112,7 +8112,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy27 {
-        get { return result.HasDummy27; }
+        get { return result.hasDummy27; }
       }
       public int Dummy27 {
         get { return result.Dummy27; }
@@ -8130,7 +8130,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy28 {
-        get { return result.HasDummy28; }
+        get { return result.hasDummy28; }
       }
       public int Dummy28 {
         get { return result.Dummy28; }
@@ -8148,7 +8148,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy29 {
-        get { return result.HasDummy29; }
+        get { return result.hasDummy29; }
       }
       public int Dummy29 {
         get { return result.Dummy29; }
@@ -8166,7 +8166,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy30 {
-        get { return result.HasDummy30; }
+        get { return result.hasDummy30; }
       }
       public int Dummy30 {
         get { return result.Dummy30; }
@@ -8184,7 +8184,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy31 {
-        get { return result.HasDummy31; }
+        get { return result.hasDummy31; }
       }
       public int Dummy31 {
         get { return result.Dummy31; }
@@ -8202,7 +8202,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy32 {
-        get { return result.HasDummy32; }
+        get { return result.hasDummy32; }
       }
       public int Dummy32 {
         get { return result.Dummy32; }
@@ -8220,7 +8220,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasC {
-        get { return result.HasC; }
+        get { return result.hasC; }
       }
       public int C {
         get { return result.C; }
@@ -8313,13 +8313,13 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasOptionalMessage) {
+      if (hasOptionalMessage) {
         output.WriteMessage(1, "optional_message", OptionalMessage);
       }
       if (repeatedMessage_.Count > 0) {
         output.WriteArray(pbd::FieldType.Message, 2, "repeated_message", repeatedMessage_);
       }
-      if (HasDummy) {
+      if (hasDummy) {
         output.WriteInt32(3, "dummy", Dummy);
       }
       UnknownFields.WriteTo(output);
@@ -8332,13 +8332,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasOptionalMessage) {
+        if (hasOptionalMessage) {
           size += pb::CodedOutputStream.ComputeMessageSize(1, OptionalMessage);
         }
         foreach (global::Google.ProtocolBuffers.TestProtos.TestRequired element in RepeatedMessageList) {
           size += pb::CodedOutputStream.ComputeMessageSize(2, element);
         }
-        if (HasDummy) {
+        if (hasDummy) {
           size += pb::CodedOutputStream.ComputeInt32Size(3, Dummy);
         }
         size += UnknownFields.SerializedSize;
@@ -8478,7 +8478,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 10: {
               global::Google.ProtocolBuffers.TestProtos.TestRequired.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestRequired.CreateBuilder();
-              if (HasOptionalMessage) {
+              if (result.hasOptionalMessage) {
                 subBuilder.MergeFrom(OptionalMessage);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -8504,7 +8504,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasOptionalMessage {
-       get { return result.HasOptionalMessage; }
+       get { return result.hasOptionalMessage; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestRequired OptionalMessage {
         get { return result.OptionalMessage; }
@@ -8524,7 +8524,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeOptionalMessage(global::Google.ProtocolBuffers.TestProtos.TestRequired value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasOptionalMessage &&
+        if (result.hasOptionalMessage &&
             result.optionalMessage_ != global::Google.ProtocolBuffers.TestProtos.TestRequired.DefaultInstance) {
             result.optionalMessage_ = global::Google.ProtocolBuffers.TestProtos.TestRequired.CreateBuilder(result.optionalMessage_).MergeFrom(value).BuildPartial();
         } else {
@@ -8578,7 +8578,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDummy {
-        get { return result.HasDummy; }
+        get { return result.hasDummy; }
       }
       public int Dummy {
         get { return result.Dummy; }
@@ -8643,7 +8643,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasForeignNested) {
+      if (hasForeignNested) {
         output.WriteMessage(1, "foreign_nested", ForeignNested);
       }
       UnknownFields.WriteTo(output);
@@ -8656,7 +8656,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasForeignNested) {
+        if (hasForeignNested) {
           size += pb::CodedOutputStream.ComputeMessageSize(1, ForeignNested);
         }
         size += UnknownFields.SerializedSize;
@@ -8789,7 +8789,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 10: {
               global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.CreateBuilder();
-              if (HasForeignNested) {
+              if (result.hasForeignNested) {
                 subBuilder.MergeFrom(ForeignNested);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -8807,7 +8807,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasForeignNested {
-       get { return result.HasForeignNested; }
+       get { return result.hasForeignNested; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage ForeignNested {
         get { return result.ForeignNested; }
@@ -8827,7 +8827,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeForeignNested(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasForeignNested &&
+        if (result.hasForeignNested &&
             result.foreignNested_ != global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance) {
             result.foreignNested_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.CreateBuilder(result.foreignNested_).MergeFrom(value).BuildPartial();
         } else {
@@ -9461,10 +9461,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasA) {
+      if (hasA) {
         output.WriteInt32(1, "a", A);
       }
-      if (HasBb) {
+      if (hasBb) {
         output.WriteInt32(268435455, "bb", Bb);
       }
       UnknownFields.WriteTo(output);
@@ -9477,10 +9477,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasA) {
+        if (hasA) {
           size += pb::CodedOutputStream.ComputeInt32Size(1, A);
         }
-        if (HasBb) {
+        if (hasBb) {
           size += pb::CodedOutputStream.ComputeInt32Size(268435455, Bb);
         }
         size += UnknownFields.SerializedSize;
@@ -9633,7 +9633,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasA {
-        get { return result.HasA; }
+        get { return result.hasA; }
       }
       public int A {
         get { return result.A; }
@@ -9651,7 +9651,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasBb {
-        get { return result.HasBb; }
+        get { return result.hasBb; }
       }
       public int Bb {
         get { return result.Bb; }
@@ -9726,10 +9726,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasA) {
+      if (hasA) {
         output.WriteMessage(1, "a", A);
       }
-      if (HasI) {
+      if (hasI) {
         output.WriteInt32(2, "i", I);
       }
       UnknownFields.WriteTo(output);
@@ -9742,10 +9742,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasA) {
+        if (hasA) {
           size += pb::CodedOutputStream.ComputeMessageSize(1, A);
         }
-        if (HasI) {
+        if (hasI) {
           size += pb::CodedOutputStream.ComputeInt32Size(2, I);
         }
         size += UnknownFields.SerializedSize;
@@ -9881,7 +9881,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 10: {
               global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.CreateBuilder();
-              if (HasA) {
+              if (result.hasA) {
                 subBuilder.MergeFrom(A);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -9903,7 +9903,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasA {
-       get { return result.HasA; }
+       get { return result.hasA; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage A {
         get { return result.A; }
@@ -9923,7 +9923,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeA(global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasA &&
+        if (result.hasA &&
             result.a_ != global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.DefaultInstance) {
             result.a_ = global::Google.ProtocolBuffers.TestProtos.TestRecursiveMessage.CreateBuilder(result.a_).MergeFrom(value).BuildPartial();
         } else {
@@ -9939,7 +9939,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasI {
-        get { return result.HasI; }
+        get { return result.hasI; }
       }
       public int I {
         get { return result.I; }
@@ -10004,7 +10004,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasBb) {
+      if (hasBb) {
         output.WriteMessage(1, "bb", Bb);
       }
       UnknownFields.WriteTo(output);
@@ -10017,7 +10017,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasBb) {
+        if (hasBb) {
           size += pb::CodedOutputStream.ComputeMessageSize(1, Bb);
         }
         size += UnknownFields.SerializedSize;
@@ -10150,7 +10150,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 10: {
               global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.CreateBuilder();
-              if (HasBb) {
+              if (result.hasBb) {
                 subBuilder.MergeFrom(Bb);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -10168,7 +10168,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasBb {
-       get { return result.HasBb; }
+       get { return result.hasBb; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB Bb {
         get { return result.Bb; }
@@ -10188,7 +10188,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeBb(global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasBb &&
+        if (result.hasBb &&
             result.bb_ != global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.DefaultInstance) {
             result.bb_ = global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionB.CreateBuilder(result.bb_).MergeFrom(value).BuildPartial();
         } else {
@@ -10261,10 +10261,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasA) {
+      if (hasA) {
         output.WriteMessage(1, "a", A);
       }
-      if (HasOptionalInt32) {
+      if (hasOptionalInt32) {
         output.WriteInt32(2, "optional_int32", OptionalInt32);
       }
       UnknownFields.WriteTo(output);
@@ -10277,10 +10277,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasA) {
+        if (hasA) {
           size += pb::CodedOutputStream.ComputeMessageSize(1, A);
         }
-        if (HasOptionalInt32) {
+        if (hasOptionalInt32) {
           size += pb::CodedOutputStream.ComputeInt32Size(2, OptionalInt32);
         }
         size += UnknownFields.SerializedSize;
@@ -10416,7 +10416,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 10: {
               global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.CreateBuilder();
-              if (HasA) {
+              if (result.hasA) {
                 subBuilder.MergeFrom(A);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -10438,7 +10438,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasA {
-       get { return result.HasA; }
+       get { return result.hasA; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA A {
         get { return result.A; }
@@ -10458,7 +10458,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeA(global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasA &&
+        if (result.hasA &&
             result.a_ != global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.DefaultInstance) {
             result.a_ = global::Google.ProtocolBuffers.TestProtos.TestMutualRecursionA.CreateBuilder(result.a_).MergeFrom(value).BuildPartial();
         } else {
@@ -10474,7 +10474,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionalInt32 {
-        get { return result.HasOptionalInt32; }
+        get { return result.hasOptionalInt32; }
       }
       public int OptionalInt32 {
         get { return result.OptionalInt32; }
@@ -10569,7 +10569,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
-          if (HasA) {
+          if (hasA) {
             output.WriteInt32(1, "a", A);
           }
           UnknownFields.WriteTo(output);
@@ -10582,7 +10582,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             if (size != -1) return size;
             
             size = 0;
-            if (HasA) {
+            if (hasA) {
               size += pb::CodedOutputStream.ComputeInt32Size(1, A);
             }
             size += UnknownFields.SerializedSize;
@@ -10728,7 +10728,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           
           
           public bool HasA {
-            get { return result.HasA; }
+            get { return result.hasA; }
           }
           public int A {
             get { return result.A; }
@@ -10793,7 +10793,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
-          if (HasA) {
+          if (hasA) {
             output.WriteInt32(1, "a", A);
           }
           UnknownFields.WriteTo(output);
@@ -10806,7 +10806,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             if (size != -1) return size;
             
             size = 0;
-            if (HasA) {
+            if (hasA) {
               size += pb::CodedOutputStream.ComputeInt32Size(1, A);
             }
             size += UnknownFields.SerializedSize;
@@ -10952,7 +10952,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           
           
           public bool HasA {
-            get { return result.HasA; }
+            get { return result.hasA; }
           }
           public int A {
             get { return result.A; }
@@ -11015,13 +11015,13 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasA) {
+      if (hasA) {
         output.WriteInt32(1, "a", A);
       }
-      if (HasFoo) {
+      if (hasFoo) {
         output.WriteGroup(2, "foo", Foo);
       }
-      if (HasBar) {
+      if (hasBar) {
         output.WriteGroup(3, "bar", Bar);
       }
       UnknownFields.WriteTo(output);
@@ -11034,13 +11034,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasA) {
+        if (hasA) {
           size += pb::CodedOutputStream.ComputeInt32Size(1, A);
         }
-        if (HasFoo) {
+        if (hasFoo) {
           size += pb::CodedOutputStream.ComputeGroupSize(2, Foo);
         }
-        if (HasBar) {
+        if (hasBar) {
           size += pb::CodedOutputStream.ComputeGroupSize(3, Bar);
         }
         size += UnknownFields.SerializedSize;
@@ -11183,7 +11183,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 19: {
               global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo.CreateBuilder();
-              if (HasFoo) {
+              if (result.hasFoo) {
                 subBuilder.MergeFrom(Foo);
               }
               input.ReadGroup(2, subBuilder, extensionRegistry);
@@ -11192,7 +11192,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 27: {
               global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.CreateBuilder();
-              if (HasBar) {
+              if (result.hasBar) {
                 subBuilder.MergeFrom(Bar);
               }
               input.ReadGroup(3, subBuilder, extensionRegistry);
@@ -11210,7 +11210,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasA {
-        get { return result.HasA; }
+        get { return result.hasA; }
       }
       public int A {
         get { return result.A; }
@@ -11228,7 +11228,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasFoo {
-       get { return result.HasFoo; }
+       get { return result.hasFoo; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo Foo {
         get { return result.Foo; }
@@ -11248,7 +11248,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeFoo(global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasFoo &&
+        if (result.hasFoo &&
             result.foo_ != global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo.DefaultInstance) {
             result.foo_ = global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Foo.CreateBuilder(result.foo_).MergeFrom(value).BuildPartial();
         } else {
@@ -11264,7 +11264,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasBar {
-       get { return result.HasBar; }
+       get { return result.hasBar; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar Bar {
         get { return result.Bar; }
@@ -11284,7 +11284,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeBar(global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasBar &&
+        if (result.hasBar &&
             result.bar_ != global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.DefaultInstance) {
             result.bar_ = global::Google.ProtocolBuffers.TestProtos.TestDupFieldNumber.Types.Bar.CreateBuilder(result.bar_).MergeFrom(value).BuildPartial();
         } else {
@@ -11660,7 +11660,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasOptionalNestedMessage) {
+      if (hasOptionalNestedMessage) {
         output.WriteMessage(1, "optional_nested_message", OptionalNestedMessage);
       }
       UnknownFields.WriteTo(output);
@@ -11673,7 +11673,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasOptionalNestedMessage) {
+        if (hasOptionalNestedMessage) {
           size += pb::CodedOutputStream.ComputeMessageSize(1, OptionalNestedMessage);
         }
         size += UnknownFields.SerializedSize;
@@ -11806,7 +11806,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 10: {
               global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.CreateBuilder();
-              if (HasOptionalNestedMessage) {
+              if (result.hasOptionalNestedMessage) {
                 subBuilder.MergeFrom(OptionalNestedMessage);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -11824,7 +11824,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasOptionalNestedMessage {
-       get { return result.HasOptionalNestedMessage; }
+       get { return result.hasOptionalNestedMessage; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage OptionalNestedMessage {
         get { return result.OptionalNestedMessage; }
@@ -11844,7 +11844,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeOptionalNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasOptionalNestedMessage &&
+        if (result.hasOptionalNestedMessage &&
             result.optionalNestedMessage_ != global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.DefaultInstance) {
             result.optionalNestedMessage_ = global::Google.ProtocolBuffers.TestProtos.TestNestedMessageHasBits.Types.NestedMessage.CreateBuilder(result.optionalNestedMessage_).MergeFrom(value).BuildPartial();
         } else {
@@ -12029,22 +12029,22 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasPrimitiveField) {
+      if (hasPrimitiveField) {
         output.WriteInt32(1, "PrimitiveField", PrimitiveField);
       }
-      if (HasStringField) {
+      if (hasStringField) {
         output.WriteString(2, "StringField", StringField);
       }
-      if (HasEnumField) {
+      if (hasEnumField) {
         output.WriteEnum(3, "EnumField", (int) EnumField, EnumField.ToString());
       }
-      if (HasMessageField) {
+      if (hasMessageField) {
         output.WriteMessage(4, "MessageField", MessageField);
       }
-      if (HasStringPieceField) {
+      if (hasStringPieceField) {
         output.WriteString(5, "StringPieceField", StringPieceField);
       }
-      if (HasCordField) {
+      if (hasCordField) {
         output.WriteString(6, "CordField", CordField);
       }
       if (repeatedPrimitiveField_.Count > 0) {
@@ -12075,22 +12075,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasPrimitiveField) {
+        if (hasPrimitiveField) {
           size += pb::CodedOutputStream.ComputeInt32Size(1, PrimitiveField);
         }
-        if (HasStringField) {
+        if (hasStringField) {
           size += pb::CodedOutputStream.ComputeStringSize(2, StringField);
         }
-        if (HasEnumField) {
+        if (hasEnumField) {
           size += pb::CodedOutputStream.ComputeEnumSize(3, (int) EnumField);
         }
-        if (HasMessageField) {
+        if (hasMessageField) {
           size += pb::CodedOutputStream.ComputeMessageSize(4, MessageField);
         }
-        if (HasStringPieceField) {
+        if (hasStringPieceField) {
           size += pb::CodedOutputStream.ComputeStringSize(5, StringPieceField);
         }
-        if (HasCordField) {
+        if (hasCordField) {
           size += pb::CodedOutputStream.ComputeStringSize(6, CordField);
         }
         {
@@ -12327,7 +12327,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 34: {
               global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder();
-              if (HasMessageField) {
+              if (result.hasMessageField) {
                 subBuilder.MergeFrom(MessageField);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -12388,7 +12388,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasPrimitiveField {
-        get { return result.HasPrimitiveField; }
+        get { return result.hasPrimitiveField; }
       }
       public int PrimitiveField {
         get { return result.PrimitiveField; }
@@ -12406,7 +12406,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasStringField {
-        get { return result.HasStringField; }
+        get { return result.hasStringField; }
       }
       public string StringField {
         get { return result.StringField; }
@@ -12425,7 +12425,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasEnumField {
-       get { return result.HasEnumField; }
+       get { return result.hasEnumField; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ForeignEnum EnumField {
         get { return result.EnumField; }
@@ -12443,7 +12443,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasMessageField {
-       get { return result.HasMessageField; }
+       get { return result.hasMessageField; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ForeignMessage MessageField {
         get { return result.MessageField; }
@@ -12463,7 +12463,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeMessageField(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasMessageField &&
+        if (result.hasMessageField &&
             result.messageField_ != global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance) {
             result.messageField_ = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder(result.messageField_).MergeFrom(value).BuildPartial();
         } else {
@@ -12479,7 +12479,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasStringPieceField {
-        get { return result.HasStringPieceField; }
+        get { return result.hasStringPieceField; }
       }
       public string StringPieceField {
         get { return result.StringPieceField; }
@@ -12498,7 +12498,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasCordField {
-        get { return result.HasCordField; }
+        get { return result.hasCordField; }
       }
       public string CordField {
         get { return result.CordField; }
@@ -12760,15 +12760,15 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessage<TestFieldOrderings, TestFieldOrderings.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
-      if (HasMyInt) {
+      if (hasMyInt) {
         output.WriteInt64(1, "my_int", MyInt);
       }
       extensionWriter.WriteUntil(11, output);
-      if (HasMyString) {
+      if (hasMyString) {
         output.WriteString(11, "my_string", MyString);
       }
       extensionWriter.WriteUntil(101, output);
-      if (HasMyFloat) {
+      if (hasMyFloat) {
         output.WriteFloat(101, "my_float", MyFloat);
       }
       UnknownFields.WriteTo(output);
@@ -12781,13 +12781,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasMyString) {
+        if (hasMyString) {
           size += pb::CodedOutputStream.ComputeStringSize(11, MyString);
         }
-        if (HasMyInt) {
+        if (hasMyInt) {
           size += pb::CodedOutputStream.ComputeInt64Size(1, MyInt);
         }
-        if (HasMyFloat) {
+        if (hasMyFloat) {
           size += pb::CodedOutputStream.ComputeFloatSize(101, MyFloat);
         }
         size += ExtensionsSerializedSize;
@@ -12949,7 +12949,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasMyString {
-        get { return result.HasMyString; }
+        get { return result.hasMyString; }
       }
       public string MyString {
         get { return result.MyString; }
@@ -12968,7 +12968,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasMyInt {
-        get { return result.HasMyInt; }
+        get { return result.hasMyInt; }
       }
       public long MyInt {
         get { return result.MyInt; }
@@ -12986,7 +12986,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasMyFloat {
-        get { return result.HasMyFloat; }
+        get { return result.hasMyFloat; }
       }
       public float MyFloat {
         get { return result.MyFloat; }
@@ -13233,61 +13233,61 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasEscapedBytes) {
+      if (hasEscapedBytes) {
         output.WriteBytes(1, "escaped_bytes", EscapedBytes);
       }
-      if (HasLargeUint32) {
+      if (hasLargeUint32) {
         output.WriteUInt32(2, "large_uint32", LargeUint32);
       }
-      if (HasLargeUint64) {
+      if (hasLargeUint64) {
         output.WriteUInt64(3, "large_uint64", LargeUint64);
       }
-      if (HasSmallInt32) {
+      if (hasSmallInt32) {
         output.WriteInt32(4, "small_int32", SmallInt32);
       }
-      if (HasSmallInt64) {
+      if (hasSmallInt64) {
         output.WriteInt64(5, "small_int64", SmallInt64);
       }
-      if (HasUtf8String) {
+      if (hasUtf8String) {
         output.WriteString(6, "utf8_string", Utf8String);
       }
-      if (HasZeroFloat) {
+      if (hasZeroFloat) {
         output.WriteFloat(7, "zero_float", ZeroFloat);
       }
-      if (HasOneFloat) {
+      if (hasOneFloat) {
         output.WriteFloat(8, "one_float", OneFloat);
       }
-      if (HasSmallFloat) {
+      if (hasSmallFloat) {
         output.WriteFloat(9, "small_float", SmallFloat);
       }
-      if (HasNegativeOneFloat) {
+      if (hasNegativeOneFloat) {
         output.WriteFloat(10, "negative_one_float", NegativeOneFloat);
       }
-      if (HasNegativeFloat) {
+      if (hasNegativeFloat) {
         output.WriteFloat(11, "negative_float", NegativeFloat);
       }
-      if (HasLargeFloat) {
+      if (hasLargeFloat) {
         output.WriteFloat(12, "large_float", LargeFloat);
       }
-      if (HasSmallNegativeFloat) {
+      if (hasSmallNegativeFloat) {
         output.WriteFloat(13, "small_negative_float", SmallNegativeFloat);
       }
-      if (HasInfDouble) {
+      if (hasInfDouble) {
         output.WriteDouble(14, "inf_double", InfDouble);
       }
-      if (HasNegInfDouble) {
+      if (hasNegInfDouble) {
         output.WriteDouble(15, "neg_inf_double", NegInfDouble);
       }
-      if (HasNanDouble) {
+      if (hasNanDouble) {
         output.WriteDouble(16, "nan_double", NanDouble);
       }
-      if (HasInfFloat) {
+      if (hasInfFloat) {
         output.WriteFloat(17, "inf_float", InfFloat);
       }
-      if (HasNegInfFloat) {
+      if (hasNegInfFloat) {
         output.WriteFloat(18, "neg_inf_float", NegInfFloat);
       }
-      if (HasNanFloat) {
+      if (hasNanFloat) {
         output.WriteFloat(19, "nan_float", NanFloat);
       }
       UnknownFields.WriteTo(output);
@@ -13300,61 +13300,61 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasEscapedBytes) {
+        if (hasEscapedBytes) {
           size += pb::CodedOutputStream.ComputeBytesSize(1, EscapedBytes);
         }
-        if (HasLargeUint32) {
+        if (hasLargeUint32) {
           size += pb::CodedOutputStream.ComputeUInt32Size(2, LargeUint32);
         }
-        if (HasLargeUint64) {
+        if (hasLargeUint64) {
           size += pb::CodedOutputStream.ComputeUInt64Size(3, LargeUint64);
         }
-        if (HasSmallInt32) {
+        if (hasSmallInt32) {
           size += pb::CodedOutputStream.ComputeInt32Size(4, SmallInt32);
         }
-        if (HasSmallInt64) {
+        if (hasSmallInt64) {
           size += pb::CodedOutputStream.ComputeInt64Size(5, SmallInt64);
         }
-        if (HasUtf8String) {
+        if (hasUtf8String) {
           size += pb::CodedOutputStream.ComputeStringSize(6, Utf8String);
         }
-        if (HasZeroFloat) {
+        if (hasZeroFloat) {
           size += pb::CodedOutputStream.ComputeFloatSize(7, ZeroFloat);
         }
-        if (HasOneFloat) {
+        if (hasOneFloat) {
           size += pb::CodedOutputStream.ComputeFloatSize(8, OneFloat);
         }
-        if (HasSmallFloat) {
+        if (hasSmallFloat) {
           size += pb::CodedOutputStream.ComputeFloatSize(9, SmallFloat);
         }
-        if (HasNegativeOneFloat) {
+        if (hasNegativeOneFloat) {
           size += pb::CodedOutputStream.ComputeFloatSize(10, NegativeOneFloat);
         }
-        if (HasNegativeFloat) {
+        if (hasNegativeFloat) {
           size += pb::CodedOutputStream.ComputeFloatSize(11, NegativeFloat);
         }
-        if (HasLargeFloat) {
+        if (hasLargeFloat) {
           size += pb::CodedOutputStream.ComputeFloatSize(12, LargeFloat);
         }
-        if (HasSmallNegativeFloat) {
+        if (hasSmallNegativeFloat) {
           size += pb::CodedOutputStream.ComputeFloatSize(13, SmallNegativeFloat);
         }
-        if (HasInfDouble) {
+        if (hasInfDouble) {
           size += pb::CodedOutputStream.ComputeDoubleSize(14, InfDouble);
         }
-        if (HasNegInfDouble) {
+        if (hasNegInfDouble) {
           size += pb::CodedOutputStream.ComputeDoubleSize(15, NegInfDouble);
         }
-        if (HasNanDouble) {
+        if (hasNanDouble) {
           size += pb::CodedOutputStream.ComputeDoubleSize(16, NanDouble);
         }
-        if (HasInfFloat) {
+        if (hasInfFloat) {
           size += pb::CodedOutputStream.ComputeFloatSize(17, InfFloat);
         }
-        if (HasNegInfFloat) {
+        if (hasNegInfFloat) {
           size += pb::CodedOutputStream.ComputeFloatSize(18, NegInfFloat);
         }
-        if (HasNanFloat) {
+        if (hasNanFloat) {
           size += pb::CodedOutputStream.ComputeFloatSize(19, NanFloat);
         }
         size += UnknownFields.SerializedSize;
@@ -13626,7 +13626,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasEscapedBytes {
-        get { return result.HasEscapedBytes; }
+        get { return result.hasEscapedBytes; }
       }
       public pb::ByteString EscapedBytes {
         get { return result.EscapedBytes; }
@@ -13645,7 +13645,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasLargeUint32 {
-        get { return result.HasLargeUint32; }
+        get { return result.hasLargeUint32; }
       }
       [global::System.CLSCompliant(false)]
       public uint LargeUint32 {
@@ -13665,7 +13665,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasLargeUint64 {
-        get { return result.HasLargeUint64; }
+        get { return result.hasLargeUint64; }
       }
       [global::System.CLSCompliant(false)]
       public ulong LargeUint64 {
@@ -13685,7 +13685,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasSmallInt32 {
-        get { return result.HasSmallInt32; }
+        get { return result.hasSmallInt32; }
       }
       public int SmallInt32 {
         get { return result.SmallInt32; }
@@ -13703,7 +13703,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasSmallInt64 {
-        get { return result.HasSmallInt64; }
+        get { return result.hasSmallInt64; }
       }
       public long SmallInt64 {
         get { return result.SmallInt64; }
@@ -13721,7 +13721,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasUtf8String {
-        get { return result.HasUtf8String; }
+        get { return result.hasUtf8String; }
       }
       public string Utf8String {
         get { return result.Utf8String; }
@@ -13740,7 +13740,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasZeroFloat {
-        get { return result.HasZeroFloat; }
+        get { return result.hasZeroFloat; }
       }
       public float ZeroFloat {
         get { return result.ZeroFloat; }
@@ -13758,7 +13758,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOneFloat {
-        get { return result.HasOneFloat; }
+        get { return result.hasOneFloat; }
       }
       public float OneFloat {
         get { return result.OneFloat; }
@@ -13776,7 +13776,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasSmallFloat {
-        get { return result.HasSmallFloat; }
+        get { return result.hasSmallFloat; }
       }
       public float SmallFloat {
         get { return result.SmallFloat; }
@@ -13794,7 +13794,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasNegativeOneFloat {
-        get { return result.HasNegativeOneFloat; }
+        get { return result.hasNegativeOneFloat; }
       }
       public float NegativeOneFloat {
         get { return result.NegativeOneFloat; }
@@ -13812,7 +13812,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasNegativeFloat {
-        get { return result.HasNegativeFloat; }
+        get { return result.hasNegativeFloat; }
       }
       public float NegativeFloat {
         get { return result.NegativeFloat; }
@@ -13830,7 +13830,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasLargeFloat {
-        get { return result.HasLargeFloat; }
+        get { return result.hasLargeFloat; }
       }
       public float LargeFloat {
         get { return result.LargeFloat; }
@@ -13848,7 +13848,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasSmallNegativeFloat {
-        get { return result.HasSmallNegativeFloat; }
+        get { return result.hasSmallNegativeFloat; }
       }
       public float SmallNegativeFloat {
         get { return result.SmallNegativeFloat; }
@@ -13866,7 +13866,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasInfDouble {
-        get { return result.HasInfDouble; }
+        get { return result.hasInfDouble; }
       }
       public double InfDouble {
         get { return result.InfDouble; }
@@ -13884,7 +13884,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasNegInfDouble {
-        get { return result.HasNegInfDouble; }
+        get { return result.hasNegInfDouble; }
       }
       public double NegInfDouble {
         get { return result.NegInfDouble; }
@@ -13902,7 +13902,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasNanDouble {
-        get { return result.HasNanDouble; }
+        get { return result.hasNanDouble; }
       }
       public double NanDouble {
         get { return result.NanDouble; }
@@ -13920,7 +13920,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasInfFloat {
-        get { return result.HasInfFloat; }
+        get { return result.hasInfFloat; }
       }
       public float InfFloat {
         get { return result.InfFloat; }
@@ -13938,7 +13938,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasNegInfFloat {
-        get { return result.HasNegInfFloat; }
+        get { return result.hasNegInfFloat; }
       }
       public float NegInfFloat {
         get { return result.NegInfFloat; }
@@ -13956,7 +13956,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasNanFloat {
-        get { return result.HasNanFloat; }
+        get { return result.hasNanFloat; }
       }
       public float NanFloat {
         get { return result.NanFloat; }
@@ -14021,7 +14021,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasData) {
+      if (hasData) {
         output.WriteString(1, "data", Data);
       }
       UnknownFields.WriteTo(output);
@@ -14034,7 +14034,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasData) {
+        if (hasData) {
           size += pb::CodedOutputStream.ComputeStringSize(1, Data);
         }
         size += UnknownFields.SerializedSize;
@@ -14180,7 +14180,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasData {
-        get { return result.HasData; }
+        get { return result.hasData; }
       }
       public string Data {
         get { return result.Data; }
@@ -14246,7 +14246,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasData) {
+      if (hasData) {
         output.WriteBytes(1, "data", Data);
       }
       UnknownFields.WriteTo(output);
@@ -14259,7 +14259,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasData) {
+        if (hasData) {
           size += pb::CodedOutputStream.ComputeBytesSize(1, Data);
         }
         size += UnknownFields.SerializedSize;
@@ -14405,7 +14405,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasData {
-        get { return result.HasData; }
+        get { return result.hasData; }
       }
       public pb::ByteString Data {
         get { return result.Data; }
@@ -16980,7 +16980,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
-          if (HasDynamicField) {
+          if (hasDynamicField) {
             output.WriteInt32(2100, "dynamic_field", DynamicField);
           }
           UnknownFields.WriteTo(output);
@@ -16993,7 +16993,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             if (size != -1) return size;
             
             size = 0;
-            if (HasDynamicField) {
+            if (hasDynamicField) {
               size += pb::CodedOutputStream.ComputeInt32Size(2100, DynamicField);
             }
             size += UnknownFields.SerializedSize;
@@ -17139,7 +17139,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           
           
           public bool HasDynamicField {
-            get { return result.HasDynamicField; }
+            get { return result.hasDynamicField; }
           }
           public int DynamicField {
             get { return result.DynamicField; }
@@ -17248,19 +17248,19 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasScalarExtension) {
+      if (hasScalarExtension) {
         output.WriteFixed32(2000, "scalar_extension", ScalarExtension);
       }
-      if (HasEnumExtension) {
+      if (hasEnumExtension) {
         output.WriteEnum(2001, "enum_extension", (int) EnumExtension, EnumExtension.ToString());
       }
-      if (HasDynamicEnumExtension) {
+      if (hasDynamicEnumExtension) {
         output.WriteEnum(2002, "dynamic_enum_extension", (int) DynamicEnumExtension, DynamicEnumExtension.ToString());
       }
-      if (HasMessageExtension) {
+      if (hasMessageExtension) {
         output.WriteMessage(2003, "message_extension", MessageExtension);
       }
-      if (HasDynamicMessageExtension) {
+      if (hasDynamicMessageExtension) {
         output.WriteMessage(2004, "dynamic_message_extension", DynamicMessageExtension);
       }
       if (repeatedExtension_.Count > 0) {
@@ -17279,19 +17279,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasScalarExtension) {
+        if (hasScalarExtension) {
           size += pb::CodedOutputStream.ComputeFixed32Size(2000, ScalarExtension);
         }
-        if (HasEnumExtension) {
+        if (hasEnumExtension) {
           size += pb::CodedOutputStream.ComputeEnumSize(2001, (int) EnumExtension);
         }
-        if (HasDynamicEnumExtension) {
+        if (hasDynamicEnumExtension) {
           size += pb::CodedOutputStream.ComputeEnumSize(2002, (int) DynamicEnumExtension);
         }
-        if (HasMessageExtension) {
+        if (hasMessageExtension) {
           size += pb::CodedOutputStream.ComputeMessageSize(2003, MessageExtension);
         }
-        if (HasDynamicMessageExtension) {
+        if (hasDynamicMessageExtension) {
           size += pb::CodedOutputStream.ComputeMessageSize(2004, DynamicMessageExtension);
         }
         {
@@ -17491,7 +17491,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 16026: {
               global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder();
-              if (HasMessageExtension) {
+              if (result.hasMessageExtension) {
                 subBuilder.MergeFrom(MessageExtension);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -17500,7 +17500,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 16034: {
               global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType.CreateBuilder();
-              if (HasDynamicMessageExtension) {
+              if (result.hasDynamicMessageExtension) {
                 subBuilder.MergeFrom(DynamicMessageExtension);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -17527,7 +17527,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasScalarExtension {
-        get { return result.HasScalarExtension; }
+        get { return result.hasScalarExtension; }
       }
       [global::System.CLSCompliant(false)]
       public uint ScalarExtension {
@@ -17547,7 +17547,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasEnumExtension {
-       get { return result.HasEnumExtension; }
+       get { return result.hasEnumExtension; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ForeignEnum EnumExtension {
         get { return result.EnumExtension; }
@@ -17565,7 +17565,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDynamicEnumExtension {
-       get { return result.HasDynamicEnumExtension; }
+       get { return result.hasDynamicEnumExtension; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicEnumType DynamicEnumExtension {
         get { return result.DynamicEnumExtension; }
@@ -17583,7 +17583,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasMessageExtension {
-       get { return result.HasMessageExtension; }
+       get { return result.hasMessageExtension; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ForeignMessage MessageExtension {
         get { return result.MessageExtension; }
@@ -17603,7 +17603,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeMessageExtension(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasMessageExtension &&
+        if (result.hasMessageExtension &&
             result.messageExtension_ != global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance) {
             result.messageExtension_ = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder(result.messageExtension_).MergeFrom(value).BuildPartial();
         } else {
@@ -17619,7 +17619,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasDynamicMessageExtension {
-       get { return result.HasDynamicMessageExtension; }
+       get { return result.hasDynamicMessageExtension; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType DynamicMessageExtension {
         get { return result.DynamicMessageExtension; }
@@ -17639,7 +17639,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeDynamicMessageExtension(global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasDynamicMessageExtension &&
+        if (result.hasDynamicMessageExtension &&
             result.dynamicMessageExtension_ != global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType.DefaultInstance) {
             result.dynamicMessageExtension_ = global::Google.ProtocolBuffers.TestProtos.TestDynamicExtensions.Types.DynamicMessageType.CreateBuilder(result.dynamicMessageExtension_).MergeFrom(value).BuildPartial();
         } else {

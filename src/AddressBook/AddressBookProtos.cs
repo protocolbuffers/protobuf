@@ -154,10 +154,10 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
-          if (HasNumber) {
+          if (hasNumber) {
             output.WriteString(1, "number", Number);
           }
-          if (HasType) {
+          if (hasType) {
             output.WriteEnum(2, "type", (int) Type, Type.ToString());
           }
           UnknownFields.WriteTo(output);
@@ -170,10 +170,10 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
             if (size != -1) return size;
             
             size = 0;
-            if (HasNumber) {
+            if (hasNumber) {
               size += pb::CodedOutputStream.ComputeStringSize(1, Number);
             }
-            if (HasType) {
+            if (hasType) {
               size += pb::CodedOutputStream.ComputeEnumSize(2, (int) Type);
             }
             size += UnknownFields.SerializedSize;
@@ -334,7 +334,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           
           
           public bool HasNumber {
-            get { return result.HasNumber; }
+            get { return result.hasNumber; }
           }
           public string Number {
             get { return result.Number; }
@@ -353,7 +353,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           }
           
           public bool HasType {
-           get { return result.HasType; }
+           get { return result.hasType; }
           }
           public global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType Type {
             get { return result.Type; }
@@ -433,13 +433,13 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasName) {
+      if (hasName) {
         output.WriteString(1, "name", Name);
       }
-      if (HasId) {
+      if (hasId) {
         output.WriteInt32(2, "id", Id);
       }
-      if (HasEmail) {
+      if (hasEmail) {
         output.WriteString(3, "email", Email);
       }
       if (phone_.Count > 0) {
@@ -455,13 +455,13 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         if (size != -1) return size;
         
         size = 0;
-        if (HasName) {
+        if (hasName) {
           size += pb::CodedOutputStream.ComputeStringSize(1, Name);
         }
-        if (HasId) {
+        if (hasId) {
           size += pb::CodedOutputStream.ComputeInt32Size(2, Id);
         }
-        if (HasEmail) {
+        if (hasEmail) {
           size += pb::CodedOutputStream.ComputeStringSize(3, Email);
         }
         foreach (global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber element in PhoneList) {
@@ -632,7 +632,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       
       
       public bool HasName {
-        get { return result.HasName; }
+        get { return result.hasName; }
       }
       public string Name {
         get { return result.Name; }
@@ -651,7 +651,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       
       public bool HasId {
-        get { return result.HasId; }
+        get { return result.hasId; }
       }
       public int Id {
         get { return result.Id; }
@@ -669,7 +669,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       
       public bool HasEmail {
-        get { return result.HasEmail; }
+        get { return result.hasEmail; }
       }
       public string Email {
         get { return result.Email; }

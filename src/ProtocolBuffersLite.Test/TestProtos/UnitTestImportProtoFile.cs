@@ -108,7 +108,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasD) {
+      if (hasD) {
         output.WriteInt32(1, "d", D);
       }
       UnknownFields.WriteTo(output);
@@ -121,7 +121,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasD) {
+        if (hasD) {
           size += pb::CodedOutputStream.ComputeInt32Size(1, D);
         }
         size += UnknownFields.SerializedSize;
@@ -267,7 +267,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasD {
-        get { return result.HasD; }
+        get { return result.hasD; }
       }
       public int D {
         get { return result.D; }

@@ -403,10 +403,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
-          if (HasUrl) {
+          if (hasUrl) {
             output.WriteString(1, "url", Url);
           }
-          if (HasName) {
+          if (hasName) {
             output.WriteString(2, "name", Name);
           }
           UnknownFields.WriteTo(output);
@@ -419,10 +419,10 @@ namespace Google.ProtocolBuffers.TestProtos {
             if (size != -1) return size;
             
             size = 0;
-            if (HasUrl) {
+            if (hasUrl) {
               size += pb::CodedOutputStream.ComputeStringSize(1, Url);
             }
-            if (HasName) {
+            if (hasName) {
               size += pb::CodedOutputStream.ComputeStringSize(2, Name);
             }
             size += UnknownFields.SerializedSize;
@@ -575,7 +575,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           
           
           public bool HasUrl {
-            get { return result.HasUrl; }
+            get { return result.hasUrl; }
           }
           public string Url {
             get { return result.Url; }
@@ -594,7 +594,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasName {
-            get { return result.HasName; }
+            get { return result.hasName; }
           }
           public string Name {
             get { return result.Name; }
@@ -905,7 +905,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       if (criteria_.Count > 0) {
         output.WriteArray(pbd::FieldType.String, 1, "Criteria", criteria_);
       }
-      if (HasPreviousResults) {
+      if (hasPreviousResults) {
         output.WriteMessage(2, "previous_results", PreviousResults);
       }
       UnknownFields.WriteTo(output);
@@ -926,7 +926,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           size += dataSize;
           size += 1 * criteria_.Count;
         }
-        if (HasPreviousResults) {
+        if (hasPreviousResults) {
           size += pb::CodedOutputStream.ComputeMessageSize(2, PreviousResults);
         }
         size += UnknownFields.SerializedSize;
@@ -1067,7 +1067,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 18: {
               global::Google.ProtocolBuffers.TestProtos.SearchResponse.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.SearchResponse.CreateBuilder();
-              if (HasPreviousResults) {
+              if (result.hasPreviousResults) {
                 subBuilder.MergeFrom(PreviousResults);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -1113,7 +1113,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasPreviousResults {
-       get { return result.HasPreviousResults; }
+       get { return result.hasPreviousResults; }
       }
       public global::Google.ProtocolBuffers.TestProtos.SearchResponse PreviousResults {
         get { return result.PreviousResults; }
@@ -1133,7 +1133,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergePreviousResults(global::Google.ProtocolBuffers.TestProtos.SearchResponse value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasPreviousResults &&
+        if (result.hasPreviousResults &&
             result.previousResults_ != global::Google.ProtocolBuffers.TestProtos.SearchResponse.DefaultInstance) {
             result.previousResults_ = global::Google.ProtocolBuffers.TestProtos.SearchResponse.CreateBuilder(result.previousResults_).MergeFrom(value).BuildPartial();
         } else {

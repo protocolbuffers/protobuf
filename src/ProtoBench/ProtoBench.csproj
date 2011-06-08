@@ -66,6 +66,7 @@
     <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffers.csproj">
       <Project>{6908BDCE-D925-43F3-94AC-A531E6DF2591}</Project>
       <Name>ProtocolBuffers</Name>
+      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

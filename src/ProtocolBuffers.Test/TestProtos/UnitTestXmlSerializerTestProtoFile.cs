@@ -182,7 +182,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       if (options_.Count > 0) {
         output.WriteArray(pbd::FieldType.Enum, 3, "options", options_);
       }
-      if (HasBinary) {
+      if (hasBinary) {
         output.WriteBytes(4, "binary", Binary);
       }
       UnknownFields.WriteTo(output);
@@ -205,7 +205,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             size += 1 * options_.Count;
           }
         }
-        if (HasBinary) {
+        if (hasBinary) {
           size += pb::CodedOutputStream.ComputeBytesSize(4, Binary);
         }
         size += UnknownFields.SerializedSize;
@@ -395,7 +395,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasBinary {
-        get { return result.HasBinary; }
+        get { return result.hasBinary; }
       }
       public pb::ByteString Binary {
         get { return result.Binary; }
@@ -689,7 +689,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           if (options_.Count > 0) {
             output.WriteArray(pbd::FieldType.Enum, 3, "options", options_);
           }
-          if (HasBinary) {
+          if (hasBinary) {
             output.WriteBytes(4, "binary", Binary);
           }
           UnknownFields.WriteTo(output);
@@ -712,7 +712,7 @@ namespace Google.ProtocolBuffers.TestProtos {
                 size += 1 * options_.Count;
               }
             }
-            if (HasBinary) {
+            if (hasBinary) {
               size += pb::CodedOutputStream.ComputeBytesSize(4, Binary);
             }
             size += UnknownFields.SerializedSize;
@@ -902,7 +902,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasBinary {
-            get { return result.HasBinary; }
+            get { return result.hasBinary; }
           }
           public pb::ByteString Binary {
             get { return result.Binary; }
@@ -1014,19 +1014,19 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessage<TestXmlMessage, TestXmlMessage.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
-      if (HasChild) {
+      if (hasChild) {
         output.WriteMessage(1, "child", Child);
       }
       if (numbers_.Count > 0) {
         output.WriteArray(pbd::FieldType.Int32, 2, "numbers", numbers_);
       }
-      if (HasText) {
+      if (hasText) {
         output.WriteString(3, "text", Text);
       }
-      if (HasValid) {
+      if (hasValid) {
         output.WriteBool(5, "valid", Valid);
       }
-      if (HasNumber) {
+      if (hasNumber) {
         output.WriteInt64(6, "number", Number);
       }
       extensionWriter.WriteUntil(200, output);
@@ -1046,7 +1046,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasNumber) {
+        if (hasNumber) {
           size += pb::CodedOutputStream.ComputeInt64Size(6, Number);
         }
         {
@@ -1057,7 +1057,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           size += dataSize;
           size += 1 * numbers_.Count;
         }
-        if (HasText) {
+        if (hasText) {
           size += pb::CodedOutputStream.ComputeStringSize(3, Text);
         }
         {
@@ -1068,10 +1068,10 @@ namespace Google.ProtocolBuffers.TestProtos {
           size += dataSize;
           size += 2 * textlines_.Count;
         }
-        if (HasValid) {
+        if (hasValid) {
           size += pb::CodedOutputStream.ComputeBoolSize(5, Valid);
         }
-        if (HasChild) {
+        if (hasChild) {
           size += pb::CodedOutputStream.ComputeMessageSize(1, Child);
         }
         foreach (global::Google.ProtocolBuffers.TestProtos.TestXmlMessage.Types.Children element in ChildrenList) {
@@ -1230,7 +1230,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 10: {
               global::Google.ProtocolBuffers.TestProtos.TestXmlChild.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestXmlChild.CreateBuilder();
-              if (HasChild) {
+              if (result.hasChild) {
                 subBuilder.MergeFrom(Child);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -1273,7 +1273,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasNumber {
-        get { return result.HasNumber; }
+        get { return result.hasNumber; }
       }
       public long Number {
         get { return result.Number; }
@@ -1317,7 +1317,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasText {
-        get { return result.HasText; }
+        get { return result.hasText; }
       }
       public string Text {
         get { return result.Text; }
@@ -1364,7 +1364,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasValid {
-        get { return result.HasValid; }
+        get { return result.hasValid; }
       }
       public bool Valid {
         get { return result.Valid; }
@@ -1382,7 +1382,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasChild {
-       get { return result.HasChild; }
+       get { return result.hasChild; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestXmlChild Child {
         get { return result.Child; }
@@ -1402,7 +1402,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeChild(global::Google.ProtocolBuffers.TestProtos.TestXmlChild value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasChild &&
+        if (result.hasChild &&
             result.child_ != global::Google.ProtocolBuffers.TestProtos.TestXmlChild.DefaultInstance) {
             result.child_ = global::Google.ProtocolBuffers.TestProtos.TestXmlChild.CreateBuilder(result.child_).MergeFrom(value).BuildPartial();
         } else {
@@ -1504,7 +1504,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasNumber) {
+      if (hasNumber) {
         output.WriteInt32(1, "number", Number);
       }
       UnknownFields.WriteTo(output);
@@ -1517,7 +1517,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasNumber) {
+        if (hasNumber) {
           size += pb::CodedOutputStream.ComputeInt32Size(1, Number);
         }
         size += UnknownFields.SerializedSize;
@@ -1663,7 +1663,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasNumber {
-        get { return result.HasNumber; }
+        get { return result.hasNumber; }
       }
       public int Number {
         get { return result.Number; }

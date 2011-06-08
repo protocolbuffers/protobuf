@@ -35,6 +35,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -315,11 +316,95 @@ namespace Google.ProtocolBuffers
             WriteBytes(WireFormat.MessageSetField.Message, "message", value);
             WriteTag(WireFormat.MessageSetField.Item, WireFormat.WireType.EndGroup);
         }
-
+        
         public void WriteArray(FieldType fieldType, int fieldNumber, string fieldName, System.Collections.IEnumerable list)
         {
             foreach (object element in list)
                 WriteField(fieldType, fieldNumber, fieldName, element);
+        }
+
+        public void WriteArray<T>(FieldType fieldType, int fieldNumber, string fieldName, System.Collections.Generic.IEnumerable<T> list)
+        {
+            switch (fieldType)
+            {
+                case FieldType.String:
+                    foreach (string value in ((IEnumerable<string>)list))
+                        WriteString(fieldNumber, fieldName, value);
+                    break;
+                case FieldType.Message:
+                    foreach (T value in list)
+                        WriteMessage(fieldNumber, fieldName, (IMessageLite)value);
+                    break;
+                case FieldType.Group:
+                    foreach (T value in list)
+                        WriteGroup(fieldNumber, fieldName, (IMessageLite)value);
+                    break;
+                case FieldType.Bytes:
+                    foreach (ByteString value in ((IEnumerable<ByteString>)list))
+                        WriteBytes(fieldNumber, fieldName, value);
+                    break;
+                case FieldType.Bool:
+                    foreach (bool value in ((IEnumerable<bool>)list))
+                        WriteBool(fieldNumber, fieldName, value);
+                    break;
+                case FieldType.Enum:
+                    foreach (T value in list)
+                    {
+                        if (value is System.Enum)
+                            WriteEnum(fieldNumber, fieldName, ((IConvertible)value).ToInt32(CultureInfo.InvariantCulture), null/*not used*/);
+                        else
+                            WriteEnum(fieldNumber, fieldName, ((IEnumLite)value).Number, null/*not used*/);
+                    }
+                    break;
+                case FieldType.Int32:
+                    foreach (int value in ((IEnumerable<int>)list))
+                        WriteInt32(fieldNumber, fieldName, value);
+                    break;
+                case FieldType.Int64:
+                    foreach (long value in ((IEnumerable<long>)list))
+                        WriteInt64(fieldNumber, fieldName, value);
+                    break;
+                case FieldType.UInt32:
+                    foreach (uint value in ((IEnumerable<uint>)list))
+                        WriteUInt32(fieldNumber, fieldName, value);
+                    break;
+                case FieldType.UInt64:
+                    foreach (ulong value in ((IEnumerable<ulong>)list))
+                        WriteUInt64(fieldNumber, fieldName, value);
+                    break;
+                case FieldType.SInt32:
+                    foreach (int value in ((IEnumerable<int>)list))
+                        WriteSInt32(fieldNumber, fieldName, value);
+                    break;
+                case FieldType.SInt64:
+                    foreach (long value in ((IEnumerable<long>)list))
+                        WriteSInt64(fieldNumber, fieldName, value);
+                    break;
+                case FieldType.Fixed32:
+                    foreach (uint value in ((IEnumerable<uint>)list))
+                        WriteFixed32(fieldNumber, fieldName, value);
+                    break;
+                case FieldType.Fixed64:
+                    foreach (ulong value in ((IEnumerable<ulong>)list))
+                        WriteFixed64(fieldNumber, fieldName, value);
+                    break;
+                case FieldType.SFixed32:
+                    foreach (int value in ((IEnumerable<int>)list))
+                        WriteSFixed32(fieldNumber, fieldName, value);
+                    break;
+                case FieldType.SFixed64:
+                    foreach (long value in ((IEnumerable<long>)list))
+                        WriteSFixed64(fieldNumber, fieldName, value);
+                    break;
+                case FieldType.Double:
+                    foreach (double value in ((IEnumerable<double>)list))
+                        WriteDouble(fieldNumber, fieldName, value);
+                    break;
+                case FieldType.Float:
+                    foreach (float value in ((IEnumerable<float>)list))
+                        WriteFloat(fieldNumber, fieldName, value);
+                    break;
+            }
         }
 
         public void WritePackedArray(FieldType fieldType, int fieldNumber, string fieldName, System.Collections.IEnumerable list)
@@ -327,11 +412,7 @@ namespace Google.ProtocolBuffers
             int calculatedSize = 0;
             foreach (object element in list)
                 calculatedSize += CodedOutputStream.ComputeFieldSizeNoTag(fieldType, element);
-            WritePackedArray(fieldType, fieldNumber, fieldName, calculatedSize, list);
-        }
-
-        public void WritePackedArray(FieldType fieldType, int fieldNumber, string fieldName, int calculatedSize, System.Collections.IEnumerable list)
-        {
+            
             WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
             WriteRawVarint32((uint)calculatedSize);
             
@@ -339,48 +420,141 @@ namespace Google.ProtocolBuffers
                 WriteFieldNoTag(fieldType, element);
         }
 
+        public void WritePackedArray<T>(FieldType fieldType, int fieldNumber, string fieldName, int calculatedSize, System.Collections.Generic.IEnumerable<T> list)
+        {
+            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
+            WriteRawVarint32((uint)calculatedSize);
+
+            switch (fieldType)
+            {
+                case FieldType.String:
+                    foreach (string value in ((IEnumerable<string>)list))
+                        WriteStringNoTag(value);
+                    break;
+                case FieldType.Message:
+                    foreach (T value in list)
+                        WriteMessageNoTag((IMessageLite)value);
+                    break;
+                case FieldType.Group:
+                    foreach (T value in list)
+                        WriteGroupNoTag((IMessageLite)value);
+                    break;
+                case FieldType.Bytes:
+                    foreach (ByteString value in ((IEnumerable<ByteString>)list))
+                        WriteBytesNoTag(value);
+                    break;
+                case FieldType.Bool:
+                    foreach (bool value in ((IEnumerable<bool>)list))
+                        WriteBoolNoTag(value);
+                    break;
+                case FieldType.Enum:
+                    foreach (T value in list)
+                    {
+                        if (value is System.Enum)
+                            WriteEnumNoTag(((IConvertible)value).ToInt32(CultureInfo.InvariantCulture));
+                        else
+                            WriteEnumNoTag(((IEnumLite)value).Number);
+                    }
+                    break;
+                case FieldType.Int32:
+                    foreach (int value in ((IEnumerable<int>)list))
+                        WriteInt32NoTag(value);
+                    break;
+                case FieldType.Int64:
+                    foreach (long value in ((IEnumerable<long>)list))
+                        WriteInt64NoTag(value);
+                    break;
+                case FieldType.UInt32:
+                    foreach (uint value in ((IEnumerable<uint>)list))
+                        WriteUInt32NoTag(value);
+                    break;
+                case FieldType.UInt64:
+                    foreach (ulong value in ((IEnumerable<ulong>)list))
+                        WriteUInt64NoTag(value);
+                    break;
+                case FieldType.SInt32:
+                    foreach (int value in ((IEnumerable<int>)list))
+                        WriteSInt32NoTag(value);
+                    break;
+                case FieldType.SInt64:
+                    foreach (long value in ((IEnumerable<long>)list))
+                        WriteSInt64NoTag(value);
+                    break;
+                case FieldType.Fixed32:
+                    foreach (uint value in ((IEnumerable<uint>)list))
+                        WriteFixed32NoTag(value);
+                    break;
+                case FieldType.Fixed64:
+                    foreach (ulong value in ((IEnumerable<ulong>)list))
+                        WriteFixed64NoTag(value);
+                    break;
+                case FieldType.SFixed32:
+                    foreach (int value in ((IEnumerable<int>)list))
+                        WriteSFixed32NoTag(value);
+                    break;
+                case FieldType.SFixed64:
+                    foreach (long value in ((IEnumerable<long>)list))
+                        WriteSFixed64NoTag(value);
+                    break;
+                case FieldType.Double:
+                    foreach (double value in ((IEnumerable<double>)list))
+                        WriteDoubleNoTag(value);
+                    break;
+                case FieldType.Float:
+                    foreach (float value in ((IEnumerable<float>)list))
+                        WriteFloatNoTag(value);
+                    break;
+            }
+        }
+
         public void WriteField(FieldType fieldType, int fieldNumber, string fieldName, object value)
         {
             switch (fieldType)
             {
-                case FieldType.Double:
-                    WriteDouble(fieldNumber, fieldName, (double) value);
+                case FieldType.String:
+                    WriteString(fieldNumber, fieldName, (string)value);
                     break;
-                case FieldType.Float:
-                    WriteFloat(fieldNumber, fieldName, (float) value);
+                case FieldType.Message:
+                    WriteMessage(fieldNumber, fieldName, (IMessageLite)value);
                     break;
-                case FieldType.Int64:
-                    WriteInt64(fieldNumber, fieldName, (long) value);
+                case FieldType.Group:
+                    WriteGroup(fieldNumber, fieldName, (IMessageLite)value);
                     break;
-                case FieldType.UInt64:
-                    WriteUInt64(fieldNumber, fieldName, (ulong) value);
+                case FieldType.Bytes:
+                    WriteBytes(fieldNumber, fieldName, (ByteString)value);
+                    break;
+                case FieldType.Bool:
+                    WriteBool(fieldNumber, fieldName, (bool)value);
+                    break;
+                case FieldType.Enum:
+                    if (value is System.Enum)
+                        WriteEnum(fieldNumber, fieldName, ((IConvertible)value).ToInt32(CultureInfo.InvariantCulture), null/*not used*/);
+                    else
+                        WriteEnum(fieldNumber, fieldName, ((IEnumLite)value).Number, null/*not used*/);
                     break;
                 case FieldType.Int32:
                     WriteInt32(fieldNumber, fieldName, (int) value);
                     break;
-                case FieldType.Fixed64:
-                    WriteFixed64(fieldNumber, fieldName, (ulong) value);
+                case FieldType.Int64:
+                    WriteInt64(fieldNumber, fieldName, (long) value);
+                    break;
+                case FieldType.UInt32:
+                    WriteUInt32(fieldNumber, fieldName, (uint) value);
+                    break;
+                case FieldType.UInt64:
+                    WriteUInt64(fieldNumber, fieldName, (ulong) value);
+                    break;
+                case FieldType.SInt32:
+                    WriteSInt32(fieldNumber, fieldName, (int)value);
+                    break;
+                case FieldType.SInt64:
+                    WriteSInt64(fieldNumber, fieldName, (long)value);
                     break;
                 case FieldType.Fixed32:
                     WriteFixed32(fieldNumber, fieldName, (uint) value);
                     break;
-                case FieldType.Bool:
-                    WriteBool(fieldNumber, fieldName, (bool) value);
-                    break;
-                case FieldType.String:
-                    WriteString(fieldNumber, fieldName, (string) value);
-                    break;
-                case FieldType.Group:
-                    WriteGroup(fieldNumber, fieldName, (IMessageLite) value);
-                    break;
-                case FieldType.Message:
-                    WriteMessage(fieldNumber, fieldName, (IMessageLite) value);
-                    break;
-                case FieldType.Bytes:
-                    WriteBytes(fieldNumber, fieldName, (ByteString) value);
-                    break;
-                case FieldType.UInt32:
-                    WriteUInt32(fieldNumber, fieldName, (uint) value);
+                case FieldType.Fixed64:
+                    WriteFixed64(fieldNumber, fieldName, (ulong) value);
                     break;
                 case FieldType.SFixed32:
                     WriteSFixed32(fieldNumber, fieldName, (int) value);
@@ -388,17 +562,11 @@ namespace Google.ProtocolBuffers
                 case FieldType.SFixed64:
                     WriteSFixed64(fieldNumber, fieldName, (long) value);
                     break;
-                case FieldType.SInt32:
-                    WriteSInt32(fieldNumber, fieldName, (int) value);
+                case FieldType.Double:
+                    WriteDouble(fieldNumber, fieldName, (double)value);
                     break;
-                case FieldType.SInt64:
-                    WriteSInt64(fieldNumber, fieldName, (long) value);
-                    break;
-                case FieldType.Enum:
-                    if(value is System.Enum)
-                        WriteEnum(fieldNumber, fieldName, ((IConvertible)value).ToInt32(CultureInfo.InvariantCulture), null/*not used*/);
-                    else
-                        WriteEnum(fieldNumber, fieldName, ((IEnumLite) value).Number, null/*not used*/);
+                case FieldType.Float:
+                    WriteFloat(fieldNumber, fieldName, (float)value);
                     break;
             }
         }
@@ -407,50 +575,38 @@ namespace Google.ProtocolBuffers
         {
             switch (fieldType)
             {
-                case FieldType.Double:
-                    WriteDoubleNoTag((double) value);
+                case FieldType.String:
+                    WriteStringNoTag((string)value);
                     break;
-                case FieldType.Float:
-                    WriteFloatNoTag((float) value);
+                case FieldType.Message:
+                    WriteMessageNoTag((IMessageLite)value);
                     break;
-                case FieldType.Int64:
-                    WriteInt64NoTag((long) value);
+                case FieldType.Group:
+                    WriteGroupNoTag((IMessageLite)value);
                     break;
-                case FieldType.UInt64:
-                    WriteUInt64NoTag((ulong) value);
+                case FieldType.Bytes:
+                    WriteBytesNoTag((ByteString)value);
+                    break;
+                case FieldType.Bool:
+                    WriteBoolNoTag((bool)value);
+                    break;
+                case FieldType.Enum:
+                    if (value is System.Enum)
+                        WriteEnumNoTag(((IConvertible)value).ToInt32(CultureInfo.InvariantCulture));
+                    else
+                        WriteEnumNoTag(((IEnumLite)value).Number);
                     break;
                 case FieldType.Int32:
                     WriteInt32NoTag((int) value);
                     break;
-                case FieldType.Fixed64:
-                    WriteFixed64NoTag((ulong) value);
-                    break;
-                case FieldType.Fixed32:
-                    WriteFixed32NoTag((uint) value);
-                    break;
-                case FieldType.Bool:
-                    WriteBoolNoTag((bool) value);
-                    break;
-                case FieldType.String:
-                    WriteStringNoTag((string) value);
-                    break;
-                case FieldType.Group:
-                    WriteGroupNoTag((IMessageLite) value);
-                    break;
-                case FieldType.Message:
-                    WriteMessageNoTag((IMessageLite) value);
-                    break;
-                case FieldType.Bytes:
-                    WriteBytesNoTag((ByteString) value);
+                case FieldType.Int64:
+                    WriteInt64NoTag((long) value);
                     break;
                 case FieldType.UInt32:
                     WriteUInt32NoTag((uint) value);
                     break;
-                case FieldType.SFixed32:
-                    WriteSFixed32NoTag((int) value);
-                    break;
-                case FieldType.SFixed64:
-                    WriteSFixed64NoTag((long) value);
+                case FieldType.UInt64:
+                    WriteUInt64NoTag((ulong) value);
                     break;
                 case FieldType.SInt32:
                     WriteSInt32NoTag((int) value);
@@ -458,11 +614,23 @@ namespace Google.ProtocolBuffers
                 case FieldType.SInt64:
                     WriteSInt64NoTag((long) value);
                     break;
-                case FieldType.Enum:
-                    if (value is System.Enum)
-                        WriteEnumNoTag(((IConvertible)value).ToInt32(CultureInfo.InvariantCulture));
-                    else
-                        WriteEnumNoTag(((IEnumLite) value).Number);
+                case FieldType.Fixed32:
+                    WriteFixed32NoTag((uint) value);
+                    break;
+                case FieldType.Fixed64:
+                    WriteFixed64NoTag((ulong) value);
+                    break;
+                case FieldType.SFixed32:
+                    WriteSFixed32NoTag((int) value);
+                    break;
+                case FieldType.SFixed64:
+                    WriteSFixed64NoTag((long) value);
+                    break;
+                case FieldType.Double:
+                    WriteDoubleNoTag((double)value);
+                    break;
+                case FieldType.Float:
+                    WriteFloatNoTag((float)value);
                     break;
             }
         }
@@ -641,6 +809,7 @@ namespace Google.ProtocolBuffers
             WriteRawVarint32(WireFormat.MakeTag(fieldNumber, type));
         }
 
+#if false
         private void SlowWriteRawVarint32(uint value)
         {
             while (true)
@@ -657,7 +826,7 @@ namespace Google.ProtocolBuffers
                 }
             }
         }
-
+#endif
         /// <summary>
         /// Writes a 32 bit value as a varint. The fast route is taken when
         /// there's enough buffer space left to whizz through without checking
@@ -666,6 +835,22 @@ namespace Google.ProtocolBuffers
         [CLSCompliant(false)]
         public void WriteRawVarint32(uint value)
         {
+#if true
+            while (value > 127 && position < limit)
+            {
+                buffer[position++] = (byte)((value & 0x7F) | 0x80);
+                value >>= 7;
+            }
+            while (value > 127)
+            {
+                WriteRawByte((byte)((value & 0x7F) | 0x80));
+                value >>= 7;
+            }
+            if(position < limit)
+                buffer[position++] = (byte)value;
+            else
+                WriteRawByte((byte)value);
+#else
             if (position + 5 > limit)
             {
                 SlowWriteRawVarint32(value);
@@ -685,11 +870,28 @@ namespace Google.ProtocolBuffers
                     value >>= 7;
                 }
             }
+#endif
         }
 
         [CLSCompliant(false)]
         public void WriteRawVarint64(ulong value)
         {
+#if true
+            while (value > 127 && position < limit)
+            {
+                buffer[position++] = (byte)((value & 0x7F) | 0x80);
+                value >>= 7;
+            }
+            while (value > 127)
+            {
+                WriteRawByte((byte)((value & 0x7F) | 0x80));
+                value >>= 7;
+            }
+            if(position < limit)
+                buffer[position++] = (byte)value;
+            else
+                WriteRawByte((byte)value);
+#else
             while (true)
             {
                 if ((value & ~0x7FUL) == 0)
@@ -703,28 +905,53 @@ namespace Google.ProtocolBuffers
                     value >>= 7;
                 }
             }
+#endif
         }
 
         [CLSCompliant(false)]
         public void WriteRawLittleEndian32(uint value)
         {
-            WriteRawByte((byte) value);
-            WriteRawByte((byte) (value >> 8));
-            WriteRawByte((byte) (value >> 16));
-            WriteRawByte((byte) (value >> 24));
+            if (position + 4 > limit)
+            {
+                WriteRawByte((byte) value);
+                WriteRawByte((byte) (value >> 8));
+                WriteRawByte((byte) (value >> 16));
+                WriteRawByte((byte) (value >> 24));
+            }
+            else
+            {
+                buffer[position++] = ((byte)value);
+                buffer[position++] = ((byte)(value >> 8));
+                buffer[position++] = ((byte)(value >> 16));
+                buffer[position++] = ((byte)(value >> 24));
+            }
         }
 
         [CLSCompliant(false)]
         public void WriteRawLittleEndian64(ulong value)
         {
-            WriteRawByte((byte) value);
-            WriteRawByte((byte) (value >> 8));
-            WriteRawByte((byte) (value >> 16));
-            WriteRawByte((byte) (value >> 24));
-            WriteRawByte((byte) (value >> 32));
-            WriteRawByte((byte) (value >> 40));
-            WriteRawByte((byte) (value >> 48));
-            WriteRawByte((byte) (value >> 56));
+            if (position + 8 > limit)
+            {
+                WriteRawByte((byte) value);
+                WriteRawByte((byte) (value >> 8));
+                WriteRawByte((byte) (value >> 16));
+                WriteRawByte((byte) (value >> 24));
+                WriteRawByte((byte) (value >> 32));
+                WriteRawByte((byte) (value >> 40));
+                WriteRawByte((byte) (value >> 48));
+                WriteRawByte((byte) (value >> 56));
+            }
+            else
+            {
+                buffer[position++] = ((byte)value);
+                buffer[position++] = ((byte)(value >> 8));
+                buffer[position++] = ((byte)(value >> 16));
+                buffer[position++] = ((byte)(value >> 24));
+                buffer[position++] = ((byte)(value >> 32));
+                buffer[position++] = ((byte)(value >> 40));
+                buffer[position++] = ((byte)(value >> 48));
+                buffer[position++] = ((byte)(value >> 56));
+            }
         }
 
         public void WriteRawByte(byte value)

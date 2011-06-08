@@ -60,7 +60,7 @@ namespace Google.ProtocolBuffers.ProtoGen
         public void GenerateBuilderMembers(TextGenerator writer)
         {
             writer.WriteLine("public bool Has{0} {{", PropertyName);
-            writer.WriteLine(" get {{ return result.Has{0}; }}", PropertyName);
+            writer.WriteLine(" get {{ return result.has{0}; }}", PropertyName);
             writer.WriteLine("}");
             writer.WriteLine("public {0} {1} {{", TypeName, PropertyName);
             writer.WriteLine("  get {{ return result.{0}; }}", PropertyName);
@@ -80,7 +80,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("}");
             writer.WriteLine("public Builder Merge{0}({1} value) {{", PropertyName, TypeName);
             AddNullCheck(writer);
-            writer.WriteLine("  if (result.Has{0} &&", PropertyName);
+            writer.WriteLine("  if (result.has{0} &&", PropertyName);
             writer.WriteLine("      result.{0}_ != {1}) {{", Name, DefaultValue);
             writer.WriteLine("      result.{0}_ = {1}.CreateBuilder(result.{0}_).MergeFrom(value).BuildPartial();", Name,
                              TypeName);
@@ -112,7 +112,7 @@ namespace Google.ProtocolBuffers.ProtoGen
         public void GenerateParsingCode(TextGenerator writer)
         {
             writer.WriteLine("{0}.Builder subBuilder = {0}.CreateBuilder();", TypeName);
-            writer.WriteLine("if (Has{0}) {{", PropertyName);
+            writer.WriteLine("if (result.has{0}) {{", PropertyName);
             writer.WriteLine("  subBuilder.MergeFrom({0});", PropertyName);
             writer.WriteLine("}");
             if (Descriptor.FieldType == FieldType.Group)
@@ -128,14 +128,14 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         public void GenerateSerializationCode(TextGenerator writer)
         {
-            writer.WriteLine("if (Has{0}) {{", PropertyName);
+            writer.WriteLine("if (has{0}) {{", PropertyName);
             writer.WriteLine("  output.Write{0}({1}, \"{3}\", {2});", MessageOrGroup, Number, PropertyName, Descriptor.Name);
             writer.WriteLine("}");
         }
 
         public void GenerateSerializedSizeCode(TextGenerator writer)
         {
-            writer.WriteLine("if (Has{0}) {{", PropertyName);
+            writer.WriteLine("if (has{0}) {{", PropertyName);
             writer.WriteLine("  size += pb::CodedOutputStream.Compute{0}Size({1}, {2});",
                              MessageOrGroup, Number, PropertyName);
             writer.WriteLine("}");

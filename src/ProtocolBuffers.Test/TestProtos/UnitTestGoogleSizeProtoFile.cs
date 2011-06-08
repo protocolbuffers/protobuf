@@ -651,7 +651,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasField1 {
-        get { return result.HasField1; }
+        get { return result.hasField1; }
       }
       public string Field1 {
         get { return result.Field1; }
@@ -670,7 +670,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField9 {
-        get { return result.HasField9; }
+        get { return result.hasField9; }
       }
       public string Field9 {
         get { return result.Field9; }
@@ -689,7 +689,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField18 {
-        get { return result.HasField18; }
+        get { return result.hasField18; }
       }
       public string Field18 {
         get { return result.Field18; }
@@ -708,7 +708,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField80 {
-        get { return result.HasField80; }
+        get { return result.hasField80; }
       }
       public bool Field80 {
         get { return result.Field80; }
@@ -726,7 +726,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField81 {
-        get { return result.HasField81; }
+        get { return result.hasField81; }
       }
       public bool Field81 {
         get { return result.Field81; }
@@ -744,7 +744,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField2 {
-        get { return result.HasField2; }
+        get { return result.hasField2; }
       }
       public int Field2 {
         get { return result.Field2; }
@@ -762,7 +762,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField3 {
-        get { return result.HasField3; }
+        get { return result.hasField3; }
       }
       public int Field3 {
         get { return result.Field3; }
@@ -780,7 +780,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField280 {
-        get { return result.HasField280; }
+        get { return result.hasField280; }
       }
       public int Field280 {
         get { return result.Field280; }
@@ -798,7 +798,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField6 {
-        get { return result.HasField6; }
+        get { return result.hasField6; }
       }
       public int Field6 {
         get { return result.Field6; }
@@ -816,7 +816,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField22 {
-        get { return result.HasField22; }
+        get { return result.hasField22; }
       }
       public long Field22 {
         get { return result.Field22; }
@@ -834,7 +834,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField4 {
-        get { return result.HasField4; }
+        get { return result.hasField4; }
       }
       public string Field4 {
         get { return result.Field4; }
@@ -884,7 +884,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField59 {
-        get { return result.HasField59; }
+        get { return result.hasField59; }
       }
       public bool Field59 {
         get { return result.Field59; }
@@ -902,7 +902,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField7 {
-        get { return result.HasField7; }
+        get { return result.hasField7; }
       }
       public string Field7 {
         get { return result.Field7; }
@@ -921,7 +921,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField16 {
-        get { return result.HasField16; }
+        get { return result.hasField16; }
       }
       public int Field16 {
         get { return result.Field16; }
@@ -939,7 +939,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField130 {
-        get { return result.HasField130; }
+        get { return result.hasField130; }
       }
       public int Field130 {
         get { return result.Field130; }
@@ -957,7 +957,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField12 {
-        get { return result.HasField12; }
+        get { return result.hasField12; }
       }
       public bool Field12 {
         get { return result.Field12; }
@@ -975,7 +975,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField17 {
-        get { return result.HasField17; }
+        get { return result.hasField17; }
       }
       public bool Field17 {
         get { return result.Field17; }
@@ -993,7 +993,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField13 {
-        get { return result.HasField13; }
+        get { return result.hasField13; }
       }
       public bool Field13 {
         get { return result.Field13; }
@@ -1011,7 +1011,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField14 {
-        get { return result.HasField14; }
+        get { return result.hasField14; }
       }
       public bool Field14 {
         get { return result.Field14; }
@@ -1029,7 +1029,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField104 {
-        get { return result.HasField104; }
+        get { return result.hasField104; }
       }
       public int Field104 {
         get { return result.Field104; }
@@ -1047,7 +1047,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField100 {
-        get { return result.HasField100; }
+        get { return result.hasField100; }
       }
       public int Field100 {
         get { return result.Field100; }
@@ -1065,7 +1065,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField101 {
-        get { return result.HasField101; }
+        get { return result.hasField101; }
       }
       public int Field101 {
         get { return result.Field101; }
@@ -1083,7 +1083,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField102 {
-        get { return result.HasField102; }
+        get { return result.hasField102; }
       }
       public string Field102 {
         get { return result.Field102; }
@@ -1102,7 +1102,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField103 {
-        get { return result.HasField103; }
+        get { return result.hasField103; }
       }
       public string Field103 {
         get { return result.Field103; }
@@ -1121,7 +1121,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField29 {
-        get { return result.HasField29; }
+        get { return result.hasField29; }
       }
       public int Field29 {
         get { return result.Field29; }
@@ -1139,7 +1139,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField30 {
-        get { return result.HasField30; }
+        get { return result.hasField30; }
       }
       public bool Field30 {
         get { return result.Field30; }
@@ -1157,7 +1157,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField60 {
-        get { return result.HasField60; }
+        get { return result.hasField60; }
       }
       public int Field60 {
         get { return result.Field60; }
@@ -1175,7 +1175,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField271 {
-        get { return result.HasField271; }
+        get { return result.hasField271; }
       }
       public int Field271 {
         get { return result.Field271; }
@@ -1193,7 +1193,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField272 {
-        get { return result.HasField272; }
+        get { return result.hasField272; }
       }
       public int Field272 {
         get { return result.Field272; }
@@ -1211,7 +1211,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField150 {
-        get { return result.HasField150; }
+        get { return result.hasField150; }
       }
       public int Field150 {
         get { return result.Field150; }
@@ -1229,7 +1229,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField23 {
-        get { return result.HasField23; }
+        get { return result.hasField23; }
       }
       public int Field23 {
         get { return result.Field23; }
@@ -1247,7 +1247,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField24 {
-        get { return result.HasField24; }
+        get { return result.hasField24; }
       }
       public bool Field24 {
         get { return result.Field24; }
@@ -1265,7 +1265,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField25 {
-        get { return result.HasField25; }
+        get { return result.hasField25; }
       }
       public int Field25 {
         get { return result.Field25; }
@@ -1283,7 +1283,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField15 {
-       get { return result.HasField15; }
+       get { return result.hasField15; }
       }
       public global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage Field15 {
         get { return result.Field15; }
@@ -1303,7 +1303,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeField15(global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasField15 &&
+        if (result.hasField15 &&
             result.field15_ != global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage.DefaultInstance) {
             result.field15_ = global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage.CreateBuilder(result.field15_).MergeFrom(value).BuildPartial();
         } else {
@@ -1319,7 +1319,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField78 {
-        get { return result.HasField78; }
+        get { return result.hasField78; }
       }
       public bool Field78 {
         get { return result.Field78; }
@@ -1337,7 +1337,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField67 {
-        get { return result.HasField67; }
+        get { return result.hasField67; }
       }
       public int Field67 {
         get { return result.Field67; }
@@ -1355,7 +1355,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField68 {
-        get { return result.HasField68; }
+        get { return result.hasField68; }
       }
       public int Field68 {
         get { return result.Field68; }
@@ -1373,7 +1373,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField128 {
-        get { return result.HasField128; }
+        get { return result.hasField128; }
       }
       public int Field128 {
         get { return result.Field128; }
@@ -1391,7 +1391,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField129 {
-        get { return result.HasField129; }
+        get { return result.hasField129; }
       }
       public string Field129 {
         get { return result.Field129; }
@@ -1410,7 +1410,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField131 {
-        get { return result.HasField131; }
+        get { return result.hasField131; }
       }
       public int Field131 {
         get { return result.Field131; }
@@ -1741,7 +1741,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasField1 {
-        get { return result.HasField1; }
+        get { return result.hasField1; }
       }
       public int Field1 {
         get { return result.Field1; }
@@ -1759,7 +1759,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField2 {
-        get { return result.HasField2; }
+        get { return result.hasField2; }
       }
       public int Field2 {
         get { return result.Field2; }
@@ -1777,7 +1777,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField3 {
-        get { return result.HasField3; }
+        get { return result.hasField3; }
       }
       public int Field3 {
         get { return result.Field3; }
@@ -1795,7 +1795,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField15 {
-        get { return result.HasField15; }
+        get { return result.hasField15; }
       }
       public string Field15 {
         get { return result.Field15; }
@@ -1814,7 +1814,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField12 {
-        get { return result.HasField12; }
+        get { return result.hasField12; }
       }
       public bool Field12 {
         get { return result.Field12; }
@@ -1832,7 +1832,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField13 {
-        get { return result.HasField13; }
+        get { return result.hasField13; }
       }
       public long Field13 {
         get { return result.Field13; }
@@ -1850,7 +1850,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField14 {
-        get { return result.HasField14; }
+        get { return result.hasField14; }
       }
       public long Field14 {
         get { return result.Field14; }
@@ -1868,7 +1868,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField16 {
-        get { return result.HasField16; }
+        get { return result.hasField16; }
       }
       public int Field16 {
         get { return result.Field16; }
@@ -1886,7 +1886,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField19 {
-        get { return result.HasField19; }
+        get { return result.hasField19; }
       }
       public int Field19 {
         get { return result.Field19; }
@@ -1904,7 +1904,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField20 {
-        get { return result.HasField20; }
+        get { return result.hasField20; }
       }
       public bool Field20 {
         get { return result.Field20; }
@@ -1922,7 +1922,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField28 {
-        get { return result.HasField28; }
+        get { return result.hasField28; }
       }
       public bool Field28 {
         get { return result.Field28; }
@@ -1940,7 +1940,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField21 {
-        get { return result.HasField21; }
+        get { return result.hasField21; }
       }
       [global::System.CLSCompliant(false)]
       public ulong Field21 {
@@ -1960,7 +1960,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField22 {
-        get { return result.HasField22; }
+        get { return result.hasField22; }
       }
       public int Field22 {
         get { return result.Field22; }
@@ -1978,7 +1978,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField23 {
-        get { return result.HasField23; }
+        get { return result.hasField23; }
       }
       public bool Field23 {
         get { return result.Field23; }
@@ -1996,7 +1996,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField206 {
-        get { return result.HasField206; }
+        get { return result.hasField206; }
       }
       public bool Field206 {
         get { return result.Field206; }
@@ -2014,7 +2014,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField203 {
-        get { return result.HasField203; }
+        get { return result.hasField203; }
       }
       [global::System.CLSCompliant(false)]
       public uint Field203 {
@@ -2034,7 +2034,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField204 {
-        get { return result.HasField204; }
+        get { return result.hasField204; }
       }
       public int Field204 {
         get { return result.Field204; }
@@ -2052,7 +2052,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField205 {
-        get { return result.HasField205; }
+        get { return result.hasField205; }
       }
       public string Field205 {
         get { return result.Field205; }
@@ -2071,7 +2071,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField207 {
-        get { return result.HasField207; }
+        get { return result.hasField207; }
       }
       [global::System.CLSCompliant(false)]
       public ulong Field207 {
@@ -2091,7 +2091,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField300 {
-        get { return result.HasField300; }
+        get { return result.hasField300; }
       }
       [global::System.CLSCompliant(false)]
       public ulong Field300 {
@@ -2420,7 +2420,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           
           
           public bool HasField11 {
-            get { return result.HasField11; }
+            get { return result.hasField11; }
           }
           public float Field11 {
             get { return result.Field11; }
@@ -2438,7 +2438,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasField26 {
-            get { return result.HasField26; }
+            get { return result.hasField26; }
           }
           public float Field26 {
             get { return result.Field26; }
@@ -2456,7 +2456,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasField12 {
-            get { return result.HasField12; }
+            get { return result.hasField12; }
           }
           public string Field12 {
             get { return result.Field12; }
@@ -2475,7 +2475,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasField13 {
-            get { return result.HasField13; }
+            get { return result.hasField13; }
           }
           public string Field13 {
             get { return result.Field13; }
@@ -2522,7 +2522,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasField15 {
-            get { return result.HasField15; }
+            get { return result.hasField15; }
           }
           [global::System.CLSCompliant(false)]
           public ulong Field15 {
@@ -2542,7 +2542,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasField5 {
-            get { return result.HasField5; }
+            get { return result.hasField5; }
           }
           public int Field5 {
             get { return result.Field5; }
@@ -2560,7 +2560,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasField27 {
-            get { return result.HasField27; }
+            get { return result.hasField27; }
           }
           public string Field27 {
             get { return result.Field27; }
@@ -2579,7 +2579,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasField28 {
-            get { return result.HasField28; }
+            get { return result.hasField28; }
           }
           public int Field28 {
             get { return result.Field28; }
@@ -2597,7 +2597,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasField29 {
-            get { return result.HasField29; }
+            get { return result.hasField29; }
           }
           public string Field29 {
             get { return result.Field29; }
@@ -2616,7 +2616,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasField16 {
-            get { return result.HasField16; }
+            get { return result.hasField16; }
           }
           public string Field16 {
             get { return result.Field16; }
@@ -2689,7 +2689,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasField20 {
-            get { return result.HasField20; }
+            get { return result.hasField20; }
           }
           public int Field20 {
             get { return result.Field20; }
@@ -2707,7 +2707,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasField24 {
-            get { return result.HasField24; }
+            get { return result.hasField24; }
           }
           public string Field24 {
             get { return result.Field24; }
@@ -2726,7 +2726,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasField31 {
-           get { return result.HasField31; }
+           get { return result.hasField31; }
           }
           public global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage Field31 {
             get { return result.Field31; }
@@ -2746,7 +2746,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           public Builder MergeField31(global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage value) {
             pb::ThrowHelper.ThrowIfNull(value, "value");
-            if (result.HasField31 &&
+            if (result.hasField31 &&
                 result.field31_ != global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage.DefaultInstance) {
                 result.field31_ = global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage.CreateBuilder(result.field31_).MergeFrom(value).BuildPartial();
             } else {
@@ -3161,7 +3161,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasField1 {
-        get { return result.HasField1; }
+        get { return result.hasField1; }
       }
       public string Field1 {
         get { return result.Field1; }
@@ -3180,7 +3180,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField3 {
-        get { return result.HasField3; }
+        get { return result.hasField3; }
       }
       public long Field3 {
         get { return result.Field3; }
@@ -3198,7 +3198,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField4 {
-        get { return result.HasField4; }
+        get { return result.hasField4; }
       }
       public long Field4 {
         get { return result.Field4; }
@@ -3216,7 +3216,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField30 {
-        get { return result.HasField30; }
+        get { return result.hasField30; }
       }
       public long Field30 {
         get { return result.Field30; }
@@ -3234,7 +3234,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField75 {
-        get { return result.HasField75; }
+        get { return result.hasField75; }
       }
       public bool Field75 {
         get { return result.Field75; }
@@ -3252,7 +3252,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField6 {
-        get { return result.HasField6; }
+        get { return result.hasField6; }
       }
       public string Field6 {
         get { return result.Field6; }
@@ -3271,7 +3271,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField2 {
-        get { return result.HasField2; }
+        get { return result.hasField2; }
       }
       public pb::ByteString Field2 {
         get { return result.Field2; }
@@ -3290,7 +3290,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField21 {
-        get { return result.HasField21; }
+        get { return result.hasField21; }
       }
       public int Field21 {
         get { return result.Field21; }
@@ -3308,7 +3308,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField71 {
-        get { return result.HasField71; }
+        get { return result.hasField71; }
       }
       public int Field71 {
         get { return result.Field71; }
@@ -3326,7 +3326,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField25 {
-        get { return result.HasField25; }
+        get { return result.hasField25; }
       }
       public float Field25 {
         get { return result.Field25; }
@@ -3344,7 +3344,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField109 {
-        get { return result.HasField109; }
+        get { return result.hasField109; }
       }
       public int Field109 {
         get { return result.Field109; }
@@ -3362,7 +3362,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField210 {
-        get { return result.HasField210; }
+        get { return result.hasField210; }
       }
       public int Field210 {
         get { return result.Field210; }
@@ -3380,7 +3380,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField211 {
-        get { return result.HasField211; }
+        get { return result.hasField211; }
       }
       public int Field211 {
         get { return result.Field211; }
@@ -3398,7 +3398,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField212 {
-        get { return result.HasField212; }
+        get { return result.hasField212; }
       }
       public int Field212 {
         get { return result.Field212; }
@@ -3416,7 +3416,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField213 {
-        get { return result.HasField213; }
+        get { return result.hasField213; }
       }
       public int Field213 {
         get { return result.Field213; }
@@ -3434,7 +3434,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField216 {
-        get { return result.HasField216; }
+        get { return result.hasField216; }
       }
       public int Field216 {
         get { return result.Field216; }
@@ -3452,7 +3452,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField217 {
-        get { return result.HasField217; }
+        get { return result.hasField217; }
       }
       public int Field217 {
         get { return result.Field217; }
@@ -3470,7 +3470,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField218 {
-        get { return result.HasField218; }
+        get { return result.hasField218; }
       }
       public int Field218 {
         get { return result.Field218; }
@@ -3488,7 +3488,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField220 {
-        get { return result.HasField220; }
+        get { return result.hasField220; }
       }
       public int Field220 {
         get { return result.Field220; }
@@ -3506,7 +3506,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField221 {
-        get { return result.HasField221; }
+        get { return result.hasField221; }
       }
       public int Field221 {
         get { return result.Field221; }
@@ -3524,7 +3524,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField222 {
-        get { return result.HasField222; }
+        get { return result.hasField222; }
       }
       public float Field222 {
         get { return result.Field222; }
@@ -3542,7 +3542,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField63 {
-        get { return result.HasField63; }
+        get { return result.hasField63; }
       }
       public int Field63 {
         get { return result.Field63; }
@@ -3626,7 +3626,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField131 {
-        get { return result.HasField131; }
+        get { return result.hasField131; }
       }
       public long Field131 {
         get { return result.Field131; }
@@ -3672,7 +3672,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField129 {
-        get { return result.HasField129; }
+        get { return result.hasField129; }
       }
       public int Field129 {
         get { return result.Field129; }
@@ -3716,7 +3716,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField205 {
-        get { return result.HasField205; }
+        get { return result.hasField205; }
       }
       public bool Field205 {
         get { return result.Field205; }
@@ -3734,7 +3734,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField206 {
-        get { return result.HasField206; }
+        get { return result.hasField206; }
       }
       public bool Field206 {
         get { return result.Field206; }
@@ -3971,7 +3971,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasField1 {
-        get { return result.HasField1; }
+        get { return result.hasField1; }
       }
       public float Field1 {
         get { return result.Field1; }
@@ -3989,7 +3989,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField2 {
-        get { return result.HasField2; }
+        get { return result.hasField2; }
       }
       public float Field2 {
         get { return result.Field2; }
@@ -4007,7 +4007,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField3 {
-        get { return result.HasField3; }
+        get { return result.hasField3; }
       }
       public float Field3 {
         get { return result.Field3; }
@@ -4025,7 +4025,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField4 {
-        get { return result.HasField4; }
+        get { return result.hasField4; }
       }
       public bool Field4 {
         get { return result.Field4; }
@@ -4043,7 +4043,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField5 {
-        get { return result.HasField5; }
+        get { return result.hasField5; }
       }
       public bool Field5 {
         get { return result.Field5; }
@@ -4061,7 +4061,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField6 {
-        get { return result.HasField6; }
+        get { return result.hasField6; }
       }
       public bool Field6 {
         get { return result.Field6; }
@@ -4079,7 +4079,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField7 {
-        get { return result.HasField7; }
+        get { return result.hasField7; }
       }
       public bool Field7 {
         get { return result.Field7; }
@@ -4097,7 +4097,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField8 {
-        get { return result.HasField8; }
+        get { return result.hasField8; }
       }
       public float Field8 {
         get { return result.Field8; }
@@ -4115,7 +4115,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField9 {
-        get { return result.HasField9; }
+        get { return result.hasField9; }
       }
       public bool Field9 {
         get { return result.Field9; }
@@ -4133,7 +4133,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField10 {
-        get { return result.HasField10; }
+        get { return result.hasField10; }
       }
       public float Field10 {
         get { return result.Field10; }
@@ -4151,7 +4151,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasField11 {
-        get { return result.HasField11; }
+        get { return result.hasField11; }
       }
       public long Field11 {
         get { return result.Field11; }

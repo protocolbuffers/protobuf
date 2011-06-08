@@ -100,10 +100,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasD) {
+      if (hasD) {
         output.WriteInt32(1, "d", D);
       }
-      if (HasEn) {
+      if (hasEn) {
         output.WriteEnum(2, "en", (int) En, En.ToString());
       }
     }
@@ -115,10 +115,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasD) {
+        if (hasD) {
           size += pb::CodedOutputStream.ComputeInt32Size(1, D);
         }
-        if (HasEn) {
+        if (hasEn) {
           size += pb::CodedOutputStream.ComputeEnumSize(2, (int) En);
         }
         memoizedSerializedSize = size;
@@ -281,7 +281,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasD {
-        get { return result.HasD; }
+        get { return result.hasD; }
       }
       public int D {
         get { return result.D; }
@@ -299,7 +299,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasEn {
-       get { return result.HasEn; }
+       get { return result.hasEn; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ExtraEnum En {
         get { return result.En; }
@@ -397,10 +397,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
-          if (HasNumber) {
+          if (hasNumber) {
             output.WriteString(1, "number", Number);
           }
-          if (HasType) {
+          if (hasType) {
             output.WriteEnum(2, "type", (int) Type, Type.ToString());
           }
         }
@@ -412,10 +412,10 @@ namespace Google.ProtocolBuffers.TestProtos {
             if (size != -1) return size;
             
             size = 0;
-            if (HasNumber) {
+            if (hasNumber) {
               size += pb::CodedOutputStream.ComputeStringSize(1, Number);
             }
-            if (HasType) {
+            if (hasType) {
               size += pb::CodedOutputStream.ComputeEnumSize(2, (int) Type);
             }
             memoizedSerializedSize = size;
@@ -578,7 +578,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           
           
           public bool HasNumber {
-            get { return result.HasNumber; }
+            get { return result.hasNumber; }
           }
           public string Number {
             get { return result.Number; }
@@ -597,7 +597,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasType {
-           get { return result.HasType; }
+           get { return result.hasType; }
           }
           public global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneType Type {
             get { return result.Type; }
@@ -699,19 +699,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
-          if (HasAddress) {
+          if (hasAddress) {
             output.WriteString(1, "address", Address);
           }
-          if (HasAddress2) {
+          if (hasAddress2) {
             output.WriteString(2, "address2", Address2);
           }
-          if (HasCity) {
+          if (hasCity) {
             output.WriteString(3, "city", City);
           }
-          if (HasState) {
+          if (hasState) {
             output.WriteString(4, "state", State);
           }
-          if (HasZip) {
+          if (hasZip) {
             output.WriteFixed32(5, "zip", Zip);
           }
         }
@@ -723,19 +723,19 @@ namespace Google.ProtocolBuffers.TestProtos {
             if (size != -1) return size;
             
             size = 0;
-            if (HasAddress) {
+            if (hasAddress) {
               size += pb::CodedOutputStream.ComputeStringSize(1, Address);
             }
-            if (HasAddress2) {
+            if (hasAddress2) {
               size += pb::CodedOutputStream.ComputeStringSize(2, Address2);
             }
-            if (HasCity) {
+            if (hasCity) {
               size += pb::CodedOutputStream.ComputeStringSize(3, City);
             }
-            if (HasState) {
+            if (hasState) {
               size += pb::CodedOutputStream.ComputeStringSize(4, State);
             }
-            if (HasZip) {
+            if (hasZip) {
               size += pb::CodedOutputStream.ComputeFixed32Size(5, Zip);
             }
             memoizedSerializedSize = size;
@@ -924,7 +924,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           
           
           public bool HasAddress {
-            get { return result.HasAddress; }
+            get { return result.hasAddress; }
           }
           public string Address {
             get { return result.Address; }
@@ -943,7 +943,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasAddress2 {
-            get { return result.HasAddress2; }
+            get { return result.hasAddress2; }
           }
           public string Address2 {
             get { return result.Address2; }
@@ -962,7 +962,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasCity {
-            get { return result.HasCity; }
+            get { return result.hasCity; }
           }
           public string City {
             get { return result.City; }
@@ -981,7 +981,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasState {
-            get { return result.HasState; }
+            get { return result.hasState; }
           }
           public string State {
             get { return result.State; }
@@ -1000,7 +1000,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public bool HasZip {
-            get { return result.HasZip; }
+            get { return result.hasZip; }
           }
           [global::System.CLSCompliant(false)]
           public uint Zip {
@@ -1109,13 +1109,13 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
       pb::ExtendableMessageLite<TestInteropPersonLite, TestInteropPersonLite.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
-      if (HasName) {
+      if (hasName) {
         output.WriteString(1, "name", Name);
       }
-      if (HasId) {
+      if (hasId) {
         output.WriteInt32(2, "id", Id);
       }
-      if (HasEmail) {
+      if (hasEmail) {
         output.WriteString(3, "email", Email);
       }
       if (phone_.Count > 0) {
@@ -1137,13 +1137,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasName) {
+        if (hasName) {
           size += pb::CodedOutputStream.ComputeStringSize(1, Name);
         }
-        if (HasId) {
+        if (hasId) {
           size += pb::CodedOutputStream.ComputeInt32Size(2, Id);
         }
-        if (HasEmail) {
+        if (hasEmail) {
           size += pb::CodedOutputStream.ComputeStringSize(3, Email);
         }
         {
@@ -1377,7 +1377,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasName {
-        get { return result.HasName; }
+        get { return result.hasName; }
       }
       public string Name {
         get { return result.Name; }
@@ -1396,7 +1396,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasId {
-        get { return result.HasId; }
+        get { return result.hasId; }
       }
       public int Id {
         get { return result.Id; }
@@ -1414,7 +1414,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasEmail {
-        get { return result.HasEmail; }
+        get { return result.hasEmail; }
       }
       public string Email {
         get { return result.Email; }
@@ -1575,7 +1575,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasNumber) {
+      if (hasNumber) {
         output.WriteString(1, "number", Number);
       }
     }
@@ -1587,7 +1587,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasNumber) {
+        if (hasNumber) {
           size += pb::CodedOutputStream.ComputeStringSize(1, Number);
         }
         memoizedSerializedSize = size;
@@ -1736,7 +1736,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasNumber {
-        get { return result.HasNumber; }
+        get { return result.hasNumber; }
       }
       public string Number {
         get { return result.Number; }

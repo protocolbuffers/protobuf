@@ -61,7 +61,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasMessage) {
+      if (hasMessage) {
         output.WriteMessage(1, "message", Message);
       }
     }
@@ -73,7 +73,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasMessage) {
+        if (hasMessage) {
           size += pb::CodedOutputStream.ComputeMessageSize(1, Message);
         }
         memoizedSerializedSize = size;
@@ -212,7 +212,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 10: {
               global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.CreateBuilder();
-              if (HasMessage) {
+              if (result.hasMessage) {
                 subBuilder.MergeFrom(Message);
               }
               input.ReadMessage(subBuilder, extensionRegistry);
@@ -227,7 +227,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasMessage {
-       get { return result.HasMessage; }
+       get { return result.hasMessage; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestAllTypes Message {
         get { return result.Message; }
@@ -247,7 +247,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder MergeMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
-        if (result.HasMessage &&
+        if (result.hasMessage &&
             result.message_ != global::Google.ProtocolBuffers.TestProtos.TestAllTypes.DefaultInstance) {
             result.message_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.CreateBuilder(result.message_).MergeFrom(value).BuildPartial();
         } else {

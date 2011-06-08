@@ -79,7 +79,8 @@ namespace Google.ProtocolBuffers
         void WriteMessageSetExtension(int fieldNumber, string fieldName, ByteString value);
         void WriteArray(FieldType fieldType, int fieldNumber, string fieldName, System.Collections.IEnumerable list);
         void WritePackedArray(FieldType fieldType, int fieldNumber, string fieldName, System.Collections.IEnumerable list);
-        void WritePackedArray(FieldType fieldType, int fieldNumber, string fieldName, int calculatedSize, System.Collections.IEnumerable list);
+        void WriteArray<T>(FieldType fieldType, int fieldNumber, string fieldName, System.Collections.Generic.IEnumerable<T> list);
+        void WritePackedArray<T>(FieldType fieldType, int fieldNumber, string fieldName, int calculatedSize, System.Collections.Generic.IEnumerable<T> list);
         void WriteField(FieldType fieldType, int fieldNumber, string fieldName, object value);
         void Flush();
     }

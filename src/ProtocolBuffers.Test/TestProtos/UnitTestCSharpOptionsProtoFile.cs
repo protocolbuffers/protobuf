@@ -117,13 +117,13 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
-      if (HasNormal) {
+      if (hasNormal) {
         output.WriteString(1, "normal", Normal);
       }
-      if (HasOptionsMessage_) {
+      if (hasOptionsMessage_) {
         output.WriteString(2, "options_message", OptionsMessage_);
       }
-      if (HasCustomName) {
+      if (hasCustomName) {
         output.WriteString(3, "customized", CustomName);
       }
       UnknownFields.WriteTo(output);
@@ -136,13 +136,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (size != -1) return size;
         
         size = 0;
-        if (HasNormal) {
+        if (hasNormal) {
           size += pb::CodedOutputStream.ComputeStringSize(1, Normal);
         }
-        if (HasOptionsMessage_) {
+        if (hasOptionsMessage_) {
           size += pb::CodedOutputStream.ComputeStringSize(2, OptionsMessage_);
         }
-        if (HasCustomName) {
+        if (hasCustomName) {
           size += pb::CodedOutputStream.ComputeStringSize(3, CustomName);
         }
         size += UnknownFields.SerializedSize;
@@ -302,7 +302,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       
       public bool HasNormal {
-        get { return result.HasNormal; }
+        get { return result.hasNormal; }
       }
       public string Normal {
         get { return result.Normal; }
@@ -321,7 +321,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasOptionsMessage_ {
-        get { return result.HasOptionsMessage_; }
+        get { return result.hasOptionsMessage_; }
       }
       public string OptionsMessage_ {
         get { return result.OptionsMessage_; }
@@ -340,7 +340,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public bool HasCustomName {
-        get { return result.HasCustomName; }
+        get { return result.hasCustomName; }
       }
       public string CustomName {
         get { return result.CustomName; }
