@@ -64,14 +64,20 @@ namespace Google.ProtocolBuffers.ProtoBench
 
             FastTest = temp.Remove("/fast") || temp.Remove("-fast");
             Verbose = temp.Remove("/verbose") || temp.Remove("-verbose");
-            
+
             RunBenchmark = BenchmarkV1;
             if (temp.Remove("/v2") || temp.Remove("-v2"))
+            {
+                string cpu = temp.Find(x => x.StartsWith("-cpu:"));
+                int cpuIx = 1;
+                if (cpu != null) cpuIx = 1 << Math.Max(0, int.Parse(cpu.Substring(5)));
+
+                //pin the entire process to a single CPU
+                Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(cpuIx);
+                Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
                 RunBenchmark = BenchmarkV2;
-
+            }
             args = temp.ToArray();
-
-
 
             if (args.Length < 2 || (args.Length%2) != 0)
             {
@@ -188,13 +194,6 @@ namespace Google.ProtocolBuffers.ProtoBench
                             
                             double bps = (iterations * dataSize) / (cycle.TotalSeconds * 1024 * 1024);
                             if (Verbose) Console.WriteLine("Round {0,3}: Count = {1,6}, Bps = {2,8:f3}", runs, iterations, bps);
-                            if (runs == 0 && bps > first * 1.1)
-                            {
-                                if (Verbose) Console.WriteLine("Warming up...");
-                                iterations = (int)((target.Ticks * iterations) / (double)cycle.Ticks);
-                                first = bps;
-                                continue;//still warming up...
-                            }
 
                             best = Math.Max(best, bps);
                             worst = Math.Min(worst, bps);
