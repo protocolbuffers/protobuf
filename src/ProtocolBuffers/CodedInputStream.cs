@@ -204,15 +204,22 @@ namespace Google.ProtocolBuffers
         public bool ReadDouble(ref double value)
         {
 #if SILVERLIGHT2 || COMPACT_FRAMEWORK_35
-            byte[] rawBytes = ReadRawBytes(8);
-            if (!BitConverter.IsLittleEndian) 
-                Array.Reverse(rawBytes);
-            value = BitConverter.ToDouble(rawBytes, 0);
-            return true;
+            if (BitConverter.IsLittleEndian && 8 <= bufferSize - bufferPos)
+            {
+                value = BitConverter.ToDouble(buffer, bufferPos);
+                bufferPos += 8;
+            }
+            else
+            {
+                byte[] rawBytes = ReadRawBytes(8);
+                if (!BitConverter.IsLittleEndian) 
+                    Array.Reverse(rawBytes);
+                value = BitConverter.ToDouble(rawBytes, 0);
+            }
 #else
             value = BitConverter.Int64BitsToDouble((long) ReadRawLittleEndian64());
-            return true;
 #endif
+            return true;
         }
 
         /// <summary>
@@ -220,10 +227,18 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public bool ReadFloat(ref float value)
         {
-            byte[] rawBytes = ReadRawBytes(4);
-            if (!BitConverter.IsLittleEndian)
-                Array.Reverse(rawBytes);
-            value = BitConverter.ToSingle(rawBytes, 0);
+            if (BitConverter.IsLittleEndian && 4 <= bufferSize - bufferPos)
+            {
+                value = BitConverter.ToSingle(buffer, bufferPos);
+                bufferPos += 4;
+            }
+            else
+            {
+                byte[] rawBytes = ReadRawBytes(4);
+                if (!BitConverter.IsLittleEndian)
+                    Array.Reverse(rawBytes);
+                value = BitConverter.ToSingle(rawBytes, 0);
+            }
             return true;
         }
 

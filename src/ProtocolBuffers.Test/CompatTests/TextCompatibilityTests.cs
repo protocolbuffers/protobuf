@@ -23,17 +23,6 @@ namespace Google.ProtocolBuffers.CompatTests
         }
 
         [Test, Explicit, Description("This test can take a very long time to run.")]
-        public override void Message2OptimizeSizeReadPerf()
-        {
-            base.Message2OptimizeSizeReadPerf();
-        }
-        [Test, Explicit, Description("This test can take a very long time to run.")]
-        public override void Message2OptimizeSpeedReadPerf()
-        {
-            base.Message2OptimizeSpeedReadPerf();
-        }
-
-        [Test, Explicit, Description("This test can take a very long time to run.")]
         public override void RoundTripMessage2OptimizeSize()
         {
             base.RoundTripMessage2OptimizeSize();
@@ -44,17 +33,5 @@ namespace Google.ProtocolBuffers.CompatTests
         {
             base.RoundTripMessage2OptimizeSpeed();
         }
-
-        [Test, Explicit, Description("This test can take a very long time to run.")]
-        public override void Message2OptimizeSizeWriterPerf()
-        {
-            base.Message2OptimizeSizeWriterPerf();
-        }
-        [Test, Explicit, Description("This test can take a very long time to run.")]
-        public override void Message2OptimizeSpeedWriterPerf()
-        {
-            base.Message2OptimizeSpeedWriterPerf();
-        }
-
     }
 }
