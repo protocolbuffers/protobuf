@@ -213,7 +213,7 @@ namespace Google.ProtocolBuffers
             {
                 byte[] rawBytes = ReadRawBytes(8);
                 if (!BitConverter.IsLittleEndian) 
-                    Array.Reverse(rawBytes);
+                    ByteArray.Reverse(rawBytes);
                 value = BitConverter.ToDouble(rawBytes, 0);
             }
 #else
@@ -236,7 +236,7 @@ namespace Google.ProtocolBuffers
             {
                 byte[] rawBytes = ReadRawBytes(4);
                 if (!BitConverter.IsLittleEndian)
-                    Array.Reverse(rawBytes);
+                    ByteArray.Reverse(rawBytes);
                 value = BitConverter.ToSingle(rawBytes, 0);
             }
             return true;
@@ -1240,7 +1240,7 @@ namespace Google.ProtocolBuffers
             {
                 // We have all the bytes we need already.
                 byte[] bytes = new byte[size];
-                Bytes.Copy(buffer, bufferPos, bytes, 0, size);
+                ByteArray.Copy(buffer, bufferPos, bytes, 0, size);
                 bufferPos += size;
                 return bytes;
             }
@@ -1252,7 +1252,7 @@ namespace Google.ProtocolBuffers
                 // First copy what we have.
                 byte[] bytes = new byte[size];
                 int pos = bufferSize - bufferPos;
-                Bytes.Copy(buffer, bufferPos, bytes, 0, pos);
+                ByteArray.Copy(buffer, bufferPos, bytes, 0, pos);
                 bufferPos = bufferSize;
 
                 // We want to use RefillBuffer() and then copy from the buffer into our
@@ -1268,7 +1268,7 @@ namespace Google.ProtocolBuffers
                     RefillBuffer(true);
                 }
 
-                Bytes.Copy(buffer, 0, bytes, pos, size - pos);
+                ByteArray.Copy(buffer, 0, bytes, pos, size - pos);
                 bufferPos = size - pos;
 
                 return bytes;
@@ -1320,7 +1320,7 @@ namespace Google.ProtocolBuffers
 
                 // Start by copying the leftover bytes from this.buffer.
                 int newPos = originalBufferSize - originalBufferPos;
-                Bytes.Copy(buffer, originalBufferPos, bytes, 0, newPos);
+                ByteArray.Copy(buffer, originalBufferPos, bytes, 0, newPos);
 
                 // And now all the chunks.
                 foreach (byte[] chunk in chunks)

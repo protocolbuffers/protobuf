@@ -648,7 +648,7 @@ namespace Google.ProtocolBuffers
 #if SILVERLIGHT2 || COMPACT_FRAMEWORK_35
             byte[] rawBytes = BitConverter.GetBytes(value);
             if (!BitConverter.IsLittleEndian) 
-                Array.Reverse(rawBytes);
+                ByteArray.Reverse(rawBytes);
             
             if (limit - position >= 8)
             {
@@ -674,8 +674,8 @@ namespace Google.ProtocolBuffers
         public void WriteFloatNoTag(float value)
         {
             byte[] rawBytes = BitConverter.GetBytes(value);
-            if (!BitConverter.IsLittleEndian) 
-                Array.Reverse(rawBytes);
+            if (!BitConverter.IsLittleEndian)
+                ByteArray.Reverse(rawBytes);
 
             if (limit - position >= 4)
             {
@@ -1008,7 +1008,7 @@ namespace Google.ProtocolBuffers
         {
             if (limit - position >= length)
             {
-                Bytes.Copy(value, offset, buffer, position, length);
+                ByteArray.Copy(value, offset, buffer, position, length);
                 // We have room in the current buffer.
                 position += length;
             }
@@ -1017,7 +1017,7 @@ namespace Google.ProtocolBuffers
                 // Write extends past current buffer.  Fill the rest of this buffer and
                 // flush.
                 int bytesWritten = limit - position;
-                Bytes.Copy(value, offset, buffer, position, bytesWritten);
+                ByteArray.Copy(value, offset, buffer, position, bytesWritten);
                 offset += bytesWritten;
                 length -= bytesWritten;
                 position = limit;
@@ -1029,7 +1029,7 @@ namespace Google.ProtocolBuffers
                 if (length <= limit)
                 {
                     // Fits in new buffer.
-                    Bytes.Copy(value, offset, buffer, 0, length);
+                    ByteArray.Copy(value, offset, buffer, 0, length);
                     position = length;
                 }
                 else
