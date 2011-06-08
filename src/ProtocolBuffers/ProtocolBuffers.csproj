@@ -99,6 +99,7 @@
     <Compile Include="AbstractMessageLite.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Bytes.cs" />
     <Compile Include="ByteString.cs" />
     <Compile Include="Collections\Enumerables.cs" />
     <Compile Include="Collections\IPopsicleList.cs" />

@@ -87,6 +87,7 @@ namespace Google.ProtocolBuffers.ProtoBench
                 Console.Error.WriteLine("(You can specify multiple pairs of descriptor type name and input data.)");
                 return 1;
             }
+
             bool success = true;
             for (int i = 0; i < args.Length; i += 2)
             {
@@ -94,7 +95,7 @@ namespace Google.ProtocolBuffers.ProtoBench
             }
             return success ? 0 : 1;
         }
-
+        
         /// <summary>
         /// Runs a single test. Error messages are displayed to Console.Error, and the return value indicates
         /// general success/failure.
@@ -185,7 +186,7 @@ namespace Google.ProtocolBuffers.ProtoBench
                         double first = (iterations * dataSize) / (elapsed.TotalSeconds * 1024 * 1024);
                         if (Verbose) Console.WriteLine("Round ---: Count = {1,6}, Bps = {2,8:f3}", 0, iterations, first);
                         elapsed = TimeSpan.Zero;
-                        int max = FastTest ? 30 : 100;
+                        int max = FastTest ? 10 : 30;
 
                         while (runs < max)
                         {

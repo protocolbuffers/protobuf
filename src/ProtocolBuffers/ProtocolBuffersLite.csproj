@@ -78,6 +78,7 @@
   <ItemGroup>
     <Compile Include="AbstractBuilderLite.cs" />
     <Compile Include="AbstractMessageLite.cs" />
+    <Compile Include="Bytes.cs" />
     <Compile Include="CodedOutputStream.ComputeSize.cs" />
     <Compile Include="Collections\Dictionaries.cs" />
     <Compile Include="Collections\Enumerables.cs" />

@@ -123,7 +123,7 @@ namespace Google.ProtocolBuffers
         public static ByteString CopyFrom(byte[] bytes, int offset, int count)
         {
             byte[] portion = new byte[count];
-            Array.Copy(bytes, offset, portion, 0, count);
+            Bytes.Copy(bytes, offset, portion, 0, count);
             return new ByteString(portion);
         }
 
@@ -259,9 +259,9 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Copies the entire byte array to the destination array provided at the offset specified.
         /// </summary>
-        public void CopyTo(Array array, int position)
+        public void CopyTo(byte[] array, int position)
         {
-            Array.Copy(bytes, 0, array, position, bytes.Length);
+            Bytes.Copy(bytes, 0, array, position, bytes.Length);
         }
 
         /// <summary>

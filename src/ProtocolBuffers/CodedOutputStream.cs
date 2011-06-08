@@ -38,6 +38,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using Google.ProtocolBuffers.Descriptors;
 
@@ -648,7 +649,20 @@ namespace Google.ProtocolBuffers
             byte[] rawBytes = BitConverter.GetBytes(value);
             if (!BitConverter.IsLittleEndian) 
                 Array.Reverse(rawBytes);
-            WriteRawBytes(rawBytes, 0, 8);
+            
+            if (limit - position >= 8)
+            {
+                buffer[position++] = rawBytes[0];
+                buffer[position++] = rawBytes[1];
+                buffer[position++] = rawBytes[2];
+                buffer[position++] = rawBytes[3];
+                buffer[position++] = rawBytes[4];
+                buffer[position++] = rawBytes[5];
+                buffer[position++] = rawBytes[6];
+                buffer[position++] = rawBytes[7];
+            }
+            else
+                WriteRawBytes(rawBytes, 0, 8);
 #else
             WriteRawLittleEndian64((ulong)BitConverter.DoubleToInt64Bits(value));
 #endif
@@ -662,7 +676,16 @@ namespace Google.ProtocolBuffers
             byte[] rawBytes = BitConverter.GetBytes(value);
             if (!BitConverter.IsLittleEndian) 
                 Array.Reverse(rawBytes);
-            WriteRawBytes(rawBytes, 0, 4);
+
+            if (limit - position >= 4)
+            {
+                buffer[position++] = rawBytes[0];
+                buffer[position++] = rawBytes[1];
+                buffer[position++] = rawBytes[2];
+                buffer[position++] = rawBytes[3];
+            }
+            else
+                WriteRawBytes(rawBytes, 0, 4);
         }
 
         /// <summary>
@@ -985,7 +1008,7 @@ namespace Google.ProtocolBuffers
         {
             if (limit - position >= length)
             {
-                Array.Copy(value, offset, buffer, position, length);
+                Bytes.Copy(value, offset, buffer, position, length);
                 // We have room in the current buffer.
                 position += length;
             }
@@ -994,7 +1017,7 @@ namespace Google.ProtocolBuffers
                 // Write extends past current buffer.  Fill the rest of this buffer and
                 // flush.
                 int bytesWritten = limit - position;
-                Array.Copy(value, offset, buffer, position, bytesWritten);
+                Bytes.Copy(value, offset, buffer, position, bytesWritten);
                 offset += bytesWritten;
                 length -= bytesWritten;
                 position = limit;
@@ -1006,7 +1029,7 @@ namespace Google.ProtocolBuffers
                 if (length <= limit)
                 {
                     // Fits in new buffer.
-                    Array.Copy(value, offset, buffer, 0, length);
+                    Bytes.Copy(value, offset, buffer, 0, length);
                     position = length;
                 }
                 else

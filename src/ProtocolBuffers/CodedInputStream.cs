@@ -1225,7 +1225,7 @@ namespace Google.ProtocolBuffers
             {
                 // We have all the bytes we need already.
                 byte[] bytes = new byte[size];
-                Array.Copy(buffer, bufferPos, bytes, 0, size);
+                Bytes.Copy(buffer, bufferPos, bytes, 0, size);
                 bufferPos += size;
                 return bytes;
             }
@@ -1237,7 +1237,7 @@ namespace Google.ProtocolBuffers
                 // First copy what we have.
                 byte[] bytes = new byte[size];
                 int pos = bufferSize - bufferPos;
-                Array.Copy(buffer, bufferPos, bytes, 0, pos);
+                Bytes.Copy(buffer, bufferPos, bytes, 0, pos);
                 bufferPos = bufferSize;
 
                 // We want to use RefillBuffer() and then copy from the buffer into our
@@ -1247,13 +1247,13 @@ namespace Google.ProtocolBuffers
 
                 while (size - pos > bufferSize)
                 {
-                    Array.Copy(buffer, 0, bytes, pos, bufferSize);
+                    Buffer.BlockCopy(buffer, 0, bytes, pos, bufferSize);
                     pos += bufferSize;
                     bufferPos = bufferSize;
                     RefillBuffer(true);
                 }
 
-                Array.Copy(buffer, 0, bytes, pos, size - pos);
+                Bytes.Copy(buffer, 0, bytes, pos, size - pos);
                 bufferPos = size - pos;
 
                 return bytes;
@@ -1305,12 +1305,12 @@ namespace Google.ProtocolBuffers
 
                 // Start by copying the leftover bytes from this.buffer.
                 int newPos = originalBufferSize - originalBufferPos;
-                Array.Copy(buffer, originalBufferPos, bytes, 0, newPos);
+                Bytes.Copy(buffer, originalBufferPos, bytes, 0, newPos);
 
                 // And now all the chunks.
                 foreach (byte[] chunk in chunks)
                 {
-                    Array.Copy(chunk, 0, bytes, newPos, chunk.Length);
+                    Buffer.BlockCopy(chunk, 0, bytes, newPos, chunk.Length);
                     newPos += chunk.Length;
                 }
 
