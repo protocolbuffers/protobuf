@@ -42,6 +42,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ImportMessageLite : pb::GeneratedMessageLite<ImportMessageLite, ImportMessageLite.Builder> {
     private static readonly ImportMessageLite defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _importMessageLiteFieldNames = new string[] { "d" };
+    private static readonly uint[] _importMessageLiteFieldTags = new uint[] { 8 };
     public static ImportMessageLite DefaultInstance {
       get { return defaultInstance; }
     }
@@ -72,8 +74,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _importMessageLiteFieldNames;
       if (hasD) {
-        output.WriteInt32(1, "d", D);
+        output.WriteInt32(1, field_names[0], D);
       }
     }
     
@@ -210,6 +213,15 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_importMessageLiteFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _importMessageLiteFieldTags[field_ordinal];
+            else {
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -222,7 +234,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 8: {
-              result.hasD |= input.ReadInt32(ref result.d_);
+              result.hasD = input.ReadInt32(ref result.d_);
               break;
             }
           }

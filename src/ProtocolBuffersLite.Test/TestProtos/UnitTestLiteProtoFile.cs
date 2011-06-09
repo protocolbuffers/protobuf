@@ -1227,6 +1227,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestAllTypesLite : pb::GeneratedMessageLite<TestAllTypesLite, TestAllTypesLite.Builder> {
     private static readonly TestAllTypesLite defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _testAllTypesLiteFieldNames = new string[] { "default_bool", "default_bytes", "default_cord", "default_double", "default_fixed32", "default_fixed64", "default_float", "default_foreign_enum", "default_import_enum", "default_int32", "default_int64", "default_nested_enum", "default_sfixed32", "default_sfixed64", "default_sint32", "default_sint64", "default_string", "default_string_piece", "default_uint32", "default_uint64", "optional_bool", "optional_bytes", "optional_cord", "optional_double", "optional_fixed32", "optional_fixed64", "optional_float", "optional_foreign_enum", "optional_foreign_message", "optional_import_enum", "optional_import_message", "optional_int32", "optional_int64", "optional_nested_enum", "optional_nested_message", "optional_sfixed32", "optional_sfixed64", "optional_sint32", "optional_sint64", "optional_string", "optional_string_piece", "optional_uint32", "optional_uint64", "optionalgroup", "repeated_bool", "repeated_bytes", "repeated_cord", "repeated_double", "repeated_fixed32", "repeated_fixed64", "repeated_float", "repeated_foreign_enum", "repeated_foreign_message", "repeated_import_enum", "repeated_import_message", "repeated_int32", "repeated_int64", "repeated_nested_enum", "repeated_nested_message", "repeated_sfixed32", "repeated_sfixed64", "repeated_sint32", "repeated_sint64", "repeated_string", "repeated_string_piece", "repeated_uint32", "repeated_uint64", "repeatedgroup" };
+    private static readonly uint[] _testAllTypesLiteFieldTags = new uint[] { 584, 602, 682, 577, 541, 545, 573, 656, 664, 488, 496, 648, 557, 561, 520, 528, 594, 674, 504, 512, 104, 122, 202, 97, 61, 65, 93, 176, 154, 184, 162, 8, 16, 168, 146, 77, 81, 40, 48, 114, 194, 24, 32, 131, 344, 362, 442, 337, 301, 305, 333, 416, 394, 424, 402, 248, 256, 408, 386, 317, 321, 280, 288, 354, 434, 264, 272, 371 };
     public static TestAllTypesLite DefaultInstance {
       get { return defaultInstance; }
     }
@@ -1257,6 +1259,8 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class NestedMessage : pb::GeneratedMessageLite<NestedMessage, NestedMessage.Builder> {
         private static readonly NestedMessage defaultInstance = new Builder().BuildPartial();
+        private static readonly string[] _nestedMessageFieldNames = new string[] { "bb" };
+        private static readonly uint[] _nestedMessageFieldTags = new uint[] { 8 };
         public static NestedMessage DefaultInstance {
           get { return defaultInstance; }
         }
@@ -1287,8 +1291,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
+          string[] field_names = _nestedMessageFieldNames;
           if (hasBb) {
-            output.WriteInt32(1, "bb", Bb);
+            output.WriteInt32(1, field_names[0], Bb);
           }
         }
         
@@ -1425,6 +1430,15 @@ namespace Google.ProtocolBuffers.TestProtos {
             uint tag;
             string field_name;
             while (input.ReadTag(out tag, out field_name)) {
+              if(tag == 0 && field_name != null) {
+                int field_ordinal = global::System.Array.BinarySearch(_nestedMessageFieldNames, field_name, global::System.StringComparer.Ordinal);
+                if(field_ordinal >= 0)
+                  tag = _nestedMessageFieldTags[field_ordinal];
+                else {
+                  ParseUnknownField(input, extensionRegistry, tag, field_name);
+                  continue;
+                }
+              }
               switch (tag) {
                 case 0: {
                   throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -1437,7 +1451,7 @@ namespace Google.ProtocolBuffers.TestProtos {
                   break;
                 }
                 case 8: {
-                  result.hasBb |= input.ReadInt32(ref result.bb_);
+                  result.hasBb = input.ReadInt32(ref result.bb_);
                   break;
                 }
               }
@@ -1475,6 +1489,8 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class OptionalGroup : pb::GeneratedMessageLite<OptionalGroup, OptionalGroup.Builder> {
         private static readonly OptionalGroup defaultInstance = new Builder().BuildPartial();
+        private static readonly string[] _optionalGroupFieldNames = new string[] { "a" };
+        private static readonly uint[] _optionalGroupFieldTags = new uint[] { 136 };
         public static OptionalGroup DefaultInstance {
           get { return defaultInstance; }
         }
@@ -1505,8 +1521,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
+          string[] field_names = _optionalGroupFieldNames;
           if (hasA) {
-            output.WriteInt32(17, "a", A);
+            output.WriteInt32(17, field_names[0], A);
           }
         }
         
@@ -1643,6 +1660,15 @@ namespace Google.ProtocolBuffers.TestProtos {
             uint tag;
             string field_name;
             while (input.ReadTag(out tag, out field_name)) {
+              if(tag == 0 && field_name != null) {
+                int field_ordinal = global::System.Array.BinarySearch(_optionalGroupFieldNames, field_name, global::System.StringComparer.Ordinal);
+                if(field_ordinal >= 0)
+                  tag = _optionalGroupFieldTags[field_ordinal];
+                else {
+                  ParseUnknownField(input, extensionRegistry, tag, field_name);
+                  continue;
+                }
+              }
               switch (tag) {
                 case 0: {
                   throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -1655,7 +1681,7 @@ namespace Google.ProtocolBuffers.TestProtos {
                   break;
                 }
                 case 136: {
-                  result.hasA |= input.ReadInt32(ref result.a_);
+                  result.hasA = input.ReadInt32(ref result.a_);
                   break;
                 }
               }
@@ -1693,6 +1719,8 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class RepeatedGroup : pb::GeneratedMessageLite<RepeatedGroup, RepeatedGroup.Builder> {
         private static readonly RepeatedGroup defaultInstance = new Builder().BuildPartial();
+        private static readonly string[] _repeatedGroupFieldNames = new string[] { "a" };
+        private static readonly uint[] _repeatedGroupFieldTags = new uint[] { 376 };
         public static RepeatedGroup DefaultInstance {
           get { return defaultInstance; }
         }
@@ -1723,8 +1751,9 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
+          string[] field_names = _repeatedGroupFieldNames;
           if (hasA) {
-            output.WriteInt32(47, "a", A);
+            output.WriteInt32(47, field_names[0], A);
           }
         }
         
@@ -1861,6 +1890,15 @@ namespace Google.ProtocolBuffers.TestProtos {
             uint tag;
             string field_name;
             while (input.ReadTag(out tag, out field_name)) {
+              if(tag == 0 && field_name != null) {
+                int field_ordinal = global::System.Array.BinarySearch(_repeatedGroupFieldNames, field_name, global::System.StringComparer.Ordinal);
+                if(field_ordinal >= 0)
+                  tag = _repeatedGroupFieldTags[field_ordinal];
+                else {
+                  ParseUnknownField(input, extensionRegistry, tag, field_name);
+                  continue;
+                }
+              }
               switch (tag) {
                 case 0: {
                   throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -1873,7 +1911,7 @@ namespace Google.ProtocolBuffers.TestProtos {
                   break;
                 }
                 case 376: {
-                  result.hasA |= input.ReadInt32(ref result.a_);
+                  result.hasA = input.ReadInt32(ref result.a_);
                   break;
                 }
               }
@@ -2661,209 +2699,210 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _testAllTypesLiteFieldNames;
       if (hasOptionalInt32) {
-        output.WriteInt32(1, "optional_int32", OptionalInt32);
+        output.WriteInt32(1, field_names[31], OptionalInt32);
       }
       if (hasOptionalInt64) {
-        output.WriteInt64(2, "optional_int64", OptionalInt64);
+        output.WriteInt64(2, field_names[32], OptionalInt64);
       }
       if (hasOptionalUint32) {
-        output.WriteUInt32(3, "optional_uint32", OptionalUint32);
+        output.WriteUInt32(3, field_names[41], OptionalUint32);
       }
       if (hasOptionalUint64) {
-        output.WriteUInt64(4, "optional_uint64", OptionalUint64);
+        output.WriteUInt64(4, field_names[42], OptionalUint64);
       }
       if (hasOptionalSint32) {
-        output.WriteSInt32(5, "optional_sint32", OptionalSint32);
+        output.WriteSInt32(5, field_names[37], OptionalSint32);
       }
       if (hasOptionalSint64) {
-        output.WriteSInt64(6, "optional_sint64", OptionalSint64);
+        output.WriteSInt64(6, field_names[38], OptionalSint64);
       }
       if (hasOptionalFixed32) {
-        output.WriteFixed32(7, "optional_fixed32", OptionalFixed32);
+        output.WriteFixed32(7, field_names[24], OptionalFixed32);
       }
       if (hasOptionalFixed64) {
-        output.WriteFixed64(8, "optional_fixed64", OptionalFixed64);
+        output.WriteFixed64(8, field_names[25], OptionalFixed64);
       }
       if (hasOptionalSfixed32) {
-        output.WriteSFixed32(9, "optional_sfixed32", OptionalSfixed32);
+        output.WriteSFixed32(9, field_names[35], OptionalSfixed32);
       }
       if (hasOptionalSfixed64) {
-        output.WriteSFixed64(10, "optional_sfixed64", OptionalSfixed64);
+        output.WriteSFixed64(10, field_names[36], OptionalSfixed64);
       }
       if (hasOptionalFloat) {
-        output.WriteFloat(11, "optional_float", OptionalFloat);
+        output.WriteFloat(11, field_names[26], OptionalFloat);
       }
       if (hasOptionalDouble) {
-        output.WriteDouble(12, "optional_double", OptionalDouble);
+        output.WriteDouble(12, field_names[23], OptionalDouble);
       }
       if (hasOptionalBool) {
-        output.WriteBool(13, "optional_bool", OptionalBool);
+        output.WriteBool(13, field_names[20], OptionalBool);
       }
       if (hasOptionalString) {
-        output.WriteString(14, "optional_string", OptionalString);
+        output.WriteString(14, field_names[39], OptionalString);
       }
       if (hasOptionalBytes) {
-        output.WriteBytes(15, "optional_bytes", OptionalBytes);
+        output.WriteBytes(15, field_names[21], OptionalBytes);
       }
       if (hasOptionalGroup) {
-        output.WriteGroup(16, "optionalgroup", OptionalGroup);
+        output.WriteGroup(16, field_names[43], OptionalGroup);
       }
       if (hasOptionalNestedMessage) {
-        output.WriteMessage(18, "optional_nested_message", OptionalNestedMessage);
+        output.WriteMessage(18, field_names[34], OptionalNestedMessage);
       }
       if (hasOptionalForeignMessage) {
-        output.WriteMessage(19, "optional_foreign_message", OptionalForeignMessage);
+        output.WriteMessage(19, field_names[28], OptionalForeignMessage);
       }
       if (hasOptionalImportMessage) {
-        output.WriteMessage(20, "optional_import_message", OptionalImportMessage);
+        output.WriteMessage(20, field_names[30], OptionalImportMessage);
       }
       if (hasOptionalNestedEnum) {
-        output.WriteEnum(21, "optional_nested_enum", (int) OptionalNestedEnum, OptionalNestedEnum.ToString());
+        output.WriteEnum(21, field_names[33], (int) OptionalNestedEnum, OptionalNestedEnum.ToString());
       }
       if (hasOptionalForeignEnum) {
-        output.WriteEnum(22, "optional_foreign_enum", (int) OptionalForeignEnum, OptionalForeignEnum.ToString());
+        output.WriteEnum(22, field_names[27], (int) OptionalForeignEnum, OptionalForeignEnum.ToString());
       }
       if (hasOptionalImportEnum) {
-        output.WriteEnum(23, "optional_import_enum", (int) OptionalImportEnum, OptionalImportEnum.ToString());
+        output.WriteEnum(23, field_names[29], (int) OptionalImportEnum, OptionalImportEnum.ToString());
       }
       if (hasOptionalStringPiece) {
-        output.WriteString(24, "optional_string_piece", OptionalStringPiece);
+        output.WriteString(24, field_names[40], OptionalStringPiece);
       }
       if (hasOptionalCord) {
-        output.WriteString(25, "optional_cord", OptionalCord);
+        output.WriteString(25, field_names[22], OptionalCord);
       }
       if (repeatedInt32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Int32, 31, "repeated_int32", repeatedInt32_);
+        output.WriteArray(pbd::FieldType.Int32, 31, field_names[55], repeatedInt32_);
       }
       if (repeatedInt64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Int64, 32, "repeated_int64", repeatedInt64_);
+        output.WriteArray(pbd::FieldType.Int64, 32, field_names[56], repeatedInt64_);
       }
       if (repeatedUint32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.UInt32, 33, "repeated_uint32", repeatedUint32_);
+        output.WriteArray(pbd::FieldType.UInt32, 33, field_names[65], repeatedUint32_);
       }
       if (repeatedUint64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.UInt64, 34, "repeated_uint64", repeatedUint64_);
+        output.WriteArray(pbd::FieldType.UInt64, 34, field_names[66], repeatedUint64_);
       }
       if (repeatedSint32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.SInt32, 35, "repeated_sint32", repeatedSint32_);
+        output.WriteArray(pbd::FieldType.SInt32, 35, field_names[61], repeatedSint32_);
       }
       if (repeatedSint64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.SInt64, 36, "repeated_sint64", repeatedSint64_);
+        output.WriteArray(pbd::FieldType.SInt64, 36, field_names[62], repeatedSint64_);
       }
       if (repeatedFixed32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Fixed32, 37, "repeated_fixed32", repeatedFixed32_);
+        output.WriteArray(pbd::FieldType.Fixed32, 37, field_names[48], repeatedFixed32_);
       }
       if (repeatedFixed64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Fixed64, 38, "repeated_fixed64", repeatedFixed64_);
+        output.WriteArray(pbd::FieldType.Fixed64, 38, field_names[49], repeatedFixed64_);
       }
       if (repeatedSfixed32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.SFixed32, 39, "repeated_sfixed32", repeatedSfixed32_);
+        output.WriteArray(pbd::FieldType.SFixed32, 39, field_names[59], repeatedSfixed32_);
       }
       if (repeatedSfixed64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.SFixed64, 40, "repeated_sfixed64", repeatedSfixed64_);
+        output.WriteArray(pbd::FieldType.SFixed64, 40, field_names[60], repeatedSfixed64_);
       }
       if (repeatedFloat_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Float, 41, "repeated_float", repeatedFloat_);
+        output.WriteArray(pbd::FieldType.Float, 41, field_names[50], repeatedFloat_);
       }
       if (repeatedDouble_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Double, 42, "repeated_double", repeatedDouble_);
+        output.WriteArray(pbd::FieldType.Double, 42, field_names[47], repeatedDouble_);
       }
       if (repeatedBool_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Bool, 43, "repeated_bool", repeatedBool_);
+        output.WriteArray(pbd::FieldType.Bool, 43, field_names[44], repeatedBool_);
       }
       if (repeatedString_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 44, "repeated_string", repeatedString_);
+        output.WriteArray(pbd::FieldType.String, 44, field_names[63], repeatedString_);
       }
       if (repeatedBytes_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Bytes, 45, "repeated_bytes", repeatedBytes_);
+        output.WriteArray(pbd::FieldType.Bytes, 45, field_names[45], repeatedBytes_);
       }
       if (repeatedGroup_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Group, 46, "repeatedgroup", repeatedGroup_);
+        output.WriteArray(pbd::FieldType.Group, 46, field_names[67], repeatedGroup_);
       }
       if (repeatedNestedMessage_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 48, "repeated_nested_message", repeatedNestedMessage_);
+        output.WriteArray(pbd::FieldType.Message, 48, field_names[58], repeatedNestedMessage_);
       }
       if (repeatedForeignMessage_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 49, "repeated_foreign_message", repeatedForeignMessage_);
+        output.WriteArray(pbd::FieldType.Message, 49, field_names[52], repeatedForeignMessage_);
       }
       if (repeatedImportMessage_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 50, "repeated_import_message", repeatedImportMessage_);
+        output.WriteArray(pbd::FieldType.Message, 50, field_names[54], repeatedImportMessage_);
       }
       if (repeatedNestedEnum_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Enum, 51, "repeated_nested_enum", repeatedNestedEnum_);
+        output.WriteArray(pbd::FieldType.Enum, 51, field_names[57], repeatedNestedEnum_);
       }
       if (repeatedForeignEnum_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Enum, 52, "repeated_foreign_enum", repeatedForeignEnum_);
+        output.WriteArray(pbd::FieldType.Enum, 52, field_names[51], repeatedForeignEnum_);
       }
       if (repeatedImportEnum_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Enum, 53, "repeated_import_enum", repeatedImportEnum_);
+        output.WriteArray(pbd::FieldType.Enum, 53, field_names[53], repeatedImportEnum_);
       }
       if (repeatedStringPiece_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 54, "repeated_string_piece", repeatedStringPiece_);
+        output.WriteArray(pbd::FieldType.String, 54, field_names[64], repeatedStringPiece_);
       }
       if (repeatedCord_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 55, "repeated_cord", repeatedCord_);
+        output.WriteArray(pbd::FieldType.String, 55, field_names[46], repeatedCord_);
       }
       if (hasDefaultInt32) {
-        output.WriteInt32(61, "default_int32", DefaultInt32);
+        output.WriteInt32(61, field_names[9], DefaultInt32);
       }
       if (hasDefaultInt64) {
-        output.WriteInt64(62, "default_int64", DefaultInt64);
+        output.WriteInt64(62, field_names[10], DefaultInt64);
       }
       if (hasDefaultUint32) {
-        output.WriteUInt32(63, "default_uint32", DefaultUint32);
+        output.WriteUInt32(63, field_names[18], DefaultUint32);
       }
       if (hasDefaultUint64) {
-        output.WriteUInt64(64, "default_uint64", DefaultUint64);
+        output.WriteUInt64(64, field_names[19], DefaultUint64);
       }
       if (hasDefaultSint32) {
-        output.WriteSInt32(65, "default_sint32", DefaultSint32);
+        output.WriteSInt32(65, field_names[14], DefaultSint32);
       }
       if (hasDefaultSint64) {
-        output.WriteSInt64(66, "default_sint64", DefaultSint64);
+        output.WriteSInt64(66, field_names[15], DefaultSint64);
       }
       if (hasDefaultFixed32) {
-        output.WriteFixed32(67, "default_fixed32", DefaultFixed32);
+        output.WriteFixed32(67, field_names[4], DefaultFixed32);
       }
       if (hasDefaultFixed64) {
-        output.WriteFixed64(68, "default_fixed64", DefaultFixed64);
+        output.WriteFixed64(68, field_names[5], DefaultFixed64);
       }
       if (hasDefaultSfixed32) {
-        output.WriteSFixed32(69, "default_sfixed32", DefaultSfixed32);
+        output.WriteSFixed32(69, field_names[12], DefaultSfixed32);
       }
       if (hasDefaultSfixed64) {
-        output.WriteSFixed64(70, "default_sfixed64", DefaultSfixed64);
+        output.WriteSFixed64(70, field_names[13], DefaultSfixed64);
       }
       if (hasDefaultFloat) {
-        output.WriteFloat(71, "default_float", DefaultFloat);
+        output.WriteFloat(71, field_names[6], DefaultFloat);
       }
       if (hasDefaultDouble) {
-        output.WriteDouble(72, "default_double", DefaultDouble);
+        output.WriteDouble(72, field_names[3], DefaultDouble);
       }
       if (hasDefaultBool) {
-        output.WriteBool(73, "default_bool", DefaultBool);
+        output.WriteBool(73, field_names[0], DefaultBool);
       }
       if (hasDefaultString) {
-        output.WriteString(74, "default_string", DefaultString);
+        output.WriteString(74, field_names[16], DefaultString);
       }
       if (hasDefaultBytes) {
-        output.WriteBytes(75, "default_bytes", DefaultBytes);
+        output.WriteBytes(75, field_names[1], DefaultBytes);
       }
       if (hasDefaultNestedEnum) {
-        output.WriteEnum(81, "default_nested_enum", (int) DefaultNestedEnum, DefaultNestedEnum.ToString());
+        output.WriteEnum(81, field_names[11], (int) DefaultNestedEnum, DefaultNestedEnum.ToString());
       }
       if (hasDefaultForeignEnum) {
-        output.WriteEnum(82, "default_foreign_enum", (int) DefaultForeignEnum, DefaultForeignEnum.ToString());
+        output.WriteEnum(82, field_names[7], (int) DefaultForeignEnum, DefaultForeignEnum.ToString());
       }
       if (hasDefaultImportEnum) {
-        output.WriteEnum(83, "default_import_enum", (int) DefaultImportEnum, DefaultImportEnum.ToString());
+        output.WriteEnum(83, field_names[8], (int) DefaultImportEnum, DefaultImportEnum.ToString());
       }
       if (hasDefaultStringPiece) {
-        output.WriteString(84, "default_string_piece", DefaultStringPiece);
+        output.WriteString(84, field_names[17], DefaultStringPiece);
       }
       if (hasDefaultCord) {
-        output.WriteString(85, "default_cord", DefaultCord);
+        output.WriteString(85, field_names[2], DefaultCord);
       }
     }
     
@@ -3791,6 +3830,15 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_testAllTypesLiteFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _testAllTypesLiteFieldTags[field_ordinal];
+            else {
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -3803,63 +3851,63 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 8: {
-              result.hasOptionalInt32 |= input.ReadInt32(ref result.optionalInt32_);
+              result.hasOptionalInt32 = input.ReadInt32(ref result.optionalInt32_);
               break;
             }
             case 16: {
-              result.hasOptionalInt64 |= input.ReadInt64(ref result.optionalInt64_);
+              result.hasOptionalInt64 = input.ReadInt64(ref result.optionalInt64_);
               break;
             }
             case 24: {
-              result.hasOptionalUint32 |= input.ReadUInt32(ref result.optionalUint32_);
+              result.hasOptionalUint32 = input.ReadUInt32(ref result.optionalUint32_);
               break;
             }
             case 32: {
-              result.hasOptionalUint64 |= input.ReadUInt64(ref result.optionalUint64_);
+              result.hasOptionalUint64 = input.ReadUInt64(ref result.optionalUint64_);
               break;
             }
             case 40: {
-              result.hasOptionalSint32 |= input.ReadSInt32(ref result.optionalSint32_);
+              result.hasOptionalSint32 = input.ReadSInt32(ref result.optionalSint32_);
               break;
             }
             case 48: {
-              result.hasOptionalSint64 |= input.ReadSInt64(ref result.optionalSint64_);
+              result.hasOptionalSint64 = input.ReadSInt64(ref result.optionalSint64_);
               break;
             }
             case 61: {
-              result.hasOptionalFixed32 |= input.ReadFixed32(ref result.optionalFixed32_);
+              result.hasOptionalFixed32 = input.ReadFixed32(ref result.optionalFixed32_);
               break;
             }
             case 65: {
-              result.hasOptionalFixed64 |= input.ReadFixed64(ref result.optionalFixed64_);
+              result.hasOptionalFixed64 = input.ReadFixed64(ref result.optionalFixed64_);
               break;
             }
             case 77: {
-              result.hasOptionalSfixed32 |= input.ReadSFixed32(ref result.optionalSfixed32_);
+              result.hasOptionalSfixed32 = input.ReadSFixed32(ref result.optionalSfixed32_);
               break;
             }
             case 81: {
-              result.hasOptionalSfixed64 |= input.ReadSFixed64(ref result.optionalSfixed64_);
+              result.hasOptionalSfixed64 = input.ReadSFixed64(ref result.optionalSfixed64_);
               break;
             }
             case 93: {
-              result.hasOptionalFloat |= input.ReadFloat(ref result.optionalFloat_);
+              result.hasOptionalFloat = input.ReadFloat(ref result.optionalFloat_);
               break;
             }
             case 97: {
-              result.hasOptionalDouble |= input.ReadDouble(ref result.optionalDouble_);
+              result.hasOptionalDouble = input.ReadDouble(ref result.optionalDouble_);
               break;
             }
             case 104: {
-              result.hasOptionalBool |= input.ReadBool(ref result.optionalBool_);
+              result.hasOptionalBool = input.ReadBool(ref result.optionalBool_);
               break;
             }
             case 114: {
-              result.hasOptionalString |= input.ReadString(ref result.optionalString_);
+              result.hasOptionalString = input.ReadString(ref result.optionalString_);
               break;
             }
             case 122: {
-              result.hasOptionalBytes |= input.ReadBytes(ref result.optionalBytes_);
+              result.hasOptionalBytes = input.ReadBytes(ref result.optionalBytes_);
               break;
             }
             case 131: {
@@ -3923,11 +3971,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 194: {
-              result.hasOptionalStringPiece |= input.ReadString(ref result.optionalStringPiece_);
+              result.hasOptionalStringPiece = input.ReadString(ref result.optionalStringPiece_);
               break;
             }
             case 202: {
-              result.hasOptionalCord |= input.ReadString(ref result.optionalCord_);
+              result.hasOptionalCord = input.ReadString(ref result.optionalCord_);
               break;
             }
             case 250:
@@ -4046,63 +4094,63 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 488: {
-              result.hasDefaultInt32 |= input.ReadInt32(ref result.defaultInt32_);
+              result.hasDefaultInt32 = input.ReadInt32(ref result.defaultInt32_);
               break;
             }
             case 496: {
-              result.hasDefaultInt64 |= input.ReadInt64(ref result.defaultInt64_);
+              result.hasDefaultInt64 = input.ReadInt64(ref result.defaultInt64_);
               break;
             }
             case 504: {
-              result.hasDefaultUint32 |= input.ReadUInt32(ref result.defaultUint32_);
+              result.hasDefaultUint32 = input.ReadUInt32(ref result.defaultUint32_);
               break;
             }
             case 512: {
-              result.hasDefaultUint64 |= input.ReadUInt64(ref result.defaultUint64_);
+              result.hasDefaultUint64 = input.ReadUInt64(ref result.defaultUint64_);
               break;
             }
             case 520: {
-              result.hasDefaultSint32 |= input.ReadSInt32(ref result.defaultSint32_);
+              result.hasDefaultSint32 = input.ReadSInt32(ref result.defaultSint32_);
               break;
             }
             case 528: {
-              result.hasDefaultSint64 |= input.ReadSInt64(ref result.defaultSint64_);
+              result.hasDefaultSint64 = input.ReadSInt64(ref result.defaultSint64_);
               break;
             }
             case 541: {
-              result.hasDefaultFixed32 |= input.ReadFixed32(ref result.defaultFixed32_);
+              result.hasDefaultFixed32 = input.ReadFixed32(ref result.defaultFixed32_);
               break;
             }
             case 545: {
-              result.hasDefaultFixed64 |= input.ReadFixed64(ref result.defaultFixed64_);
+              result.hasDefaultFixed64 = input.ReadFixed64(ref result.defaultFixed64_);
               break;
             }
             case 557: {
-              result.hasDefaultSfixed32 |= input.ReadSFixed32(ref result.defaultSfixed32_);
+              result.hasDefaultSfixed32 = input.ReadSFixed32(ref result.defaultSfixed32_);
               break;
             }
             case 561: {
-              result.hasDefaultSfixed64 |= input.ReadSFixed64(ref result.defaultSfixed64_);
+              result.hasDefaultSfixed64 = input.ReadSFixed64(ref result.defaultSfixed64_);
               break;
             }
             case 573: {
-              result.hasDefaultFloat |= input.ReadFloat(ref result.defaultFloat_);
+              result.hasDefaultFloat = input.ReadFloat(ref result.defaultFloat_);
               break;
             }
             case 577: {
-              result.hasDefaultDouble |= input.ReadDouble(ref result.defaultDouble_);
+              result.hasDefaultDouble = input.ReadDouble(ref result.defaultDouble_);
               break;
             }
             case 584: {
-              result.hasDefaultBool |= input.ReadBool(ref result.defaultBool_);
+              result.hasDefaultBool = input.ReadBool(ref result.defaultBool_);
               break;
             }
             case 594: {
-              result.hasDefaultString |= input.ReadString(ref result.defaultString_);
+              result.hasDefaultString = input.ReadString(ref result.defaultString_);
               break;
             }
             case 602: {
-              result.hasDefaultBytes |= input.ReadBytes(ref result.defaultBytes_);
+              result.hasDefaultBytes = input.ReadBytes(ref result.defaultBytes_);
               break;
             }
             case 648: {
@@ -4130,11 +4178,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 674: {
-              result.hasDefaultStringPiece |= input.ReadString(ref result.defaultStringPiece_);
+              result.hasDefaultStringPiece = input.ReadString(ref result.defaultStringPiece_);
               break;
             }
             case 682: {
-              result.hasDefaultCord |= input.ReadString(ref result.defaultCord_);
+              result.hasDefaultCord = input.ReadString(ref result.defaultCord_);
               break;
             }
           }
@@ -5742,6 +5790,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ForeignMessageLite : pb::GeneratedMessageLite<ForeignMessageLite, ForeignMessageLite.Builder> {
     private static readonly ForeignMessageLite defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _foreignMessageLiteFieldNames = new string[] { "c" };
+    private static readonly uint[] _foreignMessageLiteFieldTags = new uint[] { 8 };
     public static ForeignMessageLite DefaultInstance {
       get { return defaultInstance; }
     }
@@ -5772,8 +5822,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _foreignMessageLiteFieldNames;
       if (hasC) {
-        output.WriteInt32(1, "c", C);
+        output.WriteInt32(1, field_names[0], C);
       }
     }
     
@@ -5910,6 +5961,15 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_foreignMessageLiteFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _foreignMessageLiteFieldTags[field_ordinal];
+            else {
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -5922,7 +5982,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 8: {
-              result.hasC |= input.ReadInt32(ref result.c_);
+              result.hasC = input.ReadInt32(ref result.c_);
               break;
             }
           }
@@ -5960,6 +6020,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestPackedTypesLite : pb::GeneratedMessageLite<TestPackedTypesLite, TestPackedTypesLite.Builder> {
     private static readonly TestPackedTypesLite defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _testPackedTypesLiteFieldNames = new string[] { "packed_bool", "packed_double", "packed_enum", "packed_fixed32", "packed_fixed64", "packed_float", "packed_int32", "packed_int64", "packed_sfixed32", "packed_sfixed64", "packed_sint32", "packed_sint64", "packed_uint32", "packed_uint64" };
+    private static readonly uint[] _testPackedTypesLiteFieldTags = new uint[] { 818, 810, 826, 770, 778, 802, 722, 730, 786, 794, 754, 762, 738, 746 };
     public static TestPackedTypesLite DefaultInstance {
       get { return defaultInstance; }
     }
@@ -6170,47 +6232,48 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _testPackedTypesLiteFieldNames;
       if (packedInt32_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Int32, 90, "packed_int32", packedInt32MemoizedSerializedSize, packedInt32_);
+        output.WritePackedArray(pbd::FieldType.Int32, 90, field_names[6], packedInt32MemoizedSerializedSize, packedInt32_);
       }
       if (packedInt64_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Int64, 91, "packed_int64", packedInt64MemoizedSerializedSize, packedInt64_);
+        output.WritePackedArray(pbd::FieldType.Int64, 91, field_names[7], packedInt64MemoizedSerializedSize, packedInt64_);
       }
       if (packedUint32_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.UInt32, 92, "packed_uint32", packedUint32MemoizedSerializedSize, packedUint32_);
+        output.WritePackedArray(pbd::FieldType.UInt32, 92, field_names[12], packedUint32MemoizedSerializedSize, packedUint32_);
       }
       if (packedUint64_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.UInt64, 93, "packed_uint64", packedUint64MemoizedSerializedSize, packedUint64_);
+        output.WritePackedArray(pbd::FieldType.UInt64, 93, field_names[13], packedUint64MemoizedSerializedSize, packedUint64_);
       }
       if (packedSint32_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.SInt32, 94, "packed_sint32", packedSint32MemoizedSerializedSize, packedSint32_);
+        output.WritePackedArray(pbd::FieldType.SInt32, 94, field_names[10], packedSint32MemoizedSerializedSize, packedSint32_);
       }
       if (packedSint64_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.SInt64, 95, "packed_sint64", packedSint64MemoizedSerializedSize, packedSint64_);
+        output.WritePackedArray(pbd::FieldType.SInt64, 95, field_names[11], packedSint64MemoizedSerializedSize, packedSint64_);
       }
       if (packedFixed32_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Fixed32, 96, "packed_fixed32", packedFixed32MemoizedSerializedSize, packedFixed32_);
+        output.WritePackedArray(pbd::FieldType.Fixed32, 96, field_names[3], packedFixed32MemoizedSerializedSize, packedFixed32_);
       }
       if (packedFixed64_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Fixed64, 97, "packed_fixed64", packedFixed64MemoizedSerializedSize, packedFixed64_);
+        output.WritePackedArray(pbd::FieldType.Fixed64, 97, field_names[4], packedFixed64MemoizedSerializedSize, packedFixed64_);
       }
       if (packedSfixed32_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.SFixed32, 98, "packed_sfixed32", packedSfixed32MemoizedSerializedSize, packedSfixed32_);
+        output.WritePackedArray(pbd::FieldType.SFixed32, 98, field_names[8], packedSfixed32MemoizedSerializedSize, packedSfixed32_);
       }
       if (packedSfixed64_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.SFixed64, 99, "packed_sfixed64", packedSfixed64MemoizedSerializedSize, packedSfixed64_);
+        output.WritePackedArray(pbd::FieldType.SFixed64, 99, field_names[9], packedSfixed64MemoizedSerializedSize, packedSfixed64_);
       }
       if (packedFloat_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Float, 100, "packed_float", packedFloatMemoizedSerializedSize, packedFloat_);
+        output.WritePackedArray(pbd::FieldType.Float, 100, field_names[5], packedFloatMemoizedSerializedSize, packedFloat_);
       }
       if (packedDouble_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Double, 101, "packed_double", packedDoubleMemoizedSerializedSize, packedDouble_);
+        output.WritePackedArray(pbd::FieldType.Double, 101, field_names[1], packedDoubleMemoizedSerializedSize, packedDouble_);
       }
       if (packedBool_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Bool, 102, "packed_bool", packedBoolMemoizedSerializedSize, packedBool_);
+        output.WritePackedArray(pbd::FieldType.Bool, 102, field_names[0], packedBoolMemoizedSerializedSize, packedBool_);
       }
       if (packedEnum_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Enum, 103, "packed_enum", packedEnumMemoizedSerializedSize, packedEnum_);
+        output.WritePackedArray(pbd::FieldType.Enum, 103, field_names[2], packedEnumMemoizedSerializedSize, packedEnum_);
       }
     }
     
@@ -6619,6 +6682,15 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_testPackedTypesLiteFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _testPackedTypesLiteFieldTags[field_ordinal];
+            else {
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -7102,6 +7174,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestUnpackedTypesLite : pb::GeneratedMessageLite<TestUnpackedTypesLite, TestUnpackedTypesLite.Builder> {
     private static readonly TestUnpackedTypesLite defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _testUnpackedTypesLiteFieldNames = new string[] { "unpacked_bool", "unpacked_double", "unpacked_enum", "unpacked_fixed32", "unpacked_fixed64", "unpacked_float", "unpacked_int32", "unpacked_int64", "unpacked_sfixed32", "unpacked_sfixed64", "unpacked_sint32", "unpacked_sint64", "unpacked_uint32", "unpacked_uint64" };
+    private static readonly uint[] _testUnpackedTypesLiteFieldTags = new uint[] { 816, 809, 824, 773, 777, 805, 720, 728, 789, 793, 752, 760, 736, 744 };
     public static TestUnpackedTypesLite DefaultInstance {
       get { return defaultInstance; }
     }
@@ -7298,47 +7372,48 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _testUnpackedTypesLiteFieldNames;
       if (unpackedInt32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Int32, 90, "unpacked_int32", unpackedInt32_);
+        output.WriteArray(pbd::FieldType.Int32, 90, field_names[6], unpackedInt32_);
       }
       if (unpackedInt64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Int64, 91, "unpacked_int64", unpackedInt64_);
+        output.WriteArray(pbd::FieldType.Int64, 91, field_names[7], unpackedInt64_);
       }
       if (unpackedUint32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.UInt32, 92, "unpacked_uint32", unpackedUint32_);
+        output.WriteArray(pbd::FieldType.UInt32, 92, field_names[12], unpackedUint32_);
       }
       if (unpackedUint64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.UInt64, 93, "unpacked_uint64", unpackedUint64_);
+        output.WriteArray(pbd::FieldType.UInt64, 93, field_names[13], unpackedUint64_);
       }
       if (unpackedSint32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.SInt32, 94, "unpacked_sint32", unpackedSint32_);
+        output.WriteArray(pbd::FieldType.SInt32, 94, field_names[10], unpackedSint32_);
       }
       if (unpackedSint64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.SInt64, 95, "unpacked_sint64", unpackedSint64_);
+        output.WriteArray(pbd::FieldType.SInt64, 95, field_names[11], unpackedSint64_);
       }
       if (unpackedFixed32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Fixed32, 96, "unpacked_fixed32", unpackedFixed32_);
+        output.WriteArray(pbd::FieldType.Fixed32, 96, field_names[3], unpackedFixed32_);
       }
       if (unpackedFixed64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Fixed64, 97, "unpacked_fixed64", unpackedFixed64_);
+        output.WriteArray(pbd::FieldType.Fixed64, 97, field_names[4], unpackedFixed64_);
       }
       if (unpackedSfixed32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.SFixed32, 98, "unpacked_sfixed32", unpackedSfixed32_);
+        output.WriteArray(pbd::FieldType.SFixed32, 98, field_names[8], unpackedSfixed32_);
       }
       if (unpackedSfixed64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.SFixed64, 99, "unpacked_sfixed64", unpackedSfixed64_);
+        output.WriteArray(pbd::FieldType.SFixed64, 99, field_names[9], unpackedSfixed64_);
       }
       if (unpackedFloat_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Float, 100, "unpacked_float", unpackedFloat_);
+        output.WriteArray(pbd::FieldType.Float, 100, field_names[5], unpackedFloat_);
       }
       if (unpackedDouble_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Double, 101, "unpacked_double", unpackedDouble_);
+        output.WriteArray(pbd::FieldType.Double, 101, field_names[1], unpackedDouble_);
       }
       if (unpackedBool_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Bool, 102, "unpacked_bool", unpackedBool_);
+        output.WriteArray(pbd::FieldType.Bool, 102, field_names[0], unpackedBool_);
       }
       if (unpackedEnum_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Enum, 103, "unpacked_enum", unpackedEnum_);
+        output.WriteArray(pbd::FieldType.Enum, 103, field_names[2], unpackedEnum_);
       }
     }
     
@@ -7706,6 +7781,15 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_testUnpackedTypesLiteFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _testUnpackedTypesLiteFieldTags[field_ordinal];
+            else {
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -8189,6 +8273,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestAllExtensionsLite : pb::ExtendableMessageLite<TestAllExtensionsLite, TestAllExtensionsLite.Builder> {
     private static readonly TestAllExtensionsLite defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _testAllExtensionsLiteFieldNames = new string[] {  };
+    private static readonly uint[] _testAllExtensionsLiteFieldTags = new uint[] {  };
     public static TestAllExtensionsLite DefaultInstance {
       get { return defaultInstance; }
     }
@@ -8210,6 +8296,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _testAllExtensionsLiteFieldNames;
       pb::ExtendableMessageLite<TestAllExtensionsLite, TestAllExtensionsLite.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       extensionWriter.WriteUntil(536870912, output);
     }
@@ -8343,6 +8430,15 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_testAllExtensionsLiteFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _testAllExtensionsLiteFieldTags[field_ordinal];
+            else {
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -8371,6 +8467,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class OptionalGroup_extension_lite : pb::GeneratedMessageLite<OptionalGroup_extension_lite, OptionalGroup_extension_lite.Builder> {
     private static readonly OptionalGroup_extension_lite defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _optionalGroupExtensionLiteFieldNames = new string[] { "a" };
+    private static readonly uint[] _optionalGroupExtensionLiteFieldTags = new uint[] { 136 };
     public static OptionalGroup_extension_lite DefaultInstance {
       get { return defaultInstance; }
     }
@@ -8401,8 +8499,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _optionalGroupExtensionLiteFieldNames;
       if (hasA) {
-        output.WriteInt32(17, "a", A);
+        output.WriteInt32(17, field_names[0], A);
       }
     }
     
@@ -8539,6 +8638,15 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_optionalGroupExtensionLiteFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _optionalGroupExtensionLiteFieldTags[field_ordinal];
+            else {
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -8551,7 +8659,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 136: {
-              result.hasA |= input.ReadInt32(ref result.a_);
+              result.hasA = input.ReadInt32(ref result.a_);
               break;
             }
           }
@@ -8589,6 +8697,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class RepeatedGroup_extension_lite : pb::GeneratedMessageLite<RepeatedGroup_extension_lite, RepeatedGroup_extension_lite.Builder> {
     private static readonly RepeatedGroup_extension_lite defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _repeatedGroupExtensionLiteFieldNames = new string[] { "a" };
+    private static readonly uint[] _repeatedGroupExtensionLiteFieldTags = new uint[] { 376 };
     public static RepeatedGroup_extension_lite DefaultInstance {
       get { return defaultInstance; }
     }
@@ -8619,8 +8729,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _repeatedGroupExtensionLiteFieldNames;
       if (hasA) {
-        output.WriteInt32(47, "a", A);
+        output.WriteInt32(47, field_names[0], A);
       }
     }
     
@@ -8757,6 +8868,15 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_repeatedGroupExtensionLiteFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _repeatedGroupExtensionLiteFieldTags[field_ordinal];
+            else {
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -8769,7 +8889,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 376: {
-              result.hasA |= input.ReadInt32(ref result.a_);
+              result.hasA = input.ReadInt32(ref result.a_);
               break;
             }
           }
@@ -8807,6 +8927,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestPackedExtensionsLite : pb::ExtendableMessageLite<TestPackedExtensionsLite, TestPackedExtensionsLite.Builder> {
     private static readonly TestPackedExtensionsLite defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _testPackedExtensionsLiteFieldNames = new string[] {  };
+    private static readonly uint[] _testPackedExtensionsLiteFieldTags = new uint[] {  };
     public static TestPackedExtensionsLite DefaultInstance {
       get { return defaultInstance; }
     }
@@ -8828,6 +8950,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _testPackedExtensionsLiteFieldNames;
       pb::ExtendableMessageLite<TestPackedExtensionsLite, TestPackedExtensionsLite.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       extensionWriter.WriteUntil(536870912, output);
     }
@@ -8961,6 +9084,15 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_testPackedExtensionsLiteFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _testPackedExtensionsLiteFieldTags[field_ordinal];
+            else {
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -8989,6 +9121,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestUnpackedExtensionsLite : pb::ExtendableMessageLite<TestUnpackedExtensionsLite, TestUnpackedExtensionsLite.Builder> {
     private static readonly TestUnpackedExtensionsLite defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _testUnpackedExtensionsLiteFieldNames = new string[] {  };
+    private static readonly uint[] _testUnpackedExtensionsLiteFieldTags = new uint[] {  };
     public static TestUnpackedExtensionsLite DefaultInstance {
       get { return defaultInstance; }
     }
@@ -9010,6 +9144,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _testUnpackedExtensionsLiteFieldNames;
       pb::ExtendableMessageLite<TestUnpackedExtensionsLite, TestUnpackedExtensionsLite.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       extensionWriter.WriteUntil(536870912, output);
     }
@@ -9143,6 +9278,15 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_testUnpackedExtensionsLiteFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _testUnpackedExtensionsLiteFieldTags[field_ordinal];
+            else {
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -9171,6 +9315,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestNestedExtensionLite : pb::GeneratedMessageLite<TestNestedExtensionLite, TestNestedExtensionLite.Builder> {
     private static readonly TestNestedExtensionLite defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _testNestedExtensionLiteFieldNames = new string[] {  };
+    private static readonly uint[] _testNestedExtensionLiteFieldTags = new uint[] {  };
     public static TestNestedExtensionLite DefaultInstance {
       get { return defaultInstance; }
     }
@@ -9193,6 +9339,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _testNestedExtensionLiteFieldNames;
     }
     
     private int memoizedSerializedSize = -1;
@@ -9319,6 +9466,15 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_testNestedExtensionLiteFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _testNestedExtensionLiteFieldTags[field_ordinal];
+            else {
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -9347,6 +9503,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestDeprecatedLite : pb::GeneratedMessageLite<TestDeprecatedLite, TestDeprecatedLite.Builder> {
     private static readonly TestDeprecatedLite defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _testDeprecatedLiteFieldNames = new string[] { "deprecated_field" };
+    private static readonly uint[] _testDeprecatedLiteFieldTags = new uint[] { 8 };
     public static TestDeprecatedLite DefaultInstance {
       get { return defaultInstance; }
     }
@@ -9377,8 +9535,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _testDeprecatedLiteFieldNames;
       if (hasDeprecatedField) {
-        output.WriteInt32(1, "deprecated_field", DeprecatedField);
+        output.WriteInt32(1, field_names[0], DeprecatedField);
       }
     }
     
@@ -9515,6 +9674,15 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_testDeprecatedLiteFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _testDeprecatedLiteFieldTags[field_ordinal];
+            else {
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -9527,7 +9695,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 8: {
-              result.hasDeprecatedField |= input.ReadInt32(ref result.deprecatedField_);
+              result.hasDeprecatedField = input.ReadInt32(ref result.deprecatedField_);
               break;
             }
           }

@@ -59,6 +59,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class OptionsMessage : pb::GeneratedMessage<OptionsMessage, OptionsMessage.Builder> {
     private static readonly OptionsMessage defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _optionsMessageFieldNames = new string[] { "customized", "normal", "options_message" };
+    private static readonly uint[] _optionsMessageFieldTags = new uint[] { 26, 10, 18 };
     public static OptionsMessage DefaultInstance {
       get { return defaultInstance; }
     }
@@ -117,14 +119,15 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _optionsMessageFieldNames;
       if (hasNormal) {
-        output.WriteString(1, "normal", Normal);
+        output.WriteString(1, field_names[1], Normal);
       }
       if (hasOptionsMessage_) {
-        output.WriteString(2, "options_message", OptionsMessage_);
+        output.WriteString(2, field_names[2], OptionsMessage_);
       }
       if (hasCustomName) {
-        output.WriteString(3, "customized", CustomName);
+        output.WriteString(3, field_names[0], CustomName);
       }
       UnknownFields.WriteTo(output);
     }
@@ -262,6 +265,18 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_optionsMessageFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _optionsMessageFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -280,15 +295,15 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 10: {
-              result.hasNormal |= input.ReadString(ref result.normal_);
+              result.hasNormal = input.ReadString(ref result.normal_);
               break;
             }
             case 18: {
-              result.hasOptionsMessage_ |= input.ReadString(ref result.optionsMessage_);
+              result.hasOptionsMessage_ = input.ReadString(ref result.optionsMessage_);
               break;
             }
             case 26: {
-              result.hasCustomName |= input.ReadString(ref result.customized_);
+              result.hasCustomName = input.ReadString(ref result.customized_);
               break;
             }
           }

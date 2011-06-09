@@ -41,8 +41,8 @@ namespace Google.ProtocolBuffers.ProtoGen
 {
     internal class RepeatedMessageFieldGenerator : FieldGeneratorBase, IFieldSourceGenerator
     {
-        internal RepeatedMessageFieldGenerator(FieldDescriptor descriptor)
-            : base(descriptor)
+        internal RepeatedMessageFieldGenerator(FieldDescriptor descriptor, int fieldOrdinal)
+            : base(descriptor, fieldOrdinal)
         {
         }
 
@@ -123,33 +123,13 @@ namespace Google.ProtocolBuffers.ProtoGen
         public void GenerateParsingCode(TextGenerator writer)
         {
             writer.WriteLine("input.Read{0}Array(tag, field_name, result.{1}_, {2}.DefaultInstance, extensionRegistry);", MessageOrGroup, Name, TypeName);
-      
-            //writer.WriteLine("{0}.Builder subBuilder = {0}.CreateBuilder();", TypeName);
-            //if (Descriptor.FieldType == FieldType.Group)
-            //{
-            //    writer.WriteLine("input.ReadGroup({0}, subBuilder, extensionRegistry);", Number);
-            //}
-            //else
-            //{
-            //    writer.WriteLine("input.ReadMessage(subBuilder, extensionRegistry);");
-            //}
-            //writer.WriteLine("Add{0}(subBuilder.BuildPartial());", PropertyName);
         }
 
         public void GenerateSerializationCode(TextGenerator writer)
         {
             writer.WriteLine("if ({0}_.Count > 0) {{", Name);
             writer.Indent();
-
-            // Arrays of message types do not currently support 'packed' storage
-            //if (Descriptor.IsPacked)
-            //    writer.WriteLine("output.WritePackedArray(pbd::FieldType.{3}, {0}, \"{2}\", {1}MemoizedSerializedSize, {1}_);", Number, Name, Descriptor.Name, Descriptor.FieldType);
-            //else
-            writer.WriteLine("output.WriteArray(pbd::FieldType.{3}, {0}, \"{2}\", {1}_);", Number, Name, Descriptor.Name, Descriptor.FieldType);
-
-            //writer.WriteLine("foreach ({0} element in {1}List) {{", TypeName, PropertyName);
-            //writer.WriteLine("  output.Write{0}({1}, element);", MessageOrGroup, Number);
-            //writer.WriteLine("}");
+            writer.WriteLine("output.WriteArray(pbd::FieldType.{3}, {0}, field_names[{2}], {1}_);", Number, Name, FieldOrdinal, Descriptor.FieldType);
             writer.Outdent();
             writer.WriteLine("}");
         }

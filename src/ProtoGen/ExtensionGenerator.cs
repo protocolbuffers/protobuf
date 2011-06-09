@@ -48,7 +48,7 @@ namespace Google.ProtocolBuffers.ProtoGen
         private readonly string name;
 
         internal ExtensionGenerator(FieldDescriptor descriptor)
-            : base(descriptor)
+            : base(descriptor, 0)
         {
             if (Descriptor.ExtensionScope != null)
             {

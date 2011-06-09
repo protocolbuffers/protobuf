@@ -232,6 +232,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FileDescriptorSet : pb::GeneratedMessage<FileDescriptorSet, FileDescriptorSet.Builder> {
     private static readonly FileDescriptorSet defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _fileDescriptorSetFieldNames = new string[] { "file" };
+    private static readonly uint[] _fileDescriptorSetFieldTags = new uint[] { 10 };
     public static FileDescriptorSet DefaultInstance {
       get { return defaultInstance; }
     }
@@ -275,8 +277,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _fileDescriptorSetFieldNames;
       if (file_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 1, "file", file_);
+        output.WriteArray(pbd::FieldType.Message, 1, field_names[0], file_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -403,6 +406,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_fileDescriptorSetFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _fileDescriptorSetFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -482,6 +497,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FileDescriptorProto : pb::GeneratedMessage<FileDescriptorProto, FileDescriptorProto.Builder> {
     private static readonly FileDescriptorProto defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _fileDescriptorProtoFieldNames = new string[] { "dependency", "enum_type", "extension", "message_type", "name", "options", "package", "service" };
+    private static readonly uint[] _fileDescriptorProtoFieldTags = new uint[] { 26, 42, 58, 34, 10, 66, 18, 50 };
     public static FileDescriptorProto DefaultInstance {
       get { return defaultInstance; }
     }
@@ -615,29 +632,30 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _fileDescriptorProtoFieldNames;
       if (hasName) {
-        output.WriteString(1, "name", Name);
+        output.WriteString(1, field_names[4], Name);
       }
       if (hasPackage) {
-        output.WriteString(2, "package", Package);
+        output.WriteString(2, field_names[6], Package);
       }
       if (dependency_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 3, "dependency", dependency_);
+        output.WriteArray(pbd::FieldType.String, 3, field_names[0], dependency_);
       }
       if (messageType_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 4, "message_type", messageType_);
+        output.WriteArray(pbd::FieldType.Message, 4, field_names[3], messageType_);
       }
       if (enumType_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 5, "enum_type", enumType_);
+        output.WriteArray(pbd::FieldType.Message, 5, field_names[1], enumType_);
       }
       if (service_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 6, "service", service_);
+        output.WriteArray(pbd::FieldType.Message, 6, field_names[7], service_);
       }
       if (extension_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 7, "extension", extension_);
+        output.WriteArray(pbd::FieldType.Message, 7, field_names[2], extension_);
       }
       if (hasOptions) {
-        output.WriteMessage(8, "options", Options);
+        output.WriteMessage(8, field_names[5], Options);
       }
       UnknownFields.WriteTo(output);
     }
@@ -815,6 +833,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_fileDescriptorProtoFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _fileDescriptorProtoFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -833,11 +863,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 10: {
-              result.hasName |= input.ReadString(ref result.name_);
+              result.hasName = input.ReadString(ref result.name_);
               break;
             }
             case 18: {
-              result.hasPackage |= input.ReadString(ref result.package_);
+              result.hasPackage = input.ReadString(ref result.package_);
               break;
             }
             case 26: {
@@ -1143,6 +1173,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class DescriptorProto : pb::GeneratedMessage<DescriptorProto, DescriptorProto.Builder> {
     private static readonly DescriptorProto defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _descriptorProtoFieldNames = new string[] { "enum_type", "extension", "extension_range", "field", "name", "nested_type", "options" };
+    private static readonly uint[] _descriptorProtoFieldTags = new uint[] { 34, 50, 42, 18, 10, 26, 58 };
     public static DescriptorProto DefaultInstance {
       get { return defaultInstance; }
     }
@@ -1173,6 +1205,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class ExtensionRange : pb::GeneratedMessage<ExtensionRange, ExtensionRange.Builder> {
         private static readonly ExtensionRange defaultInstance = new Builder().BuildPartial();
+        private static readonly string[] _extensionRangeFieldNames = new string[] { "end", "start" };
+        private static readonly uint[] _extensionRangeFieldTags = new uint[] { 16, 8 };
         public static ExtensionRange DefaultInstance {
           get { return defaultInstance; }
         }
@@ -1221,11 +1255,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
+          string[] field_names = _extensionRangeFieldNames;
           if (hasStart) {
-            output.WriteInt32(1, "start", Start);
+            output.WriteInt32(1, field_names[1], Start);
           }
           if (hasEnd) {
-            output.WriteInt32(2, "end", End);
+            output.WriteInt32(2, field_names[0], End);
           }
           UnknownFields.WriteTo(output);
         }
@@ -1357,6 +1392,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
             uint tag;
             string field_name;
             while (input.ReadTag(out tag, out field_name)) {
+              if(tag == 0 && field_name != null) {
+                int field_ordinal = global::System.Array.BinarySearch(_extensionRangeFieldNames, field_name, global::System.StringComparer.Ordinal);
+                if(field_ordinal >= 0)
+                  tag = _extensionRangeFieldTags[field_ordinal];
+                else {
+                  if (unknownFields == null) {
+                    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                  }
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+                  continue;
+                }
+              }
               switch (tag) {
                 case 0: {
                   throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -1375,11 +1422,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
                   break;
                 }
                 case 8: {
-                  result.hasStart |= input.ReadInt32(ref result.start_);
+                  result.hasStart = input.ReadInt32(ref result.start_);
                   break;
                 }
                 case 16: {
-                  result.hasEnd |= input.ReadInt32(ref result.end_);
+                  result.hasEnd = input.ReadInt32(ref result.end_);
                   break;
                 }
               }
@@ -1539,26 +1586,27 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _descriptorProtoFieldNames;
       if (hasName) {
-        output.WriteString(1, "name", Name);
+        output.WriteString(1, field_names[4], Name);
       }
       if (field_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 2, "field", field_);
+        output.WriteArray(pbd::FieldType.Message, 2, field_names[3], field_);
       }
       if (nestedType_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 3, "nested_type", nestedType_);
+        output.WriteArray(pbd::FieldType.Message, 3, field_names[5], nestedType_);
       }
       if (enumType_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 4, "enum_type", enumType_);
+        output.WriteArray(pbd::FieldType.Message, 4, field_names[0], enumType_);
       }
       if (extensionRange_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 5, "extension_range", extensionRange_);
+        output.WriteArray(pbd::FieldType.Message, 5, field_names[2], extensionRange_);
       }
       if (extension_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 6, "extension", extension_);
+        output.WriteArray(pbd::FieldType.Message, 6, field_names[1], extension_);
       }
       if (hasOptions) {
-        output.WriteMessage(7, "options", Options);
+        output.WriteMessage(7, field_names[6], Options);
       }
       UnknownFields.WriteTo(output);
     }
@@ -1725,6 +1773,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_descriptorProtoFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _descriptorProtoFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -1743,7 +1803,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 10: {
-              result.hasName |= input.ReadString(ref result.name_);
+              result.hasName = input.ReadString(ref result.name_);
               break;
             }
             case 18: {
@@ -2040,6 +2100,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FieldDescriptorProto : pb::GeneratedMessage<FieldDescriptorProto, FieldDescriptorProto.Builder> {
     private static readonly FieldDescriptorProto defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _fieldDescriptorProtoFieldNames = new string[] { "default_value", "extendee", "label", "name", "number", "options", "type", "type_name" };
+    private static readonly uint[] _fieldDescriptorProtoFieldTags = new uint[] { 58, 18, 32, 10, 24, 66, 40, 50 };
     public static FieldDescriptorProto DefaultInstance {
       get { return defaultInstance; }
     }
@@ -2190,29 +2252,30 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _fieldDescriptorProtoFieldNames;
       if (hasName) {
-        output.WriteString(1, "name", Name);
+        output.WriteString(1, field_names[3], Name);
       }
       if (hasExtendee) {
-        output.WriteString(2, "extendee", Extendee);
+        output.WriteString(2, field_names[1], Extendee);
       }
       if (hasNumber) {
-        output.WriteInt32(3, "number", Number);
+        output.WriteInt32(3, field_names[4], Number);
       }
       if (hasLabel) {
-        output.WriteEnum(4, "label", (int) Label, Label.ToString());
+        output.WriteEnum(4, field_names[2], (int) Label, Label.ToString());
       }
       if (hasType) {
-        output.WriteEnum(5, "type", (int) Type, Type.ToString());
+        output.WriteEnum(5, field_names[6], (int) Type, Type.ToString());
       }
       if (hasTypeName) {
-        output.WriteString(6, "type_name", TypeName);
+        output.WriteString(6, field_names[7], TypeName);
       }
       if (hasDefaultValue) {
-        output.WriteString(7, "default_value", DefaultValue);
+        output.WriteString(7, field_names[0], DefaultValue);
       }
       if (hasOptions) {
-        output.WriteMessage(8, "options", Options);
+        output.WriteMessage(8, field_names[5], Options);
       }
       UnknownFields.WriteTo(output);
     }
@@ -2380,6 +2443,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_fieldDescriptorProtoFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _fieldDescriptorProtoFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -2398,15 +2473,15 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 10: {
-              result.hasName |= input.ReadString(ref result.name_);
+              result.hasName = input.ReadString(ref result.name_);
               break;
             }
             case 18: {
-              result.hasExtendee |= input.ReadString(ref result.extendee_);
+              result.hasExtendee = input.ReadString(ref result.extendee_);
               break;
             }
             case 24: {
-              result.hasNumber |= input.ReadInt32(ref result.number_);
+              result.hasNumber = input.ReadInt32(ref result.number_);
               break;
             }
             case 32: {
@@ -2434,11 +2509,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 50: {
-              result.hasTypeName |= input.ReadString(ref result.typeName_);
+              result.hasTypeName = input.ReadString(ref result.typeName_);
               break;
             }
             case 58: {
-              result.hasDefaultValue |= input.ReadString(ref result.defaultValue_);
+              result.hasDefaultValue = input.ReadString(ref result.defaultValue_);
               break;
             }
             case 66: {
@@ -2636,6 +2711,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class EnumDescriptorProto : pb::GeneratedMessage<EnumDescriptorProto, EnumDescriptorProto.Builder> {
     private static readonly EnumDescriptorProto defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _enumDescriptorProtoFieldNames = new string[] { "name", "options", "value" };
+    private static readonly uint[] _enumDescriptorProtoFieldTags = new uint[] { 10, 26, 18 };
     public static EnumDescriptorProto DefaultInstance {
       get { return defaultInstance; }
     }
@@ -2702,14 +2779,15 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _enumDescriptorProtoFieldNames;
       if (hasName) {
-        output.WriteString(1, "name", Name);
+        output.WriteString(1, field_names[0], Name);
       }
       if (value_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 2, "value", value_);
+        output.WriteArray(pbd::FieldType.Message, 2, field_names[2], value_);
       }
       if (hasOptions) {
-        output.WriteMessage(3, "options", Options);
+        output.WriteMessage(3, field_names[1], Options);
       }
       UnknownFields.WriteTo(output);
     }
@@ -2848,6 +2926,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_enumDescriptorProtoFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _enumDescriptorProtoFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -2866,7 +2956,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 10: {
-              result.hasName |= input.ReadString(ref result.name_);
+              result.hasName = input.ReadString(ref result.name_);
               break;
             }
             case 18: {
@@ -2995,6 +3085,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class EnumValueDescriptorProto : pb::GeneratedMessage<EnumValueDescriptorProto, EnumValueDescriptorProto.Builder> {
     private static readonly EnumValueDescriptorProto defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _enumValueDescriptorProtoFieldNames = new string[] { "name", "number", "options" };
+    private static readonly uint[] _enumValueDescriptorProtoFieldTags = new uint[] { 10, 16, 26 };
     public static EnumValueDescriptorProto DefaultInstance {
       get { return defaultInstance; }
     }
@@ -3056,14 +3148,15 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _enumValueDescriptorProtoFieldNames;
       if (hasName) {
-        output.WriteString(1, "name", Name);
+        output.WriteString(1, field_names[0], Name);
       }
       if (hasNumber) {
-        output.WriteInt32(2, "number", Number);
+        output.WriteInt32(2, field_names[1], Number);
       }
       if (hasOptions) {
-        output.WriteMessage(3, "options", Options);
+        output.WriteMessage(3, field_names[2], Options);
       }
       UnknownFields.WriteTo(output);
     }
@@ -3201,6 +3294,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_enumValueDescriptorProtoFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _enumValueDescriptorProtoFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -3219,11 +3324,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 10: {
-              result.hasName |= input.ReadString(ref result.name_);
+              result.hasName = input.ReadString(ref result.name_);
               break;
             }
             case 16: {
-              result.hasNumber |= input.ReadInt32(ref result.number_);
+              result.hasNumber = input.ReadInt32(ref result.number_);
               break;
             }
             case 26: {
@@ -3328,6 +3433,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ServiceDescriptorProto : pb::GeneratedMessage<ServiceDescriptorProto, ServiceDescriptorProto.Builder> {
     private static readonly ServiceDescriptorProto defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _serviceDescriptorProtoFieldNames = new string[] { "method", "name", "options" };
+    private static readonly uint[] _serviceDescriptorProtoFieldTags = new uint[] { 18, 10, 26 };
     public static ServiceDescriptorProto DefaultInstance {
       get { return defaultInstance; }
     }
@@ -3394,14 +3501,15 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _serviceDescriptorProtoFieldNames;
       if (hasName) {
-        output.WriteString(1, "name", Name);
+        output.WriteString(1, field_names[1], Name);
       }
       if (method_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 2, "method", method_);
+        output.WriteArray(pbd::FieldType.Message, 2, field_names[0], method_);
       }
       if (hasOptions) {
-        output.WriteMessage(3, "options", Options);
+        output.WriteMessage(3, field_names[2], Options);
       }
       UnknownFields.WriteTo(output);
     }
@@ -3540,6 +3648,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_serviceDescriptorProtoFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _serviceDescriptorProtoFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -3558,7 +3678,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 10: {
-              result.hasName |= input.ReadString(ref result.name_);
+              result.hasName = input.ReadString(ref result.name_);
               break;
             }
             case 18: {
@@ -3687,6 +3807,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class MethodDescriptorProto : pb::GeneratedMessage<MethodDescriptorProto, MethodDescriptorProto.Builder> {
     private static readonly MethodDescriptorProto defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _methodDescriptorProtoFieldNames = new string[] { "input_type", "name", "options", "output_type" };
+    private static readonly uint[] _methodDescriptorProtoFieldTags = new uint[] { 18, 10, 34, 26 };
     public static MethodDescriptorProto DefaultInstance {
       get { return defaultInstance; }
     }
@@ -3758,17 +3880,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _methodDescriptorProtoFieldNames;
       if (hasName) {
-        output.WriteString(1, "name", Name);
+        output.WriteString(1, field_names[1], Name);
       }
       if (hasInputType) {
-        output.WriteString(2, "input_type", InputType);
+        output.WriteString(2, field_names[0], InputType);
       }
       if (hasOutputType) {
-        output.WriteString(3, "output_type", OutputType);
+        output.WriteString(3, field_names[3], OutputType);
       }
       if (hasOptions) {
-        output.WriteMessage(4, "options", Options);
+        output.WriteMessage(4, field_names[2], Options);
       }
       UnknownFields.WriteTo(output);
     }
@@ -3912,6 +4035,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_methodDescriptorProtoFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _methodDescriptorProtoFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -3930,15 +4065,15 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 10: {
-              result.hasName |= input.ReadString(ref result.name_);
+              result.hasName = input.ReadString(ref result.name_);
               break;
             }
             case 18: {
-              result.hasInputType |= input.ReadString(ref result.inputType_);
+              result.hasInputType = input.ReadString(ref result.inputType_);
               break;
             }
             case 26: {
-              result.hasOutputType |= input.ReadString(ref result.outputType_);
+              result.hasOutputType = input.ReadString(ref result.outputType_);
               break;
             }
             case 34: {
@@ -4063,6 +4198,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FileOptions : pb::ExtendableMessage<FileOptions, FileOptions.Builder> {
     private static readonly FileOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _fileOptionsFieldNames = new string[] { "cc_generic_services", "java_generic_services", "java_multiple_files", "java_outer_classname", "java_package", "optimize_for", "py_generic_services", "uninterpreted_option" };
+    private static readonly uint[] _fileOptionsFieldTags = new uint[] { 128, 136, 80, 66, 10, 72, 144, 7994 };
     public static FileOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -4193,30 +4330,31 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _fileOptionsFieldNames;
       pb::ExtendableMessage<FileOptions, FileOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (hasJavaPackage) {
-        output.WriteString(1, "java_package", JavaPackage);
+        output.WriteString(1, field_names[4], JavaPackage);
       }
       if (hasJavaOuterClassname) {
-        output.WriteString(8, "java_outer_classname", JavaOuterClassname);
+        output.WriteString(8, field_names[3], JavaOuterClassname);
       }
       if (hasOptimizeFor) {
-        output.WriteEnum(9, "optimize_for", (int) OptimizeFor, OptimizeFor.ToString());
+        output.WriteEnum(9, field_names[5], (int) OptimizeFor, OptimizeFor.ToString());
       }
       if (hasJavaMultipleFiles) {
-        output.WriteBool(10, "java_multiple_files", JavaMultipleFiles);
+        output.WriteBool(10, field_names[2], JavaMultipleFiles);
       }
       if (hasCcGenericServices) {
-        output.WriteBool(16, "cc_generic_services", CcGenericServices);
+        output.WriteBool(16, field_names[0], CcGenericServices);
       }
       if (hasJavaGenericServices) {
-        output.WriteBool(17, "java_generic_services", JavaGenericServices);
+        output.WriteBool(17, field_names[1], JavaGenericServices);
       }
       if (hasPyGenericServices) {
-        output.WriteBool(18, "py_generic_services", PyGenericServices);
+        output.WriteBool(18, field_names[6], PyGenericServices);
       }
       if (uninterpretedOption_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 999, "uninterpreted_option", uninterpretedOption_);
+        output.WriteArray(pbd::FieldType.Message, 999, field_names[7], uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -4388,6 +4526,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_fileOptionsFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _fileOptionsFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -4406,11 +4556,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 10: {
-              result.hasJavaPackage |= input.ReadString(ref result.javaPackage_);
+              result.hasJavaPackage = input.ReadString(ref result.javaPackage_);
               break;
             }
             case 66: {
-              result.hasJavaOuterClassname |= input.ReadString(ref result.javaOuterClassname_);
+              result.hasJavaOuterClassname = input.ReadString(ref result.javaOuterClassname_);
               break;
             }
             case 72: {
@@ -4426,19 +4576,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 80: {
-              result.hasJavaMultipleFiles |= input.ReadBool(ref result.javaMultipleFiles_);
+              result.hasJavaMultipleFiles = input.ReadBool(ref result.javaMultipleFiles_);
               break;
             }
             case 128: {
-              result.hasCcGenericServices |= input.ReadBool(ref result.ccGenericServices_);
+              result.hasCcGenericServices = input.ReadBool(ref result.ccGenericServices_);
               break;
             }
             case 136: {
-              result.hasJavaGenericServices |= input.ReadBool(ref result.javaGenericServices_);
+              result.hasJavaGenericServices = input.ReadBool(ref result.javaGenericServices_);
               break;
             }
             case 144: {
-              result.hasPyGenericServices |= input.ReadBool(ref result.pyGenericServices_);
+              result.hasPyGenericServices = input.ReadBool(ref result.pyGenericServices_);
               break;
             }
             case 7994: {
@@ -4631,6 +4781,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class MessageOptions : pb::ExtendableMessage<MessageOptions, MessageOptions.Builder> {
     private static readonly MessageOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _messageOptionsFieldNames = new string[] { "message_set_wire_format", "no_standard_descriptor_accessor", "uninterpreted_option" };
+    private static readonly uint[] _messageOptionsFieldTags = new uint[] { 8, 16, 7994 };
     public static MessageOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -4695,15 +4847,16 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _messageOptionsFieldNames;
       pb::ExtendableMessage<MessageOptions, MessageOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (hasMessageSetWireFormat) {
-        output.WriteBool(1, "message_set_wire_format", MessageSetWireFormat);
+        output.WriteBool(1, field_names[0], MessageSetWireFormat);
       }
       if (hasNoStandardDescriptorAccessor) {
-        output.WriteBool(2, "no_standard_descriptor_accessor", NoStandardDescriptorAccessor);
+        output.WriteBool(2, field_names[1], NoStandardDescriptorAccessor);
       }
       if (uninterpretedOption_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 999, "uninterpreted_option", uninterpretedOption_);
+        output.WriteArray(pbd::FieldType.Message, 999, field_names[2], uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -4845,6 +4998,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_messageOptionsFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _messageOptionsFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -4863,11 +5028,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 8: {
-              result.hasMessageSetWireFormat |= input.ReadBool(ref result.messageSetWireFormat_);
+              result.hasMessageSetWireFormat = input.ReadBool(ref result.messageSetWireFormat_);
               break;
             }
             case 16: {
-              result.hasNoStandardDescriptorAccessor |= input.ReadBool(ref result.noStandardDescriptorAccessor_);
+              result.hasNoStandardDescriptorAccessor = input.ReadBool(ref result.noStandardDescriptorAccessor_);
               break;
             }
             case 7994: {
@@ -4968,6 +5133,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FieldOptions : pb::ExtendableMessage<FieldOptions, FieldOptions.Builder> {
     private static readonly FieldOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _fieldOptionsFieldNames = new string[] { "ctype", "deprecated", "experimental_map_key", "packed", "uninterpreted_option" };
+    private static readonly uint[] _fieldOptionsFieldTags = new uint[] { 8, 24, 74, 16, 7994 };
     public static FieldOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -5068,21 +5235,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _fieldOptionsFieldNames;
       pb::ExtendableMessage<FieldOptions, FieldOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (hasCtype) {
-        output.WriteEnum(1, "ctype", (int) Ctype, Ctype.ToString());
+        output.WriteEnum(1, field_names[0], (int) Ctype, Ctype.ToString());
       }
       if (hasPacked) {
-        output.WriteBool(2, "packed", Packed);
+        output.WriteBool(2, field_names[3], Packed);
       }
       if (hasDeprecated) {
-        output.WriteBool(3, "deprecated", Deprecated);
+        output.WriteBool(3, field_names[1], Deprecated);
       }
       if (hasExperimentalMapKey) {
-        output.WriteString(9, "experimental_map_key", ExperimentalMapKey);
+        output.WriteString(9, field_names[2], ExperimentalMapKey);
       }
       if (uninterpretedOption_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 999, "uninterpreted_option", uninterpretedOption_);
+        output.WriteArray(pbd::FieldType.Message, 999, field_names[4], uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -5236,6 +5404,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_fieldOptionsFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _fieldOptionsFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -5266,15 +5446,15 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 16: {
-              result.hasPacked |= input.ReadBool(ref result.packed_);
+              result.hasPacked = input.ReadBool(ref result.packed_);
               break;
             }
             case 24: {
-              result.hasDeprecated |= input.ReadBool(ref result.deprecated_);
+              result.hasDeprecated = input.ReadBool(ref result.deprecated_);
               break;
             }
             case 74: {
-              result.hasExperimentalMapKey |= input.ReadString(ref result.experimentalMapKey_);
+              result.hasExperimentalMapKey = input.ReadString(ref result.experimentalMapKey_);
               break;
             }
             case 7994: {
@@ -5412,6 +5592,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class EnumOptions : pb::ExtendableMessage<EnumOptions, EnumOptions.Builder> {
     private static readonly EnumOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _enumOptionsFieldNames = new string[] { "uninterpreted_option" };
+    private static readonly uint[] _enumOptionsFieldTags = new uint[] { 7994 };
     public static EnumOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -5456,9 +5638,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _enumOptionsFieldNames;
       pb::ExtendableMessage<EnumOptions, EnumOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (uninterpretedOption_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 999, "uninterpreted_option", uninterpretedOption_);
+        output.WriteArray(pbd::FieldType.Message, 999, field_names[0], uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -5588,6 +5771,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_enumOptionsFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _enumOptionsFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -5667,6 +5862,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class EnumValueOptions : pb::ExtendableMessage<EnumValueOptions, EnumValueOptions.Builder> {
     private static readonly EnumValueOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _enumValueOptionsFieldNames = new string[] { "uninterpreted_option" };
+    private static readonly uint[] _enumValueOptionsFieldTags = new uint[] { 7994 };
     public static EnumValueOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -5711,9 +5908,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _enumValueOptionsFieldNames;
       pb::ExtendableMessage<EnumValueOptions, EnumValueOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (uninterpretedOption_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 999, "uninterpreted_option", uninterpretedOption_);
+        output.WriteArray(pbd::FieldType.Message, 999, field_names[0], uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -5843,6 +6041,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_enumValueOptionsFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _enumValueOptionsFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -5922,6 +6132,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ServiceOptions : pb::ExtendableMessage<ServiceOptions, ServiceOptions.Builder> {
     private static readonly ServiceOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _serviceOptionsFieldNames = new string[] { "uninterpreted_option" };
+    private static readonly uint[] _serviceOptionsFieldTags = new uint[] { 7994 };
     public static ServiceOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -5966,9 +6178,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _serviceOptionsFieldNames;
       pb::ExtendableMessage<ServiceOptions, ServiceOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (uninterpretedOption_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 999, "uninterpreted_option", uninterpretedOption_);
+        output.WriteArray(pbd::FieldType.Message, 999, field_names[0], uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -6098,6 +6311,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_serviceOptionsFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _serviceOptionsFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -6177,6 +6402,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class MethodOptions : pb::ExtendableMessage<MethodOptions, MethodOptions.Builder> {
     private static readonly MethodOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _methodOptionsFieldNames = new string[] { "uninterpreted_option" };
+    private static readonly uint[] _methodOptionsFieldTags = new uint[] { 7994 };
     public static MethodOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -6221,9 +6448,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _methodOptionsFieldNames;
       pb::ExtendableMessage<MethodOptions, MethodOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (uninterpretedOption_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 999, "uninterpreted_option", uninterpretedOption_);
+        output.WriteArray(pbd::FieldType.Message, 999, field_names[0], uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -6353,6 +6581,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_methodOptionsFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _methodOptionsFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -6432,6 +6672,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class UninterpretedOption : pb::GeneratedMessage<UninterpretedOption, UninterpretedOption.Builder> {
     private static readonly UninterpretedOption defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _uninterpretedOptionFieldNames = new string[] { "double_value", "identifier_value", "name", "negative_int_value", "positive_int_value", "string_value" };
+    private static readonly uint[] _uninterpretedOptionFieldTags = new uint[] { 49, 26, 18, 40, 32, 58 };
     public static UninterpretedOption DefaultInstance {
       get { return defaultInstance; }
     }
@@ -6462,6 +6704,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class NamePart : pb::GeneratedMessage<NamePart, NamePart.Builder> {
         private static readonly NamePart defaultInstance = new Builder().BuildPartial();
+        private static readonly string[] _namePartFieldNames = new string[] { "is_extension", "name_part" };
+        private static readonly uint[] _namePartFieldTags = new uint[] { 16, 10 };
         public static NamePart DefaultInstance {
           get { return defaultInstance; }
         }
@@ -6512,11 +6756,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
+          string[] field_names = _namePartFieldNames;
           if (hasNamePart_) {
-            output.WriteString(1, "name_part", NamePart_);
+            output.WriteString(1, field_names[1], NamePart_);
           }
           if (hasIsExtension) {
-            output.WriteBool(2, "is_extension", IsExtension);
+            output.WriteBool(2, field_names[0], IsExtension);
           }
           UnknownFields.WriteTo(output);
         }
@@ -6648,6 +6893,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
             uint tag;
             string field_name;
             while (input.ReadTag(out tag, out field_name)) {
+              if(tag == 0 && field_name != null) {
+                int field_ordinal = global::System.Array.BinarySearch(_namePartFieldNames, field_name, global::System.StringComparer.Ordinal);
+                if(field_ordinal >= 0)
+                  tag = _namePartFieldTags[field_ordinal];
+                else {
+                  if (unknownFields == null) {
+                    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                  }
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+                  continue;
+                }
+              }
               switch (tag) {
                 case 0: {
                   throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -6666,11 +6923,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
                   break;
                 }
                 case 10: {
-                  result.hasNamePart_ |= input.ReadString(ref result.namePart_);
+                  result.hasNamePart_ = input.ReadString(ref result.namePart_);
                   break;
                 }
                 case 16: {
-                  result.hasIsExtension |= input.ReadBool(ref result.isExtension_);
+                  result.hasIsExtension = input.ReadBool(ref result.isExtension_);
                   break;
                 }
               }
@@ -6802,23 +7059,24 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _uninterpretedOptionFieldNames;
       if (name_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 2, "name", name_);
+        output.WriteArray(pbd::FieldType.Message, 2, field_names[2], name_);
       }
       if (hasIdentifierValue) {
-        output.WriteString(3, "identifier_value", IdentifierValue);
+        output.WriteString(3, field_names[1], IdentifierValue);
       }
       if (hasPositiveIntValue) {
-        output.WriteUInt64(4, "positive_int_value", PositiveIntValue);
+        output.WriteUInt64(4, field_names[4], PositiveIntValue);
       }
       if (hasNegativeIntValue) {
-        output.WriteInt64(5, "negative_int_value", NegativeIntValue);
+        output.WriteInt64(5, field_names[3], NegativeIntValue);
       }
       if (hasDoubleValue) {
-        output.WriteDouble(6, "double_value", DoubleValue);
+        output.WriteDouble(6, field_names[0], DoubleValue);
       }
       if (hasStringValue) {
-        output.WriteBytes(7, "string_value", StringValue);
+        output.WriteBytes(7, field_names[5], StringValue);
       }
       UnknownFields.WriteTo(output);
     }
@@ -6975,6 +7233,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_uninterpretedOptionFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _uninterpretedOptionFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -6997,23 +7267,23 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 26: {
-              result.hasIdentifierValue |= input.ReadString(ref result.identifierValue_);
+              result.hasIdentifierValue = input.ReadString(ref result.identifierValue_);
               break;
             }
             case 32: {
-              result.hasPositiveIntValue |= input.ReadUInt64(ref result.positiveIntValue_);
+              result.hasPositiveIntValue = input.ReadUInt64(ref result.positiveIntValue_);
               break;
             }
             case 40: {
-              result.hasNegativeIntValue |= input.ReadInt64(ref result.negativeIntValue_);
+              result.hasNegativeIntValue = input.ReadInt64(ref result.negativeIntValue_);
               break;
             }
             case 49: {
-              result.hasDoubleValue |= input.ReadDouble(ref result.doubleValue_);
+              result.hasDoubleValue = input.ReadDouble(ref result.doubleValue_);
               break;
             }
             case 58: {
-              result.hasStringValue |= input.ReadBytes(ref result.stringValue_);
+              result.hasStringValue = input.ReadBytes(ref result.stringValue_);
               break;
             }
           }

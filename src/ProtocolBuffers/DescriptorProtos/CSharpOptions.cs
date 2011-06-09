@@ -124,6 +124,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CSharpFileOptions : pb::GeneratedMessage<CSharpFileOptions, CSharpFileOptions.Builder> {
     private static readonly CSharpFileOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _cSharpFileOptionsFieldNames = new string[] { "cls_compliance", "code_contracts", "expand_namespace_directories", "file_extension", "ignore_google_protobuf", "multiple_files", "namespace", "nest_classes", "output_directory", "public_classes", "service_generator_type", "umbrella_classname", "umbrella_namespace" };
+    private static readonly uint[] _cSharpFileOptionsFieldTags = new uint[] { 64, 48, 56, 1770, 1792, 32, 10, 40, 1786, 24, 1800, 18, 1778 };
     public static CSharpFileOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -282,44 +284,45 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _cSharpFileOptionsFieldNames;
       if (hasNamespace) {
-        output.WriteString(1, "namespace", Namespace);
+        output.WriteString(1, field_names[6], Namespace);
       }
       if (hasUmbrellaClassname) {
-        output.WriteString(2, "umbrella_classname", UmbrellaClassname);
+        output.WriteString(2, field_names[11], UmbrellaClassname);
       }
       if (hasPublicClasses) {
-        output.WriteBool(3, "public_classes", PublicClasses);
+        output.WriteBool(3, field_names[9], PublicClasses);
       }
       if (hasMultipleFiles) {
-        output.WriteBool(4, "multiple_files", MultipleFiles);
+        output.WriteBool(4, field_names[5], MultipleFiles);
       }
       if (hasNestClasses) {
-        output.WriteBool(5, "nest_classes", NestClasses);
+        output.WriteBool(5, field_names[7], NestClasses);
       }
       if (hasCodeContracts) {
-        output.WriteBool(6, "code_contracts", CodeContracts);
+        output.WriteBool(6, field_names[1], CodeContracts);
       }
       if (hasExpandNamespaceDirectories) {
-        output.WriteBool(7, "expand_namespace_directories", ExpandNamespaceDirectories);
+        output.WriteBool(7, field_names[2], ExpandNamespaceDirectories);
       }
       if (hasClsCompliance) {
-        output.WriteBool(8, "cls_compliance", ClsCompliance);
+        output.WriteBool(8, field_names[0], ClsCompliance);
       }
       if (hasFileExtension) {
-        output.WriteString(221, "file_extension", FileExtension);
+        output.WriteString(221, field_names[3], FileExtension);
       }
       if (hasUmbrellaNamespace) {
-        output.WriteString(222, "umbrella_namespace", UmbrellaNamespace);
+        output.WriteString(222, field_names[12], UmbrellaNamespace);
       }
       if (hasOutputDirectory) {
-        output.WriteString(223, "output_directory", OutputDirectory);
+        output.WriteString(223, field_names[8], OutputDirectory);
       }
       if (hasIgnoreGoogleProtobuf) {
-        output.WriteBool(224, "ignore_google_protobuf", IgnoreGoogleProtobuf);
+        output.WriteBool(224, field_names[4], IgnoreGoogleProtobuf);
       }
       if (hasServiceGeneratorType) {
-        output.WriteEnum(225, "service_generator_type", (int) ServiceGeneratorType, ServiceGeneratorType.ToString());
+        output.WriteEnum(225, field_names[10], (int) ServiceGeneratorType, ServiceGeneratorType.ToString());
       }
       UnknownFields.WriteTo(output);
     }
@@ -517,6 +520,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_cSharpFileOptionsFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _cSharpFileOptionsFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -535,51 +550,51 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 10: {
-              result.hasNamespace |= input.ReadString(ref result.namespace_);
+              result.hasNamespace = input.ReadString(ref result.namespace_);
               break;
             }
             case 18: {
-              result.hasUmbrellaClassname |= input.ReadString(ref result.umbrellaClassname_);
+              result.hasUmbrellaClassname = input.ReadString(ref result.umbrellaClassname_);
               break;
             }
             case 24: {
-              result.hasPublicClasses |= input.ReadBool(ref result.publicClasses_);
+              result.hasPublicClasses = input.ReadBool(ref result.publicClasses_);
               break;
             }
             case 32: {
-              result.hasMultipleFiles |= input.ReadBool(ref result.multipleFiles_);
+              result.hasMultipleFiles = input.ReadBool(ref result.multipleFiles_);
               break;
             }
             case 40: {
-              result.hasNestClasses |= input.ReadBool(ref result.nestClasses_);
+              result.hasNestClasses = input.ReadBool(ref result.nestClasses_);
               break;
             }
             case 48: {
-              result.hasCodeContracts |= input.ReadBool(ref result.codeContracts_);
+              result.hasCodeContracts = input.ReadBool(ref result.codeContracts_);
               break;
             }
             case 56: {
-              result.hasExpandNamespaceDirectories |= input.ReadBool(ref result.expandNamespaceDirectories_);
+              result.hasExpandNamespaceDirectories = input.ReadBool(ref result.expandNamespaceDirectories_);
               break;
             }
             case 64: {
-              result.hasClsCompliance |= input.ReadBool(ref result.clsCompliance_);
+              result.hasClsCompliance = input.ReadBool(ref result.clsCompliance_);
               break;
             }
             case 1770: {
-              result.hasFileExtension |= input.ReadString(ref result.fileExtension_);
+              result.hasFileExtension = input.ReadString(ref result.fileExtension_);
               break;
             }
             case 1778: {
-              result.hasUmbrellaNamespace |= input.ReadString(ref result.umbrellaNamespace_);
+              result.hasUmbrellaNamespace = input.ReadString(ref result.umbrellaNamespace_);
               break;
             }
             case 1786: {
-              result.hasOutputDirectory |= input.ReadString(ref result.outputDirectory_);
+              result.hasOutputDirectory = input.ReadString(ref result.outputDirectory_);
               break;
             }
             case 1792: {
-              result.hasIgnoreGoogleProtobuf |= input.ReadBool(ref result.ignoreGoogleProtobuf_);
+              result.hasIgnoreGoogleProtobuf = input.ReadBool(ref result.ignoreGoogleProtobuf_);
               break;
             }
             case 1800: {
@@ -853,6 +868,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CSharpFieldOptions : pb::GeneratedMessage<CSharpFieldOptions, CSharpFieldOptions.Builder> {
     private static readonly CSharpFieldOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _cSharpFieldOptionsFieldNames = new string[] { "property_name" };
+    private static readonly uint[] _cSharpFieldOptionsFieldTags = new uint[] { 10 };
     public static CSharpFieldOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -891,8 +908,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _cSharpFieldOptionsFieldNames;
       if (hasPropertyName) {
-        output.WriteString(1, "property_name", PropertyName);
+        output.WriteString(1, field_names[0], PropertyName);
       }
       UnknownFields.WriteTo(output);
     }
@@ -1018,6 +1036,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_cSharpFieldOptionsFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _cSharpFieldOptionsFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -1036,7 +1066,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 10: {
-              result.hasPropertyName |= input.ReadString(ref result.propertyName_);
+              result.hasPropertyName = input.ReadString(ref result.propertyName_);
               break;
             }
           }
@@ -1078,6 +1108,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CSharpServiceOptions : pb::GeneratedMessage<CSharpServiceOptions, CSharpServiceOptions.Builder> {
     private static readonly CSharpServiceOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _cSharpServiceOptionsFieldNames = new string[] { "interface_id" };
+    private static readonly uint[] _cSharpServiceOptionsFieldTags = new uint[] { 10 };
     public static CSharpServiceOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -1116,8 +1148,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _cSharpServiceOptionsFieldNames;
       if (hasInterfaceId) {
-        output.WriteString(1, "interface_id", InterfaceId);
+        output.WriteString(1, field_names[0], InterfaceId);
       }
       UnknownFields.WriteTo(output);
     }
@@ -1243,6 +1276,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_cSharpServiceOptionsFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _cSharpServiceOptionsFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -1261,7 +1306,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 10: {
-              result.hasInterfaceId |= input.ReadString(ref result.interfaceId_);
+              result.hasInterfaceId = input.ReadString(ref result.interfaceId_);
               break;
             }
           }
@@ -1303,6 +1348,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CSharpMethodOptions : pb::GeneratedMessage<CSharpMethodOptions, CSharpMethodOptions.Builder> {
     private static readonly CSharpMethodOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _cSharpMethodOptionsFieldNames = new string[] { "dispatch_id" };
+    private static readonly uint[] _cSharpMethodOptionsFieldTags = new uint[] { 8 };
     public static CSharpMethodOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -1341,8 +1388,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _cSharpMethodOptionsFieldNames;
       if (hasDispatchId) {
-        output.WriteInt32(1, "dispatch_id", DispatchId);
+        output.WriteInt32(1, field_names[0], DispatchId);
       }
       UnknownFields.WriteTo(output);
     }
@@ -1468,6 +1516,18 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_cSharpMethodOptionsFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _cSharpMethodOptionsFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -1486,7 +1546,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 8: {
-              result.hasDispatchId |= input.ReadInt32(ref result.dispatchId_);
+              result.hasDispatchId = input.ReadInt32(ref result.dispatchId_);
               break;
             }
           }

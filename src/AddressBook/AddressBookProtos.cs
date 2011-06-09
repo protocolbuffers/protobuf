@@ -67,6 +67,8 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class Person : pb::GeneratedMessage<Person, Person.Builder> {
     private static readonly Person defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _personFieldNames = new string[] { "email", "id", "name", "phone" };
+    private static readonly uint[] _personFieldTags = new uint[] { 26, 16, 10, 34 };
     public static Person DefaultInstance {
       get { return defaultInstance; }
     }
@@ -105,6 +107,8 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class PhoneNumber : pb::GeneratedMessage<PhoneNumber, PhoneNumber.Builder> {
         private static readonly PhoneNumber defaultInstance = new Builder().BuildPartial();
+        private static readonly string[] _phoneNumberFieldNames = new string[] { "number", "type" };
+        private static readonly uint[] _phoneNumberFieldTags = new uint[] { 10, 16 };
         public static PhoneNumber DefaultInstance {
           get { return defaultInstance; }
         }
@@ -154,11 +158,12 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
+          string[] field_names = _phoneNumberFieldNames;
           if (hasNumber) {
-            output.WriteString(1, "number", Number);
+            output.WriteString(1, field_names[0], Number);
           }
           if (hasType) {
-            output.WriteEnum(2, "type", (int) Type, Type.ToString());
+            output.WriteEnum(2, field_names[1], (int) Type, Type.ToString());
           }
           UnknownFields.WriteTo(output);
         }
@@ -290,6 +295,18 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
             uint tag;
             string field_name;
             while (input.ReadTag(out tag, out field_name)) {
+              if(tag == 0 && field_name != null) {
+                int field_ordinal = global::System.Array.BinarySearch(_phoneNumberFieldNames, field_name, global::System.StringComparer.Ordinal);
+                if(field_ordinal >= 0)
+                  tag = _phoneNumberFieldTags[field_ordinal];
+                else {
+                  if (unknownFields == null) {
+                    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                  }
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+                  continue;
+                }
+              }
               switch (tag) {
                 case 0: {
                   throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -308,7 +325,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
                   break;
                 }
                 case 10: {
-                  result.hasNumber |= input.ReadString(ref result.number_);
+                  result.hasNumber = input.ReadString(ref result.number_);
                   break;
                 }
                 case 16: {
@@ -433,17 +450,18 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _personFieldNames;
       if (hasName) {
-        output.WriteString(1, "name", Name);
+        output.WriteString(1, field_names[2], Name);
       }
       if (hasId) {
-        output.WriteInt32(2, "id", Id);
+        output.WriteInt32(2, field_names[1], Id);
       }
       if (hasEmail) {
-        output.WriteString(3, "email", Email);
+        output.WriteString(3, field_names[0], Email);
       }
       if (phone_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 4, "phone", phone_);
+        output.WriteArray(pbd::FieldType.Message, 4, field_names[3], phone_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -588,6 +606,18 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_personFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _personFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -606,15 +636,15 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
               break;
             }
             case 10: {
-              result.hasName |= input.ReadString(ref result.name_);
+              result.hasName = input.ReadString(ref result.name_);
               break;
             }
             case 16: {
-              result.hasId |= input.ReadInt32(ref result.id_);
+              result.hasId = input.ReadInt32(ref result.id_);
               break;
             }
             case 26: {
-              result.hasEmail |= input.ReadString(ref result.email_);
+              result.hasEmail = input.ReadString(ref result.email_);
               break;
             }
             case 34: {
@@ -735,6 +765,8 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class AddressBook : pb::GeneratedMessage<AddressBook, AddressBook.Builder> {
     private static readonly AddressBook defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _addressBookFieldNames = new string[] { "person" };
+    private static readonly uint[] _addressBookFieldTags = new uint[] { 10 };
     public static AddressBook DefaultInstance {
       get { return defaultInstance; }
     }
@@ -778,8 +810,9 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _addressBookFieldNames;
       if (person_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 1, "person", person_);
+        output.WriteArray(pbd::FieldType.Message, 1, field_names[0], person_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -906,6 +939,18 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_addressBookFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _addressBookFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();

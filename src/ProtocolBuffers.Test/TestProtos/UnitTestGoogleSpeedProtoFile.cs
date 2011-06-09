@@ -136,6 +136,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SpeedMessage1 : pb::GeneratedMessage<SpeedMessage1, SpeedMessage1.Builder> {
     private static readonly SpeedMessage1 defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _speedMessage1FieldNames = new string[] { "field1", "field100", "field101", "field102", "field103", "field104", "field12", "field128", "field129", "field13", "field130", "field131", "field14", "field15", "field150", "field16", "field17", "field18", "field2", "field22", "field23", "field24", "field25", "field271", "field272", "field280", "field29", "field3", "field30", "field4", "field5", "field59", "field6", "field60", "field67", "field68", "field7", "field78", "field80", "field81", "field9" };
+    private static readonly uint[] _speedMessage1FieldTags = new uint[] { 10, 800, 808, 818, 826, 832, 96, 1024, 1034, 104, 1040, 1048, 112, 122, 1200, 128, 136, 146, 16, 176, 184, 192, 200, 2168, 2176, 2240, 232, 24, 240, 34, 41, 472, 48, 480, 536, 544, 58, 624, 640, 648, 74 };
     public static SpeedMessage1 DefaultInstance {
       get { return defaultInstance; }
     }
@@ -581,128 +583,129 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _speedMessage1FieldNames;
       if (hasField1) {
-        output.WriteString(1, "field1", Field1);
+        output.WriteString(1, field_names[0], Field1);
       }
       if (hasField2) {
-        output.WriteInt32(2, "field2", Field2);
+        output.WriteInt32(2, field_names[18], Field2);
       }
       if (hasField3) {
-        output.WriteInt32(3, "field3", Field3);
+        output.WriteInt32(3, field_names[27], Field3);
       }
       if (hasField4) {
-        output.WriteString(4, "field4", Field4);
+        output.WriteString(4, field_names[29], Field4);
       }
       if (field5_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Fixed64, 5, "field5", field5_);
+        output.WriteArray(pbd::FieldType.Fixed64, 5, field_names[30], field5_);
       }
       if (hasField6) {
-        output.WriteInt32(6, "field6", Field6);
+        output.WriteInt32(6, field_names[32], Field6);
       }
       if (hasField7) {
-        output.WriteString(7, "field7", Field7);
+        output.WriteString(7, field_names[36], Field7);
       }
       if (hasField9) {
-        output.WriteString(9, "field9", Field9);
+        output.WriteString(9, field_names[40], Field9);
       }
       if (hasField12) {
-        output.WriteBool(12, "field12", Field12);
+        output.WriteBool(12, field_names[6], Field12);
       }
       if (hasField13) {
-        output.WriteBool(13, "field13", Field13);
+        output.WriteBool(13, field_names[9], Field13);
       }
       if (hasField14) {
-        output.WriteBool(14, "field14", Field14);
+        output.WriteBool(14, field_names[12], Field14);
       }
       if (hasField15) {
-        output.WriteMessage(15, "field15", Field15);
+        output.WriteMessage(15, field_names[13], Field15);
       }
       if (hasField16) {
-        output.WriteInt32(16, "field16", Field16);
+        output.WriteInt32(16, field_names[15], Field16);
       }
       if (hasField17) {
-        output.WriteBool(17, "field17", Field17);
+        output.WriteBool(17, field_names[16], Field17);
       }
       if (hasField18) {
-        output.WriteString(18, "field18", Field18);
+        output.WriteString(18, field_names[17], Field18);
       }
       if (hasField22) {
-        output.WriteInt64(22, "field22", Field22);
+        output.WriteInt64(22, field_names[19], Field22);
       }
       if (hasField23) {
-        output.WriteInt32(23, "field23", Field23);
+        output.WriteInt32(23, field_names[20], Field23);
       }
       if (hasField24) {
-        output.WriteBool(24, "field24", Field24);
+        output.WriteBool(24, field_names[21], Field24);
       }
       if (hasField25) {
-        output.WriteInt32(25, "field25", Field25);
+        output.WriteInt32(25, field_names[22], Field25);
       }
       if (hasField29) {
-        output.WriteInt32(29, "field29", Field29);
+        output.WriteInt32(29, field_names[26], Field29);
       }
       if (hasField30) {
-        output.WriteBool(30, "field30", Field30);
+        output.WriteBool(30, field_names[28], Field30);
       }
       if (hasField59) {
-        output.WriteBool(59, "field59", Field59);
+        output.WriteBool(59, field_names[31], Field59);
       }
       if (hasField60) {
-        output.WriteInt32(60, "field60", Field60);
+        output.WriteInt32(60, field_names[33], Field60);
       }
       if (hasField67) {
-        output.WriteInt32(67, "field67", Field67);
+        output.WriteInt32(67, field_names[34], Field67);
       }
       if (hasField68) {
-        output.WriteInt32(68, "field68", Field68);
+        output.WriteInt32(68, field_names[35], Field68);
       }
       if (hasField78) {
-        output.WriteBool(78, "field78", Field78);
+        output.WriteBool(78, field_names[37], Field78);
       }
       if (hasField80) {
-        output.WriteBool(80, "field80", Field80);
+        output.WriteBool(80, field_names[38], Field80);
       }
       if (hasField81) {
-        output.WriteBool(81, "field81", Field81);
+        output.WriteBool(81, field_names[39], Field81);
       }
       if (hasField100) {
-        output.WriteInt32(100, "field100", Field100);
+        output.WriteInt32(100, field_names[1], Field100);
       }
       if (hasField101) {
-        output.WriteInt32(101, "field101", Field101);
+        output.WriteInt32(101, field_names[2], Field101);
       }
       if (hasField102) {
-        output.WriteString(102, "field102", Field102);
+        output.WriteString(102, field_names[3], Field102);
       }
       if (hasField103) {
-        output.WriteString(103, "field103", Field103);
+        output.WriteString(103, field_names[4], Field103);
       }
       if (hasField104) {
-        output.WriteInt32(104, "field104", Field104);
+        output.WriteInt32(104, field_names[5], Field104);
       }
       if (hasField128) {
-        output.WriteInt32(128, "field128", Field128);
+        output.WriteInt32(128, field_names[7], Field128);
       }
       if (hasField129) {
-        output.WriteString(129, "field129", Field129);
+        output.WriteString(129, field_names[8], Field129);
       }
       if (hasField130) {
-        output.WriteInt32(130, "field130", Field130);
+        output.WriteInt32(130, field_names[10], Field130);
       }
       if (hasField131) {
-        output.WriteInt32(131, "field131", Field131);
+        output.WriteInt32(131, field_names[11], Field131);
       }
       if (hasField150) {
-        output.WriteInt32(150, "field150", Field150);
+        output.WriteInt32(150, field_names[14], Field150);
       }
       if (hasField271) {
-        output.WriteInt32(271, "field271", Field271);
+        output.WriteInt32(271, field_names[23], Field271);
       }
       if (hasField272) {
-        output.WriteInt32(272, "field272", Field272);
+        output.WriteInt32(272, field_names[24], Field272);
       }
       if (hasField280) {
-        output.WriteInt32(280, "field280", Field280);
+        output.WriteInt32(280, field_names[25], Field280);
       }
       UnknownFields.WriteTo(output);
     }
@@ -1072,6 +1075,18 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_speedMessage1FieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _speedMessage1FieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -1090,19 +1105,19 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 10: {
-              result.hasField1 |= input.ReadString(ref result.field1_);
+              result.hasField1 = input.ReadString(ref result.field1_);
               break;
             }
             case 16: {
-              result.hasField2 |= input.ReadInt32(ref result.field2_);
+              result.hasField2 = input.ReadInt32(ref result.field2_);
               break;
             }
             case 24: {
-              result.hasField3 |= input.ReadInt32(ref result.field3_);
+              result.hasField3 = input.ReadInt32(ref result.field3_);
               break;
             }
             case 34: {
-              result.hasField4 |= input.ReadString(ref result.field4_);
+              result.hasField4 = input.ReadString(ref result.field4_);
               break;
             }
             case 42:
@@ -1111,27 +1126,27 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 48: {
-              result.hasField6 |= input.ReadInt32(ref result.field6_);
+              result.hasField6 = input.ReadInt32(ref result.field6_);
               break;
             }
             case 58: {
-              result.hasField7 |= input.ReadString(ref result.field7_);
+              result.hasField7 = input.ReadString(ref result.field7_);
               break;
             }
             case 74: {
-              result.hasField9 |= input.ReadString(ref result.field9_);
+              result.hasField9 = input.ReadString(ref result.field9_);
               break;
             }
             case 96: {
-              result.hasField12 |= input.ReadBool(ref result.field12_);
+              result.hasField12 = input.ReadBool(ref result.field12_);
               break;
             }
             case 104: {
-              result.hasField13 |= input.ReadBool(ref result.field13_);
+              result.hasField13 = input.ReadBool(ref result.field13_);
               break;
             }
             case 112: {
-              result.hasField14 |= input.ReadBool(ref result.field14_);
+              result.hasField14 = input.ReadBool(ref result.field14_);
               break;
             }
             case 122: {
@@ -1144,119 +1159,119 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 128: {
-              result.hasField16 |= input.ReadInt32(ref result.field16_);
+              result.hasField16 = input.ReadInt32(ref result.field16_);
               break;
             }
             case 136: {
-              result.hasField17 |= input.ReadBool(ref result.field17_);
+              result.hasField17 = input.ReadBool(ref result.field17_);
               break;
             }
             case 146: {
-              result.hasField18 |= input.ReadString(ref result.field18_);
+              result.hasField18 = input.ReadString(ref result.field18_);
               break;
             }
             case 176: {
-              result.hasField22 |= input.ReadInt64(ref result.field22_);
+              result.hasField22 = input.ReadInt64(ref result.field22_);
               break;
             }
             case 184: {
-              result.hasField23 |= input.ReadInt32(ref result.field23_);
+              result.hasField23 = input.ReadInt32(ref result.field23_);
               break;
             }
             case 192: {
-              result.hasField24 |= input.ReadBool(ref result.field24_);
+              result.hasField24 = input.ReadBool(ref result.field24_);
               break;
             }
             case 200: {
-              result.hasField25 |= input.ReadInt32(ref result.field25_);
+              result.hasField25 = input.ReadInt32(ref result.field25_);
               break;
             }
             case 232: {
-              result.hasField29 |= input.ReadInt32(ref result.field29_);
+              result.hasField29 = input.ReadInt32(ref result.field29_);
               break;
             }
             case 240: {
-              result.hasField30 |= input.ReadBool(ref result.field30_);
+              result.hasField30 = input.ReadBool(ref result.field30_);
               break;
             }
             case 472: {
-              result.hasField59 |= input.ReadBool(ref result.field59_);
+              result.hasField59 = input.ReadBool(ref result.field59_);
               break;
             }
             case 480: {
-              result.hasField60 |= input.ReadInt32(ref result.field60_);
+              result.hasField60 = input.ReadInt32(ref result.field60_);
               break;
             }
             case 536: {
-              result.hasField67 |= input.ReadInt32(ref result.field67_);
+              result.hasField67 = input.ReadInt32(ref result.field67_);
               break;
             }
             case 544: {
-              result.hasField68 |= input.ReadInt32(ref result.field68_);
+              result.hasField68 = input.ReadInt32(ref result.field68_);
               break;
             }
             case 624: {
-              result.hasField78 |= input.ReadBool(ref result.field78_);
+              result.hasField78 = input.ReadBool(ref result.field78_);
               break;
             }
             case 640: {
-              result.hasField80 |= input.ReadBool(ref result.field80_);
+              result.hasField80 = input.ReadBool(ref result.field80_);
               break;
             }
             case 648: {
-              result.hasField81 |= input.ReadBool(ref result.field81_);
+              result.hasField81 = input.ReadBool(ref result.field81_);
               break;
             }
             case 800: {
-              result.hasField100 |= input.ReadInt32(ref result.field100_);
+              result.hasField100 = input.ReadInt32(ref result.field100_);
               break;
             }
             case 808: {
-              result.hasField101 |= input.ReadInt32(ref result.field101_);
+              result.hasField101 = input.ReadInt32(ref result.field101_);
               break;
             }
             case 818: {
-              result.hasField102 |= input.ReadString(ref result.field102_);
+              result.hasField102 = input.ReadString(ref result.field102_);
               break;
             }
             case 826: {
-              result.hasField103 |= input.ReadString(ref result.field103_);
+              result.hasField103 = input.ReadString(ref result.field103_);
               break;
             }
             case 832: {
-              result.hasField104 |= input.ReadInt32(ref result.field104_);
+              result.hasField104 = input.ReadInt32(ref result.field104_);
               break;
             }
             case 1024: {
-              result.hasField128 |= input.ReadInt32(ref result.field128_);
+              result.hasField128 = input.ReadInt32(ref result.field128_);
               break;
             }
             case 1034: {
-              result.hasField129 |= input.ReadString(ref result.field129_);
+              result.hasField129 = input.ReadString(ref result.field129_);
               break;
             }
             case 1040: {
-              result.hasField130 |= input.ReadInt32(ref result.field130_);
+              result.hasField130 = input.ReadInt32(ref result.field130_);
               break;
             }
             case 1048: {
-              result.hasField131 |= input.ReadInt32(ref result.field131_);
+              result.hasField131 = input.ReadInt32(ref result.field131_);
               break;
             }
             case 1200: {
-              result.hasField150 |= input.ReadInt32(ref result.field150_);
+              result.hasField150 = input.ReadInt32(ref result.field150_);
               break;
             }
             case 2168: {
-              result.hasField271 |= input.ReadInt32(ref result.field271_);
+              result.hasField271 = input.ReadInt32(ref result.field271_);
               break;
             }
             case 2176: {
-              result.hasField272 |= input.ReadInt32(ref result.field272_);
+              result.hasField272 = input.ReadInt32(ref result.field272_);
               break;
             }
             case 2240: {
-              result.hasField280 |= input.ReadInt32(ref result.field280_);
+              result.hasField280 = input.ReadInt32(ref result.field280_);
               break;
             }
           }
@@ -2056,6 +2071,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SpeedMessage1SubMessage : pb::GeneratedMessage<SpeedMessage1SubMessage, SpeedMessage1SubMessage.Builder> {
     private static readonly SpeedMessage1SubMessage defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _speedMessage1SubMessageFieldNames = new string[] { "field1", "field12", "field13", "field14", "field15", "field16", "field19", "field2", "field20", "field203", "field204", "field205", "field206", "field207", "field21", "field22", "field23", "field28", "field3", "field300" };
+    private static readonly uint[] _speedMessage1SubMessageFieldTags = new uint[] { 8, 96, 104, 112, 122, 128, 152, 16, 160, 1629, 1632, 1642, 1648, 1656, 169, 176, 184, 224, 24, 2400 };
     public static SpeedMessage1SubMessage DefaultInstance {
       get { return defaultInstance; }
     }
@@ -2288,65 +2305,66 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _speedMessage1SubMessageFieldNames;
       if (hasField1) {
-        output.WriteInt32(1, "field1", Field1);
+        output.WriteInt32(1, field_names[0], Field1);
       }
       if (hasField2) {
-        output.WriteInt32(2, "field2", Field2);
+        output.WriteInt32(2, field_names[7], Field2);
       }
       if (hasField3) {
-        output.WriteInt32(3, "field3", Field3);
+        output.WriteInt32(3, field_names[18], Field3);
       }
       if (hasField12) {
-        output.WriteBool(12, "field12", Field12);
+        output.WriteBool(12, field_names[1], Field12);
       }
       if (hasField13) {
-        output.WriteInt64(13, "field13", Field13);
+        output.WriteInt64(13, field_names[2], Field13);
       }
       if (hasField14) {
-        output.WriteInt64(14, "field14", Field14);
+        output.WriteInt64(14, field_names[3], Field14);
       }
       if (hasField15) {
-        output.WriteString(15, "field15", Field15);
+        output.WriteString(15, field_names[4], Field15);
       }
       if (hasField16) {
-        output.WriteInt32(16, "field16", Field16);
+        output.WriteInt32(16, field_names[5], Field16);
       }
       if (hasField19) {
-        output.WriteInt32(19, "field19", Field19);
+        output.WriteInt32(19, field_names[6], Field19);
       }
       if (hasField20) {
-        output.WriteBool(20, "field20", Field20);
+        output.WriteBool(20, field_names[8], Field20);
       }
       if (hasField21) {
-        output.WriteFixed64(21, "field21", Field21);
+        output.WriteFixed64(21, field_names[14], Field21);
       }
       if (hasField22) {
-        output.WriteInt32(22, "field22", Field22);
+        output.WriteInt32(22, field_names[15], Field22);
       }
       if (hasField23) {
-        output.WriteBool(23, "field23", Field23);
+        output.WriteBool(23, field_names[16], Field23);
       }
       if (hasField28) {
-        output.WriteBool(28, "field28", Field28);
+        output.WriteBool(28, field_names[17], Field28);
       }
       if (hasField203) {
-        output.WriteFixed32(203, "field203", Field203);
+        output.WriteFixed32(203, field_names[9], Field203);
       }
       if (hasField204) {
-        output.WriteInt32(204, "field204", Field204);
+        output.WriteInt32(204, field_names[10], Field204);
       }
       if (hasField205) {
-        output.WriteString(205, "field205", Field205);
+        output.WriteString(205, field_names[11], Field205);
       }
       if (hasField206) {
-        output.WriteBool(206, "field206", Field206);
+        output.WriteBool(206, field_names[12], Field206);
       }
       if (hasField207) {
-        output.WriteUInt64(207, "field207", Field207);
+        output.WriteUInt64(207, field_names[13], Field207);
       }
       if (hasField300) {
-        output.WriteUInt64(300, "field300", Field300);
+        output.WriteUInt64(300, field_names[19], Field300);
       }
       UnknownFields.WriteTo(output);
     }
@@ -2586,6 +2604,18 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_speedMessage1SubMessageFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _speedMessage1SubMessageFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -2604,83 +2634,83 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 8: {
-              result.hasField1 |= input.ReadInt32(ref result.field1_);
+              result.hasField1 = input.ReadInt32(ref result.field1_);
               break;
             }
             case 16: {
-              result.hasField2 |= input.ReadInt32(ref result.field2_);
+              result.hasField2 = input.ReadInt32(ref result.field2_);
               break;
             }
             case 24: {
-              result.hasField3 |= input.ReadInt32(ref result.field3_);
+              result.hasField3 = input.ReadInt32(ref result.field3_);
               break;
             }
             case 96: {
-              result.hasField12 |= input.ReadBool(ref result.field12_);
+              result.hasField12 = input.ReadBool(ref result.field12_);
               break;
             }
             case 104: {
-              result.hasField13 |= input.ReadInt64(ref result.field13_);
+              result.hasField13 = input.ReadInt64(ref result.field13_);
               break;
             }
             case 112: {
-              result.hasField14 |= input.ReadInt64(ref result.field14_);
+              result.hasField14 = input.ReadInt64(ref result.field14_);
               break;
             }
             case 122: {
-              result.hasField15 |= input.ReadString(ref result.field15_);
+              result.hasField15 = input.ReadString(ref result.field15_);
               break;
             }
             case 128: {
-              result.hasField16 |= input.ReadInt32(ref result.field16_);
+              result.hasField16 = input.ReadInt32(ref result.field16_);
               break;
             }
             case 152: {
-              result.hasField19 |= input.ReadInt32(ref result.field19_);
+              result.hasField19 = input.ReadInt32(ref result.field19_);
               break;
             }
             case 160: {
-              result.hasField20 |= input.ReadBool(ref result.field20_);
+              result.hasField20 = input.ReadBool(ref result.field20_);
               break;
             }
             case 169: {
-              result.hasField21 |= input.ReadFixed64(ref result.field21_);
+              result.hasField21 = input.ReadFixed64(ref result.field21_);
               break;
             }
             case 176: {
-              result.hasField22 |= input.ReadInt32(ref result.field22_);
+              result.hasField22 = input.ReadInt32(ref result.field22_);
               break;
             }
             case 184: {
-              result.hasField23 |= input.ReadBool(ref result.field23_);
+              result.hasField23 = input.ReadBool(ref result.field23_);
               break;
             }
             case 224: {
-              result.hasField28 |= input.ReadBool(ref result.field28_);
+              result.hasField28 = input.ReadBool(ref result.field28_);
               break;
             }
             case 1629: {
-              result.hasField203 |= input.ReadFixed32(ref result.field203_);
+              result.hasField203 = input.ReadFixed32(ref result.field203_);
               break;
             }
             case 1632: {
-              result.hasField204 |= input.ReadInt32(ref result.field204_);
+              result.hasField204 = input.ReadInt32(ref result.field204_);
               break;
             }
             case 1642: {
-              result.hasField205 |= input.ReadString(ref result.field205_);
+              result.hasField205 = input.ReadString(ref result.field205_);
               break;
             }
             case 1648: {
-              result.hasField206 |= input.ReadBool(ref result.field206_);
+              result.hasField206 = input.ReadBool(ref result.field206_);
               break;
             }
             case 1656: {
-              result.hasField207 |= input.ReadUInt64(ref result.field207_);
+              result.hasField207 = input.ReadUInt64(ref result.field207_);
               break;
             }
             case 2400: {
-              result.hasField300 |= input.ReadUInt64(ref result.field300_);
+              result.hasField300 = input.ReadUInt64(ref result.field300_);
               break;
             }
           }
@@ -3073,6 +3103,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SpeedMessage2 : pb::GeneratedMessage<SpeedMessage2, SpeedMessage2.Builder> {
     private static readonly SpeedMessage2 defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _speedMessage2FieldNames = new string[] { "field1", "field109", "field127", "field128", "field129", "field130", "field131", "field2", "field205", "field206", "field21", "field210", "field211", "field212", "field213", "field216", "field217", "field218", "field220", "field221", "field222", "field25", "field3", "field30", "field4", "field6", "field63", "field71", "field75", "group1" };
+    private static readonly uint[] _speedMessage2FieldTags = new uint[] { 10, 872, 1018, 1026, 1032, 1040, 1048, 18, 1640, 1648, 168, 1680, 1688, 1696, 1704, 1728, 1736, 1744, 1760, 1768, 1781, 205, 24, 240, 32, 50, 504, 568, 600, 83 };
     public static SpeedMessage2 DefaultInstance {
       get { return defaultInstance; }
     }
@@ -3103,6 +3135,8 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class Group1 : pb::GeneratedMessage<Group1, Group1.Builder> {
         private static readonly Group1 defaultInstance = new Builder().BuildPartial();
+        private static readonly string[] _group1FieldNames = new string[] { "field11", "field12", "field13", "field14", "field15", "field16", "field20", "field22", "field24", "field26", "field27", "field28", "field29", "field31", "field5", "field73" };
+        private static readonly uint[] _group1FieldTags = new uint[] { 93, 98, 106, 114, 120, 130, 160, 178, 194, 213, 218, 224, 234, 250, 40, 584 };
         public static Group1 DefaultInstance {
           get { return defaultInstance; }
         }
@@ -3300,53 +3334,54 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
+          string[] field_names = _group1FieldNames;
           if (hasField5) {
-            output.WriteInt32(5, "field5", Field5);
+            output.WriteInt32(5, field_names[14], Field5);
           }
           if (hasField11) {
-            output.WriteFloat(11, "field11", Field11);
+            output.WriteFloat(11, field_names[0], Field11);
           }
           if (hasField12) {
-            output.WriteString(12, "field12", Field12);
+            output.WriteString(12, field_names[1], Field12);
           }
           if (hasField13) {
-            output.WriteString(13, "field13", Field13);
+            output.WriteString(13, field_names[2], Field13);
           }
           if (field14_.Count > 0) {
-            output.WriteArray(pbd::FieldType.String, 14, "field14", field14_);
+            output.WriteArray(pbd::FieldType.String, 14, field_names[3], field14_);
           }
           if (hasField15) {
-            output.WriteUInt64(15, "field15", Field15);
+            output.WriteUInt64(15, field_names[4], Field15);
           }
           if (hasField16) {
-            output.WriteString(16, "field16", Field16);
+            output.WriteString(16, field_names[5], Field16);
           }
           if (hasField20) {
-            output.WriteInt32(20, "field20", Field20);
+            output.WriteInt32(20, field_names[6], Field20);
           }
           if (field22_.Count > 0) {
-            output.WriteArray(pbd::FieldType.String, 22, "field22", field22_);
+            output.WriteArray(pbd::FieldType.String, 22, field_names[7], field22_);
           }
           if (hasField24) {
-            output.WriteString(24, "field24", Field24);
+            output.WriteString(24, field_names[8], Field24);
           }
           if (hasField26) {
-            output.WriteFloat(26, "field26", Field26);
+            output.WriteFloat(26, field_names[9], Field26);
           }
           if (hasField27) {
-            output.WriteString(27, "field27", Field27);
+            output.WriteString(27, field_names[10], Field27);
           }
           if (hasField28) {
-            output.WriteInt32(28, "field28", Field28);
+            output.WriteInt32(28, field_names[11], Field28);
           }
           if (hasField29) {
-            output.WriteString(29, "field29", Field29);
+            output.WriteString(29, field_names[12], Field29);
           }
           if (hasField31) {
-            output.WriteMessage(31, "field31", Field31);
+            output.WriteMessage(31, field_names[13], Field31);
           }
           if (field73_.Count > 0) {
-            output.WriteArray(pbd::FieldType.Int32, 73, "field73", field73_);
+            output.WriteArray(pbd::FieldType.Int32, 73, field_names[15], field73_);
           }
           UnknownFields.WriteTo(output);
         }
@@ -3580,6 +3615,18 @@ namespace Google.ProtocolBuffers.TestProtos {
             uint tag;
             string field_name;
             while (input.ReadTag(out tag, out field_name)) {
+              if(tag == 0 && field_name != null) {
+                int field_ordinal = global::System.Array.BinarySearch(_group1FieldNames, field_name, global::System.StringComparer.Ordinal);
+                if(field_ordinal >= 0)
+                  tag = _group1FieldTags[field_ordinal];
+                else {
+                  if (unknownFields == null) {
+                    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                  }
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+                  continue;
+                }
+              }
               switch (tag) {
                 case 0: {
                   throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -3598,19 +3645,19 @@ namespace Google.ProtocolBuffers.TestProtos {
                   break;
                 }
                 case 40: {
-                  result.hasField5 |= input.ReadInt32(ref result.field5_);
+                  result.hasField5 = input.ReadInt32(ref result.field5_);
                   break;
                 }
                 case 93: {
-                  result.hasField11 |= input.ReadFloat(ref result.field11_);
+                  result.hasField11 = input.ReadFloat(ref result.field11_);
                   break;
                 }
                 case 98: {
-                  result.hasField12 |= input.ReadString(ref result.field12_);
+                  result.hasField12 = input.ReadString(ref result.field12_);
                   break;
                 }
                 case 106: {
-                  result.hasField13 |= input.ReadString(ref result.field13_);
+                  result.hasField13 = input.ReadString(ref result.field13_);
                   break;
                 }
                 case 114: {
@@ -3618,15 +3665,15 @@ namespace Google.ProtocolBuffers.TestProtos {
                   break;
                 }
                 case 120: {
-                  result.hasField15 |= input.ReadUInt64(ref result.field15_);
+                  result.hasField15 = input.ReadUInt64(ref result.field15_);
                   break;
                 }
                 case 130: {
-                  result.hasField16 |= input.ReadString(ref result.field16_);
+                  result.hasField16 = input.ReadString(ref result.field16_);
                   break;
                 }
                 case 160: {
-                  result.hasField20 |= input.ReadInt32(ref result.field20_);
+                  result.hasField20 = input.ReadInt32(ref result.field20_);
                   break;
                 }
                 case 178: {
@@ -3634,23 +3681,23 @@ namespace Google.ProtocolBuffers.TestProtos {
                   break;
                 }
                 case 194: {
-                  result.hasField24 |= input.ReadString(ref result.field24_);
+                  result.hasField24 = input.ReadString(ref result.field24_);
                   break;
                 }
                 case 213: {
-                  result.hasField26 |= input.ReadFloat(ref result.field26_);
+                  result.hasField26 = input.ReadFloat(ref result.field26_);
                   break;
                 }
                 case 218: {
-                  result.hasField27 |= input.ReadString(ref result.field27_);
+                  result.hasField27 = input.ReadString(ref result.field27_);
                   break;
                 }
                 case 224: {
-                  result.hasField28 |= input.ReadInt32(ref result.field28_);
+                  result.hasField28 = input.ReadInt32(ref result.field28_);
                   break;
                 }
                 case 234: {
-                  result.hasField29 |= input.ReadString(ref result.field29_);
+                  result.hasField29 = input.ReadString(ref result.field29_);
                   break;
                 }
                 case 250: {
@@ -4343,95 +4390,96 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _speedMessage2FieldNames;
       if (hasField1) {
-        output.WriteString(1, "field1", Field1);
+        output.WriteString(1, field_names[0], Field1);
       }
       if (hasField2) {
-        output.WriteBytes(2, "field2", Field2);
+        output.WriteBytes(2, field_names[7], Field2);
       }
       if (hasField3) {
-        output.WriteInt64(3, "field3", Field3);
+        output.WriteInt64(3, field_names[22], Field3);
       }
       if (hasField4) {
-        output.WriteInt64(4, "field4", Field4);
+        output.WriteInt64(4, field_names[24], Field4);
       }
       if (hasField6) {
-        output.WriteString(6, "field6", Field6);
+        output.WriteString(6, field_names[25], Field6);
       }
       if (group1_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Group, 10, "group1", group1_);
+        output.WriteArray(pbd::FieldType.Group, 10, field_names[29], group1_);
       }
       if (hasField21) {
-        output.WriteInt32(21, "field21", Field21);
+        output.WriteInt32(21, field_names[10], Field21);
       }
       if (hasField25) {
-        output.WriteFloat(25, "field25", Field25);
+        output.WriteFloat(25, field_names[21], Field25);
       }
       if (hasField30) {
-        output.WriteInt64(30, "field30", Field30);
+        output.WriteInt64(30, field_names[23], Field30);
       }
       if (hasField63) {
-        output.WriteInt32(63, "field63", Field63);
+        output.WriteInt32(63, field_names[26], Field63);
       }
       if (hasField71) {
-        output.WriteInt32(71, "field71", Field71);
+        output.WriteInt32(71, field_names[27], Field71);
       }
       if (hasField75) {
-        output.WriteBool(75, "field75", Field75);
+        output.WriteBool(75, field_names[28], Field75);
       }
       if (hasField109) {
-        output.WriteInt32(109, "field109", Field109);
+        output.WriteInt32(109, field_names[1], Field109);
       }
       if (field127_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 127, "field127", field127_);
+        output.WriteArray(pbd::FieldType.String, 127, field_names[2], field127_);
       }
       if (field128_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 128, "field128", field128_);
+        output.WriteArray(pbd::FieldType.String, 128, field_names[3], field128_);
       }
       if (hasField129) {
-        output.WriteInt32(129, "field129", Field129);
+        output.WriteInt32(129, field_names[4], Field129);
       }
       if (field130_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Int64, 130, "field130", field130_);
+        output.WriteArray(pbd::FieldType.Int64, 130, field_names[5], field130_);
       }
       if (hasField131) {
-        output.WriteInt64(131, "field131", Field131);
+        output.WriteInt64(131, field_names[6], Field131);
       }
       if (hasField205) {
-        output.WriteBool(205, "field205", Field205);
+        output.WriteBool(205, field_names[8], Field205);
       }
       if (hasField206) {
-        output.WriteBool(206, "field206", Field206);
+        output.WriteBool(206, field_names[9], Field206);
       }
       if (hasField210) {
-        output.WriteInt32(210, "field210", Field210);
+        output.WriteInt32(210, field_names[11], Field210);
       }
       if (hasField211) {
-        output.WriteInt32(211, "field211", Field211);
+        output.WriteInt32(211, field_names[12], Field211);
       }
       if (hasField212) {
-        output.WriteInt32(212, "field212", Field212);
+        output.WriteInt32(212, field_names[13], Field212);
       }
       if (hasField213) {
-        output.WriteInt32(213, "field213", Field213);
+        output.WriteInt32(213, field_names[14], Field213);
       }
       if (hasField216) {
-        output.WriteInt32(216, "field216", Field216);
+        output.WriteInt32(216, field_names[15], Field216);
       }
       if (hasField217) {
-        output.WriteInt32(217, "field217", Field217);
+        output.WriteInt32(217, field_names[16], Field217);
       }
       if (hasField218) {
-        output.WriteInt32(218, "field218", Field218);
+        output.WriteInt32(218, field_names[17], Field218);
       }
       if (hasField220) {
-        output.WriteInt32(220, "field220", Field220);
+        output.WriteInt32(220, field_names[18], Field220);
       }
       if (hasField221) {
-        output.WriteInt32(221, "field221", Field221);
+        output.WriteInt32(221, field_names[19], Field221);
       }
       if (hasField222) {
-        output.WriteFloat(222, "field222", Field222);
+        output.WriteFloat(222, field_names[20], Field222);
       }
       UnknownFields.WriteTo(output);
     }
@@ -4750,6 +4798,18 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_speedMessage2FieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _speedMessage2FieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -4768,23 +4828,23 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 10: {
-              result.hasField1 |= input.ReadString(ref result.field1_);
+              result.hasField1 = input.ReadString(ref result.field1_);
               break;
             }
             case 18: {
-              result.hasField2 |= input.ReadBytes(ref result.field2_);
+              result.hasField2 = input.ReadBytes(ref result.field2_);
               break;
             }
             case 24: {
-              result.hasField3 |= input.ReadInt64(ref result.field3_);
+              result.hasField3 = input.ReadInt64(ref result.field3_);
               break;
             }
             case 32: {
-              result.hasField4 |= input.ReadInt64(ref result.field4_);
+              result.hasField4 = input.ReadInt64(ref result.field4_);
               break;
             }
             case 50: {
-              result.hasField6 |= input.ReadString(ref result.field6_);
+              result.hasField6 = input.ReadString(ref result.field6_);
               break;
             }
             case 83: {
@@ -4792,31 +4852,31 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 168: {
-              result.hasField21 |= input.ReadInt32(ref result.field21_);
+              result.hasField21 = input.ReadInt32(ref result.field21_);
               break;
             }
             case 205: {
-              result.hasField25 |= input.ReadFloat(ref result.field25_);
+              result.hasField25 = input.ReadFloat(ref result.field25_);
               break;
             }
             case 240: {
-              result.hasField30 |= input.ReadInt64(ref result.field30_);
+              result.hasField30 = input.ReadInt64(ref result.field30_);
               break;
             }
             case 504: {
-              result.hasField63 |= input.ReadInt32(ref result.field63_);
+              result.hasField63 = input.ReadInt32(ref result.field63_);
               break;
             }
             case 568: {
-              result.hasField71 |= input.ReadInt32(ref result.field71_);
+              result.hasField71 = input.ReadInt32(ref result.field71_);
               break;
             }
             case 600: {
-              result.hasField75 |= input.ReadBool(ref result.field75_);
+              result.hasField75 = input.ReadBool(ref result.field75_);
               break;
             }
             case 872: {
-              result.hasField109 |= input.ReadInt32(ref result.field109_);
+              result.hasField109 = input.ReadInt32(ref result.field109_);
               break;
             }
             case 1018: {
@@ -4828,7 +4888,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 1032: {
-              result.hasField129 |= input.ReadInt32(ref result.field129_);
+              result.hasField129 = input.ReadInt32(ref result.field129_);
               break;
             }
             case 1042:
@@ -4837,55 +4897,55 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 1048: {
-              result.hasField131 |= input.ReadInt64(ref result.field131_);
+              result.hasField131 = input.ReadInt64(ref result.field131_);
               break;
             }
             case 1640: {
-              result.hasField205 |= input.ReadBool(ref result.field205_);
+              result.hasField205 = input.ReadBool(ref result.field205_);
               break;
             }
             case 1648: {
-              result.hasField206 |= input.ReadBool(ref result.field206_);
+              result.hasField206 = input.ReadBool(ref result.field206_);
               break;
             }
             case 1680: {
-              result.hasField210 |= input.ReadInt32(ref result.field210_);
+              result.hasField210 = input.ReadInt32(ref result.field210_);
               break;
             }
             case 1688: {
-              result.hasField211 |= input.ReadInt32(ref result.field211_);
+              result.hasField211 = input.ReadInt32(ref result.field211_);
               break;
             }
             case 1696: {
-              result.hasField212 |= input.ReadInt32(ref result.field212_);
+              result.hasField212 = input.ReadInt32(ref result.field212_);
               break;
             }
             case 1704: {
-              result.hasField213 |= input.ReadInt32(ref result.field213_);
+              result.hasField213 = input.ReadInt32(ref result.field213_);
               break;
             }
             case 1728: {
-              result.hasField216 |= input.ReadInt32(ref result.field216_);
+              result.hasField216 = input.ReadInt32(ref result.field216_);
               break;
             }
             case 1736: {
-              result.hasField217 |= input.ReadInt32(ref result.field217_);
+              result.hasField217 = input.ReadInt32(ref result.field217_);
               break;
             }
             case 1744: {
-              result.hasField218 |= input.ReadInt32(ref result.field218_);
+              result.hasField218 = input.ReadInt32(ref result.field218_);
               break;
             }
             case 1760: {
-              result.hasField220 |= input.ReadInt32(ref result.field220_);
+              result.hasField220 = input.ReadInt32(ref result.field220_);
               break;
             }
             case 1768: {
-              result.hasField221 |= input.ReadInt32(ref result.field221_);
+              result.hasField221 = input.ReadInt32(ref result.field221_);
               break;
             }
             case 1781: {
-              result.hasField222 |= input.ReadFloat(ref result.field222_);
+              result.hasField222 = input.ReadFloat(ref result.field222_);
               break;
             }
           }
@@ -5499,6 +5559,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SpeedMessage2GroupedMessage : pb::GeneratedMessage<SpeedMessage2GroupedMessage, SpeedMessage2GroupedMessage.Builder> {
     private static readonly SpeedMessage2GroupedMessage defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _speedMessage2GroupedMessageFieldNames = new string[] { "field1", "field10", "field11", "field2", "field3", "field4", "field5", "field6", "field7", "field8", "field9" };
+    private static readonly uint[] _speedMessage2GroupedMessageFieldTags = new uint[] { 13, 85, 88, 21, 29, 32, 40, 48, 56, 69, 72 };
     public static SpeedMessage2GroupedMessage DefaultInstance {
       get { return defaultInstance; }
     }
@@ -5637,38 +5699,39 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _speedMessage2GroupedMessageFieldNames;
       if (hasField1) {
-        output.WriteFloat(1, "field1", Field1);
+        output.WriteFloat(1, field_names[0], Field1);
       }
       if (hasField2) {
-        output.WriteFloat(2, "field2", Field2);
+        output.WriteFloat(2, field_names[3], Field2);
       }
       if (hasField3) {
-        output.WriteFloat(3, "field3", Field3);
+        output.WriteFloat(3, field_names[4], Field3);
       }
       if (hasField4) {
-        output.WriteBool(4, "field4", Field4);
+        output.WriteBool(4, field_names[5], Field4);
       }
       if (hasField5) {
-        output.WriteBool(5, "field5", Field5);
+        output.WriteBool(5, field_names[6], Field5);
       }
       if (hasField6) {
-        output.WriteBool(6, "field6", Field6);
+        output.WriteBool(6, field_names[7], Field6);
       }
       if (hasField7) {
-        output.WriteBool(7, "field7", Field7);
+        output.WriteBool(7, field_names[8], Field7);
       }
       if (hasField8) {
-        output.WriteFloat(8, "field8", Field8);
+        output.WriteFloat(8, field_names[9], Field8);
       }
       if (hasField9) {
-        output.WriteBool(9, "field9", Field9);
+        output.WriteBool(9, field_names[10], Field9);
       }
       if (hasField10) {
-        output.WriteFloat(10, "field10", Field10);
+        output.WriteFloat(10, field_names[1], Field10);
       }
       if (hasField11) {
-        output.WriteInt64(11, "field11", Field11);
+        output.WriteInt64(11, field_names[2], Field11);
       }
       UnknownFields.WriteTo(output);
     }
@@ -5854,6 +5917,18 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_speedMessage2GroupedMessageFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _speedMessage2GroupedMessageFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -5872,47 +5947,47 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 13: {
-              result.hasField1 |= input.ReadFloat(ref result.field1_);
+              result.hasField1 = input.ReadFloat(ref result.field1_);
               break;
             }
             case 21: {
-              result.hasField2 |= input.ReadFloat(ref result.field2_);
+              result.hasField2 = input.ReadFloat(ref result.field2_);
               break;
             }
             case 29: {
-              result.hasField3 |= input.ReadFloat(ref result.field3_);
+              result.hasField3 = input.ReadFloat(ref result.field3_);
               break;
             }
             case 32: {
-              result.hasField4 |= input.ReadBool(ref result.field4_);
+              result.hasField4 = input.ReadBool(ref result.field4_);
               break;
             }
             case 40: {
-              result.hasField5 |= input.ReadBool(ref result.field5_);
+              result.hasField5 = input.ReadBool(ref result.field5_);
               break;
             }
             case 48: {
-              result.hasField6 |= input.ReadBool(ref result.field6_);
+              result.hasField6 = input.ReadBool(ref result.field6_);
               break;
             }
             case 56: {
-              result.hasField7 |= input.ReadBool(ref result.field7_);
+              result.hasField7 = input.ReadBool(ref result.field7_);
               break;
             }
             case 69: {
-              result.hasField8 |= input.ReadFloat(ref result.field8_);
+              result.hasField8 = input.ReadFloat(ref result.field8_);
               break;
             }
             case 72: {
-              result.hasField9 |= input.ReadBool(ref result.field9_);
+              result.hasField9 = input.ReadBool(ref result.field9_);
               break;
             }
             case 85: {
-              result.hasField10 |= input.ReadFloat(ref result.field10_);
+              result.hasField10 = input.ReadFloat(ref result.field10_);
               break;
             }
             case 88: {
-              result.hasField11 |= input.ReadInt64(ref result.field11_);
+              result.hasField11 = input.ReadInt64(ref result.field11_);
               break;
             }
           }

@@ -58,6 +58,7 @@ namespace Google.ProtocolBuffers.ProtoBench
 
         private static BenchmarkTest RunBenchmark;
 
+        [STAThread]
         public static int Main(string[] args)
         {
             List<string> temp = new List<string>(args);
@@ -160,58 +161,47 @@ namespace Google.ProtocolBuffers.ProtoBench
             long totalCount = 0;
             double best = double.MinValue, worst = double.MaxValue;
 
-            ThreadStart threadProc = 
-                delegate()
-                    {
-                        action();
-                        // Run it progressively more times until we've got a reasonable sample
+            action();
+            // Run it progressively more times until we've got a reasonable sample
 
-                        int iterations = 100;
-                        elapsed = TimeAction(action, iterations);
-                        while (elapsed.TotalMilliseconds < 1000)
-                        {
-                            elapsed += TimeAction(action, iterations);
-                            iterations *= 2;
-                        }
+            int iterations = 100;
+            elapsed = TimeAction(action, iterations);
+            while (elapsed.TotalMilliseconds < 1000)
+            {
+                elapsed += TimeAction(action, iterations);
+                iterations *= 2;
+            }
 
-                        TimeSpan target = TimeSpan.FromSeconds(1);
+            TimeSpan target = TimeSpan.FromSeconds(1);
 
-                        elapsed = TimeAction(action, iterations);
-                        iterations = (int)((target.Ticks * iterations) / (double)elapsed.Ticks);
-                        elapsed = TimeAction(action, iterations);
-                        iterations = (int)((target.Ticks * iterations) / (double)elapsed.Ticks);
-                        elapsed = TimeAction(action, iterations);
-                        iterations = (int)((target.Ticks * iterations) / (double)elapsed.Ticks);
+            elapsed = TimeAction(action, iterations);
+            iterations = (int)((target.Ticks * iterations) / (double)elapsed.Ticks);
+            elapsed = TimeAction(action, iterations);
+            iterations = (int)((target.Ticks * iterations) / (double)elapsed.Ticks);
+            elapsed = TimeAction(action, iterations);
+            iterations = (int)((target.Ticks * iterations) / (double)elapsed.Ticks);
 
-                        double first = (iterations * dataSize) / (elapsed.TotalSeconds * 1024 * 1024);
-                        if (Verbose) Console.WriteLine("Round ---: Count = {1,6}, Bps = {2,8:f3}", 0, iterations, first);
-                        elapsed = TimeSpan.Zero;
-                        int max = FastTest ? 10 : 30;
+            double first = (iterations * dataSize) / (elapsed.TotalSeconds * 1024 * 1024);
+            if (Verbose) Console.WriteLine("Round ---: Count = {1,6}, Bps = {2,8:f3}", 0, iterations, first);
+            elapsed = TimeSpan.Zero;
+            int max = FastTest ? 10 : 30;
 
-                        while (runs < max)
-                        {
-                            TimeSpan cycle = TimeAction(action, iterations);
-                            // Accumulate and scale for next cycle.
-                            
-                            double bps = (iterations * dataSize) / (cycle.TotalSeconds * 1024 * 1024);
-                            if (Verbose) Console.WriteLine("Round {0,3}: Count = {1,6}, Bps = {2,8:f3}", runs, iterations, bps);
+            while (runs < max)
+            {
+                TimeSpan cycle = TimeAction(action, iterations);
+                // Accumulate and scale for next cycle.
+                
+                double bps = (iterations * dataSize) / (cycle.TotalSeconds * 1024 * 1024);
+                if (Verbose) Console.WriteLine("Round {0,3}: Count = {1,6}, Bps = {2,8:f3}", runs, iterations, bps);
 
-                            best = Math.Max(best, bps);
-                            worst = Math.Min(worst, bps);
+                best = Math.Max(best, bps);
+                worst = Math.Min(worst, bps);
 
-                            runs++;
-                            elapsed += cycle;
-                            totalCount += iterations;
-                            iterations = (int) ((target.Ticks*totalCount)/(double) elapsed.Ticks);
-                        }
-                    };
-
-            Thread work = new Thread(threadProc);
-            work.Name = "Worker";
-            work.Priority = ThreadPriority.Highest;
-            work.SetApartmentState(ApartmentState.STA);
-            work.Start();
-            work.Join();
+                runs++;
+                elapsed += cycle;
+                totalCount += iterations;
+                iterations = (int) ((target.Ticks*totalCount)/(double) elapsed.Ticks);
+            }
 
             Console.WriteLine("{0}: averages {1} per {2:f3}s for {3} runs; avg: {4:f3}mbps; best: {5:f3}mbps; worst: {6:f3}mbps",
                               name, totalCount / runs, elapsed.TotalSeconds / runs, runs,

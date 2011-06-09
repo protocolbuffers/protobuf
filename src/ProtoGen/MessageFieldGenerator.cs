@@ -40,8 +40,8 @@ namespace Google.ProtocolBuffers.ProtoGen
 {
     internal class MessageFieldGenerator : FieldGeneratorBase, IFieldSourceGenerator
     {
-        internal MessageFieldGenerator(FieldDescriptor descriptor)
-            : base(descriptor)
+        internal MessageFieldGenerator(FieldDescriptor descriptor, int fieldOrdinal)
+            : base(descriptor, fieldOrdinal)
         {
         }
 
@@ -129,7 +129,7 @@ namespace Google.ProtocolBuffers.ProtoGen
         public void GenerateSerializationCode(TextGenerator writer)
         {
             writer.WriteLine("if (has{0}) {{", PropertyName);
-            writer.WriteLine("  output.Write{0}({1}, \"{3}\", {2});", MessageOrGroup, Number, PropertyName, Descriptor.Name);
+            writer.WriteLine("  output.Write{0}({1}, field_names[{3}], {2});", MessageOrGroup, Number, PropertyName, FieldOrdinal);
             writer.WriteLine("}");
         }
 

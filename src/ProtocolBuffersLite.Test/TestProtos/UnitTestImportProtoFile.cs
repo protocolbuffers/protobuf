@@ -70,6 +70,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ImportMessage : pb::GeneratedMessage<ImportMessage, ImportMessage.Builder> {
     private static readonly ImportMessage defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _importMessageFieldNames = new string[] { "d" };
+    private static readonly uint[] _importMessageFieldTags = new uint[] { 8 };
     public static ImportMessage DefaultInstance {
       get { return defaultInstance; }
     }
@@ -108,8 +110,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _importMessageFieldNames;
       if (hasD) {
-        output.WriteInt32(1, "d", D);
+        output.WriteInt32(1, field_names[0], D);
       }
       UnknownFields.WriteTo(output);
     }
@@ -235,6 +238,18 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_importMessageFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _importMessageFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -253,7 +268,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 8: {
-              result.hasD |= input.ReadInt32(ref result.d_);
+              result.hasD = input.ReadInt32(ref result.d_);
               break;
             }
           }

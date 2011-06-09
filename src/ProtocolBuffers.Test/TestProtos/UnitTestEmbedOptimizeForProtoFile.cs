@@ -63,6 +63,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestEmbedOptimizedForSize : pb::GeneratedMessage<TestEmbedOptimizedForSize, TestEmbedOptimizedForSize.Builder> {
     private static readonly TestEmbedOptimizedForSize defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _testEmbedOptimizedForSizeFieldNames = new string[] { "optional_message", "repeated_message" };
+    private static readonly uint[] _testEmbedOptimizedForSizeFieldTags = new uint[] { 10, 18 };
     public static TestEmbedOptimizedForSize DefaultInstance {
       get { return defaultInstance; }
     }
@@ -119,11 +121,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _testEmbedOptimizedForSizeFieldNames;
       if (hasOptionalMessage) {
-        output.WriteMessage(1, "optional_message", OptionalMessage);
+        output.WriteMessage(1, field_names[0], OptionalMessage);
       }
       if (repeatedMessage_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 2, "repeated_message", repeatedMessage_);
+        output.WriteArray(pbd::FieldType.Message, 2, field_names[1], repeatedMessage_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -256,6 +259,18 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_testEmbedOptimizedForSizeFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _testEmbedOptimizedForSizeFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();

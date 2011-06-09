@@ -42,14 +42,19 @@ namespace Google.ProtocolBuffers.ProtoGen
 {
     internal abstract class FieldGeneratorBase : SourceGeneratorBase<FieldDescriptor>
     {
-        protected FieldGeneratorBase(FieldDescriptor descriptor)
+        private readonly int _fieldOrdinal;
+
+        protected FieldGeneratorBase(FieldDescriptor descriptor, int fieldOrdinal)
             : base(descriptor)
         {
+            _fieldOrdinal = fieldOrdinal;
         }
 
         public abstract void WriteHash(TextGenerator writer);
         public abstract void WriteEquals(TextGenerator writer);
         public abstract void WriteToString(TextGenerator writer);
+
+        public int FieldOrdinal { get { return _fieldOrdinal; } }
 
         private static bool AllPrintableAscii(string text)
         {

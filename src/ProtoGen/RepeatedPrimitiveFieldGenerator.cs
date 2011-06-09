@@ -41,8 +41,8 @@ namespace Google.ProtocolBuffers.ProtoGen
 {
     internal class RepeatedPrimitiveFieldGenerator : FieldGeneratorBase, IFieldSourceGenerator
     {
-        internal RepeatedPrimitiveFieldGenerator(FieldDescriptor descriptor)
-            : base(descriptor)
+        internal RepeatedPrimitiveFieldGenerator(FieldDescriptor descriptor, int fieldOrdinal)
+            : base(descriptor, fieldOrdinal)
         {
         }
 
@@ -122,19 +122,6 @@ namespace Google.ProtocolBuffers.ProtoGen
         public void GenerateParsingCode(TextGenerator writer)
         {
             writer.WriteLine("input.ReadPrimitiveArray(pbd::FieldType.{1}, tag, field_name, result.{0}_);", Name, Descriptor.FieldType);
-            //if (Descriptor.IsPacked)
-            //{
-            //    writer.WriteLine("int length = input.ReadInt32();");
-            //    writer.WriteLine("int limit = input.PushLimit(length);");
-            //    writer.WriteLine("while (!input.ReachedLimit) {");
-            //    writer.WriteLine("  Add{0}(input.Read{1}());", PropertyName, CapitalizedTypeName);
-            //    writer.WriteLine("}");
-            //    writer.WriteLine("input.PopLimit(limit);");
-            //}
-            //else
-            //{
-            //    writer.WriteLine("Add{0}(input.Read{1}());", PropertyName, CapitalizedTypeName);
-            //}
         }
 
         public void GenerateSerializationCode(TextGenerator writer)
@@ -142,23 +129,9 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("if ({0}_.Count > 0) {{", Name);
             writer.Indent();
             if (Descriptor.IsPacked)
-                writer.WriteLine("output.WritePackedArray(pbd::FieldType.{3}, {0}, \"{2}\", {1}MemoizedSerializedSize, {1}_);", Number, Name, Descriptor.Name, Descriptor.FieldType);
+                writer.WriteLine("output.WritePackedArray(pbd::FieldType.{3}, {0}, field_names[{2}], {1}MemoizedSerializedSize, {1}_);", Number, Name, FieldOrdinal, Descriptor.FieldType);
             else
-                writer.WriteLine("output.WriteArray(pbd::FieldType.{3}, {0}, \"{2}\", {1}_);", Number, Name, Descriptor.Name, Descriptor.FieldType);
-            //if (Descriptor.IsPacked)
-            //{
-            //    writer.WriteLine("output.WriteRawVarint32({0});", WireFormat.MakeTag(Descriptor));
-            //    writer.WriteLine("output.WriteRawVarint32((uint) {0}MemoizedSerializedSize);", Name);
-            //    writer.WriteLine("foreach ({0} element in {1}_) {{", TypeName, Name);
-            //    writer.WriteLine("  output.Write{0}NoTag(element);", CapitalizedTypeName);
-            //    writer.WriteLine("}");
-            //}
-            //else
-            //{
-            //    writer.WriteLine("foreach ({0} element in {1}_) {{", TypeName, Name);
-            //    writer.WriteLine("  output.Write{0}({1}, element);", CapitalizedTypeName, Number);
-            //    writer.WriteLine("}");
-            //}
+                writer.WriteLine("output.WriteArray(pbd::FieldType.{3}, {0}, field_names[{2}], {1}_);", Number, Name, FieldOrdinal, Descriptor.FieldType);
             writer.Outdent();
             writer.WriteLine("}");
         }

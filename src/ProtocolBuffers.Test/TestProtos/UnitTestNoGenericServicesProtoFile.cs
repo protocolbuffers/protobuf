@@ -80,6 +80,8 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestMessage : pb::ExtendableMessage<TestMessage, TestMessage.Builder> {
     private static readonly TestMessage defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _testMessageFieldNames = new string[] { "a" };
+    private static readonly uint[] _testMessageFieldTags = new uint[] { 8 };
     public static TestMessage DefaultInstance {
       get { return defaultInstance; }
     }
@@ -119,9 +121,10 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _testMessageFieldNames;
       pb::ExtendableMessage<TestMessage, TestMessage.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (hasA) {
-        output.WriteInt32(1, "a", A);
+        output.WriteInt32(1, field_names[0], A);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -250,6 +253,18 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_testMessageFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _testMessageFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -268,7 +283,7 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
               break;
             }
             case 8: {
-              result.hasA |= input.ReadInt32(ref result.a_);
+              result.hasA = input.ReadInt32(ref result.a_);
               break;
             }
           }

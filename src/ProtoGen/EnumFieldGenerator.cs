@@ -40,8 +40,8 @@ namespace Google.ProtocolBuffers.ProtoGen
 {
     internal class EnumFieldGenerator : FieldGeneratorBase, IFieldSourceGenerator
     {
-        internal EnumFieldGenerator(FieldDescriptor descriptor)
-            : base(descriptor)
+        internal EnumFieldGenerator(FieldDescriptor descriptor, int fieldOrdinal)
+            : base(descriptor, fieldOrdinal)
         {
         }
 
@@ -107,26 +107,12 @@ namespace Google.ProtocolBuffers.ProtoGen
                 writer.WriteLine("  unknownFields.MergeVarintField({0}, (ulong)(int)unknown);", Number);
             }
             writer.WriteLine("}");
-
-            // TO DO(jonskeet): Make a more efficient way of doing this
-            //writer.WriteLine("int rawValue = input.ReadEnum();");
-            //writer.WriteLine("if (!global::System.Enum.IsDefined(typeof({0}), rawValue)) {{", TypeName);
-            //if (!UseLiteRuntime)
-            //{
-            //    writer.WriteLine("  if (unknownFields == null) {"); // First unknown field - create builder now
-            //    writer.WriteLine("    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
-            //    writer.WriteLine("  }");
-            //    writer.WriteLine("  unknownFields.MergeVarintField({0}, (ulong) rawValue);", Number);
-            //}
-            //writer.WriteLine("} else {");
-            //writer.WriteLine("  {0} = ({1}) rawValue;", PropertyName, TypeName);
-            //writer.WriteLine("}");
         }
 
         public void GenerateSerializationCode(TextGenerator writer)
         {
             writer.WriteLine("if (has{0}) {{", PropertyName);
-            writer.WriteLine("  output.WriteEnum({0}, \"{2}\", (int) {1}, {1}.ToString());", Number, PropertyName, Descriptor.Name);
+            writer.WriteLine("  output.WriteEnum({0}, field_names[{2}], (int) {1}, {1}.ToString());", Number, PropertyName, FieldOrdinal);
             writer.WriteLine("}");
         }
 

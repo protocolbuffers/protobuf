@@ -41,8 +41,8 @@ namespace Google.ProtocolBuffers.ProtoGen
     // TODO(jonskeet): Refactor this. There's loads of common code here.
     internal class PrimitiveFieldGenerator : FieldGeneratorBase, IFieldSourceGenerator
     {
-        internal PrimitiveFieldGenerator(FieldDescriptor descriptor)
-            : base(descriptor)
+        internal PrimitiveFieldGenerator(FieldDescriptor descriptor, int fieldOrdinal)
+            : base(descriptor, fieldOrdinal)
         {
         }
 
@@ -97,13 +97,13 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         public void GenerateParsingCode(TextGenerator writer)
         {
-            writer.WriteLine("result.has{0} |= input.Read{1}(ref result.{2}_);", PropertyName, CapitalizedTypeName, Name);
+            writer.WriteLine("result.has{0} = input.Read{1}(ref result.{2}_);", PropertyName, CapitalizedTypeName, Name);
         }
 
         public void GenerateSerializationCode(TextGenerator writer)
         {
             writer.WriteLine("if (has{0}) {{", PropertyName);
-            writer.WriteLine("  output.Write{0}({1}, \"{3}\", {2});", CapitalizedTypeName, Number, PropertyName, Descriptor.Name);
+            writer.WriteLine("  output.Write{0}({1}, field_names[{3}], {2});", CapitalizedTypeName, Number, PropertyName, FieldOrdinal);
             writer.WriteLine("}");
         }
 

@@ -82,6 +82,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SearchRequest : pb::GeneratedMessage<SearchRequest, SearchRequest.Builder> {
     private static readonly SearchRequest defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _searchRequestFieldNames = new string[] { "Criteria" };
+    private static readonly uint[] _searchRequestFieldTags = new uint[] { 10 };
     public static SearchRequest DefaultInstance {
       get { return defaultInstance; }
     }
@@ -122,8 +124,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _searchRequestFieldNames;
       if (criteria_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 1, "Criteria", criteria_);
+        output.WriteArray(pbd::FieldType.String, 1, field_names[0], criteria_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -255,6 +258,18 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_searchRequestFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _searchRequestFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -324,6 +339,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SearchResponse : pb::GeneratedMessage<SearchResponse, SearchResponse.Builder> {
     private static readonly SearchResponse defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _searchResponseFieldNames = new string[] { "results" };
+    private static readonly uint[] _searchResponseFieldTags = new uint[] { 10 };
     public static SearchResponse DefaultInstance {
       get { return defaultInstance; }
     }
@@ -354,6 +371,8 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class ResultItem : pb::GeneratedMessage<ResultItem, ResultItem.Builder> {
         private static readonly ResultItem defaultInstance = new Builder().BuildPartial();
+        private static readonly string[] _resultItemFieldNames = new string[] { "name", "url" };
+        private static readonly uint[] _resultItemFieldTags = new uint[] { 18, 10 };
         public static ResultItem DefaultInstance {
           get { return defaultInstance; }
         }
@@ -403,11 +422,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public override void WriteTo(pb::ICodedOutputStream output) {
           int size = SerializedSize;
+          string[] field_names = _resultItemFieldNames;
           if (hasUrl) {
-            output.WriteString(1, "url", Url);
+            output.WriteString(1, field_names[1], Url);
           }
           if (hasName) {
-            output.WriteString(2, "name", Name);
+            output.WriteString(2, field_names[0], Name);
           }
           UnknownFields.WriteTo(output);
         }
@@ -539,6 +559,18 @@ namespace Google.ProtocolBuffers.TestProtos {
             uint tag;
             string field_name;
             while (input.ReadTag(out tag, out field_name)) {
+              if(tag == 0 && field_name != null) {
+                int field_ordinal = global::System.Array.BinarySearch(_resultItemFieldNames, field_name, global::System.StringComparer.Ordinal);
+                if(field_ordinal >= 0)
+                  tag = _resultItemFieldTags[field_ordinal];
+                else {
+                  if (unknownFields == null) {
+                    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                  }
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+                  continue;
+                }
+              }
               switch (tag) {
                 case 0: {
                   throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -557,11 +589,11 @@ namespace Google.ProtocolBuffers.TestProtos {
                   break;
                 }
                 case 10: {
-                  result.hasUrl |= input.ReadString(ref result.url_);
+                  result.hasUrl = input.ReadString(ref result.url_);
                   break;
                 }
                 case 18: {
-                  result.hasName |= input.ReadString(ref result.name_);
+                  result.hasName = input.ReadString(ref result.name_);
                   break;
                 }
               }
@@ -643,8 +675,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _searchResponseFieldNames;
       if (results_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 1, "results", results_);
+        output.WriteArray(pbd::FieldType.Message, 1, field_names[0], results_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -771,6 +804,18 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_searchResponseFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _searchResponseFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -850,6 +895,8 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class RefineSearchRequest : pb::GeneratedMessage<RefineSearchRequest, RefineSearchRequest.Builder> {
     private static readonly RefineSearchRequest defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _refineSearchRequestFieldNames = new string[] { "Criteria", "previous_results" };
+    private static readonly uint[] _refineSearchRequestFieldTags = new uint[] { 10, 18 };
     public static RefineSearchRequest DefaultInstance {
       get { return defaultInstance; }
     }
@@ -902,11 +949,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public override void WriteTo(pb::ICodedOutputStream output) {
       int size = SerializedSize;
+      string[] field_names = _refineSearchRequestFieldNames;
       if (criteria_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 1, "Criteria", criteria_);
+        output.WriteArray(pbd::FieldType.String, 1, field_names[0], criteria_);
       }
       if (hasPreviousResults) {
-        output.WriteMessage(2, "previous_results", PreviousResults);
+        output.WriteMessage(2, field_names[1], PreviousResults);
       }
       UnknownFields.WriteTo(output);
     }
@@ -1044,6 +1092,18 @@ namespace Google.ProtocolBuffers.TestProtos {
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_refineSearchRequestFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _refineSearchRequestFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
           switch (tag) {
             case 0: {
               throw pb::InvalidProtocolBufferException.InvalidTag();

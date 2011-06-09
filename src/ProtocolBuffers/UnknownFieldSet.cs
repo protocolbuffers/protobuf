@@ -607,6 +607,18 @@ namespace Google.ProtocolBuffers
                 string name;
                 while (input.ReadTag(out tag, out name))
                 {
+                    if (tag == 0 && name != null)
+                    {
+                        FieldDescriptor fieldByName = builder.DescriptorForType.FindFieldByName(name);
+                        if (fieldByName != null)
+                            tag = WireFormat.MakeTag(fieldByName);
+                        else
+                        {
+                            ExtensionInfo extension = extensionRegistry.FindByName(builder.DescriptorForType, name);
+                            if (extension != null)
+                                tag = WireFormat.MakeTag(extension.Descriptor);
+                        }
+                    }
                     if (tag == 0)
                     {
                         if (input.SkipField())
@@ -634,6 +646,19 @@ namespace Google.ProtocolBuffers
             internal bool MergeFieldFrom(ICodedInputStream input,
                                          ExtensionRegistry extensionRegistry, IBuilder builder, uint tag, string fieldName)
             {
+                if (tag == 0 && fieldName != null)
+                {
+                    FieldDescriptor fieldByName = builder.DescriptorForType.FindFieldByName(fieldName);
+                    if (fieldByName != null)
+                        tag = WireFormat.MakeTag(fieldByName);
+                    else
+                    {
+                        ExtensionInfo extension = extensionRegistry.FindByName(builder.DescriptorForType, fieldName);
+                        if (extension != null)
+                            tag = WireFormat.MakeTag(extension.Descriptor);
+                    }
+                }
+
                 MessageDescriptor type = builder.DescriptorForType;
                 if (type.Options.MessageSetWireFormat && tag == WireFormat.MessageSetTag.ItemStart)
                 {
@@ -799,6 +824,11 @@ namespace Google.ProtocolBuffers
                 string name;
                 while (input.ReadTag(out tag, out name))
                 {
+                    if (tag == 0 && name != null)
+                    {
+                        if (name == "type_id") tag = WireFormat.MessageSetTag.TypeID;
+                        else if (name == "message") tag = WireFormat.MessageSetTag.Message;
+                    }
                     if (tag == 0)
                     {
                         if (input.SkipField())

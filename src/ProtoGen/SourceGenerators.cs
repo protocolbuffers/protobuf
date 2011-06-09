@@ -44,98 +44,33 @@ namespace Google.ProtocolBuffers.ProtoGen
 
     internal static class SourceGenerators
     {
-        private static readonly Dictionary<Type, Func<IDescriptor, ISourceGenerator>> GeneratorFactories = new Dictionary
-            <Type, Func<IDescriptor, ISourceGenerator>>
-                                                                                                               {
-                                                                                                                   {
-                                                                                                                       typeof
-                                                                                                                       (
-                                                                                                                       FileDescriptor
-                                                                                                                       )
-                                                                                                                       ,
-                                                                                                                       descriptor
-                                                                                                                       =>
-                                                                                                                       new UmbrellaClassGenerator
-                                                                                                                           ((
-                                                                                                                            FileDescriptor
-                                                                                                                            )
-                                                                                                                            descriptor)
-                                                                                                                       },
-                                                                                                                   {
-                                                                                                                       typeof
-                                                                                                                       (
-                                                                                                                       EnumDescriptor
-                                                                                                                       )
-                                                                                                                       ,
-                                                                                                                       descriptor
-                                                                                                                       =>
-                                                                                                                       new EnumGenerator
-                                                                                                                           ((
-                                                                                                                            EnumDescriptor
-                                                                                                                            )
-                                                                                                                            descriptor)
-                                                                                                                       },
-                                                                                                                   {
-                                                                                                                       typeof
-                                                                                                                       (
-                                                                                                                       ServiceDescriptor
-                                                                                                                       )
-                                                                                                                       ,
-                                                                                                                       descriptor
-                                                                                                                       =>
-                                                                                                                       new ServiceGenerator
-                                                                                                                           ((
-                                                                                                                            ServiceDescriptor
-                                                                                                                            )
-                                                                                                                            descriptor)
-                                                                                                                       },
-                                                                                                                   {
-                                                                                                                       typeof
-                                                                                                                       (
-                                                                                                                       MessageDescriptor
-                                                                                                                       )
-                                                                                                                       ,
-                                                                                                                       descriptor
-                                                                                                                       =>
-                                                                                                                       new MessageGenerator
-                                                                                                                           ((
-                                                                                                                            MessageDescriptor
-                                                                                                                            )
-                                                                                                                            descriptor)
-                                                                                                                       },
-                                                                                                                   // For other fields, we have IFieldSourceGenerators.
-                                                                                                                   {
-                                                                                                                       typeof
-                                                                                                                       (
-                                                                                                                       FieldDescriptor
-                                                                                                                       )
-                                                                                                                       ,
-                                                                                                                       descriptor
-                                                                                                                       =>
-                                                                                                                       new ExtensionGenerator
-                                                                                                                           ((
-                                                                                                                            FieldDescriptor
-                                                                                                                            )
-                                                                                                                            descriptor)
-                                                                                                                       }
-                                                                                                               };
+        private static readonly Dictionary<Type, Func<IDescriptor, ISourceGenerator>> GeneratorFactories = 
+            new Dictionary<Type, Func<IDescriptor, ISourceGenerator>>
+            {
+                {typeof(FileDescriptor),descriptor=>new UmbrellaClassGenerator((FileDescriptor)descriptor)},
+                {typeof(EnumDescriptor),descriptor=>new EnumGenerator((EnumDescriptor)descriptor)},
+                {typeof(ServiceDescriptor),descriptor=>new ServiceGenerator((ServiceDescriptor)descriptor)},
+                {typeof(MessageDescriptor),descriptor=>new MessageGenerator((MessageDescriptor)descriptor)},
+                // For other fields, we have IFieldSourceGenerators.
+                {typeof(FieldDescriptor),descriptor=>new ExtensionGenerator((FieldDescriptor)descriptor)}
+            };
 
-        public static IFieldSourceGenerator CreateFieldGenerator(FieldDescriptor field)
+        public static IFieldSourceGenerator CreateFieldGenerator(FieldDescriptor field, int fieldOrdinal)
         {
             switch (field.MappedType)
             {
                 case MappedType.Message:
                     return field.IsRepeated
-                               ? (IFieldSourceGenerator) new RepeatedMessageFieldGenerator(field)
-                               : new MessageFieldGenerator(field);
+                               ? (IFieldSourceGenerator) new RepeatedMessageFieldGenerator(field, fieldOrdinal)
+                               : new MessageFieldGenerator(field, fieldOrdinal);
                 case MappedType.Enum:
                     return field.IsRepeated
-                               ? (IFieldSourceGenerator) new RepeatedEnumFieldGenerator(field)
-                               : new EnumFieldGenerator(field);
+                               ? (IFieldSourceGenerator)new RepeatedEnumFieldGenerator(field, fieldOrdinal)
+                               : new EnumFieldGenerator(field, fieldOrdinal);
                 default:
                     return field.IsRepeated
-                               ? (IFieldSourceGenerator) new RepeatedPrimitiveFieldGenerator(field)
-                               : new PrimitiveFieldGenerator(field);
+                               ? (IFieldSourceGenerator)new RepeatedPrimitiveFieldGenerator(field, fieldOrdinal)
+                               : new PrimitiveFieldGenerator(field, fieldOrdinal);
             }
         }
 

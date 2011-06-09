@@ -41,8 +41,8 @@ namespace Google.ProtocolBuffers.ProtoGen
 {
     internal class RepeatedEnumFieldGenerator : FieldGeneratorBase, IFieldSourceGenerator
     {
-        internal RepeatedEnumFieldGenerator(FieldDescriptor descriptor)
-            : base(descriptor)
+        internal RepeatedEnumFieldGenerator(FieldDescriptor descriptor, int fieldOrdinal)
+            : base(descriptor, fieldOrdinal)
         {
         }
 
@@ -125,37 +125,6 @@ namespace Google.ProtocolBuffers.ProtoGen
                 writer.WriteLine("      unknownFields.MergeVarintField({0}, (ulong)(int)rawValue);", Number);
                 writer.WriteLine("}");
             }
-
-            //// If packed, set up the while loop
-            //if (Descriptor.IsPacked)
-            //{
-            //    writer.WriteLine("int length = input.ReadInt32();");
-            //    writer.WriteLine("int oldLimit = input.PushLimit(length);");
-            //    writer.WriteLine("while (!input.ReachedLimit) {");
-            //    writer.Indent();
-            //}
-
-            //// Read and store the enum
-            //// TO DO(jonskeet): Make a more efficient way of doing this
-            //writer.WriteLine("int rawValue = input.ReadEnum();");
-            //writer.WriteLine("if (!global::System.Enum.IsDefined(typeof({0}), rawValue)) {{", TypeName);
-            //if (!UseLiteRuntime)
-            //{
-            //    writer.WriteLine("  if (unknownFields == null) {"); // First unknown field - create builder now
-            //    writer.WriteLine("    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
-            //    writer.WriteLine("  }");
-            //    writer.WriteLine("  unknownFields.MergeVarintField({0}, (ulong) rawValue);", Number);
-            //}
-            //writer.WriteLine("} else {");
-            //writer.WriteLine("  Add{0}(({1}) rawValue);", PropertyName, TypeName);
-            //writer.WriteLine("}");
-
-            //if (Descriptor.IsPacked)
-            //{
-            //    writer.Outdent();
-            //    writer.WriteLine("}");
-            //    writer.WriteLine("input.PopLimit(oldLimit);");
-            //}
         }
 
         public void GenerateSerializationCode(TextGenerator writer)
@@ -163,23 +132,9 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("if ({0}_.Count > 0) {{", Name);
             writer.Indent();
             if (Descriptor.IsPacked)
-                writer.WriteLine("output.WritePackedArray(pbd::FieldType.{3}, {0}, \"{2}\", {1}MemoizedSerializedSize, {1}_);", Number, Name, Descriptor.Name, Descriptor.FieldType);
+                writer.WriteLine("output.WritePackedArray(pbd::FieldType.{3}, {0}, field_names[{2}], {1}MemoizedSerializedSize, {1}_);", Number, Name, FieldOrdinal, Descriptor.FieldType);
             else
-                writer.WriteLine("output.WriteArray(pbd::FieldType.{3}, {0}, \"{2}\", {1}_);", Number, Name, Descriptor.Name, Descriptor.FieldType);
-            //if (Descriptor.IsPacked)
-            //{
-            //    writer.WriteLine("output.WriteRawVarint32({0});", WireFormat.MakeTag(Descriptor));
-            //    writer.WriteLine("output.WriteRawVarint32((uint) {0}MemoizedSerializedSize);", Name);
-            //    writer.WriteLine("foreach (int element in {0}_) {{", Name);
-            //    writer.WriteLine("  output.WriteEnumNoTag(element);");
-            //    writer.WriteLine("}");
-            //}
-            //else
-            //{
-            //    writer.WriteLine("foreach (int element in {0}_) {{", Name);
-            //    writer.WriteLine("  output.WriteEnum({0}, element);", Number);
-            //    writer.WriteLine("}");
-            //}
+                writer.WriteLine("output.WriteArray(pbd::FieldType.{3}, {0}, field_names[{2}], {1}_);", Number, Name, FieldOrdinal, Descriptor.FieldType);
             writer.Outdent();
             writer.WriteLine("}");
         }
