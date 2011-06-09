@@ -67,6 +67,9 @@ namespace Google.ProtocolBuffers
         private readonly Stream input;
         private uint lastTag = 0;
 
+        private uint nextTag = 0;
+        private bool hasNextTag = false;
+
         internal const int DefaultRecursionLimit = 64;
         internal const int DefaultSizeLimit = 64 << 20; // 64MB
         public const int BufferSize = 4096;
@@ -164,6 +167,26 @@ namespace Google.ProtocolBuffers
         #region Reading of tags etc
         
         /// <summary>
+        /// Attempt to peek at the next field tag.
+        /// </summary>
+        [CLSCompliant(false)]
+        public bool PeekNextTag(out uint fieldTag, out string fieldName)
+        {
+            if (hasNextTag)
+            {
+                fieldName = null;
+                fieldTag = nextTag;
+                return true;
+            }
+
+            uint savedLast = lastTag;
+            hasNextTag = ReadTag(out nextTag, out fieldName);
+            lastTag = savedLast;
+            fieldTag = nextTag;
+            return hasNextTag;
+        }
+
+        /// <summary>
         /// Attempt to read a field tag, returning false if we have reached the end
         /// of the input data.
         /// </summary>
@@ -182,6 +205,13 @@ namespace Google.ProtocolBuffers
         public bool ReadTag(out uint fieldTag, out string fieldName)
         {
             fieldName = null;
+
+            if (hasNextTag)
+            {
+                lastTag = fieldTag = nextTag;
+                hasNextTag = false;
+                return true;
+            }
 
             if (IsAtEnd)
             {
@@ -483,6 +513,24 @@ namespace Google.ProtocolBuffers
             return true;
         }
 
+        /// <summary>
+        /// Returns true if the next tag is also part of the same unpacked array
+        /// </summary>
+        private bool ContinueArray(uint currentTag)
+        {
+            string ignore;
+            uint next;
+            if (PeekNextTag(out next, out ignore))
+            {
+                if (next == currentTag)
+                {
+                    hasNextTag = false;
+                    return true;
+                }
+            }
+            return false;
+        }
+
         [CLSCompliant(false)]
         public void ReadPrimitiveArray<T>(FieldType fieldType, uint fieldTag, string fieldName, ICollection<T> list)
         {
@@ -505,8 +553,12 @@ namespace Google.ProtocolBuffers
             else
             {
                 Object value = null;
-                if (ReadPrimitiveField(fieldType, ref value))
-                    list.Add((T)value);
+                do
+                {
+                    if (ReadPrimitiveField(fieldType, ref value))
+                        list.Add((T)value);
+                }
+                while (ContinueArray(fieldTag));
             }
         }
 
@@ -538,10 +590,18 @@ namespace Google.ProtocolBuffers
             }
             else
             {
-                if (ReadEnum(ref value, out unkval, mapping))
-                    list.Add(value);
-                else
-                    unknown = new object[] { unkval };
+                do
+                {
+                    if (ReadEnum(ref value, out unkval, mapping))
+                        list.Add(value);
+                    else
+                    {
+                        if (unknown == null)
+                            unknown = new List<object>();
+                        unknown.Add(unkval);
+                    }
+                }
+                while (ContinueArray(fieldTag));
             }
         }
 
@@ -574,27 +634,43 @@ namespace Google.ProtocolBuffers
             }
             else
             {
-                if (ReadEnum(ref value, out unkval))
-                    list.Add(value);
-                else
-                    unknown = new object[] { unkval };
+                do
+                {
+                    if (ReadEnum(ref value, out unkval))
+                        list.Add(value);
+                    else
+                    {
+                        if (unknown == null)
+                            unknown = new List<object>();
+                        unknown.Add(unkval);
+                    }
+                }
+                while (ContinueArray(fieldTag));
             }
         }
 
         [CLSCompliant(false)]
         public void ReadMessageArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType, ExtensionRegistry registry) where T : IMessageLite
         {
-            IBuilderLite builder = messageType.WeakCreateBuilderForType();
-            ReadMessage(builder, registry);
-            list.Add((T)builder.WeakBuildPartial());
+            do
+            {
+                IBuilderLite builder = messageType.WeakCreateBuilderForType();
+                ReadMessage(builder, registry);
+                list.Add((T)builder.WeakBuildPartial());
+            }
+            while (ContinueArray(fieldTag));
         }
 
         [CLSCompliant(false)]
         public void ReadGroupArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType, ExtensionRegistry registry) where T : IMessageLite
         {
-            IBuilderLite builder = messageType.WeakCreateBuilderForType();
-            ReadGroup(WireFormat.GetTagFieldNumber(fieldTag), builder, registry);
-            list.Add((T)builder.WeakBuildPartial());
+            do
+            {
+                IBuilderLite builder = messageType.WeakCreateBuilderForType();
+                ReadGroup(WireFormat.GetTagFieldNumber(fieldTag), builder, registry);
+                list.Add((T)builder.WeakBuildPartial());
+            }
+            while (ContinueArray(fieldTag));
         }
 
         /// <summary>
