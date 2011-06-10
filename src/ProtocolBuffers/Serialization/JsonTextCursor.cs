@@ -156,7 +156,7 @@ namespace Google.ProtocolBuffers.Serialization
         {
             SkipWhitespace();
             Consume('"');
-            StringBuilder sb = new StringBuilder();
+            List<Char> sb = new List<char>(100);
             while (_next != '"')
             {
                 if (_next == '\\')
@@ -165,54 +165,53 @@ namespace Google.ProtocolBuffers.Serialization
                     char ch = ReadChar();
                     switch (ch)
                     {
-                        case 'b': sb.Append('\b'); break;
-                        case 'f': sb.Append('\f'); break;
-                        case 'n': sb.Append('\n'); break;
-                        case 'r': sb.Append('\r'); break;
-                        case 't': sb.Append('\t'); break;
+                        case 'b': sb.Add('\b'); break;
+                        case 'f': sb.Add('\f'); break;
+                        case 'n': sb.Add('\n'); break;
+                        case 'r': sb.Add('\r'); break;
+                        case 't': sb.Add('\t'); break;
                         case 'u':
                             {
                                 string hex = new string(new char[] { ReadChar(), ReadChar(), ReadChar(), ReadChar() });
                                 int result;
                                 Assert(int.TryParse(hex, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out result),
                                        "Expected a 4-character hex specifier.");
-                                sb.Append((char)result);
+                                sb.Add((char)result);
                                 break;
                             }
                         default:
-                            sb.Append(ch); break;
+                            sb.Add(ch); break;
                     }
                 }
                 else
                 {
                     Assert(_next != '\n' && _next != '\r' && _next != '\f' && _next != -1, '"');
-                    sb.Append(ReadChar());
+                    sb.Add(ReadChar());
                 }
             }
             Consume('"');
-            return sb.ToString();
+            return new String(sb.ToArray());
         }
 
         public string ReadNumber()
         {
             SkipWhitespace();
-
-            StringBuilder sb = new StringBuilder();
+            List<Char> sb = new List<char>(24);
             if (_next == '-')
-                sb.Append(ReadChar());
+                sb.Add(ReadChar());
             Assert(_next >= '0' && _next <= '9', "Expected a numeric type.");
             while ((_next >= '0' && _next <= '9') || _next == '.')
-                sb.Append(ReadChar());
+                sb.Add(ReadChar());
             if (_next == 'e' || _next == 'E')
             {
-                sb.Append(ReadChar());
+                sb.Add(ReadChar());
                 if (_next == '-' || _next == '+')
-                    sb.Append(ReadChar());
+                    sb.Add(ReadChar());
                 Assert(_next >= '0' && _next <= '9', "Expected a numeric type.");
                 while (_next >= '0' && _next <= '9')
-                    sb.Append(ReadChar());
+                    sb.Add(ReadChar());
             }
-            return sb.ToString();
+            return new String(sb.ToArray());
         }
 
         public JsType ReadVariant(out object value)
