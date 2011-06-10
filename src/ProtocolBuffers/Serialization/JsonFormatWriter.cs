@@ -264,16 +264,6 @@ namespace Google.ProtocolBuffers.Serialization
         }
 
         /// <summary>
-        /// Writes a message
-        /// </summary>
-        [System.ComponentModel.Browsable(false)]
-        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        public override void WriteMessage(string field, IMessageLite message)
-        {
-            WriteMessage(message);
-        }
-
-        /// <summary>
         /// Used in streaming arrays of objects to the writer
         /// </summary>
         /// <example>

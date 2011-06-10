@@ -137,6 +137,10 @@ namespace Google.ProtocolBuffers.ProtoBench
                 new JsonFormatWriter(temp).WriteMessage(sampleMessage);
                 string jsonMessageText = temp.ToString();
 
+                IDictionary<string, object> dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
+                new DictionaryWriter(dictionary).WriteMessage(sampleMessage);
+
+
                 //Serializers
                 if(!FastTest) RunBenchmark("Serialize to byte string", inputData.Length, () => sampleMessage.ToByteString());
                 RunBenchmark("Serialize to byte array", inputData.Length, () => sampleMessage.ToByteArray());
@@ -145,6 +149,7 @@ namespace Google.ProtocolBuffers.ProtoBench
 
                 RunBenchmark("Serialize to xml", xmlMessageText.Length, () => new XmlFormatWriter(new StringWriter()).WriteMessage(sampleMessage));
                 RunBenchmark("Serialize to json", jsonMessageText.Length, () => new JsonFormatWriter(new StringWriter()).WriteMessage(sampleMessage));
+                RunBenchmark("Serialize to dictionary", sampleMessage.SerializedSize, () => new DictionaryWriter().WriteMessage(sampleMessage));
 
                 //Deserializers
                 if (!FastTest) RunBenchmark("Deserialize from byte string", inputData.Length,
@@ -168,6 +173,7 @@ namespace Google.ProtocolBuffers.ProtoBench
 
                 RunBenchmark("Deserialize from xml", xmlMessageText.Length, () => new XmlFormatReader(xmlMessageText).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
                 RunBenchmark("Deserialize from json", jsonMessageText.Length, () => new JsonFormatReader(jsonMessageText).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
+                RunBenchmark("Deserialize from dictionary", sampleMessage.SerializedSize, () => new DictionaryReader(dictionary).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
 
                 Console.WriteLine();
                 return true;

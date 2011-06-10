@@ -42,13 +42,6 @@ namespace Google.ProtocolBuffers.Serialization
         public abstract void WriteMessage(IMessageLite message);
 
         /// <summary>
-        /// Writes a message
-        /// </summary>
-        public abstract void WriteMessage(string field, IMessageLite message);
-
-
-
-        /// <summary>
         /// Writes a Boolean value
         /// </summary>
         protected abstract void Write(string field, Boolean value);

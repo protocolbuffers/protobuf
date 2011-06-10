@@ -73,7 +73,7 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// Writes a message as an element with the given name
         /// </summary>
-        public override void WriteMessage(string elementName, IMessageLite message)
+        public void WriteMessage(string elementName, IMessageLite message)
         {
             if (TestOption(XmlWriterOptions.OutputJsonTypes))
             {

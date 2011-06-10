@@ -14,6 +14,11 @@ namespace Google.ProtocolBuffers.CompatTests
             where TMessage : IMessageLite<TMessage, TBuilder>
             where TBuilder : IBuilderLite<TMessage, TBuilder>;
 
+        protected virtual void AssertOutputEquals(object lhs, object rhs)
+        {
+            Assert.AreEqual(lhs, rhs);
+        }
+
         [Test]
         public virtual void RoundTripMessage1OptimizeSize()
         {
@@ -23,7 +28,7 @@ namespace Google.ProtocolBuffers.CompatTests
             SizeMessage1 copy = DeerializeMessage<SizeMessage1, SizeMessage1.Builder>(content, SizeMessage1.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
             Assert.AreEqual(msg, copy);
-            Assert.AreEqual(content, SerializeMessage<SizeMessage1,SizeMessage1.Builder>(copy));
+            AssertOutputEquals(content, SerializeMessage<SizeMessage1, SizeMessage1.Builder>(copy));
             Assert.AreEqual(TestResources.google_message1, copy.ToByteArray());
         }
 
@@ -36,7 +41,7 @@ namespace Google.ProtocolBuffers.CompatTests
             SizeMessage2 copy = DeerializeMessage<SizeMessage2, SizeMessage2.Builder>(content, SizeMessage2.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
             Assert.AreEqual(msg, copy);
-            Assert.AreEqual(content, SerializeMessage<SizeMessage2, SizeMessage2.Builder>(copy));
+            AssertOutputEquals(content, SerializeMessage<SizeMessage2, SizeMessage2.Builder>(copy));
             Assert.AreEqual(TestResources.google_message2, copy.ToByteArray());
         }
 
@@ -49,7 +54,7 @@ namespace Google.ProtocolBuffers.CompatTests
             SpeedMessage1 copy = DeerializeMessage<SpeedMessage1, SpeedMessage1.Builder>(content, SpeedMessage1.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
             Assert.AreEqual(msg, copy);
-            Assert.AreEqual(content, SerializeMessage<SpeedMessage1, SpeedMessage1.Builder>(copy));
+            AssertOutputEquals(content, SerializeMessage<SpeedMessage1, SpeedMessage1.Builder>(copy));
             Assert.AreEqual(TestResources.google_message1, copy.ToByteArray());
         }
 
@@ -62,7 +67,7 @@ namespace Google.ProtocolBuffers.CompatTests
             SpeedMessage2 copy = DeerializeMessage<SpeedMessage2, SpeedMessage2.Builder>(content, SpeedMessage2.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
             Assert.AreEqual(msg, copy);
-            Assert.AreEqual(content, SerializeMessage<SpeedMessage2, SpeedMessage2.Builder>(copy));
+            AssertOutputEquals(content, SerializeMessage<SpeedMessage2, SpeedMessage2.Builder>(copy));
             Assert.AreEqual(TestResources.google_message2, copy.ToByteArray());
         }
 
