@@ -77,6 +77,7 @@
     <Compile Include="Collections\PopsicleListTest.cs" />
     <Compile Include="CompatTests\BinaryCompatibilityTests.cs" />
     <Compile Include="CompatTests\CompatibilityTests.cs" />
+    <Compile Include="CompatTests\JsonCompatibilityTests.cs" />
     <Compile Include="CompatTests\TestResources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -115,6 +116,7 @@
     <Compile Include="TestProtos\UnitTestXmlSerializerTestProtoFile.cs" />
     <Compile Include="TestRpcGenerator.cs" />
     <Compile Include="TestUtil.cs" />
+    <Compile Include="TestWriterFormatJson.cs" />
     <Compile Include="TestWriterFormatXml.cs" />
     <Compile Include="TextFormatTest.cs" />
     <Compile Include="UnknownFieldSetTest.cs" />

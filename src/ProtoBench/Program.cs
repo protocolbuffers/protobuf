@@ -39,6 +39,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using Google.ProtocolBuffers.Serialization;
 using Google.ProtocolBuffers.TestProtos;
 
 namespace Google.ProtocolBuffers.ProtoBench
@@ -127,12 +128,25 @@ namespace Google.ProtocolBuffers.ProtoBench
                 inputData = inputData ?? File.ReadAllBytes(file);
                 MemoryStream inputStream = new MemoryStream(inputData);
                 ByteString inputString = ByteString.CopyFrom(inputData);
-                IMessage sampleMessage =
-                    defaultMessage.WeakCreateBuilderForType().WeakMergeFrom(inputString, registry).WeakBuild();
+                IMessage sampleMessage = defaultMessage.WeakCreateBuilderForType().WeakMergeFrom(inputString, registry).WeakBuild();
+                
+                StringWriter temp = new StringWriter();
+                new XmlFormatWriter(temp).WriteMessage(sampleMessage);
+                string xmlMessageText = temp.ToString();
+                temp = new StringWriter();
+                new JsonFormatWriter(temp).WriteMessage(sampleMessage);
+                string jsonMessageText = temp.ToString();
+
+                //Serializers
                 if(!FastTest) RunBenchmark("Serialize to byte string", inputData.Length, () => sampleMessage.ToByteString());
                 RunBenchmark("Serialize to byte array", inputData.Length, () => sampleMessage.ToByteArray());
                 if (!FastTest) RunBenchmark("Serialize to memory stream", inputData.Length,
                           () => sampleMessage.WriteTo(new MemoryStream()));
+
+                RunBenchmark("Serialize to xml", xmlMessageText.Length, () => new XmlFormatWriter(new StringWriter()).WriteMessage(sampleMessage));
+                RunBenchmark("Serialize to json", jsonMessageText.Length, () => new JsonFormatWriter(new StringWriter()).WriteMessage(sampleMessage));
+
+                //Deserializers
                 if (!FastTest) RunBenchmark("Deserialize from byte string", inputData.Length,
                           () => defaultMessage.WeakCreateBuilderForType()
                                     .WeakMergeFrom(inputString, registry)
@@ -151,6 +165,10 @@ namespace Google.ProtocolBuffers.ProtoBench
                               CodedInputStream.CreateInstance(inputStream), registry)
                           .WeakBuild();
                   });
+
+                RunBenchmark("Deserialize from xml", xmlMessageText.Length, () => new XmlFormatReader(xmlMessageText).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
+                RunBenchmark("Deserialize from json", jsonMessageText.Length, () => new JsonFormatReader(jsonMessageText).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
+
                 Console.WriteLine();
                 return true;
             }

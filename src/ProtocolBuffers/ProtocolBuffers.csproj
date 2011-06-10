@@ -184,6 +184,9 @@
     <Compile Include="Serialization\AbstractTextReader.cs" />
     <Compile Include="Serialization\AbstractTextWriter.cs" />
     <Compile Include="Serialization\AbstractWriter.cs" />
+    <Compile Include="Serialization\JsonFormatReader.cs" />
+    <Compile Include="Serialization\JsonFormatWriter.cs" />
+    <Compile Include="Serialization\JsonTextCursor.cs" />
     <Compile Include="Serialization\XmlFormatReader.cs" />
     <Compile Include="Serialization\XmlFormatWriter.cs" />
     <Compile Include="Serialization\XmlReaderOptions.cs" />
