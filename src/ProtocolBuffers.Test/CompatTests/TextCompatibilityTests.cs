@@ -7,8 +7,6 @@ namespace Google.ProtocolBuffers.CompatTests
     [TestFixture]
     public class TextCompatibilityTests : CompatibilityTests
     {
-        protected override string TestName { get { return "text"; } }
-
         protected override object SerializeMessage<TMessage, TBuilder>(TMessage message)
         {
             StringWriter text = new StringWriter();

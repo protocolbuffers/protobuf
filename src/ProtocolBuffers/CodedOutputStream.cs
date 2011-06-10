@@ -127,6 +127,36 @@ namespace Google.ProtocolBuffers
 
         #endregion
 
+        #region Writing of unknown fields
+
+        [Obsolete]
+        public void WriteUnknownGroup(int fieldNumber, IMessageLite value)
+        {
+            WriteTag(fieldNumber, WireFormat.WireType.StartGroup);
+            value.WriteTo(this);
+            WriteTag(fieldNumber, WireFormat.WireType.EndGroup);
+        }
+
+        public void WriteUnknownBytes(int fieldNumber, ByteString value)
+        {
+            WriteBytes(fieldNumber, null /*not used*/, value);
+        }
+
+        [CLSCompliant(false)]
+        public void WriteUnknownField(int fieldNumber, WireFormat.WireType wireType, ulong value)
+        {
+            if(wireType == WireFormat.WireType.Varint)
+                WriteUInt64(fieldNumber, null /*not used*/, value);
+            else if (wireType == WireFormat.WireType.Fixed32)
+                WriteFixed32(fieldNumber, null /*not used*/, (uint)value);
+            else if (wireType == WireFormat.WireType.Fixed64)
+                WriteFixed64(fieldNumber, null /*not used*/, value);
+            else
+                throw InvalidProtocolBufferException.InvalidWireType();
+        }
+
+        #endregion
+
         #region Writing of tags and fields
 
         public void WriteField(FieldType fieldType, int fieldNumber, string fieldName, object value)
@@ -302,14 +332,6 @@ namespace Google.ProtocolBuffers
         /// Writes a group field value, including tag, to the stream.
         /// </summary>
         public void WriteGroup(int fieldNumber, string fieldName, IMessageLite value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.StartGroup);
-            value.WriteTo(this);
-            WriteTag(fieldNumber, WireFormat.WireType.EndGroup);
-        }
-
-        [Obsolete]
-        public void WriteUnknownGroup(int fieldNumber, string fieldName, IMessageLite value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.StartGroup);
             value.WriteTo(this);

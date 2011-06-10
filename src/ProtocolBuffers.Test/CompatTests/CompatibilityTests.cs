@@ -6,7 +6,6 @@ namespace Google.ProtocolBuffers.CompatTests
 {
     public abstract class CompatibilityTests
     {
-        protected abstract string TestName { get; }
         protected abstract object SerializeMessage<TMessage, TBuilder>(TMessage message)
             where TMessage : IMessageLite<TMessage, TBuilder>
             where TBuilder : IBuilderLite<TMessage, TBuilder>;

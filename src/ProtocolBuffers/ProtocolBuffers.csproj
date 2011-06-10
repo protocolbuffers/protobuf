@@ -180,6 +180,14 @@
     <Compile Include="NameHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RpcUtil.cs" />
+    <Compile Include="Serialization\AbstractReader.cs" />
+    <Compile Include="Serialization\AbstractTextReader.cs" />
+    <Compile Include="Serialization\AbstractTextWriter.cs" />
+    <Compile Include="Serialization\AbstractWriter.cs" />
+    <Compile Include="Serialization\XmlFormatReader.cs" />
+    <Compile Include="Serialization\XmlFormatWriter.cs" />
+    <Compile Include="Serialization\XmlReaderOptions.cs" />
+    <Compile Include="Serialization\XmlWriterOptions.cs" />
     <Compile Include="SilverlightCompatibility.cs" />
     <Compile Include="SortedList.cs" />
     <Compile Include="TextFormat.cs" />

@@ -12,7 +12,11 @@ namespace Google.ProtocolBuffers
         void Flush();
 
         [Obsolete]
-        void WriteUnknownGroup(int fieldNumber, string fieldName, IMessageLite value);
+        void WriteUnknownGroup(int fieldNumber, IMessageLite value);
+        void WriteUnknownBytes(int fieldNumber, ByteString value);
+        [CLSCompliant(false)]
+        void WriteUnknownField(int fieldNumber, WireFormat.WireType wireType, ulong value);
+
         void WriteMessageSetExtension(int fieldNumber, string fieldName, IMessageLite value);
         void WriteMessageSetExtension(int fieldNumber, string fieldName, ByteString value);
 

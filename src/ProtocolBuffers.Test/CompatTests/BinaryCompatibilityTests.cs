@@ -6,8 +6,6 @@ namespace Google.ProtocolBuffers.CompatTests
     [TestFixture]
     public class BinaryCompatibilityTests : CompatibilityTests
     {
-        protected override string TestName { get { return "binary"; } }
-
         protected override object SerializeMessage<TMessage, TBuilder>(TMessage message)
         {
             byte[] bresult = message.ToByteArray();

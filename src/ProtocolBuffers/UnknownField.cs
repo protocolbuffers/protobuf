@@ -178,24 +178,24 @@ namespace Google.ProtocolBuffers
         {
             foreach (ulong value in varintList)
             {
-                output.WriteUInt64(fieldNumber, UnknownFieldName, value);
+                output.WriteUnknownField(fieldNumber, WireFormat.WireType.Varint, value);
             }
             foreach (uint value in fixed32List)
             {
-                output.WriteFixed32(fieldNumber, UnknownFieldName, value);
+                output.WriteUnknownField(fieldNumber, WireFormat.WireType.Fixed32, value);
             }
             foreach (ulong value in fixed64List)
             {
-                output.WriteFixed64(fieldNumber, UnknownFieldName, value);
+                output.WriteUnknownField(fieldNumber, WireFormat.WireType.Fixed64, value);
             }
             foreach (ByteString value in lengthDelimitedList)
             {
-                output.WriteBytes(fieldNumber, UnknownFieldName, value);
+                output.WriteUnknownBytes(fieldNumber, value);
             }
             foreach (UnknownFieldSet value in groupList)
             {
 #pragma warning disable 0612
-                output.WriteUnknownGroup(fieldNumber, UnknownFieldName, value);
+                output.WriteUnknownGroup(fieldNumber, value);
 #pragma warning restore 0612
             }
         }

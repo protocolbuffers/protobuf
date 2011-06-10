@@ -446,6 +446,12 @@ namespace Google.ProtocolBuffers
             [CLSCompliant(false)]
             public bool MergeFieldFrom(uint tag, ICodedInputStream input)
             {
+                if (tag == 0)
+                {
+                    input.SkipField();
+                    return true;
+                }
+
                 int number = WireFormat.GetTagFieldNumber(tag);
                 switch (WireFormat.GetTagWireType(tag))
                 {

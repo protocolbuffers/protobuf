@@ -83,6 +83,7 @@
       <DependentUpon>TestResources.resx</DependentUpon>
     </Compile>
     <Compile Include="CompatTests\TextCompatibilityTests.cs" />
+    <Compile Include="CompatTests\XmlCompatibilityTests.cs" />
     <Compile Include="CSharpOptionsTest.cs" />
     <Compile Include="DescriptorsTest.cs" />
     <Compile Include="Descriptors\MessageDescriptorTest.cs" />
@@ -114,6 +115,7 @@
     <Compile Include="TestProtos\UnitTestXmlSerializerTestProtoFile.cs" />
     <Compile Include="TestRpcGenerator.cs" />
     <Compile Include="TestUtil.cs" />
+    <Compile Include="TestWriterFormatXml.cs" />
     <Compile Include="TextFormatTest.cs" />
     <Compile Include="UnknownFieldSetTest.cs" />
     <Compile Include="WireFormatTest.cs" />
