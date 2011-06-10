@@ -59,6 +59,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\ProtocolBuffers.Test\TestProtos\UnitTestImportProtoFile.cs">
+      <Link>UnitTestImportProtoFile.cs</Link>
+    </Compile>
+    <Compile Include="..\ProtocolBuffers.Test\TestProtos\UnitTestProtoFile.cs">
+      <Link>UnitTestProtoFile.cs</Link>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

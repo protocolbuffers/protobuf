@@ -104,7 +104,7 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
     
     public const int AFieldNumber = 1;
     private bool hasA;
-    private int a_ = 0;
+    private int a_;
     public bool HasA {
       get { return hasA; }
     }

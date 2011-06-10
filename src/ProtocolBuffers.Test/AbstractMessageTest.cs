@@ -63,6 +63,13 @@ namespace Google.ProtocolBuffers
         }
 
         [Test]
+        public void CreateAndBuild()
+        {
+            TestAllTypes.CreateBuilder()
+                .Build();
+        }
+
+        [Test]
         public void SerializedSize()
         {
             TestAllTypes message = TestUtil.GetAllSet();

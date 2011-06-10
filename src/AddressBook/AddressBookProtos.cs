@@ -163,7 +163,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
             output.WriteString(1, field_names[0], Number);
           }
           if (hasType) {
-            output.WriteEnum(2, field_names[1], (int) Type, Type.ToString());
+            output.WriteEnum(2, field_names[1], (int) Type, Type);
           }
           UnknownFields.WriteTo(output);
         }
@@ -407,7 +407,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     
     public const int IdFieldNumber = 2;
     private bool hasId;
-    private int id_ = 0;
+    private int id_;
     public bool HasId {
       get { return hasId; }
     }

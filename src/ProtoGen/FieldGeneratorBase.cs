@@ -68,6 +68,36 @@ namespace Google.ProtocolBuffers.ProtoGen
             return true;
         }
 
+        protected bool HasDefaultValue
+        {
+            get 
+            {
+                switch (Descriptor.FieldType)
+                {
+                    case FieldType.Float:
+                    case FieldType.Double:
+                    case FieldType.Int32:
+                    case FieldType.Int64:
+                    case FieldType.SInt32:
+                    case FieldType.SInt64:
+                    case FieldType.SFixed32:
+                    case FieldType.SFixed64:
+                    case FieldType.UInt32:
+                    case FieldType.UInt64:
+                    case FieldType.Fixed32:
+                    case FieldType.Fixed64:
+                        {
+                            IConvertible value = (IConvertible) Descriptor.DefaultValue;
+                            return value.ToString(CultureInfo.InvariantCulture) != "0";
+                        }
+                    case FieldType.Bool:
+                        return ((bool) Descriptor.DefaultValue) == true;
+                    default:
+                        return true;
+                }
+            }
+        }
+
         /// <remarks>Copy exists in ExtensionGenerator.cs</remarks>
         protected string DefaultValue
         {

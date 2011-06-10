@@ -1185,7 +1185,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int BbFieldNumber = 1;
         private bool hasBb;
-        private int bb_ = 0;
+        private int bb_;
         public bool HasBb {
           get { return hasBb; }
         }
@@ -1424,7 +1424,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int AFieldNumber = 17;
         private bool hasA;
-        private int a_ = 0;
+        private int a_;
         public bool HasA {
           get { return hasA; }
         }
@@ -1663,7 +1663,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int AFieldNumber = 47;
         private bool hasA;
-        private int a_ = 0;
+        private int a_;
         public bool HasA {
           get { return hasA; }
         }
@@ -1878,7 +1878,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int OptionalInt32FieldNumber = 1;
     private bool hasOptionalInt32;
-    private int optionalInt32_ = 0;
+    private int optionalInt32_;
     public bool HasOptionalInt32 {
       get { return hasOptionalInt32; }
     }
@@ -1888,7 +1888,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int OptionalInt64FieldNumber = 2;
     private bool hasOptionalInt64;
-    private long optionalInt64_ = 0L;
+    private long optionalInt64_;
     public bool HasOptionalInt64 {
       get { return hasOptionalInt64; }
     }
@@ -1898,7 +1898,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int OptionalUint32FieldNumber = 3;
     private bool hasOptionalUint32;
-    private uint optionalUint32_ = 0;
+    private uint optionalUint32_;
     public bool HasOptionalUint32 {
       get { return hasOptionalUint32; }
     }
@@ -1909,7 +1909,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int OptionalUint64FieldNumber = 4;
     private bool hasOptionalUint64;
-    private ulong optionalUint64_ = 0UL;
+    private ulong optionalUint64_;
     public bool HasOptionalUint64 {
       get { return hasOptionalUint64; }
     }
@@ -1920,7 +1920,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int OptionalSint32FieldNumber = 5;
     private bool hasOptionalSint32;
-    private int optionalSint32_ = 0;
+    private int optionalSint32_;
     public bool HasOptionalSint32 {
       get { return hasOptionalSint32; }
     }
@@ -1930,7 +1930,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int OptionalSint64FieldNumber = 6;
     private bool hasOptionalSint64;
-    private long optionalSint64_ = 0;
+    private long optionalSint64_;
     public bool HasOptionalSint64 {
       get { return hasOptionalSint64; }
     }
@@ -1940,7 +1940,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int OptionalFixed32FieldNumber = 7;
     private bool hasOptionalFixed32;
-    private uint optionalFixed32_ = 0;
+    private uint optionalFixed32_;
     public bool HasOptionalFixed32 {
       get { return hasOptionalFixed32; }
     }
@@ -1951,7 +1951,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int OptionalFixed64FieldNumber = 8;
     private bool hasOptionalFixed64;
-    private ulong optionalFixed64_ = 0;
+    private ulong optionalFixed64_;
     public bool HasOptionalFixed64 {
       get { return hasOptionalFixed64; }
     }
@@ -1962,7 +1962,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int OptionalSfixed32FieldNumber = 9;
     private bool hasOptionalSfixed32;
-    private int optionalSfixed32_ = 0;
+    private int optionalSfixed32_;
     public bool HasOptionalSfixed32 {
       get { return hasOptionalSfixed32; }
     }
@@ -1972,7 +1972,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int OptionalSfixed64FieldNumber = 10;
     private bool hasOptionalSfixed64;
-    private long optionalSfixed64_ = 0;
+    private long optionalSfixed64_;
     public bool HasOptionalSfixed64 {
       get { return hasOptionalSfixed64; }
     }
@@ -1982,7 +1982,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int OptionalFloatFieldNumber = 11;
     private bool hasOptionalFloat;
-    private float optionalFloat_ = 0F;
+    private float optionalFloat_;
     public bool HasOptionalFloat {
       get { return hasOptionalFloat; }
     }
@@ -1992,7 +1992,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int OptionalDoubleFieldNumber = 12;
     private bool hasOptionalDouble;
-    private double optionalDouble_ = 0D;
+    private double optionalDouble_;
     public bool HasOptionalDouble {
       get { return hasOptionalDouble; }
     }
@@ -2002,7 +2002,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int OptionalBoolFieldNumber = 13;
     private bool hasOptionalBool;
-    private bool optionalBool_ = false;
+    private bool optionalBool_;
     public bool HasOptionalBool {
       get { return hasOptionalBool; }
     }
@@ -2687,13 +2687,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteMessage(20, field_names[30], OptionalImportMessage);
       }
       if (hasOptionalNestedEnum) {
-        output.WriteEnum(21, field_names[33], (int) OptionalNestedEnum, OptionalNestedEnum.ToString());
+        output.WriteEnum(21, field_names[33], (int) OptionalNestedEnum, OptionalNestedEnum);
       }
       if (hasOptionalForeignEnum) {
-        output.WriteEnum(22, field_names[27], (int) OptionalForeignEnum, OptionalForeignEnum.ToString());
+        output.WriteEnum(22, field_names[27], (int) OptionalForeignEnum, OptionalForeignEnum);
       }
       if (hasOptionalImportEnum) {
-        output.WriteEnum(23, field_names[29], (int) OptionalImportEnum, OptionalImportEnum.ToString());
+        output.WriteEnum(23, field_names[29], (int) OptionalImportEnum, OptionalImportEnum);
       }
       if (hasOptionalStringPiece) {
         output.WriteString(24, field_names[40], OptionalStringPiece);
@@ -2819,13 +2819,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteBytes(75, field_names[1], DefaultBytes);
       }
       if (hasDefaultNestedEnum) {
-        output.WriteEnum(81, field_names[11], (int) DefaultNestedEnum, DefaultNestedEnum.ToString());
+        output.WriteEnum(81, field_names[11], (int) DefaultNestedEnum, DefaultNestedEnum);
       }
       if (hasDefaultForeignEnum) {
-        output.WriteEnum(82, field_names[7], (int) DefaultForeignEnum, DefaultForeignEnum.ToString());
+        output.WriteEnum(82, field_names[7], (int) DefaultForeignEnum, DefaultForeignEnum);
       }
       if (hasDefaultImportEnum) {
-        output.WriteEnum(83, field_names[8], (int) DefaultImportEnum, DefaultImportEnum.ToString());
+        output.WriteEnum(83, field_names[8], (int) DefaultImportEnum, DefaultImportEnum);
       }
       if (hasDefaultStringPiece) {
         output.WriteString(84, field_names[17], DefaultStringPiece);
@@ -5519,7 +5519,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int DeprecatedInt32FieldNumber = 1;
     private bool hasDeprecatedInt32;
-    private int deprecatedInt32_ = 0;
+    private int deprecatedInt32_;
     public bool HasDeprecatedInt32 {
       get { return hasDeprecatedInt32; }
     }
@@ -5758,7 +5758,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int CFieldNumber = 1;
     private bool hasC;
-    private int c_ = 0;
+    private int c_;
     public bool HasC {
       get { return hasC; }
     }
@@ -6200,7 +6200,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int AFieldNumber = 17;
     private bool hasA;
-    private int a_ = 0;
+    private int a_;
     public bool HasA {
       get { return hasA; }
     }
@@ -6439,7 +6439,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int AFieldNumber = 47;
     private bool hasA;
-    private int a_ = 0;
+    private int a_;
     public bool HasA {
       get { return hasA; }
     }
@@ -6882,7 +6882,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static pb::GeneratedExtensionBase<scg::IList<global::Google.ProtocolBuffers.TestProtos.TestRequired>> Multi;
     public const int AFieldNumber = 1;
     private bool hasA;
-    private int a_ = 0;
+    private int a_;
     public bool HasA {
       get { return hasA; }
     }
@@ -6892,7 +6892,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy2FieldNumber = 2;
     private bool hasDummy2;
-    private int dummy2_ = 0;
+    private int dummy2_;
     public bool HasDummy2 {
       get { return hasDummy2; }
     }
@@ -6902,7 +6902,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int BFieldNumber = 3;
     private bool hasB;
-    private int b_ = 0;
+    private int b_;
     public bool HasB {
       get { return hasB; }
     }
@@ -6912,7 +6912,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy4FieldNumber = 4;
     private bool hasDummy4;
-    private int dummy4_ = 0;
+    private int dummy4_;
     public bool HasDummy4 {
       get { return hasDummy4; }
     }
@@ -6922,7 +6922,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy5FieldNumber = 5;
     private bool hasDummy5;
-    private int dummy5_ = 0;
+    private int dummy5_;
     public bool HasDummy5 {
       get { return hasDummy5; }
     }
@@ -6932,7 +6932,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy6FieldNumber = 6;
     private bool hasDummy6;
-    private int dummy6_ = 0;
+    private int dummy6_;
     public bool HasDummy6 {
       get { return hasDummy6; }
     }
@@ -6942,7 +6942,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy7FieldNumber = 7;
     private bool hasDummy7;
-    private int dummy7_ = 0;
+    private int dummy7_;
     public bool HasDummy7 {
       get { return hasDummy7; }
     }
@@ -6952,7 +6952,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy8FieldNumber = 8;
     private bool hasDummy8;
-    private int dummy8_ = 0;
+    private int dummy8_;
     public bool HasDummy8 {
       get { return hasDummy8; }
     }
@@ -6962,7 +6962,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy9FieldNumber = 9;
     private bool hasDummy9;
-    private int dummy9_ = 0;
+    private int dummy9_;
     public bool HasDummy9 {
       get { return hasDummy9; }
     }
@@ -6972,7 +6972,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy10FieldNumber = 10;
     private bool hasDummy10;
-    private int dummy10_ = 0;
+    private int dummy10_;
     public bool HasDummy10 {
       get { return hasDummy10; }
     }
@@ -6982,7 +6982,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy11FieldNumber = 11;
     private bool hasDummy11;
-    private int dummy11_ = 0;
+    private int dummy11_;
     public bool HasDummy11 {
       get { return hasDummy11; }
     }
@@ -6992,7 +6992,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy12FieldNumber = 12;
     private bool hasDummy12;
-    private int dummy12_ = 0;
+    private int dummy12_;
     public bool HasDummy12 {
       get { return hasDummy12; }
     }
@@ -7002,7 +7002,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy13FieldNumber = 13;
     private bool hasDummy13;
-    private int dummy13_ = 0;
+    private int dummy13_;
     public bool HasDummy13 {
       get { return hasDummy13; }
     }
@@ -7012,7 +7012,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy14FieldNumber = 14;
     private bool hasDummy14;
-    private int dummy14_ = 0;
+    private int dummy14_;
     public bool HasDummy14 {
       get { return hasDummy14; }
     }
@@ -7022,7 +7022,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy15FieldNumber = 15;
     private bool hasDummy15;
-    private int dummy15_ = 0;
+    private int dummy15_;
     public bool HasDummy15 {
       get { return hasDummy15; }
     }
@@ -7032,7 +7032,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy16FieldNumber = 16;
     private bool hasDummy16;
-    private int dummy16_ = 0;
+    private int dummy16_;
     public bool HasDummy16 {
       get { return hasDummy16; }
     }
@@ -7042,7 +7042,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy17FieldNumber = 17;
     private bool hasDummy17;
-    private int dummy17_ = 0;
+    private int dummy17_;
     public bool HasDummy17 {
       get { return hasDummy17; }
     }
@@ -7052,7 +7052,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy18FieldNumber = 18;
     private bool hasDummy18;
-    private int dummy18_ = 0;
+    private int dummy18_;
     public bool HasDummy18 {
       get { return hasDummy18; }
     }
@@ -7062,7 +7062,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy19FieldNumber = 19;
     private bool hasDummy19;
-    private int dummy19_ = 0;
+    private int dummy19_;
     public bool HasDummy19 {
       get { return hasDummy19; }
     }
@@ -7072,7 +7072,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy20FieldNumber = 20;
     private bool hasDummy20;
-    private int dummy20_ = 0;
+    private int dummy20_;
     public bool HasDummy20 {
       get { return hasDummy20; }
     }
@@ -7082,7 +7082,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy21FieldNumber = 21;
     private bool hasDummy21;
-    private int dummy21_ = 0;
+    private int dummy21_;
     public bool HasDummy21 {
       get { return hasDummy21; }
     }
@@ -7092,7 +7092,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy22FieldNumber = 22;
     private bool hasDummy22;
-    private int dummy22_ = 0;
+    private int dummy22_;
     public bool HasDummy22 {
       get { return hasDummy22; }
     }
@@ -7102,7 +7102,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy23FieldNumber = 23;
     private bool hasDummy23;
-    private int dummy23_ = 0;
+    private int dummy23_;
     public bool HasDummy23 {
       get { return hasDummy23; }
     }
@@ -7112,7 +7112,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy24FieldNumber = 24;
     private bool hasDummy24;
-    private int dummy24_ = 0;
+    private int dummy24_;
     public bool HasDummy24 {
       get { return hasDummy24; }
     }
@@ -7122,7 +7122,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy25FieldNumber = 25;
     private bool hasDummy25;
-    private int dummy25_ = 0;
+    private int dummy25_;
     public bool HasDummy25 {
       get { return hasDummy25; }
     }
@@ -7132,7 +7132,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy26FieldNumber = 26;
     private bool hasDummy26;
-    private int dummy26_ = 0;
+    private int dummy26_;
     public bool HasDummy26 {
       get { return hasDummy26; }
     }
@@ -7142,7 +7142,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy27FieldNumber = 27;
     private bool hasDummy27;
-    private int dummy27_ = 0;
+    private int dummy27_;
     public bool HasDummy27 {
       get { return hasDummy27; }
     }
@@ -7152,7 +7152,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy28FieldNumber = 28;
     private bool hasDummy28;
-    private int dummy28_ = 0;
+    private int dummy28_;
     public bool HasDummy28 {
       get { return hasDummy28; }
     }
@@ -7162,7 +7162,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy29FieldNumber = 29;
     private bool hasDummy29;
-    private int dummy29_ = 0;
+    private int dummy29_;
     public bool HasDummy29 {
       get { return hasDummy29; }
     }
@@ -7172,7 +7172,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy30FieldNumber = 30;
     private bool hasDummy30;
-    private int dummy30_ = 0;
+    private int dummy30_;
     public bool HasDummy30 {
       get { return hasDummy30; }
     }
@@ -7182,7 +7182,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy31FieldNumber = 31;
     private bool hasDummy31;
-    private int dummy31_ = 0;
+    private int dummy31_;
     public bool HasDummy31 {
       get { return hasDummy31; }
     }
@@ -7192,7 +7192,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Dummy32FieldNumber = 32;
     private bool hasDummy32;
-    private int dummy32_ = 0;
+    private int dummy32_;
     public bool HasDummy32 {
       get { return hasDummy32; }
     }
@@ -7202,7 +7202,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int CFieldNumber = 33;
     private bool hasC;
-    private int c_ = 0;
+    private int c_;
     public bool HasC {
       get { return hasC; }
     }
@@ -8458,7 +8458,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int DummyFieldNumber = 3;
     private bool hasDummy;
-    private int dummy_ = 0;
+    private int dummy_;
     public bool HasDummy {
       get { return hasDummy; }
     }
@@ -9677,7 +9677,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int AFieldNumber = 1;
     private bool hasA;
-    private int a_ = 0;
+    private int a_;
     public bool HasA {
       get { return hasA; }
     }
@@ -9687,7 +9687,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int BbFieldNumber = 268435455;
     private bool hasBb;
-    private int bb_ = 0;
+    private int bb_;
     public bool HasBb {
       get { return hasBb; }
     }
@@ -9967,7 +9967,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int IFieldNumber = 2;
     private bool hasI;
-    private int i_ = 0;
+    private int i_;
     public bool HasI {
       get { return hasI; }
     }
@@ -10532,7 +10532,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int OptionalInt32FieldNumber = 2;
     private bool hasOptionalInt32;
-    private int optionalInt32_ = 0;
+    private int optionalInt32_;
     public bool HasOptionalInt32 {
       get { return hasOptionalInt32; }
     }
@@ -10857,7 +10857,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int AFieldNumber = 1;
         private bool hasA;
-        private int a_ = 0;
+        private int a_;
         public bool HasA {
           get { return hasA; }
         }
@@ -11096,7 +11096,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int AFieldNumber = 1;
         private bool hasA;
-        private int a_ = 0;
+        private int a_;
         public bool HasA {
           get { return hasA; }
         }
@@ -11311,7 +11311,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int AFieldNumber = 1;
     private bool hasA;
-    private int a_ = 0;
+    private int a_;
     public bool HasA {
       get { return hasA; }
     }
@@ -12268,7 +12268,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int PrimitiveFieldFieldNumber = 1;
     private bool hasPrimitiveField;
-    private int primitiveField_ = 0;
+    private int primitiveField_;
     public bool HasPrimitiveField {
       get { return hasPrimitiveField; }
     }
@@ -12414,7 +12414,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteString(2, field_names[10], StringField);
       }
       if (hasEnumField) {
-        output.WriteEnum(3, field_names[1], (int) EnumField, EnumField.ToString());
+        output.WriteEnum(3, field_names[1], (int) EnumField, EnumField);
       }
       if (hasMessageField) {
         output.WriteMessage(4, field_names[2], MessageField);
@@ -13124,7 +13124,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int MyIntFieldNumber = 1;
     private bool hasMyInt;
-    private long myInt_ = 0L;
+    private long myInt_;
     public bool HasMyInt {
       get { return hasMyInt; }
     }
@@ -13134,7 +13134,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int MyFloatFieldNumber = 101;
     private bool hasMyFloat;
-    private float myFloat_ = 0F;
+    private float myFloat_;
     public bool HasMyFloat {
       get { return hasMyFloat; }
     }
@@ -13504,7 +13504,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int ZeroFloatFieldNumber = 7;
     private bool hasZeroFloat;
-    private float zeroFloat_ = 0F;
+    private float zeroFloat_;
     public bool HasZeroFloat {
       get { return hasZeroFloat; }
     }
@@ -17478,7 +17478,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int DynamicFieldFieldNumber = 2100;
         private bool hasDynamicField;
-        private int dynamicField_ = 0;
+        private int dynamicField_;
         public bool HasDynamicField {
           get { return hasDynamicField; }
         }
@@ -17693,7 +17693,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int ScalarExtensionFieldNumber = 2000;
     private bool hasScalarExtension;
-    private uint scalarExtension_ = 0;
+    private uint scalarExtension_;
     public bool HasScalarExtension {
       get { return hasScalarExtension; }
     }
@@ -17780,10 +17780,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteFixed32(2000, field_names[6], ScalarExtension);
       }
       if (hasEnumExtension) {
-        output.WriteEnum(2001, field_names[2], (int) EnumExtension, EnumExtension.ToString());
+        output.WriteEnum(2001, field_names[2], (int) EnumExtension, EnumExtension);
       }
       if (hasDynamicEnumExtension) {
-        output.WriteEnum(2002, field_names[0], (int) DynamicEnumExtension, DynamicEnumExtension.ToString());
+        output.WriteEnum(2002, field_names[0], (int) DynamicEnumExtension, DynamicEnumExtension);
       }
       if (hasMessageExtension) {
         output.WriteMessage(2003, field_names[3], MessageExtension);

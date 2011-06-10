@@ -2475,7 +2475,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int FooFieldNumber = 1;
     private bool hasFoo;
-    private int foo_ = 0;
+    private int foo_;
     public bool HasFoo {
       get { return hasFoo; }
     }
@@ -2485,7 +2485,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Foo2FieldNumber = 2;
     private bool hasFoo2;
-    private int foo2_ = 0;
+    private int foo2_;
     public bool HasFoo2 {
       get { return hasFoo2; }
     }
@@ -2495,7 +2495,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Foo3FieldNumber = 3;
     private bool hasFoo3;
-    private int foo3_ = 0;
+    private int foo3_;
     public bool HasFoo3 {
       get { return hasFoo3; }
     }
@@ -2835,7 +2835,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4> ComplexOpt4;
         public const int WaldoFieldNumber = 1;
         private bool hasWaldo;
-        private int waldo_ = 0;
+        private int waldo_;
         public bool HasWaldo {
           get { return hasWaldo; }
         }
@@ -3060,7 +3060,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int BazFieldNumber = 2;
     private bool hasBaz;
-    private int baz_ = 0;
+    private int baz_;
     public bool HasBaz {
       get { return hasBaz; }
     }
@@ -3457,7 +3457,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int PlughFieldNumber = 3;
         private bool hasPlugh;
-        private int plugh_ = 0;
+        private int plugh_;
         public bool HasPlugh {
           get { return hasPlugh; }
         }
@@ -3672,7 +3672,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int QuxFieldNumber = 1;
     private bool hasQux;
-    private int qux_ = 0;
+    private int qux_;
     public bool HasQux {
       get { return hasQux; }
     }
@@ -3975,7 +3975,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int XyzzyFieldNumber = 7593951;
     private bool hasXyzzy;
-    private int xyzzy_ = 0;
+    private int xyzzy_;
     public bool HasXyzzy {
       get { return hasXyzzy; }
     }

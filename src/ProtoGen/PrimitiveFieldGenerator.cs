@@ -49,7 +49,7 @@ namespace Google.ProtocolBuffers.ProtoGen
         public void GenerateMembers(TextGenerator writer)
         {
             writer.WriteLine("private bool has{0};", PropertyName);
-            writer.WriteLine("private {0} {1}_ = {2};", TypeName, Name, DefaultValue);
+            writer.WriteLine("private {0} {1}_{2};", TypeName, Name, HasDefaultValue ? " = " + DefaultValue : "");
             writer.WriteLine("public bool Has{0} {{", PropertyName);
             writer.WriteLine("  get {{ return has{0}; }}", PropertyName);
             writer.WriteLine("}");

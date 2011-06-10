@@ -593,7 +593,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestMessageSetExtension1> MessageSetExtension;
     public const int IFieldNumber = 15;
     private bool hasI;
-    private int i_ = 0;
+    private int i_;
     public bool HasI {
       get { return hasI; }
     }
@@ -1106,7 +1106,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int TypeIdFieldNumber = 2;
         private bool hasTypeId;
-        private int typeId_ = 0;
+        private int typeId_;
         public bool HasTypeId {
           get { return hasTypeId; }
         }

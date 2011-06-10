@@ -977,7 +977,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int NumberFieldNumber = 6;
     private bool hasNumber;
-    private long number_ = 0L;
+    private long number_;
     public bool HasNumber {
       get { return hasNumber; }
     }
@@ -1021,7 +1021,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int ValidFieldNumber = 5;
     private bool hasValid;
-    private bool valid_ = false;
+    private bool valid_;
     public bool HasValid {
       get { return hasValid; }
     }
@@ -1549,7 +1549,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int NumberFieldNumber = 1;
     private bool hasNumber;
-    private int number_ = 0;
+    private int number_;
     public bool HasNumber {
       get { return hasNumber; }
     }

@@ -112,7 +112,7 @@ namespace Google.ProtocolBuffers.ProtoGen
         public void GenerateSerializationCode(TextGenerator writer)
         {
             writer.WriteLine("if (has{0}) {{", PropertyName);
-            writer.WriteLine("  output.WriteEnum({0}, field_names[{2}], (int) {1}, {1}.ToString());", Number, PropertyName, FieldOrdinal);
+            writer.WriteLine("  output.WriteEnum({0}, field_names[{2}], (int) {1}, {1});", Number, PropertyName, FieldOrdinal);
             writer.WriteLine("}");
         }
 

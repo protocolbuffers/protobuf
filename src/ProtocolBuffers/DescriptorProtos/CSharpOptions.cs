@@ -178,7 +178,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int MultipleFilesFieldNumber = 4;
     private bool hasMultipleFiles;
-    private bool multipleFiles_ = false;
+    private bool multipleFiles_;
     public bool HasMultipleFiles {
       get { return hasMultipleFiles; }
     }
@@ -188,7 +188,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int NestClassesFieldNumber = 5;
     private bool hasNestClasses;
-    private bool nestClasses_ = false;
+    private bool nestClasses_;
     public bool HasNestClasses {
       get { return hasNestClasses; }
     }
@@ -198,7 +198,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int CodeContractsFieldNumber = 6;
     private bool hasCodeContracts;
-    private bool codeContracts_ = false;
+    private bool codeContracts_;
     public bool HasCodeContracts {
       get { return hasCodeContracts; }
     }
@@ -208,7 +208,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int ExpandNamespaceDirectoriesFieldNumber = 7;
     private bool hasExpandNamespaceDirectories;
-    private bool expandNamespaceDirectories_ = false;
+    private bool expandNamespaceDirectories_;
     public bool HasExpandNamespaceDirectories {
       get { return hasExpandNamespaceDirectories; }
     }
@@ -258,7 +258,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int IgnoreGoogleProtobufFieldNumber = 224;
     private bool hasIgnoreGoogleProtobuf;
-    private bool ignoreGoogleProtobuf_ = false;
+    private bool ignoreGoogleProtobuf_;
     public bool HasIgnoreGoogleProtobuf {
       get { return hasIgnoreGoogleProtobuf; }
     }
@@ -322,7 +322,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         output.WriteBool(224, field_names[4], IgnoreGoogleProtobuf);
       }
       if (hasServiceGeneratorType) {
-        output.WriteEnum(225, field_names[10], (int) ServiceGeneratorType, ServiceGeneratorType.ToString());
+        output.WriteEnum(225, field_names[10], (int) ServiceGeneratorType, ServiceGeneratorType);
       }
       UnknownFields.WriteTo(output);
     }
@@ -1372,7 +1372,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int DispatchIdFieldNumber = 1;
     private bool hasDispatchId;
-    private int dispatchId_ = 0;
+    private int dispatchId_;
     public bool HasDispatchId {
       get { return hasDispatchId; }
     }

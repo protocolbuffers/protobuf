@@ -110,7 +110,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize> TestExtension2;
     public const int IFieldNumber = 1;
     private bool hasI;
-    private int i_ = 0;
+    private int i_;
     public bool HasI {
       get { return hasI; }
     }
@@ -293,7 +293,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int XFieldNumber = 1;
     private bool hasX;
-    private int x_ = 0;
+    private int x_;
     public bool HasX {
       get { return hasX; }
     }

@@ -516,8 +516,13 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Returns true if the next tag is also part of the same unpacked array
         /// </summary>
-        private bool ContinueArray(uint currentTag)
+        private bool ContinueArray(uint currentTag, bool packed)
         {
+            if (packed)
+            {
+                return !ReachedLimit;
+            }
+
             string ignore;
             uint next;
             if (PeekNextTag(out next, out ignore))
@@ -532,7 +537,7 @@ namespace Google.ProtocolBuffers
         }
 
         [CLSCompliant(false)]
-        public void ReadPrimitiveArray<T>(FieldType fieldType, uint fieldTag, string fieldName, ICollection<T> list)
+        public void ReadPrimitiveArray(FieldType fieldType, uint fieldTag, string fieldName, ICollection<object> list)
         {
             WireFormat.WireType normal = WireFormat.GetWireType(fieldType);
             WireFormat.WireType wformat = WireFormat.GetTagWireType(fieldTag);
@@ -546,7 +551,7 @@ namespace Google.ProtocolBuffers
                 {
                     Object value = null;
                     if(ReadPrimitiveField(fieldType, ref value))
-                        list.Add((T)value);
+                        list.Add(value);
                 }
                 PopLimit(limit);
             }
@@ -556,9 +561,241 @@ namespace Google.ProtocolBuffers
                 do
                 {
                     if (ReadPrimitiveField(fieldType, ref value))
-                        list.Add((T)value);
+                        list.Add(value);
                 }
-                while (ContinueArray(fieldTag));
+                while (ContinueArray(fieldTag, false));
+            }
+        }
+
+        [CLSCompliant(false)]
+        public void ReadPrimitiveArray<T>(FieldType fieldType, uint fieldTag, string fieldName, ICollection<T> list)
+        {
+            WireFormat.WireType normal = WireFormat.GetWireType(fieldType);
+            WireFormat.WireType wformat = WireFormat.GetTagWireType(fieldTag);
+
+            // 2.3 allows packed form even if the field is not declared packed.
+            if (normal != wformat && wformat == WireFormat.WireType.LengthDelimited)
+            {
+                int length = (int)(ReadRawVarint32() & int.MaxValue);
+                int limit = PushLimit(length);
+                //while (!ReachedLimit)
+                //{
+                //    Object value = null;
+                //    if (ReadPrimitiveField(fieldType, ref value))
+                //        list.Add((T)value);
+                //}
+                if (!ReachedLimit)
+                    ReadPrimitiveArrayItems(fieldType, fieldTag, list, true);
+
+                PopLimit(limit);
+            }
+            else
+            {
+                ReadPrimitiveArrayItems(fieldType, fieldTag, list, false);
+                //Object value = null;
+                //do
+                //{
+                //    if (ReadPrimitiveField(fieldType, ref value))
+                //        list.Add((T)value);
+                //}
+                //while (ContinueArray(fieldTag, false));
+            }
+        }
+
+        void ReadPrimitiveArrayItems<T>(FieldType fieldType, uint fieldTag, ICollection<T> list, bool packed)
+        {
+            switch (fieldType)
+            {
+                case FieldType.Double:
+                    {
+                        ICollection<double> output = (ICollection<double>)list;
+                        double tmp = 0;
+                        do
+                        {
+                            ReadDouble(ref tmp);
+                            output.Add(tmp);
+                        }
+                        while (ContinueArray(fieldTag, packed));
+                    }
+                    break;
+                case FieldType.Float:
+                    {
+                        ICollection<float> output = (ICollection<float>)list;
+                        float tmp = 0;
+                        do
+                        {
+                            ReadFloat(ref tmp);
+                            output.Add(tmp);
+                        }
+                        while (ContinueArray(fieldTag, packed));
+                    }
+                    break;
+                case FieldType.Int64:
+                    {
+                        ICollection<long> output = (ICollection<long>)list;
+                        long tmp = 0;
+                        do
+                        {
+                            ReadInt64(ref tmp);
+                            output.Add(tmp);
+                        }
+                        while (ContinueArray(fieldTag, packed));
+                    }
+                    break;
+                case FieldType.UInt64:
+                    {
+                        ICollection<ulong> output = (ICollection<ulong>)list;
+                        ulong tmp = 0;
+                        do
+                        {
+                            ReadUInt64(ref tmp);
+                            output.Add(tmp);
+                        }
+                        while (ContinueArray(fieldTag, packed));
+                    }
+                    break;
+                case FieldType.Int32:
+                    {
+                        ICollection<int> output = (ICollection<int>)list;
+                        int tmp = 0;
+                        do
+                        {
+                            ReadInt32(ref tmp);
+                            output.Add(tmp);
+                        }
+                        while (ContinueArray(fieldTag, packed));
+                    }
+                    break;
+                case FieldType.Fixed64:
+                    {
+                        ICollection<ulong> output = (ICollection<ulong>)list;
+                        ulong tmp = 0;
+                        do
+                        {
+                            ReadFixed64(ref tmp);
+                            output.Add(tmp);
+                        }
+                        while (ContinueArray(fieldTag, packed));
+                    }
+                    break;
+                case FieldType.Fixed32:
+                    {
+                        ICollection<uint> output = (ICollection<uint>)list;
+                        uint tmp = 0;
+                        do
+                        {
+                            ReadFixed32(ref tmp);
+                            output.Add(tmp);
+                        }
+                        while (ContinueArray(fieldTag, packed));
+                    }
+                    break;
+                case FieldType.Bool:
+                    {
+                        ICollection<bool> output = (ICollection<bool>)list;
+                        bool tmp = false;
+                        do
+                        {
+                            ReadBool(ref tmp);
+                            output.Add(tmp);
+                        }
+                        while (ContinueArray(fieldTag, packed));
+                    }
+                    break;
+                case FieldType.String:
+                    {
+                        ICollection<string> output = (ICollection<string>)list;
+                        string tmp = null;
+                        do
+                        {
+                            ReadString(ref tmp);
+                            output.Add(tmp);
+                        }
+                        while (ContinueArray(fieldTag, packed));
+                    }
+                    break;
+                case FieldType.Bytes:
+                    {
+                        ICollection<ByteString> output = (ICollection<ByteString>)list;
+                        ByteString tmp = null;
+                        do
+                        {
+                            ReadBytes(ref tmp);
+                            output.Add(tmp);
+                        }
+                        while (ContinueArray(fieldTag, packed));
+                    }
+                    break;
+                case FieldType.UInt32:
+                    {
+                        ICollection<uint> output = (ICollection<uint>)list;
+                        uint tmp = 0;
+                        do
+                        {
+                            ReadUInt32(ref tmp);
+                            output.Add(tmp);
+                        }
+                        while (ContinueArray(fieldTag, packed));
+                    }
+                    break;
+                case FieldType.SFixed32:
+                    {
+                        ICollection<int> output = (ICollection<int>)list;
+                        int tmp = 0;
+                        do
+                        {
+                            ReadSFixed32(ref tmp);
+                            output.Add(tmp);
+                        }
+                        while (ContinueArray(fieldTag, packed));
+                    }
+                    break;
+                case FieldType.SFixed64:
+                    {
+                        ICollection<long> output = (ICollection<long>)list;
+                        long tmp = 0;
+                        do
+                        {
+                            ReadSFixed64(ref tmp);
+                            output.Add(tmp);
+                        }
+                        while (ContinueArray(fieldTag, packed));
+                    }
+                    break;
+                case FieldType.SInt32:
+                    {
+                        ICollection<int> output = (ICollection<int>)list;
+                        int tmp = 0;
+                        do
+                        {
+                            ReadSInt32(ref tmp);
+                            output.Add(tmp);
+                        }
+                        while (ContinueArray(fieldTag, packed));
+                    }
+                    break;
+                case FieldType.SInt64:
+                    {
+                        ICollection<long> output = (ICollection<long>)list;
+                        long tmp = 0;
+                        do
+                        {
+                            ReadSInt64(ref tmp);
+                            output.Add(tmp);
+                        }
+                        while (ContinueArray(fieldTag, packed));
+                    }
+                    break;
+                case FieldType.Group:
+                    throw new ArgumentException("ReadPrimitiveField() cannot handle nested groups.");
+                case FieldType.Message:
+                    throw new ArgumentException("ReadPrimitiveField() cannot handle embedded messages.");
+                // We don't handle enums because we don't know what to do if the
+                // value is not recognized.
+                case FieldType.Enum:
+                    throw new ArgumentException("ReadPrimitiveField() cannot handle enums.");
+                default:
+                    throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);
             }
         }
 
@@ -601,7 +838,7 @@ namespace Google.ProtocolBuffers
                         unknown.Add(unkval);
                     }
                 }
-                while (ContinueArray(fieldTag));
+                while (ContinueArray(fieldTag, false));
             }
         }
 
@@ -645,7 +882,7 @@ namespace Google.ProtocolBuffers
                         unknown.Add(unkval);
                     }
                 }
-                while (ContinueArray(fieldTag));
+                while (ContinueArray(fieldTag, false));
             }
         }
 
@@ -658,7 +895,7 @@ namespace Google.ProtocolBuffers
                 ReadMessage(builder, registry);
                 list.Add((T)builder.WeakBuildPartial());
             }
-            while (ContinueArray(fieldTag));
+            while (ContinueArray(fieldTag, false));
         }
 
         [CLSCompliant(false)]
@@ -670,7 +907,7 @@ namespace Google.ProtocolBuffers
                 ReadGroup(WireFormat.GetTagFieldNumber(fieldTag), builder, registry);
                 list.Add((T)builder.WeakBuildPartial());
             }
-            while (ContinueArray(fieldTag));
+            while (ContinueArray(fieldTag, false));
         }
 
         /// <summary>

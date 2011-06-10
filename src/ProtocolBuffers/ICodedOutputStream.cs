@@ -70,7 +70,7 @@ namespace Google.ProtocolBuffers
         [CLSCompliant(false)]
         void WriteUInt32(int fieldNumber, string fieldName, uint value);
 
-        void WriteEnum(int fieldNumber, string fieldName, int value, string textValue);
+        void WriteEnum(int fieldNumber, string fieldName, int value, object rawValue);
         void WriteSFixed32(int fieldNumber, string fieldName, int value);
         void WriteSFixed64(int fieldNumber, string fieldName, long value);
         void WriteSInt32(int fieldNumber, string fieldName, int value);

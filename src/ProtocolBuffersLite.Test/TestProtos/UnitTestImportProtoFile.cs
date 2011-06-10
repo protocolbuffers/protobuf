@@ -94,7 +94,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int DFieldNumber = 1;
     private bool hasD;
-    private int d_ = 0;
+    private int d_;
     public bool HasD {
       get { return hasD; }
     }

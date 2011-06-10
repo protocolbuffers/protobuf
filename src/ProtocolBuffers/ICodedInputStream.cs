@@ -144,6 +144,13 @@ namespace Google.ProtocolBuffers
         /// type is numberic, it will read a packed array.
         /// </summary>
         [CLSCompliant(false)]
+        void ReadPrimitiveArray(FieldType fieldType, uint fieldTag, string fieldName, ICollection<object> list);
+
+        /// <summary>
+        /// Reads an array of primitive values into the list, if the wire-type of fieldTag is length-prefixed and the 
+        /// type is numberic, it will read a packed array.
+        /// </summary>
+        [CLSCompliant(false)]
         void ReadPrimitiveArray<T>(FieldType fieldType, uint fieldTag, string fieldName, ICollection<T> list);
 
         /// <summary>

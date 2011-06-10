@@ -39,6 +39,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using Google.ProtocolBuffers.TestProtos;
 
 namespace Google.ProtocolBuffers.ProtoBench
 {
@@ -49,8 +50,7 @@ namespace Google.ProtocolBuffers.ProtoBench
     {
         private static TimeSpan MinSampleTime = TimeSpan.FromSeconds(2);
         private static TimeSpan TargetTime = TimeSpan.FromSeconds(30);
-        private static bool FastTest = false;
-        private static bool Verbose = false;
+        private static bool Verbose = false, FastTest = false;
         // Avoid a .NET 3.5 dependency
         private delegate void Action();
 
@@ -63,20 +63,26 @@ namespace Google.ProtocolBuffers.ProtoBench
         {
             List<string> temp = new List<string>(args);
 
-            FastTest = temp.Remove("/fast") || temp.Remove("-fast");
             Verbose = temp.Remove("/verbose") || temp.Remove("-verbose");
+
+            if (true == (FastTest = (temp.Remove("/fast") || temp.Remove("-fast"))))
+                TargetTime = TimeSpan.FromSeconds(10);
 
             RunBenchmark = BenchmarkV1;
             if (temp.Remove("/v2") || temp.Remove("-v2"))
             {
-                string cpu = temp.Find(x => x.StartsWith("-cpu:"));
-                int cpuIx = 1;
-                if (cpu != null) cpuIx = 1 << Math.Max(0, int.Parse(cpu.Substring(5)));
-
-                //pin the entire process to a single CPU
-                Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(cpuIx);
                 Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
                 RunBenchmark = BenchmarkV2;
+            }
+            if (temp.Remove("/all") || temp.Remove("-all"))
+            {
+                if(FastTest)
+                    TargetTime = TimeSpan.FromSeconds(5);
+                foreach (KeyValuePair<string, string> item in MakeTests())
+                {
+                    temp.Add(item.Key);
+                    temp.Add(item.Value);
+                }
             }
             args = temp.ToArray();
 
@@ -92,16 +98,16 @@ namespace Google.ProtocolBuffers.ProtoBench
             bool success = true;
             for (int i = 0; i < args.Length; i += 2)
             {
-                success &= RunTest(args[i], args[i + 1]);
+                success &= RunTest(args[i], args[i + 1], null);
             }
             return success ? 0 : 1;
         }
-        
+
         /// <summary>
         /// Runs a single test. Error messages are displayed to Console.Error, and the return value indicates
         /// general success/failure.
         /// </summary>
-        public static bool RunTest(string typeName, string file)
+        public static bool RunTest(string typeName, string file, byte[] inputData)
         {
             Console.WriteLine("Benchmarking {0} with file {1}", typeName, file);
             IMessage defaultMessage;
@@ -116,30 +122,32 @@ namespace Google.ProtocolBuffers.ProtoBench
             }
             try
             {
-                byte[] inputData = File.ReadAllBytes(file);
+                ExtensionRegistry registry = ExtensionRegistry.Empty;
+                inputData = inputData ?? File.ReadAllBytes(file);
                 MemoryStream inputStream = new MemoryStream(inputData);
                 ByteString inputString = ByteString.CopyFrom(inputData);
                 IMessage sampleMessage =
-                    defaultMessage.WeakCreateBuilderForType().WeakMergeFrom(inputString).WeakBuild();
+                    defaultMessage.WeakCreateBuilderForType().WeakMergeFrom(inputString, registry).WeakBuild();
                 if(!FastTest) RunBenchmark("Serialize to byte string", inputData.Length, () => sampleMessage.ToByteString());
                 RunBenchmark("Serialize to byte array", inputData.Length, () => sampleMessage.ToByteArray());
                 if (!FastTest) RunBenchmark("Serialize to memory stream", inputData.Length,
                           () => sampleMessage.WriteTo(new MemoryStream()));
                 if (!FastTest) RunBenchmark("Deserialize from byte string", inputData.Length,
                           () => defaultMessage.WeakCreateBuilderForType()
-                                    .WeakMergeFrom(inputString)
+                                    .WeakMergeFrom(inputString, registry)
                                     .WeakBuild()
                     );
+
                 RunBenchmark("Deserialize from byte array", inputData.Length,
                           () => defaultMessage.WeakCreateBuilderForType()
-                                    .WeakMergeFrom(CodedInputStream.CreateInstance(inputData))
+                                    .WeakMergeFrom(CodedInputStream.CreateInstance(inputData), registry)
                                     .WeakBuild()
                     );
                 if (!FastTest) RunBenchmark("Deserialize from memory stream", inputData.Length, 
                     () => {
                       inputStream.Position = 0;
                       defaultMessage.WeakCreateBuilderForType().WeakMergeFrom(
-                              CodedInputStream.CreateInstance(inputStream))
+                              CodedInputStream.CreateInstance(inputStream), registry)
                           .WeakBuild();
                   });
                 Console.WriteLine();
@@ -156,6 +164,7 @@ namespace Google.ProtocolBuffers.ProtoBench
 
         private static void BenchmarkV2(string name, long dataSize, Action action)
         {
+            Thread.BeginThreadAffinity();
             TimeSpan elapsed = TimeSpan.Zero;
             long runs = 0;
             long totalCount = 0;
@@ -184,7 +193,7 @@ namespace Google.ProtocolBuffers.ProtoBench
             double first = (iterations * dataSize) / (elapsed.TotalSeconds * 1024 * 1024);
             if (Verbose) Console.WriteLine("Round ---: Count = {1,6}, Bps = {2,8:f3}", 0, iterations, first);
             elapsed = TimeSpan.Zero;
-            int max = FastTest ? 10 : 30;
+            int max = (int)TargetTime.TotalSeconds;
 
             while (runs < max)
             {
@@ -192,7 +201,8 @@ namespace Google.ProtocolBuffers.ProtoBench
                 // Accumulate and scale for next cycle.
                 
                 double bps = (iterations * dataSize) / (cycle.TotalSeconds * 1024 * 1024);
-                if (Verbose) Console.WriteLine("Round {0,3}: Count = {1,6}, Bps = {2,8:f3}", runs, iterations, bps);
+                if (Verbose) Console.WriteLine("Round {1,3}: Count = {2,6}, Bps = {3,8:f3}",
+                    0, runs, iterations, bps);
 
                 best = Math.Max(best, bps);
                 worst = Math.Min(worst, bps);
@@ -203,8 +213,9 @@ namespace Google.ProtocolBuffers.ProtoBench
                 iterations = (int) ((target.Ticks*totalCount)/(double) elapsed.Ticks);
             }
 
-            Console.WriteLine("{0}: averages {1} per {2:f3}s for {3} runs; avg: {4:f3}mbps; best: {5:f3}mbps; worst: {6:f3}mbps",
-                              name, totalCount / runs, elapsed.TotalSeconds / runs, runs,
+            Thread.EndThreadAffinity();
+            Console.WriteLine("{1}: averages {2} per {3:f3}s for {4} runs; avg: {5:f3}mbps; best: {6:f3}mbps; worst: {7:f3}mbps",
+                              0, name, totalCount / runs, elapsed.TotalSeconds / runs, runs,
                               (totalCount * dataSize) / (elapsed.TotalSeconds * 1024 * 1024), best, worst);
         }
 
@@ -243,6 +254,120 @@ namespace Google.ProtocolBuffers.ProtoBench
             }
             sw.Stop();
             return sw.Elapsed;
+        }
+
+        private static IEnumerable<KeyValuePair<string, string>> MakeTests()
+        {
+            //Aggregate Tests
+            yield return MakeWorkItem("all-types", MakeTestAllTypes());
+            yield return MakeWorkItem("repeated-100", MakeRepeatedTestAllTypes(100));
+            yield return MakeWorkItem("packed-100", MakeTestPackedTypes(100));
+
+            //Discrete Tests
+            foreach (KeyValuePair<string, Action<TestAllTypes.Builder>> item in MakeTestAllTypes())
+                yield return MakeWorkItem(item.Key, new[] { item });
+
+            foreach (KeyValuePair<string, Action<TestAllTypes.Builder>> item in MakeRepeatedTestAllTypes(100))
+                yield return MakeWorkItem(item.Key, new[] { item });
+
+            foreach (KeyValuePair<string, Action<TestPackedTypes.Builder>> item in MakeTestPackedTypes(100))
+                yield return MakeWorkItem(item.Key, new[] { item });
+        }
+
+        private static IEnumerable<KeyValuePair<string, Action<TestAllTypes.Builder>>> MakeTestAllTypes()
+        {
+            // Many of the raw type serializers below perform poorly due to the numerous fields defined
+            // in TestAllTypes.
+
+            //single values
+            yield return MakeItem<TestAllTypes.Builder>("int32", 1, x => x.SetOptionalInt32(1001));
+            yield return MakeItem<TestAllTypes.Builder>("int64", 1, x => x.SetOptionalInt64(1001));
+            yield return MakeItem<TestAllTypes.Builder>("uint32", 1, x => x.SetOptionalUint32(1001));
+            yield return MakeItem<TestAllTypes.Builder>("uint64", 1, x => x.SetOptionalUint64(1001));
+            yield return MakeItem<TestAllTypes.Builder>("sint32", 1, x => x.SetOptionalSint32(-1001));
+            yield return MakeItem<TestAllTypes.Builder>("sint64", 1, x => x.SetOptionalSint64(-1001));
+            yield return MakeItem<TestAllTypes.Builder>("fixed32", 1, x => x.SetOptionalFixed32(1001));
+            yield return MakeItem<TestAllTypes.Builder>("fixed64", 1, x => x.SetOptionalFixed64(1001));
+            yield return MakeItem<TestAllTypes.Builder>("sfixed32", 1, x => x.SetOptionalSfixed32(-1001));
+            yield return MakeItem<TestAllTypes.Builder>("sfixed64", 1, x => x.SetOptionalSfixed64(-1001));
+            yield return MakeItem<TestAllTypes.Builder>("float", 1, x => x.SetOptionalFloat(1001.1001f));
+            yield return MakeItem<TestAllTypes.Builder>("double", 1, x => x.SetOptionalDouble(1001.1001));
+            yield return MakeItem<TestAllTypes.Builder>("bool", 1, x => x.SetOptionalBool(true));
+            yield return MakeItem<TestAllTypes.Builder>("string", 1, x => x.SetOptionalString("this is a string value"));
+            yield return MakeItem<TestAllTypes.Builder>("bytes", 1, x => x.SetOptionalBytes(ByteString.CopyFromUtf8("this is an array of bytes")));
+            yield return MakeItem<TestAllTypes.Builder>("group", 1, x => x.SetOptionalGroup(new TestAllTypes.Types.OptionalGroup.Builder().SetA(1001)));
+            yield return MakeItem<TestAllTypes.Builder>("message", 1, x => x.SetOptionalNestedMessage(new TestAllTypes.Types.NestedMessage.Builder().SetBb(1001)));
+            yield return MakeItem<TestAllTypes.Builder>("enum", 1, x => x.SetOptionalNestedEnum(TestAllTypes.Types.NestedEnum.FOO));
+        }
+
+        private static IEnumerable<KeyValuePair<string, Action<TestAllTypes.Builder>>> MakeRepeatedTestAllTypes(int size)
+        {
+            //repeated values
+            yield return MakeItem<TestAllTypes.Builder>("repeated-int32", size, x => x.AddRepeatedInt32(1001));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-int64", size, x => x.AddRepeatedInt64(1001));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-uint32", size, x => x.AddRepeatedUint32(1001));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-uint64", size, x => x.AddRepeatedUint64(1001));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-sint32", size, x => x.AddRepeatedSint32(-1001));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-sint64", size, x => x.AddRepeatedSint64(-1001));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-fixed32", size, x => x.AddRepeatedFixed32(1001));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-fixed64", size, x => x.AddRepeatedFixed64(1001));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-sfixed32", size, x => x.AddRepeatedSfixed32(-1001));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-sfixed64", size, x => x.AddRepeatedSfixed64(-1001));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-float", size, x => x.AddRepeatedFloat(1001.1001f));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-double", size, x => x.AddRepeatedDouble(1001.1001));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-bool", size, x => x.AddRepeatedBool(true));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-string", size, x => x.AddRepeatedString("this is a string value"));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-bytes", size, x => x.AddRepeatedBytes(ByteString.CopyFromUtf8("this is an array of bytes")));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-group", size, x => x.AddRepeatedGroup(new TestAllTypes.Types.RepeatedGroup.Builder().SetA(1001)));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-message", size, x => x.AddRepeatedNestedMessage(new TestAllTypes.Types.NestedMessage.Builder().SetBb(1001)));
+            yield return MakeItem<TestAllTypes.Builder>("repeated-enum", size, x => x.AddRepeatedNestedEnum(TestAllTypes.Types.NestedEnum.FOO));
+        }
+
+        private static IEnumerable<KeyValuePair<string, Action<TestPackedTypes.Builder>>> MakeTestPackedTypes(int size)
+        {
+            //packed values
+            yield return MakeItem<TestPackedTypes.Builder>("packed-int32", size, x => x.AddPackedInt32(1001));
+            yield return MakeItem<TestPackedTypes.Builder>("packed-int64", size, x => x.AddPackedInt64(1001));
+            yield return MakeItem<TestPackedTypes.Builder>("packed-uint32", size, x => x.AddPackedUint32(1001));
+            yield return MakeItem<TestPackedTypes.Builder>("packed-uint64", size, x => x.AddPackedUint64(1001));
+            yield return MakeItem<TestPackedTypes.Builder>("packed-sint32", size, x => x.AddPackedSint32(-1001));
+            yield return MakeItem<TestPackedTypes.Builder>("packed-sint64", size, x => x.AddPackedSint64(-1001));
+            yield return MakeItem<TestPackedTypes.Builder>("packed-fixed32", size, x => x.AddPackedFixed32(1001));
+            yield return MakeItem<TestPackedTypes.Builder>("packed-fixed64", size, x => x.AddPackedFixed64(1001));
+            yield return MakeItem<TestPackedTypes.Builder>("packed-sfixed32", size, x => x.AddPackedSfixed32(-1001));
+            yield return MakeItem<TestPackedTypes.Builder>("packed-sfixed64", size, x => x.AddPackedSfixed64(-1001));
+            yield return MakeItem<TestPackedTypes.Builder>("packed-float", size, x => x.AddPackedFloat(1001.1001f));
+            yield return MakeItem<TestPackedTypes.Builder>("packed-double", size, x => x.AddPackedDouble(1001.1001));
+            yield return MakeItem<TestPackedTypes.Builder>("packed-bool", size, x => x.AddPackedBool(true));
+            yield return MakeItem<TestPackedTypes.Builder>("packed-enum", size, x => x.AddPackedEnum(ForeignEnum.FOREIGN_FOO));
+        }
+
+        private static KeyValuePair<string, Action<T>> MakeItem<T>(string name, int repeated, Action<T> build) where T : IBuilderLite, new()
+        {
+            if (repeated == 1)
+                return new KeyValuePair<string, Action<T>>(name, build);
+
+            return new KeyValuePair<string, Action<T>>(
+                String.Format("{0}[{1}]", name, repeated),
+                x =>
+                {
+                    for (int i = 0; i < repeated; i++)
+                        build(x);
+                }
+            );
+        }
+
+        private static KeyValuePair<string, string> MakeWorkItem<T>(string name, IEnumerable<KeyValuePair<string, Action<T>>> builders) where T : IBuilderLite, new()
+        {
+            T builder = new T();
+
+            foreach (KeyValuePair<string, Action<T>> item in builders)
+                item.Value(builder);
+
+            IMessageLite msg = builder.WeakBuild();
+            string fname = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "unittest_" + name + ".dat");
+            File.WriteAllBytes(fname, msg.ToByteArray());
+            return new KeyValuePair<string, string>(String.Format("{0},{1}", msg.GetType().FullName, msg.GetType().Assembly.GetName().Name), fname);
         }
     }
 }

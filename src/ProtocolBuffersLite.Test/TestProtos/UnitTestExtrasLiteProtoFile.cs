@@ -74,7 +74,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int DFieldNumber = 1;
     private bool hasD;
-    private int d_ = 0;
+    private int d_;
     public bool HasD {
       get { return hasD; }
     }
@@ -107,7 +107,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteInt32(1, field_names[0], D);
       }
       if (hasEn) {
-        output.WriteEnum(2, field_names[1], (int) En, En.ToString());
+        output.WriteEnum(2, field_names[1], (int) En, En);
       }
     }
     
@@ -418,7 +418,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             output.WriteString(1, field_names[0], Number);
           }
           if (hasType) {
-            output.WriteEnum(2, field_names[1], (int) Type, Type.ToString());
+            output.WriteEnum(2, field_names[1], (int) Type, Type);
           }
         }
         
@@ -706,7 +706,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int ZipFieldNumber = 5;
         private bool hasZip;
-        private uint zip_ = 0;
+        private uint zip_;
         public bool HasZip {
           get { return hasZip; }
         }
@@ -1077,7 +1077,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int IdFieldNumber = 2;
     private bool hasId;
-    private int id_ = 0;
+    private int id_;
     public bool HasId {
       get { return hasId; }
     }

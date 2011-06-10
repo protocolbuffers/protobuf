@@ -40,10 +40,12 @@ namespace Google.ProtocolBuffers.Collections
     /// to be made read-only (with the <see cref="MakeReadOnly" /> method), 
     /// after which any modifying methods throw <see cref="NotSupportedException" />.
     /// </summary>
-    public sealed class PopsicleList<T> : IPopsicleList<T>
+    public sealed class PopsicleList<T> : IPopsicleList<T>, ICastArray
     {
-        private readonly List<T> items = new List<T>();
-        private bool readOnly = false;
+        private static readonly IEnumerable<T> EmptySet = new T[0];
+
+        private List<T> items;
+        private bool readOnly;
 
         /// <summary>
         /// Makes this list read-only ("freezes the popsicle"). From this
@@ -57,7 +59,7 @@ namespace Google.ProtocolBuffers.Collections
 
         public int IndexOf(T item)
         {
-            return items.IndexOf(item);
+            return items == null ? -1 : items.IndexOf(item);
         }
 
         public void Insert(int index, T item)
@@ -74,7 +76,7 @@ namespace Google.ProtocolBuffers.Collections
 
         public T this[int index]
         {
-            get { return items[index]; }
+            get { if (items == null) throw new ArgumentOutOfRangeException(); return items[index]; }
             set
             {
                 ValidateModification();
@@ -96,17 +98,18 @@ namespace Google.ProtocolBuffers.Collections
 
         public bool Contains(T item)
         {
-            return items.Contains(item);
+            return items == null ? false : items.Contains(item);
         }
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            items.CopyTo(array, arrayIndex);
+            if (items != null)
+                items.CopyTo(array, arrayIndex);
         }
 
         public int Count
         {
-            get { return items.Count; }
+            get { return items == null ? 0 : items.Count; }
         }
 
         public bool IsReadOnly
@@ -120,23 +123,25 @@ namespace Google.ProtocolBuffers.Collections
             return items.Remove(item);
         }
 
+        public IEnumerator<T> GetEnumerator()
+        {
+            return items == null ? EmptySet.GetEnumerator() : items.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
         public void Add(IEnumerable<T> collection)
         {
             if (readOnly)
             {
                 throw new NotSupportedException("List is read-only");
             }
+            if (items == null)
+                items = new List<T>();
             items.AddRange(collection);
-        }
-
-        public IEnumerator<T> GetEnumerator()
-        {
-            return items.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
 
         private void ValidateModification()
@@ -145,6 +150,15 @@ namespace Google.ProtocolBuffers.Collections
             {
                 throw new NotSupportedException("List is read-only");
             }
+            if (items == null)
+                items = new List<T>();
+        }
+
+        IEnumerable<TItemType> ICastArray.CastArray<TItemType>()
+        {
+            if (items == null)
+                return new TItemType[0];
+            return (TItemType[])(object)items.ToArray();
         }
     }
 }

@@ -190,7 +190,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field80FieldNumber = 80;
     private bool hasField80;
-    private bool field80_ = false;
+    private bool field80_;
     public bool HasField80 {
       get { return hasField80; }
     }
@@ -210,7 +210,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field2FieldNumber = 2;
     private bool hasField2;
-    private int field2_ = 0;
+    private int field2_;
     public bool HasField2 {
       get { return hasField2; }
     }
@@ -220,7 +220,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field3FieldNumber = 3;
     private bool hasField3;
-    private int field3_ = 0;
+    private int field3_;
     public bool HasField3 {
       get { return hasField3; }
     }
@@ -230,7 +230,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field280FieldNumber = 280;
     private bool hasField280;
-    private int field280_ = 0;
+    private int field280_;
     public bool HasField280 {
       get { return hasField280; }
     }
@@ -240,7 +240,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field6FieldNumber = 6;
     private bool hasField6;
-    private int field6_ = 0;
+    private int field6_;
     public bool HasField6 {
       get { return hasField6; }
     }
@@ -250,7 +250,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field22FieldNumber = 22;
     private bool hasField22;
-    private long field22_ = 0L;
+    private long field22_;
     public bool HasField22 {
       get { return hasField22; }
     }
@@ -284,7 +284,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field59FieldNumber = 59;
     private bool hasField59;
-    private bool field59_ = false;
+    private bool field59_;
     public bool HasField59 {
       get { return hasField59; }
     }
@@ -304,7 +304,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field16FieldNumber = 16;
     private bool hasField16;
-    private int field16_ = 0;
+    private int field16_;
     public bool HasField16 {
       get { return hasField16; }
     }
@@ -314,7 +314,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field130FieldNumber = 130;
     private bool hasField130;
-    private int field130_ = 0;
+    private int field130_;
     public bool HasField130 {
       get { return hasField130; }
     }
@@ -364,7 +364,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field104FieldNumber = 104;
     private bool hasField104;
-    private int field104_ = 0;
+    private int field104_;
     public bool HasField104 {
       get { return hasField104; }
     }
@@ -374,7 +374,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field100FieldNumber = 100;
     private bool hasField100;
-    private int field100_ = 0;
+    private int field100_;
     public bool HasField100 {
       get { return hasField100; }
     }
@@ -384,7 +384,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field101FieldNumber = 101;
     private bool hasField101;
-    private int field101_ = 0;
+    private int field101_;
     public bool HasField101 {
       get { return hasField101; }
     }
@@ -414,7 +414,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field29FieldNumber = 29;
     private bool hasField29;
-    private int field29_ = 0;
+    private int field29_;
     public bool HasField29 {
       get { return hasField29; }
     }
@@ -424,7 +424,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field30FieldNumber = 30;
     private bool hasField30;
-    private bool field30_ = false;
+    private bool field30_;
     public bool HasField30 {
       get { return hasField30; }
     }
@@ -464,7 +464,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field150FieldNumber = 150;
     private bool hasField150;
-    private int field150_ = 0;
+    private int field150_;
     public bool HasField150 {
       get { return hasField150; }
     }
@@ -474,7 +474,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field23FieldNumber = 23;
     private bool hasField23;
-    private int field23_ = 0;
+    private int field23_;
     public bool HasField23 {
       get { return hasField23; }
     }
@@ -484,7 +484,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field24FieldNumber = 24;
     private bool hasField24;
-    private bool field24_ = false;
+    private bool field24_;
     public bool HasField24 {
       get { return hasField24; }
     }
@@ -494,7 +494,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field25FieldNumber = 25;
     private bool hasField25;
-    private int field25_ = 0;
+    private int field25_;
     public bool HasField25 {
       get { return hasField25; }
     }
@@ -514,7 +514,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field78FieldNumber = 78;
     private bool hasField78;
-    private bool field78_ = false;
+    private bool field78_;
     public bool HasField78 {
       get { return hasField78; }
     }
@@ -524,7 +524,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field67FieldNumber = 67;
     private bool hasField67;
-    private int field67_ = 0;
+    private int field67_;
     public bool HasField67 {
       get { return hasField67; }
     }
@@ -534,7 +534,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field68FieldNumber = 68;
     private bool hasField68;
-    private int field68_ = 0;
+    private int field68_;
     public bool HasField68 {
       get { return hasField68; }
     }
@@ -544,7 +544,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field128FieldNumber = 128;
     private bool hasField128;
-    private int field128_ = 0;
+    private int field128_;
     public bool HasField128 {
       get { return hasField128; }
     }
@@ -564,7 +564,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field131FieldNumber = 131;
     private bool hasField131;
-    private int field131_ = 0;
+    private int field131_;
     public bool HasField131 {
       get { return hasField131; }
     }
@@ -2095,7 +2095,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field1FieldNumber = 1;
     private bool hasField1;
-    private int field1_ = 0;
+    private int field1_;
     public bool HasField1 {
       get { return hasField1; }
     }
@@ -2105,7 +2105,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field2FieldNumber = 2;
     private bool hasField2;
-    private int field2_ = 0;
+    private int field2_;
     public bool HasField2 {
       get { return hasField2; }
     }
@@ -2115,7 +2115,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field3FieldNumber = 3;
     private bool hasField3;
-    private int field3_ = 0;
+    private int field3_;
     public bool HasField3 {
       get { return hasField3; }
     }
@@ -2145,7 +2145,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field13FieldNumber = 13;
     private bool hasField13;
-    private long field13_ = 0L;
+    private long field13_;
     public bool HasField13 {
       get { return hasField13; }
     }
@@ -2155,7 +2155,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field14FieldNumber = 14;
     private bool hasField14;
-    private long field14_ = 0L;
+    private long field14_;
     public bool HasField14 {
       get { return hasField14; }
     }
@@ -2165,7 +2165,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field16FieldNumber = 16;
     private bool hasField16;
-    private int field16_ = 0;
+    private int field16_;
     public bool HasField16 {
       get { return hasField16; }
     }
@@ -2205,7 +2205,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field21FieldNumber = 21;
     private bool hasField21;
-    private ulong field21_ = 0;
+    private ulong field21_;
     public bool HasField21 {
       get { return hasField21; }
     }
@@ -2216,7 +2216,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field22FieldNumber = 22;
     private bool hasField22;
-    private int field22_ = 0;
+    private int field22_;
     public bool HasField22 {
       get { return hasField22; }
     }
@@ -2226,7 +2226,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field23FieldNumber = 23;
     private bool hasField23;
-    private bool field23_ = false;
+    private bool field23_;
     public bool HasField23 {
       get { return hasField23; }
     }
@@ -2236,7 +2236,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field206FieldNumber = 206;
     private bool hasField206;
-    private bool field206_ = false;
+    private bool field206_;
     public bool HasField206 {
       get { return hasField206; }
     }
@@ -2246,7 +2246,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field203FieldNumber = 203;
     private bool hasField203;
-    private uint field203_ = 0;
+    private uint field203_;
     public bool HasField203 {
       get { return hasField203; }
     }
@@ -2257,7 +2257,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field204FieldNumber = 204;
     private bool hasField204;
-    private int field204_ = 0;
+    private int field204_;
     public bool HasField204 {
       get { return hasField204; }
     }
@@ -2277,7 +2277,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field207FieldNumber = 207;
     private bool hasField207;
-    private ulong field207_ = 0UL;
+    private ulong field207_;
     public bool HasField207 {
       get { return hasField207; }
     }
@@ -2288,7 +2288,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field300FieldNumber = 300;
     private bool hasField300;
-    private ulong field300_ = 0UL;
+    private ulong field300_;
     public bool HasField300 {
       get { return hasField300; }
     }
@@ -3159,7 +3159,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int Field11FieldNumber = 11;
         private bool hasField11;
-        private float field11_ = 0F;
+        private float field11_;
         public bool HasField11 {
           get { return hasField11; }
         }
@@ -3169,7 +3169,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int Field26FieldNumber = 26;
         private bool hasField26;
-        private float field26_ = 0F;
+        private float field26_;
         public bool HasField26 {
           get { return hasField26; }
         }
@@ -3211,7 +3211,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int Field15FieldNumber = 15;
         private bool hasField15;
-        private ulong field15_ = 0UL;
+        private ulong field15_;
         public bool HasField15 {
           get { return hasField15; }
         }
@@ -3222,7 +3222,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int Field5FieldNumber = 5;
         private bool hasField5;
-        private int field5_ = 0;
+        private int field5_;
         public bool HasField5 {
           get { return hasField5; }
         }
@@ -3242,7 +3242,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int Field28FieldNumber = 28;
         private bool hasField28;
-        private int field28_ = 0;
+        private int field28_;
         public bool HasField28 {
           get { return hasField28; }
         }
@@ -3296,7 +3296,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int Field20FieldNumber = 20;
         private bool hasField20;
-        private int field20_ = 0;
+        private int field20_;
         public bool HasField20 {
           get { return hasField20; }
         }
@@ -4086,7 +4086,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field3FieldNumber = 3;
     private bool hasField3;
-    private long field3_ = 0L;
+    private long field3_;
     public bool HasField3 {
       get { return hasField3; }
     }
@@ -4096,7 +4096,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field4FieldNumber = 4;
     private bool hasField4;
-    private long field4_ = 0L;
+    private long field4_;
     public bool HasField4 {
       get { return hasField4; }
     }
@@ -4106,7 +4106,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field30FieldNumber = 30;
     private bool hasField30;
-    private long field30_ = 0L;
+    private long field30_;
     public bool HasField30 {
       get { return hasField30; }
     }
@@ -4116,7 +4116,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field75FieldNumber = 75;
     private bool hasField75;
-    private bool field75_ = false;
+    private bool field75_;
     public bool HasField75 {
       get { return hasField75; }
     }
@@ -4146,7 +4146,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field21FieldNumber = 21;
     private bool hasField21;
-    private int field21_ = 0;
+    private int field21_;
     public bool HasField21 {
       get { return hasField21; }
     }
@@ -4156,7 +4156,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field71FieldNumber = 71;
     private bool hasField71;
-    private int field71_ = 0;
+    private int field71_;
     public bool HasField71 {
       get { return hasField71; }
     }
@@ -4166,7 +4166,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field25FieldNumber = 25;
     private bool hasField25;
-    private float field25_ = 0F;
+    private float field25_;
     public bool HasField25 {
       get { return hasField25; }
     }
@@ -4176,7 +4176,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field109FieldNumber = 109;
     private bool hasField109;
-    private int field109_ = 0;
+    private int field109_;
     public bool HasField109 {
       get { return hasField109; }
     }
@@ -4186,7 +4186,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field210FieldNumber = 210;
     private bool hasField210;
-    private int field210_ = 0;
+    private int field210_;
     public bool HasField210 {
       get { return hasField210; }
     }
@@ -4196,7 +4196,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field211FieldNumber = 211;
     private bool hasField211;
-    private int field211_ = 0;
+    private int field211_;
     public bool HasField211 {
       get { return hasField211; }
     }
@@ -4206,7 +4206,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field212FieldNumber = 212;
     private bool hasField212;
-    private int field212_ = 0;
+    private int field212_;
     public bool HasField212 {
       get { return hasField212; }
     }
@@ -4216,7 +4216,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field213FieldNumber = 213;
     private bool hasField213;
-    private int field213_ = 0;
+    private int field213_;
     public bool HasField213 {
       get { return hasField213; }
     }
@@ -4226,7 +4226,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field216FieldNumber = 216;
     private bool hasField216;
-    private int field216_ = 0;
+    private int field216_;
     public bool HasField216 {
       get { return hasField216; }
     }
@@ -4236,7 +4236,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field217FieldNumber = 217;
     private bool hasField217;
-    private int field217_ = 0;
+    private int field217_;
     public bool HasField217 {
       get { return hasField217; }
     }
@@ -4246,7 +4246,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field218FieldNumber = 218;
     private bool hasField218;
-    private int field218_ = 0;
+    private int field218_;
     public bool HasField218 {
       get { return hasField218; }
     }
@@ -4256,7 +4256,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field220FieldNumber = 220;
     private bool hasField220;
-    private int field220_ = 0;
+    private int field220_;
     public bool HasField220 {
       get { return hasField220; }
     }
@@ -4266,7 +4266,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field221FieldNumber = 221;
     private bool hasField221;
-    private int field221_ = 0;
+    private int field221_;
     public bool HasField221 {
       get { return hasField221; }
     }
@@ -4276,7 +4276,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field222FieldNumber = 222;
     private bool hasField222;
-    private float field222_ = 0F;
+    private float field222_;
     public bool HasField222 {
       get { return hasField222; }
     }
@@ -4286,7 +4286,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field63FieldNumber = 63;
     private bool hasField63;
-    private int field63_ = 0;
+    private int field63_;
     public bool HasField63 {
       get { return hasField63; }
     }
@@ -4320,7 +4320,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field131FieldNumber = 131;
     private bool hasField131;
-    private long field131_ = 0L;
+    private long field131_;
     public bool HasField131 {
       get { return hasField131; }
     }
@@ -4342,7 +4342,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field129FieldNumber = 129;
     private bool hasField129;
-    private int field129_ = 0;
+    private int field129_;
     public bool HasField129 {
       get { return hasField129; }
     }
@@ -4364,7 +4364,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field205FieldNumber = 205;
     private bool hasField205;
-    private bool field205_ = false;
+    private bool field205_;
     public bool HasField205 {
       get { return hasField205; }
     }
@@ -4374,7 +4374,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field206FieldNumber = 206;
     private bool hasField206;
-    private bool field206_ = false;
+    private bool field206_;
     public bool HasField206 {
       get { return hasField206; }
     }
@@ -5583,7 +5583,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field1FieldNumber = 1;
     private bool hasField1;
-    private float field1_ = 0F;
+    private float field1_;
     public bool HasField1 {
       get { return hasField1; }
     }
@@ -5593,7 +5593,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field2FieldNumber = 2;
     private bool hasField2;
-    private float field2_ = 0F;
+    private float field2_;
     public bool HasField2 {
       get { return hasField2; }
     }
@@ -5603,7 +5603,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field3FieldNumber = 3;
     private bool hasField3;
-    private float field3_ = 0F;
+    private float field3_;
     public bool HasField3 {
       get { return hasField3; }
     }
@@ -5613,7 +5613,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field4FieldNumber = 4;
     private bool hasField4;
-    private bool field4_ = false;
+    private bool field4_;
     public bool HasField4 {
       get { return hasField4; }
     }
@@ -5623,7 +5623,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field5FieldNumber = 5;
     private bool hasField5;
-    private bool field5_ = false;
+    private bool field5_;
     public bool HasField5 {
       get { return hasField5; }
     }
@@ -5643,7 +5643,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field7FieldNumber = 7;
     private bool hasField7;
-    private bool field7_ = false;
+    private bool field7_;
     public bool HasField7 {
       get { return hasField7; }
     }
@@ -5653,7 +5653,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field8FieldNumber = 8;
     private bool hasField8;
-    private float field8_ = 0F;
+    private float field8_;
     public bool HasField8 {
       get { return hasField8; }
     }
@@ -5663,7 +5663,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field9FieldNumber = 9;
     private bool hasField9;
-    private bool field9_ = false;
+    private bool field9_;
     public bool HasField9 {
       get { return hasField9; }
     }
@@ -5673,7 +5673,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field10FieldNumber = 10;
     private bool hasField10;
-    private float field10_ = 0F;
+    private float field10_;
     public bool HasField10 {
       get { return hasField10; }
     }
@@ -5683,7 +5683,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field11FieldNumber = 11;
     private bool hasField11;
-    private long field11_ = 0L;
+    private long field11_;
     public bool HasField11 {
       get { return hasField11; }
     }

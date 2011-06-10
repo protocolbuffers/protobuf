@@ -393,7 +393,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int ZipFieldNumber = 5;
         private bool hasZip;
-        private uint zip_ = 0;
+        private uint zip_;
         public bool HasZip {
           get { return hasZip; }
         }
@@ -597,7 +597,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int IdFieldNumber = 2;
     private bool hasId;
-    private int id_ = 0;
+    private int id_;
     public bool HasId {
       get { return hasId; }
     }
@@ -1091,7 +1091,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int CountFieldNumber = 5;
         private bool hasCount;
-        private int count_ = 0;
+        private int count_;
         public bool HasCount {
           get { return hasCount; }
         }
@@ -1257,7 +1257,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int IdFieldNumber = 2;
     private bool hasId;
-    private int id_ = 0;
+    private int id_;
     public bool HasId {
       get { return hasId; }
     }
@@ -1656,7 +1656,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int IdFieldNumber = 2;
     private bool hasId;
-    private int id_ = 0;
+    private int id_;
     public bool HasId {
       get { return hasId; }
     }

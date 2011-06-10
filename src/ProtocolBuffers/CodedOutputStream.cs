@@ -40,6 +40,7 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers
@@ -272,7 +273,7 @@ namespace Google.ProtocolBuffers
             WriteRawVarint32(value);
         }
 
-        public void WriteEnum(int fieldNumber, string fieldName, int value, string textValue)
+        public void WriteEnum(int fieldNumber, string fieldName, int value, object textValue)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Varint);
             WriteRawVarint32((uint) value);
@@ -349,11 +350,14 @@ namespace Google.ProtocolBuffers
                         WriteBool(fieldNumber, fieldName, value);
                     break;
                 case FieldType.Enum:
-                    foreach (T value in list)
+                    if (default(T) is System.Enum)
                     {
-                        if (value is System.Enum)
-                            WriteEnum(fieldNumber, fieldName, ((IConvertible)value).ToInt32(CultureInfo.InvariantCulture), null/*not used*/);
-                        else
+                        foreach (int value in ((ICastArray)list).CastArray<int>())
+                            WriteEnum(fieldNumber, fieldName, value, null/*not used*/);
+                    }
+                    else
+                    {
+                        foreach (T value in list)
                             WriteEnum(fieldNumber, fieldName, ((IEnumLite)value).Number, null/*not used*/);
                     }
                     break;
@@ -449,11 +453,14 @@ namespace Google.ProtocolBuffers
                         WriteBoolNoTag(value);
                     break;
                 case FieldType.Enum:
-                    foreach (T value in list)
+                    if (default(T) is System.Enum)
                     {
-                        if (value is System.Enum)
-                            WriteEnumNoTag(((IConvertible)value).ToInt32(CultureInfo.InvariantCulture));
-                        else
+                        foreach (int value in ((ICastArray)list).CastArray<int>())
+                            WriteEnumNoTag(value);
+                    }
+                    else
+                    {
+                        foreach (T value in list)
                             WriteEnumNoTag(((IEnumLite)value).Number);
                     }
                     break;
@@ -529,7 +536,7 @@ namespace Google.ProtocolBuffers
                     break;
                 case FieldType.Enum:
                     if (value is System.Enum)
-                        WriteEnum(fieldNumber, fieldName, ((IConvertible)value).ToInt32(CultureInfo.InvariantCulture), null/*not used*/);
+                        WriteEnum(fieldNumber, fieldName, (int)value, null/*not used*/);
                     else
                         WriteEnum(fieldNumber, fieldName, ((IEnumLite)value).Number, null/*not used*/);
                     break;
@@ -593,7 +600,7 @@ namespace Google.ProtocolBuffers
                     break;
                 case FieldType.Enum:
                     if (value is System.Enum)
-                        WriteEnumNoTag(((IConvertible)value).ToInt32(CultureInfo.InvariantCulture));
+                        WriteEnumNoTag((int)value);
                     else
                         WriteEnumNoTag(((IEnumLite)value).Number);
                     break;

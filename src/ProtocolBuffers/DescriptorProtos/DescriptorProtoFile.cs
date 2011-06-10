@@ -1229,7 +1229,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         
         public const int StartFieldNumber = 1;
         private bool hasStart;
-        private int start_ = 0;
+        private int start_;
         public bool HasStart {
           get { return hasStart; }
         }
@@ -1239,7 +1239,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         
         public const int EndFieldNumber = 2;
         private bool hasEnd;
-        private int end_ = 0;
+        private int end_;
         public bool HasEnd {
           get { return hasEnd; }
         }
@@ -2173,7 +2173,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int NumberFieldNumber = 3;
     private bool hasNumber;
-    private int number_ = 0;
+    private int number_;
     public bool HasNumber {
       get { return hasNumber; }
     }
@@ -2263,10 +2263,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         output.WriteInt32(3, field_names[4], Number);
       }
       if (hasLabel) {
-        output.WriteEnum(4, field_names[2], (int) Label, Label.ToString());
+        output.WriteEnum(4, field_names[2], (int) Label, Label);
       }
       if (hasType) {
-        output.WriteEnum(5, field_names[6], (int) Type, Type.ToString());
+        output.WriteEnum(5, field_names[6], (int) Type, Type);
       }
       if (hasTypeName) {
         output.WriteString(6, field_names[7], TypeName);
@@ -3119,7 +3119,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int NumberFieldNumber = 2;
     private bool hasNumber;
-    private int number_ = 0;
+    private int number_;
     public bool HasNumber {
       get { return hasNumber; }
     }
@@ -4258,7 +4258,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int JavaMultipleFilesFieldNumber = 10;
     private bool hasJavaMultipleFiles;
-    private bool javaMultipleFiles_ = false;
+    private bool javaMultipleFiles_;
     public bool HasJavaMultipleFiles {
       get { return hasJavaMultipleFiles; }
     }
@@ -4339,7 +4339,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         output.WriteString(8, field_names[3], JavaOuterClassname);
       }
       if (hasOptimizeFor) {
-        output.WriteEnum(9, field_names[5], (int) OptimizeFor, OptimizeFor.ToString());
+        output.WriteEnum(9, field_names[5], (int) OptimizeFor, OptimizeFor);
       }
       if (hasJavaMultipleFiles) {
         output.WriteBool(10, field_names[2], JavaMultipleFiles);
@@ -4805,7 +4805,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int MessageSetWireFormatFieldNumber = 1;
     private bool hasMessageSetWireFormat;
-    private bool messageSetWireFormat_ = false;
+    private bool messageSetWireFormat_;
     public bool HasMessageSetWireFormat {
       get { return hasMessageSetWireFormat; }
     }
@@ -4815,7 +4815,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int NoStandardDescriptorAccessorFieldNumber = 2;
     private bool hasNoStandardDescriptorAccessor;
-    private bool noStandardDescriptorAccessor_ = false;
+    private bool noStandardDescriptorAccessor_;
     public bool HasNoStandardDescriptorAccessor {
       get { return hasNoStandardDescriptorAccessor; }
     }
@@ -5183,7 +5183,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int PackedFieldNumber = 2;
     private bool hasPacked;
-    private bool packed_ = false;
+    private bool packed_;
     public bool HasPacked {
       get { return hasPacked; }
     }
@@ -5193,7 +5193,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int DeprecatedFieldNumber = 3;
     private bool hasDeprecated;
-    private bool deprecated_ = false;
+    private bool deprecated_;
     public bool HasDeprecated {
       get { return hasDeprecated; }
     }
@@ -5238,7 +5238,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       string[] field_names = _fieldOptionsFieldNames;
       pb::ExtendableMessage<FieldOptions, FieldOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (hasCtype) {
-        output.WriteEnum(1, field_names[0], (int) Ctype, Ctype.ToString());
+        output.WriteEnum(1, field_names[0], (int) Ctype, Ctype);
       }
       if (hasPacked) {
         output.WriteBool(2, field_names[3], Packed);
@@ -6738,7 +6738,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         
         public const int IsExtensionFieldNumber = 2;
         private bool hasIsExtension;
-        private bool isExtension_ = false;
+        private bool isExtension_;
         public bool HasIsExtension {
           get { return hasIsExtension; }
         }
@@ -7009,7 +7009,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int PositiveIntValueFieldNumber = 4;
     private bool hasPositiveIntValue;
-    private ulong positiveIntValue_ = 0UL;
+    private ulong positiveIntValue_;
     public bool HasPositiveIntValue {
       get { return hasPositiveIntValue; }
     }
@@ -7020,7 +7020,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int NegativeIntValueFieldNumber = 5;
     private bool hasNegativeIntValue;
-    private long negativeIntValue_ = 0L;
+    private long negativeIntValue_;
     public bool HasNegativeIntValue {
       get { return hasNegativeIntValue; }
     }
@@ -7030,7 +7030,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int DoubleValueFieldNumber = 6;
     private bool hasDoubleValue;
-    private double doubleValue_ = 0D;
+    private double doubleValue_;
     public bool HasDoubleValue {
       get { return hasDoubleValue; }
     }

@@ -47,4 +47,12 @@ namespace Google.ProtocolBuffers.Collections
     {
         void Add(IEnumerable<T> collection);
     }
+
+    /// <summary>
+    /// Used to efficiently cast the elements of enumerations
+    /// </summary>
+    internal interface ICastArray
+    {
+        IEnumerable<TItemType> CastArray<TItemType>();
+    }
 }
