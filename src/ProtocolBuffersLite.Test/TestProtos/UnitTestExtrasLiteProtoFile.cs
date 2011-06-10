@@ -1158,13 +1158,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteString(3, field_names[2], Email);
       }
       if (phone_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 4, field_names[5], phone_);
+        output.WriteMessageArray(4, field_names[5], phone_);
       }
       if (addresses_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Group, 5, field_names[0], addresses_);
+        output.WriteGroupArray(5, field_names[0], addresses_);
       }
       if (codes_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Int32, 10, field_names[1], codesMemoizedSerializedSize, codes_);
+        output.WritePackedInt32Array(10, field_names[1], codesMemoizedSerializedSize, codes_);
       }
       extensionWriter.WriteUntil(200, output);
     }
@@ -1414,7 +1414,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 82:
             case 80: {
-              input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.codes_);
+              input.ReadInt32Array(tag, field_name, result.codes_);
               break;
             }
           }

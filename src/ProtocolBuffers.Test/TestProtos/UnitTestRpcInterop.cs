@@ -126,7 +126,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       int size = SerializedSize;
       string[] field_names = _searchRequestFieldNames;
       if (criteria_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 1, field_names[0], criteria_);
+        output.WriteStringArray(1, field_names[0], criteria_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -288,7 +288,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 10: {
-              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.criteria_);
+              input.ReadStringArray(tag, field_name, result.criteria_);
               break;
             }
           }
@@ -677,7 +677,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       int size = SerializedSize;
       string[] field_names = _searchResponseFieldNames;
       if (results_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 1, field_names[0], results_);
+        output.WriteMessageArray(1, field_names[0], results_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -951,7 +951,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       int size = SerializedSize;
       string[] field_names = _refineSearchRequestFieldNames;
       if (criteria_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 1, field_names[0], criteria_);
+        output.WriteStringArray(1, field_names[0], criteria_);
       }
       if (hasPreviousResults) {
         output.WriteMessage(2, field_names[1], PreviousResults);
@@ -1122,7 +1122,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 10: {
-              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.criteria_);
+              input.ReadStringArray(tag, field_name, result.criteria_);
               break;
             }
             case 18: {

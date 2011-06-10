@@ -126,7 +126,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteMessage(1, field_names[0], OptionalMessage);
       }
       if (repeatedMessage_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 2, field_names[1], repeatedMessage_);
+        output.WriteMessageArray(2, field_names[1], repeatedMessage_);
       }
       UnknownFields.WriteTo(output);
     }

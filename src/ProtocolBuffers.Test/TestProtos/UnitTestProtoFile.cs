@@ -2702,76 +2702,76 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteString(25, field_names[22], OptionalCord);
       }
       if (repeatedInt32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Int32, 31, field_names[55], repeatedInt32_);
+        output.WriteInt32Array(31, field_names[55], repeatedInt32_);
       }
       if (repeatedInt64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Int64, 32, field_names[56], repeatedInt64_);
+        output.WriteInt64Array(32, field_names[56], repeatedInt64_);
       }
       if (repeatedUint32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.UInt32, 33, field_names[65], repeatedUint32_);
+        output.WriteUInt32Array(33, field_names[65], repeatedUint32_);
       }
       if (repeatedUint64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.UInt64, 34, field_names[66], repeatedUint64_);
+        output.WriteUInt64Array(34, field_names[66], repeatedUint64_);
       }
       if (repeatedSint32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.SInt32, 35, field_names[61], repeatedSint32_);
+        output.WriteSInt32Array(35, field_names[61], repeatedSint32_);
       }
       if (repeatedSint64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.SInt64, 36, field_names[62], repeatedSint64_);
+        output.WriteSInt64Array(36, field_names[62], repeatedSint64_);
       }
       if (repeatedFixed32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Fixed32, 37, field_names[48], repeatedFixed32_);
+        output.WriteFixed32Array(37, field_names[48], repeatedFixed32_);
       }
       if (repeatedFixed64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Fixed64, 38, field_names[49], repeatedFixed64_);
+        output.WriteFixed64Array(38, field_names[49], repeatedFixed64_);
       }
       if (repeatedSfixed32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.SFixed32, 39, field_names[59], repeatedSfixed32_);
+        output.WriteSFixed32Array(39, field_names[59], repeatedSfixed32_);
       }
       if (repeatedSfixed64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.SFixed64, 40, field_names[60], repeatedSfixed64_);
+        output.WriteSFixed64Array(40, field_names[60], repeatedSfixed64_);
       }
       if (repeatedFloat_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Float, 41, field_names[50], repeatedFloat_);
+        output.WriteFloatArray(41, field_names[50], repeatedFloat_);
       }
       if (repeatedDouble_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Double, 42, field_names[47], repeatedDouble_);
+        output.WriteDoubleArray(42, field_names[47], repeatedDouble_);
       }
       if (repeatedBool_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Bool, 43, field_names[44], repeatedBool_);
+        output.WriteBoolArray(43, field_names[44], repeatedBool_);
       }
       if (repeatedString_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 44, field_names[63], repeatedString_);
+        output.WriteStringArray(44, field_names[63], repeatedString_);
       }
       if (repeatedBytes_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Bytes, 45, field_names[45], repeatedBytes_);
+        output.WriteBytesArray(45, field_names[45], repeatedBytes_);
       }
       if (repeatedGroup_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Group, 46, field_names[67], repeatedGroup_);
+        output.WriteGroupArray(46, field_names[67], repeatedGroup_);
       }
       if (repeatedNestedMessage_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 48, field_names[58], repeatedNestedMessage_);
+        output.WriteMessageArray(48, field_names[58], repeatedNestedMessage_);
       }
       if (repeatedForeignMessage_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 49, field_names[52], repeatedForeignMessage_);
+        output.WriteMessageArray(49, field_names[52], repeatedForeignMessage_);
       }
       if (repeatedImportMessage_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 50, field_names[54], repeatedImportMessage_);
+        output.WriteMessageArray(50, field_names[54], repeatedImportMessage_);
       }
       if (repeatedNestedEnum_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Enum, 51, field_names[57], repeatedNestedEnum_);
+        output.WriteEnumArray(51, field_names[57], repeatedNestedEnum_);
       }
       if (repeatedForeignEnum_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Enum, 52, field_names[51], repeatedForeignEnum_);
+        output.WriteEnumArray(52, field_names[51], repeatedForeignEnum_);
       }
       if (repeatedImportEnum_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Enum, 53, field_names[53], repeatedImportEnum_);
+        output.WriteEnumArray(53, field_names[53], repeatedImportEnum_);
       }
       if (repeatedStringPiece_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 54, field_names[64], repeatedStringPiece_);
+        output.WriteStringArray(54, field_names[64], repeatedStringPiece_);
       }
       if (repeatedCord_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 55, field_names[46], repeatedCord_);
+        output.WriteStringArray(55, field_names[46], repeatedCord_);
       }
       if (hasDefaultInt32) {
         output.WriteInt32(61, field_names[9], DefaultInt32);
@@ -3646,75 +3646,75 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 250:
             case 248: {
-              input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.repeatedInt32_);
+              input.ReadInt32Array(tag, field_name, result.repeatedInt32_);
               break;
             }
             case 258:
             case 256: {
-              input.ReadPrimitiveArray(pbd::FieldType.Int64, tag, field_name, result.repeatedInt64_);
+              input.ReadInt64Array(tag, field_name, result.repeatedInt64_);
               break;
             }
             case 266:
             case 264: {
-              input.ReadPrimitiveArray(pbd::FieldType.UInt32, tag, field_name, result.repeatedUint32_);
+              input.ReadUInt32Array(tag, field_name, result.repeatedUint32_);
               break;
             }
             case 274:
             case 272: {
-              input.ReadPrimitiveArray(pbd::FieldType.UInt64, tag, field_name, result.repeatedUint64_);
+              input.ReadUInt64Array(tag, field_name, result.repeatedUint64_);
               break;
             }
             case 282:
             case 280: {
-              input.ReadPrimitiveArray(pbd::FieldType.SInt32, tag, field_name, result.repeatedSint32_);
+              input.ReadSInt32Array(tag, field_name, result.repeatedSint32_);
               break;
             }
             case 290:
             case 288: {
-              input.ReadPrimitiveArray(pbd::FieldType.SInt64, tag, field_name, result.repeatedSint64_);
+              input.ReadSInt64Array(tag, field_name, result.repeatedSint64_);
               break;
             }
             case 298:
             case 301: {
-              input.ReadPrimitiveArray(pbd::FieldType.Fixed32, tag, field_name, result.repeatedFixed32_);
+              input.ReadFixed32Array(tag, field_name, result.repeatedFixed32_);
               break;
             }
             case 306:
             case 305: {
-              input.ReadPrimitiveArray(pbd::FieldType.Fixed64, tag, field_name, result.repeatedFixed64_);
+              input.ReadFixed64Array(tag, field_name, result.repeatedFixed64_);
               break;
             }
             case 314:
             case 317: {
-              input.ReadPrimitiveArray(pbd::FieldType.SFixed32, tag, field_name, result.repeatedSfixed32_);
+              input.ReadSFixed32Array(tag, field_name, result.repeatedSfixed32_);
               break;
             }
             case 322:
             case 321: {
-              input.ReadPrimitiveArray(pbd::FieldType.SFixed64, tag, field_name, result.repeatedSfixed64_);
+              input.ReadSFixed64Array(tag, field_name, result.repeatedSfixed64_);
               break;
             }
             case 330:
             case 333: {
-              input.ReadPrimitiveArray(pbd::FieldType.Float, tag, field_name, result.repeatedFloat_);
+              input.ReadFloatArray(tag, field_name, result.repeatedFloat_);
               break;
             }
             case 338:
             case 337: {
-              input.ReadPrimitiveArray(pbd::FieldType.Double, tag, field_name, result.repeatedDouble_);
+              input.ReadDoubleArray(tag, field_name, result.repeatedDouble_);
               break;
             }
             case 346:
             case 344: {
-              input.ReadPrimitiveArray(pbd::FieldType.Bool, tag, field_name, result.repeatedBool_);
+              input.ReadBoolArray(tag, field_name, result.repeatedBool_);
               break;
             }
             case 354: {
-              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedString_);
+              input.ReadStringArray(tag, field_name, result.repeatedString_);
               break;
             }
             case 362: {
-              input.ReadPrimitiveArray(pbd::FieldType.Bytes, tag, field_name, result.repeatedBytes_);
+              input.ReadBytesArray(tag, field_name, result.repeatedBytes_);
               break;
             }
             case 371: {
@@ -3776,11 +3776,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 434: {
-              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedStringPiece_);
+              input.ReadStringArray(tag, field_name, result.repeatedStringPiece_);
               break;
             }
             case 442: {
-              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedCord_);
+              input.ReadStringArray(tag, field_name, result.repeatedCord_);
               break;
             }
             case 488: {
@@ -8485,7 +8485,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteMessage(1, field_names[1], OptionalMessage);
       }
       if (repeatedMessage_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 2, field_names[2], repeatedMessage_);
+        output.WriteMessageArray(2, field_names[2], repeatedMessage_);
       }
       if (hasDummy) {
         output.WriteInt32(3, field_names[0], Dummy);
@@ -11742,10 +11742,10 @@ namespace Google.ProtocolBuffers.TestProtos {
           int size = SerializedSize;
           string[] field_names = _nestedMessageFieldNames;
           if (nestedmessageRepeatedInt32_.Count > 0) {
-            output.WriteArray(pbd::FieldType.Int32, 1, field_names[1], nestedmessageRepeatedInt32_);
+            output.WriteInt32Array(1, field_names[1], nestedmessageRepeatedInt32_);
           }
           if (nestedmessageRepeatedForeignmessage_.Count > 0) {
-            output.WriteArray(pbd::FieldType.Message, 2, field_names[0], nestedmessageRepeatedForeignmessage_);
+            output.WriteMessageArray(2, field_names[0], nestedmessageRepeatedForeignmessage_);
           }
           UnknownFields.WriteTo(output);
         }
@@ -11915,7 +11915,7 @@ namespace Google.ProtocolBuffers.TestProtos {
                 }
                 case 10:
                 case 8: {
-                  input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.nestedmessageRepeatedInt32_);
+                  input.ReadInt32Array(tag, field_name, result.nestedmessageRepeatedInt32_);
                   break;
                 }
                 case 18: {
@@ -12426,22 +12426,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteString(6, field_names[0], CordField);
       }
       if (repeatedPrimitiveField_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Int32, 7, field_names[7], repeatedPrimitiveField_);
+        output.WriteInt32Array(7, field_names[7], repeatedPrimitiveField_);
       }
       if (repeatedStringField_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 8, field_names[8], repeatedStringField_);
+        output.WriteStringArray(8, field_names[8], repeatedStringField_);
       }
       if (repeatedEnumField_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Enum, 9, field_names[5], repeatedEnumField_);
+        output.WriteEnumArray(9, field_names[5], repeatedEnumField_);
       }
       if (repeatedMessageField_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 10, field_names[6], repeatedMessageField_);
+        output.WriteMessageArray(10, field_names[6], repeatedMessageField_);
       }
       if (repeatedStringPieceField_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 11, field_names[9], repeatedStringPieceField_);
+        output.WriteStringArray(11, field_names[9], repeatedStringPieceField_);
       }
       if (repeatedCordField_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 12, field_names[4], repeatedCordField_);
+        output.WriteStringArray(12, field_names[4], repeatedCordField_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -12734,11 +12734,11 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 58:
             case 56: {
-              input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.repeatedPrimitiveField_);
+              input.ReadInt32Array(tag, field_name, result.repeatedPrimitiveField_);
               break;
             }
             case 66: {
-              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedStringField_);
+              input.ReadStringArray(tag, field_name, result.repeatedStringField_);
               break;
             }
             case 74:
@@ -12760,11 +12760,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 90: {
-              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedStringPieceField_);
+              input.ReadStringArray(tag, field_name, result.repeatedStringPieceField_);
               break;
             }
             case 98: {
-              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedCordField_);
+              input.ReadStringArray(tag, field_name, result.repeatedCordField_);
               break;
             }
           }
@@ -15105,46 +15105,46 @@ namespace Google.ProtocolBuffers.TestProtos {
       int size = SerializedSize;
       string[] field_names = _testPackedTypesFieldNames;
       if (packedInt32_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Int32, 90, field_names[6], packedInt32MemoizedSerializedSize, packedInt32_);
+        output.WritePackedInt32Array(90, field_names[6], packedInt32MemoizedSerializedSize, packedInt32_);
       }
       if (packedInt64_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Int64, 91, field_names[7], packedInt64MemoizedSerializedSize, packedInt64_);
+        output.WritePackedInt64Array(91, field_names[7], packedInt64MemoizedSerializedSize, packedInt64_);
       }
       if (packedUint32_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.UInt32, 92, field_names[12], packedUint32MemoizedSerializedSize, packedUint32_);
+        output.WritePackedUInt32Array(92, field_names[12], packedUint32MemoizedSerializedSize, packedUint32_);
       }
       if (packedUint64_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.UInt64, 93, field_names[13], packedUint64MemoizedSerializedSize, packedUint64_);
+        output.WritePackedUInt64Array(93, field_names[13], packedUint64MemoizedSerializedSize, packedUint64_);
       }
       if (packedSint32_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.SInt32, 94, field_names[10], packedSint32MemoizedSerializedSize, packedSint32_);
+        output.WritePackedSInt32Array(94, field_names[10], packedSint32MemoizedSerializedSize, packedSint32_);
       }
       if (packedSint64_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.SInt64, 95, field_names[11], packedSint64MemoizedSerializedSize, packedSint64_);
+        output.WritePackedSInt64Array(95, field_names[11], packedSint64MemoizedSerializedSize, packedSint64_);
       }
       if (packedFixed32_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Fixed32, 96, field_names[3], packedFixed32MemoizedSerializedSize, packedFixed32_);
+        output.WritePackedFixed32Array(96, field_names[3], packedFixed32MemoizedSerializedSize, packedFixed32_);
       }
       if (packedFixed64_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Fixed64, 97, field_names[4], packedFixed64MemoizedSerializedSize, packedFixed64_);
+        output.WritePackedFixed64Array(97, field_names[4], packedFixed64MemoizedSerializedSize, packedFixed64_);
       }
       if (packedSfixed32_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.SFixed32, 98, field_names[8], packedSfixed32MemoizedSerializedSize, packedSfixed32_);
+        output.WritePackedSFixed32Array(98, field_names[8], packedSfixed32MemoizedSerializedSize, packedSfixed32_);
       }
       if (packedSfixed64_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.SFixed64, 99, field_names[9], packedSfixed64MemoizedSerializedSize, packedSfixed64_);
+        output.WritePackedSFixed64Array(99, field_names[9], packedSfixed64MemoizedSerializedSize, packedSfixed64_);
       }
       if (packedFloat_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Float, 100, field_names[5], packedFloatMemoizedSerializedSize, packedFloat_);
+        output.WritePackedFloatArray(100, field_names[5], packedFloatMemoizedSerializedSize, packedFloat_);
       }
       if (packedDouble_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Double, 101, field_names[1], packedDoubleMemoizedSerializedSize, packedDouble_);
+        output.WritePackedDoubleArray(101, field_names[1], packedDoubleMemoizedSerializedSize, packedDouble_);
       }
       if (packedBool_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Bool, 102, field_names[0], packedBoolMemoizedSerializedSize, packedBool_);
+        output.WritePackedBoolArray(102, field_names[0], packedBoolMemoizedSerializedSize, packedBool_);
       }
       if (packedEnum_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.Enum, 103, field_names[2], packedEnumMemoizedSerializedSize, packedEnum_);
+        output.WritePackedEnumArray(103, field_names[2], packedEnumMemoizedSerializedSize, packedEnum_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -15492,67 +15492,67 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 722:
             case 720: {
-              input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.packedInt32_);
+              input.ReadInt32Array(tag, field_name, result.packedInt32_);
               break;
             }
             case 730:
             case 728: {
-              input.ReadPrimitiveArray(pbd::FieldType.Int64, tag, field_name, result.packedInt64_);
+              input.ReadInt64Array(tag, field_name, result.packedInt64_);
               break;
             }
             case 738:
             case 736: {
-              input.ReadPrimitiveArray(pbd::FieldType.UInt32, tag, field_name, result.packedUint32_);
+              input.ReadUInt32Array(tag, field_name, result.packedUint32_);
               break;
             }
             case 746:
             case 744: {
-              input.ReadPrimitiveArray(pbd::FieldType.UInt64, tag, field_name, result.packedUint64_);
+              input.ReadUInt64Array(tag, field_name, result.packedUint64_);
               break;
             }
             case 754:
             case 752: {
-              input.ReadPrimitiveArray(pbd::FieldType.SInt32, tag, field_name, result.packedSint32_);
+              input.ReadSInt32Array(tag, field_name, result.packedSint32_);
               break;
             }
             case 762:
             case 760: {
-              input.ReadPrimitiveArray(pbd::FieldType.SInt64, tag, field_name, result.packedSint64_);
+              input.ReadSInt64Array(tag, field_name, result.packedSint64_);
               break;
             }
             case 770:
             case 773: {
-              input.ReadPrimitiveArray(pbd::FieldType.Fixed32, tag, field_name, result.packedFixed32_);
+              input.ReadFixed32Array(tag, field_name, result.packedFixed32_);
               break;
             }
             case 778:
             case 777: {
-              input.ReadPrimitiveArray(pbd::FieldType.Fixed64, tag, field_name, result.packedFixed64_);
+              input.ReadFixed64Array(tag, field_name, result.packedFixed64_);
               break;
             }
             case 786:
             case 789: {
-              input.ReadPrimitiveArray(pbd::FieldType.SFixed32, tag, field_name, result.packedSfixed32_);
+              input.ReadSFixed32Array(tag, field_name, result.packedSfixed32_);
               break;
             }
             case 794:
             case 793: {
-              input.ReadPrimitiveArray(pbd::FieldType.SFixed64, tag, field_name, result.packedSfixed64_);
+              input.ReadSFixed64Array(tag, field_name, result.packedSfixed64_);
               break;
             }
             case 802:
             case 805: {
-              input.ReadPrimitiveArray(pbd::FieldType.Float, tag, field_name, result.packedFloat_);
+              input.ReadFloatArray(tag, field_name, result.packedFloat_);
               break;
             }
             case 810:
             case 809: {
-              input.ReadPrimitiveArray(pbd::FieldType.Double, tag, field_name, result.packedDouble_);
+              input.ReadDoubleArray(tag, field_name, result.packedDouble_);
               break;
             }
             case 818:
             case 816: {
-              input.ReadPrimitiveArray(pbd::FieldType.Bool, tag, field_name, result.packedBool_);
+              input.ReadBoolArray(tag, field_name, result.packedBool_);
               break;
             }
             case 826:
@@ -16181,46 +16181,46 @@ namespace Google.ProtocolBuffers.TestProtos {
       int size = SerializedSize;
       string[] field_names = _testUnpackedTypesFieldNames;
       if (unpackedInt32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Int32, 90, field_names[6], unpackedInt32_);
+        output.WriteInt32Array(90, field_names[6], unpackedInt32_);
       }
       if (unpackedInt64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Int64, 91, field_names[7], unpackedInt64_);
+        output.WriteInt64Array(91, field_names[7], unpackedInt64_);
       }
       if (unpackedUint32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.UInt32, 92, field_names[12], unpackedUint32_);
+        output.WriteUInt32Array(92, field_names[12], unpackedUint32_);
       }
       if (unpackedUint64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.UInt64, 93, field_names[13], unpackedUint64_);
+        output.WriteUInt64Array(93, field_names[13], unpackedUint64_);
       }
       if (unpackedSint32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.SInt32, 94, field_names[10], unpackedSint32_);
+        output.WriteSInt32Array(94, field_names[10], unpackedSint32_);
       }
       if (unpackedSint64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.SInt64, 95, field_names[11], unpackedSint64_);
+        output.WriteSInt64Array(95, field_names[11], unpackedSint64_);
       }
       if (unpackedFixed32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Fixed32, 96, field_names[3], unpackedFixed32_);
+        output.WriteFixed32Array(96, field_names[3], unpackedFixed32_);
       }
       if (unpackedFixed64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Fixed64, 97, field_names[4], unpackedFixed64_);
+        output.WriteFixed64Array(97, field_names[4], unpackedFixed64_);
       }
       if (unpackedSfixed32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.SFixed32, 98, field_names[8], unpackedSfixed32_);
+        output.WriteSFixed32Array(98, field_names[8], unpackedSfixed32_);
       }
       if (unpackedSfixed64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.SFixed64, 99, field_names[9], unpackedSfixed64_);
+        output.WriteSFixed64Array(99, field_names[9], unpackedSfixed64_);
       }
       if (unpackedFloat_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Float, 100, field_names[5], unpackedFloat_);
+        output.WriteFloatArray(100, field_names[5], unpackedFloat_);
       }
       if (unpackedDouble_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Double, 101, field_names[1], unpackedDouble_);
+        output.WriteDoubleArray(101, field_names[1], unpackedDouble_);
       }
       if (unpackedBool_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Bool, 102, field_names[0], unpackedBool_);
+        output.WriteBoolArray(102, field_names[0], unpackedBool_);
       }
       if (unpackedEnum_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Enum, 103, field_names[2], unpackedEnum_);
+        output.WriteEnumArray(103, field_names[2], unpackedEnum_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -16527,67 +16527,67 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 722:
             case 720: {
-              input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.unpackedInt32_);
+              input.ReadInt32Array(tag, field_name, result.unpackedInt32_);
               break;
             }
             case 730:
             case 728: {
-              input.ReadPrimitiveArray(pbd::FieldType.Int64, tag, field_name, result.unpackedInt64_);
+              input.ReadInt64Array(tag, field_name, result.unpackedInt64_);
               break;
             }
             case 738:
             case 736: {
-              input.ReadPrimitiveArray(pbd::FieldType.UInt32, tag, field_name, result.unpackedUint32_);
+              input.ReadUInt32Array(tag, field_name, result.unpackedUint32_);
               break;
             }
             case 746:
             case 744: {
-              input.ReadPrimitiveArray(pbd::FieldType.UInt64, tag, field_name, result.unpackedUint64_);
+              input.ReadUInt64Array(tag, field_name, result.unpackedUint64_);
               break;
             }
             case 754:
             case 752: {
-              input.ReadPrimitiveArray(pbd::FieldType.SInt32, tag, field_name, result.unpackedSint32_);
+              input.ReadSInt32Array(tag, field_name, result.unpackedSint32_);
               break;
             }
             case 762:
             case 760: {
-              input.ReadPrimitiveArray(pbd::FieldType.SInt64, tag, field_name, result.unpackedSint64_);
+              input.ReadSInt64Array(tag, field_name, result.unpackedSint64_);
               break;
             }
             case 770:
             case 773: {
-              input.ReadPrimitiveArray(pbd::FieldType.Fixed32, tag, field_name, result.unpackedFixed32_);
+              input.ReadFixed32Array(tag, field_name, result.unpackedFixed32_);
               break;
             }
             case 778:
             case 777: {
-              input.ReadPrimitiveArray(pbd::FieldType.Fixed64, tag, field_name, result.unpackedFixed64_);
+              input.ReadFixed64Array(tag, field_name, result.unpackedFixed64_);
               break;
             }
             case 786:
             case 789: {
-              input.ReadPrimitiveArray(pbd::FieldType.SFixed32, tag, field_name, result.unpackedSfixed32_);
+              input.ReadSFixed32Array(tag, field_name, result.unpackedSfixed32_);
               break;
             }
             case 794:
             case 793: {
-              input.ReadPrimitiveArray(pbd::FieldType.SFixed64, tag, field_name, result.unpackedSfixed64_);
+              input.ReadSFixed64Array(tag, field_name, result.unpackedSfixed64_);
               break;
             }
             case 802:
             case 805: {
-              input.ReadPrimitiveArray(pbd::FieldType.Float, tag, field_name, result.unpackedFloat_);
+              input.ReadFloatArray(tag, field_name, result.unpackedFloat_);
               break;
             }
             case 810:
             case 809: {
-              input.ReadPrimitiveArray(pbd::FieldType.Double, tag, field_name, result.unpackedDouble_);
+              input.ReadDoubleArray(tag, field_name, result.unpackedDouble_);
               break;
             }
             case 818:
             case 816: {
-              input.ReadPrimitiveArray(pbd::FieldType.Bool, tag, field_name, result.unpackedBool_);
+              input.ReadBoolArray(tag, field_name, result.unpackedBool_);
               break;
             }
             case 826:
@@ -17792,10 +17792,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteMessage(2004, field_names[1], DynamicMessageExtension);
       }
       if (repeatedExtension_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 2005, field_names[5], repeatedExtension_);
+        output.WriteStringArray(2005, field_names[5], repeatedExtension_);
       }
       if (packedExtension_.Count > 0) {
-        output.WritePackedArray(pbd::FieldType.SInt32, 2006, field_names[4], packedExtensionMemoizedSerializedSize, packedExtension_);
+        output.WritePackedSInt32Array(2006, field_names[4], packedExtensionMemoizedSerializedSize, packedExtension_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -18048,12 +18048,12 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 16042: {
-              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.repeatedExtension_);
+              input.ReadStringArray(tag, field_name, result.repeatedExtension_);
               break;
             }
             case 16050:
             case 16048: {
-              input.ReadPrimitiveArray(pbd::FieldType.SInt32, tag, field_name, result.packedExtension_);
+              input.ReadSInt32Array(tag, field_name, result.packedExtension_);
               break;
             }
           }
@@ -18368,22 +18368,22 @@ namespace Google.ProtocolBuffers.TestProtos {
       int size = SerializedSize;
       string[] field_names = _testRepeatedScalarDifferentTagSizesFieldNames;
       if (repeatedFixed32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Fixed32, 12, field_names[0], repeatedFixed32_);
+        output.WriteFixed32Array(12, field_names[0], repeatedFixed32_);
       }
       if (repeatedInt32_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Int32, 13, field_names[3], repeatedInt32_);
+        output.WriteInt32Array(13, field_names[3], repeatedInt32_);
       }
       if (repeatedFixed64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Fixed64, 2046, field_names[1], repeatedFixed64_);
+        output.WriteFixed64Array(2046, field_names[1], repeatedFixed64_);
       }
       if (repeatedInt64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Int64, 2047, field_names[4], repeatedInt64_);
+        output.WriteInt64Array(2047, field_names[4], repeatedInt64_);
       }
       if (repeatedFloat_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Float, 262142, field_names[2], repeatedFloat_);
+        output.WriteFloatArray(262142, field_names[2], repeatedFloat_);
       }
       if (repeatedUint64_.Count > 0) {
-        output.WriteArray(pbd::FieldType.UInt64, 262143, field_names[5], repeatedUint64_);
+        output.WriteUInt64Array(262143, field_names[5], repeatedUint64_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -18600,32 +18600,32 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 98:
             case 101: {
-              input.ReadPrimitiveArray(pbd::FieldType.Fixed32, tag, field_name, result.repeatedFixed32_);
+              input.ReadFixed32Array(tag, field_name, result.repeatedFixed32_);
               break;
             }
             case 106:
             case 104: {
-              input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.repeatedInt32_);
+              input.ReadInt32Array(tag, field_name, result.repeatedInt32_);
               break;
             }
             case 16370:
             case 16369: {
-              input.ReadPrimitiveArray(pbd::FieldType.Fixed64, tag, field_name, result.repeatedFixed64_);
+              input.ReadFixed64Array(tag, field_name, result.repeatedFixed64_);
               break;
             }
             case 16378:
             case 16376: {
-              input.ReadPrimitiveArray(pbd::FieldType.Int64, tag, field_name, result.repeatedInt64_);
+              input.ReadInt64Array(tag, field_name, result.repeatedInt64_);
               break;
             }
             case 2097138:
             case 2097141: {
-              input.ReadPrimitiveArray(pbd::FieldType.Float, tag, field_name, result.repeatedFloat_);
+              input.ReadFloatArray(tag, field_name, result.repeatedFloat_);
               break;
             }
             case 2097146:
             case 2097144: {
-              input.ReadPrimitiveArray(pbd::FieldType.UInt64, tag, field_name, result.repeatedUint64_);
+              input.ReadUInt64Array(tag, field_name, result.repeatedUint64_);
               break;
             }
           }

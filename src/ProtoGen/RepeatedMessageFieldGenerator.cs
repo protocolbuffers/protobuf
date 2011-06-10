@@ -129,7 +129,7 @@ namespace Google.ProtocolBuffers.ProtoGen
         {
             writer.WriteLine("if ({0}_.Count > 0) {{", Name);
             writer.Indent();
-            writer.WriteLine("output.WriteArray(pbd::FieldType.{3}, {0}, field_names[{2}], {1}_);", Number, Name, FieldOrdinal, Descriptor.FieldType);
+            writer.WriteLine("output.Write{0}Array({1}, field_names[{3}], {2}_);", MessageOrGroup, Number, Name, FieldOrdinal, Descriptor.FieldType);
             writer.Outdent();
             writer.WriteLine("}");
         }

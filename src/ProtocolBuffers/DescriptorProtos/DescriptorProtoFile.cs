@@ -279,7 +279,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       int size = SerializedSize;
       string[] field_names = _fileDescriptorSetFieldNames;
       if (file_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 1, field_names[0], file_);
+        output.WriteMessageArray(1, field_names[0], file_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -640,19 +640,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         output.WriteString(2, field_names[6], Package);
       }
       if (dependency_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 3, field_names[0], dependency_);
+        output.WriteStringArray(3, field_names[0], dependency_);
       }
       if (messageType_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 4, field_names[3], messageType_);
+        output.WriteMessageArray(4, field_names[3], messageType_);
       }
       if (enumType_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 5, field_names[1], enumType_);
+        output.WriteMessageArray(5, field_names[1], enumType_);
       }
       if (service_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 6, field_names[7], service_);
+        output.WriteMessageArray(6, field_names[7], service_);
       }
       if (extension_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 7, field_names[2], extension_);
+        output.WriteMessageArray(7, field_names[2], extension_);
       }
       if (hasOptions) {
         output.WriteMessage(8, field_names[5], Options);
@@ -871,7 +871,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               break;
             }
             case 26: {
-              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.dependency_);
+              input.ReadStringArray(tag, field_name, result.dependency_);
               break;
             }
             case 34: {
@@ -1591,19 +1591,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         output.WriteString(1, field_names[4], Name);
       }
       if (field_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 2, field_names[3], field_);
+        output.WriteMessageArray(2, field_names[3], field_);
       }
       if (nestedType_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 3, field_names[5], nestedType_);
+        output.WriteMessageArray(3, field_names[5], nestedType_);
       }
       if (enumType_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 4, field_names[0], enumType_);
+        output.WriteMessageArray(4, field_names[0], enumType_);
       }
       if (extensionRange_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 5, field_names[2], extensionRange_);
+        output.WriteMessageArray(5, field_names[2], extensionRange_);
       }
       if (extension_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 6, field_names[1], extension_);
+        output.WriteMessageArray(6, field_names[1], extension_);
       }
       if (hasOptions) {
         output.WriteMessage(7, field_names[6], Options);
@@ -2784,7 +2784,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         output.WriteString(1, field_names[0], Name);
       }
       if (value_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 2, field_names[2], value_);
+        output.WriteMessageArray(2, field_names[2], value_);
       }
       if (hasOptions) {
         output.WriteMessage(3, field_names[1], Options);
@@ -3506,7 +3506,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         output.WriteString(1, field_names[1], Name);
       }
       if (method_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 2, field_names[0], method_);
+        output.WriteMessageArray(2, field_names[0], method_);
       }
       if (hasOptions) {
         output.WriteMessage(3, field_names[2], Options);
@@ -4354,7 +4354,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         output.WriteBool(18, field_names[6], PyGenericServices);
       }
       if (uninterpretedOption_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 999, field_names[7], uninterpretedOption_);
+        output.WriteMessageArray(999, field_names[7], uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -4856,7 +4856,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         output.WriteBool(2, field_names[1], NoStandardDescriptorAccessor);
       }
       if (uninterpretedOption_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 999, field_names[2], uninterpretedOption_);
+        output.WriteMessageArray(999, field_names[2], uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -5250,7 +5250,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         output.WriteString(9, field_names[2], ExperimentalMapKey);
       }
       if (uninterpretedOption_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 999, field_names[4], uninterpretedOption_);
+        output.WriteMessageArray(999, field_names[4], uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -5641,7 +5641,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       string[] field_names = _enumOptionsFieldNames;
       pb::ExtendableMessage<EnumOptions, EnumOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (uninterpretedOption_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 999, field_names[0], uninterpretedOption_);
+        output.WriteMessageArray(999, field_names[0], uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -5911,7 +5911,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       string[] field_names = _enumValueOptionsFieldNames;
       pb::ExtendableMessage<EnumValueOptions, EnumValueOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (uninterpretedOption_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 999, field_names[0], uninterpretedOption_);
+        output.WriteMessageArray(999, field_names[0], uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -6181,7 +6181,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       string[] field_names = _serviceOptionsFieldNames;
       pb::ExtendableMessage<ServiceOptions, ServiceOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (uninterpretedOption_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 999, field_names[0], uninterpretedOption_);
+        output.WriteMessageArray(999, field_names[0], uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -6451,7 +6451,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       string[] field_names = _methodOptionsFieldNames;
       pb::ExtendableMessage<MethodOptions, MethodOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (uninterpretedOption_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 999, field_names[0], uninterpretedOption_);
+        output.WriteMessageArray(999, field_names[0], uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -7061,7 +7061,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       int size = SerializedSize;
       string[] field_names = _uninterpretedOptionFieldNames;
       if (name_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 2, field_names[2], name_);
+        output.WriteMessageArray(2, field_names[2], name_);
       }
       if (hasIdentifierValue) {
         output.WriteString(3, field_names[1], IdentifierValue);

@@ -72,6 +72,7 @@ namespace Google.ProtocolBuffers.ProtoBench
             if (temp.Remove("/v2") || temp.Remove("-v2"))
             {
                 Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
+                Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(1);
                 RunBenchmark = BenchmarkV2;
             }
             if (temp.Remove("/all") || temp.Remove("-all"))

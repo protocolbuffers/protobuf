@@ -597,7 +597,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteString(4, field_names[29], Field4);
       }
       if (field5_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Fixed64, 5, field_names[30], field5_);
+        output.WriteFixed64Array(5, field_names[30], field5_);
       }
       if (hasField6) {
         output.WriteInt32(6, field_names[32], Field6);
@@ -1122,7 +1122,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 42:
             case 41: {
-              input.ReadPrimitiveArray(pbd::FieldType.Fixed64, tag, field_name, result.field5_);
+              input.ReadFixed64Array(tag, field_name, result.field5_);
               break;
             }
             case 48: {
@@ -3348,7 +3348,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             output.WriteString(13, field_names[2], Field13);
           }
           if (field14_.Count > 0) {
-            output.WriteArray(pbd::FieldType.String, 14, field_names[3], field14_);
+            output.WriteStringArray(14, field_names[3], field14_);
           }
           if (hasField15) {
             output.WriteUInt64(15, field_names[4], Field15);
@@ -3360,7 +3360,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             output.WriteInt32(20, field_names[6], Field20);
           }
           if (field22_.Count > 0) {
-            output.WriteArray(pbd::FieldType.String, 22, field_names[7], field22_);
+            output.WriteStringArray(22, field_names[7], field22_);
           }
           if (hasField24) {
             output.WriteString(24, field_names[8], Field24);
@@ -3381,7 +3381,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             output.WriteMessage(31, field_names[13], Field31);
           }
           if (field73_.Count > 0) {
-            output.WriteArray(pbd::FieldType.Int32, 73, field_names[15], field73_);
+            output.WriteInt32Array(73, field_names[15], field73_);
           }
           UnknownFields.WriteTo(output);
         }
@@ -3661,7 +3661,7 @@ namespace Google.ProtocolBuffers.TestProtos {
                   break;
                 }
                 case 114: {
-                  input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.field14_);
+                  input.ReadStringArray(tag, field_name, result.field14_);
                   break;
                 }
                 case 120: {
@@ -3677,7 +3677,7 @@ namespace Google.ProtocolBuffers.TestProtos {
                   break;
                 }
                 case 178: {
-                  input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.field22_);
+                  input.ReadStringArray(tag, field_name, result.field22_);
                   break;
                 }
                 case 194: {
@@ -3711,7 +3711,7 @@ namespace Google.ProtocolBuffers.TestProtos {
                 }
                 case 586:
                 case 584: {
-                  input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.field73_);
+                  input.ReadInt32Array(tag, field_name, result.field73_);
                   break;
                 }
               }
@@ -4407,7 +4407,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteString(6, field_names[25], Field6);
       }
       if (group1_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Group, 10, field_names[29], group1_);
+        output.WriteGroupArray(10, field_names[29], group1_);
       }
       if (hasField21) {
         output.WriteInt32(21, field_names[10], Field21);
@@ -4431,16 +4431,16 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteInt32(109, field_names[1], Field109);
       }
       if (field127_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 127, field_names[2], field127_);
+        output.WriteStringArray(127, field_names[2], field127_);
       }
       if (field128_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 128, field_names[3], field128_);
+        output.WriteStringArray(128, field_names[3], field128_);
       }
       if (hasField129) {
         output.WriteInt32(129, field_names[4], Field129);
       }
       if (field130_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Int64, 130, field_names[5], field130_);
+        output.WriteInt64Array(130, field_names[5], field130_);
       }
       if (hasField131) {
         output.WriteInt64(131, field_names[6], Field131);
@@ -4880,11 +4880,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 1018: {
-              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.field127_);
+              input.ReadStringArray(tag, field_name, result.field127_);
               break;
             }
             case 1026: {
-              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.field128_);
+              input.ReadStringArray(tag, field_name, result.field128_);
               break;
             }
             case 1032: {
@@ -4893,7 +4893,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 1042:
             case 1040: {
-              input.ReadPrimitiveArray(pbd::FieldType.Int64, tag, field_name, result.field130_);
+              input.ReadInt64Array(tag, field_name, result.field130_);
               break;
             }
             case 1048: {

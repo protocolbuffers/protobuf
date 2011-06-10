@@ -183,7 +183,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       int size = SerializedSize;
       string[] field_names = _testXmlChildFieldNames;
       if (options_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Enum, 3, field_names[1], options_);
+        output.WriteEnumArray(3, field_names[1], options_);
       }
       if (hasBinary) {
         output.WriteBytes(4, field_names[0], Binary);
@@ -722,7 +722,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           int size = SerializedSize;
           string[] field_names = _childrenFieldNames;
           if (options_.Count > 0) {
-            output.WriteArray(pbd::FieldType.Enum, 3, field_names[1], options_);
+            output.WriteEnumArray(3, field_names[1], options_);
           }
           if (hasBinary) {
             output.WriteBytes(4, field_names[0], Binary);
@@ -1066,7 +1066,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         output.WriteMessage(1, field_names[0], Child);
       }
       if (numbers_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Int32, 2, field_names[3], numbers_);
+        output.WriteInt32Array(2, field_names[3], numbers_);
       }
       if (hasText) {
         output.WriteString(3, field_names[4], Text);
@@ -1079,10 +1079,10 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       extensionWriter.WriteUntil(200, output);
       if (children_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Group, 401, field_names[1], children_);
+        output.WriteGroupArray(401, field_names[1], children_);
       }
       if (textlines_.Count > 0) {
-        output.WriteArray(pbd::FieldType.String, 700, field_names[5], textlines_);
+        output.WriteStringArray(700, field_names[5], textlines_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -1299,7 +1299,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             }
             case 18:
             case 16: {
-              input.ReadPrimitiveArray(pbd::FieldType.Int32, tag, field_name, result.numbers_);
+              input.ReadInt32Array(tag, field_name, result.numbers_);
               break;
             }
             case 26: {
@@ -1319,7 +1319,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 5602: {
-              input.ReadPrimitiveArray(pbd::FieldType.String, tag, field_name, result.textlines_);
+              input.ReadStringArray(tag, field_name, result.textlines_);
               break;
             }
           }

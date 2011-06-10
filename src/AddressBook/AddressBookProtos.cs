@@ -461,7 +461,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         output.WriteString(3, field_names[0], Email);
       }
       if (phone_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 4, field_names[3], phone_);
+        output.WriteMessageArray(4, field_names[3], phone_);
       }
       UnknownFields.WriteTo(output);
     }
@@ -812,7 +812,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       int size = SerializedSize;
       string[] field_names = _addressBookFieldNames;
       if (person_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Message, 1, field_names[0], person_);
+        output.WriteMessageArray(1, field_names[0], person_);
       }
       UnknownFields.WriteTo(output);
     }

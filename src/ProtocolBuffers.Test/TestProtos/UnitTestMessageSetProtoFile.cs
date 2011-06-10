@@ -1385,7 +1385,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       int size = SerializedSize;
       string[] field_names = _rawMessageSetFieldNames;
       if (item_.Count > 0) {
-        output.WriteArray(pbd::FieldType.Group, 1, field_names[0], item_);
+        output.WriteGroupArray(1, field_names[0], item_);
       }
       UnknownFields.WriteTo(output);
     }

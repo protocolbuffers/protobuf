@@ -147,13 +147,6 @@ namespace Google.ProtocolBuffers
         void ReadPrimitiveArray(FieldType fieldType, uint fieldTag, string fieldName, ICollection<object> list);
 
         /// <summary>
-        /// Reads an array of primitive values into the list, if the wire-type of fieldTag is length-prefixed and the 
-        /// type is numberic, it will read a packed array.
-        /// </summary>
-        [CLSCompliant(false)]
-        void ReadPrimitiveArray<T>(FieldType fieldType, uint fieldTag, string fieldName, ICollection<T> list);
-
-        /// <summary>
         /// Reads an array of primitive values into the list, if the wire-type of fieldTag is length-prefixed, it will
         /// read a packed array.
         /// </summary>
@@ -201,5 +194,50 @@ namespace Google.ProtocolBuffers
         /// nothing is skipped. Otherwise, returns true.</returns>
         [CLSCompliant(false)]
         bool SkipField();
+
+        [CLSCompliant(false)]
+        void ReadStringArray(uint fieldTag, string fieldName, ICollection<string> list);
+
+        [CLSCompliant(false)]
+        void ReadBytesArray(uint fieldTag, string fieldName, ICollection<ByteString> list);
+
+        [CLSCompliant(false)]
+        void ReadBoolArray(uint fieldTag, string fieldName, ICollection<bool> list);
+
+        [CLSCompliant(false)]
+        void ReadInt32Array(uint fieldTag, string fieldName, ICollection<int> list);
+
+        [CLSCompliant(false)]
+        void ReadSInt32Array(uint fieldTag, string fieldName, ICollection<int> list);
+
+        [CLSCompliant(false)]
+        void ReadUInt32Array(uint fieldTag, string fieldName, ICollection<uint> list);
+
+        [CLSCompliant(false)]
+        void ReadFixed32Array(uint fieldTag, string fieldName, ICollection<uint> list);
+
+        [CLSCompliant(false)]
+        void ReadSFixed32Array(uint fieldTag, string fieldName, ICollection<int> list);
+
+        [CLSCompliant(false)]
+        void ReadInt64Array(uint fieldTag, string fieldName, ICollection<long> list);
+
+        [CLSCompliant(false)]
+        void ReadSInt64Array(uint fieldTag, string fieldName, ICollection<long> list);
+
+        [CLSCompliant(false)]
+        void ReadUInt64Array(uint fieldTag, string fieldName, ICollection<ulong> list);
+
+        [CLSCompliant(false)]
+        void ReadFixed64Array(uint fieldTag, string fieldName, ICollection<ulong> list);
+
+        [CLSCompliant(false)]
+        void ReadSFixed64Array(uint fieldTag, string fieldName, ICollection<long> list);
+
+        [CLSCompliant(false)]
+        void ReadDoubleArray(uint fieldTag, string fieldName, ICollection<double> list);
+
+        [CLSCompliant(false)]
+        void ReadFloatArray(uint fieldTag, string fieldName, ICollection<float> list);
     }
 }
