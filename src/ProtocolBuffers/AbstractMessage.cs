@@ -121,6 +121,27 @@ namespace Google.ProtocolBuffers
             return TextFormat.PrintToString(this);
         }
 
+        public string ToJson()
+        {
+            Serialization.JsonFormatWriter w = Serialization.JsonFormatWriter.CreateInstance();
+            w.WriteMessage(this);
+            return w.ToString();
+        }
+
+        public string ToXml()
+        {
+            StringWriter w = new StringWriter(new System.Text.StringBuilder(4096));
+            Serialization.XmlFormatWriter.CreateInstance(w).WriteMessage(this);
+            return w.ToString();
+        }
+
+        public string ToXml(string rootElementName)
+        {
+            StringWriter w = new StringWriter(new System.Text.StringBuilder(4096));
+            Serialization.XmlFormatWriter.CreateInstance(w).WriteMessage(rootElementName, this);
+            return w.ToString();
+        }
+
         public override sealed void PrintTo(TextWriter writer)
         {
             TextFormat.Print(this, writer);

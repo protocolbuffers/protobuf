@@ -13,6 +13,28 @@ namespace Google.ProtocolBuffers
     public class TestWriterFormatXml
     {
         [Test]
+        public void TestToXmlParseFromXml()
+        {
+            TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
+            string xml = msg.ToXml();
+            Assert.AreEqual("<root><default_bool>true</default_bool></root>", xml);
+            TestAllTypes copy = TestAllTypes.ParseFromXml(XmlReader.Create(new StringReader(xml)));
+            Assert.IsTrue(copy.HasDefaultBool && copy.DefaultBool);
+            Assert.AreEqual(msg, copy);
+        }
+
+        [Test]
+        public void TestToXmlParseFromXmlWithRootName()
+        {
+            TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
+            string xml = msg.ToXml("message");
+            Assert.AreEqual("<message><default_bool>true</default_bool></message>", xml);
+            TestAllTypes copy = TestAllTypes.ParseFromXml("message", XmlReader.Create(new StringReader(xml)));
+            Assert.IsTrue(copy.HasDefaultBool && copy.DefaultBool);
+            Assert.AreEqual(msg, copy);
+        }
+
+        [Test]
         public void TestEmptyMessage()
         {
             TestXmlChild message = TestXmlChild.CreateBuilder()

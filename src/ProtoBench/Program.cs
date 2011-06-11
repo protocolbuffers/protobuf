@@ -158,7 +158,7 @@ namespace Google.ProtocolBuffers.ProtoBench
                 } );
                 RunBenchmark("Serialize to json", jsonBytes.Length, () => 
                 {
-                    JsonFormatWriter.CreateInstance(new MemoryStream()).WriteMessage(sampleMessage); 
+                    JsonFormatWriter.CreateInstance().WriteMessage(sampleMessage); 
                 });
                 RunBenchmark("Serialize to json via xml", jsonBytes.Length,
                     () =>

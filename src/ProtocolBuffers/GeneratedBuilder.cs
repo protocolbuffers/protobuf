@@ -49,7 +49,7 @@ namespace Google.ProtocolBuffers
     /// </summary>
     public abstract class GeneratedBuilder<TMessage, TBuilder> : AbstractBuilder<TMessage, TBuilder>
         where TMessage : GeneratedMessage<TMessage, TBuilder>
-        where TBuilder : GeneratedBuilder<TMessage, TBuilder>
+        where TBuilder : GeneratedBuilder<TMessage, TBuilder>, new()
     {
         /// <summary>
         /// Returns the message being built at the moment.

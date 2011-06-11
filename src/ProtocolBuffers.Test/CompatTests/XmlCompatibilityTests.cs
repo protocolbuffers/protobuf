@@ -1,5 +1,6 @@
 using System.IO;
 using Google.ProtocolBuffers.Serialization;
+using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
 
 namespace Google.ProtocolBuffers.CompatTests

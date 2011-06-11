@@ -32,6 +32,28 @@ namespace Google.ProtocolBuffers
         }
 
         [Test]
+        public void TestToJsonParseFromJson()
+        {
+            TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
+            string json = msg.ToJson();
+            Assert.AreEqual("{\"default_bool\":true}", json);
+            TestAllTypes copy = TestAllTypes.ParseFromJson(json);
+            Assert.IsTrue(copy.HasDefaultBool && copy.DefaultBool);
+            Assert.AreEqual(msg, copy);
+        }
+
+        [Test]
+        public void TestToJsonParseFromJsonReader()
+        {
+            TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
+            string json = msg.ToJson();
+            Assert.AreEqual("{\"default_bool\":true}", json);
+            TestAllTypes copy = TestAllTypes.ParseFromJson(new StringReader(json));
+            Assert.IsTrue(copy.HasDefaultBool && copy.DefaultBool);
+            Assert.AreEqual(msg, copy);
+        }
+
+        [Test]
         public void TestJsonFormatted()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()

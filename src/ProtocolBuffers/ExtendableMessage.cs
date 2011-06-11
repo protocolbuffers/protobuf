@@ -43,7 +43,7 @@ namespace Google.ProtocolBuffers
 {
     public abstract class ExtendableMessage<TMessage, TBuilder> : GeneratedMessage<TMessage, TBuilder>
         where TMessage : GeneratedMessage<TMessage, TBuilder>
-        where TBuilder : GeneratedBuilder<TMessage, TBuilder>
+        where TBuilder : GeneratedBuilder<TMessage, TBuilder>, new()
     {
         protected ExtendableMessage()
         {

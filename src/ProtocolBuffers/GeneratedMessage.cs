@@ -50,7 +50,7 @@ namespace Google.ProtocolBuffers
     /// </summary>
     public abstract class GeneratedMessage<TMessage, TBuilder> : AbstractMessage<TMessage, TBuilder>
         where TMessage : GeneratedMessage<TMessage, TBuilder>
-        where TBuilder : GeneratedBuilder<TMessage, TBuilder>
+        where TBuilder : GeneratedBuilder<TMessage, TBuilder>, new()
     {
         private UnknownFieldSet unknownFields = UnknownFieldSet.DefaultInstance;
 
@@ -174,6 +174,36 @@ namespace Google.ProtocolBuffers
         internal void SetUnknownFields(UnknownFieldSet fieldSet)
         {
             unknownFields = fieldSet;
+        }
+
+        public static TMessage ParseFromJson(string jsonText)
+        {
+            return Serialization.JsonFormatReader.CreateInstance(jsonText)
+                .Merge(new TBuilder())
+                .Build();
+        }
+
+        public static TMessage ParseFromJson(System.IO.TextReader reader)
+        { return ParseFromJson(reader, ExtensionRegistry.Empty); }
+
+        public static TMessage ParseFromJson(System.IO.TextReader reader, ExtensionRegistry extensionRegistry)
+        {
+            return Serialization.JsonFormatReader.CreateInstance(reader)
+                .Merge(new TBuilder(), extensionRegistry)
+                .Build();
+        }
+
+        public static TMessage ParseFromXml(System.Xml.XmlReader reader)
+        { return ParseFromXml(Serialization.XmlFormatReader.DefaultRootElementName, reader, ExtensionRegistry.Empty); }
+        
+        public static TMessage ParseFromXml(string rootElementName, System.Xml.XmlReader reader)
+        { return ParseFromXml(rootElementName, reader, ExtensionRegistry.Empty); }
+
+        public static TMessage ParseFromXml(string rootElementName, System.Xml.XmlReader reader, ExtensionRegistry extensionRegistry)
+        {
+            return Serialization.XmlFormatReader.CreateInstance(reader)
+                .Merge(rootElementName, new TBuilder(), extensionRegistry)
+                .Build();
         }
     }
 }

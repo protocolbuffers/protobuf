@@ -73,7 +73,7 @@ namespace Google.ProtocolBuffers.CompatTests
 
         #region Test message builders
 
-        private static TestAllTypes.Builder AddAllTypes(TestAllTypes.Builder builder)
+        protected static TestAllTypes.Builder AddAllTypes(TestAllTypes.Builder builder)
         {
             return builder.SetOptionalInt32(1001)
                 .SetOptionalInt64(1001)
@@ -96,7 +96,7 @@ namespace Google.ProtocolBuffers.CompatTests
             ;
         }
 
-        private static TestAllTypes.Builder AddRepeatedTypes(TestAllTypes.Builder builder, int size)
+        protected static TestAllTypes.Builder AddRepeatedTypes(TestAllTypes.Builder builder, int size)
         {
             //repeated values
             for (int i = 0; i < size; i++)
@@ -122,7 +122,7 @@ namespace Google.ProtocolBuffers.CompatTests
             return builder;
         }
 
-        private static TestPackedTypes.Builder AddPackedTypes(TestPackedTypes.Builder builder, int size)
+        protected static TestPackedTypes.Builder AddPackedTypes(TestPackedTypes.Builder builder, int size)
         {
             for(int i=0; i < size; i++ )
                 builder.AddPackedInt32(1001)

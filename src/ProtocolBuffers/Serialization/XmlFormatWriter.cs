@@ -20,7 +20,13 @@ namespace Google.ProtocolBuffers.Serialization
 
         static XmlWriterSettings DefaultSettings(Encoding encoding)
         {
-            return new XmlWriterSettings() { CheckCharacters = false, NewLineHandling = NewLineHandling.Entitize, Encoding = encoding };
+            return new XmlWriterSettings() 
+            { 
+                CheckCharacters = false, 
+                NewLineHandling = NewLineHandling.Entitize, 
+                OmitXmlDeclaration = true,
+                Encoding = encoding, 
+            };
         }
 
         /// <summary>
