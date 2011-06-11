@@ -10,7 +10,7 @@ namespace Google.ProtocolBuffers.Serialization
     /// </summary>
     public class JsonFormatReader : AbstractTextReader
     {
-        private readonly JsonTextCursor _input;
+        private readonly JsonCursor _input;
         private readonly Stack<int> _stopChar;
 
         enum ReaderState { Start, BeginValue, EndValue, BeginObject, BeginArray }
@@ -18,25 +18,41 @@ namespace Google.ProtocolBuffers.Serialization
         ReaderState _state;
 
         /// <summary>
-        /// Constructs a JsonFormatReader to parse Json into a message
+        /// Constructs a JsonFormatReader to parse Json into a message, this method does not use text encoding, all bytes MUST
+        /// represent ASCII character values.
         /// </summary>
-        public JsonFormatReader(string jsonText)
-        {
-            _input = new JsonTextCursor(jsonText.ToCharArray());
-            _stopChar = new Stack<int>();
-            _stopChar.Push(-1);
-            _state = ReaderState.Start;
-        }
+        public static JsonFormatReader CreateInstance(Stream stream) { return new JsonFormatReader(JsonCursor.CreateInstance(stream)); }
+        /// <summary>
+        /// Constructs a JsonFormatReader to parse Json into a message, this method does not use text encoding, all bytes MUST
+        /// represent ASCII character values.
+        /// </summary>
+        public static JsonFormatReader CreateInstance(byte[] bytes) { return new JsonFormatReader(JsonCursor.CreateInstance(bytes)); }
         /// <summary>
         /// Constructs a JsonFormatReader to parse Json into a message
         /// </summary>
-        public JsonFormatReader(TextReader input)
+        public static JsonFormatReader CreateInstance(string jsonText) { return new JsonFormatReader(JsonCursor.CreateInstance(jsonText)); }
+        /// <summary>
+        /// Constructs a JsonFormatReader to parse Json into a message
+        /// </summary>
+        public static JsonFormatReader CreateInstance(TextReader input) { return new JsonFormatReader(JsonCursor.CreateInstance(input)); }
+
+        /// <summary>
+        /// Constructs a JsonFormatReader to parse Json into a message
+        /// </summary>
+        internal JsonFormatReader(JsonCursor input)
         {
-            _input = new JsonTextCursor(input);
+            _input = input;
             _stopChar = new Stack<int>();
             _stopChar.Push(-1);
             _state = ReaderState.Start;
         }
+
+        /// <summary>
+        /// Constructs a JsonFormatReader to parse Json into a message
+        /// </summary>
+        protected JsonFormatReader(TextReader input)
+            : this(JsonCursor.CreateInstance(input))
+        { }
 
         /// <summary>
         /// Returns true if the reader is currently on an array element
@@ -115,18 +131,18 @@ namespace Google.ProtocolBuffers.Serialization
         protected override bool ReadAsText(ref string value, Type typeInfo)
         {
             object temp;
-            JsonTextCursor.JsType type = _input.ReadVariant(out temp);
+            JsonCursor.JsType type = _input.ReadVariant(out temp);
             _state = ReaderState.EndValue;
 
-            _input.Assert(type != JsonTextCursor.JsType.Array && type != JsonTextCursor.JsType.Object, "Encountered {0} while expecting {1}", type, typeInfo);
-            if (type == JsonTextCursor.JsType.Null)
+            _input.Assert(type != JsonCursor.JsType.Array && type != JsonCursor.JsType.Object, "Encountered {0} while expecting {1}", type, typeInfo);
+            if (type == JsonCursor.JsType.Null)
                 return false;
-            if (type == JsonTextCursor.JsType.True) value = "1";
-            else if (type == JsonTextCursor.JsType.False) value = "0";
+            if (type == JsonCursor.JsType.True) value = "1";
+            else if (type == JsonCursor.JsType.False) value = "0";
             else value = temp as string;
 
             //exponent representation of integer number:
-            if (value != null && type == JsonTextCursor.JsType.Number &&
+            if (value != null && type == JsonCursor.JsType.Number &&
                 (typeInfo != typeof(double) && typeInfo != typeof(float)) &&
                 value.IndexOf("e", StringComparison.OrdinalIgnoreCase) > 0)
             {

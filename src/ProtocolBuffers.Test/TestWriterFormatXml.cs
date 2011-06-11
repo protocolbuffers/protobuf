@@ -23,12 +23,12 @@ namespace Google.ProtocolBuffers
 
             //When we call message.WriteTo, we are responsible for the root element
             xw.WriteStartElement("root");
-            message.WriteTo(new XmlFormatWriter(xw));
+            message.WriteTo(XmlFormatWriter.CreateInstance(xw));
             xw.WriteEndElement();
             xw.Flush();
 
             string xml = sw.ToString();
-            XmlFormatReader rdr = new XmlFormatReader(xml);
+            XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlChild copy = rdr.Merge(TestXmlChild.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
@@ -42,10 +42,10 @@ namespace Google.ProtocolBuffers
 
             //Allow the writer to write the root element
             StringWriter sw = new StringWriter();
-            new XmlFormatWriter(sw).WriteMessage("root", message);
+            XmlFormatWriter.CreateInstance(sw).WriteMessage("root", message);
 
             string xml = sw.ToString();
-            XmlFormatReader rdr = new XmlFormatReader(xml);
+            XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlChild copy = rdr.Merge(TestXmlChild.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
@@ -57,10 +57,10 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             StringWriter sw = new StringWriter();
-            new XmlFormatWriter(sw).WriteMessage("root", message);
+            XmlFormatWriter.CreateInstance(sw).WriteMessage("root", message);
 
             string xml = sw.ToString();
-            XmlFormatReader rdr = new XmlFormatReader(xml);
+            XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
@@ -72,10 +72,10 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             StringWriter sw = new StringWriter();
-            new XmlFormatWriter(sw).WriteMessage("root", message);
+            XmlFormatWriter.CreateInstance(sw).WriteMessage("root", message);
 
             string xml = sw.ToString();
-            XmlFormatReader rdr = new XmlFormatReader(xml);
+            XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
@@ -87,10 +87,10 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             StringWriter sw = new StringWriter();
-            new XmlFormatWriter(sw).WriteMessage("root", message);
+            XmlFormatWriter.CreateInstance(sw).WriteMessage("root", message);
 
             string xml = sw.ToString();
-            XmlFormatReader rdr = new XmlFormatReader(xml);
+            XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
@@ -113,11 +113,11 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             StringWriter sw = new StringWriter();
-            new XmlFormatWriter(sw).WriteMessage("root", message);
+            XmlFormatWriter.CreateInstance(sw).WriteMessage("root", message);
 
             string xml = sw.ToString();
 
-            XmlFormatReader rdr = new XmlFormatReader(xml);
+            XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
@@ -140,14 +140,13 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             StringWriter sw = new StringWriter();
-            new XmlFormatWriter(sw) 
-            {
-                Options = XmlWriterOptions.OutputNestedArrays | XmlWriterOptions.OutputEnumValues
-            }.WriteMessage("root", message);
+            XmlFormatWriter.CreateInstance(sw)
+                .SetOptions(XmlWriterOptions.OutputNestedArrays | XmlWriterOptions.OutputEnumValues)
+                .WriteMessage("root", message);
 
             string xml = sw.ToString();
 
-            XmlFormatReader rdr = new XmlFormatReader(xml);
+            XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             rdr.Options = XmlReaderOptions.ReadNestedArrays;
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
@@ -174,10 +173,9 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(0, message.AllFields.Count);
 
             StringWriter sw = new StringWriter();
-            new XmlFormatWriter(sw)
-            {
-                Options = XmlWriterOptions.OutputNestedArrays | XmlWriterOptions.OutputEnumValues
-            }.WriteMessage("root", message);
+            XmlFormatWriter.CreateInstance(sw)
+                .SetOptions(XmlWriterOptions.OutputNestedArrays | XmlWriterOptions.OutputEnumValues)
+                .WriteMessage("root", message);
 
             string xml = sw.ToString();
 
@@ -191,7 +189,7 @@ namespace Google.ProtocolBuffers
                     );
             }
 
-            XmlFormatReader rdr = new XmlFormatReader(xml);
+            XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             rdr.Options = XmlReaderOptions.ReadNestedArrays;
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
             Assert.AreEqual(TestXmlMessage.DefaultInstance, copy);
@@ -203,11 +201,11 @@ namespace Google.ProtocolBuffers
                 .SetText("<text>").Build();
 
             StringWriter sw = new StringWriter();
-            new XmlFormatWriter(sw).WriteMessage("root", message);
+            XmlFormatWriter.CreateInstance(sw).WriteMessage("root", message);
 
             string xml = sw.ToString();
 
-            XmlFormatReader rdr = new XmlFormatReader(xml);
+            XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
@@ -218,11 +216,11 @@ namespace Google.ProtocolBuffers
                 .SetText(" \t <- leading space and trailing -> \r\n\t").Build();
 
             StringWriter sw = new StringWriter();
-            new XmlFormatWriter(sw).WriteMessage("root", message);
+            XmlFormatWriter.CreateInstance(sw).WriteMessage("root", message);
 
             string xml = sw.ToString();
 
-            XmlFormatReader rdr = new XmlFormatReader(xml);
+            XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
@@ -234,14 +232,14 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             StringWriter sw = new StringWriter();
-            new XmlFormatWriter(sw).WriteMessage("root", message);
+            XmlFormatWriter.CreateInstance(sw).WriteMessage("root", message);
 
             string xml = sw.ToString();
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
             UnitTestXmlSerializerTestProtoFile.RegisterAllExtensions(registry);
 
-            XmlFormatReader rdr = new XmlFormatReader(xml);
+            XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
             Assert.AreEqual(message, copy);
         }
@@ -253,14 +251,14 @@ namespace Google.ProtocolBuffers
                 new TestXmlExtension.Builder().SetNumber(42).Build()).Build();
 
             StringWriter sw = new StringWriter();
-            new XmlFormatWriter(sw).WriteMessage("root", message);
+            XmlFormatWriter.CreateInstance(sw).WriteMessage("root", message);
 
             string xml = sw.ToString();
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
             UnitTestXmlSerializerTestProtoFile.RegisterAllExtensions(registry);
 
-            XmlFormatReader rdr = new XmlFormatReader(xml);
+            XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
             Assert.AreEqual(message, copy);
         }
@@ -274,14 +272,14 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             StringWriter sw = new StringWriter();
-            new XmlFormatWriter(sw).WriteMessage("root", message);
+            XmlFormatWriter.CreateInstance(sw).WriteMessage("root", message);
 
             string xml = sw.ToString();
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
             UnitTestXmlSerializerTestProtoFile.RegisterAllExtensions(registry);
 
-            XmlFormatReader rdr = new XmlFormatReader(xml);
+            XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
             Assert.AreEqual(message, copy);
         }
@@ -293,14 +291,14 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             StringWriter sw = new StringWriter();
-            new XmlFormatWriter(sw).WriteMessage("root", message);
+            XmlFormatWriter.CreateInstance(sw).WriteMessage("root", message);
 
             string xml = sw.ToString();
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
             UnitTestXmlSerializerTestProtoFile.RegisterAllExtensions(registry);
 
-            XmlFormatReader rdr = new XmlFormatReader(xml);
+            XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
             Assert.AreEqual(message, copy);
         }

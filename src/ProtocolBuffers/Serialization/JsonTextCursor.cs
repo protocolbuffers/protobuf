@@ -9,52 +9,115 @@ namespace Google.ProtocolBuffers.Serialization
     /// <summary>
     /// JSon Tokenizer used by JsonFormatReader
     /// </summary>
-    class JsonTextCursor
+    abstract class JsonCursor
     {
         public enum JsType { String, Number, Object, Array, True, False, Null }
 
-        private readonly char[] _buffer;
-        private int _bufferPos;
-        private readonly TextReader _input;
+        #region Buffering implementations
+        class JsonStreamCursor : JsonCursor
+        {
+            private readonly byte[] _buffer;
+            private int _bufferPos;
+            private readonly Stream _input;
+
+            public JsonStreamCursor(Stream input)
+            {
+                _input = input;
+                _next = _input.ReadByte();
+            }
+            public JsonStreamCursor(byte[] input)
+            {
+                _input = null;
+                _buffer = input;
+                _next = _buffer[_bufferPos];
+            }
+
+            protected override int Peek()
+            {
+                if (_input != null)
+                    return _next;
+                else if (_bufferPos < _buffer.Length)
+                    return _buffer[_bufferPos];
+                else
+                    return -1;
+            }
+
+            protected override int Read()
+            {
+                if (_input != null)
+                {
+                    int result = _next;
+                    _next = _input.ReadByte();
+                    return result;
+                }
+                else if (_bufferPos < _buffer.Length)
+                    return _buffer[_bufferPos++];
+                else
+                    return -1;
+            }
+        }
+
+        class JsonTextCursor : JsonCursor
+        {
+            private readonly char[] _buffer;
+            private int _bufferPos;
+            private readonly TextReader _input;
+
+            public JsonTextCursor(char[] input)
+            {
+                _input = null;
+                _buffer = input;
+                _bufferPos = 0;
+                _next = Peek();
+            }
+
+            public JsonTextCursor(TextReader input)
+            {
+                _input = input;
+                _next = Peek();
+            }
+
+            protected override int Peek()
+            {
+                if (_input != null)
+                    return _input.Peek();
+                else if (_bufferPos < _buffer.Length)
+                    return _buffer[_bufferPos];
+                else
+                    return -1;
+            }
+
+            protected override int Read()
+            {
+                if (_input != null)
+                    return _input.Read();
+                else if (_bufferPos < _buffer.Length)
+                    return _buffer[_bufferPos++];
+                else
+                    return -1;
+            }
+        }
+        #endregion
+
+        protected int _next;
         private int _lineNo, _linePos;
 
-        public JsonTextCursor(char[] input)
+        public static JsonCursor CreateInstance(byte[] input) { return new JsonStreamCursor(input); }
+        public static JsonCursor CreateInstance(Stream input) { return new JsonStreamCursor(input); }
+        public static JsonCursor CreateInstance(string input) { return new JsonTextCursor(input.ToCharArray()); }
+        public static JsonCursor CreateInstance(TextReader input) { return new JsonTextCursor(input); }
+
+        protected JsonCursor()
         {
-            _input = null;
-            _buffer = input;
-            _bufferPos = 0;
-            _next = Peek();
             _lineNo = 1;
+            _linePos = 0;
         }
+        
+        /// <summary>Returns the next character without actually 'reading' it</summary>
+        protected abstract int Peek();
+        /// <summary>Reads the next character in the input</summary>
+        protected abstract int Read();
 
-        public JsonTextCursor(TextReader input)
-        {
-            _input = input;
-            _next = Peek();
-            _lineNo = 1;
-        }
-
-        private int Peek()
-        {
-            if (_input != null)
-                return _input.Peek();
-            else if (_bufferPos < _buffer.Length)
-                return _buffer[_bufferPos];
-            else
-                return -1;
-        }
-
-        private int Read()
-        {
-            if (_input != null)
-                return _input.Read();
-            else if (_bufferPos < _buffer.Length)
-                return _buffer[_bufferPos++];
-            else
-                return -1;
-        }
-
-        int _next;
         public Char NextChar { get { SkipWhitespace(); return (char)_next; } }
 
         #region Assert(...)
@@ -62,8 +125,8 @@ namespace Google.ProtocolBuffers.Serialization
         private string CharDisplay(int ch)
         {
             return ch == -1 ? "EOF" :
-                                        (ch > 32 && ch < 127) ? String.Format("'{0}'", (char)ch) :
-                                                                                                     String.Format("'\\u{0:x4}'", ch);
+                (ch > 32 && ch < 127) ? String.Format("'{0}'", (char)ch) :
+                String.Format("'\\u{0:x4}'", ch);
         }
         [System.Diagnostics.DebuggerNonUserCode]
         private void Assert(bool cond, char expected)

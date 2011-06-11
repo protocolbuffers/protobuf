@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.Serialization
@@ -10,81 +11,178 @@ namespace Google.ProtocolBuffers.Serialization
     /// you may also use the XmlFormatWriter with an XmlWriter created by the
     /// <see cref="System.Runtime.Serialization.Json.JsonReaderWriterFactory">JsonReaderWriterFactory</see>.
     /// </summary>
-    public class JsonFormatWriter : AbstractTextWriter
+    public abstract class JsonFormatWriter : AbstractTextWriter
     {
-        private readonly char[] _buffer;
-        private readonly TextWriter _output;
-        private readonly List<int> _counter;
-        private bool _isArray;
-        int _bufferPos;
-        /// <summary>
-        /// Constructs a JsonFormatWriter to output to a new instance of a StringWriter, use
-        /// the ToString() member to extract the final Json on completion.
-        /// </summary>
-        public JsonFormatWriter() : this(new StringWriter()) { }
-        /// <summary>
-        /// Constructs a JsonFormatWriter to output to the given text writer
-        /// </summary>
-        public JsonFormatWriter(TextWriter output)
+        #region buffering implementations
+        private class JsonTextWriter : JsonFormatWriter
         {
-            _buffer = new char[4096];
-            _bufferPos = 0;
-            _output = output;
-            _counter = new List<int>();
-            _counter.Add(0);
-        }
+            private readonly char[] _buffer;
+            private TextWriter _output;
+            int _bufferPos;
 
-
-        private void WriteToOutput(string format, params object[] args)
-        { WriteToOutput(String.Format(format, args)); }
-
-        private void WriteToOutput(string text)
-        { WriteToOutput(text.ToCharArray(), 0, text.Length); }
-
-        private void WriteToOutput(char[] chars, int offset, int len)
-        {
-            if (_bufferPos + len >= _buffer.Length)
-                Flush();
-            if (len < _buffer.Length)
+            public JsonTextWriter(TextWriter output)
             {
-                if (len <= 12)
+                _buffer = new char[4096];
+                _bufferPos = 0;
+                _output = output;
+                _counter.Add(0);
+            }
+
+            /// <summary>
+            /// Returns the output of TextWriter.ToString() where TextWriter is the ctor argument.
+            /// </summary>
+            public override string ToString()
+            {
+                Flush();
+
+                if (_output != null)
+                    return _output.ToString();
+
+                return new String(_buffer, 0, _bufferPos);
+            }
+
+            protected override void WriteToOutput(char[] chars, int offset, int len)
+            {
+                if (_bufferPos + len >= _buffer.Length)
                 {
-                    int stop = offset + len;
-                    for (int i = offset; i < stop; i++)
-                        _buffer[_bufferPos++] = chars[i];
+                    if (_output == null)
+                        _output = new StringWriter(new System.Text.StringBuilder(_buffer.Length * 2 + len));
+                    Flush();
+                }
+
+                if (len < _buffer.Length)
+                {
+                    if (len <= 12)
+                    {
+                        int stop = offset + len;
+                        for (int i = offset; i < stop; i++)
+                            _buffer[_bufferPos++] = chars[i];
+                    }
+                    else
+                    {
+                        Buffer.BlockCopy(chars, offset << 1, _buffer, _bufferPos << 1, len << 1);
+                        _bufferPos += len;
+                    }
+                }
+                else
+                    _output.Write(chars, offset, len);
+            }
+
+            protected override void WriteToOutput(char ch)
+            {
+                if (_bufferPos >= _buffer.Length)
+                    Flush();
+                _buffer[_bufferPos++] = ch;
+            }
+
+            public override void Flush()
+            {
+                if (_bufferPos > 0 && _output != null)
+                {
+                    _output.Write(_buffer, 0, _bufferPos);
+                    _bufferPos = 0;
+                }
+                base.Flush();
+            }
+        }
+        private class JsonStreamWriter : JsonFormatWriter
+        {
+#if SILVERLIGHT2 || COMPACT_FRAMEWORK_35
+            static readonly Encoding Encoding = Encoding.UTF8;
+#else
+            static readonly Encoding Encoding = Encoding.ASCII;
+#endif
+            private readonly byte[] _buffer;
+            private Stream _output;
+            int _bufferPos;
+
+            public JsonStreamWriter(Stream output)
+            {
+                _buffer = new byte[8192];
+                _bufferPos = 0;
+                _output = output;
+                _counter.Add(0);
+            }
+
+            protected override void WriteToOutput(char[] chars, int offset, int len)
+            {
+                if (_bufferPos + len >= _buffer.Length)
+                    Flush();
+
+                if (len < _buffer.Length)
+                {
+                    if (len <= 12)
+                    {
+                        int stop = offset + len;
+                        for (int i = offset; i < stop; i++)
+                            _buffer[_bufferPos++] = (byte)chars[i];
+                    }
+                    else
+                    {
+                        _bufferPos += Encoding.GetBytes(chars, offset, len, _buffer, _bufferPos);
+                    }
                 }
                 else
                 {
-                    Buffer.BlockCopy(chars, offset << 1, _buffer, _bufferPos << 1, len << 1);
-                    _bufferPos += len;
+                    byte[] temp = Encoding.GetBytes(chars, offset, len);
+                    _output.Write(temp, 0, temp.Length);
                 }
             }
-            else
-                _output.Write(chars, offset, len);
-        }
 
-        private void WriteToOutput(char ch)
-        {
-            if (_bufferPos >= _buffer.Length)
-                Flush();
-            _buffer[_bufferPos++] = ch;
-        }
-
-        public override void Flush()
-        {
-            if (_bufferPos > 0)
+            protected override void WriteToOutput(char ch)
             {
-                _output.Write(_buffer, 0, _bufferPos);
-                _bufferPos = 0;
+                if (_bufferPos >= _buffer.Length)
+                    Flush();
+                _buffer[_bufferPos++] = (byte)ch;
             }
-            base.Flush();
+
+            public override void Flush()
+            {
+                if (_bufferPos > 0 && _output != null)
+                {
+                    _output.Write(_buffer, 0, _bufferPos);
+                    _bufferPos = 0;
+                }
+                base.Flush();
+            }
+        }
+        #endregion
+
+        private readonly List<int> _counter;
+        private bool _isArray;
+        /// <summary>
+        /// Constructs a JsonFormatWriter, use the ToString() member to extract the final Json on completion.
+        /// </summary>
+        protected JsonFormatWriter()
+        {
+            _counter = new List<int>();
         }
 
         /// <summary>
-        /// Returns the output of TextWriter.ToString() where TextWriter is the ctor argument.
+        /// Constructs a JsonFormatWriter, use ToString() to extract the final output
         /// </summary>
-        public override string ToString()
-        { Flush(); return _output.ToString(); }
+        public static JsonFormatWriter CreateInstance() { return new JsonTextWriter(null); }
+            
+        /// <summary>
+        /// Constructs a JsonFormatWriter to output to the given text writer
+        /// </summary>
+        public static JsonFormatWriter CreateInstance(TextWriter output) { return new JsonTextWriter(output); }
+
+        /// <summary>
+        /// Constructs a JsonFormatWriter to output to the given stream
+        /// </summary>
+        public static JsonFormatWriter CreateInstance(Stream output) { return new JsonStreamWriter(output); }
+
+        /// <summary> Write to the output stream </summary>
+        protected void WriteToOutput(string format, params object[] args)
+        { WriteToOutput(String.Format(format, args)); }
+        /// <summary> Write to the output stream </summary>
+        protected void WriteToOutput(string text)
+        { WriteToOutput(text.ToCharArray(), 0, text.Length); }
+        /// <summary> Write to the output stream </summary>
+        protected abstract void WriteToOutput(char ch);
+        /// <summary> Write to the output stream </summary>
+        protected abstract void WriteToOutput(char[] chars, int offset, int len);
 
         /// <summary> Sets the output formatting to use Environment.NewLine with 4-character indentions </summary>
         public JsonFormatWriter Formatted()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Xml;
 using Google.ProtocolBuffers.Descriptors;
 
@@ -17,23 +18,29 @@ namespace Google.ProtocolBuffers.Serialization
         private readonly XmlWriter _output;
         private string _rootElementName;
 
-        static XmlWriterSettings DefaultSettings
+        static XmlWriterSettings DefaultSettings(Encoding encoding)
         {
-            get { return new XmlWriterSettings() {CheckCharacters = false, NewLineHandling = NewLineHandling.Entitize}; }
+            return new XmlWriterSettings() { CheckCharacters = false, NewLineHandling = NewLineHandling.Entitize, Encoding = encoding };
         }
 
         /// <summary>
         /// Constructs the XmlFormatWriter to write to the given TextWriter
         /// </summary>
-        public XmlFormatWriter(TextWriter output) : this(XmlWriter.Create(output, DefaultSettings)) { }
+        public static XmlFormatWriter CreateInstance(TextWriter output) { return new XmlFormatWriter(XmlWriter.Create(output, DefaultSettings(output.Encoding))); }
         /// <summary>
         /// Constructs the XmlFormatWriter to write to the given stream
         /// </summary>
-        public XmlFormatWriter(Stream output) : this(XmlWriter.Create(output, DefaultSettings)) { }
+        public static XmlFormatWriter CreateInstance(Stream output) { return new XmlFormatWriter(XmlWriter.Create(output, DefaultSettings(Encoding.UTF8))); }
+        /// <summary>
+        /// Constructs the XmlFormatWriter to write to the given stream
+        /// </summary>
+        public static XmlFormatWriter CreateInstance(Stream output, Encoding encoding) { return new XmlFormatWriter(XmlWriter.Create(output, DefaultSettings(encoding))); }
         /// <summary>
         /// Constructs the XmlFormatWriter to write to the given XmlWriter
         /// </summary>
-        public XmlFormatWriter(XmlWriter output)
+        public static XmlFormatWriter CreateInstance(XmlWriter output) { return new XmlFormatWriter(output); }
+
+        protected XmlFormatWriter(XmlWriter output)
         {
             _output = output;
             _rootElementName = DefaultRootElementName;
@@ -61,6 +68,10 @@ namespace Google.ProtocolBuffers.Serialization
         /// Gets or sets the options to use while generating the XML
         /// </summary>
         public XmlWriterOptions Options { get; set; }
+        /// <summary>
+        /// Sets the options to use while generating the XML
+        /// </summary>
+        public XmlFormatWriter SetOptions(XmlWriterOptions options) { Options = options; return this; }
 
         private bool TestOption(XmlWriterOptions option) { return (Options & option) != 0; }
 

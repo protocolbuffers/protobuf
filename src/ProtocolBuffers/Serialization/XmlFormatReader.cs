@@ -25,33 +25,41 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// Constructs the XmlFormatReader using the stream provided as the xml
         /// </summary>
-        public XmlFormatReader(Stream input) : this(XmlReader.Create(input, DefaultSettings)) { }
+        public static XmlFormatReader CreateInstance(byte[] input) { return new XmlFormatReader(XmlReader.Create(new MemoryStream(input, false), DefaultSettings)); }
+        /// <summary>
+        /// Constructs the XmlFormatReader using the stream provided as the xml
+        /// </summary>
+        public static XmlFormatReader CreateInstance(Stream input) { return new XmlFormatReader(XmlReader.Create(input, DefaultSettings)); }
         /// <summary>
         /// Constructs the XmlFormatReader using the string provided as the xml to be read
         /// </summary>
-        public XmlFormatReader(String input) : this(XmlReader.Create(new StringReader(input))) { }
+        public static XmlFormatReader CreateInstance(String input) { return new XmlFormatReader(XmlReader.Create(new StringReader(input), DefaultSettings)); }
         /// <summary>
         /// Constructs the XmlFormatReader using the xml in the TextReader
         /// </summary>
-        public XmlFormatReader(TextReader input) : this(XmlReader.Create(input)) { }
+        public static XmlFormatReader CreateInstance(TextReader input) { return new XmlFormatReader(XmlReader.Create(input, DefaultSettings)); }
         /// <summary>
         /// Constructs the XmlFormatReader with the XmlReader
         /// </summary>
-        public XmlFormatReader(XmlReader input) : this(input, XmlReaderOptions.None) { }
+        public static XmlFormatReader CreateInstance(XmlReader input) { return new XmlFormatReader(input); }
         /// <summary>
         /// Constructs the XmlFormatReader with the XmlReader and options
         /// </summary>
-        public XmlFormatReader(XmlReader input, XmlReaderOptions options)
+        protected XmlFormatReader(XmlReader input)
         {
             _input = input;
             _rootElementName = DefaultRootElementName;
-            Options = options;
+            Options = XmlReaderOptions.None;
         }
         
         /// <summary>
         /// Gets or sets the options to use when reading the xml
         /// </summary>
         public XmlReaderOptions Options { get; set; }
+        /// <summary>
+        /// Sets the options to use while generating the XML
+        /// </summary>
+        public XmlFormatReader SetOptions(XmlReaderOptions options) { Options = options; return this; }
 
         /// <summary>
         /// Gets or sets the default element name to use when using the Merge&lt;TBuilder>()
@@ -64,7 +72,7 @@ namespace Google.ProtocolBuffers.Serialization
 
         private XmlFormatReader CloneWith(XmlReader rdr)
         {
-            return new XmlFormatReader(rdr, Options);
+            return new XmlFormatReader(rdr).SetOptions(Options);
         }
         private void NextElement()
         {
