@@ -38,6 +38,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.Serialization.Json;
+using System.Text;
 using System.Threading;
 using Google.ProtocolBuffers.Serialization;
 using Google.ProtocolBuffers.TestProtos;
@@ -136,6 +138,7 @@ namespace Google.ProtocolBuffers.ProtoBench
                 temp = new StringWriter();
                 new JsonFormatWriter(temp).WriteMessage(sampleMessage);
                 string jsonMessageText = temp.ToString();
+                byte[] jsonBytes /*no pun intended*/ = Encoding.UTF8.GetBytes(jsonMessageText);
 
                 IDictionary<string, object> dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
                 new DictionaryWriter(dictionary).WriteMessage(sampleMessage);
@@ -149,6 +152,11 @@ namespace Google.ProtocolBuffers.ProtoBench
 
                 RunBenchmark("Serialize to xml", xmlMessageText.Length, () => new XmlFormatWriter(new StringWriter()).WriteMessage(sampleMessage));
                 RunBenchmark("Serialize to json", jsonMessageText.Length, () => new JsonFormatWriter(new StringWriter()).WriteMessage(sampleMessage));
+                RunBenchmark("Serialize to json via xml", jsonMessageText.Length,
+                    () => new XmlFormatWriter(JsonReaderWriterFactory.CreateJsonWriter(new MemoryStream(), Encoding.UTF8)) 
+                    { Options = XmlWriterOptions.OutputJsonTypes }.WriteMessage(sampleMessage)
+                );
+
                 RunBenchmark("Serialize to dictionary", sampleMessage.SerializedSize, () => new DictionaryWriter().WriteMessage(sampleMessage));
 
                 //Deserializers
@@ -173,6 +181,11 @@ namespace Google.ProtocolBuffers.ProtoBench
 
                 RunBenchmark("Deserialize from xml", xmlMessageText.Length, () => new XmlFormatReader(xmlMessageText).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
                 RunBenchmark("Deserialize from json", jsonMessageText.Length, () => new JsonFormatReader(jsonMessageText).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
+                RunBenchmark("Deserialize from json via xml", jsonMessageText.Length,
+                    () => new XmlFormatReader(JsonReaderWriterFactory.CreateJsonReader(jsonBytes, System.Xml.XmlDictionaryReaderQuotas.Max)) 
+                    { Options = XmlReaderOptions.ReadNestedArrays }
+                    .Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
+
                 RunBenchmark("Deserialize from dictionary", sampleMessage.SerializedSize, () => new DictionaryReader(dictionary).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
 
                 Console.WriteLine();
