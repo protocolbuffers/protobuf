@@ -15,7 +15,7 @@ namespace Google.ProtocolBuffers.Serialization
         /// Constructs a writer using a new dictionary
         /// </summary>
         public DictionaryWriter()
-            : this(new Dictionary<string,object>())
+            : this(new Dictionary<string,object>(StringComparer.Ordinal))
         { }
 
         /// <summary>
@@ -25,6 +25,14 @@ namespace Google.ProtocolBuffers.Serialization
         {
             ThrowHelper.ThrowIfNull(output, "output");
             _output = output;
+        }
+
+        /// <summary>
+        /// Creates the dictionary instance for a child message.
+        /// </summary>
+        protected virtual DictionaryWriter Create()
+        {
+            return new DictionaryWriter();
         }
 
         /// <summary>
@@ -119,7 +127,7 @@ namespace Google.ProtocolBuffers.Serialization
         /// </summary>
         protected override void WriteMessageOrGroup(string field, IMessageLite message)
         {
-            DictionaryWriter writer = new DictionaryWriter();
+            DictionaryWriter writer = Create();
             writer.WriteMessage(message);
 
             _output[field] = writer.ToDictionary();
@@ -146,7 +154,7 @@ namespace Google.ProtocolBuffers.Serialization
                     case FieldType.Group:
                     case FieldType.Message:
                         {
-                            DictionaryWriter writer = new DictionaryWriter();
+                            DictionaryWriter writer = Create();
                             writer.WriteMessage((IMessageLite)o);
                             objects.Add(writer.ToDictionary());
                         }

@@ -72,7 +72,11 @@ namespace Google.ProtocolBuffers.Serialization
 
         private XmlFormatReader CloneWith(XmlReader rdr)
         {
-            return new XmlFormatReader(rdr).SetOptions(Options);
+            XmlFormatReader copy = new XmlFormatReader(rdr).SetOptions(Options);
+            copy._rootElementName = _rootElementName;
+            copy._depth = _depth;
+            return copy;
+
         }
         private void NextElement()
         {

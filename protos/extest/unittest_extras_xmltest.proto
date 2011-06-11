@@ -23,6 +23,10 @@ message TestXmlChild
 message TestXmlNoFields {
 }
 
+message TestXmlRescursive {
+    optional TestXmlRescursive child = 1;
+}
+
 message TestXmlMessage {
 
     optional int64 number = 6;

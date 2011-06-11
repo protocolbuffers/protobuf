@@ -324,5 +324,13 @@ namespace Google.ProtocolBuffers
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
             Assert.AreEqual(message, copy);
         }
+        [Test, ExpectedException(typeof(InvalidProtocolBufferException))]
+        public void TestRecursiveLimit()
+        {
+            StringBuilder sb = new StringBuilder(8192);
+            for (int i = 0; i < 80; i++)
+                sb.Append("<child>");
+            TestXmlRescursive msg = TestXmlRescursive.ParseFromXml("child", XmlReader.Create(new StringReader(sb.ToString())));
+        }
     }
 }

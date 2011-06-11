@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using Google.ProtocolBuffers.Serialization;
 using NUnit.Framework;
 using Google.ProtocolBuffers.TestProtos;
@@ -335,6 +336,14 @@ namespace Google.ProtocolBuffers
                 }
             Assert.AreEqual(3, ordinal);
             Assert.AreEqual(3, builder.TextlinesCount);
+        }
+        [Test,ExpectedException(typeof(InvalidProtocolBufferException))]
+        public void TestRecursiveLimit()
+        {
+            StringBuilder sb = new StringBuilder(8192);
+            for (int i = 0; i < 80; i++)
+                sb.Append("{\"child\":");
+            TestXmlRescursive msg = TestXmlRescursive.ParseFromJson(sb.ToString());
         }
         [Test, ExpectedException(typeof(FormatException))]
         public void FailWithEmptyText()
