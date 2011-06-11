@@ -53,7 +53,7 @@ namespace Google.ProtocolBuffers.ProtoBench
     {
         private static TimeSpan MinSampleTime = TimeSpan.FromSeconds(2);
         private static TimeSpan TargetTime = TimeSpan.FromSeconds(30);
-        private static bool Verbose = false, FastTest = false;
+        private static bool Verbose = false, FastTest = false, OtherFormats = false;
         // Avoid a .NET 3.5 dependency
         private delegate void Action();
 
@@ -67,6 +67,7 @@ namespace Google.ProtocolBuffers.ProtoBench
             List<string> temp = new List<string>(args);
 
             Verbose = temp.Remove("/verbose") || temp.Remove("-verbose");
+            OtherFormats = temp.Remove("/formats") || temp.Remove("-formats");
 
             if (true == (FastTest = (temp.Remove("/fast") || temp.Remove("-fast"))))
                 TargetTime = TimeSpan.FromSeconds(10);
@@ -132,19 +133,23 @@ namespace Google.ProtocolBuffers.ProtoBench
                 ByteString inputString = ByteString.CopyFrom(inputData);
                 IMessage sampleMessage = defaultMessage.WeakCreateBuilderForType().WeakMergeFrom(inputString, registry).WeakBuild();
 
-                byte[] jsonBytes, xmlBytes;/*no pun intended, well... maybe for xml*/
-                using (MemoryStream temp = new MemoryStream())
+                IDictionary<string, object> dictionary = null;
+                byte[] jsonBytes = null, xmlBytes = null;/*no pun intended, well... maybe for xml*/
+                if (OtherFormats)
                 {
-                    XmlFormatWriter.CreateInstance(temp).WriteMessage(sampleMessage);
-                    xmlBytes = temp.ToArray();
+                    using (MemoryStream temp = new MemoryStream())
+                    {
+                        XmlFormatWriter.CreateInstance(temp).WriteMessage(sampleMessage);
+                        xmlBytes = temp.ToArray();
+                    }
+                    using (MemoryStream temp = new MemoryStream())
+                    {
+                        JsonFormatWriter.CreateInstance(temp).WriteMessage(sampleMessage);
+                        jsonBytes = temp.ToArray();
+                    }
+                    dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
+                    new DictionaryWriter(dictionary).WriteMessage(sampleMessage);
                 }
-                using (MemoryStream temp = new MemoryStream())
-                {
-                    JsonFormatWriter.CreateInstance(temp).WriteMessage(sampleMessage);
-                    jsonBytes = temp.ToArray();
-                }
-                IDictionary<string, object> dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
-                new DictionaryWriter(dictionary).WriteMessage(sampleMessage);
 
                 //Serializers
                 if(!FastTest) RunBenchmark("Serialize to byte string", inputData.Length, () => sampleMessage.ToByteString());
@@ -152,23 +157,25 @@ namespace Google.ProtocolBuffers.ProtoBench
                 if (!FastTest) RunBenchmark("Serialize to memory stream", inputData.Length,
                           () => sampleMessage.WriteTo(new MemoryStream()));
 
-                RunBenchmark("Serialize to xml", xmlBytes.Length, () =>
+                if (OtherFormats)
                 {
-                    XmlFormatWriter.CreateInstance(new MemoryStream(), Encoding.UTF8).WriteMessage(sampleMessage);
-                } );
-                RunBenchmark("Serialize to json", jsonBytes.Length, () => 
-                {
-                    JsonFormatWriter.CreateInstance().WriteMessage(sampleMessage); 
-                });
-                RunBenchmark("Serialize to json via xml", jsonBytes.Length,
-                    () =>
-                        XmlFormatWriter.CreateInstance(JsonReaderWriterFactory.CreateJsonWriter(new MemoryStream(), Encoding.UTF8))
-                            .SetOptions(XmlWriterOptions.OutputJsonTypes)
-                            .WriteMessage(sampleMessage)
-                );
+                    RunBenchmark("Serialize to xml", xmlBytes.Length, () =>
+                    {
+                        XmlFormatWriter.CreateInstance(new MemoryStream(), Encoding.UTF8).WriteMessage(sampleMessage);
+                    });
+                    RunBenchmark("Serialize to json", jsonBytes.Length, () =>
+                    {
+                        JsonFormatWriter.CreateInstance().WriteMessage(sampleMessage);
+                    });
+                    RunBenchmark("Serialize to json via xml", jsonBytes.Length,
+                        () =>
+                            XmlFormatWriter.CreateInstance(JsonReaderWriterFactory.CreateJsonWriter(new MemoryStream(), Encoding.UTF8))
+                                .SetOptions(XmlWriterOptions.OutputJsonTypes)
+                                .WriteMessage(sampleMessage)
+                    );
 
-                RunBenchmark("Serialize to dictionary", sampleMessage.SerializedSize, () => new DictionaryWriter().WriteMessage(sampleMessage));
-
+                    RunBenchmark("Serialize to dictionary", sampleMessage.SerializedSize, () => new DictionaryWriter().WriteMessage(sampleMessage));
+                }
                 //Deserializers
                 if (!FastTest) RunBenchmark("Deserialize from byte string", inputData.Length,
                           () => defaultMessage.WeakCreateBuilderForType()
@@ -189,14 +196,16 @@ namespace Google.ProtocolBuffers.ProtoBench
                           .WeakBuild();
                   });
 
-                RunBenchmark("Deserialize from xml", xmlBytes.Length, () => XmlFormatReader.CreateInstance(xmlBytes).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
-                RunBenchmark("Deserialize from json", jsonBytes.Length, () => JsonFormatReader.CreateInstance(jsonBytes).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
-                RunBenchmark("Deserialize from json via xml", jsonBytes.Length,
-                    () => XmlFormatReader.CreateInstance(JsonReaderWriterFactory.CreateJsonReader(jsonBytes, System.Xml.XmlDictionaryReaderQuotas.Max))
-                        .SetOptions(XmlReaderOptions.ReadNestedArrays).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
+                if (OtherFormats)
+                {
+                    RunBenchmark("Deserialize from xml", xmlBytes.Length, () => XmlFormatReader.CreateInstance(xmlBytes).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
+                    RunBenchmark("Deserialize from json", jsonBytes.Length, () => JsonFormatReader.CreateInstance(jsonBytes).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
+                    RunBenchmark("Deserialize from json via xml", jsonBytes.Length,
+                        () => XmlFormatReader.CreateInstance(JsonReaderWriterFactory.CreateJsonReader(jsonBytes, System.Xml.XmlDictionaryReaderQuotas.Max))
+                            .SetOptions(XmlReaderOptions.ReadNestedArrays).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
 
-                RunBenchmark("Deserialize from dictionary", sampleMessage.SerializedSize, () => new DictionaryReader(dictionary).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
-
+                    RunBenchmark("Deserialize from dictionary", sampleMessage.SerializedSize, () => new DictionaryReader(dictionary).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
+                }
                 Console.WriteLine();
                 return true;
             }
