@@ -74,7 +74,7 @@ namespace Google.ProtocolBuffers.Serialization
         {
             XmlFormatReader copy = new XmlFormatReader(rdr).SetOptions(Options);
             copy._rootElementName = _rootElementName;
-            copy._depth = _depth;
+            copy.Depth = Depth;
             return copy;
 
         }
