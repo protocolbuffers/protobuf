@@ -9,7 +9,7 @@
 
 static upb_string *input_str;
 static upb_msgdef *def;
-static upb_msg *msg;
+static void *msg;
 static upb_stringsrc strsrc;
 static upb_decoder d;
 
@@ -25,7 +25,7 @@ static bool initialize()
     upb_printerr(&status);
     return false;
   }
-  upb_parsedesc(s, fds_str, &status);
+  upb_read_descriptor(s, fds_str, &status);
   upb_string_unref(fds_str);
 
   if(!upb_ok(&status)) {
@@ -49,13 +49,10 @@ static bool initialize()
     return false;
   }
   upb_status_uninit(&status);
-  msg = upb_msg_new(def);
+  msg = upb_stdmsg_new(def);
 
   upb_stringsrc_init(&strsrc);
-  upb_handlers *handlers = upb_handlers_new();
-  upb_msg_reghandlers(handlers, def);
-  upb_decoder_init(&d, handlers);
-  upb_handlers_unref(handlers);
+  upb_decoder_initformsgdef(&d, def);
 
   if (!BYREF) {
     // Pretend the input string is stack-allocated, which will force its data
@@ -74,7 +71,7 @@ static void cleanup()
     input_str->refcount.v = 1;
   }
   upb_string_unref(input_str);
-  upb_msg_unref(msg, def);
+  upb_stdmsg_free(msg, def);
   upb_def_unref(UPB_UPCAST(def));
   upb_stringsrc_uninit(&strsrc);
   upb_decoder_uninit(&d);

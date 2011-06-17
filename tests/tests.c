@@ -17,7 +17,7 @@ static upb_symtab *load_test_proto() {
     exit(1);
   }
   upb_status status = UPB_STATUS_INIT;
-  upb_parsedesc(s, descriptor, &status);
+  upb_read_descriptor(s, descriptor, &status);
   ASSERT(upb_ok(&status));
   upb_status_uninit(&status);
   upb_string_unref(descriptor);
@@ -42,7 +42,7 @@ static void test_upb_jit() {
   upb_handlerset hset = {NULL, NULL, &upb_test_onvalue, NULL, NULL, NULL, NULL};
   upb_handlers_reghandlerset(h, upb_downcast_msgdef(def), &hset);
   upb_decoder d;
-  upb_decoder_init(&d, h);
+  upb_decoder_initforhandlers(&d, h);
   upb_decoder_uninit(&d);
   upb_symtab_unref(s);
   upb_def_unref(def);

@@ -36,7 +36,7 @@ static bool initialize()
     upb_printerr(&status);
     return false;
   }
-  upb_parsedesc(s, fds_str, &status);
+  upb_read_descriptor(s, fds_str, &status);
   upb_string_unref(fds_str);
 
   if(!upb_ok(&status)) {
@@ -64,7 +64,7 @@ static bool initialize()
   // Cause all messages to be read, but do nothing when they are.
   upb_handlerset hset = {NULL, NULL, value, startsubmsg, NULL, NULL, NULL};
   upb_handlers_reghandlerset(handlers, def, &hset);
-  upb_decoder_init(&decoder, handlers);
+  upb_decoder_initforhandlers(&decoder, handlers);
   upb_handlers_unref(handlers);
   upb_stringsrc_init(&stringsrc);
   return true;

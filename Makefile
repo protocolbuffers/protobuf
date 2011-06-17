@@ -73,11 +73,13 @@ $(ALLSRC): perf-cppflags
 CORE= \
   src/upb.c \
   src/upb_handlers.c \
+  src/upb_descriptor.c \
   src/upb_table.c \
   src/upb_string.c \
   src/upb_def.c \
   src/upb_msg.c \
   src/upb_varint.c \
+
 
 # Common encoders/decoders -- you're almost certain to want these.
 STREAM= \
@@ -101,7 +103,8 @@ TESTS_SRC= \
   tests/test_string.c \
   tests/tests.c \
   tests/tests_varint.c \
-  tests/test_vs_proto2.cc
+
+  #tests/test_vs_proto2.cc
 
   #tests/test_stream.c \
 

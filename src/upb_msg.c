@@ -9,201 +9,23 @@
 
 #include "upb_msg.h"
 
-static uint32_t upb_round_up_pow2(uint32_t v) {
-  // http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
-  v--;
-  v |= v >> 1;
-  v |= v >> 2;
-  v |= v >> 4;
-  v |= v >> 8;
-  v |= v >> 16;
-  v++;
-  return v;
+void upb_msg_clear(void *msg, upb_msgdef *md) {
+  memset(msg, 0, md->hasbit_bytes);
+  // TODO: set primitive fields to defaults?
 }
 
-static void upb_elem_free(upb_value v, upb_fielddef *f) {
-  switch(f->type) {
-    case UPB_TYPE(MESSAGE):
-    case UPB_TYPE(GROUP):
-      _upb_msg_free(upb_value_getmsg(v), upb_downcast_msgdef(f->def));
-      break;
-    case UPB_TYPE(STRING):
-    case UPB_TYPE(BYTES):
-      _upb_string_free(upb_value_getstr(v));
-      break;
-    default:
-      abort();
+void *upb_stdarray_append(upb_stdarray *a, size_t type_size) {
+  assert(a->len <= a->size);
+  if (a->len == a->size) {
+    size_t old_size = a->size;
+    a->size = old_size == 0 ? 8 : (old_size * 2);
+    a->ptr = realloc(a->ptr, a->size * type_size);
+    memset(&a->ptr[old_size * type_size], 0, (a->size - old_size) * type_size);
   }
+  return &a->ptr[a->len++ * type_size];
 }
 
-static void upb_elem_unref(upb_value v, upb_fielddef *f) {
-  assert(upb_elem_ismm(f));
-  upb_atomic_t *refcount = upb_value_getrefcount(v);
-  if (refcount && upb_atomic_unref(refcount))
-    upb_elem_free(v, f);
-}
-
-static void upb_field_free(upb_value v, upb_fielddef *f) {
-  if (upb_isarray(f)) {
-    _upb_array_free(upb_value_getarr(v), f);
-  } else {
-    upb_elem_free(v, f);
-  }
-}
-
-static void upb_field_unref(upb_value v, upb_fielddef *f) {
-  assert(upb_field_ismm(f));
-  upb_atomic_t *refcount = upb_value_getrefcount(v);
-  if (refcount && upb_atomic_unref(refcount))
-    upb_field_free(v, f);
-}
-
-
-/* upb_array ******************************************************************/
-
-upb_array *upb_array_new(void) {
-  upb_array *arr = malloc(sizeof(*arr));
-  upb_atomic_init(&arr->refcount, 1);
-  arr->size = 0;
-  arr->len = 0;
-  arr->ptr = NULL;
-  return arr;
-}
-
-void __attribute__((noinline)) upb_array_dorecycle(upb_array **_arr) {
-  upb_array *arr = *_arr;
-  if(arr && upb_atomic_only(&arr->refcount)) {
-    arr->len = 0;
-  } else {
-    if (arr) {
-      bool was_lastref = upb_atomic_unref(&arr->refcount);
-      (void)was_lastref;
-      assert(!was_lastref);   // If it was, we would have just recycled.
-    }
-    *_arr = upb_array_new();
-  }
-}
-
-void upb_array_recycle(upb_array **_arr) {
-  upb_array *arr = *_arr;
-  if(arr && upb_atomic_only(&arr->refcount)) {
-    arr->len = 0;
-  } else {
-    upb_array_dorecycle(_arr);
-  }
-}
-
-void _upb_array_free(upb_array *arr, upb_fielddef *f) {
-  if (upb_elem_ismm(f)) {
-    // Need to release refs on sub-objects.
-    upb_valuetype_t type = upb_elem_valuetype(f);
-    for (int32_t i = 0; i < arr->size; i++) {
-      upb_valueptr p = _upb_array_getptr(arr, f, i);
-      upb_elem_unref(upb_value_read(p, type), f);
-    }
-  }
-  free(arr->ptr);
-  free(arr);
-}
-
-void __attribute__((noinline)) upb_array_doresize(
-    upb_array *arr, size_t type_size, upb_arraylen_t len) {
-  upb_arraylen_t old_size = arr->size;
-  size_t new_size = upb_round_up_pow2(len);
-  arr->ptr = realloc(arr->ptr, new_size * type_size);
-  arr->size = new_size;
-  memset(arr->ptr + (old_size * type_size), 0,
-         (new_size - old_size) * type_size);
-}
-
-void upb_array_resizefortypesize(upb_array *arr, size_t type_size,
-                                 int32_t len) {
-  assert(len >= 0);
-  if (arr->size < len) upb_array_doresize(arr, type_size, len);
-  arr->len = len;
-}
-
-void upb_array_resize(upb_array *arr, upb_fielddef *f, upb_arraylen_t len) {
-  upb_array_resizefortypesize(arr, upb_types[f->type].size, len);
-}
-
-
-/* upb_msg ********************************************************************/
-
-upb_msg *upb_msg_new(upb_msgdef *md) {
-  upb_msg *msg = malloc(md->size);
-  // Clear all set bits and cached pointers.
-  memset(msg, 0, md->size);
-  upb_atomic_init(&msg->refcount, 1);
-  return msg;
-}
-
-void _upb_msg_free(upb_msg *msg, upb_msgdef *md) {
-  // Need to release refs on all sub-objects.
-  upb_msg_iter i;
-  for(i = upb_msg_begin(md); !upb_msg_done(i); i = upb_msg_next(md, i)) {
-    upb_fielddef *f = upb_msg_iter_field(i);
-    upb_valueptr p = _upb_msg_getptr(msg, f);
-    upb_valuetype_t type = upb_field_valuetype(f);
-    if (upb_field_ismm(f)) upb_field_unref(upb_value_read(p, type), f);
-  }
-  free(msg);
-}
-
-void upb_msg_recycle(upb_msg **_msg, upb_msgdef *msgdef) {
-  upb_msg *msg = *_msg;
-  if(msg && upb_atomic_only(&msg->refcount)) {
-    upb_msg_clear(msg, msgdef);
-  } else {
-    upb_msg_unref(msg, msgdef);
-    if (msg) {
-      bool was_lastref = upb_atomic_unref(&msg->refcount);
-      (void)was_lastref;
-      assert(!was_lastref);
-    }
-    *_msg = upb_msg_new(msgdef);
-  }
-}
-
-INLINE void upb_msg_sethas(upb_msg *msg, upb_fielddef *f) {
-  msg->data[f->set_bit_offset] |= f->set_bit_mask;
-}
-
-void upb_msg_set(upb_msg *msg, upb_fielddef *f, upb_value val) {
-  assert(val.type == upb_types[upb_field_valuetype(f)].inmemory_type);
-  upb_valueptr ptr = _upb_msg_getptr(msg, f);
-  if (upb_field_ismm(f)) {
-    // Unref any previous value we may have had there.
-    upb_value oldval = upb_value_read(ptr, upb_field_valuetype(f));
-    upb_field_unref(oldval, f);
-
-    // Ref the new value.
-    upb_atomic_t *refcount = upb_value_getrefcount(val);
-    if (refcount) upb_atomic_ref(refcount);
-  }
-  upb_msg_sethas(msg, f);
-  return upb_value_write(ptr, val, upb_field_valuetype(f));
-}
-
-upb_value upb_msg_get(upb_msg *msg, upb_fielddef *f) {
-  if (!upb_msg_has(msg, f)) {
-    upb_value val = f->default_value;
-    if (upb_issubmsg(f)) {
-      // TODO: handle arrays also, which must be treated similarly.
-      upb_msgdef *md = upb_downcast_msgdef(f->def);
-      upb_msg *m = upb_msg_new(md);
-      // Copy all set bits and values, except the refcount.
-      memcpy(m , upb_value_getmsg(val), md->size);
-      upb_atomic_init(&m->refcount, 0); // The msg will take a ref.
-      upb_value_setmsg(&val, m);
-    }
-    upb_msg_set(msg, f, val);
-    return val;
-  } else {
-    return upb_value_read(_upb_msg_getptr(msg, f), upb_field_valuetype(f));
-  }
-}
-
+#if 0
 static upb_flow_t upb_msg_dispatch(upb_msg *msg, upb_msgdef *md,
                                    upb_dispatcher *d);
 
@@ -253,110 +75,64 @@ void upb_msg_runhandlers(upb_msg *msg, upb_msgdef *md, upb_handlers *h,
 
   upb_dispatcher_uninit(&d);
 }
-
-static upb_valueptr upb_msg_getappendptr(upb_msg *msg, upb_fielddef *f) {
-  upb_valueptr p = _upb_msg_getptr(msg, f);
-  if (upb_isarray(f)) {
-    // Create/recycle/resize the array if necessary, and find a pointer to
-    // a newly-appended element.
-    if (!upb_msg_has(msg, f)) {
-      upb_array_recycle(p.arr);
-      upb_msg_sethas(msg, f);
-    }
-    assert(*p.arr != NULL);
-    upb_arraylen_t oldlen = upb_array_len(*p.arr);
-    upb_array_resize(*p.arr, f, oldlen + 1);
-    p = _upb_array_getptr(*p.arr, f, oldlen);
-  }
-  return p;
-}
-
-upb_msg *upb_msg_appendmsg(upb_msg *msg, upb_fielddef *f, upb_msgdef *msgdef) {
-  upb_valueptr p = upb_msg_getappendptr(msg, f);
-  if (upb_isarray(f) || !upb_msg_has(msg, f)) {
-    upb_msg_recycle(p.msg, msgdef);
-    upb_msg_sethas(msg, f);
-  }
-  return *p.msg;
-}
-
-
-/* upb_msg handlers ***********************************************************/
-
-#if UPB_MAX_FIELDS > 2048
-#error "We're using an 8-bit integer to store a has_offset."
 #endif
-typedef struct {
-  uint8_t has_offset;
-  uint8_t has_mask;
-  uint16_t val_offset;
-  uint16_t msg_size;
-  uint8_t set_flags_bytes;
-  uint8_t padding;
-} upb_msgsink_fval;
 
-static upb_msgsink_fval upb_msgsink_unpackfval(upb_value fval) {
-  assert(sizeof(upb_msgsink_fval) == 8);
-  upb_msgsink_fval ret;
-  uint64_t fval_u64 = upb_value_getuint64(fval);
-  memcpy(&ret, &fval_u64, 8);
-  return ret;
+/* Standard writers. **********************************************************/
+
+void upb_stdmsg_sethas(void *_m, upb_value fval) {
+  char *m = _m;
+  upb_fielddef *f = upb_value_getfielddef(fval);
+  if (f->hasbit >= 0) m[f->hasbit / 8] |= (1 << (f->hasbit % 8));
 }
 
-static uint64_t upb_msgsink_packfval(uint8_t has_offset, uint8_t has_mask,
-                                     uint16_t val_offset, uint16_t msg_size,
-                                     uint8_t set_flags_bytes) {
-  upb_msgsink_fval fval = {
-      has_offset, has_mask, val_offset, msg_size, set_flags_bytes, 0};
-  uint64_t ret = 0;
-  memcpy(&ret, &fval, sizeof(fval));
-  return ret;
+bool upb_stdmsg_has(void *_m, upb_value fval) {
+  char *m = _m;
+  upb_fielddef *f = upb_value_getfielddef(fval);
+  return f->hasbit < 0 || (m[f->hasbit / 8] & (1 << (f->hasbit % 8)));
 }
 
-#define SCALAR_VALUE_CB_PAIR(type, ctype)                                     \
-  upb_flow_t upb_msgsink_ ## type ## value(void *_m, upb_value _fval,         \
-                                                  upb_value val) {            \
-    upb_msg *m = _m;                                                          \
-    upb_msgsink_fval fval = upb_msgsink_unpackfval(_fval);                    \
-    m->data[fval.has_offset] |= fval.has_mask;                                \
-    *(ctype*)&m->data[fval.val_offset] = upb_value_get ## type(val);          \
+#define UPB_ACCESSORS(type, ctype)                                            \
+  upb_flow_t upb_stdmsg_set ## type (void *_m, upb_value fval,                \
+                                     upb_value val) {                         \
+    upb_fielddef *f = upb_value_getfielddef(fval);                            \
+    uint8_t *m = _m;                                                          \
+    upb_stdmsg_sethas(_m, fval);                                              \
+    *(ctype*)&m[f->offset] = upb_value_get ## type(val);                      \
     return UPB_CONTINUE;                                                      \
   }                                                                           \
                                                                               \
-  upb_flow_t upb_msgsink_ ## type ## value_r(void *_a, upb_value _fval,       \
-                                             upb_value val) {                 \
+  upb_flow_t upb_stdmsg_set ## type ## _r(void *a, upb_value _fval,           \
+                                          upb_value val) {                    \
     (void)_fval;                                                              \
-    upb_array *arr = _a;                                                      \
-    upb_array_resizefortypesize(arr, sizeof(ctype), arr->len+1);              \
-    upb_valueptr p = _upb_array_getptrforsize(arr, sizeof(ctype),             \
-                                              arr->len-1);                    \
-    *(ctype*)p._void = upb_value_get ## type(val);                            \
+    ctype *p = upb_stdarray_append((upb_stdarray*)a, sizeof(ctype));          \
+    *p = upb_value_get ## type(val);                                          \
     return UPB_CONTINUE;                                                      \
   }                                                                           \
-
-SCALAR_VALUE_CB_PAIR(double, double)
-SCALAR_VALUE_CB_PAIR(float, float)
-SCALAR_VALUE_CB_PAIR(int32, int32_t)
-SCALAR_VALUE_CB_PAIR(int64, int64_t)
-SCALAR_VALUE_CB_PAIR(uint32, uint32_t)
-SCALAR_VALUE_CB_PAIR(uint64, uint64_t)
-SCALAR_VALUE_CB_PAIR(bool, bool)
-
-upb_sflow_t upb_msgsink_startseq(void *_m, upb_value _fval) {
-  upb_msg *m = _m;
-  upb_msgsink_fval fval = upb_msgsink_unpackfval(_fval);
-  upb_array **arr = (upb_array**)&m->data[fval.val_offset];
-  if (!(m->data[fval.has_offset] & fval.has_mask)) {
-    upb_array_recycle(arr);
-    m->data[fval.has_offset] |= fval.has_mask;
+                                                                              \
+  upb_value upb_stdmsg_get ## type(void *_m, upb_value fval) {                \
+    uint8_t *m = _m;                                                          \
+    upb_fielddef *f = upb_value_getfielddef(fval);                            \
+    upb_value ret;                                                            \
+    upb_value_set ## type(&ret, *(ctype*)&m[f->offset]);                      \
+    return ret;                                                               \
+  }                                                                           \
+  upb_value upb_stdmsg_seqget ## type(void *i) {                              \
+    upb_value val;                                                            \
+    upb_value_set ## type(&val, *(ctype*)i);                                  \
+    return val;                                                               \
   }
-  return UPB_CONTINUE_WITH(*arr);
-}
 
-upb_flow_t upb_msgsink_strvalue(void *_m, upb_value _fval, upb_value val) {
-  upb_msg *m = _m;
-  upb_msgsink_fval fval = upb_msgsink_unpackfval(_fval);
-  m->data[fval.has_offset] |= fval.has_mask;
+UPB_ACCESSORS(double, double)
+UPB_ACCESSORS(float, float)
+UPB_ACCESSORS(int32, int32_t)
+UPB_ACCESSORS(int64, int64_t)
+UPB_ACCESSORS(uint32, uint32_t)
+UPB_ACCESSORS(uint64, uint64_t)
+UPB_ACCESSORS(bool, bool)
+UPB_ACCESSORS(ptr, void*)
+#undef UPB_ACCESSORS
+
+static void _upb_stdmsg_setstr(void *_dst, upb_value _src) {
   // We do:
   //  - upb_string_recycle(), upb_string_substr() instead of
   //  - upb_string_unref(), upb_string_getref()
@@ -369,115 +145,204 @@ upb_flow_t upb_msgsink_strvalue(void *_m, upb_value _fval, upb_value val) {
   // allocate string objects whereas a upb_string_getref could have avoided
   // those allocations completely; if this is an issue, we could make it an
   // option of the upb_msgsink which behavior is desired.
-  upb_string *src = upb_value_getstr(val);
-  upb_string **dst = (void*)&m->data[fval.val_offset];
+  upb_string **dst = _dst;
+  upb_string *src = upb_value_getstr(_src);
   upb_string_recycle(dst);
   upb_string_substr(*dst, src, 0, upb_string_len(src));
+}
+
+upb_flow_t upb_stdmsg_setstr(void *_m, upb_value fval, upb_value val) {
+  char *m = _m;
+  upb_fielddef *f = upb_value_getfielddef(fval);
+  upb_stdmsg_sethas(_m, fval);
+  _upb_stdmsg_setstr(&m[f->offset], val);
   return UPB_CONTINUE;
 }
 
-upb_flow_t upb_msgsink_strvalue_r(void *_a, upb_value _fval,
-                                  upb_value val) {
-  upb_array *arr = _a;
-  (void)_fval;
-  upb_array_resizefortypesize(arr, sizeof(void*), arr->len+1);
-  upb_valueptr p = _upb_array_getptrforsize(arr, sizeof(void*),
-                                            upb_array_len(arr)-1);
-  upb_string *src = upb_value_getstr(val);
-  upb_string_recycle(p.str);
-  upb_string_substr(*p.str, src, 0, upb_string_len(src));
+upb_flow_t upb_stdmsg_setstr_r(void *a, upb_value fval, upb_value val) {
+  (void)fval;
+  _upb_stdmsg_setstr(upb_stdarray_append((upb_stdarray*)a, sizeof(void*)), val);
   return UPB_CONTINUE;
 }
 
+upb_value upb_stdmsg_getstr(void *m, upb_value fval) {
+  upb_value val = upb_stdmsg_getptr(m, fval);
+  upb_value_setstr(&val, upb_value_getptr(val));
+  return val;
+}
 
-upb_sflow_t upb_msgsink_startsubmsg(void *_m, upb_value _fval) {
-  upb_msg *msg = _m;
-  upb_msgsink_fval fval = upb_msgsink_unpackfval(_fval);
+upb_value upb_stdmsg_seqgetstr(void *i) {
+  upb_value val = upb_stdmsg_seqgetptr(i);
+  upb_value_setstr(&val, upb_value_getptr(val));
+  return val;
+}
 
-  upb_msgdef md;
-  md.size = fval.msg_size;
-  md.set_flags_bytes = fval.set_flags_bytes;
-  upb_fielddef f;
-  f.set_bit_mask = fval.has_mask;
-  f.set_bit_offset = fval.has_offset;
-  f.label = UPB_LABEL(OPTIONAL);  // Just not repeated.
-  f.type = UPB_TYPE(MESSAGE);
-  f.byte_offset = fval.val_offset;
+void *upb_stdmsg_new(upb_msgdef *md) {
+  void *m = malloc(md->size);
+  memset(m, 0, md->size);
+  upb_msg_clear(m, md);
+  return m;
+}
 
-  upb_msg **subm = _upb_msg_getptr(msg, &f).msg;
-  if (!upb_msg_has(msg, &f)) {
-    upb_msg_recycle(subm, &md);
-    upb_msg_sethas(msg, &f);
+void upb_stdseq_free(void *s, upb_fielddef *f) {
+  upb_stdarray *a = s;
+  if (upb_issubmsg(f) || upb_isstring(f)) {
+    void **p = (void**)a->ptr;
+    for (int i = 0; i < a->size; i++) {
+      if (upb_issubmsg(f)) {
+        upb_stdmsg_free(p[i], upb_downcast_msgdef(f->def));
+      } else {
+        upb_string_unref(p[i]);
+      }
+    }
+  }
+  free(a->ptr);
+  free(a);
+}
+
+void upb_stdmsg_free(void *m, upb_msgdef *md) {
+  if (m == NULL) return;
+  upb_msg_iter i;
+  for(i = upb_msg_begin(md); !upb_msg_done(i); i = upb_msg_next(md, i)) {
+    upb_fielddef *f = upb_msg_iter_field(i);
+    if (!upb_isseq(f) && !upb_issubmsg(f) && !upb_isstring(f)) continue;
+    void *subp = upb_value_getptr(upb_stdmsg_getptr(m, f->fval));
+    if (subp == NULL) continue;
+    if (upb_isseq(f)) {
+      upb_stdseq_free(subp, f);
+    } else if (upb_issubmsg(f)) {
+      upb_stdmsg_free(subp, upb_downcast_msgdef(f->def));
+    } else {
+      upb_string_unref(subp);
+    }
+  }
+  free(m);
+}
+
+upb_sflow_t upb_stdmsg_startseq(void *_m, upb_value fval) {
+  char *m = _m;
+  upb_fielddef *f = upb_value_getfielddef(fval);
+  upb_stdarray **arr = (void*)&m[f->offset];
+  if (!upb_stdmsg_has(_m, fval)) {
+    if (!*arr) {
+      *arr = malloc(sizeof(**arr));
+      (*arr)->size = 0;
+      (*arr)->ptr = NULL;
+    }
+    (*arr)->len = 0;
+    upb_stdmsg_sethas(m, fval);
+  }
+  return UPB_CONTINUE_WITH(*arr);
+}
+
+void upb_stdmsg_recycle(void **m, upb_msgdef *md) {
+  if (*m)
+    upb_msg_clear(*m, md);
+  else
+    *m = upb_stdmsg_new(md);
+}
+
+upb_sflow_t upb_stdmsg_startsubmsg(void *_m, upb_value fval) {
+  char *m = _m;
+  upb_fielddef *f = upb_value_getfielddef(fval);
+  void **subm = (void*)&m[f->offset];
+  if (!upb_stdmsg_has(m, fval)) {
+    upb_stdmsg_recycle(subm, upb_downcast_msgdef(f->def));
+    upb_stdmsg_sethas(m, fval);
   }
   return UPB_CONTINUE_WITH(*subm);
 }
 
-upb_sflow_t upb_msgsink_startsubmsg_r(void *_a, upb_value _fval) {
-  upb_array *a = _a;
+upb_sflow_t upb_stdmsg_startsubmsg_r(void *a, upb_value fval) {
   assert(a != NULL);
-  upb_msgsink_fval fval = upb_msgsink_unpackfval(_fval);
-
-  upb_msgdef md;
-  md.size = fval.msg_size;
-  md.set_flags_bytes = fval.set_flags_bytes;
-  upb_fielddef f;
-  f.set_bit_mask = fval.has_mask;
-  f.set_bit_offset = fval.has_offset;
-  f.label = UPB_LABEL(REPEATED);
-  f.type = UPB_TYPE(MESSAGE);
-  f.byte_offset = fval.val_offset;
-
-  upb_arraylen_t oldlen = upb_array_len(a);
-  upb_array_resize(a, &f, oldlen + 1);
-  upb_valueptr p = _upb_array_getptr(a, &f, oldlen);
-  upb_msg_recycle(p.msg, &md);
-  return UPB_CONTINUE_WITH(*p.msg);
+  upb_fielddef *f = upb_value_getfielddef(fval);
+  void **subm = upb_stdarray_append((upb_stdarray*)a, sizeof(void*));
+  upb_stdmsg_recycle(subm, upb_downcast_msgdef(f->def));
+  return UPB_CONTINUE_WITH(*subm);
 }
 
-INLINE void upb_msg_onfreg(void *c, upb_fhandlers *fh, upb_fielddef *f) {
+void *upb_stdmsg_seqbegin(void *_a) {
+  upb_stdarray *a = _a;
+  return a->len > 0 ? a->ptr : NULL;
+}
+
+#define NEXTFUNC(size) \
+  void *upb_stdmsg_ ## size ## byte_seqnext(void *_a, void *iter) {      \
+    upb_stdarray *a = _a;                                                \
+    void *next = (char*)iter + size;                                     \
+    return (char*)next < (char*)a->ptr + (a->len * size) ? next : NULL;  \
+  }
+
+NEXTFUNC(8)
+NEXTFUNC(4)
+NEXTFUNC(1)
+
+#define STDMSG(type) { static upb_accessor_vtbl vtbl = {NULL, &upb_stdmsg_startsubmsg, \
+  &upb_stdmsg_set ## type, &upb_stdmsg_has, &upb_stdmsg_get ## type, \
+  NULL, NULL, NULL}; return &vtbl; }
+#define STDMSG_R(type, size) { static upb_accessor_vtbl vtbl = { \
+  &upb_stdmsg_startseq, &upb_stdmsg_startsubmsg_r, &upb_stdmsg_set ## type ## _r, \
+  &upb_stdmsg_has, &upb_stdmsg_getptr, &upb_stdmsg_seqbegin, \
+  &upb_stdmsg_ ## size ## byte_seqnext, &upb_stdmsg_seqget ## type}; \
+  return &vtbl; }
+
+upb_accessor_vtbl *upb_stdmsg_accessor(upb_fielddef *f) {
+  if (upb_isseq(f)) {
+    switch (f->type) {
+      case UPB_TYPE(DOUBLE): STDMSG_R(double, 8)
+      case UPB_TYPE(FLOAT): STDMSG_R(float, 4)
+      case UPB_TYPE(UINT64):
+      case UPB_TYPE(FIXED64): STDMSG_R(uint64, 8)
+      case UPB_TYPE(INT64):
+      case UPB_TYPE(SFIXED64):
+      case UPB_TYPE(SINT64): STDMSG_R(int64, 8)
+      case UPB_TYPE(INT32):
+      case UPB_TYPE(SINT32):
+      case UPB_TYPE(ENUM):
+      case UPB_TYPE(SFIXED32): STDMSG_R(int32, 4)
+      case UPB_TYPE(UINT32):
+      case UPB_TYPE(FIXED32): STDMSG_R(uint32, 4)
+      case UPB_TYPE(BOOL): STDMSG_R(bool, 1)
+      case UPB_TYPE(STRING):
+      case UPB_TYPE(BYTES):
+      case UPB_TYPE(GROUP):
+      case UPB_TYPE(MESSAGE): STDMSG_R(str, 8)  // TODO: 32-bit
+    }
+  } else {
+    switch (f->type) {
+      case UPB_TYPE(DOUBLE): STDMSG(double)
+      case UPB_TYPE(FLOAT): STDMSG(float)
+      case UPB_TYPE(UINT64):
+      case UPB_TYPE(FIXED64): STDMSG(uint64)
+      case UPB_TYPE(INT64):
+      case UPB_TYPE(SFIXED64):
+      case UPB_TYPE(SINT64): STDMSG(int64)
+      case UPB_TYPE(INT32):
+      case UPB_TYPE(SINT32):
+      case UPB_TYPE(ENUM):
+      case UPB_TYPE(SFIXED32): STDMSG(int32)
+      case UPB_TYPE(UINT32):
+      case UPB_TYPE(FIXED32): STDMSG(uint32)
+      case UPB_TYPE(BOOL): STDMSG(bool)
+      case UPB_TYPE(STRING):
+      case UPB_TYPE(BYTES):
+      case UPB_TYPE(GROUP):
+      case UPB_TYPE(MESSAGE): STDMSG(str)
+    }
+  }
+  return NULL;
+}
+
+static void upb_accessors_onfreg(void *c, upb_fhandlers *fh, upb_fielddef *f) {
   (void)c;
-  uint16_t msg_size = 0;
-  uint8_t set_flags_bytes = 0;
-  if (upb_issubmsg(f)) {
-    upb_msgdef *md = upb_downcast_msgdef(f->def);
-    msg_size = md->size;
-    set_flags_bytes = md->set_flags_bytes;
-  }
-  upb_value_setuint64(&fh->fval,
-      upb_msgsink_packfval(f->set_bit_offset, f->set_bit_mask,
-                           f->byte_offset, msg_size, set_flags_bytes));
-  if (fh->repeated) upb_fhandlers_setstartseq(fh, upb_msgsink_startseq);
-#define CASE(upb_type, type) \
-case UPB_TYPE(upb_type): \
-    upb_fhandlers_setvalue(fh, upb_isarray(f) ? \
-        upb_msgsink_ ## type ## value_r : upb_msgsink_ ## type ## value); \
-    break;
-  switch (f->type) {
-    CASE(DOUBLE,   double)
-    CASE(FLOAT,    float)
-    CASE(INT32,    int32)
-    CASE(INT64,    int64)
-    CASE(UINT32,   uint32)
-    CASE(UINT64,   uint64)
-    CASE(SINT32,   int32)
-    CASE(SINT64,   int64)
-    CASE(FIXED32,  uint32)
-    CASE(FIXED64,  uint64)
-    CASE(SFIXED32, int32)
-    CASE(SFIXED64, int64)
-    CASE(BOOL,     bool)
-    CASE(ENUM,     int32)
-    CASE(STRING,   str)
-    CASE(BYTES,    str)
-#undef CASE
-    case UPB_TYPE(MESSAGE):
-    case UPB_TYPE(GROUP):
-      upb_fhandlers_setstartsubmsg(fh,
-          upb_isarray(f) ? upb_msgsink_startsubmsg_r : upb_msgsink_startsubmsg);
-      break;
+  if (f->accessor) {
+    upb_fhandlers_setstartseq(fh, f->accessor->appendseq);
+    upb_fhandlers_setvalue(fh, f->accessor->set);
+    upb_fhandlers_setstartsubmsg(fh, f->accessor->appendsubmsg);
+    upb_fhandlers_setfval(fh, f->fval);
   }
 }
 
-upb_mhandlers *upb_msg_reghandlers(upb_handlers *h, upb_msgdef *m) {
-  return upb_handlers_regmsgdef(h, m, NULL, &upb_msg_onfreg, NULL);
+upb_mhandlers *upb_accessors_reghandlers(upb_handlers *h, upb_msgdef *m) {
+  return upb_handlers_regmsgdef(h, m, NULL, &upb_accessors_onfreg, NULL);
 }

@@ -5,32 +5,29 @@
  * Author: Josh Haberman <jhaberman@gmail.com>
  */
 
+#include "upb_decoder.h"
+#include "upb_descriptor.h"
 #include "upb_glue.h"
 #include "upb_msg.h"
-#include "upb_decoder.h"
 #include "upb_strstream.h"
 #include "upb_textprinter.h"
 
-void upb_strtomsg(upb_string *str, upb_msg *msg, upb_msgdef *md,
+void upb_strtomsg(upb_string *str, void *msg, upb_msgdef *md,
                   upb_status *status) {
   upb_stringsrc strsrc;
   upb_stringsrc_init(&strsrc);
   upb_stringsrc_reset(&strsrc, str);
 
-  upb_handlers *h = upb_handlers_new();
-  upb_msg_reghandlers(h, md);
-
   upb_decoder d;
-  upb_decoder_init(&d, h);
+  upb_decoder_initformsgdef(&d, md);
   upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), msg);
-  upb_handlers_unref(h);
-
   upb_decoder_decode(&d, status);
 
   upb_stringsrc_uninit(&strsrc);
   upb_decoder_uninit(&d);
 }
 
+#if 0
 void upb_msgtotext(upb_string *str, upb_msg *msg, upb_msgdef *md,
                    bool single_line) {
   upb_stringsink strsink;
@@ -53,23 +50,49 @@ void upb_msgtotext(upb_string *str, upb_msg *msg, upb_msgdef *md,
   upb_textprinter_free(p);
   upb_handlers_unref(h);
 }
+#endif
 
-void upb_parsedesc(upb_symtab *symtab, upb_string *str, upb_status *status) {
+// TODO: read->load.
+void upb_read_descriptor(upb_symtab *symtab, upb_string *str, upb_status *status) {
   upb_stringsrc strsrc;
   upb_stringsrc_init(&strsrc);
   upb_stringsrc_reset(&strsrc, str);
 
   upb_handlers *h = upb_handlers_new();
-  upb_defbuilder_reghandlers(h);
+  upb_descreader_reghandlers(h);
 
   upb_decoder d;
-  upb_decoder_init(&d, h);
+  upb_decoder_initforhandlers(&d, h);
   upb_handlers_unref(h);
-  upb_defbuilder *b = upb_defbuilder_new(symtab);
-  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), b);
+  upb_descreader r;
+  upb_symtabtxn txn;
+  upb_symtabtxn_init(&txn);
+  upb_descreader_init(&r, &txn);
+  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), &r);
 
   upb_decoder_decode(&d, status);
 
+  // Set default accessors and layouts on all messages.
+  // for msgdef in symtabtxn:
+  upb_symtabtxn_iter i;
+  for(i = upb_symtabtxn_begin(&txn); !upb_symtabtxn_done(i);
+      i = upb_symtabtxn_next(&txn, i)) {
+    upb_def *def = upb_symtabtxn_iter_def(i);
+    upb_msgdef *md = upb_dyncast_msgdef(def);
+    if (!md) return;
+    // For field in msgdef:
+    upb_msg_iter i;
+    for(i = upb_msg_begin(md); !upb_msg_done(i); i = upb_msg_next(md, i)) {
+      upb_fielddef *f = upb_msg_iter_field(i);
+      upb_fielddef_setaccessor(f, upb_stdmsg_accessor(f));
+    }
+    upb_msgdef_layout(md);
+  }
+
+  if (upb_ok(status)) upb_symtab_commit(symtab, &txn, status);
+
+  upb_symtabtxn_uninit(&txn);
+  upb_descreader_uninit(&r);
   upb_stringsrc_uninit(&strsrc);
   upb_decoder_uninit(&d);
 }

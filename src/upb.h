@@ -146,6 +146,7 @@ typedef uint8_t upb_valuetype_t;
 #define UPB_VALUETYPE_BYTESRC 32
 #define UPB_VALUETYPE_RAW 33
 #define UPB_VALUETYPE_FIELDDEF 34
+#define UPB_VALUETYPE_PTR 35
 
 // A single .proto value.  The owner must have an out-of-band way of knowing
 // the type, so that it knows which union member to use.
@@ -196,11 +197,9 @@ UPB_VALUE_ACCESSORS(int64, int64, int64_t, UPB_TYPE(INT64));
 UPB_VALUE_ACCESSORS(uint32, uint32, uint32_t, UPB_TYPE(UINT32));
 UPB_VALUE_ACCESSORS(uint64, uint64, uint64_t, UPB_TYPE(UINT64));
 UPB_VALUE_ACCESSORS(bool, _bool, bool, UPB_TYPE(BOOL));
-UPB_VALUE_ACCESSORS(str, str, upb_string*, UPB_TYPE(STRING));
-UPB_VALUE_ACCESSORS(msg, msg, upb_msg*, UPB_TYPE(MESSAGE));
-UPB_VALUE_ACCESSORS(arr, arr, upb_array*, UPB_VALUETYPE_ARRAY);
-UPB_VALUE_ACCESSORS(bytesrc, bytesrc, upb_bytesrc*, UPB_VALUETYPE_BYTESRC);
+UPB_VALUE_ACCESSORS(str, str, upb_string*, UPB_TYPE(STRING));  // Marked for destruction.
 UPB_VALUE_ACCESSORS(fielddef, fielddef, upb_fielddef*, UPB_VALUETYPE_FIELDDEF);
+UPB_VALUE_ACCESSORS(ptr, _void, void*, UPB_VALUETYPE_PTR);
 
 extern upb_value UPB_NO_VALUE;
 

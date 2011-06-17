@@ -107,6 +107,8 @@ void _upb_string_free(upb_string *str);
 // can be NULL, in which case this is a no-op.  WARNING: NOT THREAD_SAFE
 // UNLESS THE STRING IS SYNCHRONIZED.
 INLINE void upb_string_unref(upb_string *str) {
+  if (str) {
+  }
   if (str && upb_atomic_read(&str->refcount) > 0 &&
       upb_atomic_unref(&str->refcount)) {
     _upb_string_free(str);
@@ -129,7 +131,9 @@ INLINE upb_string *upb_string_getref(upb_string *str) {
   int refcount = upb_atomic_read(&str->refcount);
   if (refcount == _UPB_STRING_REFCOUNT_STACK) return upb_strdup(str);
   // We don't ref the special <0 refcount for static strings.
-  if (refcount > 0) upb_atomic_ref(&str->refcount);
+  if (refcount > 0) {
+    upb_atomic_ref(&str->refcount);
+  }
   return str;
 }
 

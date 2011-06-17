@@ -91,8 +91,16 @@ typedef struct {
 struct _upb_decoder;
 typedef struct _upb_decoder upb_decoder;
 
-// Allocates and frees a upb_decoder, respectively.
-void upb_decoder_init(upb_decoder *d, upb_handlers *handlers);
+// Initializes/uninitializes a decoder for calling into the given handlers
+// or to write into the given msgdef, given its accessors).  Takes a ref
+// on the handlers or msgdef.
+void upb_decoder_initforhandlers(upb_decoder *d, upb_handlers *h);
+
+// Equivalent to:
+//   upb_accessors_reghandlers(m, h);
+//   upb_decoder_initforhandlers(d, h);
+// except possibly more efficient, by using cached state in the msgdef.
+void upb_decoder_initformsgdef(upb_decoder *d, upb_msgdef *m);
 void upb_decoder_uninit(upb_decoder *d);
 
 // Resets the internal state of an already-allocated decoder.  This puts it in a

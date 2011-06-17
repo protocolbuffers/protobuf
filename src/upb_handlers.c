@@ -123,9 +123,9 @@ static upb_mhandlers *upb_regmsg_dfs(upb_handlers *h, upb_msgdef *m,
                                 fieldreg_cb, closure, mtab);
       }
       fh = upb_mhandlers_newfhandlers_subm(
-          mh, f->number, f->type, upb_isarray(f), sub_mh);
+          mh, f->number, f->type, upb_isseq(f), sub_mh);
     } else {
-      fh = upb_mhandlers_newfhandlers(mh, f->number, f->type, upb_isarray(f));
+      fh = upb_mhandlers_newfhandlers(mh, f->number, f->type, upb_isseq(f));
     }
     if (fieldreg_cb) fieldreg_cb(closure, fh, f);
   }

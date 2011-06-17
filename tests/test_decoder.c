@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
   }
 
   upb_status status = UPB_STATUS_INIT;
-  upb_parsedesc(symtab, desc, &status);
+  upb_read_descriptor(symtab, desc, &status);
   if (!upb_ok(&status)) {
     fprintf(stderr, "Error parsing descriptor: ");
     upb_printerr(&status);
@@ -45,14 +45,13 @@ int main(int argc, char *argv[]) {
   upb_stdio *out = upb_stdio_new();
   upb_stdio_reset(out, stdout);
 
-  upb_handlers handlers;
-  upb_handlers_init(&handlers);
+  upb_handlers *handlers = upb_handlers_new();
   upb_textprinter *p = upb_textprinter_new();
   upb_textprinter_reset(p, upb_stdio_bytesink(out), false);
-  upb_textprinter_reghandlers(&handlers, m);
+  upb_textprinter_reghandlers(handlers, m);
 
   upb_decoder d;
-  upb_decoder_init(&d, &handlers);
+  upb_decoder_initforhandlers(&d, handlers);
   upb_decoder_reset(&d, upb_stdio_bytesrc(in), p);
 
   upb_clearerr(&status);

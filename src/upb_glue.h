@@ -42,14 +42,14 @@ struct _upb_symtab;
 
 // Decodes the given string, which must be in protobuf binary format, to the
 // given upb_msg with msgdef "md", storing the status of the operation in "s".
-void upb_strtomsg(struct _upb_string *str, struct _upb_msg *msg,
+void upb_strtomsg(struct _upb_string *str, void *msg,
                   struct _upb_msgdef *md, struct _upb_status *s);
 
-void upb_msgtotext(struct _upb_string *str, struct _upb_msg *msg,
+void upb_msgtotext(struct _upb_string *str, void *msg,
                    struct _upb_msgdef *md, bool single_line);
 
-void upb_parsedesc(struct _upb_symtab *symtab, struct _upb_string *str,
-                   struct _upb_status *status);
+void upb_read_descriptor(struct _upb_symtab *symtab, struct _upb_string *str,
+                         struct _upb_status *status);
 
 #ifdef __cplusplus
 }  /* extern "C" */

@@ -103,6 +103,12 @@ INLINE uint32_t upb_strtable_count(upb_strtable *t) {
 void upb_inttable_insert(upb_inttable *t, upb_inttable_key_t key, void *val);
 void upb_strtable_insert(upb_strtable *t, upb_strtable_entry *ent);  // TODO: update
 void upb_inttable_compact(upb_inttable *t);
+INLINE void upb_strtable_clear(upb_strtable *t) {
+  // TODO: improve.
+  uint16_t entry_size = t->t.entry_size;
+  upb_strtable_free(t);
+  upb_strtable_init(t, 8, entry_size);
+}
 
 INLINE uint32_t _upb_inttable_bucket(upb_inttable *t, upb_inttable_key_t k) {
   uint32_t bucket = k & t->t.mask;  // Identity hash for ints.
