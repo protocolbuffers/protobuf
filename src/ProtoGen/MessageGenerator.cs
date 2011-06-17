@@ -559,7 +559,7 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         private void GenerateCommonBuilderMethods(TextGenerator writer)
         {
-            writer.WriteLine("{0} Builder() {{}}", ClassAccessLevel);
+            writer.WriteLine("public Builder() {{}}", ClassAccessLevel);
             writer.WriteLine();
             writer.WriteLine("{0} result = new {0}();", ClassName);
             writer.WriteLine();
