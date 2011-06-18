@@ -1305,7 +1305,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (dispose) ((global::System.IDisposable)implementation).Dispose();
       }
       
-      public pb::IMessageLite CallMethod(string methodName, pb::CodedInputStream input, pb::ExtensionRegistry registry) {
+      public pb::IMessageLite CallMethod(string methodName, pb::ICodedInputStream input, pb::ExtensionRegistry registry) {
         switch(methodName) {
           case "Search": return implementation.CallMethod(methodName, global::Google.ProtocolBuffers.TestProtos.SearchRequest.ParseFrom(input, registry), global::Google.ProtocolBuffers.TestProtos.SearchResponse.CreateBuilder());
           case "RefineSearch": return implementation.CallMethod(methodName, global::Google.ProtocolBuffers.TestProtos.RefineSearchRequest.ParseFrom(input, registry), global::Google.ProtocolBuffers.TestProtos.SearchResponse.CreateBuilder());

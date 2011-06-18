@@ -274,7 +274,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                     writer.WriteLine();
 
                     writer.WriteLine(
-                        "public pb::IMessageLite CallMethod(string methodName, pb::CodedInputStream input, pb::ExtensionRegistry registry) {{",
+                        "public pb::IMessageLite CallMethod(string methodName, pb::ICodedInputStream input, pb::ExtensionRegistry registry) {{",
                         Descriptor.Name);
                     writer.Indent();
                     writer.WriteLine("switch(methodName) {");

@@ -43,7 +43,7 @@ namespace Google.ProtocolBuffers
     /// </summary>
     public interface IRpcServerStub
     {
-        IMessageLite CallMethod(string methodName, CodedInputStream input, ExtensionRegistry registry);
+        IMessageLite CallMethod(string methodName, ICodedInputStream input, ExtensionRegistry registry);
     }
 
     public interface IRpcDispatch

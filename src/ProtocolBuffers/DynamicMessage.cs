@@ -77,7 +77,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Parses a message of the given type from the given stream.
         /// </summary>
-        public static DynamicMessage ParseFrom(MessageDescriptor type, CodedInputStream input)
+        public static DynamicMessage ParseFrom(MessageDescriptor type, ICodedInputStream input)
         {
             Builder builder = CreateBuilder(type);
             Builder dynamicBuilder = builder.MergeFrom(input);
@@ -91,7 +91,7 @@ namespace Google.ProtocolBuffers
         /// <param name="input"></param>
         /// <param name="extensionRegistry"></param>
         /// <returns></returns>
-        public static DynamicMessage ParseFrom(MessageDescriptor type, CodedInputStream input,
+        public static DynamicMessage ParseFrom(MessageDescriptor type, ICodedInputStream input,
                                                ExtensionRegistry extensionRegistry)
         {
             Builder builder = CreateBuilder(type);
