@@ -305,7 +305,7 @@ class LIBPROTOBUF_EXPORT StringTypeHandlerBase {
   static void Merge(const string& from, string* to) { *to = from; }
 };
 
-class LIBPROTOBUF_EXPORT StringTypeHandler : public StringTypeHandlerBase {
+class StringTypeHandler : public StringTypeHandlerBase {
  public:
   static int SpaceUsed(const string& value)  {
     return sizeof(value) + StringSpaceUsedExcludingSelf(value);

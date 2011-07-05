@@ -53,7 +53,7 @@ class Message;
 namespace compiler {
 
 // Utility class for launching sub-processes.
-class Subprocess {
+class LIBPROTOC_EXPORT Subprocess {
  public:
   Subprocess();
   ~Subprocess();
