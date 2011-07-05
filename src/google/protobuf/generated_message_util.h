@@ -68,11 +68,11 @@ namespace internal {
 
 
 // Constants for special floating point values.
-double Infinity();
-double NaN();
+LIBPROTOBUF_EXPORT double Infinity();
+LIBPROTOBUF_EXPORT double NaN();
 
 // Constant used for empty default strings.
-extern const ::std::string kEmptyString;
+LIBPROTOBUF_EXPORT extern const ::std::string kEmptyString;
 
 
 }  // namespace internal
