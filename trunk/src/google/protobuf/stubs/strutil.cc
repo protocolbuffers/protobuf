@@ -670,7 +670,14 @@ char *InternalFastHexToBuffer(uint64 value, char* buffer, int num_byte) {
   static const char *hexdigits = "0123456789abcdef";
   buffer[num_byte] = '\0';
   for (int i = num_byte - 1; i >= 0; i--) {
+#ifdef _M_X64
+    // MSVC x64 platform has a bug optimizing the uint32(value) in the #else
+    // block. Given that the uint32 cast was to improve performance on 32-bit
+    // platforms, we use 64-bit '&' directly.
+    buffer[i] = hexdigits[value & 0xf];
+#else
     buffer[i] = hexdigits[uint32(value) & 0xf];
+#endif
     value >>= 4;
   }
   return buffer;
