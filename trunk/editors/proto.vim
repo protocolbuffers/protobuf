@@ -69,8 +69,7 @@ syn keyword pbBool      true false
 syn match   pbInt     /-\?\<\d\+\>/
 syn match   pbInt     /\<0[xX]\x+\>/
 syn match   pbFloat   /\<-\?\d*\(\.\d*\)\?/
-" TODO: .proto also supports C-style block comments;
-" see /usr/share/vim/vim70/syntax/c.vim for how it's done.
+syn region  pbComment start="\/\*" end="\*\/" contains=@pbCommentGrp
 syn region  pbComment start="//" skip="\\$" end="$" keepend contains=@pbCommentGrp
 syn region  pbString  start=/"/ skip=/\\"/ end=/"/
 syn region  pbString  start=/'/ skip=/\\'/ end=/'/
