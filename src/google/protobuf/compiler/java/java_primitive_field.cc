@@ -168,7 +168,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   (*variables)["field_type"] = (*variables)["type"];
   (*variables)["field_list_type"] = "java.util.List<" +
       (*variables)["boxed_type"] + ">";
-  (*variables)["empty_list"] = "java.util.Collections.emptyList();";
+  (*variables)["empty_list"] = "java.util.Collections.emptyList()";
   (*variables)["default"] = DefaultValue(descriptor);
   (*variables)["default_init"] = IsDefaultValueJavaDefault(descriptor) ?
       "" : ("= " + DefaultValue(descriptor));
