@@ -186,11 +186,8 @@ LOCAL_C_INCLUDES := \
 LOCAL_SHARED_LIBRARIES := \
     libcutils libutils
 
-# stlport conflicts with the host stl library
-ifneq ($(TARGET_SIMULATOR),true)
 LOCAL_C_INCLUDES += external/stlport/stlport
 LOCAL_SHARED_LIBRARIES += libstlport
-endif
 
 # Define the header files to be copied
 #LOCAL_COPY_HEADERS := \
@@ -252,11 +249,8 @@ LOCAL_C_INCLUDES := \
 LOCAL_SHARED_LIBRARIES := \
     libz libcutils libutils
 
-# stlport conflicts with the host stl library
-ifneq ($(TARGET_SIMULATOR),true)
 LOCAL_C_INCLUDES += external/stlport/stlport
 LOCAL_SHARED_LIBRARIES += libstlport
-endif
 
 # Define the header files to be copied
 #LOCAL_COPY_HEADERS := \
