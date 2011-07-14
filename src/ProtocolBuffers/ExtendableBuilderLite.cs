@@ -142,8 +142,10 @@ namespace Google.ProtocolBuffers
             int fieldNumber = WireFormat.GetTagFieldNumber(tag);
             IGeneratedExtensionLite extension = extensionRegistry[DefaultInstanceForType, fieldNumber];
 
-            if (extension == null)//unknown field
+            if (extension == null) //unknown field
+            {
                 return input.SkipField();
+            }
 
             IFieldDescriptorLite field = extension.Descriptor;
 
@@ -153,9 +155,9 @@ namespace Google.ProtocolBuffers
             {
                 return input.SkipField();
             }
-            WireFormat.WireType expectedType = field.IsPacked 
-                ? WireFormat.WireType.LengthDelimited 
-                : WireFormat.GetWireType(field.FieldType);
+            WireFormat.WireType expectedType = field.IsPacked
+                                                   ? WireFormat.WireType.LengthDelimited
+                                                   : WireFormat.GetWireType(field.FieldType);
             if (wireType != expectedType)
             {
                 expectedType = WireFormat.GetWireType(field.FieldType);
@@ -164,15 +166,20 @@ namespace Google.ProtocolBuffers
                     //Allowed as of 2.3, this is unpacked data for a packed array
                 }
                 else if (field.IsRepeated && wireType == WireFormat.WireType.LengthDelimited &&
-                    (expectedType == WireFormat.WireType.Varint || expectedType == WireFormat.WireType.Fixed32 || expectedType == WireFormat.WireType.Fixed64))
+                         (expectedType == WireFormat.WireType.Varint || expectedType == WireFormat.WireType.Fixed32 ||
+                          expectedType == WireFormat.WireType.Fixed64))
                 {
                     //Allowed as of 2.3, this is packed data for an unpacked array
                 }
                 else
+                {
                     return input.SkipField();
+                }
             }
             if (!field.IsRepeated && wireType != WireFormat.GetWireType(field.FieldType)) //invalid wire type
+            {
                 return input.SkipField();
+            }
 
             switch (field.FieldType)
             {
@@ -185,22 +192,34 @@ namespace Google.ProtocolBuffers
                             IBuilderLite subBuilder = (message ?? extension.MessageDefaultInstance).WeakToBuilder();
 
                             if (field.FieldType == FieldType.Group)
+                            {
                                 input.ReadGroup(field.FieldNumber, subBuilder, extensionRegistry);
+                            }
                             else
+                            {
                                 input.ReadMessage(subBuilder, extensionRegistry);
-                            
+                            }
+
                             extensions[field] = subBuilder.WeakBuild();
                         }
                         else
                         {
                             List<IMessageLite> list = new List<IMessageLite>();
                             if (field.FieldType == FieldType.Group)
-                                input.ReadGroupArray(tag, fieldName, list, extension.MessageDefaultInstance, extensionRegistry);
+                            {
+                                input.ReadGroupArray(tag, fieldName, list, extension.MessageDefaultInstance,
+                                                     extensionRegistry);
+                            }
                             else
-                                input.ReadMessageArray(tag, fieldName, list, extension.MessageDefaultInstance, extensionRegistry);
+                            {
+                                input.ReadMessageArray(tag, fieldName, list, extension.MessageDefaultInstance,
+                                                       extensionRegistry);
+                            }
 
                             foreach (IMessageLite m in list)
+                            {
                                 extensions.AddRepeatedField(field, m);
+                            }
                             return true;
                         }
                         break;
@@ -212,7 +231,9 @@ namespace Google.ProtocolBuffers
                             object unknown;
                             IEnumLite value = null;
                             if (input.ReadEnum(ref value, out unknown, field.EnumType))
+                            {
                                 extensions[field] = value;
+                            }
                         }
                         else
                         {
@@ -221,7 +242,9 @@ namespace Google.ProtocolBuffers
                             input.ReadEnumArray(tag, fieldName, list, out unknown, field.EnumType);
 
                             foreach (IEnumLite en in list)
+                            {
                                 extensions.AddRepeatedField(field, en);
+                            }
                         }
                         break;
                     }
@@ -231,14 +254,18 @@ namespace Google.ProtocolBuffers
                         {
                             object value = null;
                             if (input.ReadPrimitiveField(field.FieldType, ref value))
+                            {
                                 extensions[field] = value;
+                            }
                         }
                         else
                         {
                             List<object> list = new List<object>();
                             input.ReadPrimitiveArray(field.FieldType, tag, fieldName, list);
                             foreach (object oval in list)
+                            {
                                 extensions.AddRepeatedField(field, oval);
+                            }
                         }
                         break;
                     }

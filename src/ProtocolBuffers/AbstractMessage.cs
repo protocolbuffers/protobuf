@@ -37,8 +37,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
+using Google.ProtocolBuffers.Serialization;
 
 namespace Google.ProtocolBuffers
 {
@@ -123,22 +125,22 @@ namespace Google.ProtocolBuffers
 
         public string ToJson()
         {
-            Serialization.JsonFormatWriter w = Serialization.JsonFormatWriter.CreateInstance();
+            JsonFormatWriter w = JsonFormatWriter.CreateInstance();
             w.WriteMessage(this);
             return w.ToString();
         }
 
         public string ToXml()
         {
-            StringWriter w = new StringWriter(new System.Text.StringBuilder(4096));
-            Serialization.XmlFormatWriter.CreateInstance(w).WriteMessage(this);
+            StringWriter w = new StringWriter(new StringBuilder(4096));
+            XmlFormatWriter.CreateInstance(w).WriteMessage(this);
             return w.ToString();
         }
 
         public string ToXml(string rootElementName)
         {
-            StringWriter w = new StringWriter(new System.Text.StringBuilder(4096));
-            Serialization.XmlFormatWriter.CreateInstance(w).WriteMessage(rootElementName, this);
+            StringWriter w = new StringWriter(new StringBuilder(4096));
+            XmlFormatWriter.CreateInstance(w).WriteMessage(rootElementName, this);
             return w.ToString();
         }
 
@@ -170,28 +172,13 @@ namespace Google.ProtocolBuffers
                     // IEnumerable is the best we can do. (C# generics aren't covariant yet.)
                     IEnumerable valueList = (IEnumerable) entry.Value;
                     if (field.IsPacked)
+                    {
                         output.WritePackedArray(field.FieldType, field.FieldNumber, field.Name, valueList);
-                    //{
-                    //    output.WriteTag(field.FieldNumber, WireFormat.WireType.LengthDelimited);
-                    //    int dataSize = 0;
-                    //    foreach (object element in valueList)
-                    //    {
-                    //        dataSize += CodedOutputStream.ComputeFieldSizeNoTag(field.FieldType, element);
-                    //    }
-                    //    output.WriteRawVarint32((uint) dataSize);
-                    //    foreach (object element in valueList)
-                    //    {
-                    //        output.WriteFieldNoTag(field.FieldType, element);
-                    //    }
-                    //}
+                    }
                     else
+                    {
                         output.WriteArray(field.FieldType, field.FieldNumber, field.Name, valueList);
-                    //{
-                    //    foreach (object element in valueList)
-                    //    {
-                    //        output.WriteField(field.FieldType, field.FieldNumber, field.Name, element);
-                    //    }
-                    //}
+                    }
                 }
                 else
                 {

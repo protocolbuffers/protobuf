@@ -35,6 +35,7 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.Descriptors;
 
@@ -49,7 +50,9 @@ namespace Google.ProtocolBuffers
 
         [Obsolete]
         void WriteUnknownGroup(int fieldNumber, IMessageLite value);
+
         void WriteUnknownBytes(int fieldNumber, ByteString value);
+
         [CLSCompliant(false)]
         void WriteUnknownField(int fieldNumber, WireFormat.WireType wireType, ulong value);
 
@@ -115,6 +118,7 @@ namespace Google.ProtocolBuffers
         /// Writes a message field value, including tag, to the stream.
         /// </summary>
         void WriteMessage(int fieldNumber, string fieldName, IMessageLite value);
+
         /// <summary>
         /// Writes a byte array field value, including tag, to the stream.
         /// </summary>
@@ -130,67 +134,71 @@ namespace Google.ProtocolBuffers
         /// Writes an enum field value, including tag, to the stream.
         /// </summary>
         void WriteEnum(int fieldNumber, string fieldName, int value, object rawValue);
+
         /// <summary>
         /// Writes a fixed 32-bit field value, including tag, to the stream.
         /// </summary>
         void WriteSFixed32(int fieldNumber, string fieldName, int value);
+
         /// <summary>
         /// Writes a signed fixed 64-bit field value, including tag, to the stream.
         /// </summary>
         void WriteSFixed64(int fieldNumber, string fieldName, long value);
+
         /// <summary>
         /// Writes a signed 32-bit field value, including tag, to the stream.
         /// </summary>
         void WriteSInt32(int fieldNumber, string fieldName, int value);
+
         /// <summary>
         /// Writes a signed 64-bit field value, including tag, to the stream.
         /// </summary>
         void WriteSInt64(int fieldNumber, string fieldName, long value);
 
-        void WriteArray(FieldType fieldType, int fieldNumber, string fieldName, System.Collections.IEnumerable list);
+        void WriteArray(FieldType fieldType, int fieldNumber, string fieldName, IEnumerable list);
 
         void WriteGroupArray<T>(int fieldNumber, string fieldName, IEnumerable<T> list)
             where T : IMessageLite;
-            
+
         void WriteMessageArray<T>(int fieldNumber, string fieldName, IEnumerable<T> list)
             where T : IMessageLite;
-            
+
         void WriteStringArray(int fieldNumber, string fieldName, IEnumerable<string> list);
-            
+
         void WriteBytesArray(int fieldNumber, string fieldName, IEnumerable<ByteString> list);
-                    
+
         void WriteBoolArray(int fieldNumber, string fieldName, IEnumerable<bool> list);
-                    
+
         void WriteInt32Array(int fieldNumber, string fieldName, IEnumerable<int> list);
-            
+
         void WriteSInt32Array(int fieldNumber, string fieldName, IEnumerable<int> list);
-            
+
         void WriteUInt32Array(int fieldNumber, string fieldName, IEnumerable<uint> list);
-            
+
         void WriteFixed32Array(int fieldNumber, string fieldName, IEnumerable<uint> list);
-            
+
         void WriteSFixed32Array(int fieldNumber, string fieldName, IEnumerable<int> list);
-                    
+
         void WriteInt64Array(int fieldNumber, string fieldName, IEnumerable<long> list);
-            
+
         void WriteSInt64Array(int fieldNumber, string fieldName, IEnumerable<long> list);
-            
+
         void WriteUInt64Array(int fieldNumber, string fieldName, IEnumerable<ulong> list);
-            
+
         void WriteFixed64Array(int fieldNumber, string fieldName, IEnumerable<ulong> list);
-            
+
         void WriteSFixed64Array(int fieldNumber, string fieldName, IEnumerable<long> list);
 
         void WriteDoubleArray(int fieldNumber, string fieldName, IEnumerable<double> list);
-            
+
         void WriteFloatArray(int fieldNumber, string fieldName, IEnumerable<float> list);
 
         [CLSCompliant(false)]
-        void WriteEnumArray<T>(int fieldNumber, string fieldName, IEnumerable<T> list) 
+        void WriteEnumArray<T>(int fieldNumber, string fieldName, IEnumerable<T> list)
             where T : struct, IComparable, IFormattable, IConvertible;
 
-        void WritePackedArray(FieldType fieldType, int fieldNumber, string fieldName, System.Collections.IEnumerable list);
-        
+        void WritePackedArray(FieldType fieldType, int fieldNumber, string fieldName, IEnumerable list);
+
         void WritePackedBoolArray(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<bool> list);
 
         void WritePackedInt32Array(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<int> list);

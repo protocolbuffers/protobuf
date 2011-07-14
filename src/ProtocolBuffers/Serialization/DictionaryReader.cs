@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Globalization;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.Serialization
@@ -54,23 +54,32 @@ namespace Google.ProtocolBuffers.Serialization
 
         private bool GetValue<T>(ref T value)
         {
-            if (!_ready) return false;
+            if (!_ready)
+            {
+                return false;
+            }
 
             object obj = _input.Current.Value;
             if (obj is T)
-                value = (T)obj;
+            {
+                value = (T) obj;
+            }
             else
             {
-                try 
+                try
                 {
                     if (obj is IConvertible)
-                        value = (T)Convert.ChangeType(obj, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
+                    {
+                        value = (T) Convert.ChangeType(obj, typeof (T), CultureInfo.InvariantCulture);
+                    }
                     else
-                        value = (T)obj;
+                    {
+                        value = (T) obj;
+                    }
                 }
                 catch
                 {
-                    _ready = _input.MoveNext(); 
+                    _ready = _input.MoveNext();
                     return false;
                 }
             }
@@ -83,7 +92,7 @@ namespace Google.ProtocolBuffers.Serialization
         /// </summary>
         protected override bool Read(ref bool value)
         {
-            return GetValue(ref value); 
+            return GetValue(ref value);
         }
 
         /// <summary>
@@ -186,35 +195,42 @@ namespace Google.ProtocolBuffers.Serialization
             object[] array = null;
             if (GetValue(ref array))
             {
-                if (typeof(T) == typeof(ByteString))
+                if (typeof (T) == typeof (ByteString))
                 {
-                    ICollection<ByteString> output = (ICollection<ByteString>)items;
+                    ICollection<ByteString> output = (ICollection<ByteString>) items;
                     foreach (byte[] item in array)
+                    {
                         output.Add(ByteString.CopyFrom(item));
+                    }
                 }
                 else
                 {
                     foreach (T item in array)
+                    {
                         items.Add(item);
+                    }
                 }
                 return true;
             }
             return false;
         }
-        
+
         public override bool ReadEnumArray(string field, ICollection<object> items)
         {
             object[] array = null;
             if (GetValue(ref array))
             {
                 foreach (object item in array)
+                {
                     items.Add(item);
+                }
                 return true;
             }
             return false;
         }
 
-        public override bool ReadMessageArray<T>(string field, ICollection<T> items, IMessageLite messageType, ExtensionRegistry registry)
+        public override bool ReadMessageArray<T>(string field, ICollection<T> items, IMessageLite messageType,
+                                                 ExtensionRegistry registry)
         {
             object[] array = null;
             if (GetValue(ref array))
@@ -223,14 +239,17 @@ namespace Google.ProtocolBuffers.Serialization
                 {
                     IBuilderLite builder = messageType.WeakCreateBuilderForType();
                     new DictionaryReader(item).Merge(builder);
-                    items.Add((T)builder.WeakBuild());
+                    items.Add((T) builder.WeakBuild());
                 }
                 return true;
             }
             return false;
         }
 
-        public override bool ReadGroupArray<T>(string field, ICollection<T> items, IMessageLite messageType, ExtensionRegistry registry)
-        { return ReadMessageArray(field, items, messageType, registry); }
+        public override bool ReadGroupArray<T>(string field, ICollection<T> items, IMessageLite messageType,
+                                               ExtensionRegistry registry)
+        {
+            return ReadMessageArray(field, items, messageType, registry);
+        }
     }
 }

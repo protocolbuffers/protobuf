@@ -14,8 +14,8 @@ namespace Google.ProtocolBuffers.ProtoGen
     /// </summary>
     public class ProgramPreprocess
     {
-        const string ProtocExecutable = "protoc.exe";
-        const string ProtocDirectoryArg = "--protoc_dir=";
+        private const string ProtocExecutable = "protoc.exe";
+        private const string ProtocDirectoryArg = "--protoc_dir=";
 
         private static int Main(string[] args)
         {
@@ -154,7 +154,7 @@ namespace Google.ProtocolBuffers.ProtoGen
 
             foreach (string path in searchPath)
             {
-                string exeFile = Path.Combine(path, ProtocExecutable); 
+                string exeFile = Path.Combine(path, ProtocExecutable);
                 if (File.Exists(exeFile))
                 {
                     return exeFile;

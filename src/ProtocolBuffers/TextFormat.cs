@@ -35,12 +35,12 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
 using Google.ProtocolBuffers.Descriptors;
-using System.Collections;
 
 namespace Google.ProtocolBuffers
 {
@@ -166,14 +166,14 @@ namespace Google.ProtocolBuffers
         {
             switch (field.FieldType)
             {
-                // The Float and Double types must specify the "r" format to preserve their precision, otherwise,
-                // the double to/from string will trim the precision to 6 places.  As with other numeric formats
-                // below, always use the invariant culture so it's predictable.
+                    // The Float and Double types must specify the "r" format to preserve their precision, otherwise,
+                    // the double to/from string will trim the precision to 6 places.  As with other numeric formats
+                    // below, always use the invariant culture so it's predictable.
                 case FieldType.Float:
-                    generator.Print(((float)value).ToString("r", CultureInfo.InvariantCulture));
+                    generator.Print(((float) value).ToString("r", CultureInfo.InvariantCulture));
                     break;
                 case FieldType.Double:
-                    generator.Print(((double)value).ToString("r", CultureInfo.InvariantCulture));
+                    generator.Print(((double) value).ToString("r", CultureInfo.InvariantCulture));
                     break;
 
                 case FieldType.Int32:
@@ -756,7 +756,9 @@ namespace Google.ProtocolBuffers
                 {
                     subBuilder = extension.DefaultInstance.WeakCreateBuilderForType() as IBuilder;
                     if (subBuilder == null)
+                    {
                         throw new NotSupportedException("Lite messages are not supported.");
+                    }
                 }
 
                 while (!tokenizer.TryConsume(endToken))

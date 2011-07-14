@@ -36,9 +36,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections;
 using System.Globalization;
-using Google.ProtocolBuffers.Descriptors;
+using System.IO;
+using System.Text;
 
 namespace Google.ProtocolBuffers
 {
@@ -55,7 +55,7 @@ namespace Google.ProtocolBuffers
 
         public override sealed string ToString()
         {
-            using (System.IO.StringWriter wtr = new System.IO.StringWriter())
+            using (StringWriter wtr = new StringWriter())
             {
                 PrintTo(wtr);
                 return wtr.ToString();
@@ -65,18 +65,23 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// PrintTo() helper methods for Lite Runtime
         /// </summary>
-        protected static void PrintField<T>(string name, IList<T> value, System.IO.TextWriter writer)
+        protected static void PrintField<T>(string name, IList<T> value, TextWriter writer)
         {
             foreach (T item in value)
+            {
                 PrintField(name, true, (object) item, writer);
+            }
         }
 
         /// <summary>
         /// PrintTo() helper methods for Lite Runtime
         /// </summary>
-        protected static void PrintField(string name, bool hasValue, object value, System.IO.TextWriter writer)
+        protected static void PrintField(string name, bool hasValue, object value, TextWriter writer)
         {
-            if (!hasValue) return;
+            if (!hasValue)
+            {
+                return;
+            }
             if (value is IMessageLite)
             {
                 writer.WriteLine("{0} {{", name);
@@ -87,9 +92,13 @@ namespace Google.ProtocolBuffers
             {
                 writer.Write("{0}: \"", name);
                 if (value is String)
-                    EscapeBytes(System.Text.Encoding.UTF8.GetBytes((string) value), writer);
+                {
+                    EscapeBytes(Encoding.UTF8.GetBytes((string) value), writer);
+                }
                 else
+                {
                     EscapeBytes(((ByteString) value), writer);
+                }
                 writer.WriteLine("\"");
             }
             else if (value is bool)
@@ -116,7 +125,7 @@ namespace Google.ProtocolBuffers
         /// using 3-digit octal sequences.
         /// The returned value is guaranteed to be entirely ASCII.
         /// </summary>
-        private static void EscapeBytes(IEnumerable<byte> input, System.IO.TextWriter writer)
+        private static void EscapeBytes(IEnumerable<byte> input, TextWriter writer)
         {
             foreach (byte b in input)
             {

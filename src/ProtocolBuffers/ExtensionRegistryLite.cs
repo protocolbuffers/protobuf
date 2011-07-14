@@ -34,9 +34,8 @@
 
 #endregion
 
-using System.Collections.Generic;
 using System;
-using Google.ProtocolBuffers.Descriptors;
+using System.Collections.Generic;
 
 namespace Google.ProtocolBuffers
 {
@@ -93,8 +92,13 @@ namespace Google.ProtocolBuffers
     /// </remarks>
     public sealed partial class ExtensionRegistry
     {
-        class ExtensionByNameMap : Dictionary<object, Dictionary<string, IGeneratedExtensionLite>> { }
-        class ExtensionByIdMap : Dictionary<ExtensionIntPair, IGeneratedExtensionLite> { }
+        private class ExtensionByNameMap : Dictionary<object, Dictionary<string, IGeneratedExtensionLite>>
+        {
+        }
+
+        private class ExtensionByIdMap : Dictionary<ExtensionIntPair, IGeneratedExtensionLite>
+        {
+        }
 
         private static readonly ExtensionRegistry empty = new ExtensionRegistry(
             new ExtensionByNameMap(),
@@ -149,14 +153,18 @@ namespace Google.ProtocolBuffers
         }
 
         public IGeneratedExtensionLite FindByName(IMessageLite defaultInstanceOfType, string fieldName)
-        { return FindExtensionByName(defaultInstanceOfType, fieldName); }
+        {
+            return FindExtensionByName(defaultInstanceOfType, fieldName);
+        }
 
-        IGeneratedExtensionLite FindExtensionByName(object forwhat, string fieldName)
+        private IGeneratedExtensionLite FindExtensionByName(object forwhat, string fieldName)
         {
             IGeneratedExtensionLite extension = null;
             Dictionary<string, IGeneratedExtensionLite> map;
             if (extensionsByName.TryGetValue(forwhat, out map) && map.TryGetValue(fieldName, out extension))
+            {
                 return extension;
+            }
             return null;
         }
 
@@ -173,7 +181,9 @@ namespace Google.ProtocolBuffers
 
             Dictionary<string, IGeneratedExtensionLite> map;
             if (!extensionsByName.TryGetValue(extension.ContainingType, out map))
+            {
                 extensionsByName.Add(extension.ContainingType, map = new Dictionary<string, IGeneratedExtensionLite>());
+            }
             map[extension.Descriptor.Name] = extension;
             map[extension.Descriptor.FullName] = extension;
         }
@@ -195,7 +205,7 @@ namespace Google.ProtocolBuffers
 
             public override int GetHashCode()
             {
-                return msgType.GetHashCode() * ((1 << 16) - 1) + number;
+                return msgType.GetHashCode()*((1 << 16) - 1) + number;
             }
 
             public override bool Equals(object obj)
@@ -204,7 +214,7 @@ namespace Google.ProtocolBuffers
                 {
                     return false;
                 }
-                return Equals((ExtensionIntPair)obj);
+                return Equals((ExtensionIntPair) obj);
             }
 
             public bool Equals(ExtensionIntPair other)

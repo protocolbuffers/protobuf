@@ -34,7 +34,6 @@
 
 #endregion
 
-using Google.ProtocolBuffers.DescriptorProtos;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoGen
@@ -121,7 +120,8 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         public void GenerateParsingCode(TextGenerator writer)
         {
-            writer.WriteLine("input.Read{0}Array(tag, field_name, result.{1}_);", CapitalizedTypeName, Name, Descriptor.FieldType);
+            writer.WriteLine("input.Read{0}Array(tag, field_name, result.{1}_);", CapitalizedTypeName, Name,
+                             Descriptor.FieldType);
         }
 
         public void GenerateSerializationCode(TextGenerator writer)
@@ -129,9 +129,15 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("if ({0}_.Count > 0) {{", Name);
             writer.Indent();
             if (Descriptor.IsPacked)
-                writer.WriteLine("output.WritePacked{0}Array({1}, field_names[{3}], {2}MemoizedSerializedSize, {2}_);", CapitalizedTypeName, Number, Name, FieldOrdinal, Descriptor.FieldType);
+            {
+                writer.WriteLine("output.WritePacked{0}Array({1}, field_names[{3}], {2}MemoizedSerializedSize, {2}_);",
+                                 CapitalizedTypeName, Number, Name, FieldOrdinal, Descriptor.FieldType);
+            }
             else
-                writer.WriteLine("output.Write{0}Array({1}, field_names[{3}], {2}_);", CapitalizedTypeName, Number, Name, FieldOrdinal, Descriptor.FieldType);
+            {
+                writer.WriteLine("output.Write{0}Array({1}, field_names[{3}], {2}_);", CapitalizedTypeName, Number, Name,
+                                 FieldOrdinal, Descriptor.FieldType);
+            }
             writer.Outdent();
             writer.WriteLine("}");
         }

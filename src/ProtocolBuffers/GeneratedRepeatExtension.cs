@@ -35,9 +35,9 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.Descriptors;
-using System.Collections;
 
 namespace Google.ProtocolBuffers
 {

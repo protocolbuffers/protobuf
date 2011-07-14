@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.Descriptors;
 
@@ -15,8 +16,9 @@ namespace Google.ProtocolBuffers.Serialization
         /// Constructs a writer using a new dictionary
         /// </summary>
         public DictionaryWriter()
-            : this(new Dictionary<string,object>(StringComparer.Ordinal))
-        { }
+            : this(new Dictionary<string, object>(StringComparer.Ordinal))
+        {
+        }
 
         /// <summary>
         /// Constructs a writer using an existing dictionary
@@ -38,9 +40,12 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// Accesses the dictionary that is backing this writer
         /// </summary>
-        public IDictionary<string, object> ToDictionary() { return _output; }
+        public IDictionary<string, object> ToDictionary()
+        {
+            return _output;
+        }
 
-            /// <summary>
+        /// <summary>
         /// Writes the message to the the formatted stream.
         /// </summary>
         public override void WriteMessage(IMessageLite message)
@@ -144,7 +149,7 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// Writes an array of field values
         /// </summary>
-        protected override void WriteArray(FieldType fieldType, string field, System.Collections.IEnumerable items)
+        protected override void WriteArray(FieldType fieldType, string field, IEnumerable items)
         {
             List<object> objects = new List<object>();
             foreach (object o in items)
@@ -155,18 +160,22 @@ namespace Google.ProtocolBuffers.Serialization
                     case FieldType.Message:
                         {
                             DictionaryWriter writer = Create();
-                            writer.WriteMessage((IMessageLite)o);
+                            writer.WriteMessage((IMessageLite) o);
                             objects.Add(writer.ToDictionary());
                         }
                         break;
                     case FieldType.Bytes:
-                        objects.Add(((ByteString)o).ToByteArray());
+                        objects.Add(((ByteString) o).ToByteArray());
                         break;
                     case FieldType.Enum:
                         if (o is IEnumLite)
-                            objects.Add(((IEnumLite)o).Number);
+                        {
+                            objects.Add(((IEnumLite) o).Number);
+                        }
                         else
-                            objects.Add((int)o);
+                        {
+                            objects.Add((int) o);
+                        }
                         break;
                     default:
                         objects.Add(o);

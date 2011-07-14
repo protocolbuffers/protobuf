@@ -48,7 +48,8 @@ namespace Google.ProtocolBuffers.ProtoGen
         public void Generate(TextGenerator writer)
         {
             writer.WriteLine("[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]");
-            writer.WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]", GetType().Assembly.GetName().Name, GetType().Assembly.GetName().Version);
+            writer.WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]",
+                             GetType().Assembly.GetName().Name, GetType().Assembly.GetName().Version);
             writer.WriteLine("{0} enum {1} {{", ClassAccessLevel, Descriptor.Name);
             writer.Indent();
             foreach (EnumValueDescriptor value in Descriptor.Values)

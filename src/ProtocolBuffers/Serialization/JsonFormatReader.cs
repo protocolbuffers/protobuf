@@ -13,28 +13,51 @@ namespace Google.ProtocolBuffers.Serialization
         private readonly JsonCursor _input;
         private readonly Stack<int> _stopChar;
 
-        enum ReaderState { Start, BeginValue, EndValue, BeginObject, BeginArray }
-        string _current;
-        ReaderState _state;
+        private enum ReaderState
+        {
+            Start,
+            BeginValue,
+            EndValue,
+            BeginObject,
+            BeginArray
+        }
+
+        private string _current;
+        private ReaderState _state;
 
         /// <summary>
         /// Constructs a JsonFormatReader to parse Json into a message, this method does not use text encoding, all bytes MUST
         /// represent ASCII character values.
         /// </summary>
-        public static JsonFormatReader CreateInstance(Stream stream) { return new JsonFormatReader(JsonCursor.CreateInstance(stream)); }
+        public static JsonFormatReader CreateInstance(Stream stream)
+        {
+            return new JsonFormatReader(JsonCursor.CreateInstance(stream));
+        }
+
         /// <summary>
         /// Constructs a JsonFormatReader to parse Json into a message, this method does not use text encoding, all bytes MUST
         /// represent ASCII character values.
         /// </summary>
-        public static JsonFormatReader CreateInstance(byte[] bytes) { return new JsonFormatReader(JsonCursor.CreateInstance(bytes)); }
+        public static JsonFormatReader CreateInstance(byte[] bytes)
+        {
+            return new JsonFormatReader(JsonCursor.CreateInstance(bytes));
+        }
+
         /// <summary>
         /// Constructs a JsonFormatReader to parse Json into a message
         /// </summary>
-        public static JsonFormatReader CreateInstance(string jsonText) { return new JsonFormatReader(JsonCursor.CreateInstance(jsonText)); }
+        public static JsonFormatReader CreateInstance(string jsonText)
+        {
+            return new JsonFormatReader(JsonCursor.CreateInstance(jsonText));
+        }
+
         /// <summary>
         /// Constructs a JsonFormatReader to parse Json into a message
         /// </summary>
-        public static JsonFormatReader CreateInstance(TextReader input) { return new JsonFormatReader(JsonCursor.CreateInstance(input)); }
+        public static JsonFormatReader CreateInstance(TextReader input)
+        {
+            return new JsonFormatReader(JsonCursor.CreateInstance(input));
+        }
 
         /// <summary>
         /// Constructs a JsonFormatReader to parse Json into a message
@@ -52,12 +75,16 @@ namespace Google.ProtocolBuffers.Serialization
         /// </summary>
         protected JsonFormatReader(TextReader input)
             : this(JsonCursor.CreateInstance(input))
-        { }
+        {
+        }
 
         /// <summary>
         /// Returns true if the reader is currently on an array element
         /// </summary>
-        public bool IsArrayMessage { get { return _input.NextChar == '['; } }
+        public bool IsArrayMessage
+        {
+            get { return _input.NextChar == '['; }
+        }
 
         /// <summary>
         /// Returns an enumerator that is used to cursor over an array of messages
@@ -68,7 +95,9 @@ namespace Google.ProtocolBuffers.Serialization
         public IEnumerable<JsonFormatReader> EnumerateArray()
         {
             foreach (string ignored in ForeachArrayItem(_current))
+            {
                 yield return this;
+            }
         }
 
         /// <summary>
@@ -81,7 +110,7 @@ namespace Google.ProtocolBuffers.Serialization
 
             _state = ReaderState.BeginObject;
             builder.WeakMergeFrom(this, registry);
-            _input.Consume((char)_stopChar.Pop());
+            _input.Consume((char) _stopChar.Pop());
             _state = ReaderState.EndValue;
             return builder;
         }
@@ -106,18 +135,24 @@ namespace Google.ProtocolBuffers.Serialization
         protected override bool PeekNext(out string field)
         {
             field = _current;
-            if(_state == ReaderState.BeginValue)
+            if (_state == ReaderState.BeginValue)
+            {
                 return true;
+            }
 
             int next = _input.NextChar;
             if (next == _stopChar.Peek())
+            {
                 return false;
+            }
 
             _input.Assert(next != -1, "Unexpected end of file.");
 
             //not sure about this yet, it will allow {, "a":true }
             if (_state == ReaderState.EndValue && !_input.TryConsume(','))
+            {
                 return false;
+            }
 
             field = _current = _input.ReadString();
             _input.Consume(':');
@@ -134,19 +169,31 @@ namespace Google.ProtocolBuffers.Serialization
             JsonCursor.JsType type = _input.ReadVariant(out temp);
             _state = ReaderState.EndValue;
 
-            _input.Assert(type != JsonCursor.JsType.Array && type != JsonCursor.JsType.Object, "Encountered {0} while expecting {1}", type, typeInfo);
+            _input.Assert(type != JsonCursor.JsType.Array && type != JsonCursor.JsType.Object,
+                          "Encountered {0} while expecting {1}", type, typeInfo);
             if (type == JsonCursor.JsType.Null)
+            {
                 return false;
-            if (type == JsonCursor.JsType.True) value = "1";
-            else if (type == JsonCursor.JsType.False) value = "0";
-            else value = temp as string;
+            }
+            if (type == JsonCursor.JsType.True)
+            {
+                value = "1";
+            }
+            else if (type == JsonCursor.JsType.False)
+            {
+                value = "0";
+            }
+            else
+            {
+                value = temp as string;
+            }
 
             //exponent representation of integer number:
             if (value != null && type == JsonCursor.JsType.Number &&
-                (typeInfo != typeof(double) && typeInfo != typeof(float)) &&
+                (typeInfo != typeof (double) && typeInfo != typeof (float)) &&
                 value.IndexOf("e", StringComparison.OrdinalIgnoreCase) > 0)
             {
-                value = XmlConvert.ToString((long)Math.Round(XmlConvert.ToDouble(value), 0));
+                value = XmlConvert.ToString((long) Math.Round(XmlConvert.ToDouble(value), 0));
             }
             return value != null;
         }
@@ -177,10 +224,12 @@ namespace Google.ProtocolBuffers.Serialization
             {
                 _current = field;
                 yield return field;
-                if(!_input.TryConsume(','))
+                if (!_input.TryConsume(','))
+                {
                     break;
+                }
             }
-            _input.Consume((char)_stopChar.Pop());
+            _input.Consume((char) _stopChar.Pop());
             _state = ReaderState.EndValue;
         }
 
@@ -192,6 +241,5 @@ namespace Google.ProtocolBuffers.Serialization
             Merge(builder, registry);
             return true;
         }
-
     }
 }

@@ -12,19 +12,22 @@ namespace Google.ProtocolBuffers.Serialization
     /// </summary>
     public abstract class AbstractReader : ICodedInputStream
     {
-        const int MaxDepth = CodedInputStream.DefaultRecursionLimit;
+        private const int MaxDepth = CodedInputStream.DefaultRecursionLimit;
         protected int Depth;
 
         /// <summary>
         /// Merges the contents of stream into the provided message builder
         /// </summary>
         public TBuilder Merge<TBuilder>(TBuilder builder) where TBuilder : IBuilderLite
-        { return Merge(builder, ExtensionRegistry.Empty); }
+        {
+            return Merge(builder, ExtensionRegistry.Empty);
+        }
 
         /// <summary>
         /// Merges the contents of stream into the provided message builder
         /// </summary>
-        public abstract TBuilder Merge<TBuilder>(TBuilder builder, ExtensionRegistry registry) where TBuilder : IBuilderLite;
+        public abstract TBuilder Merge<TBuilder>(TBuilder builder, ExtensionRegistry registry)
+            where TBuilder : IBuilderLite;
 
         /// <summary>
         /// Peeks at the next field in the input stream and returns what information is available.
@@ -117,14 +120,17 @@ namespace Google.ProtocolBuffers.Serialization
                 yield return next;
 
                 if (!PeekNext(out next) || next != field)
+                {
                     break;
+                }
             }
         }
 
         /// <summary>
         /// Reads an array of T messages
         /// </summary>
-        public virtual bool ReadMessageArray<T>(string field, ICollection<T> items, IMessageLite messageType, ExtensionRegistry registry)
+        public virtual bool ReadMessageArray<T>(string field, ICollection<T> items, IMessageLite messageType,
+                                                ExtensionRegistry registry)
         {
             bool success = false;
             foreach (string next in ForeachArrayItem(field))
@@ -132,7 +138,7 @@ namespace Google.ProtocolBuffers.Serialization
                 IBuilderLite builder = messageType.WeakCreateBuilderForType();
                 if (ReadMessage(builder, registry))
                 {
-                    items.Add((T)builder.WeakBuild());
+                    items.Add((T) builder.WeakBuild());
                     success |= true;
                 }
             }
@@ -142,7 +148,8 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// Reads an array of T messages as a proto-buffer group
         /// </summary>
-        public virtual bool ReadGroupArray<T>(string field, ICollection<T> items, IMessageLite messageType, ExtensionRegistry registry)
+        public virtual bool ReadGroupArray<T>(string field, ICollection<T> items, IMessageLite messageType,
+                                              ExtensionRegistry registry)
         {
             bool success = false;
             foreach (string next in ForeachArrayItem(field))
@@ -150,7 +157,7 @@ namespace Google.ProtocolBuffers.Serialization
                 IBuilderLite builder = messageType.WeakCreateBuilderForType();
                 if (ReadGroup(builder, registry))
                 {
-                    items.Add((T)builder.WeakBuild());
+                    items.Add((T) builder.WeakBuild());
                     success |= true;
                 }
             }
@@ -186,7 +193,7 @@ namespace Google.ProtocolBuffers.Serialization
                 object temp = null;
                 if (ReadField(type, ref temp))
                 {
-                    items.Add((T)temp);
+                    items.Add((T) temp);
                     success |= true;
                 }
             }
@@ -204,9 +211,13 @@ namespace Google.ProtocolBuffers.Serialization
                     {
                         bool temp = false;
                         if (Read(ref temp))
+                        {
                             value = temp;
+                        }
                         else
+                        {
                             return false;
+                        }
                         break;
                     }
                 case FieldType.Int64:
@@ -215,9 +226,13 @@ namespace Google.ProtocolBuffers.Serialization
                     {
                         long temp = 0;
                         if (Read(ref temp))
+                        {
                             value = temp;
+                        }
                         else
+                        {
                             return false;
+                        }
                         break;
                     }
                 case FieldType.UInt64:
@@ -225,9 +240,13 @@ namespace Google.ProtocolBuffers.Serialization
                     {
                         ulong temp = 0;
                         if (Read(ref temp))
+                        {
                             value = temp;
+                        }
                         else
+                        {
                             return false;
+                        }
                         break;
                     }
                 case FieldType.Int32:
@@ -236,9 +255,13 @@ namespace Google.ProtocolBuffers.Serialization
                     {
                         int temp = 0;
                         if (Read(ref temp))
+                        {
                             value = temp;
+                        }
                         else
+                        {
                             return false;
+                        }
                         break;
                     }
                 case FieldType.UInt32:
@@ -246,45 +269,65 @@ namespace Google.ProtocolBuffers.Serialization
                     {
                         uint temp = 0;
                         if (Read(ref temp))
+                        {
                             value = temp;
+                        }
                         else
+                        {
                             return false;
+                        }
                         break;
                     }
                 case FieldType.Float:
                     {
                         float temp = float.NaN;
                         if (Read(ref temp))
+                        {
                             value = temp;
+                        }
                         else
+                        {
                             return false;
+                        }
                         break;
                     }
                 case FieldType.Double:
                     {
                         double temp = float.NaN;
                         if (Read(ref temp))
+                        {
                             value = temp;
+                        }
                         else
+                        {
                             return false;
+                        }
                         break;
                     }
                 case FieldType.String:
                     {
                         string temp = null;
                         if (Read(ref temp))
+                        {
                             value = temp;
+                        }
                         else
+                        {
                             return false;
+                        }
                         break;
                     }
                 case FieldType.Bytes:
                     {
                         ByteString temp = null;
                         if (Read(ref temp))
+                        {
                             value = temp;
+                        }
                         else
+                        {
                             return false;
+                        }
                         break;
                     }
                 default:
@@ -306,65 +349,99 @@ namespace Google.ProtocolBuffers.Serialization
         }
 
         bool ICodedInputStream.ReadDouble(ref double value)
-        { return Read(ref value); }
+        {
+            return Read(ref value);
+        }
 
         bool ICodedInputStream.ReadFloat(ref float value)
-        { return Read(ref value); }
+        {
+            return Read(ref value);
+        }
 
         bool ICodedInputStream.ReadUInt64(ref ulong value)
-        { return Read(ref value); }
+        {
+            return Read(ref value);
+        }
 
         bool ICodedInputStream.ReadInt64(ref long value)
-        { return Read(ref value); }
+        {
+            return Read(ref value);
+        }
 
         bool ICodedInputStream.ReadInt32(ref int value)
-        { return Read(ref value); }
+        {
+            return Read(ref value);
+        }
 
         bool ICodedInputStream.ReadFixed64(ref ulong value)
-        { return Read(ref value); }
+        {
+            return Read(ref value);
+        }
 
         bool ICodedInputStream.ReadFixed32(ref uint value)
-        { return Read(ref value); }
+        {
+            return Read(ref value);
+        }
 
         bool ICodedInputStream.ReadBool(ref bool value)
-        { return Read(ref value); }
+        {
+            return Read(ref value);
+        }
 
         bool ICodedInputStream.ReadString(ref string value)
-        { return Read(ref value); }
+        {
+            return Read(ref value);
+        }
 
         void ICodedInputStream.ReadGroup(int fieldNumber, IBuilderLite builder, ExtensionRegistry extensionRegistry)
         {
             if (Depth++ > MaxDepth)
+            {
                 throw InvalidProtocolBufferException.RecursionLimitExceeded();
+            }
             ReadGroup(builder, extensionRegistry);
             Depth--;
         }
 
         void ICodedInputStream.ReadUnknownGroup(int fieldNumber, IBuilderLite builder)
-        { throw new NotSupportedException(); }
+        {
+            throw new NotSupportedException();
+        }
 
         void ICodedInputStream.ReadMessage(IBuilderLite builder, ExtensionRegistry extensionRegistry)
         {
             if (Depth++ > MaxDepth)
-                throw InvalidProtocolBufferException.RecursionLimitExceeded(); 
+            {
+                throw InvalidProtocolBufferException.RecursionLimitExceeded();
+            }
             ReadMessage(builder, extensionRegistry);
             Depth--;
         }
 
         bool ICodedInputStream.ReadBytes(ref ByteString value)
-        { return Read(ref value); }
+        {
+            return Read(ref value);
+        }
 
         bool ICodedInputStream.ReadUInt32(ref uint value)
-        { return Read(ref value); }
+        {
+            return Read(ref value);
+        }
 
         bool ICodedInputStream.ReadEnum(ref IEnumLite value, out object unknown, IEnumLiteMap mapping)
         {
             value = null;
             unknown = null;
-            if(ReadEnum(ref unknown))
+            if (ReadEnum(ref unknown))
             {
-                if (unknown is int) value = mapping.FindValueByNumber((int)unknown);
-                else if (unknown is string) value = mapping.FindValueByName((string)unknown);
+                if (unknown is int)
+                {
+                    value = mapping.FindValueByNumber((int) unknown);
+                }
+                else if (unknown is string)
+                {
+                    value = mapping.FindValueByName((string) unknown);
+                }
                 return value != null;
             }
             return false;
@@ -375,12 +452,16 @@ namespace Google.ProtocolBuffers.Serialization
             rawValue = null;
             if (ReadEnum(ref rawValue))
             {
-                if (Enum.IsDefined(typeof(T), rawValue))
+                if (Enum.IsDefined(typeof (T), rawValue))
                 {
                     if (rawValue is int)
-                        value = (T)rawValue;
+                    {
+                        value = (T) rawValue;
+                    }
                     else if (rawValue is string)
-                        value = (T)Enum.Parse(typeof(T), (string)rawValue, false);
+                    {
+                        value = (T) Enum.Parse(typeof (T), (string) rawValue, false);
+                    }
                     else
                     {
                         value = default(T);
@@ -393,21 +474,33 @@ namespace Google.ProtocolBuffers.Serialization
         }
 
         bool ICodedInputStream.ReadSFixed32(ref int value)
-        { return Read(ref value); }
+        {
+            return Read(ref value);
+        }
 
         bool ICodedInputStream.ReadSFixed64(ref long value)
-        { return Read(ref value); }
+        {
+            return Read(ref value);
+        }
 
         bool ICodedInputStream.ReadSInt32(ref int value)
-        { return Read(ref value); }
+        {
+            return Read(ref value);
+        }
 
         bool ICodedInputStream.ReadSInt64(ref long value)
-        { return Read(ref value); }
+        {
+            return Read(ref value);
+        }
 
-        void ICodedInputStream.ReadPrimitiveArray(FieldType fieldType, uint fieldTag, string fieldName, ICollection<object> list)
-        { ReadArray(fieldType, fieldName, list); }
+        void ICodedInputStream.ReadPrimitiveArray(FieldType fieldType, uint fieldTag, string fieldName,
+                                                  ICollection<object> list)
+        {
+            ReadArray(fieldType, fieldName, list);
+        }
 
-        void ICodedInputStream.ReadEnumArray(uint fieldTag, string fieldName, ICollection<IEnumLite> list, out ICollection<object> unknown, IEnumLiteMap mapping)
+        void ICodedInputStream.ReadEnumArray(uint fieldTag, string fieldName, ICollection<IEnumLite> list,
+                                             out ICollection<object> unknown, IEnumLiteMap mapping)
         {
             unknown = null;
             List<object> array = new List<object>();
@@ -416,21 +509,33 @@ namespace Google.ProtocolBuffers.Serialization
                 foreach (object rawValue in array)
                 {
                     IEnumLite item = null;
-                    if (rawValue is int) item = mapping.FindValueByNumber((int)rawValue);
-                    else if (rawValue is string) item = mapping.FindValueByName((string)rawValue);
+                    if (rawValue is int)
+                    {
+                        item = mapping.FindValueByNumber((int) rawValue);
+                    }
+                    else if (rawValue is string)
+                    {
+                        item = mapping.FindValueByName((string) rawValue);
+                    }
 
                     if (item != null)
+                    {
                         list.Add(item);
+                    }
                     else
                     {
-                        if (unknown == null) unknown = new List<object>();
+                        if (unknown == null)
+                        {
+                            unknown = new List<object>();
+                        }
                         unknown.Add(rawValue);
                     }
                 }
             }
         }
 
-        void ICodedInputStream.ReadEnumArray<T>(uint fieldTag, string fieldName, ICollection<T> list, out ICollection<object> unknown)
+        void ICodedInputStream.ReadEnumArray<T>(uint fieldTag, string fieldName, ICollection<T> list,
+                                                out ICollection<object> unknown)
         {
             unknown = null;
             List<object> array = new List<object>();
@@ -439,40 +544,59 @@ namespace Google.ProtocolBuffers.Serialization
                 foreach (object rawValue in array)
                 {
                     if (rawValue is int)
-                        list.Add((T)rawValue);
+                    {
+                        list.Add((T) rawValue);
+                    }
                     else if (rawValue is string)
-                        list.Add((T)Enum.Parse(typeof(T), (string)rawValue, false));
+                    {
+                        list.Add((T) Enum.Parse(typeof (T), (string) rawValue, false));
+                    }
                     else
                     {
-                        if (unknown == null) unknown = new List<object>();
+                        if (unknown == null)
+                        {
+                            unknown = new List<object>();
+                        }
                         unknown.Add(rawValue);
                     }
                 }
             }
         }
 
-        void ICodedInputStream.ReadMessageArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType, ExtensionRegistry registry)
+        void ICodedInputStream.ReadMessageArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType,
+                                                   ExtensionRegistry registry)
         {
             if (Depth++ > MaxDepth)
-                throw InvalidProtocolBufferException.RecursionLimitExceeded(); 
+            {
+                throw InvalidProtocolBufferException.RecursionLimitExceeded();
+            }
             ReadMessageArray(fieldName, list, messageType, registry);
             Depth--;
         }
 
-        void ICodedInputStream.ReadGroupArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType, ExtensionRegistry registry)
+        void ICodedInputStream.ReadGroupArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType,
+                                                 ExtensionRegistry registry)
         {
             if (Depth++ > MaxDepth)
+            {
                 throw InvalidProtocolBufferException.RecursionLimitExceeded();
+            }
             ReadGroupArray(fieldName, list, messageType, registry);
             Depth--;
         }
 
         bool ICodedInputStream.ReadPrimitiveField(FieldType fieldType, ref object value)
-        { return ReadField(fieldType, ref value); }
+        {
+            return ReadField(fieldType, ref value);
+        }
 
         bool ICodedInputStream.IsAtEnd
         {
-            get { string next; return PeekNext(out next) == false; }
+            get
+            {
+                string next;
+                return PeekNext(out next) == false;
+            }
         }
 
         bool ICodedInputStream.SkipField()
@@ -482,49 +606,79 @@ namespace Google.ProtocolBuffers.Serialization
         }
 
         void ICodedInputStream.ReadStringArray(uint fieldTag, string fieldName, ICollection<string> list)
-        { ReadArray(FieldType.String, fieldName, list); }
+        {
+            ReadArray(FieldType.String, fieldName, list);
+        }
 
         void ICodedInputStream.ReadBytesArray(uint fieldTag, string fieldName, ICollection<ByteString> list)
-        { ReadArray(FieldType.Bytes, fieldName, list); }
+        {
+            ReadArray(FieldType.Bytes, fieldName, list);
+        }
 
         void ICodedInputStream.ReadBoolArray(uint fieldTag, string fieldName, ICollection<bool> list)
-        { ReadArray(FieldType.Bool, fieldName, list); }
+        {
+            ReadArray(FieldType.Bool, fieldName, list);
+        }
 
         void ICodedInputStream.ReadInt32Array(uint fieldTag, string fieldName, ICollection<int> list)
-        { ReadArray(FieldType.Int32, fieldName, list); }
+        {
+            ReadArray(FieldType.Int32, fieldName, list);
+        }
 
         void ICodedInputStream.ReadSInt32Array(uint fieldTag, string fieldName, ICollection<int> list)
-        { ReadArray(FieldType.SInt32, fieldName, list); }
+        {
+            ReadArray(FieldType.SInt32, fieldName, list);
+        }
 
         void ICodedInputStream.ReadUInt32Array(uint fieldTag, string fieldName, ICollection<uint> list)
-        { ReadArray(FieldType.UInt32, fieldName, list); }
+        {
+            ReadArray(FieldType.UInt32, fieldName, list);
+        }
 
         void ICodedInputStream.ReadFixed32Array(uint fieldTag, string fieldName, ICollection<uint> list)
-        { ReadArray(FieldType.Fixed32, fieldName, list); }
+        {
+            ReadArray(FieldType.Fixed32, fieldName, list);
+        }
 
         void ICodedInputStream.ReadSFixed32Array(uint fieldTag, string fieldName, ICollection<int> list)
-        { ReadArray(FieldType.SFixed32, fieldName, list); }
+        {
+            ReadArray(FieldType.SFixed32, fieldName, list);
+        }
 
         void ICodedInputStream.ReadInt64Array(uint fieldTag, string fieldName, ICollection<long> list)
-        { ReadArray(FieldType.Int64, fieldName, list); }
+        {
+            ReadArray(FieldType.Int64, fieldName, list);
+        }
 
         void ICodedInputStream.ReadSInt64Array(uint fieldTag, string fieldName, ICollection<long> list)
-        { ReadArray(FieldType.SInt64, fieldName, list); }
+        {
+            ReadArray(FieldType.SInt64, fieldName, list);
+        }
 
         void ICodedInputStream.ReadUInt64Array(uint fieldTag, string fieldName, ICollection<ulong> list)
-        { ReadArray(FieldType.UInt64, fieldName, list); }
+        {
+            ReadArray(FieldType.UInt64, fieldName, list);
+        }
 
         void ICodedInputStream.ReadFixed64Array(uint fieldTag, string fieldName, ICollection<ulong> list)
-        { ReadArray(FieldType.Fixed64, fieldName, list); }
+        {
+            ReadArray(FieldType.Fixed64, fieldName, list);
+        }
 
         void ICodedInputStream.ReadSFixed64Array(uint fieldTag, string fieldName, ICollection<long> list)
-        { ReadArray(FieldType.SFixed64, fieldName, list); }
+        {
+            ReadArray(FieldType.SFixed64, fieldName, list);
+        }
 
         void ICodedInputStream.ReadDoubleArray(uint fieldTag, string fieldName, ICollection<double> list)
-        { ReadArray(FieldType.Double, fieldName, list); }
+        {
+            ReadArray(FieldType.Double, fieldName, list);
+        }
 
         void ICodedInputStream.ReadFloatArray(uint fieldTag, string fieldName, ICollection<float> list)
-        { ReadArray(FieldType.Float, fieldName, list); }
+        {
+            ReadArray(FieldType.Float, fieldName, list);
+        }
 
         #endregion
     }

@@ -34,7 +34,6 @@
 
 #endregion
 
-using Google.ProtocolBuffers.DescriptorProtos;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoGen
@@ -132,9 +131,16 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("if ({0}_.Count > 0) {{", Name);
             writer.Indent();
             if (Descriptor.IsPacked)
-                writer.WriteLine("output.WritePackedEnumArray({0}, field_names[{2}], {1}MemoizedSerializedSize, {1}_);", Number, Name, FieldOrdinal, Descriptor.FieldType);
+            {
+                writer.WriteLine(
+                    "output.WritePackedEnumArray({0}, field_names[{2}], {1}MemoizedSerializedSize, {1}_);", Number, Name,
+                    FieldOrdinal, Descriptor.FieldType);
+            }
             else
-                writer.WriteLine("output.WriteEnumArray({0}, field_names[{2}], {1}_);", Number, Name, FieldOrdinal, Descriptor.FieldType);
+            {
+                writer.WriteLine("output.WriteEnumArray({0}, field_names[{2}], {1}_);", Number, Name, FieldOrdinal,
+                                 Descriptor.FieldType);
+            }
             writer.Outdent();
             writer.WriteLine("}");
         }

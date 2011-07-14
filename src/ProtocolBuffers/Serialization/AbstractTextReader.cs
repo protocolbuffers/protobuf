@@ -20,7 +20,7 @@ namespace Google.ProtocolBuffers.Serialization
         protected override bool Read(ref string value)
         {
             string text = null;
-            if (ReadAsText(ref text, typeof(string)))
+            if (ReadAsText(ref text, typeof (string)))
             {
                 value = text;
                 return true;
@@ -34,7 +34,7 @@ namespace Google.ProtocolBuffers.Serialization
         protected override bool Read(ref bool value)
         {
             string text = null;
-            if (ReadAsText(ref text, typeof(bool)))
+            if (ReadAsText(ref text, typeof (bool)))
             {
                 value = XmlConvert.ToBoolean(text);
                 return true;
@@ -48,7 +48,7 @@ namespace Google.ProtocolBuffers.Serialization
         protected override bool Read(ref int value)
         {
             string text = null;
-            if (ReadAsText(ref text, typeof(int)))
+            if (ReadAsText(ref text, typeof (int)))
             {
                 value = XmlConvert.ToInt32(text);
                 return true;
@@ -63,7 +63,7 @@ namespace Google.ProtocolBuffers.Serialization
         protected override bool Read(ref uint value)
         {
             string text = null;
-            if (ReadAsText(ref text, typeof(uint)))
+            if (ReadAsText(ref text, typeof (uint)))
             {
                 value = XmlConvert.ToUInt32(text);
                 return true;
@@ -77,7 +77,7 @@ namespace Google.ProtocolBuffers.Serialization
         protected override bool Read(ref long value)
         {
             string text = null;
-            if (ReadAsText(ref text, typeof(long)))
+            if (ReadAsText(ref text, typeof (long)))
             {
                 value = XmlConvert.ToInt64(text);
                 return true;
@@ -92,7 +92,7 @@ namespace Google.ProtocolBuffers.Serialization
         protected override bool Read(ref ulong value)
         {
             string text = null;
-            if (ReadAsText(ref text, typeof(ulong)))
+            if (ReadAsText(ref text, typeof (ulong)))
             {
                 value = XmlConvert.ToUInt64(text);
                 return true;
@@ -106,7 +106,7 @@ namespace Google.ProtocolBuffers.Serialization
         protected override bool Read(ref float value)
         {
             string text = null;
-            if (ReadAsText(ref text, typeof(float)))
+            if (ReadAsText(ref text, typeof (float)))
             {
                 value = XmlConvert.ToSingle(text);
                 return true;
@@ -120,7 +120,7 @@ namespace Google.ProtocolBuffers.Serialization
         protected override bool Read(ref double value)
         {
             string text = null;
-            if (ReadAsText(ref text, typeof(double)))
+            if (ReadAsText(ref text, typeof (double)))
             {
                 value = XmlConvert.ToDouble(text);
                 return true;
@@ -131,7 +131,10 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// Provides decoding of bytes read from the input stream
         /// </summary>
-        protected virtual ByteString DecodeBytes(string bytes) { return ByteString.FromBase64(bytes); }
+        protected virtual ByteString DecodeBytes(string bytes)
+        {
+            return ByteString.FromBase64(bytes);
+        }
 
         /// <summary>
         /// Returns true if it was able to read a ByteString from the input
@@ -139,7 +142,7 @@ namespace Google.ProtocolBuffers.Serialization
         protected override bool Read(ref ByteString value)
         {
             string text = null;
-            if (ReadAsText(ref text, typeof(ByteString)))
+            if (ReadAsText(ref text, typeof (ByteString)))
             {
                 value = DecodeBytes(text);
                 return true;
@@ -154,7 +157,7 @@ namespace Google.ProtocolBuffers.Serialization
         protected override bool ReadEnum(ref object value)
         {
             string text = null;
-            if (ReadAsText(ref text, typeof(Enum)))
+            if (ReadAsText(ref text, typeof (Enum)))
             {
                 int number;
                 if (int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out number))

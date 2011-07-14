@@ -37,6 +37,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using Google.ProtocolBuffers.Collections;
 
 namespace Google.ProtocolBuffers
@@ -74,7 +75,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// writes the extensions to the text stream
         /// </summary>
-        public override void PrintTo(System.IO.TextWriter writer)
+        public override void PrintTo(TextWriter writer)
         {
             foreach (KeyValuePair<IFieldDescriptorLite, object> entry in extensions.AllFields)
             {
@@ -82,7 +83,9 @@ namespace Google.ProtocolBuffers
                 if (entry.Key.IsRepeated)
                 {
                     foreach (object o in ((IEnumerable) entry.Value))
+                    {
                         PrintField(fn, true, o, writer);
+                    }
                 }
                 else
                 {

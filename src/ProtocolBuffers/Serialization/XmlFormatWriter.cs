@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.IO;
 using System.Text;
 using System.Xml;
@@ -18,33 +19,48 @@ namespace Google.ProtocolBuffers.Serialization
         private readonly XmlWriter _output;
         private string _rootElementName;
 
-        static XmlWriterSettings DefaultSettings(Encoding encoding)
+        private static XmlWriterSettings DefaultSettings(Encoding encoding)
         {
-            return new XmlWriterSettings() 
-            { 
-                CheckCharacters = false, 
-                NewLineHandling = NewLineHandling.Entitize, 
-                OmitXmlDeclaration = true,
-                Encoding = encoding, 
-            };
+            return new XmlWriterSettings()
+                       {
+                           CheckCharacters = false,
+                           NewLineHandling = NewLineHandling.Entitize,
+                           OmitXmlDeclaration = true,
+                           Encoding = encoding,
+                       };
         }
 
         /// <summary>
         /// Constructs the XmlFormatWriter to write to the given TextWriter
         /// </summary>
-        public static XmlFormatWriter CreateInstance(TextWriter output) { return new XmlFormatWriter(XmlWriter.Create(output, DefaultSettings(output.Encoding))); }
+        public static XmlFormatWriter CreateInstance(TextWriter output)
+        {
+            return new XmlFormatWriter(XmlWriter.Create(output, DefaultSettings(output.Encoding)));
+        }
+
         /// <summary>
         /// Constructs the XmlFormatWriter to write to the given stream
         /// </summary>
-        public static XmlFormatWriter CreateInstance(Stream output) { return new XmlFormatWriter(XmlWriter.Create(output, DefaultSettings(Encoding.UTF8))); }
+        public static XmlFormatWriter CreateInstance(Stream output)
+        {
+            return new XmlFormatWriter(XmlWriter.Create(output, DefaultSettings(Encoding.UTF8)));
+        }
+
         /// <summary>
         /// Constructs the XmlFormatWriter to write to the given stream
         /// </summary>
-        public static XmlFormatWriter CreateInstance(Stream output, Encoding encoding) { return new XmlFormatWriter(XmlWriter.Create(output, DefaultSettings(encoding))); }
+        public static XmlFormatWriter CreateInstance(Stream output, Encoding encoding)
+        {
+            return new XmlFormatWriter(XmlWriter.Create(output, DefaultSettings(encoding)));
+        }
+
         /// <summary>
         /// Constructs the XmlFormatWriter to write to the given XmlWriter
         /// </summary>
-        public static XmlFormatWriter CreateInstance(XmlWriter output) { return new XmlFormatWriter(output); }
+        public static XmlFormatWriter CreateInstance(XmlWriter output)
+        {
+            return new XmlFormatWriter(output);
+        }
 
         protected XmlFormatWriter(XmlWriter output)
         {
@@ -57,8 +73,10 @@ namespace Google.ProtocolBuffers.Serialization
         /// </summary>
         protected override void Dispose(bool disposing)
         {
-            if(disposing)
+            if (disposing)
+            {
                 _output.Close();
+            }
         }
 
         /// <summary>
@@ -67,25 +85,39 @@ namespace Google.ProtocolBuffers.Serialization
         public string RootElementName
         {
             get { return _rootElementName; }
-            set { ThrowHelper.ThrowIfNull(value, "RootElementName"); _rootElementName = value; }
+            set
+            {
+                ThrowHelper.ThrowIfNull(value, "RootElementName");
+                _rootElementName = value;
+            }
         }
 
         /// <summary>
         /// Gets or sets the options to use while generating the XML
         /// </summary>
         public XmlWriterOptions Options { get; set; }
+
         /// <summary>
         /// Sets the options to use while generating the XML
         /// </summary>
-        public XmlFormatWriter SetOptions(XmlWriterOptions options) { Options = options; return this; }
+        public XmlFormatWriter SetOptions(XmlWriterOptions options)
+        {
+            Options = options;
+            return this;
+        }
 
-        private bool TestOption(XmlWriterOptions option) { return (Options & option) != 0; }
+        private bool TestOption(XmlWriterOptions option)
+        {
+            return (Options & option) != 0;
+        }
 
         /// <summary>
         /// Writes a message as an element using the name defined in <see cref="RootElementName"/>
         /// </summary>
         public override void WriteMessage(IMessageLite message)
-        { WriteMessage(_rootElementName, message); }
+        {
+            WriteMessage(_rootElementName, message);
+        }
 
         /// <summary>
         /// Writes a message as an element with the given name
@@ -98,7 +130,9 @@ namespace Google.ProtocolBuffers.Serialization
                 _output.WriteAttributeString("type", "object");
             }
             else
+            {
                 _output.WriteStartElement(elementName);
+            }
 
             message.WriteTo(this);
             _output.WriteEndElement();
@@ -113,7 +147,9 @@ namespace Google.ProtocolBuffers.Serialization
             _output.WriteStartElement(field);
 
             if (TestOption(XmlWriterOptions.OutputJsonTypes))
+            {
                 _output.WriteAttributeString("type", "object");
+            }
 
             message.WriteTo(this);
             _output.WriteEndElement();
@@ -128,16 +164,23 @@ namespace Google.ProtocolBuffers.Serialization
 
             if (TestOption(XmlWriterOptions.OutputJsonTypes))
             {
-                if (typedValue is int || typedValue is uint || typedValue is long || typedValue is ulong || typedValue is double || typedValue is float)
+                if (typedValue is int || typedValue is uint || typedValue is long || typedValue is ulong ||
+                    typedValue is double || typedValue is float)
+                {
                     _output.WriteAttributeString("type", "number");
+                }
                 else if (typedValue is bool)
+                {
                     _output.WriteAttributeString("type", "boolean");
+                }
             }
             _output.WriteString(textValue);
 
             //Empty strings should not be written as empty elements '<item/>', rather as '<item></item>'
             if (_output.WriteState == WriteState.Element)
+            {
                 _output.WriteRaw("");
+            }
 
             _output.WriteEndElement();
         }
@@ -145,25 +188,40 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// Writes an array of field values
         /// </summary>
-        protected override void WriteArray(FieldType fieldType, string field, System.Collections.IEnumerable items)
+        protected override void WriteArray(FieldType fieldType, string field, IEnumerable items)
         {
             //see if it's empty
-            System.Collections.IEnumerator eitems = items.GetEnumerator();
-            try { if (!eitems.MoveNext()) return; }
+            IEnumerator eitems = items.GetEnumerator();
+            try
+            {
+                if (!eitems.MoveNext())
+                {
+                    return;
+                }
+            }
             finally
-            { if (eitems is IDisposable) ((IDisposable) eitems).Dispose(); }
+            {
+                if (eitems is IDisposable)
+                {
+                    ((IDisposable) eitems).Dispose();
+                }
+            }
 
             if (TestOption(XmlWriterOptions.OutputNestedArrays | XmlWriterOptions.OutputJsonTypes))
             {
                 _output.WriteStartElement(field);
                 if (TestOption(XmlWriterOptions.OutputJsonTypes))
+                {
                     _output.WriteAttributeString("type", "array");
+                }
 
                 base.WriteArray(fieldType, "item", items);
                 _output.WriteEndElement();
             }
             else
+            {
                 base.WriteArray(fieldType, field, items);
+            }
         }
 
         /// <summary>
@@ -174,7 +232,9 @@ namespace Google.ProtocolBuffers.Serialization
             _output.WriteStartElement(field);
 
             if (!TestOption(XmlWriterOptions.OutputJsonTypes) && TestOption(XmlWriterOptions.OutputEnumValues))
+            {
                 _output.WriteAttributeString("value", XmlConvert.ToString(number));
+            }
 
             _output.WriteString(name);
             _output.WriteEndElement();

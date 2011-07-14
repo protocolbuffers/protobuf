@@ -34,10 +34,8 @@
 
 #endregion
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers
@@ -76,12 +74,14 @@ namespace Google.ProtocolBuffers
 
         public string Name
         {
-            get 
+            get
             {
                 string name = fullName;
                 int offset = name.LastIndexOf('.');
                 if (offset >= 0)
+                {
                     name = name.Substring(offset);
+                }
                 return name;
             }
         }

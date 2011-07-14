@@ -30,8 +30,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
-using System.Collections.Generic;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace Google.ProtocolBuffers.Collections
 {
@@ -76,7 +76,14 @@ namespace Google.ProtocolBuffers.Collections
 
         public T this[int index]
         {
-            get { if (items == null) throw new ArgumentOutOfRangeException(); return items[index]; }
+            get
+            {
+                if (items == null)
+                {
+                    throw new ArgumentOutOfRangeException();
+                }
+                return items[index];
+            }
             set
             {
                 ValidateModification();
@@ -104,7 +111,9 @@ namespace Google.ProtocolBuffers.Collections
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (items != null)
+            {
                 items.CopyTo(array, arrayIndex);
+            }
         }
 
         public int Count
@@ -140,7 +149,9 @@ namespace Google.ProtocolBuffers.Collections
                 throw new NotSupportedException("List is read-only");
             }
             if (items == null)
+            {
                 items = new List<T>();
+            }
             items.AddRange(collection);
         }
 
@@ -151,14 +162,18 @@ namespace Google.ProtocolBuffers.Collections
                 throw new NotSupportedException("List is read-only");
             }
             if (items == null)
+            {
                 items = new List<T>();
+            }
         }
 
         IEnumerable<TItemType> ICastArray.CastArray<TItemType>()
         {
             if (items == null)
+            {
                 return new TItemType[0];
-            return (TItemType[])(object)items.ToArray();
+            }
+            return (TItemType[]) (object) items.ToArray();
         }
     }
 }

@@ -165,7 +165,7 @@ namespace Google.ProtocolBuffers
         #endregion
 
         #region Reading of tags etc
-        
+
         /// <summary>
         /// Attempt to peek at the next field tag.
         /// </summary>
@@ -266,7 +266,9 @@ namespace Google.ProtocolBuffers
             {
                 byte[] rawBytes = ReadRawBytes(4);
                 if (!BitConverter.IsLittleEndian)
+                {
                     ByteArray.Reverse(rawBytes);
+                }
                 value = BitConverter.ToSingle(rawBytes, 0);
             }
             return true;
@@ -296,7 +298,7 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public bool ReadInt32(ref int value)
         {
-            value = (int)ReadRawVarint32();
+            value = (int) ReadRawVarint32();
             return true;
         }
 
@@ -445,8 +447,8 @@ namespace Google.ProtocolBuffers
         /// </summary>   
         public bool ReadEnum(ref IEnumLite value, out object unknown, IEnumLiteMap mapping)
         {
-            int rawValue = (int)ReadRawVarint32();
-            
+            int rawValue = (int) ReadRawVarint32();
+
             value = mapping.FindValueByNumber(rawValue);
             if (value != null)
             {
@@ -466,11 +468,11 @@ namespace Google.ProtocolBuffers
         public bool ReadEnum<T>(ref T value, out object unknown)
             where T : struct, IComparable, IFormattable, IConvertible
         {
-            int number = (int)ReadRawVarint32();
-            if (Enum.IsDefined(typeof(T), number))
+            int number = (int) ReadRawVarint32();
+            if (Enum.IsDefined(typeof (T), number))
             {
                 unknown = null;
-                value = (T)(object)number;
+                value = (T) (object) number;
                 return true;
             }
             unknown = number;
@@ -482,7 +484,7 @@ namespace Google.ProtocolBuffers
         /// </summary>   
         public bool ReadSFixed32(ref int value)
         {
-            value = (int)ReadRawLittleEndian32();
+            value = (int) ReadRawLittleEndian32();
             return true;
         }
 
@@ -491,7 +493,7 @@ namespace Google.ProtocolBuffers
         /// </summary>   
         public bool ReadSFixed64(ref long value)
         {
-            value = (long)ReadRawLittleEndian64();
+            value = (long) ReadRawLittleEndian64();
             return true;
         }
 
@@ -566,17 +568,19 @@ namespace Google.ProtocolBuffers
         {
             WireFormat.WireType normal = WireFormat.GetWireType(fieldType);
             WireFormat.WireType wformat = WireFormat.GetTagWireType(fieldTag);
-            
+
             // 2.3 allows packed form even if the field is not declared packed.
-            if(normal != wformat && wformat == WireFormat.WireType.LengthDelimited)
+            if (normal != wformat && wformat == WireFormat.WireType.LengthDelimited)
             {
-                int length = (int)(ReadRawVarint32() & int.MaxValue);
+                int length = (int) (ReadRawVarint32() & int.MaxValue);
                 int limit = PushLimit(length);
                 while (!ReachedLimit)
                 {
                     Object value = null;
-                    if(ReadPrimitiveField(fieldType, ref value))
+                    if (ReadPrimitiveField(fieldType, ref value))
+                    {
                         list.Add(value);
+                    }
                 }
                 PopLimit(limit);
             }
@@ -586,9 +590,10 @@ namespace Google.ProtocolBuffers
                 do
                 {
                     if (ReadPrimitiveField(fieldType, ref value))
+                    {
                         list.Add(value);
-                }
-                while (ContinueArray(fieldTag, false, 0));
+                    }
+                } while (ContinueArray(fieldTag, false, 0));
             }
         }
 
@@ -611,8 +616,7 @@ namespace Google.ProtocolBuffers
             {
                 ReadBytes(ref tmp);
                 list.Add(tmp);
-            }
-            while (ContinueArray(fieldTag, false, 0));
+            } while (ContinueArray(fieldTag, false, 0));
         }
 
         [CLSCompliant(false)]
@@ -824,7 +828,8 @@ namespace Google.ProtocolBuffers
         }
 
         [CLSCompliant(false)]
-        public void ReadEnumArray(uint fieldTag, string fieldName, ICollection<IEnumLite> list, out ICollection<object> unknown, IEnumLiteMap mapping)
+        public void ReadEnumArray(uint fieldTag, string fieldName, ICollection<IEnumLite> list,
+                                  out ICollection<object> unknown, IEnumLiteMap mapping)
         {
             unknown = null;
             object unkval;
@@ -834,16 +839,20 @@ namespace Google.ProtocolBuffers
             // 2.3 allows packed form even if the field is not declared packed.
             if (wformat == WireFormat.WireType.LengthDelimited)
             {
-                int length = (int)(ReadRawVarint32() & int.MaxValue);
+                int length = (int) (ReadRawVarint32() & int.MaxValue);
                 int limit = PushLimit(length);
                 while (!ReachedLimit)
                 {
                     if (ReadEnum(ref value, out unkval, mapping))
+                    {
                         list.Add(value);
+                    }
                     else
                     {
                         if (unknown == null)
+                        {
                             unknown = new List<object>();
+                        }
                         unknown.Add(unkval);
                     }
                 }
@@ -854,20 +863,24 @@ namespace Google.ProtocolBuffers
                 do
                 {
                     if (ReadEnum(ref value, out unkval, mapping))
+                    {
                         list.Add(value);
+                    }
                     else
                     {
                         if (unknown == null)
+                        {
                             unknown = new List<object>();
+                        }
                         unknown.Add(unkval);
                     }
-                }
-                while (ContinueArray(fieldTag, false, 0));
+                } while (ContinueArray(fieldTag, false, 0));
             }
         }
 
         [CLSCompliant(false)]
-        public void ReadEnumArray<T>(uint fieldTag, string fieldName, ICollection<T> list, out ICollection<object> unknown)
+        public void ReadEnumArray<T>(uint fieldTag, string fieldName, ICollection<T> list,
+                                     out ICollection<object> unknown)
             where T : struct, IComparable, IFormattable, IConvertible
         {
             unknown = null;
@@ -878,16 +891,20 @@ namespace Google.ProtocolBuffers
             // 2.3 allows packed form even if the field is not declared packed.
             if (wformat == WireFormat.WireType.LengthDelimited)
             {
-                int length = (int)(ReadRawVarint32() & int.MaxValue);
+                int length = (int) (ReadRawVarint32() & int.MaxValue);
                 int limit = PushLimit(length);
                 while (!ReachedLimit)
                 {
                     if (ReadEnum<T>(ref value, out unkval))
+                    {
                         list.Add(value);
+                    }
                     else
                     {
                         if (unknown == null)
+                        {
                             unknown = new List<object>();
+                        }
                         unknown.Add(unkval);
                     }
                 }
@@ -898,40 +915,43 @@ namespace Google.ProtocolBuffers
                 do
                 {
                     if (ReadEnum(ref value, out unkval))
+                    {
                         list.Add(value);
+                    }
                     else
                     {
                         if (unknown == null)
+                        {
                             unknown = new List<object>();
+                        }
                         unknown.Add(unkval);
                     }
-                }
-                while (ContinueArray(fieldTag, false, 0));
+                } while (ContinueArray(fieldTag, false, 0));
             }
         }
 
         [CLSCompliant(false)]
-        public void ReadMessageArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType, ExtensionRegistry registry) where T : IMessageLite
+        public void ReadMessageArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType,
+                                        ExtensionRegistry registry) where T : IMessageLite
         {
             do
             {
                 IBuilderLite builder = messageType.WeakCreateBuilderForType();
                 ReadMessage(builder, registry);
-                list.Add((T)builder.WeakBuildPartial());
-            }
-            while (ContinueArray(fieldTag, false, 0));
+                list.Add((T) builder.WeakBuildPartial());
+            } while (ContinueArray(fieldTag, false, 0));
         }
 
         [CLSCompliant(false)]
-        public void ReadGroupArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType, ExtensionRegistry registry) where T : IMessageLite
+        public void ReadGroupArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType,
+                                      ExtensionRegistry registry) where T : IMessageLite
         {
             do
             {
                 IBuilderLite builder = messageType.WeakCreateBuilderForType();
                 ReadGroup(WireFormat.GetTagFieldNumber(fieldTag), builder, registry);
-                list.Add((T)builder.WeakBuildPartial());
-            }
-            while (ContinueArray(fieldTag, false, 0));
+                list.Add((T) builder.WeakBuildPartial());
+            } while (ContinueArray(fieldTag, false, 0));
         }
 
         /// <summary>
@@ -1148,7 +1168,10 @@ namespace Google.ProtocolBuffers
                             // Discard upper 32 bits.
                             for (int i = 0; i < 5; i++)
                             {
-                                if (ReadRawByte() < 128) return (uint) result;
+                                if (ReadRawByte() < 128)
+                                {
+                                    return (uint) result;
+                                }
                             }
                             throw InvalidProtocolBufferException.MalformedVarint();
                         }
@@ -1208,7 +1231,10 @@ namespace Google.ProtocolBuffers
                             // use the fast path in more cases, and we rarely hit this section of code.
                             for (int i = 0; i < 5; i++)
                             {
-                                if (ReadRawByte() < 128) return (uint) result;
+                                if (ReadRawByte() < 128)
+                                {
+                                    return (uint) result;
+                                }
                             }
                             throw InvalidProtocolBufferException.MalformedVarint();
                         }

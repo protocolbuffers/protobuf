@@ -39,7 +39,6 @@ using System.Collections.Generic;
 using System.IO;
 using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
-using Google.ProtocolBuffers.DescriptorProtos;
 
 namespace Google.ProtocolBuffers
 {
@@ -426,12 +425,16 @@ namespace Google.ProtocolBuffers
                     if (tag == 0)
                     {
                         if (input.SkipField())
+                        {
                             continue; //can't merge unknown without field tag
+                        }
                         break;
                     }
 
-                    if(!MergeFieldFrom(tag, input))
+                    if (!MergeFieldFrom(tag, input))
+                    {
                         break;
+                    }
                 }
                 return this;
             }
@@ -458,29 +461,37 @@ namespace Google.ProtocolBuffers
                     case WireFormat.WireType.Varint:
                         {
                             ulong uint64 = 0;
-                            if(input.ReadUInt64(ref uint64))
+                            if (input.ReadUInt64(ref uint64))
+                            {
                                 GetFieldBuilder(number).AddVarint(uint64);
+                            }
                             return true;
                         }
                     case WireFormat.WireType.Fixed32:
                         {
                             uint uint32 = 0;
                             if (input.ReadFixed32(ref uint32))
+                            {
                                 GetFieldBuilder(number).AddFixed32(uint32);
+                            }
                             return true;
                         }
                     case WireFormat.WireType.Fixed64:
                         {
                             ulong uint64 = 0;
                             if (input.ReadFixed64(ref uint64))
+                            {
                                 GetFieldBuilder(number).AddFixed64(uint64);
+                            }
                             return true;
                         }
                     case WireFormat.WireType.LengthDelimited:
                         {
                             ByteString bytes = null;
                             if (input.ReadBytes(ref bytes))
+                            {
                                 GetFieldBuilder(number).AddLengthDelimited(bytes);
+                            }
                             return true;
                         }
                     case WireFormat.WireType.StartGroup:
@@ -617,18 +628,24 @@ namespace Google.ProtocolBuffers
                     {
                         FieldDescriptor fieldByName = builder.DescriptorForType.FindFieldByName(name);
                         if (fieldByName != null)
+                        {
                             tag = WireFormat.MakeTag(fieldByName);
+                        }
                         else
                         {
                             ExtensionInfo extension = extensionRegistry.FindByName(builder.DescriptorForType, name);
                             if (extension != null)
+                            {
                                 tag = WireFormat.MakeTag(extension.Descriptor);
+                            }
                         }
                     }
                     if (tag == 0)
                     {
                         if (input.SkipField())
+                        {
                             continue; //can't merge unknown without field tag
+                        }
                         break;
                     }
 
@@ -650,18 +667,23 @@ namespace Google.ProtocolBuffers
             /// <param name="tag">The tag, which should already have been read from the input</param>
             /// <returns>true unless the tag is an end-group tag</returns>
             internal bool MergeFieldFrom(ICodedInputStream input,
-                                         ExtensionRegistry extensionRegistry, IBuilder builder, uint tag, string fieldName)
+                                         ExtensionRegistry extensionRegistry, IBuilder builder, uint tag,
+                                         string fieldName)
             {
                 if (tag == 0 && fieldName != null)
                 {
                     FieldDescriptor fieldByName = builder.DescriptorForType.FindFieldByName(fieldName);
                     if (fieldByName != null)
+                    {
                         tag = WireFormat.MakeTag(fieldByName);
+                    }
                     else
                     {
                         ExtensionInfo extension = extensionRegistry.FindByName(builder.DescriptorForType, fieldName);
                         if (extension != null)
+                        {
                             tag = WireFormat.MakeTag(extension.Descriptor);
+                        }
                     }
                 }
 
@@ -709,12 +731,15 @@ namespace Google.ProtocolBuffers
                         //Allowed as of 2.3, this is unpacked data for a packed array
                     }
                     else if (field.IsRepeated && wireType == WireFormat.WireType.LengthDelimited &&
-                        (expectedType == WireFormat.WireType.Varint || expectedType == WireFormat.WireType.Fixed32 || expectedType == WireFormat.WireType.Fixed64))
+                             (expectedType == WireFormat.WireType.Varint || expectedType == WireFormat.WireType.Fixed32 ||
+                              expectedType == WireFormat.WireType.Fixed64))
                     {
                         //Allowed as of 2.3, this is packed data for an unpacked array
                     }
                     else
+                    {
                         return MergeFieldFrom(tag, input);
+                    }
                 }
 
                 switch (field.FieldType)
@@ -722,26 +747,40 @@ namespace Google.ProtocolBuffers
                     case FieldType.Group:
                     case FieldType.Message:
                         {
-                            IBuilderLite subBuilder = (defaultFieldInstance != null) ? defaultFieldInstance.WeakCreateBuilderForType() : builder.CreateBuilderForField(field);
+                            IBuilderLite subBuilder = (defaultFieldInstance != null)
+                                                          ? defaultFieldInstance.WeakCreateBuilderForType()
+                                                          : builder.CreateBuilderForField(field);
                             if (!field.IsRepeated)
                             {
-                                subBuilder.WeakMergeFrom((IMessageLite)builder[field]);
+                                subBuilder.WeakMergeFrom((IMessageLite) builder[field]);
                                 if (field.FieldType == FieldType.Group)
+                                {
                                     input.ReadGroup(field.FieldNumber, subBuilder, extensionRegistry);
+                                }
                                 else
+                                {
                                     input.ReadMessage(subBuilder, extensionRegistry);
+                                }
                                 builder[field] = subBuilder.WeakBuild();
                             }
                             else
                             {
                                 List<IMessageLite> list = new List<IMessageLite>();
                                 if (field.FieldType == FieldType.Group)
-                                    input.ReadGroupArray(tag, fieldName, list, subBuilder.WeakDefaultInstanceForType, extensionRegistry);
+                                {
+                                    input.ReadGroupArray(tag, fieldName, list, subBuilder.WeakDefaultInstanceForType,
+                                                         extensionRegistry);
+                                }
                                 else
-                                    input.ReadMessageArray(tag, fieldName, list, subBuilder.WeakDefaultInstanceForType, extensionRegistry);
+                                {
+                                    input.ReadMessageArray(tag, fieldName, list, subBuilder.WeakDefaultInstanceForType,
+                                                           extensionRegistry);
+                                }
 
                                 foreach (IMessageLite m in list)
+                                {
                                     builder.WeakAddRepeatedField(field, m);
+                                }
                                 return true;
                             }
                             break;
@@ -753,24 +792,34 @@ namespace Google.ProtocolBuffers
                                 object unknown;
                                 IEnumLite value = null;
                                 if (input.ReadEnum(ref value, out unknown, field.EnumType))
+                                {
                                     builder[field] = value;
-                                else if(unknown is int)
-                                    MergeVarintField(fieldNumber, (ulong)(int)unknown);
+                                }
+                                else if (unknown is int)
+                                {
+                                    MergeVarintField(fieldNumber, (ulong) (int) unknown);
+                                }
                             }
                             else
                             {
                                 ICollection<object> unknown;
                                 List<IEnumLite> list = new List<IEnumLite>();
                                 input.ReadEnumArray(tag, fieldName, list, out unknown, field.EnumType);
-                                
+
                                 foreach (IEnumLite en in list)
+                                {
                                     builder.WeakAddRepeatedField(field, en);
+                                }
 
                                 if (unknown != null)
                                 {
                                     foreach (object oval in unknown)
+                                    {
                                         if (oval is int)
-                                            MergeVarintField(fieldNumber, (ulong)(int)oval);
+                                        {
+                                            MergeVarintField(fieldNumber, (ulong) (int) oval);
+                                        }
+                                    }
                                 }
                             }
                             break;
@@ -781,14 +830,18 @@ namespace Google.ProtocolBuffers
                             {
                                 object value = null;
                                 if (input.ReadPrimitiveField(field.FieldType, ref value))
+                                {
                                     builder[field] = value;
+                                }
                             }
                             else
                             {
                                 List<object> list = new List<object>();
                                 input.ReadPrimitiveArray(field.FieldType, tag, fieldName, list);
                                 foreach (object oval in list)
+                                {
                                     builder.WeakAddRepeatedField(field, oval);
+                                }
                             }
                             break;
                         }
@@ -832,13 +885,21 @@ namespace Google.ProtocolBuffers
                 {
                     if (tag == 0 && name != null)
                     {
-                        if (name == "type_id") tag = WireFormat.MessageSetTag.TypeID;
-                        else if (name == "message") tag = WireFormat.MessageSetTag.Message;
+                        if (name == "type_id")
+                        {
+                            tag = WireFormat.MessageSetTag.TypeID;
+                        }
+                        else if (name == "message")
+                        {
+                            tag = WireFormat.MessageSetTag.Message;
+                        }
                     }
                     if (tag == 0)
                     {
                         if (input.SkipField())
+                        {
                             continue; //can't merge unknown without field tag
+                        }
                         break;
                     }
 
@@ -882,7 +943,7 @@ namespace Google.ProtocolBuffers
                     }
                     else if (tag == WireFormat.MessageSetTag.Message)
                     {
-                        if(subBuilder != null)
+                        if (subBuilder != null)
                         {
                             // We already know the type, so we can parse directly from the input
                             // with no copying.  Hooray!
@@ -909,7 +970,9 @@ namespace Google.ProtocolBuffers
                 }
 
                 if (lastTag != WireFormat.MessageSetTag.ItemEnd)
+                {
                     throw InvalidProtocolBufferException.InvalidEndTag();
+                }
 
                 if (subBuilder != null)
                 {

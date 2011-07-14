@@ -115,7 +115,7 @@ namespace Google.ProtocolBuffers
         /// Reads a group field value from the stream.
         /// </summary>    
         void ReadGroup(int fieldNumber, IBuilderLite builder,
-                                       ExtensionRegistry extensionRegistry);
+                       ExtensionRegistry extensionRegistry);
 
         /// <summary>
         /// Reads a group field value from the stream and merges it into the given
@@ -187,7 +187,8 @@ namespace Google.ProtocolBuffers
         /// read a packed array.
         /// </summary>
         [CLSCompliant(false)]
-        void ReadEnumArray(uint fieldTag, string fieldName, ICollection<IEnumLite> list, out ICollection<object> unknown, IEnumLiteMap mapping);
+        void ReadEnumArray(uint fieldTag, string fieldName, ICollection<IEnumLite> list, out ICollection<object> unknown,
+                           IEnumLiteMap mapping);
 
         /// <summary>
         /// Reads an array of primitive values into the list, if the wire-type of fieldTag is length-prefixed, it will
@@ -202,13 +203,15 @@ namespace Google.ProtocolBuffers
         /// the most derived type, it is only the type specifier for the collection.
         /// </summary>
         [CLSCompliant(false)]
-        void ReadMessageArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType, ExtensionRegistry registry) where T : IMessageLite;
+        void ReadMessageArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType,
+                                 ExtensionRegistry registry) where T : IMessageLite;
 
         /// <summary>
         /// Reads a set of messages using the <paramref name="messageType"/> as a template.
         /// </summary>
         [CLSCompliant(false)]
-        void ReadGroupArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType, ExtensionRegistry registry) where T : IMessageLite;
+        void ReadGroupArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType,
+                               ExtensionRegistry registry) where T : IMessageLite;
 
         /// <summary>
         /// Reads a field of any primitive type. Enums, groups and embedded

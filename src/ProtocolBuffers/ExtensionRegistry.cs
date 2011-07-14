@@ -34,9 +34,9 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.Descriptors;
-using System;
 
 namespace Google.ProtocolBuffers
 {
@@ -107,7 +107,9 @@ namespace Google.ProtocolBuffers
                 foreach (IGeneratedExtensionLite ext in extensionsByNumber.Values)
                 {
                     if (StringComparer.Ordinal.Equals(ext.Descriptor.FullName, fullName))
+                    {
                         return ext as ExtensionInfo;
+                    }
                 }
                 return null;
             }
@@ -204,7 +206,9 @@ namespace Google.ProtocolBuffers
                 // up by type name.
                 Dictionary<string, IGeneratedExtensionLite> map;
                 if (extensionsByName.TryGetValue(liteExtension.ContainingType, out map))
+                {
                     map[field.MessageType.FullName] = extension;
+                }
             }
         }
     }

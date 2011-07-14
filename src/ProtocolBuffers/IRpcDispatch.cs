@@ -34,8 +34,6 @@
 
 #endregion
 
-using System;
-
 namespace Google.ProtocolBuffers
 {
     /// <summary>

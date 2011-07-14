@@ -36,6 +36,7 @@
 
 using System;
 using System.Globalization;
+using System.Text;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoGen
@@ -54,7 +55,10 @@ namespace Google.ProtocolBuffers.ProtoGen
         public abstract void WriteEquals(TextGenerator writer);
         public abstract void WriteToString(TextGenerator writer);
 
-        public int FieldOrdinal { get { return _fieldOrdinal; } }
+        public int FieldOrdinal
+        {
+            get { return _fieldOrdinal; }
+        }
 
         private static bool AllPrintableAscii(string text)
         {
@@ -70,7 +74,7 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         protected bool HasDefaultValue
         {
-            get 
+            get
             {
                 switch (Descriptor.FieldType)
                 {
@@ -141,20 +145,32 @@ namespace Google.ProtocolBuffers.ProtoGen
                             if (Descriptor.FieldType == FieldType.Double && value is double)
                             {
                                 if (double.IsNaN((double) value))
+                                {
                                     return "double.NaN";
+                                }
                                 if (double.IsPositiveInfinity((double) value))
+                                {
                                     return "double.PositiveInfinity";
+                                }
                                 if (double.IsNegativeInfinity((double) value))
+                                {
                                     return "double.NegativeInfinity";
+                                }
                             }
                             else if (Descriptor.FieldType == FieldType.Float && value is float)
                             {
                                 if (float.IsNaN((float) value))
+                                {
                                     return "float.NaN";
+                                }
                                 if (float.IsPositiveInfinity((float) value))
+                                {
                                     return "float.PositiveInfinity";
+                                }
                                 if (float.IsNegativeInfinity((float) value))
+                                {
                                     return "float.NegativeInfinity";
+                                }
                             }
                             return value.ToString(CultureInfo.InvariantCulture) + suffix;
                         }
@@ -188,7 +204,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                         {
                             string temp =
                                 Convert.ToBase64String(
-                                    System.Text.Encoding.UTF8.GetBytes((String) Descriptor.DefaultValue));
+                                    Encoding.UTF8.GetBytes((String) Descriptor.DefaultValue));
                             return String.Format("ByteString.FromBase64(\"{0}\").ToStringUtf8()", temp);
                         }
                         return string.Format("(string) {0}.Descriptor.Fields[{1}].DefaultValue",

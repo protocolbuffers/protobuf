@@ -36,7 +36,6 @@
 
 using System;
 using System.Globalization;
-using System.IO;
 using System.Text;
 using Google.ProtocolBuffers.Descriptors;
 
@@ -477,10 +476,22 @@ namespace Google.ProtocolBuffers
         [CLSCompliant(false)]
         public static int ComputeRawVarint32Size(uint value)
         {
-            if ((value & (0xffffffff << 7)) == 0) return 1;
-            if ((value & (0xffffffff << 14)) == 0) return 2;
-            if ((value & (0xffffffff << 21)) == 0) return 3;
-            if ((value & (0xffffffff << 28)) == 0) return 4;
+            if ((value & (0xffffffff << 7)) == 0)
+            {
+                return 1;
+            }
+            if ((value & (0xffffffff << 14)) == 0)
+            {
+                return 2;
+            }
+            if ((value & (0xffffffff << 21)) == 0)
+            {
+                return 3;
+            }
+            if ((value & (0xffffffff << 28)) == 0)
+            {
+                return 4;
+            }
             return 5;
         }
 
@@ -490,15 +501,42 @@ namespace Google.ProtocolBuffers
         [CLSCompliant(false)]
         public static int ComputeRawVarint64Size(ulong value)
         {
-            if ((value & (0xffffffffffffffffL << 7)) == 0) return 1;
-            if ((value & (0xffffffffffffffffL << 14)) == 0) return 2;
-            if ((value & (0xffffffffffffffffL << 21)) == 0) return 3;
-            if ((value & (0xffffffffffffffffL << 28)) == 0) return 4;
-            if ((value & (0xffffffffffffffffL << 35)) == 0) return 5;
-            if ((value & (0xffffffffffffffffL << 42)) == 0) return 6;
-            if ((value & (0xffffffffffffffffL << 49)) == 0) return 7;
-            if ((value & (0xffffffffffffffffL << 56)) == 0) return 8;
-            if ((value & (0xffffffffffffffffL << 63)) == 0) return 9;
+            if ((value & (0xffffffffffffffffL << 7)) == 0)
+            {
+                return 1;
+            }
+            if ((value & (0xffffffffffffffffL << 14)) == 0)
+            {
+                return 2;
+            }
+            if ((value & (0xffffffffffffffffL << 21)) == 0)
+            {
+                return 3;
+            }
+            if ((value & (0xffffffffffffffffL << 28)) == 0)
+            {
+                return 4;
+            }
+            if ((value & (0xffffffffffffffffL << 35)) == 0)
+            {
+                return 5;
+            }
+            if ((value & (0xffffffffffffffffL << 42)) == 0)
+            {
+                return 6;
+            }
+            if ((value & (0xffffffffffffffffL << 49)) == 0)
+            {
+                return 7;
+            }
+            if ((value & (0xffffffffffffffffL << 56)) == 0)
+            {
+                return 8;
+            }
+            if ((value & (0xffffffffffffffffL << 63)) == 0)
+            {
+                return 9;
+            }
             return 10;
         }
 
@@ -545,10 +583,14 @@ namespace Google.ProtocolBuffers
                 case FieldType.SInt64:
                     return ComputeSInt64Size(fieldNumber, (long) value);
                 case FieldType.Enum:
-                    if (value is System.Enum)
-                        return ComputeEnumSize(fieldNumber, ((IConvertible)value).ToInt32(CultureInfo.InvariantCulture));
+                    if (value is Enum)
+                    {
+                        return ComputeEnumSize(fieldNumber, ((IConvertible) value).ToInt32(CultureInfo.InvariantCulture));
+                    }
                     else
+                    {
                         return ComputeEnumSize(fieldNumber, ((IEnumLite) value).Number);
+                    }
                 default:
                     throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);
             }
@@ -597,10 +639,14 @@ namespace Google.ProtocolBuffers
                 case FieldType.SInt64:
                     return ComputeSInt64SizeNoTag((long) value);
                 case FieldType.Enum:
-                    if (value is System.Enum)
-                        return ComputeEnumSizeNoTag(((IConvertible)value).ToInt32(CultureInfo.InvariantCulture));
+                    if (value is Enum)
+                    {
+                        return ComputeEnumSizeNoTag(((IConvertible) value).ToInt32(CultureInfo.InvariantCulture));
+                    }
                     else
+                    {
                         return ComputeEnumSizeNoTag(((IEnumLite) value).Number);
+                    }
                 default:
                     throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);
             }

@@ -62,7 +62,10 @@ namespace Google.ProtocolBuffers.FieldAccess
         {
             PropertyInfo messageProperty = typeof (TMessage).GetProperty(name);
             PropertyInfo builderProperty = typeof (TBuilder).GetProperty(name);
-            if (builderProperty == null) builderProperty = typeof (TBuilder).GetProperty(name);
+            if (builderProperty == null)
+            {
+                builderProperty = typeof (TBuilder).GetProperty(name);
+            }
             PropertyInfo hasProperty = typeof (TMessage).GetProperty("Has" + name);
             MethodInfo clearMethod = typeof (TBuilder).GetMethod("Clear" + name, EmptyTypes);
             if (messageProperty == null || builderProperty == null || hasProperty == null || clearMethod == null)

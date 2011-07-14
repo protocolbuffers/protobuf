@@ -35,8 +35,8 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
@@ -223,9 +223,13 @@ namespace Google.ProtocolBuffers
                 while (input.ReadTag(out tag, out name))
                 {
                     if ((tag == 0 && name == "item") || (tag == ExpectedTag))
+                    {
                         yield return messageReader(input, extensionRegistry);
+                    }
                     else
+                    {
                         throw InvalidProtocolBufferException.InvalidMessageStreamTag();
+                    }
 
                     input.ResetSizeCounter();
                 }

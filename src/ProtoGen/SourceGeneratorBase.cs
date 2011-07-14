@@ -35,6 +35,7 @@
 #endregion
 
 using System.Collections.Generic;
+using Google.ProtocolBuffers.DescriptorProtos;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoGen
@@ -53,11 +54,11 @@ namespace Google.ProtocolBuffers.ProtoGen
             this.descriptor = descriptor;
 
             OptimizeSize = descriptor.File.Options.OptimizeFor ==
-                           Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode.CODE_SIZE;
+                           FileOptions.Types.OptimizeMode.CODE_SIZE;
             OptimizeSpeed = descriptor.File.Options.OptimizeFor ==
-                            Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED;
+                            FileOptions.Types.OptimizeMode.SPEED;
             UseLiteRuntime = descriptor.File.Options.OptimizeFor ==
-                             Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode.LITE_RUNTIME;
+                             FileOptions.Types.OptimizeMode.LITE_RUNTIME;
             //Lite runtime uses OptimizeSpeed code branches
             OptimizeSpeed |= UseLiteRuntime;
             RuntimeSuffix = UseLiteRuntime ? "Lite" : "";

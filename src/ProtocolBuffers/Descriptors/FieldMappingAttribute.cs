@@ -31,6 +31,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Google.ProtocolBuffers.Collections;
 
 namespace Google.ProtocolBuffers.Descriptors
@@ -62,10 +63,7 @@ namespace Google.ProtocolBuffers.Descriptors
         private static IDictionary<FieldType, FieldMappingAttribute> MapFieldTypes()
         {
             var map = new Dictionary<FieldType, FieldMappingAttribute>();
-            foreach (
-                System.Reflection.FieldInfo field in
-                    typeof (FieldType).GetFields(System.Reflection.BindingFlags.Static |
-                                                 System.Reflection.BindingFlags.Public))
+            foreach (FieldInfo field in typeof (FieldType).GetFields(BindingFlags.Static | BindingFlags.Public))
             {
                 FieldType fieldType = (FieldType) field.GetValue(null);
                 FieldMappingAttribute mapping =

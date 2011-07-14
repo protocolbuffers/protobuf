@@ -10,6 +10,7 @@ namespace Google.ProtocolBuffers.Serialization
     {
         /// <summary> Simple xml formatting with no attributes </summary>
         None,
+
         /// <summary> Requires that arrays items are nested in an &lt;item> element </summary>
         ReadNestedArrays = 1,
     }

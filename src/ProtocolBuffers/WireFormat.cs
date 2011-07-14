@@ -143,6 +143,7 @@ namespace Google.ProtocolBuffers
         }
 
 #endif
+
         /// <summary>
         /// Converts a field type to its wire type. Done with a switch for the sake
         /// of speed - this is significantly faster than a dictionary lookup.

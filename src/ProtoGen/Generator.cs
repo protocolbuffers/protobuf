@@ -35,11 +35,11 @@
 #endregion
 
 using System.Collections.Generic;
-using System.Text;
-using Google.ProtocolBuffers.DescriptorProtos;
 using System.IO;
-using Google.ProtocolBuffers.Descriptors;
+using System.Text;
 using Google.ProtocolBuffers.Collections;
+using Google.ProtocolBuffers.DescriptorProtos;
+using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoGen
 {
@@ -148,7 +148,9 @@ namespace Google.ProtocolBuffers.ProtoGen
             // we've already converted all the dependencies, until we get to a stalemate
             List<FileDescriptorProto> fileList = new List<FileDescriptorProto>();
             foreach (FileDescriptorSet set in descriptorProtos)
+            {
                 fileList.AddRange(set.FileList);
+            }
 
             FileDescriptor[] converted = new FileDescriptor[fileList.Count];
 
@@ -172,10 +174,10 @@ namespace Google.ProtocolBuffers.ProtoGen
 
 
                     CSharpFileOptions.Builder builder = options.ToBuilder();
-                    if (candidate.Options.HasExtension(DescriptorProtos.CSharpOptions.CSharpFileOptions))
+                    if (candidate.Options.HasExtension(CSharpOptions.CSharpFileOptions))
                     {
                         builder.MergeFrom(
-                            candidate.Options.GetExtension(DescriptorProtos.CSharpOptions.CSharpFileOptions));
+                            candidate.Options.GetExtension(CSharpOptions.CSharpFileOptions));
                     }
                     CSharpFileOptions localOptions = builder.Build();
 

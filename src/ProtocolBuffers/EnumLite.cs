@@ -36,9 +36,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Reflection;
-using System.Text;
 
 namespace Google.ProtocolBuffers
 {
@@ -102,16 +99,18 @@ namespace Google.ProtocolBuffers
         {
             items = new SortedList<int, IEnumLite>();
 #if SILVERLIGHT2
-            // Silverlight doesn't support Enum.GetValues
-            // TODO(jonskeet): Validate that this reflection is permitted, e.g. in Windows Phone 7
+    // Silverlight doesn't support Enum.GetValues
+    // TODO(jonskeet): Validate that this reflection is permitted, e.g. in Windows Phone 7
             foreach (FieldInfo fi in typeof (TEnum).GetFields(BindingFlags.Static | BindingFlags.Public))
             {
                 TEnum evalue = (TEnum) fi.GetValue(null);
                 items.Add(Convert.ToInt32(evalue), new EnumValue(evalue));
             }
 #else
-      foreach (TEnum evalue in Enum.GetValues(typeof(TEnum)))
-        items.Add(Convert.ToInt32(evalue), new EnumValue(evalue));
+            foreach (TEnum evalue in Enum.GetValues(typeof (TEnum)))
+            {
+                items.Add(Convert.ToInt32(evalue), new EnumValue(evalue));
+            }
 #endif
         }
 
@@ -129,8 +128,10 @@ namespace Google.ProtocolBuffers
         public IEnumLite FindValueByName(string name)
         {
             IEnumLite val;
-            if(Enum.IsDefined(typeof(TEnum), name))
-                return items.TryGetValue((int)Enum.Parse(typeof(TEnum), name, false), out val) ? val : null;
+            if (Enum.IsDefined(typeof (TEnum), name))
+            {
+                return items.TryGetValue((int) Enum.Parse(typeof (TEnum), name, false), out val) ? val : null;
+            }
             return null;
         }
 

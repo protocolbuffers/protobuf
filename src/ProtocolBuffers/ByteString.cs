@@ -37,6 +37,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace Google.ProtocolBuffers
@@ -91,7 +92,7 @@ namespace Google.ProtocolBuffers
 
         public byte[] ToByteArray()
         {
-            return (byte[])bytes.Clone();
+            return (byte[]) bytes.Clone();
         }
 
         public string ToBase64()
@@ -104,7 +105,7 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public static ByteString FromBase64(string bytes)
         {
-            return new ByteString(System.Convert.FromBase64String(bytes));
+            return new ByteString(Convert.FromBase64String(bytes));
         }
 
         /// <summary>
@@ -267,7 +268,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes the entire byte array to the provided stream
         /// </summary>
-        public void WriteTo(System.IO.Stream outputStream)
+        public void WriteTo(Stream outputStream)
         {
             outputStream.Write(bytes, 0, bytes.Length);
         }

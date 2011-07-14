@@ -1,20 +1,30 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Text;
 
 namespace Google.ProtocolBuffers.Serialization
 {
     /// <summary>
     /// JSon Tokenizer used by JsonFormatReader
     /// </summary>
-    abstract class JsonCursor
+    internal abstract class JsonCursor
     {
-        public enum JsType { String, Number, Object, Array, True, False, Null }
+        public enum JsType
+        {
+            String,
+            Number,
+            Object,
+            Array,
+            True,
+            False,
+            Null
+        }
 
         #region Buffering implementations
-        class JsonStreamCursor : JsonCursor
+
+        private class JsonStreamCursor : JsonCursor
         {
             private readonly byte[] _buffer;
             private int _bufferPos;
@@ -25,6 +35,7 @@ namespace Google.ProtocolBuffers.Serialization
                 _input = input;
                 _next = _input.ReadByte();
             }
+
             public JsonStreamCursor(byte[] input)
             {
                 _input = null;
@@ -35,11 +46,17 @@ namespace Google.ProtocolBuffers.Serialization
             protected override int Peek()
             {
                 if (_input != null)
+                {
                     return _next;
+                }
                 else if (_bufferPos < _buffer.Length)
+                {
                     return _buffer[_bufferPos];
+                }
                 else
+                {
                     return -1;
+                }
             }
 
             protected override int Read()
@@ -51,13 +68,17 @@ namespace Google.ProtocolBuffers.Serialization
                     return result;
                 }
                 else if (_bufferPos < _buffer.Length)
+                {
                     return _buffer[_bufferPos++];
+                }
                 else
+                {
                     return -1;
+                }
             }
         }
 
-        class JsonTextCursor : JsonCursor
+        private class JsonTextCursor : JsonCursor
         {
             private readonly char[] _buffer;
             private int _bufferPos;
@@ -80,55 +101,95 @@ namespace Google.ProtocolBuffers.Serialization
             protected override int Peek()
             {
                 if (_input != null)
+                {
                     return _input.Peek();
+                }
                 else if (_bufferPos < _buffer.Length)
+                {
                     return _buffer[_bufferPos];
+                }
                 else
+                {
                     return -1;
+                }
             }
 
             protected override int Read()
             {
                 if (_input != null)
+                {
                     return _input.Read();
+                }
                 else if (_bufferPos < _buffer.Length)
+                {
                     return _buffer[_bufferPos++];
+                }
                 else
+                {
                     return -1;
+                }
             }
         }
+
         #endregion
 
         protected int _next;
         private int _lineNo, _linePos;
 
-        public static JsonCursor CreateInstance(byte[] input) { return new JsonStreamCursor(input); }
-        public static JsonCursor CreateInstance(Stream input) { return new JsonStreamCursor(input); }
-        public static JsonCursor CreateInstance(string input) { return new JsonTextCursor(input.ToCharArray()); }
-        public static JsonCursor CreateInstance(TextReader input) { return new JsonTextCursor(input); }
+        public static JsonCursor CreateInstance(byte[] input)
+        {
+            return new JsonStreamCursor(input);
+        }
+
+        public static JsonCursor CreateInstance(Stream input)
+        {
+            return new JsonStreamCursor(input);
+        }
+
+        public static JsonCursor CreateInstance(string input)
+        {
+            return new JsonTextCursor(input.ToCharArray());
+        }
+
+        public static JsonCursor CreateInstance(TextReader input)
+        {
+            return new JsonTextCursor(input);
+        }
 
         protected JsonCursor()
         {
             _lineNo = 1;
             _linePos = 0;
         }
-        
+
         /// <summary>Returns the next character without actually 'reading' it</summary>
         protected abstract int Peek();
+
         /// <summary>Reads the next character in the input</summary>
         protected abstract int Read();
 
-        public Char NextChar { get { SkipWhitespace(); return (char)_next; } }
+        public Char NextChar
+        {
+            get
+            {
+                SkipWhitespace();
+                return (char) _next;
+            }
+        }
 
         #region Assert(...)
-        [System.Diagnostics.DebuggerNonUserCode]
+
+        [DebuggerNonUserCode]
         private string CharDisplay(int ch)
         {
-            return ch == -1 ? "EOF" :
-                (ch > 32 && ch < 127) ? String.Format("'{0}'", (char)ch) :
-                String.Format("'\\u{0:x4}'", ch);
+            return ch == -1
+                       ? "EOF"
+                       : (ch > 32 && ch < 127)
+                             ? String.Format("'{0}'", (char) ch)
+                             : String.Format("'\\u{0:x4}'", ch);
         }
-        [System.Diagnostics.DebuggerNonUserCode]
+
+        [DebuggerNonUserCode]
         private void Assert(bool cond, char expected)
         {
             if (!cond)
@@ -136,13 +197,14 @@ namespace Google.ProtocolBuffers.Serialization
                 throw new FormatException(
                     String.Format(CultureInfo.InvariantCulture,
                                   "({0}:{1}) error: Unexpected token {2}, expected: {3}.",
-                                  _lineNo, _linePos, 
+                                  _lineNo, _linePos,
                                   CharDisplay(_next),
                                   CharDisplay(expected)
                         ));
             }
         }
-        [System.Diagnostics.DebuggerNonUserCode]
+
+        [DebuggerNonUserCode]
         public void Assert(bool cond, string message)
         {
             if (!cond)
@@ -152,18 +214,22 @@ namespace Google.ProtocolBuffers.Serialization
                                   "({0},{1}) error: {2}", _lineNo, _linePos, message));
             }
         }
-        [System.Diagnostics.DebuggerNonUserCode]
+
+        [DebuggerNonUserCode]
         public void Assert(bool cond, string format, params object[] args)
         {
             if (!cond)
             {
                 if (args != null && args.Length > 0)
+                {
                     format = String.Format(format, args);
+                }
                 throw new FormatException(
                     String.Format(CultureInfo.InvariantCulture,
                                   "({0},{1}) error: {2}", _lineNo, _linePos, format));
             }
         }
+
         #endregion
 
         private char ReadChar()
@@ -180,10 +246,14 @@ namespace Google.ProtocolBuffers.Serialization
                 _linePos++;
             }
             _next = Peek();
-            return (char)ch;
+            return (char) ch;
         }
 
-        public void Consume(char ch) { Assert(TryConsume(ch), ch); }
+        public void Consume(char ch)
+        {
+            Assert(TryConsume(ch), ch);
+        }
+
         public bool TryConsume(char ch)
         {
             SkipWhitespace();
@@ -200,7 +270,9 @@ namespace Google.ProtocolBuffers.Serialization
             SkipWhitespace();
 
             foreach (char ch in sequence)
+            {
                 Assert(ch == ReadChar(), "Expected token '{0}'.", sequence);
+            }
         }
 
         public void SkipWhitespace()
@@ -208,8 +280,10 @@ namespace Google.ProtocolBuffers.Serialization
             int chnext = _next;
             while (chnext != -1)
             {
-                if (!Char.IsWhiteSpace((char)chnext))
+                if (!Char.IsWhiteSpace((char) chnext))
+                {
                     break;
+                }
                 ReadChar();
                 chnext = _next;
             }
@@ -224,26 +298,39 @@ namespace Google.ProtocolBuffers.Serialization
             {
                 if (_next == '\\')
                 {
-                    Consume('\\');//skip the escape
+                    Consume('\\'); //skip the escape
                     char ch = ReadChar();
                     switch (ch)
                     {
-                        case 'b': sb.Add('\b'); break;
-                        case 'f': sb.Add('\f'); break;
-                        case 'n': sb.Add('\n'); break;
-                        case 'r': sb.Add('\r'); break;
-                        case 't': sb.Add('\t'); break;
+                        case 'b':
+                            sb.Add('\b');
+                            break;
+                        case 'f':
+                            sb.Add('\f');
+                            break;
+                        case 'n':
+                            sb.Add('\n');
+                            break;
+                        case 'r':
+                            sb.Add('\r');
+                            break;
+                        case 't':
+                            sb.Add('\t');
+                            break;
                         case 'u':
                             {
-                                string hex = new string(new char[] { ReadChar(), ReadChar(), ReadChar(), ReadChar() });
+                                string hex = new string(new char[] {ReadChar(), ReadChar(), ReadChar(), ReadChar()});
                                 int result;
-                                Assert(int.TryParse(hex, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out result),
-                                       "Expected a 4-character hex specifier.");
-                                sb.Add((char)result);
+                                Assert(
+                                    int.TryParse(hex, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture,
+                                                 out result),
+                                    "Expected a 4-character hex specifier.");
+                                sb.Add((char) result);
                                 break;
                             }
                         default:
-                            sb.Add(ch); break;
+                            sb.Add(ch);
+                            break;
                     }
                 }
                 else
@@ -261,18 +348,26 @@ namespace Google.ProtocolBuffers.Serialization
             SkipWhitespace();
             List<Char> sb = new List<char>(24);
             if (_next == '-')
+            {
                 sb.Add(ReadChar());
+            }
             Assert(_next >= '0' && _next <= '9', "Expected a numeric type.");
             while ((_next >= '0' && _next <= '9') || _next == '.')
+            {
                 sb.Add(ReadChar());
+            }
             if (_next == 'e' || _next == 'E')
             {
                 sb.Add(ReadChar());
                 if (_next == '-' || _next == '+')
+                {
                     sb.Add(ReadChar());
+                }
                 Assert(_next >= '0' && _next <= '9', "Expected a numeric type.");
                 while (_next >= '0' && _next <= '9')
+                {
                     sb.Add(ReadChar());
+                }
             }
             return new String(sb.ToArray());
         }
@@ -282,10 +377,21 @@ namespace Google.ProtocolBuffers.Serialization
             SkipWhitespace();
             switch (_next)
             {
-                case 'n': Consume("null"); value = null; return JsType.Null;
-                case 't': Consume("true"); value = true; return JsType.True;
-                case 'f': Consume("false"); value = false; return JsType.False;
-                case '"': value = ReadString(); return JsType.String;
+                case 'n':
+                    Consume("null");
+                    value = null;
+                    return JsType.Null;
+                case 't':
+                    Consume("true");
+                    value = true;
+                    return JsType.True;
+                case 'f':
+                    Consume("false");
+                    value = false;
+                    return JsType.False;
+                case '"':
+                    value = ReadString();
+                    return JsType.String;
                 case '{':
                     {
                         Consume('{');
@@ -296,7 +402,9 @@ namespace Google.ProtocolBuffers.Serialization
                             object tmp;
                             ReadVariant(out tmp);
                             if (!TryConsume(','))
+                            {
                                 break;
+                            }
                         }
                         Consume('}');
                         value = null;
@@ -312,7 +420,9 @@ namespace Google.ProtocolBuffers.Serialization
                             ReadVariant(out tmp);
                             values.Add(tmp);
                             if (!TryConsume(','))
+                            {
                                 break;
+                            }
                         }
                         Consume(']');
                         value = values.ToArray();

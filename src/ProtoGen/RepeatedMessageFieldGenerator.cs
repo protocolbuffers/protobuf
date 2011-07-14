@@ -34,7 +34,6 @@
 
 #endregion
 
-using System;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.ProtoGen
@@ -122,14 +121,17 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         public void GenerateParsingCode(TextGenerator writer)
         {
-            writer.WriteLine("input.Read{0}Array(tag, field_name, result.{1}_, {2}.DefaultInstance, extensionRegistry);", MessageOrGroup, Name, TypeName);
+            writer.WriteLine(
+                "input.Read{0}Array(tag, field_name, result.{1}_, {2}.DefaultInstance, extensionRegistry);",
+                MessageOrGroup, Name, TypeName);
         }
 
         public void GenerateSerializationCode(TextGenerator writer)
         {
             writer.WriteLine("if ({0}_.Count > 0) {{", Name);
             writer.Indent();
-            writer.WriteLine("output.Write{0}Array({1}, field_names[{3}], {2}_);", MessageOrGroup, Number, Name, FieldOrdinal, Descriptor.FieldType);
+            writer.WriteLine("output.Write{0}Array({1}, field_names[{3}], {2}_);", MessageOrGroup, Number, Name,
+                             FieldOrdinal, Descriptor.FieldType);
             writer.Outdent();
             writer.WriteLine("}");
         }

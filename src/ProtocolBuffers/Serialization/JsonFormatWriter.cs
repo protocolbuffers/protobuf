@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -14,11 +15,12 @@ namespace Google.ProtocolBuffers.Serialization
     public abstract class JsonFormatWriter : AbstractTextWriter
     {
         #region buffering implementations
+
         private class JsonTextWriter : JsonFormatWriter
         {
             private readonly char[] _buffer;
             private TextWriter _output;
-            int _bufferPos;
+            private int _bufferPos;
 
             public JsonTextWriter(TextWriter output)
             {
@@ -36,7 +38,9 @@ namespace Google.ProtocolBuffers.Serialization
                 Flush();
 
                 if (_output != null)
+                {
                     return _output.ToString();
+                }
 
                 return new String(_buffer, 0, _bufferPos);
             }
@@ -46,7 +50,9 @@ namespace Google.ProtocolBuffers.Serialization
                 if (_bufferPos + len >= _buffer.Length)
                 {
                     if (_output == null)
-                        _output = new StringWriter(new System.Text.StringBuilder(_buffer.Length * 2 + len));
+                    {
+                        _output = new StringWriter(new StringBuilder(_buffer.Length*2 + len));
+                    }
                     Flush();
                 }
 
@@ -56,7 +62,9 @@ namespace Google.ProtocolBuffers.Serialization
                     {
                         int stop = offset + len;
                         for (int i = offset; i < stop; i++)
+                        {
                             _buffer[_bufferPos++] = chars[i];
+                        }
                     }
                     else
                     {
@@ -65,13 +73,17 @@ namespace Google.ProtocolBuffers.Serialization
                     }
                 }
                 else
+                {
                     _output.Write(chars, offset, len);
+                }
             }
 
             protected override void WriteToOutput(char ch)
             {
                 if (_bufferPos >= _buffer.Length)
+                {
                     Flush();
+                }
                 _buffer[_bufferPos++] = ch;
             }
 
@@ -85,16 +97,17 @@ namespace Google.ProtocolBuffers.Serialization
                 base.Flush();
             }
         }
+
         private class JsonStreamWriter : JsonFormatWriter
         {
 #if SILVERLIGHT2 || COMPACT_FRAMEWORK_35
             static readonly Encoding Encoding = Encoding.UTF8;
 #else
-            static readonly Encoding Encoding = Encoding.ASCII;
+            private static readonly Encoding Encoding = Encoding.ASCII;
 #endif
             private readonly byte[] _buffer;
             private Stream _output;
-            int _bufferPos;
+            private int _bufferPos;
 
             public JsonStreamWriter(Stream output)
             {
@@ -107,7 +120,9 @@ namespace Google.ProtocolBuffers.Serialization
             protected override void WriteToOutput(char[] chars, int offset, int len)
             {
                 if (_bufferPos + len >= _buffer.Length)
+                {
                     Flush();
+                }
 
                 if (len < _buffer.Length)
                 {
@@ -115,7 +130,9 @@ namespace Google.ProtocolBuffers.Serialization
                     {
                         int stop = offset + len;
                         for (int i = offset; i < stop; i++)
-                            _buffer[_bufferPos++] = (byte)chars[i];
+                        {
+                            _buffer[_bufferPos++] = (byte) chars[i];
+                        }
                     }
                     else
                     {
@@ -132,8 +149,10 @@ namespace Google.ProtocolBuffers.Serialization
             protected override void WriteToOutput(char ch)
             {
                 if (_bufferPos >= _buffer.Length)
+                {
                     Flush();
-                _buffer[_bufferPos++] = (byte)ch;
+                }
+                _buffer[_bufferPos++] = (byte) ch;
             }
 
             public override void Flush()
@@ -146,10 +165,12 @@ namespace Google.ProtocolBuffers.Serialization
                 base.Flush();
             }
         }
+
         #endregion
 
         private readonly List<int> _counter;
         private bool _isArray;
+
         /// <summary>
         /// Constructs a JsonFormatWriter, use the ToString() member to extract the final Json on completion.
         /// </summary>
@@ -161,26 +182,42 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// Constructs a JsonFormatWriter, use ToString() to extract the final output
         /// </summary>
-        public static JsonFormatWriter CreateInstance() { return new JsonTextWriter(null); }
-            
+        public static JsonFormatWriter CreateInstance()
+        {
+            return new JsonTextWriter(null);
+        }
+
         /// <summary>
         /// Constructs a JsonFormatWriter to output to the given text writer
         /// </summary>
-        public static JsonFormatWriter CreateInstance(TextWriter output) { return new JsonTextWriter(output); }
+        public static JsonFormatWriter CreateInstance(TextWriter output)
+        {
+            return new JsonTextWriter(output);
+        }
 
         /// <summary>
         /// Constructs a JsonFormatWriter to output to the given stream
         /// </summary>
-        public static JsonFormatWriter CreateInstance(Stream output) { return new JsonStreamWriter(output); }
+        public static JsonFormatWriter CreateInstance(Stream output)
+        {
+            return new JsonStreamWriter(output);
+        }
 
         /// <summary> Write to the output stream </summary>
         protected void WriteToOutput(string format, params object[] args)
-        { WriteToOutput(String.Format(format, args)); }
+        {
+            WriteToOutput(String.Format(format, args));
+        }
+
         /// <summary> Write to the output stream </summary>
         protected void WriteToOutput(string text)
-        { WriteToOutput(text.ToCharArray(), 0, text.Length); }
+        {
+            WriteToOutput(text.ToCharArray(), 0, text.Length);
+        }
+
         /// <summary> Write to the output stream </summary>
         protected abstract void WriteToOutput(char ch);
+
         /// <summary> Write to the output stream </summary>
         protected abstract void WriteToOutput(char[] chars, int offset, int len);
 
@@ -195,19 +232,25 @@ namespace Google.ProtocolBuffers.Serialization
 
         /// <summary> Gets or sets the characters to use for the new-line, default = empty </summary>
         public string NewLine { get; set; }
+
         /// <summary> Gets or sets the text to use for indenting, default = empty </summary>
         public string Indent { get; set; }
+
         /// <summary> Gets or sets the whitespace to use to separate the text, default = empty </summary>
         public string Whitespace { get; set; }
 
         private void Seperator()
         {
             if (_counter.Count == 0)
+            {
                 throw new InvalidOperationException("Missmatched open/close in Json writer.");
+            }
 
             int index = _counter.Count - 1;
             if (_counter[index] > 0)
+            {
                 WriteToOutput(',');
+            }
 
             WriteLine(String.Empty);
             _counter[index] = _counter[index] + 1;
@@ -219,10 +262,14 @@ namespace Google.ProtocolBuffers.Serialization
             {
                 WriteToOutput(NewLine);
                 for (int i = 1; i < _counter.Count; i++)
+                {
                     WriteToOutput(Indent);
+                }
             }
-            else if(!String.IsNullOrEmpty(Whitespace))
+            else if (!String.IsNullOrEmpty(Whitespace))
+            {
                 WriteToOutput(Whitespace);
+            }
 
             WriteToOutput(content);
         }
@@ -237,7 +284,9 @@ namespace Google.ProtocolBuffers.Serialization
                 WriteToOutput('"');
                 WriteToOutput(':');
                 if (!String.IsNullOrEmpty(Whitespace))
+                {
                     WriteToOutput(Whitespace);
+                }
             }
         }
 
@@ -250,23 +299,44 @@ namespace Google.ProtocolBuffers.Serialization
             while (pos < len)
             {
                 int next = pos;
-                while (next < len && text[next] >= 32 && text[next] < 127 && text[next] != '\\' && text[next] != '/' && text[next] != '"')
+                while (next < len && text[next] >= 32 && text[next] < 127 && text[next] != '\\' && text[next] != '/' &&
+                       text[next] != '"')
+                {
                     next++;
+                }
                 WriteToOutput(text, pos, next - pos);
                 if (next < len)
                 {
                     switch (text[next])
                     {
-                        case '"': WriteToOutput(@"\"""); break;
-                        case '\\': WriteToOutput(@"\\"); break;
-                        //odd at best to escape '/', most Json implementations don't, but it is defined in the rfc-4627
-                        case '/': WriteToOutput(@"\/"); break; 
-                        case '\b': WriteToOutput(@"\b"); break;
-                        case '\f': WriteToOutput(@"\f"); break;
-                        case '\n': WriteToOutput(@"\n"); break;
-                        case '\r': WriteToOutput(@"\r"); break;
-                        case '\t': WriteToOutput(@"\t"); break;
-                        default: WriteToOutput(@"\u{0:x4}", (int)text[next]); break;
+                        case '"':
+                            WriteToOutput(@"\""");
+                            break;
+                        case '\\':
+                            WriteToOutput(@"\\");
+                            break;
+                            //odd at best to escape '/', most Json implementations don't, but it is defined in the rfc-4627
+                        case '/':
+                            WriteToOutput(@"\/");
+                            break;
+                        case '\b':
+                            WriteToOutput(@"\b");
+                            break;
+                        case '\f':
+                            WriteToOutput(@"\f");
+                            break;
+                        case '\n':
+                            WriteToOutput(@"\n");
+                            break;
+                        case '\r':
+                            WriteToOutput(@"\r");
+                            break;
+                        case '\t':
+                            WriteToOutput(@"\t");
+                            break;
+                        default:
+                            WriteToOutput(@"\u{0:x4}", (int) text[next]);
+                            break;
                     }
                     next++;
                 }
@@ -280,15 +350,22 @@ namespace Google.ProtocolBuffers.Serialization
         protected override void WriteAsText(string field, string textValue, object typedValue)
         {
             WriteName(field);
-            if(typedValue is bool || typedValue is int || typedValue is uint || typedValue is long || typedValue is ulong || typedValue is double || typedValue is float)
+            if (typedValue is bool || typedValue is int || typedValue is uint || typedValue is long ||
+                typedValue is ulong || typedValue is double || typedValue is float)
+            {
                 WriteToOutput(textValue);
+            }
             else
             {
                 WriteToOutput('"');
                 if (typedValue is string)
+                {
                     EncodeText(textValue);
+                }
                 else
+                {
                     WriteToOutput(textValue);
+                }
                 WriteToOutput('"');
             }
         }
@@ -299,7 +376,9 @@ namespace Google.ProtocolBuffers.Serialization
         protected override void Write(string field, double value)
         {
             if (double.IsNaN(value) || double.IsNegativeInfinity(value) || double.IsPositiveInfinity(value))
+            {
                 throw new InvalidOperationException("This format does not support NaN, Infinity, or -Infinity");
+            }
             base.Write(field, value);
         }
 
@@ -309,7 +388,9 @@ namespace Google.ProtocolBuffers.Serialization
         protected override void Write(string field, float value)
         {
             if (float.IsNaN(value) || float.IsNegativeInfinity(value) || float.IsPositiveInfinity(value))
+            {
                 throw new InvalidOperationException("This format does not support NaN, Infinity, or -Infinity");
+            }
             base.Write(field, value);
         }
 
@@ -322,11 +403,23 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// Writes an array of field values
         /// </summary>
-        protected override void WriteArray(FieldType type, string field, System.Collections.IEnumerable items)
+        protected override void WriteArray(FieldType type, string field, IEnumerable items)
         {
-            System.Collections.IEnumerator enumerator = items.GetEnumerator();
-            try { if (!enumerator.MoveNext()) return; }
-            finally { if (enumerator is IDisposable) ((IDisposable)enumerator).Dispose(); }
+            IEnumerator enumerator = items.GetEnumerator();
+            try
+            {
+                if (!enumerator.MoveNext())
+                {
+                    return;
+                }
+            }
+            finally
+            {
+                if (enumerator is IDisposable)
+                {
+                    ((IDisposable) enumerator).Dispose();
+                }
+            }
 
             WriteName(field);
             WriteToOutput("[");
@@ -352,7 +445,10 @@ namespace Google.ProtocolBuffers.Serialization
         /// </summary>
         public override void WriteMessage(IMessageLite message)
         {
-            if (_isArray) Seperator();
+            if (_isArray)
+            {
+                Seperator();
+            }
             WriteToOutput("{");
             _counter.Add(0);
             message.WriteTo(this);
@@ -371,9 +467,10 @@ namespace Google.ProtocolBuffers.Serialization
         ///         writer.WriteMessage(m);
         /// </code>
         /// </example>
-        public sealed class JsonArray : IDisposable 
+        public sealed class JsonArray : IDisposable
         {
-            JsonFormatWriter _writer;
+            private JsonFormatWriter _writer;
+
             internal JsonArray(JsonFormatWriter writer)
             {
                 _writer = writer;
@@ -384,7 +481,7 @@ namespace Google.ProtocolBuffers.Serialization
             /// <summary>
             /// Causes the end of the array character to be written.
             /// </summary>
-            void EndArray() 
+            private void EndArray()
             {
                 if (_writer != null)
                 {
@@ -392,9 +489,13 @@ namespace Google.ProtocolBuffers.Serialization
                     _writer.WriteLine("]");
                     _writer.Flush();
                 }
-                _writer = null; 
+                _writer = null;
             }
-            void IDisposable.Dispose() { EndArray(); }
+
+            void IDisposable.Dispose()
+            {
+                EndArray();
+            }
         }
 
         /// <summary>
@@ -409,7 +510,10 @@ namespace Google.ProtocolBuffers.Serialization
         /// </example>
         public JsonArray StartArray()
         {
-            if (_isArray) Seperator();
+            if (_isArray)
+            {
+                Seperator();
+            }
             _isArray = true;
             return new JsonArray(this);
         }

@@ -35,11 +35,14 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Xml;
 using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.FieldAccess;
-using System.Collections;
+using Google.ProtocolBuffers.Serialization;
 
 namespace Google.ProtocolBuffers
 {
@@ -178,30 +181,37 @@ namespace Google.ProtocolBuffers
 
         public static TMessage ParseFromJson(string jsonText)
         {
-            return Serialization.JsonFormatReader.CreateInstance(jsonText)
+            return JsonFormatReader.CreateInstance(jsonText)
                 .Merge(new TBuilder())
                 .Build();
         }
 
-        public static TMessage ParseFromJson(System.IO.TextReader reader)
-        { return ParseFromJson(reader, ExtensionRegistry.Empty); }
-
-        public static TMessage ParseFromJson(System.IO.TextReader reader, ExtensionRegistry extensionRegistry)
+        public static TMessage ParseFromJson(TextReader reader)
         {
-            return Serialization.JsonFormatReader.CreateInstance(reader)
+            return ParseFromJson(reader, ExtensionRegistry.Empty);
+        }
+
+        public static TMessage ParseFromJson(TextReader reader, ExtensionRegistry extensionRegistry)
+        {
+            return JsonFormatReader.CreateInstance(reader)
                 .Merge(new TBuilder(), extensionRegistry)
                 .Build();
         }
 
-        public static TMessage ParseFromXml(System.Xml.XmlReader reader)
-        { return ParseFromXml(Serialization.XmlFormatReader.DefaultRootElementName, reader, ExtensionRegistry.Empty); }
-        
-        public static TMessage ParseFromXml(string rootElementName, System.Xml.XmlReader reader)
-        { return ParseFromXml(rootElementName, reader, ExtensionRegistry.Empty); }
-
-        public static TMessage ParseFromXml(string rootElementName, System.Xml.XmlReader reader, ExtensionRegistry extensionRegistry)
+        public static TMessage ParseFromXml(XmlReader reader)
         {
-            return Serialization.XmlFormatReader.CreateInstance(reader)
+            return ParseFromXml(XmlFormatReader.DefaultRootElementName, reader, ExtensionRegistry.Empty);
+        }
+
+        public static TMessage ParseFromXml(string rootElementName, XmlReader reader)
+        {
+            return ParseFromXml(rootElementName, reader, ExtensionRegistry.Empty);
+        }
+
+        public static TMessage ParseFromXml(string rootElementName, XmlReader reader,
+                                            ExtensionRegistry extensionRegistry)
+        {
+            return XmlFormatReader.CreateInstance(reader)
                 .Merge(rootElementName, new TBuilder(), extensionRegistry)
                 .Build();
         }

@@ -264,7 +264,10 @@ namespace Google.ProtocolBuffers
             get
             {
                 int size = memoizedSize;
-                if (size != -1) return size;
+                if (size != -1)
+                {
+                    return size;
+                }
 
                 size = fields.SerializedSize;
                 if (type.Options.MessageSetWireFormat)

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
-using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.Serialization
 {
@@ -17,31 +16,55 @@ namespace Google.ProtocolBuffers.Serialization
         private readonly XmlReader _input;
         private string _rootElementName;
 
-        static XmlReaderSettings DefaultSettings
+        private static XmlReaderSettings DefaultSettings
         {
-            get { return new XmlReaderSettings() { CheckCharacters=false, IgnoreComments=true, IgnoreProcessingInstructions = true }; }
+            get
+            {
+                return new XmlReaderSettings()
+                           {CheckCharacters = false, IgnoreComments = true, IgnoreProcessingInstructions = true};
+            }
         }
 
         /// <summary>
         /// Constructs the XmlFormatReader using the stream provided as the xml
         /// </summary>
-        public static XmlFormatReader CreateInstance(byte[] input) { return new XmlFormatReader(XmlReader.Create(new MemoryStream(input, false), DefaultSettings)); }
+        public static XmlFormatReader CreateInstance(byte[] input)
+        {
+            return new XmlFormatReader(XmlReader.Create(new MemoryStream(input, false), DefaultSettings));
+        }
+
         /// <summary>
         /// Constructs the XmlFormatReader using the stream provided as the xml
         /// </summary>
-        public static XmlFormatReader CreateInstance(Stream input) { return new XmlFormatReader(XmlReader.Create(input, DefaultSettings)); }
+        public static XmlFormatReader CreateInstance(Stream input)
+        {
+            return new XmlFormatReader(XmlReader.Create(input, DefaultSettings));
+        }
+
         /// <summary>
         /// Constructs the XmlFormatReader using the string provided as the xml to be read
         /// </summary>
-        public static XmlFormatReader CreateInstance(String input) { return new XmlFormatReader(XmlReader.Create(new StringReader(input), DefaultSettings)); }
+        public static XmlFormatReader CreateInstance(String input)
+        {
+            return new XmlFormatReader(XmlReader.Create(new StringReader(input), DefaultSettings));
+        }
+
         /// <summary>
         /// Constructs the XmlFormatReader using the xml in the TextReader
         /// </summary>
-        public static XmlFormatReader CreateInstance(TextReader input) { return new XmlFormatReader(XmlReader.Create(input, DefaultSettings)); }
+        public static XmlFormatReader CreateInstance(TextReader input)
+        {
+            return new XmlFormatReader(XmlReader.Create(input, DefaultSettings));
+        }
+
         /// <summary>
         /// Constructs the XmlFormatReader with the XmlReader
         /// </summary>
-        public static XmlFormatReader CreateInstance(XmlReader input) { return new XmlFormatReader(input); }
+        public static XmlFormatReader CreateInstance(XmlReader input)
+        {
+            return new XmlFormatReader(input);
+        }
+
         /// <summary>
         /// Constructs the XmlFormatReader with the XmlReader and options
         /// </summary>
@@ -51,23 +74,32 @@ namespace Google.ProtocolBuffers.Serialization
             _rootElementName = DefaultRootElementName;
             Options = XmlReaderOptions.None;
         }
-        
+
         /// <summary>
         /// Gets or sets the options to use when reading the xml
         /// </summary>
         public XmlReaderOptions Options { get; set; }
+
         /// <summary>
         /// Sets the options to use while generating the XML
         /// </summary>
-        public XmlFormatReader SetOptions(XmlReaderOptions options) { Options = options; return this; }
+        public XmlFormatReader SetOptions(XmlReaderOptions options)
+        {
+            Options = options;
+            return this;
+        }
 
         /// <summary>
         /// Gets or sets the default element name to use when using the Merge&lt;TBuilder>()
         /// </summary>
-        public string RootElementName 
+        public string RootElementName
         {
-            get { return _rootElementName; } 
-            set { ThrowHelper.ThrowIfNull(value, "RootElementName"); _rootElementName = value; } 
+            get { return _rootElementName; }
+            set
+            {
+                ThrowHelper.ThrowIfNull(value, "RootElementName");
+                _rootElementName = value;
+            }
         }
 
         private XmlFormatReader CloneWith(XmlReader rdr)
@@ -76,34 +108,45 @@ namespace Google.ProtocolBuffers.Serialization
             copy._rootElementName = _rootElementName;
             copy.Depth = Depth;
             return copy;
-
         }
+
         private void NextElement()
         {
             while (!_input.IsStartElement() && _input.Read())
+            {
                 continue;
+            }
         }
+
         private static void Assert(bool cond)
         {
-            if (!cond) throw new FormatException();
+            if (!cond)
+            {
+                throw new FormatException();
+            }
         }
 
         /// <summary>
         /// Merge the provided builder as an element named <see cref="RootElementName"/> in the current context
         /// </summary>
         public override TBuilder Merge<TBuilder>(TBuilder builder, ExtensionRegistry registry)
-        { return Merge(_rootElementName, builder, registry); }
+        {
+            return Merge(_rootElementName, builder, registry);
+        }
 
         /// <summary>
         /// Merge the provided builder as an element of the current context
         /// </summary>
         public TBuilder Merge<TBuilder>(string element, TBuilder builder) where TBuilder : IBuilderLite
-        { return Merge(element, builder, ExtensionRegistry.Empty); }
+        {
+            return Merge(element, builder, ExtensionRegistry.Empty);
+        }
 
         /// <summary>
         /// Merge the provided builder as an element of the current context
         /// </summary>
-        public TBuilder Merge<TBuilder>(string element, TBuilder builder, ExtensionRegistry registry) where TBuilder : IBuilderLite
+        public TBuilder Merge<TBuilder>(string element, TBuilder builder, ExtensionRegistry registry)
+            where TBuilder : IBuilderLite
         {
             string field;
             Assert(PeekNext(out field) && field == element);
@@ -121,7 +164,7 @@ namespace Google.ProtocolBuffers.Serialization
         protected override bool PeekNext(out string field)
         {
             NextElement();
-            if(_input.IsStartElement())
+            if (_input.IsStartElement())
             {
                 field = _input.LocalName;
                 return true;
@@ -141,7 +184,9 @@ namespace Google.ProtocolBuffers.Serialization
                 {
                     int depth = _input.Depth;
                     while (_input.Depth >= depth && _input.NodeType != XmlNodeType.EndElement)
+                    {
                         Assert(_input.Read());
+                    }
                 }
                 _input.Read();
             }
@@ -171,7 +216,7 @@ namespace Google.ProtocolBuffers.Serialization
         {
             Assert(_input.NodeType == XmlNodeType.Element);
             value = _input.ReadElementContentAsString();
-            
+
             return true;
         }
 
@@ -187,7 +232,9 @@ namespace Google.ProtocolBuffers.Serialization
                 int depth = _input.Depth;
                 XmlReader child = _input.ReadSubtree();
                 while (!child.IsStartElement() && child.Read())
+                {
                     continue;
+                }
                 child.Read();
                 builder.WeakMergeFrom(CloneWith(child), registry);
                 Assert(depth == _input.Depth && _input.NodeType == XmlNodeType.EndElement);
@@ -211,7 +258,9 @@ namespace Google.ProtocolBuffers.Serialization
             if (!isNested)
             {
                 foreach (string item in NonNestedArrayItems(field))
+                {
                     yield return item;
+                }
                 yield break;
             }
             if (!_input.IsEmptyElement)
@@ -220,11 +269,15 @@ namespace Google.ProtocolBuffers.Serialization
                 XmlReader child = _input.ReadSubtree();
 
                 while (!child.IsStartElement() && child.Read())
+                {
                     continue;
+                }
                 child.Read();
 
                 foreach (string item in CloneWith(child).NonNestedArrayItems("item"))
+                {
                     yield return item;
+                }
                 Assert(depth == _input.Depth && _input.NodeType == XmlNodeType.EndElement);
             }
             _input.Read();
