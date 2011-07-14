@@ -44,21 +44,43 @@ using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers
 {
+    /// <summary>
+    /// Provides an interface that is used write a message.  Most often proto buffers are written
+    /// in their binary form by creating a instance via the CodedOutputStream.CreateInstance
+    /// static factory.
+    /// </summary>
     public interface ICodedOutputStream
     {
+        /// <summary>
+        /// Indicates that all temporary buffers be written to the final output.
+        /// </summary>
         void Flush();
-
+        /// <summary>
+        /// Writes an unknown message as a group
+        /// </summary>
         [Obsolete]
         void WriteUnknownGroup(int fieldNumber, IMessageLite value);
-
+        /// <summary>
+        /// Writes an unknown field value of bytes
+        /// </summary>
         void WriteUnknownBytes(int fieldNumber, ByteString value);
-
+        /// <summary>
+        /// Writes an unknown field of a primitive type
+        /// </summary>
         [CLSCompliant(false)]
         void WriteUnknownField(int fieldNumber, WireFormat.WireType wireType, ulong value);
-
+        /// <summary>
+        /// Writes an extension as a message-set group
+        /// </summary>
         void WriteMessageSetExtension(int fieldNumber, string fieldName, IMessageLite value);
+        /// <summary>
+        /// Writes an unknown extension as a message-set group
+        /// </summary>
         void WriteMessageSetExtension(int fieldNumber, string fieldName, ByteString value);
 
+        /// <summary>
+        /// Writes a field value, including tag, to the stream.
+        /// </summary>
         void WriteField(FieldType fieldType, int fieldNumber, string fieldName, object value);
 
         /// <summary>
@@ -155,76 +177,178 @@ namespace Google.ProtocolBuffers
         /// </summary>
         void WriteSInt64(int fieldNumber, string fieldName, long value);
 
+        /// <summary>
+        /// Writes a repeated field value, including tag(s), to the stream.
+        /// </summary>
         void WriteArray(FieldType fieldType, int fieldNumber, string fieldName, IEnumerable list);
 
+        /// <summary>
+        /// Writes a repeated group value, including tag(s), to the stream.
+        /// </summary>
         void WriteGroupArray<T>(int fieldNumber, string fieldName, IEnumerable<T> list)
             where T : IMessageLite;
 
+        /// <summary>
+        /// Writes a repeated message value, including tag(s), to the stream.
+        /// </summary>
         void WriteMessageArray<T>(int fieldNumber, string fieldName, IEnumerable<T> list)
             where T : IMessageLite;
 
+        /// <summary>
+        /// Writes a repeated string value, including tag(s), to the stream.
+        /// </summary>
         void WriteStringArray(int fieldNumber, string fieldName, IEnumerable<string> list);
 
+        /// <summary>
+        /// Writes a repeated ByteString value, including tag(s), to the stream.
+        /// </summary>
         void WriteBytesArray(int fieldNumber, string fieldName, IEnumerable<ByteString> list);
 
+        /// <summary>
+        /// Writes a repeated boolean value, including tag(s), to the stream.
+        /// </summary>
         void WriteBoolArray(int fieldNumber, string fieldName, IEnumerable<bool> list);
 
+        /// <summary>
+        /// Writes a repeated Int32 value, including tag(s), to the stream.
+        /// </summary>
         void WriteInt32Array(int fieldNumber, string fieldName, IEnumerable<int> list);
 
+        /// <summary>
+        /// Writes a repeated SInt32 value, including tag(s), to the stream.
+        /// </summary>
         void WriteSInt32Array(int fieldNumber, string fieldName, IEnumerable<int> list);
 
+        /// <summary>
+        /// Writes a repeated UInt32 value, including tag(s), to the stream.
+        /// </summary>
         void WriteUInt32Array(int fieldNumber, string fieldName, IEnumerable<uint> list);
 
+        /// <summary>
+        /// Writes a repeated Fixed32 value, including tag(s), to the stream.
+        /// </summary>
         void WriteFixed32Array(int fieldNumber, string fieldName, IEnumerable<uint> list);
 
+        /// <summary>
+        /// Writes a repeated SFixed32 value, including tag(s), to the stream.
+        /// </summary>
         void WriteSFixed32Array(int fieldNumber, string fieldName, IEnumerable<int> list);
 
+        /// <summary>
+        /// Writes a repeated Int64 value, including tag(s), to the stream.
+        /// </summary>
         void WriteInt64Array(int fieldNumber, string fieldName, IEnumerable<long> list);
 
+        /// <summary>
+        /// Writes a repeated SInt64 value, including tag(s), to the stream.
+        /// </summary>
         void WriteSInt64Array(int fieldNumber, string fieldName, IEnumerable<long> list);
 
+        /// <summary>
+        /// Writes a repeated UInt64 value, including tag(s), to the stream.
+        /// </summary>
         void WriteUInt64Array(int fieldNumber, string fieldName, IEnumerable<ulong> list);
 
+        /// <summary>
+        /// Writes a repeated Fixed64 value, including tag(s), to the stream.
+        /// </summary>
         void WriteFixed64Array(int fieldNumber, string fieldName, IEnumerable<ulong> list);
 
+        /// <summary>
+        /// Writes a repeated SFixed64 value, including tag(s), to the stream.
+        /// </summary>
         void WriteSFixed64Array(int fieldNumber, string fieldName, IEnumerable<long> list);
 
+        /// <summary>
+        /// Writes a repeated Double value, including tag(s), to the stream.
+        /// </summary>
         void WriteDoubleArray(int fieldNumber, string fieldName, IEnumerable<double> list);
 
+        /// <summary>
+        /// Writes a repeated Float value, including tag(s), to the stream.
+        /// </summary>
         void WriteFloatArray(int fieldNumber, string fieldName, IEnumerable<float> list);
 
+        /// <summary>
+        /// Writes a repeated enumeration value of type T, including tag(s), to the stream.
+        /// </summary>
         [CLSCompliant(false)]
         void WriteEnumArray<T>(int fieldNumber, string fieldName, IEnumerable<T> list)
             where T : struct, IComparable, IFormattable, IConvertible;
 
+        /// <summary>
+        /// Writes a packed repeated primitive, including tag and length, to the stream.
+        /// </summary>
         void WritePackedArray(FieldType fieldType, int fieldNumber, string fieldName, IEnumerable list);
 
+        /// <summary>
+        /// Writes a packed repeated boolean, including tag and length, to the stream.
+        /// </summary>
         void WritePackedBoolArray(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<bool> list);
 
+        /// <summary>
+        /// Writes a packed repeated Int32, including tag and length, to the stream.
+        /// </summary>
         void WritePackedInt32Array(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<int> list);
 
+        /// <summary>
+        /// Writes a packed repeated SInt32, including tag and length, to the stream.
+        /// </summary>
         void WritePackedSInt32Array(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<int> list);
 
+        /// <summary>
+        /// Writes a packed repeated UInt32, including tag and length, to the stream.
+        /// </summary>
         void WritePackedUInt32Array(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<uint> list);
 
+        /// <summary>
+        /// Writes a packed repeated Fixed32, including tag and length, to the stream.
+        /// </summary>
         void WritePackedFixed32Array(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<uint> list);
 
+        /// <summary>
+        /// Writes a packed repeated SFixed32, including tag and length, to the stream.
+        /// </summary>
         void WritePackedSFixed32Array(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<int> list);
 
+        /// <summary>
+        /// Writes a packed repeated Int64, including tag and length, to the stream.
+        /// </summary>
         void WritePackedInt64Array(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<long> list);
 
+        /// <summary>
+        /// Writes a packed repeated SInt64, including tag and length, to the stream.
+        /// </summary>
         void WritePackedSInt64Array(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<long> list);
 
+        /// <summary>
+        /// Writes a packed repeated UInt64, including tag and length, to the stream.
+        /// </summary>
         void WritePackedUInt64Array(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<ulong> list);
 
+        /// <summary>
+        /// Writes a packed repeated Fixed64, including tag and length, to the stream.
+        /// </summary>
         void WritePackedFixed64Array(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<ulong> list);
 
+        /// <summary>
+        /// Writes a packed repeated SFixed64, including tag and length, to the stream.
+        /// </summary>
         void WritePackedSFixed64Array(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<long> list);
 
+        /// <summary>
+        /// Writes a packed repeated Double, including tag and length, to the stream.
+        /// </summary>
         void WritePackedDoubleArray(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<double> list);
 
+        /// <summary>
+        /// Writes a packed repeated Float, including tag and length, to the stream.
+        /// </summary>
         void WritePackedFloatArray(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<float> list);
 
+        /// <summary>
+        /// Writes a packed repeated enumeration of type T, including tag and length, to the stream.
+        /// </summary>
         [CLSCompliant(false)]
         void WritePackedEnumArray<T>(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<T> list)
             where T : struct, IComparable, IFormattable, IConvertible;

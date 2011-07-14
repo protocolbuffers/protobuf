@@ -41,19 +41,9 @@ using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers
 {
-    /// <summary>
-    /// Encodes and writes protocol message fields.
-    /// </summary>
-    /// <remarks>
-    /// This class contains two kinds of methods:  methods that write specific
-    /// protocol message constructs and field types (e.g. WriteTag and
-    /// WriteInt32) and methods that write low-level values (e.g.
-    /// WriteRawVarint32 and WriteRawBytes).  If you are writing encoded protocol
-    /// messages, you should use the former methods, but if you are writing some
-    /// other format of your own design, use the latter. The names of the former
-    /// methods are taken from the protocol buffer type names, not .NET types.
-    /// (Hence WriteFloat instead of WriteSingle, and WriteBool instead of WriteBoolean.)
-    /// </remarks>
+    // This part of CodedOutputStream provides all the static entry points that are used
+    // by generated code and internally to compute the size of messages prior to being
+    // written to an instance of CodedOutputStream.
     public sealed partial class CodedOutputStream
     {
         private const int LittleEndian64Size = 8;
