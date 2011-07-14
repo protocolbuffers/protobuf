@@ -185,7 +185,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                         if (UseLiteRuntime && Descriptor.DefaultValue is ByteString)
                         {
                             string temp = (((ByteString) Descriptor.DefaultValue).ToBase64());
-                            return String.Format("ByteString.FromBase64(\"{0}\")", temp);
+                            return String.Format("pb::ByteString.FromBase64(\"{0}\")", temp);
                         }
                         return string.Format("(pb::ByteString) {0}.Descriptor.Fields[{1}].DefaultValue",
                                              GetClassName(Descriptor.ContainingType), Descriptor.Index);
@@ -202,10 +202,9 @@ namespace Google.ProtocolBuffers.ProtoGen
                         }
                         if (UseLiteRuntime && Descriptor.DefaultValue is String)
                         {
-                            string temp =
-                                Convert.ToBase64String(
+                            string temp = Convert.ToBase64String(
                                     Encoding.UTF8.GetBytes((String) Descriptor.DefaultValue));
-                            return String.Format("ByteString.FromBase64(\"{0}\").ToStringUtf8()", temp);
+                            return String.Format("pb::ByteString.FromBase64(\"{0}\").ToStringUtf8()", temp);
                         }
                         return string.Format("(string) {0}.Descriptor.Fields[{1}].DefaultValue",
                                              GetClassName(Descriptor.ContainingType), Descriptor.Index);
