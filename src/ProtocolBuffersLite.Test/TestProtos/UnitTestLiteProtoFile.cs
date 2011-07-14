@@ -904,7 +904,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         new pb::GeneratedExtensionLite<global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite, pb::ByteString>(
           "protobuf_unittest.default_bytes_extension_lite",
           global::Google.ProtocolBuffers.TestProtos.TestAllExtensionsLite.DefaultInstance,
-          ByteString.FromBase64("d29ybGQ="),
+          pb::ByteString.FromBase64("d29ybGQ="),
           null,
           null,
           global::Google.ProtocolBuffers.TestProtos.UnitTestLiteProtoFile.DefaultBytesExtensionLiteFieldNumber,
@@ -2633,7 +2633,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int DefaultBytesFieldNumber = 75;
     private bool hasDefaultBytes;
-    private pb::ByteString defaultBytes_ = ByteString.FromBase64("d29ybGQ=");
+    private pb::ByteString defaultBytes_ = pb::ByteString.FromBase64("d29ybGQ=");
     public bool HasDefaultBytes {
       get { return hasDefaultBytes; }
     }
@@ -5684,7 +5684,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder ClearDefaultBytes() {
         result.hasDefaultBytes = false;
-        result.defaultBytes_ = ByteString.FromBase64("d29ybGQ=");
+        result.defaultBytes_ = pb::ByteString.FromBase64("d29ybGQ=");
         return this;
       }
       
