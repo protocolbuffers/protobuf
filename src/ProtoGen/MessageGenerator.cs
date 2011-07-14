@@ -704,13 +704,6 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("switch (tag) {");
             writer.Indent();
             writer.WriteLine("case 0: {"); // 0 signals EOF / limit reached
-            //if (!UseLiteRuntime)
-            //{
-            //    writer.WriteLine("  if (unknownFields != null) {");
-            //    writer.WriteLine("    this.UnknownFields = unknownFields.Build();");
-            //    writer.WriteLine("  }");
-            //}
-            //writer.WriteLine("  return this;");
             writer.WriteLine("  throw pb::InvalidProtocolBufferException.InvalidTag();");
             writer.WriteLine("}");
             writer.WriteLine("default: {");
