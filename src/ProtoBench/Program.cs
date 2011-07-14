@@ -41,6 +41,7 @@ using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading;
+using System.Xml;
 using Google.ProtocolBuffers.Serialization;
 using Google.ProtocolBuffers.TestProtos;
 
@@ -70,7 +71,9 @@ namespace Google.ProtocolBuffers.ProtoBench
             OtherFormats = temp.Remove("/formats") || temp.Remove("-formats");
 
             if (true == (FastTest = (temp.Remove("/fast") || temp.Remove("-fast"))))
+            {
                 TargetTime = TimeSpan.FromSeconds(10);
+            }
 
             RunBenchmark = BenchmarkV1;
             if (temp.Remove("/v2") || temp.Remove("-v2"))
@@ -81,8 +84,10 @@ namespace Google.ProtocolBuffers.ProtoBench
             }
             if (temp.Remove("/all") || temp.Remove("-all"))
             {
-                if(FastTest)
+                if (FastTest)
+                {
                     TargetTime = TimeSpan.FromSeconds(5);
+                }
                 foreach (KeyValuePair<string, string> item in MakeTests())
                 {
                     temp.Add(item.Key);
@@ -95,7 +100,8 @@ namespace Google.ProtocolBuffers.ProtoBench
             {
                 Console.Error.WriteLine("Usage: ProtoBench [/fast] <descriptor type name> <input data>");
                 Console.Error.WriteLine("The descriptor type name is the fully-qualified message name,");
-                Console.Error.WriteLine("including assembly - e.g. Google.ProtocolBuffers.BenchmarkProtos.Message1,ProtoBench");
+                Console.Error.WriteLine(
+                    "including assembly - e.g. Google.ProtocolBuffers.BenchmarkProtos.Message1,ProtoBench");
                 Console.Error.WriteLine("(You can specify multiple pairs of descriptor type name and input data.)");
                 return 1;
             }
@@ -131,10 +137,11 @@ namespace Google.ProtocolBuffers.ProtoBench
                 inputData = inputData ?? File.ReadAllBytes(file);
                 MemoryStream inputStream = new MemoryStream(inputData);
                 ByteString inputString = ByteString.CopyFrom(inputData);
-                IMessage sampleMessage = defaultMessage.WeakCreateBuilderForType().WeakMergeFrom(inputString, registry).WeakBuild();
+                IMessage sampleMessage =
+                    defaultMessage.WeakCreateBuilderForType().WeakMergeFrom(inputString, registry).WeakBuild();
 
                 IDictionary<string, object> dictionary = null;
-                byte[] jsonBytes = null, xmlBytes = null;/*no pun intended, well... maybe for xml*/
+                byte[] jsonBytes = null, xmlBytes = null; /*no pun intended, well... maybe for xml*/
                 if (OtherFormats)
                 {
                     using (MemoryStream temp = new MemoryStream())
@@ -152,59 +159,84 @@ namespace Google.ProtocolBuffers.ProtoBench
                 }
 
                 //Serializers
-                if(!FastTest) RunBenchmark("Serialize to byte string", inputData.Length, () => sampleMessage.ToByteString());
+                if (!FastTest)
+                {
+                    RunBenchmark("Serialize to byte string", inputData.Length, () => sampleMessage.ToByteString());
+                }
                 RunBenchmark("Serialize to byte array", inputData.Length, () => sampleMessage.ToByteArray());
-                if (!FastTest) RunBenchmark("Serialize to memory stream", inputData.Length,
-                          () => sampleMessage.WriteTo(new MemoryStream()));
+                if (!FastTest)
+                {
+                    RunBenchmark("Serialize to memory stream", inputData.Length,
+                                 () => sampleMessage.WriteTo(new MemoryStream()));
+                }
 
                 if (OtherFormats)
                 {
-                    RunBenchmark("Serialize to xml", xmlBytes.Length, () =>
-                    {
-                        XmlFormatWriter.CreateInstance(new MemoryStream(), Encoding.UTF8).WriteMessage(sampleMessage);
-                    });
-                    RunBenchmark("Serialize to json", jsonBytes.Length, () =>
-                    {
-                        JsonFormatWriter.CreateInstance().WriteMessage(sampleMessage);
-                    });
+                    RunBenchmark("Serialize to xml", xmlBytes.Length,
+                                 () =>
+                                     {
+                                         XmlFormatWriter.CreateInstance(new MemoryStream(), Encoding.UTF8).WriteMessage(sampleMessage);
+                                     });
+                    RunBenchmark("Serialize to json", jsonBytes.Length,
+                                 () => { JsonFormatWriter.CreateInstance().WriteMessage(sampleMessage); });
                     RunBenchmark("Serialize to json via xml", jsonBytes.Length,
-                        () =>
-                            XmlFormatWriter.CreateInstance(JsonReaderWriterFactory.CreateJsonWriter(new MemoryStream(), Encoding.UTF8))
-                                .SetOptions(XmlWriterOptions.OutputJsonTypes)
-                                .WriteMessage(sampleMessage)
-                    );
+                                 () =>
+                                 XmlFormatWriter.CreateInstance(
+                                     JsonReaderWriterFactory.CreateJsonWriter(new MemoryStream(), Encoding.UTF8))
+                                     .SetOptions(XmlWriterOptions.OutputJsonTypes)
+                                     .WriteMessage(sampleMessage)
+                        );
 
-                    RunBenchmark("Serialize to dictionary", sampleMessage.SerializedSize, () => new DictionaryWriter().WriteMessage(sampleMessage));
+                    RunBenchmark("Serialize to dictionary", sampleMessage.SerializedSize,
+                                 () => new DictionaryWriter().WriteMessage(sampleMessage));
                 }
                 //Deserializers
-                if (!FastTest) RunBenchmark("Deserialize from byte string", inputData.Length,
-                          () => defaultMessage.WeakCreateBuilderForType()
-                                    .WeakMergeFrom(inputString, registry)
-                                    .WeakBuild()
-                    );
+                if (!FastTest)
+                {
+                    RunBenchmark("Deserialize from byte string", inputData.Length,
+                                 () => defaultMessage.WeakCreateBuilderForType()
+                                           .WeakMergeFrom(inputString, registry)
+                                           .WeakBuild()
+                        );
+                }
 
                 RunBenchmark("Deserialize from byte array", inputData.Length,
-                          () => defaultMessage.WeakCreateBuilderForType()
-                                    .WeakMergeFrom(CodedInputStream.CreateInstance(inputData), registry)
-                                    .WeakBuild()
+                             () => defaultMessage.WeakCreateBuilderForType()
+                                       .WeakMergeFrom(CodedInputStream.CreateInstance(inputData), registry)
+                                       .WeakBuild()
                     );
-                if (!FastTest) RunBenchmark("Deserialize from memory stream", inputData.Length, 
-                    () => {
-                      inputStream.Position = 0;
-                      defaultMessage.WeakCreateBuilderForType().WeakMergeFrom(
-                              CodedInputStream.CreateInstance(inputStream), registry)
-                          .WeakBuild();
-                  });
+                if (!FastTest)
+                {
+                    RunBenchmark("Deserialize from memory stream", inputData.Length,
+                                 () =>
+                                     {
+                                         inputStream.Position = 0;
+                                         defaultMessage.WeakCreateBuilderForType().WeakMergeFrom(
+                                             CodedInputStream.CreateInstance(inputStream), registry)
+                                             .WeakBuild();
+                                     });
+                }
 
                 if (OtherFormats)
                 {
-                    RunBenchmark("Deserialize from xml", xmlBytes.Length, () => XmlFormatReader.CreateInstance(xmlBytes).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
-                    RunBenchmark("Deserialize from json", jsonBytes.Length, () => JsonFormatReader.CreateInstance(jsonBytes).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
+                    RunBenchmark("Deserialize from xml", xmlBytes.Length,
+                                 () =>
+                                 XmlFormatReader.CreateInstance(xmlBytes).Merge(
+                                     defaultMessage.WeakCreateBuilderForType()).WeakBuild());
+                    RunBenchmark("Deserialize from json", jsonBytes.Length,
+                                 () =>
+                                 JsonFormatReader.CreateInstance(jsonBytes).Merge(
+                                     defaultMessage.WeakCreateBuilderForType()).WeakBuild());
                     RunBenchmark("Deserialize from json via xml", jsonBytes.Length,
-                        () => XmlFormatReader.CreateInstance(JsonReaderWriterFactory.CreateJsonReader(jsonBytes, System.Xml.XmlDictionaryReaderQuotas.Max))
-                            .SetOptions(XmlReaderOptions.ReadNestedArrays).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
+                                 () =>
+                                 XmlFormatReader.CreateInstance(JsonReaderWriterFactory.CreateJsonReader(jsonBytes, XmlDictionaryReaderQuotas.Max))
+                                     .SetOptions(XmlReaderOptions.ReadNestedArrays).Merge(
+                                         defaultMessage.WeakCreateBuilderForType()).WeakBuild());
 
-                    RunBenchmark("Deserialize from dictionary", sampleMessage.SerializedSize, () => new DictionaryReader(dictionary).Merge(defaultMessage.WeakCreateBuilderForType()).WeakBuild());
+                    RunBenchmark("Deserialize from dictionary", sampleMessage.SerializedSize,
+                                 () =>
+                                 new DictionaryReader(dictionary).Merge(defaultMessage.WeakCreateBuilderForType()).
+                                     WeakBuild());
                 }
                 Console.WriteLine();
                 return true;
@@ -240,25 +272,31 @@ namespace Google.ProtocolBuffers.ProtoBench
             TimeSpan target = TimeSpan.FromSeconds(1);
 
             elapsed = TimeAction(action, iterations);
-            iterations = (int)((target.Ticks * iterations) / (double)elapsed.Ticks);
+            iterations = (int) ((target.Ticks*iterations)/(double) elapsed.Ticks);
             elapsed = TimeAction(action, iterations);
-            iterations = (int)((target.Ticks * iterations) / (double)elapsed.Ticks);
+            iterations = (int) ((target.Ticks*iterations)/(double) elapsed.Ticks);
             elapsed = TimeAction(action, iterations);
-            iterations = (int)((target.Ticks * iterations) / (double)elapsed.Ticks);
+            iterations = (int) ((target.Ticks*iterations)/(double) elapsed.Ticks);
 
-            double first = (iterations * dataSize) / (elapsed.TotalSeconds * 1024 * 1024);
-            if (Verbose) Console.WriteLine("Round ---: Count = {1,6}, Bps = {2,8:f3}", 0, iterations, first);
+            double first = (iterations*dataSize)/(elapsed.TotalSeconds*1024*1024);
+            if (Verbose)
+            {
+                Console.WriteLine("Round ---: Count = {1,6}, Bps = {2,8:f3}", 0, iterations, first);
+            }
             elapsed = TimeSpan.Zero;
-            int max = (int)TargetTime.TotalSeconds;
+            int max = (int) TargetTime.TotalSeconds;
 
             while (runs < max)
             {
                 TimeSpan cycle = TimeAction(action, iterations);
                 // Accumulate and scale for next cycle.
-                
-                double bps = (iterations * dataSize) / (cycle.TotalSeconds * 1024 * 1024);
-                if (Verbose) Console.WriteLine("Round {1,3}: Count = {2,6}, Bps = {3,8:f3}",
-                    0, runs, iterations, bps);
+
+                double bps = (iterations*dataSize)/(cycle.TotalSeconds*1024*1024);
+                if (Verbose)
+                {
+                    Console.WriteLine("Round {1,3}: Count = {2,6}, Bps = {3,8:f3}",
+                                      0, runs, iterations, bps);
+                }
 
                 best = Math.Max(best, bps);
                 worst = Math.Min(worst, bps);
@@ -270,9 +308,10 @@ namespace Google.ProtocolBuffers.ProtoBench
             }
 
             Thread.EndThreadAffinity();
-            Console.WriteLine("{1}: averages {2} per {3:f3}s for {4} runs; avg: {5:f3}mbps; best: {6:f3}mbps; worst: {7:f3}mbps",
-                              0, name, totalCount / runs, elapsed.TotalSeconds / runs, runs,
-                              (totalCount * dataSize) / (elapsed.TotalSeconds * 1024 * 1024), best, worst);
+            Console.WriteLine(
+                "{1}: averages {2} per {3:f3}s for {4} runs; avg: {5:f3}mbps; best: {6:f3}mbps; worst: {7:f3}mbps",
+                0, name, totalCount/runs, elapsed.TotalSeconds/runs, runs,
+                (totalCount*dataSize)/(elapsed.TotalSeconds*1024*1024), best, worst);
         }
 
         private static void BenchmarkV1(string name, long dataSize, Action action)
@@ -321,13 +360,19 @@ namespace Google.ProtocolBuffers.ProtoBench
 
             //Discrete Tests
             foreach (KeyValuePair<string, Action<TestAllTypes.Builder>> item in MakeTestAllTypes())
-                yield return MakeWorkItem(item.Key, new[] { item });
+            {
+                yield return MakeWorkItem(item.Key, new[] {item});
+            }
 
             foreach (KeyValuePair<string, Action<TestAllTypes.Builder>> item in MakeRepeatedTestAllTypes(100))
-                yield return MakeWorkItem(item.Key, new[] { item });
+            {
+                yield return MakeWorkItem(item.Key, new[] {item});
+            }
 
             foreach (KeyValuePair<string, Action<TestPackedTypes.Builder>> item in MakeTestPackedTypes(100))
-                yield return MakeWorkItem(item.Key, new[] { item });
+            {
+                yield return MakeWorkItem(item.Key, new[] {item});
+            }
         }
 
         private static IEnumerable<KeyValuePair<string, Action<TestAllTypes.Builder>>> MakeTestAllTypes()
@@ -349,11 +394,26 @@ namespace Google.ProtocolBuffers.ProtoBench
             yield return MakeItem<TestAllTypes.Builder>("float", 1, x => x.SetOptionalFloat(1001.1001f));
             yield return MakeItem<TestAllTypes.Builder>("double", 1, x => x.SetOptionalDouble(1001.1001));
             yield return MakeItem<TestAllTypes.Builder>("bool", 1, x => x.SetOptionalBool(true));
-            yield return MakeItem<TestAllTypes.Builder>("string", 1, x => x.SetOptionalString("this is a string value"));
-            yield return MakeItem<TestAllTypes.Builder>("bytes", 1, x => x.SetOptionalBytes(ByteString.CopyFromUtf8("this is an array of bytes")));
-            yield return MakeItem<TestAllTypes.Builder>("group", 1, x => x.SetOptionalGroup(new TestAllTypes.Types.OptionalGroup.Builder().SetA(1001)));
-            yield return MakeItem<TestAllTypes.Builder>("message", 1, x => x.SetOptionalNestedMessage(new TestAllTypes.Types.NestedMessage.Builder().SetBb(1001)));
-            yield return MakeItem<TestAllTypes.Builder>("enum", 1, x => x.SetOptionalNestedEnum(TestAllTypes.Types.NestedEnum.FOO));
+            yield return MakeItem<TestAllTypes.Builder>("string", 1, x => x.SetOptionalString("this is a string value"))
+                ;
+            yield return
+                MakeItem<TestAllTypes.Builder>("bytes", 1,
+                                               x =>
+                                               x.SetOptionalBytes(ByteString.CopyFromUtf8("this is an array of bytes")))
+                ;
+            yield return
+                MakeItem<TestAllTypes.Builder>("group", 1,
+                                               x =>
+                                               x.SetOptionalGroup(
+                                                   new TestAllTypes.Types.OptionalGroup.Builder().SetA(1001)));
+            yield return
+                MakeItem<TestAllTypes.Builder>("message", 1,
+                                               x =>
+                                               x.SetOptionalNestedMessage(
+                                                   new TestAllTypes.Types.NestedMessage.Builder().SetBb(1001)));
+            yield return
+                MakeItem<TestAllTypes.Builder>("enum", 1,
+                                               x => x.SetOptionalNestedEnum(TestAllTypes.Types.NestedEnum.FOO));
         }
 
         private static IEnumerable<KeyValuePair<string, Action<TestAllTypes.Builder>>> MakeRepeatedTestAllTypes(int size)
@@ -372,11 +432,27 @@ namespace Google.ProtocolBuffers.ProtoBench
             yield return MakeItem<TestAllTypes.Builder>("repeated-float", size, x => x.AddRepeatedFloat(1001.1001f));
             yield return MakeItem<TestAllTypes.Builder>("repeated-double", size, x => x.AddRepeatedDouble(1001.1001));
             yield return MakeItem<TestAllTypes.Builder>("repeated-bool", size, x => x.AddRepeatedBool(true));
-            yield return MakeItem<TestAllTypes.Builder>("repeated-string", size, x => x.AddRepeatedString("this is a string value"));
-            yield return MakeItem<TestAllTypes.Builder>("repeated-bytes", size, x => x.AddRepeatedBytes(ByteString.CopyFromUtf8("this is an array of bytes")));
-            yield return MakeItem<TestAllTypes.Builder>("repeated-group", size, x => x.AddRepeatedGroup(new TestAllTypes.Types.RepeatedGroup.Builder().SetA(1001)));
-            yield return MakeItem<TestAllTypes.Builder>("repeated-message", size, x => x.AddRepeatedNestedMessage(new TestAllTypes.Types.NestedMessage.Builder().SetBb(1001)));
-            yield return MakeItem<TestAllTypes.Builder>("repeated-enum", size, x => x.AddRepeatedNestedEnum(TestAllTypes.Types.NestedEnum.FOO));
+            yield return
+                MakeItem<TestAllTypes.Builder>("repeated-string", size,
+                                               x => x.AddRepeatedString("this is a string value"));
+            yield return
+                MakeItem<TestAllTypes.Builder>("repeated-bytes", size,
+                                               x =>
+                                               x.AddRepeatedBytes(ByteString.CopyFromUtf8("this is an array of bytes")))
+                ;
+            yield return
+                MakeItem<TestAllTypes.Builder>("repeated-group", size,
+                                               x =>
+                                               x.AddRepeatedGroup(
+                                                   new TestAllTypes.Types.RepeatedGroup.Builder().SetA(1001)));
+            yield return
+                MakeItem<TestAllTypes.Builder>("repeated-message", size,
+                                               x =>
+                                               x.AddRepeatedNestedMessage(
+                                                   new TestAllTypes.Types.NestedMessage.Builder().SetBb(1001)));
+            yield return
+                MakeItem<TestAllTypes.Builder>("repeated-enum", size,
+                                               x => x.AddRepeatedNestedEnum(TestAllTypes.Types.NestedEnum.FOO));
         }
 
         private static IEnumerable<KeyValuePair<string, Action<TestPackedTypes.Builder>>> MakeTestPackedTypes(int size)
@@ -395,35 +471,47 @@ namespace Google.ProtocolBuffers.ProtoBench
             yield return MakeItem<TestPackedTypes.Builder>("packed-float", size, x => x.AddPackedFloat(1001.1001f));
             yield return MakeItem<TestPackedTypes.Builder>("packed-double", size, x => x.AddPackedDouble(1001.1001));
             yield return MakeItem<TestPackedTypes.Builder>("packed-bool", size, x => x.AddPackedBool(true));
-            yield return MakeItem<TestPackedTypes.Builder>("packed-enum", size, x => x.AddPackedEnum(ForeignEnum.FOREIGN_FOO));
+            yield return
+                MakeItem<TestPackedTypes.Builder>("packed-enum", size, x => x.AddPackedEnum(ForeignEnum.FOREIGN_FOO));
         }
 
-        private static KeyValuePair<string, Action<T>> MakeItem<T>(string name, int repeated, Action<T> build) where T : IBuilderLite, new()
+        private static KeyValuePair<string, Action<T>> MakeItem<T>(string name, int repeated, Action<T> build)
+            where T : IBuilderLite, new()
         {
             if (repeated == 1)
+            {
                 return new KeyValuePair<string, Action<T>>(name, build);
+            }
 
             return new KeyValuePair<string, Action<T>>(
                 String.Format("{0}[{1}]", name, repeated),
                 x =>
-                {
-                    for (int i = 0; i < repeated; i++)
-                        build(x);
-                }
-            );
+                    {
+                        for (int i = 0; i < repeated; i++)
+                        {
+                            build(x);
+                        }
+                    }
+                );
         }
 
-        private static KeyValuePair<string, string> MakeWorkItem<T>(string name, IEnumerable<KeyValuePair<string, Action<T>>> builders) where T : IBuilderLite, new()
+        private static KeyValuePair<string, string> MakeWorkItem<T>(string name,
+                                                                    IEnumerable<KeyValuePair<string, Action<T>>>
+                                                                        builders) where T : IBuilderLite, new()
         {
             T builder = new T();
 
             foreach (KeyValuePair<string, Action<T>> item in builders)
+            {
                 item.Value(builder);
+            }
 
             IMessageLite msg = builder.WeakBuild();
             string fname = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "unittest_" + name + ".dat");
             File.WriteAllBytes(fname, msg.ToByteArray());
-            return new KeyValuePair<string, string>(String.Format("{0},{1}", msg.GetType().FullName, msg.GetType().Assembly.GetName().Name), fname);
+            return
+                new KeyValuePair<string, string>(
+                    String.Format("{0},{1}", msg.GetType().FullName, msg.GetType().Assembly.GetName().Name), fname);
         }
     }
 }
