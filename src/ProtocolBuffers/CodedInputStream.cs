@@ -425,7 +425,7 @@ namespace Google.ProtocolBuffers
             }
             else
             {
-                // Slow path:  Build a byte array first then copy it.
+                // Slow path:  Build a byte array and attach it to a new ByteString.
                 value = ByteString.AttachBytes(ReadRawBytes(size));
                 return true;
             }
