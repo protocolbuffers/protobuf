@@ -101,7 +101,7 @@ namespace Google.ProtocolBuffers
 #if SILVERLIGHT2
     // Silverlight doesn't support Enum.GetValues
     // TODO(jonskeet): Validate that this reflection is permitted, e.g. in Windows Phone 7
-            foreach (FieldInfo fi in typeof (TEnum).GetFields(BindingFlags.Static | BindingFlags.Public))
+            foreach (System.Reflection.FieldInfo fi in typeof(TEnum).GetFields(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public))
             {
                 TEnum evalue = (TEnum) fi.GetValue(null);
                 items.Add(Convert.ToInt32(evalue), new EnumValue(evalue));
