@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.IO;
 using NUnit.Framework;
 
-namespace Google.ProtocolBuffers.CompatTests
+namespace Google.ProtocolBuffers.Compatibility
 {
     [TestFixture]
     public class TextCompatibilityTests : CompatibilityTests
@@ -14,7 +14,7 @@ namespace Google.ProtocolBuffers.CompatTests
             return text.ToString();
         }
 
-        protected override TBuilder DeerializeMessage<TMessage, TBuilder>(object message, TBuilder builder, ExtensionRegistry registry)
+        protected override TBuilder DeserializeMessage<TMessage, TBuilder>(object message, TBuilder builder, ExtensionRegistry registry)
         {
             TextFormat.Merge(new StringReader((string)message), registry, (IBuilder)builder);
             return builder;

@@ -36,6 +36,8 @@
 
 using System;
 using System.Collections.Generic;
+using ExtensionByNameMap = System.Collections.Generic.Dictionary<object, System.Collections.Generic.Dictionary<string, Google.ProtocolBuffers.IGeneratedExtensionLite>>;
+using ExtensionByIdMap = System.Collections.Generic.Dictionary<Google.ProtocolBuffers.ExtensionRegistry.ExtensionIntPair, Google.ProtocolBuffers.IGeneratedExtensionLite>;
 
 namespace Google.ProtocolBuffers
 {
@@ -92,14 +94,6 @@ namespace Google.ProtocolBuffers
     /// </remarks>
     public sealed partial class ExtensionRegistry
     {
-        private class ExtensionByNameMap : Dictionary<object, Dictionary<string, IGeneratedExtensionLite>>
-        {
-        }
-
-        private class ExtensionByIdMap : Dictionary<ExtensionIntPair, IGeneratedExtensionLite>
-        {
-        }
-
         private static readonly ExtensionRegistry empty = new ExtensionRegistry(
             new ExtensionByNameMap(),
             new ExtensionByIdMap(),
@@ -192,7 +186,7 @@ namespace Google.ProtocolBuffers
         /// Nested type just used to represent a pair of MessageDescriptor and int, as
         /// the key into the "by number" map.
         /// </summary>
-        private struct ExtensionIntPair : IEquatable<ExtensionIntPair>
+        internal struct ExtensionIntPair : IEquatable<ExtensionIntPair>
         {
             private readonly object msgType;
             private readonly int number;

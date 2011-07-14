@@ -3,7 +3,7 @@ using System.Text;
 using Google.ProtocolBuffers.Serialization;
 using NUnit.Framework;
 
-namespace Google.ProtocolBuffers.CompatTests
+namespace Google.ProtocolBuffers.Compatibility
 {
     [TestFixture]
     public class JsonCompatibilityTests : CompatibilityTests
@@ -17,7 +17,7 @@ namespace Google.ProtocolBuffers.CompatTests
             return sw.ToString();
         }
 
-        protected override TBuilder DeerializeMessage<TMessage, TBuilder>(object message, TBuilder builder, ExtensionRegistry registry)
+        protected override TBuilder DeserializeMessage<TMessage, TBuilder>(object message, TBuilder builder, ExtensionRegistry registry)
         {
             JsonFormatReader.CreateInstance((string)message).Merge(builder);
             return builder;

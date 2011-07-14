@@ -2,15 +2,20 @@
 using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
 
-namespace Google.ProtocolBuffers.CompatTests
+namespace Google.ProtocolBuffers.Compatibility
 {
+    /// <summary>
+    /// This abstract base implements several tests to ensure that well-known messages can be written
+    /// and read to/from various formats without loosing data.  Implementations overload the two serailization
+    /// methods to provide the tests with the means to read and write for a given format.
+    /// </summary>
     public abstract class CompatibilityTests
     {
         protected abstract object SerializeMessage<TMessage, TBuilder>(TMessage message)
             where TMessage : IMessageLite<TMessage, TBuilder>
             where TBuilder : IBuilderLite<TMessage, TBuilder>;
 
-        protected abstract TBuilder DeerializeMessage<TMessage, TBuilder>(object message, TBuilder builder, ExtensionRegistry registry)
+        protected abstract TBuilder DeserializeMessage<TMessage, TBuilder>(object message, TBuilder builder, ExtensionRegistry registry)
             where TMessage : IMessageLite<TMessage, TBuilder>
             where TBuilder : IBuilderLite<TMessage, TBuilder>;
 
@@ -25,7 +30,7 @@ namespace Google.ProtocolBuffers.CompatTests
             SizeMessage1 msg = SizeMessage1.CreateBuilder().MergeFrom(TestResources.google_message1).Build();
             object content = SerializeMessage<SizeMessage1, SizeMessage1.Builder>(msg);
 
-            SizeMessage1 copy = DeerializeMessage<SizeMessage1, SizeMessage1.Builder>(content, SizeMessage1.CreateBuilder(), ExtensionRegistry.Empty).Build();
+            SizeMessage1 copy = DeserializeMessage<SizeMessage1, SizeMessage1.Builder>(content, SizeMessage1.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
             Assert.AreEqual(msg, copy);
             AssertOutputEquals(content, SerializeMessage<SizeMessage1, SizeMessage1.Builder>(copy));
@@ -38,7 +43,7 @@ namespace Google.ProtocolBuffers.CompatTests
             SizeMessage2 msg = SizeMessage2.CreateBuilder().MergeFrom(TestResources.google_message2).Build();
             object content = SerializeMessage<SizeMessage2, SizeMessage2.Builder>(msg);
 
-            SizeMessage2 copy = DeerializeMessage<SizeMessage2, SizeMessage2.Builder>(content, SizeMessage2.CreateBuilder(), ExtensionRegistry.Empty).Build();
+            SizeMessage2 copy = DeserializeMessage<SizeMessage2, SizeMessage2.Builder>(content, SizeMessage2.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
             Assert.AreEqual(msg, copy);
             AssertOutputEquals(content, SerializeMessage<SizeMessage2, SizeMessage2.Builder>(copy));
@@ -51,7 +56,7 @@ namespace Google.ProtocolBuffers.CompatTests
             SpeedMessage1 msg = SpeedMessage1.CreateBuilder().MergeFrom(TestResources.google_message1).Build();
             object content = SerializeMessage<SpeedMessage1, SpeedMessage1.Builder>(msg);
 
-            SpeedMessage1 copy = DeerializeMessage<SpeedMessage1, SpeedMessage1.Builder>(content, SpeedMessage1.CreateBuilder(), ExtensionRegistry.Empty).Build();
+            SpeedMessage1 copy = DeserializeMessage<SpeedMessage1, SpeedMessage1.Builder>(content, SpeedMessage1.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
             Assert.AreEqual(msg, copy);
             AssertOutputEquals(content, SerializeMessage<SpeedMessage1, SpeedMessage1.Builder>(copy));
@@ -64,7 +69,7 @@ namespace Google.ProtocolBuffers.CompatTests
             SpeedMessage2 msg = SpeedMessage2.CreateBuilder().MergeFrom(TestResources.google_message2).Build();
             object content = SerializeMessage<SpeedMessage2, SpeedMessage2.Builder>(msg);
 
-            SpeedMessage2 copy = DeerializeMessage<SpeedMessage2, SpeedMessage2.Builder>(content, SpeedMessage2.CreateBuilder(), ExtensionRegistry.Empty).Build();
+            SpeedMessage2 copy = DeserializeMessage<SpeedMessage2, SpeedMessage2.Builder>(content, SpeedMessage2.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
             Assert.AreEqual(msg, copy);
             AssertOutputEquals(content, SerializeMessage<SpeedMessage2, SpeedMessage2.Builder>(copy));
@@ -151,7 +156,7 @@ namespace Google.ProtocolBuffers.CompatTests
             TestAllTypes msg = AddAllTypes(new TestAllTypes.Builder()).Build();
             object content = SerializeMessage<TestAllTypes, TestAllTypes.Builder>(msg);
 
-            TestAllTypes copy = DeerializeMessage<TestAllTypes, TestAllTypes.Builder>(content, TestAllTypes.CreateBuilder(), ExtensionRegistry.Empty).Build();
+            TestAllTypes copy = DeserializeMessage<TestAllTypes, TestAllTypes.Builder>(content, TestAllTypes.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
             Assert.AreEqual(msg, copy);
             AssertOutputEquals(content, SerializeMessage<TestAllTypes, TestAllTypes.Builder>(copy));
@@ -164,7 +169,7 @@ namespace Google.ProtocolBuffers.CompatTests
             TestAllTypes msg = AddRepeatedTypes(new TestAllTypes.Builder(), 5).Build();
             object content = SerializeMessage<TestAllTypes, TestAllTypes.Builder>(msg);
 
-            TestAllTypes copy = DeerializeMessage<TestAllTypes, TestAllTypes.Builder>(content, TestAllTypes.CreateBuilder(), ExtensionRegistry.Empty).Build();
+            TestAllTypes copy = DeserializeMessage<TestAllTypes, TestAllTypes.Builder>(content, TestAllTypes.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
             Assert.AreEqual(msg, copy);
             AssertOutputEquals(content, SerializeMessage<TestAllTypes, TestAllTypes.Builder>(copy));
@@ -177,7 +182,7 @@ namespace Google.ProtocolBuffers.CompatTests
             TestPackedTypes msg = AddPackedTypes(new TestPackedTypes.Builder(), 5).Build();
             object content = SerializeMessage<TestPackedTypes, TestPackedTypes.Builder>(msg);
 
-            TestPackedTypes copy = DeerializeMessage<TestPackedTypes, TestPackedTypes.Builder>(content, TestPackedTypes.CreateBuilder(), ExtensionRegistry.Empty).Build();
+            TestPackedTypes copy = DeserializeMessage<TestPackedTypes, TestPackedTypes.Builder>(content, TestPackedTypes.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
             Assert.AreEqual(msg, copy);
             AssertOutputEquals(content, SerializeMessage<TestPackedTypes, TestPackedTypes.Builder>(copy));

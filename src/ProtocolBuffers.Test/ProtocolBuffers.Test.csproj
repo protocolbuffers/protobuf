@@ -75,17 +75,17 @@
     <Compile Include="CodedInputStreamTest.cs" />
     <Compile Include="CodedOutputStreamTest.cs" />
     <Compile Include="Collections\PopsicleListTest.cs" />
-    <Compile Include="CompatTests\BinaryCompatibilityTests.cs" />
-    <Compile Include="CompatTests\CompatibilityTests.cs" />
-    <Compile Include="CompatTests\DictionaryCompatibilityTests.cs" />
-    <Compile Include="CompatTests\JsonCompatibilityTests.cs" />
-    <Compile Include="CompatTests\TestResources.Designer.cs">
+    <Compile Include="Compatibility\BinaryCompatibilityTests.cs" />
+    <Compile Include="Compatibility\CompatibilityTests.cs" />
+    <Compile Include="Compatibility\DictionaryCompatibilityTests.cs" />
+    <Compile Include="Compatibility\JsonCompatibilityTests.cs" />
+    <Compile Include="Compatibility\TestResources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>TestResources.resx</DependentUpon>
     </Compile>
-    <Compile Include="CompatTests\TextCompatibilityTests.cs" />
-    <Compile Include="CompatTests\XmlCompatibilityTests.cs" />
+    <Compile Include="Compatibility\TextCompatibilityTests.cs" />
+    <Compile Include="Compatibility\XmlCompatibilityTests.cs" />
     <Compile Include="CSharpOptionsTest.cs" />
     <Compile Include="DescriptorsTest.cs" />
     <Compile Include="Descriptors\MessageDescriptorTest.cs" />
@@ -147,11 +147,11 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="CompatTests\google_message1.dat" />
-    <None Include="CompatTests\google_message2.dat" />
+    <None Include="Compatibility\google_message1.dat" />
+    <None Include="Compatibility\google_message2.dat" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="CompatTests\TestResources.resx">
+    <EmbeddedResource Include="Compatibility\TestResources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>TestResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>

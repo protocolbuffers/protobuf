@@ -5,7 +5,7 @@ using System.Text;
 using Google.ProtocolBuffers.Serialization;
 using NUnit.Framework;
 
-namespace Google.ProtocolBuffers.CompatTests
+namespace Google.ProtocolBuffers.Compatibility
 {
     [TestFixture]
     public class DictionaryCompatibilityTests : CompatibilityTests
@@ -17,7 +17,7 @@ namespace Google.ProtocolBuffers.CompatTests
             return writer.ToDictionary();
         }
 
-        protected override TBuilder DeerializeMessage<TMessage, TBuilder>(object message, TBuilder builder, ExtensionRegistry registry)
+        protected override TBuilder DeserializeMessage<TMessage, TBuilder>(object message, TBuilder builder, ExtensionRegistry registry)
         {
             new DictionaryReader((IDictionary<string, object>)message).Merge(builder);
             return builder;

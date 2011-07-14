@@ -1,7 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
 
-namespace Google.ProtocolBuffers.CompatTests
+namespace Google.ProtocolBuffers.Compatibility
 {
     [TestFixture]
     public class BinaryCompatibilityTests : CompatibilityTests
@@ -12,7 +12,7 @@ namespace Google.ProtocolBuffers.CompatTests
             return bresult;
         }
 
-        protected override TBuilder DeerializeMessage<TMessage, TBuilder>(object message, TBuilder builder, ExtensionRegistry registry)
+        protected override TBuilder DeserializeMessage<TMessage, TBuilder>(object message, TBuilder builder, ExtensionRegistry registry)
         {
             return builder.MergeFrom((byte[])message, registry);
         }

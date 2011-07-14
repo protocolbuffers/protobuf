@@ -3,7 +3,7 @@ using Google.ProtocolBuffers.Serialization;
 using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
 
-namespace Google.ProtocolBuffers.CompatTests
+namespace Google.ProtocolBuffers.Compatibility
 {
     [TestFixture]
     public class XmlCompatibilityTests : CompatibilityTests
@@ -16,7 +16,7 @@ namespace Google.ProtocolBuffers.CompatTests
             return text.ToString();
         }
 
-        protected override TBuilder DeerializeMessage<TMessage, TBuilder>(object message, TBuilder builder, ExtensionRegistry registry)
+        protected override TBuilder DeserializeMessage<TMessage, TBuilder>(object message, TBuilder builder, ExtensionRegistry registry)
         {
             XmlFormatReader reader = XmlFormatReader.CreateInstance((string)message);
             return reader.Merge("root", builder, registry);
