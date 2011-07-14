@@ -252,7 +252,10 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        internal void WriteTo(CodedOutputStream outputStream)
+        /// <summary>
+        /// Used internally by CodedOutputStream to avoid creating a copy for the write
+        /// </summary>
+        internal void WriteRawBytesTo(CodedOutputStream outputStream)
         {
             outputStream.WriteRawBytes(bytes, 0, bytes.Length);
         }

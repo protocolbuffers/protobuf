@@ -360,7 +360,7 @@ namespace Google.ProtocolBuffers
         {
             WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
             WriteRawVarint32((uint) value.Length);
-            value.WriteTo(this);
+            value.WriteRawBytesTo(this);
         }
 
         [CLSCompliant(false)]
@@ -637,7 +637,7 @@ namespace Google.ProtocolBuffers
         public void WriteBytesNoTag(ByteString value)
         {
             WriteRawVarint32((uint) value.Length);
-            value.WriteTo(this);
+            value.WriteRawBytesTo(this);
         }
 
         [CLSCompliant(false)]
