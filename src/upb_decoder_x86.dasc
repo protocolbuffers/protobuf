@@ -120,7 +120,7 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |.define PTR,       rbx
 |.define CLOSURE,   r12
 |.type   FRAME,     upb_dispatcher_frame, r13
-|.type   STRING,    upb_string, r14
+|.type   STRREF,    upb_strref, r14
 |.type   DECODER,   upb_decoder, r15
 |
 |.macro callp, addr
@@ -199,7 +199,7 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |  jae   ->exit_jit  // Frame stack overflow.
 |  mov   qword FRAME:rax->f, f
 |  mov   qword FRAME:rax->closure, closure_
-|  mov   dword FRAME:rax->end_offset, end_offset_
+|  mov   dword FRAME:rax->end_ofs, end_offset_
 |  mov   byte FRAME:rax->is_sequence, is_sequence_
 |  mov   CLOSURE, rdx
 |  mov   DECODER->dispatcher.top, rax
@@ -217,17 +217,17 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |    mov    rsi, DECODER->jit_end
 || if (m->is_group) {
 |    mov64  rax, 0xffffffffffffffff
-|    mov    qword DECODER->submsg_end, rax
+|    mov    qword DECODER->delim_end, rax
 |    mov    DECODER->effective_end, rsi
 || } else {
 |    // Could store a correctly-biased version in the frame, at the cost of
 |    // a larger stack.
-|    mov    eax, dword FRAME->end_offset
+|    mov    eax, dword FRAME->end_ofs
 |    add    rax, qword DECODER->buf
-|    mov    DECODER->submsg_end, rax  // submsg_end = d->buf + f->end_offset
+|    mov    DECODER->delim_end, rax  // delim_end = d->buf + f->end_ofs
 |    cmp    rax, rsi
 |    jb     >8
-|    mov    rax, rsi                  // effective_end = min(d->submsg_end, d->jit_end)
+|    mov    rax, rsi                  // effective_end = min(d->delim_end, d->jit_end)
 |8:
 |    mov    DECODER->effective_end, rax
 || }
@@ -293,7 +293,7 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
     } else {
       |  mov   rdx, CLOSURE
     }
-    |  mov   esi, FRAME->end_offset
+    |  mov   esi, FRAME->end_ofs
     |  pushframe  f, rdx, esi, true
   }
 
@@ -357,10 +357,14 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
       // buf, which sidesteps any security problems.  The C path has more
       // robust checks.
       |  decode_varint  tag_size
-      |  mov  STRING->len, ARG3_32
-      |  mov  STRING->ptr, PTR
+      |  mov  STRREF->len, ARG3_32
+      |  mov  STRREF->ptr, PTR
+      |  mov  rax, PTR
+      |  sub  rax, DECODER->buf
+      |  add  eax, DECODER->bufstart_ofs  // = d->ptr - d->buf + d->bufstart_ofs
+      |  mov  STRREF->stream_offset, eax
       |  add  PTR, ARG3_64
-      |  mov  ARG3_64, STRING
+      |  mov  ARG3_64, STRREF
       |  cmp  PTR, DECODER->effective_end
       |  ja   ->exit_jit   // Can't deliver, whole string not in buf.
       break;
@@ -514,7 +518,7 @@ static void upb_decoder_jit_msg(upb_decoder *d, upb_mhandlers *m) {
     // This case doesn't exist for groups, because there eob really means
     // eob, so that case just exits the jit directly.
     |=>m->jit_endofbuf_pclabel:
-    |  cmp  PTR, DECODER->submsg_end
+    |  cmp  PTR, DECODER->delim_end
     |  jb   ->exit_jit    // We are at eob, but not end-of-submsg.
   }
 
@@ -550,7 +554,7 @@ static void upb_decoder_jit(upb_decoder *d) {
   |  push  rbx
   |  mov   DECODER, ARG1_64
   |  mov   FRAME, DECODER:ARG1_64->dispatcher.top
-  |  mov   STRING, DECODER:ARG1_64->tmp
+  |  lea   STRREF, DECODER:ARG1_64->strref
   |  mov   CLOSURE, FRAME->closure
   |  mov   PTR, DECODER->ptr
 

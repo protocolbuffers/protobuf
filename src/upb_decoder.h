@@ -30,44 +30,33 @@ extern "C" {
 
 struct dasm_State;
 
-struct _upb_decoder {
-  // Bytesrc from which we pull serialized data.
-  upb_bytesrc *bytesrc;
+typedef struct _upb_decoder {
+  upb_bytesrc *bytesrc;       // Source of our serialized data.
+  upb_dispatcher dispatcher;  // Dispatcher to which we push parsed data.
+  upb_status *status;         // Where we will store any errors that occur.
+  upb_strref strref;          // For passing string data to callbacks.
 
-  // String to hold our input buffer; is only active if d->buf != NULL.
-  upb_string *bufstr;
+  // Offsets for the region we currently have ref'd.
+  uint64_t refstart_ofs, refend_ofs;
 
-  // Temporary string for passing string data to callbacks.
-  upb_string *tmp;
+  // Current buffer and its stream offset.
+  const char *buf, *ptr, *end;
+  uint64_t bufstart_ofs, bufend_ofs;
 
-  // The offset within the overall stream represented by the *beginning* of buf.
-  size_t buf_stream_offset;
+  // Stream offset for the end of the top-level message, if any.
+  uint64_t end_ofs;
 
-  // Pointer to the beginning of our current data buffer, or NULL if none.
-  const char *buf;
+  // Buf offset as of which we've delivered calbacks; needed for rollback on
+  // UPB_TRYAGAIN (or in the future, UPB_SUSPEND).
+  const char *completed_ptr;
 
-  // End of this buffer, relative to *ptr.
-  const char *end;
-  const char *jit_end;
+  // End of the delimited region, relative to ptr, or UINTPTR_MAX if not in
+  // this buf.
+  uintptr_t delim_end;
 
-  // Members which may also be written by the JIT:
-
-  // Our current position in the data buffer.
-  const char *ptr;
-
-  // End of this submessage, relative to *ptr.
-  const char *submsg_end;
-
-  // MIN(end, submsg_end)
-  const char *effective_end;
-
-  upb_fhandlers *f;
-
-  // Where we will store any errors that occur.
-  upb_status *status;
-
-  // Dispatcher to which we push parsed data.
-  upb_dispatcher dispatcher;
+#ifdef UPB_USE_JIT_X64
+  // For JIT, which doesn't do bounds checks in the middle of parsing a field.
+  const char *jit_end, *effective_end;  // == MIN(jit_end, submsg_end)
 
   // JIT-generated machine code (else NULL).
   char *jit_code;
@@ -75,21 +64,10 @@ struct _upb_decoder {
   char *debug_info;
 
   struct dasm_State *dynasm;
+#endif
+
   sigjmp_buf exitjmp;
-};
-
-// For use in the upb_dispatcher's stack.
-typedef struct {
-  // Relative to the beginning of this buffer.
-  // For groups and the top-level: UINT32_MAX.
-  uint32_t end_offset;
-  bool is_packed;  // == !upb_issubmsg(f) && end_offset != UPB_REPATEDEND
-} upb_decoder_srcdata;
-
-// A upb_decoder decodes the binary protocol buffer format, writing the data it
-// decodes to a upb_sink.
-struct _upb_decoder;
-typedef struct _upb_decoder upb_decoder;
+} upb_decoder;
 
 // Initializes/uninitializes a decoder for calling into the given handlers
 // or to write into the given msgdef, given its accessors).  Takes a ref
@@ -107,7 +85,10 @@ void upb_decoder_uninit(upb_decoder *d);
 // state where it has not seen any data, and expects the next data to be from
 // the beginning of a new protobuf.  Parsers must be reset before they can be
 // used.  A decoder can be reset multiple times.
-void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc, void *closure);
+//
+// Pass UINT64_MAX for end_ofs to indicate a non-delimited top-level message.
+void upb_decoder_reset(upb_decoder *d, upb_bytesrc *src, uint64_t start_ofs,
+                       uint64_t end_ofs, void *closure);
 
 void upb_decoder_decode(upb_decoder *d, upb_status *status);
 

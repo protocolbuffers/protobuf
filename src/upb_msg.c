@@ -7,6 +7,7 @@
  * Data structure for storing a message of protobuf data.
  */
 
+#include "upb.h"
 #include "upb_msg.h"
 
 void upb_msg_clear(void *msg, upb_msgdef *md) {
@@ -132,23 +133,23 @@ UPB_ACCESSORS(bool, bool)
 UPB_ACCESSORS(ptr, void*)
 #undef UPB_ACCESSORS
 
-static void _upb_stdmsg_setstr(void *_dst, upb_value _src) {
-  // We do:
-  //  - upb_string_recycle(), upb_string_substr() instead of
-  //  - upb_string_unref(), upb_string_getref()
-  // because we can conveniently cache these upb_string objects in the
-  // upb_msg, whereas the upb_src who is sending us these strings may not
-  // have a good way of caching them.  This saves the upb_src from allocating
-  // new upb_strings all the time to give us.
-  //
-  // If you were using this to copy one upb_msg to another this would
-  // allocate string objects whereas a upb_string_getref could have avoided
-  // those allocations completely; if this is an issue, we could make it an
-  // option of the upb_msgsink which behavior is desired.
-  upb_string **dst = _dst;
-  upb_string *src = upb_value_getstr(_src);
-  upb_string_recycle(dst);
-  upb_string_substr(*dst, src, 0, upb_string_len(src));
+static void _upb_stdmsg_setstr(void *_dst, upb_value src) {
+  upb_stdarray **dstp = _dst;
+  upb_stdarray *dst = *dstp;
+  if (!dst) {
+    dst = malloc(sizeof(*dst));
+    dst->size = 0;
+    dst->ptr = NULL;
+    *dstp = dst;
+  }
+  dst->len = 0;
+  upb_strref *ref = upb_value_getstrref(src);
+  if (ref->len > dst->size) {
+    dst->size = ref->len;
+    dst->ptr = realloc(dst->ptr, dst->size);
+  }
+  dst->len = ref->len;
+  upb_bytesrc_read(ref->bytesrc, ref->stream_offset, ref->len, dst->ptr);
 }
 
 upb_flow_t upb_stdmsg_setstr(void *_m, upb_value fval, upb_value val) {
@@ -166,15 +167,11 @@ upb_flow_t upb_stdmsg_setstr_r(void *a, upb_value fval, upb_value val) {
 }
 
 upb_value upb_stdmsg_getstr(void *m, upb_value fval) {
-  upb_value val = upb_stdmsg_getptr(m, fval);
-  upb_value_setstr(&val, upb_value_getptr(val));
-  return val;
+  return upb_stdmsg_getptr(m, fval);
 }
 
 upb_value upb_stdmsg_seqgetstr(void *i) {
-  upb_value val = upb_stdmsg_seqgetptr(i);
-  upb_value_setstr(&val, upb_value_getptr(val));
-  return val;
+  return upb_stdmsg_seqgetptr(i);
 }
 
 void *upb_stdmsg_new(upb_msgdef *md) {
@@ -188,11 +185,13 @@ void upb_stdseq_free(void *s, upb_fielddef *f) {
   upb_stdarray *a = s;
   if (upb_issubmsg(f) || upb_isstring(f)) {
     void **p = (void**)a->ptr;
-    for (int i = 0; i < a->size; i++) {
+    for (uint32_t i = 0; i < a->size; i++) {
       if (upb_issubmsg(f)) {
         upb_stdmsg_free(p[i], upb_downcast_msgdef(f->def));
       } else {
-        upb_string_unref(p[i]);
+        upb_stdarray *str = p[i];
+        free(str->ptr);
+        free(str);
       }
     }
   }
@@ -213,7 +212,9 @@ void upb_stdmsg_free(void *m, upb_msgdef *md) {
     } else if (upb_issubmsg(f)) {
       upb_stdmsg_free(subp, upb_downcast_msgdef(f->def));
     } else {
-      upb_string_unref(subp);
+      upb_stdarray *str = subp;
+      free(str->ptr);
+      free(str);
     }
   }
   free(m);

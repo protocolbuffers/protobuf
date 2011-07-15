@@ -96,7 +96,6 @@ upb_mhandlers *upb_handlers_newmhandlers(upb_handlers *h) {
 }
 
 typedef struct {
-  upb_strtable_entry e;
   upb_mhandlers *mh;
 } upb_mtab_ent;
 
@@ -105,8 +104,8 @@ static upb_mhandlers *upb_regmsg_dfs(upb_handlers *h, upb_msgdef *m,
                                      upb_onfieldreg *fieldreg_cb,
                                      void *closure, upb_strtable *mtab) {
   upb_mhandlers *mh = upb_handlers_newmhandlers(h);
-  upb_mtab_ent e = {{m->base.fqname, 0}, mh};
-  upb_strtable_insert(mtab, &e.e);
+  upb_mtab_ent e = {mh};
+  upb_strtable_insert(mtab, m->base.fqname, &e);
   if (msgreg_cb) msgreg_cb(closure, mh, m);
   upb_msg_iter i;
   for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
@@ -153,7 +152,7 @@ static upb_fhandlers toplevel_f = {
 #ifdef NDEBUG
   {{0}},
 #else
-  {{0}, UPB_VALUETYPE_RAW},
+  {{0}, -1},
 #endif
   NULL, NULL, NULL, NULL, NULL, 0, 0, 0, NULL};
 
@@ -198,23 +197,23 @@ void upb_dispatch_endmsg(upb_dispatcher *d, upb_status *status) {
   assert(d->top == d->stack);
   if (d->msgent->endmsg) d->msgent->endmsg(d->top->closure, &d->status);
   // TODO: should we avoid this copy by passing client's status obj to cbs?
-  upb_copyerr(status, &d->status);
+  upb_status_copy(status, &d->status);
 }
 
 void indent(upb_dispatcher *d) {
-  for (int i = 0; i < (d->top - d->stack); i++) printf(" ");
+  for (int i = 0; i < (d->top - d->stack); i++) fprintf(stderr, " ");
 }
 
 void indentm1(upb_dispatcher *d) {
-  for (int i = 0; i < (d->top - d->stack - 1); i++) printf(" ");
+  for (int i = 0; i < (d->top - d->stack - 1); i++) fprintf(stderr, " ");
 }
 
 upb_dispatcher_frame *upb_dispatch_startseq(upb_dispatcher *d,
                                             upb_fhandlers *f) {
   //indent(d);
-  //printf("START SEQ: %d\n", f->number);
+  //fprintf(stderr, "START SEQ: %d\n", f->number);
   if((d->top+1) >= d->limit) {
-    upb_seterr(&d->status, UPB_ERROR, "Nesting too deep.");
+    upb_status_setf(&d->status, UPB_ERROR, "Nesting too deep.");
     _upb_dispatcher_unwind(d, UPB_BREAK);
     return d->top;  // Dummy.
   }
@@ -235,7 +234,7 @@ upb_dispatcher_frame *upb_dispatch_startseq(upb_dispatcher *d,
 
 upb_dispatcher_frame *upb_dispatch_endseq(upb_dispatcher *d) {
   //indentm1(d);
-  //printf("END SEQ\n");
+  //fprintf(stderr, "END SEQ\n");
   assert(d->top > d->stack);
   assert(d->top->is_sequence);
   upb_fhandlers *f = d->top->f;
@@ -255,9 +254,9 @@ upb_dispatcher_frame *upb_dispatch_endseq(upb_dispatcher *d) {
 upb_dispatcher_frame *upb_dispatch_startsubmsg(upb_dispatcher *d,
                                                upb_fhandlers *f) {
   //indent(d);
-  //printf("START SUBMSG: %d\n", f->number);
+  //fprintf(stderr, "START SUBMSG: %d\n", f->number);
   if((d->top+1) >= d->limit) {
-    upb_seterr(&d->status, UPB_ERROR, "Nesting too deep.");
+    upb_status_setf(&d->status, UPB_ERROR, "Nesting too deep.");
     _upb_dispatcher_unwind(d, UPB_BREAK);
     return d->top;  // Dummy.
   }
@@ -281,7 +280,7 @@ upb_dispatcher_frame *upb_dispatch_startsubmsg(upb_dispatcher *d,
 
 upb_dispatcher_frame *upb_dispatch_endsubmsg(upb_dispatcher *d) {
   //indentm1(d);
-  //printf("END SUBMSG\n");
+  //fprintf(stderr, "END SUBMSG\n");
   assert(d->top > d->stack);
   assert(!d->top->is_sequence);
   upb_fhandlers *f = d->top->f;

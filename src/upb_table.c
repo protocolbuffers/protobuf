@@ -97,7 +97,7 @@ static uint32_t empty_intbucket(upb_inttable *table)
 // The insert routines have a lot more code duplication between int/string
 // variants than I would like, but there's just a bit too much that varies to
 // parameterize them.
-static void intinsert(upb_inttable *t, upb_inttable_key_t key, void *val) {
+static void intinsert(upb_inttable *t, uint32_t key, const void *val) {
   assert(upb_inttable_lookup(t, key) == NULL);
   upb_inttable_value *table_val;
   if (_upb_inttable_isarrkey(t, key)) {
@@ -160,7 +160,7 @@ static void upb_inttable_insertall(upb_inttable *dst, upb_inttable *src) {
   }
 }
 
-void upb_inttable_insert(upb_inttable *t, upb_inttable_key_t key, void *val) {
+void upb_inttable_insert(upb_inttable *t, uint32_t key, const void *val) {
   if((double)(t->t.count + 1) / upb_inttable_hashtablesize(t) > MAX_LOAD) {
     //printf("RESIZE!\n");
     // Need to resize.  Allocate new table with double the size of however many
@@ -181,7 +181,7 @@ void upb_inttable_insert(upb_inttable *t, upb_inttable_key_t key, void *val) {
 void upb_inttable_compact(upb_inttable *t) {
   // Find the largest array part we can that satisfies the MIN_DENSITY
   // definition.  For now we just count down powers of two.
-  upb_inttable_key_t largest_key = 0;
+  uint32_t largest_key = 0;
   for(upb_inttable_iter i = upb_inttable_begin(t); !upb_inttable_done(i);
       i = upb_inttable_next(t, i)) {
     largest_key = UPB_MAX(largest_key, upb_inttable_iter_key(i));
@@ -260,6 +260,8 @@ upb_inttable_iter upb_inttable_next(upb_inttable *t, upb_inttable_iter iter) {
 /* upb_strtable ***************************************************************/
 
 static upb_strtable_entry *strent(upb_strtable *t, int32_t i) {
+  //fprintf(stderr, "i: %d, table_size: %d\n", i, upb_table_size(&t->t));
+  assert(i <= (int32_t)upb_table_size(&t->t));
   return UPB_INDEX(t->t.entries, i, t->t.entry_size);
 }
 
@@ -267,121 +269,134 @@ static uint32_t upb_strtable_size(upb_strtable *t) {
   return upb_table_size(&t->t);
 }
 
-void upb_strtable_init(upb_strtable *t, uint32_t size, uint16_t entsize) {
+void upb_strtable_init(upb_strtable *t, uint32_t size, uint16_t valuesize) {
+  t->t.value_size = valuesize;
+  size_t entsize = upb_align_up(sizeof(upb_strtable_header) + valuesize, 8);
   upb_table_init(&t->t, size, entsize);
   for (uint32_t i = 0; i < upb_table_size(&t->t); i++) {
     upb_strtable_entry *e = strent(t, i);
-    e->key = NULL;
-    e->next = UPB_END_OF_CHAIN;
+    e->hdr.key = NULL;
+    e->hdr.next = UPB_END_OF_CHAIN;
   }
 }
 
 void upb_strtable_free(upb_strtable *t) {
-  // Free refs from the strtable.
-  upb_strtable_entry *e = upb_strtable_begin(t);
-  for(; e; e = upb_strtable_next(t, e)) {
-    upb_string_unref(e->key);
-  }
+  // Free keys from the strtable.
+  upb_strtable_iter i;
+  for(upb_strtable_begin(&i, t); !upb_strtable_done(&i); upb_strtable_next(&i))
+    free((char*)upb_strtable_iter_key(&i));
   upb_table_free(&t->t);
 }
 
-static uint32_t strtable_bucket(upb_strtable *t, upb_string *key)
-{
-  uint32_t hash = MurmurHash2(upb_string_getrobuf(key), upb_string_len(key), 0);
+static uint32_t strtable_bucket(upb_strtable *t, const char *key) {
+  uint32_t hash = MurmurHash2(key, strlen(key), 0);
   return (hash & t->t.mask);
 }
 
-void *upb_strtable_lookup(upb_strtable *t, upb_string *key)
-{
+void *upb_strtable_lookup(upb_strtable *t, const char *key) {
   uint32_t bucket = strtable_bucket(t, key);
   upb_strtable_entry *e;
   do {
     e = strent(t, bucket);
-    if(e->key && upb_streql(e->key, key)) return e;
-  } while((bucket = e->next) != UPB_END_OF_CHAIN);
+    if(e->hdr.key && strcmp(e->hdr.key, key) == 0) return &e->val;
+  } while((bucket = e->hdr.next) != UPB_END_OF_CHAIN);
   return NULL;
 }
 
-static uint32_t empty_strbucket(upb_strtable *table)
-{
+void *upb_strtable_lookupl(upb_strtable *t, const char *key, size_t len) {
+  // TODO: improve.
+  char key2[len+1];
+  memcpy(key2, key, len);
+  key2[len] = '\0';
+  return upb_strtable_lookup(t, key2);
+}
+
+static uint32_t empty_strbucket(upb_strtable *table) {
   // TODO: does it matter that this is biased towards the front of the table?
   for(uint32_t i = 0; i < upb_strtable_size(table); i++) {
     upb_strtable_entry *e = strent(table, i);
-    if(!e->key) return i;
+    if(!e->hdr.key) return i;
   }
   assert(false);
   return 0;
 }
 
-static void strinsert(upb_strtable *t, upb_strtable_entry *e)
-{
-  assert(upb_strtable_lookup(t, e->key) == NULL);
-  e->key = upb_string_getref(e->key);
+static void strinsert(upb_strtable *t, const char *key, const void *val) {
+  assert(upb_strtable_lookup(t, key) == NULL);
   t->t.count++;
-  uint32_t bucket = strtable_bucket(t, e->key);
+  uint32_t bucket = strtable_bucket(t, key);
   upb_strtable_entry *table_e = strent(t, bucket);
-  if(table_e->key) {  /* Collision. */
-    if(bucket == strtable_bucket(t, table_e->key)) {
+  if(table_e->hdr.key) {  /* Collision. */
+    if(bucket == strtable_bucket(t, table_e->hdr.key)) {
       /* Existing element is in its main posisiton.  Find an empty slot to
        * place our new element and append it to this key's chain. */
       uint32_t empty_bucket = empty_strbucket(t);
-      while (table_e->next != UPB_END_OF_CHAIN)
-        table_e = strent(t, table_e->next);
-      table_e->next = empty_bucket;
+      while (table_e->hdr.next != UPB_END_OF_CHAIN)
+        table_e = strent(t, table_e->hdr.next);
+      table_e->hdr.next = empty_bucket;
       table_e = strent(t, empty_bucket);
     } else {
       /* Existing element is not in its main position.  Move it to an empty
        * slot and put our element in its main position. */
       uint32_t empty_bucket = empty_strbucket(t);
-      uint32_t evictee_bucket = strtable_bucket(t, table_e->key);
+      uint32_t evictee_bucket = strtable_bucket(t, table_e->hdr.key);
       memcpy(strent(t, empty_bucket), table_e, t->t.entry_size); /* copies next */
       upb_strtable_entry *evictee_e = strent(t, evictee_bucket);
       while(1) {
-        assert(evictee_e->key);
-        assert(evictee_e->next != UPB_END_OF_CHAIN);
-        if(evictee_e->next == bucket) {
-          evictee_e->next = empty_bucket;
+        assert(evictee_e->hdr.key);
+        assert(evictee_e->hdr.next != UPB_END_OF_CHAIN);
+        if(evictee_e->hdr.next == bucket) {
+          evictee_e->hdr.next = empty_bucket;
           break;
         }
-        evictee_e = strent(t, evictee_e->next);
+        evictee_e = strent(t, evictee_e->hdr.next);
       }
       /* table_e remains set to our mainpos. */
     }
   }
-  memcpy(table_e, e, t->t.entry_size);
-  table_e->next = UPB_END_OF_CHAIN;
-  //printf("Looking up, string=" UPB_STRFMT "...\n", UPB_STRARG(e->key));
-  assert(upb_strtable_lookup(t, e->key) == table_e);
+  //fprintf(stderr, "val: %p\n", val);
+  //fprintf(stderr, "val size: %d\n", t->t.value_size);
+  memcpy(&table_e->val, val, t->t.value_size);
+  table_e->hdr.key = strdup(key);
+  table_e->hdr.next = UPB_END_OF_CHAIN;
+  //fprintf(stderr, "Looking up, string=%s...\n", key);
+  assert(upb_strtable_lookup(t, key) == &table_e->val);
   //printf("Yay!\n");
 }
 
-void upb_strtable_insert(upb_strtable *t, upb_strtable_entry *e)
-{
+void upb_strtable_insert(upb_strtable *t, const char *key, const void *val) {
   if((double)(t->t.count + 1) / upb_strtable_size(t) > MAX_LOAD) {
     // Need to resize.  New table of double the size, add old elements to it.
     //printf("RESIZE!!\n");
     upb_strtable new_table;
-    upb_strtable_init(&new_table, upb_strtable_size(t)*2, t->t.entry_size);
-    upb_strtable_entry *old_e;
-    for(old_e = upb_strtable_begin(t); old_e; old_e = upb_strtable_next(t, old_e))
-      strinsert(&new_table, old_e);
+    upb_strtable_init(&new_table, upb_strtable_size(t)*2, t->t.value_size);
+    upb_strtable_iter i;
+    upb_strtable_begin(&i, t);
+    for(; !upb_strtable_done(&i); upb_strtable_next(&i)) {
+      strinsert(&new_table,
+                upb_strtable_iter_key(&i),
+                upb_strtable_iter_value(&i));
+    }
     upb_strtable_free(t);
     *t = new_table;
   }
-  strinsert(t, e);
+  strinsert(t, key, val);
 }
 
-void *upb_strtable_begin(upb_strtable *t) {
-  return upb_strtable_next(t, strent(t, -1));
+void upb_strtable_begin(upb_strtable_iter *i, upb_strtable *t) {
+  i->e = strent(t, -1);
+  i->t = t;
+  upb_strtable_next(i);
 }
 
-void *upb_strtable_next(upb_strtable *t, upb_strtable_entry *cur) {
-  upb_strtable_entry *end = strent(t, upb_strtable_size(t));
+void upb_strtable_next(upb_strtable_iter *i) {
+  upb_strtable_entry *end = strent(i->t, upb_strtable_size(i->t));
+  upb_strtable_entry *cur = i->e;
   do {
-    cur = (void*)((char*)cur + t->t.entry_size);
-    if(cur == end) return NULL;
-  } while(cur->key == NULL);
-  return cur;
+    cur = (void*)((char*)cur + i->t->t.entry_size);
+    if(cur == end) { i->e = NULL; return; }
+  } while(cur->hdr.key == NULL);
+  i->e = cur;
 }
 
 #ifdef UPB_UNALIGNED_READS_OK

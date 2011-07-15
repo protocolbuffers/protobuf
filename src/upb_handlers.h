@@ -17,6 +17,7 @@
 #include <limits.h>
 #include "upb.h"
 #include "upb_def.h"
+#include "upb_bytestream.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -303,14 +304,12 @@ typedef struct {
 
   // Members to use as the data source requires.
   void *srcclosure;
+  uint64_t end_ofs;
   uint16_t msgindex;
   uint16_t fieldindex;
-  uint32_t end_offset;
 
-  // Does this frame represent a sequence or a submsg (f might be both).
-  // We only need a single bit here, but this will make each individual
-  // frame grow from 32 to 40 bytes on LP64, which is a bit excessive.
-  bool is_sequence;
+  bool is_sequence;   // frame represents seq or submsg? (f might be both).
+  bool is_packed;     // !upb_issubmsg(f) && end_ofs != UINT64_MAX (strings aren't pushed)
 } upb_dispatcher_frame;
 
 // Called when some of the input needs to be skipped.  All frames from

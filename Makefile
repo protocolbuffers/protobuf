@@ -75,7 +75,6 @@ CORE= \
   src/upb_handlers.c \
   src/upb_descriptor.c \
   src/upb_table.c \
-  src/upb_string.c \
   src/upb_def.c \
   src/upb_msg.c \
   src/upb_varint.c \
@@ -100,7 +99,6 @@ BENCHMARKS_SRC= \
 TESTS_SRC= \
   tests/test_decoder.c \
   tests/test_def.c \
-  tests/test_string.c \
   tests/tests.c \
   tests/tests_varint.c \
 
@@ -212,7 +210,6 @@ tests/test.proto.pb: tests/test.proto
 	protoc tests/test.proto -otests/test.proto.pb
 
 SIMPLE_TESTS= \
-  tests/test_string \
   tests/test_def \
   tests/test_varint \
   tests/tests \

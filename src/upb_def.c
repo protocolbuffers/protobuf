@@ -7,17 +7,10 @@
 
 #include <stdlib.h>
 #include <stddef.h>
+#include <string.h>
 #include "upb_def.h"
 
 #define alignof(t) offsetof(struct { char c; t x; }, x)
-
-/* Search for a character in a string, in reverse. */
-static int my_memrchr(char *data, char c, size_t len)
-{
-  int off = len-1;
-  while(off > 0 && data[off] != c) --off;
-  return off;
-}
 
 void upb_deflist_init(upb_deflist *l) {
   l->size = 8;
@@ -105,7 +98,8 @@ static void upb_def_init(upb_def *def, upb_deftype_t type) {
 }
 
 static void upb_def_uninit(upb_def *def) {
-  upb_string_unref(def->fqname);
+  //fprintf(stderr, "Freeing def: %p\n", def);
+  free(def->fqname);
 }
 
 
@@ -120,19 +114,19 @@ typedef struct _upb_unresolveddef {
   // The target type name.  This may or may not be fully qualified.  It is
   // tempting to want to use base.fqname for this, but that will be qualified
   // which is inappropriate for a name we still have to resolve.
-  upb_string *name;
+  char *name;
 } upb_unresolveddef;
 
 // Is passed a ref on the string.
-static upb_unresolveddef *upb_unresolveddef_new(upb_string *str) {
+static upb_unresolveddef *upb_unresolveddef_new(const char *str) {
   upb_unresolveddef *def = malloc(sizeof(*def));
   upb_def_init(&def->base, UPB_DEF_UNRESOLVED);
-  def->name = upb_string_getref(str);
+  def->name = strdup(str);
   return def;
 }
 
 static void upb_unresolveddef_free(struct _upb_unresolveddef *def) {
-  upb_string_unref(def->name);
+  free(def->name);
   upb_def_uninit(&def->base);
   free(def);
 }
@@ -152,7 +146,7 @@ static void upb_enumdef_free(upb_enumdef *e) {
   upb_enum_iter i;
   for(i = upb_enum_begin(e); !upb_enum_done(i); i = upb_enum_next(e, i)) {
     // Frees the ref taken when the string was parsed.
-    upb_string_unref(upb_enum_iter_name(i));
+    free(upb_enum_iter_name(i));
   }
   upb_strtable_free(&e->ntoi);
   upb_inttable_free(&e->iton);
@@ -170,12 +164,11 @@ upb_enumdef *upb_enumdef_dup(upb_enumdef *e) {
   return new_e;
 }
 
-bool upb_enumdef_addval(upb_enumdef *e, upb_string *name, int32_t num) {
-  if (upb_enumdef_iton(e, num) || upb_enumdef_ntoi(e, name, NULL)) return false;
-  upb_ntoi_ent ntoi_ent = {{name, 0}, num};
-  upb_iton_ent iton_ent = {0, name};
-  upb_strtable_insert(&e->ntoi, &ntoi_ent.e);
-  upb_inttable_insert(&e->iton, num, &iton_ent); // Uses strtable's ref on name
+bool upb_enumdef_addval(upb_enumdef *e, char *name, int32_t num) {
+  if (upb_enumdef_iton(e, num) || upb_enumdef_ntoi(e, name, NULL))
+    return false;
+  upb_strtable_insert(&e->ntoi, name, &num);
+  upb_inttable_insert(&e->iton, num, strdup(name));
   return true;
 }
 
@@ -193,17 +186,20 @@ upb_enum_iter upb_enum_next(upb_enumdef *e, upb_enum_iter iter) {
   return upb_inttable_next(&e->iton, iter);
 }
 
-upb_string *upb_enumdef_iton(upb_enumdef *def, int32_t num) {
-  upb_iton_ent *e =
-      (upb_iton_ent*)upb_inttable_fastlookup(&def->iton, num, sizeof(*e));
-  return e ? e->string : NULL;
+const char *upb_enumdef_iton(upb_enumdef *def, int32_t num) {
+  upb_iton_ent *e = upb_inttable_fastlookup(&def->iton, num, sizeof(*e));
+  return e ? e->str : NULL;
 }
 
-bool upb_enumdef_ntoi(upb_enumdef *def, upb_string *name, int32_t *num) {
-  upb_ntoi_ent *e = (upb_ntoi_ent*)upb_strtable_lookup(&def->ntoi, name);
+bool upb_enumdef_ntoil(upb_enumdef *def, char *name, size_t len, int32_t *num) {
+  upb_ntoi_ent *e = upb_strtable_lookupl(&def->ntoi, name, len);
   if (!e) return false;
   if (num) *num = e->value;
   return true;
+}
+
+bool upb_enumdef_ntoi(upb_enumdef *e, char *name, int32_t *num) {
+  return upb_enumdef_ntoil(e, name, strlen(name), num);
 }
 
 
@@ -228,9 +224,9 @@ upb_fielddef *upb_fielddef_new() {
 
 static void upb_fielddef_free(upb_fielddef *f) {
   if (upb_isstring(f)) {
-    upb_string_unref(upb_value_getstr(f->defaultval));
+    free(upb_value_getptr(f->defaultval));
   }
-  upb_string_unref(f->name);
+  free(f->name);
   free(f);
 }
 
@@ -270,18 +266,18 @@ static bool upb_fielddef_resolve(upb_fielddef *f, upb_def *def, upb_status *s) {
   f->def = def;
   if (f->type == UPB_TYPE(ENUM)) {
     // Resolve the enum's default from a string to an integer.
-    upb_string *str = upb_value_getstr(f->defaultval);
+    char *str = upb_value_getptr(f->defaultval);
     assert(str);  // Should point to either a real default or the empty string.
     upb_enumdef *e = upb_downcast_enumdef(f->def);
     int32_t val = 0;
-    if (str == upb_emptystring()) {
+    if (str[0] == '\0') {
       upb_value_setint32(&f->defaultval, e->defaultval);
     } else {
       bool success = upb_enumdef_ntoi(e, str, &val);
-      upb_string_unref(str);
+      free(str);
       if (!success) {
-        upb_seterr(s, UPB_ERROR, "Default enum value (" UPB_STRFMT ") is not a "
-                   "member of the enum", UPB_STRARG(str));
+        upb_status_setf(s, UPB_ERROR, "Default enum value (%s) is not a "
+                                      "member of the enum", str);
         return false;
       }
       upb_value_setint32(&f->defaultval, val);
@@ -295,9 +291,9 @@ void upb_fielddef_setnumber(upb_fielddef *f, int32_t number) {
   f->number = number;
 }
 
-void upb_fielddef_setname(upb_fielddef *f, upb_string *name) {
+void upb_fielddef_setname(upb_fielddef *f, const char *name) {
   assert(f->msgdef == NULL);
-  f->name = upb_string_getref(name);
+  f->name = strdup(name);
 }
 
 void upb_fielddef_settype(upb_fielddef *f, uint8_t type) {
@@ -326,7 +322,7 @@ void upb_fielddef_setaccessor(upb_fielddef *f, struct _upb_accessor_vtbl *vtbl) 
   f->accessor = vtbl;
 }
 
-void upb_fielddef_settypename(upb_fielddef *f, upb_string *name) {
+void upb_fielddef_settypename(upb_fielddef *f, const char *name) {
   upb_def_unref(f->def);
   f->def = UPB_UPCAST(upb_unresolveddef_new(name));
 }
@@ -424,9 +420,8 @@ bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f) {
   assert(f->msgdef == NULL);
   f->msgdef = m;
   upb_itof_ent itof_ent = {0, f};
-  upb_ntof_ent ntof_ent = {{f->name, 0}, f};
   upb_inttable_insert(&m->itof, f->number, &itof_ent);
-  upb_strtable_insert(&m->ntof, &ntof_ent.e);
+  upb_strtable_insert(&m->ntof, f->name, &f);
   return true;
 }
 
@@ -493,7 +488,6 @@ upb_msg_iter upb_msg_next(upb_msgdef *m, upb_msg_iter iter) {
 /* upb_symtabtxn **************************************************************/
 
 typedef struct {
-  upb_strtable_entry e;
   upb_def *def;
 } upb_symtab_ent;
 
@@ -503,16 +497,19 @@ void upb_symtabtxn_init(upb_symtabtxn *t) {
 
 void upb_symtabtxn_uninit(upb_symtabtxn *txn) {
   upb_strtable *t = &txn->deftab;
-  upb_symtab_ent *e;
-  for(e = upb_strtable_begin(t); e; e = upb_strtable_next(t, &e->e))
-    upb_def_unref(e->def);
+  upb_strtable_iter i;
+  for(upb_strtable_begin(&i, t); !upb_strtable_done(&i); upb_strtable_next(&i)) {
+    const upb_symtab_ent *e = upb_strtable_iter_value(&i);
+    free(e->def);
+  }
   upb_strtable_free(t);
 }
 
 bool upb_symtabtxn_add(upb_symtabtxn *t, upb_def *def) {
   // TODO: check if already present.
-  upb_symtab_ent e = {{def->fqname, 0}, def};
-  upb_strtable_insert(&t->deftab, &e.e);
+  upb_symtab_ent e = {def};
+  //fprintf(stderr, "txn Inserting: %p, ent: %p\n", e.def, &e);
+  upb_strtable_insert(&t->deftab, def->fqname, &e);
   return true;
 }
 
@@ -531,59 +528,28 @@ err:
 // Given a symbol and the base symbol inside which it is defined, find the
 // symbol's definition in t.
 static upb_symtab_ent *upb_resolve(upb_strtable *t,
-                                   upb_string *base, upb_string *sym) {
-  if(upb_string_len(sym) == 0) return NULL;
-  if(upb_string_getrobuf(sym)[0] == UPB_SYMBOL_SEPARATOR) {
+                                   const char *base, const char *sym) {
+  if(strlen(sym) == 0) return NULL;
+  if(sym[0] == UPB_SYMBOL_SEPARATOR) {
     // Symbols starting with '.' are absolute, so we do a single lookup.
     // Slice to omit the leading '.'
-    upb_string *sym_str = upb_strslice(sym, 1, upb_string_len(sym) - 1);
-    upb_symtab_ent *e = upb_strtable_lookup(t, sym_str);
-    upb_string_unref(sym_str);
-    return e;
+    return upb_strtable_lookup(t, sym + 1);
   } else {
     // Remove components from base until we find an entry or run out.
     // TODO: This branch is totally broken, but currently not used.
-    upb_string *sym_str = upb_string_new();
-    int baselen = upb_string_len(base);
-    upb_symtab_ent *ret = NULL;
-    while(1) {
-      // sym_str = base[0...base_len] + UPB_SYMBOL_SEPARATOR + sym
-      upb_strlen_t len = baselen + upb_string_len(sym) + 1;
-      char *buf = upb_string_getrwbuf(sym_str, len);
-      memcpy(buf, upb_string_getrobuf(base), baselen);
-      buf[baselen] = UPB_SYMBOL_SEPARATOR;
-      memcpy(buf + baselen + 1, upb_string_getrobuf(sym), upb_string_len(sym));
-
-      upb_symtab_ent *e = upb_strtable_lookup(t, sym_str);
-      if (e) {
-        ret = e;
-        break;
-      } else if(baselen == 0) {
-        // No more scopes to try.
-        ret = NULL;
-        break;
-      }
-      baselen = my_memrchr(buf, UPB_SYMBOL_SEPARATOR, baselen);
-    }
-    upb_string_unref(sym_str);
-    return ret;
+    (void)base;
+    assert(false);
+    return NULL;
   }
 }
 
-upb_symtabtxn_iter upb_symtabtxn_begin(upb_symtabtxn *t) {
-  return upb_strtable_begin(&t->deftab);
+void upb_symtabtxn_begin(upb_symtabtxn_iter *i, upb_symtabtxn *t) {
+  upb_strtable_begin(i, &t->deftab);
 }
-
-upb_symtabtxn_iter upb_symtabtxn_next(upb_symtabtxn *t, upb_symtabtxn_iter i) {
-  return upb_strtable_next(&t->deftab, i);
-}
-
-bool upb_symtabtxn_done(upb_symtabtxn_iter i) {
-  return i == NULL;
-}
-
-upb_def *upb_symtabtxn_iter_def(upb_symtabtxn_iter iter) {
-  upb_symtab_ent *e = iter;
+void upb_symtabtxn_next(upb_symtabtxn_iter *i) { upb_strtable_next(i); }
+bool upb_symtabtxn_done(upb_symtabtxn_iter *i) { return upb_strtable_done(i); }
+upb_def *upb_symtabtxn_iter_def(upb_symtabtxn_iter *i) {
+  const upb_symtab_ent *e = upb_strtable_iter_value(i);
   return e->def;
 }
 
@@ -591,8 +557,10 @@ upb_def *upb_symtabtxn_iter_def(upb_symtabtxn_iter iter) {
 /* upb_symtab public interface ************************************************/
 
 static void _upb_symtab_free(upb_strtable *t) {
-  upb_symtab_ent *e;
-  for (e = upb_strtable_begin(t); e; e = upb_strtable_next(t, &e->e)) {
+  upb_strtable_iter i;
+  upb_strtable_begin(&i, t);
+  for (; !upb_strtable_done(&i); upb_strtable_next(&i)) {
+    const upb_symtab_ent *e = upb_strtable_iter_value(&i);
     assert(upb_atomic_read(&e->def->refcount) == 0);
     upb_def_free(e->def);
   }
@@ -632,9 +600,11 @@ upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_deftype_t type) {
   // We may only use part of this, depending on how many symbols are of the
   // correct type.
   upb_def **defs = malloc(sizeof(*defs) * total);
-  upb_symtab_ent *e = upb_strtable_begin(&s->symtab);
+  upb_strtable_iter iter;
+  upb_strtable_begin(&iter, &s->symtab);
   int i = 0;
-  for(; e; e = upb_strtable_next(&s->symtab, &e->e)) {
+  for(; !upb_strtable_done(&iter); upb_strtable_next(&iter)) {
+    const upb_symtab_ent *e = upb_strtable_iter_value(&iter);
     upb_def *def = e->def;
     assert(def);
     if(type == UPB_DEF_ANY || def->type == type)
@@ -646,7 +616,7 @@ upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_deftype_t type) {
   return defs;
 }
 
-upb_def *upb_symtab_lookup(upb_symtab *s, upb_string *sym) {
+upb_def *upb_symtab_lookup(upb_symtab *s, const char *sym) {
   upb_rwlock_rdlock(&s->lock);
   upb_symtab_ent *e = upb_strtable_lookup(&s->symtab, sym);
   upb_def *ret = NULL;
@@ -658,9 +628,9 @@ upb_def *upb_symtab_lookup(upb_symtab *s, upb_string *sym) {
   return ret;
 }
 
-upb_def *upb_symtab_resolve(upb_symtab *s, upb_string *base, upb_string *symbol) {
+upb_def *upb_symtab_resolve(upb_symtab *s, const char *base, const char *sym) {
   upb_rwlock_rdlock(&s->lock);
-  upb_symtab_ent *e = upb_resolve(&s->symtab, base, symbol);
+  upb_symtab_ent *e = upb_resolve(&s->symtab, base, sym);
   upb_def *ret = NULL;
   if(e) {
     ret = e->def;
@@ -692,8 +662,9 @@ bool upb_symtab_dfs(upb_def *def, upb_def **open_defs, int n,
 
   bool replacing = (upb_strtable_lookup(&txn->deftab, m->base.fqname) != NULL);
   if (needcopy && !replacing) {
-    upb_symtab_ent e = {{def->fqname, 0}, upb_def_dup(def)};
-    upb_strtable_insert(&txn->deftab, &e.e);
+    upb_symtab_ent e = {upb_def_dup(def)};
+    //fprintf(stderr, "Replacing def: %p\n", e.def);
+    upb_strtable_insert(&txn->deftab, def->fqname, &e);
     replacing = true;
   }
   return replacing;
@@ -706,25 +677,29 @@ bool upb_symtab_commit(upb_symtab *s, upb_symtabtxn *txn, upb_status *status) {
   // themselves be replaced with versions that will point to the new defs.
   // Do a DFS -- any path that finds a new def must replace all ancestors.
   upb_strtable *symtab = &s->symtab;
-  upb_symtab_ent *e;
-  for(e = upb_strtable_begin(symtab); e; e = upb_strtable_next(symtab, &e->e)) {
+  upb_strtable_iter i;
+  upb_strtable_begin(&i, symtab);
+  for(; !upb_strtable_done(&i); upb_strtable_next(&i)) {
     upb_def *open_defs[UPB_MAX_TYPE_DEPTH];
+    const upb_symtab_ent *e = upb_strtable_iter_value(&i);
     upb_symtab_dfs(e->def, open_defs, 0, txn);
   }
 
   // Resolve all refs.
   upb_strtable *txntab = &txn->deftab;
-  for(e = upb_strtable_begin(txntab); e; e = upb_strtable_next(txntab, &e->e)) {
+  upb_strtable_begin(&i, txntab);
+  for(; !upb_strtable_done(&i); upb_strtable_next(&i)) {
+    const upb_symtab_ent *e = upb_strtable_iter_value(&i);
     upb_msgdef *m = upb_dyncast_msgdef(e->def);
     if(!m) continue;
     // Type names are resolved relative to the message in which they appear.
-    upb_string *base = m->base.fqname;
+    const char *base = m->base.fqname;
 
-    upb_msg_iter i;
-    for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
-      upb_fielddef *f = upb_msg_iter_field(i);
+    upb_msg_iter j;
+    for(j = upb_msg_begin(m); !upb_msg_done(j); j = upb_msg_next(m, j)) {
+      upb_fielddef *f = upb_msg_iter_field(j);
       if(!upb_hasdef(f)) continue;  // No resolving necessary.
-      upb_string *name = upb_downcast_unresolveddef(f->def)->name;
+      const char *name = upb_downcast_unresolveddef(f->def)->name;
 
       // Resolve from either the txntab (pending adds) or symtab (existing
       // defs).  If both exist, prefer the pending add, because it will be
@@ -732,17 +707,18 @@ bool upb_symtab_commit(upb_symtab *s, upb_symtabtxn *txn, upb_status *status) {
       upb_symtab_ent *found;
       if(!(found = upb_resolve(txntab, base, name)) &&
          !(found = upb_resolve(symtab, base, name))) {
-        upb_seterr(status, UPB_ERROR,
-                   "could not resolve symbol '" UPB_STRFMT "'"
-                   " in context '" UPB_STRFMT "'",
-                   UPB_STRARG(name), UPB_STRARG(base));
+        upb_status_setf(status, UPB_ERROR, "could not resolve symbol '%s' "
+                                           "in context '%s'", name, base);
         return false;
       }
 
       // Check the type of the found def.
       upb_fieldtype_t expected = upb_issubmsg(f) ? UPB_DEF_MSG : UPB_DEF_ENUM;
+      //fprintf(stderr, "found: %p\n", found);
+      //fprintf(stderr, "found->def: %p\n", found->def);
+      //fprintf(stderr, "found->def->type: %d\n", found->def->type);
       if(found->def->type != expected) {
-        upb_seterr(status, UPB_ERROR, "Unexpected type");
+        upb_status_setf(status, UPB_ERROR, "Unexpected type");
         return false;
       }
       if (!upb_fielddef_resolve(f, found->def, status)) return false;
@@ -751,9 +727,9 @@ bool upb_symtab_commit(upb_symtab *s, upb_symtabtxn *txn, upb_status *status) {
 
   // The defs in the transaction have been vetted, and can be moved to the
   // symtab without causing errors.
-  upb_symtab_ent *tmptab_e;
-  for(tmptab_e = upb_strtable_begin(txntab); tmptab_e;
-      tmptab_e = upb_strtable_next(txntab, &tmptab_e->e)) {
+  upb_strtable_begin(&i, txntab);
+  for(; !upb_strtable_done(&i); upb_strtable_next(&i)) {
+    const upb_symtab_ent *tmptab_e = upb_strtable_iter_value(&i);
     upb_def_movetosymtab(tmptab_e->def, s);
     upb_symtab_ent *symtab_e =
         upb_strtable_lookup(&s->symtab, tmptab_e->def->fqname);
@@ -761,7 +737,8 @@ bool upb_symtab_commit(upb_symtab *s, upb_symtabtxn *txn, upb_status *status) {
       upb_deflist_push(&s->olddefs, symtab_e->def);
       symtab_e->def = tmptab_e->def;
     } else {
-      upb_strtable_insert(&s->symtab, &tmptab_e->e);
+      //fprintf(stderr, "Inserting def: %p\n", tmptab_e->def);
+      upb_strtable_insert(&s->symtab, tmptab_e->def->fqname, tmptab_e);
     }
   }
 

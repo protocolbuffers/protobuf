@@ -28,7 +28,7 @@ extern "C" {
 // definitions that are contained inside.  "name" tracks the name of the
 // message or package (a bare name -- not qualified by any enclosing scopes).
 typedef struct {
-  upb_string *name;
+  char *name;
   // Index of the first def that is under this scope.  For msgdefs, the
   // msgdef itself is at start-1.
   int start;
@@ -42,11 +42,11 @@ typedef struct {
   upb_status status;
 
   uint32_t number;
-  upb_string *name;
+  char *name;
   bool saw_number;
   bool saw_name;
 
-  upb_string *default_string;
+  char *default_string;
 
   upb_fielddef *f;
 } upb_descreader;

@@ -1,12 +1,14 @@
 
 #include "main.c"
 
+#include <stdlib.h>
 #include "upb_def.h"
 #include "upb_decoder.h"
 #include "upb_strstream.h"
 #include "upb_glue.h"
 
-static upb_string *input_str;
+static char *input_str;
+static size_t input_len;
 static upb_msgdef *def;
 static upb_decoder decoder;
 static upb_stringsrc stringsrc;
@@ -29,32 +31,21 @@ static bool initialize()
   // Initialize upb state, decode descriptor.
   upb_status status = UPB_STATUS_INIT;
   upb_symtab *s = upb_symtab_new();
-
-  upb_string *fds_str = upb_strreadfile(MESSAGE_DESCRIPTOR_FILE);
-  if(fds_str == NULL) {
-    fprintf(stderr, "Couldn't read " MESSAGE_DESCRIPTOR_FILE ":"),
-    upb_printerr(&status);
-    return false;
-  }
-  upb_read_descriptor(s, fds_str, &status);
-  upb_string_unref(fds_str);
-
+  upb_read_descriptorfile(s, MESSAGE_DESCRIPTOR_FILE, &status);
   if(!upb_ok(&status)) {
-    fprintf(stderr, "Error importing " MESSAGE_DESCRIPTOR_FILE ":");
-    upb_printerr(&status);
+    upb_status_print(&status, stderr);
     return false;
   }
 
-  def = upb_dyncast_msgdef(upb_symtab_lookup(s, UPB_STRLIT(MESSAGE_NAME)));
+  def = upb_dyncast_msgdef(upb_symtab_lookup(s, MESSAGE_NAME));
   if(!def) {
-    fprintf(stderr, "Error finding symbol '" UPB_STRFMT "'.\n",
-            UPB_STRARG(UPB_STRLIT(MESSAGE_NAME)));
+    fprintf(stderr, "Error finding symbol '%s'.\n", MESSAGE_NAME);
     return false;
   }
   upb_symtab_unref(s);
 
   // Read the message data itself.
-  input_str = upb_strreadfile(MESSAGE_FILE);
+  input_str = upb_readfile(MESSAGE_FILE, &input_len);
   if(input_str == NULL) {
     fprintf(stderr, "Error reading " MESSAGE_FILE "\n");
     return false;
@@ -72,7 +63,7 @@ static bool initialize()
 
 static void cleanup()
 {
-  upb_string_unref(input_str);
+  free(input_str);
   upb_def_unref(UPB_UPCAST(def));
   upb_decoder_uninit(&decoder);
   upb_stringsrc_uninit(&stringsrc);
@@ -82,14 +73,14 @@ static size_t run(int i)
 {
   (void)i;
   upb_status status = UPB_STATUS_INIT;
-  upb_stringsrc_reset(&stringsrc, input_str);
-  upb_decoder_reset(&decoder, upb_stringsrc_bytesrc(&stringsrc), NULL);
+  upb_stringsrc_reset(&stringsrc, input_str, input_len);
+  upb_decoder_reset(&decoder, upb_stringsrc_bytesrc(&stringsrc), 0, UINT64_MAX, NULL);
   upb_decoder_decode(&decoder, &status);
   if(!upb_ok(&status)) goto err;
-  return upb_string_len(input_str);
+  return input_len;
 
 err:
   fprintf(stderr, "Decode error: ");
-  upb_printerr(&status);
+  upb_status_print(&status, stderr);
   return 0;
 }

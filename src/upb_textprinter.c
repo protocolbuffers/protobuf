@@ -21,12 +21,15 @@ struct _upb_textprinter {
 
 #define CHECK(x) if ((x) < 0) goto err;
 
-static int upb_textprinter_putescaped(upb_textprinter *p, upb_string *str,
+static int upb_textprinter_putescaped(upb_textprinter *p, upb_strref *strref,
                                       bool preserve_utf8) {
   // Based on CEscapeInternal() from Google's protobuf release.
+  // TODO; we could read directly fraom a bytesrc's buffer instead.
   // TODO; we could write directly into a bytesink's buffer instead.
   char dstbuf[4096], *dst = dstbuf, *dstend = dstbuf + sizeof(dstbuf);
-  const char *src = upb_string_getrobuf(str), *end = src + upb_string_len(str);
+  char buf[strref->len], *src = buf;
+  char *end = src + strref->len;
+  upb_strref_read(strref, src);
 
   // I think hex is prettier and more useful, but proto2 uses octal; should
   // investigate whether it can parse hex also.
@@ -35,8 +38,7 @@ static int upb_textprinter_putescaped(upb_textprinter *p, upb_string *str,
 
   for (; src < end; src++) {
     if (dstend - dst < 4) {
-      upb_string str = UPB_STACK_STRING_LEN(dstbuf, dst - dstbuf);
-      CHECK(upb_bytesink_putstr(p->bytesink, &str, &p->status));
+      CHECK(upb_bytesink_write(p->bytesink, dstbuf, dst - dstbuf, &p->status));
       dst = dstbuf;
     }
 
@@ -64,8 +66,7 @@ static int upb_textprinter_putescaped(upb_textprinter *p, upb_string *str,
     last_hex_escape = is_hex_escape;
   }
   // Flush remaining data.
-  upb_string outstr = UPB_STACK_STRING_LEN(dstbuf, dst - dstbuf);
-  CHECK(upb_bytesink_putstr(p->bytesink, &outstr, &p->status));
+  CHECK(upb_bytesink_write(p->bytesink, dst, dst - dstbuf, &p->status));
   return 0;
 err:
   return -1;
@@ -74,7 +75,7 @@ err:
 static int upb_textprinter_indent(upb_textprinter *p) {
   if(!p->single_line)
     for(int i = 0; i < p->indent_depth; i++)
-      CHECK(upb_bytesink_putstr(p->bytesink, UPB_STRLIT("  "), &p->status));
+      CHECK(upb_bytesink_writestr(p->bytesink, "  ", &p->status));
   return 0;
 err:
   return -1;
@@ -82,9 +83,9 @@ err:
 
 static int upb_textprinter_endfield(upb_textprinter *p) {
   if(p->single_line) {
-    CHECK(upb_bytesink_putstr(p->bytesink, UPB_STRLIT(" "), &p->status));
+    CHECK(upb_bytesink_writestr(p->bytesink, " ", &p->status));
   } else {
-    CHECK(upb_bytesink_putstr(p->bytesink, UPB_STRLIT("\n"), &p->status));
+    CHECK(upb_bytesink_writestr(p->bytesink, "\n", &p->status));
   }
   return 0;
 err:
@@ -96,7 +97,7 @@ static upb_flow_t upb_textprinter_value(void *_p, upb_value fval,
   upb_textprinter *p = _p;
   upb_fielddef *f = upb_value_getfielddef(fval);
   upb_textprinter_indent(p);
-  CHECK(upb_bytesink_printf(p->bytesink, &p->status, UPB_STRFMT ": ", UPB_STRARG(f->name)));
+  CHECK(upb_bytesink_printf(p->bytesink, &p->status, "%s: ", f->name));
 #define CASE(fmtstr, member) \
     CHECK(upb_bytesink_printf(p->bytesink, &p->status, fmtstr, upb_value_get ## member(val))); break;
   switch(f->type) {
@@ -118,12 +119,11 @@ static upb_flow_t upb_textprinter_value(void *_p, upb_value fval,
       CASE("%" PRIu32, uint32);
     case UPB_TYPE(ENUM): {
       upb_enumdef *enum_def = upb_downcast_enumdef(f->def);
-      upb_string *enum_label =
-          upb_enumdef_iton(enum_def, upb_value_getint32(val));
-      if (enum_label) {
+      const char *label = upb_enumdef_iton(enum_def, upb_value_getint32(val));
+      if (label) {
         // We found a corresponding string for this enum.  Otherwise we fall
         // through to the int32 code path.
-        CHECK(upb_bytesink_putstr(p->bytesink, enum_label, &p->status));
+        CHECK(upb_bytesink_writestr(p->bytesink, label, &p->status));
         break;
       }
     }
@@ -134,12 +134,13 @@ static upb_flow_t upb_textprinter_value(void *_p, upb_value fval,
     case UPB_TYPE(BOOL):
       CASE("%hhu", bool);
     case UPB_TYPE(STRING):
-    case UPB_TYPE(BYTES):
-      CHECK(upb_bytesink_putstr(p->bytesink, UPB_STRLIT("\""), &p->status));
-      CHECK(upb_textprinter_putescaped(p, upb_value_getstr(val),
+    case UPB_TYPE(BYTES): {
+      CHECK(upb_bytesink_writestr(p->bytesink, "\"", &p->status));
+      CHECK(upb_textprinter_putescaped(p, upb_value_getstrref(val),
                                        f->type == UPB_TYPE(STRING)));
-      CHECK(upb_bytesink_putstr(p->bytesink, UPB_STRLIT("\""), &p->status));
+      CHECK(upb_bytesink_writestr(p->bytesink, "\"", &p->status));
       break;
+    }
   }
   upb_textprinter_endfield(p);
   return UPB_CONTINUE;
@@ -151,11 +152,10 @@ static upb_sflow_t upb_textprinter_startsubmsg(void *_p, upb_value fval) {
   upb_textprinter *p = _p;
   upb_fielddef *f = upb_value_getfielddef(fval);
   upb_textprinter_indent(p);
-  bool ret = upb_bytesink_printf(p->bytesink, &p->status,
-                                 UPB_STRFMT " {", UPB_STRARG(f->name));
+  bool ret = upb_bytesink_printf(p->bytesink, &p->status, "%s {", f->name);
   if (!ret) return UPB_SBREAK;
   if (!p->single_line)
-    upb_bytesink_putstr(p->bytesink, UPB_STRLIT("\n"), &p->status);
+    upb_bytesink_writestr(p->bytesink, "\n", &p->status);
   p->indent_depth++;
   return UPB_CONTINUE_WITH(_p);
 }
@@ -165,7 +165,7 @@ static upb_flow_t upb_textprinter_endsubmsg(void *_p, upb_value fval) {
   upb_textprinter *p = _p;
   p->indent_depth--;
   upb_textprinter_indent(p);
-  upb_bytesink_putstr(p->bytesink, UPB_STRLIT("}"), &p->status);
+  upb_bytesink_writestr(p->bytesink, "}", &p->status);
   upb_textprinter_endfield(p);
   return UPB_CONTINUE;
 }

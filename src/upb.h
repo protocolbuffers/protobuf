@@ -30,9 +30,7 @@ extern "C" {
 #define UPB_MIN(x, y) ((x) < (y) ? (x) : (y))
 #define UPB_INDEX(base, i, m) (void*)((char*)(base) + ((i)*(m)))
 
-INLINE void nop_printf(const char *fmt, ...) {
-  (void)fmt;
-}
+INLINE void nop_printf(const char *fmt, ...) { (void)fmt; }
 
 #ifdef NDEBUG
 #define DEBUGPRINTF nop_printf
@@ -44,7 +42,6 @@ INLINE void nop_printf(const char *fmt, ...) {
 INLINE size_t upb_align_up(size_t val, size_t align) {
   return val % align == 0 ? val : val + align - (val % align);
 }
-
 
 // The maximum that any submessages can be nested.  Matches proto2's limit.
 // At the moment this specifies the size of several statically-sized arrays
@@ -122,31 +119,16 @@ typedef struct {
 extern const upb_type_info upb_types[];
 
 
-/* Polymorphic values of .proto types *****************************************/
+/* upb_value ******************************************************************/
 
-struct _upb_string;
-typedef struct _upb_string upb_string;
-struct _upb_array;
-typedef struct _upb_array upb_array;
-struct _upb_msg;
-typedef struct _upb_msg upb_msg;
-struct _upb_bytesrc;
-typedef struct _upb_bytesrc upb_bytesrc;
+struct _upb_strref;
 struct _upb_fielddef;
-typedef struct _upb_fielddef upb_fielddef;
 
-typedef int32_t upb_strlen_t;
-#define UPB_STRLEN_MAX INT32_MAX
-
-// The type of a upb_value.  This is like a upb_fieldtype_t, but adds the
-// constant UPB_VALUETYPE_ARRAY to represent an array.
-typedef uint8_t upb_valuetype_t;
-#define UPB_TYPE_ENDGROUP 19  // Need to increase if more real types are added!
-#define UPB_VALUETYPE_ARRAY 32
-#define UPB_VALUETYPE_BYTESRC 32
-#define UPB_VALUETYPE_RAW 33
-#define UPB_VALUETYPE_FIELDDEF 34
-#define UPB_VALUETYPE_PTR 35
+// Special constants for the upb_value.type field.  These must not conflict
+// with any members of FieldDescriptorProto.Type.
+#define UPB_TYPE_ENDGROUP 0
+#define UPB_VALUETYPE_FIELDDEF 32
+#define UPB_VALUETYPE_PTR 33
 
 // A single .proto value.  The owner must have an out-of-band way of knowing
 // the type, so that it knows which union member to use.
@@ -159,19 +141,15 @@ typedef struct {
     int64_t int64;
     uint32_t uint32;
     bool _bool;
-    upb_string *str;
-    upb_bytesrc *bytesrc;
-    upb_msg *msg;
-    upb_array *arr;
-    upb_atomic_t *refcount;
-    upb_fielddef *fielddef;
+    struct _upb_strref *strref;
+    struct _upb_fielddef *fielddef;
     void *_void;
   } val;
 
+#ifndef NDEBUG
   // In debug mode we carry the value type around also so we can check accesses
   // to be sure the right member is being read.
-#ifndef NDEBUG
-  upb_valuetype_t type;
+  char type;
 #endif
 } upb_value;
 
@@ -183,7 +161,7 @@ typedef struct {
 
 #define UPB_VALUE_ACCESSORS(name, membername, ctype, proto_type) \
   INLINE ctype upb_value_get ## name(upb_value val) { \
-    assert(val.type == proto_type || val.type == UPB_VALUETYPE_RAW); \
+    assert(val.type == proto_type); \
     return val.val.membername; \
   } \
   INLINE void upb_value_set ## name(upb_value *val, ctype cval) { \
@@ -197,18 +175,14 @@ UPB_VALUE_ACCESSORS(int64, int64, int64_t, UPB_TYPE(INT64));
 UPB_VALUE_ACCESSORS(uint32, uint32, uint32_t, UPB_TYPE(UINT32));
 UPB_VALUE_ACCESSORS(uint64, uint64, uint64_t, UPB_TYPE(UINT64));
 UPB_VALUE_ACCESSORS(bool, _bool, bool, UPB_TYPE(BOOL));
-UPB_VALUE_ACCESSORS(str, str, upb_string*, UPB_TYPE(STRING));  // Marked for destruction.
-UPB_VALUE_ACCESSORS(fielddef, fielddef, upb_fielddef*, UPB_VALUETYPE_FIELDDEF);
+UPB_VALUE_ACCESSORS(strref, strref, struct _upb_strref*, UPB_TYPE(STRING));
+UPB_VALUE_ACCESSORS(fielddef, fielddef, struct _upb_fielddef*, UPB_VALUETYPE_FIELDDEF);
 UPB_VALUE_ACCESSORS(ptr, _void, void*, UPB_VALUETYPE_PTR);
 
 extern upb_value UPB_NO_VALUE;
 
-INLINE upb_atomic_t *upb_value_getrefcount(upb_value val) {
-  assert(val.type == UPB_TYPE(MESSAGE) ||
-         val.type == UPB_TYPE(STRING) ||
-         val.type == UPB_VALUETYPE_ARRAY);
-  return val.val.refcount;
-}
+
+/* upb_status *****************************************************************/
 
 // Status codes used as a return value.  Codes >0 are not fatal and can be
 // resumed.
@@ -224,42 +198,38 @@ enum upb_status_code {
 
   // An unrecoverable error occurred.
   UPB_ERROR = -1,
-
-  // A recoverable error occurred (for example, data of the wrong type was
-  // encountered which we can skip over).
-  // UPB_STATUS_RECOVERABLE_ERROR = -2
 };
 
 // TODO: consider adding error space and code, to let ie. errno be stored
 // as a proper code, or application-specific error codes.
-struct _upb_status {
+typedef struct {
   char code;
-  upb_string *str;
-};
+  char *str;  // NULL when no message is present.  NULL-terminated.
+  char *buf;  // Owned by the status.
+  size_t bufsize;
+} upb_status;
 
-typedef struct _upb_status upb_status;
+#define UPB_STATUS_INIT {UPB_OK, NULL, NULL, 0}
 
-#define UPB_STATUS_INIT {UPB_OK, NULL}
-#define UPB_ERRORMSG_MAXLEN 256
-
-INLINE bool upb_ok(upb_status *status) {
-  return status->code == UPB_OK;
-}
-
-INLINE void upb_status_init(upb_status *status) {
-  status->code = UPB_OK;
-  status->str = NULL;
-}
-
+void upb_status_init(upb_status *status);
 void upb_status_uninit(upb_status *status);
 
-// Caller owns a ref on the returned string.
-upb_string *upb_status_tostring(upb_status *status);
-void upb_printerr(upb_status *status);
-void upb_clearerr(upb_status *status);
-void upb_seterr(upb_status *status, enum upb_status_code code, const char *msg,
-                ...);
-void upb_copyerr(upb_status *to, upb_status *from);
+INLINE bool upb_ok(upb_status *status) { return status->code == UPB_OK; }
+INLINE bool upb_iseof(upb_status *status) { return status->code == UPB_EOF; }
+
+void upb_status_fromerrno(upb_status *status);
+void upb_status_print(upb_status *status, FILE *f);
+void upb_status_clear(upb_status *status);
+void upb_status_setf(upb_status *status, enum upb_status_code code,
+                     const char *fmt, ...);
+void upb_status_copy(upb_status *to, upb_status *from);
+
+// Like vaprintf, but uses *buf (which can be NULL) as a starting point and
+// reallocates it only if the new value will not fit.  "size" is updated to
+// reflect the allocated size of the buffer.  Returns false on memory alloc
+// failure.
+int upb_vrprintf(char **buf, size_t *size, size_t ofs,
+                 const char *fmt, va_list args);
 
 #ifdef __cplusplus
 }  /* extern "C" */

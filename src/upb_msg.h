@@ -148,7 +148,7 @@ typedef struct {
 void upb_msgvisitor_init(upb_msgvisitor *v, upb_msgdef *md, upb_handlers *h);
 void upb_msgvisitor_uninit(upb_msgvisitor *v);
 
-void upb_msgvisitor_reset(upb_msgvisitor *v, upb_msg *m);
+void upb_msgvisitor_reset(upb_msgvisitor *v, void *m);
 void upb_msgvisitor_visit(upb_msgvisitor *v, upb_status *status);
 
 
@@ -183,8 +183,8 @@ upb_flow_t upb_stdmsg_setbool(void *c, upb_value fval, upb_value val);
 // if necessary.
 typedef struct {
   char *ptr;
-  int32_t len;   // Number of elements present.
-  int32_t size;  // Number of elements allocated.
+  uint32_t len;   // Number of elements present.
+  uint32_t size;  // Number of elements allocated.
 } upb_stdarray;
 
 upb_flow_t upb_stdmsg_setint64_r(void *c, upb_value fval, upb_value val);

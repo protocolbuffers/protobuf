@@ -1,7 +1,6 @@
 
 #undef NDEBUG  /* ensure tests always assert. */
 #include "upb_table.h"
-#include "upb_string.h"
 #include "test_util.h"
 #include <assert.h>
 #include <map>
@@ -23,7 +22,6 @@ typedef struct {
 } inttable_entry;
 
 typedef struct {
-  upb_strtable_entry e;
   int32_t value;  /* ASCII Value of first letter */
 } strtable_entry;
 
@@ -47,34 +45,29 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
     all.insert(key);
     strtable_entry e;
     e.value = key[0];
-    upb_string *str = upb_strduplen(key.c_str(), key.size());
-    e.e.key = str;
-    upb_strtable_insert(&table, &e.e);
-    upb_string_unref(str);  // The table still owns a ref.
+    upb_strtable_insert(&table, key.c_str(), &e);
     m[key] = key[0];
   }
 
   /* Test correctness. */
   for(uint32_t i = 0; i < keys.size(); i++) {
     const string& key = keys[i];
-    upb_string *str = upb_strduplen(key.c_str(), key.size());
-    strtable_entry *e = (strtable_entry*)upb_strtable_lookup(&table, str);
-    printf("Looking up " UPB_STRFMT "...\n", UPB_STRARG(str));
+    strtable_entry *e = (strtable_entry*)upb_strtable_lookup(&table, key.c_str());
+    printf("Looking up %s...\n", key.c_str());
     if(m.find(key) != m.end()) { /* Assume map implementation is correct. */
       assert(e);
-      assert(upb_streql(e->e.key, str));
       assert(e->value == key[0]);
       assert(m[key] == key[0]);
     } else {
       assert(e == NULL);
     }
-    upb_string_unref(str);
   }
 
-  strtable_entry *e;
-  for(e = (strtable_entry*)upb_strtable_begin(&table); e;
-      e = (strtable_entry*)upb_strtable_next(&table, &e->e)) {
-    string tmp(upb_string_getrobuf(e->e.key), upb_string_len(e->e.key));
+  upb_strtable_iter iter;
+  for(upb_strtable_begin(&iter, &table); !upb_strtable_done(&iter);
+      upb_strtable_next(&iter)) {
+    const char *key = upb_strtable_iter_key(&iter);
+    string tmp(key, strlen(key));
     std::set<string>::iterator i = all.find(tmp);
     assert(i != all.end());
     all.erase(i);

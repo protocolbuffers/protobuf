@@ -71,18 +71,17 @@ void compare_arrays(const google::protobuf::Reflection *r,
       case UPB_TYPE(STRING):
       case UPB_TYPE(BYTES): {
         std::string str = r->GetRepeatedString(proto2_msg, proto2_f, i);
-        upb_string *upbstr = upb_value_getstr(v);
-        std::string str2(upb_string_getrobuf(upbstr), upb_string_len(upbstr));
-        string_size += upb_string_len(upbstr);
+        upb_stdarray *upbstr = (upb_stdarray*)upb_value_getptr(v);
+        std::string str2(upbstr->ptr, upbstr->len);
+        string_size += upbstr->len;
         ASSERT(str == str2);
         break;
       }
       case UPB_TYPE(GROUP):
       case UPB_TYPE(MESSAGE):
-        // XXX: getstr
         ASSERT(upb_dyncast_msgdef(upb_f->def) != NULL);
         compare(r->GetRepeatedMessage(proto2_msg, proto2_f, i),
-                upb_value_getstr(v), upb_downcast_msgdef(upb_f->def));
+                upb_value_getptr(v), upb_downcast_msgdef(upb_f->def));
     }
   }
   ASSERT(upb_seq_done(iter));
@@ -129,9 +128,9 @@ void compare_values(const google::protobuf::Reflection *r,
     case UPB_TYPE(STRING):
     case UPB_TYPE(BYTES): {
       std::string str = r->GetString(proto2_msg, proto2_f);
-      upb_string *upbstr = upb_value_getstr(v);
-      std::string str2(upb_string_getrobuf(upbstr), upb_string_len(upbstr));
-      string_size += upb_string_len(upbstr);
+      upb_stdarray *upbstr = (upb_stdarray*)upb_value_getptr(v);
+      std::string str2(upbstr->ptr, upbstr->len);
+      string_size += upbstr->len;
       ASSERT(str == str2);
       break;
     }
@@ -139,7 +138,7 @@ void compare_values(const google::protobuf::Reflection *r,
     case UPB_TYPE(MESSAGE):
       // XXX: getstr
       compare(r->GetMessage(proto2_msg, proto2_f),
-              upb_value_getstr(v), upb_downcast_msgdef(upb_f->def));
+              upb_value_getptr(v), upb_downcast_msgdef(upb_f->def));
   }
 }
 
@@ -159,9 +158,7 @@ void compare(const google::protobuf::Message& proto2_msg,
     ASSERT(upb_f);
     ASSERT(proto2_f);
     ASSERT(upb_f->number == proto2_f->number());
-    ASSERT(std::string(upb_string_getrobuf(upb_f->name),
-                       upb_string_len(upb_f->name)) ==
-           proto2_f->name());
+    ASSERT(std::string(upb_f->name) == proto2_f->name());
     ASSERT(upb_f->type == proto2_f->type());
     ASSERT(upb_isseq(upb_f) == proto2_f->is_repeated());
 
@@ -183,22 +180,22 @@ void compare(const google::protobuf::Message& proto2_msg,
 
 void parse_and_compare(MESSAGE_CIDENT *proto2_msg,
                        void *upb_msg, upb_msgdef *upb_md,
-                       upb_string *str)
+                       const char *str, size_t len)
 {
   // Parse to both proto2 and upb.
-  ASSERT(proto2_msg->ParseFromArray(upb_string_getrobuf(str), upb_string_len(str)));
+  ASSERT(proto2_msg->ParseFromArray(str, len));
   upb_status status = UPB_STATUS_INIT;
   upb_msg_clear(upb_msg, upb_md);
-  upb_strtomsg(str, upb_msg, upb_md, &status);
+  upb_strtomsg(str, len, upb_msg, upb_md, &status);
   if (!upb_ok(&status)) {
     fprintf(stderr, "Error parsing test protobuf: ");
-    upb_printerr(&status);
+    upb_status_print(&status, stderr);
     exit(1);
   }
   string_size = 0;
   compare(*proto2_msg, upb_msg, upb_md);
-  printf("Total size: %d, string size: %zd (%0.2f%%)\n", upb_string_len(str),
-         string_size, (double)string_size / upb_string_len(str) * 100);
+  printf("Total size: %zd, string size: %zd (%0.2f%%)\n", len,
+         string_size, (double)string_size / len * 100);
   upb_status_uninit(&status);
 }
 
@@ -221,31 +218,30 @@ int main(int argc, char *argv[])
   // Initialize upb state, parse descriptor.
   upb_status status = UPB_STATUS_INIT;
   upb_symtab *symtab = upb_symtab_new();
-  upb_string *fds = upb_strreadfile(MESSAGE_DESCRIPTOR_FILE);
+  size_t fds_len;
+  const char *fds = upb_readfile(MESSAGE_DESCRIPTOR_FILE, &fds_len);
   if(fds == NULL) {
     fprintf(stderr, "Couldn't read " MESSAGE_DESCRIPTOR_FILE ".\n");
     return 1;
   }
-  upb_read_descriptor(symtab, fds, &status);
+  upb_read_descriptor(symtab, fds, fds_len, &status);
   if(!upb_ok(&status)) {
     fprintf(stderr, "Error importing " MESSAGE_DESCRIPTOR_FILE ": ");
-    upb_printerr(&status);
+    upb_status_print(&status, stderr);
     return 1;
   }
-  upb_string_unref(fds);
+  free((void*)fds);
 
-  upb_string *proto_name = upb_strdupc(MESSAGE_NAME);
-  upb_def *def = upb_symtab_lookup(symtab, proto_name);
+  upb_def *def = upb_symtab_lookup(symtab, MESSAGE_NAME);
   upb_msgdef *msgdef;
   if(!def || !(msgdef = upb_dyncast_msgdef(def))) {
-    fprintf(stderr, "Error finding symbol '" UPB_STRFMT "'.\n",
-            UPB_STRARG(proto_name));
+    fprintf(stderr, "Error finding symbol '%s'.\n", MESSAGE_NAME);
     return 1;
   }
-  upb_string_unref(proto_name);
 
   // Read the message data itself.
-  upb_string *str = upb_strreadfile(MESSAGE_FILE);
+  size_t len;
+  const char *str = upb_readfile(MESSAGE_FILE, &len);
   if(str == NULL) {
     fprintf(stderr, "Error reading " MESSAGE_FILE "\n");
     return 1;
@@ -254,13 +250,13 @@ int main(int argc, char *argv[])
   // Run twice to test proper object reuse.
   MESSAGE_CIDENT proto2_msg;
   void *upb_msg = upb_stdmsg_new(msgdef);
-  parse_and_compare(&proto2_msg, upb_msg, msgdef, str);
-  parse_and_compare(&proto2_msg, upb_msg, msgdef, str);
+  parse_and_compare(&proto2_msg, upb_msg, msgdef, str, len);
+  parse_and_compare(&proto2_msg, upb_msg, msgdef, str, len);
   printf("All tests passed, %d assertions.\n", num_assertions);
 
   upb_stdmsg_free(upb_msg, msgdef);
   upb_def_unref(UPB_UPCAST(msgdef));
-  upb_string_unref(str);
+  free((void*)str);
   upb_symtab_unref(symtab);
   upb_status_uninit(&status);
   google::protobuf::ShutdownProtobufLibrary();

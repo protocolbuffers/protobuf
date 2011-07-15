@@ -11,16 +11,18 @@
 static upb_symtab *load_test_proto() {
   upb_symtab *s = upb_symtab_new();
   ASSERT(s);
-  upb_string *descriptor = upb_strreadfile("tests/test.proto.pb");
+  size_t len;
+  char *descriptor = upb_readfile("tests/test.proto.pb", &len);
   if(!descriptor) {
     fprintf(stderr, "Couldn't read input file tests/test.proto.pb\n");
     exit(1);
   }
   upb_status status = UPB_STATUS_INIT;
-  upb_read_descriptor(s, descriptor, &status);
+  upb_read_descriptor(s, descriptor, len, &status);
+  upb_status_print(&status, stderr);
   ASSERT(upb_ok(&status));
   upb_status_uninit(&status);
-  upb_string_unref(descriptor);
+  free(descriptor);
   return s;
 }
 
@@ -33,9 +35,7 @@ static upb_flow_t upb_test_onvalue(void *closure, upb_value fval, upb_value val)
 
 static void test_upb_jit() {
   upb_symtab *s = load_test_proto();
-  upb_string *symname = upb_strdupc("SimplePrimitives");
-  upb_def *def = upb_symtab_lookup(s, symname);
-  upb_string_unref(symname);
+  upb_def *def = upb_symtab_lookup(s, "SimplePrimitives");
   ASSERT(def);
 
   upb_handlers *h = upb_handlers_new();
@@ -54,9 +54,7 @@ static void test_upb_symtab() {
 
   // Test cycle detection by making a cyclic def's main refcount go to zero
   // and then be incremented to one again.
-  upb_string *symname = upb_strdupc("A");
-  upb_def *def = upb_symtab_lookup(s, symname);
-  upb_string_unref(symname);
+  upb_def *def = upb_symtab_lookup(s, "A");
   ASSERT(def);
   upb_symtab_unref(s);
   upb_msgdef *m = upb_downcast_msgdef(def);

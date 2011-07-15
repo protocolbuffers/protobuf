@@ -12,15 +12,15 @@
 #include "upb_strstream.h"
 #include "upb_textprinter.h"
 
-void upb_strtomsg(upb_string *str, void *msg, upb_msgdef *md,
+void upb_strtomsg(const char *str, size_t len, void *msg, upb_msgdef *md,
                   upb_status *status) {
   upb_stringsrc strsrc;
   upb_stringsrc_init(&strsrc);
-  upb_stringsrc_reset(&strsrc, str);
+  upb_stringsrc_reset(&strsrc, str, len);
 
   upb_decoder d;
   upb_decoder_initformsgdef(&d, md);
-  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), msg);
+  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), 0, UINT64_MAX, msg);
   upb_decoder_decode(&d, status);
 
   upb_stringsrc_uninit(&strsrc);
@@ -53,10 +53,11 @@ void upb_msgtotext(upb_string *str, upb_msg *msg, upb_msgdef *md,
 #endif
 
 // TODO: read->load.
-void upb_read_descriptor(upb_symtab *symtab, upb_string *str, upb_status *status) {
+void upb_read_descriptor(upb_symtab *symtab, const char *str, size_t len,
+                         upb_status *status) {
   upb_stringsrc strsrc;
   upb_stringsrc_init(&strsrc);
-  upb_stringsrc_reset(&strsrc, str);
+  upb_stringsrc_reset(&strsrc, str, len);
 
   upb_handlers *h = upb_handlers_new();
   upb_descreader_reghandlers(h);
@@ -68,16 +69,16 @@ void upb_read_descriptor(upb_symtab *symtab, upb_string *str, upb_status *status
   upb_symtabtxn txn;
   upb_symtabtxn_init(&txn);
   upb_descreader_init(&r, &txn);
-  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), &r);
+  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), 0, UINT64_MAX, &r);
 
   upb_decoder_decode(&d, status);
 
   // Set default accessors and layouts on all messages.
   // for msgdef in symtabtxn:
   upb_symtabtxn_iter i;
-  for(i = upb_symtabtxn_begin(&txn); !upb_symtabtxn_done(i);
-      i = upb_symtabtxn_next(&txn, i)) {
-    upb_def *def = upb_symtabtxn_iter_def(i);
+  upb_symtabtxn_begin(&i, &txn);
+  for(; !upb_symtabtxn_done(&i); upb_symtabtxn_next(&i)) {
+    upb_def *def = upb_symtabtxn_iter_def(&i);
     upb_msgdef *md = upb_dyncast_msgdef(def);
     if (!md) return;
     // For field in msgdef:
@@ -95,4 +96,34 @@ void upb_read_descriptor(upb_symtab *symtab, upb_string *str, upb_status *status
   upb_descreader_uninit(&r);
   upb_stringsrc_uninit(&strsrc);
   upb_decoder_uninit(&d);
+}
+
+char *upb_readfile(const char *filename, size_t *len) {
+  FILE *f = fopen(filename, "rb");
+  if(!f) return NULL;
+  if(fseek(f, 0, SEEK_END) != 0) goto error;
+  long size = ftell(f);
+  if(size < 0) goto error;
+  if(fseek(f, 0, SEEK_SET) != 0) goto error;
+  char *buf = malloc(size);
+  if(fread(buf, size, 1, f) != 1) goto error;
+  fclose(f);
+  if (len) *len = size;
+  return buf;
+
+error:
+  fclose(f);
+  return NULL;
+}
+
+void upb_read_descriptorfile(upb_symtab *symtab, const char *fname,
+                             upb_status *status) {
+  size_t len;
+  char *data = upb_readfile(fname, &len);
+  if (!data) {
+    upb_status_setf(status, UPB_ERROR, "Couldn't read file: %s", fname);
+    return;
+  }
+  upb_read_descriptor(symtab, data, len, status);
+  free(data);
 }

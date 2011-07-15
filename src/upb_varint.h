@@ -83,16 +83,13 @@ upb_decoderet upb_vdecode_max8_massimino(upb_decoderet r);
 
 // Template for a function that checks the first two bytes with branching
 // and dispatches 2-10 bytes with a separate function.
-#define UPB_VARINT_DECODER_CHECK2(name, decode_max8_function)            \
-INLINE upb_decoderet upb_vdecode_check2_ ## name(const char *p) {        \
-  uint64_t b = 0;                                                        \
-  upb_decoderet r = {p, 0};                                              \
-  memcpy(&b, r.p, 2);                                                    \
-  if ((b & 0x80) == 0) { r.val = (b & 0x7f); r.p = p + 1; return r; }    \
-  r.val = (b & 0x7f) | ((b & 0x7f00) >> 1);                              \
-  r.p = p + 2;                                                           \
-  if ((b & 0x8000) == 0) return r;                                       \
-  return decode_max8_function(r);                                        \
+#define UPB_VARINT_DECODER_CHECK2(name, decode_max8_function)                \
+INLINE upb_decoderet upb_vdecode_check2_ ## name(const char *_p) {           \
+  uint8_t *p = (uint8_t*)_p;                                                 \
+  if ((*p & 0x80) == 0) { upb_decoderet r = {_p + 1, *p & 0x7f}; return r; } \
+  upb_decoderet r = {_p + 2, (*p & 0x7f) | ((*(p + 1) & 0x7f) << 7)};        \
+  if ((*(p + 1) & 0x80) == 0) return r;                                      \
+  return decode_max8_function(r);                                            \
 }
 
 UPB_VARINT_DECODER_CHECK2(wright, upb_vdecode_max8_wright);

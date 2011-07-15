@@ -27,6 +27,7 @@
 #define UPB_GLUE_H
 
 #include <stdbool.h>
+#include "upb.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,20 +37,23 @@ extern "C" {
 // Clients should use the regular, typedef'd names (eg. upb_string).
 struct _upb_msg;
 struct _upb_msgdef;
-struct _upb_status;
-struct _upb_string;
 struct _upb_symtab;
 
 // Decodes the given string, which must be in protobuf binary format, to the
 // given upb_msg with msgdef "md", storing the status of the operation in "s".
-void upb_strtomsg(struct _upb_string *str, void *msg,
-                  struct _upb_msgdef *md, struct _upb_status *s);
+void upb_strtomsg(const char *str, size_t len, void *msg,
+                  struct _upb_msgdef *md, upb_status *s);
 
-void upb_msgtotext(struct _upb_string *str, void *msg,
-                   struct _upb_msgdef *md, bool single_line);
+//void upb_msgtotext(struct _upb_string *str, void *msg,
+//                   struct _upb_msgdef *md, bool single_line);
 
-void upb_read_descriptor(struct _upb_symtab *symtab, struct _upb_string *str,
-                         struct _upb_status *status);
+void upb_read_descriptor(struct _upb_symtab *symtab, const char *str, size_t len,
+                         upb_status *status);
+
+void upb_read_descriptorfile(struct _upb_symtab *symtab, const char *fname,
+                             upb_status *status);
+
+char *upb_readfile(const char *filename, size_t *len);
 
 #ifdef __cplusplus
 }  /* extern "C" */
