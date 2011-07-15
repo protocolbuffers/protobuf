@@ -227,7 +227,7 @@ INLINE upb_fielddef *upb_msgdef_itof(upb_msgdef *m, uint32_t i) {
   return e ? e->f : NULL;
 }
 
-INLINE upb_fielddef *upb_msgdef_ntof(upb_msgdef *m, char *name) {
+INLINE upb_fielddef *upb_msgdef_ntof(upb_msgdef *m, const char *name) {
   upb_ntof_ent *e = (upb_ntof_ent*)upb_strtable_lookup(&m->ntof, name);
   return e ? e->f : NULL;
 }
