@@ -7,8 +7,8 @@
  * Data structure for storing a message of protobuf data.
  */
 
-#include "upb.h"
-#include "upb_msg.h"
+#include "upb/upb.h"
+#include "upb/msg.h"
 
 void upb_msg_clear(void *msg, upb_msgdef *md) {
   memset(msg, 0, md->hasbit_bytes);

@@ -52,9 +52,9 @@ INLINE void upb_bytesrc_init(upb_bytesrc *src, upb_bytesrc_vtbl *vtbl) {
   src->vtbl = vtbl;
 }
 
-// Fetches at least minlen bytes starting at ofs, returning the actual number
-// of bytes fetched (or 0 on error: see "s" for details).  Gives caller a ref
-// on the fetched region.  It is safe to re-fetch existing regions but only if
+// Fetches at least one byte starting at ofs, returning the actual number of
+// bytes fetched (or 0 on error: see "s" for details).  Gives caller a ref on
+// the fetched region.  It is safe to re-fetch existing regions but only if
 // they are ref'd.  "ofs" may not greater than the end of the region that was
 // previously fetched.
 INLINE size_t upb_bytesrc_fetch(upb_bytesrc *src, uint64_t ofs, upb_status *s) {
@@ -135,12 +135,7 @@ typedef struct _upb_strref {
 
 // Copies the contents of the strref into a newly-allocated, NULL-terminated
 // string.
-INLINE char *upb_strref_dup(struct _upb_strref *r) {
-  char *ret = (char*)malloc(r->len + 1);
-  upb_bytesrc_read(r->bytesrc, r->stream_offset, r->len, ret);
-  ret[r->len] = '\0';
-  return ret;
-}
+char *upb_strref_dup(struct _upb_strref *r);
 
 
 /* upb_bytesink ***************************************************************/
@@ -187,9 +182,102 @@ INLINE int32_t upb_bytesink_printf(upb_bytesink *sink, upb_status *status,
 // TODO: add flush()
 
 
-/* upb_cbuf *******************************************************************/
+/* upb_stdio ******************************************************************/
 
-// A circular buffer implementation for bytesrcs that do internal buffering.
+// bytesrc/bytesink for ANSI C stdio, which is less efficient than posixfd, but
+// more portable.
+//
+// Specifically, stdio functions acquire locks on every operation (unless you
+// use the f{read,write,...}_unlocked variants, which are not standard) and
+// performs redundant buffering (unless you disable it with setvbuf(), but we
+// can only do this on newly-opened filehandles).
+
+typedef struct {
+  uint64_t ofs;
+  uint32_t refcount;
+  char data[];
+} upb_stdio_buf;
+
+// We use a single object for both bytesrc and bytesink for simplicity.
+// The object is still not thread-safe, and may only be used by one reader
+// and one writer at a time.
+typedef struct {
+  upb_bytesrc src;
+  upb_bytesink sink;
+  FILE *file;
+  bool should_close;
+  upb_stdio_buf **bufs;
+  uint32_t nbuf, szbuf;
+} upb_stdio;
+
+void upb_stdio_init(upb_stdio *stdio);
+// Caller should call upb_stdio_flush prior to calling this to ensure that
+// all data is flushed, otherwise data can be silently dropped if an error
+// occurs flushing the remaining buffers.
+void upb_stdio_uninit(upb_stdio *stdio);
+
+// Resets the object to read/write to the given "file."  The caller is
+// responsible for closing the file, which must outlive this object.
+void upb_stdio_reset(upb_stdio *stdio, FILE *file);
+
+// As an alternative to upb_stdio_reset(), initializes the object by opening a
+// file, and will handle closing it.  This may result in more efficient I/O
+// than the previous since we can call setvbuf() to disable buffering.
+void upb_stdio_open(upb_stdio *stdio, const char *filename, const char *mode,
+                    upb_status *s);
+
+upb_bytesrc *upb_stdio_bytesrc(upb_stdio *stdio);
+upb_bytesink *upb_stdio_bytesink(upb_stdio *stdio);
+
+
+/* upb_stringsrc **************************************************************/
+
+// bytesrc/bytesink for a simple contiguous string.
+
+struct _upb_stringsrc {
+  upb_bytesrc bytesrc;
+  const char *str;
+  size_t len;
+};
+typedef struct _upb_stringsrc upb_stringsrc;
+
+// Create/free a stringsrc.
+void upb_stringsrc_init(upb_stringsrc *s);
+void upb_stringsrc_uninit(upb_stringsrc *s);
+
+// Resets the stringsrc to a state where it will vend the given string.  The
+// stringsrc will take a reference on the string, so the caller need not ensure
+// that it outlives the stringsrc.  A stringsrc can be reset multiple times.
+void upb_stringsrc_reset(upb_stringsrc *s, const char *str, size_t len);
+
+// Returns the upb_bytesrc* for this stringsrc.
+upb_bytesrc *upb_stringsrc_bytesrc(upb_stringsrc *s);
+
+
+/* upb_stringsink *************************************************************/
+
+struct _upb_stringsink {
+  upb_bytesink bytesink;
+  char *str;
+  size_t len, size;
+};
+typedef struct _upb_stringsink upb_stringsink;
+
+// Create/free a stringsrc.
+void upb_stringsink_init(upb_stringsink *s);
+void upb_stringsink_uninit(upb_stringsink *s);
+
+// Resets the sink's string to "str", which the sink takes ownership of.
+// "str" may be NULL, which will make the sink allocate a new string.
+void upb_stringsink_reset(upb_stringsink *s, char *str, size_t size);
+
+// Releases ownership of the returned string (which is "len" bytes long) and
+// resets the internal string to be empty again (as if reset were called with
+// NULL).
+const char *upb_stringsink_release(upb_stringsink *s, size_t *len);
+
+// Returns the upb_bytesink* for this stringsrc.  Invalidated by reset above.
+upb_bytesink *upb_stringsink_bytesink();
 
 #ifdef __cplusplus
 }  /* extern "C" */

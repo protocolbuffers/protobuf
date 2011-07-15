@@ -5,12 +5,12 @@
  * Author: Josh Haberman <jhaberman@gmail.com>
  */
 
-#include "upb_decoder.h"
-#include "upb_descriptor.h"
-#include "upb_glue.h"
-#include "upb_msg.h"
-#include "upb_strstream.h"
-#include "upb_textprinter.h"
+#include "upb/bytestream.h"
+#include "upb/descriptor.h"
+#include "upb/msg.h"
+#include "upb/pb/decoder.h"
+#include "upb/pb/glue.h"
+#include "upb/pb/textprinter.h"
 
 void upb_strtomsg(const char *str, size_t len, void *msg, upb_msgdef *md,
                   upb_status *status) {

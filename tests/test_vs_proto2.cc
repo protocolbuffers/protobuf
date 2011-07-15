@@ -11,10 +11,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <google/protobuf/descriptor.h>
+#include "upb/def.h"
+#include "upb/msg.h"
+#include "upb/pb/glue.h"
 #include "upb_test.h"
-#include "upb_def.h"
-#include "upb_glue.h"
-#include "upb_msg.h"
 
 #include MESSAGE_HFILE
 

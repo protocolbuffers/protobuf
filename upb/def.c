@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
-#include "upb_def.h"
+#include "upb/def.h"
 
 #define alignof(t) offsetof(struct { char c; t x; }, x)
 

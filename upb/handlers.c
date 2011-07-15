@@ -6,7 +6,7 @@
  */
 
 #include <stdlib.h>
-#include "upb_handlers.h"
+#include "upb/handlers.h"
 
 
 /* upb_mhandlers **************************************************************/

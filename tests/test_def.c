@@ -1,6 +1,6 @@
 
 #undef NDEBUG  /* ensure tests always assert. */
-#include "upb_def.h"
+#include "upb/def.h"
 #include <stdlib.h>
 
 int main() {

@@ -8,7 +8,7 @@
  * can be useful for debugging.
  */
 
-#include "upb_table.h"
+#include "upb/table.h"
 
 #include <assert.h>
 #include <stdlib.h>

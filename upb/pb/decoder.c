@@ -8,11 +8,10 @@
 #include <inttypes.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include "bswap.h"
-#include "upb_bytestream.h"
-#include "upb_decoder.h"
-#include "upb_varint.h"
-#include "upb_msg.h"
+#include "upb/bytestream.h"
+#include "upb/msg.h"
+#include "upb/pb/decoder.h"
+#include "upb/pb/varint.h"
 
 // Used for frames that have no specific end offset: groups, repeated primitive
 // fields inside groups, and the top-level message.
@@ -23,7 +22,7 @@
 #define Dst_REF (d->dynasm)
 #define Dst (d)
 #include "dynasm/dasm_proto.h"
-#include "upb_decoder_x86.h"
+#include "upb/pb/decoder_x86.h"
 #endif
 
 // It's unfortunate that we have to micro-manage the compiler this way,
@@ -201,12 +200,12 @@ FORCEINLINE void upb_decode_fixed(upb_decoder *d, char *buf, size_t bytes) {
 FORCEINLINE uint32_t upb_decode_fixed32(upb_decoder *d) {
   uint32_t u32;
   upb_decode_fixed(d, (char*)&u32, sizeof(uint32_t));
-  return le32toh(u32);
+  return u32;  // TODO: proper byte swapping
 }
 FORCEINLINE uint64_t upb_decode_fixed64(upb_decoder *d) {
   uint64_t u64;
   upb_decode_fixed(d, (char*)&u64, sizeof(uint64_t));
-  return le64toh(u64);
+  return u64;  // TODO: proper byte swapping
 }
 
 INLINE upb_strref *upb_decode_string(upb_decoder *d) {

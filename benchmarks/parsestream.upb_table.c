@@ -2,10 +2,10 @@
 #include "main.c"
 
 #include <stdlib.h>
-#include "upb_def.h"
-#include "upb_decoder.h"
-#include "upb_strstream.h"
-#include "upb_glue.h"
+#include "upb/bytestream.h"
+#include "upb/def.h"
+#include "upb/pb/decoder.h"
+#include "upb/pb/glue.h"
 
 static char *input_str;
 static size_t input_len;

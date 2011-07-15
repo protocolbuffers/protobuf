@@ -27,7 +27,7 @@
 #define UPB_GLUE_H
 
 #include <stdbool.h>
-#include "upb.h"
+#include "upb/upb.h"
 
 #ifdef __cplusplus
 extern "C" {

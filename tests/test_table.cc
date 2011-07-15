@@ -1,15 +1,16 @@
 
 #undef NDEBUG  /* ensure tests always assert. */
-#include "upb_table.h"
+#include "upb/table.h"
 #include "test_util.h"
 #include <assert.h>
+#include <string.h>
+#include <sys/resource.h>
+#include <ext/hash_map>
+#include <iostream>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
-#include <set>
-#include <ext/hash_map>
-#include <sys/resource.h>
-#include <iostream>
 
 bool benchmark = false;
 #define CPU_TIME_PER_TEST 0.5

@@ -5,7 +5,7 @@
  * Author: Josh Haberman <jhaberman@gmail.com>
  */
 
-#include "upb_varint.h"
+#include "upb/pb/varint.h"
 
 // Given an encoded varint v, returns an integer with a single bit set that
 // indicates the end of the varint.  Subtracting one from this value will

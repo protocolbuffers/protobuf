@@ -12,7 +12,7 @@
 #ifndef UPB_DESCRIPTOR_H
 #define UPB_DESCRIPTOR_H
 
-#include "upb_handlers.h"
+#include "upb/handlers.h"
 
 #ifdef __cplusplus
 extern "C" {

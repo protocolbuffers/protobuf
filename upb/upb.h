@@ -15,7 +15,7 @@
 #include <stdio.h>  // only for size_t.
 #include <assert.h>
 #include "descriptor_const.h"
-#include "upb_atomic.h"
+#include "atomic.h"
 
 #ifdef __cplusplus
 extern "C" {

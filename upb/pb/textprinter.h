@@ -8,8 +8,8 @@
 #ifndef UPB_TEXT_H_
 #define UPB_TEXT_H_
 
-#include "upb_bytestream.h"
-#include "upb_handlers.h"
+#include "upb/bytestream.h"
+#include "upb/handlers.h"
 
 #ifdef __cplusplus
 extern "C" {

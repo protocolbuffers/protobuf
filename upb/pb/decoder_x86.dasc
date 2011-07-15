@@ -40,7 +40,7 @@
 // for a few magic numbers and doing a dumb string replacement.
 
 #ifndef __APPLE__
-#include "jit_debug_elf_file.h"
+#include "upb/pb/jit_debug_elf_file.h"
 
 typedef enum
 {
@@ -69,9 +69,9 @@ void __attribute__((noinline)) __jit_debug_register_code() { __asm__ __volatile_
 
 void upb_reg_jit_gdb(upb_decoder *d) {
   // Create debug info.
-  size_t elf_len = src_jit_debug_elf_file_o_len;
+  size_t elf_len = upb_pb_jit_debug_elf_file_o_len;
   d->debug_info = malloc(elf_len);
-  memcpy(d->debug_info, src_jit_debug_elf_file_o, elf_len);
+  memcpy(d->debug_info, upb_pb_jit_debug_elf_file_o, elf_len);
   uint64_t *p = (void*)d->debug_info;
   for (; (void*)(p+1) <= (void*)d->debug_info + elf_len; ++p) {
     if (*p == 0x12345678) { *p = (uintptr_t)d->jit_code; }
@@ -270,7 +270,7 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |.endmacro
 
 #include <stdlib.h>
-#include "upb_varint.h"
+#include "upb/pb/varint.h"
 
 // PTR should point to the beginning of the tag.
 static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_tag,

@@ -2,11 +2,11 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "upb_def.h"
-#include "upb_glue.h"
+#include "upb/def.h"
+#include "upb/handlers.h"
+#include "upb/pb/decoder.h"
+#include "upb/pb/glue.h"
 #include "upb_test.h"
-#include "upb_handlers.h"
-#include "upb_decoder.h"
 
 static upb_symtab *load_test_proto() {
   upb_symtab *s = upb_symtab_new();

@@ -5,11 +5,10 @@
  * Author: Josh Haberman <jhaberman@gmail.com>
  */
 
-#include "upb_descriptor.h"
-
 #include <stdlib.h>
 #include <errno.h>
-#include "upb_def.h"
+#include "upb/def.h"
+#include "upb/descriptor.h"
 
 // Returns a newly allocated string that joins input strings together, for example:
 //   join("Foo.Bar", "Baz") -> "Foo.Bar.Baz"

@@ -11,9 +11,9 @@
 #ifndef UPB_VARINT_DECODER_H_
 #define UPB_VARINT_DECODER_H_
 
-#include "upb.h"
 #include <stdint.h>
 #include <string.h>
+#include "upb/upb.h"
 
 #ifdef __cplusplus
 extern "C" {

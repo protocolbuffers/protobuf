@@ -5,12 +5,11 @@
  * Author: Josh Haberman <jhaberman@gmail.com>
  */
 
-#include "upb_textprinter.h"
-
 #include <ctype.h>
 #include <float.h>
 #include <inttypes.h>
 #include <stdlib.h>
+#include "upb/pb/textprinter.h"
 
 struct _upb_textprinter {
   upb_bytesink *bytesink;
@@ -29,7 +28,7 @@ static int upb_textprinter_putescaped(upb_textprinter *p, upb_strref *strref,
   char dstbuf[4096], *dst = dstbuf, *dstend = dstbuf + sizeof(dstbuf);
   char buf[strref->len], *src = buf;
   char *end = src + strref->len;
-  upb_strref_read(strref, src);
+  upb_bytesrc_read(strref->bytesrc, strref->stream_offset, strref->len, buf);
 
   // I think hex is prettier and more useful, but proto2 uses octal; should
   // investigate whether it can parse hex also.

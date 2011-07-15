@@ -19,8 +19,8 @@
 #ifndef UPB_DEF_H_
 #define UPB_DEF_H_
 
-#include "upb_atomic.h"
-#include "upb_table.h"
+#include "upb/atomic.h"
+#include "upb/table.h"
 
 #ifdef __cplusplus
 extern "C" {

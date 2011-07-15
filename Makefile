@@ -29,7 +29,7 @@ all: lib
 USER_CFLAGS=$(strip $(shell test -f perf-cppflags && cat perf-cppflags))
 
 # If the user doesn't specify an -O setting, we default to -O3, except
-# for upb_def which gets -Os.
+# for def which gets -Os.
 ifeq (, $(findstring -O, $(USER_CFLAGS)))
   USER_CFLAGS += -O3
   DEF_OPT = -Os
@@ -39,9 +39,9 @@ endif
 CC=gcc
 CXX=g++
 CFLAGS=-std=gnu99
-INCLUDE=-Isrc -Itests -I.
+INCLUDE=-Itests -I.
 CPPFLAGS=$(INCLUDE) -Wall -Wextra $(USER_CFLAGS)
-LDLIBS=-lpthread src/libupb.a
+LDLIBS=-lpthread upb/libupb.a
 
 # Build with "make Q=" to see all commands that are being executed.
 Q=@
@@ -60,7 +60,7 @@ endif
 # different -D options, which can include different header files.
 deps: gen-deps.sh Makefile $(CORE) $(STREAM)
 	$(Q) CPPFLAGS="$(CPPFLAGS)" ./gen-deps.sh $(CORE) $(STREAM)
-	$(E) Regenerating dependencies for src/...
+	$(E) Regenerating dependencies for upb/...
 
 $(ALLSRC): perf-cppflags
 
@@ -71,25 +71,23 @@ $(ALLSRC): perf-cppflags
 
 # The core library.
 CORE= \
-  src/upb.c \
-  src/upb_handlers.c \
-  src/upb_descriptor.c \
-  src/upb_table.c \
-  src/upb_def.c \
-  src/upb_msg.c \
-  src/upb_varint.c \
+  upb/upb.c \
+  upb/handlers.c \
+  upb/descriptor.c \
+  upb/table.c \
+  upb/def.c \
+  upb/msg.c \
+  upb/bytestream.c \
 
-
-# Common encoders/decoders -- you're almost certain to want these.
-STREAM= \
-  src/upb_decoder.c \
-  src/upb_stdio.c \
-  src/upb_textprinter.c \
-  src/upb_strstream.c \
-  src/upb_glue.c \
+# Library for the protocol buffer format (both text and binary).
+PB= \
+  upb/pb/decoder.c \
+  upb/pb/varint.c \
+  upb/pb/glue.c \
+  upb/pb/textprinter.c \
 
 # Parts of core that are yet to be converted.
-OTHERSRC=src/upb_encoder.c
+OTHERSRC=upb/pb/encoder.c
 
 BENCHMARKS_SRC= \
   benchmarks/main.c \
@@ -114,13 +112,13 @@ ALLSRC=$(CORE) $(STREAM) $(BENCHMARKS_SRC) $(TESTS_SRC)
 clean_leave_profile:
 	rm -rf $(LIBUPB) $(LIBUPB_PIC)
 	rm -rf $(call rwildcard,,*.o) $(call rwildcard,,*.lo) $(call rwildcard,,*.dSYM)
-	rm -rf src/upb_decoder_x86.h
+	rm -rf upb/pb/decoder_x86.h
 	rm -rf benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
-	rm -rf src/jit_debug_elf_file.o
-	rm -rf src/jit_debug_elf_file.h
+	rm -rf upb/pb/jit_debug_elf_file.o
+	rm -rf upb/pb/jit_debug_elf_file.h
 	rm -rf $(TESTS) tests/t.*
-	rm -rf src/descriptor.pb
-	rm -rf src/upbc deps
+	rm -rf upb/descriptor.pb
+	rm -rf tools/upbc deps
 	rm -rf lang_ext/lua/upb.so
 	cd lang_ext/python && python setup.py clean --all
 
@@ -128,9 +126,9 @@ clean: clean_leave_profile
 	rm -rf $(call rwildcard,,*.gcno) $(call rwildcard,,*.gcda)
 
 # Core library (libupb.a).
-SRC=$(CORE) $(STREAM)
-LIBUPB=src/libupb.a
-LIBUPB_PIC=src/libupb_pic.a
+SRC=$(CORE) $(PB)
+LIBUPB=upb/libupb.a
+LIBUPB_PIC=upb/libupb_pic.a
 lib: $(LIBUPB)
 
 
@@ -138,7 +136,7 @@ OBJ=$(patsubst %.c,%.o,$(SRC))
 PICOBJ=$(patsubst %.c,%.lo,$(SRC))
 
 ifneq (, $(findstring DUPB_USE_JIT_X64, $(USER_CFLAGS)))
-src/upb_decoder.o: src/upb_decoder_x86.h
+upb/pb/decoder.o: upb/pb/decoder_x86.h
   ifeq (, $(findstring DNDEBUG, $(USER_CFLAGS)))
   $(error "JIT only works with -DNDEBUG enabled!")
   endif
@@ -158,29 +156,29 @@ $(LIBUPB_PIC): $(PICOBJ)
 	$(E) 'CC -fPIC' $<
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $< -fPIC
 
-# Override the optimization level for upb_def.o, because it is not in the
+# Override the optimization level for def.o, because it is not in the
 # critical path but gets very large when -O3 is used.
-src/upb_def.o: src/upb_def.c
+upb/def.o: upb/def.c
 	$(E) CC $<
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) $(DEF_OPT) -c -o $@ $<
 
-src/upb_def.lo: src/upb_def.c
+upb/def.lo: upb/def.c
 	$(E) 'CC -fPIC' $<
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) $(DEF_OPT) -c -o $@ $< -fPIC
 
-src/upb_decoder_x86.h: src/upb_decoder_x86.dasc
+upb/pb/decoder_x86.h: upb/pb/decoder_x86.dasc
 	$(E) DYNASM $<
-	$(Q) lua dynasm/dynasm.lua src/upb_decoder_x86.dasc > src/upb_decoder_x86.h
+	$(Q) lua dynasm/dynasm.lua upb/pb/decoder_x86.dasc > upb/pb/decoder_x86.h
 
 ifneq ($(shell uname), Darwin)
-src/jit_debug_elf_file.o: src/jit_debug_elf_file.s
+upb/pb/jit_debug_elf_file.o: upb/pb/jit_debug_elf_file.s
 	$(E) GAS $<
-	$(Q) gcc -c src/jit_debug_elf_file.s -o src/jit_debug_elf_file.o
+	$(Q) gcc -c upb/pb/jit_debug_elf_file.s -o upb/pb/jit_debug_elf_file.o
 
-src/jit_debug_elf_file.h: src/jit_debug_elf_file.o
+upb/pb/jit_debug_elf_file.h: upb/pb/jit_debug_elf_file.o
 	$(E) XXD $<
-	$(Q) xxd -i src/jit_debug_elf_file.o > src/jit_debug_elf_file.h
-src/upb_decoder_x86.h: src/jit_debug_elf_file.h
+	$(Q) xxd -i upb/pb/jit_debug_elf_file.o > upb/pb/jit_debug_elf_file.h
+upb/pb/decoder_x86.h: upb/pb/jit_debug_elf_file.h
 endif
 
 # Function to expand a wildcard pattern recursively.
@@ -188,16 +186,16 @@ rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $
 
 
 
-# Regenerating the auto-generated files in src/.
-src/descriptor.pb: src/descriptor.proto
+# Regenerating the auto-generated files in upb/.
+upb/descriptor.pb: upb/descriptor.proto
 	@# TODO: replace with upbc
-	protoc src/descriptor.proto -osrc/descriptor.pb
+	protoc upb/descriptor.proto -oupb/descriptor.pb
 
-descriptorgen: src/descriptor.pb src/upbc
+descriptorgen: upb/descriptor.pb tools/upbc
 	@# Regenerate descriptor_const.h
-	./src/upbc -o src/descriptor src/descriptor.pb
+	./tools/upbc -o upb/descriptor upb/descriptor.pb
 
-src/upbc: src/upbc.c $(LIBUPB)
+tools/upbc: tools/upbc.c $(LIBUPB)
 
 # Language extensions.
 python: $(LIBUPB_PIC)
@@ -275,7 +273,7 @@ tests/test_table: tests/test_table.cc
 	$(E) CXX $<
 	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-deprecated -o $@ $< $(LIBUPB)
 
-tests/tests: src/libupb.a
+tests/tests: upb/libupb.a
 
 
 # Benchmarks. ##################################################################
@@ -398,4 +396,4 @@ LUAEXT=lang_ext/lua/upb.so
 lua: $(LUAEXT)
 lang_ext/lua/upb.so: lang_ext/lua/upb.c $(LIBUPB_PIC)
 	@echo CC lang_ext/lua/upb.c
-	@$(CC) $(CFLAGS) $(CPPFLAGS) $(LUA_CPPFLAGS) -fpic -shared -o $@ $< src/libupb_pic.a $(LUA_LDFLAGS)
+	@$(CC) $(CFLAGS) $(CPPFLAGS) $(LUA_CPPFLAGS) -fpic -shared -o $@ $< upb/libupb_pic.a $(LUA_LDFLAGS)

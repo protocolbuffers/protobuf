@@ -1,11 +1,11 @@
 
 #include "main.c"
 
-#include "upb_def.h"
-#include "upb_decoder.h"
-#include "upb_strstream.h"
-#include "upb_glue.h"
-#include "upb_msg.h"
+#include "upb/bytestream.h"
+#include "upb/def.h"
+#include "upb/msg.h"
+#include "upb/pb/decoder.h"
+#include "upb/pb/glue.h"
 
 static upb_msgdef *def;
 static size_t len;

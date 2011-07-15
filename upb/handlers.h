@@ -15,9 +15,9 @@
 #define UPB_HANDLERS_H
 
 #include <limits.h>
-#include "upb.h"
-#include "upb_def.h"
-#include "upb_bytestream.h"
+#include "upb/upb.h"
+#include "upb/def.h"
+#include "upb/bytestream.h"
 
 #ifdef __cplusplus
 extern "C" {

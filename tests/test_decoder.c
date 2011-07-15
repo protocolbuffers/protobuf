@@ -1,9 +1,9 @@
 
 #include <stdlib.h>
-#include "upb_decoder.h"
-#include "upb_textprinter.h"
-#include "upb_stdio.h"
-#include "upb_glue.h"
+#include "upb/bytestream.h"
+#include "upb/pb/decoder.h"
+#include "upb/pb/glue.h"
+#include "upb/pb/textprinter.h"
 
 int main(int argc, char *argv[]) {
   if (argc < 3) {
@@ -23,14 +23,12 @@ int main(int argc, char *argv[]) {
   upb_read_descriptor(symtab, desc, desc_len, &status);
   if (!upb_ok(&status)) {
     fprintf(stderr, "Error parsing descriptor: ");
-    upb_printerr(&status);
+    upb_status_print(&status, stderr);
     return 1;
   }
   free((void*)desc);
 
-  upb_string *name = upb_strdupc(argv[2]);
-  upb_def *md = upb_symtab_lookup(symtab, name);
-  upb_string_unref(name);
+  upb_def *md = upb_symtab_lookup(symtab, argv[2]);
   if (!md) {
     fprintf(stderr, "Descriptor did not contain message: %s\n", argv[2]);
     return 1;
@@ -57,12 +55,12 @@ int main(int argc, char *argv[]) {
   upb_decoder_initforhandlers(&d, handlers);
   upb_decoder_reset(&d, upb_stdio_bytesrc(&in), 0, UINT64_MAX, p);
 
-  upb_clearerr(&status);
+  upb_status_clear(&status);
   upb_decoder_decode(&d, &status);
 
   if (!upb_ok(&status)) {
     fprintf(stderr, "Error parsing input: ");
-    upb_printerr(&status);
+    upb_status_print(&status, stderr);
   }
 
   upb_status_uninit(&status);

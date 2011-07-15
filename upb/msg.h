@@ -26,8 +26,8 @@
 #define UPB_MSG_H
 
 #include <stdlib.h>
-#include "upb_def.h"
-#include "upb_handlers.h"
+#include "upb/def.h"
+#include "upb/handlers.h"
 
 #ifdef __cplusplus
 extern "C" {

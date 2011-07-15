@@ -10,9 +10,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include "descriptor_const.h"
-#include "upb.h"
-#include "upb_bytestream.h"
+#include "upb/descriptor_const.h"
+#include "upb/upb.h"
+#include "upb/bytestream.h"
 
 #define alignof(t) offsetof(struct { char c; t x; }, x)
 #define TYPE_INFO(wire_type, ctype, inmemory_type) \
