@@ -318,47 +318,6 @@ INLINE int32_t upb_enum_iter_number(upb_enum_iter iter) {
 }
 
 
-/* upb_symtabtxn **************************************************************/
-
-// A symbol table transaction is a map of defs that can be added to a symtab
-// in one single atomic operation that either succeeds or fails.  Mutable defs
-// can be added to this map (and perhaps removed, in the future).
-//
-// A symtabtxn is not thread-safe.
-
-typedef struct {
-  upb_strtable deftab;
-} upb_symtabtxn;
-
-void upb_symtabtxn_init(upb_symtabtxn *t);
-void upb_symtabtxn_uninit(upb_symtabtxn *t);
-
-// Adds a def to the symtab.  Caller passes a ref on the def to the symtabtxn.
-// The def's name must be set and there must not be any existing defs in the
-// symtabtxn with this name, otherwise false will be returned and no operation
-// will be performed (and the ref on the def will be released).
-bool upb_symtabtxn_add(upb_symtabtxn *t, upb_def *def);
-
-// Gets the def (if any) that is associated with this name in the symtab.
-// Caller does *not* inherit a ref on the def.
-upb_def *upb_symtabtxn_get(upb_symtabtxn *t, char *name);
-
-// Iterate over the defs that are part of the transaction.
-// The order is undefined.
-// The iterator is invalidated by upb_symtabtxn_add().
-//   upb_symtabtxn_iter i;
-//   for(i = upb_symtabtxn_begin(t); !upb_symtabtxn_done(t);
-//       i = upb_symtabtxn_next(t, i)) {
-//     upb_def *def = upb_symtabtxn_iter_def(i);
-//   }
-typedef upb_strtable_iter upb_symtabtxn_iter;
-
-void upb_symtabtxn_begin(upb_symtabtxn_iter* i, upb_symtabtxn *t);
-void upb_symtabtxn_next(upb_symtabtxn_iter *i);
-bool upb_symtabtxn_done(upb_symtabtxn_iter *i);
-upb_def *upb_symtabtxn_iter_def(upb_symtabtxn_iter *iter);
-
-
 /* upb_symtab *****************************************************************/
 
 // A SymbolTable is where upb_defs live.  It is empty when first constructed.
@@ -412,16 +371,12 @@ upb_def *upb_symtab_lookup(upb_symtab *s, const char *sym);
 // TODO: make return const
 upb_def **upb_symtab_getdefs(upb_symtab *s, int *n, upb_deftype_t type);
 
-// Adds a single upb_def into the symtab.  A ref on the def is passed to the
-// symtab.  If any references cannot be resolved, false is returned and the
-// symtab is unchanged.  The error (if any) is saved to status if non-NULL.
-bool upb_symtab_add(upb_symtab *s, upb_def *d, upb_status *status);
-
-// Adds the set of defs contained in the transaction to the symtab, clearing
-// the txn.  The entire operation either succeeds or fails.  If the operation
-// fails, the symtab is unchanged, false is returned, and status indicates
-// the error.
-bool upb_symtab_commit(upb_symtab *s, upb_symtabtxn *t, upb_status *status);
+// Adds the given defs to the symtab, resolving all symbols.  Only one def per
+// name may be in the list, but defs can replace existing defs in the symtab.
+// The entire operation either succeeds or fails.  If the operation fails, the
+// symtab is unchanged, false is returned, and status indicates the error.  A
+// ref on the defs is passed to the symtab iff the operation succeeds.
+bool upb_symtab_add(upb_symtab *s, upb_def **defs, int n, upb_status *status);
 
 // Frees defs that are no longer active in the symtab and are no longer
 // reachable.  Such defs are not freed when they are replaced in the symtab

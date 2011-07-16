@@ -51,10 +51,9 @@ static void upb_deflist_qualify(upb_deflist *l, char *str, int32_t start) {
 static upb_mhandlers *upb_msgdef_register_DescriptorProto(upb_handlers *h);
 static upb_mhandlers * upb_enumdef_register_EnumDescriptorProto(upb_handlers *h);
 
-void upb_descreader_init(upb_descreader *r, upb_symtabtxn *txn) {
+void upb_descreader_init(upb_descreader *r) {
   upb_deflist_init(&r->defs);
   upb_status_init(&r->status);
-  r->txn = txn;
   r->stack_len = 0;
   r->name = NULL;
   r->default_string = NULL;
@@ -69,6 +68,12 @@ void upb_descreader_uninit(upb_descreader *r) {
     upb_descreader_frame *f = &r->stack[--r->stack_len];
     free(f->name);
   }
+}
+
+upb_def **upb_descreader_getdefs(upb_descreader *r, int *n) {
+  *n = r->defs.len;
+  r->defs.len = 0;
+  return r->defs.defs;
 }
 
 static upb_msgdef *upb_descreader_top(upb_descreader *r) {
@@ -148,23 +153,8 @@ static upb_mhandlers *upb_descreader_register_FileDescriptorProto(
 #undef FNUM
 #undef FTYPE
 
-// Handlers for google.protobuf.FileDescriptorSet.
-static void upb_descreader_FileDescriptorSet_onendmsg(void *_r,
-                                                      upb_status *status) {
-  // Move all defs (which are now guaranteed to be fully-qualified) to the txn.
-  upb_descreader *r = _r;
-  if (upb_ok(status)) {
-    for (unsigned int i = 0; i < r->defs.len; i++) {
-      // TODO: check return for duplicate def.
-      upb_symtabtxn_add(r->txn, r->defs.defs[i]);
-    }
-    r->defs.len = 0;
-  }
-}
-
 static upb_mhandlers *upb_descreader_register_FileDescriptorSet(upb_handlers *h) {
   upb_mhandlers *m = upb_handlers_newmhandlers(h);
-  upb_mhandlers_setendmsg(m, upb_descreader_FileDescriptorSet_onendmsg);
 
 #define FNUM(field) GOOGLE_PROTOBUF_FILEDESCRIPTORSET_ ## field ## __FIELDNUM
 #define FTYPE(field) GOOGLE_PROTOBUF_FILEDESCRIPTORSET_ ## field ## __FIELDTYPE

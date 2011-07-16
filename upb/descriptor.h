@@ -36,7 +36,6 @@ typedef struct {
 
 typedef struct {
   upb_deflist defs;
-  upb_symtabtxn *txn;
   upb_descreader_frame stack[UPB_MAX_TYPE_DEPTH];
   int stack_len;
   upb_status status;
@@ -52,13 +51,20 @@ typedef struct {
 } upb_descreader;
 
 // Creates a new descriptor builder that will add defs to the given txn.
-void upb_descreader_init(upb_descreader *r, upb_symtabtxn *txn);
+void upb_descreader_init(upb_descreader *r);
 void upb_descreader_uninit(upb_descreader *r);
 
 // Registers handlers that will load descriptor data into a symtabtxn.
 // Pass the descreader as the closure.  The messages will have
 // upb_msgdef_layout() called on them before adding to the txn.
 upb_mhandlers *upb_descreader_reghandlers(upb_handlers *h);
+
+// Gets the array of defs that have been parsed and removes them from the
+// descreader.  Ownership of the defs is passed to the caller, but the
+// ownership of the returned array is retained and is invalidated by any other
+// call into the descreader.  The defs will not have been resolved, and are
+// ready to be added to a symtab.
+upb_def **upb_descreader_getdefs(upb_descreader *r, int *n);
 
 #ifdef __cplusplus
 }  /* extern "C" */

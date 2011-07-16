@@ -485,45 +485,11 @@ upb_msg_iter upb_msg_next(upb_msgdef *m, upb_msg_iter iter) {
 }
 
 
-/* upb_symtabtxn **************************************************************/
+/* upb_symtab *****************************************************************/
 
 typedef struct {
   upb_def *def;
 } upb_symtab_ent;
-
-void upb_symtabtxn_init(upb_symtabtxn *t) {
-  upb_strtable_init(&t->deftab, 16, sizeof(upb_symtab_ent));
-}
-
-void upb_symtabtxn_uninit(upb_symtabtxn *txn) {
-  upb_strtable *t = &txn->deftab;
-  upb_strtable_iter i;
-  for(upb_strtable_begin(&i, t); !upb_strtable_done(&i); upb_strtable_next(&i)) {
-    const upb_symtab_ent *e = upb_strtable_iter_value(&i);
-    free(e->def);
-  }
-  upb_strtable_free(t);
-}
-
-bool upb_symtabtxn_add(upb_symtabtxn *t, upb_def *def) {
-  // TODO: check if already present.
-  upb_symtab_ent e = {def};
-  //fprintf(stderr, "txn Inserting: %p, ent: %p\n", e.def, &e);
-  upb_strtable_insert(&t->deftab, def->fqname, &e);
-  return true;
-}
-
-#if 0
-err:
-  // We need to free all defs from "tmptab."
-  upb_rwlock_unlock(&s->lock);
-  for(upb_symtab_ent *e = upb_strtable_begin(&tmptab); e;
-      e = upb_strtable_next(&tmptab, &e->e)) {
-    upb_def_unref(e->def);
-  }
-  upb_strtable_free(&tmptab);
-  return false;
-#endif
 
 // Given a symbol and the base symbol inside which it is defined, find the
 // symbol's definition in t.
@@ -542,19 +508,6 @@ static upb_symtab_ent *upb_resolve(upb_strtable *t,
     return NULL;
   }
 }
-
-void upb_symtabtxn_begin(upb_symtabtxn_iter *i, upb_symtabtxn *t) {
-  upb_strtable_begin(i, &t->deftab);
-}
-void upb_symtabtxn_next(upb_symtabtxn_iter *i) { upb_strtable_next(i); }
-bool upb_symtabtxn_done(upb_symtabtxn_iter *i) { return upb_strtable_done(i); }
-upb_def *upb_symtabtxn_iter_def(upb_symtabtxn_iter *i) {
-  const upb_symtab_ent *e = upb_strtable_iter_value(i);
-  return e->def;
-}
-
-
-/* upb_symtab public interface ************************************************/
 
 static void _upb_symtab_free(upb_strtable *t) {
   upb_strtable_iter i;
@@ -641,7 +594,7 @@ upb_def *upb_symtab_resolve(upb_symtab *s, const char *base, const char *sym) {
 }
 
 bool upb_symtab_dfs(upb_def *def, upb_def **open_defs, int n,
-                    upb_symtabtxn *txn) {
+                    upb_strtable *addtab) {
   // This linear search makes the DFS O(n^2) in the length of the paths.
   // Could make this O(n) with a hash table, but n is small.
   for (int i = 0; i < n; i++) {
@@ -656,22 +609,36 @@ bool upb_symtab_dfs(upb_def *def, upb_def **open_defs, int n,
     for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
       upb_fielddef *f = upb_msg_iter_field(i);
       if (!upb_hasdef(f)) continue;
-      needcopy |= upb_symtab_dfs(f->def, open_defs, n, txn);
+      needcopy |= upb_symtab_dfs(f->def, open_defs, n, addtab);
     }
   }
 
-  bool replacing = (upb_strtable_lookup(&txn->deftab, m->base.fqname) != NULL);
+  bool replacing = (upb_strtable_lookup(addtab, m->base.fqname) != NULL);
   if (needcopy && !replacing) {
     upb_symtab_ent e = {upb_def_dup(def)};
     //fprintf(stderr, "Replacing def: %p\n", e.def);
-    upb_strtable_insert(&txn->deftab, def->fqname, &e);
+    upb_strtable_insert(addtab, def->fqname, &e);
     replacing = true;
   }
   return replacing;
 }
 
-bool upb_symtab_commit(upb_symtab *s, upb_symtabtxn *txn, upb_status *status) {
+bool upb_symtab_add(upb_symtab *s, upb_def **defs, int n, upb_status *status) {
   upb_rwlock_wrlock(&s->lock);
+
+  // Add all defs to a table for resolution.
+  upb_strtable addtab;
+  upb_strtable_init(&addtab, n, sizeof(upb_symtab_ent));
+  for (int i = 0; i < n; i++) {
+    upb_def *def = defs[i];
+    if (upb_strtable_lookup(&addtab, def->fqname)) {
+      upb_status_setf(status, UPB_ERROR,
+                      "Conflicting defs named '%s'", def->fqname);
+      upb_strtable_free(&addtab);
+      return false;
+    }
+    upb_strtable_insert(&addtab, def->fqname, &def);
+  }
 
   // All existing defs that can reach defs that are being replaced must
   // themselves be replaced with versions that will point to the new defs.
@@ -682,12 +649,11 @@ bool upb_symtab_commit(upb_symtab *s, upb_symtabtxn *txn, upb_status *status) {
   for(; !upb_strtable_done(&i); upb_strtable_next(&i)) {
     upb_def *open_defs[UPB_MAX_TYPE_DEPTH];
     const upb_symtab_ent *e = upb_strtable_iter_value(&i);
-    upb_symtab_dfs(e->def, open_defs, 0, txn);
+    upb_symtab_dfs(e->def, open_defs, 0, &addtab);
   }
 
   // Resolve all refs.
-  upb_strtable *txntab = &txn->deftab;
-  upb_strtable_begin(&i, txntab);
+  upb_strtable_begin(&i, &addtab);
   for(; !upb_strtable_done(&i); upb_strtable_next(&i)) {
     const upb_symtab_ent *e = upb_strtable_iter_value(&i);
     upb_msgdef *m = upb_dyncast_msgdef(e->def);
@@ -701,11 +667,11 @@ bool upb_symtab_commit(upb_symtab *s, upb_symtabtxn *txn, upb_status *status) {
       if(!upb_hasdef(f)) continue;  // No resolving necessary.
       const char *name = upb_downcast_unresolveddef(f->def)->name;
 
-      // Resolve from either the txntab (pending adds) or symtab (existing
+      // Resolve from either the addtab (pending adds) or symtab (existing
       // defs).  If both exist, prefer the pending add, because it will be
       // overwriting the existing def.
       upb_symtab_ent *found;
-      if(!(found = upb_resolve(txntab, base, name)) &&
+      if(!(found = upb_resolve(&addtab, base, name)) &&
          !(found = upb_resolve(symtab, base, name))) {
         upb_status_setf(status, UPB_ERROR, "could not resolve symbol '%s' "
                                            "in context '%s'", name, base);
@@ -727,7 +693,7 @@ bool upb_symtab_commit(upb_symtab *s, upb_symtabtxn *txn, upb_status *status) {
 
   // The defs in the transaction have been vetted, and can be moved to the
   // symtab without causing errors.
-  upb_strtable_begin(&i, txntab);
+  upb_strtable_begin(&i, &addtab);
   for(; !upb_strtable_done(&i); upb_strtable_next(&i)) {
     const upb_symtab_ent *tmptab_e = upb_strtable_iter_value(&i);
     upb_def_movetosymtab(tmptab_e->def, s);
@@ -742,7 +708,7 @@ bool upb_symtab_commit(upb_symtab *s, upb_symtabtxn *txn, upb_status *status) {
     }
   }
 
-  upb_strtable_clear(txntab);
+  upb_strtable_free(&addtab);
   upb_rwlock_unlock(&s->lock);
   upb_symtab_gc(s);
   return true;

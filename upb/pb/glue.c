@@ -66,19 +66,16 @@ void upb_read_descriptor(upb_symtab *symtab, const char *str, size_t len,
   upb_decoder_initforhandlers(&d, h);
   upb_handlers_unref(h);
   upb_descreader r;
-  upb_symtabtxn txn;
-  upb_symtabtxn_init(&txn);
-  upb_descreader_init(&r, &txn);
+  upb_descreader_init(&r);
   upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), 0, UINT64_MAX, &r);
 
   upb_decoder_decode(&d, status);
+  int n;
+  upb_def **defs = upb_descreader_getdefs(&r, &n);
 
   // Set default accessors and layouts on all messages.
-  // for msgdef in symtabtxn:
-  upb_symtabtxn_iter i;
-  upb_symtabtxn_begin(&i, &txn);
-  for(; !upb_symtabtxn_done(&i); upb_symtabtxn_next(&i)) {
-    upb_def *def = upb_symtabtxn_iter_def(&i);
+  for(int i = 0; i < n; i++) {
+    upb_def *def = defs[i];
     upb_msgdef *md = upb_dyncast_msgdef(def);
     if (!md) return;
     // For field in msgdef:
@@ -90,9 +87,8 @@ void upb_read_descriptor(upb_symtab *symtab, const char *str, size_t len,
     upb_msgdef_layout(md);
   }
 
-  if (upb_ok(status)) upb_symtab_commit(symtab, &txn, status);
+  if (upb_ok(status)) upb_symtab_add(symtab, defs, n, status);
 
-  upb_symtabtxn_uninit(&txn);
   upb_descreader_uninit(&r);
   upb_stringsrc_uninit(&strsrc);
   upb_decoder_uninit(&d);

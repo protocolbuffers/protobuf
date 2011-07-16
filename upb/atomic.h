@@ -20,6 +20,7 @@
 #define UPB_ATOMIC_H_
 
 #include <stdbool.h>
+#include <assert.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,7 +46,7 @@ typedef struct {
 
 INLINE void upb_atomic_init(upb_atomic_t *a, int val) { a->v = val; }
 INLINE bool upb_atomic_ref(upb_atomic_t *a) { return a->v++ == 0; }
-INLINE bool upb_atomic_unref(upb_atomic_t *a) { return --a->v == 0; }
+INLINE bool upb_atomic_unref(upb_atomic_t *a) { assert(a->v > 0); return --a->v == 0; }
 INLINE int upb_atomic_read(upb_atomic_t *a) { return a->v; }
 INLINE bool upb_atomic_add(upb_atomic_t *a, int val) {
   a->v += val;
