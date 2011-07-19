@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <stdio.h>  // only for size_t.
 #include <assert.h>
+#include <stdarg.h>
 #include "descriptor_const.h"
 #include "atomic.h"
 

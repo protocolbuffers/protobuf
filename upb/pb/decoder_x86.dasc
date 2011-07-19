@@ -682,6 +682,8 @@ void upb_decoder_makejit(upb_decoder *d) {
 
   mprotect(d->jit_code, d->jit_size, PROT_EXEC | PROT_READ);
 
+  // View with: objdump -M intel -D -b binary -mi386 -Mx86-64 /tmp/machine-code
+  // Or: ndisasm -b 64 /tmp/machine-code
   FILE *f = fopen("/tmp/machine-code", "wb");
   fwrite(d->jit_code, d->jit_size, 1, f);
   fclose(f);
