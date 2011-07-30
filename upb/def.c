@@ -38,9 +38,14 @@ static void upb_msgdef_free(upb_msgdef *m);
 static void upb_enumdef_free(upb_enumdef *e);
 static void upb_unresolveddef_free(struct _upb_unresolveddef *u);
 
-#ifndef NDEBUG
-static bool upb_def_ismutable(upb_def *def) { return def->symtab == NULL; }
-#endif
+bool upb_def_ismutable(upb_def *def) { return def->symtab == NULL; }
+
+bool upb_def_setfqname(upb_def *def, const char *fqname) {
+  assert(upb_def_ismutable(def));
+  free(def->fqname);
+  def->fqname = strdup(fqname);
+  return true;  // TODO: check for acceptable characters.
+}
 
 static void upb_def_free(upb_def *def) {
   switch (def->type) {
@@ -73,7 +78,7 @@ void upb_def_ref(upb_def *def) {
 static void upb_def_movetosymtab(upb_def *d, upb_symtab *s) {
   assert(upb_atomic_read(&d->refcount) > 0);
   d->symtab = s;
-  if (!upb_atomic_unref(&d->refcount)) upb_symtab_ref(s);
+  upb_symtab_ref(s);
   upb_msgdef *m = upb_dyncast_msgdef(d);
   if (m) upb_inttable_compact(&m->itof);
 }
@@ -216,6 +221,7 @@ upb_fielddef *upb_fielddef_new() {
   f->hasbit = 0;
   f->offset = 0;
   f->number = 0;  // not a valid field number.
+  f->hasdefault = false;
   f->name = NULL;
   f->accessor = NULL;
   upb_value_setfielddef(&f->fval, f);
@@ -260,6 +266,17 @@ upb_fielddef *upb_fielddef_dup(upb_fielddef *f) {
   return f;
 }
 
+bool upb_fielddef_ismutable(upb_fielddef *f) {
+  return !f->msgdef || upb_def_ismutable(UPB_UPCAST(f->msgdef));
+}
+
+upb_def *upb_fielddef_subdef(upb_fielddef *f) {
+  if (upb_hassubdef(f) && !upb_fielddef_ismutable(f))
+    return f->def;
+  else
+    return NULL;
+}
+
 static bool upb_fielddef_resolve(upb_fielddef *f, upb_def *def, upb_status *s) {
   assert(upb_dyncast_unresolveddef(f->def));
   upb_def_unref(f->def);
@@ -286,25 +303,30 @@ static bool upb_fielddef_resolve(upb_fielddef *f, upb_def *def, upb_status *s) {
   return true;
 }
 
-void upb_fielddef_setnumber(upb_fielddef *f, int32_t number) {
+bool upb_fielddef_setnumber(upb_fielddef *f, int32_t number) {
   assert(f->msgdef == NULL);
   f->number = number;
+  return true;
 }
 
-void upb_fielddef_setname(upb_fielddef *f, const char *name) {
+bool upb_fielddef_setname(upb_fielddef *f, const char *name) {
   assert(f->msgdef == NULL);
   f->name = strdup(name);
+  return true;
 }
 
-void upb_fielddef_settype(upb_fielddef *f, uint8_t type) {
+bool upb_fielddef_settype(upb_fielddef *f, uint8_t type) {
   assert(!f->finalized);
   f->type = type;
+  return true;
 }
 
-void upb_fielddef_setlabel(upb_fielddef *f, uint8_t label) {
+bool upb_fielddef_setlabel(upb_fielddef *f, uint8_t label) {
   assert(!f->finalized);
   f->label = label;
+  return true;
 }
+
 void upb_fielddef_setdefault(upb_fielddef *f, upb_value value) {
   assert(!f->finalized);
   // TODO: string ownership?
@@ -322,9 +344,10 @@ void upb_fielddef_setaccessor(upb_fielddef *f, struct _upb_accessor_vtbl *vtbl) 
   f->accessor = vtbl;
 }
 
-void upb_fielddef_settypename(upb_fielddef *f, const char *name) {
+bool upb_fielddef_settypename(upb_fielddef *f, const char *name) {
   upb_def_unref(f->def);
   f->def = UPB_UPCAST(upb_unresolveddef_new(name));
+  return true;
 }
 
 // Returns an ordering of fields based on:
@@ -363,8 +386,8 @@ upb_msgdef *upb_msgdef_new() {
   upb_strtable_init(&m->ntof, 4, sizeof(upb_ntof_ent));
   m->size = 0;
   m->hasbit_bytes = 0;
-  m->extension_start = 0;
-  m->extension_end = 0;
+  m->extstart = 0;
+  m->extend = 0;
   return m;
 }
 
@@ -382,11 +405,12 @@ upb_msgdef *upb_msgdef_dup(upb_msgdef *m) {
   upb_msgdef *newm = upb_msgdef_new();
   newm->size = m->size;
   newm->hasbit_bytes = m->hasbit_bytes;
-  newm->extension_start = m->extension_start;
-  newm->extension_end = m->extension_end;
+  newm->extstart = m->extstart;
+  newm->extend = m->extend;
   upb_msg_iter i;
-  for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i))
+  for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
     upb_msgdef_addfield(newm, upb_fielddef_dup(upb_msg_iter_field(i)));
+  }
   return newm;
 }
 
@@ -400,28 +424,38 @@ void upb_msgdef_sethasbit_bytes(upb_msgdef *m, uint16_t bytes) {
   m->hasbit_bytes = bytes;
 }
 
-void upb_msgdef_setextension_start(upb_msgdef *m, uint32_t start) {
+bool upb_msgdef_setextrange(upb_msgdef *m, uint32_t start, uint32_t end) {
   assert(upb_def_ismutable(UPB_UPCAST(m)));
-  m->extension_start = start;
-}
-
-void upb_msgdef_setextension_end(upb_msgdef *m, uint32_t end) {
-  assert(upb_def_ismutable(UPB_UPCAST(m)));
-  m->extension_end = end;
-}
-
-bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f) {
-  assert(upb_atomic_read(&f->refcount) > 0);
-  if (!upb_atomic_unref(&f->refcount)) upb_msgdef_ref(m);
-  if (upb_msgdef_itof(m, f->number) || upb_msgdef_ntof(m, f->name)) {
-    upb_fielddef_unref(f);
+  if (start == 0 && end == 0) {
+    // Clearing the extension range -- ok to fall through.
+  } else if (start >= end || start < 1 || end > UPB_MAX_FIELDNUMBER) {
     return false;
   }
-  assert(f->msgdef == NULL);
-  f->msgdef = m;
-  upb_itof_ent itof_ent = {0, f};
-  upb_inttable_insert(&m->itof, f->number, &itof_ent);
-  upb_strtable_insert(&m->ntof, f->name, &f);
+  m->extstart = start;
+  m->extend = start;
+  return true;
+}
+
+bool upb_msgdef_addfields(upb_msgdef *m, upb_fielddef **fields, int n) {
+  // Check constraints for all fields before performing any action.
+  for (int i = 0; i < n; i++) {
+    upb_fielddef *f = fields[i];
+    assert(upb_atomic_read(&f->refcount) > 0);
+    if (f->name == NULL || f->number == 0 ||
+        upb_msgdef_itof(m, f->number) || upb_msgdef_ntof(m, f->name))
+      return false;
+  }
+
+  // Constraint checks ok, perform the action.
+  for (int i = 0; i < n; i++) {
+    upb_fielddef *f = fields[i];
+    upb_msgdef_ref(m);
+    assert(f->msgdef == NULL);
+    f->msgdef = m;
+    upb_itof_ent itof_ent = {0, f};
+    upb_inttable_insert(&m->itof, f->number, &itof_ent);
+    upb_strtable_insert(&m->ntof, f->name, &f);
+  }
   return true;
 }
 
@@ -608,7 +642,7 @@ bool upb_symtab_dfs(upb_def *def, upb_def **open_defs, int n,
     open_defs[n++] = def;
     for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
       upb_fielddef *f = upb_msg_iter_field(i);
-      if (!upb_hasdef(f)) continue;
+      if (!upb_hassubdef(f)) continue;
       needcopy |= upb_symtab_dfs(f->def, open_defs, n, addtab);
     }
   }
@@ -664,7 +698,36 @@ bool upb_symtab_add(upb_symtab *s, upb_def **defs, int n, upb_status *status) {
     upb_msg_iter j;
     for(j = upb_msg_begin(m); !upb_msg_done(j); j = upb_msg_next(m, j)) {
       upb_fielddef *f = upb_msg_iter_field(j);
-      if(!upb_hasdef(f)) continue;  // No resolving necessary.
+      if (f->type == 0) {
+        upb_status_setf(status, UPB_ERROR, "Field type was not set.");
+        return false;
+      }
+
+      // Set default default if none was set explicitly.
+      if (!f->hasdefault) {
+        switch (upb_fielddef_type(f)) {
+          case UPB_TYPE(DOUBLE): upb_value_setdouble(&f->defaultval, 0); break;
+          case UPB_TYPE(FLOAT): upb_value_setfloat(&f->defaultval, 0); break;
+          case UPB_TYPE(UINT64):
+          case UPB_TYPE(FIXED64): upb_value_setuint64(&f->defaultval, 0); break;
+          case UPB_TYPE(INT64):
+          case UPB_TYPE(SFIXED64):
+          case UPB_TYPE(SINT64): upb_value_setint64(&f->defaultval, 0); break;
+          case UPB_TYPE(INT32):
+          case UPB_TYPE(SINT32):
+          case UPB_TYPE(ENUM):
+          case UPB_TYPE(SFIXED32): upb_value_setint32(&f->defaultval, 0); break;
+          case UPB_TYPE(UINT32):
+          case UPB_TYPE(FIXED32): upb_value_setuint32(&f->defaultval, 0); break;
+          case UPB_TYPE(BOOL): upb_value_setbool(&f->defaultval, false); break;
+          case UPB_TYPE(STRING):
+          case UPB_TYPE(BYTES):
+          case UPB_TYPE(GROUP):
+          case UPB_TYPE(MESSAGE): break;  // do nothing for now.
+        }
+      }
+
+      if (!upb_hassubdef(f)) continue;  // No resolving necessary.
       const char *name = upb_downcast_unresolveddef(f->def)->name;
 
       // Resolve from either the addtab (pending adds) or symtab (existing

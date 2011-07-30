@@ -119,16 +119,17 @@ typedef struct _upb_strref {
   // the actual pointers).
   const char *ptr;
 
-  // Bytesrc from which this string data comes.  This is only guaranteed to be
-  // alive from inside the callback; however if the handler knows more about
-  // its type and how to prolong its life, it may do so.
-  upb_bytesrc *bytesrc;
+  // Length of the string.
+  uint32_t len;
 
   // Offset in the bytesrc that represents the beginning of this string.
   uint32_t stream_offset;
 
-  // Length of the string.
-  uint32_t len;
+  // Bytesrc from which this string data comes.  May be NULL if ptr is set.  If
+  // non-NULL, the bytesrc is only guaranteed to be alive from inside the
+  // callback; however if the handler knows more about its type and how to
+  // prolong its life, it may do so.
+  upb_bytesrc *bytesrc;
 
   // Possibly add optional members here like start_line, start_column, etc.
 } upb_strref;

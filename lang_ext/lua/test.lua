@@ -1,13 +1,46 @@
 
 require "upb"
 
-symtab = upb.symtab()
+symtab = upb.SymbolTable{
+  upb.MessageDef{fqname="A", fields={
+    upb.FieldDef{name="a", type=upb.TYPE_INT32, number=1},
+    upb.FieldDef{name="b", type=upb.TYPE_DOUBLE, number=2}}
+  }
+}
+
+symtab = upb.SymbolTable{
+  upb.MessageDef{fqname="A", fields={
+    upb.FieldDef{name="a", type=upb.TYPE_INT32, number=1},
+    upb.FieldDef{name="b", type=upb.TYPE_DOUBLE, number=2}}
+  },
+  upb.MessageDef{fqname="B"}
+}
+A, B, C = symtab:lookup("A", "B")
+print(A)
+print(B)
+print(C)
+
+a = A()
+print("YO!  a.a=" .. tostring(a.a))
+a.a = 2
+print("YO!  a.a=" .. tostring(a.a))
+
+A = symtab:lookup("A")
+if not A then
+  error("Could not find A")
+end
 
 f = io.open("../../src/descriptor.pb")
 if not f then
   error("Couldn't open descriptor.pb, try running 'make descriptorgen'")
 end
 symtab:parsedesc(f:read("*all"))
+symtab:load_descriptor()
+symtab:load_descriptor_file()
+
+upb.pb.load_descriptor(f:read("*all"))
+
+upb.pb.load_descriptor_file("../../src/descriptor.pb", symtab)
 
 f = io.open("../../benchmarks/google_messages.proto.pb")
 if not f then
@@ -23,10 +56,35 @@ SpeedMessage1 = symtab:lookup("benchmarks.SpeedMessage1")
 SpeedMessage2 = symtab:lookup("benchmarks.SpeedMessage2")
 print(SpeedMessage1:name())
 
-msg = SpeedMessage1()
+msg = MyType()
+msg:Decode(str)
+
+msg:DecodeJSON(str)
+
+msg = upb.pb.decode(str, MyType)
+str = upb.pb.encode(msg)
+
+msg = upb.pb.decode_text(str, MyType)
+str = upb.pb.encode_text(msg)
+
+upb.clear(msg)
+upb.msgdef(msg)
+upb.has(msg, "foo_bar")
+
+msg = upb.json.decode(str, MyType)
+
+msg = upb.pb.DecodeText(str)
+msg = upb.pb.EncodeText(msg)
+upb.
+
+upb.pb.decode_into(msg, str)
+
+str = upb.json.Encode(msg)
+upb.json.DecodeInto(msg, str)
 f = assert(io.open("../../benchmarks/google_message1.dat"))
 msg:Parse(f:read("*all"))
 print(msg:ToText())
+print(upb.json.encode(msg))
 
 msg = SpeedMessage2()
 f = assert(io.open("../../benchmarks/google_message2.dat"))
@@ -46,4 +104,4 @@ print(msg:ToText())
 -- print(msg.field129)
 -- msg.field129 = 5
 -- print(msg.field129)
-
+--]]

@@ -367,11 +367,13 @@ static void upb_fielddef_endmsg(void *_r, upb_status *status) {
   upb_fielddef *f = r->f;
   // TODO: verify that all required fields were present.
   assert(f->number != -1 && f->name != NULL);
-  assert((f->def != NULL) == upb_hasdef(f));
+  assert((f->def != NULL) == upb_hassubdef(f));
 
   // Field was successfully read, add it as a field of the msgdef.
   upb_msgdef *m = upb_descreader_top(r);
   upb_msgdef_addfield(m, f);
+  upb_fielddef_unref(f);
+  r->f = NULL;
   char *dstr = r->default_string;
   r->default_string = NULL;
   upb_value val;

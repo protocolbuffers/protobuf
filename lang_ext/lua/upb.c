@@ -15,13 +15,47 @@
 #include "upb/msg.h"
 #include "upb/pb/glue.h"
 
+static bool streql(const char *a, const char *b) { return strcmp(a, b) == 0; }
+
+static uint8_t lupb_touint8(lua_State *L, int narg, const char *name) {
+  lua_Number n = lua_tonumber(L, narg);
+  if (n > UINT8_MAX || n < 0 || rint(n) != n)
+    luaL_error(L, "Invalid %s", name);
+  return n;
+}
+
+static uint32_t lupb_touint32(lua_State *L, int narg, const char *name) {
+  lua_Number n = lua_tonumber(L, narg);
+  if (n > UINT32_MAX || n < 0 || rint(n) != n)
+    luaL_error(L, "Invalid %s", name);
+  return n;
+}
+
 //static void lupb_msg_getorcreate(lua_State *L, upb_msg *msg, upb_msgdef *md);
+static void lupb_fielddef_getorcreate(lua_State *L, upb_fielddef *f);
 
 // All the def types share the same C layout, even though they are different Lua
 // types with different metatables.
 typedef struct {
   upb_def *def;
 } lupb_def;
+
+typedef struct {
+  upb_fielddef *field;
+} lupb_fielddef;
+
+static lupb_def *lupb_def_check(lua_State *L, int narg) {
+  void *ldef = luaL_checkudata(L, narg, "upb.msgdef");
+  if (!ldef) ldef = luaL_checkudata(L, narg, "upb.enumdef");
+  luaL_argcheck(L, ldef != NULL, narg, "upb def expected");
+  return ldef;
+}
+
+static lupb_fielddef *lupb_fielddef_check(lua_State *L, int narg) {
+  lupb_fielddef *f = luaL_checkudata(L, narg, "upb.fielddef");
+  luaL_argcheck(L, f != NULL, narg, "upb fielddef expected");
+  return f;
+}
 
 void lupb_checkstatus(lua_State *L, upb_status *s) {
   if (!upb_ok(s)) {
@@ -78,52 +112,45 @@ static bool lupb_cache_getorcreate(lua_State *L, void *cobj, const char *type) {
   return lupb_cache_getorcreate_size(L, cobj, type, sizeof(void*)) != NULL;
 }
 
+static void lupb_cache_create(lua_State *L, void *cobj, const char *type) {
+  bool created =
+      lupb_cache_getorcreate_size(L, cobj, type, sizeof(void*)) != NULL;
+  (void)created;  // For NDEBUG
+  assert(created);
+}
+
 
 /* lupb_msg********************************************************************/
 
-#if 0
-// We prefer field access syntax (foo.bar, foo.bar = 5) over method syntax
-// (foo:bar(), foo:set_bar(5)) to make messages behave more like regular tables.
-// However, there are methods also, like foo:CopyFrom(other_foo) or foo:Clear().
+// Messages are userdata where we store primitive values (numbers and bools)
+// right in the userdata.  We also use integer entries in the environment table
+// like so:
+//   {msgdef, <string, submessage, or array fields>}
 
-typedef struct {
-  upb_msg *msg;
-  upb_msgdef *msgdef;
-} lupb_msg;
-
-static lupb_msg *lupb_msg_check(lua_State *L, int narg) {
-  return luaL_checkudata(L, narg, "upb.msg");
+static void *lupb_msg_check(lua_State *L, int narg, upb_msgdef **md) {
+  void *msg = luaL_checkudata(L, narg, "upb.msg");
+  luaL_argcheck(L, msg != NULL, narg, "msg expected");
+  // If going all the way to the environment table for the msgdef is an
+  // efficiency issue, we could put the pointer right in the userdata.
+  lua_getfenv(L, narg);
+  lua_rawgeti(L, -1, 1);
+  // Shouldn't have to check msgdef userdata validity, environment table can't
+  // be accessed from Lua.
+  lupb_def *lmd = lua_touserdata(L, -1);
+  *md = upb_downcast_msgdef(lmd->def);
+  return msg;
 }
 
 static void lupb_msg_pushnew(lua_State *L, upb_msgdef *md) {
-  upb_msg *msg = upb_msg_new(md);
-  lupb_msg *m = lupb_cache_getorcreate_size(L, msg, "upb.msg", sizeof(lupb_msg));
-  assert(m);
-  m->msgdef = md;
-  // We need to ensure that the msgdef outlives the msg.  This performs an
-  // atomic ref, if this turns out to be too expensive there are other
-  // possible approaches, like creating a separate metatable for every
-  // msgdef that references the msgdef.
-  upb_msgdef_ref(md);
-}
-
-// Caller does *not* pass a ref.
-static void lupb_msg_getorcreate(lua_State *L, upb_msg *msg, upb_msgdef *md) {
-  lupb_msg *m = lupb_cache_getorcreate_size(L, msg, "upb.msg", sizeof(lupb_msg));
-  if (m) {
-    // New Lua object, we need to ref the message.
-    m->msg = upb_msg_getref(msg);
-    m->msgdef = md;
-    // See comment above.
-    upb_msgdef_ref(md);
-  }
-}
-
-static int lupb_msg_gc(lua_State *L) {
-  lupb_msg *m = lupb_msg_check(L, 1);
-  upb_msg_unref(m->msg, m->msgdef);
-  upb_msgdef_unref(m->msgdef);
-  return 0;
+  void *msg = lua_newuserdata(L, upb_msgdef_size(md));
+  luaL_getmetatable(L, "upb.msg");
+  assert(!lua_isnil(L, -1));  // Should have been created by luaopen_upb.
+  lua_setmetatable(L, -2);
+  upb_msg_clear(msg, md);
+  lua_getfenv(L, -1);
+  lupb_cache_getorcreate(L, md, "upb.msgdef");
+  lua_rawseti(L, -2, 1);
+  lua_pop(L, 1);  // Pop the fenv.
 }
 
 static void lupb_pushvalue(lua_State *L, upb_value val, upb_fielddef *f) {
@@ -149,138 +176,99 @@ static void lupb_pushvalue(lua_State *L, upb_value val, upb_fielddef *f) {
       lua_pushnumber(L, upb_value_getfloat(val)); break;
     case UPB_TYPE(BOOL):
       lua_pushboolean(L, upb_value_getbool(val)); break;
-    case UPB_TYPE(STRING):
-    case UPB_TYPE(BYTES): {
-      lupb_pushstring(L, upb_value_getstr(val)); break;
-    }
-    case UPB_TYPE(MESSAGE):
-    case UPB_TYPE(GROUP): {
-      upb_msg *msg = upb_value_getmsg(val);
-      assert(msg);
-      lupb_msg_getorcreate(L, msg, upb_downcast_msgdef(f->def));
-    }
+    default: luaL_error(L, "internal error");
   }
 }
 
-static upb_value lupb_getvalue(lua_State *L, int narg, upb_fielddef *f) {
+// Returns a scalar value (ie. not a submessage) as a upb_value.
+static upb_value lupb_getvalue(lua_State *L, int narg, upb_fielddef *f,
+                               upb_strref *ref) {
+  assert(!upb_issubmsg(f));
   upb_value val;
-  lua_Number num = 0;
-  if (!upb_issubmsg(f) && !upb_isstring(f) && f->type != UPB_TYPE(BOOL)) {
+  if (upb_fielddef_type(f) == UPB_TYPE(BOOL)) {
+    if (!lua_isboolean(L, narg))
+      luaL_error(L, "Must explicitly pass true or false for boolean fields");
+    upb_value_setbool(&val, lua_toboolean(L, narg));
+  } else if (upb_fielddef_type(f) == UPB_TYPE(STRING)) {
+    size_t len;
+    ref->ptr = luaL_checklstring(L, narg, &len);
+    ref->len = len;
+    upb_value_setstrref(&val, ref);
+  } else {
+    // Numeric type.
+    lua_Number num = 0;
     num = luaL_checknumber(L, narg);
-    if (f->type != UPB_TYPE(DOUBLE) && f->type != UPB_TYPE(FLOAT) &&
-        num != rint(num)) {
-      luaL_error(L, "Cannot assign non-integer number %f to integer field", num);
-    }
-  }
-  switch (f->type) {
-    case UPB_TYPE(INT32):
-    case UPB_TYPE(SINT32):
-    case UPB_TYPE(SFIXED32):
-    case UPB_TYPE(ENUM):
-      if (num > INT32_MAX || num < INT32_MIN)
-        luaL_error(L, "Number %f is out-of-range for 32-bit integer field.", num);
-      upb_value_setint32(&val, num);
-      break;
-    case UPB_TYPE(INT64):
-    case UPB_TYPE(SINT64):
-    case UPB_TYPE(SFIXED64):
-      if (num > INT64_MAX || num < INT64_MIN)
-        luaL_error(L, "Number %f is out-of-range for 64-bit integer field.", num);
-      upb_value_setint64(&val, num);
-      break;
-    case UPB_TYPE(UINT32):
-    case UPB_TYPE(FIXED32):
-      if (num > UINT32_MAX || num < 0)
-        luaL_error(L, "Number %f is out-of-range for unsigned 32-bit integer field.", num);
-      upb_value_setuint32(&val, num);
-      break;
-    case UPB_TYPE(UINT64):
-    case UPB_TYPE(FIXED64):
-      if (num > UINT64_MAX || num < 0)
-        luaL_error(L, "Number %f is out-of-range for unsigned 64-bit integer field.", num);
-      upb_value_setuint64(&val, num);
-      break;
-    case UPB_TYPE(DOUBLE):
-      if (num > DBL_MAX || num < -DBL_MAX) {
-        // This could happen if lua_Number was long double.
-        luaL_error(L, "Number %f is out-of-range for double field.", num);
-      }
-      upb_value_setdouble(&val, num);
-      break;
-    case UPB_TYPE(FLOAT):
-      if (num > FLT_MAX || num < -FLT_MAX)
-        luaL_error(L, "Number %f is out-of-range for float field.", num);
-      upb_value_setfloat(&val, num);
-      break;
-    case UPB_TYPE(BOOL):
-      if (!lua_isboolean(L, narg))
-        luaL_error(L, "Must explicitly pass true or false for boolean fields");
-      upb_value_setbool(&val, lua_toboolean(L, narg));
-      break;
-    case UPB_TYPE(STRING):
-    case UPB_TYPE(BYTES): {
-      // TODO: is there any reasonable way to avoid a copy here?
-      size_t len;
-      const char *str = luaL_checklstring(L, narg, &len);
-      upb_value_setstr(&val, upb_strduplen(str, len));
-      break;
-    }
-    case UPB_TYPE(MESSAGE):
-    case UPB_TYPE(GROUP): {
-      lupb_msg *m = lupb_msg_check(L, narg);
-      if (m->msgdef != upb_downcast_msgdef(f->def))
-        luaL_error(L, "Tried to assign a message of the wrong type.");
-      upb_value_setmsg(&val, m->msg);
-      break;
+    switch (upb_fielddef_type(f)) {
+      case UPB_TYPE(INT32):
+      case UPB_TYPE(SINT32):
+      case UPB_TYPE(SFIXED32):
+      case UPB_TYPE(ENUM):
+        if (num > INT32_MAX || num < INT32_MIN || num != rint(num))
+          luaL_error(L, "Cannot convert %f to 32-bit integer", num);
+        upb_value_setint32(&val, num);
+        break;
+      case UPB_TYPE(INT64):
+      case UPB_TYPE(SINT64):
+      case UPB_TYPE(SFIXED64):
+        if (num > INT64_MAX || num < INT64_MIN || num != rint(num))
+          luaL_error(L, "Cannot convert %f to 64-bit integer", num);
+        upb_value_setint64(&val, num);
+        break;
+      case UPB_TYPE(UINT32):
+      case UPB_TYPE(FIXED32):
+        if (num > UINT32_MAX || num < 0 || num != rint(num))
+          luaL_error(L, "Cannot convert %f to unsigned 32-bit integer", num);
+        upb_value_setuint32(&val, num);
+        break;
+      case UPB_TYPE(UINT64):
+      case UPB_TYPE(FIXED64):
+        if (num > UINT64_MAX || num < 0 || num != rint(num))
+          luaL_error(L, "Cannot convert %f to unsigned 64-bit integer", num);
+        upb_value_setuint64(&val, num);
+        break;
+      case UPB_TYPE(DOUBLE):
+        if (num > DBL_MAX || num < -DBL_MAX) {
+          // This could happen if lua_Number was long double.
+          luaL_error(L, "Cannot convert %f to double", num);
+        }
+        upb_value_setdouble(&val, num);
+        break;
+      case UPB_TYPE(FLOAT):
+        if (num > FLT_MAX || num < -FLT_MAX)
+          luaL_error(L, "Cannot convert %f to float", num);
+        upb_value_setfloat(&val, num);
+        break;
     }
   }
   return val;
 }
 
-
 static int lupb_msg_index(lua_State *L) {
   assert(lua_gettop(L) == 2);  // __index should always be called with 2 args.
-  lupb_msg *m = lupb_msg_check(L, 1);
-  size_t len;
-  const char *name = luaL_checklstring(L, 2, &len);
-  upb_string namestr = UPB_STACK_STRING_LEN(name, len);
-  upb_fielddef *f = upb_msgdef_ntof(m->msgdef, &namestr);
-  if (f) {
-    if (upb_isarray(f)) {
-      luaL_error(L, "Access of repeated fields not yet implemented.");
-    }
-    lupb_pushvalue(L, upb_msg_get(m->msg, f), f);
-  } else {
-    // It wasn't a field, perhaps it's a method?
-    lua_getmetatable(L, 1);
-    lua_pushvalue(L, 2);
-    lua_rawget(L, -2);
-    if (lua_isnil(L, -1)) {
-      luaL_error(L, "%s is not a field name or a method name", name);
-    }
-  }
+  upb_msgdef *md;
+  void *m = lupb_msg_check(L, 1, &md);
+  const char *name = luaL_checkstring(L, 2);
+  upb_fielddef *f = upb_msgdef_ntof(md, name);
+  if (!f) luaL_error(L, "%s is not a field name", name);
+  if (upb_isseq(f)) luaL_error(L, "NYI: access of repeated fields");
+  upb_value val =
+      upb_msg_has(m, f) ? upb_msg_get(m, f) : upb_fielddef_default(f);
+  lupb_pushvalue(L, val, f);
   return 1;
 }
 
 static int lupb_msg_newindex(lua_State *L) {
   assert(lua_gettop(L) == 3);  // __newindex should always be called with 3 args.
-  lupb_msg *m = lupb_msg_check(L, 1);
-  size_t len;
-  const char *name = luaL_checklstring(L, 2, &len);
-  upb_string namestr = UPB_STACK_STRING_LEN(name, len);
-  upb_fielddef *f = upb_msgdef_ntof(m->msgdef, &namestr);
-  if (f) {
-    upb_value val = lupb_getvalue(L, 3, f);
-    upb_msg_set(m->msg, f, val);
-    if (upb_isstring(f)) {
-      upb_string_unref(upb_value_getstr(val));
-    }
-  } else {
-    luaL_error(L, "%s is not a field name", name);
-  }
+  upb_msgdef *md;
+  void *m = lupb_msg_check(L, 1, &md);
+  const char *name = luaL_checkstring(L, 2);
+  upb_fielddef *f = upb_msgdef_ntof(md, name);
+  if (!f) luaL_error(L, "%s is not a field name", name);
+  upb_msg_set(m, f, lupb_getvalue(L, 3, f, NULL));
   return 0;
 }
 
+#if 0
 static int lupb_msg_clear(lua_State *L) {
   lupb_msg *m = lupb_msg_check(L, 1);
   upb_msg_clear(m->msg, m->msgdef);
@@ -306,24 +294,24 @@ static int lupb_msg_totext(lua_State *L) {
   upb_string_unref(str);
   return 1;
 }
+#endif
 
 static const struct luaL_Reg lupb_msg_mm[] = {
-  {"__gc", lupb_msg_gc},
   {"__index", lupb_msg_index},
   {"__newindex", lupb_msg_newindex},
   // Our __index mm will look up methods if the index isn't a field name.
-  {"Clear", lupb_msg_clear},
-  {"Parse", lupb_msg_parse},
-  {"ToText", lupb_msg_totext},
+  //{"Clear", lupb_msg_clear},
+  //{"Parse", lupb_msg_parse},
+  //{"ToText", lupb_msg_totext},
   {NULL, NULL}
 };
-#endif
 
 
 /* lupb_msgdef ****************************************************************/
 
 static upb_msgdef *lupb_msgdef_check(lua_State *L, int narg) {
   lupb_def *ldef = luaL_checkudata(L, narg, "upb.msgdef");
+  luaL_argcheck(L, ldef != NULL, narg, "upb msgdef expected");
   return upb_downcast_msgdef(ldef->def);
 }
 
@@ -333,17 +321,53 @@ static int lupb_msgdef_gc(lua_State *L) {
   return 0;
 }
 
-#if 0
 static int lupb_msgdef_call(lua_State *L) {
   upb_msgdef *md = lupb_msgdef_check(L, 1);
   lupb_msg_pushnew(L, md);
   return 1;
 }
-#endif
 
-static void lupb_fielddef_getorcreate(lua_State *L, upb_fielddef *f);
+static int lupb_msgdef_new(lua_State *L) {
+  upb_msgdef *md = upb_msgdef_new();
+  lupb_cache_create(L, md, "upb.msgdef");
 
-static int lupb_msgdef_name(lua_State *L) {
+  if (lua_gettop(L) == 0) return 1;
+
+  // User can specify initialization values like so:
+  //   upb.MessageDef{fqname="MyMessage", extstart=8000, fields={...}}
+  luaL_checktype(L, 1, LUA_TTABLE);
+  // Iterate over table.
+  lua_pushnil(L);  // first key
+  while (lua_next(L, 1)) {
+    luaL_checktype(L, -2, LUA_TSTRING);
+    const char *key = lua_tostring(L, -2);
+
+    if (streql(key, "fqname")) {  // fqname="MyMessage"
+      const char *fqname = lua_tostring(L, -1);
+      if (!fqname || !upb_def_setfqname(UPB_UPCAST(md), fqname))
+        luaL_error(L, "Invalid fqname");
+    } else if (streql(key, "fields")) {  // fields={...}
+      // Iterate over the list of fields.
+      lua_pushnil(L);
+      luaL_checktype(L, -2, LUA_TTABLE);
+      while (lua_next(L, -2)) {
+        lupb_fielddef *f = lupb_fielddef_check(L, -1);
+        if (!upb_msgdef_addfield(md, f->field)) {
+          // TODO: more specific error.
+          luaL_error(L, "Could not add field.");
+        }
+        lua_pop(L, 1);
+      }
+    } else {
+      // TODO: extrange=
+      luaL_error(L, "Unknown initializer key '%s'", key);
+    }
+    lua_pop(L, 1);
+  }
+  return 1;
+}
+
+static int lupb_msgdef_fqname(lua_State *L) {
   upb_msgdef *m = lupb_msgdef_check(L, 1);
   lua_pushstring(L, m->base.fqname);
   return 1;
@@ -373,7 +397,7 @@ static int lupb_msgdef_fieldbynum(lua_State *L) {
 }
 
 static const struct luaL_Reg lupb_msgdef_mm[] = {
-  //{"__call", lupb_msgdef_call},
+  {"__call", lupb_msgdef_call},
   {"__gc", lupb_msgdef_gc},
   {NULL, NULL}
 };
@@ -381,7 +405,7 @@ static const struct luaL_Reg lupb_msgdef_mm[] = {
 static const struct luaL_Reg lupb_msgdef_m[] = {
   {"fieldbyname", lupb_msgdef_fieldbyname},
   {"fieldbynum", lupb_msgdef_fieldbynum},
-  {"name", lupb_msgdef_name},
+  {"fqname", lupb_msgdef_fqname},
   {NULL, NULL}
 };
 
@@ -440,9 +464,96 @@ static void lupb_def_getorcreate(lua_State *L, upb_def *def, int owned) {
 
 /* lupb_fielddef **************************************************************/
 
-typedef struct {
-  upb_fielddef *field;
-} lupb_fielddef;
+#if 0
+static const upb_accessor lupb_accessor = {
+  upb_startfield_handler *appendseq;     // Repeated fields only.
+  upb_startfield_handler *appendsubmsg;  // Submsg fields (repeated or no).
+  upb_value_handler      *set;           // Scalar fields (repeated or no).
+
+  // Readers.
+  upb_has_reader         *has;
+  upb_value_reader       *get;
+  upb_seqbegin_handler   *seqbegin;
+  upb_seqnext_handler    *seqnext;
+  upb_seqget_handler     *seqget;
+};
+#endif
+
+static upb_accessor_vtbl *lupb_accessor(upb_fielddef *f) {
+  return upb_stdmsg_accessor(f);
+}
+
+static int lupb_fielddef_index(lua_State *L) {
+  lupb_fielddef *f = lupb_fielddef_check(L, 1);
+  const char *str = luaL_checkstring(L, 2);
+  if (streql(str, "name")) {
+    lua_pushstring(L, upb_fielddef_name(f->field));
+  } else if (streql(str, "number")) {
+    lua_pushinteger(L, upb_fielddef_number(f->field));
+  } else if (streql(str, "type")) {
+    lua_pushinteger(L, upb_fielddef_type(f->field));
+  } else if (streql(str, "label")) {
+    lua_pushinteger(L, upb_fielddef_label(f->field));
+  } else if (streql(str, "subdef")) {
+    lupb_def_getorcreate(L, upb_fielddef_subdef(f->field), false);
+  } else if (streql(str, "msgdef")) {
+    lupb_def_getorcreate(L, UPB_UPCAST(upb_fielddef_msgdef(f->field)), false);
+  } else {
+    luaL_error(L, "Invalid fielddef member '%s'", str);
+  }
+  return 1;
+}
+
+static void lupb_fielddef_set(lua_State *L, upb_fielddef *f,
+                              const char *field, int narg) {
+  if (!upb_fielddef_ismutable(f)) luaL_error(L, "fielddef is not mutable.");
+  if (streql(field, "name")) {
+    const char *name = lua_tostring(L, narg);
+    if (!name || !upb_fielddef_setname(f, name))
+      luaL_error(L, "Invalid name");
+  } else if (streql(field, "number")) {
+    if (!upb_fielddef_setnumber(f, lupb_touint32(L, narg, "number")))
+      luaL_error(L, "Invalid number");
+  } else if (streql(field, "type")) {
+    if (!upb_fielddef_settype(f, lupb_touint8(L, narg, "type")))
+      luaL_error(L, "Invalid type");
+  } else if (streql(field, "label")) {
+    if (!upb_fielddef_setlabel(f, lupb_touint8(L, narg, "label")))
+      luaL_error(L, "Invalid label");
+  } else if (streql(field, "type_name")) {
+    const char *name = lua_tostring(L, narg);
+    if (!name || !upb_fielddef_settypename(f, name))
+      luaL_error(L, "Invalid type_name");
+  } else if (streql(field, "default_value")) {
+    if (!upb_fielddef_type(f))
+      luaL_error(L, "Must set type before setting default_value");
+    upb_strref ref;
+    upb_fielddef_setdefault(f, lupb_getvalue(L, narg, f, &ref));
+  } else {
+    luaL_error(L, "Cannot set fielddef member '%s'", field);
+  }
+}
+
+static int lupb_fielddef_new(lua_State *L) {
+  upb_fielddef *f = upb_fielddef_new();
+  lupb_cache_create(L, f, "upb.fielddef");
+
+  if (lua_gettop(L) == 0) return 1;
+
+  // User can specify initialization values like so:
+  //   upb.FieldDef{label=upb.LABEL_REQUIRED, name="my_field", number=5,
+  //                type=upb.TYPE_INT32, default_value=12, type_name="Foo"}
+  luaL_checktype(L, 1, LUA_TTABLE);
+  // Iterate over table.
+  lua_pushnil(L);  // first key
+  while (lua_next(L, 1)) {
+    luaL_checktype(L, -2, LUA_TSTRING);
+    const char *key = lua_tostring(L, -2);
+    lupb_fielddef_set(L, f, key, -1);
+    lua_pop(L, 1);
+  }
+  return 1;
+}
 
 static void lupb_fielddef_getorcreate(lua_State *L, upb_fielddef *f) {
   bool created = lupb_cache_getorcreate(L, f, "upb.fielddef");
@@ -453,42 +564,25 @@ static void lupb_fielddef_getorcreate(lua_State *L, upb_fielddef *f) {
   }
 }
 
-static lupb_fielddef *lupb_fielddef_check(lua_State *L, int narg) {
-  return luaL_checkudata(L, narg, "upb.fielddef");
-}
-
-static int lupb_fielddef_index(lua_State *L) {
+static int lupb_fielddef_newindex(lua_State *L) {
   lupb_fielddef *f = lupb_fielddef_check(L, 1);
-  const char *str = luaL_checkstring(L, 2);
-  if (strcmp(str, "name") == 0) {
-    lua_pushstring(L, upb_fielddef_name(f->field));
-  } else if (strcmp(str, "number") == 0) {
-    lua_pushinteger(L, upb_fielddef_number(f->field));
-  } else if (strcmp(str, "type") == 0) {
-    lua_pushinteger(L, upb_fielddef_type(f->field));
-  } else if (strcmp(str, "label") == 0) {
-    lua_pushinteger(L, upb_fielddef_label(f->field));
-  } else if (strcmp(str, "subdef") == 0) {
-    lupb_def_getorcreate(L, upb_fielddef_subdef(f->field), false);
-  } else if (strcmp(str, "msgdef") == 0) {
-    lupb_def_getorcreate(L, UPB_UPCAST(upb_fielddef_msgdef(f->field)), false);
-  } else {
-    lua_pushnil(L);
-  }
-  return 1;
+  lupb_fielddef_set(L, f->field, luaL_checkstring(L, 2), 3);
+  return 0;
 }
 
 static int lupb_fielddef_gc(lua_State *L) {
   lupb_fielddef *lfielddef = lupb_fielddef_check(L, 1);
-  upb_def_unref(UPB_UPCAST(lfielddef->field->msgdef));
+  upb_fielddef_unref(lfielddef->field);
   return 0;
 }
 
 static const struct luaL_Reg lupb_fielddef_mm[] = {
   {"__gc", lupb_fielddef_gc},
   {"__index", lupb_fielddef_index},
+  {"__newindex", lupb_fielddef_newindex},
   {NULL, NULL}
 };
+
 
 
 /* lupb_symtab ****************************************************************/
@@ -504,6 +598,58 @@ lupb_symtab *lupb_symtab_check(lua_State *L, int narg) {
   return luaL_checkudata(L, narg, "upb.symtab");
 }
 
+// narg is a lua table containing a list of defs to add.
+void lupb_symtab_doadd(lua_State *L, upb_symtab *s, int narg) {
+  luaL_checktype(L, narg, LUA_TTABLE);
+  // Iterate over table twice.  First iteration to count entries and
+  // check constraints.
+  int n = 0;
+  lua_pushnil(L);  // first key
+  while (lua_next(L, narg)) {
+    lupb_def_check(L, -1);
+    ++n;
+    lua_pop(L, 1);
+  }
+
+  // Second iteration to build deflist and layout.
+  upb_def **defs = malloc(n * sizeof(*defs));
+  n = 0;
+  lua_pushnil(L);  // first key
+  while (lua_next(L, 1)) {
+    upb_def *def = lupb_def_check(L, -1)->def;
+    defs[n++] = def;
+    upb_msgdef *md = upb_dyncast_msgdef(def);
+    if (md) {
+      upb_msg_iter i;
+      for(i = upb_msg_begin(md); !upb_msg_done(i); i = upb_msg_next(md, i)) {
+        upb_fielddef *f = upb_msg_iter_field(i);
+        upb_fielddef_setaccessor(f, lupb_accessor(f));
+      }
+      upb_msgdef_layout(md);
+    }
+    lua_pop(L, 1);
+  }
+
+  upb_status status = UPB_STATUS_INIT;
+  upb_symtab_add(s, defs, n, &status);
+  free(defs);
+  lupb_checkstatus(L, &status);
+}
+
+static int lupb_symtab_new(lua_State *L) {
+  upb_symtab *s = upb_symtab_new();
+  lupb_cache_create(L, s, "upb.symtab");
+  if (lua_gettop(L) == 0) return 1;
+  lupb_symtab_doadd(L, s, 1);
+  return 1;
+}
+
+static int lupb_symtab_add(lua_State *L) {
+  lupb_symtab *s = lupb_symtab_check(L, 1);
+  lupb_symtab_doadd(L, s->symtab, 2);
+  return 0;
+}
+
 static int lupb_symtab_gc(lua_State *L) {
   lupb_symtab *s = lupb_symtab_check(L, 1);
   upb_symtab_unref(s->symtab);
@@ -512,13 +658,16 @@ static int lupb_symtab_gc(lua_State *L) {
 
 static int lupb_symtab_lookup(lua_State *L) {
   lupb_symtab *s = lupb_symtab_check(L, 1);
-  upb_def *def = upb_symtab_lookup(s->symtab, luaL_checkstring(L, 2));
-  if (def) {
-    lupb_def_getorcreate(L, def, true);
-  } else {
-    lua_pushnil(L);
+  for (int i = 2; i <= lua_gettop(L); i++) {
+    upb_def *def = upb_symtab_lookup(s->symtab, luaL_checkstring(L, i));
+    if (def) {
+      lupb_def_getorcreate(L, def, true);
+    } else {
+      lua_pushnil(L);
+    }
+    lua_replace(L, i);
   }
-  return 1;
+  return lua_gettop(L) - 1;
 }
 
 static int lupb_symtab_getdefs(lua_State *L) {
@@ -551,7 +700,7 @@ static int lupb_symtab_parsedesc(lua_State *L) {
 }
 
 static const struct luaL_Reg lupb_symtab_m[] = {
-  //{"addfds", lupb_symtab_addfds},
+  {"add", lupb_symtab_add},
   {"getdefs", lupb_symtab_getdefs},
   {"lookup", lupb_symtab_lookup},
   {"parsedesc", lupb_symtab_parsedesc},
@@ -567,16 +716,10 @@ static const struct luaL_Reg lupb_symtab_mm[] = {
 
 /* lupb toplevel **************************************************************/
 
-static int lupb_symtab_new(lua_State *L) {
-  upb_symtab *s = upb_symtab_new();
-  bool created = lupb_cache_getorcreate(L, s, "upb.symtab");
-  (void)created;  // For NDEBUG
-  assert(created);  // It's new, there shouldn't be an obj for it already.
-  return 1;
-}
-
 static const struct luaL_Reg lupb_toplevel_m[] = {
-  {"symtab", lupb_symtab_new},
+  {"SymbolTable", lupb_symtab_new},
+  {"MessageDef", lupb_msgdef_new},
+  {"FieldDef", lupb_fielddef_new},
   {NULL, NULL}
 };
 
@@ -595,12 +738,17 @@ static void lupb_register_type(lua_State *L, const char *name,
   lua_pop(L, 1);  // The mt.
 }
 
+static void lupb_setfieldi(lua_State *L, const char *field, int i) {
+  lua_pushnumber(L, i);
+  lua_setfield(L, -2, field);
+}
+
 int luaopen_upb(lua_State *L) {
   lupb_register_type(L, "upb.msgdef", lupb_msgdef_m, lupb_msgdef_mm);
   lupb_register_type(L, "upb.enumdef", lupb_enumdef_m, lupb_enumdef_mm);
   lupb_register_type(L, "upb.fielddef", NULL, lupb_fielddef_mm);
   lupb_register_type(L, "upb.symtab", lupb_symtab_m, lupb_symtab_mm);
-  //lupb_register_type(L, "upb.msg", NULL, lupb_msg_mm);
+  lupb_register_type(L, "upb.msg", NULL, lupb_msg_mm);
 
   // Create our object cache.
   lua_createtable(L, 0, 0);
@@ -610,5 +758,30 @@ int luaopen_upb(lua_State *L) {
   lua_setfield(L, LUA_REGISTRYINDEX, "upb.objcache");
 
   luaL_register(L, "upb", lupb_toplevel_m);
+
+  // Register constants.
+  lupb_setfieldi(L, "LABEL_OPTIONAL", UPB_LABEL(OPTIONAL));
+  lupb_setfieldi(L, "LABEL_REQUIRED", UPB_LABEL(REQUIRED));
+  lupb_setfieldi(L, "LABEL_REPEATED", UPB_LABEL(REPEATED));
+
+  lupb_setfieldi(L, "TYPE_DOUBLE", UPB_TYPE(DOUBLE));
+  lupb_setfieldi(L, "TYPE_FLOAT", UPB_TYPE(FLOAT));
+  lupb_setfieldi(L, "TYPE_INT64", UPB_TYPE(INT64));
+  lupb_setfieldi(L, "TYPE_UINT64", UPB_TYPE(UINT64));
+  lupb_setfieldi(L, "TYPE_INT32", UPB_TYPE(INT32));
+  lupb_setfieldi(L, "TYPE_FIXED64", UPB_TYPE(FIXED64));
+  lupb_setfieldi(L, "TYPE_FIXED32", UPB_TYPE(FIXED32));
+  lupb_setfieldi(L, "TYPE_BOOL", UPB_TYPE(BOOL));
+  lupb_setfieldi(L, "TYPE_STRING", UPB_TYPE(STRING));
+  lupb_setfieldi(L, "TYPE_GROUP", UPB_TYPE(GROUP));
+  lupb_setfieldi(L, "TYPE_MESSAGE", UPB_TYPE(MESSAGE));
+  lupb_setfieldi(L, "TYPE_BYTES", UPB_TYPE(BYTES));
+  lupb_setfieldi(L, "TYPE_UINT32", UPB_TYPE(UINT32));
+  lupb_setfieldi(L, "TYPE_ENUM", UPB_TYPE(ENUM));
+  lupb_setfieldi(L, "TYPE_SFIXED32", UPB_TYPE(SFIXED32));
+  lupb_setfieldi(L, "TYPE_SFIXED64", UPB_TYPE(SFIXED64));
+  lupb_setfieldi(L, "TYPE_SINT32", UPB_TYPE(SINT32));
+  lupb_setfieldi(L, "TYPE_SINT64", UPB_TYPE(SINT64));
+
   return 1;  // Return package table.
 }

@@ -64,6 +64,8 @@ INLINE size_t upb_align_up(size_t val, size_t align) {
 // An individual string or array is unaffected by this 16k byte limit.
 #define UPB_MAX_FIELDS (2048)
 
+#define UPB_MAX_FIELDNUMBER ((1 << 29) - 1)
+
 // Nested type names are separated by periods.
 #define UPB_SYMBOL_SEPARATOR '.'
 

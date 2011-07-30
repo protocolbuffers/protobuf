@@ -92,10 +92,15 @@ INLINE bool upb_msg_has(void *m, upb_fielddef *f) {
   return f->accessor && f->accessor->has(m, f->fval);
 }
 
-// May only be called for fields that are known to be set.
+// May only be called for fields that have accessors.
 INLINE upb_value upb_msg_get(void *m, upb_fielddef *f) {
-  assert(upb_msg_has(m, f));
+  assert(f->accessor);
   return f->accessor->get(m, f->fval);
+}
+
+INLINE void upb_msg_set(void *m, upb_fielddef *f, upb_value val) {
+  assert(f->accessor);
+  f->accessor->set(m, f->fval, val);
 }
 
 INLINE void *upb_seq_begin(void *s, upb_fielddef *f) {

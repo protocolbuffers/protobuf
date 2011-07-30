@@ -14,6 +14,10 @@
  * These defs are mutable (and not thread-safe) when first created.
  * Once they are added to a defbuilder (and later its symtab) they become
  * immutable.
+ *
+ * TODO: consider making thread-safe even when first created by using mutexes
+ * internally.  Would also have to change any methods returning pointers to
+ * return copies instead.
  */
 
 #ifndef UPB_DEF_H_
@@ -58,6 +62,11 @@ void upb_def_ref(upb_def *def);
 void upb_def_unref(upb_def *def);
 upb_def *upb_def_dup(upb_def *def);
 
+// A def is mutable until it has been added to a symtab.
+bool upb_def_ismutable(upb_def *def);
+INLINE const char *upb_def_fqname(upb_def *def) { return def->fqname; }
+bool upb_def_setfqname(upb_def *def, const char *fqname);  // Only if mutable.
+
 #define UPB_UPCAST(ptr) (&(ptr)->base)
 
 
@@ -77,6 +86,8 @@ typedef struct _upb_fielddef {
   uint8_t label;         // Use UPB_LABEL() constants.
   int16_t hasbit;
   uint16_t offset;
+  bool hasdefault;
+  bool active;
   int32_t number;
   char *name;
   upb_value defaultval;  // Only meaningful for non-repeated scalars and strings.
@@ -88,6 +99,9 @@ upb_fielddef *upb_fielddef_new();
 void upb_fielddef_ref(upb_fielddef *f);
 void upb_fielddef_unref(upb_fielddef *f);
 upb_fielddef *upb_fielddef_dup(upb_fielddef *f);
+
+// A fielddef is mutable until its msgdef has been added to a symtab.
+bool upb_fielddef_ismutable(upb_fielddef *f);
 
 // Read accessors.  May be called any time.
 INLINE uint8_t upb_fielddef_type(upb_fielddef *f) { return f->type; }
@@ -113,18 +127,18 @@ upb_def *upb_fielddef_subdef(upb_fielddef *f);
 // Write accessors.  "Number" and "name" must be set before the fielddef is
 // added to a msgdef.  For the moment we do not allow these to be set once
 // the fielddef is added to a msgdef -- this could be relaxed in the future.
-void upb_fielddef_setnumber(upb_fielddef *f, int32_t number);
-void upb_fielddef_setname(upb_fielddef *f, const char *name);
+bool upb_fielddef_setnumber(upb_fielddef *f, int32_t number);
+bool upb_fielddef_setname(upb_fielddef *f, const char *name);
 
 // These writers may be called at any time prior to being put in a symtab.
-void upb_fielddef_settype(upb_fielddef *f, uint8_t type);
-void upb_fielddef_setlabel(upb_fielddef *f, uint8_t label);
+bool upb_fielddef_settype(upb_fielddef *f, uint8_t type);
+bool upb_fielddef_setlabel(upb_fielddef *f, uint8_t label);
 void upb_fielddef_setdefault(upb_fielddef *f, upb_value value);
 void upb_fielddef_setfval(upb_fielddef *f, upb_value fval);
 void upb_fielddef_setaccessor(upb_fielddef *f, struct _upb_accessor_vtbl *vtbl);
 // The name of the message or enum this field is referring to.  Must be found
-// at name resolution time (when the symtabtxn is committed to the symtab).
-void upb_fielddef_settypename(upb_fielddef *f, const char *name);
+// at name resolution time (when upb_symtab_add() is called).
+bool upb_fielddef_settypename(upb_fielddef *f, const char *name);
 
 // A variety of tests about the type of a field.
 INLINE bool upb_issubmsgtype(upb_fieldtype_t type) {
@@ -141,7 +155,7 @@ INLINE bool upb_isstring(upb_fielddef *f) { return upb_isstringtype(f->type); }
 INLINE bool upb_isseq(upb_fielddef *f) { return f->label == UPB_LABEL(REPEATED); }
 
 // Does the type of this field imply that it should contain an associated def?
-INLINE bool upb_hasdef(upb_fielddef *f) {
+INLINE bool upb_hassubdef(upb_fielddef *f) {
   return upb_issubmsg(f) || f->type == UPB_TYPE(ENUM);
 }
 
@@ -160,8 +174,7 @@ typedef struct _upb_msgdef {
   uint16_t size;
   uint8_t hasbit_bytes;
   // The range of tag numbers used to store extensions.
-  uint32_t extension_start;
-  uint32_t extension_end;
+  uint32_t extstart, extend;
 } upb_msgdef;
 
 // Hash table entries for looking up fields by name or number.
@@ -170,7 +183,6 @@ typedef struct {
   upb_fielddef *f;
 } upb_itof_ent;
 typedef struct {
-  upb_strtable_entry e;
   upb_fielddef *f;
 } upb_ntof_ent;
 
@@ -189,25 +201,23 @@ INLINE uint16_t upb_msgdef_size(upb_msgdef *m) { return m->size; }
 INLINE uint8_t upb_msgdef_hasbit_bytes(upb_msgdef *m) {
   return m->hasbit_bytes;
 }
-INLINE uint32_t upb_msgdef_extension_start(upb_msgdef *m) {
-  return m->extension_start;
-}
-INLINE uint32_t upb_msgdef_extension_end(upb_msgdef *m) {
-  return m->extension_end;
-}
+INLINE uint32_t upb_msgdef_extstart(upb_msgdef *m) { return m->extstart; }
+INLINE uint32_t upb_msgdef_extend(upb_msgdef *m) { return m->extend; }
 
 // Write accessors.  May only be called before the msgdef is in a symtab.
 void upb_msgdef_setsize(upb_msgdef *m, uint16_t size);
 void upb_msgdef_sethasbit_bytes(upb_msgdef *m, uint16_t bytes);
-void upb_msgdef_setextension_start(upb_msgdef *m, uint32_t start);
-void upb_msgdef_setextension_end(upb_msgdef *m, uint32_t end);
+bool upb_msgdef_setextrange(upb_msgdef *m, uint32_t start, uint32_t end);
 
-// Adds a fielddef to a msgdef, and passes a ref on the field to the msgdef.
+// Adds a fielddef to a msgdef.  Caller retains its ref on the fielddef.
 // May only be done before the msgdef is in a symtab.  The fielddef's name and
 // number must be set, and the message may not already contain any field with
-// this name or number -- if it does, the fielddef is unref'd and false is
-// returned.  The fielddef may not already belong to another message.
-bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f);
+// this name or number, and this fielddef may not be part of another message,
+// otherwise false is returned and no action is performed.
+bool upb_msgdef_addfields(upb_msgdef *m, upb_fielddef **f, int n);
+INLINE bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f) {
+  return upb_msgdef_addfields(m, &f, 1);
+}
 
 // Sets the layout of all fields according to default rules:
 // 1. Hasbits for required fields come first, then optional fields.
@@ -374,8 +384,8 @@ upb_def **upb_symtab_getdefs(upb_symtab *s, int *n, upb_deftype_t type);
 // Adds the given defs to the symtab, resolving all symbols.  Only one def per
 // name may be in the list, but defs can replace existing defs in the symtab.
 // The entire operation either succeeds or fails.  If the operation fails, the
-// symtab is unchanged, false is returned, and status indicates the error.  A
-// ref on the defs is passed to the symtab iff the operation succeeds.
+// symtab is unchanged, false is returned, and status indicates the error.  The
+// caller retains its ref on all defs in all cases.
 bool upb_symtab_add(upb_symtab *s, upb_def **defs, int n, upb_status *status);
 
 // Frees defs that are no longer active in the symtab and are no longer
