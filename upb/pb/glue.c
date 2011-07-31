@@ -77,7 +77,7 @@ void upb_read_descriptor(upb_symtab *symtab, const char *str, size_t len,
   for(int i = 0; i < n; i++) {
     upb_def *def = defs[i];
     upb_msgdef *md = upb_dyncast_msgdef(def);
-    if (!md) return;
+    if (!md) continue;
     // For field in msgdef:
     upb_msg_iter i;
     for(i = upb_msg_begin(md); !upb_msg_done(i); i = upb_msg_next(md, i)) {

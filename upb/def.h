@@ -276,7 +276,6 @@ typedef struct _upb_enumdef {
 } upb_enumdef;
 
 typedef struct {
-  upb_strtable_entry e;
   uint32_t value;
 } upb_ntoi_ent;
 

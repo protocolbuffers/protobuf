@@ -172,8 +172,9 @@ upb_enumdef *upb_enumdef_dup(upb_enumdef *e) {
 bool upb_enumdef_addval(upb_enumdef *e, char *name, int32_t num) {
   if (upb_enumdef_iton(e, num) || upb_enumdef_ntoi(e, name, NULL))
     return false;
+  upb_iton_ent ent = {0, strdup(name)};
   upb_strtable_insert(&e->ntoi, name, &num);
-  upb_inttable_insert(&e->iton, num, strdup(name));
+  upb_inttable_insert(&e->iton, num, &ent);
   return true;
 }
 
@@ -715,11 +716,11 @@ bool upb_symtab_add(upb_symtab *s, upb_def **defs, int n, upb_status *status) {
           case UPB_TYPE(SINT64): upb_value_setint64(&f->defaultval, 0); break;
           case UPB_TYPE(INT32):
           case UPB_TYPE(SINT32):
-          case UPB_TYPE(ENUM):
           case UPB_TYPE(SFIXED32): upb_value_setint32(&f->defaultval, 0); break;
           case UPB_TYPE(UINT32):
           case UPB_TYPE(FIXED32): upb_value_setuint32(&f->defaultval, 0); break;
           case UPB_TYPE(BOOL): upb_value_setbool(&f->defaultval, false); break;
+          case UPB_TYPE(ENUM):  // Will be resolved by upb_resolve().
           case UPB_TYPE(STRING):
           case UPB_TYPE(BYTES):
           case UPB_TYPE(GROUP):

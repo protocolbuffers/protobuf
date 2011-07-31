@@ -106,8 +106,8 @@ enum upb_wire_type {
 typedef uint8_t upb_fieldtype_t;
 
 // For referencing the type constants tersely.
-#define UPB_TYPE(type) GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_ ## type
-#define UPB_LABEL(type) GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_ ## type
+#define UPB_TYPE(type) GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_TYPE_ ## type
+#define UPB_LABEL(type) GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_LABEL_ ## type
 
 // Info for a given field type.
 typedef struct {
