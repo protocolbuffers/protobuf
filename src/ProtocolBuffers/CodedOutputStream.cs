@@ -1078,25 +1078,6 @@ namespace Google.ProtocolBuffers
             WriteRawVarint32(WireFormat.MakeTag(fieldNumber, type));
         }
 
-#if false
-        private void SlowWriteRawVarint32(uint value)
-        {
-            while (true)
-            {
-                if ((value & ~0x7F) == 0)
-                {
-                    WriteRawByte(value);
-                    return;
-                }
-                else
-                {
-                    WriteRawByte((value & 0x7F) | 0x80);
-                    value >>= 7;
-                }
-            }
-        }
-#endif
-
         /// <summary>
         /// Writes a 32 bit value as a varint. The fast route is taken when
         /// there's enough buffer space left to whizz through without checking
@@ -1105,7 +1086,6 @@ namespace Google.ProtocolBuffers
         [CLSCompliant(false)]
         public void WriteRawVarint32(uint value)
         {
-#if true
             while (value > 127 && position < limit)
             {
                 buffer[position++] = (byte) ((value & 0x7F) | 0x80);
@@ -1124,33 +1104,11 @@ namespace Google.ProtocolBuffers
             {
                 WriteRawByte((byte) value);
             }
-#else
-            if (position + 5 > limit)
-            {
-                SlowWriteRawVarint32(value);
-                return;
-            }
-
-            while (true)
-            {
-                if ((value & ~0x7F) == 0)
-                {
-                    buffer[position++] = (byte) value;
-                    return;
-                }
-                else
-                {
-                    buffer[position++] = (byte) ((value & 0x7F) | 0x80);
-                    value >>= 7;
-                }
-            }
-#endif
         }
 
         [CLSCompliant(false)]
         public void WriteRawVarint64(ulong value)
         {
-#if true
             while (value > 127 && position < limit)
             {
                 buffer[position++] = (byte) ((value & 0x7F) | 0x80);
@@ -1169,21 +1127,6 @@ namespace Google.ProtocolBuffers
             {
                 WriteRawByte((byte) value);
             }
-#else
-            while (true)
-            {
-                if ((value & ~0x7FUL) == 0)
-                {
-                    WriteRawByte((uint) value);
-                    return;
-                }
-                else
-                {
-                    WriteRawByte(((uint) value & 0x7F) | 0x80);
-                    value >>= 7;
-                }
-            }
-#endif
         }
 
         [CLSCompliant(false)]
