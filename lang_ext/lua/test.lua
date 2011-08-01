@@ -21,16 +21,18 @@ print(B)
 print(C)
 
 a = A()
-print("YO!  a.a=" .. tostring(a.a))
+a2 = upb.Message(A)
+print("YO!  a.a=" .. tostring(a.a) .. ", a2.a=" .. tostring(a2.a))
 a.a = 2
-print("YO!  a.a=" .. tostring(a.a))
+a2.a = 3
+print("YO!  a.a=" .. tostring(a.a) .. ", a2.a=" .. tostring(a2.a))
 
 A = symtab:lookup("A")
 if not A then
   error("Could not find A")
 end
 
-f = io.open("../../src/descriptor.pb")
+f = io.open("../../upb/descriptor.pb")
 if not f then
   error("Couldn't open descriptor.pb, try running 'make descriptorgen'")
 end
