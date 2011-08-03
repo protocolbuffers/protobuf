@@ -673,5 +673,91 @@ message MyMessageList {
                 a.GetType("nunit.simple.Proto.MyMessageList", true, true);
             }
         }
+
+        [Test]
+        public void TestProtoFileWithService()
+        {
+            string test = new StackFrame(false).GetMethod().Name;
+            Setup();
+            using (TempFile source = TempFile.Attach(test + ".cs"))
+            using (ProtoFile proto = new ProtoFile(test + ".proto",
+@"
+import ""google/protobuf/csharp_options.proto"";
+option (google.protobuf.csharp_file_options).service_generator_type = GENERIC;
+
+package nunit.simple;
+// Test a very simple message.
+message MyMessage {
+  optional string name = 1;
+}
+// test a very simple service.
+service TestService {
+  rpc Execute (MyMessage) returns (MyMessage);
+}"))
+            {
+                CopyInGoogleProtoFiles();
+
+                RunProtoGen(0, proto.TempPath, "-ignore_google_protobuf:true", "-nest_classes=false");
+                Assert.AreEqual(1, Directory.GetFiles(TempPath, "*.cs").Length);
+
+                Assembly a = RunCsc(0, source.TempPath);
+                //assert that the service type is in the expected namespace
+                Type t1 = a.GetType("nunit.simple.TestService", true, true);
+                Assert.IsTrue(typeof(IService).IsAssignableFrom(t1), "Expect an IService");
+                Assert.IsTrue(t1.IsAbstract, "Expect abstract class");
+                //assert that the Stub subclass type is in the expected namespace
+                Type t2 = a.GetType("nunit.simple.TestService+Stub", true, true);
+                Assert.IsTrue(t1.IsAssignableFrom(t2), "Expect a sub of TestService");
+                Assert.IsFalse(t2.IsAbstract, "Expect concrete class");
+            }
+        }
+
+        [Test]
+        public void TestProtoFileWithServiceInternal()
+        {
+            string test = new StackFrame(false).GetMethod().Name;
+            Setup();
+            using (TempFile source = TempFile.Attach(test + ".cs"))
+            using (ProtoFile proto = new ProtoFile(test + ".proto",
+@"
+import ""google/protobuf/csharp_options.proto"";
+option (google.protobuf.csharp_file_options).service_generator_type = GENERIC;
+
+package nunit.simple;
+// Test a very simple message.
+message MyMessage {
+  optional string name = 1;
+}
+// test a very simple service.
+service TestService {
+  rpc Execute (MyMessage) returns (MyMessage);
+}"))
+            {
+                CopyInGoogleProtoFiles();
+
+                RunProtoGen(0, proto.TempPath, "-ignore_google_protobuf:true", "-nest_classes=false", "-public_classes=false");
+                Assert.AreEqual(1, Directory.GetFiles(TempPath, "*.cs").Length);
+
+                Assembly a = RunCsc(0, source.TempPath);
+                //assert that the service type is in the expected namespace
+                Type t1 = a.GetType("nunit.simple.TestService", true, true);
+                Assert.IsTrue(typeof(IService).IsAssignableFrom(t1), "Expect an IService");
+                Assert.IsTrue(t1.IsAbstract, "Expect abstract class");
+                //assert that the Stub subclass type is in the expected namespace
+                Type t2 = a.GetType("nunit.simple.TestService+Stub", true, true);
+                Assert.IsTrue(t1.IsAssignableFrom(t2), "Expect a sub of TestService");
+                Assert.IsFalse(t2.IsAbstract, "Expect concrete class");
+            }
+        }
+
+        private static void CopyInGoogleProtoFiles()
+        {
+            string google = Path.Combine(TempPath, "google\\protobuf");
+            Directory.CreateDirectory(google);
+            foreach (string file in Directory.GetFiles(Path.Combine(OriginalWorkingDirectory, "google\\protobuf")))
+            {
+                File.Copy(file, Path.Combine(google, Path.GetFileName(file)));
+            }
+        }
     }
 }
