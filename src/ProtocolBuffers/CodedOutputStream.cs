@@ -370,7 +370,7 @@ namespace Google.ProtocolBuffers
             WriteRawVarint32(value);
         }
 
-        public void WriteEnum(int fieldNumber, string fieldName, int value, object textValue)
+        public void WriteEnum(int fieldNumber, string fieldName, int value, object rawValue)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Varint);
             WriteRawVarint32((uint) value);

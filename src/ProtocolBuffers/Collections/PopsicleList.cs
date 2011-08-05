@@ -42,7 +42,7 @@ namespace Google.ProtocolBuffers.Collections
     /// </summary>
     public sealed class PopsicleList<T> : IPopsicleList<T>, ICastArray
     {
-        private static readonly IEnumerable<T> EmptySet = new T[0];
+        private static readonly T[] EmptySet = new T[0];
 
         private List<T> items;
         private bool readOnly;
@@ -134,7 +134,8 @@ namespace Google.ProtocolBuffers.Collections
 
         public IEnumerator<T> GetEnumerator()
         {
-            return items == null ? EmptySet.GetEnumerator() : items.GetEnumerator();
+            IEnumerable<T> tenum = (IEnumerable<T>)items ?? EmptySet;
+            return tenum.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -171,7 +172,7 @@ namespace Google.ProtocolBuffers.Collections
         {
             if (items == null)
             {
-                return new TItemType[0];
+                return PopsicleList<TItemType>.EmptySet;
             }
             return (TItemType[]) (object) items.ToArray();
         }

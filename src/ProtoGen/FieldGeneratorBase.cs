@@ -72,6 +72,10 @@ namespace Google.ProtocolBuffers.ProtoGen
             return true;
         }
 
+        /// <summary>
+        /// This returns true if the field has a non-default default value.  For instance this returns 
+        /// false for numerics with a default of zero '0', or booleans with a default of false.
+        /// </summary>
         protected bool HasDefaultValue
         {
             get
