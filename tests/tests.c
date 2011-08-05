@@ -59,7 +59,7 @@ static void test_upb_symtab() {
   upb_msgdef *m = upb_downcast_msgdef(def);
   upb_msg_iter i = upb_msg_begin(m);
   upb_fielddef *f = upb_msg_iter_field(i);
-  ASSERT(upb_hasdef(f));
+  ASSERT(upb_hassubdef(f));
   upb_def *def2 = f->def;
 
   i = upb_msg_next(m, i);

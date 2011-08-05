@@ -51,12 +51,17 @@ INLINE bool upb_seq_done(void *iter) { return iter == NULL; }
 typedef struct _upb_accessor_vtbl {
   // Writers.  These take an fval as a parameter because the callbacks are used
   // as upb_handlers, but the fval is always the fielddef for that field.
-  upb_startfield_handler *appendseq;     // Repeated fields only.
-  upb_startfield_handler *appendsubmsg;  // Submsg fields (repeated or no).
-  upb_value_handler      *set;           // Scalar fields (repeated or no).
+  upb_startfield_handler *startsubmsg;     // Non-repeated submsg fields.
+  upb_value_handler      *set;             // Non-repeated scalar fields.
+  upb_startfield_handler *startseq;        // Repeated fields only.
+  upb_startfield_handler *appendsubmsg;    // Repeated submsg fields.
+  upb_value_handler      *append;          // Repeated scalar fields.
+
+  // TODO: expect to also need endsubmsg and endseq.
 
   // Readers.
   upb_has_reader         *has;
+  upb_value_reader       *getseq;
   upb_value_reader       *get;
   upb_seqbegin_handler   *seqbegin;
   upb_seqnext_handler    *seqnext;
@@ -82,6 +87,10 @@ upb_accessor_vtbl *upb_stdmsg_accessor(upb_fielddef *f);
 // defaults (but not strings, submessages, or arrays).
 void upb_msg_clear(void *msg, upb_msgdef *md);
 
+INLINE void upb_msg_clearbit(void *msg, upb_fielddef *f) {
+  ((char*)msg)[f->hasbit / 8] &= ~(1 << (f->hasbit % 8));
+}
+
 // Could add a method that recursively clears submessages, strings, and
 // arrays if desired.  This could be a win if you wanted to merge without
 // needing hasbits, because during parsing you would never clear submessages
@@ -94,8 +103,14 @@ INLINE bool upb_msg_has(void *m, upb_fielddef *f) {
 
 // May only be called for fields that have accessors.
 INLINE upb_value upb_msg_get(void *m, upb_fielddef *f) {
-  assert(f->accessor);
+  assert(f->accessor && !upb_isseq(f));
   return f->accessor->get(m, f->fval);
+}
+
+// May only be called for fields that have accessors.
+INLINE upb_value upb_msg_getseq(void *m, upb_fielddef *f) {
+  assert(f->accessor && upb_isseq(f));
+  return f->accessor->getseq(m, f->fval);
 }
 
 INLINE void upb_msg_set(void *m, upb_fielddef *f, upb_value val) {
@@ -182,6 +197,7 @@ upb_flow_t upb_stdmsg_setuint32(void *c, upb_value fval, upb_value val);
 upb_flow_t upb_stdmsg_setdouble(void *c, upb_value fval, upb_value val);
 upb_flow_t upb_stdmsg_setfloat(void *c, upb_value fval, upb_value val);
 upb_flow_t upb_stdmsg_setbool(void *c, upb_value fval, upb_value val);
+upb_flow_t upb_stdmsg_setptr(void *c, upb_value fval, upb_value val);
 
 // Value writers for repeated fields: the closure points to a standard array
 // struct, appends the value to the end of the array, resizing with realloc()
@@ -199,6 +215,7 @@ upb_flow_t upb_stdmsg_setuint32_r(void *c, upb_value fval, upb_value val);
 upb_flow_t upb_stdmsg_setdouble_r(void *c, upb_value fval, upb_value val);
 upb_flow_t upb_stdmsg_setfloat_r(void *c, upb_value fval, upb_value val);
 upb_flow_t upb_stdmsg_setbool_r(void *c, upb_value fval, upb_value val);
+upb_flow_t upb_stdmsg_setptr_r(void *c, upb_value fval, upb_value val);
 
 // Writers for C strings (NULL-terminated): we can find a char* at a known
 // offset from the closure "c".  Calls realloc() on the pointer to allocate

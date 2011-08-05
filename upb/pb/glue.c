@@ -89,6 +89,8 @@ void upb_read_descriptor(upb_symtab *symtab, const char *str, size_t len,
 
   if (upb_ok(status)) upb_symtab_add(symtab, defs, n, status);
 
+  for(int i = 0; i < n; i++) upb_def_unref(defs[i]);
+
   upb_descreader_uninit(&r);
   upb_stringsrc_uninit(&strsrc);
   upb_decoder_uninit(&d);

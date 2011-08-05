@@ -278,58 +278,40 @@ NEXTFUNC(8)
 NEXTFUNC(4)
 NEXTFUNC(1)
 
-#define STDMSG(type) { static upb_accessor_vtbl vtbl = {NULL, &upb_stdmsg_startsubmsg, \
-  &upb_stdmsg_set ## type, &upb_stdmsg_has, &upb_stdmsg_get ## type, \
-  NULL, NULL, NULL}; return &vtbl; }
-#define STDMSG_R(type, size) { static upb_accessor_vtbl vtbl = { \
-  &upb_stdmsg_startseq, &upb_stdmsg_startsubmsg_r, &upb_stdmsg_set ## type ## _r, \
-  &upb_stdmsg_has, &upb_stdmsg_getptr, &upb_stdmsg_seqbegin, \
-  &upb_stdmsg_ ## size ## byte_seqnext, &upb_stdmsg_seqget ## type}; \
+#define STDMSG(type, size) { static upb_accessor_vtbl vtbl = { \
+    &upb_stdmsg_startsubmsg, \
+    &upb_stdmsg_set ## type, \
+    &upb_stdmsg_startseq, \
+    &upb_stdmsg_startsubmsg_r, \
+    &upb_stdmsg_set ## type ## _r, \
+    &upb_stdmsg_has, \
+    &upb_stdmsg_getptr, \
+    &upb_stdmsg_get ## type, \
+    &upb_stdmsg_seqbegin, \
+    &upb_stdmsg_ ## size ## byte_seqnext, \
+    &upb_stdmsg_seqget ## type}; \
   return &vtbl; }
 
 upb_accessor_vtbl *upb_stdmsg_accessor(upb_fielddef *f) {
-  if (upb_isseq(f)) {
-    switch (f->type) {
-      case UPB_TYPE(DOUBLE): STDMSG_R(double, 8)
-      case UPB_TYPE(FLOAT): STDMSG_R(float, 4)
-      case UPB_TYPE(UINT64):
-      case UPB_TYPE(FIXED64): STDMSG_R(uint64, 8)
-      case UPB_TYPE(INT64):
-      case UPB_TYPE(SFIXED64):
-      case UPB_TYPE(SINT64): STDMSG_R(int64, 8)
-      case UPB_TYPE(INT32):
-      case UPB_TYPE(SINT32):
-      case UPB_TYPE(ENUM):
-      case UPB_TYPE(SFIXED32): STDMSG_R(int32, 4)
-      case UPB_TYPE(UINT32):
-      case UPB_TYPE(FIXED32): STDMSG_R(uint32, 4)
-      case UPB_TYPE(BOOL): STDMSG_R(bool, 1)
-      case UPB_TYPE(STRING):
-      case UPB_TYPE(BYTES):
-      case UPB_TYPE(GROUP):
-      case UPB_TYPE(MESSAGE): STDMSG_R(str, 8)  // TODO: 32-bit
-    }
-  } else {
-    switch (f->type) {
-      case UPB_TYPE(DOUBLE): STDMSG(double)
-      case UPB_TYPE(FLOAT): STDMSG(float)
-      case UPB_TYPE(UINT64):
-      case UPB_TYPE(FIXED64): STDMSG(uint64)
-      case UPB_TYPE(INT64):
-      case UPB_TYPE(SFIXED64):
-      case UPB_TYPE(SINT64): STDMSG(int64)
-      case UPB_TYPE(INT32):
-      case UPB_TYPE(SINT32):
-      case UPB_TYPE(ENUM):
-      case UPB_TYPE(SFIXED32): STDMSG(int32)
-      case UPB_TYPE(UINT32):
-      case UPB_TYPE(FIXED32): STDMSG(uint32)
-      case UPB_TYPE(BOOL): STDMSG(bool)
-      case UPB_TYPE(STRING):
-      case UPB_TYPE(BYTES):
-      case UPB_TYPE(GROUP):
-      case UPB_TYPE(MESSAGE): STDMSG(str)
-    }
+  switch (f->type) {
+    case UPB_TYPE(DOUBLE): STDMSG(double, 8)
+    case UPB_TYPE(FLOAT): STDMSG(float, 4)
+    case UPB_TYPE(UINT64):
+    case UPB_TYPE(FIXED64): STDMSG(uint64, 8)
+    case UPB_TYPE(INT64):
+    case UPB_TYPE(SFIXED64):
+    case UPB_TYPE(SINT64): STDMSG(int64, 8)
+    case UPB_TYPE(INT32):
+    case UPB_TYPE(SINT32):
+    case UPB_TYPE(ENUM):
+    case UPB_TYPE(SFIXED32): STDMSG(int32, 4)
+    case UPB_TYPE(UINT32):
+    case UPB_TYPE(FIXED32): STDMSG(uint32, 4)
+    case UPB_TYPE(BOOL): STDMSG(bool, 1)
+    case UPB_TYPE(STRING):
+    case UPB_TYPE(BYTES):
+    case UPB_TYPE(GROUP):
+    case UPB_TYPE(MESSAGE): STDMSG(str, 8)  // TODO: 32-bit
   }
   return NULL;
 }
@@ -337,10 +319,15 @@ upb_accessor_vtbl *upb_stdmsg_accessor(upb_fielddef *f) {
 static void upb_accessors_onfreg(void *c, upb_fhandlers *fh, upb_fielddef *f) {
   (void)c;
   if (f->accessor) {
-    upb_fhandlers_setstartseq(fh, f->accessor->appendseq);
-    upb_fhandlers_setvalue(fh, f->accessor->set);
-    upb_fhandlers_setstartsubmsg(fh, f->accessor->appendsubmsg);
     upb_fhandlers_setfval(fh, f->fval);
+    if (upb_isseq(f)) {
+      upb_fhandlers_setstartseq(fh, f->accessor->startseq);
+      upb_fhandlers_setvalue(fh, f->accessor->append);
+      upb_fhandlers_setstartsubmsg(fh, f->accessor->appendsubmsg);
+    } else {
+      upb_fhandlers_setvalue(fh, f->accessor->set);
+      upb_fhandlers_setstartsubmsg(fh, f->accessor->startsubmsg);
+    }
   }
 }
 
