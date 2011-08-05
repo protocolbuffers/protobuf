@@ -190,17 +190,9 @@ namespace Google.ProtocolBuffers
         /// Attempt to read a field tag, returning false if we have reached the end
         /// of the input data.
         /// </summary>
-        /// <remarks>
-        /// <para>
-        /// If fieldTag is non-zero and ReadTag returns true then the value in fieldName
-        /// may or may not be populated.  However, if fieldTag is zero and ReadTag returns
-        /// true, then fieldName should be populated with a non-null field name.
-        /// </para><para>
-        /// In other words if ReadTag returns true then either fieldTag will be non-zero OR
-        /// fieldName will be non-zero.  In some cases both may be populated, however the
-        /// builders will always prefer the fieldTag over fieldName.
-        /// </para>
-        /// </remarks>
+        /// <param name="fieldTag">The 'tag' of the field (id * 8 + wire-format)</param>
+        /// <param name="fieldName">Not Supported - For protobuffer streams, this parameter is always null</param>
+        /// <returns>true if the next fieldTag was read</returns>
         [CLSCompliant(false)]
         public bool ReadTag(out uint fieldTag, out string fieldName)
         {
@@ -208,18 +200,21 @@ namespace Google.ProtocolBuffers
 
             if (hasNextTag)
             {
-                lastTag = fieldTag = nextTag;
+                fieldTag = nextTag;
+                lastTag = fieldTag;
                 hasNextTag = false;
                 return true;
             }
 
             if (IsAtEnd)
             {
-                lastTag = fieldTag = 0;
+                fieldTag = 0;
+                lastTag = fieldTag;
                 return false;
             }
 
-            lastTag = fieldTag = ReadRawVarint32();
+            fieldTag = ReadRawVarint32();
+            lastTag = fieldTag;
             if (lastTag == 0)
             {
                 // If we actually read zero, that's not a valid tag.
