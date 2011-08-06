@@ -40,7 +40,6 @@ using System.IO;
 using System.Text;
 using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
-using Google.ProtocolBuffers.Serialization;
 
 namespace Google.ProtocolBuffers
 {
@@ -121,27 +120,6 @@ namespace Google.ProtocolBuffers
         public override sealed string ToString()
         {
             return TextFormat.PrintToString(this);
-        }
-
-        public string ToJson()
-        {
-            JsonFormatWriter w = JsonFormatWriter.CreateInstance();
-            w.WriteMessage(this);
-            return w.ToString();
-        }
-
-        public string ToXml()
-        {
-            StringWriter w = new StringWriter(new StringBuilder(4096));
-            XmlFormatWriter.CreateInstance(w).WriteMessage(this);
-            return w.ToString();
-        }
-
-        public string ToXml(string rootElementName)
-        {
-            StringWriter w = new StringWriter(new StringBuilder(4096));
-            XmlFormatWriter.CreateInstance(w).WriteMessage(rootElementName, this);
-            return w.ToString();
         }
 
         public override sealed void PrintTo(TextWriter writer)

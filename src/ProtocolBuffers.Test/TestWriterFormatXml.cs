@@ -18,7 +18,7 @@ namespace Google.ProtocolBuffers
             TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
             string xml = msg.ToXml();
             Assert.AreEqual("<root><default_bool>true</default_bool></root>", xml);
-            TestAllTypes copy = TestAllTypes.ParseFromXml(XmlReader.Create(new StringReader(xml)));
+            TestAllTypes copy = new TestAllTypes.Builder().MergeFromXml(XmlReader.Create(new StringReader(xml))).Build();
             Assert.IsTrue(copy.HasDefaultBool && copy.DefaultBool);
             Assert.AreEqual(msg, copy);
         }
@@ -29,7 +29,7 @@ namespace Google.ProtocolBuffers
             TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
             string xml = msg.ToXml("message");
             Assert.AreEqual("<message><default_bool>true</default_bool></message>", xml);
-            TestAllTypes copy = TestAllTypes.ParseFromXml("message", XmlReader.Create(new StringReader(xml)));
+            TestAllTypes copy = new TestAllTypes.Builder().MergeFromXml("message", XmlReader.Create(new StringReader(xml))).Build();
             Assert.IsTrue(copy.HasDefaultBool && copy.DefaultBool);
             Assert.AreEqual(msg, copy);
         }
@@ -324,13 +324,13 @@ namespace Google.ProtocolBuffers
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
             Assert.AreEqual(message, copy);
         }
-        [Test, ExpectedException(typeof(InvalidProtocolBufferException))]
+        [Test, ExpectedException(typeof(RecursionLimitExceededException))]
         public void TestRecursiveLimit()
         {
             StringBuilder sb = new StringBuilder(8192);
             for (int i = 0; i < 80; i++)
                 sb.Append("<child>");
-            TestXmlRescursive msg = TestXmlRescursive.ParseFromXml("child", XmlReader.Create(new StringReader(sb.ToString())));
+            TestXmlRescursive msg = new TestXmlRescursive.Builder().MergeFromXml("child", XmlReader.Create(new StringReader(sb.ToString()))).Build();
         }
     }
 }

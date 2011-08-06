@@ -38,7 +38,7 @@ namespace Google.ProtocolBuffers
             TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
             string json = msg.ToJson();
             Assert.AreEqual("{\"default_bool\":true}", json);
-            TestAllTypes copy = TestAllTypes.ParseFromJson(json);
+            TestAllTypes copy = new TestAllTypes.Builder().MergeFromJson(json).Build();
             Assert.IsTrue(copy.HasDefaultBool && copy.DefaultBool);
             Assert.AreEqual(msg, copy);
         }
@@ -49,7 +49,7 @@ namespace Google.ProtocolBuffers
             TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
             string json = msg.ToJson();
             Assert.AreEqual("{\"default_bool\":true}", json);
-            TestAllTypes copy = TestAllTypes.ParseFromJson(new StringReader(json));
+            TestAllTypes copy = new TestAllTypes.Builder().MergeFromJson(new StringReader(json)).Build();
             Assert.IsTrue(copy.HasDefaultBool && copy.DefaultBool);
             Assert.AreEqual(msg, copy);
         }
@@ -337,13 +337,13 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(3, ordinal);
             Assert.AreEqual(3, builder.TextlinesCount);
         }
-        [Test,ExpectedException(typeof(InvalidProtocolBufferException))]
+        [Test,ExpectedException(typeof(RecursionLimitExceededException))]
         public void TestRecursiveLimit()
         {
             StringBuilder sb = new StringBuilder(8192);
             for (int i = 0; i < 80; i++)
                 sb.Append("{\"child\":");
-            TestXmlRescursive msg = TestXmlRescursive.ParseFromJson(sb.ToString());
+            TestXmlRescursive msg = new TestXmlRescursive.Builder().MergeFromJson(sb.ToString()).Build();
         }
         [Test, ExpectedException(typeof(FormatException))]
         public void FailWithEmptyText()

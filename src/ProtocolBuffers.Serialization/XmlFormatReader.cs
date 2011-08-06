@@ -76,6 +76,17 @@ namespace Google.ProtocolBuffers.Serialization
         }
 
         /// <summary>
+        /// Constructs the XmlFormatReader with the XmlReader and options
+        /// </summary>
+        protected XmlFormatReader(XmlFormatReader copyFrom, XmlReader input)
+            : base(copyFrom)
+        {
+            _input = input;
+            _rootElementName = copyFrom._rootElementName;
+            Options = copyFrom.Options;
+        }
+
+        /// <summary>
         /// Gets or sets the options to use when reading the xml
         /// </summary>
         public XmlReaderOptions Options { get; set; }
@@ -104,9 +115,7 @@ namespace Google.ProtocolBuffers.Serialization
 
         private XmlFormatReader CloneWith(XmlReader rdr)
         {
-            XmlFormatReader copy = new XmlFormatReader(rdr).SetOptions(Options);
-            copy._rootElementName = _rootElementName;
-            copy.Depth = Depth;
+            XmlFormatReader copy = new XmlFormatReader(this, rdr);
             return copy;
         }
 

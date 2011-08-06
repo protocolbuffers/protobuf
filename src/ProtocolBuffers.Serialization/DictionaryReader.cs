@@ -161,7 +161,7 @@ namespace Google.ProtocolBuffers.Serialization
             byte[] rawbytes = null;
             if (GetValue(ref rawbytes))
             {
-                value = ByteString.AttachBytes(rawbytes);
+                value = ByteString.CopyFrom(rawbytes);
                 return true;
             }
             return false;

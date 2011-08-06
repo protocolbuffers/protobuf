@@ -12,8 +12,20 @@ namespace Google.ProtocolBuffers.Serialization
     /// </summary>
     public abstract class AbstractReader : ICodedInputStream
     {
-        private const int MaxDepth = CodedInputStream.DefaultRecursionLimit;
-        protected int Depth;
+        private const int DefaultMaxDepth = 64;
+        private int _depth;
+        
+        /// <summary> Constructs a new reader </summary>
+        protected AbstractReader() { MaxDepth = DefaultMaxDepth; }
+        /// <summary> Constructs a new child reader </summary>
+        protected AbstractReader(AbstractReader copyFrom)
+        {
+            _depth = copyFrom._depth + 1;
+            MaxDepth = copyFrom.MaxDepth;
+        }
+
+        /// <summary> Gets or sets the maximum recursion depth allowed </summary>
+        public int MaxDepth { get; set; }
 
         /// <summary>
         /// Merges the contents of stream into the provided message builder
@@ -395,12 +407,12 @@ namespace Google.ProtocolBuffers.Serialization
 
         void ICodedInputStream.ReadGroup(int fieldNumber, IBuilderLite builder, ExtensionRegistry extensionRegistry)
         {
-            if (Depth++ > MaxDepth)
+            if (_depth++ > MaxDepth)
             {
-                throw InvalidProtocolBufferException.RecursionLimitExceeded();
+                throw new RecursionLimitExceededException();
             }
             ReadGroup(builder, extensionRegistry);
-            Depth--;
+            _depth--;
         }
 
         void ICodedInputStream.ReadUnknownGroup(int fieldNumber, IBuilderLite builder)
@@ -410,12 +422,12 @@ namespace Google.ProtocolBuffers.Serialization
 
         void ICodedInputStream.ReadMessage(IBuilderLite builder, ExtensionRegistry extensionRegistry)
         {
-            if (Depth++ > MaxDepth)
+            if (_depth++ > MaxDepth)
             {
-                throw InvalidProtocolBufferException.RecursionLimitExceeded();
+                throw new RecursionLimitExceededException();
             }
             ReadMessage(builder, extensionRegistry);
-            Depth--;
+            _depth--;
         }
 
         bool ICodedInputStream.ReadBytes(ref ByteString value)
@@ -566,23 +578,23 @@ namespace Google.ProtocolBuffers.Serialization
         void ICodedInputStream.ReadMessageArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType,
                                                    ExtensionRegistry registry)
         {
-            if (Depth++ > MaxDepth)
+            if (_depth++ > MaxDepth)
             {
-                throw InvalidProtocolBufferException.RecursionLimitExceeded();
+                throw new RecursionLimitExceededException();
             }
             ReadMessageArray(fieldName, list, messageType, registry);
-            Depth--;
+            _depth--;
         }
 
         void ICodedInputStream.ReadGroupArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType,
                                                  ExtensionRegistry registry)
         {
-            if (Depth++ > MaxDepth)
+            if (_depth++ > MaxDepth)
             {
-                throw InvalidProtocolBufferException.RecursionLimitExceeded();
+                throw new RecursionLimitExceededException();
             }
             ReadGroupArray(fieldName, list, messageType, registry);
-            Depth--;
+            _depth--;
         }
 
         bool ICodedInputStream.ReadPrimitiveField(FieldType fieldType, ref object value)

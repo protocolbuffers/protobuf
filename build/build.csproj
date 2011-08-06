@@ -145,6 +145,7 @@
     <TestContainer Include="$(SourceDirectory)\ProtoGen.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.ProtoGen.Test.dll" />
 
     <DynamicPackageItem Include="$(SourceDirectory)\ProtocolBuffers\bin\$(BuildConfiguration)\Google.ProtocolBuffers.*" />
+    <DynamicPackageItem Include="$(SourceDirectory)\ProtocolBuffers.Serialization\bin\$(BuildConfiguration)\Google.ProtocolBuffers.Serialization.*" />
     <DynamicPackageItem Include="$(SourceDirectory)\ProtocolBuffers\bin\$(BuildConfiguration)\Google.ProtocolBuffersLite.*" />
     <DynamicPackageItem Include="$(SourceDirectory)\ProtoGen\bin\$(BuildConfiguration)\ProtoGen.*" />
     <DynamicPackageItem Include="$(SourceDirectory)\ProtoMunge\bin\$(BuildConfiguration)\ProtoMunge.*" />

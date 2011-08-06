@@ -9,6 +9,13 @@ namespace Google.ProtocolBuffers.Serialization
     /// </summary>
     public abstract class AbstractTextReader : AbstractReader
     {
+        /// <summary> Constructs a new reader </summary>
+        protected AbstractTextReader() { }
+        /// <summary> Constructs a new child reader </summary>
+        protected AbstractTextReader(AbstractTextReader copyFrom)
+            : base(copyFrom)
+        { }
+
         /// <summary>
         /// Reads a typed field as a string
         /// </summary>

@@ -185,24 +185,6 @@ namespace Google.ProtocolBuffers
         new byte[] ToByteArray();
 
         /// <summary>
-        /// Serializes the message to JSON text.  This is a trivial wrapper 
-        /// around Serialization.JsonFormatWriter.WriteMessage.
-        /// </summary>
-        string ToJson();
-
-        /// <summary>
-        /// Serializes the message to XML text.  This is a trivial wrapper 
-        /// around Serialization.XmlFormatWriter.WriteMessage.
-        /// </summary>
-        string ToXml();
-
-        /// <summary>
-        /// Serializes the message to XML text using the element name provided.
-        /// This is a trivial wrapper around Serialization.XmlFormatWriter.WriteMessage.
-        /// </summary>
-        string ToXml(string rootElementName);
-
-        /// <summary>
         /// Serializes the message and writes it to the given stream.
         /// This is just a wrapper around WriteTo(ICodedOutputStream). This
         /// does not flush or close the stream.

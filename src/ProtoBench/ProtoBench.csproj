@@ -72,6 +72,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ProtocolBuffers.Serialization\ProtocolBuffers.Serialization.csproj">
+      <Project>{231391AF-449C-4a39-986C-AD7F270F4750}</Project>
+      <Name>ProtocolBuffers.Serialization</Name>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffers.csproj">
       <Project>{6908BDCE-D925-43F3-94AC-A531E6DF2591}</Project>
       <Name>ProtocolBuffers</Name>
