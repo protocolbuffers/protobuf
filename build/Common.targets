@@ -93,6 +93,7 @@
 
   <Target Name="_RunBenchmarks" DependsOnTargets="_PrepareBenchmarkEnvironment">
     <ItemGroup>
+      <BenchmarkParameter Include="/v2" />
       <BenchmarkParameter Include="Google.ProtocolBuffers.ProtoBench.SizeMessage1,BenchmarkTypes" />
       <BenchmarkParameter Include="google_message1.dat" />
       <BenchmarkParameter Include="Google.ProtocolBuffers.ProtoBench.SpeedMessage1,BenchmarkTypes" />
