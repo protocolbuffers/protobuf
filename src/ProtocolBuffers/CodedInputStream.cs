@@ -530,6 +530,9 @@ namespace Google.ProtocolBuffers
             return true;
         }
 
+        /// <summary>
+        /// Returns true if the next tag is also part of the same unpacked array.
+        /// </summary>
         private bool ContinueArray(uint currentTag)
         {
             string ignore;
@@ -546,7 +549,7 @@ namespace Google.ProtocolBuffers
         }
 
         /// <summary>
-        /// Returns true if the next tag is also part of the same unpacked array
+        /// Returns true if the next tag is also part of the same array, which may or may not be packed.
         /// </summary>
         private bool ContinueArray(uint currentTag, bool packed, int oldLimit)
         {
