@@ -530,6 +530,21 @@ namespace Google.ProtocolBuffers
             return true;
         }
 
+        private bool ContinueArray(uint currentTag)
+        {
+            string ignore;
+            uint next;
+            if (PeekNextTag(out next, out ignore))
+            {
+                if (next == currentTag)
+                {
+                    hasNextTag = false;
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /// <summary>
         /// Returns true if the next tag is also part of the same unpacked array
         /// </summary>
@@ -588,7 +603,7 @@ namespace Google.ProtocolBuffers
                     {
                         list.Add(value);
                     }
-                } while (ContinueArray(fieldTag, false, 0));
+                } while (ContinueArray(fieldTag));
             }
         }
 
@@ -600,7 +615,7 @@ namespace Google.ProtocolBuffers
             {
                 ReadString(ref tmp);
                 list.Add(tmp);
-            } while (ContinueArray(fieldTag, false, 0));
+            } while (ContinueArray(fieldTag));
         }
 
         [CLSCompliant(false)]
@@ -611,7 +626,7 @@ namespace Google.ProtocolBuffers
             {
                 ReadBytes(ref tmp);
                 list.Add(tmp);
-            } while (ContinueArray(fieldTag, false, 0));
+            } while (ContinueArray(fieldTag));
         }
 
         [CLSCompliant(false)]
@@ -869,7 +884,7 @@ namespace Google.ProtocolBuffers
                         }
                         unknown.Add(unkval);
                     }
-                } while (ContinueArray(fieldTag, false, 0));
+                } while (ContinueArray(fieldTag));
             }
         }
 
@@ -921,7 +936,7 @@ namespace Google.ProtocolBuffers
                         }
                         unknown.Add(unkval);
                     }
-                } while (ContinueArray(fieldTag, false, 0));
+                } while (ContinueArray(fieldTag));
             }
         }
 
@@ -934,7 +949,7 @@ namespace Google.ProtocolBuffers
                 IBuilderLite builder = messageType.WeakCreateBuilderForType();
                 ReadMessage(builder, registry);
                 list.Add((T) builder.WeakBuildPartial());
-            } while (ContinueArray(fieldTag, false, 0));
+            } while (ContinueArray(fieldTag));
         }
 
         [CLSCompliant(false)]
@@ -946,7 +961,7 @@ namespace Google.ProtocolBuffers
                 IBuilderLite builder = messageType.WeakCreateBuilderForType();
                 ReadGroup(WireFormat.GetTagFieldNumber(fieldTag), builder, registry);
                 list.Add((T) builder.WeakBuildPartial());
-            } while (ContinueArray(fieldTag, false, 0));
+            } while (ContinueArray(fieldTag));
         }
 
         /// <summary>
