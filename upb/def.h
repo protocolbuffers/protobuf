@@ -95,7 +95,7 @@ typedef struct _upb_fielddef {
   struct _upb_accessor_vtbl *accessor;
 } upb_fielddef;
 
-upb_fielddef *upb_fielddef_new();
+upb_fielddef *upb_fielddef_new(void);
 void upb_fielddef_ref(upb_fielddef *f);
 void upb_fielddef_unref(upb_fielddef *f);
 upb_fielddef *upb_fielddef_dup(upb_fielddef *f);
@@ -186,7 +186,7 @@ typedef struct {
   upb_fielddef *f;
 } upb_ntof_ent;
 
-upb_msgdef *upb_msgdef_new();
+upb_msgdef *upb_msgdef_new(void);
 INLINE void upb_msgdef_unref(upb_msgdef *md) { upb_def_unref(UPB_UPCAST(md)); }
 INLINE void upb_msgdef_ref(upb_msgdef *md) { upb_def_ref(UPB_UPCAST(md)); }
 
@@ -284,7 +284,7 @@ typedef struct {
   char *str;
 } upb_iton_ent;
 
-upb_enumdef *upb_enumdef_new();
+upb_enumdef *upb_enumdef_new(void);
 INLINE void upb_enumdef_ref(upb_enumdef *e) { upb_def_ref(UPB_UPCAST(e)); }
 INLINE void upb_enumdef_unref(upb_enumdef *e) { upb_def_unref(UPB_UPCAST(e)); }
 upb_enumdef *upb_enumdef_dup(upb_enumdef *e);
