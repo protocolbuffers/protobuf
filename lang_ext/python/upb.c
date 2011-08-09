@@ -60,15 +60,25 @@ static void PyUpb_FieldDef_dealloc(PyObject *obj) {
 
 static PyObject* PyUpb_FieldDef_getattro(PyObject *obj, PyObject *attr_name) {
   PyUpb_FieldDef *f = Check_FieldDef(obj, NULL);
+  if (!upb_fielddef_ismutable(f->field)) {
+    PyErr_SetString(PyExc_TypeError, "fielddef is not mutable.");
+    return NULL;
+  }
   const char *name = PyString_AsString(attr_name);
   if (streql(name, "name")) {
-    return PyString_FromString(upb_fielddef_name(f->field));
+    const char *name = upb_fielddef_name(f->field);
+    return name == NULL ? Py_None : PyString_FromString(name);
   } else if (streql(name, "number")) {
-    return PyInt_FromLong(upb_fielddef_number(f->field));
+    uint32_t num = upb_fielddef_number(f->field);
+    return num == 0 ? Py_None : PyInt_FromLong(num);
   } else if (streql(name, "type")) {
-    return PyInt_FromLong(upb_fielddef_type(f->field));
+    uint8_t type = upb_fielddef_type(f->field);
+    return type == 0 ? Py_None : PyInt_FromLong(type);
   } else if (streql(name, "label")) {
     return PyInt_FromLong(upb_fielddef_label(f->field));
+  } else if (streql(name, "type_name")) {
+    const char *name = upb_fielddef_typename(f->field);
+    return name == NULL ? Py_None : PyString_FromString(name);
   } else if (streql(name, "subdef")) {
     // NYI;
     return NULL;
@@ -150,7 +160,7 @@ static PyTypeObject PyUpb_FieldDefType = {
   0,                                      /* tp_call */
   0,                                      /* tp_str */
   &PyUpb_FieldDef_getattro,               /* tp_getattro */
-  0,                                      /* tp_setattro */
+  &PyUpb_FieldDef_setattro,               /* tp_setattro */
   0,                                      /* tp_as_buffer */
   Py_TPFLAGS_DEFAULT,                     /* tp_flags */
   0,                                      /* tp_doc */
@@ -187,4 +197,28 @@ PyMODINIT_FUNC initupb(void) {
   Py_INCREF(&PyUpb_FieldDefType);
 
   PyModule_AddObject(mod, "FieldDef", (PyObject*)&PyUpb_FieldDefType);
+
+  // Register constants.
+  PyModule_AddIntConstant(mod, "LABEL_OPTIONAL", UPB_LABEL(OPTIONAL));
+  PyModule_AddIntConstant(mod, "LABEL_REQUIRED", UPB_LABEL(REQUIRED));
+  PyModule_AddIntConstant(mod, "LABEL_REPEATED", UPB_LABEL(REPEATED));
+
+  PyModule_AddIntConstant(mod, "TYPE_DOUBLE", UPB_TYPE(DOUBLE));
+  PyModule_AddIntConstant(mod, "TYPE_FLOAT", UPB_TYPE(FLOAT));
+  PyModule_AddIntConstant(mod, "TYPE_INT64", UPB_TYPE(INT64));
+  PyModule_AddIntConstant(mod, "TYPE_UINT64", UPB_TYPE(UINT64));
+  PyModule_AddIntConstant(mod, "TYPE_INT32", UPB_TYPE(INT32));
+  PyModule_AddIntConstant(mod, "TYPE_FIXED64", UPB_TYPE(FIXED64));
+  PyModule_AddIntConstant(mod, "TYPE_FIXED32", UPB_TYPE(FIXED32));
+  PyModule_AddIntConstant(mod, "TYPE_BOOL", UPB_TYPE(BOOL));
+  PyModule_AddIntConstant(mod, "TYPE_STRING", UPB_TYPE(STRING));
+  PyModule_AddIntConstant(mod, "TYPE_GROUP", UPB_TYPE(GROUP));
+  PyModule_AddIntConstant(mod, "TYPE_MESSAGE", UPB_TYPE(MESSAGE));
+  PyModule_AddIntConstant(mod, "TYPE_BYTES", UPB_TYPE(BYTES));
+  PyModule_AddIntConstant(mod, "TYPE_UINT32", UPB_TYPE(UINT32));
+  PyModule_AddIntConstant(mod, "TYPE_ENUM", UPB_TYPE(ENUM));
+  PyModule_AddIntConstant(mod, "TYPE_SFIXED32", UPB_TYPE(SFIXED32));
+  PyModule_AddIntConstant(mod, "TYPE_SFIXED64", UPB_TYPE(SFIXED64));
+  PyModule_AddIntConstant(mod, "TYPE_SINT32", UPB_TYPE(SINT32));
+  PyModule_AddIntConstant(mod, "TYPE_SINT64", UPB_TYPE(SINT64));
 }
