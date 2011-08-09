@@ -76,7 +76,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                              DescriptorUtil.GetQualifiedUmbrellaClassName(Descriptor.File.CSharpOptions),
                              Descriptor.Index);
             writer.WriteLine("}");
-            writer.WriteLine("{0} pbd::ServiceDescriptor DescriptorForType {{", ClassAccessLevel);
+            writer.WriteLine("public pbd::ServiceDescriptor DescriptorForType {");
             writer.WriteLine("  get { return Descriptor; }");
             writer.WriteLine("}");
 
@@ -92,7 +92,7 @@ namespace Google.ProtocolBuffers.ProtoGen
         private void GenerateCallMethod(TextGenerator writer)
         {
             writer.WriteLine();
-            writer.WriteLine("public void CallMethod(", ClassAccessLevel);
+            writer.WriteLine("public void CallMethod(");
             writer.WriteLine("    pbd::MethodDescriptor method,");
             writer.WriteLine("    pb::IRpcController controller,");
             writer.WriteLine("    pb::IMessage request,");
@@ -174,7 +174,8 @@ namespace Google.ProtocolBuffers.ProtoGen
             foreach (MethodDescriptor method in Descriptor.Methods)
             {
                 writer.WriteLine();
-                writer.WriteLine("public override void {0}(", NameHelpers.UnderscoresToPascalCase(method.Name));
+                writer.WriteLine("{0} override void {1}(", ClassAccessLevel, 
+                                 NameHelpers.UnderscoresToPascalCase(method.Name));
                 writer.WriteLine("    pb::IRpcController controller,");
                 writer.WriteLine("    {0} request,", GetClassName(method.InputType));
                 writer.WriteLine("    global::System.Action<{0}> done) {{", GetClassName(method.OutputType));
