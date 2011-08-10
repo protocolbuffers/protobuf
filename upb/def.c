@@ -103,7 +103,6 @@ static void upb_def_init(upb_def *def, upb_deftype_t type) {
 }
 
 static void upb_def_uninit(upb_def *def) {
-  //fprintf(stderr, "Freeing def: %p\n", def);
   free(def->fqname);
 }
 
@@ -115,23 +114,17 @@ static void upb_def_uninit(upb_def *def) {
 // are replaced with pointers to the actual def being referenced.
 typedef struct _upb_unresolveddef {
   upb_def base;
-
-  // The target type name.  This may or may not be fully qualified.  It is
-  // tempting to want to use base.fqname for this, but that will be qualified
-  // which is inappropriate for a name we still have to resolve.
-  char *name;
 } upb_unresolveddef;
 
 // Is passed a ref on the string.
 static upb_unresolveddef *upb_unresolveddef_new(const char *str) {
   upb_unresolveddef *def = malloc(sizeof(*def));
   upb_def_init(&def->base, UPB_DEF_UNRESOLVED);
-  def->name = strdup(str);
+  def->base.fqname = strdup(str);
   return def;
 }
 
 static void upb_unresolveddef_free(struct _upb_unresolveddef *def) {
-  free(def->name);
   upb_def_uninit(&def->base);
   free(def);
 }
@@ -729,7 +722,8 @@ bool upb_symtab_add(upb_symtab *s, upb_def **defs, int n, upb_status *status) {
       }
 
       if (!upb_hassubdef(f)) continue;  // No resolving necessary.
-      const char *name = upb_downcast_unresolveddef(f->def)->name;
+      upb_downcast_unresolveddef(f->def);  // Type check.
+      const char *name = f->def->fqname;
 
       // Resolve from either the addtab (pending adds) or symtab (existing
       // defs).  If both exist, prefer the pending add, because it will be

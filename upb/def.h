@@ -117,6 +117,9 @@ INLINE struct _upb_msgdef *upb_fielddef_msgdef(upb_fielddef *f) {
 INLINE struct _upb_accessor_vtbl *upb_fielddef_accessor(upb_fielddef *f) {
   return f->accessor;
 }
+INLINE const char *upb_fielddef_typename(upb_fielddef *f) {
+  return f->def ? f->def->fqname : NULL;
+}
 
 // Only meaningful once the def is in a symtab (returns NULL otherwise, or for
 // a fielddef where !upb_hassubdef(f)).

@@ -136,7 +136,7 @@ OBJ=$(patsubst %.c,%.o,$(SRC))
 PICOBJ=$(patsubst %.c,%.lo,$(SRC))
 
 ifneq (, $(findstring DUPB_USE_JIT_X64, $(USER_CFLAGS)))
-upb/pb/decoder.o: upb/pb/decoder_x86.h
+upb/pb/decoder.o upb/pb/decoder.lo: upb/pb/decoder_x86.h
   ifeq (, $(findstring DNDEBUG, $(USER_CFLAGS)))
   $(error "JIT only works with -DNDEBUG enabled!")
   endif
@@ -196,10 +196,6 @@ descriptorgen: upb/descriptor.pb tools/upbc
 	./tools/upbc -o upb/descriptor upb/descriptor.pb
 
 tools/upbc: tools/upbc.c $(LIBUPB)
-
-# Language extensions.
-python: $(LIBUPB_PIC)
-	cd lang_ext/python && python setup.py build
 
 # Tests. #######################################################################
 
@@ -397,3 +393,15 @@ lua: $(LUAEXT)
 lang_ext/lua/upb.so: lang_ext/lua/upb.c $(LIBUPB_PIC)
 	$(E) CC lang_ext/lua/upb.c
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) $(LUA_CPPFLAGS) -fpic -shared -o $@ $< upb/libupb_pic.a $(LUA_LDFLAGS)
+
+
+# Python extension #############################################################
+
+PYTHONEXT=lang_ext/python/build/install/lib/python/upb/__init__.so
+python: $(PYTHONEXT)
+$(PYTHONEXT): $(LIBUPB_PIC) lang_ext/python/upb.c
+	$(E) PYTHON lang_ext/python/upb.c
+	$(Q) cd lang_ext/python && python setup.py build install --home=build/install
+
+pythontest: $(PYTHONEXT)
+	cd lang_ext/python && cp test.py build/install/lib/python && python ./build/install/lib/python/test.py
