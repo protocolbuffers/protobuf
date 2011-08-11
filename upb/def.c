@@ -226,6 +226,11 @@ static void upb_fielddef_free(upb_fielddef *f) {
   if (upb_isstring(f)) {
     free(upb_value_getptr(f->defaultval));
   }
+  if (f->def) {
+    // We own a ref on the subdef iff we are not part of a msgdef.
+    assert((f->msgdef == NULL) == (upb_dyncast_unresolveddef(f->def) != NULL));
+    if (f->msgdef == NULL) upb_def_unref(f->def);
+  }
   free(f->name);
   free(f);
 }
@@ -305,6 +310,7 @@ bool upb_fielddef_setnumber(upb_fielddef *f, int32_t number) {
 
 bool upb_fielddef_setname(upb_fielddef *f, const char *name) {
   assert(f->msgdef == NULL);
+  free(f->name);
   f->name = strdup(name);
   return true;
 }

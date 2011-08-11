@@ -120,7 +120,7 @@ clean_leave_profile:
 	rm -rf upb/descriptor.pb
 	rm -rf tools/upbc deps
 	rm -rf lang_ext/lua/upb.so
-	cd lang_ext/python && python setup.py clean --all
+	rm -rf lang_ext/python/build
 
 clean: clean_leave_profile
 	rm -rf $(call rwildcard,,*.gcno) $(call rwildcard,,*.gcda)
@@ -397,11 +397,12 @@ lang_ext/lua/upb.so: lang_ext/lua/upb.c $(LIBUPB_PIC)
 
 # Python extension #############################################################
 
+PYTHON=python2.6-dbg
 PYTHONEXT=lang_ext/python/build/install/lib/python/upb/__init__.so
 python: $(PYTHONEXT)
 $(PYTHONEXT): $(LIBUPB_PIC) lang_ext/python/upb.c
 	$(E) PYTHON lang_ext/python/upb.c
-	$(Q) cd lang_ext/python && python setup.py build install --home=build/install
+	$(Q) cd lang_ext/python && $(PYTHON) setup.py build --debug install --home=build/install
 
 pythontest: $(PYTHONEXT)
-	cd lang_ext/python && cp test.py build/install/lib/python && python ./build/install/lib/python/test.py
+	cd lang_ext/python && cp test.py build/install/lib/python && valgrind $(PYTHON) ./build/install/lib/python/test.py
