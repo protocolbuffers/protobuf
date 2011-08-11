@@ -78,7 +78,7 @@ static PyObject *weakref_callback = NULL;
 static PyObject *PyUpb_ObjCacheDeleteCallback(PyObject *self, PyObject *ref) {
   // Remove the value from the weak table.
   PyUpb_ObjWrapper *tmp = (PyUpb_ObjWrapper*)PyWeakref_GetObject(ref);
-  char key[sizeof(void*)];
+  char key[sizeof(void*) + 1];
   key[sizeof(void*)] = '\0';
   memcpy(key, &tmp->obj, sizeof(void*));
   PyDict_DelItemString(obj_cache, key);
@@ -86,7 +86,7 @@ static PyObject *PyUpb_ObjCacheDeleteCallback(PyObject *self, PyObject *ref) {
 }
 
 static PyObject *PyUpb_ObjCacheGet(void *obj, PyTypeObject *type) {
-  char key[sizeof(void*)];
+  char key[sizeof(void*) + 1];
   key[sizeof(void*)] = '\0';
   memcpy(key, &obj, sizeof(void*));
   PyObject *ref = PyDict_GetItemString(obj_cache, key);
