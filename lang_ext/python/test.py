@@ -33,6 +33,13 @@ class TestFieldDef(unittest.TestCase):
     fielddef2.type = upb.TYPE_FLOAT
     self.assertEqual(fielddef2.type, upb.TYPE_FLOAT)
 
+  def test_nosubclasses(self):
+    def create_subclass():
+      class MyClass(upb.FieldDef):
+        pass
+
+    self.assertRaises(TypeError, create_subclass)
+
   # TODO: test that assigning invalid values is properly prevented.
 
 class TestMessageDef(unittest.TestCase):
@@ -41,9 +48,11 @@ class TestMessageDef(unittest.TestCase):
     self.assertTrue(msgdef1.fqname is None)
     self.assertEqual(msgdef1.fields(), [])
 
-    msgdef2 = upb.MessageDef(fqname="Message2", fields=[
-      upb.FieldDef(number=1, name="field1", type=upb.TYPE_INT32)
-    ])
+    fields = [upb.FieldDef(number=1, name="field1", type=upb.TYPE_INT32)]
+    f = upb.FieldDef(number=1, name="field1", type=upb.TYPE_INT32)
+    f = upb.FieldDef()
+    msgdef2 = upb.MessageDef(fqname="Message2", fields=fields)
+    self.assertEqual(set(msgdef2.fields()), set(fields))
 
 if __name__ == '__main__':
   unittest.main()

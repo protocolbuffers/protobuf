@@ -25,24 +25,6 @@ int PyUpb_ErrorInt(const char *str) {
 }
 
 
-/* PyUpb_Def ******************************************************************/
-
-// All the def types share the same C layout, even though they are different
-// Python types.  For the moment we don't bother trying to make them an actual
-// inheritance hierarchy.
-
-typedef struct {
-  PyObject_HEAD;
-  upb_def *def;
-} PyUpb_Def;
-
-static void PyUpb_Def_dealloc(PyObject *obj) {
-  PyUpb_Def *def = (void*)obj;
-  upb_def_unref(def->def);
-  obj->ob_type->tp_free(obj);
-}
-
-
 /* Object cache ***************************************************************/
 
 // For objects that are just wrappers around a C object pointer, we keep a
@@ -73,34 +55,62 @@ typedef struct {
 } PyUpb_ObjWrapper;
 
 static PyObject *obj_cache = NULL;
+static PyObject *reverse_cache = NULL;
 static PyObject *weakref_callback = NULL;
 
+// Utility functions for manipulating Python dictionaries keyed by pointer.
+
+static PyObject *PyUpb_StringForPointer(void *ptr) {
+  PyObject *o = PyString_FromStringAndSize((const char *)&ptr, sizeof(void*));
+  assert(o);
+  return o;
+}
+
 static PyObject *PyUpb_ObjCacheDeleteCallback(PyObject *self, PyObject *ref) {
-  // Remove the value from the weak table.
-  PyUpb_ObjWrapper *tmp = (PyUpb_ObjWrapper*)PyWeakref_GetObject(ref);
-  char key[sizeof(void*) + 1];
-  key[sizeof(void*)] = '\0';
-  memcpy(key, &tmp->obj, sizeof(void*));
-  PyDict_DelItemString(obj_cache, key);
+  // Python very unfortunately clears the weakref before running our callback.
+  // This prevents us from using the weakref to find the C pointer we need to
+  // remove from the cache.  As a result we are forced to keep a second map
+  // mapping weakref->C pointer.
+  PyObject *ptr_str = PyDict_GetItem(reverse_cache, ref);
+  assert(ptr_str);
+  int err = PyDict_DelItem(obj_cache, ptr_str);
+  assert(!err);
+  err = PyDict_DelItem(reverse_cache, ref);
+  assert(!err);
   return Py_None;
 }
 
 static PyObject *PyUpb_ObjCacheGet(void *obj, PyTypeObject *type) {
-  char key[sizeof(void*) + 1];
-  key[sizeof(void*)] = '\0';
-  memcpy(key, &obj, sizeof(void*));
-  PyObject *ref = PyDict_GetItemString(obj_cache, key);
-  if (!ref) {
-    PyUpb_ObjWrapper *tmp = (PyUpb_ObjWrapper*)type->tp_alloc(type, 0);
-    tmp->obj = obj;
-    tmp->weakreflist = NULL;
-    ref = PyWeakref_NewRef((PyObject*)tmp, weakref_callback);
+  PyObject *kv = PyUpb_StringForPointer(obj);
+  PyObject *ref = PyDict_GetItem(obj_cache, kv);
+  PyObject *ret;
+  if (ref) {
+    ret = PyWeakref_GetObject(ref);
+    assert(ret != Py_None);
+    Py_INCREF(ret);
+  } else {
+    PyUpb_ObjWrapper *wrapper = (PyUpb_ObjWrapper*)type->tp_alloc(type, 0);
+    wrapper->obj = obj;
+    wrapper->weakreflist = NULL;
+    ret = (PyObject*)wrapper;
+    ref = PyWeakref_NewRef(ret, weakref_callback);
+    assert(PyWeakref_GetObject(ref) == ret);
     assert(ref);
-    PyDict_SetItemString(obj_cache, key, ref);
+    PyDict_SetItem(obj_cache, kv, ref);
+    PyDict_SetItem(reverse_cache, ref, kv);
   }
-  PyObject *ret = PyWeakref_GetObject(ref);
   assert(ret);
+  Py_DECREF(kv);
   return ret;
+}
+
+
+/* PyUpb_Def ******************************************************************/
+
+static void PyUpb_Def_dealloc(PyObject *obj) {
+  PyUpb_ObjWrapper *wrapper = (void*)obj;
+  upb_def_unref((upb_def*)wrapper->obj);
+  obj->ob_type->tp_free(obj);
 }
 
 
@@ -258,9 +268,9 @@ static PyTypeObject PyUpb_FieldDefType = {
 static PyTypeObject PyUpb_MessageDefType;
 static int PyUpb_MessageDef_setattro(PyObject *o, PyObject *key, PyObject *val);
 
-#define Check_MessageDef(obj, badret) \
-  (void*)obj; do { \
-    if(!PyObject_TypeCheck(obj, &PyUpb_MessageDefType)) { \
+#define Check_MessageDef(o, badret) \
+  (void*)(((PyUpb_ObjWrapper*)o)->obj); do { \
+    if(!PyObject_TypeCheck(o, &PyUpb_MessageDefType)) { \
       PyErr_SetString(PyExc_TypeError, "must be a upb.MessageDef"); \
       return badret; \
     } \
@@ -268,41 +278,55 @@ static int PyUpb_MessageDef_setattro(PyObject *o, PyObject *key, PyObject *val);
 
 static PyObject *PyUpb_MessageDef_new(PyTypeObject *subtype,
                                       PyObject *args, PyObject *kwds) {
-  PyUpb_Def *def = (PyUpb_Def*)subtype->tp_alloc(subtype, 0);
-  def->def = UPB_UPCAST(upb_msgdef_new());
-  return (PyObject*)def;
+  return PyUpb_ObjCacheGet(upb_msgdef_new(), subtype);
 }
+
+static PyObject *PyUpb_MessageDef_addfields(PyObject *o, PyObject *args);
 
 static int PyUpb_MessageDef_init(PyObject *self, PyObject *args, PyObject *kwds) {
   if (!kwds) return 0;
   PyObject *key, *value;
   Py_ssize_t pos = 0;
-  while (PyDict_Next(kwds, &pos, &key, &value))
-    PyUpb_MessageDef_setattro(self, key, value);
+  while (PyDict_Next(kwds, &pos, &key, &value)) {
+    const char *field = PyString_AsString(key);
+    if (streql(field, "fields")) {
+      PyUpb_MessageDef_addfields(self, value);
+    } else {
+      PyUpb_MessageDef_setattro(self, key, value);
+    }
+  }
   return 0;
 }
 
 static PyObject *PyUpb_MessageDef_getattro(PyObject *obj, PyObject *attr_name) {
-  PyUpb_Def *def = Check_MessageDef(obj, NULL);
-  if (!upb_def_ismutable(def->def)) {
-    PyErr_SetString(PyExc_TypeError, "fielddef is not mutable.");
-    return NULL;
-  }
+  upb_msgdef *m = Check_MessageDef(obj, NULL);
   const char *name = PyString_AsString(attr_name);
   if (streql(name, "fqname")) {
-    const char *fqname = upb_def_fqname(def->def);
+    const char *fqname = upb_def_fqname(UPB_UPCAST(m));
     return fqname == NULL ? Py_None : PyString_FromString(fqname);
   }
   return PyObject_GenericGetAttr(obj, attr_name);
 }
 
 static int PyUpb_MessageDef_setattro(PyObject *o, PyObject *key, PyObject *val) {
+  upb_msgdef *m = Check_MessageDef(o, -1);
+  if (!upb_def_ismutable(UPB_UPCAST(m))) {
+    PyErr_SetString(PyExc_TypeError, "MessageDef is not mutable.");
+    return -1;
+  }
+  const char *name = PyString_AsString(key);
+  if (streql(name, "fqname")) {
+    const char *fqname = PyString_AsString(val);
+    if (!fqname || !upb_def_setfqname(UPB_UPCAST(m), fqname))
+      return PyUpb_ErrorInt("Invalid fqname");
+  } else {
+    return PyUpb_ErrorInt("Invalid MessageDef member.");
+  }
   return 0;
 }
 
 static PyObject *PyUpb_MessageDef_fields(PyObject *obj, PyObject *args) {
-  PyUpb_Def *def = Check_MessageDef(obj, NULL);
-  upb_msgdef *m = upb_downcast_msgdef(def->def);
+  upb_msgdef *m = Check_MessageDef(obj, NULL);
   PyObject *ret = PyList_New(0);
   upb_msg_iter i;
   for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
@@ -310,6 +334,20 @@ static PyObject *PyUpb_MessageDef_fields(PyObject *obj, PyObject *args) {
     PyList_Append(ret, PyUpb_FieldDef_GetOrCreate(f));
   }
   return ret;
+}
+
+static PyObject *PyUpb_MessageDef_addfields(PyObject *o, PyObject *fields) {
+  upb_msgdef *m = Check_MessageDef(o, NULL);
+  Py_ssize_t len = PySequence_Length(fields);
+  if (len > UPB_MAX_FIELDS) return PyUpb_Error("Too many fields.");
+  upb_fielddef *f[len];
+  int i;
+  for (i = 0; i < len; i++) {
+    PyObject *field = PySequence_GetItem(fields, i);
+    f[i] = Check_FieldDef(field, NULL);
+  }
+  upb_msgdef_addfields(m, f, len);
+  return Py_None;
 }
 
 static PyMethodDef PyUpb_MessageDef_methods[] = {
@@ -404,6 +442,7 @@ PyMODINIT_FUNC initupb(void) {
   PyModule_AddIntConstant(mod, "TYPE_SINT64", UPB_TYPE(SINT64));
 
   obj_cache = PyDict_New();
+  reverse_cache = PyDict_New();
   static PyMethodDef method = {
         "WeakRefCallback", &PyUpb_ObjCacheDeleteCallback, METH_O, NULL};
   PyObject *pyname = PyString_FromString(method.ml_name);
