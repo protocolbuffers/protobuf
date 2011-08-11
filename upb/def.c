@@ -228,8 +228,10 @@ static void upb_fielddef_free(upb_fielddef *f) {
   }
   if (f->def) {
     // We own a ref on the subdef iff we are not part of a msgdef.
-    assert((f->msgdef == NULL) == (upb_dyncast_unresolveddef(f->def) != NULL));
-    if (f->msgdef == NULL) upb_def_unref(f->def);
+    if (f->msgdef == NULL) {
+      if (f->def) upb_downcast_unresolveddef(f->def);  // assert() check.
+      upb_def_unref(f->def);
+    }
   }
   free(f->name);
   free(f);
