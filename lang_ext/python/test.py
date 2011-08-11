@@ -35,5 +35,15 @@ class TestFieldDef(unittest.TestCase):
 
   # TODO: test that assigning invalid values is properly prevented.
 
+class TestMessageDef(unittest.TestCase):
+  def test_construction(self):
+    msgdef1 = upb.MessageDef()
+    self.assertTrue(msgdef1.fqname is None)
+    self.assertEqual(msgdef1.fields(), [])
+
+    msgdef2 = upb.MessageDef(fqname="Message2", fields=[
+      upb.FieldDef(number=1, name="field1", type=upb.TYPE_INT32)
+    ])
+
 if __name__ == '__main__':
   unittest.main()
