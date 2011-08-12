@@ -80,3 +80,9 @@ message B {
 message AB {
     optional int32 a_b = 1;
 }
+
+// Similar issue with numberic names
+message NumberField {
+    optional int32 _01 = 1;
+}
+

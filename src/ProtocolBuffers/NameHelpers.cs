@@ -67,12 +67,22 @@ namespace Google.ProtocolBuffers
         private static string UnderscoresToPascalOrCamelCase(string input, bool pascal)
         {
             string name = Transform(input, pascal ? UnderlineToPascal : UnderlineToCamel, x => x.Value.TrimStart('_').ToUpper());
-            if (!pascal && name.Length > 0 && Char.IsUpper(name[0]))
+
+            if (name.Length == 0)
+                throw new ArgumentException(String.Format("The field name '{0}' is invalid.", input));
+
+            // Pascal case always begins with lower-case letter
+            if (!pascal && Char.IsUpper(name[0]))
             {
                 char[] chars = name.ToCharArray();
                 chars[0] = char.ToLower(chars[0]);
                 return new string(chars);
             }
+
+            // Fields can not start with a number
+            if (Char.IsNumber(name[0]))
+                name = '_' + name;
+
             return name;
         }
 

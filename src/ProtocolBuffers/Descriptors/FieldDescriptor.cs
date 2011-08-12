@@ -352,7 +352,12 @@ namespace Google.ProtocolBuffers.Descriptors
 
         public bool IsCLSCompliant
         {
-            get { return mappedType != MappedType.UInt32 && mappedType != MappedType.UInt64; }
+            get 
+            { 
+                return mappedType != MappedType.UInt32 && 
+                    mappedType != MappedType.UInt64 &&
+                    !NameHelpers.UnderscoresToPascalCase(Name).StartsWith("_");
+            }
         }
 
         public int FieldNumber

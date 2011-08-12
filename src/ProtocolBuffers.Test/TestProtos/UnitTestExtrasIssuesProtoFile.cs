@@ -22,6 +22,8 @@ namespace UnitTest.Issues.TestProtos {
     internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.B, global::UnitTest.Issues.TestProtos.B.Builder> internal__static_unittest_issues_B__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_unittest_issues_AB__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.AB, global::UnitTest.Issues.TestProtos.AB.Builder> internal__static_unittest_issues_AB__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_unittest_issues_NumberField__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.NumberField, global::UnitTest.Issues.TestProtos.NumberField.Builder> internal__static_unittest_issues_NumberField__FieldAccessorTable;
     #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
@@ -34,8 +36,9 @@ namespace UnitTest.Issues.TestProtos {
           "ChxleHRlc3QvdW5pdHRlc3RfaXNzdWVzLnByb3RvEg91bml0dGVzdF9pc3N1" + 
           "ZXMaJGdvb2dsZS9wcm90b2J1Zi9jc2hhcnBfb3B0aW9ucy5wcm90byIPCgFB" + 
           "EgoKAl9BGAEgASgFIg8KAUISCgoCQl8YASABKAUiEQoCQUISCwoDYV9iGAEg" + 
-          "ASgFQkBIAcI+OwoaVW5pdFRlc3QuSXNzdWVzLlRlc3RQcm90b3MSHVVuaXRU" + 
-          "ZXN0RXh0cmFzSXNzdWVzUHJvdG9GaWxl");
+          "ASgFIhoKC051bWJlckZpZWxkEgsKA18wMRgBIAEoBUJASAHCPjsKGlVuaXRU" + 
+          "ZXN0Lklzc3Vlcy5UZXN0UHJvdG9zEh1Vbml0VGVzdEV4dHJhc0lzc3Vlc1By" + 
+          "b3RvRmlsZQ==");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_unittest_issues_A__Descriptor = Descriptor.MessageTypes[0];
@@ -50,6 +53,10 @@ namespace UnitTest.Issues.TestProtos {
         internal__static_unittest_issues_AB__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.AB, global::UnitTest.Issues.TestProtos.AB.Builder>(internal__static_unittest_issues_AB__Descriptor,
                 new string[] { "AB_", });
+        internal__static_unittest_issues_NumberField__Descriptor = Descriptor.MessageTypes[3];
+        internal__static_unittest_issues_NumberField__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.NumberField, global::UnitTest.Issues.TestProtos.NumberField.Builder>(internal__static_unittest_issues_NumberField__Descriptor,
+                new string[] { "_01", });
         pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
         RegisterAllExtensions(registry);
         global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.RegisterAllExtensions(registry);
@@ -97,7 +104,6 @@ namespace UnitTest.Issues.TestProtos {
     public bool HasA_ {
       get { return hasA_; }
     }
-    [global::System.CLSCompliant(false)]
     public int A_ {
       get { return a_; }
     }
@@ -284,12 +290,10 @@ namespace UnitTest.Issues.TestProtos {
       public bool HasA_ {
         get { return result.hasA_; }
       }
-      [global::System.CLSCompliant(false)]
       public int A_ {
         get { return result.A_; }
         set { SetA_(value); }
       }
-      [global::System.CLSCompliant(false)]
       public Builder SetA_(int value) {
         result.hasA_ = true;
         result.a_ = value;
@@ -780,6 +784,249 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
     static AB() {
+      object.ReferenceEquals(global::UnitTest.Issues.TestProtos.UnitTestExtrasIssuesProtoFile.Descriptor, null);
+    }
+  }
+  
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+  public sealed partial class NumberField : pb::GeneratedMessage<NumberField, NumberField.Builder> {
+    private static readonly NumberField defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _numberFieldFieldNames = new string[] { "_01" };
+    private static readonly uint[] _numberFieldFieldTags = new uint[] { 8 };
+    public static NumberField DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override NumberField DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override NumberField ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::UnitTest.Issues.TestProtos.UnitTestExtrasIssuesProtoFile.internal__static_unittest_issues_NumberField__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<NumberField, NumberField.Builder> InternalFieldAccessors {
+      get { return global::UnitTest.Issues.TestProtos.UnitTestExtrasIssuesProtoFile.internal__static_unittest_issues_NumberField__FieldAccessorTable; }
+    }
+    
+    [global::System.CLSCompliant(false)]
+    public const int _01FieldNumber = 1;
+    private bool has_01;
+    private int _01_;
+    public bool Has_01 {
+      get { return has_01; }
+    }
+    [global::System.CLSCompliant(false)]
+    public int _01 {
+      get { return _01_; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::ICodedOutputStream output) {
+      int size = SerializedSize;
+      string[] field_names = _numberFieldFieldNames;
+      if (has_01) {
+        output.WriteInt32(1, field_names[0], _01);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (has_01) {
+          size += pb::CodedOutputStream.ComputeInt32Size(1, _01);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static NumberField ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static NumberField ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static NumberField ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static NumberField ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static NumberField ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static NumberField ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static NumberField ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static NumberField ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static NumberField ParseFrom(pb::ICodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static NumberField ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(NumberField prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+    public sealed partial class Builder : pb::GeneratedBuilder<NumberField, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      NumberField result = new NumberField();
+      
+      protected override NumberField MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new NumberField();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::UnitTest.Issues.TestProtos.NumberField.Descriptor; }
+      }
+      
+      public override NumberField DefaultInstanceForType {
+        get { return global::UnitTest.Issues.TestProtos.NumberField.DefaultInstance; }
+      }
+      
+      public override NumberField BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
+        NumberField returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is NumberField) {
+          return MergeFrom((NumberField) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(NumberField other) {
+        if (other == global::UnitTest.Issues.TestProtos.NumberField.DefaultInstance) return this;
+        if (other.Has_01) {
+          _01 = other._01;
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_numberFieldFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _numberFieldFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
+          switch (tag) {
+            case 0: {
+              throw pb::InvalidProtocolBufferException.InvalidTag();
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              break;
+            }
+            case 8: {
+              result.has_01 = input.ReadInt32(ref result._01_);
+              break;
+            }
+          }
+        }
+        
+        if (unknownFields != null) {
+          this.UnknownFields = unknownFields.Build();
+        }
+        return this;
+      }
+      
+      
+      public bool Has_01 {
+        get { return result.has_01; }
+      }
+      [global::System.CLSCompliant(false)]
+      public int _01 {
+        get { return result._01; }
+        set { Set_01(value); }
+      }
+      [global::System.CLSCompliant(false)]
+      public Builder Set_01(int value) {
+        result.has_01 = true;
+        result._01_ = value;
+        return this;
+      }
+      public Builder Clear_01() {
+        result.has_01 = false;
+        result._01_ = 0;
+        return this;
+      }
+    }
+    static NumberField() {
       object.ReferenceEquals(global::UnitTest.Issues.TestProtos.UnitTestExtrasIssuesProtoFile.Descriptor, null);
     }
   }
