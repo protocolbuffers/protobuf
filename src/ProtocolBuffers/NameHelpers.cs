@@ -102,12 +102,12 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Similar to UnderlineToCamel, but also matches the first character if it is lower-case
         /// </summary>
-        private static Regex UnderlineToPascal = new Regex(@"(?:^|[0-9_])[a-z]");
+        private static Regex UnderlineToPascal = new Regex(@"(?:(?:^|[0-9_])[a-z])|_");
 
         /// <summary>
         /// Matches lower-case character that follow either an underscore, or a number
         /// </summary>
-        private static Regex UnderlineToCamel = new Regex(@"[0-9_][a-z]");
+        private static Regex UnderlineToCamel = new Regex(@"(?:[0-9_][a-z])|_");
 
         /// <summary>
         /// Used for text-template transformation where a regex match is replaced in the input string.
