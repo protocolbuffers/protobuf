@@ -230,7 +230,7 @@ struct _upb_handlers {
 };
 typedef struct _upb_handlers upb_handlers;
 
-upb_handlers *upb_handlers_new();
+upb_handlers *upb_handlers_new(void);
 void upb_handlers_ref(upb_handlers *h);
 void upb_handlers_unref(upb_handlers *h);
 

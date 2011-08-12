@@ -734,7 +734,7 @@ static int lupb_msgdef(lua_State *L) {
 // - put the env tables for all messages and arrays in the registry, keyed by
 //   userdata pointer (light userdata), or by a reference using luaL_ref().
 //   Then we can just let upb's parse stack track the stack of env tables.
-//   Easy but requires all messages and arraysto be in the registry, which
+//   Easy but requires all messages and arrays to be in the registry, which
 //   seems too heavyweight.
 //
 // - store the stack of env tables in the Lua stack.  Convenient, but requires
@@ -809,21 +809,6 @@ static upb_flow_t lupb_msg_stringval(void *m, upb_value fval, upb_value val) {
 static upb_flow_t lupb_msg_stringval_r(void *a, upb_value fval, upb_value val) {
   return lupb_msg_string(a, fval, val, true);
 }
-
-#if 0
-static const upb_accessor lupb_accessor = {
-  upb_startfield_handler *appendseq;     // Repeated fields only.
-  upb_startfield_handler *appendsubmsg;  // Submsg fields (repeated or no).
-  upb_value_handler      *set;           // Scalar fields (repeated or no).
-
-  // Readers.
-  upb_has_reader         *has;
-  upb_value_reader       *get;
-  upb_seqbegin_handler   *seqbegin;
-  upb_seqnext_handler    *seqnext;
-  upb_seqget_handler     *seqget;
-};
-#endif
 
 #define STDMSG(type, size) static upb_accessor_vtbl vtbl = { \
     &lupb_msg_startsubmsg, \

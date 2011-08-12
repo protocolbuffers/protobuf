@@ -49,10 +49,24 @@ class TestMessageDef(unittest.TestCase):
     self.assertEqual(msgdef1.fields(), [])
 
     fields = [upb.FieldDef(number=1, name="field1", type=upb.TYPE_INT32)]
-    f = upb.FieldDef(number=1, name="field1", type=upb.TYPE_INT32)
-    f = upb.FieldDef()
     msgdef2 = upb.MessageDef(fqname="Message2", fields=fields)
+
     self.assertEqual(set(msgdef2.fields()), set(fields))
+
+    f2 = upb.FieldDef(number=2, name="field2", type=upb.TYPE_INT64)
+    msgdef2.add_field(f2)
+
+    fields.append(f2)
+    self.assertEqual(set(msgdef2.fields()), set(fields))
+
+class TestSymbolTable(unittest.TestCase):
+  def test_construction(self):
+    s = upb.SymbolTable()
+    self.assertEqual(s.defs(), []);
+
+    s.add_def(upb.MessageDef(fqname="A"))
+    self.assertTrue(s.lookup("A") is not None)
+    self.assertTrue(s.lookup("A") is s.lookup("A"))
 
 if __name__ == '__main__':
   unittest.main()

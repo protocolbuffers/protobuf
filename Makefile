@@ -405,4 +405,4 @@ $(PYTHONEXT): $(LIBUPB_PIC) lang_ext/python/upb.c
 	$(Q) cd lang_ext/python && $(PYTHON) setup.py build --debug install --home=build/install
 
 pythontest: $(PYTHONEXT)
-	cd lang_ext/python && cp test.py build/install/lib/python && $(PYTHON) ./build/install/lib/python/test.py
+	cd lang_ext/python && cp test.py build/install/lib/python && valgrind $(PYTHON) ./build/install/lib/python/test.py

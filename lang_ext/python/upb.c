@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <Python.h>
 #include "upb/def.h"
+#include "upb/msg.h"
 
 static bool streql(const char *a, const char *b) { return strcmp(a, b) == 0; }
 
@@ -23,6 +24,11 @@ int PyUpb_ErrorInt(const char *str) {
   PyErr_SetString(PyExc_TypeError, str);
   return -1;
 }
+
+#define PyUpb_CheckStatus(status) \
+  if (!upb_ok(status)) return PyUpb_Error((status)->str);
+
+static upb_accessor_vtbl *PyUpb_AccessorForField(upb_fielddef *f);
 
 
 /* Object cache ***************************************************************/
@@ -107,11 +113,20 @@ static PyObject *PyUpb_ObjCacheGet(void *obj, PyTypeObject *type) {
 
 /* PyUpb_Def ******************************************************************/
 
+static PyTypeObject *PyUpb_TypeForDef(upb_def *def);
+
 static void PyUpb_Def_dealloc(PyObject *obj) {
   PyUpb_ObjWrapper *wrapper = (void*)obj;
   upb_def_unref((upb_def*)wrapper->obj);
   obj->ob_type->tp_free(obj);
 }
+
+PyObject *PyUpb_Def_GetOrCreate(upb_def *def) {
+  return def ? PyUpb_ObjCacheGet(def, PyUpb_TypeForDef(def)) : Py_None;
+}
+
+// Will need to expand once other kinds of defs are supported.
+#define Check_Def(o, badret) Check_MessageDef(o, badret)
 
 
 /* PyUpb_FieldDef *************************************************************/
@@ -281,7 +296,7 @@ static PyObject *PyUpb_MessageDef_new(PyTypeObject *subtype,
   return PyUpb_ObjCacheGet(upb_msgdef_new(), subtype);
 }
 
-static PyObject *PyUpb_MessageDef_addfields(PyObject *o, PyObject *args);
+static PyObject *PyUpb_MessageDef_add_fields(PyObject *o, PyObject *args);
 
 static int PyUpb_MessageDef_init(PyObject *self, PyObject *args, PyObject *kwds) {
   if (!kwds) return 0;
@@ -290,7 +305,7 @@ static int PyUpb_MessageDef_init(PyObject *self, PyObject *args, PyObject *kwds)
   while (PyDict_Next(kwds, &pos, &key, &value)) {
     const char *field = PyString_AsString(key);
     if (streql(field, "fields")) {
-      PyUpb_MessageDef_addfields(self, value);
+      PyUpb_MessageDef_add_fields(self, value);
     } else {
       PyUpb_MessageDef_setattro(self, key, value);
     }
@@ -336,8 +351,9 @@ static PyObject *PyUpb_MessageDef_fields(PyObject *obj, PyObject *args) {
   return ret;
 }
 
-static PyObject *PyUpb_MessageDef_addfields(PyObject *o, PyObject *fields) {
+static PyObject *PyUpb_MessageDef_add_fields(PyObject *o, PyObject *fields) {
   upb_msgdef *m = Check_MessageDef(o, NULL);
+  if (!PySequence_Check(fields)) return PyUpb_Error("Must be a sequence");
   Py_ssize_t len = PySequence_Length(fields);
   if (len > UPB_MAX_FIELDS) return PyUpb_Error("Too many fields.");
   upb_fielddef *f[len];
@@ -350,7 +366,16 @@ static PyObject *PyUpb_MessageDef_addfields(PyObject *o, PyObject *fields) {
   return Py_None;
 }
 
+static PyObject *PyUpb_MessageDef_add_field(PyObject *o, PyObject *field) {
+  upb_msgdef *m = Check_MessageDef(o, NULL);
+  upb_fielddef *f = Check_FieldDef(field, NULL);
+  upb_msgdef_addfield(m, f);
+  return Py_None;
+}
+
 static PyMethodDef PyUpb_MessageDef_methods[] = {
+  {"add_field", &PyUpb_MessageDef_add_field, METH_O, "Adds a list of fields."},
+  {"add_fields", &PyUpb_MessageDef_add_fields, METH_O, "Adds a list of fields."},
   {"fields", &PyUpb_MessageDef_fields, METH_NOARGS, "Returns list of fields."},
   {NULL, NULL}
 };
@@ -399,6 +424,225 @@ static PyTypeObject PyUpb_MessageDefType = {
 };
 
 
+static PyTypeObject *PyUpb_TypeForDef(upb_def *def) {
+  switch(def->type) {
+    case UPB_DEF_MSG: return &PyUpb_MessageDefType;
+    default: return NULL;
+  }
+}
+
+/* PyUpb_SymbolTable **********************************************************/
+
+static PyTypeObject PyUpb_SymbolTableType;
+
+#define Check_SymbolTable(o, badret) \
+  (void*)(((PyUpb_ObjWrapper*)o)->obj); do { \
+    if(!PyObject_TypeCheck(o, &PyUpb_SymbolTableType)) { \
+      PyErr_SetString(PyExc_TypeError, "must be a upb.MessageDef"); \
+      return badret; \
+    } \
+  } while(0)
+
+static PyObject *PyUpb_SymbolTable_new(PyTypeObject *subtype,
+                                       PyObject *args, PyObject *kwds) {
+  return PyUpb_ObjCacheGet(upb_symtab_new(), subtype);
+}
+
+static int PyUpb_SymbolTable_init(PyObject *self, PyObject *args, PyObject *kwds) {
+  return 0;
+}
+
+static void PyUpb_SymbolTable_dealloc(PyObject *obj) {
+  PyUpb_ObjWrapper *wrapper = (void*)obj;
+  upb_symtab_unref((upb_symtab*)wrapper->obj);
+  obj->ob_type->tp_free(obj);
+}
+
+// narg is a lua table containing a list of defs to add.
+static PyObject *PyUpb_SymbolTable_add_defs(PyObject *o, PyObject *defs) {
+  upb_symtab *s = Check_SymbolTable(o, NULL);
+  if (!PySequence_Check(defs)) return PyUpb_Error("Must be a sequence");
+  Py_ssize_t n = PySequence_Length(defs);
+
+  // Prevent stack overflow.
+  if (n > 2048) return PyUpb_Error("Too many defs");
+  upb_def *cdefs[n];
+
+  int i = 0;
+  for (i = 0; i < n; i++) {
+    PyObject *pydef = PySequence_GetItem(defs, i);
+    upb_def *def = Check_MessageDef(pydef, NULL);
+    cdefs[i++] = def;
+    upb_msgdef *md = upb_dyncast_msgdef(def);
+    if (!md) continue;
+    upb_msg_iter j;
+    for(j = upb_msg_begin(md); !upb_msg_done(j); j = upb_msg_next(md, j)) {
+      upb_fielddef *f = upb_msg_iter_field(j);
+      upb_fielddef_setaccessor(f, PyUpb_AccessorForField(f));
+    }
+    upb_msgdef_layout(md);
+  }
+
+  upb_status status = UPB_STATUS_INIT;
+  upb_symtab_add(s, cdefs, n, &status);
+  PyUpb_CheckStatus(&status);
+  return Py_None;
+}
+
+static PyObject *PyUpb_SymbolTable_add_def(PyObject *o, PyObject *def) {
+  PyObject *defs = PyList_New(1);
+  PyList_SetItem(defs, 0, def);
+  return PyUpb_SymbolTable_add_defs(o, defs);
+}
+
+// TODO: update to allow user to choose type of defs.
+static PyObject *PyUpb_SymbolTable_defs(PyObject *o, PyObject *none) {
+  upb_symtab *s = Check_SymbolTable(o, NULL);
+  int count;
+  upb_def **defs = upb_symtab_getdefs(s, &count, UPB_DEF_ANY);
+  PyObject *ret = PyList_New(count);
+  int i;
+  for(i = 0; i < count; i++)
+    PyList_SetItem(ret, i, PyUpb_Def_GetOrCreate(defs[i]));
+  return ret;
+}
+
+static PyObject *PyUpb_SymbolTable_lookup(PyObject *o, PyObject *arg) {
+  upb_symtab *s = Check_SymbolTable(o, NULL);
+  const char *name = PyString_AsString(arg);
+  upb_def *def = upb_symtab_lookup(s, name);
+  return PyUpb_Def_GetOrCreate(def);
+}
+
+static PyMethodDef PyUpb_SymbolTable_methods[] = {
+  {"add_def", &PyUpb_SymbolTable_add_def, METH_O, NULL},
+  {"add_defs", &PyUpb_SymbolTable_add_defs, METH_O, NULL},
+  {"defs", &PyUpb_SymbolTable_defs, METH_NOARGS, NULL},
+  {"lookup", &PyUpb_SymbolTable_lookup, METH_O, NULL},
+  {NULL, NULL}
+};
+
+static PyTypeObject PyUpb_SymbolTableType = {
+  PyObject_HEAD_INIT(NULL)
+  0,                                      /* ob_size */
+  "upb.SymbolTable",                      /* tp_name */
+  sizeof(PyUpb_ObjWrapper),               /* tp_basicsize */
+  0,                                      /* tp_itemsize */
+  &PyUpb_SymbolTable_dealloc,             /* tp_dealloc */
+  0,                                      /* tp_print */
+  0,                                      /* tp_getattr */
+  0,                                      /* tp_setattr */
+  0,                                      /* tp_compare */
+  0, /* TODO */                           /* tp_repr */
+  0,                                      /* tp_as_number */
+  0,                                      /* tp_as_sequence */
+  0,                                      /* tp_as_mapping */
+  0,                                      /* tp_hash */
+  0,                                      /* tp_call */
+  0,                                      /* tp_str */
+  0,                                      /* tp_getattro */
+  0,                                      /* tp_setattro */
+  0,                                      /* tp_as_buffer */
+  Py_TPFLAGS_DEFAULT,                     /* tp_flags */
+  0,                                      /* tp_doc */
+  0,                                      /* tp_traverse */
+  0,                                      /* tp_clear */
+  0,                                      /* tp_richcompare */
+  offsetof(PyUpb_ObjWrapper, weakreflist),/* tp_weaklistoffset */
+  0,                                      /* tp_iter */
+  0,                                      /* tp_iternext */
+  PyUpb_SymbolTable_methods,              /* tp_methods */
+  0,                                      /* tp_members */
+  0,                                      /* tp_getset */
+  0,                                      /* tp_base */
+  0,                                      /* tp_dict */
+  0,                                      /* tp_descr_get */
+  0,                                      /* tp_descr_set */
+  0,                                      /* tp_dictoffset */
+  &PyUpb_SymbolTable_init,                /* tp_init */
+  0,                                      /* tp_alloc */
+  &PyUpb_SymbolTable_new,                 /* tp_new */
+  0,                                      /* tp_free */
+};
+
+
+/* Accessor and PyUpb_Message *************************************************/
+
+static upb_sflow_t PyUpb_Message_StartSequence(void *m, upb_value fval) {
+  upb_fielddef *f = upb_value_getfielddef(fval);
+  (void)f;
+  return UPB_CONTINUE_WITH(NULL);
+}
+
+static upb_sflow_t PyUpb_Message_StartSubmessage(void *m, upb_value fval) {
+  upb_fielddef *f = upb_value_getfielddef(fval);
+  (void)f;
+  return UPB_CONTINUE_WITH(NULL);
+}
+
+static upb_sflow_t PyUpb_Message_StartRepeatedSubmessage(void *a, upb_value fval) {
+  upb_fielddef *f = upb_value_getfielddef(fval);
+  (void)f;
+  return UPB_CONTINUE_WITH(NULL);
+}
+
+static upb_flow_t PyUpb_Message_StringValue(void *m, upb_value fval, upb_value val) {
+  upb_fielddef *f = upb_value_getfielddef(fval);
+  (void)f;
+  return UPB_CONTINUE;
+}
+
+static upb_flow_t PyUpb_Message_AppendStringValue(void *a, upb_value fval, upb_value val) {
+  upb_fielddef *f = upb_value_getfielddef(fval);
+  (void)f;
+  return UPB_CONTINUE;
+}
+
+#define STDMSG(type, size) static upb_accessor_vtbl vtbl = { \
+    &PyUpb_Message_StartSubmessage, \
+    &upb_stdmsg_set ## type, \
+    &PyUpb_Message_StartSequence, \
+    &PyUpb_Message_StartRepeatedSubmessage, \
+    &upb_stdmsg_set ## type ## _r, \
+    &upb_stdmsg_has, \
+    &upb_stdmsg_getptr, \
+    &upb_stdmsg_get ## type, \
+    &upb_stdmsg_seqbegin, \
+    &upb_stdmsg_ ## size ## byte_seqnext, \
+    &upb_stdmsg_seqget ## type};
+
+#define RETURN_STDMSG(type, size) { STDMSG(type, size); return &vtbl; }
+
+static upb_accessor_vtbl *PyUpb_AccessorForField(upb_fielddef *f) {
+  switch (f->type) {
+    case UPB_TYPE(DOUBLE): RETURN_STDMSG(double, 8)
+    case UPB_TYPE(FLOAT): RETURN_STDMSG(float, 4)
+    case UPB_TYPE(UINT64):
+    case UPB_TYPE(FIXED64): RETURN_STDMSG(uint64, 8)
+    case UPB_TYPE(INT64):
+    case UPB_TYPE(SFIXED64):
+    case UPB_TYPE(SINT64): RETURN_STDMSG(int64, 8)
+    case UPB_TYPE(INT32):
+    case UPB_TYPE(SINT32):
+    case UPB_TYPE(ENUM):
+    case UPB_TYPE(SFIXED32): RETURN_STDMSG(int32, 4)
+    case UPB_TYPE(UINT32):
+    case UPB_TYPE(FIXED32): RETURN_STDMSG(uint32, 4)
+    case UPB_TYPE(BOOL): { STDMSG(bool, 1); return &vtbl; }
+    case UPB_TYPE(GROUP):
+    case UPB_TYPE(MESSAGE): RETURN_STDMSG(ptr, 8)  // TODO: 32-bit
+    case UPB_TYPE(STRING):
+    case UPB_TYPE(BYTES): {
+      STDMSG(ptr, 8);
+      vtbl.set = &PyUpb_Message_StringValue;
+      vtbl.append = &PyUpb_Message_AppendStringValue;
+      return &vtbl;
+    }
+  }
+  return NULL;
+}
+
+
 /* Toplevel *******************************************************************/
 
 static PyMethodDef methods[] = {
@@ -417,6 +661,7 @@ PyMODINIT_FUNC initupb(void) {
 
   PyUpb_AddType(mod, "FieldDef", &PyUpb_FieldDefType);
   PyUpb_AddType(mod, "MessageDef", &PyUpb_MessageDefType);
+  PyUpb_AddType(mod, "SymbolTable", &PyUpb_SymbolTableType);
 
   PyModule_AddIntConstant(mod, "LABEL_OPTIONAL", UPB_LABEL(OPTIONAL));
   PyModule_AddIntConstant(mod, "LABEL_REQUIRED", UPB_LABEL(REQUIRED));

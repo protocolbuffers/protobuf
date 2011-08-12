@@ -278,7 +278,7 @@ void upb_stringsink_reset(upb_stringsink *s, char *str, size_t size);
 const char *upb_stringsink_release(upb_stringsink *s, size_t *len);
 
 // Returns the upb_bytesink* for this stringsrc.  Invalidated by reset above.
-upb_bytesink *upb_stringsink_bytesink();
+upb_bytesink *upb_stringsink_bytesink(void);
 
 #ifdef __cplusplus
 }  /* extern "C" */
