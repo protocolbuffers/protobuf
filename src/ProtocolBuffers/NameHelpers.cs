@@ -34,8 +34,10 @@
 
 #endregion
 
+using System;
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Google.ProtocolBuffers
 {
@@ -64,49 +66,14 @@ namespace Google.ProtocolBuffers
         /// </summary>
         private static string UnderscoresToPascalOrCamelCase(string input, bool pascal)
         {
-            StringBuilder result = new StringBuilder();
-            bool capitaliseNext = pascal;
-            for (int i = 0; i < input.Length; i++)
+            string name = Transform(input, pascal ? UnderlineToPascal : UnderlineToCamel, x => x.Value.TrimStart('_').ToUpper());
+            if (!pascal && name.Length > 0 && Char.IsUpper(name[0]))
             {
-                char c = input[i];
-                if ('a' <= c && c <= 'z')
-                {
-                    if (capitaliseNext)
-                    {
-                        result.Append(char.ToUpper(c, CultureInfo.InvariantCulture));
-                    }
-                    else
-                    {
-                        result.Append(c);
-                    }
-                    capitaliseNext = false;
-                }
-                else if ('A' <= c && c <= 'Z')
-                {
-                    if (i == 0 && !pascal)
-                    {
-                        // Force first letter to lower-case unless explicitly told to
-                        // capitalize it.
-                        result.Append(char.ToLower(c, CultureInfo.InvariantCulture));
-                    }
-                    else
-                    {
-                        // Capital letters after the first are left as-is.
-                        result.Append(c);
-                    }
-                    capitaliseNext = false;
-                }
-                else if ('0' <= c && c <= '9')
-                {
-                    result.Append(c);
-                    capitaliseNext = true;
-                }
-                else
-                {
-                    capitaliseNext = true;
-                }
+                char[] chars = name.ToCharArray();
+                chars[0] = char.ToLower(chars[0]);
+                return new string(chars);
             }
-            return result.ToString();
+            return name;
         }
 
         internal static string StripProto(string text)
@@ -130,6 +97,45 @@ namespace Google.ProtocolBuffers
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Similar to UnderlineToCamel, but also matches the first character if it is lower-case
+        /// </summary>
+        private static Regex UnderlineToPascal = new Regex(@"(?:^|[0-9_])[a-z]");
+
+        /// <summary>
+        /// Matches lower-case character that follow either an underscore, or a number
+        /// </summary>
+        private static Regex UnderlineToCamel = new Regex(@"[0-9_][a-z]");
+
+        /// <summary>
+        /// Used for text-template transformation where a regex match is replaced in the input string.
+        /// </summary>
+        /// <param name="input">The text to perform the replacement upon</param>
+        /// <param name="pattern">The regex used to perform the match</param>
+        /// <param name="fnReplace">A delegate that selects the appropriate replacement text</param>
+        /// <returns>The newly formed text after all replacements are made</returns>
+        /// <remarks>
+        /// Originally found at http://csharptest.net/browse/src/Library/Utils/StringUtils.cs#120
+        /// Republished here by the original author under this project's licensing.
+        /// </remarks>
+        private static string Transform(string input, Regex pattern, Converter<Match, string> fnReplace)
+        {
+            int currIx = 0;
+            StringBuilder sb = new StringBuilder();
+
+            foreach (Match match in pattern.Matches(input))
+            {
+                sb.Append(input, currIx, match.Index - currIx);
+                string replace = fnReplace(match);
+                sb.Append(replace);
+
+                currIx = match.Index + match.Length;
+            }
+
+            sb.Append(input, currIx, input.Length - currIx);
+            return sb.ToString();
         }
     }
 }
