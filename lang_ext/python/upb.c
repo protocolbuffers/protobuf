@@ -568,33 +568,61 @@ static PyTypeObject PyUpb_SymbolTableType = {
 
 /* Accessor and PyUpb_Message *************************************************/
 
-static upb_sflow_t PyUpb_Message_StartSequence(void *m, upb_value fval) {
+typedef struct {
+  PyTypeObject type;
+  PyTypeObject *alt_type;
+} PyUpb_MessageType;
+
+typedef struct {
+  PyObject_HEAD;
+  PyObject *msgdef;
+  char data[1];
+} PyUpb_Message;
+
+PyObject **PyUpb_Accessor_GetPtr(PyObject *_m, upb_value fval) {
+  PyUpb_Message *m = (PyUpb_Message*)_m;
   upb_fielddef *f = upb_value_getfielddef(fval);
-  (void)f;
-  return UPB_CONTINUE_WITH(NULL);
+  return (PyObject**)&m->data[f->offset];
+}
+
+static upb_sflow_t PyUpb_Message_StartSequence(void *m, upb_value fval) {
+  PyObject **seq = PyUpb_Accessor_GetPtr(m, fval);
+  PyTypeObject *type = ((PyUpb_MessageType*)Py_TYPE(m))->alt_type;
+  if (!*seq) *seq = type->tp_alloc(type, 0);
+  upb_stdmsg_sethas(m, fval);
+  return UPB_CONTINUE_WITH(*seq);
 }
 
 static upb_sflow_t PyUpb_Message_StartSubmessage(void *m, upb_value fval) {
-  upb_fielddef *f = upb_value_getfielddef(fval);
-  (void)f;
-  return UPB_CONTINUE_WITH(NULL);
+  PyObject **submsg = PyUpb_Accessor_GetPtr(m, fval);
+  PyTypeObject *type = Py_TYPE(m);
+  if (!*submsg) *submsg = type->tp_alloc(type, 0);
+  upb_stdmsg_sethas(m, fval);
+  return UPB_CONTINUE_WITH(*submsg);
 }
 
 static upb_sflow_t PyUpb_Message_StartRepeatedSubmessage(void *a, upb_value fval) {
-  upb_fielddef *f = upb_value_getfielddef(fval);
-  (void)f;
-  return UPB_CONTINUE_WITH(NULL);
+  (void)fval;
+  PyObject **elem = upb_stdarray_append(a, sizeof(void*));
+  PyTypeObject *type = ((PyUpb_MessageType*)Py_TYPE(a))->alt_type;
+  if (!*elem) *elem = type->tp_alloc(type, 0);
+  return UPB_CONTINUE_WITH(*elem);
 }
 
 static upb_flow_t PyUpb_Message_StringValue(void *m, upb_value fval, upb_value val) {
-  upb_fielddef *f = upb_value_getfielddef(fval);
-  (void)f;
+  PyObject **str = PyUpb_Accessor_GetPtr(m, fval);
+  if (*str) Py_DECREF(*str);
+  *str = PyString_FromStringAndSize(NULL, upb_value_getstrref(val)->len);
+  upb_strref_read(upb_value_getstrref(val), PyString_AsString(*str));
+  upb_stdmsg_sethas(m, fval);
   return UPB_CONTINUE;
 }
 
 static upb_flow_t PyUpb_Message_AppendStringValue(void *a, upb_value fval, upb_value val) {
-  upb_fielddef *f = upb_value_getfielddef(fval);
-  (void)f;
+  (void)fval;
+  PyObject **elem = upb_stdarray_append(a, sizeof(void*));
+  *elem = PyString_FromStringAndSize(NULL, upb_value_getstrref(val)->len);
+  upb_strref_read(upb_value_getstrref(val), PyString_AsString(*elem));
   return UPB_CONTINUE;
 }
 

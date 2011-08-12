@@ -180,6 +180,8 @@ void *upb_stdmsg_new(upb_msgdef *md);
 // Recursively frees any strings or submessages that the message refers to.
 void upb_stdmsg_free(void *m, upb_msgdef *md);
 
+void upb_stdmsg_sethas(void *_m, upb_value fval);
+
 // "hasbit" must be <= UPB_MAX_FIELDS.  If it is <0, this field has no hasbit.
 upb_value upb_stdmsg_packfval(int16_t hasbit, uint16_t value_offset);
 upb_value upb_stdmsg_packfval_subm(int16_t hasbit, uint16_t value_offset,
@@ -207,6 +209,8 @@ typedef struct {
   uint32_t len;   // Number of elements present.
   uint32_t size;  // Number of elements allocated.
 } upb_stdarray;
+
+void *upb_stdarray_append(upb_stdarray *a, size_t type_size);
 
 upb_flow_t upb_stdmsg_setint64_r(void *c, upb_value fval, upb_value val);
 upb_flow_t upb_stdmsg_setint32_r(void *c, upb_value fval, upb_value val);

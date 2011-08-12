@@ -138,6 +138,10 @@ typedef struct _upb_strref {
 // string.
 char *upb_strref_dup(struct _upb_strref *r);
 
+INLINE void upb_strref_read(struct _upb_strref *r, char *buf) {
+  upb_bytesrc_read(r->bytesrc, r->stream_offset, r->len, buf);
+}
+
 
 /* upb_bytesink ***************************************************************/
 
@@ -278,7 +282,7 @@ void upb_stringsink_reset(upb_stringsink *s, char *str, size_t size);
 const char *upb_stringsink_release(upb_stringsink *s, size_t *len);
 
 // Returns the upb_bytesink* for this stringsrc.  Invalidated by reset above.
-upb_bytesink *upb_stringsink_bytesink(void);
+upb_bytesink *upb_stringsink_bytesink(upb_stringsink *s);
 
 #ifdef __cplusplus
 }  /* extern "C" */
