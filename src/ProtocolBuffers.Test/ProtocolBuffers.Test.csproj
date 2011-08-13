@@ -104,6 +104,7 @@
     <Compile Include="TestProtos\UnitTestCustomOptionsProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestEmbedOptimizeForProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestEmptyProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestExtrasIssuesProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestGenericServices.cs" />
     <Compile Include="TestProtos\UnitTestGoogleSizeProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestGoogleSpeedProtoFile.cs" />

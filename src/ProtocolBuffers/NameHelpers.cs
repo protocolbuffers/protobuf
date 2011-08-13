@@ -34,8 +34,8 @@
 
 #endregion
 
-using System.Globalization;
-using System.Text;
+using System;
+using System.Text.RegularExpressions;
 
 namespace Google.ProtocolBuffers
 {
@@ -44,69 +44,74 @@ namespace Google.ProtocolBuffers
     /// </summary>
     public class NameHelpers
     {
+        /// <summary>
+        /// All characters that are not alpha-numeric
+        /// </summary>
+        private static readonly Regex NonAlphaNumericCharacters = new Regex(@"[^a-zA-Z0-9]+");
+
+        /// <summary>
+        /// Matches lower-case character that follow either an underscore, or a number
+        /// </summary>
+        private static readonly Regex UnderscoreOrNumberWithLowerCase = new Regex(@"[0-9_][a-z]");
+
+        /// <summary>
+        /// Removes non alpha numeric characters while capitalizing letters that follow
+        /// a number or underscore.  The first letter is always upper case.
+        /// </summary>
         public static string UnderscoresToPascalCase(string input)
         {
-            return UnderscoresToPascalOrCamelCase(input, true);
-        }
+            string name = UnderscoresToUpperCase(input);
 
-        public static string UnderscoresToCamelCase(string input)
-        {
-            return UnderscoresToPascalOrCamelCase(input, false);
+            // Pascal case always begins with upper-case letter
+            if (Char.IsLower(name[0]))
+            {
+                char[] chars = name.ToCharArray();
+                chars[0] = char.ToUpper(chars[0]);
+                return new string(chars);
+            }
+            return name;
         }
 
         /// <summary>
-        /// Converts a string to Pascal or Camel case. The first letter is capitalized or
-        /// lower-cased depending on <paramref name="pascal"/> is true. 
-        /// After the first letter, any punctuation is removed but triggers capitalization
-        /// of the next letter. Digits are preserved but trigger capitalization of the next
-        /// letter.
-        /// All capitalisation is done in the invariant culture. 
+        /// Removes non alpha numeric characters while capitalizing letters that follow
+        /// a number or underscore.  The first letter is always lower case.
         /// </summary>
-        private static string UnderscoresToPascalOrCamelCase(string input, bool pascal)
+        public static string UnderscoresToCamelCase(string input)
         {
-            StringBuilder result = new StringBuilder();
-            bool capitaliseNext = pascal;
-            for (int i = 0; i < input.Length; i++)
+            string name = UnderscoresToUpperCase(input);
+
+            // Camel case always begins with lower-case letter
+            if (Char.IsUpper(name[0]))
             {
-                char c = input[i];
-                if ('a' <= c && c <= 'z')
-                {
-                    if (capitaliseNext)
-                    {
-                        result.Append(char.ToUpper(c, CultureInfo.InvariantCulture));
-                    }
-                    else
-                    {
-                        result.Append(c);
-                    }
-                    capitaliseNext = false;
-                }
-                else if ('A' <= c && c <= 'Z')
-                {
-                    if (i == 0 && !pascal)
-                    {
-                        // Force first letter to lower-case unless explicitly told to
-                        // capitalize it.
-                        result.Append(char.ToLower(c, CultureInfo.InvariantCulture));
-                    }
-                    else
-                    {
-                        // Capital letters after the first are left as-is.
-                        result.Append(c);
-                    }
-                    capitaliseNext = false;
-                }
-                else if ('0' <= c && c <= '9')
-                {
-                    result.Append(c);
-                    capitaliseNext = true;
-                }
-                else
-                {
-                    capitaliseNext = true;
-                }
+                char[] chars = name.ToCharArray();
+                chars[0] = char.ToLower(chars[0]);
+                return new string(chars);
             }
-            return result.ToString();
+            return name;
+        }
+
+        /// <summary>
+        /// Capitalizes any characters following an '_' or a number '0' - '9' and removes
+        /// all non alpha-numeric characters.  If the resulting string begins with a number
+        /// an '_' will be prefixed.  
+        /// </summary>
+        private static string UnderscoresToUpperCase(string input)
+        {
+            string name = UnderscoreOrNumberWithLowerCase.Replace(input, x => x.Value.ToUpper());
+            name = NonAlphaNumericCharacters.Replace(name, String.Empty);
+
+            if (name.Length == 0)
+            {
+                throw new ArgumentException(String.Format("The field name '{0}' is invalid.", input));
+            }
+
+            // Fields can not start with a number
+            if (Char.IsNumber(name[0]))
+            {
+                name = '_' + name;
+            }
+
+            return name;
         }
 
         internal static string StripProto(string text)

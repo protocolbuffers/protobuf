@@ -48,6 +48,11 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual("FooBar", NameHelpers.UnderscoresToPascalCase("foo_bar"));
             Assert.AreEqual("Foo0Bar", NameHelpers.UnderscoresToPascalCase("Foo0bar"));
             Assert.AreEqual("FooBar", NameHelpers.UnderscoresToPascalCase("Foo_+_Bar"));
+
+            Assert.AreEqual("Bar", NameHelpers.UnderscoresToPascalCase("__+bar"));
+            Assert.AreEqual("Bar", NameHelpers.UnderscoresToPascalCase("bar_"));
+            Assert.AreEqual("_0Bar", NameHelpers.UnderscoresToPascalCase("_0bar"));
+            Assert.AreEqual("_1Bar", NameHelpers.UnderscoresToPascalCase("_1_bar"));
         }
 
         [Test]
@@ -57,6 +62,11 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual("fooBar", NameHelpers.UnderscoresToCamelCase("foo_bar"));
             Assert.AreEqual("foo0Bar", NameHelpers.UnderscoresToCamelCase("Foo0bar"));
             Assert.AreEqual("fooBar", NameHelpers.UnderscoresToCamelCase("Foo_+_Bar"));
+
+            Assert.AreEqual("bar", NameHelpers.UnderscoresToCamelCase("__+bar"));
+            Assert.AreEqual("bar", NameHelpers.UnderscoresToCamelCase("bar_"));
+            Assert.AreEqual("_0Bar", NameHelpers.UnderscoresToCamelCase("_0bar"));
+            Assert.AreEqual("_1Bar", NameHelpers.UnderscoresToCamelCase("_1_bar"));
         }
 
         [Test]
