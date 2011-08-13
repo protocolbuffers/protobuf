@@ -35,8 +35,6 @@
 #endregion
 
 using System;
-using System.Globalization;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Google.ProtocolBuffers
@@ -46,6 +44,20 @@ namespace Google.ProtocolBuffers
     /// </summary>
     public class NameHelpers
     {
+        /// <summary>
+        /// All characters that are not alpha-numeric
+        /// </summary>
+        private static readonly Regex NonAlphaNumericCharacters = new Regex(@"[^a-zA-Z0-9]+");
+
+        /// <summary>
+        /// Matches lower-case character that follow either an underscore, or a number
+        /// </summary>
+        private static readonly Regex UnderscoreOrNumberWithLowerCase = new Regex(@"[0-9_][a-z]");
+
+        /// <summary>
+        /// Removes non alpha numeric characters while capitalizing letters that follow
+        /// a number or underscore.  The first letter is always upper case.
+        /// </summary>
         public static string UnderscoresToPascalCase(string input)
         {
             string name = UnderscoresToUpperCase(input);
@@ -60,6 +72,10 @@ namespace Google.ProtocolBuffers
             return name;
         }
 
+        /// <summary>
+        /// Removes non alpha numeric characters while capitalizing letters that follow
+        /// a number or underscore.  The first letter is always lower case.
+        /// </summary>
         public static string UnderscoresToCamelCase(string input)
         {
             string name = UnderscoresToUpperCase(input);
@@ -76,20 +92,24 @@ namespace Google.ProtocolBuffers
 
         /// <summary>
         /// Capitalizes any characters following an '_' or a number '0' - '9' and removes
-        /// all non alpha-numberic characters.  If the resulting string begins with a number
+        /// all non alpha-numeric characters.  If the resulting string begins with a number
         /// an '_' will be prefixed.  
         /// </summary>
         private static string UnderscoresToUpperCase(string input)
         {
-            string name = Transform(input, UnderlineCharacter, x => x.Value.ToUpper());
-            name = Transform(name, InvalidCharacters, x => String.Empty);
+            string name = UnderscoreOrNumberWithLowerCase.Replace(input, x => x.Value.ToUpper());
+            name = NonAlphaNumericCharacters.Replace(name, String.Empty);
 
             if (name.Length == 0)
+            {
                 throw new ArgumentException(String.Format("The field name '{0}' is invalid.", input));
+            }
 
             // Fields can not start with a number
             if (Char.IsNumber(name[0]))
+            {
                 name = '_' + name;
+            }
 
             return name;
         }
@@ -115,45 +135,6 @@ namespace Google.ProtocolBuffers
                 return true;
             }
             return false;
-        }
-
-        /// <summary>
-        /// All characters that are not alpha-numberic
-        /// </summary>
-        private static Regex InvalidCharacters = new Regex(@"[^a-zA-Z0-9]+");
-
-        /// <summary>
-        /// Matches lower-case character that follow either an underscore, or a number
-        /// </summary>
-        private static Regex UnderlineCharacter = new Regex(@"[0-9_][a-z]");
-
-        /// <summary>
-        /// Used for text-template transformation where a regex match is replaced in the input string.
-        /// </summary>
-        /// <param name="input">The text to perform the replacement upon</param>
-        /// <param name="pattern">The regex used to perform the match</param>
-        /// <param name="fnReplace">A delegate that selects the appropriate replacement text</param>
-        /// <returns>The newly formed text after all replacements are made</returns>
-        /// <remarks>
-        /// Originally found at http://csharptest.net/browse/src/Library/Utils/StringUtils.cs#120
-        /// Republished here by the original author under this project's licensing.
-        /// </remarks>
-        private static string Transform(string input, Regex pattern, Converter<Match, string> fnReplace)
-        {
-            int currIx = 0;
-            StringBuilder sb = new StringBuilder();
-
-            foreach (Match match in pattern.Matches(input))
-            {
-                sb.Append(input, currIx, match.Index - currIx);
-                string replace = fnReplace(match);
-                sb.Append(replace);
-
-                currIx = match.Index + match.Length;
-            }
-
-            sb.Append(input, currIx, input.Length - currIx);
-            return sb.ToString();
         }
     }
 }

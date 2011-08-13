@@ -76,7 +76,9 @@ namespace Google.ProtocolBuffers.ProtoGen
         public void Generate(TextGenerator writer)
         {
             if (Descriptor.File.CSharpOptions.ClsCompliance && GetFieldConstantName(Descriptor).StartsWith("_"))
+            {
                 writer.WriteLine("[global::System.CLSCompliant(false)]");
+            }
 
             writer.WriteLine("public const int {0} = {1};", GetFieldConstantName(Descriptor), Descriptor.FieldNumber);
 

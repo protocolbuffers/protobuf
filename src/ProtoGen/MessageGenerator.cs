@@ -247,7 +247,9 @@ namespace Google.ProtocolBuffers.ProtoGen
             foreach (FieldDescriptor fieldDescriptor in Descriptor.Fields)
             {
                 if (Descriptor.File.CSharpOptions.ClsCompliance && GetFieldConstantName(fieldDescriptor).StartsWith("_"))
+                {
                     writer.WriteLine("[global::System.CLSCompliant(false)]");
+                }
 
                 // Rats: we lose the debug comment here :(
                 writer.WriteLine("public const int {0} = {1};", GetFieldConstantName(fieldDescriptor),

@@ -81,7 +81,7 @@ message AB {
     optional int32 a_b = 1;
 }
 
-// Similar issue with numberic names
+// Similar issue with numeric names
 message NumberField {
     optional int32 _01 = 1;
 }
