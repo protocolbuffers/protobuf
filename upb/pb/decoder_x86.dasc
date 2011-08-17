@@ -122,6 +122,7 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |.type   FRAME,     upb_dispatcher_frame, r13
 |.type   STRREF,    upb_strref, r14
 |.type   DECODER,   upb_decoder, r15
+|.type   STDARRAY,  upb_stdarray, r15
 |
 |.macro callp, addr
 || if ((uintptr_t)addr < 0xffffffff) {
@@ -206,7 +207,7 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |  mov   FRAME, rax
 |.endmacro
 |
-|.macro popframe
+|.macro popframe, m
 |  sub   FRAME, sizeof(upb_dispatcher_frame)
 |  mov   DECODER->dispatcher.top, FRAME
 |  setmsgend  m
@@ -271,36 +272,13 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 
 #include <stdlib.h>
 #include "upb/pb/varint.h"
+#include "upb/msg.h"
 
-// PTR should point to the beginning of the tag.
-static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_tag,
-                                  upb_mhandlers *m,
-                                  upb_fhandlers *f, upb_fhandlers *next_f) {
-  int tag_size = upb_value_size(tag);
-
-  // PC-label for the dispatch table.
-  // We check the wire type (which must be loaded in edx) because the
-  // table is keyed on field number, not type.
-  |=>f->jit_pclabel:
-  |  cmp  edx, (tag & 0x7)
-  |  jne  ->exit_jit     // In the future: could be an unknown field or packed.
-  |=>f->jit_pclabel_notypecheck:
-  if (f->repeated) {
-    if (f->startseq) {
-      |  mov   ARG1_64, CLOSURE
-      |  loadfval f
-      |  callp f->startseq
-    } else {
-      |  mov   rdx, CLOSURE
-    }
-    |  mov   esi, FRAME->end_ofs
-    |  pushframe  f, rdx, esi, true
-  }
-
-  |1:  // Label for repeating this field.
-
+// Decodes the next val into ARG3, advances PTR.
+static void upb_decoder_jit_decodefield(upb_decoder *d, upb_mhandlers *m,
+                                        uint8_t type, size_t tag_size) {
   // Decode the value into arg 3 for the callback.
-  switch (f->type) {
+  switch (type) {
     case UPB_TYPE(DOUBLE):
     case UPB_TYPE(FIXED64):
     case UPB_TYPE(SFIXED64):
@@ -385,18 +363,60 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
 
     default: abort();
   }
-  // Commit our work by advancing ptr.
-  // (If in the future we wanted to support a UPB_SUSPEND_AGAIN that
-  // suspends the decoder and redelivers the value later, we would
-  // need to adjust this to happen perhaps after the callback ran).
-  |  mov   DECODER->ptr, PTR
+}
 
-  // Load closure and fval into arg registers.
-  |  mov   ARG1_64, CLOSURE
+// DEPENDS: closure is in ARG1_64
+static void upb_decoder_jit_sethas(upb_decoder *d, upb_fielddef *f) {
+  if (f->hasbit < 0) return;
+  size_t byte = f->hasbit / 8;
+  uint8_t bit = 1 << (f->hasbit % 8);
+  |  or   byte [ARG1_64 + byte], bit
+}
+
+#if 0
+// These appear not to speed things up, but keeping around for
+// further experimentation.
+static void upb_decoder_jit_doappend(upb_decoder *d, uint8_t size,
+                                     upb_fhandlers *f) {
+  |  mov   eax, STDARRAY:ARG1_64->len
+  |  cmp   eax, STDARRAY:ARG1_64->size
+  |  jne   >2
+  // If array is full, fall back to actual function.
   |  loadfval f
+  |  callp  f->value
+  |  jmp   >3
+  |2:
+  |  mov   rcx, STDARRAY:ARG1_64->ptr
+  |  mov   esi, eax
+  |  add   eax, 1
 
+  switch (size) {
+    case 8:
+      |  mov   [rcx + rsi * 8], ARG3_64
+      break;
+
+    case 4:
+      |  mov   [rcx + rsi * 4], ARG3_32
+      break;
+
+    case 1:
+      |  mov   [rcx + rsi * 4], ARG3_8
+      break;
+  }
+
+  |  mov   STDARRAY:ARG1_64->len, eax
+  |3:
+}
+#endif
+
+static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
+  upb_fielddef *fd = upb_value_getfielddef(f->fval);
   // Call callbacks.
   if (upb_issubmsgtype(f->type)) {
+    // Load closure and fval into arg registers.
+    |  mov   ARG1_64, CLOSURE
+    |  loadfval f
+
     // Call startsubmsg handler (if any).
     if (f->startsubmsg) {
       // upb_sflow_t startsubmsg(void *closure, upb_value fval)
@@ -424,7 +444,7 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
     }
 
     |=>f->jit_submsg_done_pclabel:
-    |   popframe
+    |   popframe upb_fhandlers_getmsg(f)
 
     // Call endsubmsg handler (if any).
     if (f->endsubmsg) {
@@ -434,9 +454,81 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
       |  callp f->endsubmsg
     }
   } else {
-    |  callp  f->value
+    |  mov   ARG1_64, CLOSURE
+    // Test for callbacks we can specialize.
+    // Can't switch() on function pointers.
+    if (f->value == &upb_stdmsg_setint64 ||
+        f->value == &upb_stdmsg_setuint64 ||
+        f->value == &upb_stdmsg_setptr ||
+        f->value == &upb_stdmsg_setdouble) {
+      upb_decoder_jit_sethas(d, fd);
+      |  mov   [ARG1_64 + fd->offset], ARG3_64
+    } else if (f->value == &upb_stdmsg_setint32 ||
+               f->value == &upb_stdmsg_setuint32 ||
+               f->value == &upb_stdmsg_setfloat) {
+      upb_decoder_jit_sethas(d, fd);
+      |  mov   [ARG1_64 + fd->offset], ARG3_32
+    } else if (f->value == &upb_stdmsg_setbool) {
+      upb_decoder_jit_sethas(d, fd);
+      |  mov   [ARG1_64 + fd->offset], ARG3_8
+#if 0
+    // These appear not to speed things up, but keeping around for
+    // further experimentation.
+    } else if (f->value == &upb_stdmsg_setint64_r ||
+        f->value == &upb_stdmsg_setuint64_r ||
+        f->value == &upb_stdmsg_setptr_r ||
+        f->value == &upb_stdmsg_setdouble_r) {
+      upb_decoder_jit_doappend(d, 8, f);
+    } else if (f->value == &upb_stdmsg_setint32_r ||
+               f->value == &upb_stdmsg_setuint32_r ||
+               f->value == &upb_stdmsg_setfloat_r) {
+      upb_decoder_jit_doappend(d, 4, f);
+    } else if (f->value == &upb_stdmsg_setbool_r) {
+      upb_decoder_jit_doappend(d, 1, f);
+#endif
+    } else {
+      // Load closure and fval into arg registers.
+      |  loadfval f
+      |  callp  f->value
+    }
   }
   // TODO: Handle UPB_SKIPSUBMSG, UPB_BREAK
+}
+
+// PTR should point to the beginning of the tag.
+static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_tag,
+                                  upb_mhandlers *m,
+                                  upb_fhandlers *f, upb_fhandlers *next_f) {
+  // PC-label for the dispatch table.
+  // We check the wire type (which must be loaded in edx) because the
+  // table is keyed on field number, not type.
+  |=>f->jit_pclabel:
+  |  cmp  edx, (tag & 0x7)
+  |  jne  ->exit_jit     // In the future: could be an unknown field or packed.
+  |=>f->jit_pclabel_notypecheck:
+  if (f->repeated) {
+    if (f->startseq) {
+      |  mov   ARG1_64, CLOSURE
+      |  loadfval f
+      |  callp f->startseq
+    } else {
+      |  mov   rdx, CLOSURE
+    }
+    |  mov   esi, FRAME->end_ofs
+    |  pushframe  f, rdx, esi, true
+  }
+
+  |1:  // Label for repeating this field.
+
+  upb_decoder_jit_decodefield(d, m, f->type, upb_value_size(tag));
+
+  // Commit our work by advancing ptr.
+  // (If in the future we wanted to support a UPB_SUSPEND_AGAIN that
+  // suspends the decoder and redelivers the value later, we would
+  // need to adjust this to happen perhaps after the callback ran).
+  |  mov   DECODER->ptr, PTR
+
+  upb_decoder_jit_callcb(d, f);
 
   // Epilogue: load next tag, check for repeated field.
   |  check_eob   m
@@ -444,7 +536,7 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
   if (f->repeated) {
     |  checktag  tag
     |  je  <1
-    |  popframe
+    |  popframe m
     if (f->endseq) {
       |  mov   ARG1_64, CLOSURE
       |  loadfval f

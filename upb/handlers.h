@@ -170,6 +170,7 @@ UPB_FHANDLERS_ACCESSORS(startsubmsg, upb_startfield_handler*)
 UPB_FHANDLERS_ACCESSORS(endsubmsg, upb_endfield_handler*)
 UPB_FHANDLERS_ACCESSORS(startseq, upb_startfield_handler*)
 UPB_FHANDLERS_ACCESSORS(endseq, upb_endfield_handler*)
+UPB_FHANDLERS_ACCESSORS(msg, struct _upb_mhandlers*)
 UPB_FHANDLERS_ACCESSORS(submsg, struct _upb_mhandlers*)
 
 
