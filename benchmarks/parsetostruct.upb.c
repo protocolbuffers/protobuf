@@ -42,7 +42,11 @@ static bool initialize()
 
   upb_stringsrc_init(&strsrc);
   upb_stringsrc_reset(&strsrc, str, len);
-  upb_decoder_initformsgdef(&d, def);
+  upb_handlers *h = upb_handlers_new();
+  upb_accessors_reghandlers(h, def);
+  if (!JIT) h->should_jit = false;
+  upb_decoder_initforhandlers(&d, h);
+  upb_handlers_unref(h);
 
   if (!BYREF) {
     // TODO: use byref/byval accessors.

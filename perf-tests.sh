@@ -26,6 +26,7 @@ run_with_flags () {
   run_with_flags "-DNDEBUG -fomit-frame-pointer -m32" "omitfp32"
 #fi
 
-run_with_flags "-DNDEBUG " "plain"
-run_with_flags "-DNDEBUG -fomit-frame-pointer" "omitfp"
-run_with_flags "-DNDEBUG -DUPB_USE_JIT_X64" "jit"
+# Ideally we could test for x86-64 in deciding whether to compile with
+# the JIT flag.
+run_with_flags "-DNDEBUG -DUPB_USE_JIT_X64" "plain"
+run_with_flags "-DNDEBUG -fomit-frame-pointer -DUPB_USE_JIT_X64" "omitfp"

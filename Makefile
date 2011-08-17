@@ -35,6 +35,13 @@ ifeq (, $(findstring -O, $(USER_CFLAGS)))
   DEF_OPT = -Os
 endif
 
+ifneq (, $(findstring DUPB_USE_JIT_X64, $(USER_CFLAGS)))
+  ifeq (, $(findstring DNDEBUG, $(USER_CFLAGS)))
+  $(error "JIT only works with -DNDEBUG enabled!")
+  endif
+  USE_JIT=true
+endif
+
 # Basic compiler/flag setup.
 CC=gcc
 CXX=g++
@@ -91,8 +98,8 @@ OTHERSRC=upb/pb/encoder.c
 
 BENCHMARKS_SRC= \
   benchmarks/main.c \
-  benchmarks/parsestream.upb_table.c \
-  benchmarks/parsetostruct.upb_table.c
+  benchmarks/parsestream.upb.c \
+  benchmarks/parsetostruct.upb.c
 
 TESTS_SRC= \
   tests/test_decoder.c \
@@ -135,11 +142,8 @@ lib: $(LIBUPB)
 OBJ=$(patsubst %.c,%.o,$(SRC))
 PICOBJ=$(patsubst %.c,%.lo,$(SRC))
 
-ifneq (, $(findstring DUPB_USE_JIT_X64, $(USER_CFLAGS)))
+ifdef USE_JIT
 upb/pb/decoder.o upb/pb/decoder.lo: upb/pb/decoder_x86.h
-  ifeq (, $(findstring DNDEBUG, $(USER_CFLAGS)))
-  $(error "JIT only works with -DNDEBUG enabled!")
-  endif
 endif
 $(LIBUPB): $(OBJ)
 	$(E) AR $(LIBUPB)
@@ -277,8 +281,16 @@ tests/tests: upb/libupb.a
 # Benchmarks
 UPB_BENCHMARKS=benchmarks/b.parsestream_googlemessage1.upb_table \
                benchmarks/b.parsestream_googlemessage2.upb_table \
-               benchmarks/b.parsetostruct_googlemessage1.upb_table_byref \
-               benchmarks/b.parsetostruct_googlemessage2.upb_table_byref
+               benchmarks/b.parsetostruct_googlemessage1.upb_table_byval \
+               benchmarks/b.parsetostruct_googlemessage2.upb_table_byval \
+
+ifdef USE_JIT
+UPB_BENCHMARKS += \
+               benchmarks/b.parsestream_googlemessage1.upb_jit \
+               benchmarks/b.parsestream_googlemessage2.upb_jit \
+               benchmarks/b.parsetostruct_googlemessage1.upb_jit_byval \
+               benchmarks/b.parsetostruct_googlemessage2.upb_jit_byval
+endif
 
 BENCHMARKS=$(UPB_BENCHMARKS) \
            benchmarks/b.parsetostruct_googlemessage1.proto2_table \
@@ -300,50 +312,70 @@ benchmarks/google_messages.pb.cc: benchmarks/google_messages.proto
 	protoc benchmarks/google_messages.proto --cpp_out=.
 
 benchmarks/b.parsetostruct_googlemessage1.upb_table_byval \
-benchmarks/b.parsetostruct_googlemessage1.upb_table_byref \
-benchmarks/b.parsetostruct_googlemessage2.upb_table_byval \
-benchmarks/b.parsetostruct_googlemessage2.upb_table_byref: \
-    benchmarks/parsetostruct.upb_table.c $(LIBUPB) benchmarks/google_messages.proto.pb
-	$(E) 'CC benchmarks/parsetostruct.upb_table.c (benchmarks.SpeedMessage1, byval)'
+benchmarks/b.parsetostruct_googlemessage2.upb_table_byval: \
+    benchmarks/parsetostruct.upb.c $(LIBUPB) benchmarks/google_messages.proto.pb
+	$(E) 'CC benchmarks/parsetostruct.upb.c (benchmarks.SpeedMessage1, byval, nojit)'
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.upb_table_byval $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"google_message1.dat\" \
-	  -DBYREF=false $(LIBUPB)
-	$(E) 'CC benchmarks/parsetostruct.upb_table.c (benchmarks.SpeedMessage1, byref)'
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.upb_table_byref $< \
-	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
-	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
-	  -DMESSAGE_FILE=\"google_message1.dat\" \
-	  -DBYREF=true $(LIBUPB)
-	$(E) 'CC benchmarks/parsetostruct.upb_table.c (benchmarks.SpeedMessage2, byval)'
+	  -DBYREF=false -DJIT=false $(LIBUPB)
+	$(E) 'CC benchmarks/parsetostruct.upb.c (benchmarks.SpeedMessage2, byref, nojit)'
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.upb_table_byval $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"google_message2.dat\" \
-	  -DBYREF=false $(LIBUPB)
-	$(E) 'CC benchmarks/parsetostruct.upb_table.c (benchmarks.SpeedMessage2, byref)'
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.upb_table_byref $< \
-	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
-	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
-	  -DMESSAGE_FILE=\"google_message2.dat\" \
-	  -DBYREF=true $(LIBUPB)
+	  -DBYREF=false -DJIT=false $(LIBUPB)
 
 benchmarks/b.parsestream_googlemessage1.upb_table \
 benchmarks/b.parsestream_googlemessage2.upb_table: \
-    benchmarks/parsestream.upb_table.c $(LIBUPB) benchmarks/google_messages.proto.pb
-	$(E) 'CC benchmarks/parsestream.upb_table.c (benchmarks.SpeedMessage1)'
+    benchmarks/parsestream.upb.c $(LIBUPB) benchmarks/google_messages.proto.pb
+	$(E) 'CC benchmarks/parsestream.upb.c (benchmarks.SpeedMessage1, nojit)'
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsestream_googlemessage1.upb_table $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
-	  -DMESSAGE_FILE=\"google_message1.dat\" \
+	  -DMESSAGE_FILE=\"google_message1.dat\" -DJIT=false \
 	  $(LIBUPB)
-	$(E) 'CC benchmarks/parsestream.upb_table.c (benchmarks.SpeedMessage2)'
+	$(E) 'CC benchmarks/parsestream.upb.c (benchmarks.SpeedMessage2, nojit)'
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsestream_googlemessage2.upb_table $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
-	  -DMESSAGE_FILE=\"google_message2.dat\" \
+	  -DMESSAGE_FILE=\"google_message2.dat\" -DJIT=false \
 	  $(LIBUPB)
+
+ifdef USE_JIT
+benchmarks/b.parsetostruct_googlemessage1.upb_jit_byval \
+benchmarks/b.parsetostruct_googlemessage2.upb_jit_byval: \
+    benchmarks/parsetostruct.upb.c $(LIBUPB) benchmarks/google_messages.proto.pb
+	$(E) 'CC benchmarks/parsetostruct.upb.c (benchmarks.SpeedMessage1, byref, jit)'
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.upb_jit_byval $< \
+	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
+	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
+	  -DMESSAGE_FILE=\"google_message1.dat\" -DJIT=true \
+	  -DBYREF=true -DJIT=true $(LIBUPB)
+	$(E) 'CC benchmarks/parsetostruct.upb.c (benchmarks.SpeedMessage2, byval, jit)'
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.upb_jit_byval $< \
+	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
+	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
+	  -DMESSAGE_FILE=\"google_message2.dat\" -DJIT=true \
+	  -DBYREF=false -DJIT=true $(LIBUPB)
+
+benchmarks/b.parsestream_googlemessage1.upb_jit \
+benchmarks/b.parsestream_googlemessage2.upb_jit: \
+    benchmarks/parsestream.upb.c $(LIBUPB) benchmarks/google_messages.proto.pb
+	$(E) 'CC benchmarks/parsestream.upb.c (benchmarks.SpeedMessage1, jit)'
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsestream_googlemessage1.upb_jit $< \
+	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
+	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
+	  -DMESSAGE_FILE=\"google_message1.dat\" -DJIT=true \
+	  $(LIBUPB)
+	$(E) 'CC benchmarks/parsestream.upb.c (benchmarks.SpeedMessage2, jit)'
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsestream_googlemessage2.upb_jit $< \
+	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
+	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
+	  -DMESSAGE_FILE=\"google_message2.dat\" -DJIT=true \
+	  $(LIBUPB)
+endif
 
 benchmarks/b.parsetostruct_googlemessage1.proto2_table \
 benchmarks/b.parsetostruct_googlemessage2.proto2_table: \

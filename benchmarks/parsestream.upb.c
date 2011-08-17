@@ -52,6 +52,7 @@ static bool initialize()
   }
 
   upb_handlers *handlers = upb_handlers_new();
+  if (!JIT) handlers->should_jit = false;
   // Cause all messages to be read, but do nothing when they are.
   upb_handlerset hset = {NULL, NULL, value, startsubmsg, NULL, NULL, NULL};
   upb_handlers_reghandlerset(handlers, def, &hset);
