@@ -86,6 +86,9 @@ class UpbRepeatedPtrField : public google::protobuf::internal::RepeatedPtrFieldB
   class TypeHandler {
    public:
     typedef void Type;
+    // AddAllocated() calls this, but only if other objects are sitting
+    // around waiting for reuse, which we will not do.
+    static void Delete(Type*) { assert(false); }
   };
   void *Add(google::protobuf::Message *m) {
     void *submsg = RepeatedPtrFieldBase::AddFromCleared<TypeHandler>();

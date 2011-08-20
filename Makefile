@@ -289,7 +289,9 @@ UPB_BENCHMARKS += \
                benchmarks/b.parsestream_googlemessage1.upb_jit \
                benchmarks/b.parsestream_googlemessage2.upb_jit \
                benchmarks/b.parsetostruct_googlemessage1.upb_jit_byval \
-               benchmarks/b.parsetostruct_googlemessage2.upb_jit_byval
+               benchmarks/b.parsetostruct_googlemessage2.upb_jit_byval \
+               benchmarks/b.parsetoproto2_googlemessage1.upb_jit \
+               benchmarks/b.parsetoproto2_googlemessage2.upb_jit
 endif
 
 BENCHMARKS=$(UPB_BENCHMARKS) \
@@ -299,12 +301,6 @@ BENCHMARKS=$(UPB_BENCHMARKS) \
            benchmarks/b.parsetostruct_googlemessage2.proto2_compiled \
            benchmarks/b.parsetoproto2_googlemessage1.upb \
            benchmarks/b.parsetoproto2_googlemessage2.upb
-
-ifdef USE_JIT
-BENCHMARKS += \
-           benchmarks/b.parsetoproto2_googlemessage1.upb_jit \
-           benchmarks/b.parsetoproto2_googlemessage2.upb_jit
-endif
 
 upb_benchmarks: $(UPB_BENCHMARKS)
 benchmarks: $(BENCHMARKS)
