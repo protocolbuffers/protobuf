@@ -374,7 +374,10 @@ void upb_decoder_decode(upb_decoder *d, upb_status *status) {
     upb_decoder_enterjit(d);
     // if (!d->dispatcher.top->is_packed)
     upb_fhandlers *f = upb_decode_tag(d);
-    if (!f) upb_decoder_exit2(d);
+    if (!f) {
+      upb_decoder_onexit(d);
+      return;
+    }
     f->decode(d, f);
     upb_decoder_commit(d);
   }
