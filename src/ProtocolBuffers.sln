@@ -22,6 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unittest", "unittest", "{C8
 		..\protos\extest\unittest_generic_services.proto = ..\protos\extest\unittest_generic_services.proto
 		..\protos\google\protobuf\unittest_import.proto = ..\protos\google\protobuf\unittest_import.proto
 		..\protos\google\protobuf\unittest_import_lite.proto = ..\protos\google\protobuf\unittest_import_lite.proto
+		..\protos\extest\unittest_issues.proto = ..\protos\extest\unittest_issues.proto
 		..\protos\google\protobuf\unittest_lite.proto = ..\protos\google\protobuf\unittest_lite.proto
 		..\protos\google\protobuf\unittest_lite_imports_nonlite.proto = ..\protos\google\protobuf\unittest_lite_imports_nonlite.proto
 		..\protos\google\protobuf\unittest_mset.proto = ..\protos\google\protobuf\unittest_mset.proto
@@ -66,7 +67,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{66ED1950
 		..\build\RunBenchmarks.bat = ..\build\RunBenchmarks.bat
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffers.Serialization", "ProtocolBuffers.Serialization\ProtocolBuffers.Serialization.csproj", "{231391AF-449C-4a39-986C-AD7F270F4750}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffers.Serialization", "ProtocolBuffers.Serialization\ProtocolBuffers.Serialization.csproj", "{231391AF-449C-4A39-986C-AD7F270F4750}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -146,14 +147,14 @@ Global
 		{EEFFED24-3750-4567-9A23-1DB676A15610}.Release_Silverlight2|Any CPU.ActiveCfg = Release|Any CPU
 		{EEFFED24-3750-4567-9A23-1DB676A15610}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EEFFED24-3750-4567-9A23-1DB676A15610}.Release|Any CPU.Build.0 = Release|Any CPU
-		{231391AF-449C-4a39-986C-AD7F270F4750}.Debug_Silverlight2|Any CPU.ActiveCfg = Debug_Silverlight2|Any CPU
-		{231391AF-449C-4a39-986C-AD7F270F4750}.Debug_Silverlight2|Any CPU.Build.0 = Debug_Silverlight2|Any CPU
-		{231391AF-449C-4a39-986C-AD7F270F4750}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{231391AF-449C-4a39-986C-AD7F270F4750}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{231391AF-449C-4a39-986C-AD7F270F4750}.Release_Silverlight2|Any CPU.ActiveCfg = Release_Silverlight2|Any CPU
-		{231391AF-449C-4a39-986C-AD7F270F4750}.Release_Silverlight2|Any CPU.Build.0 = Release_Silverlight2|Any CPU
-		{231391AF-449C-4a39-986C-AD7F270F4750}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{231391AF-449C-4a39-986C-AD7F270F4750}.Release|Any CPU.Build.0 = Release|Any CPU
+		{231391AF-449C-4A39-986C-AD7F270F4750}.Debug_Silverlight2|Any CPU.ActiveCfg = Debug_Silverlight2|Any CPU
+		{231391AF-449C-4A39-986C-AD7F270F4750}.Debug_Silverlight2|Any CPU.Build.0 = Debug_Silverlight2|Any CPU
+		{231391AF-449C-4A39-986C-AD7F270F4750}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{231391AF-449C-4A39-986C-AD7F270F4750}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{231391AF-449C-4A39-986C-AD7F270F4750}.Release_Silverlight2|Any CPU.ActiveCfg = Release_Silverlight2|Any CPU
+		{231391AF-449C-4A39-986C-AD7F270F4750}.Release_Silverlight2|Any CPU.Build.0 = Release_Silverlight2|Any CPU
+		{231391AF-449C-4A39-986C-AD7F270F4750}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{231391AF-449C-4A39-986C-AD7F270F4750}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
