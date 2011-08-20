@@ -50,9 +50,8 @@ typedef struct _upb_decoder {
   // UPB_TRYAGAIN (or in the future, UPB_SUSPEND).
   const char *completed_ptr;
 
-  // End of the delimited region, relative to ptr, or UINTPTR_MAX if not in
-  // this buf.
-  uintptr_t delim_end;
+  // End of the delimited region, relative to ptr, or NULL if not in this buf.
+  const char *delim_end;
 
 #ifdef UPB_USE_JIT_X64
   // For JIT, which doesn't do bounds checks in the middle of parsing a field.
@@ -68,6 +67,10 @@ typedef struct _upb_decoder {
 
   sigjmp_buf exitjmp;
 } upb_decoder;
+
+// Used for frames that have no specific end offset: groups, repeated primitive
+// fields inside groups, and the top-level message.
+#define UPB_NONDELIMITED UINT32_MAX
 
 // Initializes/uninitializes a decoder for calling into the given handlers
 // or to write into the given msgdef, given its accessors).  Takes a ref

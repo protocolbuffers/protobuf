@@ -16,8 +16,10 @@ static upb_mhandlers *upb_mhandlers_new() {
   upb_inttable_init(&m->fieldtab, 8, sizeof(upb_fhandlers));
   m->startmsg = NULL;
   m->endmsg = NULL;
-  m->tablearray = NULL;
   m->is_group = false;
+#ifdef UPB_USE_JIT_X64
+  m->tablearray = NULL;
+#endif
   return m;
 }
 
@@ -29,7 +31,11 @@ static upb_fhandlers *_upb_mhandlers_newfhandlers(upb_mhandlers *m, uint32_t n,
   if (f) abort();
   upb_fhandlers new_f = {false, type, repeated,
       repeated && upb_isprimitivetype(type), UPB_ATOMIC_INIT(0),
-      n, m, NULL, UPB_NO_VALUE, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, NULL};
+      n, m, NULL, UPB_NO_VALUE, NULL, NULL, NULL, NULL, NULL,
+#ifdef UPB_USE_JIT_X64
+      0, 0, 0,
+#endif
+      NULL};
   upb_inttable_insert(&m->fieldtab, tag, &new_f);
   f = upb_inttable_lookup(&m->fieldtab, tag);
   assert(f);
@@ -77,7 +83,9 @@ void upb_handlers_unref(upb_handlers *h) {
     for (int i = 0; i < h->msgs_len; i++) {
       upb_mhandlers *mh = h->msgs[i];
       upb_inttable_free(&mh->fieldtab);
+#ifdef UPB_USE_JIT_X64
       free(mh->tablearray);
+#endif
       free(mh);
     }
     free(h->msgs);
@@ -154,7 +162,11 @@ static upb_fhandlers toplevel_f = {
 #else
   {{0}, -1},
 #endif
-  NULL, NULL, NULL, NULL, NULL, 0, 0, 0, NULL};
+  NULL, NULL, NULL, NULL, NULL,
+#ifdef UPB_USE_JIT_X64
+  0, 0, 0,
+#endif
+  NULL};
 
 void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h,
                          upb_skip_handler *skip, upb_exit_handler *exit,

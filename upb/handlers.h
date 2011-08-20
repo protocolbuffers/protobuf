@@ -149,9 +149,11 @@ typedef struct _upb_fieldent {
   upb_endfield_handler *endsubmsg;
   upb_startfield_handler *startseq;
   upb_endfield_handler *endseq;
+#ifdef UPB_USE_JIT_X64
   uint32_t jit_pclabel;
   uint32_t jit_pclabel_notypecheck;
   uint32_t jit_submsg_done_pclabel;
+#endif
   void (*decode)(struct _upb_decoder *d, struct _upb_fieldent *f);
 } upb_fhandlers;
 
@@ -184,16 +186,18 @@ typedef struct _upb_mhandlers {
   upb_startmsg_handler *startmsg;
   upb_endmsg_handler *endmsg;
   upb_inttable fieldtab;  // Maps field number -> upb_fhandlers.
+  bool is_group;
+#ifdef UPB_USE_JIT_X64
   uint32_t jit_startmsg_pclabel;
   uint32_t jit_endofbuf_pclabel;
   uint32_t jit_endofmsg_pclabel;
   uint32_t jit_unknownfield_pclabel;
-  bool is_group;
   int32_t jit_parent_field_done_pclabel;
   uint32_t max_field_number;
   // Currently keyed on field number.  Could also try keying it
   // on encoded or decoded tag, or on encoded field number.
   void **tablearray;
+#endif
 } upb_mhandlers;
 
 // mhandlers are created as part of a upb_handlers instance, but can be ref'd

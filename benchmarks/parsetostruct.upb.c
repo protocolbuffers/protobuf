@@ -69,7 +69,8 @@ static size_t run(int i)
   upb_status status = UPB_STATUS_INIT;
   i %= NUM_MESSAGES;
   upb_msg_clear(msg[i], def);
-  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), 0, UINT64_MAX, msg[i]);
+  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc),
+                    0, UPB_NONDELIMITED, msg[i]);
   upb_decoder_decode(&d, &status);
   if(!upb_ok(&status)) goto err;
   return len;

@@ -283,7 +283,8 @@ static size_t run(int i)
   (void)i;
   upb_status status = UPB_STATUS_INIT;
   msg[i % NUM_MESSAGES].Clear();
-  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), 0, UINT64_MAX, &msg[i % NUM_MESSAGES]);
+  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc),
+                    0, UPB_NONDELIMITED, &msg[i % NUM_MESSAGES]);
   upb_decoder_decode(&d, &status);
   if(!upb_ok(&status)) goto err;
   return len;

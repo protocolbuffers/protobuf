@@ -13,10 +13,6 @@
 #include "upb/pb/decoder.h"
 #include "upb/pb/varint.h"
 
-// Used for frames that have no specific end offset: groups, repeated primitive
-// fields inside groups, and the top-level message.
-#define UPB_NONDELIMITED UINT32_MAX
-
 #ifdef UPB_USE_JIT_X64
 #define Dst_DECL upb_decoder *d
 #define Dst_REF (d->dynasm)
@@ -33,7 +29,11 @@
 #define FORCEINLINE static __attribute__((always_inline))
 #define NOINLINE static __attribute__((noinline))
 
-static void upb_decoder_exit(upb_decoder *d) { siglongjmp(d->exitjmp, 1); }
+static void upb_decoder_exit(upb_decoder *d) {
+  // If/when we support resumable decoding, we would want to back our progress
+  // up to completed_ptr and possibly get a previous buffer.
+  siglongjmp(d->exitjmp, 1);
+}
 static void upb_decoder_exit2(void *_d) {
   upb_decoder *d = _d;
   upb_decoder_exit(d);
@@ -43,7 +43,12 @@ static void upb_decoder_abort(upb_decoder *d, const char *msg) {
   upb_decoder_exit(d);
 }
 
-/* Decoding/Buffering of wire types *******************************************/
+/* Buffering ******************************************************************/
+
+// We operate on one buffer at a time, which may be a subset of the bytesrc
+// region we have ref'd.  When data for the buffer is gone we pull the next
+// one.  When we've committed our progress we release our ref on any previous
+// buffers' regions.
 
 static size_t upb_decoder_bufleft(upb_decoder *d) { return d->end - d->ptr; }
 static void upb_decoder_advance(upb_decoder *d, size_t len) {
@@ -61,12 +66,11 @@ static void upb_decoder_setmsgend(upb_decoder *d) {
   upb_dispatcher_frame *f = d->dispatcher.top;
   size_t delimlen = f->end_ofs - d->bufstart_ofs;
   size_t buflen = d->end - d->buf;
-  if (f->end_ofs != UINT64_MAX && delimlen <= buflen) {
-    d->delim_end = (uintptr_t)(d->buf + delimlen);
+  if (f->end_ofs != UPB_NONDELIMITED && delimlen <= buflen) {
+    // Delimited message ends in this buffer.
+    d->delim_end = d->buf + delimlen;
   } else {
-    // Buffers must not run up against the end of memory.
-    assert((uintptr_t)d->end < UINTPTR_MAX);
-    d->delim_end = UINTPTR_MAX;
+    d->delim_end = NULL;
   }
 }
 
@@ -111,6 +115,9 @@ void upb_decoder_commit(upb_decoder *d) {
   }
 }
 
+
+/* Decoding of wire types *****************************************************/
+
 NOINLINE uint64_t upb_decode_varint_slow(upb_decoder *d) {
   uint8_t byte = 0x80;
   uint64_t u64 = 0;
@@ -150,7 +157,8 @@ done:
 
 FORCEINLINE bool upb_trydecode_varint32(upb_decoder *d, uint32_t *val) {
   if (upb_decoder_bufleft(d) == 0) {
-    // Check for our two normal end-of-message conditions.
+    // Check for our two successful end-of-message conditions
+    // (user-specified EOM and bytesrc EOF).
     if (d->bufend_ofs == d->end_ofs) return false;
     if (!upb_trypullbuf(d)) return false;
   }
@@ -286,8 +294,8 @@ static void upb_decode_MESSAGE(upb_decoder *d, upb_fhandlers *f) {
 /* The main decoding loop *****************************************************/
 
 static void upb_decoder_checkdelim(upb_decoder *d) {
-  while ((uintptr_t)d->ptr >= d->delim_end) {
-    if ((uintptr_t)d->ptr > d->delim_end)
+  while (d->delim_end != NULL && d->ptr >= d->delim_end) {
+    if (d->ptr > d->delim_end)
       upb_decoder_abort(d, "Bad submessage end");
 
     if (d->dispatcher.top->is_sequence) {
@@ -460,7 +468,7 @@ void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc, uint64_t start_ofs,
 #ifdef UPB_USE_JIT_X64
   d->jit_end = NULL;
 #endif
-  d->delim_end = UINTPTR_MAX;  // But don't let end-of-message get triggered.
+  d->delim_end = NULL;  // But don't let end-of-message get triggered.
   d->strref.bytesrc = bytesrc;
 }
 
