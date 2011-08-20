@@ -54,7 +54,6 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
   for(uint32_t i = 0; i < keys.size(); i++) {
     const string& key = keys[i];
     strtable_entry *e = (strtable_entry*)upb_strtable_lookup(&table, key.c_str());
-    printf("Looking up %s...\n", key.c_str());
     if(m.find(key) != m.end()) { /* Assume map implementation is correct. */
       assert(e);
       assert(e->value == key[0]);
@@ -79,7 +78,7 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
 }
 
 /* num_entries must be a power of 2. */
-void test_inttable(int32_t *keys, uint16_t num_entries)
+void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc)
 {
   /* Initialize structures. */
   upb_inttable table;
@@ -132,6 +131,8 @@ void test_inttable(int32_t *keys, uint16_t num_entries)
     upb_inttable_free(&table);
     return;
   }
+
+  printf("%s\n", desc);
 
   /* Test performance. We only test lookups for keys that are known to exist. */
   uint16_t rand_order[num_entries];
@@ -257,21 +258,16 @@ int main(int argc, char *argv[])
 
   test_strtable(keys, 18);
 
-  printf("Benchmarking hash lookups in an integer-keyed hash table.\n");
-  printf("\n");
   int32_t *keys1 = get_contiguous_keys(8);
-  printf("Table size: 8, keys: 1-8 ====\n");
-  test_inttable(keys1, 8);
+  test_inttable(keys1, 8, "Table size: 8, keys: 1-8 ====");
   delete[] keys1;
 
   int32_t *keys2 = get_contiguous_keys(64);
-  printf("Table size: 64, keys: 1-64 ====\n");
-  test_inttable(keys2, 64);
+  test_inttable(keys2, 64, "Table size: 64, keys: 1-64 ====\n");
   delete[] keys2;
 
   int32_t *keys3 = get_contiguous_keys(512);
-  printf("Table size: 512, keys: 1-512 ====\n");
-  test_inttable(keys3, 512);
+  test_inttable(keys3, 512, "Table size: 512, keys: 1-512 ====\n");
   delete[] keys3;
 
   int32_t *keys4 = new int32_t[64];
@@ -281,7 +277,6 @@ int main(int argc, char *argv[])
     else
       keys4[i] = 10101+i;
   }
-  printf("Table size: 64, keys: 1-32 and 10133-10164 ====\n");
-  test_inttable(keys4, 64);
+  test_inttable(keys4, 64, "Table size: 64, keys: 1-32 and 10133-10164 ====\n");
   delete[] keys4;
 }

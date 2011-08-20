@@ -30,8 +30,8 @@
 #define NOINLINE static __attribute__((noinline))
 
 static void upb_decoder_exit(upb_decoder *d) {
-  // If/when we support resumable decoding, we would want to back our progress
-  // up to completed_ptr and possibly get a previous buffer.
+  // Resumable decoder would back out to completed_ptr (and possibly get a
+  // previous buffer).
   siglongjmp(d->exitjmp, 1);
 }
 static void upb_decoder_exit2(void *_d) {
@@ -46,9 +46,9 @@ static void upb_decoder_abort(upb_decoder *d, const char *msg) {
 /* Buffering ******************************************************************/
 
 // We operate on one buffer at a time, which may be a subset of the bytesrc
-// region we have ref'd.  When data for the buffer is gone we pull the next
-// one.  When we've committed our progress we release our ref on any previous
-// buffers' regions.
+// region we have ref'd.  When data for the buffer is completely gone we pull
+// the next one.  When we've committed our progress we release our ref on any
+// previous buffers' regions.
 
 static size_t upb_decoder_bufleft(upb_decoder *d) { return d->end - d->ptr; }
 static void upb_decoder_advance(upb_decoder *d, size_t len) {
@@ -66,16 +66,10 @@ static void upb_decoder_setmsgend(upb_decoder *d) {
   upb_dispatcher_frame *f = d->dispatcher.top;
   size_t delimlen = f->end_ofs - d->bufstart_ofs;
   size_t buflen = d->end - d->buf;
-  if (f->end_ofs != UPB_NONDELIMITED && delimlen <= buflen) {
-    // Delimited message ends in this buffer.
-    d->delim_end = d->buf + delimlen;
-  } else {
-    d->delim_end = NULL;
-  }
+  d->delim_end = (f->end_ofs != UPB_NONDELIMITED && delimlen <= buflen) ?
+      d->buf + delimlen : NULL;  // NULL if not in this buf.
 }
 
-// Pulls the next buffer from the bytesrc.  Should be called only when the
-// current buffer is completely empty.
 static bool upb_trypullbuf(upb_decoder *d) {
   assert(upb_decoder_bufleft(d) == 0);
   if (d->bufend_ofs == d->refend_ofs) {
@@ -84,7 +78,7 @@ static bool upb_trypullbuf(upb_decoder *d) {
       d->ptr = NULL;
       d->end = NULL;
       if (upb_iseof(d->status)) return false;
-      upb_decoder_exit(d);
+      upb_decoder_exit(d);  // Non-EOF error.
     }
   }
   d->bufstart_ofs = d->bufend_ofs;
@@ -295,9 +289,7 @@ static void upb_decode_MESSAGE(upb_decoder *d, upb_fhandlers *f) {
 
 static void upb_decoder_checkdelim(upb_decoder *d) {
   while (d->delim_end != NULL && d->ptr >= d->delim_end) {
-    if (d->ptr > d->delim_end)
-      upb_decoder_abort(d, "Bad submessage end");
-
+    if (d->ptr > d->delim_end) upb_decoder_abort(d, "Bad submessage end");
     if (d->dispatcher.top->is_sequence) {
       upb_dispatch_endseq(&d->dispatcher);
     } else {
@@ -420,27 +412,12 @@ void upb_decoder_initforhandlers(upb_decoder *d, upb_handlers *handlers) {
     for(upb_inttable_iter i = upb_inttable_begin(&m->fieldtab); !upb_inttable_done(i);
         i = upb_inttable_next(&m->fieldtab, i)) {
       upb_fhandlers *f = upb_inttable_iter_value(i);
-      switch (f->type) {
-        case UPB_TYPE(INT32):    f->decode = &upb_decode_INT32;    break;
-        case UPB_TYPE(INT64):    f->decode = &upb_decode_INT64;    break;
-        case UPB_TYPE(UINT32):   f->decode = &upb_decode_UINT32;   break;
-        case UPB_TYPE(UINT64):   f->decode = &upb_decode_UINT64;   break;
-        case UPB_TYPE(FIXED32):  f->decode = &upb_decode_FIXED32;  break;
-        case UPB_TYPE(FIXED64):  f->decode = &upb_decode_FIXED64;  break;
-        case UPB_TYPE(SFIXED32): f->decode = &upb_decode_SFIXED32; break;
-        case UPB_TYPE(SFIXED64): f->decode = &upb_decode_SFIXED64; break;
-        case UPB_TYPE(BOOL):     f->decode = &upb_decode_BOOL;     break;
-        case UPB_TYPE(ENUM):     f->decode = &upb_decode_ENUM;     break;
-        case UPB_TYPE(DOUBLE):   f->decode = &upb_decode_DOUBLE;   break;
-        case UPB_TYPE(FLOAT):    f->decode = &upb_decode_FLOAT;    break;
-        case UPB_TYPE(SINT32):   f->decode = &upb_decode_SINT32;   break;
-        case UPB_TYPE(SINT64):   f->decode = &upb_decode_SINT64;   break;
-        case UPB_TYPE(STRING):   f->decode = &upb_decode_STRING;   break;
-        case UPB_TYPE(BYTES):    f->decode = &upb_decode_STRING;   break;
-        case UPB_TYPE(GROUP):    f->decode = &upb_decode_GROUP;    break;
-        case UPB_TYPE(MESSAGE):  f->decode = &upb_decode_MESSAGE;  break;
-        case UPB_TYPE_ENDGROUP:  f->decode = &upb_endgroup;        break;
-      }
+#define F(type) &upb_decode_ ## type
+      static void *fptrs[] = {&upb_endgroup, F(DOUBLE), F(FLOAT), F(INT64),
+          F(UINT64), F(INT32), F(FIXED64), F(FIXED32), F(BOOL), F(STRING),
+          F(GROUP), F(MESSAGE), F(STRING), F(UINT32), F(ENUM), F(SFIXED32),
+          F(SFIXED64), F(SINT32), F(SINT64)};
+      f->decode = fptrs[f->type];
     }
   }
 }

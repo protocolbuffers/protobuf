@@ -38,7 +38,6 @@ const upb_type_info upb_types[] = {
   TYPE_INFO(UPB_WIRE_TYPE_64BIT,       int64_t,   INT64)     // SFIXED64
   TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int32_t,   INT32)     // SINT32
   TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int64_t,   INT64)     // SINT64
-  TYPE_INFO(UPB_WIRE_TYPE_END_GROUP,   void*,     INT64)     // SINT64
 };
 
 #ifdef NDEBUG
