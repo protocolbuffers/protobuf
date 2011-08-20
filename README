@@ -1,9 +1,9 @@
 
-upb - a minimalist implementation of protocol buffers.
+upb - a small, low-level protocol buffer library
 
 For API documentation, see the header files.
 
-To build (the core library is ANSI C and has no dependencies):
+To build (the core library is ANSI C99 and has no dependencies):
 $ make
 
 Other useful targets:
@@ -32,10 +32,6 @@ The issue tracker contains small-to-medium tasks that need doing; but here are
 the major things that are broken or not yet implemented yet:
 
 - serialization isn't written yet (only deserialization)
-
-- the language extensions that exist so far (Python and Lua) are totally
-  incomplete/broken.  They are not usable for anything yet.  This will
-  be remedied very soon.
 
 
 CONTACT

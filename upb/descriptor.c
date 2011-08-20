@@ -304,6 +304,7 @@ static bool upb_fielddef_parsedefault(char *str, upb_value *d, int type) {
   } else if (type == UPB_TYPE(MESSAGE) || type == UPB_TYPE(GROUP)) {
     // We don't expect to get a default value.
     free(str);
+    upb_value_setptr(d, NULL);
     if (str != NULL) success = false;
   } else if (type == UPB_TYPE(BOOL)) {
     if (!str || strcmp(str, "false") == 0)
@@ -356,6 +357,7 @@ static bool upb_fielddef_parsedefault(char *str, upb_value *d, int type) {
         upb_value_setfloat(d, strtof(str, &end));
         if (errno == ERANGE || *end) success = false;
         break;
+      default: abort();
     }
     free(str);
   }
@@ -377,6 +379,7 @@ static void upb_fielddef_endmsg(void *_r, upb_status *status) {
   char *dstr = r->default_string;
   r->default_string = NULL;
   upb_value val;
+  upb_value_setptr(&val, NULL);  // Silence inaccurate compiler warnings.
   if (!upb_fielddef_parsedefault(dstr, &val, f->type)) {
     // We don't worry too much about giving a great error message since the
     // compiler should have ensured this was correct.

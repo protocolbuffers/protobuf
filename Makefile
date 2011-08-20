@@ -126,8 +126,8 @@ clean_leave_profile:
 	rm -rf $(TESTS) tests/t.*
 	rm -rf upb/descriptor.pb
 	rm -rf tools/upbc deps
-	rm -rf lang_ext/lua/upb.so
-	rm -rf lang_ext/python/build
+	rm -rf bindings/lua/upb.so
+	rm -rf bindings/python/build
 
 clean: clean_leave_profile
 	rm -rf $(call rwildcard,,*.gcno) $(call rwildcard,,*.gcda)
@@ -464,21 +464,21 @@ else
   LUA_LDFLAGS =
 endif
 
-LUAEXT=lang_ext/lua/upb.so
+LUAEXT=bindings/lua/upb.so
 lua: $(LUAEXT)
-lang_ext/lua/upb.so: lang_ext/lua/upb.c $(LIBUPB_PIC)
-	$(E) CC lang_ext/lua/upb.c
+bindings/lua/upb.so: bindings/lua/upb.c $(LIBUPB_PIC)
+	$(E) CC bindings/lua/upb.c
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) $(LUA_CPPFLAGS) -fpic -shared -o $@ $< upb/libupb_pic.a $(LUA_LDFLAGS)
 
 
 # Python extension #############################################################
 
 PYTHON=python
-PYTHONEXT=lang_ext/python/build/install/lib/python/upb/__init__.so
+PYTHONEXT=bindings/python/build/install/lib/python/upb/__init__.so
 python: $(PYTHONEXT)
-$(PYTHONEXT): $(LIBUPB_PIC) lang_ext/python/upb.c
-	$(E) PYTHON lang_ext/python/upb.c
-	$(Q) cd lang_ext/python && $(PYTHON) setup.py build --debug install --home=build/install
+$(PYTHONEXT): $(LIBUPB_PIC) bindings/python/upb.c
+	$(E) PYTHON bindings/python/upb.c
+	$(Q) cd bindings/python && $(PYTHON) setup.py build --debug install --home=build/install
 
 pythontest: $(PYTHONEXT)
-	cd lang_ext/python && cp test.py build/install/lib/python && valgrind $(PYTHON) ./build/install/lib/python/test.py
+	cd bindings/python && cp test.py build/install/lib/python && valgrind $(PYTHON) ./build/install/lib/python/test.py
