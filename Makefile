@@ -296,7 +296,16 @@ BENCHMARKS=$(UPB_BENCHMARKS) \
            benchmarks/b.parsetostruct_googlemessage1.proto2_table \
            benchmarks/b.parsetostruct_googlemessage2.proto2_table \
            benchmarks/b.parsetostruct_googlemessage1.proto2_compiled \
-           benchmarks/b.parsetostruct_googlemessage2.proto2_compiled
+           benchmarks/b.parsetostruct_googlemessage2.proto2_compiled \
+           benchmarks/b.parsetoproto2_googlemessage1.upb \
+           benchmarks/b.parsetoproto2_googlemessage2.upb
+
+ifdef USE_JIT
+BENCHMARKS += \
+           benchmarks/b.parsetoproto2_googlemessage1.upb_jit \
+           benchmarks/b.parsetoproto2_googlemessage2.upb_jit
+endif
+
 upb_benchmarks: $(UPB_BENCHMARKS)
 benchmarks: $(BENCHMARKS)
 benchmark:
@@ -375,6 +384,26 @@ benchmarks/b.parsestream_googlemessage2.upb_jit: \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"google_message2.dat\" -DJIT=true \
 	  $(LIBUPB)
+
+benchmarks/b.parsetoproto2_googlemessage1.upb_jit \
+benchmarks/b.parsetoproto2_googlemessage2.upb_jit: \
+    benchmarks/parsetoproto2.upb.cc benchmarks/google_messages.pb.cc
+	$(E) 'CXX benchmarks/parsetoproto2.upb.cc (benchmarks.SpeedMessage1, jit)'
+	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetoproto2_googlemessage1.upb_jit $< \
+	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
+	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
+	  -DMESSAGE_FILE=\"google_message1.dat\" \
+	  -DMESSAGE_HFILE=\"google_messages.pb.h\" \
+	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" -DJIT=true \
+	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread $(LIBUPB)
+	$(E) 'CXX benchmarks/parsetoproto2.upb.cc (benchmarks.SpeedMessage2, jit)'
+	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetoproto2_googlemessage2.upb_jit $< \
+	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage2" \
+	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
+	  -DMESSAGE_FILE=\"google_message2.dat\" \
+	  -DMESSAGE_HFILE=\"google_messages.pb.h\" -DJIT=true \
+	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
+	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread $(LIBUPB)
 endif
 
 benchmarks/b.parsetostruct_googlemessage1.proto2_table \
@@ -395,8 +424,7 @@ benchmarks/b.parsetostruct_googlemessage2.proto2_table: \
 
 benchmarks/b.parsetostruct_googlemessage1.proto2_compiled \
 benchmarks/b.parsetostruct_googlemessage2.proto2_compiled: \
-    benchmarks/parsetostruct.proto2_compiled.cc \
-    benchmarks/parsetostruct.proto2_table.cc benchmarks/google_messages.pb.cc
+    benchmarks/parsetostruct.proto2_compiled.cc benchmarks/google_messages.pb.cc
 	$(E) 'CXX benchmarks/parsetostruct.proto2_compiled.cc (benchmarks.SpeedMessage1)'
 	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.proto2_compiled $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
@@ -409,6 +437,26 @@ benchmarks/b.parsetostruct_googlemessage2.proto2_compiled: \
 	  -DMESSAGE_FILE=\"google_message2.dat\" \
 	  -DMESSAGE_HFILE=\"google_messages.pb.h\" \
 	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread
+
+benchmarks/b.parsetoproto2_googlemessage1.upb \
+benchmarks/b.parsetoproto2_googlemessage2.upb: \
+    benchmarks/parsetoproto2.upb.cc benchmarks/google_messages.pb.cc
+	$(E) 'CXX benchmarks/parsetoproto2.upb.cc (benchmarks.SpeedMessage1, nojit)'
+	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetoproto2_googlemessage1.upb $< \
+	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
+	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
+	  -DMESSAGE_FILE=\"google_message1.dat\" \
+	  -DMESSAGE_HFILE=\"google_messages.pb.h\" \
+	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" -DJIT=false \
+	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread $(LIBUPB)
+	$(E) 'CXX benchmarks/parsetoproto2.upb.cc (benchmarks.SpeedMessage2, nojit)'
+	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetoproto2_googlemessage2.upb $< \
+	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage2" \
+	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
+	  -DMESSAGE_FILE=\"google_message2.dat\" \
+	  -DMESSAGE_HFILE=\"google_messages.pb.h\" \
+	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" -DJIT=false \
+	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread $(LIBUPB)
 
 
 # Lua extension ##################################################################

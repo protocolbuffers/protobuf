@@ -53,8 +53,8 @@ void upb_msgtotext(upb_string *str, upb_msg *msg, upb_msgdef *md,
 #endif
 
 // TODO: read->load.
-void upb_read_descriptor(upb_symtab *symtab, const char *str, size_t len,
-                         upb_status *status) {
+upb_def **upb_load_descriptor(const char *str, size_t len, int *n,
+                              upb_status *status) {
   upb_stringsrc strsrc;
   upb_stringsrc_init(&strsrc);
   upb_stringsrc_reset(&strsrc, str, len);
@@ -70,12 +70,17 @@ void upb_read_descriptor(upb_symtab *symtab, const char *str, size_t len,
   upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), 0, UINT64_MAX, &r);
 
   upb_decoder_decode(&d, status);
-  int n;
-  upb_def **defs = upb_descreader_getdefs(&r, &n);
+  upb_def **defs = upb_descreader_getdefs(&r, n);
+  upb_def **defscopy = malloc(sizeof(upb_def*) * (*n));
+  memcpy(defscopy, defs, sizeof(upb_def*) * (*n));
+
+  upb_descreader_uninit(&r);
+  upb_stringsrc_uninit(&strsrc);
+  upb_decoder_uninit(&d);
 
   // Set default accessors and layouts on all messages.
-  for(int i = 0; i < n; i++) {
-    upb_def *def = defs[i];
+  for(int i = 0; i < *n; i++) {
+    upb_def *def = defscopy[i];
     upb_msgdef *md = upb_dyncast_msgdef(def);
     if (!md) continue;
     // For field in msgdef:
@@ -87,13 +92,16 @@ void upb_read_descriptor(upb_symtab *symtab, const char *str, size_t len,
     upb_msgdef_layout(md);
   }
 
-  if (upb_ok(status)) upb_symtab_add(symtab, defs, n, status);
+  return defscopy;
+}
 
+void upb_read_descriptor(upb_symtab *s, const char *str, size_t len,
+                         upb_status *status) {
+  int n;
+  upb_def **defs = upb_load_descriptor(str, len, &n, status);
+  if (upb_ok(status)) upb_symtab_add(s, defs, n, status);
   for(int i = 0; i < n; i++) upb_def_unref(defs[i]);
-
-  upb_descreader_uninit(&r);
-  upb_stringsrc_uninit(&strsrc);
-  upb_decoder_uninit(&d);
+  free(defs);
 }
 
 char *upb_readfile(const char *filename, size_t *len) {

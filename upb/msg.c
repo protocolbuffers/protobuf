@@ -11,11 +11,13 @@
 #include "upb/msg.h"
 
 void upb_msg_clear(void *msg, upb_msgdef *md) {
+  assert(msg != NULL);
   memset(msg, 0, md->hasbit_bytes);
   // TODO: set primitive fields to defaults?
 }
 
 void *upb_stdarray_append(upb_stdarray *a, size_t type_size) {
+  assert(a != NULL);
   assert(a->len <= a->size);
   if (a->len == a->size) {
     size_t old_size = a->size;
@@ -81,12 +83,14 @@ void upb_msg_runhandlers(upb_msg *msg, upb_msgdef *md, upb_handlers *h,
 /* Standard writers. **********************************************************/
 
 void upb_stdmsg_sethas(void *_m, upb_value fval) {
+  assert(_m != NULL);
   char *m = _m;
   upb_fielddef *f = upb_value_getfielddef(fval);
   if (f->hasbit >= 0) m[f->hasbit / 8] |= (1 << (f->hasbit % 8));
 }
 
 bool upb_stdmsg_has(void *_m, upb_value fval) {
+  assert(_m != NULL);
   char *m = _m;
   upb_fielddef *f = upb_value_getfielddef(fval);
   return f->hasbit < 0 || (m[f->hasbit / 8] & (1 << (f->hasbit % 8)));
@@ -95,6 +99,7 @@ bool upb_stdmsg_has(void *_m, upb_value fval) {
 #define UPB_ACCESSORS(type, ctype)                                            \
   upb_flow_t upb_stdmsg_set ## type (void *_m, upb_value fval,                \
                                      upb_value val) {                         \
+    assert(_m != NULL);                                                       \
     upb_fielddef *f = upb_value_getfielddef(fval);                            \
     uint8_t *m = _m;                                                          \
     upb_stdmsg_sethas(_m, fval);                                              \
@@ -105,12 +110,14 @@ bool upb_stdmsg_has(void *_m, upb_value fval) {
   upb_flow_t upb_stdmsg_set ## type ## _r(void *a, upb_value _fval,           \
                                           upb_value val) {                    \
     (void)_fval;                                                              \
+    assert(a != NULL);                                                        \
     ctype *p = upb_stdarray_append((upb_stdarray*)a, sizeof(ctype));          \
     *p = upb_value_get ## type(val);                                          \
     return UPB_CONTINUE;                                                      \
   }                                                                           \
                                                                               \
   upb_value upb_stdmsg_get ## type(void *_m, upb_value fval) {                \
+    assert(_m != NULL);                                                       \
     uint8_t *m = _m;                                                          \
     upb_fielddef *f = upb_value_getfielddef(fval);                            \
     upb_value ret;                                                            \
@@ -118,6 +125,7 @@ bool upb_stdmsg_has(void *_m, upb_value fval) {
     return ret;                                                               \
   }                                                                           \
   upb_value upb_stdmsg_seqget ## type(void *i) {                              \
+    assert(i != NULL);                                                        \
     upb_value val;                                                            \
     upb_value_set ## type(&val, *(ctype*)i);                                  \
     return val;                                                               \
@@ -153,6 +161,7 @@ static void _upb_stdmsg_setstr(void *_dst, upb_value src) {
 }
 
 upb_flow_t upb_stdmsg_setstr(void *_m, upb_value fval, upb_value val) {
+  assert(_m != NULL);
   char *m = _m;
   upb_fielddef *f = upb_value_getfielddef(fval);
   upb_stdmsg_sethas(_m, fval);
@@ -161,16 +170,19 @@ upb_flow_t upb_stdmsg_setstr(void *_m, upb_value fval, upb_value val) {
 }
 
 upb_flow_t upb_stdmsg_setstr_r(void *a, upb_value fval, upb_value val) {
+  assert(a != NULL);
   (void)fval;
   _upb_stdmsg_setstr(upb_stdarray_append((upb_stdarray*)a, sizeof(void*)), val);
   return UPB_CONTINUE;
 }
 
 upb_value upb_stdmsg_getstr(void *m, upb_value fval) {
+  assert(m != NULL);
   return upb_stdmsg_getptr(m, fval);
 }
 
 upb_value upb_stdmsg_seqgetstr(void *i) {
+  assert(i != NULL);
   return upb_stdmsg_seqgetptr(i);
 }
 
@@ -244,6 +256,7 @@ void upb_stdmsg_recycle(void **m, upb_msgdef *md) {
 }
 
 upb_sflow_t upb_stdmsg_startsubmsg(void *_m, upb_value fval) {
+  assert(_m != NULL);
   char *m = _m;
   upb_fielddef *f = upb_value_getfielddef(fval);
   void **subm = (void*)&m[f->offset];

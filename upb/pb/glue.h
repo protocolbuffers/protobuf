@@ -47,6 +47,9 @@ void upb_strtomsg(const char *str, size_t len, void *msg,
 //void upb_msgtotext(struct _upb_string *str, void *msg,
 //                   struct _upb_msgdef *md, bool single_line);
 
+upb_def **upb_load_descriptor(const char *str, size_t len, int *n,
+                              upb_status *status);
+
 void upb_read_descriptor(struct _upb_symtab *symtab, const char *str, size_t len,
                          upb_status *status);
 

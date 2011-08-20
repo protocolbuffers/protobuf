@@ -93,6 +93,8 @@ typedef struct _upb_fielddef {
   upb_value defaultval;  // Only meaningful for non-repeated scalars and strings.
   upb_value fval;
   struct _upb_accessor_vtbl *accessor;
+  const void *default_ptr;
+  const void *prototype;
 } upb_fielddef;
 
 upb_fielddef *upb_fielddef_new(void);
