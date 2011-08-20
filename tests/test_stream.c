@@ -1,7 +1,6 @@
 
 #undef NDEBUG  /* ensure tests always assert. */
-#include "upb_stream.h"
-#include "upb_string.h"
+#include "upb/handlers.h"
 
 typedef struct {
   upb_string *str;

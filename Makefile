@@ -65,16 +65,13 @@ endif
 # Unfortuantely we can't easily generate deps for benchmarks or tests because
 # of the scheme we use that compiles the same source file multiple times with
 # different -D options, which can include different header files.
-deps: gen-deps.sh Makefile $(CORE) $(STREAM)
-	$(Q) CPPFLAGS="$(CPPFLAGS)" ./gen-deps.sh $(CORE) $(STREAM)
+ALLSRC=$(shell find . -name '*.c' -print | grep -v perf-tmp)
+deps: gen-deps.sh Makefile $(ALLSRC)
+	$(Q) CPPFLAGS="$(CPPFLAGS)" ./gen-deps.sh $(ALLSRC)
 	$(E) Regenerating dependencies for upb/...
-
-$(ALLSRC): perf-cppflags
 
 
 # Source files. ###############################################################
-
-# Every source file used in upb should appear here.
 
 # The core library.
 CORE= \
@@ -92,26 +89,6 @@ PB= \
   upb/pb/varint.c \
   upb/pb/glue.c \
   upb/pb/textprinter.c \
-
-# Parts of core that are yet to be converted.
-OTHERSRC=upb/pb/encoder.c
-
-BENCHMARKS_SRC= \
-  benchmarks/main.c \
-  benchmarks/parsestream.upb.c \
-  benchmarks/parsetostruct.upb.c
-
-TESTS_SRC= \
-  tests/test_decoder.c \
-  tests/test_def.c \
-  tests/tests.c \
-  tests/tests_varint.c \
-
-  #tests/test_vs_proto2.cc
-
-  #tests/test_stream.c \
-
-ALLSRC=$(CORE) $(STREAM) $(BENCHMARKS_SRC) $(TESTS_SRC)
 
 
 # Rules. #######################################################################
@@ -187,8 +164,6 @@ endif
 
 # Function to expand a wildcard pattern recursively.
 rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $(subst *,%,$2),$d)))
-
-
 
 # Regenerating the auto-generated files in upb/.
 upb/descriptor.pb: upb/descriptor.proto
@@ -315,6 +290,12 @@ benchmarks/google_messages.proto.pb: benchmarks/google_messages.proto
 
 benchmarks/google_messages.pb.cc: benchmarks/google_messages.proto
 	protoc benchmarks/google_messages.proto --cpp_out=.
+
+# This basic idea is useful (varying the benchmarks' setup by recompiling
+# several times with different #defines) but the implementation in this
+# Makefile is verbose and error-prone.  Open to better ideas here.  I don't
+# want to make these command-line parameters -- it makes it more annoying to
+# debug or profile them.
 
 benchmarks/b.parsetostruct_googlemessage1.upb_table_byval \
 benchmarks/b.parsetostruct_googlemessage2.upb_table_byval: \

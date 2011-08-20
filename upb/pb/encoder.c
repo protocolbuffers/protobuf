@@ -5,10 +5,10 @@
  * Author: Josh Haberman <jhaberman@gmail.com>
  */
 
-#include "upb_encoder.h"
+#include "upb/pb/encoder.h"
 
 #include <stdlib.h>
-#include "descriptor.h"
+#include "upb/descriptor.h"
 
 /* Functions for calculating sizes of wire values. ****************************/
 

@@ -15,8 +15,8 @@
 #ifndef UPB_ENCODER_H_
 #define UPB_ENCODER_H_
 
-#include "upb.h"
-#include "upb_stream.h"
+#include "upb/upb.h"
+#include "upb/bytestream.h"
 
 #ifdef __cplusplus
 extern "C" {
