@@ -364,7 +364,7 @@ benchmarks/b.parsestream_googlemessage2.upb_jit: \
 
 benchmarks/b.parsetoproto2_googlemessage1.upb_jit \
 benchmarks/b.parsetoproto2_googlemessage2.upb_jit: \
-    benchmarks/parsetoproto2.upb.cc benchmarks/google_messages.pb.cc
+    benchmarks/parsetoproto2.upb.cc benchmarks/google_messages.pb.cc $(LIBUPB) benchmarks/google_messages.proto.pb
 	$(E) 'CXX benchmarks/parsetoproto2.upb.cc (benchmarks.SpeedMessage1, jit)'
 	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetoproto2_googlemessage1.upb_jit $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
@@ -417,7 +417,7 @@ benchmarks/b.parsetostruct_googlemessage2.proto2_compiled: \
 
 benchmarks/b.parsetoproto2_googlemessage1.upb \
 benchmarks/b.parsetoproto2_googlemessage2.upb: \
-    benchmarks/parsetoproto2.upb.cc benchmarks/google_messages.pb.cc
+    benchmarks/parsetoproto2.upb.cc benchmarks/google_messages.pb.cc $(LIBUPB) benchmarks/google_messages.proto.pb
 	$(E) 'CXX benchmarks/parsetoproto2.upb.cc (benchmarks.SpeedMessage1, nojit)'
 	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetoproto2_googlemessage1.upb $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \

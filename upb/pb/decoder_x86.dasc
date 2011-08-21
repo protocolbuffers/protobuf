@@ -7,6 +7,10 @@
 |// JIT compiler for upb_decoder on x86.  Given a upb_handlers object,
 |// generates code specialized to parsing the specific message and
 |// calling specific handlers.
+|//
+|// Since the JIT can call other functions (the JIT'ted code is not a leaf
+|// function) we must respect alignment rules.  On OS X, this means aligning
+|// the stack to 16 bytes.
 
 #define UPB_NONE -1
 #define UPB_MULTIPLE -2
@@ -561,6 +565,11 @@ static int upb_compare_uint32(const void *a, const void *b) {
 
 static void upb_decoder_jit_msg(upb_decoder *d, upb_mhandlers *m) {
   |=>m->jit_startmsg_pclabel:
+
+  if (m->jit_parent_field_done_pclabel == UPB_MULTIPLE) {
+    // There was a call to get here, so we need to align the stack.
+    |  sub  rsp, 8
+  }
   // Call startmsg handler (if any):
   if (m->startmsg) {
     // upb_flow_t startmsg(void *closure);
@@ -624,6 +633,8 @@ static void upb_decoder_jit_msg(upb_decoder *d, upb_mhandlers *m) {
   }
 
   if (m->jit_parent_field_done_pclabel == UPB_MULTIPLE) {
+    // Counter previous alignment.
+    |  add  rsp, 8
     |  ret
   } else if (m->jit_parent_field_done_pclabel == UPB_TOPLEVEL_ONE) {
     |  jmp  ->exit_jit
@@ -644,6 +655,8 @@ static void upb_decoder_jit(upb_decoder *d) {
   |  push  r13
   |  push  r12
   |  push  rbx
+  // Align stack.
+  |  sub   rsp, 8
   |  mov   DECODER, ARG1_64
   |  mov   FRAME, DECODER:ARG1_64->dispatcher.top
   |  lea   STRREF, DECODER:ARG1_64->strref
@@ -661,6 +674,8 @@ static void upb_decoder_jit(upb_decoder *d) {
   for (int i = 0; i < h->msgs_len; i++) upb_decoder_jit_msg(d, h->msgs[i]);
 
   |->exit_jit:
+  // Counter previous alignment.
+  |  add   rsp, 8
   |  pop   rbx
   |  pop   r12
   |  pop   r13
