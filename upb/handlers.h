@@ -141,6 +141,7 @@ typedef struct _upb_fieldent {
   bool is_repeated_primitive;
   upb_atomic_t refcount;
   uint32_t number;
+  int32_t valuehasbit;
   struct _upb_mhandlers *msg;
   struct _upb_mhandlers *submsg;  // Set iff upb_issubmsgtype(type) == true.
   upb_value fval;
@@ -174,6 +175,11 @@ UPB_FHANDLERS_ACCESSORS(startseq, upb_startfield_handler*)
 UPB_FHANDLERS_ACCESSORS(endseq, upb_endfield_handler*)
 UPB_FHANDLERS_ACCESSORS(msg, struct _upb_mhandlers*)
 UPB_FHANDLERS_ACCESSORS(submsg, struct _upb_mhandlers*)
+// If set to >= 0, the hasbit will automatically be set after the corresponding
+// callback is called (when a JIT is enabled, this can be significantly more
+// efficient than setting the hasbit yourself inside the callback).  Could add
+// this for seq and submsg also, but doesn't look like a win at the moment.
+UPB_FHANDLERS_ACCESSORS(valuehasbit, int32_t)
 
 
 /* upb_mhandlers **************************************************************/
@@ -357,11 +363,17 @@ INLINE upb_fhandlers *upb_dispatcher_lookup(upb_dispatcher *d, uint32_t n) {
 
 void _upb_dispatcher_unwind(upb_dispatcher *d, upb_flow_t flow);
 
+INLINE void _upb_dispatcher_sethas(void *_p, int32_t hasbit) {
+  char *p = (char*)_p;
+  if (hasbit >= 0) p[hasbit / 8] |= (1 << (hasbit % 8));
+}
+
 // Dispatch functions -- call the user handler and handle errors.
 INLINE void upb_dispatch_value(upb_dispatcher *d, upb_fhandlers *f,
                                upb_value val) {
   upb_flow_t flow = UPB_CONTINUE;
   if (f->value) flow = f->value(d->top->closure, f->fval, val);
+  _upb_dispatcher_sethas(d->top->closure, f->valuehasbit);
   if (flow != UPB_CONTINUE) _upb_dispatcher_unwind(d, flow);
 }
 void upb_dispatch_startmsg(upb_dispatcher *d);

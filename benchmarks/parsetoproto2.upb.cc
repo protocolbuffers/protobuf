@@ -42,7 +42,6 @@ PROTO2_APPEND(bool, bool)
 
 upb_flow_t proto2_setstr(void *m, upb_value fval, upb_value val) {
   assert(m != NULL);
-  upb_stdmsg_sethas(m, fval);
   upb_fielddef *f = upb_value_getfielddef(fval);
   std::string **str = (std::string**)UPB_INDEX(m, f->offset, 1);
   if (*str == f->default_ptr) *str = new std::string;
@@ -72,7 +71,6 @@ upb_sflow_t proto2_startseq(void *m, upb_value fval) {
 upb_sflow_t proto2_startsubmsg(void *m, upb_value fval) {
   assert(m != NULL);
   upb_fielddef *f = upb_value_getfielddef(fval);
-  upb_stdmsg_sethas(m, fval);
   google::protobuf::Message *prototype = (google::protobuf::Message*)f->prototype;
   void **subm = (void**)UPB_INDEX(m, f->offset, 1);
   if (*subm == NULL || *subm == f->default_ptr)
@@ -183,8 +181,13 @@ static void layout_msgdef_from_proto2(upb_msgdef *upb_md,
     uint32_t hasbit = (r->has_bits_offset_ * 8) + proto2_f->index();
     // Encapsulation violation END
 
+    if (upb_isseq(upb_f)) {
+      // proto2 does not store hasbits for repeated fields.
+      upb_f->hasbit = -1;
+    } else {
+      upb_f->hasbit = hasbit;
+    }
     upb_f->offset = data_offset;
-    upb_f->hasbit = hasbit;
     upb_fielddef_setaccessor(upb_f, proto2_accessor(upb_f));
 
     if (upb_isstring(upb_f) && !upb_isseq(upb_f)) {

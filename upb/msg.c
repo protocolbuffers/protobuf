@@ -102,7 +102,7 @@ bool upb_stdmsg_has(void *_m, upb_value fval) {
     assert(_m != NULL);                                                       \
     upb_fielddef *f = upb_value_getfielddef(fval);                            \
     uint8_t *m = _m;                                                          \
-    upb_stdmsg_sethas(_m, fval);                                              \
+    /* Hasbit is set automatically by the handlers. */                        \
     *(ctype*)&m[f->offset] = upb_value_get ## type(val);                      \
     return UPB_CONTINUE;                                                      \
   }                                                                           \
@@ -164,7 +164,7 @@ upb_flow_t upb_stdmsg_setstr(void *_m, upb_value fval, upb_value val) {
   assert(_m != NULL);
   char *m = _m;
   upb_fielddef *f = upb_value_getfielddef(fval);
-  upb_stdmsg_sethas(_m, fval);
+  // Hasbit automatically set by the handlers.
   _upb_stdmsg_setstr(&m[f->offset], val);
   return UPB_CONTINUE;
 }
@@ -340,6 +340,7 @@ static void upb_accessors_onfreg(void *c, upb_fhandlers *fh, upb_fielddef *f) {
     } else {
       upb_fhandlers_setvalue(fh, f->accessor->set);
       upb_fhandlers_setstartsubmsg(fh, f->accessor->startsubmsg);
+      upb_fhandlers_setvaluehasbit(fh, f->hasbit);
     }
   }
 }

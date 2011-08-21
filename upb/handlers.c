@@ -31,7 +31,7 @@ static upb_fhandlers *_upb_mhandlers_newfhandlers(upb_mhandlers *m, uint32_t n,
   if (f) abort();
   upb_fhandlers new_f = {false, type, repeated,
       repeated && upb_isprimitivetype(type), UPB_ATOMIC_INIT(0),
-      n, m, NULL, UPB_NO_VALUE, NULL, NULL, NULL, NULL, NULL,
+      n, -1, m, NULL, UPB_NO_VALUE, NULL, NULL, NULL, NULL, NULL,
 #ifdef UPB_USE_JIT_X64
       0, 0, 0,
 #endif
@@ -156,7 +156,7 @@ upb_mhandlers *upb_handlers_regmsgdef(upb_handlers *h, upb_msgdef *m,
 
 static upb_fhandlers toplevel_f = {
   false, UPB_TYPE(GROUP), false, false, UPB_ATOMIC_INIT(0), 0,
-  NULL, NULL, // submsg
+  -1, NULL, NULL, // submsg
 #ifdef NDEBUG
   {{0}},
 #else

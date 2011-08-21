@@ -212,7 +212,7 @@ upb_fielddef *upb_fielddef_new() {
   f->finalized = false;
   f->type = 0;
   f->label = UPB_LABEL(OPTIONAL);
-  f->hasbit = 0;
+  f->hasbit = -1;
   f->offset = 0;
   f->number = 0;  // not a valid field number.
   f->hasdefault = false;

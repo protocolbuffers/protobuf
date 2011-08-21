@@ -126,7 +126,7 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |.type   FRAME,     upb_dispatcher_frame, r13
 |.type   STRREF,    upb_strref, r14
 |.type   DECODER,   upb_decoder, r15
-|.type   STDARRAY,  upb_stdarray, r15
+|.type   STDARRAY,  upb_stdarray
 |
 |.macro callp, addr
 || if ((uintptr_t)addr < 0xffffffff) {
@@ -273,6 +273,13 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |    mov64   ARG2_64, f->fval.val.uint64
 || }
 |.endmacro
+|
+|.macro sethas, reg, hasbit
+|| if (hasbit >= 0) {
+|    or   byte [reg + (hasbit / 8)], (1 << (hasbit % 8))
+|| }
+|.endmacro
+
 
 #include <stdlib.h>
 #include "upb/pb/varint.h"
@@ -369,14 +376,6 @@ static void upb_decoder_jit_decodefield(upb_decoder *d, upb_mhandlers *m,
   }
 }
 
-// DEPENDS: closure is in ARG1_64
-static void upb_decoder_jit_sethas(upb_decoder *d, upb_fielddef *f) {
-  if (f->hasbit < 0) return;
-  size_t byte = f->hasbit / 8;
-  uint8_t bit = 1 << (f->hasbit % 8);
-  |  or   byte [ARG1_64 + byte], bit
-}
-
 #if 0
 // These appear not to speed things up, but keeping around for
 // further experimentation.
@@ -465,15 +464,12 @@ static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
         f->value == &upb_stdmsg_setuint64 ||
         f->value == &upb_stdmsg_setptr ||
         f->value == &upb_stdmsg_setdouble) {
-      upb_decoder_jit_sethas(d, fd);
       |  mov   [ARG1_64 + fd->offset], ARG3_64
     } else if (f->value == &upb_stdmsg_setint32 ||
                f->value == &upb_stdmsg_setuint32 ||
                f->value == &upb_stdmsg_setfloat) {
-      upb_decoder_jit_sethas(d, fd);
       |  mov   [ARG1_64 + fd->offset], ARG3_32
     } else if (f->value == &upb_stdmsg_setbool) {
-      upb_decoder_jit_sethas(d, fd);
       |  mov   [ARG1_64 + fd->offset], ARG3_8
 #if 0
     // These appear not to speed things up, but keeping around for
@@ -495,6 +491,7 @@ static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
       |  loadfval f
       |  callp  f->value
     }
+    |  sethas CLOSURE, f->valuehasbit
   }
   // TODO: Handle UPB_SKIPSUBMSG, UPB_BREAK
 }
