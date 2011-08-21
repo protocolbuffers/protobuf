@@ -199,6 +199,7 @@ INLINE int32_t upb_bytesink_printf(upb_bytesink *sink, upb_status *status,
 
 typedef struct {
   uint64_t ofs;
+  uint32_t len;
   uint32_t refcount;
   char data[];
 } upb_stdio_buf;

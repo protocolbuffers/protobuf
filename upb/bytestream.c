@@ -35,30 +35,46 @@ static upb_stdio_buf *upb_stdio_findbuf(upb_stdio *s, uint64_t ofs) {
   return bsearch(&ofs, s->bufs, s->nbuf, sizeof(*s->bufs), &upb_stdio_cmpbuf);
 }
 
-//static upb_strlen_t upb_stdio_read(void *src, uint32_t ofs, upb_buf *b,
-//                                   upb_status *status) {
-//  upb_stdio *stdio = (upb_stdio*)src;
-//  size_t read = fread(buf, 1, BLOCK_SIZE, stdio->file);
-//  if(read < (size_t)BLOCK_SIZE) {
-//    // Error or EOF.
-//    if(feof(stdio->file)) {
-//      upb_seterr(status, UPB_EOF, "");
-//    } else if(ferror(stdio->file)) {
-//      upb_status_fromerrno(s);
-//      return 0;
-//    }
-//  }
-//  b->len = read;
-//  stdio->next_ofs += read;
-//  return stdio->next_ofs;
-//}
+static upb_stdio_buf *upb_stdio_rotatebufs(upb_stdio *s) {
+  upb_stdio_buf *reuse[s->nbuf];
+  uint32_t num_reused = 0, num_inuse = 0;
+
+  // Could sweep only a subset of bufs if this was a hotspot.
+  for (uint32_t i = 0; i < s->nbuf; i++) {
+    upb_stdio_buf *buf = s->bufs[i];
+    if (buf->refcount > 0) {
+      s->bufs[num_inuse++] = buf;
+    } else {
+      reuse[num_reused++] = buf;
+    }
+  }
+  assert(num_reused + num_inuse == s->nbuf);
+  memcpy(s->bufs + num_inuse, reuse, num_reused * sizeof(upb_stdio_buf*));
+  if (num_reused == 0) {
+    ++s->nbuf;
+    s->bufs = realloc(s->bufs, s->nbuf * sizeof(*s->bufs));
+    s->bufs[s->nbuf-1] = malloc(sizeof(upb_stdio_buf) + BUF_SIZE);
+    return s->bufs[s->nbuf-1];
+  }
+  return s->bufs[s->nbuf-num_reused];
+}
 
 size_t upb_stdio_fetch(void *src, uint64_t ofs, upb_status *s) {
-  (void)src;
   (void)ofs;
-  (void)s;
-
-  return 0;
+  upb_stdio *stdio = (upb_stdio*)src;
+  upb_stdio_buf *buf = upb_stdio_rotatebufs(stdio);
+  size_t read = fread(&buf->data, 1, BUF_SIZE, stdio->file);
+  if(read < (size_t)BUF_SIZE) {
+    // Error or EOF.
+    if(feof(stdio->file)) {
+      upb_status_setf(s, UPB_EOF, "");
+    } else if(ferror(stdio->file)) {
+      upb_status_fromerrno(s);
+      return 0;
+    }
+  }
+  buf->len = read;
+  return buf->ofs + buf->len;
 }
 
 void upb_stdio_read(void *src, uint64_t src_ofs, size_t len, char *dst) {
@@ -88,6 +104,7 @@ void upb_stdio_refregion(void *src, uint64_t ofs, size_t len) {
   len -= (BUF_SIZE - ofs);
   ++buf->refcount;
   while (len > 0) {
+    len -= BUF_SIZE;
     ++buf;
     ++buf->refcount;
   }
@@ -218,10 +235,6 @@ void upb_stringsink_uninit(upb_stringsink *s) {
   free(s->str);
 }
 
-// Resets the stringsink to a state where it will append to the given string.
-// The string must be newly created or recycled.  The stringsink will take a
-// reference on the string, so the caller need not ensure that it outlives the
-// stringsink.  A stringsink can be reset multiple times.
 void upb_stringsink_reset(upb_stringsink *s, char *str, size_t size) {
   free(s->str);
   s->str = str;
