@@ -66,9 +66,13 @@ endif
 # of the scheme we use that compiles the same source file multiple times with
 # different -D options, which can include different header files.
 ALLSRC=$(shell find . -name '*.c' -print | grep -v perf-tmp)
-deps: gen-deps.sh Makefile $(ALLSRC)
-	$(Q) CPPFLAGS="$(CPPFLAGS)" ./gen-deps.sh $(ALLSRC)
+deps: Makefile $(ALLSRC)
 	$(E) Regenerating dependencies for upb/...
+	@set -e
+	@rm -f deps
+	@for file in $(ALLSRC); do \
+	  gcc -MM $$file -MT $${file%.*}.o $(CPPFLAGS) -I. >> deps; \
+	done
 
 
 # Source files. ###############################################################
