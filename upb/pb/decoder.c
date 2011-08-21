@@ -369,6 +369,8 @@ void upb_decoder_decode(upb_decoder *d, upb_status *status) {
   }
   d->status = status;
   upb_dispatch_startmsg(&d->dispatcher);
+  // Prime the buf so we can hit the JIT immediately.
+  upb_trypullbuf(d);
   while(1) { // Main loop: executed once per tag/field pair.
     upb_decoder_checkdelim(d);
     upb_decoder_enterjit(d);
