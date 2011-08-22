@@ -1,4 +1,12 @@
-
+// This file is a crime against software engineering.  It breaks the
+// encapsulation of proto2 in numerous ways, violates the C++ standard
+// in others, and generally deserves to have comtempt and scorn heaped
+// upon it.
+//
+// Its purpose is to get an accurate benchmark for how fast upb can
+// parse into proto2 data structures.  To add proper support for this
+// functionality, proto2 would need to expose actual support for the
+// operations we are trying to perform here.
 
 #define __STDC_LIMIT_MACROS 1
 #include "main.c"
