@@ -17,11 +17,12 @@
 #ifndef UPB_HANDLERS_HPP
 #define UPB_HANDLERS_HPP
 
-#include "upb_handlers.h"
+#include "upb/handlers.h"
 
 namespace upb {
 
 typedef upb_flow_t Flow;
+class MessageHandlers;
 
 class FieldHandlers : public upb_fhandlers {
  public:
@@ -32,8 +33,8 @@ class FieldHandlers : public upb_fhandlers {
   // The FieldHandlers will live at least as long as the upb::Handlers to
   // which it belongs, but can be Ref'd/Unref'd to make it live longer (which
   // will prolong the life of the underlying upb::Handlers also).
-  void Ref()   { upb_fhandlers_ref(this); }
-  void Unref() { upb_fhandlers_unref(this); }
+  void Ref()   const { upb_fhandlers_ref(this); }
+  void Unref() const { upb_fhandlers_unref(this); }
 
   // Functions to set this field's handlers.
   // These return "this" so they can be conveniently chained, eg.
@@ -58,10 +59,26 @@ class FieldHandlers : public upb_fhandlers {
   }
 
   // Get/Set the field's bound value, which will be passed to its handlers.
-  Value GetBoundValue() { return upb_fhandlers_getfval(this); }
+  Value GetBoundValue() const { return upb_fhandlers_getfval(this); }
   FieldHandlers* SetBoundValue(Value val) {
     upb_fhandlers_setfval(this, val); return this;
   }
+
+  // Returns the MessageHandlers to which we belong.
+  MessageHandlers* GetMessageHandlers() const {
+    return upb_fhandlers_msg(this);
+  }
+
+  // Returns the MessageHandlers for this field's submessage (invalid to call
+  // unless this field's type UPB_TYPE(MESSAGE) or UPB_TYPE(GROUP).
+  MessageHandlers* GetSubMessageHandlers() const {
+    return upb_fhandlers_submsg(this);
+  }
+
+  // If set to >=0, the given hasbit will be set after the value callback is
+  // called (relative to the current closure).
+  int32_t GetValueHasbit() const { return upb_fhandler_valuehasbit(this); }
+  void SetValueHasbit(int32_t bit) { upb_fhandler_setvaluehasbit(this, bit); }
 
  private:
   FieldHandlers();  // Only created by upb::Handlers.
@@ -77,8 +94,8 @@ class MessageHandlers : public upb_mhandlers {
   // The MessageHandlers will live at least as long as the upb::Handlers to
   // which it belongs, but can be Ref'd/Unref'd to make it live longer (which
   // will prolong the life of the underlying upb::Handlers also).
-  void Ref()   { upb_mhandlers_ref(this); }
-  void Unref() { upb_mhandlers_unref(this); }
+  void Ref()   const { upb_mhandlers_ref(this); }
+  void Unref() const { upb_mhandlers_unref(this); }
 
   // Functions to set this message's handlers.
   // These return "this" so they can be conveniently chained, eg.
@@ -103,8 +120,8 @@ class MessageHandlers : public upb_mhandlers {
 
   // Like the previous but for MESSAGE or GROUP fields.  For GROUP fields, the
   // given submessage must not have any fields with this field number.
-  FieldHandlers* NewFieldHandlersForSubmessage(uint32_t n, FieldType type,
-                                               bool repeated,
+  FieldHandlers* NewFieldHandlersForSubmessage(uint32_t n, const char *name,
+                                               FieldType type, bool repeated,
                                                MessageHandlers* subm) {
     return upb_mhandlers_newsubmsgfhandlers(this, n, type, repeated, subm);
   }
@@ -130,7 +147,13 @@ class Handlers : public upb_handlers {
 
   // Returns a new MessageHandlers object.  The first such message that is
   // obtained will be the top-level message for this Handlers object.
-  MessageHandlers* NewMessageHandlers() { return upb_handlers_newmhandlers(); }
+  MessageHandlers* NewMessageHandlers() { return upb_handlers_newmhandlers(this); }
+
+  // Freezes the handlers against future modification.  Handlers must be
+  // finalized before they can be passed to a data producer.  After Finalize()
+  // has been called, you may only call const methods on the Handlers and its
+  // MessageHandlers/FieldHandlers.
+  void Finalize() { upb_handlers_finalize(this); }
 
  private:
   FieldHandlers();  // Only created by Handlers::New().
