@@ -188,8 +188,7 @@ void parse_and_compare(MESSAGE_CIDENT *proto2_msg,
   upb_msg_clear(upb_msg, upb_md);
   upb_strtomsg(str, len, upb_msg, upb_md, &status);
   if (!upb_ok(&status)) {
-    fprintf(stderr, "Error parsing test protobuf: ");
-    upb_status_print(&status, stderr);
+    fprintf(stderr, "Error parsing protobuf: %s", upb_status_getstr(&status));
     exit(1);
   }
   string_size = 0;
@@ -226,8 +225,8 @@ int main(int argc, char *argv[])
   }
   upb_read_descriptor(symtab, fds, fds_len, &status);
   if(!upb_ok(&status)) {
-    fprintf(stderr, "Error importing " MESSAGE_DESCRIPTOR_FILE ": ");
-    upb_status_print(&status, stderr);
+    fprintf(stderr, "Error importing " MESSAGE_DESCRIPTOR_FILE ": %s",
+            upb_status_getstr(&status));
     return 1;
   }
   free((void*)fds);

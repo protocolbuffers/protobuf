@@ -39,7 +39,7 @@ static void upb_decoder_exit2(void *_d) {
   upb_decoder_exit(d);
 }
 static void upb_decoder_abort(upb_decoder *d, const char *msg) {
-  upb_status_setf(d->status, UPB_ERROR, msg);
+  upb_status_seterrliteral(d->status, msg);
   upb_decoder_exit(d);
 }
 

@@ -145,9 +145,8 @@ INLINE void upb_strref_read(struct _upb_strref *r, char *buf) {
 
 /* upb_bytesink ***************************************************************/
 
-typedef bool upb_bytesink_write_func(void*, const char*, size_t, upb_status*);
-typedef int32_t upb_bytesink_vprintf_func(
-    void*, upb_status*, const char *fmt, va_list args);
+typedef bool upb_bytesink_write_func(void*, const char*, size_t);
+typedef int32_t upb_bytesink_vprintf_func(void*, const char *fmt, va_list args);
 
 typedef struct {
   upb_bytesink_write_func   *write;
@@ -156,28 +155,26 @@ typedef struct {
 
 typedef struct {
   upb_bytesink_vtbl *vtbl;
+  upb_status status;
 } upb_bytesink;
 
-INLINE void upb_bytesink_init(upb_bytesink *sink, upb_bytesink_vtbl *vtbl) {
-  sink->vtbl = vtbl;
+// Should be called by derived classes.
+void upb_bytesink_init(upb_bytesink *sink, upb_bytesink_vtbl *vtbl);
+void upb_bytesink_uninit(upb_bytesink *sink);
+
+INLINE bool upb_bytesink_write(upb_bytesink *s, const char *buf, size_t len) {
+  return s->vtbl->write(s, buf, len);
 }
 
-INLINE bool upb_bytesink_write(upb_bytesink *sink, const char *buf, size_t len,
-                               upb_status *s) {
-  return sink->vtbl->write(sink, buf, len, s);
-}
-
-INLINE bool upb_bytesink_writestr(upb_bytesink *sink, const char *str,
-                                  upb_status *s) {
-  return upb_bytesink_write(sink, str, strlen(str), s);
+INLINE bool upb_bytesink_writestr(upb_bytesink *sink, const char *str) {
+  return upb_bytesink_write(sink, str, strlen(str));
 }
 
 // Returns the number of bytes written or -1 on error.
-INLINE int32_t upb_bytesink_printf(upb_bytesink *sink, upb_status *status,
-                                   const char *fmt, ...) {
+INLINE int32_t upb_bytesink_printf(upb_bytesink *sink, const char *fmt, ...) {
   va_list args;
   va_start(args, fmt);
-  uint32_t ret = sink->vtbl->vprintf(sink, status, fmt, args);
+  uint32_t ret = sink->vtbl->vprintf(sink, fmt, args);
   va_end(args);
   return ret;
 }

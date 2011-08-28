@@ -22,8 +22,7 @@ int main(int argc, char *argv[]) {
   upb_status status = UPB_STATUS_INIT;
   upb_read_descriptor(symtab, desc, desc_len, &status);
   if (!upb_ok(&status)) {
-    fprintf(stderr, "Error parsing descriptor: ");
-    upb_status_print(&status, stderr);
+    fprintf(stderr, "Error parsing descriptor: %s", upb_status_getstr(&status));
     return 1;
   }
   free((void*)desc);
@@ -59,8 +58,7 @@ int main(int argc, char *argv[]) {
   upb_decoder_decode(&d, &status);
 
   if (!upb_ok(&status)) {
-    fprintf(stderr, "Error parsing input: ");
-    upb_status_print(&status, stderr);
+    fprintf(stderr, "Error parsing input: %s", upb_status_getstr(&status));
   }
 
   upb_status_uninit(&status);

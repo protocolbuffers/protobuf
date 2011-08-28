@@ -21,6 +21,15 @@ char *upb_strref_dup(struct _upb_strref *r) {
   return ret;
 }
 
+void upb_bytesink_init(upb_bytesink *sink, upb_bytesink_vtbl *vtbl) {
+  sink->vtbl = vtbl;
+  upb_status_init(&sink->status);
+}
+
+void upb_bytesink_uninit(upb_bytesink *sink) {
+  upb_status_uninit(&sink->status);
+}
+
 /* upb_stdio ******************************************************************/
 
 int upb_stdio_cmpbuf(const void *_key, const void *_elem) {
@@ -134,7 +143,7 @@ uint32_t upb_stdio_vprintf(upb_bytesink *sink, upb_status *status,
   upb_stdio *stdio = (upb_stdio*)((char*)sink - offsetof(upb_stdio, sink));
   int written = vfprintf(stdio->file, fmt, args);
   if (written < 0) {
-    upb_status_setf(status, UPB_ERROR, "Error writing to stdio stream.");
+    upb_status_seterrf(status, "Error writing to stdio stream.");
     return -1;
   }
   return written;
@@ -245,18 +254,16 @@ upb_bytesink *upb_stringsink_bytesink(upb_stringsink *s) {
   return &s->bytesink;
 }
 
-static int32_t upb_stringsink_vprintf(void *_s, upb_status *status,
-                                      const char *fmt, va_list args) {
-  (void)status;  // TODO: report realloc() errors.
+static int32_t upb_stringsink_vprintf(void *_s, const char *fmt, va_list args) {
+  // TODO: detect realloc() errors.
   upb_stringsink *s = _s;
   int ret = upb_vrprintf(&s->str, &s->size, s->len, fmt, args);
   if (ret >= 0) s->len += ret;
   return ret;
 }
 
-bool upb_stringsink_write(void *_s, const char *buf, size_t len,
-                          upb_status *status) {
-  (void)status;  // TODO: report realloc() errors.
+bool upb_stringsink_write(void *_s, const char *buf, size_t len) {
+  // TODO: detect realloc() errors.
   upb_stringsink *s = _s;
   if (s->len + len > s->size) {
     while(s->len + len > s->size) s->size *= 2;

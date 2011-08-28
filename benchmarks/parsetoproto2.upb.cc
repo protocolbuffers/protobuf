@@ -228,7 +228,8 @@ static bool initialize()
   upb_def **defs = upb_load_descriptor(data, len, &n, &status);
   free(data);
   if(!upb_ok(&status)) {
-    upb_status_print(&status, stderr);
+    fprintf(stderr, "Error reading descriptor: %s\n",
+            upb_status_getstr(&status));
     return false;
   }
 
@@ -249,7 +250,8 @@ static bool initialize()
 
   upb_symtab_add(s, defs, n, &status);
   if(!upb_ok(&status)) {
-    upb_status_print(&status, stderr);
+    fprintf(stderr, "Error reading adding to symtab: %s\n",
+            upb_status_getstr(&status));
     return false;
   }
   for(int i = 0; i < n; i++) upb_def_unref(defs[i]);
@@ -301,7 +303,6 @@ static size_t run(int i)
   return len;
 
 err:
-  fprintf(stderr, "Decode error: ");
-  upb_status_print(&status, stderr);
+  fprintf(stderr, "Decode error: %s", upb_status_getstr(&status));
   return 0;
 }

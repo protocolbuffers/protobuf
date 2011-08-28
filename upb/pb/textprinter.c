@@ -37,7 +37,7 @@ static int upb_textprinter_putescaped(upb_textprinter *p, upb_strref *strref,
 
   for (; src < end; src++) {
     if (dstend - dst < 4) {
-      CHECK(upb_bytesink_write(p->bytesink, dstbuf, dst - dstbuf, &p->status));
+      CHECK(upb_bytesink_write(p->bytesink, dstbuf, dst - dstbuf));
       dst = dstbuf;
     }
 
@@ -65,7 +65,7 @@ static int upb_textprinter_putescaped(upb_textprinter *p, upb_strref *strref,
     last_hex_escape = is_hex_escape;
   }
   // Flush remaining data.
-  CHECK(upb_bytesink_write(p->bytesink, dst, dst - dstbuf, &p->status));
+  CHECK(upb_bytesink_write(p->bytesink, dst, dst - dstbuf));
   return 0;
 err:
   return -1;
@@ -74,7 +74,7 @@ err:
 static int upb_textprinter_indent(upb_textprinter *p) {
   if(!p->single_line)
     for(int i = 0; i < p->indent_depth; i++)
-      CHECK(upb_bytesink_writestr(p->bytesink, "  ", &p->status));
+      CHECK(upb_bytesink_writestr(p->bytesink, "  "));
   return 0;
 err:
   return -1;
@@ -82,9 +82,9 @@ err:
 
 static int upb_textprinter_endfield(upb_textprinter *p) {
   if(p->single_line) {
-    CHECK(upb_bytesink_writestr(p->bytesink, " ", &p->status));
+    CHECK(upb_bytesink_writestr(p->bytesink, " "));
   } else {
-    CHECK(upb_bytesink_writestr(p->bytesink, "\n", &p->status));
+    CHECK(upb_bytesink_writestr(p->bytesink, "\n"));
   }
   return 0;
 err:
@@ -96,16 +96,16 @@ static upb_flow_t upb_textprinter_value(void *_p, upb_value fval,
   upb_textprinter *p = _p;
   upb_fielddef *f = upb_value_getfielddef(fval);
   upb_textprinter_indent(p);
-  CHECK(upb_bytesink_printf(p->bytesink, &p->status, "%s: ", f->name));
+  CHECK(upb_bytesink_printf(p->bytesink, "%s: ", f->name));
 #define CASE(fmtstr, member) \
-    CHECK(upb_bytesink_printf(p->bytesink, &p->status, fmtstr, upb_value_get ## member(val))); break;
+    CHECK(upb_bytesink_printf(p->bytesink, fmtstr, upb_value_get ## member(val))); break;
   switch(f->type) {
     // TODO: figure out what we should really be doing for these
     // floating-point formats.
     case UPB_TYPE(DOUBLE):
-      CHECK(upb_bytesink_printf(p->bytesink, &p->status, "%.*g", DBL_DIG, upb_value_getdouble(val))); break;
+      CHECK(upb_bytesink_printf(p->bytesink, "%.*g", DBL_DIG, upb_value_getdouble(val))); break;
     case UPB_TYPE(FLOAT):
-      CHECK(upb_bytesink_printf(p->bytesink, &p->status, "%.*g", FLT_DIG+2, upb_value_getfloat(val))); break;
+      CHECK(upb_bytesink_printf(p->bytesink, "%.*g", FLT_DIG+2, upb_value_getfloat(val))); break;
     case UPB_TYPE(INT64):
     case UPB_TYPE(SFIXED64):
     case UPB_TYPE(SINT64):
@@ -122,7 +122,7 @@ static upb_flow_t upb_textprinter_value(void *_p, upb_value fval,
       if (label) {
         // We found a corresponding string for this enum.  Otherwise we fall
         // through to the int32 code path.
-        CHECK(upb_bytesink_writestr(p->bytesink, label, &p->status));
+        CHECK(upb_bytesink_writestr(p->bytesink, label));
         break;
       }
     }
@@ -134,10 +134,10 @@ static upb_flow_t upb_textprinter_value(void *_p, upb_value fval,
       CASE("%hhu", bool);
     case UPB_TYPE(STRING):
     case UPB_TYPE(BYTES): {
-      CHECK(upb_bytesink_writestr(p->bytesink, "\"", &p->status));
+      CHECK(upb_bytesink_writestr(p->bytesink, "\""));
       CHECK(upb_textprinter_putescaped(p, upb_value_getstrref(val),
                                        f->type == UPB_TYPE(STRING)));
-      CHECK(upb_bytesink_writestr(p->bytesink, "\"", &p->status));
+      CHECK(upb_bytesink_writestr(p->bytesink, "\""));
       break;
     }
   }
@@ -151,10 +151,10 @@ static upb_sflow_t upb_textprinter_startsubmsg(void *_p, upb_value fval) {
   upb_textprinter *p = _p;
   upb_fielddef *f = upb_value_getfielddef(fval);
   upb_textprinter_indent(p);
-  bool ret = upb_bytesink_printf(p->bytesink, &p->status, "%s {", f->name);
+  bool ret = upb_bytesink_printf(p->bytesink, "%s {", f->name);
   if (!ret) return UPB_SBREAK;
   if (!p->single_line)
-    upb_bytesink_writestr(p->bytesink, "\n", &p->status);
+    upb_bytesink_writestr(p->bytesink, "\n");
   p->indent_depth++;
   return UPB_CONTINUE_WITH(_p);
 }
@@ -164,7 +164,7 @@ static upb_flow_t upb_textprinter_endsubmsg(void *_p, upb_value fval) {
   upb_textprinter *p = _p;
   p->indent_depth--;
   upb_textprinter_indent(p);
-  upb_bytesink_writestr(p->bytesink, "}", &p->status);
+  upb_bytesink_writestr(p->bytesink, "}");
   upb_textprinter_endfield(p);
   return UPB_CONTINUE;
 }

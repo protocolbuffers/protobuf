@@ -48,6 +48,7 @@ upb_value UPB_NO_VALUE = {{0}, -1};
 
 void upb_status_init(upb_status *status) {
   status->buf = NULL;
+  status->bufsize = 0;
   upb_status_clear(status);
 }
 
@@ -55,9 +56,8 @@ void upb_status_uninit(upb_status *status) {
   free(status->buf);
 }
 
-void upb_status_setf(upb_status *s, enum upb_status_code code,
-                     const char *msg, ...) {
-  s->code = code;
+void upb_status_seterrf(upb_status *s, const char *msg, ...) {
+  s->code = UPB_ERROR;
   va_list args;
   va_start(args, msg);
   upb_vrprintf(&s->buf, &s->bufsize, 0, msg, args);
@@ -65,36 +65,61 @@ void upb_status_setf(upb_status *s, enum upb_status_code code,
   s->str = s->buf;
 }
 
+void upb_status_seterrliteral(upb_status *status, const char *msg) {
+  status->code = UPB_ERROR;
+  status->str = msg;
+  status->space = NULL;
+}
+
 void upb_status_copy(upb_status *to, upb_status *from) {
+  to->status = from->status;
   to->code = from->code;
-  if (from->str) {
+  to->space = from->space;
+  if (from->str == from->buf) {
     if (to->bufsize < from->bufsize) {
       to->bufsize = from->bufsize;
       to->buf = realloc(to->buf, to->bufsize);
-      to->str = to->buf;
     }
-    memcpy(to->str, from->str, from->bufsize);
+    memcpy(to->buf, from->buf, from->bufsize);
+    to->str = to->buf;
   } else {
-    to->str = NULL;
+    to->str = from->str;
   }
+}
+
+const char *upb_status_getstr(upb_status *status) {
+  if (status->str == NULL && status->space && status->space->code_to_string) {
+    status->space->code_to_string(status->code, status->buf, status->bufsize);
+    status->str = status->buf;
+  }
+  return status->str;
 }
 
 void upb_status_clear(upb_status *status) {
-  status->code = UPB_OK;
+  status->status = UPB_OK;
+  status->code = 0;
+  status->space = NULL;
   status->str = NULL;
 }
 
-void upb_status_print(upb_status *status, FILE *f) {
-  if(status->str) {
-    fprintf(f, "code: %d, msg: %s\n", status->code, status->str);
-  } else {
-    fprintf(f, "code: %d, no msg\n", status->code);
-  }
+void upb_status_setcode(upb_status *status, upb_errorspace *space, int code) {
+  status->code = code;
+  status->space = space;
+  status->str = NULL;
 }
 
 void upb_status_fromerrno(upb_status *status) {
-  upb_status_setf(status, UPB_ERROR, "%s", strerror(errno));
+  if (errno == 0) {
+    status->status = UPB_OK;
+  } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
+    status->status = UPB_WOULDBLOCK;
+  } else {
+    status->status = UPB_ERROR;
+  }
+  upb_status_setcode(status, &upb_posix_errorspace, errno);
 }
+
+upb_errorspace upb_posix_errorspace = {"POSIX", NULL};  // TODO
 
 int upb_vrprintf(char **buf, size_t *size, size_t ofs,
                  const char *fmt, va_list args) {

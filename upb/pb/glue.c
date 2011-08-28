@@ -127,7 +127,7 @@ void upb_read_descriptorfile(upb_symtab *symtab, const char *fname,
   size_t len;
   char *data = upb_readfile(fname, &len);
   if (!data) {
-    upb_status_setf(status, UPB_ERROR, "Couldn't read file: %s", fname);
+    upb_status_seterrf(status, "Couldn't read file: %s", fname);
     return;
   }
   upb_read_descriptor(symtab, data, len, status);

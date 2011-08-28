@@ -227,7 +227,7 @@ upb_dispatcher_frame *upb_dispatch_startseq(upb_dispatcher *d,
   //indent(d);
   //fprintf(stderr, "START SEQ: %d\n", f->number);
   if((d->top+1) >= d->limit) {
-    upb_status_setf(&d->status, UPB_ERROR, "Nesting too deep.");
+    upb_status_seterrliteral(&d->status, "Nesting too deep.");
     _upb_dispatcher_unwind(d, UPB_BREAK);
     return d->top;  // Dummy.
   }
@@ -271,7 +271,7 @@ upb_dispatcher_frame *upb_dispatch_startsubmsg(upb_dispatcher *d,
   //indent(d);
   //fprintf(stderr, "START SUBMSG: %d\n", f->number);
   if((d->top+1) >= d->limit) {
-    upb_status_setf(&d->status, UPB_ERROR, "Nesting too deep.");
+    upb_status_seterrliteral(&d->status, "Nesting too deep.");
     _upb_dispatcher_unwind(d, UPB_BREAK);
     return d->top;  // Dummy.
   }

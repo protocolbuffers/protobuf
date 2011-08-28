@@ -203,7 +203,7 @@ static void upb_enumdef_EnumValueDescriptorProto_endmsg(void *_r,
                                                         upb_status *status) {
   upb_descreader *r = _r;
   if(!r->saw_number || !r->saw_name) {
-    upb_status_setf(status, UPB_ERROR, "Enum value missing name or number.");
+    upb_status_seterrliteral(status, "Enum value missing name or number.");
     return;
   }
   upb_enumdef *e = upb_downcast_enumdef(upb_descreader_last(r));
@@ -247,11 +247,11 @@ static void upb_enumdef_EnumDescriptorProto_endmsg(void *_r, upb_status *status)
   upb_descreader *r = _r;
   upb_enumdef *e = upb_downcast_enumdef(upb_descreader_last(r));
   if (upb_descreader_last((upb_descreader*)_r)->fqname == NULL) {
-    upb_status_setf(status, UPB_ERROR, "Enum had no name.");
+    upb_status_seterrliteral(status, "Enum had no name.");
     return;
   }
   if (upb_inttable_count(&e->iton) == 0) {
-    upb_status_setf(status, UPB_ERROR, "Enum had no values.");
+    upb_status_seterrliteral(status, "Enum had no values.");
     return;
   }
 }
@@ -383,7 +383,7 @@ static void upb_fielddef_endmsg(void *_r, upb_status *status) {
   if (!upb_fielddef_parsedefault(dstr, &val, f->type)) {
     // We don't worry too much about giving a great error message since the
     // compiler should have ensured this was correct.
-    upb_status_setf(status, UPB_ERROR, "Error converting default value.");
+    upb_status_seterrliteral(status, "Error converting default value.");
     return;
   }
   upb_fielddef_setdefault(f, val);
@@ -477,7 +477,7 @@ static void upb_msgdef_endmsg(void *_r, upb_status *status) {
   upb_descreader *r = _r;
   upb_msgdef *m = upb_descreader_top(r);
   if(!m->base.fqname) {
-    upb_status_setf(status, UPB_ERROR, "Encountered message with no name.");
+    upb_status_seterrliteral(status, "Encountered message with no name.");
     return;
   }
 

@@ -20,7 +20,8 @@ static bool initialize()
   upb_symtab *s = upb_symtab_new();
   upb_read_descriptorfile(s, MESSAGE_DESCRIPTOR_FILE, &status);
   if(!upb_ok(&status)) {
-    upb_status_print(&status, stderr);
+    fprintf(stderr, "Error reading descriptor: %s\n",
+            upb_status_getstr(&status));
     return false;
   }
 
@@ -76,7 +77,6 @@ static size_t run(int i)
   return len;
 
 err:
-  fprintf(stderr, "Decode error: ");
-  upb_status_print(&status, stderr);
+  fprintf(stderr, "Decode error: %s", upb_status_getstr(&status));
   return 0;
 }

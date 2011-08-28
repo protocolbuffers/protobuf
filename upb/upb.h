@@ -187,45 +187,47 @@ extern upb_value UPB_NO_VALUE;
 
 /* upb_status *****************************************************************/
 
-// Status codes used as a return value.  Codes >0 are not fatal and can be
-// resumed.
-enum upb_status_code {
-  // The operation completed successfully.
-  UPB_OK = 0,
-
-  // The bytesrc is at EOF and all data was read successfully.
-  UPB_EOF = 1,
-
-  // A read or write from a streaming src/sink could not be completed right now.
-  UPB_TRYAGAIN = 2,
-
-  // An unrecoverable error occurred.
-  UPB_ERROR = -1,
+enum {
+  UPB_OK,          // The operation completed successfully.
+  UPB_WOULDBLOCK,  // Stream is nonblocking and the operation would block.
+  UPB_ERROR,       // An error occurred.
 };
+
+typedef struct {
+  const char *name;
+  // Writes a NULL-terminated string to "buf" containing an error message for
+  // the given error code, returning false if the message was too large to fit.
+  bool (*code_to_string)(int code, char *buf, size_t len);
+} upb_errorspace;
 
 // TODO: consider adding error space and code, to let ie. errno be stored
 // as a proper code, or application-specific error codes.
 typedef struct {
-  char code;
-  char *str;  // NULL when no message is present.  NULL-terminated.
-  char *buf;  // Owned by the status.
+  char status;
+  int code;   // Can be set to a more specific code (defined by error space).
+  upb_errorspace *space;
+  const char *str;  // NULL when no message is present.  NULL-terminated.
+  char *buf;        // Owned by the status.
   size_t bufsize;
 } upb_status;
 
-#define UPB_STATUS_INIT {UPB_OK, NULL, NULL, 0}
+#define UPB_STATUS_INIT {UPB_OK, 0, NULL, NULL, NULL, 0}
 
 void upb_status_init(upb_status *status);
 void upb_status_uninit(upb_status *status);
 
 INLINE bool upb_ok(upb_status *status) { return status->code == UPB_OK; }
-INLINE bool upb_iseof(upb_status *status) { return status->code == UPB_EOF; }
 
-void upb_status_fromerrno(upb_status *status);
-void upb_status_print(upb_status *status, FILE *f);
 void upb_status_clear(upb_status *status);
-void upb_status_setf(upb_status *status, enum upb_status_code code,
-                     const char *fmt, ...);
+void upb_status_seterrliteral(upb_status *status, const char *msg);
+void upb_status_seterrf(upb_status *s, const char *msg, ...);
+void upb_status_setcode(upb_status *s, upb_errorspace *space, int code);
+// The returned string is invalidated by any other call into the status.
+const char *upb_status_getstr(upb_status *s);
 void upb_status_copy(upb_status *to, upb_status *from);
+
+upb_errorspace upb_posix_errorspace;
+void upb_status_fromerrno(upb_status *status);
 
 // Like vaprintf, but uses *buf (which can be NULL) as a starting point and
 // reallocates it only if the new value will not fit.  "size" is updated to

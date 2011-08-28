@@ -294,8 +294,8 @@ static bool upb_fielddef_resolve(upb_fielddef *f, upb_def *def, upb_status *s) {
       bool success = upb_enumdef_ntoi(e, str, &val);
       free(str);
       if (!success) {
-        upb_status_setf(s, UPB_ERROR, "Default enum value (%s) is not a "
-                                      "member of the enum", str);
+        upb_status_seterrf(
+            s, "Default enum value (%s) is not a member of the enum", str);
         return false;
       }
       upb_value_setint32(&f->defaultval, val);
@@ -668,8 +668,7 @@ bool upb_symtab_add(upb_symtab *s, upb_def **defs, int n, upb_status *status) {
   for (int i = 0; i < n; i++) {
     upb_def *def = defs[i];
     if (upb_strtable_lookup(&addtab, def->fqname)) {
-      upb_status_setf(status, UPB_ERROR,
-                      "Conflicting defs named '%s'", def->fqname);
+      upb_status_seterrf(status, "Conflicting defs named '%s'", def->fqname);
       upb_strtable_free(&addtab);
       return false;
     }
@@ -701,7 +700,7 @@ bool upb_symtab_add(upb_symtab *s, upb_def **defs, int n, upb_status *status) {
     for(j = upb_msg_begin(m); !upb_msg_done(j); j = upb_msg_next(m, j)) {
       upb_fielddef *f = upb_msg_iter_field(j);
       if (f->type == 0) {
-        upb_status_setf(status, UPB_ERROR, "Field type was not set.");
+        upb_status_seterrf(status, "Field type was not set.");
         return false;
       }
 
@@ -739,8 +738,8 @@ bool upb_symtab_add(upb_symtab *s, upb_def **defs, int n, upb_status *status) {
       upb_symtab_ent *found;
       if(!(found = upb_resolve(&addtab, base, name)) &&
          !(found = upb_resolve(symtab, base, name))) {
-        upb_status_setf(status, UPB_ERROR, "could not resolve symbol '%s' "
-                                           "in context '%s'", name, base);
+        upb_status_seterrf(status, "could not resolve symbol '%s' "
+                                   "in context '%s'", name, base);
         return false;
       }
 
@@ -750,7 +749,7 @@ bool upb_symtab_add(upb_symtab *s, upb_def **defs, int n, upb_status *status) {
       //fprintf(stderr, "found->def: %p\n", found->def);
       //fprintf(stderr, "found->def->type: %d\n", found->def->type);
       if(found->def->type != expected) {
-        upb_status_setf(status, UPB_ERROR, "Unexpected type");
+        upb_status_seterrliteral(status, "Unexpected type");
         return false;
       }
       if (!upb_fielddef_resolve(f, found->def, status)) return false;
