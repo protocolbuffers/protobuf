@@ -182,6 +182,7 @@ void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h,
   d->skip = skip;
   d->exit = exit;
   d->srcclosure = srcclosure;
+  d->top_is_implicit = false;
   upb_status_init(&d->status);
 }
 
@@ -191,6 +192,7 @@ upb_dispatcher_frame *upb_dispatcher_reset(upb_dispatcher *d, void *closure) {
   d->top = d->stack;
   d->top->closure = closure;
   d->top->is_sequence = false;
+  d->top->is_packed = false;
   return d->top;
 }
 
@@ -240,6 +242,7 @@ upb_dispatcher_frame *upb_dispatch_startseq(upb_dispatcher *d,
   ++d->top;
   d->top->f = f;
   d->top->is_sequence = true;
+  d->top->is_packed = false;
   d->top->closure = sflow.closure;
   return d->top;
 }
@@ -283,6 +286,7 @@ upb_dispatcher_frame *upb_dispatch_startsubmsg(upb_dispatcher *d,
   ++d->top;
   d->top->f = f;
   d->top->is_sequence = false;
+  d->top->is_packed = false;
   d->top->closure = sflow.closure;
   d->msgent = f->submsg;
   d->dispatch_table = &d->msgent->fieldtab;
@@ -308,6 +312,12 @@ upb_dispatcher_frame *upb_dispatch_endsubmsg(upb_dispatcher *d) {
 
 bool upb_dispatcher_stackempty(upb_dispatcher *d) {
   return d->top == d->stack;
+}
+bool upb_dispatcher_islegalend(upb_dispatcher *d) {
+  if (d->top == d->stack) return true;
+  if (d->top - 1 == d->stack &&
+      d->top->is_sequence && !d->top->is_packed) return true;
+  return false;
 }
 
 void _upb_dispatcher_unwind(upb_dispatcher *d, upb_flow_t flow) {

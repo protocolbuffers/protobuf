@@ -303,6 +303,9 @@ INLINE upb_mhandlers *upb_handlers_reghandlerset(upb_handlers *h, upb_msgdef *m,
 
 /* upb_dispatcher *************************************************************/
 
+// WARNING: upb_dispatcher should be considered INTERNAL-ONLY.  The interface
+// between it and upb_decoder is somewhat tightly coupled and may change.
+//
 // upb_dispatcher can be used by sources of data to invoke the appropriate
 // handlers on a upb_handlers object.  Besides maintaining the runtime stack of
 // closures and handlers, the dispatcher checks the return status of user
@@ -340,6 +343,7 @@ typedef struct {
   upb_skip_handler *skip;
   upb_exit_handler *exit;
   void *srcclosure;
+  bool top_is_implicit;
 
   // Stack.
   upb_status status;
@@ -352,8 +356,9 @@ void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h,
 upb_dispatcher_frame *upb_dispatcher_reset(upb_dispatcher *d, void *topclosure);
 void upb_dispatcher_uninit(upb_dispatcher *d);
 
-// Tests whether the runtime stack is in the base level message.
-bool upb_dispatcher_stackempty(upb_dispatcher *d);
+// Tests whether the message could legally end here (either the stack is empty
+// or the only open stack frame is implicit).
+bool upb_dispatcher_islegalend(upb_dispatcher *d);
 
 // Looks up a field by number for the current message.
 INLINE upb_fhandlers *upb_dispatcher_lookup(upb_dispatcher *d, uint32_t n) {

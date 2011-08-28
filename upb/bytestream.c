@@ -66,12 +66,12 @@ size_t upb_stdio_fetch(void *src, uint64_t ofs, upb_status *s) {
   size_t read = fread(&buf->data, 1, BUF_SIZE, stdio->file);
   if(read < (size_t)BUF_SIZE) {
     // Error or EOF.
-    if(feof(stdio->file)) {
-      upb_status_setf(s, UPB_EOF, "");
-    } else if(ferror(stdio->file)) {
+    if(feof(stdio->file)) return 0;
+    if(ferror(stdio->file)) {
       upb_status_fromerrno(s);
-      return 0;
+      return -1;
     }
+    assert(false);
   }
   buf->len = read;
   return buf->ofs + buf->len;
@@ -190,9 +190,8 @@ upb_bytesink* upb_stdio_bytesink(upb_stdio *stdio) { return &stdio->sink; }
 
 size_t upb_stringsrc_fetch(void *_src, uint64_t ofs, upb_status *s) {
   upb_stringsrc *src = _src;
-  size_t bytes = src->len - ofs;
-  if (bytes == 0) s->code = UPB_EOF;
-  return bytes;
+  (void)s;  // No errors can occur.
+  return src->len - ofs;
 }
 
 void upb_stringsrc_read(void *_src, uint64_t src_ofs, size_t len, char *dst) {

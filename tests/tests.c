@@ -19,6 +19,7 @@ static upb_symtab *load_test_proto() {
   }
   upb_status status = UPB_STATUS_INIT;
   upb_read_descriptor(s, descriptor, len, &status);
+  upb_status_print(&status, stderr);
   ASSERT(upb_ok(&status));
   upb_status_uninit(&status);
   free(descriptor);

@@ -68,18 +68,20 @@ static void upb_decoder_setmsgend(upb_decoder *d) {
   size_t buflen = d->end - d->buf;
   d->delim_end = (f->end_ofs != UPB_NONDELIMITED && delimlen <= buflen) ?
       d->buf + delimlen : NULL;  // NULL if not in this buf.
+  d->top_is_packed = f->is_packed;
 }
 
 static bool upb_trypullbuf(upb_decoder *d) {
   assert(upb_decoder_bufleft(d) == 0);
   if (d->bufend_ofs == d->refend_ofs) {
-    d->refend_ofs += upb_bytesrc_fetch(d->bytesrc, d->refend_ofs, d->status);
-    if (!upb_ok(d->status)) {
+    size_t read = upb_bytesrc_fetch(d->bytesrc, d->refend_ofs, d->status);
+    if (read <= 0) {
       d->ptr = NULL;
       d->end = NULL;
-      if (upb_iseof(d->status)) return false;
+      if (read == 0) return false;  // EOF
       upb_decoder_exit(d);  // Non-EOF error.
     }
+    d->refend_ofs += read;
   }
   d->bufstart_ofs = d->bufend_ofs;
   size_t len;
@@ -150,11 +152,10 @@ done:
 }
 
 FORCEINLINE bool upb_trydecode_varint32(upb_decoder *d, uint32_t *val) {
-  if (upb_decoder_bufleft(d) == 0) {
+  if (upb_decoder_bufleft(d) == 0 && upb_dispatcher_islegalend(&d->dispatcher)) {
     // Check for our two successful end-of-message conditions
     // (user-specified EOM and bytesrc EOF).
-    if (d->bufend_ofs == d->end_ofs) return false;
-    if (!upb_trypullbuf(d)) return false;
+    if (d->bufend_ofs == d->end_ofs || !upb_trypullbuf(d)) return false;
   }
   *val = upb_decode_varint32(d);
   return true;
@@ -195,6 +196,7 @@ FORCEINLINE void upb_decode_fixed(upb_decoder *d, char *buf, size_t bytes) {
       memcpy(buf + read, d->ptr, avail);
       upb_decoder_advance(d, avail);
       read += avail;
+      upb_pullbuf(d);
     }
   }
 }
@@ -232,7 +234,7 @@ INLINE upb_strref *upb_decode_string(upb_decoder *d) {
   return &d->strref;
 }
 
-INLINE void upb_push(upb_decoder *d, upb_fhandlers *f, uint32_t end) {
+INLINE void upb_push(upb_decoder *d, upb_fhandlers *f, uint64_t end) {
   upb_dispatch_startsubmsg(&d->dispatcher, f)->end_ofs = end;
   upb_decoder_setmsgend(d);
 }
@@ -281,7 +283,7 @@ static void upb_endgroup(upb_decoder *d, upb_fhandlers *f) {
   upb_decoder_setmsgend(d);
 }
 static void upb_decode_MESSAGE(upb_decoder *d, upb_fhandlers *f) {
-  upb_push(d, f, upb_decode_varint32(d) + (d->ptr - d->buf));
+  upb_push(d, f, upb_decode_varint32(d) + upb_decoder_offset(d));
 }
 
 
@@ -315,6 +317,7 @@ INLINE upb_fhandlers *upb_decode_tag(upb_decoder *d) {
   while (1) {
     uint32_t tag;
     if (!upb_trydecode_varint32(d, &tag)) return NULL;
+    uint8_t wire_type = tag & 0x7;
     upb_fhandlers *f = upb_dispatcher_lookup(&d->dispatcher, tag);
 
     // There are no explicit "startseq" or "endseq" markers in protobuf
@@ -325,17 +328,24 @@ INLINE upb_fhandlers *upb_decode_tag(upb_decoder *d) {
       upb_decoder_setmsgend(d);
     }
     if (f && f->repeated && d->dispatcher.top->f != f) {
-      // TODO: support packed.
-      assert(upb_issubmsgtype(f->type) || upb_isstringtype(f->type) ||
-             (tag & 0x7) != UPB_WIRE_TYPE_DELIMITED);
-      uint32_t end = d->dispatcher.top->end_ofs;
-      upb_dispatch_startseq(&d->dispatcher, f)->end_ofs = end;
+      uint64_t old_end = d->dispatcher.top->end_ofs;
+      upb_dispatcher_frame *fr = upb_dispatch_startseq(&d->dispatcher, f);
+      if (wire_type != UPB_WIRE_TYPE_DELIMITED ||
+          upb_issubmsgtype(f->type) || upb_isstringtype(f->type)) {
+        // Non-packed field -- this tag pertains to only a single message.
+        fr->end_ofs = old_end;
+      } else {
+        // Packed primitive field.
+        fr->end_ofs = upb_decoder_offset(d) + upb_decode_varint(d);
+        fr->is_packed = true;
+      }
       upb_decoder_setmsgend(d);
     }
+
     if (f) return f;
 
     // Unknown field.
-    switch (tag & 0x7) {
+    switch (wire_type) {
       case UPB_WIRE_TYPE_VARINT:    upb_decode_varint(d); break;
       case UPB_WIRE_TYPE_32BIT:     upb_decoder_advance(d, 4); break;
       case UPB_WIRE_TYPE_64BIT:     upb_decoder_advance(d, 8); break;
@@ -350,34 +360,23 @@ INLINE upb_fhandlers *upb_decode_tag(upb_decoder *d) {
   }
 }
 
-void upb_decoder_onexit(upb_decoder *d) {
-  if (d->dispatcher.top->is_sequence) upb_dispatch_endseq(&d->dispatcher);
-  if (d->status->code == UPB_EOF && upb_dispatcher_stackempty(&d->dispatcher)) {
-    // Normal end-of-file.
-    upb_status_clear(d->status);
-    upb_dispatch_endmsg(&d->dispatcher, d->status);
-  } else {
-    if (d->status->code == UPB_EOF)
-      upb_status_setf(d->status, UPB_ERROR, "Input ended mid-submessage.");
-  }
-}
-
 void upb_decoder_decode(upb_decoder *d, upb_status *status) {
-  if (sigsetjmp(d->exitjmp, 0)) {
-    upb_decoder_onexit(d);
-    return;
-  }
+  if (sigsetjmp(d->exitjmp, 0)) { assert(!upb_ok(status)); return; }
   d->status = status;
   upb_dispatch_startmsg(&d->dispatcher);
   // Prime the buf so we can hit the JIT immediately.
   upb_trypullbuf(d);
+  upb_fhandlers *f = d->dispatcher.top->f;
   while(1) { // Main loop: executed once per tag/field pair.
     upb_decoder_checkdelim(d);
     upb_decoder_enterjit(d);
-    // if (!d->dispatcher.top->is_packed)
-    upb_fhandlers *f = upb_decode_tag(d);
+    if (!d->top_is_packed) f = upb_decode_tag(d);
     if (!f) {
-      upb_decoder_onexit(d);
+      // Sucessful EOF.  We may need to dispatch a top-level implicit frame.
+      if (d->dispatcher.top == d->dispatcher.stack + 1) {
+        assert(d->dispatcher.top->is_sequence);
+        upb_dispatch_endseq(&d->dispatcher);
+      }
       return;
     }
     f->decode(d, f);
