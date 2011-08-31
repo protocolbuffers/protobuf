@@ -262,7 +262,7 @@ static int32_t upb_stringsink_vprintf(void *_s, const char *fmt, va_list args) {
   return ret;
 }
 
-bool upb_stringsink_write(void *_s, const char *buf, size_t len) {
+int upb_stringsink_write(void *_s, const void *buf, int len) {
   // TODO: detect realloc() errors.
   upb_stringsink *s = _s;
   if (s->len + len > s->size) {
@@ -271,7 +271,7 @@ bool upb_stringsink_write(void *_s, const char *buf, size_t len) {
   }
   memcpy(s->str + s->len, buf, len);
   s->len += len;
-  return true;
+  return len;
 }
 
 void upb_stringsink_init(upb_stringsink *s) {

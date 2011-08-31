@@ -89,7 +89,7 @@ typedef enum {
   // Halt processing permanently (in a non-resumable way).  The endmsg handlers
   // for any currently open messages will be called which can supply a more
   // specific status message.  No further input data will be consumed.
-  UPB_BREAK,
+  UPB_BREAK = -1,
 
   // Skips to the end of the current submessage (or if we are at the top
   // level, skips to the end of the entire message).  In other words, it is
@@ -102,7 +102,7 @@ typedef enum {
   //
   // If UPB_SKIPSUBMSG is called from the top-level message, no further input
   // data will be consumed.
-  UPB_SKIPSUBMSG,
+  UPB_SKIPSUBMSG = -2,
 
   // TODO: Add UPB_SUSPEND, for resumable producers/consumers.
 } upb_flow_t;

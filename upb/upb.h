@@ -226,7 +226,7 @@ void upb_status_setcode(upb_status *s, upb_errorspace *space, int code);
 const char *upb_status_getstr(upb_status *s);
 void upb_status_copy(upb_status *to, upb_status *from);
 
-upb_errorspace upb_posix_errorspace;
+extern upb_errorspace upb_posix_errorspace;
 void upb_status_fromerrno(upb_status *status);
 
 // Like vaprintf, but uses *buf (which can be NULL) as a starting point and

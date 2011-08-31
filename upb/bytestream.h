@@ -145,8 +145,8 @@ INLINE void upb_strref_read(struct _upb_strref *r, char *buf) {
 
 /* upb_bytesink ***************************************************************/
 
-typedef bool upb_bytesink_write_func(void*, const char*, size_t);
-typedef int32_t upb_bytesink_vprintf_func(void*, const char *fmt, va_list args);
+typedef int upb_bytesink_write_func(void*, const void*, int);
+typedef int upb_bytesink_vprintf_func(void*, const char *fmt, va_list args);
 
 typedef struct {
   upb_bytesink_write_func   *write;
@@ -156,27 +156,48 @@ typedef struct {
 typedef struct {
   upb_bytesink_vtbl *vtbl;
   upb_status status;
+  uint64_t offset;
 } upb_bytesink;
 
 // Should be called by derived classes.
 void upb_bytesink_init(upb_bytesink *sink, upb_bytesink_vtbl *vtbl);
 void upb_bytesink_uninit(upb_bytesink *sink);
 
-INLINE bool upb_bytesink_write(upb_bytesink *s, const char *buf, size_t len) {
+INLINE int upb_bytesink_write(upb_bytesink *s, const void *buf, int len) {
   return s->vtbl->write(s, buf, len);
 }
 
-INLINE bool upb_bytesink_writestr(upb_bytesink *sink, const char *str) {
+INLINE int upb_bytesink_writestr(upb_bytesink *sink, const char *str) {
   return upb_bytesink_write(sink, str, strlen(str));
 }
 
 // Returns the number of bytes written or -1 on error.
-INLINE int32_t upb_bytesink_printf(upb_bytesink *sink, const char *fmt, ...) {
+INLINE int upb_bytesink_printf(upb_bytesink *sink, const char *fmt, ...) {
   va_list args;
   va_start(args, fmt);
   uint32_t ret = sink->vtbl->vprintf(sink, fmt, args);
   va_end(args);
   return ret;
+}
+
+INLINE int upb_bytesink_putc(upb_bytesink *sink, char ch) {
+  return upb_bytesink_write(sink, &ch, 1);
+}
+
+INLINE int upb_bytesink_putrepeated(upb_bytesink *sink, char ch, int len) {
+  char buf[len];
+  memset(buf, ch, len);
+  return upb_bytesink_write(sink, buf, len);
+}
+
+INLINE uint64_t upb_bytesink_getoffset(upb_bytesink *sink) {
+  return sink->offset;
+}
+
+INLINE void upb_bytesink_rewind(upb_bytesink *sink, uint64_t offset) {
+  // TODO
+  (void)sink;
+  (void)offset;
 }
 
 // OPT: add getappendbuf()

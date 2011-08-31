@@ -71,7 +71,7 @@ deps: Makefile $(ALLSRC)
 	@set -e
 	@rm -f deps
 	@for file in $(ALLSRC); do \
-	  gcc -MM $$file -MT $${file%.*}.o $(CPPFLAGS) -I. >> deps; \
+	  gcc -MM $$file -MT $${file%.*}.o $(CPPFLAGS) -I. >> deps 2> /dev/null; \
 	done
 
 
