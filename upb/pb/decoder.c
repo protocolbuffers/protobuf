@@ -400,7 +400,7 @@ static void upb_decoder_skip(void *_d, upb_dispatcher_frame *top,
 #endif
 }
 
-void upb_decoder_initforhandlers(upb_decoder *d, upb_handlers *handlers) {
+void upb_decoder_init(upb_decoder *d, upb_handlers *handlers) {
   upb_dispatcher_init(
       &d->dispatcher, handlers, upb_decoder_skip, upb_decoder_exit2, d);
 #ifdef UPB_USE_JIT_X64
@@ -421,13 +421,6 @@ void upb_decoder_initforhandlers(upb_decoder *d, upb_handlers *handlers) {
       f->decode = fptrs[f->type];
     }
   }
-}
-
-void upb_decoder_initformsgdef(upb_decoder *d, upb_msgdef *m) {
-  upb_handlers *h = upb_handlers_new();
-  upb_accessors_reghandlers(h, m);
-  upb_decoder_initforhandlers(d, h);
-  upb_handlers_unref(h);
 }
 
 void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc, uint64_t start_ofs,

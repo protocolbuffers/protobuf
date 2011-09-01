@@ -21,8 +21,6 @@ extern "C" {
 
 /* upb_descreader  ************************************************************/
 
-// upb_descreader reads a descriptor and puts defs in a upb_symtabtxn.
-
 // We keep a stack of all the messages scopes we are currently in, as well as
 // the top-level file scope.  This is necessary to correctly qualify the
 // definitions that are contained inside.  "name" tracks the name of the
@@ -50,13 +48,11 @@ typedef struct {
   upb_fielddef *f;
 } upb_descreader;
 
-// Creates a new descriptor builder that will add defs to the given txn.
 void upb_descreader_init(upb_descreader *r);
 void upb_descreader_uninit(upb_descreader *r);
 
-// Registers handlers that will load descriptor data into a symtabtxn.
-// Pass the descreader as the closure.  The messages will have
-// upb_msgdef_layout() called on them before adding to the txn.
+// Registers handlers that will build the defs.  Pass the descreader as the
+// closure.
 upb_mhandlers *upb_descreader_reghandlers(upb_handlers *h);
 
 // Gets the array of defs that have been parsed and removes them from the

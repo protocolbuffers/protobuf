@@ -169,8 +169,8 @@ int main(int argc, char *argv[]) {
   upb_status status = UPB_STATUS_INIT;
   upb_read_descriptor(s, descriptor, len, &status);
   if(!upb_ok(&status)) {
-    upb_status_print(&status, stderr);
-    error("Failed to parse input file descriptor\n");
+    error("Failed to parse input file descriptor: %s\n",
+          upb_status_getstr(&status));
   }
   upb_status_uninit(&status);
 

@@ -10,6 +10,7 @@
  * can get the data from a fd, a string, a cord, etc.
  *
  * Byte streams are NOT thread-safe!  (Like f{read,write}_unlocked())
+ * This may change (in particular, bytesrc objects may be better thread-safe).
  */
 
 #ifndef UPB_BYTESTREAM_H
@@ -28,7 +29,12 @@ extern "C" {
 /* upb_bytesrc ****************************************************************/
 
 // A upb_bytesrc allows the consumer of a stream of bytes to obtain buffers as
-// they become available, and to preserve some trailing amount of data.
+// they become available, and to preserve some trailing amount of data, which
+// is useful for lazy parsing (among other things).  If there is a submessage
+// that we want to parse later we can take a reference on that region of the
+// input buffer.  This will guarantee that the bytesrc keeps the submessage
+// data around for later use, without requiring a copy out of the input
+// buffers.
 typedef size_t upb_bytesrc_fetch_func(void*, uint64_t, upb_status*);
 typedef void upb_bytesrc_read_func(void*, uint64_t, size_t, char*);
 typedef const char *upb_bytesrc_getptr_func(void*, uint64_t, size_t*);
@@ -53,10 +59,15 @@ INLINE void upb_bytesrc_init(upb_bytesrc *src, upb_bytesrc_vtbl *vtbl) {
 }
 
 // Fetches at least one byte starting at ofs, returning the actual number of
-// bytes fetched (or 0 on error: see "s" for details).  Gives caller a ref on
-// the fetched region.  It is safe to re-fetch existing regions but only if
-// they are ref'd.  "ofs" may not greater than the end of the region that was
-// previously fetched.
+// bytes fetched (or 0 on error: see "s" for details).  A successful return
+// gives caller a ref on the fetched region.
+//
+// If "ofs" may be greater or equal than the end of the already-fetched region.
+// It may also be less than the end of the already-fetch region *if* either of
+// the following is true:
+//
+// * the region is ref'd (this implies that the data is still in-memory)
+// * the bytesrc is seekable (this implies that the data can be fetched again).
 INLINE size_t upb_bytesrc_fetch(upb_bytesrc *src, uint64_t ofs, upb_status *s) {
   return src->vtbl->fetch(src, ofs, s);
 }
@@ -68,20 +79,21 @@ INLINE void upb_bytesrc_read(upb_bytesrc *src, uint64_t src_ofs, size_t len,
   src->vtbl->read(src, src_ofs, len, dst);
 }
 
-// Returns a pointer to the bytesrc's internal buffer, returning how much data
-// was actually returned (which may be less than "len" if the given region is
-// not contiguous).  The caller must own refs on the entire region from [ofs,
-// ofs+len].  The returned buffer is valid for as long as the region remains
-// ref'd.
+// Returns a pointer to the bytesrc's internal buffer, storing in *len how much
+// data is available.  The caller must own refs on the given region.  The
+// returned buffer is valid for as long as the region remains ref'd.
 //
-// TODO: is "len" really required here?
+// TODO: if more data is available than the caller has ref'd is it ok for the
+// caller to read *len bytes?
 INLINE const char *upb_bytesrc_getptr(upb_bytesrc *src, uint64_t ofs,
                                       size_t *len) {
   return src->vtbl->getptr(src, ofs, len);
 }
 
 // Gives the caller a ref on the given region.  The caller must know that the
-// given region is already ref'd.
+// given region is already ref'd (for example, inside a upb_handlers callback
+// that receives a upb_strref, the region is guaranteed to be ref'd -- this
+// function allows that handler to take its own ref).
 INLINE void upb_bytesrc_refregion(upb_bytesrc *src, uint64_t ofs, size_t len) {
   src->vtbl->refregion(src, ofs, len);
 }
@@ -110,16 +122,17 @@ INLINE void upb_bytesrc_unref(upb_bytesrc *src) {
   src->vtbl->unref(src);
 }
 
+
 /* upb_strref *****************************************************************/
 
-// The structure we pass for a string.
+// The structure we pass to upb_handlers for a string value.
 typedef struct _upb_strref {
   // Pointer to the string data.  NULL if the string spans multiple input
   // buffers (in which case upb_bytesrc_getptr() must be called to obtain
   // the actual pointers).
   const char *ptr;
 
-  // Length of the string.
+  // Total length of the string.
   uint32_t len;
 
   // Offset in the bytesrc that represents the beginning of this string.
@@ -139,12 +152,21 @@ typedef struct _upb_strref {
 char *upb_strref_dup(struct _upb_strref *r);
 
 INLINE void upb_strref_read(struct _upb_strref *r, char *buf) {
-  upb_bytesrc_read(r->bytesrc, r->stream_offset, r->len, buf);
+  if (r->ptr) {
+    memcpy(buf, r->ptr, r->len);
+  } else {
+    assert(r->bytesrc);
+    upb_bytesrc_read(r->bytesrc, r->stream_offset, r->len, buf);
+  }
 }
 
 
 /* upb_bytesink ***************************************************************/
 
+// A bytesink is an interface that allows the caller to push byte-wise data.
+// It is very simple -- the only special capability is the ability to "rewind"
+// the stream, which is really only a mechanism of having the bytesink ignore
+// some subsequent calls.
 typedef int upb_bytesink_write_func(void*, const void*, int);
 typedef int upb_bytesink_vprintf_func(void*, const char *fmt, va_list args);
 
@@ -194,6 +216,22 @@ INLINE uint64_t upb_bytesink_getoffset(upb_bytesink *sink) {
   return sink->offset;
 }
 
+// Rewinds the stream to the given offset.  This cannot actually "unput" any
+// data, it is for situations like:
+//
+// // If false is returned (because of error), call again later to resume.
+// bool write_some_data(upb_bytesink *sink, int indent) {
+//   uint64_t start_offset = upb_bytesink_getoffset(sink);
+//   if (upb_bytesink_writestr(sink, "Some data") < 0) goto err;
+//   if (upb_bytesink_putrepeated(sink, ' ', indent) < 0) goto err;
+//   return true;
+//  err:
+//   upb_bytesink_rewind(sink, start_offset);
+//   return false;
+// }
+//
+// The subsequent bytesink writes *must* be identical to the writes that were
+// rewinded past.
 INLINE void upb_bytesink_rewind(upb_bytesink *sink, uint64_t offset) {
   // TODO
   (void)sink;

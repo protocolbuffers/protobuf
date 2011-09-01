@@ -123,11 +123,11 @@ INLINE const char *upb_fielddef_typename(upb_fielddef *f) {
   return f->def ? f->def->fqname : NULL;
 }
 
-// Only meaningful once the def is in a symtab (returns NULL otherwise, or for
-// a fielddef where !upb_hassubdef(f)).
+// The enum or submessage def for this field, if any.  Only meaningful for
+// submessage, group, and enum fields (ie. when upb_hassubdef(f) is true).
+// Since defs are not linked together until they are in a symtab, this
+// will return NULL until the msgdef is in a symtab.
 upb_def *upb_fielddef_subdef(upb_fielddef *f);
-
-// NULL until the fielddef has been added to a msgdef.
 
 // Write accessors.  "Number" and "name" must be set before the fielddef is
 // added to a msgdef.  For the moment we do not allow these to be set once
@@ -214,11 +214,12 @@ void upb_msgdef_setsize(upb_msgdef *m, uint16_t size);
 void upb_msgdef_sethasbit_bytes(upb_msgdef *m, uint16_t bytes);
 bool upb_msgdef_setextrange(upb_msgdef *m, uint32_t start, uint32_t end);
 
-// Adds a fielddef to a msgdef.  Caller retains its ref on the fielddef.
-// May only be done before the msgdef is in a symtab.  The fielddef's name and
-// number must be set, and the message may not already contain any field with
-// this name or number, and this fielddef may not be part of another message,
-// otherwise false is returned and no action is performed.
+// Adds a fielddef to a msgdef.  Caller retains its ref on the fielddef.  May
+// only be done before the msgdef is in a symtab (requires upb_def_ismutable(m)
+// for the msgdef).  The fielddef's name and number must be set, and the
+// message may not already contain any field with this name or number, and this
+// fielddef may not be part of another message, otherwise false is returned and
+// no action is performed.
 bool upb_msgdef_addfields(upb_msgdef *m, upb_fielddef **f, int n);
 INLINE bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f) {
   return upb_msgdef_addfields(m, &f, 1);
@@ -252,6 +253,7 @@ INLINE int upb_msgdef_numfields(upb_msgdef *m) {
 }
 
 // Iteration over fields.  The order is undefined.
+// TODO: the iteration should be in field order.
 // Iterators are invalidated when a field is added or removed.
 //   upb_msg_iter i;
 //   for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
@@ -296,7 +298,7 @@ upb_enumdef *upb_enumdef_dup(upb_enumdef *e);
 
 INLINE int32_t upb_enumdef_default(upb_enumdef *e) { return e->defaultval; }
 
-// May only be set before the enumdef is in a symtab.
+// May only be set if upb_def_ismutable(e).
 void upb_enumdef_setdefault(upb_enumdef *e, int32_t val);
 
 // Adds a value to the enumdef.  Requires that no existing val has this
@@ -334,30 +336,12 @@ INLINE int32_t upb_enum_iter_number(upb_enum_iter iter) {
 
 /* upb_symtab *****************************************************************/
 
-// A SymbolTable is where upb_defs live.  It is empty when first constructed.
-// Clients add definitions to the symtab (or replace existing definitions) by
-// using a upb_symtab_commit() or calling upb_symtab_add().
-
-// upb_deflist: A little dynamic array for storing a growing list of upb_defs.
-typedef struct {
-  upb_def **defs;
-  uint32_t len;
-  uint32_t size;
-} upb_deflist;
-
-void upb_deflist_init(upb_deflist *l);
-void upb_deflist_uninit(upb_deflist *l);
-void upb_deflist_push(upb_deflist *l, upb_def *d);
-
-struct _upb_symtab {
-  upb_atomic_t refcount;
-  upb_rwlock_t lock;       // Protects all members except the refcount.
-  upb_strtable symtab;     // The symbol table.
-  upb_deflist olddefs;
-};
+// A symtab (symbol table) is where upb_defs live.  It is empty when first
+// constructed.  Clients add definitions to the symtab (or replace existing
+// definitions) by calling upb_symtab_add().
 
 upb_symtab *upb_symtab_new(void);
-INLINE void upb_symtab_ref(upb_symtab *s) { upb_atomic_ref(&s->refcount); }
+void upb_symtab_ref(upb_symtab *s);
 void upb_symtab_unref(upb_symtab *s);
 
 // Resolves the given symbol using the rules described in descriptor.proto,
@@ -426,6 +410,21 @@ UPB_DOWNCAST_DEF(enumdef, ENUM);
 UPB_DOWNCAST_DEF(svcdef, SERVICE);
 UPB_DOWNCAST_DEF(unresolveddef, UNRESOLVED);
 #undef UPB_DOWNCAST_DEF
+
+
+/* upb_deflist ****************************************************************/
+
+// upb_deflist is an internal-only dynamic array for storing a growing list of
+// upb_defs.
+typedef struct {
+  upb_def **defs;
+  uint32_t len;
+  uint32_t size;
+} upb_deflist;
+
+void upb_deflist_init(upb_deflist *l);
+void upb_deflist_uninit(upb_deflist *l);
+void upb_deflist_push(upb_deflist *l, upb_def *d);
 
 #ifdef __cplusplus
 }  /* extern "C" */

@@ -179,6 +179,8 @@ descriptorgen: upb/descriptor.pb tools/upbc
 	./tools/upbc -o upb/descriptor upb/descriptor.pb
 
 tools/upbc: tools/upbc.c $(LIBUPB)
+	$(E) CC $<
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) $(DEF_OPT) -o $@ $< $(LIBUPB)
 
 # Tests. #######################################################################
 

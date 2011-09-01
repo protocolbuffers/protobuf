@@ -279,7 +279,7 @@ static bool initialize()
   upb_handlers *h = upb_handlers_new();
   upb_accessors_reghandlers(h, def);
   if (!JIT) h->should_jit = false;
-  upb_decoder_initforhandlers(&d, h);
+  upb_decoder_init(&d, h);
   upb_handlers_unref(h);
 
   return true;

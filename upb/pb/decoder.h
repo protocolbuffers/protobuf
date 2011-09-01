@@ -5,13 +5,8 @@
  * Author: Josh Haberman <jhaberman@gmail.com>
  *
  * upb_decoder implements a high performance, streaming decoder for protobuf
- * data that works by implementing upb_src and getting its data from a
- * upb_bytesrc.
- *
- * The decoder does not currently support non-blocking I/O, in the sense that
- * if the bytesrc returns UPB_STATUS_TRYAGAIN it is not possible to resume the
- * decoder when data becomes available again.  Support for this could be added,
- * but it would add complexity and perhaps cost efficiency also.
+ * data that works by getting its input data from a upb_bytesrc and calling
+ * into a upb_handlers.
  */
 
 #ifndef UPB_DECODER_H_
@@ -36,18 +31,18 @@ typedef struct _upb_decoder {
   upb_status *status;         // Where we will store any errors that occur.
   upb_strref strref;          // For passing string data to callbacks.
 
-  // Offsets for the region we currently have ref'd.
+  // Offsets for the bytesrc region we currently have ref'd.
   uint64_t refstart_ofs, refend_ofs;
 
-  // Current buffer and its stream offset.
+  // Current input buffer and its stream offset.
   const char *buf, *ptr, *end;
   uint64_t bufstart_ofs, bufend_ofs;
 
   // Stream offset for the end of the top-level message, if any.
   uint64_t end_ofs;
 
-  // Buf offset as of which we've delivered calbacks; needed for rollback on
-  // UPB_TRYAGAIN (or in the future, UPB_SUSPEND).
+  // Buf offset as of which we've delivered calbacks; needed for rollback if
+  // a callback returns UPB_BREAK.
   const char *completed_ptr;
 
   // End of the delimited region, relative to ptr, or NULL if not in this buf.
@@ -66,6 +61,7 @@ typedef struct _upb_decoder {
   struct dasm_State *dynasm;
 #endif
 
+  // For exiting the decoder on error.
   sigjmp_buf exitjmp;
 } upb_decoder;
 
@@ -75,14 +71,8 @@ typedef struct _upb_decoder {
 
 // Initializes/uninitializes a decoder for calling into the given handlers
 // or to write into the given msgdef, given its accessors).  Takes a ref
-// on the handlers or msgdef.
-void upb_decoder_initforhandlers(upb_decoder *d, upb_handlers *h);
-
-// Equivalent to:
-//   upb_accessors_reghandlers(m, h);
-//   upb_decoder_initforhandlers(d, h);
-// except possibly more efficient, by using cached state in the msgdef.
-void upb_decoder_initformsgdef(upb_decoder *d, upb_msgdef *m);
+// on the handlers.
+void upb_decoder_init(upb_decoder *d, upb_handlers *h);
 void upb_decoder_uninit(upb_decoder *d);
 
 // Resets the internal state of an already-allocated decoder.  This puts it in a

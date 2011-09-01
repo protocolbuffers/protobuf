@@ -57,7 +57,7 @@ static bool initialize()
   // Cause all messages to be read, but do nothing when they are.
   upb_handlerset hset = {NULL, NULL, value, startsubmsg, NULL, NULL, NULL};
   upb_handlers_reghandlerset(handlers, def, &hset);
-  upb_decoder_initforhandlers(&decoder, handlers);
+  upb_decoder_init(&decoder, handlers);
   upb_handlers_unref(handlers);
   upb_stringsrc_init(&stringsrc);
   return true;

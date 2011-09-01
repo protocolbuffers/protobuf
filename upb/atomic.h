@@ -7,7 +7,7 @@
  * Only a very small part of upb is thread-safe.  Notably, individual
  * messages, arrays, and strings are *not* thread safe for mutating.
  * However, we do make message *metadata* such as upb_msgdef and
- * upb_context thread-safe, and their ownership is tracked via atomic
+ * upb_symtab thread-safe, and their ownership is tracked via atomic
  * refcounting.  This header implements the small number of atomic
  * primitives required to support this.  The primitives we implement
  * are:

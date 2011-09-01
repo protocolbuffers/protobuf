@@ -19,7 +19,10 @@ void upb_strtomsg(const char *str, size_t len, void *msg, upb_msgdef *md,
   upb_stringsrc_reset(&strsrc, str, len);
 
   upb_decoder d;
-  upb_decoder_initformsgdef(&d, md);
+  upb_handlers *h = upb_handlers_new();
+  upb_accessors_reghandlers(h, md);
+  upb_decoder_init(&d, h);
+  upb_handlers_unref(h);
   upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), 0, UINT64_MAX, msg);
   upb_decoder_decode(&d, status);
 
@@ -63,7 +66,7 @@ upb_def **upb_load_descriptor(const char *str, size_t len, int *n,
   upb_descreader_reghandlers(h);
 
   upb_decoder d;
-  upb_decoder_initforhandlers(&d, h);
+  upb_decoder_init(&d, h);
   upb_handlers_unref(h);
   upb_descreader r;
   upb_descreader_init(&r);

@@ -29,10 +29,6 @@ static char *upb_join(char *base, char *name) {
 
 /* upb_descreader  ************************************************************/
 
-// A upb_descreader builds a list of defs by handling a parse of a protobuf in
-// the format defined in descriptor.proto.  The output of a upb_descreader is
-// a upb_symtabtxn.
-
 static upb_def *upb_deflist_last(upb_deflist *l) {
   return l->defs[l->len-1];
 }
@@ -480,8 +476,6 @@ static void upb_msgdef_endmsg(void *_r, upb_status *status) {
     upb_status_seterrliteral(status, "Encountered message with no name.");
     return;
   }
-
-  upb_msgdef_layout(m);
   upb_descreader_endcontainer(r);
 }
 

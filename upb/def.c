@@ -523,6 +523,13 @@ upb_msg_iter upb_msg_next(upb_msgdef *m, upb_msg_iter iter) {
 
 /* upb_symtab *****************************************************************/
 
+struct _upb_symtab {
+  upb_atomic_t refcount;
+  upb_rwlock_t lock;       // Protects all members except the refcount.
+  upb_strtable symtab;     // The symbol table.
+  upb_deflist olddefs;
+};
+
 typedef struct {
   upb_def *def;
 } upb_symtab_ent;
@@ -567,6 +574,8 @@ static void upb_symtab_free(upb_symtab *s) {
   upb_deflist_uninit(&s->olddefs);
   free(s);
 }
+
+void upb_symtab_ref(upb_symtab *s) { upb_atomic_ref(&s->refcount); }
 
 void upb_symtab_unref(upb_symtab *s) {
   if(s && upb_atomic_unref(&s->refcount)) {
