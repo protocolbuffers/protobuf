@@ -14,6 +14,9 @@
  *
  * - a reader/writer lock (wrappers around platform-provided mutexes).
  * - an atomic refcount.
+ *
+ * TODO: This needs some revisiting/refinement, see:
+ *       http://code.google.com/p/upb/issues/detail?id=8
  */
 
 #ifndef UPB_ATOMIC_H_
