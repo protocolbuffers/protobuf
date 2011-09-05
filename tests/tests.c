@@ -1,4 +1,5 @@
 
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,17 +12,12 @@
 static upb_symtab *load_test_proto() {
   upb_symtab *s = upb_symtab_new();
   ASSERT(s);
-  size_t len;
-  char *descriptor = upb_readfile("tests/test.proto.pb", &len);
-  if(!descriptor) {
-    fprintf(stderr, "Couldn't read input file tests/test.proto.pb\n");
+  upb_status status = UPB_STATUS_INIT;
+  if (!upb_load_descriptor_file_into_symtab(s, "tests/test.proto.pb", &status)) {
+    fprintf(stderr, "Error loading descriptor file: %s\n", upb_status_getstr(&status));
     exit(1);
   }
-  upb_status status = UPB_STATUS_INIT;
-  upb_read_descriptor(s, descriptor, len, &status);
-  ASSERT(upb_ok(&status));
   upb_status_uninit(&status);
-  free(descriptor);
   return s;
 }
 
@@ -34,12 +30,12 @@ static upb_flow_t upb_test_onvalue(void *closure, upb_value fval, upb_value val)
 
 static void test_upb_jit() {
   upb_symtab *s = load_test_proto();
-  upb_def *def = upb_symtab_lookup(s, "SimplePrimitives");
+  const upb_def *def = upb_symtab_lookup(s, "SimplePrimitives");
   ASSERT(def);
 
   upb_handlers *h = upb_handlers_new();
   upb_handlerset hset = {NULL, NULL, &upb_test_onvalue, NULL, NULL, NULL, NULL};
-  upb_handlers_reghandlerset(h, upb_downcast_msgdef(def), &hset);
+  upb_handlers_reghandlerset(h, upb_downcast_msgdef_const(def), &hset);
   upb_decoder d;
   upb_decoder_init(&d, h);
   upb_decoder_uninit(&d);
@@ -53,10 +49,10 @@ static void test_upb_symtab() {
 
   // Test cycle detection by making a cyclic def's main refcount go to zero
   // and then be incremented to one again.
-  upb_def *def = upb_symtab_lookup(s, "A");
+  const upb_def *def = upb_symtab_lookup(s, "A");
   ASSERT(def);
   upb_symtab_unref(s);
-  upb_msgdef *m = upb_downcast_msgdef(def);
+  const upb_msgdef *m = upb_downcast_msgdef_const(def);
   upb_msg_iter i = upb_msg_begin(m);
   upb_fielddef *f = upb_msg_iter_field(i);
   ASSERT(upb_hassubdef(f));

@@ -130,11 +130,11 @@ INLINE bool upb_atomic_only(upb_atomic_t *a) {
 typedef struct {
 } upb_rwlock_t;
 
-INLINE void upb_rwlock_init(upb_rwlock_t *l) { (void)l; }
-INLINE void upb_rwlock_destroy(upb_rwlock_t *l) { (void)l; }
-INLINE void upb_rwlock_rdlock(upb_rwlock_t *l) { (void)l; }
-INLINE void upb_rwlock_wrlock(upb_rwlock_t *l) { (void)l; }
-INLINE void upb_rwlock_unlock(upb_rwlock_t *l) { (void)l; }
+INLINE void upb_rwlock_init(const upb_rwlock_t *l) { (void)l; }
+INLINE void upb_rwlock_destroy(const upb_rwlock_t *l) { (void)l; }
+INLINE void upb_rwlock_rdlock(const upb_rwlock_t *l) { (void)l; }
+INLINE void upb_rwlock_wrlock(const upb_rwlock_t *l) { (void)l; }
+INLINE void upb_rwlock_unlock(const upb_rwlock_t *l) { (void)l; }
 
 #elif defined(UPB_USE_PTHREADS)
 
@@ -144,27 +144,27 @@ typedef struct {
   pthread_rwlock_t lock;
 } upb_rwlock_t;
 
-INLINE void upb_rwlock_init(upb_rwlock_t *l) {
+INLINE void upb_rwlock_init(const upb_rwlock_t *l) {
   /* TODO: check return value. */
   pthread_rwlock_init(&l->lock, NULL);
 }
 
-INLINE void upb_rwlock_destroy(upb_rwlock_t *l) {
+INLINE void upb_rwlock_destroy(const upb_rwlock_t *l) {
   /* TODO: check return value. */
   pthread_rwlock_destroy(&l->lock);
 }
 
-INLINE void upb_rwlock_rdlock(upb_rwlock_t *l) {
+INLINE void upb_rwlock_rdlock(const upb_rwlock_t *l) {
   /* TODO: check return value. */
   pthread_rwlock_rdlock(&l->lock);
 }
 
-INLINE void upb_rwlock_wrlock(upb_rwlock_t *l) {
+INLINE void upb_rwlock_wrlock(const upb_rwlock_t *l) {
   /* TODO: check return value. */
   pthread_rwlock_wrlock(&l->lock);
 }
 
-INLINE void upb_rwlock_unlock(upb_rwlock_t *l) {
+INLINE void upb_rwlock_unlock(const upb_rwlock_t *l) {
   /* TODO: check return value. */
   pthread_rwlock_unlock(&l->lock);
 }

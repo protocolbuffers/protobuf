@@ -42,20 +42,29 @@ struct _upb_symtab;
 // Decodes the given string, which must be in protobuf binary format, to the
 // given upb_msg with msgdef "md", storing the status of the operation in "s".
 void upb_strtomsg(const char *str, size_t len, void *msg,
-                  struct _upb_msgdef *md, upb_status *s);
+                  const struct _upb_msgdef *md, upb_status *s);
 
 //void upb_msgtotext(struct _upb_string *str, void *msg,
 //                   struct _upb_msgdef *md, bool single_line);
 
-upb_def **upb_load_descriptor(const char *str, size_t len, int *n,
-                              upb_status *status);
 
-void upb_read_descriptor(struct _upb_symtab *symtab, const char *str, size_t len,
-                         upb_status *status);
+// Loads all defs from the given protobuf binary descriptor, setting default
+// accessors and a default layout on all messages.  The caller owns the
+// returned array of defs, which will be of length *n.  On error NULL is
+// returned and status is set (if non-NULL).
+upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
+                                        upb_status *status);
 
-void upb_read_descriptorfile(struct _upb_symtab *symtab, const char *fname,
-                             upb_status *status);
+// Like the previous but also adds the loaded defs to the given symtab.
+bool upb_load_descriptor_into_symtab(struct _upb_symtab *symtab, const char *str,
+                                     size_t len, upb_status *status);
 
+// Like the previous but also reads the descriptor from the given filename.
+bool upb_load_descriptor_file_into_symtab(struct _upb_symtab *symtab,
+                                          const char *fname, upb_status *status);
+
+// Reads the given filename into a character string, returning NULL if there
+// was an error.
 char *upb_readfile(const char *filename, size_t *len);
 
 #ifdef __cplusplus

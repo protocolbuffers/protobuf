@@ -36,8 +36,8 @@ static void to_preproc(char *str) {
 
 /* The _const.h file defines the constants (enums) defined in the .proto
  * file. */
-static void write_const_h(upb_def *defs[], int num_entries, char *outfile_name,
-                          FILE *stream) {
+static void write_const_h(const upb_def *defs[], int num_entries,
+                          char *outfile_name, FILE *stream) {
   /* Header file prologue. */
   char *include_guard_name = strdup(outfile_name);
   to_preproc(include_guard_name);
@@ -54,7 +54,7 @@ static void write_const_h(upb_def *defs[], int num_entries, char *outfile_name,
   fprintf(stream, "/* Enums. */\n\n");
   for(int i = 0; i < num_entries; i++) {  /* Foreach enum */
     if(defs[i]->type != UPB_DEF_ENUM) continue;
-    upb_enumdef *enumdef = upb_downcast_enumdef(defs[i]);
+    const upb_enumdef *enumdef = upb_downcast_enumdef_const(defs[i]);
     char *enum_name = strdup(upb_def_fqname(UPB_UPCAST(enumdef)));
     char *enum_val_prefix = strdup(enum_name);
     to_cident(enum_name);
@@ -83,7 +83,7 @@ static void write_const_h(upb_def *defs[], int num_entries, char *outfile_name,
   /* Constants for field names and numbers. */
   fprintf(stream, "/* Constants for field names and numbers. */\n\n");
   for(int i = 0; i < num_entries; i++) {  /* Foreach enum */
-    upb_msgdef *m = upb_dyncast_msgdef(defs[i]);
+    const upb_msgdef *m = upb_dyncast_msgdef_const(defs[i]);
     if(!m) continue;
     char *msg_name = strdup(upb_def_fqname(UPB_UPCAST(m)));
     char *msg_val_prefix = strdup(msg_name);
@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
   // importing descriptor.proto.
   upb_symtab *s = upb_symtab_new();
   upb_status status = UPB_STATUS_INIT;
-  upb_read_descriptor(s, descriptor, len, &status);
+  upb_load_descriptor_into_symtab(s, descriptor, len, &status);
   if(!upb_ok(&status)) {
     error("Failed to parse input file descriptor: %s\n",
           upb_status_getstr(&status));
@@ -184,7 +184,7 @@ int main(int argc, char *argv[]) {
   if(!h_const_file) error("Failed to open _const.h output file\n");
 
   int symcount;
-  upb_def **defs = upb_symtab_getdefs(s, &symcount, UPB_DEF_ANY);
+  const upb_def **defs = upb_symtab_getdefs(s, &symcount, UPB_DEF_ANY);
   write_const_h(defs, symcount, h_const_filename, h_const_file);
   for (int i = 0; i < symcount; i++) upb_def_unref(defs[i]);
   free(defs);

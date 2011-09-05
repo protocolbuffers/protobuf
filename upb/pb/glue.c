@@ -12,7 +12,7 @@
 #include "upb/pb/glue.h"
 #include "upb/pb/textprinter.h"
 
-void upb_strtomsg(const char *str, size_t len, void *msg, upb_msgdef *md,
+void upb_strtomsg(const char *str, size_t len, void *msg, const upb_msgdef *md,
                   upb_status *status) {
   upb_stringsrc strsrc;
   upb_stringsrc_init(&strsrc);
@@ -56,8 +56,8 @@ void upb_msgtotext(upb_string *str, upb_msg *msg, upb_msgdef *md,
 #endif
 
 // TODO: read->load.
-upb_def **upb_load_descriptor(const char *str, size_t len, int *n,
-                              upb_status *status) {
+upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
+                                        upb_status *status) {
   upb_stringsrc strsrc;
   upb_stringsrc_init(&strsrc);
   upb_stringsrc_reset(&strsrc, str, len);
@@ -98,13 +98,15 @@ upb_def **upb_load_descriptor(const char *str, size_t len, int *n,
   return defscopy;
 }
 
-void upb_read_descriptor(upb_symtab *s, const char *str, size_t len,
-                         upb_status *status) {
+bool upb_load_descriptor_into_symtab(upb_symtab *s, const char *str, size_t len,
+                                     upb_status *status) {
   int n;
-  upb_def **defs = upb_load_descriptor(str, len, &n, status);
-  if (upb_ok(status)) upb_symtab_add(s, defs, n, status);
+  upb_def **defs = upb_load_defs_from_descriptor(str, len, &n, status);
+  if (!defs) return false;
+  bool success = upb_symtab_add(s, defs, n, status);
   for(int i = 0; i < n; i++) upb_def_unref(defs[i]);
   free(defs);
+  return success;
 }
 
 char *upb_readfile(const char *filename, size_t *len) {
@@ -125,14 +127,15 @@ error:
   return NULL;
 }
 
-void upb_read_descriptorfile(upb_symtab *symtab, const char *fname,
-                             upb_status *status) {
+bool upb_load_descriptor_file_into_symtab(upb_symtab *symtab, const char *fname,
+                                          upb_status *status) {
   size_t len;
   char *data = upb_readfile(fname, &len);
   if (!data) {
-    upb_status_seterrf(status, "Couldn't read file: %s", fname);
-    return;
+    if (status) upb_status_seterrf(status, "Couldn't read file: %s", fname);
+    return false;
   }
-  upb_read_descriptor(symtab, data, len, status);
+  bool success = upb_load_descriptor_into_symtab(symtab, data, len, status);
   free(data);
+  return success;
 }

@@ -14,7 +14,7 @@
 // We can make this configurable if necessary.
 #define BUF_SIZE 32768
 
-char *upb_strref_dup(struct _upb_strref *r) {
+char *upb_strref_dup(const struct _upb_strref *r) {
   char *ret = (char*)malloc(r->len + 1);
   upb_bytesrc_read(r->bytesrc, r->stream_offset, r->len, ret);
   ret[r->len] = '\0';
@@ -38,7 +38,7 @@ int upb_stdio_cmpbuf(const void *_key, const void *_elem) {
   return (*ofs / BUF_SIZE) - (buf->ofs / BUF_SIZE);
 }
 
-static upb_stdio_buf *upb_stdio_findbuf(upb_stdio *s, uint64_t ofs) {
+static upb_stdio_buf *upb_stdio_findbuf(const upb_stdio *s, uint64_t ofs) {
   // TODO: it is probably faster to linear search short lists, and to
   // special-case the last one or two bufs.
   return bsearch(&ofs, s->bufs, s->nbuf, sizeof(*s->bufs), &upb_stdio_cmpbuf);
@@ -86,7 +86,7 @@ size_t upb_stdio_fetch(void *src, uint64_t ofs, upb_status *s) {
   return buf->ofs + buf->len;
 }
 
-void upb_stdio_read(void *src, uint64_t src_ofs, size_t len, char *dst) {
+void upb_stdio_read(const void *src, uint64_t src_ofs, size_t len, char *dst) {
   upb_stdio_buf *buf = upb_stdio_findbuf(src, src_ofs);
   src_ofs -= buf->ofs;
   memcpy(dst, &buf->data[src_ofs], BUF_SIZE - src_ofs);
@@ -203,8 +203,9 @@ size_t upb_stringsrc_fetch(void *_src, uint64_t ofs, upb_status *s) {
   return src->len - ofs;
 }
 
-void upb_stringsrc_read(void *_src, uint64_t src_ofs, size_t len, char *dst) {
-  upb_stringsrc *src = _src;
+void upb_stringsrc_read(const void *_src, uint64_t src_ofs,
+                        size_t len, char *dst) {
+  const upb_stringsrc *src = _src;
   memcpy(dst, src->str + src_ofs, len);
 }
 

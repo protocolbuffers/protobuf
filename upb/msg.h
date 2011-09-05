@@ -69,7 +69,7 @@ typedef struct _upb_accessor_vtbl {
 } upb_accessor_vtbl;
 
 // Registers handlers for writing into a message of the given type.
-upb_mhandlers *upb_accessors_reghandlers(upb_handlers *h, upb_msgdef *m);
+upb_mhandlers *upb_accessors_reghandlers(upb_handlers *h, const upb_msgdef *m);
 
 // Returns an stdmsg accessor for the given fielddef.
 upb_accessor_vtbl *upb_stdmsg_accessor(upb_fielddef *f);
@@ -85,9 +85,9 @@ upb_accessor_vtbl *upb_stdmsg_accessor(upb_fielddef *f);
 // Clears all hasbits.
 // TODO: Add a separate function for setting primitive values back to their
 // defaults (but not strings, submessages, or arrays).
-void upb_msg_clear(void *msg, upb_msgdef *md);
+void upb_msg_clear(void *msg, const upb_msgdef *md);
 
-INLINE void upb_msg_clearbit(void *msg, upb_fielddef *f) {
+INLINE void upb_msg_clearbit(void *msg, const upb_fielddef *f) {
   ((char*)msg)[f->hasbit / 8] &= ~(1 << (f->hasbit % 8));
 }
 
@@ -97,37 +97,37 @@ INLINE void upb_msg_clearbit(void *msg, upb_fielddef *f) {
 // or arrays.  Also this could be desired to provide proto2 operations on
 // generated messages.
 
-INLINE bool upb_msg_has(void *m, upb_fielddef *f) {
+INLINE bool upb_msg_has(void *m, const upb_fielddef *f) {
   return f->accessor && f->accessor->has(m, f->fval);
 }
 
 // May only be called for fields that have accessors.
-INLINE upb_value upb_msg_get(void *m, upb_fielddef *f) {
+INLINE upb_value upb_msg_get(void *m, const upb_fielddef *f) {
   assert(f->accessor && !upb_isseq(f));
   return f->accessor->get(m, f->fval);
 }
 
 // May only be called for fields that have accessors.
-INLINE upb_value upb_msg_getseq(void *m, upb_fielddef *f) {
+INLINE upb_value upb_msg_getseq(void *m, const upb_fielddef *f) {
   assert(f->accessor && upb_isseq(f));
   return f->accessor->getseq(m, f->fval);
 }
 
-INLINE void upb_msg_set(void *m, upb_fielddef *f, upb_value val) {
+INLINE void upb_msg_set(void *m, const upb_fielddef *f, upb_value val) {
   assert(f->accessor);
   f->accessor->set(m, f->fval, val);
 }
 
-INLINE void *upb_seq_begin(void *s, upb_fielddef *f) {
+INLINE void *upb_seq_begin(void *s, const upb_fielddef *f) {
   assert(f->accessor);
   return f->accessor->seqbegin(s);
 }
-INLINE void *upb_seq_next(void *s, void *iter, upb_fielddef *f) {
+INLINE void *upb_seq_next(void *s, void *iter, const upb_fielddef *f) {
   assert(f->accessor);
   assert(!upb_seq_done(iter));
   return f->accessor->seqnext(s, iter);
 }
-INLINE upb_value upb_seq_get(void *iter, upb_fielddef *f) {
+INLINE upb_value upb_seq_get(void *iter, const upb_fielddef *f) {
   assert(f->accessor);
   assert(!upb_seq_done(iter));
   return f->accessor->seqget(iter);
@@ -175,10 +175,10 @@ void upb_msgvisitor_visit(upb_msgvisitor *v, upb_status *status);
 /* Standard writers. **********************************************************/
 
 // Allocates a new stdmsg.
-void *upb_stdmsg_new(upb_msgdef *md);
+void *upb_stdmsg_new(const upb_msgdef *md);
 
 // Recursively frees any strings or submessages that the message refers to.
-void upb_stdmsg_free(void *m, upb_msgdef *md);
+void upb_stdmsg_free(void *m, const upb_msgdef *md);
 
 void upb_stdmsg_sethas(void *_m, upb_value fval);
 

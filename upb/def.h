@@ -11,13 +11,36 @@
  * - upb_enumdef: describes an enum.
  * (TODO: definitions of services).
  *
- * These defs are mutable (and not thread-safe) when first created.
- * Once they are added to a defbuilder (and later its symtab) they become
- * immutable.
  *
- * TODO: consider making thread-safe even when first created by using mutexes
- * internally.  Would also have to change any methods returning pointers to
- * return copies instead.
+ * Defs go through two distinct phases of life:
+ *
+ * 1. MUTABLE: when first created, the properties of the def can be set freely
+ *    (for example a message's name, its list of fields, the name/number of
+ *    fields, etc).  During this phase the def is *not* thread-safe, and may
+ *    not be used for any purpose except to set its properties (it can't be
+ *    used to parse anything, create any messages in memory, etc).
+ *
+ * 2. IMMUTABLE: after being added to a symtab (which links the defs together)
+ *    the defs become thread-safe and immutable.  Programs may only access defs
+ *    through a CONST POINTER during this stage -- upb_symtab will help you out
+ *    with this requirement by only vending const pointers, but you need to
+ *    make sure not to use any non-const pointers you still have sitting
+ *    around.  In practice this means that you may not call any setters on the
+ *    defs (or functions that themselves call the setters).  If you want to
+ *    modify an existing immutable def, copy it with upb_*_dup(), modify the
+ *    copy, and add the modified def to the symtab (replacing the existing
+ *    def).
+ *
+ * You can test for which stage of life a def is in by calling
+ * upb_def_ismutable().  This is particularly useful for dynamic language
+ * bindings, which must properly guarantee that the dynamic language cannot
+ * break the rules laid out above.
+ *
+ * It would be possible to make the defs thread-safe during stage 1 by using
+ * mutexes internally and changing any methods returning pointers to return
+ * copies instead.  This could be important if we are integrating with a VM or
+ * interpreter that does not naturally serialize access to wrapped objects (for
+ * example, in the case of Python this is not necessary because of the GIL).
  */
 
 #ifndef UPB_DEF_H_
@@ -58,13 +81,13 @@ typedef struct {
 // until the def is in a symtab.  While a def is in a symtab, everything
 // reachable from that def (the symtab and all defs in the symtab) are
 // guaranteed to be alive.
-void upb_def_ref(upb_def *def);
-void upb_def_unref(upb_def *def);
-upb_def *upb_def_dup(upb_def *def);
+void upb_def_ref(const upb_def *def);
+void upb_def_unref(const upb_def *def);
+upb_def *upb_def_dup(const upb_def *def);
 
 // A def is mutable until it has been added to a symtab.
-bool upb_def_ismutable(upb_def *def);
-INLINE const char *upb_def_fqname(upb_def *def) { return def->fqname; }
+bool upb_def_ismutable(const upb_def *def);
+INLINE const char *upb_def_fqname(const upb_def *def) { return def->fqname; }
 bool upb_def_setfqname(upb_def *def, const char *fqname);  // Only if mutable.
 
 #define UPB_UPCAST(ptr) (&(ptr)->base)
@@ -103,7 +126,7 @@ void upb_fielddef_unref(upb_fielddef *f);
 upb_fielddef *upb_fielddef_dup(upb_fielddef *f);
 
 // A fielddef is mutable until its msgdef has been added to a symtab.
-bool upb_fielddef_ismutable(upb_fielddef *f);
+bool upb_fielddef_ismutable(const upb_fielddef *f);
 
 // Read accessors.  May be called any time.
 INLINE uint8_t upb_fielddef_type(upb_fielddef *f) { return f->type; }
@@ -127,7 +150,7 @@ INLINE const char *upb_fielddef_typename(upb_fielddef *f) {
 // submessage, group, and enum fields (ie. when upb_hassubdef(f) is true).
 // Since defs are not linked together until they are in a symtab, this
 // will return NULL until the msgdef is in a symtab.
-upb_def *upb_fielddef_subdef(upb_fielddef *f);
+upb_def *upb_fielddef_subdef(const upb_fielddef *f);
 
 // Write accessors.  "Number" and "name" must be set before the fielddef is
 // added to a msgdef.  For the moment we do not allow these to be set once
@@ -155,12 +178,12 @@ INLINE bool upb_isstringtype(upb_fieldtype_t type) {
 INLINE bool upb_isprimitivetype(upb_fieldtype_t type) {
   return !upb_issubmsgtype(type) && !upb_isstringtype(type);
 }
-INLINE bool upb_issubmsg(upb_fielddef *f) { return upb_issubmsgtype(f->type); }
-INLINE bool upb_isstring(upb_fielddef *f) { return upb_isstringtype(f->type); }
-INLINE bool upb_isseq(upb_fielddef *f) { return f->label == UPB_LABEL(REPEATED); }
+INLINE bool upb_issubmsg(const upb_fielddef *f) { return upb_issubmsgtype(f->type); }
+INLINE bool upb_isstring(const upb_fielddef *f) { return upb_isstringtype(f->type); }
+INLINE bool upb_isseq(const upb_fielddef *f) { return f->label == UPB_LABEL(REPEATED); }
 
 // Does the type of this field imply that it should contain an associated def?
-INLINE bool upb_hassubdef(upb_fielddef *f) {
+INLINE bool upb_hassubdef(const upb_fielddef *f) {
   return upb_issubmsg(f) || f->type == UPB_TYPE(ENUM);
 }
 
@@ -192,22 +215,22 @@ typedef struct {
 } upb_ntof_ent;
 
 upb_msgdef *upb_msgdef_new(void);
-INLINE void upb_msgdef_unref(upb_msgdef *md) { upb_def_unref(UPB_UPCAST(md)); }
-INLINE void upb_msgdef_ref(upb_msgdef *md) { upb_def_ref(UPB_UPCAST(md)); }
+INLINE void upb_msgdef_unref(const upb_msgdef *md) { upb_def_unref(UPB_UPCAST(md)); }
+INLINE void upb_msgdef_ref(const upb_msgdef *md) { upb_def_ref(UPB_UPCAST(md)); }
 
 // Returns a new msgdef that is a copy of the given msgdef (and a copy of all
 // the fields) but with any references to submessages broken and replaced with
 // just the name of the submessage.  This can be put back into another symtab
 // and the names will be re-resolved in the new context.
-upb_msgdef *upb_msgdef_dup(upb_msgdef *m);
+upb_msgdef *upb_msgdef_dup(const upb_msgdef *m);
 
 // Read accessors.  May be called at any time.
-INLINE uint16_t upb_msgdef_size(upb_msgdef *m) { return m->size; }
-INLINE uint8_t upb_msgdef_hasbit_bytes(upb_msgdef *m) {
+INLINE uint16_t upb_msgdef_size(const upb_msgdef *m) { return m->size; }
+INLINE uint8_t upb_msgdef_hasbit_bytes(const upb_msgdef *m) {
   return m->hasbit_bytes;
 }
-INLINE uint32_t upb_msgdef_extstart(upb_msgdef *m) { return m->extstart; }
-INLINE uint32_t upb_msgdef_extend(upb_msgdef *m) { return m->extend; }
+INLINE uint32_t upb_msgdef_extstart(const upb_msgdef *m) { return m->extstart; }
+INLINE uint32_t upb_msgdef_extend(const upb_msgdef *m) { return m->extend; }
 
 // Write accessors.  May only be called before the msgdef is in a symtab.
 void upb_msgdef_setsize(upb_msgdef *m, uint16_t size);
@@ -248,7 +271,7 @@ INLINE upb_fielddef *upb_msgdef_ntof(upb_msgdef *m, const char *name) {
   return e ? e->f : NULL;
 }
 
-INLINE int upb_msgdef_numfields(upb_msgdef *m) {
+INLINE int upb_msgdef_numfields(const upb_msgdef *m) {
   return upb_strtable_count(&m->ntof);
 }
 
@@ -262,8 +285,8 @@ INLINE int upb_msgdef_numfields(upb_msgdef *m) {
 //   }
 typedef upb_inttable_iter upb_msg_iter;
 
-upb_msg_iter upb_msg_begin(upb_msgdef *m);
-upb_msg_iter upb_msg_next(upb_msgdef *m, upb_msg_iter iter);
+upb_msg_iter upb_msg_begin(const upb_msgdef *m);
+upb_msg_iter upb_msg_next(const upb_msgdef *m, upb_msg_iter iter);
 INLINE bool upb_msg_done(upb_msg_iter iter) { return upb_inttable_done(iter); }
 
 // Iterator accessor.
@@ -292,9 +315,9 @@ typedef struct {
 } upb_iton_ent;
 
 upb_enumdef *upb_enumdef_new(void);
-INLINE void upb_enumdef_ref(upb_enumdef *e) { upb_def_ref(UPB_UPCAST(e)); }
-INLINE void upb_enumdef_unref(upb_enumdef *e) { upb_def_unref(UPB_UPCAST(e)); }
-upb_enumdef *upb_enumdef_dup(upb_enumdef *e);
+INLINE void upb_enumdef_ref(const upb_enumdef *e) { upb_def_ref(UPB_UPCAST(e)); }
+INLINE void upb_enumdef_unref(const upb_enumdef *e) { upb_def_unref(UPB_UPCAST(e)); }
+upb_enumdef *upb_enumdef_dup(const upb_enumdef *e);
 
 INLINE int32_t upb_enumdef_default(upb_enumdef *e) { return e->defaultval; }
 
@@ -320,8 +343,8 @@ const char *upb_enumdef_iton(upb_enumdef *e, int32_t num);
 //   }
 typedef upb_inttable_iter upb_enum_iter;
 
-upb_enum_iter upb_enum_begin(upb_enumdef *e);
-upb_enum_iter upb_enum_next(upb_enumdef *e, upb_enum_iter iter);
+upb_enum_iter upb_enum_begin(const upb_enumdef *e);
+upb_enum_iter upb_enum_next(const upb_enumdef *e, upb_enum_iter iter);
 INLINE bool upb_enum_done(upb_enum_iter iter) { return upb_inttable_done(iter); }
 
 // Iterator accessors.
@@ -334,15 +357,36 @@ INLINE int32_t upb_enum_iter_number(upb_enum_iter iter) {
 }
 
 
+/* upb_deflist ****************************************************************/
+
+// upb_deflist is an internal-only dynamic array for storing a growing list of
+// upb_defs.
+typedef struct {
+  upb_def **defs;
+  uint32_t len;
+  uint32_t size;
+} upb_deflist;
+
+void upb_deflist_init(upb_deflist *l);
+void upb_deflist_uninit(upb_deflist *l);
+void upb_deflist_push(upb_deflist *l, upb_def *d);
+
+
 /* upb_symtab *****************************************************************/
 
 // A symtab (symbol table) is where upb_defs live.  It is empty when first
 // constructed.  Clients add definitions to the symtab (or replace existing
 // definitions) by calling upb_symtab_add().
+struct _upb_symtab {
+  upb_atomic_t refcount;
+  upb_rwlock_t lock;       // Protects all members except the refcount.
+  upb_strtable symtab;     // The symbol table.
+  upb_deflist olddefs;
+};
 
 upb_symtab *upb_symtab_new(void);
-void upb_symtab_ref(upb_symtab *s);
-void upb_symtab_unref(upb_symtab *s);
+void upb_symtab_ref(const upb_symtab *s);
+void upb_symtab_unref(const upb_symtab *s);
 
 // Resolves the given symbol using the rules described in descriptor.proto,
 // namely:
@@ -354,20 +398,19 @@ void upb_symtab_unref(upb_symtab *s);
 //
 // If a def is found, the caller owns one ref on the returned def.  Otherwise
 // returns NULL.
-// TODO: make return const
-upb_def *upb_symtab_resolve(upb_symtab *s, const char *base, const char *sym);
+const upb_def *upb_symtab_resolve(const upb_symtab *s, const char *base,
+                                  const char *sym);
 
 // Find an entry in the symbol table with this exact name.  If a def is found,
 // the caller owns one ref on the returned def.  Otherwise returns NULL.
-// TODO: make return const
-upb_def *upb_symtab_lookup(upb_symtab *s, const char *sym);
+const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym);
+const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym);
 
 // Gets an array of pointers to all currently active defs in this symtab.  The
 // caller owns the returned array (which is of length *count) as well as a ref
 // to each symbol inside.  If type is UPB_DEF_ANY then defs of all types are
 // returned, otherwise only defs of the required type are returned.
-// TODO: make return const
-upb_def **upb_symtab_getdefs(upb_symtab *s, int *n, upb_deftype_t type);
+const upb_def **upb_symtab_getdefs(const upb_symtab *s, int *n, upb_deftype_t type);
 
 // Adds the given defs to the symtab, resolving all symbols.  Only one def per
 // name may be in the list, but defs can replace existing defs in the symtab.
@@ -385,46 +428,31 @@ void upb_symtab_gc(upb_symtab *s);
 /* upb_def casts **************************************************************/
 
 // Dynamic casts, for determining if a def is of a particular type at runtime.
-#define UPB_DYNAMIC_CAST_DEF(lower, upper) \
+// Downcasts, for when some wants to assert that a def is of a particular type.
+// These are only checked if we are building debug.
+#define UPB_DEF_CASTS(lower, upper) \
   struct _upb_ ## lower;  /* Forward-declare. */ \
   INLINE struct _upb_ ## lower *upb_dyncast_ ## lower(upb_def *def) { \
     if(def->type != UPB_DEF_ ## upper) return NULL; \
     return (struct _upb_ ## lower*)def; \
-  }
-UPB_DYNAMIC_CAST_DEF(msgdef, MSG);
-UPB_DYNAMIC_CAST_DEF(enumdef, ENUM);
-UPB_DYNAMIC_CAST_DEF(svcdef, SERVICE);
-UPB_DYNAMIC_CAST_DEF(unresolveddef, UNRESOLVED);
-#undef UPB_DYNAMIC_CAST_DEF
-
-// Downcasts, for when some wants to assert that a def is of a particular type.
-// These are only checked if we are building debug.
-#define UPB_DOWNCAST_DEF(lower, upper) \
-  struct _upb_ ## lower;  /* Forward-declare. */ \
+  } \
+  INLINE const struct _upb_ ## lower *upb_dyncast_ ## lower ## _const(const upb_def *def) { \
+    if(def->type != UPB_DEF_ ## upper) return NULL; \
+    return (const struct _upb_ ## lower*)def; \
+  } \
   INLINE struct _upb_ ## lower *upb_downcast_ ## lower(upb_def *def) { \
     assert(def->type == UPB_DEF_ ## upper); \
     return (struct _upb_ ## lower*)def; \
+  } \
+  INLINE const struct _upb_ ## lower *upb_downcast_ ## lower ## _const(const upb_def *def) { \
+    assert(def->type == UPB_DEF_ ## upper); \
+    return (const struct _upb_ ## lower*)def; \
   }
-UPB_DOWNCAST_DEF(msgdef, MSG);
-UPB_DOWNCAST_DEF(enumdef, ENUM);
-UPB_DOWNCAST_DEF(svcdef, SERVICE);
-UPB_DOWNCAST_DEF(unresolveddef, UNRESOLVED);
-#undef UPB_DOWNCAST_DEF
-
-
-/* upb_deflist ****************************************************************/
-
-// upb_deflist is an internal-only dynamic array for storing a growing list of
-// upb_defs.
-typedef struct {
-  upb_def **defs;
-  uint32_t len;
-  uint32_t size;
-} upb_deflist;
-
-void upb_deflist_init(upb_deflist *l);
-void upb_deflist_uninit(upb_deflist *l);
-void upb_deflist_push(upb_deflist *l, upb_def *d);
+UPB_DEF_CASTS(msgdef, MSG);
+UPB_DEF_CASTS(enumdef, ENUM);
+UPB_DEF_CASTS(svcdef, SERVICE);
+UPB_DEF_CASTS(unresolveddef, UNRESOLVED);
+#undef UPB_DEF_CASTS
 
 #ifdef __cplusplus
 }  /* extern "C" */

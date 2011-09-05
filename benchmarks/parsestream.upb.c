@@ -9,7 +9,7 @@
 
 static char *input_str;
 static size_t input_len;
-static upb_msgdef *def;
+static const upb_msgdef *def;
 static upb_decoder decoder;
 static upb_stringsrc stringsrc;
 
@@ -31,14 +31,14 @@ static bool initialize()
   // Initialize upb state, decode descriptor.
   upb_status status = UPB_STATUS_INIT;
   upb_symtab *s = upb_symtab_new();
-  upb_read_descriptorfile(s, MESSAGE_DESCRIPTOR_FILE, &status);
+  upb_load_descriptor_file_into_symtab(s, MESSAGE_DESCRIPTOR_FILE, &status);
   if(!upb_ok(&status)) {
     fprintf(stderr, "Error reading descriptor: %s\n",
             upb_status_getstr(&status));
     return false;
   }
 
-  def = upb_dyncast_msgdef(upb_symtab_lookup(s, MESSAGE_NAME));
+  def = upb_dyncast_msgdef_const(upb_symtab_lookup(s, MESSAGE_NAME));
   if(!def) {
     fprintf(stderr, "Error finding symbol '%s'.\n", MESSAGE_NAME);
     return false;

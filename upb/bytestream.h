@@ -36,7 +36,7 @@ extern "C" {
 // data around for later use, without requiring a copy out of the input
 // buffers.
 typedef size_t upb_bytesrc_fetch_func(void*, uint64_t, upb_status*);
-typedef void upb_bytesrc_read_func(void*, uint64_t, size_t, char*);
+typedef void upb_bytesrc_read_func(const void*, uint64_t, size_t, char*);
 typedef const char *upb_bytesrc_getptr_func(void*, uint64_t, size_t*);
 typedef void upb_bytesrc_refregion_func(void*, uint64_t, size_t);
 typedef void upb_bytesrc_ref_func(void*);
@@ -74,8 +74,8 @@ INLINE size_t upb_bytesrc_fetch(upb_bytesrc *src, uint64_t ofs, upb_status *s) {
 
 // Copies "len" bytes of data from offset src_ofs to "dst", which must be at
 // least "len" bytes long.  The caller must own a ref on the given region.
-INLINE void upb_bytesrc_read(upb_bytesrc *src, uint64_t src_ofs, size_t len,
-                             char *dst) {
+INLINE void upb_bytesrc_read(const upb_bytesrc *src, uint64_t src_ofs,
+                             size_t len, char *dst) {
   src->vtbl->read(src, src_ofs, len, dst);
 }
 
@@ -149,9 +149,9 @@ typedef struct _upb_strref {
 
 // Copies the contents of the strref into a newly-allocated, NULL-terminated
 // string.
-char *upb_strref_dup(struct _upb_strref *r);
+char *upb_strref_dup(const struct _upb_strref *r);
 
-INLINE void upb_strref_read(struct _upb_strref *r, char *buf) {
+INLINE void upb_strref_read(const struct _upb_strref *r, char *buf) {
   if (r->ptr) {
     memcpy(buf, r->ptr, r->len);
   } else {

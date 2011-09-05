@@ -37,7 +37,7 @@ static uint32_t lupb_touint32(lua_State *L, int narg, const char *name) {
   return n;
 }
 
-static void lupb_pushstring(lua_State *L, upb_strref *ref) {
+static void lupb_pushstring(lua_State *L, const upb_strref *ref) {
   if (ref->ptr) {
     lua_pushlstring(L, ref->ptr, ref->len);
   } else {
@@ -146,15 +146,15 @@ static void lupb_typecheck(lua_State *L, int narg, upb_fielddef *f) {
 //static void lupb_msg_getorcreate(lua_State *L, upb_msg *msg, upb_msgdef *md);
 static void lupb_fielddef_getorcreate(lua_State *L, upb_fielddef *f);
 static upb_msgdef *lupb_msgdef_check(lua_State *L, int narg);
-static void lupb_msg_pushnew(lua_State *L, void *md);
+static void lupb_msg_pushnew(lua_State *L, const void *md);
 
 void lupb_checkstatus(lua_State *L, upb_status *s) {
   if (!upb_ok(s)) {
-    upb_status_print(s, stderr);
     // Need to copy the string to the stack, so we can free it and not leak
     // it (since luaL_error() does not return).
-    char buf[strlen(s->str)+1];
-    strcpy(buf, s->str);
+    const char *str = upb_status_getstr(s);
+    char buf[strlen(str)+1];
+    strcpy(buf, str);
     upb_status_uninit(s);
     luaL_error(L, "%s", buf);
   }
@@ -226,14 +226,14 @@ static lupb_def *lupb_def_check(lua_State *L, int narg) {
   return ldef;
 }
 
-static void lupb_def_getorcreate(lua_State *L, upb_def *def, int owned) {
+static void lupb_def_getorcreate(lua_State *L, const upb_def *def, int owned) {
   bool created = false;
   switch(def->type) {
     case UPB_DEF_MSG:
-      created = lupb_cache_getorcreate(L, def, "upb.msgdef");
+      created = lupb_cache_getorcreate(L, (void*)def, "upb.msgdef");
       break;
     case UPB_DEF_ENUM:
-      created = lupb_cache_getorcreate(L, def, "upb.enumdef");
+      created = lupb_cache_getorcreate(L, (void*)def, "upb.enumdef");
       break;
     default:
       luaL_error(L, "unknown deftype %d", def->type);
@@ -564,7 +564,7 @@ static int lupb_symtab_gc(lua_State *L) {
 static int lupb_symtab_lookup(lua_State *L) {
   lupb_symtab *s = lupb_symtab_check(L, 1);
   for (int i = 2; i <= lua_gettop(L); i++) {
-    upb_def *def = upb_symtab_lookup(s->symtab, luaL_checkstring(L, i));
+    const upb_def *def = upb_symtab_lookup(s->symtab, luaL_checkstring(L, i));
     if (def) {
       lupb_def_getorcreate(L, def, true);
     } else {
@@ -579,12 +579,12 @@ static int lupb_symtab_getdefs(lua_State *L) {
   lupb_symtab *s = lupb_symtab_check(L, 1);
   upb_deftype_t type = luaL_checkint(L, 2);
   int count;
-  upb_def **defs = upb_symtab_getdefs(s->symtab, &count, type);
+  const upb_def **defs = upb_symtab_getdefs(s->symtab, &count, type);
 
   // Create the table in which we will return the defs.
   lua_createtable(L, count, 0);
   for (int i = 0; i < count; i++) {
-    upb_def *def = defs[i];
+    const upb_def *def = defs[i];
     lupb_def_getorcreate(L, def, true);
     lua_rawseti(L, -2, i + 1);
   }
@@ -616,7 +616,7 @@ static const struct luaL_Reg lupb_symtab_mm[] = {
 //   {msgdef, <string, submessage, and array fields>}
 
 // Must pass a upb_fielddef as the pointer.
-static void lupb_array_pushnew(lua_State *L, void *f);
+static void lupb_array_pushnew(lua_State *L, const void *f);
 
 static void *lupb_msg_check(lua_State *L, int narg, upb_msgdef **md) {
   void *msg = luaL_checkudata(L, narg, "upb.msg");
@@ -632,14 +632,14 @@ static void *lupb_msg_check(lua_State *L, int narg, upb_msgdef **md) {
   return msg;
 }
 
-static void lupb_msg_pushnew(lua_State *L, void *md) {
+static void lupb_msg_pushnew(lua_State *L, const void *md) {
   void *msg = lua_newuserdata(L, upb_msgdef_size(md));
   luaL_getmetatable(L, "upb.msg");
   assert(!lua_isnil(L, -1));  // Should have been created by luaopen_upb.
   lua_setmetatable(L, -2);
   upb_msg_clear(msg, md);
   lua_getfenv(L, -1);
-  lupb_cache_getorcreate(L, md, "upb.msgdef");
+  lupb_cache_getorcreate(L, (void*)md, "upb.msgdef");
   lua_rawseti(L, -2, 1);
   lua_pop(L, 1);  // Pop the fenv.
 }
@@ -755,10 +755,10 @@ static int lupb_msgdef(lua_State *L) {
 //
 // - use thread-local storage.  Convenient and efficient, but not portable.
 
-typedef void createfunc_t(lua_State *L, void *param);
+typedef void createfunc_t(lua_State *L, const void *param);
 
-static upb_sflow_t lupb_msg_start(void *m, upb_fielddef *f, bool array,
-                                  createfunc_t *pushnew, void *param) {
+static upb_sflow_t lupb_msg_start(void *m, const upb_fielddef *f, bool array,
+                                  createfunc_t *pushnew, const void *param) {
   lua_State *L = *(lua_State**)m;
   int offset = array ? lua_rawlen(L, -1) : f->offset;
   if (!lua_checkstack(L, 3)) luaL_error(L, "stack full");
@@ -778,7 +778,7 @@ static upb_sflow_t lupb_msg_start(void *m, upb_fielddef *f, bool array,
 static upb_flow_t lupb_msg_string(void *m, upb_value fval, upb_value val,
                                   bool array) {
   // Could add lazy materialization of strings here.
-  upb_fielddef *f = upb_value_getfielddef(fval);
+  const upb_fielddef *f = upb_value_getfielddef(fval);
   lua_State *L = *(lua_State**)m;
   int offset = array ? lua_rawlen(L, -1) : f->offset;
   if (!lua_checkstack(L, 1)) luaL_error(L, "stack full");
@@ -788,17 +788,17 @@ static upb_flow_t lupb_msg_string(void *m, upb_value fval, upb_value val,
 }
 
 static upb_sflow_t lupb_msg_startseq(void *m, upb_value fval) {
-  upb_fielddef *f = upb_value_getfielddef(fval);
+  const upb_fielddef *f = upb_value_getfielddef(fval);
   return lupb_msg_start(m, f, false, lupb_array_pushnew, f);
 }
 
 static upb_sflow_t lupb_msg_startsubmsg(void *m, upb_value fval) {
-  upb_fielddef *f = upb_value_getfielddef(fval);
+  const upb_fielddef *f = upb_value_getfielddef(fval);
   return lupb_msg_start(m, f, false, lupb_msg_pushnew, upb_fielddef_subdef(f));
 }
 
 static upb_sflow_t lupb_msg_startsubmsg_r(void *a, upb_value fval) {
-  upb_fielddef *f = upb_value_getfielddef(fval);
+  const upb_fielddef *f = upb_value_getfielddef(fval);
   return lupb_msg_start(a, f, true, lupb_msg_pushnew, upb_fielddef_subdef(f));
 }
 
@@ -877,7 +877,7 @@ static void lupb_array_check(lua_State *L, int narg) {
     luaL_typerror(L, narg, "upb array");
 }
 
-static void lupb_array_pushnew(lua_State *L, void *f) {
+static void lupb_array_pushnew(lua_State *L, const void *f) {
   (void)L;
   (void)f;
 }

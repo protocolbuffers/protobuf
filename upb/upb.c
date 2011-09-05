@@ -87,7 +87,10 @@ void upb_status_copy(upb_status *to, upb_status *from) {
   }
 }
 
-const char *upb_status_getstr(upb_status *status) {
+const char *upb_status_getstr(const upb_status *_status) {
+  // Function is logically const but can modify internal state to materialize
+  // the string.
+  upb_status *status = (upb_status*)_status;
   if (status->str == NULL && status->space && status->space->code_to_string) {
     status->space->code_to_string(status->code, status->buf, status->bufsize);
     status->str = status->buf;

@@ -23,7 +23,11 @@
 .PHONY: clean_leave_profile
 
 # Default rule: just build libupb.
-all: lib
+default: lib
+
+# All: build absolutely everything
+all: lib tests benchmarks tools/upbc lua python
+testall: test pythontest
 
 # User-specified CFLAGS.
 USER_CFLAGS=$(strip $(shell test -f perf-cppflags && cat perf-cppflags))
@@ -46,6 +50,7 @@ endif
 CC=gcc
 CXX=g++
 CFLAGS=-std=gnu99
+CXXFLAGS=-Ibindings/cpp
 INCLUDE=-Itests -I.
 CPPFLAGS=$(INCLUDE) -Wall -Wextra $(USER_CFLAGS)
 LDLIBS=-lpthread upb/libupb.a
@@ -200,7 +205,8 @@ INTERACTIVE_TESTS= \
 
 
 SIMPLE_CXX_TESTS= \
-  tests/test_table
+  tests/test_table \
+  tests/test_cpp \
 
 VARIADIC_TESTS= \
   tests/t.test_vs_proto2.googlemessage1 \

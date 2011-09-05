@@ -21,7 +21,7 @@
 size_t string_size;
 
 void compare(const google::protobuf::Message& proto2_msg,
-             void *upb_msg, upb_msgdef *upb_md);
+             void *upb_msg, const upb_msgdef *upb_md);
 
 void compare_arrays(const google::protobuf::Reflection *r,
                     const google::protobuf::Message& proto2_msg,
@@ -143,7 +143,7 @@ void compare_values(const google::protobuf::Reflection *r,
 }
 
 void compare(const google::protobuf::Message& proto2_msg,
-             void *upb_msg, upb_msgdef *upb_md)
+             void *upb_msg, const upb_msgdef *upb_md)
 {
   const google::protobuf::Reflection *r = proto2_msg.GetReflection();
   const google::protobuf::Descriptor *d = proto2_msg.GetDescriptor();
@@ -179,7 +179,7 @@ void compare(const google::protobuf::Message& proto2_msg,
 }
 
 void parse_and_compare(MESSAGE_CIDENT *proto2_msg,
-                       void *upb_msg, upb_msgdef *upb_md,
+                       void *upb_msg, const upb_msgdef *upb_md,
                        const char *str, size_t len)
 {
   // Parse to both proto2 and upb.
@@ -223,7 +223,7 @@ int main(int argc, char *argv[])
     fprintf(stderr, "Couldn't read " MESSAGE_DESCRIPTOR_FILE ".\n");
     return 1;
   }
-  upb_read_descriptor(symtab, fds, fds_len, &status);
+  upb_load_descriptor_into_symtab(symtab, fds, fds_len, &status);
   if(!upb_ok(&status)) {
     fprintf(stderr, "Error importing " MESSAGE_DESCRIPTOR_FILE ": %s",
             upb_status_getstr(&status));
@@ -231,9 +231,9 @@ int main(int argc, char *argv[])
   }
   free((void*)fds);
 
-  upb_def *def = upb_symtab_lookup(symtab, MESSAGE_NAME);
-  upb_msgdef *msgdef;
-  if(!def || !(msgdef = upb_dyncast_msgdef(def))) {
+  const upb_def *def = upb_symtab_lookup(symtab, MESSAGE_NAME);
+  const upb_msgdef *msgdef;
+  if(!def || !(msgdef = upb_dyncast_msgdef_const(def))) {
     fprintf(stderr, "Error finding symbol '%s'.\n", MESSAGE_NAME);
     return 1;
   }

@@ -35,7 +35,7 @@ err:
   return -1;
 }
 
-static int upb_textprinter_putescaped(upb_textprinter *p, upb_strref *strref,
+static int upb_textprinter_putescaped(upb_textprinter *p, const upb_strref *strref,
                                       bool preserve_utf8) {
   // Based on CEscapeInternal() from Google's protobuf release.
   // TODO; we could read directly from a bytesrc's buffer instead.
@@ -90,7 +90,7 @@ err:
   static upb_flow_t upb_textprinter_put ## member(void *_p, upb_value fval,  \
                                                   upb_value val) {           \
     upb_textprinter *p = _p;                                                 \
-    upb_fielddef *f = upb_value_getfielddef(fval);                           \
+    const upb_fielddef *f = upb_value_getfielddef(fval);                     \
     uint64_t start_ofs = upb_bytesink_getoffset(p->sink);                    \
     CHECK(upb_textprinter_indent(p));                                        \
     CHECK(upb_bytesink_writestr(p->sink, f->name));                          \
@@ -120,7 +120,7 @@ static upb_flow_t upb_textprinter_putenum(void *_p, upb_value fval,
 
   upb_textprinter *p = _p;
   uint64_t start_ofs = upb_bytesink_getoffset(p->sink);
-  upb_fielddef *f = upb_value_getfielddef(fval);
+  const upb_fielddef *f = upb_value_getfielddef(fval);
   upb_enumdef *enum_def = upb_downcast_enumdef(f->def);
   const char *label = upb_enumdef_iton(enum_def, upb_value_getint32(val));
   if (label) {
@@ -138,7 +138,7 @@ static upb_flow_t upb_textprinter_putstr(void *_p, upb_value fval,
                                          upb_value val) {
   upb_textprinter *p = _p;
   uint64_t start_ofs = upb_bytesink_getoffset(p->sink);
-  upb_fielddef *f = upb_value_getfielddef(fval);
+  const upb_fielddef *f = upb_value_getfielddef(fval);
   CHECK(upb_bytesink_putc(p->sink, '"'));
   CHECK(upb_textprinter_putescaped(p, upb_value_getstrref(val),
                                    f->type == UPB_TYPE(STRING)));
@@ -152,7 +152,7 @@ err:
 static upb_sflow_t upb_textprinter_startsubmsg(void *_p, upb_value fval) {
   upb_textprinter *p = _p;
   uint64_t start_ofs = upb_bytesink_getoffset(p->sink);
-  upb_fielddef *f = upb_value_getfielddef(fval);
+  const upb_fielddef *f = upb_value_getfielddef(fval);
   CHECK(upb_textprinter_indent(p));
   CHECK(upb_bytesink_printf(p->sink, "%s {", f->name));
   if (!p->single_line)
@@ -192,7 +192,7 @@ void upb_textprinter_reset(upb_textprinter *p, upb_bytesink *sink,
   p->indent_depth = 0;
 }
 
-static void upb_textprinter_onfreg(void *c, upb_fhandlers *fh, upb_fielddef *f) {
+static void upb_textprinter_onfreg(void *c, upb_fhandlers *fh, const upb_fielddef *f) {
   (void)c;
   upb_fhandlers_setstartsubmsg(fh, &upb_textprinter_startsubmsg);
   upb_fhandlers_setendsubmsg(fh, &upb_textprinter_endsubmsg);
@@ -207,7 +207,7 @@ static void upb_textprinter_onfreg(void *c, upb_fhandlers *fh, upb_fielddef *f) 
   upb_fhandlers_setfval(fh, fval);
 }
 
-upb_mhandlers *upb_textprinter_reghandlers(upb_handlers *h, upb_msgdef *m) {
+upb_mhandlers *upb_textprinter_reghandlers(upb_handlers *h, const upb_msgdef *m) {
   return upb_handlers_regmsgdef(
       h, m, NULL, &upb_textprinter_onfreg, NULL);
 }

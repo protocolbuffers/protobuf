@@ -90,11 +90,11 @@ void upb_strtable_init(upb_strtable *table, uint32_t size, uint16_t value_size);
 void upb_strtable_free(upb_strtable *table);
 
 // Number of values in the hash table.
-INLINE uint32_t upb_table_count(upb_table *t) { return t->count; }
-INLINE uint32_t upb_inttable_count(upb_inttable *t) {
+INLINE uint32_t upb_table_count(const upb_table *t) { return t->count; }
+INLINE uint32_t upb_inttable_count(const upb_inttable *t) {
   return t->array_count + upb_table_count(&t->t);
 }
-INLINE uint32_t upb_strtable_count(upb_strtable *t) {
+INLINE uint32_t upb_strtable_count(const upb_strtable *t) {
   return upb_table_count(&t->t);
 }
 
@@ -111,14 +111,14 @@ void upb_inttable_insert(upb_inttable *t, uint32_t key, const void *val);
 void upb_strtable_insert(upb_strtable *t, const char *key, const void *val);
 void upb_inttable_compact(upb_inttable *t);
 
-INLINE uint32_t _upb_inttable_bucket(upb_inttable *t, uint32_t k) {
+INLINE uint32_t _upb_inttable_bucket(const upb_inttable *t, uint32_t k) {
   uint32_t bucket = k & t->t.mask;  // Identity hash for ints.
   assert(bucket != UPB_END_OF_CHAIN);
   return bucket;
 }
 
 // Returns true if this key belongs in the array part of the table.
-INLINE bool _upb_inttable_isarrkey(upb_inttable *t, uint32_t k) {
+INLINE bool _upb_inttable_isarrkey(const upb_inttable *t, uint32_t k) {
   return (k < t->array_size);
 }
 
@@ -126,7 +126,7 @@ INLINE bool _upb_inttable_isarrkey(upb_inttable *t, uint32_t k) {
 // We have the caller specify the entry_size because fixing this as a literal
 // (instead of reading table->entry_size) gives the compiler more ability to
 // optimize.
-INLINE void *_upb_inttable_fastlookup(upb_inttable *t, uint32_t key,
+INLINE void *_upb_inttable_fastlookup(const upb_inttable *t, uint32_t key,
                                       size_t entry_size, size_t value_size) {
   upb_inttable_value *arrval =
       (upb_inttable_value*)UPB_INDEX(t->array, key, value_size);
@@ -158,8 +158,8 @@ INLINE void *upb_inttable_lookup(upb_inttable *t, uint32_t key) {
   return _upb_inttable_fastlookup(t, key, t->t.entry_size, t->t.value_size);
 }
 
-void *upb_strtable_lookupl(upb_strtable *t, const char *key, size_t len);
-void *upb_strtable_lookup(upb_strtable *t, const char *key);
+void *upb_strtable_lookupl(const upb_strtable *t, const char *key, size_t len);
+void *upb_strtable_lookup(const upb_strtable *t, const char *key);
 
 
 /* upb_strtable_iter **********************************************************/
@@ -172,11 +172,11 @@ void *upb_strtable_lookup(upb_strtable *t, const char *key);
 //     // ...
 //   }
 typedef struct {
-  upb_strtable *t;
+  const upb_strtable *t;
   upb_strtable_entry *e;
 } upb_strtable_iter;
 
-void upb_strtable_begin(upb_strtable_iter *i, upb_strtable *t);
+void upb_strtable_begin(upb_strtable_iter *i, const upb_strtable *t);
 void upb_strtable_next(upb_strtable_iter *i);
 INLINE bool upb_strtable_done(upb_strtable_iter *i) { return i->e == NULL; }
 INLINE const char *upb_strtable_iter_key(upb_strtable_iter *i) {
@@ -200,8 +200,8 @@ typedef struct {
   bool array_part;
 } upb_inttable_iter;
 
-upb_inttable_iter upb_inttable_begin(upb_inttable *t);
-upb_inttable_iter upb_inttable_next(upb_inttable *t, upb_inttable_iter iter);
+upb_inttable_iter upb_inttable_begin(const upb_inttable *t);
+upb_inttable_iter upb_inttable_next(const upb_inttable *t, upb_inttable_iter iter);
 INLINE bool upb_inttable_done(upb_inttable_iter iter) { return iter.value == NULL; }
 INLINE uint32_t upb_inttable_iter_key(upb_inttable_iter iter) {
   return iter.key;

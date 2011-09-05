@@ -8,7 +8,7 @@ int main() {
 
   // Will be empty atm since we haven't added anything to the symtab.
   int count;
-  upb_def **defs = upb_symtab_getdefs(s, &count, UPB_DEF_ANY);
+  const upb_def **defs = upb_symtab_getdefs(s, &count, UPB_DEF_ANY);
   for (int i = 0; i < count; i++) {
     upb_def_unref(defs[i]);
   }

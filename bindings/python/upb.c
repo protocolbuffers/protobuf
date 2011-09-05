@@ -36,8 +36,8 @@ static upb_accessor_vtbl *PyUpb_AccessorForField(upb_fielddef *f);
 // For objects that are just wrappers around a C object pointer, we keep a
 // cache mapping C pointer -> wrapper object.  This allows us to consistently
 // vend the same Python object given the same C object.  This prevents us from
-// creating too many Python objects unnecessarily.  More importantly, it provides
-// the expected semantics:
+// creating too many Python objects unnecessarily.  Just as importantly, it
+// provides the expected semantics:
 //
 //   if field.subdef is field.subdef:
 //     print "Sanity prevails."
@@ -66,7 +66,7 @@ static PyObject *weakref_callback = NULL;
 
 // Utility functions for manipulating Python dictionaries keyed by pointer.
 
-static PyObject *PyUpb_StringForPointer(void *ptr) {
+static PyObject *PyUpb_StringForPointer(const void *ptr) {
   PyObject *o = PyString_FromStringAndSize((const char *)&ptr, sizeof(void*));
   assert(o);
   return o;
@@ -86,7 +86,7 @@ static PyObject *PyUpb_ObjCacheDeleteCallback(PyObject *self, PyObject *ref) {
   return Py_None;
 }
 
-static PyObject *PyUpb_ObjCacheGet(void *obj, PyTypeObject *type) {
+static PyObject *PyUpb_ObjCacheGet(const void *obj, PyTypeObject *type) {
   PyObject *kv = PyUpb_StringForPointer(obj);
   PyObject *ref = PyDict_GetItem(obj_cache, kv);
   PyObject *ret;
@@ -96,7 +96,7 @@ static PyObject *PyUpb_ObjCacheGet(void *obj, PyTypeObject *type) {
     Py_INCREF(ret);
   } else {
     PyUpb_ObjWrapper *wrapper = (PyUpb_ObjWrapper*)type->tp_alloc(type, 0);
-    wrapper->obj = obj;
+    wrapper->obj = (void*)obj;
     wrapper->weakreflist = NULL;
     ret = (PyObject*)wrapper;
     ref = PyWeakref_NewRef(ret, weakref_callback);
@@ -113,7 +113,7 @@ static PyObject *PyUpb_ObjCacheGet(void *obj, PyTypeObject *type) {
 
 /* PyUpb_Def ******************************************************************/
 
-static PyTypeObject *PyUpb_TypeForDef(upb_def *def);
+static PyTypeObject *PyUpb_TypeForDef(const upb_def *def);
 
 static void PyUpb_Def_dealloc(PyObject *obj) {
   PyUpb_ObjWrapper *wrapper = (void*)obj;
@@ -121,7 +121,7 @@ static void PyUpb_Def_dealloc(PyObject *obj) {
   obj->ob_type->tp_free(obj);
 }
 
-PyObject *PyUpb_Def_GetOrCreate(upb_def *def) {
+PyObject *PyUpb_Def_GetOrCreate(const upb_def *def) {
   return def ? PyUpb_ObjCacheGet(def, PyUpb_TypeForDef(def)) : Py_None;
 }
 
@@ -142,7 +142,7 @@ static int PyUpb_FieldDef_setattro(PyObject *o, PyObject *key, PyObject *val);
     } \
   } while(0)
 
-static PyObject *PyUpb_FieldDef_GetOrCreate(upb_fielddef *f) {
+static PyObject *PyUpb_FieldDef_GetOrCreate(const upb_fielddef *f) {
   return PyUpb_ObjCacheGet(f, &PyUpb_FieldDefType);
 }
 
@@ -424,7 +424,7 @@ static PyTypeObject PyUpb_MessageDefType = {
 };
 
 
-static PyTypeObject *PyUpb_TypeForDef(upb_def *def) {
+static PyTypeObject *PyUpb_TypeForDef(const upb_def *def) {
   switch(def->type) {
     case UPB_DEF_MSG: return &PyUpb_MessageDefType;
     default: return NULL;
@@ -499,7 +499,7 @@ static PyObject *PyUpb_SymbolTable_add_def(PyObject *o, PyObject *def) {
 static PyObject *PyUpb_SymbolTable_defs(PyObject *o, PyObject *none) {
   upb_symtab *s = Check_SymbolTable(o, NULL);
   int count;
-  upb_def **defs = upb_symtab_getdefs(s, &count, UPB_DEF_ANY);
+  const upb_def **defs = upb_symtab_getdefs(s, &count, UPB_DEF_ANY);
   PyObject *ret = PyList_New(count);
   int i;
   for(i = 0; i < count; i++)
@@ -510,7 +510,7 @@ static PyObject *PyUpb_SymbolTable_defs(PyObject *o, PyObject *none) {
 static PyObject *PyUpb_SymbolTable_lookup(PyObject *o, PyObject *arg) {
   upb_symtab *s = Check_SymbolTable(o, NULL);
   const char *name = PyString_AsString(arg);
-  upb_def *def = upb_symtab_lookup(s, name);
+  const upb_def *def = upb_symtab_lookup(s, name);
   return PyUpb_Def_GetOrCreate(def);
 }
 
@@ -581,7 +581,7 @@ typedef struct {
 
 PyObject **PyUpb_Accessor_GetPtr(PyObject *_m, upb_value fval) {
   PyUpb_Message *m = (PyUpb_Message*)_m;
-  upb_fielddef *f = upb_value_getfielddef(fval);
+  const upb_fielddef *f = upb_value_getfielddef(fval);
   return (PyObject**)&m->data[f->offset];
 }
 
@@ -611,7 +611,7 @@ static upb_sflow_t PyUpb_Message_StartRepeatedSubmessage(void *a, upb_value fval
 
 static upb_flow_t PyUpb_Message_StringValue(void *m, upb_value fval, upb_value val) {
   PyObject **str = PyUpb_Accessor_GetPtr(m, fval);
-  if (*str) Py_DECREF(*str);
+  if (*str) { Py_DECREF(*str); }
   *str = PyString_FromStringAndSize(NULL, upb_value_getstrref(val)->len);
   upb_strref_read(upb_value_getstrref(val), PyString_AsString(*str));
   upb_stdmsg_sethas(m, fval);

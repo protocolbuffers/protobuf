@@ -17,9 +17,14 @@ namespace upb {
 
 class MessageDef : public upb_msgdef {
  public:
+  // Converting from C types to C++ wrapper types.
   static MessageDef* Cast(upb_msgdef *md) { return (MessageDef*)md; }
+  static const MessageDef* Cast(const upb_msgdef *md) {
+    return (const MessageDef*)md;
+  }
 
-  void Unref() { return upb_msgdef_unref(this); }
+  void Ref() const { upb_msgdef_ref(this); }
+  void Unref() const { upb_msgdef_unref(this); }
 
  private:
   MessageDef();
@@ -28,14 +33,20 @@ class MessageDef : public upb_msgdef {
 
 class SymbolTable : public upb_symtab {
  public:
+  // Converting from C types to C++ wrapper types.
   static SymbolTable* Cast(upb_symtab *s) { return (SymbolTable*)s; }
+  static const SymbolTable* Cast(const upb_symtab *s) {
+    return (SymbolTable*)s;
+  }
+
   static SymbolTable* New() { return Cast(upb_symtab_new()); }
 
-  void Unref() { return upb_symtab_unref(this); }
+  void Ref() const { upb_symtab_unref(this); }
+  void Unref() const { upb_symtab_unref(this); }
 
   // If the given name refers to a message in this symbol table, returns a new
   // ref to that MessageDef object, otherwise returns NULL.
-  MessageDef* LookupMessage(const char *name) {
+  const MessageDef* LookupMessage(const char *name) const {
     return MessageDef::Cast(upb_symtab_lookupmsg(this, name));
   }
 

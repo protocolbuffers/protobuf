@@ -20,20 +20,20 @@ int main(int argc, char *argv[]) {
   }
 
   upb_status status = UPB_STATUS_INIT;
-  upb_read_descriptor(symtab, desc, desc_len, &status);
+  upb_load_descriptor_into_symtab(symtab, desc, desc_len, &status);
   if (!upb_ok(&status)) {
     fprintf(stderr, "Error parsing descriptor: %s", upb_status_getstr(&status));
     return 1;
   }
   free((void*)desc);
 
-  upb_def *md = upb_symtab_lookup(symtab, argv[2]);
+  const upb_def *md = upb_symtab_lookup(symtab, argv[2]);
   if (!md) {
     fprintf(stderr, "Descriptor did not contain message: %s\n", argv[2]);
     return 1;
   }
 
-  upb_msgdef *m = upb_dyncast_msgdef(md);
+  const upb_msgdef *m = upb_dyncast_msgdef_const(md);
   if (!m) {
     fprintf(stderr, "Def was not a msgdef.\n");
     return 1;

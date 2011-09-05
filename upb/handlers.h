@@ -166,7 +166,7 @@ void upb_fhandlers_unref(upb_fhandlers *m);
 // upb_fhandlers accessors
 #define UPB_FHANDLERS_ACCESSORS(name, type) \
   INLINE void upb_fhandlers_set ## name(upb_fhandlers *f, type v){f->name = v;} \
-  INLINE type upb_fhandlers_get ## name(upb_fhandlers *f) { return f->name; }
+  INLINE type upb_fhandlers_get ## name(const upb_fhandlers *f) { return f->name; }
 UPB_FHANDLERS_ACCESSORS(fval, upb_value)
 UPB_FHANDLERS_ACCESSORS(value, upb_value_handler*)
 UPB_FHANDLERS_ACCESSORS(startsubmsg, upb_startfield_handler*)
@@ -257,9 +257,9 @@ upb_mhandlers *upb_handlers_getmhandlers(upb_handlers *h, int index);
 // with "fieldreg_cb"
 //
 // See upb_handlers_reghandlerset() below for an example.
-typedef void upb_onmsgreg(void *closure, upb_mhandlers *mh, upb_msgdef *m);
-typedef void upb_onfieldreg(void *closure, upb_fhandlers *mh, upb_fielddef *m);
-upb_mhandlers *upb_handlers_regmsgdef(upb_handlers *h, upb_msgdef *m,
+typedef void upb_onmsgreg(void *closure, upb_mhandlers *mh, const upb_msgdef *m);
+typedef void upb_onfieldreg(void *closure, upb_fhandlers *mh, const upb_fielddef *m);
+upb_mhandlers *upb_handlers_regmsgdef(upb_handlers *h, const upb_msgdef *m,
                                       upb_onmsgreg *msgreg_cb,
                                       upb_onfieldreg *fieldreg_cb,
                                       void *closure);
@@ -278,13 +278,13 @@ typedef struct {
   upb_endfield_handler *endseq;
 } upb_handlerset;
 
-INLINE void upb_onmreg_hset(void *c, upb_mhandlers *mh, upb_msgdef *m) {
+INLINE void upb_onmreg_hset(void *c, upb_mhandlers *mh, const upb_msgdef *m) {
   (void)m;
   upb_handlerset *hs = (upb_handlerset*)c;
   if (hs->startmsg) upb_mhandlers_setstartmsg(mh, hs->startmsg);
   if (hs->endmsg) upb_mhandlers_setendmsg(mh, hs->endmsg);
 }
-INLINE void upb_onfreg_hset(void *c, upb_fhandlers *fh, upb_fielddef *f) {
+INLINE void upb_onfreg_hset(void *c, upb_fhandlers *fh, const upb_fielddef *f) {
   upb_handlerset *hs = (upb_handlerset*)c;
   if (hs->value) upb_fhandlers_setvalue(fh, hs->value);
   if (hs->startsubmsg) upb_fhandlers_setstartsubmsg(fh, hs->startsubmsg);
@@ -295,7 +295,7 @@ INLINE void upb_onfreg_hset(void *c, upb_fhandlers *fh, upb_fielddef *f) {
   upb_value_setfielddef(&val, f);
   upb_fhandlers_setfval(fh, val);
 }
-INLINE upb_mhandlers *upb_handlers_reghandlerset(upb_handlers *h, upb_msgdef *m,
+INLINE upb_mhandlers *upb_handlers_reghandlerset(upb_handlers *h, const upb_msgdef *m,
                                                  upb_handlerset *hs) {
   return upb_handlers_regmsgdef(h, m, &upb_onmreg_hset, &upb_onfreg_hset, hs);
 }

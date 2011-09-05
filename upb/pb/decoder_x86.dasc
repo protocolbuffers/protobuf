@@ -413,7 +413,7 @@ static void upb_decoder_jit_doappend(upb_decoder *d, uint8_t size,
 #endif
 
 static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
-  upb_fielddef *fd = upb_value_getfielddef(f->fval);
+  const upb_fielddef *fd = upb_value_getfielddef(f->fval);
   // Call callbacks.
   if (upb_issubmsgtype(f->type)) {
     // Load closure and fval into arg registers.
@@ -439,7 +439,7 @@ static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
     }
     |  pushframe  f, rdx, esi, false
 
-    upb_mhandlers *sub_m = upb_fhandlers_getsubmsg(f);
+    const upb_mhandlers *sub_m = upb_fhandlers_getsubmsg(f);
     if (sub_m->jit_parent_field_done_pclabel != UPB_MULTIPLE) {
       |  jmp   =>sub_m->jit_startmsg_pclabel;
     } else {

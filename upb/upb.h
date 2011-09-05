@@ -144,8 +144,8 @@ typedef struct {
     int64_t int64;
     uint32_t uint32;
     bool _bool;
-    struct _upb_strref *strref;
-    struct _upb_fielddef *fielddef;
+    const struct _upb_strref *strref;
+    const struct _upb_fielddef *fielddef;
     void *_void;
   } val;
 
@@ -178,9 +178,12 @@ UPB_VALUE_ACCESSORS(int64, int64, int64_t, UPB_TYPE(INT64));
 UPB_VALUE_ACCESSORS(uint32, uint32, uint32_t, UPB_TYPE(UINT32));
 UPB_VALUE_ACCESSORS(uint64, uint64, uint64_t, UPB_TYPE(UINT64));
 UPB_VALUE_ACCESSORS(bool, _bool, bool, UPB_TYPE(BOOL));
-UPB_VALUE_ACCESSORS(strref, strref, struct _upb_strref*, UPB_TYPE(STRING));
-UPB_VALUE_ACCESSORS(fielddef, fielddef, struct _upb_fielddef*, UPB_VALUETYPE_FIELDDEF);
 UPB_VALUE_ACCESSORS(ptr, _void, void*, UPB_VALUETYPE_PTR);
+
+// upb_fielddef and upb_strref should never be modified from a callback
+// (ie. when they're getting passed through a upb_value).
+UPB_VALUE_ACCESSORS(strref, strref, const struct _upb_strref*, UPB_TYPE(STRING));
+UPB_VALUE_ACCESSORS(fielddef, fielddef, const struct _upb_fielddef*, UPB_VALUETYPE_FIELDDEF);
 
 extern upb_value UPB_NO_VALUE;
 
@@ -223,7 +226,7 @@ void upb_status_seterrliteral(upb_status *status, const char *msg);
 void upb_status_seterrf(upb_status *s, const char *msg, ...);
 void upb_status_setcode(upb_status *s, upb_errorspace *space, int code);
 // The returned string is invalidated by any other call into the status.
-const char *upb_status_getstr(upb_status *s);
+const char *upb_status_getstr(const upb_status *s);
 void upb_status_copy(upb_status *to, upb_status *from);
 
 extern upb_errorspace upb_posix_errorspace;

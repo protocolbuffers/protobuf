@@ -10,7 +10,7 @@ static void TestSymbolTable() {
     std::cerr << "Couldn't load descriptor: " << status;
     exit(1);
   }
-  upb::MessageDef *md = s->LookupMessage("A");
+  const upb::MessageDef *md = s->LookupMessage("A");
   assert(md);
 
   s->Unref();

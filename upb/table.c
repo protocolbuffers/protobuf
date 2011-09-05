@@ -25,9 +25,9 @@ static uint32_t MurmurHash2(const void *key, size_t len, uint32_t seed);
 
 /* Base table (shared code) ***************************************************/
 
-static uint32_t upb_table_size(upb_table *t) { return 1 << t->size_lg2; }
-static size_t upb_table_entrysize(upb_table *t) { return t->entry_size; }
-static size_t upb_table_valuesize(upb_table *t) { return t->value_size; }
+static uint32_t upb_table_size(const upb_table *t) { return 1 << t->size_lg2; }
+static size_t upb_table_entrysize(const upb_table *t) { return t->entry_size; }
+static size_t upb_table_valuesize(const upb_table *t) { return t->value_size; }
 
 void upb_table_init(upb_table *t, uint32_t size, uint16_t entry_size) {
   t->count = 0;
@@ -43,12 +43,12 @@ void upb_table_free(upb_table *t) { free(t->entries); }
 
 /* upb_inttable ***************************************************************/
 
-static upb_inttable_entry *intent(upb_inttable *t, int32_t i) {
+static upb_inttable_entry *intent(const upb_inttable *t, int32_t i) {
   //printf("looking up int entry %d, size of entry: %d\n", i, t->t.entry_size);
   return UPB_INDEX(t->t.entries, i, t->t.entry_size);
 }
 
-static uint32_t upb_inttable_hashtablesize(upb_inttable *t) {
+static uint32_t upb_inttable_hashtablesize(const upb_inttable *t) {
   return upb_table_size(&t->t);
 }
 
@@ -219,12 +219,13 @@ void upb_inttable_compact(upb_inttable *t) {
   *t = new_table;
 }
 
-upb_inttable_iter upb_inttable_begin(upb_inttable *t) {
+upb_inttable_iter upb_inttable_begin(const upb_inttable *t) {
   upb_inttable_iter iter = {-1, NULL, true};  // -1 will overflow to 0 on the first iteration.
   return upb_inttable_next(t, iter);
 }
 
-upb_inttable_iter upb_inttable_next(upb_inttable *t, upb_inttable_iter iter) {
+upb_inttable_iter upb_inttable_next(const upb_inttable *t,
+                                    upb_inttable_iter iter) {
   const size_t hdrsize = sizeof(upb_inttable_header);
   const size_t entsize = upb_table_entrysize(&t->t);
   if (iter.array_part) {
@@ -259,13 +260,13 @@ upb_inttable_iter upb_inttable_next(upb_inttable *t, upb_inttable_iter iter) {
 
 /* upb_strtable ***************************************************************/
 
-static upb_strtable_entry *strent(upb_strtable *t, int32_t i) {
+static upb_strtable_entry *strent(const upb_strtable *t, int32_t i) {
   //fprintf(stderr, "i: %d, table_size: %d\n", i, upb_table_size(&t->t));
   assert(i <= (int32_t)upb_table_size(&t->t));
   return UPB_INDEX(t->t.entries, i, t->t.entry_size);
 }
 
-static uint32_t upb_strtable_size(upb_strtable *t) {
+static uint32_t upb_strtable_size(const upb_strtable *t) {
   return upb_table_size(&t->t);
 }
 
@@ -288,12 +289,12 @@ void upb_strtable_free(upb_strtable *t) {
   upb_table_free(&t->t);
 }
 
-static uint32_t strtable_bucket(upb_strtable *t, const char *key) {
+static uint32_t strtable_bucket(const upb_strtable *t, const char *key) {
   uint32_t hash = MurmurHash2(key, strlen(key), 0);
   return (hash & t->t.mask);
 }
 
-void *upb_strtable_lookup(upb_strtable *t, const char *key) {
+void *upb_strtable_lookup(const upb_strtable *t, const char *key) {
   uint32_t bucket = strtable_bucket(t, key);
   upb_strtable_entry *e;
   do {
@@ -303,7 +304,7 @@ void *upb_strtable_lookup(upb_strtable *t, const char *key) {
   return NULL;
 }
 
-void *upb_strtable_lookupl(upb_strtable *t, const char *key, size_t len) {
+void *upb_strtable_lookupl(const upb_strtable *t, const char *key, size_t len) {
   // TODO: improve.
   char key2[len+1];
   memcpy(key2, key, len);
@@ -383,7 +384,7 @@ void upb_strtable_insert(upb_strtable *t, const char *key, const void *val) {
   strinsert(t, key, val);
 }
 
-void upb_strtable_begin(upb_strtable_iter *i, upb_strtable *t) {
+void upb_strtable_begin(upb_strtable_iter *i, const upb_strtable *t) {
   i->e = strent(t, -1);
   i->t = t;
   upb_strtable_next(i);

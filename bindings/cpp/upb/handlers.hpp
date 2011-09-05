@@ -4,9 +4,6 @@
  * Copyright (c) 2011 Google Inc.  See LICENSE for details.
  * Author: Josh Haberman <jhaberman@gmail.com>
  *
- * Note!  This file is a proof-of-concept for C++ wrappers and does not
- * yet build.
- *
  * upb::Handlers is a generic visitor-like interface for iterating over a
  * stream of protobuf data.  You can register function pointers that will be
  * called for each message and/or field as the data is being parsed or iterated

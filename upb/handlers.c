@@ -107,7 +107,7 @@ typedef struct {
   upb_mhandlers *mh;
 } upb_mtab_ent;
 
-static upb_mhandlers *upb_regmsg_dfs(upb_handlers *h, upb_msgdef *m,
+static upb_mhandlers *upb_regmsg_dfs(upb_handlers *h, const upb_msgdef *m,
                                      upb_onmsgreg *msgreg_cb,
                                      upb_onfieldreg *fieldreg_cb,
                                      void *closure, upb_strtable *mtab) {
@@ -139,7 +139,7 @@ static upb_mhandlers *upb_regmsg_dfs(upb_handlers *h, upb_msgdef *m,
   return mh;
 }
 
-upb_mhandlers *upb_handlers_regmsgdef(upb_handlers *h, upb_msgdef *m,
+upb_mhandlers *upb_handlers_regmsgdef(upb_handlers *h, const upb_msgdef *m,
                                       upb_onmsgreg *msgreg_cb,
                                       upb_onfieldreg *fieldreg_cb,
                                       void *closure) {

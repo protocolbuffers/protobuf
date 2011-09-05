@@ -38,7 +38,7 @@ static void upb_msgdef_free(upb_msgdef *m);
 static void upb_enumdef_free(upb_enumdef *e);
 static void upb_unresolveddef_free(struct _upb_unresolveddef *u);
 
-bool upb_def_ismutable(upb_def *def) { return def->symtab == NULL; }
+bool upb_def_ismutable(const upb_def *def) { return def->symtab == NULL; }
 
 bool upb_def_setfqname(upb_def *def, const char *fqname) {
   assert(upb_def_ismutable(def));
@@ -58,10 +58,12 @@ static void upb_def_free(upb_def *def) {
   }
 }
 
-upb_def *upb_def_dup(upb_def *def) {
+upb_def *upb_def_dup(const upb_def *def) {
   switch (def->type) {
-    case UPB_DEF_MSG: return UPB_UPCAST(upb_msgdef_dup(upb_downcast_msgdef(def)));
-    case UPB_DEF_ENUM: return UPB_UPCAST(upb_enumdef_dup(upb_downcast_enumdef(def)));
+    case UPB_DEF_MSG:
+      return UPB_UPCAST(upb_msgdef_dup(upb_downcast_msgdef_const(def)));
+    case UPB_DEF_ENUM:
+      return UPB_UPCAST(upb_enumdef_dup(upb_downcast_enumdef_const(def)));
     default: assert(false); return NULL;
   }
 }
@@ -70,7 +72,8 @@ upb_def *upb_def_dup(upb_def *def) {
 // def itself.  If the refcount falls to zero, the def is deleted.  Once the
 // def belongs to a symtab, the def is owned by the symtab and its refcount
 // determines whether the def owns a ref on the symtab or not.
-void upb_def_ref(upb_def *def) {
+void upb_def_ref(const upb_def *_def) {
+  upb_def *def = (upb_def*)_def;  // Need to modify refcount.
   if (upb_atomic_ref(&def->refcount) && def->symtab)
     upb_symtab_ref(def->symtab);
 }
@@ -83,7 +86,8 @@ static void upb_def_movetosymtab(upb_def *d, upb_symtab *s) {
   if (m) upb_inttable_compact(&m->itof);
 }
 
-void upb_def_unref(upb_def *def) {
+void upb_def_unref(const upb_def *_def) {
+  upb_def *def = (upb_def*)_def;  // Need to modify refcount.
   if (!def) return;
   if (upb_atomic_unref(&def->refcount)) {
     if (def->symtab) {
@@ -152,7 +156,7 @@ static void upb_enumdef_free(upb_enumdef *e) {
   free(e);
 }
 
-upb_enumdef *upb_enumdef_dup(upb_enumdef *e) {
+upb_enumdef *upb_enumdef_dup(const upb_enumdef *e) {
   upb_enumdef *new_e = upb_enumdef_new();
   upb_enum_iter i;
   for(i = upb_enum_begin(e); !upb_enum_done(i); i = upb_enum_next(e, i)) {
@@ -176,12 +180,12 @@ void upb_enumdef_setdefault(upb_enumdef *e, int32_t val) {
   e->defaultval = val;
 }
 
-upb_enum_iter upb_enum_begin(upb_enumdef *e) {
+upb_enum_iter upb_enum_begin(const upb_enumdef *e) {
   // We could iterate over either table here; the choice is arbitrary.
   return upb_inttable_begin(&e->iton);
 }
 
-upb_enum_iter upb_enum_next(upb_enumdef *e, upb_enum_iter iter) {
+upb_enum_iter upb_enum_next(const upb_enumdef *e, upb_enum_iter iter) {
   return upb_inttable_next(&e->iton, iter);
 }
 
@@ -267,11 +271,11 @@ upb_fielddef *upb_fielddef_dup(upb_fielddef *f) {
   return f;
 }
 
-bool upb_fielddef_ismutable(upb_fielddef *f) {
+bool upb_fielddef_ismutable(const upb_fielddef *f) {
   return !f->msgdef || upb_def_ismutable(UPB_UPCAST(f->msgdef));
 }
 
-upb_def *upb_fielddef_subdef(upb_fielddef *f) {
+upb_def *upb_fielddef_subdef(const upb_fielddef *f) {
   if (upb_hassubdef(f) && !upb_fielddef_ismutable(f))
     return f->def;
   else
@@ -403,7 +407,7 @@ static void upb_msgdef_free(upb_msgdef *m) {
   free(m);
 }
 
-upb_msgdef *upb_msgdef_dup(upb_msgdef *m) {
+upb_msgdef *upb_msgdef_dup(const upb_msgdef *m) {
   upb_msgdef *newm = upb_msgdef_new();
   newm->size = m->size;
   newm->hasbit_bytes = m->hasbit_bytes;
@@ -512,23 +516,16 @@ void upb_msgdef_layout(upb_msgdef *m) {
   free(sorted_fields);
 }
 
-upb_msg_iter upb_msg_begin(upb_msgdef *m) {
+upb_msg_iter upb_msg_begin(const upb_msgdef *m) {
   return upb_inttable_begin(&m->itof);
 }
 
-upb_msg_iter upb_msg_next(upb_msgdef *m, upb_msg_iter iter) {
+upb_msg_iter upb_msg_next(const upb_msgdef *m, upb_msg_iter iter) {
   return upb_inttable_next(&m->itof, iter);
 }
 
 
 /* upb_symtab *****************************************************************/
-
-struct _upb_symtab {
-  upb_atomic_t refcount;
-  upb_rwlock_t lock;       // Protects all members except the refcount.
-  upb_strtable symtab;     // The symbol table.
-  upb_deflist olddefs;
-};
 
 typedef struct {
   upb_def *def;
@@ -536,7 +533,7 @@ typedef struct {
 
 // Given a symbol and the base symbol inside which it is defined, find the
 // symbol's definition in t.
-static upb_symtab_ent *upb_resolve(upb_strtable *t,
+static upb_symtab_ent *upb_resolve(const upb_strtable *t,
                                    const char *base, const char *sym) {
   if(strlen(sym) == 0) return NULL;
   if(sym[0] == UPB_SYMBOL_SEPARATOR) {
@@ -575,9 +572,13 @@ static void upb_symtab_free(upb_symtab *s) {
   free(s);
 }
 
-void upb_symtab_ref(upb_symtab *s) { upb_atomic_ref(&s->refcount); }
+void upb_symtab_ref(const upb_symtab *_s) {
+  upb_symtab *s = (upb_symtab*)_s;
+  upb_atomic_ref(&s->refcount);
+}
 
-void upb_symtab_unref(upb_symtab *s) {
+void upb_symtab_unref(const upb_symtab *_s) {
+  upb_symtab *s = (upb_symtab*)_s;
   if(s && upb_atomic_unref(&s->refcount)) {
     upb_symtab_free(s);
   }
@@ -592,12 +593,13 @@ upb_symtab *upb_symtab_new() {
   return s;
 }
 
-upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_deftype_t type) {
+const upb_def **upb_symtab_getdefs(const upb_symtab *s, int *count,
+                                   upb_deftype_t type) {
   upb_rwlock_rdlock(&s->lock);
   int total = upb_strtable_count(&s->symtab);
   // We may only use part of this, depending on how many symbols are of the
   // correct type.
-  upb_def **defs = malloc(sizeof(*defs) * total);
+  const upb_def **defs = malloc(sizeof(*defs) * total);
   upb_strtable_iter iter;
   upb_strtable_begin(&iter, &s->symtab);
   int i = 0;
@@ -614,7 +616,7 @@ upb_def **upb_symtab_getdefs(upb_symtab *s, int *count, upb_deftype_t type) {
   return defs;
 }
 
-upb_def *upb_symtab_lookup(upb_symtab *s, const char *sym) {
+const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym) {
   upb_rwlock_rdlock(&s->lock);
   upb_symtab_ent *e = upb_strtable_lookup(&s->symtab, sym);
   upb_def *ret = NULL;
@@ -626,7 +628,20 @@ upb_def *upb_symtab_lookup(upb_symtab *s, const char *sym) {
   return ret;
 }
 
-upb_def *upb_symtab_resolve(upb_symtab *s, const char *base, const char *sym) {
+const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym) {
+  upb_rwlock_rdlock(&s->lock);
+  upb_symtab_ent *e = upb_strtable_lookup(&s->symtab, sym);
+  upb_msgdef *ret = NULL;
+  if(e && e->def->type == UPB_DEF_MSG) {
+    ret = upb_downcast_msgdef(e->def);
+    upb_def_ref(UPB_UPCAST(ret));
+  }
+  upb_rwlock_unlock(&s->lock);
+  return ret;
+}
+
+const upb_def *upb_symtab_resolve(const upb_symtab *s, const char *base,
+                                  const char *sym) {
   upb_rwlock_rdlock(&s->lock);
   upb_symtab_ent *e = upb_resolve(&s->symtab, base, sym);
   upb_def *ret = NULL;

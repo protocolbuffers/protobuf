@@ -29,7 +29,7 @@ MESSAGE_CIDENT msg[NUM_MESSAGES];
 MESSAGE_CIDENT msg2;
 static upb_stringsrc strsrc;
 static upb_decoder d;
-upb_msgdef *def;
+static const upb_msgdef *def;
 
 #define PROTO2_APPEND(type, ctype) \
   upb_flow_t proto2_append_ ## type(void *_r, upb_value fval, upb_value val) { \
@@ -50,10 +50,10 @@ PROTO2_APPEND(bool, bool)
 
 upb_flow_t proto2_setstr(void *m, upb_value fval, upb_value val) {
   assert(m != NULL);
-  upb_fielddef *f = upb_value_getfielddef(fval);
+  const upb_fielddef *f = upb_value_getfielddef(fval);
   std::string **str = (std::string**)UPB_INDEX(m, f->offset, 1);
   if (*str == f->default_ptr) *str = new std::string;
-  upb_strref *ref = upb_value_getstrref(val);
+  const upb_strref *ref = upb_value_getstrref(val);
   // XXX: only supports contiguous strings atm.
   (*str)->assign(ref->ptr, ref->len);
   return UPB_CONTINUE;
@@ -64,7 +64,7 @@ upb_flow_t proto2_append_str(void *_r, upb_value fval, upb_value val) {
   typedef google::protobuf::RepeatedPtrField<std::string> R;
   (void)fval;
   R *r = (R*)_r;
-  upb_strref *ref = upb_value_getstrref(val);
+  const upb_strref *ref = upb_value_getstrref(val);
   // XXX: only supports contiguous strings atm.
   r->Add()->assign(ref->ptr, ref->len);
   return UPB_CONTINUE;
@@ -72,13 +72,13 @@ upb_flow_t proto2_append_str(void *_r, upb_value fval, upb_value val) {
 
 upb_sflow_t proto2_startseq(void *m, upb_value fval) {
   assert(m != NULL);
-  upb_fielddef *f = upb_value_getfielddef(fval);
+  const upb_fielddef *f = upb_value_getfielddef(fval);
   return UPB_CONTINUE_WITH(UPB_INDEX(m, f->offset, 1));
 }
 
 upb_sflow_t proto2_startsubmsg(void *m, upb_value fval) {
   assert(m != NULL);
-  upb_fielddef *f = upb_value_getfielddef(fval);
+  const upb_fielddef *f = upb_value_getfielddef(fval);
   google::protobuf::Message *prototype = (google::protobuf::Message*)f->prototype;
   void **subm = (void**)UPB_INDEX(m, f->offset, 1);
   if (*subm == NULL || *subm == f->default_ptr)
@@ -122,7 +122,7 @@ upb_sflow_t proto2_startsubmsg_r(void *_r, upb_value fval) {
    public:
     typedef void Type;
   };
-  upb_fielddef *f = upb_value_getfielddef(fval);
+  const upb_fielddef *f = upb_value_getfielddef(fval);
   UpbRepeatedPtrField *r = (UpbRepeatedPtrField*)_r;
   void *submsg = r->Add((google::protobuf::Message*)f->prototype);
   assert(submsg != NULL);
@@ -225,7 +225,7 @@ static bool initialize()
     return false;
   }
   int n;
-  upb_def **defs = upb_load_descriptor(data, len, &n, &status);
+  upb_def **defs = upb_load_defs_from_descriptor(data, len, &n, &status);
   free(data);
   if(!upb_ok(&status)) {
     fprintf(stderr, "Error reading descriptor: %s\n",
@@ -257,7 +257,7 @@ static bool initialize()
   for(int i = 0; i < n; i++) upb_def_unref(defs[i]);
   free(defs);
 
-  def = upb_dyncast_msgdef(upb_symtab_lookup(s, MESSAGE_NAME));
+  def = upb_dyncast_msgdef_const(upb_symtab_lookup(s, MESSAGE_NAME));
   if(!def) {
     fprintf(stderr, "Error finding symbol '%s'.\n", MESSAGE_NAME);
     return false;
