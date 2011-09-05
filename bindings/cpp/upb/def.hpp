@@ -6,6 +6,36 @@
  *
  * The set of upb::*Def classes and upb::SymbolTable allow for defining and
  * manipulating schema information (as defined in .proto files).
+ *
+ * Defs go through two distinct phases of life:
+ *
+ * 1. MUTABLE: when first created, the properties of the def can be set freely
+ *    (for example a message's name, its list of fields, the name/number of
+ *    fields, etc).  During this phase the def is *not* thread-safe, and may
+ *    not be used for any purpose except to set its properties (it can't be
+ *    used to parse anything, create any messages in memory, etc).
+ *
+ * 2. FINALIZED: after being added to a symtab (which links the defs together)
+ *    the defs become finalized (thread-safe and immutable).  Programs may only
+ *    access defs through a CONST POINTER during this stage -- upb_symtab will
+ *    help you out with this requirement by only vending const pointers, but
+ *    you need to make sure not to use any non-const pointers you still have
+ *    sitting around.  In practice this means that you may not call any setters
+ *    on the defs (or functions that themselves call the setters).  If you want
+ *    to modify an existing immutable def, copy it with upb_*_dup(), modify the
+ *    copy, and add the modified def to the symtab (replacing the existing
+ *    def).
+ *
+ * You can test for which stage of life a def is in by calling
+ * upb::Def::IsMutable().  This is particularly useful for dynamic language
+ * bindings, which must properly guarantee that the dynamic language cannot
+ * break the rules laid out above.
+ *
+ * It would be possible to make the defs thread-safe during stage 1 by using
+ * mutexes internally and changing any methods returning pointers to return
+ * copies instead.  This could be important if we are integrating with a VM or
+ * interpreter that does not naturally serialize access to wrapped objects (for
+ * example, in the case of Python this is not necessary because of the GIL).
  */
 
 #ifndef UPB_DEF_HPP

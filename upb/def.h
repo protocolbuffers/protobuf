@@ -20,14 +20,14 @@
  *    not be used for any purpose except to set its properties (it can't be
  *    used to parse anything, create any messages in memory, etc).
  *
- * 2. IMMUTABLE: after being added to a symtab (which links the defs together)
- *    the defs become thread-safe and immutable.  Programs may only access defs
- *    through a CONST POINTER during this stage -- upb_symtab will help you out
- *    with this requirement by only vending const pointers, but you need to
- *    make sure not to use any non-const pointers you still have sitting
- *    around.  In practice this means that you may not call any setters on the
- *    defs (or functions that themselves call the setters).  If you want to
- *    modify an existing immutable def, copy it with upb_*_dup(), modify the
+ * 2. FINALIZED: after being added to a symtab (which links the defs together)
+ *    the defs become finalized (thread-safe and immutable).  Programs may only
+ *    access defs through a CONST POINTER during this stage -- upb_symtab will
+ *    help you out with this requirement by only vending const pointers, but
+ *    you need to make sure not to use any non-const pointers you still have
+ *    sitting around.  In practice this means that you may not call any setters
+ *    on the defs (or functions that themselves call the setters).  If you want
+ *    to modify an existing immutable def, copy it with upb_*_dup(), modify the
  *    copy, and add the modified def to the symtab (replacing the existing
  *    def).
  *
