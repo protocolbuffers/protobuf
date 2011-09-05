@@ -129,20 +129,20 @@ upb_fielddef *upb_fielddef_dup(upb_fielddef *f);
 bool upb_fielddef_ismutable(const upb_fielddef *f);
 
 // Read accessors.  May be called any time.
-INLINE uint8_t upb_fielddef_type(upb_fielddef *f) { return f->type; }
-INLINE uint8_t upb_fielddef_label(upb_fielddef *f) { return f->label; }
-INLINE int32_t upb_fielddef_number(upb_fielddef *f) { return f->number; }
-INLINE char *upb_fielddef_name(upb_fielddef *f) { return f->name; }
-INLINE upb_value upb_fielddef_default(upb_fielddef *f) { return f->defaultval; }
-INLINE upb_value upb_fielddef_fval(upb_fielddef *f) { return f->fval; }
-INLINE bool upb_fielddef_finalized(upb_fielddef *f) { return f->finalized; }
-INLINE struct _upb_msgdef *upb_fielddef_msgdef(upb_fielddef *f) {
+INLINE uint8_t upb_fielddef_type(const upb_fielddef *f) { return f->type; }
+INLINE uint8_t upb_fielddef_label(const upb_fielddef *f) { return f->label; }
+INLINE int32_t upb_fielddef_number(const upb_fielddef *f) { return f->number; }
+INLINE char *upb_fielddef_name(const upb_fielddef *f) { return f->name; }
+INLINE upb_value upb_fielddef_default(const upb_fielddef *f) { return f->defaultval; }
+INLINE upb_value upb_fielddef_fval(const upb_fielddef *f) { return f->fval; }
+INLINE bool upb_fielddef_finalized(const upb_fielddef *f) { return f->finalized; }
+INLINE struct _upb_msgdef *upb_fielddef_msgdef(const upb_fielddef *f) {
   return f->msgdef;
 }
-INLINE struct _upb_accessor_vtbl *upb_fielddef_accessor(upb_fielddef *f) {
+INLINE struct _upb_accessor_vtbl *upb_fielddef_accessor(const upb_fielddef *f) {
   return f->accessor;
 }
-INLINE const char *upb_fielddef_typename(upb_fielddef *f) {
+INLINE const char *upb_fielddef_typename(const upb_fielddef *f) {
   return f->def ? f->def->fqname : NULL;
 }
 
@@ -225,7 +225,7 @@ INLINE void upb_msgdef_ref(const upb_msgdef *md) { upb_def_ref(UPB_UPCAST(md)); 
 upb_msgdef *upb_msgdef_dup(const upb_msgdef *m);
 
 // Read accessors.  May be called at any time.
-INLINE uint16_t upb_msgdef_size(const upb_msgdef *m) { return m->size; }
+INLINE size_t upb_msgdef_size(const upb_msgdef *m) { return m->size; }
 INLINE uint8_t upb_msgdef_hasbit_bytes(const upb_msgdef *m) {
   return m->hasbit_bytes;
 }
@@ -237,12 +237,12 @@ void upb_msgdef_setsize(upb_msgdef *m, uint16_t size);
 void upb_msgdef_sethasbit_bytes(upb_msgdef *m, uint16_t bytes);
 bool upb_msgdef_setextrange(upb_msgdef *m, uint32_t start, uint32_t end);
 
-// Adds a fielddef to a msgdef.  Caller retains its ref on the fielddef.  May
-// only be done before the msgdef is in a symtab (requires upb_def_ismutable(m)
-// for the msgdef).  The fielddef's name and number must be set, and the
-// message may not already contain any field with this name or number, and this
-// fielddef may not be part of another message, otherwise false is returned and
-// no action is performed.
+// Adds a set of fields (upb_fielddef objects) to a msgdef.  Caller retains its
+// ref on the fielddef.  May only be done before the msgdef is in a symtab
+// (requires upb_def_ismutable(m) for the msgdef).  The fielddef's name and
+// number must be set, and the message may not already contain any field with
+// this name or number, and this fielddef may not be part of another message,
+// otherwise false is returned and no action is performed.
 bool upb_msgdef_addfields(upb_msgdef *m, upb_fielddef **f, int n);
 INLINE bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f) {
   return upb_msgdef_addfields(m, &f, 1);

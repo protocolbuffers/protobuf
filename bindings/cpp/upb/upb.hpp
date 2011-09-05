@@ -20,6 +20,12 @@ class Status : public upb_status {
   const char *GetString() const { return upb_status_getstr(this); }
 };
 
+class Value : public upb_value {
+ public:
+  Value(const upb_value& val) { *this = val; }
+  Value() {}
+};
+
 INLINE std::ostream& operator<<(std::ostream& out, const Status& status) {
   out << status.GetString();
   return out;
