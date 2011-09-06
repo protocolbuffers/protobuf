@@ -75,7 +75,7 @@ extern "C" {
 //     return UPB_CONTINUE_WITH(closure);
 //   }
 //
-//   static upb_flow_t endeqvoid *closure, upb_value fval) {
+//   static upb_flow_t endseq(void *closure, upb_value fval) {
 //     // Called when a sequence ends.
 //     return UPB_CONTINUE;
 //   }
