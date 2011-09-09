@@ -67,6 +67,30 @@ static void test_upb_symtab() {
   upb_def_unref(def2);
 }
 
+static void test_upb_two_fielddefs() {
+  upb_fielddef *f1 = upb_fielddef_new();
+  upb_fielddef *f2 = upb_fielddef_new();
+
+  ASSERT(upb_fielddef_ismutable(f1));
+  upb_fielddef_setname(f1, "");
+  upb_fielddef_setnumber(f1, 1937);
+  upb_fielddef_settype(f1, UPB_TYPE(FIXED64));
+  upb_fielddef_setlabel(f1, UPB_LABEL(REPEATED));
+  upb_fielddef_settypename(f1, "");
+  ASSERT(upb_fielddef_number(f1) == 1937);
+
+  ASSERT(upb_fielddef_ismutable(f2));
+  upb_fielddef_setname(f2, "");
+  upb_fielddef_setnumber(f2, 1572);
+  upb_fielddef_settype(f2, UPB_TYPE(BYTES));
+  upb_fielddef_setlabel(f2, UPB_LABEL(REPEATED));
+  upb_fielddef_settypename(f2, "");
+  ASSERT(upb_fielddef_number(f2) == 1572);
+
+  upb_fielddef_unref(f1);
+  upb_fielddef_unref(f2);
+}
+
 int main()
 {
 #define TEST(func) do { \
@@ -78,6 +102,7 @@ int main()
 
   TEST(test_upb_symtab);
   TEST(test_upb_jit);
+  TEST(test_upb_two_fielddefs);
   printf("All tests passed (%d assertions).\n", num_assertions);
   return 0;
 }
