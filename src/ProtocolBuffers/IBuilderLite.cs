@@ -46,7 +46,7 @@ namespace Google.ProtocolBuffers
     /// use explicit interface implemenation for the non-generic form. This mirrors
     /// how IEnumerable and IEnumerable&lt;T&gt; work.
     /// </summary>
-    public interface IBuilderLite
+    public partial interface IBuilderLite
     {
         /// <summary>
         /// Returns true iff all required fields in the message and all

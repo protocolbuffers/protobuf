@@ -44,7 +44,7 @@ namespace Google.ProtocolBuffers
     /// <summary>
     /// An implementation of IMessage that can represent arbitrary types, given a MessageaDescriptor.
     /// </summary>
-    public sealed class DynamicMessage : AbstractMessage<DynamicMessage, DynamicMessage.Builder>
+    public sealed partial class DynamicMessage : AbstractMessage<DynamicMessage, DynamicMessage.Builder>
     {
         private readonly MessageDescriptor type;
         private readonly FieldSet fields;
@@ -308,7 +308,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Builder for dynamic messages. Instances are created with DynamicMessage.CreateBuilder.
         /// </summary>
-        public sealed class Builder : AbstractBuilder<DynamicMessage, Builder>
+        public sealed partial class Builder : AbstractBuilder<DynamicMessage, Builder>
         {
             private readonly MessageDescriptor type;
             private FieldSet fields;

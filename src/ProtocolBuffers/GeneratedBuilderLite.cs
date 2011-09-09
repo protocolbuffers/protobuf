@@ -44,7 +44,7 @@ namespace Google.ProtocolBuffers
     /// most of the IBuilder interface using reflection. Users can ignore this class
     /// as an implementation detail.
     /// </summary>
-    public abstract class GeneratedBuilderLite<TMessage, TBuilder> : AbstractBuilderLite<TMessage, TBuilder>
+    public abstract partial class GeneratedBuilderLite<TMessage, TBuilder> : AbstractBuilderLite<TMessage, TBuilder>
         where TMessage : GeneratedMessageLite<TMessage, TBuilder>
         where TBuilder : GeneratedBuilderLite<TMessage, TBuilder>
     {
