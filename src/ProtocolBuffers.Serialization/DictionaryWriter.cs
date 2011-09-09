@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.Descriptors;
@@ -57,13 +57,13 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// No-op
         /// </summary>
-        public override void StartMessage()
+        public override void WriteMessageStart()
         { }
 
         /// <summary>
         /// No-op
         /// </summary>
-        public override void EndMessage()
+        public override void WriteMessageEnd()
         { }
 
         /// <summary>

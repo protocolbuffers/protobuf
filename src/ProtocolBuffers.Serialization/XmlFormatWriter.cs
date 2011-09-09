@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.IO;
 using System.Text;
@@ -14,10 +14,12 @@ namespace Google.ProtocolBuffers.Serialization
     /// </summary>
     public class XmlFormatWriter : AbstractTextWriter
     {
+        private static readonly Encoding DefaultEncoding = new UTF8Encoding(false);
         public const string DefaultRootElementName = "root";
         private const int NestedArrayFlag = 0x0001;
         private readonly XmlWriter _output;
         private string _rootElementName;
+        private int _messageOpenCount;
 
         private static XmlWriterSettings DefaultSettings(Encoding encoding)
         {
@@ -43,7 +45,7 @@ namespace Google.ProtocolBuffers.Serialization
         /// </summary>
         public static XmlFormatWriter CreateInstance(Stream output)
         {
-            return new XmlFormatWriter(XmlWriter.Create(output, DefaultSettings(Encoding.UTF8)));
+            return new XmlFormatWriter(XmlWriter.Create(output, DefaultSettings(DefaultEncoding)));
         }
 
         /// <summary>
@@ -65,6 +67,7 @@ namespace Google.ProtocolBuffers.Serialization
         protected XmlFormatWriter(XmlWriter output)
         {
             _output = output;
+            _messageOpenCount = 0;
             _rootElementName = DefaultRootElementName;
         }
 
@@ -75,8 +78,8 @@ namespace Google.ProtocolBuffers.Serialization
         {
             if (disposing)
             {
-                if (_output.WriteState != WriteState.Closed && _output.WriteState != WriteState.Start)
-                    _output.WriteEndDocument();
+                while(_messageOpenCount > 0)
+                    WriteMessageEnd();
 
                 _output.Close();
             }
@@ -128,9 +131,9 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// Used to write the root-message preamble, in xml this is open element for RootElementName,
         /// by default "&lt;root&gt;". After this call you can call IMessageLite.MergeTo(...) and 
-        /// complete the message with a call to EndMessage().
+        /// complete the message with a call to WriteMessageEnd().
         /// </summary>
-        public override void StartMessage()
+        public override void WriteMessageStart()
         {
             StartMessage(_rootElementName);
         }
@@ -138,7 +141,7 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// Used to write the root-message preamble, in xml this is open element for elementName. 
         /// After this call you can call IMessageLite.MergeTo(...) and  complete the message with 
-        /// a call to EndMessage().
+        /// a call to WriteMessageEnd().
         /// </summary>
         public void StartMessage(string elementName)
         {
@@ -151,15 +154,20 @@ namespace Google.ProtocolBuffers.Serialization
             {
                 _output.WriteStartElement(elementName);
             }
+            _messageOpenCount++;
         }
 
         /// <summary>
-        /// Used to complete a root-message previously started with a call to StartMessage()
+        /// Used to complete a root-message previously started with a call to WriteMessageStart()
         /// </summary>
-        public override void EndMessage()
+        public override void WriteMessageEnd()
         {
+            if (_messageOpenCount <= 0)
+                throw new InvalidOperationException();
+
             _output.WriteEndElement();
             _output.Flush();
+            _messageOpenCount--;
         }
 
         /// <summary>
@@ -177,7 +185,7 @@ namespace Google.ProtocolBuffers.Serialization
         {
             StartMessage(elementName);
             message.WriteTo(this);
-            EndMessage();
+            WriteMessageEnd();
         }
 
         /// <summary>

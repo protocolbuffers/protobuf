@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Google.ProtocolBuffers.Descriptors;
@@ -25,17 +25,14 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// No-op
         /// </summary>
-        public override AbstractReader ReadStartMessage()
-        {
-            return this;
-        }
+        public override void ReadMessageStart()
+        { }
 
         /// <summary>
         /// No-op
         /// </summary>
-        public override void ReadEndMessage()
-        {
-        }
+        public override void ReadMessageEnd()
+        { }
 
         /// <summary>
         /// Merges the contents of stream into the provided message builder

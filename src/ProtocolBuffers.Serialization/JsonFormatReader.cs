@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
@@ -103,19 +103,18 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// Reads the root-message preamble specific to this formatter
         /// </summary>
-        public override AbstractReader ReadStartMessage()
+        public override void ReadMessageStart()
         {
             _input.Consume('{');
             _stopChar.Push('}');
 
             _state = ReaderState.BeginObject;
-            return this;
         }
 
         /// <summary>
         /// Reads the root-message close specific to this formatter
         /// </summary>
-        public override void ReadEndMessage()
+        public override void ReadMessageEnd()
         {
             _input.Consume((char)_stopChar.Pop());
             _state = ReaderState.EndValue;
@@ -126,9 +125,9 @@ namespace Google.ProtocolBuffers.Serialization
         /// </summary>
         public override TBuilder Merge<TBuilder>(TBuilder builder, ExtensionRegistry registry)
         {
-            AbstractReader rdr = ReadStartMessage();
-            builder.WeakMergeFrom(rdr, registry);
-            rdr.ReadEndMessage();
+            ReadMessageStart();
+            builder.WeakMergeFrom(this, registry);
+            ReadMessageEnd();
             return builder;
         }
 

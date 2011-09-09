@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -101,7 +101,7 @@ namespace Google.ProtocolBuffers.Serialization
         private class JsonStreamWriter : JsonFormatWriter
         {
 #if SILVERLIGHT2 || COMPACT_FRAMEWORK_35
-            static readonly Encoding Encoding = Encoding.UTF8;
+            static readonly Encoding Encoding = new UTF8Encoding(false);
 #else
             private static readonly Encoding Encoding = Encoding.ASCII;
 #endif
@@ -244,9 +244,10 @@ namespace Google.ProtocolBuffers.Serialization
         /// </summary>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && _counter.Count == 1)
+            if (disposing)
             {
-                EndMessage();
+                while(_counter.Count > 1)
+                    WriteMessageEnd();
             }
 
             base.Dispose(disposing);
@@ -458,17 +459,17 @@ namespace Google.ProtocolBuffers.Serialization
         /// </summary>
         public override void WriteMessage(IMessageLite message)
         {
-            StartMessage();
+            WriteMessageStart();
             message.WriteTo(this);
-            EndMessage();
+            WriteMessageEnd();
         }
 
         /// <summary>
         /// Used to write the root-message preamble, in json this is the left-curly brace '{'.
         /// After this call you can call IMessageLite.MergeTo(...) and complete the message with
-        /// a call to EndMessage().
+        /// a call to WriteMessageEnd().
         /// </summary>
-        public override void StartMessage()
+        public override void WriteMessageStart()
         {
             if (_isArray)
             {
@@ -479,9 +480,9 @@ namespace Google.ProtocolBuffers.Serialization
         }
 
         /// <summary>
-        /// Used to complete a root-message previously started with a call to StartMessage()
+        /// Used to complete a root-message previously started with a call to WriteMessageStart()
         /// </summary>
-        public override void EndMessage()
+        public override void WriteMessageEnd()
         {
             _counter.RemoveAt(_counter.Count - 1);
             WriteLine("}");

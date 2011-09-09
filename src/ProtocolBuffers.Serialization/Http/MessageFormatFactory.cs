@@ -3,7 +3,7 @@ using System.IO;
 using System.Xml;
 using System.Text;
 
-namespace Google.ProtocolBuffers.Serialization
+namespace Google.ProtocolBuffers.Serialization.Http
 {
     /// <summary>
     /// Extensions and helpers to abstract the reading/writing of messages by a client-specified content type.
@@ -29,14 +29,14 @@ namespace Google.ProtocolBuffers.Serialization
             else if (inputType == FormatType.Json)
             {
                 JsonFormatReader reader = JsonFormatReader.CreateInstance(input);
-                codedInput = reader.ReadStartMessage();
+                codedInput = reader;
             }
             else if (inputType == FormatType.Xml)
             {
                 XmlFormatReader reader = XmlFormatReader.CreateInstance(input);
                 reader.RootElementName = options.XmlReaderRootElementName;
                 reader.Options = options.XmlReaderOptions;
-                codedInput = reader.ReadStartMessage();
+                codedInput = reader;
             }
             else
                 throw new NotSupportedException();
@@ -56,6 +56,7 @@ namespace Google.ProtocolBuffers.Serialization
         public static TBuilder MergeFrom<TBuilder>(this TBuilder builder, MessageFormatOptions options, string contentType, Stream input) where TBuilder : IBuilderLite
         {
             ICodedInputStream codedInput = CreateInputStream(options, contentType, input);
+            codedInput.ReadMessageStart();
             return (TBuilder)builder.WeakMergeFrom(codedInput, options.ExtensionRegistry);
         }
         
@@ -82,13 +83,12 @@ namespace Google.ProtocolBuffers.Serialization
                 {
                     writer.Formatted();
                 }
-                writer.StartMessage();
                 codedOutput = writer;
             }
             else if (outputType == FormatType.Xml)
             {
                 XmlFormatWriter writer;
-                if (options.FormattedOutput)
+                if (!options.FormattedOutput)
                 {
                     writer = XmlFormatWriter.CreateInstance(output);
                 }
@@ -99,16 +99,15 @@ namespace Google.ProtocolBuffers.Serialization
                                                          CheckCharacters = false,
                                                          NewLineHandling = NewLineHandling.Entitize,
                                                          OmitXmlDeclaration = true,
-                                                         Encoding = Encoding.UTF8,
+                                                         Encoding = new UTF8Encoding(false),
                                                          Indent = true,
-                                                         IndentChars = "  ",
+                                                         IndentChars = "    ",
                                                          NewLineChars = Environment.NewLine,
                                                      };
                     writer = XmlFormatWriter.CreateInstance(XmlWriter.Create(output, settings));
                 }
                 writer.RootElementName = options.XmlWriterRootElementName;
                 writer.Options = options.XmlWriterOptions;
-                writer.StartMessage();
                 codedOutput = writer;
             }
             else
@@ -126,19 +125,17 @@ namespace Google.ProtocolBuffers.Serialization
         /// <param name="output">The stream to write the message to</param>
         public static void WriteTo(this IMessageLite message, MessageFormatOptions options, string contentType, Stream output)
         {
-            using (ICodedOutputStream codedOutput = CreateOutputStream(options, contentType, output))
-            {
-                message.WriteTo(codedOutput);
+            ICodedOutputStream codedOutput = CreateOutputStream(options, contentType, output);
 
-                // This is effectivly done by Dispose(); however, if you need to finalize a message
-                // without disposing the underlying stream, this is the only way to do it.
-                if (codedOutput is AbstractWriter)
-                    ((AbstractWriter)codedOutput).EndMessage();
+            // Output the appropriate message preamble
+            codedOutput.WriteMessageStart();
 
-                codedOutput.Flush();
-            }
+            // Write the message content to the output
+            message.WriteTo(codedOutput);
+
+            // Write the closing message fragment
+            codedOutput.WriteMessageEnd();
         }
-
 
         enum FormatType { ProtoBuffer, Json, Xml };
 

@@ -45,7 +45,7 @@ namespace Google.ProtocolBuffers
             using (TextWriter output = new StringWriter())
             using (AbstractWriter writer = JsonFormatWriter.CreateInstance(output))
             {
-                writer.StartMessage();      //manually begin the message, output is '{'
+                writer.WriteMessageStart();      //manually begin the message, output is '{'
                 
                 writer.Flush();
                 Assert.AreEqual("{", output.ToString());
@@ -56,7 +56,7 @@ namespace Google.ProtocolBuffers
                 writer.Flush();
                 Assert.AreEqual(@"{""valid"":true", output.ToString());
 
-                writer.EndMessage();        //manually write the end message '}'
+                writer.WriteMessageEnd();        //manually write the end message '}'
                 Assert.AreEqual(@"{""valid"":true}", output.ToString());
             }
         }
@@ -65,13 +65,13 @@ namespace Google.ProtocolBuffers
         public void Example_ReadJsonUsingICodedInputStream()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
-            AbstractReader reader = JsonFormatReader.CreateInstance(@"{""valid"":true}");
+            ICodedInputStream reader = JsonFormatReader.CreateInstance(@"{""valid"":true}");
 
-            AbstractReader stream = reader.ReadStartMessage();  //manually read the begin the message '{'
+            reader.ReadMessageStart();  //manually read the begin the message '{'
 
-            builder.MergeFrom(stream);  //write the message normally
+            builder.MergeFrom(reader);  //write the message normally
 
-            stream.ReadEndMessage();    //manually read the end message '}'
+            reader.ReadMessageEnd();    //manually read the end message '}'
         }
 
         protected string Content;
@@ -400,6 +400,28 @@ namespace Google.ProtocolBuffers
                 }
             Assert.AreEqual(3, ordinal);
             Assert.AreEqual(3, builder.TextlinesCount);
+        }
+        [Test]
+        public void TestReadWriteJsonWithoutRoot()
+        {
+            TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
+            TestXmlMessage message = builder.SetText("abc").SetNumber(123).Build();
+
+            string Json;
+            using (StringWriter sw = new StringWriter())
+            {
+                ICodedOutputStream output = JsonFormatWriter.CreateInstance(sw);
+
+                message.WriteTo(output);
+                output.Flush();
+                Json = sw.ToString();
+            }
+            Assert.AreEqual(@"""text"":""abc"",""number"":123", Json);
+
+            ICodedInputStream input = JsonFormatReader.CreateInstance(Json);
+            TestXmlMessage copy = TestXmlMessage.CreateBuilder().MergeFrom(input).Build();
+
+            Assert.AreEqual(message, copy);
         }
         [Test,ExpectedException(typeof(RecursionLimitExceededException))]
         public void TestRecursiveLimit()

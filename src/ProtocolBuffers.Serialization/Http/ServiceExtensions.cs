@@ -3,7 +3,7 @@ using System.Text;
 using Google.ProtocolBuffers;
 using System.IO;
 
-namespace Google.ProtocolBuffers.Serialization
+namespace Google.ProtocolBuffers.Serialization.Http
 {
     /// <summary>
     /// Extensions for the IRpcServerStub
@@ -25,6 +25,7 @@ namespace Google.ProtocolBuffers.Serialization
             string contentType, Stream input, string responseType, Stream output)
         {
             ICodedInputStream codedInput = MessageFormatFactory.CreateInputStream(options, contentType, input);
+            codedInput.ReadMessageStart();
             IMessageLite response = stub.CallMethod(methodName, codedInput, options.ExtensionRegistry);
             response.WriteTo(options, responseType, output);
         }

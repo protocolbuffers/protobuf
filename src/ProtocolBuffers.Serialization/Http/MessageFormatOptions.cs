@@ -1,6 +1,6 @@
 using System;
 
-namespace Google.ProtocolBuffers.Serialization
+namespace Google.ProtocolBuffers.Serialization.Http
 {
     /// <summary>
     /// Defines control information for the various formatting used with HTTP services
