@@ -202,7 +202,7 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public static int ComputeEnumSize(int fieldNumber, int value)
         {
-            return ComputeTagSize(fieldNumber) + ComputeRawVarint32Size((uint) value);
+            return ComputeTagSize(fieldNumber) + ComputeEnumSizeNoTag(value);
         }
 
         /// <summary>
@@ -391,7 +391,7 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public static int ComputeEnumSizeNoTag(int value)
         {
-            return ComputeRawVarint32Size((uint) value);
+            return ComputeInt32SizeNoTag(value);
         }
 
         /// <summary>
