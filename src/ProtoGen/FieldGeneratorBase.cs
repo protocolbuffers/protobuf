@@ -251,11 +251,30 @@ namespace Google.ProtocolBuffers.ProtoGen
             }
         }
 
+        protected void AddPublicMemberAttributes(TextGenerator writer)
+        {
+            AddDeprecatedFlag(writer);
+            AddClsComplianceCheck(writer);
+        }
+
         protected void AddClsComplianceCheck(TextGenerator writer)
         {
             if (!Descriptor.IsCLSCompliant && Descriptor.File.CSharpOptions.ClsCompliance)
             {
                 writer.WriteLine("[global::System.CLSCompliant(false)]");
+            }
+        }
+
+        protected bool IsObsolete { get { return Descriptor.Options.Deprecated; } }
+
+        /// <summary>
+        /// Writes [global::System.ObsoleteAttribute()] if the member is obsolete
+        /// </summary>
+        protected void AddDeprecatedFlag(TextGenerator writer)
+        {
+            if (IsObsolete)
+            {
+                writer.WriteLine("[global::System.ObsoleteAttribute()]");
             }
         }
 
