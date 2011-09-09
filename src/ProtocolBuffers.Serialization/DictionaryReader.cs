@@ -23,6 +23,21 @@ namespace Google.ProtocolBuffers.Serialization
         }
 
         /// <summary>
+        /// No-op
+        /// </summary>
+        public override AbstractReader ReadStartMessage()
+        {
+            return this;
+        }
+
+        /// <summary>
+        /// No-op
+        /// </summary>
+        public override void ReadEndMessage()
+        {
+        }
+
+        /// <summary>
         /// Merges the contents of stream into the provided message builder
         /// </summary>
         public override TBuilder Merge<TBuilder>(TBuilder builder, ExtensionRegistry registry)

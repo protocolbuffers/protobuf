@@ -136,6 +136,41 @@ namespace Google.ProtocolBuffers.Serialization
         }
 
         /// <summary>
+        /// Reads the root-message preamble specific to this formatter
+        /// </summary>
+        public override AbstractReader ReadStartMessage()
+        {
+            return ReadStartMessage(_rootElementName);
+        }
+
+        public AbstractReader ReadStartMessage(string element)
+        {
+            string field;
+            Assert(PeekNext(out field) && field == element);
+
+            XmlReader child = _input.ReadSubtree();
+            while (!child.IsStartElement() && child.Read())
+            {
+                continue;
+            }
+            child.Read();
+            return CloneWith(child);
+        }
+
+        /// <summary>
+        /// Reads the root-message close specific to this formatter, MUST be called
+        /// on the reader obtained from ReadStartMessage(string element).
+        /// </summary>
+        public override void ReadEndMessage()
+        {
+            Assert(0 == _input.Depth);
+            if(_input.NodeType == XmlNodeType.EndElement)
+            {
+                _input.Read();
+            }
+        }
+
+        /// <summary>
         /// Merge the provided builder as an element named <see cref="RootElementName"/> in the current context
         /// </summary>
         public override TBuilder Merge<TBuilder>(TBuilder builder, ExtensionRegistry registry)

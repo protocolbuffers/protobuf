@@ -112,6 +112,43 @@ namespace Google.ProtocolBuffers.Serialization
         }
 
         /// <summary>
+        /// Used to write the root-message preamble, in xml this is open element for RootElementName,
+        /// by default "&lt;root&gt;". After this call you can call IMessageLite.MergeTo(...) and 
+        /// complete the message with a call to EndMessage().
+        /// </summary>
+        public override void StartMessage()
+        {
+            StartMessage(_rootElementName);
+        }
+
+        /// <summary>
+        /// Used to write the root-message preamble, in xml this is open element for elementName. 
+        /// After this call you can call IMessageLite.MergeTo(...) and  complete the message with 
+        /// a call to EndMessage().
+        /// </summary>
+        public void StartMessage(string elementName)
+        {
+            if (TestOption(XmlWriterOptions.OutputJsonTypes))
+            {
+                _output.WriteStartElement("root"); // json requires this is the root-element
+                _output.WriteAttributeString("type", "object");
+            }
+            else
+            {
+                _output.WriteStartElement(elementName);
+            }
+        }
+
+        /// <summary>
+        /// Used to complete a root-message previously started with a call to StartMessage()
+        /// </summary>
+        public override void EndMessage()
+        {
+            _output.WriteEndElement();
+            _output.Flush();
+        }
+
+        /// <summary>
         /// Writes a message as an element using the name defined in <see cref="RootElementName"/>
         /// </summary>
         public override void WriteMessage(IMessageLite message)
@@ -124,19 +161,9 @@ namespace Google.ProtocolBuffers.Serialization
         /// </summary>
         public void WriteMessage(string elementName, IMessageLite message)
         {
-            if (TestOption(XmlWriterOptions.OutputJsonTypes))
-            {
-                _output.WriteStartElement("root"); // json requires this is the root-element
-                _output.WriteAttributeString("type", "object");
-            }
-            else
-            {
-                _output.WriteStartElement(elementName);
-            }
-
+            StartMessage(elementName);
             message.WriteTo(this);
-            _output.WriteEndElement();
-            _output.Flush();
+            EndMessage();
         }
 
         /// <summary>

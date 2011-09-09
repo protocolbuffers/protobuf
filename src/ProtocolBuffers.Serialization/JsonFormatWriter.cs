@@ -445,13 +445,31 @@ namespace Google.ProtocolBuffers.Serialization
         /// </summary>
         public override void WriteMessage(IMessageLite message)
         {
+            StartMessage();
+            message.WriteTo(this);
+            EndMessage();
+        }
+
+        /// <summary>
+        /// Used to write the root-message preamble, in json this is the left-curly brace '{'.
+        /// After this call you can call IMessageLite.MergeTo(...) and complete the message with
+        /// a call to EndMessage().
+        /// </summary>
+        public override void StartMessage()
+        {
             if (_isArray)
             {
                 Seperator();
             }
             WriteToOutput("{");
             _counter.Add(0);
-            message.WriteTo(this);
+        }
+
+        /// <summary>
+        /// Used to complete a root-message previously started with a call to StartMessage()
+        /// </summary>
+        public override void EndMessage()
+        {
             _counter.RemoveAt(_counter.Count - 1);
             WriteLine("}");
             Flush();

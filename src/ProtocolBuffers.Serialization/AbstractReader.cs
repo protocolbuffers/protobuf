@@ -112,6 +112,16 @@ namespace Google.ProtocolBuffers.Serialization
         /// Merges the input stream into the provided IBuilderLite 
         /// </summary>
         protected abstract bool ReadMessage(IBuilderLite builder, ExtensionRegistry registry);
+        
+        /// <summary>
+        /// Reads the root-message preamble specific to this formatter
+        /// </summary>
+        public abstract AbstractReader ReadStartMessage();
+
+        /// <summary>
+        /// Reads the root-message close specific to this formatter
+        /// </summary>
+        public abstract void ReadEndMessage();
 
         /// <summary>
         /// Merges the input stream into the provided IBuilderLite 

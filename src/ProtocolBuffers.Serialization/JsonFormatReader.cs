@@ -101,17 +101,34 @@ namespace Google.ProtocolBuffers.Serialization
         }
 
         /// <summary>
-        /// Merges the contents of stream into the provided message builder
+        /// Reads the root-message preamble specific to this formatter
         /// </summary>
-        public override TBuilder Merge<TBuilder>(TBuilder builder, ExtensionRegistry registry)
+        public override AbstractReader ReadStartMessage()
         {
             _input.Consume('{');
             _stopChar.Push('}');
 
             _state = ReaderState.BeginObject;
-            builder.WeakMergeFrom(this, registry);
-            _input.Consume((char) _stopChar.Pop());
+            return this;
+        }
+
+        /// <summary>
+        /// Reads the root-message close specific to this formatter
+        /// </summary>
+        public override void ReadEndMessage()
+        {
+            _input.Consume((char)_stopChar.Pop());
             _state = ReaderState.EndValue;
+        }
+
+        /// <summary>
+        /// Merges the contents of stream into the provided message builder
+        /// </summary>
+        public override TBuilder Merge<TBuilder>(TBuilder builder, ExtensionRegistry registry)
+        {
+            AbstractReader rdr = ReadStartMessage();
+            builder.WeakMergeFrom(rdr, registry);
+            rdr.ReadEndMessage();
             return builder;
         }
 

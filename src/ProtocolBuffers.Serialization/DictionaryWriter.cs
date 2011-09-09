@@ -53,6 +53,19 @@ namespace Google.ProtocolBuffers.Serialization
             message.WriteTo(this);
         }
 
+
+        /// <summary>
+        /// No-op
+        /// </summary>
+        public override void StartMessage()
+        { }
+
+        /// <summary>
+        /// No-op
+        /// </summary>
+        public override void EndMessage()
+        { }
+
         /// <summary>
         /// Writes a Boolean value
         /// </summary>
