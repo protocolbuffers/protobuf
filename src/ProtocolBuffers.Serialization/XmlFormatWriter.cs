@@ -75,8 +75,13 @@ namespace Google.ProtocolBuffers.Serialization
         {
             if (disposing)
             {
+                if (_output.WriteState != WriteState.Closed && _output.WriteState != WriteState.Start)
+                    _output.WriteEndDocument();
+
                 _output.Close();
             }
+
+            base.Dispose(disposing);
         }
 
         /// <summary>
@@ -109,6 +114,15 @@ namespace Google.ProtocolBuffers.Serialization
         private bool TestOption(XmlWriterOptions option)
         {
             return (Options & option) != 0;
+        }
+
+        /// <summary>
+        /// Completes any pending write operations
+        /// </summary>
+        public override void Flush()
+        {
+            _output.Flush();
+            base.Flush();
         }
 
         /// <summary>

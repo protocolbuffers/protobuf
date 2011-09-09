@@ -49,7 +49,7 @@ namespace Google.ProtocolBuffers
     /// in their binary form by creating a instance via the CodedOutputStream.CreateInstance
     /// static factory.
     /// </summary>
-    public interface ICodedOutputStream
+    public interface ICodedOutputStream : IDisposable
     {
         /// <summary>
         /// Indicates that all temporary buffers be written to the final output.

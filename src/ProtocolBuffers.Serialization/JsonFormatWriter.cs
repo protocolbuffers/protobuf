@@ -239,6 +239,19 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary> Gets or sets the whitespace to use to separate the text, default = empty </summary>
         public string Whitespace { get; set; }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && _counter.Count == 1)
+            {
+                EndMessage();
+            }
+
+            base.Dispose(disposing);
+        }
+
         private void Seperator()
         {
             if (_counter.Count == 0)

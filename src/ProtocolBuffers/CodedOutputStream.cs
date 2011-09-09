@@ -57,7 +57,7 @@ namespace Google.ProtocolBuffers
     /// methods are taken from the protocol buffer type names, not .NET types.
     /// (Hence WriteFloat instead of WriteSingle, and WriteBool instead of WriteBoolean.)
     /// </remarks>
-    public sealed partial class CodedOutputStream : ICodedOutputStream
+    public sealed partial class CodedOutputStream : ICodedOutputStream, IDisposable
     {
         /// <summary>
         /// The buffer size used by CreateInstance(Stream).
@@ -125,6 +125,16 @@ namespace Google.ProtocolBuffers
         }
 
         #endregion
+        
+        public void Dispose()
+        {
+            if (output != null)
+            {
+                if (position > 0)
+                    Flush();
+                output.Dispose();
+            }
+        }
 
         #region Writing of unknown fields
 

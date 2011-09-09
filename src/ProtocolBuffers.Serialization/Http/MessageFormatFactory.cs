@@ -58,15 +58,15 @@ namespace Google.ProtocolBuffers.Serialization
             ICodedInputStream codedInput = CreateInputStream(options, contentType, input);
             return (TBuilder)builder.WeakMergeFrom(codedInput, options.ExtensionRegistry);
         }
-
+        
         /// <summary>
         /// Writes the message instance to the stream using the content type provided
         /// </summary>
-        /// <param name="message">An instance of a message</param>
         /// <param name="options">Options specific to writing this message and/or content type</param>
         /// <param name="contentType">The mime type of the content to be written</param>
         /// <param name="output">The stream to write the message to</param>
-        public static void WriteTo(this IMessageLite message, MessageFormatOptions options, string contentType, Stream output)
+        /// <remarks> If you do not dispose of ICodedOutputStream some formats may yield incomplete output </remarks>
+        public static ICodedOutputStream CreateOutputStream(MessageFormatOptions options, string contentType, Stream output)
         {
             FormatType outputType = ContentTypeToFormat(contentType, options.DefaultContentType);
 
@@ -95,15 +95,15 @@ namespace Google.ProtocolBuffers.Serialization
                 else
                 {
                     XmlWriterSettings settings = new XmlWriterSettings()
-                       {
-                           CheckCharacters = false,
-                           NewLineHandling = NewLineHandling.Entitize,
-                           OmitXmlDeclaration = true,
-                           Encoding = Encoding.UTF8,
-                           Indent = true,
-                           IndentChars = "  ",
-                           NewLineChars = Environment.NewLine,
-                       };
+                                                     {
+                                                         CheckCharacters = false,
+                                                         NewLineHandling = NewLineHandling.Entitize,
+                                                         OmitXmlDeclaration = true,
+                                                         Encoding = Encoding.UTF8,
+                                                         Indent = true,
+                                                         IndentChars = "  ",
+                                                         NewLineChars = Environment.NewLine,
+                                                     };
                     writer = XmlFormatWriter.CreateInstance(XmlWriter.Create(output, settings));
                 }
                 writer.RootElementName = options.XmlWriterRootElementName;
@@ -114,12 +114,29 @@ namespace Google.ProtocolBuffers.Serialization
             else
                 throw new NotSupportedException();
 
-            message.WriteTo(codedOutput);
+            return codedOutput;
+        }
 
-            if (codedOutput is AbstractWriter)
-                ((AbstractWriter) codedOutput).EndMessage();
+        /// <summary>
+        /// Writes the message instance to the stream using the content type provided
+        /// </summary>
+        /// <param name="message">An instance of a message</param>
+        /// <param name="options">Options specific to writing this message and/or content type</param>
+        /// <param name="contentType">The mime type of the content to be written</param>
+        /// <param name="output">The stream to write the message to</param>
+        public static void WriteTo(this IMessageLite message, MessageFormatOptions options, string contentType, Stream output)
+        {
+            using (ICodedOutputStream codedOutput = CreateOutputStream(options, contentType, output))
+            {
+                message.WriteTo(codedOutput);
 
-            codedOutput.Flush();
+                // This is effectivly done by Dispose(); however, if you need to finalize a message
+                // without disposing the underlying stream, this is the only way to do it.
+                if (codedOutput is AbstractWriter)
+                    ((AbstractWriter)codedOutput).EndMessage();
+
+                codedOutput.Flush();
+            }
         }
 
 
