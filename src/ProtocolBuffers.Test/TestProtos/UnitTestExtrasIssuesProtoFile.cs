@@ -175,7 +175,7 @@ namespace UnitTest.Issues.TestProtos {
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(A prototype) {
-      return (Builder) new Builder().MergeFrom(prototype);
+      return new Builder(prototype);
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -185,21 +185,48 @@ namespace UnitTest.Issues.TestProtos {
       protected override Builder ThisBuilder {
         get { return this; }
       }
-      public Builder() {}
+      public Builder() {
+        result = DefaultInstance ?? new A();
+        builderIsReadOnly = result == DefaultInstance;
+      }
+      internal Builder(A cloneFrom) {
+        result = cloneFrom;
+        builderIsReadOnly = true;
+      }
       
-      A result = new A();
+      bool builderIsReadOnly;
+      A result;
+      
+      private A PrepareBuilder() {
+        if (builderIsReadOnly) {
+          A original = result;
+          result = new A();
+          builderIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
       
       protected override A MessageBeingBuilt {
-        get { return result; }
+        get { return PrepareBuilder(); }
       }
       
       public override Builder Clear() {
-        result = new A();
+        result = DefaultInstance ?? new A();
+        builderIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        return new Builder().MergeFrom(result);
+        if (builderIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
@@ -211,12 +238,11 @@ namespace UnitTest.Issues.TestProtos {
       }
       
       public override A BuildPartial() {
-        if (result == null) {
-          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        if (builderIsReadOnly) {
+          return result;
         }
-        A returnMe = result;
-        result = null;
-        return returnMe;
+        builderIsReadOnly = true;
+        return result;
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -230,6 +256,7 @@ namespace UnitTest.Issues.TestProtos {
       
       public override Builder MergeFrom(A other) {
         if (other == global::UnitTest.Issues.TestProtos.A.DefaultInstance) return this;
+        PrepareBuilder();
         if (other.HasA_) {
           A_ = other.A_;
         }
@@ -242,6 +269,7 @@ namespace UnitTest.Issues.TestProtos {
       }
       
       public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
         pb::UnknownFieldSet.Builder unknownFields = null;
         uint tag;
         string field_name;
@@ -297,11 +325,13 @@ namespace UnitTest.Issues.TestProtos {
         set { SetA_(value); }
       }
       public Builder SetA_(int value) {
+        PrepareBuilder();
         result.hasA_ = true;
         result.a_ = value;
         return this;
       }
       public Builder ClearA_() {
+        PrepareBuilder();
         result.hasA_ = false;
         result.a_ = 0;
         return this;
@@ -414,7 +444,7 @@ namespace UnitTest.Issues.TestProtos {
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(B prototype) {
-      return (Builder) new Builder().MergeFrom(prototype);
+      return new Builder(prototype);
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -424,21 +454,48 @@ namespace UnitTest.Issues.TestProtos {
       protected override Builder ThisBuilder {
         get { return this; }
       }
-      public Builder() {}
+      public Builder() {
+        result = DefaultInstance ?? new B();
+        builderIsReadOnly = result == DefaultInstance;
+      }
+      internal Builder(B cloneFrom) {
+        result = cloneFrom;
+        builderIsReadOnly = true;
+      }
       
-      B result = new B();
+      bool builderIsReadOnly;
+      B result;
+      
+      private B PrepareBuilder() {
+        if (builderIsReadOnly) {
+          B original = result;
+          result = new B();
+          builderIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
       
       protected override B MessageBeingBuilt {
-        get { return result; }
+        get { return PrepareBuilder(); }
       }
       
       public override Builder Clear() {
-        result = new B();
+        result = DefaultInstance ?? new B();
+        builderIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        return new Builder().MergeFrom(result);
+        if (builderIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
@@ -450,12 +507,11 @@ namespace UnitTest.Issues.TestProtos {
       }
       
       public override B BuildPartial() {
-        if (result == null) {
-          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        if (builderIsReadOnly) {
+          return result;
         }
-        B returnMe = result;
-        result = null;
-        return returnMe;
+        builderIsReadOnly = true;
+        return result;
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -469,6 +525,7 @@ namespace UnitTest.Issues.TestProtos {
       
       public override Builder MergeFrom(B other) {
         if (other == global::UnitTest.Issues.TestProtos.B.DefaultInstance) return this;
+        PrepareBuilder();
         if (other.HasB_) {
           B_ = other.B_;
         }
@@ -481,6 +538,7 @@ namespace UnitTest.Issues.TestProtos {
       }
       
       public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
         pb::UnknownFieldSet.Builder unknownFields = null;
         uint tag;
         string field_name;
@@ -536,11 +594,13 @@ namespace UnitTest.Issues.TestProtos {
         set { SetB_(value); }
       }
       public Builder SetB_(int value) {
+        PrepareBuilder();
         result.hasB_ = true;
         result.b_ = value;
         return this;
       }
       public Builder ClearB_() {
+        PrepareBuilder();
         result.hasB_ = false;
         result.b_ = 0;
         return this;
@@ -653,7 +713,7 @@ namespace UnitTest.Issues.TestProtos {
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(AB prototype) {
-      return (Builder) new Builder().MergeFrom(prototype);
+      return new Builder(prototype);
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -663,21 +723,48 @@ namespace UnitTest.Issues.TestProtos {
       protected override Builder ThisBuilder {
         get { return this; }
       }
-      public Builder() {}
+      public Builder() {
+        result = DefaultInstance ?? new AB();
+        builderIsReadOnly = result == DefaultInstance;
+      }
+      internal Builder(AB cloneFrom) {
+        result = cloneFrom;
+        builderIsReadOnly = true;
+      }
       
-      AB result = new AB();
+      bool builderIsReadOnly;
+      AB result;
+      
+      private AB PrepareBuilder() {
+        if (builderIsReadOnly) {
+          AB original = result;
+          result = new AB();
+          builderIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
       
       protected override AB MessageBeingBuilt {
-        get { return result; }
+        get { return PrepareBuilder(); }
       }
       
       public override Builder Clear() {
-        result = new AB();
+        result = DefaultInstance ?? new AB();
+        builderIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        return new Builder().MergeFrom(result);
+        if (builderIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
@@ -689,12 +776,11 @@ namespace UnitTest.Issues.TestProtos {
       }
       
       public override AB BuildPartial() {
-        if (result == null) {
-          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        if (builderIsReadOnly) {
+          return result;
         }
-        AB returnMe = result;
-        result = null;
-        return returnMe;
+        builderIsReadOnly = true;
+        return result;
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -708,6 +794,7 @@ namespace UnitTest.Issues.TestProtos {
       
       public override Builder MergeFrom(AB other) {
         if (other == global::UnitTest.Issues.TestProtos.AB.DefaultInstance) return this;
+        PrepareBuilder();
         if (other.HasAB_) {
           AB_ = other.AB_;
         }
@@ -720,6 +807,7 @@ namespace UnitTest.Issues.TestProtos {
       }
       
       public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
         pb::UnknownFieldSet.Builder unknownFields = null;
         uint tag;
         string field_name;
@@ -775,11 +863,13 @@ namespace UnitTest.Issues.TestProtos {
         set { SetAB_(value); }
       }
       public Builder SetAB_(int value) {
+        PrepareBuilder();
         result.hasAB_ = true;
         result.aB_ = value;
         return this;
       }
       public Builder ClearAB_() {
+        PrepareBuilder();
         result.hasAB_ = false;
         result.aB_ = 0;
         return this;
@@ -894,7 +984,7 @@ namespace UnitTest.Issues.TestProtos {
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(NumberField prototype) {
-      return (Builder) new Builder().MergeFrom(prototype);
+      return new Builder(prototype);
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -904,21 +994,48 @@ namespace UnitTest.Issues.TestProtos {
       protected override Builder ThisBuilder {
         get { return this; }
       }
-      public Builder() {}
+      public Builder() {
+        result = DefaultInstance ?? new NumberField();
+        builderIsReadOnly = result == DefaultInstance;
+      }
+      internal Builder(NumberField cloneFrom) {
+        result = cloneFrom;
+        builderIsReadOnly = true;
+      }
       
-      NumberField result = new NumberField();
+      bool builderIsReadOnly;
+      NumberField result;
+      
+      private NumberField PrepareBuilder() {
+        if (builderIsReadOnly) {
+          NumberField original = result;
+          result = new NumberField();
+          builderIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
       
       protected override NumberField MessageBeingBuilt {
-        get { return result; }
+        get { return PrepareBuilder(); }
       }
       
       public override Builder Clear() {
-        result = new NumberField();
+        result = DefaultInstance ?? new NumberField();
+        builderIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        return new Builder().MergeFrom(result);
+        if (builderIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
@@ -930,12 +1047,11 @@ namespace UnitTest.Issues.TestProtos {
       }
       
       public override NumberField BuildPartial() {
-        if (result == null) {
-          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        if (builderIsReadOnly) {
+          return result;
         }
-        NumberField returnMe = result;
-        result = null;
-        return returnMe;
+        builderIsReadOnly = true;
+        return result;
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -949,6 +1065,7 @@ namespace UnitTest.Issues.TestProtos {
       
       public override Builder MergeFrom(NumberField other) {
         if (other == global::UnitTest.Issues.TestProtos.NumberField.DefaultInstance) return this;
+        PrepareBuilder();
         if (other.Has_01) {
           _01 = other._01;
         }
@@ -961,6 +1078,7 @@ namespace UnitTest.Issues.TestProtos {
       }
       
       public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
         pb::UnknownFieldSet.Builder unknownFields = null;
         uint tag;
         string field_name;
@@ -1018,11 +1136,13 @@ namespace UnitTest.Issues.TestProtos {
       }
       [global::System.CLSCompliant(false)]
       public Builder Set_01(int value) {
+        PrepareBuilder();
         result.has_01 = true;
         result._01_ = value;
         return this;
       }
       public Builder Clear_01() {
+        PrepareBuilder();
         result.has_01 = false;
         result._01_ = 0;
         return this;

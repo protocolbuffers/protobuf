@@ -187,7 +187,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(TestRequiredLite prototype) {
-      return (Builder) new Builder().MergeFrom(prototype);
+      return new Builder(prototype);
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -197,21 +197,48 @@ namespace Google.ProtocolBuffers.TestProtos {
       protected override Builder ThisBuilder {
         get { return this; }
       }
-      public Builder() {}
+      public Builder() {
+        result = DefaultInstance ?? new TestRequiredLite();
+        builderIsReadOnly = result == DefaultInstance;
+      }
+      internal Builder(TestRequiredLite cloneFrom) {
+        result = cloneFrom;
+        builderIsReadOnly = true;
+      }
       
-      TestRequiredLite result = new TestRequiredLite();
+      bool builderIsReadOnly;
+      TestRequiredLite result;
+      
+      private TestRequiredLite PrepareBuilder() {
+        if (builderIsReadOnly) {
+          TestRequiredLite original = result;
+          result = new TestRequiredLite();
+          builderIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
       
       protected override TestRequiredLite MessageBeingBuilt {
-        get { return result; }
+        get { return PrepareBuilder(); }
       }
       
       public override Builder Clear() {
-        result = new TestRequiredLite();
+        result = DefaultInstance ?? new TestRequiredLite();
+        builderIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        return new Builder().MergeFrom(result);
+        if (builderIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
       }
       
       public override TestRequiredLite DefaultInstanceForType {
@@ -219,12 +246,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override TestRequiredLite BuildPartial() {
-        if (result == null) {
-          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        if (builderIsReadOnly) {
+          return result;
         }
-        TestRequiredLite returnMe = result;
-        result = null;
-        return returnMe;
+        builderIsReadOnly = true;
+        return result;
       }
       
       public override Builder MergeFrom(pb::IMessageLite other) {
@@ -238,6 +264,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       public override Builder MergeFrom(TestRequiredLite other) {
         if (other == global::Google.ProtocolBuffers.TestProtos.TestRequiredLite.DefaultInstance) return this;
+        PrepareBuilder();
         if (other.HasD) {
           D = other.D;
         }
@@ -252,6 +279,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
@@ -302,11 +330,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetD(value); }
       }
       public Builder SetD(int value) {
+        PrepareBuilder();
         result.hasD = true;
         result.d_ = value;
         return this;
       }
       public Builder ClearD() {
+        PrepareBuilder();
         result.hasD = false;
         result.d_ = 0;
         return this;
@@ -320,11 +350,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetEn(value); }
       }
       public Builder SetEn(global::Google.ProtocolBuffers.TestProtos.ExtraEnum value) {
+        PrepareBuilder();
         result.hasEn = true;
         result.en_ = value;
         return this;
       }
       public Builder ClearEn() {
+        PrepareBuilder();
         result.hasEn = false;
         result.en_ = global::Google.ProtocolBuffers.TestProtos.ExtraEnum.DEFAULT;
         return this;
@@ -498,7 +530,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override Builder ToBuilder() { return CreateBuilder(this); }
         public override Builder CreateBuilderForType() { return new Builder(); }
         public static Builder CreateBuilder(PhoneNumber prototype) {
-          return (Builder) new Builder().MergeFrom(prototype);
+          return new Builder(prototype);
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -508,21 +540,48 @@ namespace Google.ProtocolBuffers.TestProtos {
           protected override Builder ThisBuilder {
             get { return this; }
           }
-          public Builder() {}
+          public Builder() {
+            result = DefaultInstance ?? new PhoneNumber();
+            builderIsReadOnly = result == DefaultInstance;
+          }
+          internal Builder(PhoneNumber cloneFrom) {
+            result = cloneFrom;
+            builderIsReadOnly = true;
+          }
           
-          PhoneNumber result = new PhoneNumber();
+          bool builderIsReadOnly;
+          PhoneNumber result;
+          
+          private PhoneNumber PrepareBuilder() {
+            if (builderIsReadOnly) {
+              PhoneNumber original = result;
+              result = new PhoneNumber();
+              builderIsReadOnly = false;
+              MergeFrom(original);
+            }
+            return result;
+          }
+          
+          public override bool IsInitialized {
+            get { return result.IsInitialized; }
+          }
           
           protected override PhoneNumber MessageBeingBuilt {
-            get { return result; }
+            get { return PrepareBuilder(); }
           }
           
           public override Builder Clear() {
-            result = new PhoneNumber();
+            result = DefaultInstance ?? new PhoneNumber();
+            builderIsReadOnly = true;
             return this;
           }
           
           public override Builder Clone() {
-            return new Builder().MergeFrom(result);
+            if (builderIsReadOnly) {
+              return new Builder(result);
+            } else {
+              return new Builder().MergeFrom(result);
+            }
           }
           
           public override PhoneNumber DefaultInstanceForType {
@@ -530,12 +589,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override PhoneNumber BuildPartial() {
-            if (result == null) {
-              throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+            if (builderIsReadOnly) {
+              return result;
             }
-            PhoneNumber returnMe = result;
-            result = null;
-            return returnMe;
+            builderIsReadOnly = true;
+            return result;
           }
           
           public override Builder MergeFrom(pb::IMessageLite other) {
@@ -549,6 +607,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           
           public override Builder MergeFrom(PhoneNumber other) {
             if (other == global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneNumber.DefaultInstance) return this;
+            PrepareBuilder();
             if (other.HasNumber) {
               Number = other.Number;
             }
@@ -563,6 +622,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+            PrepareBuilder();
             uint tag;
             string field_name;
             while (input.ReadTag(out tag, out field_name)) {
@@ -614,11 +674,13 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           public Builder SetNumber(string value) {
             pb::ThrowHelper.ThrowIfNull(value, "value");
+            PrepareBuilder();
             result.hasNumber = true;
             result.number_ = value;
             return this;
           }
           public Builder ClearNumber() {
+            PrepareBuilder();
             result.hasNumber = false;
             result.number_ = "";
             return this;
@@ -632,11 +694,13 @@ namespace Google.ProtocolBuffers.TestProtos {
             set { SetType(value); }
           }
           public Builder SetType(global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneType value) {
+            PrepareBuilder();
             result.hasType = true;
             result.type_ = value;
             return this;
           }
           public Builder ClearType() {
+            PrepareBuilder();
             result.hasType = false;
             result.type_ = global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneType.HOME;
             return this;
@@ -839,7 +903,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         public override Builder ToBuilder() { return CreateBuilder(this); }
         public override Builder CreateBuilderForType() { return new Builder(); }
         public static Builder CreateBuilder(Addresses prototype) {
-          return (Builder) new Builder().MergeFrom(prototype);
+          return new Builder(prototype);
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -849,21 +913,48 @@ namespace Google.ProtocolBuffers.TestProtos {
           protected override Builder ThisBuilder {
             get { return this; }
           }
-          public Builder() {}
+          public Builder() {
+            result = DefaultInstance ?? new Addresses();
+            builderIsReadOnly = result == DefaultInstance;
+          }
+          internal Builder(Addresses cloneFrom) {
+            result = cloneFrom;
+            builderIsReadOnly = true;
+          }
           
-          Addresses result = new Addresses();
+          bool builderIsReadOnly;
+          Addresses result;
+          
+          private Addresses PrepareBuilder() {
+            if (builderIsReadOnly) {
+              Addresses original = result;
+              result = new Addresses();
+              builderIsReadOnly = false;
+              MergeFrom(original);
+            }
+            return result;
+          }
+          
+          public override bool IsInitialized {
+            get { return result.IsInitialized; }
+          }
           
           protected override Addresses MessageBeingBuilt {
-            get { return result; }
+            get { return PrepareBuilder(); }
           }
           
           public override Builder Clear() {
-            result = new Addresses();
+            result = DefaultInstance ?? new Addresses();
+            builderIsReadOnly = true;
             return this;
           }
           
           public override Builder Clone() {
-            return new Builder().MergeFrom(result);
+            if (builderIsReadOnly) {
+              return new Builder(result);
+            } else {
+              return new Builder().MergeFrom(result);
+            }
           }
           
           public override Addresses DefaultInstanceForType {
@@ -871,12 +962,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Addresses BuildPartial() {
-            if (result == null) {
-              throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+            if (builderIsReadOnly) {
+              return result;
             }
-            Addresses returnMe = result;
-            result = null;
-            return returnMe;
+            builderIsReadOnly = true;
+            return result;
           }
           
           public override Builder MergeFrom(pb::IMessageLite other) {
@@ -890,6 +980,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           
           public override Builder MergeFrom(Addresses other) {
             if (other == global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.Addresses.DefaultInstance) return this;
+            PrepareBuilder();
             if (other.HasAddress) {
               Address = other.Address;
             }
@@ -913,6 +1004,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+            PrepareBuilder();
             uint tag;
             string field_name;
             while (input.ReadTag(out tag, out field_name)) {
@@ -972,11 +1064,13 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           public Builder SetAddress(string value) {
             pb::ThrowHelper.ThrowIfNull(value, "value");
+            PrepareBuilder();
             result.hasAddress = true;
             result.address_ = value;
             return this;
           }
           public Builder ClearAddress() {
+            PrepareBuilder();
             result.hasAddress = false;
             result.address_ = "";
             return this;
@@ -991,11 +1085,13 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           public Builder SetAddress2(string value) {
             pb::ThrowHelper.ThrowIfNull(value, "value");
+            PrepareBuilder();
             result.hasAddress2 = true;
             result.address2_ = value;
             return this;
           }
           public Builder ClearAddress2() {
+            PrepareBuilder();
             result.hasAddress2 = false;
             result.address2_ = "";
             return this;
@@ -1010,11 +1106,13 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           public Builder SetCity(string value) {
             pb::ThrowHelper.ThrowIfNull(value, "value");
+            PrepareBuilder();
             result.hasCity = true;
             result.city_ = value;
             return this;
           }
           public Builder ClearCity() {
+            PrepareBuilder();
             result.hasCity = false;
             result.city_ = "";
             return this;
@@ -1029,11 +1127,13 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           public Builder SetState(string value) {
             pb::ThrowHelper.ThrowIfNull(value, "value");
+            PrepareBuilder();
             result.hasState = true;
             result.state_ = value;
             return this;
           }
           public Builder ClearState() {
+            PrepareBuilder();
             result.hasState = false;
             result.state_ = "";
             return this;
@@ -1049,11 +1149,13 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           [global::System.CLSCompliant(false)]
           public Builder SetZip(uint value) {
+            PrepareBuilder();
             result.hasZip = true;
             result.zip_ = value;
             return this;
           }
           public Builder ClearZip() {
+            PrepareBuilder();
             result.hasZip = false;
             result.zip_ = 0;
             return this;
@@ -1290,7 +1392,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(TestInteropPersonLite prototype) {
-      return (Builder) new Builder().MergeFrom(prototype);
+      return new Builder(prototype);
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -1300,21 +1402,48 @@ namespace Google.ProtocolBuffers.TestProtos {
       protected override Builder ThisBuilder {
         get { return this; }
       }
-      public Builder() {}
+      public Builder() {
+        result = DefaultInstance ?? new TestInteropPersonLite();
+        builderIsReadOnly = result == DefaultInstance;
+      }
+      internal Builder(TestInteropPersonLite cloneFrom) {
+        result = cloneFrom;
+        builderIsReadOnly = true;
+      }
       
-      TestInteropPersonLite result = new TestInteropPersonLite();
+      bool builderIsReadOnly;
+      TestInteropPersonLite result;
+      
+      private TestInteropPersonLite PrepareBuilder() {
+        if (builderIsReadOnly) {
+          TestInteropPersonLite original = result;
+          result = new TestInteropPersonLite();
+          builderIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
       
       protected override TestInteropPersonLite MessageBeingBuilt {
-        get { return result; }
+        get { return PrepareBuilder(); }
       }
       
       public override Builder Clear() {
-        result = new TestInteropPersonLite();
+        result = DefaultInstance ?? new TestInteropPersonLite();
+        builderIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        return new Builder().MergeFrom(result);
+        if (builderIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
       }
       
       public override TestInteropPersonLite DefaultInstanceForType {
@@ -1322,15 +1451,14 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override TestInteropPersonLite BuildPartial() {
-        if (result == null) {
-          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        if (builderIsReadOnly) {
+          return result;
         }
         result.codes_.MakeReadOnly();
         result.phone_.MakeReadOnly();
         result.addresses_.MakeReadOnly();
-        TestInteropPersonLite returnMe = result;
-        result = null;
-        return returnMe;
+        builderIsReadOnly = true;
+        return result;
       }
       
       public override Builder MergeFrom(pb::IMessageLite other) {
@@ -1344,6 +1472,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       public override Builder MergeFrom(TestInteropPersonLite other) {
         if (other == global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.DefaultInstance) return this;
+        PrepareBuilder();
         if (other.HasName) {
           Name = other.Name;
         }
@@ -1371,6 +1500,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
@@ -1435,11 +1565,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder SetName(string value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
         result.hasName = true;
         result.name_ = value;
         return this;
       }
       public Builder ClearName() {
+        PrepareBuilder();
         result.hasName = false;
         result.name_ = "";
         return this;
@@ -1453,11 +1585,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         set { SetId(value); }
       }
       public Builder SetId(int value) {
+        PrepareBuilder();
         result.hasId = true;
         result.id_ = value;
         return this;
       }
       public Builder ClearId() {
+        PrepareBuilder();
         result.hasId = false;
         result.id_ = 0;
         return this;
@@ -1472,18 +1606,20 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder SetEmail(string value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
         result.hasEmail = true;
         result.email_ = value;
         return this;
       }
       public Builder ClearEmail() {
+        PrepareBuilder();
         result.hasEmail = false;
         result.email_ = "";
         return this;
       }
       
       public pbc::IPopsicleList<int> CodesList {
-        get { return result.codes_; }
+        get { return PrepareBuilder().codes_; }
       }
       public int CodesCount {
         get { return result.CodesCount; }
@@ -1492,24 +1628,28 @@ namespace Google.ProtocolBuffers.TestProtos {
         return result.GetCodes(index);
       }
       public Builder SetCodes(int index, int value) {
+        PrepareBuilder();
         result.codes_[index] = value;
         return this;
       }
       public Builder AddCodes(int value) {
+        PrepareBuilder();
         result.codes_.Add(value);
         return this;
       }
       public Builder AddRangeCodes(scg::IEnumerable<int> values) {
+        PrepareBuilder();
         base.AddRange(values, result.codes_);
         return this;
       }
       public Builder ClearCodes() {
+        PrepareBuilder();
         result.codes_.Clear();
         return this;
       }
       
       public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneNumber> PhoneList {
-        get { return result.phone_; }
+        get { return PrepareBuilder().phone_; }
       }
       public int PhoneCount {
         get { return result.PhoneCount; }
@@ -1519,35 +1659,41 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder SetPhone(int index, global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneNumber value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
         result.phone_[index] = value;
         return this;
       }
       public Builder SetPhone(int index, global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneNumber.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        PrepareBuilder();
         result.phone_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddPhone(global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneNumber value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
         result.phone_.Add(value);
         return this;
       }
       public Builder AddPhone(global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneNumber.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        PrepareBuilder();
         result.phone_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangePhone(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneNumber> values) {
+        PrepareBuilder();
         base.AddRange(values, result.phone_);
         return this;
       }
       public Builder ClearPhone() {
+        PrepareBuilder();
         result.phone_.Clear();
         return this;
       }
       
       public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.Addresses> AddressesList {
-        get { return result.addresses_; }
+        get { return PrepareBuilder().addresses_; }
       }
       public int AddressesCount {
         get { return result.AddressesCount; }
@@ -1557,29 +1703,35 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder SetAddresses(int index, global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.Addresses value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
         result.addresses_[index] = value;
         return this;
       }
       public Builder SetAddresses(int index, global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.Addresses.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        PrepareBuilder();
         result.addresses_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddAddresses(global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.Addresses value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
         result.addresses_.Add(value);
         return this;
       }
       public Builder AddAddresses(global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.Addresses.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        PrepareBuilder();
         result.addresses_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeAddresses(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.Addresses> values) {
+        PrepareBuilder();
         base.AddRange(values, result.addresses_);
         return this;
       }
       public Builder ClearAddresses() {
+        PrepareBuilder();
         result.addresses_.Clear();
         return this;
       }
@@ -1701,7 +1853,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(TestInteropEmployeeIdLite prototype) {
-      return (Builder) new Builder().MergeFrom(prototype);
+      return new Builder(prototype);
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -1711,21 +1863,48 @@ namespace Google.ProtocolBuffers.TestProtos {
       protected override Builder ThisBuilder {
         get { return this; }
       }
-      public Builder() {}
+      public Builder() {
+        result = DefaultInstance ?? new TestInteropEmployeeIdLite();
+        builderIsReadOnly = result == DefaultInstance;
+      }
+      internal Builder(TestInteropEmployeeIdLite cloneFrom) {
+        result = cloneFrom;
+        builderIsReadOnly = true;
+      }
       
-      TestInteropEmployeeIdLite result = new TestInteropEmployeeIdLite();
+      bool builderIsReadOnly;
+      TestInteropEmployeeIdLite result;
+      
+      private TestInteropEmployeeIdLite PrepareBuilder() {
+        if (builderIsReadOnly) {
+          TestInteropEmployeeIdLite original = result;
+          result = new TestInteropEmployeeIdLite();
+          builderIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
       
       protected override TestInteropEmployeeIdLite MessageBeingBuilt {
-        get { return result; }
+        get { return PrepareBuilder(); }
       }
       
       public override Builder Clear() {
-        result = new TestInteropEmployeeIdLite();
+        result = DefaultInstance ?? new TestInteropEmployeeIdLite();
+        builderIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        return new Builder().MergeFrom(result);
+        if (builderIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
       }
       
       public override TestInteropEmployeeIdLite DefaultInstanceForType {
@@ -1733,12 +1912,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override TestInteropEmployeeIdLite BuildPartial() {
-        if (result == null) {
-          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        if (builderIsReadOnly) {
+          return result;
         }
-        TestInteropEmployeeIdLite returnMe = result;
-        result = null;
-        return returnMe;
+        builderIsReadOnly = true;
+        return result;
       }
       
       public override Builder MergeFrom(pb::IMessageLite other) {
@@ -1752,6 +1930,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       public override Builder MergeFrom(TestInteropEmployeeIdLite other) {
         if (other == global::Google.ProtocolBuffers.TestProtos.TestInteropEmployeeIdLite.DefaultInstance) return this;
+        PrepareBuilder();
         if (other.HasNumber) {
           Number = other.Number;
         }
@@ -1763,6 +1942,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
         uint tag;
         string field_name;
         while (input.ReadTag(out tag, out field_name)) {
@@ -1806,11 +1986,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder SetNumber(string value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
         result.hasNumber = true;
         result.number_ = value;
         return this;
       }
       public Builder ClearNumber() {
+        PrepareBuilder();
         result.hasNumber = false;
         result.number_ = "";
         return this;

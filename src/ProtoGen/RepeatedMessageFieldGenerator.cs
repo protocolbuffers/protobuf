@@ -67,7 +67,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             // Note:  We can return the original list here, because we make it unmodifiable when we build
             // We return it via IPopsicleList so that collection initializers work more pleasantly.
             writer.WriteLine("public pbc::IPopsicleList<{0}> {1}List {{", TypeName, PropertyName);
-            writer.WriteLine("  get {{ return result.{0}_; }}", Name);
+            writer.WriteLine("  get {{ return PrepareBuilder().{0}_; }}", Name);
             writer.WriteLine("}");
             writer.WriteLine("public int {0}Count {{", PropertyName);
             writer.WriteLine("  get {{ return result.{0}Count; }}", PropertyName);
@@ -77,31 +77,37 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("}");
             writer.WriteLine("public Builder Set{0}(int index, {1} value) {{", PropertyName, TypeName);
             AddNullCheck(writer);
+            writer.WriteLine("  PrepareBuilder();");
             writer.WriteLine("  result.{0}_[index] = value;", Name);
             writer.WriteLine("  return this;");
             writer.WriteLine("}");
             // Extra overload for builder (just on messages)
             writer.WriteLine("public Builder Set{0}(int index, {1}.Builder builderForValue) {{", PropertyName, TypeName);
             AddNullCheck(writer, "builderForValue");
+            writer.WriteLine("  PrepareBuilder();");
             writer.WriteLine("  result.{0}_[index] = builderForValue.Build();", Name);
             writer.WriteLine("  return this;");
             writer.WriteLine("}");
             writer.WriteLine("public Builder Add{0}({1} value) {{", PropertyName, TypeName);
             AddNullCheck(writer);
+            writer.WriteLine("  PrepareBuilder();");
             writer.WriteLine("  result.{0}_.Add(value);", Name, TypeName);
             writer.WriteLine("  return this;");
             writer.WriteLine("}");
             // Extra overload for builder (just on messages)
             writer.WriteLine("public Builder Add{0}({1}.Builder builderForValue) {{", PropertyName, TypeName);
             AddNullCheck(writer, "builderForValue");
+            writer.WriteLine("  PrepareBuilder();");
             writer.WriteLine("  result.{0}_.Add(builderForValue.Build());", Name);
             writer.WriteLine("  return this;");
             writer.WriteLine("}");
             writer.WriteLine("public Builder AddRange{0}(scg::IEnumerable<{1}> values) {{", PropertyName, TypeName);
+            writer.WriteLine("  PrepareBuilder();");
             writer.WriteLine("  base.AddRange(values, result.{0}_);", Name);
             writer.WriteLine("  return this;");
             writer.WriteLine("}");
             writer.WriteLine("public Builder Clear{0}() {{", PropertyName);
+            writer.WriteLine("  PrepareBuilder();");
             writer.WriteLine("  result.{0}_.Clear();", Name);
             writer.WriteLine("  return this;");
             writer.WriteLine("}");

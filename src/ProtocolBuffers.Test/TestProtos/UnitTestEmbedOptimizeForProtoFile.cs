@@ -186,7 +186,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(TestEmbedOptimizedForSize prototype) {
-      return (Builder) new Builder().MergeFrom(prototype);
+      return new Builder(prototype);
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -196,21 +196,48 @@ namespace Google.ProtocolBuffers.TestProtos {
       protected override Builder ThisBuilder {
         get { return this; }
       }
-      public Builder() {}
+      public Builder() {
+        result = DefaultInstance ?? new TestEmbedOptimizedForSize();
+        builderIsReadOnly = result == DefaultInstance;
+      }
+      internal Builder(TestEmbedOptimizedForSize cloneFrom) {
+        result = cloneFrom;
+        builderIsReadOnly = true;
+      }
       
-      TestEmbedOptimizedForSize result = new TestEmbedOptimizedForSize();
+      bool builderIsReadOnly;
+      TestEmbedOptimizedForSize result;
+      
+      private TestEmbedOptimizedForSize PrepareBuilder() {
+        if (builderIsReadOnly) {
+          TestEmbedOptimizedForSize original = result;
+          result = new TestEmbedOptimizedForSize();
+          builderIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
       
       protected override TestEmbedOptimizedForSize MessageBeingBuilt {
-        get { return result; }
+        get { return PrepareBuilder(); }
       }
       
       public override Builder Clear() {
-        result = new TestEmbedOptimizedForSize();
+        result = DefaultInstance ?? new TestEmbedOptimizedForSize();
+        builderIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        return new Builder().MergeFrom(result);
+        if (builderIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
@@ -222,13 +249,12 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override TestEmbedOptimizedForSize BuildPartial() {
-        if (result == null) {
-          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        if (builderIsReadOnly) {
+          return result;
         }
         result.repeatedMessage_.MakeReadOnly();
-        TestEmbedOptimizedForSize returnMe = result;
-        result = null;
-        return returnMe;
+        builderIsReadOnly = true;
+        return result;
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -242,6 +268,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       public override Builder MergeFrom(TestEmbedOptimizedForSize other) {
         if (other == global::Google.ProtocolBuffers.TestProtos.TestEmbedOptimizedForSize.DefaultInstance) return this;
+        PrepareBuilder();
         if (other.HasOptionalMessage) {
           MergeOptionalMessage(other.OptionalMessage);
         }
@@ -257,6 +284,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
         pb::UnknownFieldSet.Builder unknownFields = null;
         uint tag;
         string field_name;
@@ -322,18 +350,21 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder SetOptionalMessage(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
         result.hasOptionalMessage = true;
         result.optionalMessage_ = value;
         return this;
       }
       public Builder SetOptionalMessage(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        PrepareBuilder();
         result.hasOptionalMessage = true;
         result.optionalMessage_ = builderForValue.Build();
         return this;
       }
       public Builder MergeOptionalMessage(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
         if (result.hasOptionalMessage &&
             result.optionalMessage_ != global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.DefaultInstance) {
             result.optionalMessage_ = global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.CreateBuilder(result.optionalMessage_).MergeFrom(value).BuildPartial();
@@ -344,13 +375,14 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder ClearOptionalMessage() {
+        PrepareBuilder();
         result.hasOptionalMessage = false;
         result.optionalMessage_ = global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.DefaultInstance;
         return this;
       }
       
       public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize> RepeatedMessageList {
-        get { return result.repeatedMessage_; }
+        get { return PrepareBuilder().repeatedMessage_; }
       }
       public int RepeatedMessageCount {
         get { return result.RepeatedMessageCount; }
@@ -360,29 +392,35 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder SetRepeatedMessage(int index, global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
         result.repeatedMessage_[index] = value;
         return this;
       }
       public Builder SetRepeatedMessage(int index, global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        PrepareBuilder();
         result.repeatedMessage_[index] = builderForValue.Build();
         return this;
       }
       public Builder AddRepeatedMessage(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
         result.repeatedMessage_.Add(value);
         return this;
       }
       public Builder AddRepeatedMessage(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        PrepareBuilder();
         result.repeatedMessage_.Add(builderForValue.Build());
         return this;
       }
       public Builder AddRangeRepeatedMessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize> values) {
+        PrepareBuilder();
         base.AddRange(values, result.repeatedMessage_);
         return this;
       }
       public Builder ClearRepeatedMessage() {
+        PrepareBuilder();
         result.repeatedMessage_.Clear();
         return this;
       }

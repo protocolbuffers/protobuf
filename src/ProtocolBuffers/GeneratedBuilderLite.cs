@@ -61,11 +61,6 @@ namespace Google.ProtocolBuffers
 
         public abstract TBuilder MergeFrom(TMessage other);
 
-        public override bool IsInitialized
-        {
-            get { return MessageBeingBuilt.IsInitialized; }
-        }
-
         /// <summary>
         /// Adds all of the specified values to the given collection.
         /// </summary>
@@ -122,7 +117,7 @@ namespace Google.ProtocolBuffers
         public override TMessage Build()
         {
             // If the message is null, we'll throw a more appropriate exception in BuildPartial.
-            if (MessageBeingBuilt != null && !IsInitialized)
+            if (!IsInitialized)
             {
                 throw new UninitializedMessageException(MessageBeingBuilt);
             }
