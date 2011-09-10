@@ -246,8 +246,10 @@ namespace Google.ProtocolBuffers.Serialization
         {
             if (disposing)
             {
-                while(_counter.Count > 1)
+                while (_counter.Count > 1)
+                {
                     WriteMessageEnd();
+                }
             }
 
             base.Dispose(disposing);

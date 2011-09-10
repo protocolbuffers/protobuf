@@ -78,8 +78,10 @@ namespace Google.ProtocolBuffers.Serialization
         {
             if (disposing)
             {
-                while(_messageOpenCount > 0)
+                while (_messageOpenCount > 0)
+                {
                     WriteMessageEnd();
+                }
 
                 _output.Close();
             }
@@ -163,7 +165,9 @@ namespace Google.ProtocolBuffers.Serialization
         public override void WriteMessageEnd()
         {
             if (_messageOpenCount <= 0)
+            {
                 throw new InvalidOperationException();
+            }
 
             _output.WriteEndElement();
             _output.Flush();

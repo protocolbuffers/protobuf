@@ -131,7 +131,9 @@ namespace Google.ProtocolBuffers
             if (output != null)
             {
                 if (position > 0)
+                {
                     Flush();
+                }
                 output.Dispose();
             }
         }
