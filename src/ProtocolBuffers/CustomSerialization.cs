@@ -78,12 +78,16 @@ namespace Google.ProtocolBuffers
                 builder.MergeFrom(_message, registry ?? ExtensionRegistry.Empty);
 
                 if (builder is IDeserializationCallback)
-                    ((IDeserializationCallback)builder).OnDeserialization(context);
+                {
+                    ((IDeserializationCallback) builder).OnDeserialization(context);
+                }
 
                 TMessage message = _initialized ? builder.Build() : builder.BuildPartial();
 
                 if (message is IDeserializationCallback)
-                    ((IDeserializationCallback)message).OnDeserialization(context);
+                {
+                    ((IDeserializationCallback) message).OnDeserialization(context);
+                }
 
                 return message;
             }
@@ -122,7 +126,9 @@ namespace Google.ProtocolBuffers
                 builder.MergeFrom(_message, registry ?? ExtensionRegistry.Empty);
 
                 if (builder is IDeserializationCallback)
-                    ((IDeserializationCallback)builder).OnDeserialization(context);
+                {
+                    ((IDeserializationCallback) builder).OnDeserialization(context);
+                }
 
                 return builder;
             }
