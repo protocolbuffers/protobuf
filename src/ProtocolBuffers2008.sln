@@ -63,6 +63,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{66ED1950
 		..\build\Common.targets = ..\build\Common.targets
 		..\build\GenerateCompletePackage.bat = ..\build\GenerateCompletePackage.bat
 		..\build\GenerateReleasePackage.bat = ..\build\GenerateReleasePackage.bat
+		..\build\nuget-package.nuspec = ..\build\nuget-package.nuspec
 		..\build\PublishRelease.bat = ..\build\PublishRelease.bat
 		..\build\RunBenchmarks.bat = ..\build\RunBenchmarks.bat
 	EndProjectSection
