@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using Google.ProtocolBuffers.TestProtos;
+using Google.ProtocolBuffers.Serialization;
 
 namespace Google.ProtocolBuffers
 {
@@ -48,6 +49,26 @@ namespace Google.ProtocolBuffers
             //last test, if you clear a builder it reverts to default instance
             Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance,
                 TestAllTypes.CreateBuilder().SetOptionalBool(true).Build().ToBuilder().Clear().Build()));
+        }
+
+        [Test]
+        public void BuildModifyAndRebuild()
+        {
+            TestAllTypes.Builder b1 = new TestAllTypes.Builder();
+            b1.SetDefaultInt32(1);
+            b1.AddRepeatedInt32(2);
+            b1.SetOptionalForeignMessage(ForeignMessage.DefaultInstance);
+
+            TestAllTypes m1 = b1.Build();
+
+            b1.SetDefaultInt32(5);
+            b1.AddRepeatedInt32(6);
+            b1.SetOptionalForeignMessage(b1.OptionalForeignMessage.ToBuilder().SetC(7));
+
+            TestAllTypes m2 = b1.Build();
+            
+            Assert.AreEqual("{\"optional_foreign_message\":{},\"repeated_int32\":[2],\"default_int32\":1}", m1.ToJson());
+            Assert.AreEqual("{\"optional_foreign_message\":{\"c\":7},\"repeated_int32\":[2,6],\"default_int32\":5}", m2.ToJson());
         }
 
         [Test]
