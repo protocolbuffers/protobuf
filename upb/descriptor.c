@@ -284,6 +284,8 @@ static upb_mhandlers *upb_enumdef_register_EnumDescriptorProto(upb_handlers *h) 
 static upb_flow_t upb_fielddef_startmsg(void *_r) {
   upb_descreader *r = _r;
   r->f = upb_fielddef_new();
+  free(r->default_string);
+  r->default_string = NULL;
   return UPB_CONTINUE;
 }
 
@@ -291,28 +293,24 @@ static upb_flow_t upb_fielddef_startmsg(void *_r) {
 // Returns true on success.
 static bool upb_fielddef_parsedefault(char *str, upb_value *d, int type) {
   bool success = true;
-  if (type == UPB_TYPE(STRING) || type == UPB_TYPE(BYTES) || type == UPB_TYPE(ENUM)) {
-    // We'll keep the ref we had on it.  We include enums in this case because
-    // we need the enumdef to resolve the name, but we may not have it yet.
-    // We'll resolve it later.
-    if (!str) str = strdup("");
-    upb_value_setptr(d, str);
-  } else if (type == UPB_TYPE(MESSAGE) || type == UPB_TYPE(GROUP)) {
-    // We don't expect to get a default value.
-    free(str);
-    upb_value_setptr(d, NULL);
-    if (str != NULL) success = false;
-  } else if (type == UPB_TYPE(BOOL)) {
-    if (!str || strcmp(str, "false") == 0)
-      upb_value_setbool(d, false);
-    else if (strcmp(str, "true") == 0)
-      upb_value_setbool(d, true);
-    else
-      success = false;
-    free(str);
+  if (str) {
+    switch(type) {
+      case UPB_TYPE(INT32):
+      case UPB_TYPE(SINT32):
+      case UPB_TYPE(SFIXED32): upb_value_setint32(d, 0); break;
+      case UPB_TYPE(INT64):
+      case UPB_TYPE(SINT64):
+      case UPB_TYPE(SFIXED64): upb_value_setint64(d, 0); break;
+      case UPB_TYPE(UINT32):
+      case UPB_TYPE(FIXED32): upb_value_setuint32(d, 0);
+      case UPB_TYPE(UINT64):
+      case UPB_TYPE(FIXED64): upb_value_setuint64(d, 0); break;
+      case UPB_TYPE(DOUBLE): upb_value_setdouble(d, 0); break;
+      case UPB_TYPE(FLOAT): upb_value_setfloat(d, 0); break;
+      case UPB_TYPE(BOOL): upb_value_setbool(d, false); break;
+      default: abort();
+    }
   } else {
-    // The strto* functions need the string to be NULL-terminated.
-    if (!str) str = strdup("0");
     char *end;
     switch (type) {
       case UPB_TYPE(INT32):
@@ -353,9 +351,16 @@ static bool upb_fielddef_parsedefault(char *str, upb_value *d, int type) {
         upb_value_setfloat(d, strtof(str, &end));
         if (errno == ERANGE || *end) success = false;
         break;
+      case UPB_TYPE(BOOL): {
+        if (strcmp(str, "false") == 0)
+          upb_value_setbool(d, false);
+        else if (strcmp(str, "true") == 0)
+          upb_value_setbool(d, true);
+        else
+          success = false;
+      }
       default: abort();
     }
-    free(str);
   }
   return success;
 }
@@ -372,17 +377,26 @@ static void upb_fielddef_endmsg(void *_r, upb_status *status) {
   upb_msgdef_addfield(m, f);
   upb_fielddef_unref(f);
   r->f = NULL;
-  char *dstr = r->default_string;
-  r->default_string = NULL;
-  upb_value val;
-  upb_value_setptr(&val, NULL);  // Silence inaccurate compiler warnings.
-  if (!upb_fielddef_parsedefault(dstr, &val, f->type)) {
-    // We don't worry too much about giving a great error message since the
-    // compiler should have ensured this was correct.
-    upb_status_seterrliteral(status, "Error converting default value.");
-    return;
+
+  if (r->default_string) {
+    if (upb_issubmsg(f)) {
+      upb_status_seterrliteral(status, "Submessages cannot have defaults.");
+      return;
+    }
+    if (upb_isstring(f) || f->type == UPB_TYPE(ENUM)) {
+      upb_fielddef_setdefaultcstr(f, r->default_string);
+    } else {
+      upb_value val;
+      upb_value_setptr(&val, NULL);  // Silence inaccurate compiler warnings.
+      if (!upb_fielddef_parsedefault(r->default_string, &val, f->type)) {
+        // We don't worry too much about giving a great error message since the
+        // compiler should have ensured this was correct.
+        upb_status_seterrliteral(status, "Error converting default value.");
+        return;
+      }
+      upb_fielddef_setdefault(f, val);
+    }
   }
-  upb_fielddef_setdefault(f, val);
 }
 
 static upb_flow_t upb_fielddef_ontype(void *_r, upb_value fval, upb_value val) {

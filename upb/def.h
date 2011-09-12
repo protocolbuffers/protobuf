@@ -109,7 +109,7 @@ typedef struct _upb_fielddef {
   uint8_t label;         // Use UPB_LABEL() constants.
   int16_t hasbit;
   uint16_t offset;
-  bool hasdefault;
+  bool default_is_symbolic;
   bool active;
   int32_t number;
   char *name;
@@ -133,7 +133,6 @@ INLINE uint8_t upb_fielddef_type(const upb_fielddef *f) { return f->type; }
 INLINE uint8_t upb_fielddef_label(const upb_fielddef *f) { return f->label; }
 INLINE int32_t upb_fielddef_number(const upb_fielddef *f) { return f->number; }
 INLINE char *upb_fielddef_name(const upb_fielddef *f) { return f->name; }
-INLINE upb_value upb_fielddef_default(const upb_fielddef *f) { return f->defaultval; }
 INLINE upb_value upb_fielddef_fval(const upb_fielddef *f) { return f->fval; }
 INLINE bool upb_fielddef_finalized(const upb_fielddef *f) { return f->finalized; }
 INLINE struct _upb_msgdef *upb_fielddef_msgdef(const upb_fielddef *f) {
@@ -144,6 +143,25 @@ INLINE struct _upb_accessor_vtbl *upb_fielddef_accessor(const upb_fielddef *f) {
 }
 INLINE const char *upb_fielddef_typename(const upb_fielddef *f) {
   return f->def ? f->def->fqname : NULL;
+}
+
+// Returns the default value for this fielddef, which may either be something
+// the client set explicitly or the "default default" (0 for numbers, empty for
+// strings).  The field's type indicates the type of the returned value, except
+// for enums.   For enums the default can be set either numerically or
+// symbolically -- the upb_fielddef_default_is_symbolic() function below will
+// indicate which it is.  For string defaults, the value will be a upb_strref
+// which is invalidated by any other call on this object.
+INLINE upb_value upb_fielddef_default(const upb_fielddef *f) {
+  return f->defaultval;
+}
+
+// The results of this function are only meaningful for enum fields, which can
+// have a default specified either as an integer or as a string.  If this
+// returns true, the default returned from upb_fielddef_default() is a string,
+// otherwise it is an integer.
+INLINE bool upb_fielddef_default_is_symbolic(const upb_fielddef *f) {
+  return f->default_is_symbolic;
 }
 
 // The enum or submessage def for this field, if any.  Only meaningful for
@@ -161,12 +179,28 @@ bool upb_fielddef_setname(upb_fielddef *f, const char *name);
 // These writers may be called at any time prior to being put in a symtab.
 bool upb_fielddef_settype(upb_fielddef *f, uint8_t type);
 bool upb_fielddef_setlabel(upb_fielddef *f, uint8_t label);
-void upb_fielddef_setdefault(upb_fielddef *f, upb_value value);
 void upb_fielddef_setfval(upb_fielddef *f, upb_value fval);
 void upb_fielddef_setaccessor(upb_fielddef *f, struct _upb_accessor_vtbl *vtbl);
+
 // The name of the message or enum this field is referring to.  Must be found
 // at name resolution time (when upb_symtab_add() is called).
+//
+// NOTE: May only be called for fields whose type has already been set to
+// be a submessage, group, or enum!  Also, will be reset to empty if the
+// field's type is set again.
 bool upb_fielddef_settypename(upb_fielddef *f, const char *name);
+
+// The default value for the field.  For numeric types, use
+// upb_fielddef_setdefault(), and "value" must match the type of the field.
+// For string/bytes types, use upb_fielddef_setdefaultstr().
+// Enum types may use either, since the default may be set either numerically
+// or symbolically.
+//
+// NOTE: May only be called for fields whose type has already been set.
+// Also, will be reset to default if the field's type is set again.
+void upb_fielddef_setdefault(upb_fielddef *f, upb_value value);
+void upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len);
+void upb_fielddef_setdefaultcstr(upb_fielddef *f, const char *str);
 
 // A variety of tests about the type of a field.
 INLINE bool upb_issubmsgtype(upb_fieldtype_t type) {
@@ -330,8 +364,8 @@ void upb_enumdef_setdefault(upb_enumdef *e, int32_t val);
 bool upb_enumdef_addval(upb_enumdef *e, char *name, int32_t num);
 
 // Lookups from name to integer and vice-versa.
-bool upb_enumdef_ntoil(upb_enumdef *e, char *name, size_t len, int32_t *num);
-bool upb_enumdef_ntoi(upb_enumdef *e, char *name, int32_t *num);
+bool upb_enumdef_ntoil(upb_enumdef *e, const char *name, size_t len, int32_t *num);
+bool upb_enumdef_ntoi(upb_enumdef *e, const char *name, int32_t *num);
 // Caller does not own the returned string.
 const char *upb_enumdef_iton(upb_enumdef *e, int32_t num);
 

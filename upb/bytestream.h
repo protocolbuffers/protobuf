@@ -160,6 +160,14 @@ INLINE void upb_strref_read(const struct _upb_strref *r, char *buf) {
   }
 }
 
+// Dynamically allocates a upb_strref object whose contents are the given
+// string.  The given string data is copied into the strref, which makes these
+// functions unsuitable for tight loops (in those cases a strref should be made
+// to point to existing string data).
+upb_strref *upb_strref_new(const char *str);
+upb_strref *upb_strref_newl(const void *str, size_t len);
+void upb_strref_free(upb_strref *ref);
+
 
 /* upb_bytesink ***************************************************************/
 

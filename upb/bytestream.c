@@ -21,6 +21,24 @@ char *upb_strref_dup(const struct _upb_strref *r) {
   return ret;
 }
 
+upb_strref *upb_strref_new(const char *str) {
+  return upb_strref_newl(str, strlen(str));
+}
+
+upb_strref *upb_strref_newl(const void *str, size_t len) {
+  upb_strref *s = malloc(sizeof(*s));
+  s->bytesrc = NULL;
+  s->ptr = malloc(len);
+  memcpy((void*)s->ptr, str, len);
+  return s;
+}
+
+void upb_strref_free(upb_strref *ref) {
+  if (!ref) return;
+  free((char*)ref->ptr);
+  free(ref);
+}
+
 void upb_bytesink_init(upb_bytesink *sink, upb_bytesink_vtbl *vtbl) {
   sink->vtbl = vtbl;
   upb_status_init(&sink->status);

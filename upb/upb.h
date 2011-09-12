@@ -162,6 +162,15 @@ typedef struct {
 #define SET_TYPE(dest, val) dest = val
 #endif
 
+// For each value type, define the following set of functions:
+//
+// // Get/set an int32 from a upb_value.
+// int32_t upb_value_getint32(upb_value val);
+// void upb_value_setint32(upb_value *val, int32_t cval);
+//
+// // Construct a new upb_value from an int32.
+// upb_value upb_value_int32(int32_t val);
+
 #define UPB_VALUE_ACCESSORS(name, membername, ctype, proto_type) \
   INLINE ctype upb_value_get ## name(upb_value val) { \
     assert(val.type == proto_type); \
@@ -170,7 +179,13 @@ typedef struct {
   INLINE void upb_value_set ## name(upb_value *val, ctype cval) { \
     SET_TYPE(val->type, proto_type); \
     val->val.membername = cval; \
+  } \
+  INLINE upb_value upb_value_ ## name(ctype val) { \
+    upb_value ret; \
+    upb_value_set ## name(&ret, val); \
+    return ret; \
   }
+
 UPB_VALUE_ACCESSORS(double, _double, double, UPB_TYPE(DOUBLE));
 UPB_VALUE_ACCESSORS(float, _float, float, UPB_TYPE(FLOAT));
 UPB_VALUE_ACCESSORS(int32, int32, int32_t, UPB_TYPE(INT32));
