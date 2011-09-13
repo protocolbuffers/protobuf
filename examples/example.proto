@@ -1,0 +1,15 @@
+//
+// upb - a minimalist implementation of protocol buffers.
+//
+// Copyright (c) 2011 Google Inc.  See LICENSE for details.
+// Author: Josh Haberman <jhaberman@gmail.com>
+//
+// A .proto file for the examples in this directory.
+
+package example;
+
+message SampleMessage {
+  optional string name = 1;
+  optional int32 id = 2;
+  optional string email = 3;
+}

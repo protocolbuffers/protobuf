@@ -28,21 +28,20 @@
 
 #include <stdbool.h>
 #include "upb/upb.h"
+#include "upb/def.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Forward-declares so we don't have to include everything in this .h file.
-// Clients should use the regular, typedef'd names (eg. upb_string).
-struct _upb_msg;
-struct _upb_msgdef;
-struct _upb_symtab;
-
 // Decodes the given string, which must be in protobuf binary format, to the
 // given upb_msg with msgdef "md", storing the status of the operation in "s".
 void upb_strtomsg(const char *str, size_t len, void *msg,
-                  const struct _upb_msgdef *md, upb_status *s);
+                  const upb_msgdef *md, upb_status *s);
+
+// Parses the given file into a new message of the given type.  Caller owns
+// the returned message (or NULL if an error occurred).
+void *upb_filetonewmsg(const char *fname, const upb_msgdef *md, upb_status *s);
 
 //void upb_msgtotext(struct _upb_string *str, void *msg,
 //                   struct _upb_msgdef *md, bool single_line);
@@ -56,12 +55,12 @@ upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
                                         upb_status *status);
 
 // Like the previous but also adds the loaded defs to the given symtab.
-bool upb_load_descriptor_into_symtab(struct _upb_symtab *symtab, const char *str,
+bool upb_load_descriptor_into_symtab(upb_symtab *symtab, const char *str,
                                      size_t len, upb_status *status);
 
 // Like the previous but also reads the descriptor from the given filename.
-bool upb_load_descriptor_file_into_symtab(struct _upb_symtab *symtab,
-                                          const char *fname, upb_status *status);
+bool upb_load_descriptor_file_into_symtab(upb_symtab *symtab, const char *fname,
+                                          upb_status *status);
 
 // Reads the given filename into a character string, returning NULL if there
 // was an error.

@@ -30,8 +30,8 @@ void compare_arrays(const google::protobuf::Reflection *r,
 {
   ASSERT(upb_msg_has(upb_msg, upb_f));
   ASSERT(upb_isseq(upb_f));
-  void *arr = upb_value_getptr(upb_msg_getseq(upb_msg, upb_f));
-  void *iter = upb_seq_begin(arr, upb_f);
+  const void *arr = upb_value_getptr(upb_msg_getseq(upb_msg, upb_f));
+  const void *iter = upb_seq_begin(arr, upb_f);
   for(int i = 0;
       i < r->FieldSize(proto2_msg, proto2_f);
       i++, iter = upb_seq_next(arr, iter, upb_f)) {

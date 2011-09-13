@@ -294,13 +294,13 @@ void upb_msgdef_layout(upb_msgdef *m);
 // Looks up a field by name or number.  While these are written to be as fast
 // as possible, it will still be faster to cache the results of this lookup if
 // possible.  These return NULL if no such field is found.
-INLINE upb_fielddef *upb_msgdef_itof(upb_msgdef *m, uint32_t i) {
+INLINE upb_fielddef *upb_msgdef_itof(const upb_msgdef *m, uint32_t i) {
   upb_itof_ent *e = (upb_itof_ent*)
       upb_inttable_fastlookup(&m->itof, i, sizeof(upb_itof_ent));
   return e ? e->f : NULL;
 }
 
-INLINE upb_fielddef *upb_msgdef_ntof(upb_msgdef *m, const char *name) {
+INLINE upb_fielddef *upb_msgdef_ntof(const upb_msgdef *m, const char *name) {
   upb_ntof_ent *e = (upb_ntof_ent*)upb_strtable_lookup(&m->ntof, name);
   return e ? e->f : NULL;
 }

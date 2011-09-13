@@ -40,13 +40,13 @@ extern "C" {
 // for one specific upb_fielddef.  Each field has a separate accessor, which
 // lives in the fielddef.
 
-typedef bool upb_has_reader(void *m, upb_value fval);
-typedef upb_value upb_value_reader(void *m, upb_value fval);
+typedef bool upb_has_reader(const void *m, upb_value fval);
+typedef upb_value upb_value_reader(const void *m, upb_value fval);
 
-typedef void *upb_seqbegin_handler(void *s);
-typedef void *upb_seqnext_handler(void *s, void *iter);
-typedef upb_value upb_seqget_handler(void *iter);
-INLINE bool upb_seq_done(void *iter) { return iter == NULL; }
+typedef const void *upb_seqbegin_handler(const void *s);
+typedef const void *upb_seqnext_handler(const void *s, const void *iter);
+typedef upb_value upb_seqget_handler(const void *iter);
+INLINE bool upb_seq_done(const void *iter) { return iter == NULL; }
 
 typedef struct _upb_accessor_vtbl {
   // Writers.  These take an fval as a parameter because the callbacks are used
@@ -97,18 +97,18 @@ INLINE void upb_msg_clearbit(void *msg, const upb_fielddef *f) {
 // or arrays.  Also this could be desired to provide proto2 operations on
 // generated messages.
 
-INLINE bool upb_msg_has(void *m, const upb_fielddef *f) {
+INLINE bool upb_msg_has(const void *m, const upb_fielddef *f) {
   return f->accessor && f->accessor->has(m, f->fval);
 }
 
 // May only be called for fields that have accessors.
-INLINE upb_value upb_msg_get(void *m, const upb_fielddef *f) {
+INLINE upb_value upb_msg_get(const void *m, const upb_fielddef *f) {
   assert(f->accessor && !upb_isseq(f));
   return f->accessor->get(m, f->fval);
 }
 
 // May only be called for fields that have accessors.
-INLINE upb_value upb_msg_getseq(void *m, const upb_fielddef *f) {
+INLINE upb_value upb_msg_getseq(const void *m, const upb_fielddef *f) {
   assert(f->accessor && upb_isseq(f));
   return f->accessor->getseq(m, f->fval);
 }
@@ -118,19 +118,34 @@ INLINE void upb_msg_set(void *m, const upb_fielddef *f, upb_value val) {
   f->accessor->set(m, f->fval, val);
 }
 
-INLINE void *upb_seq_begin(void *s, const upb_fielddef *f) {
+INLINE const void *upb_seq_begin(const void *s, const upb_fielddef *f) {
   assert(f->accessor);
   return f->accessor->seqbegin(s);
 }
-INLINE void *upb_seq_next(void *s, void *iter, const upb_fielddef *f) {
+INLINE const void *upb_seq_next(const void *s, const void *iter,
+                                const upb_fielddef *f) {
   assert(f->accessor);
   assert(!upb_seq_done(iter));
   return f->accessor->seqnext(s, iter);
 }
-INLINE upb_value upb_seq_get(void *iter, const upb_fielddef *f) {
+INLINE upb_value upb_seq_get(const void *iter, const upb_fielddef *f) {
   assert(f->accessor);
   assert(!upb_seq_done(iter));
   return f->accessor->seqget(iter);
+}
+
+INLINE bool upb_msg_has_named(const void *m, const upb_msgdef *md,
+                              const char *field_name) {
+  const upb_fielddef *f = upb_msgdef_ntof(md, field_name);
+  return f && upb_msg_has(m, f);
+}
+
+INLINE bool upb_msg_get_named(const void *m, const upb_msgdef *md,
+                                   const char *field_name, upb_value *val) {
+  const upb_fielddef *f = upb_msgdef_ntof(md, field_name);
+  if (!f) return false;
+  *val = upb_msg_get(m, f);
+  return true;
 }
 
 
@@ -264,30 +279,30 @@ upb_sflow_t upb_stdmsg_startsubmsg_r(void *c, upb_value fval);
 
 /* Standard readers. **********************************************************/
 
-bool upb_stdmsg_has(void *c, upb_value fval);
-void *upb_stdmsg_seqbegin(void *c);
+bool upb_stdmsg_has(const void *c, upb_value fval);
+const void *upb_stdmsg_seqbegin(const void *c);
 
-upb_value upb_stdmsg_getint64(void *c, upb_value fval);
-upb_value upb_stdmsg_getint32(void *c, upb_value fval);
-upb_value upb_stdmsg_getuint64(void *c, upb_value fval);
-upb_value upb_stdmsg_getuint32(void *c, upb_value fval);
-upb_value upb_stdmsg_getdouble(void *c, upb_value fval);
-upb_value upb_stdmsg_getfloat(void *c, upb_value fval);
-upb_value upb_stdmsg_getbool(void *c, upb_value fval);
-upb_value upb_stdmsg_getptr(void *c, upb_value fval);
+upb_value upb_stdmsg_getint64(const void *c, upb_value fval);
+upb_value upb_stdmsg_getint32(const void *c, upb_value fval);
+upb_value upb_stdmsg_getuint64(const void *c, upb_value fval);
+upb_value upb_stdmsg_getuint32(const void *c, upb_value fval);
+upb_value upb_stdmsg_getdouble(const void *c, upb_value fval);
+upb_value upb_stdmsg_getfloat(const void *c, upb_value fval);
+upb_value upb_stdmsg_getbool(const void *c, upb_value fval);
+upb_value upb_stdmsg_getptr(const void *c, upb_value fval);
 
-void *upb_stdmsg_8byte_seqnext(void *c, void *iter);
-void *upb_stdmsg_4byte_seqnext(void *c, void *iter);
-void *upb_stdmsg_1byte_seqnext(void *c, void *iter);
+const void *upb_stdmsg_8byte_seqnext(const void *c, const void *iter);
+const void *upb_stdmsg_4byte_seqnext(const void *c, const void *iter);
+const void *upb_stdmsg_1byte_seqnext(const void *c, const void *iter);
 
-upb_value upb_stdmsg_seqgetint64(void *c);
-upb_value upb_stdmsg_seqgetint32(void *c);
-upb_value upb_stdmsg_seqgetuint64(void *c);
-upb_value upb_stdmsg_seqgetuint32(void *c);
-upb_value upb_stdmsg_seqgetdouble(void *c);
-upb_value upb_stdmsg_seqgetfloat(void *c);
-upb_value upb_stdmsg_seqgetbool(void *c);
-upb_value upb_stdmsg_seqgetptr(void *c);
+upb_value upb_stdmsg_seqgetint64(const void *c);
+upb_value upb_stdmsg_seqgetint32(const void *c);
+upb_value upb_stdmsg_seqgetuint64(const void *c);
+upb_value upb_stdmsg_seqgetuint32(const void *c);
+upb_value upb_stdmsg_seqgetdouble(const void *c);
+upb_value upb_stdmsg_seqgetfloat(const void *c);
+upb_value upb_stdmsg_seqgetbool(const void *c);
+upb_value upb_stdmsg_seqgetptr(const void *c);
 
 #ifdef __cplusplus
 }  /* extern "C" */

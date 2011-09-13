@@ -89,9 +89,9 @@ void upb_stdmsg_sethas(void *_m, upb_value fval) {
   if (f->hasbit >= 0) m[f->hasbit / 8] |= (1 << (f->hasbit % 8));
 }
 
-bool upb_stdmsg_has(void *_m, upb_value fval) {
+bool upb_stdmsg_has(const void *_m, upb_value fval) {
   assert(_m != NULL);
-  char *m = _m;
+  const char *m = _m;
   const upb_fielddef *f = upb_value_getfielddef(fval);
   return f->hasbit < 0 || (m[f->hasbit / 8] & (1 << (f->hasbit % 8)));
 }
@@ -116,15 +116,15 @@ bool upb_stdmsg_has(void *_m, upb_value fval) {
     return UPB_CONTINUE;                                                      \
   }                                                                           \
                                                                               \
-  upb_value upb_stdmsg_get ## type(void *_m, upb_value fval) {                \
+  upb_value upb_stdmsg_get ## type(const void *_m, upb_value fval) {          \
     assert(_m != NULL);                                                       \
-    uint8_t *m = _m;                                                          \
+    const uint8_t *m = _m;                                                    \
     const upb_fielddef *f = upb_value_getfielddef(fval);                      \
     upb_value ret;                                                            \
     upb_value_set ## type(&ret, *(ctype*)&m[f->offset]);                      \
     return ret;                                                               \
   }                                                                           \
-  upb_value upb_stdmsg_seqget ## type(void *i) {                              \
+  upb_value upb_stdmsg_seqget ## type(const void *i) {                        \
     assert(i != NULL);                                                        \
     upb_value val;                                                            \
     upb_value_set ## type(&val, *(ctype*)i);                                  \
@@ -176,12 +176,12 @@ upb_flow_t upb_stdmsg_setstr_r(void *a, upb_value fval, upb_value val) {
   return UPB_CONTINUE;
 }
 
-upb_value upb_stdmsg_getstr(void *m, upb_value fval) {
+upb_value upb_stdmsg_getstr(const void *m, upb_value fval) {
   assert(m != NULL);
   return upb_stdmsg_getptr(m, fval);
 }
 
-upb_value upb_stdmsg_seqgetstr(void *i) {
+upb_value upb_stdmsg_seqgetstr(const void *i) {
   assert(i != NULL);
   return upb_stdmsg_seqgetptr(i);
 }
@@ -275,15 +275,15 @@ upb_sflow_t upb_stdmsg_startsubmsg_r(void *a, upb_value fval) {
   return UPB_CONTINUE_WITH(*subm);
 }
 
-void *upb_stdmsg_seqbegin(void *_a) {
-  upb_stdarray *a = _a;
+const void *upb_stdmsg_seqbegin(const void *_a) {
+  const upb_stdarray *a = _a;
   return a->len > 0 ? a->ptr : NULL;
 }
 
 #define NEXTFUNC(size) \
-  void *upb_stdmsg_ ## size ## byte_seqnext(void *_a, void *iter) {      \
-    upb_stdarray *a = _a;                                                \
-    void *next = (char*)iter + size;                                     \
+  const void *upb_stdmsg_ ## size ## byte_seqnext(const void *_a, const void *iter) {\
+    const upb_stdarray *a = _a;                                          \
+    const void *next = (char*)iter + size;                               \
     return (char*)next < (char*)a->ptr + (a->len * size) ? next : NULL;  \
   }
 

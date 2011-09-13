@@ -30,6 +30,20 @@ void upb_strtomsg(const char *str, size_t len, void *msg, const upb_msgdef *md,
   upb_decoder_uninit(&d);
 }
 
+void *upb_filetonewmsg(const char *fname, const upb_msgdef *md, upb_status *s) {
+  void *msg = upb_stdmsg_new(md);
+  size_t len;
+  char *data = upb_readfile(fname, &len);
+  if (!data) goto err;
+  upb_strtomsg(data, len, msg, md, s);
+  if (!upb_ok(s)) goto err;
+  return msg;
+
+err:
+  upb_stdmsg_free(msg, md);
+  return NULL;
+}
+
 #if 0
 void upb_msgtotext(upb_string *str, upb_msg *msg, upb_msgdef *md,
                    bool single_line) {

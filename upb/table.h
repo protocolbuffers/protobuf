@@ -149,9 +149,10 @@ INLINE size_t _upb_inttable_entrysize(size_t value_size) {
   return upb_align_up(sizeof(upb_inttable_header) + value_size, 8);
 }
 
-INLINE void *upb_inttable_fastlookup(upb_inttable *t, uint32_t key,
-                                      uint32_t value_size) {
-  return _upb_inttable_fastlookup(t, key, _upb_inttable_entrysize(value_size), value_size);
+INLINE void *upb_inttable_fastlookup(const upb_inttable *t, uint32_t key,
+                                     uint32_t value_size) {
+  return _upb_inttable_fastlookup(
+      t, key, _upb_inttable_entrysize(value_size), value_size);
 }
 
 INLINE void *upb_inttable_lookup(upb_inttable *t, uint32_t key) {

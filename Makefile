@@ -185,7 +185,11 @@ descriptorgen: upb/descriptor.pb tools/upbc
 
 tools/upbc: tools/upbc.c $(LIBUPB)
 	$(E) CC $<
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) $(DEF_OPT) -o $@ $< $(LIBUPB)
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $< $(LIBUPB)
+
+examples/msg: examples/msg.c $(LIBUPB)
+	$(E) CC $<
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $< $(LIBUPB)
 
 # Tests. #######################################################################
 
