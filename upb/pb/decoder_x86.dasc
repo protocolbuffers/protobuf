@@ -181,7 +181,8 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |// Could specialize this by avoiding the value masking: could just key the
 |// table on the raw (length-masked) varint to save 3-4 cycles of latency.
 |// Currently only support tables where all entries are in the array part.
-|.macro dyndispatch, m
+|.macro dyndispatch_, m
+|=>m->jit_dyndispatch_pclabel:
 |  decode_loaded_varint, 0
 |  mov  ecx, edx
 |  shr  ecx, 3
@@ -196,6 +197,15 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 || }
 |  jmp  rax  // Dispatch: unpredictable jump.
 |.endmacro
+|
+|.if 1
+|  // Replicated dispatch: larger code, but better branch prediction.
+|  .define dyndispatch, dyndispatch_
+|.else
+|  .macro dyndispatch, m
+|    jmp =>m->jit_dyndispatch_pclabel
+|  .endmacro
+|.endif
 |
 |// Push a stack frame (not the CPU stack, the upb_decoder stack).
 |.macro pushframe, f, closure_, end_offset_, is_sequence_
@@ -549,8 +559,7 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
     |  je  =>next_f->jit_pclabel_notypecheck
   }
 
-  // Fall back to dynamic dispatch.  Replicate the dispatch
-  // here so we can learn what fields generally follow others.
+  // Fall back to dynamic dispatch.
   |  dyndispatch  m
   |1:
 }
@@ -578,7 +587,7 @@ static void upb_decoder_jit_msg(upb_decoder *d, upb_mhandlers *m) {
   |  setmsgend  m
   |  check_eob   m
   |  mov    ecx, dword [PTR]
-  |  dyndispatch m
+  |  dyndispatch_ m
 
   // --------- New code section (does not fall through) ------------------------
 
@@ -698,6 +707,7 @@ void upb_decoder_jit_assignmsglabs(upb_mhandlers *m, uint32_t *pclabel_count) {
   m->jit_startmsg_pclabel = (*pclabel_count)++;
   m->jit_endofbuf_pclabel = (*pclabel_count)++;
   m->jit_endofmsg_pclabel = (*pclabel_count)++;
+  m->jit_dyndispatch_pclabel = (*pclabel_count)++;
   m->jit_unknownfield_pclabel = (*pclabel_count)++;
   m->jit_parent_field_done_pclabel = UPB_NONE;
   m->max_field_number = 0;
