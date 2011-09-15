@@ -355,22 +355,23 @@ static void upb_decoder_jit_decodefield(upb_decoder *d, upb_mhandlers *m,
       // We only handle the case where the entire string is in our current
       // buf, which sidesteps any security problems.  The C path has more
       // robust checks.
-      |  decode_varint  tag_size
+      |  mov  ecx, dword [PTR + tag_size]
+      |  decode_loaded_varint tag_size
+      |  mov  rdi, rax
+      |  add  rdi, ARG3_64
       |  mov  STRREF->len, ARG3_32
-      |  mov  STRREF->ptr, PTR
-      |  mov  rax, PTR
+      |  mov  STRREF->ptr, rax
       |  sub  rax, DECODER->buf
       |  add  eax, DECODER->bufstart_ofs  // = d->ptr - d->buf + d->bufstart_ofs
       |  mov  STRREF->stream_offset, eax
-      |  add  PTR, ARG3_64
       |  mov  ARG3_64, STRREF
-      |  cmp  PTR, DECODER->effective_end
+      |  cmp  rdi, DECODER->effective_end
       |  ja   ->exit_jit   // Can't deliver, whole string not in buf.
+      |  mov  PTR, rdi
       break;
 
     case UPB_TYPE_ENDGROUP:  // A pseudo-type.
       |  add  PTR, tag_size
-      |  mov  DECODER->ptr, PTR
       |  jmp  =>m->jit_endofmsg_pclabel
       return;
 
@@ -467,7 +468,7 @@ static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
       |  callp f->endsubmsg
     }
   } else {
-    |  mov   ARG1_64, CLOSURE
+    |  mov ARG1_64, CLOSURE
     // Test for callbacks we can specialize.
     // Can't switch() on function pointers.
     if (f->value == &upb_stdmsg_setint64 ||
@@ -532,13 +533,6 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
   |1:  // Label for repeating this field.
 
   upb_decoder_jit_decodefield(d, m, f->type, upb_value_size(tag));
-
-  // Commit our work by advancing ptr.
-  // (If in the future we wanted to support a UPB_SUSPEND_AGAIN that
-  // suspends the decoder and redelivers the value later, we would
-  // need to adjust this to happen perhaps after the callback ran).
-  |  mov   DECODER->ptr, PTR
-
   upb_decoder_jit_callcb(d, f);
 
   // Epilogue: load next tag, check for repeated field.
@@ -680,6 +674,7 @@ static void upb_decoder_jit(upb_decoder *d) {
   for (int i = 0; i < h->msgs_len; i++) upb_decoder_jit_msg(d, h->msgs[i]);
 
   |->exit_jit:
+  |  mov   DECODER->ptr, PTR
   // Counter previous alignment.
   |  add   rsp, 8
   |  pop   rbx
