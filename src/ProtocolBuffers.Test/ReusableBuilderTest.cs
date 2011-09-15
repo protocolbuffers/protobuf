@@ -90,6 +90,15 @@ namespace Google.ProtocolBuffers
         }
 
         [Test]
+        public void CloneOnGetRepeatedBoolList()
+        {
+            TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
+            Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            GC.KeepAlive(builder.RepeatedBoolList);
+            Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+        }
+
+        [Test]
         public void CloneOnChangeMessage()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
@@ -108,11 +117,11 @@ namespace Google.ProtocolBuffers
         }
 
         [Test]
-        public void CloneOnAddRepeatedForeignMessage()
+        public void CloneOnGetRepeatedForeignMessageList()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
             Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
-            builder.AddRepeatedForeignMessage(ForeignMessage.DefaultInstance);
+            GC.KeepAlive(builder.RepeatedForeignMessageList);
             Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
@@ -126,11 +135,11 @@ namespace Google.ProtocolBuffers
         }
 
         [Test]
-        public void CloneOnAddRepeatedForeignEnum()
+        public void CloneOnGetRepeatedForeignEnumList()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
             Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
-            builder.AddRepeatedForeignEnum(ForeignEnum.FOREIGN_BAR);
+            GC.KeepAlive(builder.RepeatedForeignEnumList);
             Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
