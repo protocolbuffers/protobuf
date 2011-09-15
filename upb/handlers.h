@@ -69,7 +69,7 @@ extern "C" {
 //     return UPB_CONTINUE;
 //   }
 //
-//   static upb_sflow_t startseqmsg(void *closure, upb_value fval) {
+//   static upb_sflow_t startseq(void *closure, upb_value fval) {
 //     // Called when a sequence (repeated field) begins.  The second element
 //     // of the return value is the closure for the sequence.
 //     return UPB_CONTINUE_WITH(closure);
@@ -197,6 +197,7 @@ typedef struct _upb_mhandlers {
   uint32_t jit_startmsg_pclabel;
   uint32_t jit_endofbuf_pclabel;
   uint32_t jit_endofmsg_pclabel;
+  uint32_t jit_dyndispatch_pclabel;
   uint32_t jit_unknownfield_pclabel;
   int32_t jit_parent_field_done_pclabel;
   uint32_t max_field_number;
