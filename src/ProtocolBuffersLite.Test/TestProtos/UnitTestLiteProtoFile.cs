@@ -3690,76 +3690,76 @@ namespace Google.ProtocolBuffers.TestProtos {
           OptionalCord = other.OptionalCord;
         }
         if (other.repeatedInt32_.Count != 0) {
-          base.AddRange(other.repeatedInt32_, result.repeatedInt32_);
+          result.repeatedInt32_.Add(other.repeatedInt32_);
         }
         if (other.repeatedInt64_.Count != 0) {
-          base.AddRange(other.repeatedInt64_, result.repeatedInt64_);
+          result.repeatedInt64_.Add(other.repeatedInt64_);
         }
         if (other.repeatedUint32_.Count != 0) {
-          base.AddRange(other.repeatedUint32_, result.repeatedUint32_);
+          result.repeatedUint32_.Add(other.repeatedUint32_);
         }
         if (other.repeatedUint64_.Count != 0) {
-          base.AddRange(other.repeatedUint64_, result.repeatedUint64_);
+          result.repeatedUint64_.Add(other.repeatedUint64_);
         }
         if (other.repeatedSint32_.Count != 0) {
-          base.AddRange(other.repeatedSint32_, result.repeatedSint32_);
+          result.repeatedSint32_.Add(other.repeatedSint32_);
         }
         if (other.repeatedSint64_.Count != 0) {
-          base.AddRange(other.repeatedSint64_, result.repeatedSint64_);
+          result.repeatedSint64_.Add(other.repeatedSint64_);
         }
         if (other.repeatedFixed32_.Count != 0) {
-          base.AddRange(other.repeatedFixed32_, result.repeatedFixed32_);
+          result.repeatedFixed32_.Add(other.repeatedFixed32_);
         }
         if (other.repeatedFixed64_.Count != 0) {
-          base.AddRange(other.repeatedFixed64_, result.repeatedFixed64_);
+          result.repeatedFixed64_.Add(other.repeatedFixed64_);
         }
         if (other.repeatedSfixed32_.Count != 0) {
-          base.AddRange(other.repeatedSfixed32_, result.repeatedSfixed32_);
+          result.repeatedSfixed32_.Add(other.repeatedSfixed32_);
         }
         if (other.repeatedSfixed64_.Count != 0) {
-          base.AddRange(other.repeatedSfixed64_, result.repeatedSfixed64_);
+          result.repeatedSfixed64_.Add(other.repeatedSfixed64_);
         }
         if (other.repeatedFloat_.Count != 0) {
-          base.AddRange(other.repeatedFloat_, result.repeatedFloat_);
+          result.repeatedFloat_.Add(other.repeatedFloat_);
         }
         if (other.repeatedDouble_.Count != 0) {
-          base.AddRange(other.repeatedDouble_, result.repeatedDouble_);
+          result.repeatedDouble_.Add(other.repeatedDouble_);
         }
         if (other.repeatedBool_.Count != 0) {
-          base.AddRange(other.repeatedBool_, result.repeatedBool_);
+          result.repeatedBool_.Add(other.repeatedBool_);
         }
         if (other.repeatedString_.Count != 0) {
-          base.AddRange(other.repeatedString_, result.repeatedString_);
+          result.repeatedString_.Add(other.repeatedString_);
         }
         if (other.repeatedBytes_.Count != 0) {
-          base.AddRange(other.repeatedBytes_, result.repeatedBytes_);
+          result.repeatedBytes_.Add(other.repeatedBytes_);
         }
         if (other.repeatedGroup_.Count != 0) {
-          base.AddRange(other.repeatedGroup_, result.repeatedGroup_);
+          result.repeatedGroup_.Add(other.repeatedGroup_);
         }
         if (other.repeatedNestedMessage_.Count != 0) {
-          base.AddRange(other.repeatedNestedMessage_, result.repeatedNestedMessage_);
+          result.repeatedNestedMessage_.Add(other.repeatedNestedMessage_);
         }
         if (other.repeatedForeignMessage_.Count != 0) {
-          base.AddRange(other.repeatedForeignMessage_, result.repeatedForeignMessage_);
+          result.repeatedForeignMessage_.Add(other.repeatedForeignMessage_);
         }
         if (other.repeatedImportMessage_.Count != 0) {
-          base.AddRange(other.repeatedImportMessage_, result.repeatedImportMessage_);
+          result.repeatedImportMessage_.Add(other.repeatedImportMessage_);
         }
         if (other.repeatedNestedEnum_.Count != 0) {
-          base.AddRange(other.repeatedNestedEnum_, result.repeatedNestedEnum_);
+          result.repeatedNestedEnum_.Add(other.repeatedNestedEnum_);
         }
         if (other.repeatedForeignEnum_.Count != 0) {
-          base.AddRange(other.repeatedForeignEnum_, result.repeatedForeignEnum_);
+          result.repeatedForeignEnum_.Add(other.repeatedForeignEnum_);
         }
         if (other.repeatedImportEnum_.Count != 0) {
-          base.AddRange(other.repeatedImportEnum_, result.repeatedImportEnum_);
+          result.repeatedImportEnum_.Add(other.repeatedImportEnum_);
         }
         if (other.repeatedStringPiece_.Count != 0) {
-          base.AddRange(other.repeatedStringPiece_, result.repeatedStringPiece_);
+          result.repeatedStringPiece_.Add(other.repeatedStringPiece_);
         }
         if (other.repeatedCord_.Count != 0) {
-          base.AddRange(other.repeatedCord_, result.repeatedCord_);
+          result.repeatedCord_.Add(other.repeatedCord_);
         }
         if (other.HasDefaultInt32) {
           DefaultInt32 = other.DefaultInt32;
@@ -4728,7 +4728,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedInt32(scg::IEnumerable<int> values) {
-        base.AddRange(values, result.repeatedInt32_);
+        result.repeatedInt32_.Add(values);
         return this;
       }
       public Builder ClearRepeatedInt32() {
@@ -4754,7 +4754,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedInt64(scg::IEnumerable<long> values) {
-        base.AddRange(values, result.repeatedInt64_);
+        result.repeatedInt64_.Add(values);
         return this;
       }
       public Builder ClearRepeatedInt64() {
@@ -4785,7 +4785,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       [global::System.CLSCompliant(false)]
       public Builder AddRangeRepeatedUint32(scg::IEnumerable<uint> values) {
-        base.AddRange(values, result.repeatedUint32_);
+        result.repeatedUint32_.Add(values);
         return this;
       }
       public Builder ClearRepeatedUint32() {
@@ -4816,7 +4816,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       [global::System.CLSCompliant(false)]
       public Builder AddRangeRepeatedUint64(scg::IEnumerable<ulong> values) {
-        base.AddRange(values, result.repeatedUint64_);
+        result.repeatedUint64_.Add(values);
         return this;
       }
       public Builder ClearRepeatedUint64() {
@@ -4842,7 +4842,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedSint32(scg::IEnumerable<int> values) {
-        base.AddRange(values, result.repeatedSint32_);
+        result.repeatedSint32_.Add(values);
         return this;
       }
       public Builder ClearRepeatedSint32() {
@@ -4868,7 +4868,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedSint64(scg::IEnumerable<long> values) {
-        base.AddRange(values, result.repeatedSint64_);
+        result.repeatedSint64_.Add(values);
         return this;
       }
       public Builder ClearRepeatedSint64() {
@@ -4899,7 +4899,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       [global::System.CLSCompliant(false)]
       public Builder AddRangeRepeatedFixed32(scg::IEnumerable<uint> values) {
-        base.AddRange(values, result.repeatedFixed32_);
+        result.repeatedFixed32_.Add(values);
         return this;
       }
       public Builder ClearRepeatedFixed32() {
@@ -4930,7 +4930,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       [global::System.CLSCompliant(false)]
       public Builder AddRangeRepeatedFixed64(scg::IEnumerable<ulong> values) {
-        base.AddRange(values, result.repeatedFixed64_);
+        result.repeatedFixed64_.Add(values);
         return this;
       }
       public Builder ClearRepeatedFixed64() {
@@ -4956,7 +4956,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedSfixed32(scg::IEnumerable<int> values) {
-        base.AddRange(values, result.repeatedSfixed32_);
+        result.repeatedSfixed32_.Add(values);
         return this;
       }
       public Builder ClearRepeatedSfixed32() {
@@ -4982,7 +4982,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedSfixed64(scg::IEnumerable<long> values) {
-        base.AddRange(values, result.repeatedSfixed64_);
+        result.repeatedSfixed64_.Add(values);
         return this;
       }
       public Builder ClearRepeatedSfixed64() {
@@ -5008,7 +5008,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedFloat(scg::IEnumerable<float> values) {
-        base.AddRange(values, result.repeatedFloat_);
+        result.repeatedFloat_.Add(values);
         return this;
       }
       public Builder ClearRepeatedFloat() {
@@ -5034,7 +5034,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedDouble(scg::IEnumerable<double> values) {
-        base.AddRange(values, result.repeatedDouble_);
+        result.repeatedDouble_.Add(values);
         return this;
       }
       public Builder ClearRepeatedDouble() {
@@ -5060,7 +5060,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedBool(scg::IEnumerable<bool> values) {
-        base.AddRange(values, result.repeatedBool_);
+        result.repeatedBool_.Add(values);
         return this;
       }
       public Builder ClearRepeatedBool() {
@@ -5088,7 +5088,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedString(scg::IEnumerable<string> values) {
-        base.AddRange(values, result.repeatedString_);
+        result.repeatedString_.Add(values);
         return this;
       }
       public Builder ClearRepeatedString() {
@@ -5116,7 +5116,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedBytes(scg::IEnumerable<pb::ByteString> values) {
-        base.AddRange(values, result.repeatedBytes_);
+        result.repeatedBytes_.Add(values);
         return this;
       }
       public Builder ClearRepeatedBytes() {
@@ -5154,7 +5154,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedGroup(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.RepeatedGroup> values) {
-        base.AddRange(values, result.repeatedGroup_);
+        result.repeatedGroup_.Add(values);
         return this;
       }
       public Builder ClearRepeatedGroup() {
@@ -5192,7 +5192,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedNestedMessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage> values) {
-        base.AddRange(values, result.repeatedNestedMessage_);
+        result.repeatedNestedMessage_.Add(values);
         return this;
       }
       public Builder ClearRepeatedNestedMessage() {
@@ -5230,7 +5230,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedForeignMessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.ForeignMessageLite> values) {
-        base.AddRange(values, result.repeatedForeignMessage_);
+        result.repeatedForeignMessage_.Add(values);
         return this;
       }
       public Builder ClearRepeatedForeignMessage() {
@@ -5268,7 +5268,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedImportMessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.ImportMessageLite> values) {
-        base.AddRange(values, result.repeatedImportMessage_);
+        result.repeatedImportMessage_.Add(values);
         return this;
       }
       public Builder ClearRepeatedImportMessage() {
@@ -5294,7 +5294,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedNestedEnum(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum> values) {
-        base.AddRange(values, result.repeatedNestedEnum_);
+        result.repeatedNestedEnum_.Add(values);
         return this;
       }
       public Builder ClearRepeatedNestedEnum() {
@@ -5320,7 +5320,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedForeignEnum(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite> values) {
-        base.AddRange(values, result.repeatedForeignEnum_);
+        result.repeatedForeignEnum_.Add(values);
         return this;
       }
       public Builder ClearRepeatedForeignEnum() {
@@ -5346,7 +5346,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedImportEnum(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.ImportEnumLite> values) {
-        base.AddRange(values, result.repeatedImportEnum_);
+        result.repeatedImportEnum_.Add(values);
         return this;
       }
       public Builder ClearRepeatedImportEnum() {
@@ -5374,7 +5374,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedStringPiece(scg::IEnumerable<string> values) {
-        base.AddRange(values, result.repeatedStringPiece_);
+        result.repeatedStringPiece_.Add(values);
         return this;
       }
       public Builder ClearRepeatedStringPiece() {
@@ -5402,7 +5402,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedCord(scg::IEnumerable<string> values) {
-        base.AddRange(values, result.repeatedCord_);
+        result.repeatedCord_.Add(values);
         return this;
       }
       public Builder ClearRepeatedCord() {
@@ -6632,46 +6632,46 @@ namespace Google.ProtocolBuffers.TestProtos {
       public override Builder MergeFrom(TestPackedTypesLite other) {
         if (other == global::Google.ProtocolBuffers.TestProtos.TestPackedTypesLite.DefaultInstance) return this;
         if (other.packedInt32_.Count != 0) {
-          base.AddRange(other.packedInt32_, result.packedInt32_);
+          result.packedInt32_.Add(other.packedInt32_);
         }
         if (other.packedInt64_.Count != 0) {
-          base.AddRange(other.packedInt64_, result.packedInt64_);
+          result.packedInt64_.Add(other.packedInt64_);
         }
         if (other.packedUint32_.Count != 0) {
-          base.AddRange(other.packedUint32_, result.packedUint32_);
+          result.packedUint32_.Add(other.packedUint32_);
         }
         if (other.packedUint64_.Count != 0) {
-          base.AddRange(other.packedUint64_, result.packedUint64_);
+          result.packedUint64_.Add(other.packedUint64_);
         }
         if (other.packedSint32_.Count != 0) {
-          base.AddRange(other.packedSint32_, result.packedSint32_);
+          result.packedSint32_.Add(other.packedSint32_);
         }
         if (other.packedSint64_.Count != 0) {
-          base.AddRange(other.packedSint64_, result.packedSint64_);
+          result.packedSint64_.Add(other.packedSint64_);
         }
         if (other.packedFixed32_.Count != 0) {
-          base.AddRange(other.packedFixed32_, result.packedFixed32_);
+          result.packedFixed32_.Add(other.packedFixed32_);
         }
         if (other.packedFixed64_.Count != 0) {
-          base.AddRange(other.packedFixed64_, result.packedFixed64_);
+          result.packedFixed64_.Add(other.packedFixed64_);
         }
         if (other.packedSfixed32_.Count != 0) {
-          base.AddRange(other.packedSfixed32_, result.packedSfixed32_);
+          result.packedSfixed32_.Add(other.packedSfixed32_);
         }
         if (other.packedSfixed64_.Count != 0) {
-          base.AddRange(other.packedSfixed64_, result.packedSfixed64_);
+          result.packedSfixed64_.Add(other.packedSfixed64_);
         }
         if (other.packedFloat_.Count != 0) {
-          base.AddRange(other.packedFloat_, result.packedFloat_);
+          result.packedFloat_.Add(other.packedFloat_);
         }
         if (other.packedDouble_.Count != 0) {
-          base.AddRange(other.packedDouble_, result.packedDouble_);
+          result.packedDouble_.Add(other.packedDouble_);
         }
         if (other.packedBool_.Count != 0) {
-          base.AddRange(other.packedBool_, result.packedBool_);
+          result.packedBool_.Add(other.packedBool_);
         }
         if (other.packedEnum_.Count != 0) {
-          base.AddRange(other.packedEnum_, result.packedEnum_);
+          result.packedEnum_.Add(other.packedEnum_);
         }
         return this;
       }
@@ -6800,7 +6800,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangePackedInt32(scg::IEnumerable<int> values) {
-        base.AddRange(values, result.packedInt32_);
+        result.packedInt32_.Add(values);
         return this;
       }
       public Builder ClearPackedInt32() {
@@ -6826,7 +6826,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangePackedInt64(scg::IEnumerable<long> values) {
-        base.AddRange(values, result.packedInt64_);
+        result.packedInt64_.Add(values);
         return this;
       }
       public Builder ClearPackedInt64() {
@@ -6857,7 +6857,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       [global::System.CLSCompliant(false)]
       public Builder AddRangePackedUint32(scg::IEnumerable<uint> values) {
-        base.AddRange(values, result.packedUint32_);
+        result.packedUint32_.Add(values);
         return this;
       }
       public Builder ClearPackedUint32() {
@@ -6888,7 +6888,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       [global::System.CLSCompliant(false)]
       public Builder AddRangePackedUint64(scg::IEnumerable<ulong> values) {
-        base.AddRange(values, result.packedUint64_);
+        result.packedUint64_.Add(values);
         return this;
       }
       public Builder ClearPackedUint64() {
@@ -6914,7 +6914,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangePackedSint32(scg::IEnumerable<int> values) {
-        base.AddRange(values, result.packedSint32_);
+        result.packedSint32_.Add(values);
         return this;
       }
       public Builder ClearPackedSint32() {
@@ -6940,7 +6940,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangePackedSint64(scg::IEnumerable<long> values) {
-        base.AddRange(values, result.packedSint64_);
+        result.packedSint64_.Add(values);
         return this;
       }
       public Builder ClearPackedSint64() {
@@ -6971,7 +6971,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       [global::System.CLSCompliant(false)]
       public Builder AddRangePackedFixed32(scg::IEnumerable<uint> values) {
-        base.AddRange(values, result.packedFixed32_);
+        result.packedFixed32_.Add(values);
         return this;
       }
       public Builder ClearPackedFixed32() {
@@ -7002,7 +7002,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       [global::System.CLSCompliant(false)]
       public Builder AddRangePackedFixed64(scg::IEnumerable<ulong> values) {
-        base.AddRange(values, result.packedFixed64_);
+        result.packedFixed64_.Add(values);
         return this;
       }
       public Builder ClearPackedFixed64() {
@@ -7028,7 +7028,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangePackedSfixed32(scg::IEnumerable<int> values) {
-        base.AddRange(values, result.packedSfixed32_);
+        result.packedSfixed32_.Add(values);
         return this;
       }
       public Builder ClearPackedSfixed32() {
@@ -7054,7 +7054,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangePackedSfixed64(scg::IEnumerable<long> values) {
-        base.AddRange(values, result.packedSfixed64_);
+        result.packedSfixed64_.Add(values);
         return this;
       }
       public Builder ClearPackedSfixed64() {
@@ -7080,7 +7080,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangePackedFloat(scg::IEnumerable<float> values) {
-        base.AddRange(values, result.packedFloat_);
+        result.packedFloat_.Add(values);
         return this;
       }
       public Builder ClearPackedFloat() {
@@ -7106,7 +7106,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangePackedDouble(scg::IEnumerable<double> values) {
-        base.AddRange(values, result.packedDouble_);
+        result.packedDouble_.Add(values);
         return this;
       }
       public Builder ClearPackedDouble() {
@@ -7132,7 +7132,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangePackedBool(scg::IEnumerable<bool> values) {
-        base.AddRange(values, result.packedBool_);
+        result.packedBool_.Add(values);
         return this;
       }
       public Builder ClearPackedBool() {
@@ -7158,7 +7158,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangePackedEnum(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite> values) {
-        base.AddRange(values, result.packedEnum_);
+        result.packedEnum_.Add(values);
         return this;
       }
       public Builder ClearPackedEnum() {
@@ -7731,46 +7731,46 @@ namespace Google.ProtocolBuffers.TestProtos {
       public override Builder MergeFrom(TestUnpackedTypesLite other) {
         if (other == global::Google.ProtocolBuffers.TestProtos.TestUnpackedTypesLite.DefaultInstance) return this;
         if (other.unpackedInt32_.Count != 0) {
-          base.AddRange(other.unpackedInt32_, result.unpackedInt32_);
+          result.unpackedInt32_.Add(other.unpackedInt32_);
         }
         if (other.unpackedInt64_.Count != 0) {
-          base.AddRange(other.unpackedInt64_, result.unpackedInt64_);
+          result.unpackedInt64_.Add(other.unpackedInt64_);
         }
         if (other.unpackedUint32_.Count != 0) {
-          base.AddRange(other.unpackedUint32_, result.unpackedUint32_);
+          result.unpackedUint32_.Add(other.unpackedUint32_);
         }
         if (other.unpackedUint64_.Count != 0) {
-          base.AddRange(other.unpackedUint64_, result.unpackedUint64_);
+          result.unpackedUint64_.Add(other.unpackedUint64_);
         }
         if (other.unpackedSint32_.Count != 0) {
-          base.AddRange(other.unpackedSint32_, result.unpackedSint32_);
+          result.unpackedSint32_.Add(other.unpackedSint32_);
         }
         if (other.unpackedSint64_.Count != 0) {
-          base.AddRange(other.unpackedSint64_, result.unpackedSint64_);
+          result.unpackedSint64_.Add(other.unpackedSint64_);
         }
         if (other.unpackedFixed32_.Count != 0) {
-          base.AddRange(other.unpackedFixed32_, result.unpackedFixed32_);
+          result.unpackedFixed32_.Add(other.unpackedFixed32_);
         }
         if (other.unpackedFixed64_.Count != 0) {
-          base.AddRange(other.unpackedFixed64_, result.unpackedFixed64_);
+          result.unpackedFixed64_.Add(other.unpackedFixed64_);
         }
         if (other.unpackedSfixed32_.Count != 0) {
-          base.AddRange(other.unpackedSfixed32_, result.unpackedSfixed32_);
+          result.unpackedSfixed32_.Add(other.unpackedSfixed32_);
         }
         if (other.unpackedSfixed64_.Count != 0) {
-          base.AddRange(other.unpackedSfixed64_, result.unpackedSfixed64_);
+          result.unpackedSfixed64_.Add(other.unpackedSfixed64_);
         }
         if (other.unpackedFloat_.Count != 0) {
-          base.AddRange(other.unpackedFloat_, result.unpackedFloat_);
+          result.unpackedFloat_.Add(other.unpackedFloat_);
         }
         if (other.unpackedDouble_.Count != 0) {
-          base.AddRange(other.unpackedDouble_, result.unpackedDouble_);
+          result.unpackedDouble_.Add(other.unpackedDouble_);
         }
         if (other.unpackedBool_.Count != 0) {
-          base.AddRange(other.unpackedBool_, result.unpackedBool_);
+          result.unpackedBool_.Add(other.unpackedBool_);
         }
         if (other.unpackedEnum_.Count != 0) {
-          base.AddRange(other.unpackedEnum_, result.unpackedEnum_);
+          result.unpackedEnum_.Add(other.unpackedEnum_);
         }
         return this;
       }
@@ -7899,7 +7899,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeUnpackedInt32(scg::IEnumerable<int> values) {
-        base.AddRange(values, result.unpackedInt32_);
+        result.unpackedInt32_.Add(values);
         return this;
       }
       public Builder ClearUnpackedInt32() {
@@ -7925,7 +7925,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeUnpackedInt64(scg::IEnumerable<long> values) {
-        base.AddRange(values, result.unpackedInt64_);
+        result.unpackedInt64_.Add(values);
         return this;
       }
       public Builder ClearUnpackedInt64() {
@@ -7956,7 +7956,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       [global::System.CLSCompliant(false)]
       public Builder AddRangeUnpackedUint32(scg::IEnumerable<uint> values) {
-        base.AddRange(values, result.unpackedUint32_);
+        result.unpackedUint32_.Add(values);
         return this;
       }
       public Builder ClearUnpackedUint32() {
@@ -7987,7 +7987,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       [global::System.CLSCompliant(false)]
       public Builder AddRangeUnpackedUint64(scg::IEnumerable<ulong> values) {
-        base.AddRange(values, result.unpackedUint64_);
+        result.unpackedUint64_.Add(values);
         return this;
       }
       public Builder ClearUnpackedUint64() {
@@ -8013,7 +8013,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeUnpackedSint32(scg::IEnumerable<int> values) {
-        base.AddRange(values, result.unpackedSint32_);
+        result.unpackedSint32_.Add(values);
         return this;
       }
       public Builder ClearUnpackedSint32() {
@@ -8039,7 +8039,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeUnpackedSint64(scg::IEnumerable<long> values) {
-        base.AddRange(values, result.unpackedSint64_);
+        result.unpackedSint64_.Add(values);
         return this;
       }
       public Builder ClearUnpackedSint64() {
@@ -8070,7 +8070,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       [global::System.CLSCompliant(false)]
       public Builder AddRangeUnpackedFixed32(scg::IEnumerable<uint> values) {
-        base.AddRange(values, result.unpackedFixed32_);
+        result.unpackedFixed32_.Add(values);
         return this;
       }
       public Builder ClearUnpackedFixed32() {
@@ -8101,7 +8101,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       [global::System.CLSCompliant(false)]
       public Builder AddRangeUnpackedFixed64(scg::IEnumerable<ulong> values) {
-        base.AddRange(values, result.unpackedFixed64_);
+        result.unpackedFixed64_.Add(values);
         return this;
       }
       public Builder ClearUnpackedFixed64() {
@@ -8127,7 +8127,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeUnpackedSfixed32(scg::IEnumerable<int> values) {
-        base.AddRange(values, result.unpackedSfixed32_);
+        result.unpackedSfixed32_.Add(values);
         return this;
       }
       public Builder ClearUnpackedSfixed32() {
@@ -8153,7 +8153,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeUnpackedSfixed64(scg::IEnumerable<long> values) {
-        base.AddRange(values, result.unpackedSfixed64_);
+        result.unpackedSfixed64_.Add(values);
         return this;
       }
       public Builder ClearUnpackedSfixed64() {
@@ -8179,7 +8179,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeUnpackedFloat(scg::IEnumerable<float> values) {
-        base.AddRange(values, result.unpackedFloat_);
+        result.unpackedFloat_.Add(values);
         return this;
       }
       public Builder ClearUnpackedFloat() {
@@ -8205,7 +8205,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeUnpackedDouble(scg::IEnumerable<double> values) {
-        base.AddRange(values, result.unpackedDouble_);
+        result.unpackedDouble_.Add(values);
         return this;
       }
       public Builder ClearUnpackedDouble() {
@@ -8231,7 +8231,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeUnpackedBool(scg::IEnumerable<bool> values) {
-        base.AddRange(values, result.unpackedBool_);
+        result.unpackedBool_.Add(values);
         return this;
       }
       public Builder ClearUnpackedBool() {
@@ -8257,7 +8257,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeUnpackedEnum(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite> values) {
-        base.AddRange(values, result.unpackedEnum_);
+        result.unpackedEnum_.Add(values);
         return this;
       }
       public Builder ClearUnpackedEnum() {

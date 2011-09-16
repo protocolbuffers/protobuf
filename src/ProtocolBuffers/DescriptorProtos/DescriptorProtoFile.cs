@@ -393,7 +393,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public override Builder MergeFrom(FileDescriptorSet other) {
         if (other == global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorSet.DefaultInstance) return this;
         if (other.file_.Count != 0) {
-          base.AddRange(other.file_, result.file_);
+          result.file_.Add(other.file_);
         }
         this.MergeUnknownFields(other.UnknownFields);
         return this;
@@ -481,7 +481,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeFile(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto> values) {
-        base.AddRange(values, result.file_);
+        result.file_.Add(values);
         return this;
       }
       public Builder ClearFile() {
@@ -805,19 +805,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           Package = other.Package;
         }
         if (other.dependency_.Count != 0) {
-          base.AddRange(other.dependency_, result.dependency_);
+          result.dependency_.Add(other.dependency_);
         }
         if (other.messageType_.Count != 0) {
-          base.AddRange(other.messageType_, result.messageType_);
+          result.messageType_.Add(other.messageType_);
         }
         if (other.enumType_.Count != 0) {
-          base.AddRange(other.enumType_, result.enumType_);
+          result.enumType_.Add(other.enumType_);
         }
         if (other.service_.Count != 0) {
-          base.AddRange(other.service_, result.service_);
+          result.service_.Add(other.service_);
         }
         if (other.extension_.Count != 0) {
-          base.AddRange(other.extension_, result.extension_);
+          result.extension_.Add(other.extension_);
         }
         if (other.HasOptions) {
           MergeOptions(other.Options);
@@ -969,7 +969,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeDependency(scg::IEnumerable<string> values) {
-        base.AddRange(values, result.dependency_);
+        result.dependency_.Add(values);
         return this;
       }
       public Builder ClearDependency() {
@@ -1007,7 +1007,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeMessageType(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> values) {
-        base.AddRange(values, result.messageType_);
+        result.messageType_.Add(values);
         return this;
       }
       public Builder ClearMessageType() {
@@ -1045,7 +1045,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeEnumType(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> values) {
-        base.AddRange(values, result.enumType_);
+        result.enumType_.Add(values);
         return this;
       }
       public Builder ClearEnumType() {
@@ -1083,7 +1083,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeService(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto> values) {
-        base.AddRange(values, result.service_);
+        result.service_.Add(values);
         return this;
       }
       public Builder ClearService() {
@@ -1121,7 +1121,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeExtension(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> values) {
-        base.AddRange(values, result.extension_);
+        result.extension_.Add(values);
         return this;
       }
       public Builder ClearExtension() {
@@ -1745,19 +1745,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           Name = other.Name;
         }
         if (other.field_.Count != 0) {
-          base.AddRange(other.field_, result.field_);
+          result.field_.Add(other.field_);
         }
         if (other.extension_.Count != 0) {
-          base.AddRange(other.extension_, result.extension_);
+          result.extension_.Add(other.extension_);
         }
         if (other.nestedType_.Count != 0) {
-          base.AddRange(other.nestedType_, result.nestedType_);
+          result.nestedType_.Add(other.nestedType_);
         }
         if (other.enumType_.Count != 0) {
-          base.AddRange(other.enumType_, result.enumType_);
+          result.enumType_.Add(other.enumType_);
         }
         if (other.extensionRange_.Count != 0) {
-          base.AddRange(other.extensionRange_, result.extensionRange_);
+          result.extensionRange_.Add(other.extensionRange_);
         }
         if (other.HasOptions) {
           MergeOptions(other.Options);
@@ -1896,7 +1896,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeField(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> values) {
-        base.AddRange(values, result.field_);
+        result.field_.Add(values);
         return this;
       }
       public Builder ClearField() {
@@ -1934,7 +1934,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeExtension(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto> values) {
-        base.AddRange(values, result.extension_);
+        result.extension_.Add(values);
         return this;
       }
       public Builder ClearExtension() {
@@ -1972,7 +1972,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeNestedType(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto> values) {
-        base.AddRange(values, result.nestedType_);
+        result.nestedType_.Add(values);
         return this;
       }
       public Builder ClearNestedType() {
@@ -2010,7 +2010,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeEnumType(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto> values) {
-        base.AddRange(values, result.enumType_);
+        result.enumType_.Add(values);
         return this;
       }
       public Builder ClearEnumType() {
@@ -2048,7 +2048,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeExtensionRange(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange> values) {
-        base.AddRange(values, result.extensionRange_);
+        result.extensionRange_.Add(values);
         return this;
       }
       public Builder ClearExtensionRange() {
@@ -2910,7 +2910,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           Name = other.Name;
         }
         if (other.value_.Count != 0) {
-          base.AddRange(other.value_, result.value_);
+          result.value_.Add(other.value_);
         }
         if (other.HasOptions) {
           MergeOptions(other.Options);
@@ -3033,7 +3033,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeValue(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto> values) {
-        base.AddRange(values, result.value_);
+        result.value_.Add(values);
         return this;
       }
       public Builder ClearValue() {
@@ -3632,7 +3632,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           Name = other.Name;
         }
         if (other.method_.Count != 0) {
-          base.AddRange(other.method_, result.method_);
+          result.method_.Add(other.method_);
         }
         if (other.HasOptions) {
           MergeOptions(other.Options);
@@ -3755,7 +3755,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeMethod(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto> values) {
-        base.AddRange(values, result.method_);
+        result.method_.Add(values);
         return this;
       }
       public Builder ClearMethod() {
@@ -4512,7 +4512,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           PyGenericServices = other.PyGenericServices;
         }
         if (other.uninterpretedOption_.Count != 0) {
-          base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
+          result.uninterpretedOption_.Add(other.uninterpretedOption_);
         }
           this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
@@ -4765,7 +4765,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeUninterpretedOption(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> values) {
-        base.AddRange(values, result.uninterpretedOption_);
+        result.uninterpretedOption_.Add(values);
         return this;
       }
       public Builder ClearUninterpretedOption() {
@@ -4984,7 +4984,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           NoStandardDescriptorAccessor = other.NoStandardDescriptorAccessor;
         }
         if (other.uninterpretedOption_.Count != 0) {
-          base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
+          result.uninterpretedOption_.Add(other.uninterpretedOption_);
         }
           this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
@@ -5117,7 +5117,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeUninterpretedOption(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> values) {
-        base.AddRange(values, result.uninterpretedOption_);
+        result.uninterpretedOption_.Add(values);
         return this;
       }
       public Builder ClearUninterpretedOption() {
@@ -5390,7 +5390,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           ExperimentalMapKey = other.ExperimentalMapKey;
         }
         if (other.uninterpretedOption_.Count != 0) {
-          base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
+          result.uninterpretedOption_.Add(other.uninterpretedOption_);
         }
           this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
@@ -5576,7 +5576,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeUninterpretedOption(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> values) {
-        base.AddRange(values, result.uninterpretedOption_);
+        result.uninterpretedOption_.Add(values);
         return this;
       }
       public Builder ClearUninterpretedOption() {
@@ -5757,7 +5757,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public override Builder MergeFrom(EnumOptions other) {
         if (other == global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.DefaultInstance) return this;
         if (other.uninterpretedOption_.Count != 0) {
-          base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
+          result.uninterpretedOption_.Add(other.uninterpretedOption_);
         }
           this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
@@ -5846,7 +5846,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeUninterpretedOption(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> values) {
-        base.AddRange(values, result.uninterpretedOption_);
+        result.uninterpretedOption_.Add(values);
         return this;
       }
       public Builder ClearUninterpretedOption() {
@@ -6027,7 +6027,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public override Builder MergeFrom(EnumValueOptions other) {
         if (other == global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.DefaultInstance) return this;
         if (other.uninterpretedOption_.Count != 0) {
-          base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
+          result.uninterpretedOption_.Add(other.uninterpretedOption_);
         }
           this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
@@ -6116,7 +6116,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeUninterpretedOption(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> values) {
-        base.AddRange(values, result.uninterpretedOption_);
+        result.uninterpretedOption_.Add(values);
         return this;
       }
       public Builder ClearUninterpretedOption() {
@@ -6297,7 +6297,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public override Builder MergeFrom(ServiceOptions other) {
         if (other == global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.DefaultInstance) return this;
         if (other.uninterpretedOption_.Count != 0) {
-          base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
+          result.uninterpretedOption_.Add(other.uninterpretedOption_);
         }
           this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
@@ -6386,7 +6386,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeUninterpretedOption(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> values) {
-        base.AddRange(values, result.uninterpretedOption_);
+        result.uninterpretedOption_.Add(values);
         return this;
       }
       public Builder ClearUninterpretedOption() {
@@ -6567,7 +6567,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public override Builder MergeFrom(MethodOptions other) {
         if (other == global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions.DefaultInstance) return this;
         if (other.uninterpretedOption_.Count != 0) {
-          base.AddRange(other.uninterpretedOption_, result.uninterpretedOption_);
+          result.uninterpretedOption_.Add(other.uninterpretedOption_);
         }
           this.MergeExtensionFields(other);
         this.MergeUnknownFields(other.UnknownFields);
@@ -6656,7 +6656,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeUninterpretedOption(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption> values) {
-        base.AddRange(values, result.uninterpretedOption_);
+        result.uninterpretedOption_.Add(values);
         return this;
       }
       public Builder ClearUninterpretedOption() {
@@ -7205,7 +7205,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public override Builder MergeFrom(UninterpretedOption other) {
         if (other == global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.DefaultInstance) return this;
         if (other.name_.Count != 0) {
-          base.AddRange(other.name_, result.name_);
+          result.name_.Add(other.name_);
         }
         if (other.HasIdentifierValue) {
           IdentifierValue = other.IdentifierValue;
@@ -7328,7 +7328,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       public Builder AddRangeName(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart> values) {
-        base.AddRange(values, result.name_);
+        result.name_.Add(values);
         return this;
       }
       public Builder ClearName() {

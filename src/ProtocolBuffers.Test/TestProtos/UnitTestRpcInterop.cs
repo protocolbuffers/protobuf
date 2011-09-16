@@ -245,7 +245,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       public override Builder MergeFrom(SearchRequest other) {
         if (other == global::Google.ProtocolBuffers.TestProtos.SearchRequest.DefaultInstance) return this;
         if (other.criteria_.Count != 0) {
-          base.AddRange(other.criteria_, result.criteria_);
+          result.criteria_.Add(other.criteria_);
         }
         this.MergeUnknownFields(other.UnknownFields);
         return this;
@@ -323,7 +323,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeCriteria(scg::IEnumerable<string> values) {
-        base.AddRange(values, result.criteria_);
+        result.criteria_.Add(values);
         return this;
       }
       public Builder ClearCriteria() {
@@ -791,7 +791,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       public override Builder MergeFrom(SearchResponse other) {
         if (other == global::Google.ProtocolBuffers.TestProtos.SearchResponse.DefaultInstance) return this;
         if (other.results_.Count != 0) {
-          base.AddRange(other.results_, result.results_);
+          result.results_.Add(other.results_);
         }
         this.MergeUnknownFields(other.UnknownFields);
         return this;
@@ -879,7 +879,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeResults(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.SearchResponse.Types.ResultItem> values) {
-        base.AddRange(values, result.results_);
+        result.results_.Add(values);
         return this;
       }
       public Builder ClearResults() {
@@ -1076,7 +1076,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       public override Builder MergeFrom(RefineSearchRequest other) {
         if (other == global::Google.ProtocolBuffers.TestProtos.RefineSearchRequest.DefaultInstance) return this;
         if (other.criteria_.Count != 0) {
-          base.AddRange(other.criteria_, result.criteria_);
+          result.criteria_.Add(other.criteria_);
         }
         if (other.HasPreviousResults) {
           MergePreviousResults(other.PreviousResults);
@@ -1166,7 +1166,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeCriteria(scg::IEnumerable<string> values) {
-        base.AddRange(values, result.criteria_);
+        result.criteria_.Add(values);
         return this;
       }
       public Builder ClearCriteria() {

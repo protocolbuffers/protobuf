@@ -109,7 +109,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("}");
             AddDeprecatedFlag(writer);
             writer.WriteLine("public Builder AddRange{0}(scg::IEnumerable<{1}> values) {{", PropertyName, TypeName);
-            writer.WriteLine("  base.AddRange(values, result.{0}_);", Name);
+            writer.WriteLine("  result.{0}_.Add(values);", Name);
             writer.WriteLine("  return this;");
             writer.WriteLine("}");
             AddDeprecatedFlag(writer);
@@ -122,7 +122,7 @@ namespace Google.ProtocolBuffers.ProtoGen
         public void GenerateMergingCode(TextGenerator writer)
         {
             writer.WriteLine("if (other.{0}_.Count != 0) {{", Name);
-            writer.WriteLine("  base.AddRange(other.{0}_, result.{0}_);", Name);
+            writer.WriteLine("  result.{0}_.Add(other.{0}_);", Name);
             writer.WriteLine("}");
         }
 

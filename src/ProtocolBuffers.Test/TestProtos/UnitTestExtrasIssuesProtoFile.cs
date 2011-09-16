@@ -1297,10 +1297,10 @@ namespace UnitTest.Issues.TestProtos {
           Value = other.Value;
         }
         if (other.values_.Count != 0) {
-          base.AddRange(other.values_, result.values_);
+          result.values_.Add(other.values_);
         }
         if (other.packedValues_.Count != 0) {
-          base.AddRange(other.packedValues_, result.packedValues_);
+          result.packedValues_.Add(other.packedValues_);
         }
         this.MergeUnknownFields(other.UnknownFields);
         return this;
@@ -1430,7 +1430,7 @@ namespace UnitTest.Issues.TestProtos {
         return this;
       }
       public Builder AddRangeValues(scg::IEnumerable<global::UnitTest.Issues.TestProtos.NegativeEnum> values) {
-        base.AddRange(values, result.values_);
+        result.values_.Add(values);
         return this;
       }
       public Builder ClearValues() {
@@ -1456,7 +1456,7 @@ namespace UnitTest.Issues.TestProtos {
         return this;
       }
       public Builder AddRangePackedValues(scg::IEnumerable<global::UnitTest.Issues.TestProtos.NegativeEnum> values) {
-        base.AddRange(values, result.packedValues_);
+        result.packedValues_.Add(values);
         return this;
       }
       public Builder ClearPackedValues() {
@@ -1944,19 +1944,19 @@ namespace UnitTest.Issues.TestProtos {
           PrimitiveValue = other.PrimitiveValue;
         }
         if (other.primitiveArray_.Count != 0) {
-          base.AddRange(other.primitiveArray_, result.primitiveArray_);
+          result.primitiveArray_.Add(other.primitiveArray_);
         }
         if (other.HasMessageValue) {
           MergeMessageValue(other.MessageValue);
         }
         if (other.messageArray_.Count != 0) {
-          base.AddRange(other.messageArray_, result.messageArray_);
+          result.messageArray_.Add(other.messageArray_);
         }
         if (other.HasEnumValue) {
           EnumValue = other.EnumValue;
         }
         if (other.enumArray_.Count != 0) {
-          base.AddRange(other.enumArray_, result.enumArray_);
+          result.enumArray_.Add(other.enumArray_);
         }
         this.MergeUnknownFields(other.UnknownFields);
         return this;
@@ -2104,7 +2104,7 @@ namespace UnitTest.Issues.TestProtos {
       }
       [global::System.ObsoleteAttribute()]
       public Builder AddRangePrimitiveArray(scg::IEnumerable<int> values) {
-        base.AddRange(values, result.primitiveArray_);
+        result.primitiveArray_.Add(values);
         return this;
       }
       [global::System.ObsoleteAttribute()]
@@ -2193,7 +2193,7 @@ namespace UnitTest.Issues.TestProtos {
       }
       [global::System.ObsoleteAttribute()]
       public Builder AddRangeMessageArray(scg::IEnumerable<global::UnitTest.Issues.TestProtos.DeprecatedChild> values) {
-        base.AddRange(values, result.messageArray_);
+        result.messageArray_.Add(values);
         return this;
       }
       [global::System.ObsoleteAttribute()]
@@ -2248,7 +2248,7 @@ namespace UnitTest.Issues.TestProtos {
       }
       [global::System.ObsoleteAttribute()]
       public Builder AddRangeEnumArray(scg::IEnumerable<global::UnitTest.Issues.TestProtos.DeprecatedEnum> values) {
-        base.AddRange(values, result.enumArray_);
+        result.enumArray_.Add(values);
         return this;
       }
       [global::System.ObsoleteAttribute()]

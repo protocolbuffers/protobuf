@@ -98,6 +98,7 @@
     <Compile Include="Descriptors\MessageDescriptorTest.cs" />
     <Compile Include="DynamicMessageTest.cs" />
     <Compile Include="ExtendableMessageTest.cs" />
+    <Compile Include="GeneratedBuilderTest.cs" />
     <Compile Include="GeneratedMessageTest.cs" />
     <Compile Include="MessageStreamIteratorTest.cs" />
     <Compile Include="MessageStreamWriterTest.cs" />
