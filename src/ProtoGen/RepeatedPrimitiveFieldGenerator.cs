@@ -52,17 +52,18 @@ namespace Google.ProtocolBuffers.ProtoGen
                 writer.WriteLine("private int {0}MemoizedSerializedSize;", Name);
             }
             writer.WriteLine("private pbc::PopsicleList<{0}> {1}_ = new pbc::PopsicleList<{0}>();", TypeName, Name);
-            AddClsComplianceCheck(writer);
+            AddPublicMemberAttributes(writer);
             writer.WriteLine("public scg::IList<{0}> {1}List {{", TypeName, PropertyName);
             writer.WriteLine("  get {{ return pbc::Lists.AsReadOnly({0}_); }}", Name);
             writer.WriteLine("}");
 
             // TODO(jonskeet): Redundant API calls? Possibly - include for portability though. Maybe create an option.
+            AddDeprecatedFlag(writer);
             writer.WriteLine("public int {0}Count {{", PropertyName);
             writer.WriteLine("  get {{ return {0}_.Count; }}", Name);
             writer.WriteLine("}");
 
-            AddClsComplianceCheck(writer);
+            AddPublicMemberAttributes(writer);
             writer.WriteLine("public {0} Get{1}(int index) {{", TypeName, PropertyName);
             writer.WriteLine("  return {0}_[index];", Name);
             writer.WriteLine("}");
@@ -72,34 +73,36 @@ namespace Google.ProtocolBuffers.ProtoGen
         {
             // Note:  We can return the original list here, because we make it unmodifiable when we build
             // We return it via IPopsicleList so that collection initializers work more pleasantly.
-            AddClsComplianceCheck(writer);
+            AddPublicMemberAttributes(writer);
             writer.WriteLine("public pbc::IPopsicleList<{0}> {1}List {{", TypeName, PropertyName);
             writer.WriteLine("  get {{ return result.{0}_; }}", Name);
             writer.WriteLine("}");
+            AddDeprecatedFlag(writer);
             writer.WriteLine("public int {0}Count {{", PropertyName);
             writer.WriteLine("  get {{ return result.{0}Count; }}", PropertyName);
             writer.WriteLine("}");
-            AddClsComplianceCheck(writer);
+            AddPublicMemberAttributes(writer);
             writer.WriteLine("public {0} Get{1}(int index) {{", TypeName, PropertyName);
             writer.WriteLine("  return result.Get{0}(index);", PropertyName);
             writer.WriteLine("}");
-            AddClsComplianceCheck(writer);
+            AddPublicMemberAttributes(writer);
             writer.WriteLine("public Builder Set{0}(int index, {1} value) {{", PropertyName, TypeName);
             AddNullCheck(writer);
             writer.WriteLine("  result.{0}_[index] = value;", Name);
             writer.WriteLine("  return this;");
             writer.WriteLine("}");
-            AddClsComplianceCheck(writer);
+            AddPublicMemberAttributes(writer);
             writer.WriteLine("public Builder Add{0}({1} value) {{", PropertyName, TypeName);
             AddNullCheck(writer);
             writer.WriteLine("  result.{0}_.Add(value);", Name, TypeName);
             writer.WriteLine("  return this;");
             writer.WriteLine("}");
-            AddClsComplianceCheck(writer);
+            AddPublicMemberAttributes(writer);
             writer.WriteLine("public Builder AddRange{0}(scg::IEnumerable<{1}> values) {{", PropertyName, TypeName);
             writer.WriteLine("  base.AddRange(values, result.{0}_);", Name);
             writer.WriteLine("  return this;");
             writer.WriteLine("}");
+            AddDeprecatedFlag(writer);
             writer.WriteLine("public Builder Clear{0}() {{", PropertyName);
             writer.WriteLine("  result.{0}_.Clear();", Name);
             writer.WriteLine("  return this;");

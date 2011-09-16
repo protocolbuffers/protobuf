@@ -50,10 +50,11 @@ namespace Google.ProtocolBuffers.ProtoGen
         {
             writer.WriteLine("private bool has{0};", PropertyName);
             writer.WriteLine("private {0} {1}_{2};", TypeName, Name, HasDefaultValue ? " = " + DefaultValue : "");
+            AddDeprecatedFlag(writer);
             writer.WriteLine("public bool Has{0} {{", PropertyName);
             writer.WriteLine("  get {{ return has{0}; }}", PropertyName);
             writer.WriteLine("}");
-            AddClsComplianceCheck(writer);
+            AddPublicMemberAttributes(writer);
             writer.WriteLine("public {0} {1} {{", TypeName, PropertyName);
             writer.WriteLine("  get {{ return {0}_; }}", Name);
             writer.WriteLine("}");
@@ -61,21 +62,23 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         public void GenerateBuilderMembers(TextGenerator writer)
         {
+            AddDeprecatedFlag(writer);
             writer.WriteLine("public bool Has{0} {{", PropertyName);
             writer.WriteLine("  get {{ return result.has{0}; }}", PropertyName);
             writer.WriteLine("}");
-            AddClsComplianceCheck(writer);
+            AddPublicMemberAttributes(writer);
             writer.WriteLine("public {0} {1} {{", TypeName, PropertyName);
             writer.WriteLine("  get {{ return result.{0}; }}", PropertyName);
             writer.WriteLine("  set {{ Set{0}(value); }}", PropertyName);
             writer.WriteLine("}");
-            AddClsComplianceCheck(writer);
+            AddPublicMemberAttributes(writer);
             writer.WriteLine("public Builder Set{0}({1} value) {{", PropertyName, TypeName);
             AddNullCheck(writer);
             writer.WriteLine("  result.has{0} = true;", PropertyName);
             writer.WriteLine("  result.{0}_ = value;", Name);
             writer.WriteLine("  return this;");
             writer.WriteLine("}");
+            AddDeprecatedFlag(writer);
             writer.WriteLine("public Builder Clear{0}() {{", PropertyName);
             writer.WriteLine("  result.has{0} = false;", PropertyName);
             writer.WriteLine("  result.{0}_ = {1};", Name, DefaultValue);
