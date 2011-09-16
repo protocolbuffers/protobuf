@@ -246,7 +246,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           MergeOptionalMessage(other.OptionalMessage);
         }
         if (other.repeatedMessage_.Count != 0) {
-          base.AddRange(other.repeatedMessage_, result.repeatedMessage_);
+          result.repeatedMessage_.Add(other.repeatedMessage_);
         }
         this.MergeUnknownFields(other.UnknownFields);
         return this;
@@ -379,7 +379,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeRepeatedMessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize> values) {
-        base.AddRange(values, result.repeatedMessage_);
+        result.repeatedMessage_.Add(values);
         return this;
       }
       public Builder ClearRepeatedMessage() {

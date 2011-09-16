@@ -809,7 +809,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeCodes(scg::IEnumerable<int> values) {
-        base.AddRange(values, result.codes_);
+        result.codes_.Add(values);
         return this;
       }
       public Builder ClearCodes() {
@@ -847,7 +847,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangePhone(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestInteropPerson.Types.PhoneNumber> values) {
-        base.AddRange(values, result.phone_);
+        result.phone_.Add(values);
         return this;
       }
       public Builder ClearPhone() {
@@ -885,7 +885,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       public Builder AddRangeAddresses(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestInteropPerson.Types.Addresses> values) {
-        base.AddRange(values, result.addresses_);
+        result.addresses_.Add(values);
         return this;
       }
       public Builder ClearAddresses() {
@@ -1231,7 +1231,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             return this;
           }
           public Builder AddRangeValues(scg::IEnumerable<string> values) {
-            base.AddRange(values, result.values_);
+            result.values_.Add(values);
             return this;
           }
           public Builder ClearValues() {
@@ -1630,7 +1630,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             return this;
           }
           public Builder AddRangeValues(scg::IEnumerable<string> values) {
-            base.AddRange(values, result.values_);
+            result.values_.Add(values);
             return this;
           }
           public Builder ClearValues() {

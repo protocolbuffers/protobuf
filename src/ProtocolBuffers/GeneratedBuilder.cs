@@ -85,32 +85,6 @@ namespace Google.ProtocolBuffers
         }
 
         /// <summary>
-        /// Adds all of the specified values to the given collection.
-        /// </summary>
-        /// <exception cref="ArgumentNullException">Any element of the list is null</exception>
-        protected void AddRange<T>(IEnumerable<T> source, IList<T> destination)
-        {
-            ThrowHelper.ThrowIfNull(source);
-            // We only need to check this for nullable types.
-            if (default(T) == null)
-            {
-                ThrowHelper.ThrowIfAnyNull(source);
-            }
-            List<T> list = destination as List<T>;
-            if (list != null)
-            {
-                list.AddRange(source);
-            }
-            else
-            {
-                foreach (T element in source)
-                {
-                    destination.Add(element);
-                }
-            }
-        }
-
-        /// <summary>
         /// Called by derived classes to parse an unknown field.
         /// </summary>
         /// <returns>true unless the tag is an end-group tag</returns>
