@@ -26,6 +26,8 @@ namespace UnitTest.Issues.TestProtos {
     internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.AB, global::UnitTest.Issues.TestProtos.AB.Builder> internal__static_unittest_issues_AB__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_unittest_issues_NumberField__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.NumberField, global::UnitTest.Issues.TestProtos.NumberField.Builder> internal__static_unittest_issues_NumberField__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_unittest_issues_NegativeEnumMessage__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.NegativeEnumMessage, global::UnitTest.Issues.TestProtos.NegativeEnumMessage.Builder> internal__static_unittest_issues_NegativeEnumMessage__FieldAccessorTable;
     #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
@@ -38,9 +40,14 @@ namespace UnitTest.Issues.TestProtos {
           "ChxleHRlc3QvdW5pdHRlc3RfaXNzdWVzLnByb3RvEg91bml0dGVzdF9pc3N1" + 
           "ZXMaJGdvb2dsZS9wcm90b2J1Zi9jc2hhcnBfb3B0aW9ucy5wcm90byIPCgFB" + 
           "EgoKAl9BGAEgASgFIg8KAUISCgoCQl8YASABKAUiEQoCQUISCwoDYV9iGAEg" + 
-          "ASgFIhoKC051bWJlckZpZWxkEgsKA18wMRgBIAEoBUJASAHCPjsKGlVuaXRU" + 
-          "ZXN0Lklzc3Vlcy5UZXN0UHJvdG9zEh1Vbml0VGVzdEV4dHJhc0lzc3Vlc1By" + 
-          "b3RvRmlsZQ==");
+          "ASgFIhoKC051bWJlckZpZWxkEgsKA18wMRgBIAEoBSKsAQoTTmVnYXRpdmVF" + 
+          "bnVtTWVzc2FnZRIsCgV2YWx1ZRgBIAEoDjIdLnVuaXR0ZXN0X2lzc3Vlcy5O" + 
+          "ZWdhdGl2ZUVudW0SLQoGdmFsdWVzGAIgAygOMh0udW5pdHRlc3RfaXNzdWVz" + 
+          "Lk5lZ2F0aXZlRW51bRI4Cg1wYWNrZWRfdmFsdWVzGAMgAygOMh0udW5pdHRl" + 
+          "c3RfaXNzdWVzLk5lZ2F0aXZlRW51bUICEAEqRwoMTmVnYXRpdmVFbnVtEhYK" + 
+          "CUZpdmVCZWxvdxD7//////////8BEhUKCE1pbnVzT25lEP///////////wES" + 
+          "CAoEWmVybxAAQkBIAcI+OwoaVW5pdFRlc3QuSXNzdWVzLlRlc3RQcm90b3MS" + 
+          "HVVuaXRUZXN0RXh0cmFzSXNzdWVzUHJvdG9GaWxl");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_unittest_issues_A__Descriptor = Descriptor.MessageTypes[0];
@@ -59,6 +66,10 @@ namespace UnitTest.Issues.TestProtos {
         internal__static_unittest_issues_NumberField__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.NumberField, global::UnitTest.Issues.TestProtos.NumberField.Builder>(internal__static_unittest_issues_NumberField__Descriptor,
                 new string[] { "_01", });
+        internal__static_unittest_issues_NegativeEnumMessage__Descriptor = Descriptor.MessageTypes[4];
+        internal__static_unittest_issues_NegativeEnumMessage__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.NegativeEnumMessage, global::UnitTest.Issues.TestProtos.NegativeEnumMessage.Builder>(internal__static_unittest_issues_NegativeEnumMessage__Descriptor,
+                new string[] { "Value", "Values", "PackedValues", });
         pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
         RegisterAllExtensions(registry);
         global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.RegisterAllExtensions(registry);
@@ -72,6 +83,17 @@ namespace UnitTest.Issues.TestProtos {
     #endregion
     
   }
+  #region Enums
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+  public enum NegativeEnum {
+    FiveBelow = -5,
+    MinusOne = -1,
+    Zero = 0,
+  }
+  
+  #endregion
+  
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -1029,6 +1051,394 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
     static NumberField() {
+      object.ReferenceEquals(global::UnitTest.Issues.TestProtos.UnitTestExtrasIssuesProtoFile.Descriptor, null);
+    }
+  }
+  
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+  public sealed partial class NegativeEnumMessage : pb::GeneratedMessage<NegativeEnumMessage, NegativeEnumMessage.Builder> {
+    private static readonly NegativeEnumMessage defaultInstance = new Builder().BuildPartial();
+    private static readonly string[] _negativeEnumMessageFieldNames = new string[] { "packed_values", "value", "values" };
+    private static readonly uint[] _negativeEnumMessageFieldTags = new uint[] { 26, 8, 16 };
+    public static NegativeEnumMessage DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override NegativeEnumMessage DefaultInstanceForType {
+      get { return defaultInstance; }
+    }
+    
+    protected override NegativeEnumMessage ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::UnitTest.Issues.TestProtos.UnitTestExtrasIssuesProtoFile.internal__static_unittest_issues_NegativeEnumMessage__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<NegativeEnumMessage, NegativeEnumMessage.Builder> InternalFieldAccessors {
+      get { return global::UnitTest.Issues.TestProtos.UnitTestExtrasIssuesProtoFile.internal__static_unittest_issues_NegativeEnumMessage__FieldAccessorTable; }
+    }
+    
+    public const int ValueFieldNumber = 1;
+    private bool hasValue;
+    private global::UnitTest.Issues.TestProtos.NegativeEnum value_ = global::UnitTest.Issues.TestProtos.NegativeEnum.FiveBelow;
+    public bool HasValue {
+      get { return hasValue; }
+    }
+    public global::UnitTest.Issues.TestProtos.NegativeEnum Value {
+      get { return value_; }
+    }
+    
+    public const int ValuesFieldNumber = 2;
+    private pbc::PopsicleList<global::UnitTest.Issues.TestProtos.NegativeEnum> values_ = new pbc::PopsicleList<global::UnitTest.Issues.TestProtos.NegativeEnum>();
+    public scg::IList<global::UnitTest.Issues.TestProtos.NegativeEnum> ValuesList {
+      get { return pbc::Lists.AsReadOnly(values_); }
+    }
+    public int ValuesCount {
+      get { return values_.Count; }
+    }
+    public global::UnitTest.Issues.TestProtos.NegativeEnum GetValues(int index) {
+      return values_[index];
+    }
+    
+    public const int PackedValuesFieldNumber = 3;
+    private int packedValuesMemoizedSerializedSize;
+    private pbc::PopsicleList<global::UnitTest.Issues.TestProtos.NegativeEnum> packedValues_ = new pbc::PopsicleList<global::UnitTest.Issues.TestProtos.NegativeEnum>();
+    public scg::IList<global::UnitTest.Issues.TestProtos.NegativeEnum> PackedValuesList {
+      get { return pbc::Lists.AsReadOnly(packedValues_); }
+    }
+    public int PackedValuesCount {
+      get { return packedValues_.Count; }
+    }
+    public global::UnitTest.Issues.TestProtos.NegativeEnum GetPackedValues(int index) {
+      return packedValues_[index];
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::ICodedOutputStream output) {
+      int size = SerializedSize;
+      string[] field_names = _negativeEnumMessageFieldNames;
+      if (hasValue) {
+        output.WriteEnum(1, field_names[1], (int) Value, Value);
+      }
+      if (values_.Count > 0) {
+        output.WriteEnumArray(2, field_names[2], values_);
+      }
+      if (packedValues_.Count > 0) {
+        output.WritePackedEnumArray(3, field_names[0], packedValuesMemoizedSerializedSize, packedValues_);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (hasValue) {
+          size += pb::CodedOutputStream.ComputeEnumSize(1, (int) Value);
+        }
+        {
+          int dataSize = 0;
+          if (values_.Count > 0) {
+            foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in values_) {
+              dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+            }
+            size += dataSize;
+            size += 1 * values_.Count;
+          }
+        }
+        {
+          int dataSize = 0;
+          if (packedValues_.Count > 0) {
+            foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in packedValues_) {
+              dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+            }
+            size += dataSize;
+            size += 1;
+            size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
+          }
+          packedValuesMemoizedSerializedSize = dataSize;
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static NegativeEnumMessage ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static NegativeEnumMessage ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static NegativeEnumMessage ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static NegativeEnumMessage ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static NegativeEnumMessage ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static NegativeEnumMessage ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static NegativeEnumMessage ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static NegativeEnumMessage ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static NegativeEnumMessage ParseFrom(pb::ICodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static NegativeEnumMessage ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(NegativeEnumMessage prototype) {
+      return (Builder) new Builder().MergeFrom(prototype);
+    }
+    
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+    public sealed partial class Builder : pb::GeneratedBuilder<NegativeEnumMessage, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {}
+      
+      NegativeEnumMessage result = new NegativeEnumMessage();
+      
+      protected override NegativeEnumMessage MessageBeingBuilt {
+        get { return result; }
+      }
+      
+      public override Builder Clear() {
+        result = new NegativeEnumMessage();
+        return this;
+      }
+      
+      public override Builder Clone() {
+        return new Builder().MergeFrom(result);
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::UnitTest.Issues.TestProtos.NegativeEnumMessage.Descriptor; }
+      }
+      
+      public override NegativeEnumMessage DefaultInstanceForType {
+        get { return global::UnitTest.Issues.TestProtos.NegativeEnumMessage.DefaultInstance; }
+      }
+      
+      public override NegativeEnumMessage BuildPartial() {
+        if (result == null) {
+          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        }
+        result.values_.MakeReadOnly();
+        result.packedValues_.MakeReadOnly();
+        NegativeEnumMessage returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is NegativeEnumMessage) {
+          return MergeFrom((NegativeEnumMessage) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(NegativeEnumMessage other) {
+        if (other == global::UnitTest.Issues.TestProtos.NegativeEnumMessage.DefaultInstance) return this;
+        if (other.HasValue) {
+          Value = other.Value;
+        }
+        if (other.values_.Count != 0) {
+          base.AddRange(other.values_, result.values_);
+        }
+        if (other.packedValues_.Count != 0) {
+          base.AddRange(other.packedValues_, result.packedValues_);
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_negativeEnumMessageFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _negativeEnumMessageFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
+          switch (tag) {
+            case 0: {
+              throw pb::InvalidProtocolBufferException.InvalidTag();
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              break;
+            }
+            case 8: {
+              object unknown;
+              if(input.ReadEnum(ref result.value_, out unknown)) {
+                result.hasValue = true;
+              } else if(unknown is int) {
+                if (unknownFields == null) {
+                  unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                }
+                unknownFields.MergeVarintField(1, (ulong)(int)unknown);
+              }
+              break;
+            }
+            case 18:
+            case 16: {
+              scg::ICollection<object> unknownItems;
+              input.ReadEnumArray<global::UnitTest.Issues.TestProtos.NegativeEnum>(tag, field_name, result.values_, out unknownItems);
+              if (unknownItems != null) {
+                if (unknownFields == null) {
+                  unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                }
+                foreach (object rawValue in unknownItems)
+                  if (rawValue is int)
+                    unknownFields.MergeVarintField(2, (ulong)(int)rawValue);
+              }
+              break;
+            }
+            case 26:
+            case 24: {
+              scg::ICollection<object> unknownItems;
+              input.ReadEnumArray<global::UnitTest.Issues.TestProtos.NegativeEnum>(tag, field_name, result.packedValues_, out unknownItems);
+              if (unknownItems != null) {
+                if (unknownFields == null) {
+                  unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                }
+                foreach (object rawValue in unknownItems)
+                  if (rawValue is int)
+                    unknownFields.MergeVarintField(3, (ulong)(int)rawValue);
+              }
+              break;
+            }
+          }
+        }
+        
+        if (unknownFields != null) {
+          this.UnknownFields = unknownFields.Build();
+        }
+        return this;
+      }
+      
+      
+      public bool HasValue {
+       get { return result.hasValue; }
+      }
+      public global::UnitTest.Issues.TestProtos.NegativeEnum Value {
+        get { return result.Value; }
+        set { SetValue(value); }
+      }
+      public Builder SetValue(global::UnitTest.Issues.TestProtos.NegativeEnum value) {
+        result.hasValue = true;
+        result.value_ = value;
+        return this;
+      }
+      public Builder ClearValue() {
+        result.hasValue = false;
+        result.value_ = global::UnitTest.Issues.TestProtos.NegativeEnum.FiveBelow;
+        return this;
+      }
+      
+      public pbc::IPopsicleList<global::UnitTest.Issues.TestProtos.NegativeEnum> ValuesList {
+        get { return result.values_; }
+      }
+      public int ValuesCount {
+        get { return result.ValuesCount; }
+      }
+      public global::UnitTest.Issues.TestProtos.NegativeEnum GetValues(int index) {
+        return result.GetValues(index);
+      }
+      public Builder SetValues(int index, global::UnitTest.Issues.TestProtos.NegativeEnum value) {
+        result.values_[index] = value;
+        return this;
+      }
+      public Builder AddValues(global::UnitTest.Issues.TestProtos.NegativeEnum value) {
+        result.values_.Add(value);
+        return this;
+      }
+      public Builder AddRangeValues(scg::IEnumerable<global::UnitTest.Issues.TestProtos.NegativeEnum> values) {
+        base.AddRange(values, result.values_);
+        return this;
+      }
+      public Builder ClearValues() {
+        result.values_.Clear();
+        return this;
+      }
+      
+      public pbc::IPopsicleList<global::UnitTest.Issues.TestProtos.NegativeEnum> PackedValuesList {
+        get { return result.packedValues_; }
+      }
+      public int PackedValuesCount {
+        get { return result.PackedValuesCount; }
+      }
+      public global::UnitTest.Issues.TestProtos.NegativeEnum GetPackedValues(int index) {
+        return result.GetPackedValues(index);
+      }
+      public Builder SetPackedValues(int index, global::UnitTest.Issues.TestProtos.NegativeEnum value) {
+        result.packedValues_[index] = value;
+        return this;
+      }
+      public Builder AddPackedValues(global::UnitTest.Issues.TestProtos.NegativeEnum value) {
+        result.packedValues_.Add(value);
+        return this;
+      }
+      public Builder AddRangePackedValues(scg::IEnumerable<global::UnitTest.Issues.TestProtos.NegativeEnum> values) {
+        base.AddRange(values, result.packedValues_);
+        return this;
+      }
+      public Builder ClearPackedValues() {
+        result.packedValues_.Clear();
+        return this;
+      }
+    }
+    static NegativeEnumMessage() {
       object.ReferenceEquals(global::UnitTest.Issues.TestProtos.UnitTestExtrasIssuesProtoFile.Descriptor, null);
     }
   }

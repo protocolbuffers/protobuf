@@ -86,3 +86,17 @@ message NumberField {
     optional int32 _01 = 1;
 }
 
+
+// issue 19 - negative enum values
+
+enum NegativeEnum {
+    FiveBelow = -5;
+    MinusOne = -1;
+    Zero = 0;
+}
+
+message NegativeEnumMessage { 
+    optional NegativeEnum value = 1;
+    repeated NegativeEnum values = 2;
+    repeated NegativeEnum packed_values = 3 [packed=true];
+}
