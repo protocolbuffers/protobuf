@@ -221,5 +221,44 @@ namespace Google.ProtocolBuffers
 
             Assert.AreEqual("<root>\r\n    <text>a</text>\r\n    <number>1</number>\r\n</root>", Encoding.UTF8.GetString(ms.ToArray()));
         }
+
+        [Test]
+        public void TestReadCustomMimeTypes()
+        {
+            var options = new MessageFormatOptions();
+            //Remove existing mime-type mappings
+            options.MimeInputTypes.Clear();
+            //Add our own
+            options.MimeInputTypes.Add("-custom-XML-mime-type-", XmlFormatReader.CreateInstance);
+            Assert.AreEqual(1, options.MimeInputTypes.Count);
+
+            Stream xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(
+                TestXmlMessage.CreateBuilder().SetText("a").SetNumber(1).Build().ToXml()
+                                                    ));
+
+            TestXmlMessage msg = new TestXmlMessage.Builder().MergeFrom(
+                options, "-custom-XML-mime-type-", xmlStream)
+                .Build();
+            Assert.AreEqual("a", msg.Text);
+            Assert.AreEqual(1, msg.Number);
+        }
+
+        [Test]
+        public void TestWriteToCustomType()
+        {
+            var options = new MessageFormatOptions();
+            //Remove existing mime-type mappings
+            options.MimeOutputTypes.Clear();
+            //Add our own
+            options.MimeOutputTypes.Add("-custom-XML-mime-type-", XmlFormatWriter.CreateInstance);
+            
+            Assert.AreEqual(1, options.MimeOutputTypes.Count);
+
+            MemoryStream ms = new MemoryStream();
+            TestXmlMessage.CreateBuilder().SetText("a").SetNumber(1).Build()
+                .WriteTo(options, "-custom-XML-mime-type-", ms);
+
+            Assert.AreEqual("<root><text>a</text><number>1</number></root>", Encoding.UTF8.GetString(ms.ToArray()));
+        }
     }
 }

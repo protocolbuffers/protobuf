@@ -19,27 +19,14 @@ namespace Google.ProtocolBuffers.Serialization.Http
         /// <returns>The ICodedInputStream that can be given to the IBuilder.MergeFrom(...) method</returns>
         public static ICodedInputStream CreateInputStream(MessageFormatOptions options, string contentType, Stream input)
         {
-            FormatType inputType = ContentTypeToFormat(contentType, options.DefaultContentType);
+            ICodedInputStream codedInput = ContentTypeToInputStream(contentType, options, input);
 
-            ICodedInputStream codedInput;
-            if (inputType == FormatType.ProtoBuffer)
+            if (codedInput is XmlFormatReader)
             {
-                codedInput = CodedInputStream.CreateInstance(input);
-            }
-            else if (inputType == FormatType.Json)
-            {
-                JsonFormatReader reader = JsonFormatReader.CreateInstance(input);
-                codedInput = reader;
-            }
-            else if (inputType == FormatType.Xml)
-            {
-                XmlFormatReader reader = XmlFormatReader.CreateInstance(input);
+                XmlFormatReader reader = (XmlFormatReader)codedInput;
                 reader.RootElementName = options.XmlReaderRootElementName;
                 reader.Options = options.XmlReaderOptions;
-                codedInput = reader;
             }
-            else
-                throw new NotSupportedException();
 
             return codedInput;
         }
@@ -69,30 +56,20 @@ namespace Google.ProtocolBuffers.Serialization.Http
         /// <remarks> If you do not dispose of ICodedOutputStream some formats may yield incomplete output </remarks>
         public static ICodedOutputStream CreateOutputStream(MessageFormatOptions options, string contentType, Stream output)
         {
-            FormatType outputType = ContentTypeToFormat(contentType, options.DefaultContentType);
+            ICodedOutputStream codedOutput = ContentTypeToOutputStream(contentType, options, output);
 
-            ICodedOutputStream codedOutput;
-            if (outputType == FormatType.ProtoBuffer)
+            if (codedOutput is JsonFormatWriter)
             {
-                codedOutput = CodedOutputStream.CreateInstance(output);
-            }
-            else if (outputType == FormatType.Json)
-            {
-                JsonFormatWriter writer = JsonFormatWriter.CreateInstance(output);
+                JsonFormatWriter writer = (JsonFormatWriter)codedOutput;
                 if (options.FormattedOutput)
                 {
                     writer.Formatted();
                 }
-                codedOutput = writer;
             }
-            else if (outputType == FormatType.Xml)
+            else if (codedOutput is XmlFormatWriter)
             {
-                XmlFormatWriter writer;
-                if (!options.FormattedOutput)
-                {
-                    writer = XmlFormatWriter.CreateInstance(output);
-                }
-                else
+                XmlFormatWriter writer = (XmlFormatWriter)codedOutput;
+                if (options.FormattedOutput)
                 {
                     XmlWriterSettings settings = new XmlWriterSettings()
                                                      {
@@ -104,14 +81,12 @@ namespace Google.ProtocolBuffers.Serialization.Http
                                                          IndentChars = "    ",
                                                          NewLineChars = Environment.NewLine,
                                                      };
-                    writer = XmlFormatWriter.CreateInstance(XmlWriter.Create(output, settings));
+                    // Don't know how else to change xml writer options?
+                    codedOutput = writer = XmlFormatWriter.CreateInstance(XmlWriter.Create(output, settings));
                 }
                 writer.RootElementName = options.XmlWriterRootElementName;
                 writer.Options = options.XmlWriterOptions;
-                codedOutput = writer;
             }
-            else
-                throw new NotSupportedException();
 
             return codedOutput;
         }
@@ -137,46 +112,39 @@ namespace Google.ProtocolBuffers.Serialization.Http
             codedOutput.WriteMessageEnd();
         }
 
-        enum FormatType { ProtoBuffer, Json, Xml };
-
-        private static FormatType ContentTypeToFormat(string contentType, string defaultType)
+        private static ICodedInputStream ContentTypeToInputStream(string contentType, MessageFormatOptions options, Stream input)
         {
-            switch ((contentType ?? String.Empty).Split(';')[0].Trim().ToLower())
+            contentType = (contentType ?? String.Empty).Split(';')[0].Trim();
+
+            Converter<Stream, ICodedInputStream> factory;
+            if(!options.MimeInputTypesReadOnly.TryGetValue(contentType, out factory) || factory == null)
             {
-                case "application/json":
-                case "application/x-json":
-                case "application/x-javascript":
-                case "text/javascript":
-                case "text/x-javascript":
-                case "text/x-json":
-                case "text/json":
-                    {
-                        return FormatType.Json;
-                    }
-
-                case "text/xml":
-                case "application/xml":
-                    {
-                        return FormatType.Xml;
-                    }
-
-                case "application/binary":
-                case "application/x-protobuf":
-                case "application/vnd.google.protobuf":
-                    {
-                        return FormatType.ProtoBuffer;
-                    }
-
-                case "":
-                case null:
-                    if (!String.IsNullOrEmpty(defaultType))
-                    {
-                        return ContentTypeToFormat(defaultType, null);
-                    }
-                    break;
+                if(String.IsNullOrEmpty(options.DefaultContentType) ||
+                    !options.MimeInputTypesReadOnly.TryGetValue(options.DefaultContentType, out factory) || factory == null)
+                {
+                    throw new ArgumentOutOfRangeException("contentType");
+                }
             }
 
-            throw new ArgumentOutOfRangeException("contentType");
+            return factory(input);
         }
+
+        private static ICodedOutputStream ContentTypeToOutputStream(string contentType, MessageFormatOptions options, Stream output)
+        {
+            contentType = (contentType ?? String.Empty).Split(';')[0].Trim();
+
+            Converter<Stream, ICodedOutputStream> factory;
+            if (!options.MimeOutputTypesReadOnly.TryGetValue(contentType, out factory) || factory == null)
+            {
+                if (String.IsNullOrEmpty(options.DefaultContentType) ||
+                    !options.MimeOutputTypesReadOnly.TryGetValue(options.DefaultContentType, out factory) || factory == null)
+                {
+                    throw new ArgumentOutOfRangeException("contentType");
+                }
+            }
+
+            return factory(output);
+        }
+
     }
 }
