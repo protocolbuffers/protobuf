@@ -1,0 +1,92 @@
+===============================================================================
+Welcome to the C# port of Google Protocol Buffers, written by Jon Skeet
+(skeet@pobox.com) based on the work of many talented people.
+
+For more information about this port, visit its homepage:
+http://protobuf-csharp-port.googlecode.com
+
+For more information about Protocol Buffers in general, visit the project page 
+for the C++, Java and Python project:
+http://protobuf.googlecode.com
+===============================================================================
+RELEASE NOTES - Version TBD
+===============================================================================
+
+(PENDING MERGE)
+- Issue 20:	Support for decorating classes [Serializable]
+- Issue 22:	Reusable Builder classes
+- Issue 24:	Support for using Json/Xml formats with ICodedInputStream
+
+Features:
+- Added option service_generator_type to control service generation with
+  NONE, GENERIC, INTERFACE, or IRPCDISPATCH
+- Added interfaces IRpcDispatch and IRpcServerStub to provide for blocking
+  services and implementations.
+- Added ProtoGen.exe command-line argument "--protoc_dir=" to specify the 
+  location of protoc.exe.
+- Extracted interfaces for ICodedInputStream and ICodedOutputStream to allow
+  custom implementation of writers with both speed and size optimizations.
+- Addition of the "Google.ProtoBuffers.Serialization" assembly to support
+  reading and writing messages to/from XML, JSON, IDictionary<,> and others.
+- Several performance related fixes and tweeks
+- Issue 3:	Add option to mark generated code with attribute
+- Issue 21:	Decorate fields with [deprecated=true] as [System.Obsolete]
+
+Fixes:
+- Issue 13:	Message with Field same name as message causes uncompilable .cs
+- Issue 16:	Does not integrate well with other tooling
+- Issue 19:	Support for negative enum values
+- Issue 26:	AddRange in GeneratedBuilder iterates twice.
+- Issue 27:	Remove XML documentation output from test projects to clear 
+  warnings/errors.
+- Big-endian support for float, and double on Silverlight
+- Packed and Unpacked parsing allow for all repeated, as per version 2.3
+- Fix for leaving Builder a public ctor on internal classes for use with
+  generic "where T: new()" constraints.
+
+Other:
+- Reformatted all code and line-endings to C# defaults
+- Reworking of performance benchmarks to produce reliable results, option /v2
+
+===============================================================================
+RELEASE NOTES - Version 2.3.0.277
+===============================================================================
+
+Features:
+- Added cls_compliance option to generate attributes indicating 
+  non-CLS-compliance.
+- Added file_extension option to control the generated output file's extension.
+- Added umbrella_namespace option to place the umbrella class into a nested
+  namespace to address issues with proto files having the same name as a 
+  message it contains.
+- Added output_directory option to set the output path for the source file(s).
+- Added ignore_google_protobuf option to avoid generating code for includes 
+  from the google.protobuf package.
+- Added the LITE framework (Google.ProtoBuffersLite.dll) and the ability to
+  generate code with "option optimize_for = LITE_RUNTIME;".
+- Added ability to invoke protoc.exe from within ProtoGen.exe.
+- Upgraded to protoc.exe (2.3) compiler.
+
+Fixes:
+- Issue 9:	Class cannot be static and sealed error
+- Issue 12:	default value for enumerate fields must be filled out
+
+Other:
+- Rewrite of build using MSBbuild instead of NAnt
+- Moved to NUnit Version 2.2.8.0
+- Changed to using secure .snk for releases
+
+===============================================================================
+RELEASE NOTES - Version 0.9.1
+===============================================================================
+
+Fixes:
+- issue 10:	Incorrect encoding of packed fields when serialized
+
+===============================================================================
+RELEASE NOTES - Version 0.9.0
+===============================================================================
+
+- Initial release
+
+===============================================================================
