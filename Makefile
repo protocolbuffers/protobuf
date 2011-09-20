@@ -105,7 +105,7 @@ PB= \
 clean_leave_profile:
 	rm -rf $(LIBUPB) $(LIBUPB_PIC)
 	rm -rf $(call rwildcard,,*.o) $(call rwildcard,,*.lo) $(call rwildcard,,*.dSYM)
-	rm -rf upb/pb/decoder_x86.h
+	rm -rf upb/pb/decoder_x64.h
 	rm -rf benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
 	rm -rf upb/pb/jit_debug_elf_file.o
 	rm -rf upb/pb/jit_debug_elf_file.h
@@ -129,7 +129,7 @@ OBJ=$(patsubst %.c,%.o,$(SRC))
 PICOBJ=$(patsubst %.c,%.lo,$(SRC))
 
 ifdef USE_JIT
-upb/pb/decoder.o upb/pb/decoder.lo: upb/pb/decoder_x86.h
+upb/pb/decoder.o upb/pb/decoder.lo: upb/pb/decoder_x64.h
 endif
 $(LIBUPB): $(OBJ)
 	$(E) AR $(LIBUPB)
@@ -156,9 +156,9 @@ upb/def.lo: upb/def.c
 	$(E) 'CC -fPIC' $<
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) $(DEF_OPT) -c -o $@ $< -fPIC
 
-upb/pb/decoder_x86.h: upb/pb/decoder_x86.dasc
+upb/pb/decoder_x64.h: upb/pb/decoder_x64.dasc
 	$(E) DYNASM $<
-	$(Q) lua dynasm/dynasm.lua upb/pb/decoder_x86.dasc > upb/pb/decoder_x86.h
+	$(Q) lua dynasm/dynasm.lua upb/pb/decoder_x64.dasc > upb/pb/decoder_x64.h
 
 ifneq ($(shell uname), Darwin)
 upb/pb/jit_debug_elf_file.o: upb/pb/jit_debug_elf_file.s
@@ -168,7 +168,7 @@ upb/pb/jit_debug_elf_file.o: upb/pb/jit_debug_elf_file.s
 upb/pb/jit_debug_elf_file.h: upb/pb/jit_debug_elf_file.o
 	$(E) XXD $<
 	$(Q) xxd -i upb/pb/jit_debug_elf_file.o > upb/pb/jit_debug_elf_file.h
-upb/pb/decoder_x86.h: upb/pb/jit_debug_elf_file.h
+upb/pb/decoder_x64.h: upb/pb/jit_debug_elf_file.h
 endif
 
 # Function to expand a wildcard pattern recursively.
