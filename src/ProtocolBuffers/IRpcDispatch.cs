@@ -34,18 +34,42 @@
 
 #endregion
 
+using System;
+
 namespace Google.ProtocolBuffers
 {
     /// <summary>
-    /// 
+    /// Provides an entry-point for transport listeners to call a specified method on a service
     /// </summary>
-    public interface IRpcServerStub
+    public interface IRpcServerStub : IDisposable
     {
+        /// <summary>
+        /// Calls the method identified by methodName and returns the message
+        /// </summary>
+        /// <param name="methodName">The method name on the service descriptor (case-sensitive)</param>
+        /// <param name="input">The ICodedInputStream to deserialize the call parameter from</param>
+        /// <param name="registry">The extension registry to use when deserializing the call parameter</param>
+        /// <returns>The message that was returned from the service's method</returns>
         IMessageLite CallMethod(string methodName, ICodedInputStream input, ExtensionRegistry registry);
     }
 
+    /// <summary>
+    /// Used to forward an invocation of a service method to a transport sender implementation
+    /// </summary>
     public interface IRpcDispatch
     {
+        /// <summary>
+        /// Calls the service member on the endpoint connected.  This is generally done by serializing
+        /// the message, sending the bytes over a transport, and then deserializing the call parameter
+        /// to invoke the service's actual implementation via IRpcServerStub.  Once the call has
+        /// completed the result message is serialized and returned to the originating endpoint.
+        /// </summary>
+        /// <typeparam name="TMessage">The type of the response message</typeparam>
+        /// <typeparam name="TBuilder">The type of of the response builder</typeparam>
+        /// <param name="method">The name of the method on the service</param>
+        /// <param name="request">The message instance provided to the service call</param>
+        /// <param name="response">The builder used to deserialize the response</param>
+        /// <returns>The resulting message of the service call</returns>
         TMessage CallMethod<TMessage, TBuilder>(string method, IMessageLite request,
                                                 IBuilderLite<TMessage, TBuilder> response)
             where TMessage : IMessageLite<TMessage, TBuilder>
