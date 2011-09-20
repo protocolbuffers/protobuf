@@ -50,7 +50,7 @@ namespace Google.ProtocolBuffers
     /// most of the IMessage interface using reflection. Users
     /// can ignore this class as an implementation detail.
     /// </summary>
-    public abstract class GeneratedMessage<TMessage, TBuilder> : AbstractMessage<TMessage, TBuilder>
+    public abstract partial class GeneratedMessage<TMessage, TBuilder> : AbstractMessage<TMessage, TBuilder>
         where TMessage : GeneratedMessage<TMessage, TBuilder>
         where TBuilder : GeneratedBuilder<TMessage, TBuilder>, new()
     {

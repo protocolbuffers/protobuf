@@ -38,6 +38,9 @@ message CSharpFileOptions {
 
   // Generate attributes indicating non-CLS-compliance
   optional bool cls_compliance = 8 [default = true];
+  
+  // Generate messages/builders with the [Serializable] attribute
+  optional bool add_serializable = 9 [default = false];
 
   // The extension that should be appended to the umbrella_classname when creating files.
   optional string file_extension = 221 [default = ".cs"];

@@ -42,7 +42,7 @@ using Google.ProtocolBuffers.Collections;
 
 namespace Google.ProtocolBuffers
 {
-    public abstract class ExtendableMessageLite<TMessage, TBuilder> : GeneratedMessageLite<TMessage, TBuilder>
+    public abstract partial class ExtendableMessageLite<TMessage, TBuilder> : GeneratedMessageLite<TMessage, TBuilder>
         where TMessage : GeneratedMessageLite<TMessage, TBuilder>
         where TBuilder : GeneratedBuilderLite<TMessage, TBuilder>
     {

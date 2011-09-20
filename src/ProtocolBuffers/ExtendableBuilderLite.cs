@@ -40,7 +40,7 @@ using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers
 {
-    public abstract class ExtendableBuilderLite<TMessage, TBuilder> : GeneratedBuilderLite<TMessage, TBuilder>
+    public abstract partial class ExtendableBuilderLite<TMessage, TBuilder> : GeneratedBuilderLite<TMessage, TBuilder>
         where TMessage : ExtendableMessageLite<TMessage, TBuilder>
         where TBuilder : GeneratedBuilderLite<TMessage, TBuilder>
     {
