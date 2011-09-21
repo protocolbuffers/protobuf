@@ -162,9 +162,13 @@ upb/pb/jit_debug_elf_file.o: upb/pb/jit_debug_elf_file.s
 	$(E) GAS $<
 	$(Q) gcc -c upb/pb/jit_debug_elf_file.s -o upb/pb/jit_debug_elf_file.o
 
-upb/pb/jit_debug_elf_file.h: upb/pb/jit_debug_elf_file.o
+upb/pb/jit_debug_elf_file2.o: upb/pb/jit_debug_elf_file.o
+	$(E) OBJCOPY $<
+	$(Q) objcopy --change-section-address .text=0x12345678 $< $@
+
+upb/pb/jit_debug_elf_file.h: upb/pb/jit_debug_elf_file2.o
 	$(E) XXD $<
-	$(Q) xxd -i < upb/pb/jit_debug_elf_file.o > upb/pb/jit_debug_elf_file.h
+	$(Q) xxd -i < upb/pb/jit_debug_elf_file2.o > upb/pb/jit_debug_elf_file.h
 upb/pb/decoder_x64.h: upb/pb/jit_debug_elf_file.h
 endif
 
