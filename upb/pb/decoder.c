@@ -18,7 +18,7 @@
 #define Dst_REF (d->dynasm)
 #define Dst (d)
 #include "dynasm/dasm_proto.h"
-#include "upb/pb/decoder_x86.h"
+#include "upb/pb/decoder_x64.h"
 #endif
 
 // It's unfortunate that we have to micro-manage the compiler this way,
