@@ -108,7 +108,8 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |.globals UPB_JIT_GLOBAL_
 |.globalnames upb_jit_globalnames
 |
-|// Calling conventions.
+|// Calling conventions.  Note -- this will need to be changed for
+|// Windows, which uses a different calling convention!
 |.define ARG1_64,   rdi
 |.define ARG2_8,    sil
 |.define ARG2_32,   esi
@@ -116,6 +117,8 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |.define ARG3_8,    dl
 |.define ARG3_32,   edx
 |.define ARG3_64,   rdx
+|.define ARG4_64,   rcx
+|.define ARG5_32,   r8d
 |
 |// Register allocation / type map.
 |// ALL of the code in this file uses these register allocations.
@@ -208,15 +211,13 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |.endif
 |
 |// Push a stack frame (not the CPU stack, the upb_decoder stack).
-|.macro pushframe, f, closure_, end_offset_, is_sequence_
+|.macro pushframe, f, end_offset_, is_sequence_
 |  lea   rax, [FRAME + sizeof(upb_dispatcher_frame)]  // rax for shorter addressing.
 |  cmp   rax, qword DECODER->dispatcher.limit
 |  jae   ->exit_jit  // Frame stack overflow.
 |  mov   qword FRAME:rax->f, f
-|  mov   qword FRAME:rax->closure, closure_
 |  mov   dword FRAME:rax->end_ofs, end_offset_
 |  mov   byte FRAME:rax->is_sequence, is_sequence_
-|  mov   CLOSURE, rdx
 |  mov   DECODER->dispatcher.top, rax
 |  mov   FRAME, rax
 |.endmacro
@@ -275,6 +276,11 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |
 |// TODO: optimize for 0 (xor) and 32-bits.
 |.macro loadfval, f
+||#ifndef NDEBUG
+||// Since upb_value carries type information in debug mode
+||// only, we need to pass the arguments slightly differently.
+|    mov ARG3_32, f->fval.type
+||#endif
 || if (f->fval.val.uint64 == 0) {
 |    xor     ARG2_32, ARG2_32
 || } else if (f->fval.val.uint64 < 0xffffffff) {
@@ -424,31 +430,27 @@ static void upb_decoder_jit_doappend(upb_decoder *d, uint8_t size,
 #endif
 
 static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
-  const upb_fielddef *fd = upb_value_getfielddef(f->fval);
   // Call callbacks.
   if (upb_issubmsgtype(f->type)) {
-    // Load closure and fval into arg registers.
-    |  mov   ARG1_64, CLOSURE
-    |  loadfval f
-
-    // Call startsubmsg handler (if any).
-    if (f->startsubmsg) {
-      // upb_sflow_t startsubmsg(void *closure, upb_value fval)
-      |  mov   r12d, ARG3_32
-      |  callp f->startsubmsg
-    } else {
-      |  mov   rdx, CLOSURE
-      |  mov   r12d, ARG3_32
-    }
     if (f->type == UPB_TYPE(MESSAGE)) {
       |   mov   rsi, PTR
       |   sub   rsi, DECODER->buf
-      |   add   esi, r12d   // = (d->ptr - d->buf) + delim_len
+      |   add   esi, ARG3_32   // = (d->ptr - d->buf) + delim_len
     } else {
       assert(f->type == UPB_TYPE(GROUP));
       |   mov   esi, UPB_NONDELIMITED
     }
-    |  pushframe  f, rdx, esi, false
+    |  pushframe  f, esi, false
+
+    // Call startsubmsg handler (if any).
+    if (f->startsubmsg) {
+      // upb_sflow_t startsubmsg(void *closure, upb_value fval)
+      |  mov   ARG1_64, CLOSURE
+      |  loadfval f
+      |  callp f->startsubmsg
+      |  mov  CLOSURE, rdx
+    }
+    |  mov   qword FRAME->closure, CLOSURE
 
     const upb_mhandlers *sub_m = upb_fhandlers_getsubmsg(f);
     if (sub_m->jit_parent_field_done_pclabel != UPB_MULTIPLE) {
@@ -458,7 +460,6 @@ static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
     }
 
     |=>f->jit_submsg_done_pclabel:
-    |   popframe upb_fhandlers_getmsg(f)
 
     // Call endsubmsg handler (if any).
     if (f->endsubmsg) {
@@ -467,6 +468,8 @@ static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
       |  loadfval  f
       |  callp f->endsubmsg
     }
+    |   popframe upb_fhandlers_getmsg(f)
+
   } else {
     |  mov ARG1_64, CLOSURE
     // Test for callbacks we can specialize.
@@ -475,12 +478,15 @@ static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
         f->value == &upb_stdmsg_setuint64 ||
         f->value == &upb_stdmsg_setptr ||
         f->value == &upb_stdmsg_setdouble) {
+      const upb_fielddef *fd = upb_value_getfielddef(f->fval);
       |  mov   [ARG1_64 + fd->offset], ARG3_64
     } else if (f->value == &upb_stdmsg_setint32 ||
                f->value == &upb_stdmsg_setuint32 ||
                f->value == &upb_stdmsg_setfloat) {
+      const upb_fielddef *fd = upb_value_getfielddef(f->fval);
       |  mov   [ARG1_64 + fd->offset], ARG3_32
     } else if (f->value == &upb_stdmsg_setbool) {
+      const upb_fielddef *fd = upb_value_getfielddef(f->fval);
       |  mov   [ARG1_64 + fd->offset], ARG3_8
 #if 0
     // These appear not to speed things up, but keeping around for
@@ -499,6 +505,12 @@ static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
 #endif
     } else {
       // Load closure and fval into arg registers.
+      ||#ifndef NDEBUG
+      ||// Since upb_value carries type information in debug mode
+      ||// only, we need to pass the arguments slightly differently.
+      |    mov ARG4_64, ARG3_64
+      |    mov ARG5_32, upb_types[f->type].inmemory_type
+      ||#endif
       |  loadfval f
       |  callp  f->value
     }
@@ -519,15 +531,15 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
   |  jne  ->exit_jit     // In the future: could be an unknown field or packed.
   |=>f->jit_pclabel_notypecheck:
   if (f->repeated) {
+    |  mov   esi, FRAME->end_ofs
+    |  pushframe  f, esi, true
     if (f->startseq) {
       |  mov   ARG1_64, CLOSURE
       |  loadfval f
       |  callp f->startseq
-    } else {
-      |  mov   rdx, CLOSURE
+      |  mov   CLOSURE, rdx
     }
-    |  mov   esi, FRAME->end_ofs
-    |  pushframe  f, rdx, esi, true
+    |  mov   qword FRAME->closure, CLOSURE
   }
 
   |1:  // Label for repeating this field.
@@ -541,12 +553,12 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
   if (f->repeated) {
     |  checktag  tag
     |  je  <1
-    |  popframe m
     if (f->endseq) {
       |  mov   ARG1_64, CLOSURE
       |  loadfval f
       |  callp f->endseq
     }
+    |  popframe m
   }
   if (next_tag != 0) {
     |  checktag  next_tag

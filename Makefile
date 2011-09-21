@@ -40,9 +40,6 @@ ifeq (, $(findstring -O, $(USER_CFLAGS)))
 endif
 
 ifneq (, $(findstring DUPB_USE_JIT_X64, $(USER_CFLAGS)))
-  ifeq (, $(findstring DNDEBUG, $(USER_CFLAGS)))
-  $(error "JIT only works with -DNDEBUG enabled!")
-  endif
   USE_JIT=true
 endif
 
