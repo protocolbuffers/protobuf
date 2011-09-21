@@ -18,7 +18,7 @@ run_with_flags () {
   make clean
   echo "$FLAGS" > perf-cppflags
   make upb_benchmarks
-  make benchmark | sed -e "s/^/$NAME./g" | tee -a perf-tests.out
+  make upb_benchmark | sed -e "s/^/$NAME./g" | tee -a perf-tests.out
 }
 
 #if [ x`uname -m` = xx86_64 ]; then

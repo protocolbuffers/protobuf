@@ -295,6 +295,10 @@ BENCHMARKS=$(UPB_BENCHMARKS) \
 
 upb_benchmarks: $(UPB_BENCHMARKS)
 benchmarks: $(BENCHMARKS)
+upb_benchmark: $(UPB_BENCHMARKS)
+	@rm -f benchmarks/results
+	@rm -rf benchmarks/*.dSYM
+	@for test in benchmarks/b.* ; do ./$$test ; done
 benchmark: $(BENCHMARKS)
 	@rm -f benchmarks/results
 	@rm -rf benchmarks/*.dSYM
