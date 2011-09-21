@@ -215,9 +215,10 @@ INLINE int upb_bytesink_putc(upb_bytesink *sink, char ch) {
 }
 
 INLINE int upb_bytesink_putrepeated(upb_bytesink *sink, char ch, int len) {
-  char buf[len];
-  memset(buf, ch, len);
-  return upb_bytesink_write(sink, buf, len);
+  for (int i = 0; i < len; i++)
+    if (upb_bytesink_write(sink, &ch, 1) < 0)
+      return -1;
+  return len;
 }
 
 INLINE uint64_t upb_bytesink_getoffset(upb_bytesink *sink) {

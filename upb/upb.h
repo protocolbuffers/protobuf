@@ -115,7 +115,7 @@ typedef struct {
   uint8_t size;
   uint8_t native_wire_type;
   uint8_t inmemory_type;    // For example, INT32, SINT32, and SFIXED32 -> INT32
-  char *ctype;
+  const char *ctype;
 } upb_type_info;
 
 // A static array of info about all of the field types, indexed by type number.

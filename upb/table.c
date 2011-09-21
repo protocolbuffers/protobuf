@@ -189,7 +189,7 @@ void upb_inttable_compact(upb_inttable *t) {
   int lg2_array = 0;
   while ((1UL << lg2_array) < largest_key) ++lg2_array;
   ++lg2_array;  // Undo the first iteration.
-  size_t array_size;
+  size_t array_size = 0;
   int array_count = 0;
   while (lg2_array > 0) {
     array_size = (1 << --lg2_array);
@@ -306,10 +306,12 @@ void *upb_strtable_lookup(const upb_strtable *t, const char *key) {
 
 void *upb_strtable_lookupl(const upb_strtable *t, const char *key, size_t len) {
   // TODO: improve.
-  char key2[len+1];
+  char *key2 = malloc(len+1);
   memcpy(key2, key, len);
   key2[len] = '\0';
-  return upb_strtable_lookup(t, key2);
+  void *ret = upb_strtable_lookup(t, key2);
+  free(key2);
+  return ret;
 }
 
 static uint32_t empty_strbucket(upb_strtable *table) {

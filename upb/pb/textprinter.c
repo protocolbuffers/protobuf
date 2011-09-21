@@ -41,7 +41,7 @@ static int upb_textprinter_putescaped(upb_textprinter *p, const upb_strref *strr
   // TODO; we could read directly from a bytesrc's buffer instead.
   // TODO; we could write strrefs to the sink when possible.
   char dstbuf[4096], *dst = dstbuf, *dstend = dstbuf + sizeof(dstbuf);
-  char buf[strref->len], *src = buf;
+  char *buf = malloc(strref->len), *src = buf;
   char *end = src + strref->len;
   upb_bytesrc_read(strref->bytesrc, strref->stream_offset, strref->len, buf);
 
@@ -81,8 +81,10 @@ static int upb_textprinter_putescaped(upb_textprinter *p, const upb_strref *strr
   }
   // Flush remaining data.
   CHECK(upb_bytesink_write(p->sink, dst, dst - dstbuf));
+  free(buf);
   return 0;
 err:
+  free(buf);
   return -1;
 }
 

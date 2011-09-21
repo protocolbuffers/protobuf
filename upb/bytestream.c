@@ -63,7 +63,7 @@ static upb_stdio_buf *upb_stdio_findbuf(const upb_stdio *s, uint64_t ofs) {
 }
 
 static upb_stdio_buf *upb_stdio_rotatebufs(upb_stdio *s) {
-  upb_stdio_buf *reuse[s->nbuf];
+  upb_stdio_buf **reuse = NULL;  // XXX
   uint32_t num_reused = 0, num_inuse = 0;
 
   // Could sweep only a subset of bufs if this was a hotspot.

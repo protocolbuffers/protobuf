@@ -164,7 +164,7 @@ upb/pb/jit_debug_elf_file.o: upb/pb/jit_debug_elf_file.s
 
 upb/pb/jit_debug_elf_file.h: upb/pb/jit_debug_elf_file.o
 	$(E) XXD $<
-	$(Q) xxd -i upb/pb/jit_debug_elf_file.o > upb/pb/jit_debug_elf_file.h
+	$(Q) xxd -i < upb/pb/jit_debug_elf_file.o > upb/pb/jit_debug_elf_file.h
 upb/pb/decoder_x64.h: upb/pb/jit_debug_elf_file.h
 endif
 
