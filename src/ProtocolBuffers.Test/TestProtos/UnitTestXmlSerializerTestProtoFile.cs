@@ -139,6 +139,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestXmlChild : pb::GeneratedMessage<TestXmlChild, TestXmlChild.Builder> {
+    private TestXmlChild() { }
     private static readonly TestXmlChild defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testXmlChildFieldNames = new string[] { "binary", "options" };
     private static readonly uint[] _testXmlChildFieldTags = new uint[] { 34, 24 };
@@ -450,6 +451,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestXmlNoFields : pb::GeneratedMessage<TestXmlNoFields, TestXmlNoFields.Builder> {
+    private TestXmlNoFields() { }
     private static readonly TestXmlNoFields defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testXmlNoFieldsFieldNames = new string[] {  };
     private static readonly uint[] _testXmlNoFieldsFieldTags = new uint[] {  };
@@ -650,6 +652,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestXmlRescursive : pb::GeneratedMessage<TestXmlRescursive, TestXmlRescursive.Builder> {
+    private TestXmlRescursive() { }
     private static readonly TestXmlRescursive defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testXmlRescursiveFieldNames = new string[] { "child" };
     private static readonly uint[] _testXmlRescursiveFieldTags = new uint[] { 10 };
@@ -914,6 +917,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestXmlMessage : pb::ExtendableMessage<TestXmlMessage, TestXmlMessage.Builder> {
+    private TestXmlMessage() { }
     private static readonly TestXmlMessage defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testXmlMessageFieldNames = new string[] { "child", "children", "number", "numbers", "text", "textlines", "valid" };
     private static readonly uint[] _testXmlMessageFieldTags = new uint[] { 10, 3211, 48, 16, 26, 5602, 40 };
@@ -947,6 +951,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class Children : pb::GeneratedMessage<Children, Children.Builder> {
+        private Children() { }
         private static readonly Children defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _childrenFieldNames = new string[] { "binary", "options" };
         private static readonly uint[] _childrenFieldTags = new uint[] { 34, 24 };
@@ -1807,6 +1812,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestXmlExtension : pb::GeneratedMessage<TestXmlExtension, TestXmlExtension.Builder> {
+    private TestXmlExtension() { }
     private static readonly TestXmlExtension defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testXmlExtensionFieldNames = new string[] { "number" };
     private static readonly uint[] _testXmlExtensionFieldTags = new uint[] { 8 };

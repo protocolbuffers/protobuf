@@ -137,6 +137,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SpeedMessage1 : pb::GeneratedMessage<SpeedMessage1, SpeedMessage1.Builder> {
+    private SpeedMessage1() { }
     private static readonly SpeedMessage1 defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _speedMessage1FieldNames = new string[] { "field1", "field100", "field101", "field102", "field103", "field104", "field12", "field128", "field129", "field13", "field130", "field131", "field14", "field15", "field150", "field16", "field17", "field18", "field2", "field22", "field23", "field24", "field25", "field271", "field272", "field280", "field29", "field3", "field30", "field4", "field5", "field59", "field6", "field60", "field67", "field68", "field7", "field78", "field80", "field81", "field9" };
     private static readonly uint[] _speedMessage1FieldTags = new uint[] { 10, 800, 808, 818, 826, 832, 96, 1024, 1034, 104, 1040, 1048, 112, 122, 1200, 128, 136, 146, 16, 176, 184, 192, 200, 2168, 2176, 2240, 232, 24, 240, 34, 41, 472, 48, 480, 536, 544, 58, 624, 640, 648, 74 };
@@ -2072,6 +2073,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SpeedMessage1SubMessage : pb::GeneratedMessage<SpeedMessage1SubMessage, SpeedMessage1SubMessage.Builder> {
+    private SpeedMessage1SubMessage() { }
     private static readonly SpeedMessage1SubMessage defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _speedMessage1SubMessageFieldNames = new string[] { "field1", "field12", "field13", "field14", "field15", "field16", "field19", "field2", "field20", "field203", "field204", "field205", "field206", "field207", "field21", "field22", "field23", "field28", "field3", "field300" };
     private static readonly uint[] _speedMessage1SubMessageFieldTags = new uint[] { 8, 96, 104, 112, 122, 128, 152, 16, 160, 1629, 1632, 1642, 1648, 1656, 169, 176, 184, 224, 24, 2400 };
@@ -3104,6 +3106,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SpeedMessage2 : pb::GeneratedMessage<SpeedMessage2, SpeedMessage2.Builder> {
+    private SpeedMessage2() { }
     private static readonly SpeedMessage2 defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _speedMessage2FieldNames = new string[] { "field1", "field109", "field127", "field128", "field129", "field130", "field131", "field2", "field205", "field206", "field21", "field210", "field211", "field212", "field213", "field216", "field217", "field218", "field220", "field221", "field222", "field25", "field3", "field30", "field4", "field6", "field63", "field71", "field75", "group1" };
     private static readonly uint[] _speedMessage2FieldTags = new uint[] { 10, 872, 1018, 1026, 1032, 1040, 1048, 18, 1640, 1648, 168, 1680, 1688, 1696, 1704, 1728, 1736, 1744, 1760, 1768, 1781, 205, 24, 240, 32, 50, 504, 568, 600, 83 };
@@ -3136,6 +3139,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class Group1 : pb::GeneratedMessage<Group1, Group1.Builder> {
+        private Group1() { }
         private static readonly Group1 defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _group1FieldNames = new string[] { "field11", "field12", "field13", "field14", "field15", "field16", "field20", "field22", "field24", "field26", "field27", "field28", "field29", "field31", "field5", "field73" };
         private static readonly uint[] _group1FieldTags = new uint[] { 93, 98, 106, 114, 120, 130, 160, 178, 194, 213, 218, 224, 234, 250, 40, 584 };
@@ -5560,6 +5564,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SpeedMessage2GroupedMessage : pb::GeneratedMessage<SpeedMessage2GroupedMessage, SpeedMessage2GroupedMessage.Builder> {
+    private SpeedMessage2GroupedMessage() { }
     private static readonly SpeedMessage2GroupedMessage defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _speedMessage2GroupedMessageFieldNames = new string[] { "field1", "field10", "field11", "field2", "field3", "field4", "field5", "field6", "field7", "field8", "field9" };
     private static readonly uint[] _speedMessage2GroupedMessageFieldTags = new uint[] { 13, 85, 88, 21, 29, 32, 40, 48, 56, 69, 72 };

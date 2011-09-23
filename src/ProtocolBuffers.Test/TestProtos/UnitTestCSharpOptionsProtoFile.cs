@@ -60,6 +60,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class OptionsMessage : pb::GeneratedMessage<OptionsMessage, OptionsMessage.Builder> {
+    private OptionsMessage() { }
     private static readonly OptionsMessage defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _optionsMessageFieldNames = new string[] { "customized", "normal", "options_message" };
     private static readonly uint[] _optionsMessageFieldTags = new uint[] { 26, 10, 18 };

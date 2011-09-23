@@ -137,6 +137,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SizeMessage1 : pb::GeneratedMessage<SizeMessage1, SizeMessage1.Builder> {
+    private SizeMessage1() { }
     private static readonly SizeMessage1 defaultInstance = new Builder().BuildPartial();
     public static SizeMessage1 DefaultInstance {
       get { return defaultInstance; }
@@ -1438,6 +1439,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SizeMessage1SubMessage : pb::GeneratedMessage<SizeMessage1SubMessage, SizeMessage1SubMessage.Builder> {
+    private SizeMessage1SubMessage() { }
     private static readonly SizeMessage1SubMessage defaultInstance = new Builder().BuildPartial();
     public static SizeMessage1SubMessage DefaultInstance {
       get { return defaultInstance; }
@@ -2121,6 +2123,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SizeMessage2 : pb::GeneratedMessage<SizeMessage2, SizeMessage2.Builder> {
+    private SizeMessage2() { }
     private static readonly SizeMessage2 defaultInstance = new Builder().BuildPartial();
     public static SizeMessage2 DefaultInstance {
       get { return defaultInstance; }
@@ -2151,6 +2154,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class Group1 : pb::GeneratedMessage<Group1, Group1.Builder> {
+        private Group1() { }
         private static readonly Group1 defaultInstance = new Builder().BuildPartial();
         public static Group1 DefaultInstance {
           get { return defaultInstance; }
@@ -3762,6 +3766,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SizeMessage2GroupedMessage : pb::GeneratedMessage<SizeMessage2GroupedMessage, SizeMessage2GroupedMessage.Builder> {
+    private SizeMessage2GroupedMessage() { }
     private static readonly SizeMessage2GroupedMessage defaultInstance = new Builder().BuildPartial();
     public static SizeMessage2GroupedMessage DefaultInstance {
       get { return defaultInstance; }

@@ -71,6 +71,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ImportMessage : pb::GeneratedMessage<ImportMessage, ImportMessage.Builder> {
+    private ImportMessage() { }
     private static readonly ImportMessage defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _importMessageFieldNames = new string[] { "d" };
     private static readonly uint[] _importMessageFieldTags = new uint[] { 8 };

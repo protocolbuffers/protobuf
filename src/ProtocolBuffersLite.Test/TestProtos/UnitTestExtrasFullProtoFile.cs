@@ -128,6 +128,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestInteropPerson : pb::ExtendableMessage<TestInteropPerson, TestInteropPerson.Builder> {
+    private TestInteropPerson() { }
     private static readonly TestInteropPerson defaultInstance = new Builder().BuildPartial();
     public static TestInteropPerson DefaultInstance {
       get { return defaultInstance; }
@@ -166,6 +167,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class PhoneNumber : pb::GeneratedMessage<PhoneNumber, PhoneNumber.Builder> {
+        private PhoneNumber() { }
         private static readonly PhoneNumber defaultInstance = new Builder().BuildPartial();
         public static PhoneNumber DefaultInstance {
           get { return defaultInstance; }
@@ -332,6 +334,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class Addresses : pb::GeneratedMessage<Addresses, Addresses.Builder> {
+        private Addresses() { }
         private static readonly Addresses defaultInstance = new Builder().BuildPartial();
         public static Addresses DefaultInstance {
           get { return defaultInstance; }
@@ -902,6 +905,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestInteropEmployeeId : pb::GeneratedMessage<TestInteropEmployeeId, TestInteropEmployeeId.Builder> {
+    private TestInteropEmployeeId() { }
     private static readonly TestInteropEmployeeId defaultInstance = new Builder().BuildPartial();
     public static TestInteropEmployeeId DefaultInstance {
       get { return defaultInstance; }
@@ -1040,6 +1044,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestMissingFieldsA : pb::GeneratedMessage<TestMissingFieldsA, TestMissingFieldsA.Builder> {
+    private TestMissingFieldsA() { }
     private static readonly TestMissingFieldsA defaultInstance = new Builder().BuildPartial();
     public static TestMissingFieldsA DefaultInstance {
       get { return defaultInstance; }
@@ -1070,6 +1075,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class SubA : pb::GeneratedMessage<SubA, SubA.Builder> {
+        private SubA() { }
         private static readonly SubA defaultInstance = new Builder().BuildPartial();
         public static SubA DefaultInstance {
           get { return defaultInstance; }
@@ -1467,6 +1473,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestMissingFieldsB : pb::GeneratedMessage<TestMissingFieldsB, TestMissingFieldsB.Builder> {
+    private TestMissingFieldsB() { }
     private static readonly TestMissingFieldsB defaultInstance = new Builder().BuildPartial();
     public static TestMissingFieldsB DefaultInstance {
       get { return defaultInstance; }
@@ -1497,6 +1504,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class SubB : pb::GeneratedMessage<SubB, SubB.Builder> {
+        private SubB() { }
         private static readonly SubB defaultInstance = new Builder().BuildPartial();
         public static SubB DefaultInstance {
           get { return defaultInstance; }

@@ -60,6 +60,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestRequiredLite : pb::GeneratedMessageLite<TestRequiredLite, TestRequiredLite.Builder> {
+    private TestRequiredLite() { }
     private static readonly TestRequiredLite defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testRequiredLiteFieldNames = new string[] { "d", "en" };
     private static readonly uint[] _testRequiredLiteFieldTags = new uint[] { 8, 16 };
@@ -342,6 +343,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestInteropPersonLite : pb::ExtendableMessageLite<TestInteropPersonLite, TestInteropPersonLite.Builder> {
+    private TestInteropPersonLite() { }
     private static readonly TestInteropPersonLite defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testInteropPersonLiteFieldNames = new string[] { "addresses", "codes", "email", "id", "name", "phone" };
     private static readonly uint[] _testInteropPersonLiteFieldTags = new uint[] { 43, 82, 26, 16, 10, 34 };
@@ -375,6 +377,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class PhoneNumber : pb::GeneratedMessageLite<PhoneNumber, PhoneNumber.Builder> {
+        private PhoneNumber() { }
         private static readonly PhoneNumber defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _phoneNumberFieldNames = new string[] { "number", "type" };
         private static readonly uint[] _phoneNumberFieldTags = new uint[] { 10, 16 };
@@ -657,6 +660,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class Addresses : pb::GeneratedMessageLite<Addresses, Addresses.Builder> {
+        private Addresses() { }
         private static readonly Addresses defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _addressesFieldNames = new string[] { "address", "address2", "city", "state", "zip" };
         private static readonly uint[] _addressesFieldTags = new uint[] { 10, 18, 26, 34, 45 };
@@ -1602,6 +1606,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestInteropEmployeeIdLite : pb::GeneratedMessageLite<TestInteropEmployeeIdLite, TestInteropEmployeeIdLite.Builder> {
+    private TestInteropEmployeeIdLite() { }
     private static readonly TestInteropEmployeeIdLite defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testInteropEmployeeIdLiteFieldNames = new string[] { "number" };
     private static readonly uint[] _testInteropEmployeeIdLiteFieldTags = new uint[] { 10 };

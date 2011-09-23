@@ -103,6 +103,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestMessageSet : pb::ExtendableMessage<TestMessageSet, TestMessageSet.Builder> {
+    private TestMessageSet() { }
     private static readonly TestMessageSet defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testMessageSetFieldNames = new string[] {  };
     private static readonly uint[] _testMessageSetFieldTags = new uint[] {  };
@@ -306,6 +307,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestMessageSetContainer : pb::GeneratedMessage<TestMessageSetContainer, TestMessageSetContainer.Builder> {
+    private TestMessageSetContainer() { }
     private static readonly TestMessageSetContainer defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testMessageSetContainerFieldNames = new string[] { "message_set" };
     private static readonly uint[] _testMessageSetContainerFieldTags = new uint[] { 10 };
@@ -568,6 +570,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestMessageSetExtension1 : pb::GeneratedMessage<TestMessageSetExtension1, TestMessageSetExtension1.Builder> {
+    private TestMessageSetExtension1() { }
     private static readonly TestMessageSetExtension1 defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testMessageSetExtension1FieldNames = new string[] { "i" };
     private static readonly uint[] _testMessageSetExtension1FieldTags = new uint[] { 120 };
@@ -809,6 +812,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestMessageSetExtension2 : pb::GeneratedMessage<TestMessageSetExtension2, TestMessageSetExtension2.Builder> {
+    private TestMessageSetExtension2() { }
     private static readonly TestMessageSetExtension2 defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testMessageSetExtension2FieldNames = new string[] { "str" };
     private static readonly uint[] _testMessageSetExtension2FieldTags = new uint[] { 202 };
@@ -1051,6 +1055,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class RawMessageSet : pb::GeneratedMessage<RawMessageSet, RawMessageSet.Builder> {
+    private RawMessageSet() { }
     private static readonly RawMessageSet defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _rawMessageSetFieldNames = new string[] { "item" };
     private static readonly uint[] _rawMessageSetFieldTags = new uint[] { 11 };
@@ -1083,6 +1088,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class Item : pb::GeneratedMessage<Item, Item.Builder> {
+        private Item() { }
         private static readonly Item defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _itemFieldNames = new string[] { "message", "type_id" };
         private static readonly uint[] _itemFieldTags = new uint[] { 26, 16 };

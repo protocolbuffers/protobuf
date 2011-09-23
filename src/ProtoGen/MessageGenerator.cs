@@ -181,6 +181,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                              Descriptor.Proto.ExtensionRangeCount > 0 ? "Extendable" : "Generated",
                              RuntimeSuffix);
             writer.Indent();
+            writer.WriteLine("private {0}() {{ }}", ClassName);
             // Must call BuildPartial() to make sure all lists are made read-only
             writer.WriteLine("private static readonly {0} defaultInstance = new Builder().BuildPartial();", ClassName);
 

@@ -400,6 +400,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestMessageWithCustomOptions : pb::GeneratedMessage<TestMessageWithCustomOptions, TestMessageWithCustomOptions.Builder> {
+    private TestMessageWithCustomOptions() { }
     private static readonly TestMessageWithCustomOptions defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testMessageWithCustomOptionsFieldNames = new string[] { "field1" };
     private static readonly uint[] _testMessageWithCustomOptionsFieldTags = new uint[] { 10 };
@@ -655,6 +656,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CustomOptionFooRequest : pb::GeneratedMessage<CustomOptionFooRequest, CustomOptionFooRequest.Builder> {
+    private CustomOptionFooRequest() { }
     private static readonly CustomOptionFooRequest defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _customOptionFooRequestFieldNames = new string[] {  };
     private static readonly uint[] _customOptionFooRequestFieldTags = new uint[] {  };
@@ -853,6 +855,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CustomOptionFooResponse : pb::GeneratedMessage<CustomOptionFooResponse, CustomOptionFooResponse.Builder> {
+    private CustomOptionFooResponse() { }
     private static readonly CustomOptionFooResponse defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _customOptionFooResponseFieldNames = new string[] {  };
     private static readonly uint[] _customOptionFooResponseFieldTags = new uint[] {  };
@@ -1051,6 +1054,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class DummyMessageContainingEnum : pb::GeneratedMessage<DummyMessageContainingEnum, DummyMessageContainingEnum.Builder> {
+    private DummyMessageContainingEnum() { }
     private static readonly DummyMessageContainingEnum defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _dummyMessageContainingEnumFieldNames = new string[] {  };
     private static readonly uint[] _dummyMessageContainingEnumFieldTags = new uint[] {  };
@@ -1264,6 +1268,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class DummyMessageInvalidAsOptionType : pb::GeneratedMessage<DummyMessageInvalidAsOptionType, DummyMessageInvalidAsOptionType.Builder> {
+    private DummyMessageInvalidAsOptionType() { }
     private static readonly DummyMessageInvalidAsOptionType defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _dummyMessageInvalidAsOptionTypeFieldNames = new string[] {  };
     private static readonly uint[] _dummyMessageInvalidAsOptionTypeFieldTags = new uint[] {  };
@@ -1462,6 +1467,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CustomOptionMinIntegerValues : pb::GeneratedMessage<CustomOptionMinIntegerValues, CustomOptionMinIntegerValues.Builder> {
+    private CustomOptionMinIntegerValues() { }
     private static readonly CustomOptionMinIntegerValues defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _customOptionMinIntegerValuesFieldNames = new string[] {  };
     private static readonly uint[] _customOptionMinIntegerValuesFieldTags = new uint[] {  };
@@ -1660,6 +1666,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CustomOptionMaxIntegerValues : pb::GeneratedMessage<CustomOptionMaxIntegerValues, CustomOptionMaxIntegerValues.Builder> {
+    private CustomOptionMaxIntegerValues() { }
     private static readonly CustomOptionMaxIntegerValues defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _customOptionMaxIntegerValuesFieldNames = new string[] {  };
     private static readonly uint[] _customOptionMaxIntegerValuesFieldTags = new uint[] {  };
@@ -1858,6 +1865,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CustomOptionOtherValues : pb::GeneratedMessage<CustomOptionOtherValues, CustomOptionOtherValues.Builder> {
+    private CustomOptionOtherValues() { }
     private static readonly CustomOptionOtherValues defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _customOptionOtherValuesFieldNames = new string[] {  };
     private static readonly uint[] _customOptionOtherValuesFieldTags = new uint[] {  };
@@ -2056,6 +2064,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SettingRealsFromPositiveInts : pb::GeneratedMessage<SettingRealsFromPositiveInts, SettingRealsFromPositiveInts.Builder> {
+    private SettingRealsFromPositiveInts() { }
     private static readonly SettingRealsFromPositiveInts defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _settingRealsFromPositiveIntsFieldNames = new string[] {  };
     private static readonly uint[] _settingRealsFromPositiveIntsFieldTags = new uint[] {  };
@@ -2254,6 +2263,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SettingRealsFromNegativeInts : pb::GeneratedMessage<SettingRealsFromNegativeInts, SettingRealsFromNegativeInts.Builder> {
+    private SettingRealsFromNegativeInts() { }
     private static readonly SettingRealsFromNegativeInts defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _settingRealsFromNegativeIntsFieldNames = new string[] {  };
     private static readonly uint[] _settingRealsFromNegativeIntsFieldTags = new uint[] {  };
@@ -2452,6 +2462,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ComplexOptionType1 : pb::ExtendableMessage<ComplexOptionType1, ComplexOptionType1.Builder> {
+    private ComplexOptionType1() { }
     private static readonly ComplexOptionType1 defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _complexOptionType1FieldNames = new string[] { "foo", "foo2", "foo3" };
     private static readonly uint[] _complexOptionType1FieldTags = new uint[] { 8, 16, 24 };
@@ -2778,6 +2789,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ComplexOptionType2 : pb::ExtendableMessage<ComplexOptionType2, ComplexOptionType2.Builder> {
+    private ComplexOptionType2() { }
     private static readonly ComplexOptionType2 defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _complexOptionType2FieldNames = new string[] { "bar", "baz", "fred" };
     private static readonly uint[] _complexOptionType2FieldTags = new uint[] { 10, 16, 26 };
@@ -2810,6 +2822,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class ComplexOptionType4 : pb::GeneratedMessage<ComplexOptionType4, ComplexOptionType4.Builder> {
+        private ComplexOptionType4() { }
         private static readonly ComplexOptionType4 defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _complexOptionType4FieldNames = new string[] { "waldo" };
         private static readonly uint[] _complexOptionType4FieldTags = new uint[] { 8 };
@@ -3402,6 +3415,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ComplexOptionType3 : pb::GeneratedMessage<ComplexOptionType3, ComplexOptionType3.Builder> {
+    private ComplexOptionType3() { }
     private static readonly ComplexOptionType3 defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _complexOptionType3FieldNames = new string[] { "complexoptiontype5", "qux" };
     private static readonly uint[] _complexOptionType3FieldTags = new uint[] { 19, 8 };
@@ -3434,6 +3448,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class ComplexOptionType5 : pb::GeneratedMessage<ComplexOptionType5, ComplexOptionType5.Builder> {
+        private ComplexOptionType5() { }
         private static readonly ComplexOptionType5 defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _complexOptionType5FieldNames = new string[] { "plugh" };
         private static readonly uint[] _complexOptionType5FieldTags = new uint[] { 24 };
@@ -3952,6 +3967,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ComplexOpt6 : pb::GeneratedMessage<ComplexOpt6, ComplexOpt6.Builder> {
+    private ComplexOpt6() { }
     private static readonly ComplexOpt6 defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _complexOpt6FieldNames = new string[] { "xyzzy" };
     private static readonly uint[] _complexOpt6FieldTags = new uint[] { 60751608 };
@@ -4191,6 +4207,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class VariousComplexOptions : pb::GeneratedMessage<VariousComplexOptions, VariousComplexOptions.Builder> {
+    private VariousComplexOptions() { }
     private static readonly VariousComplexOptions defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _variousComplexOptionsFieldNames = new string[] {  };
     private static readonly uint[] _variousComplexOptionsFieldTags = new uint[] {  };
