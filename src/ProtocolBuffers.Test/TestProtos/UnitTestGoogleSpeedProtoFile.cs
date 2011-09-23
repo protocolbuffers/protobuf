@@ -137,7 +137,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SpeedMessage1 : pb::GeneratedMessage<SpeedMessage1, SpeedMessage1.Builder> {
-    private static readonly SpeedMessage1 defaultInstance = new Builder().BuildPartial();
+    private static readonly SpeedMessage1 defaultInstance = new SpeedMessage1().MakeReadOnly();
     private static readonly string[] _speedMessage1FieldNames = new string[] { "field1", "field100", "field101", "field102", "field103", "field104", "field12", "field128", "field129", "field13", "field130", "field131", "field14", "field15", "field150", "field16", "field17", "field18", "field2", "field22", "field23", "field24", "field25", "field271", "field272", "field280", "field29", "field3", "field30", "field4", "field5", "field59", "field6", "field60", "field67", "field68", "field7", "field78", "field80", "field81", "field9" };
     private static readonly uint[] _speedMessage1FieldTags = new uint[] { 10, 800, 808, 818, 826, 832, 96, 1024, 1034, 104, 1040, 1048, 112, 122, 1200, 128, 136, 146, 16, 176, 184, 192, 200, 2168, 2176, 2240, 232, 24, 240, 34, 41, 472, 48, 480, 536, 544, 58, 624, 640, 648, 74 };
     public static SpeedMessage1 DefaultInstance {
@@ -145,7 +145,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override SpeedMessage1 DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override SpeedMessage1 ThisMessage {
@@ -506,12 +506,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field15FieldNumber = 15;
     private bool hasField15;
-    private global::Google.ProtocolBuffers.TestProtos.SpeedMessage1SubMessage field15_ = global::Google.ProtocolBuffers.TestProtos.SpeedMessage1SubMessage.DefaultInstance;
+    private global::Google.ProtocolBuffers.TestProtos.SpeedMessage1SubMessage field15_;
     public bool HasField15 {
       get { return hasField15; }
     }
     public global::Google.ProtocolBuffers.TestProtos.SpeedMessage1SubMessage Field15 {
-      get { return field15_; }
+      get { return field15_ ?? global::Google.ProtocolBuffers.TestProtos.SpeedMessage1SubMessage.DefaultInstance; }
     }
     
     public const int Field78FieldNumber = 78;
@@ -881,6 +881,11 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static SpeedMessage1 ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private SpeedMessage1 MakeReadOnly() {
+      field5_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -896,22 +901,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new SpeedMessage1();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(SpeedMessage1 cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      SpeedMessage1 result;
+      private bool resultIsReadOnly;
+      private SpeedMessage1 result;
       
       private SpeedMessage1 PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           SpeedMessage1 original = result;
           result = new SpeedMessage1();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -926,13 +931,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new SpeedMessage1();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -948,12 +953,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override SpeedMessage1 BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.field5_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -2052,7 +2056,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       public Builder ClearField15() {
         PrepareBuilder();
         result.hasField15 = false;
-        result.field15_ = global::Google.ProtocolBuffers.TestProtos.SpeedMessage1SubMessage.DefaultInstance;
+        result.field15_ = null;
         return this;
       }
       
@@ -2186,7 +2190,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SpeedMessage1SubMessage : pb::GeneratedMessage<SpeedMessage1SubMessage, SpeedMessage1SubMessage.Builder> {
-    private static readonly SpeedMessage1SubMessage defaultInstance = new Builder().BuildPartial();
+    private static readonly SpeedMessage1SubMessage defaultInstance = new SpeedMessage1SubMessage().MakeReadOnly();
     private static readonly string[] _speedMessage1SubMessageFieldNames = new string[] { "field1", "field12", "field13", "field14", "field15", "field16", "field19", "field2", "field20", "field203", "field204", "field205", "field206", "field207", "field21", "field22", "field23", "field28", "field3", "field300" };
     private static readonly uint[] _speedMessage1SubMessageFieldTags = new uint[] { 8, 96, 104, 112, 122, 128, 152, 16, 160, 1629, 1632, 1642, 1648, 1656, 169, 176, 184, 224, 24, 2400 };
     public static SpeedMessage1SubMessage DefaultInstance {
@@ -2194,7 +2198,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override SpeedMessage1SubMessage DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override SpeedMessage1SubMessage ThisMessage {
@@ -2588,6 +2592,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static SpeedMessage1SubMessage ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private SpeedMessage1SubMessage MakeReadOnly() {
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -2603,22 +2611,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new SpeedMessage1SubMessage();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(SpeedMessage1SubMessage cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      SpeedMessage1SubMessage result;
+      private bool resultIsReadOnly;
+      private SpeedMessage1SubMessage result;
       
       private SpeedMessage1SubMessage PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           SpeedMessage1SubMessage original = result;
           result = new SpeedMessage1SubMessage();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -2633,13 +2641,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new SpeedMessage1SubMessage();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -2655,11 +2663,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override SpeedMessage1SubMessage BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -3286,7 +3294,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SpeedMessage2 : pb::GeneratedMessage<SpeedMessage2, SpeedMessage2.Builder> {
-    private static readonly SpeedMessage2 defaultInstance = new Builder().BuildPartial();
+    private static readonly SpeedMessage2 defaultInstance = new SpeedMessage2().MakeReadOnly();
     private static readonly string[] _speedMessage2FieldNames = new string[] { "field1", "field109", "field127", "field128", "field129", "field130", "field131", "field2", "field205", "field206", "field21", "field210", "field211", "field212", "field213", "field216", "field217", "field218", "field220", "field221", "field222", "field25", "field3", "field30", "field4", "field6", "field63", "field71", "field75", "group1" };
     private static readonly uint[] _speedMessage2FieldTags = new uint[] { 10, 872, 1018, 1026, 1032, 1040, 1048, 18, 1640, 1648, 168, 1680, 1688, 1696, 1704, 1728, 1736, 1744, 1760, 1768, 1781, 205, 24, 240, 32, 50, 504, 568, 600, 83 };
     public static SpeedMessage2 DefaultInstance {
@@ -3294,7 +3302,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override SpeedMessage2 DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override SpeedMessage2 ThisMessage {
@@ -3318,7 +3326,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class Group1 : pb::GeneratedMessage<Group1, Group1.Builder> {
-        private static readonly Group1 defaultInstance = new Builder().BuildPartial();
+        private static readonly Group1 defaultInstance = new Group1().MakeReadOnly();
         private static readonly string[] _group1FieldNames = new string[] { "field11", "field12", "field13", "field14", "field15", "field16", "field20", "field22", "field24", "field26", "field27", "field28", "field29", "field31", "field5", "field73" };
         private static readonly uint[] _group1FieldTags = new uint[] { 93, 98, 106, 114, 120, 130, 160, 178, 194, 213, 218, 224, 234, 250, 40, 584 };
         public static Group1 DefaultInstance {
@@ -3326,7 +3334,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         public override Group1 DefaultInstanceForType {
-          get { return defaultInstance; }
+          get { return DefaultInstance; }
         }
         
         protected override Group1 ThisMessage {
@@ -3500,12 +3508,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int Field31FieldNumber = 31;
         private bool hasField31;
-        private global::Google.ProtocolBuffers.TestProtos.SpeedMessage2GroupedMessage field31_ = global::Google.ProtocolBuffers.TestProtos.SpeedMessage2GroupedMessage.DefaultInstance;
+        private global::Google.ProtocolBuffers.TestProtos.SpeedMessage2GroupedMessage field31_;
         public bool HasField31 {
           get { return hasField31; }
         }
         public global::Google.ProtocolBuffers.TestProtos.SpeedMessage2GroupedMessage Field31 {
-          get { return field31_; }
+          get { return field31_ ?? global::Google.ProtocolBuffers.TestProtos.SpeedMessage2GroupedMessage.DefaultInstance; }
         }
         
         public override bool IsInitialized {
@@ -3676,6 +3684,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         public static Group1 ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
+        private Group1 MakeReadOnly() {
+          field14_.MakeReadOnly();
+          field22_.MakeReadOnly();
+          field73_.MakeReadOnly();
+          return this;
+        }
+        
         public static Builder CreateBuilder() { return new Builder(); }
         public override Builder ToBuilder() { return CreateBuilder(this); }
         public override Builder CreateBuilderForType() { return new Builder(); }
@@ -3691,22 +3706,22 @@ namespace Google.ProtocolBuffers.TestProtos {
             get { return this; }
           }
           public Builder() {
-            result = DefaultInstance ?? new Group1();
-            builderIsReadOnly = result == DefaultInstance;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
           }
           internal Builder(Group1 cloneFrom) {
             result = cloneFrom;
-            builderIsReadOnly = true;
+            resultIsReadOnly = true;
           }
           
-          bool builderIsReadOnly;
-          Group1 result;
+          private bool resultIsReadOnly;
+          private Group1 result;
           
           private Group1 PrepareBuilder() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               Group1 original = result;
               result = new Group1();
-              builderIsReadOnly = false;
+              resultIsReadOnly = false;
               MergeFrom(original);
             }
             return result;
@@ -3721,13 +3736,13 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder Clear() {
-            result = DefaultInstance ?? new Group1();
-            builderIsReadOnly = true;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
             return this;
           }
           
           public override Builder Clone() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return new Builder(result);
             } else {
               return new Builder().MergeFrom(result);
@@ -3743,14 +3758,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Group1 BuildPartial() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return result;
             }
-            result.field14_.MakeReadOnly();
-            result.field22_.MakeReadOnly();
-            result.field73_.MakeReadOnly();
-            builderIsReadOnly = true;
-            return result;
+            resultIsReadOnly = true;
+            return result.MakeReadOnly();
           }
           
           public override Builder MergeFrom(pb::IMessage other) {
@@ -4314,7 +4326,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           public Builder ClearField31() {
             PrepareBuilder();
             result.hasField31 = false;
-            result.field31_ = global::Google.ProtocolBuffers.TestProtos.SpeedMessage2GroupedMessage.DefaultInstance;
+            result.field31_ = null;
             return this;
           }
         }
@@ -4884,6 +4896,14 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static SpeedMessage2 ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private SpeedMessage2 MakeReadOnly() {
+      group1_.MakeReadOnly();
+      field128_.MakeReadOnly();
+      field127_.MakeReadOnly();
+      field130_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -4899,22 +4919,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new SpeedMessage2();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(SpeedMessage2 cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      SpeedMessage2 result;
+      private bool resultIsReadOnly;
+      private SpeedMessage2 result;
       
       private SpeedMessage2 PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           SpeedMessage2 original = result;
           result = new SpeedMessage2();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -4929,13 +4949,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new SpeedMessage2();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -4951,15 +4971,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override SpeedMessage2 BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.group1_.MakeReadOnly();
-        result.field128_.MakeReadOnly();
-        result.field127_.MakeReadOnly();
-        result.field130_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -5908,7 +5924,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SpeedMessage2GroupedMessage : pb::GeneratedMessage<SpeedMessage2GroupedMessage, SpeedMessage2GroupedMessage.Builder> {
-    private static readonly SpeedMessage2GroupedMessage defaultInstance = new Builder().BuildPartial();
+    private static readonly SpeedMessage2GroupedMessage defaultInstance = new SpeedMessage2GroupedMessage().MakeReadOnly();
     private static readonly string[] _speedMessage2GroupedMessageFieldNames = new string[] { "field1", "field10", "field11", "field2", "field3", "field4", "field5", "field6", "field7", "field8", "field9" };
     private static readonly uint[] _speedMessage2GroupedMessageFieldTags = new uint[] { 13, 85, 88, 21, 29, 32, 40, 48, 56, 69, 72 };
     public static SpeedMessage2GroupedMessage DefaultInstance {
@@ -5916,7 +5932,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override SpeedMessage2GroupedMessage DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override SpeedMessage2GroupedMessage ThisMessage {
@@ -6162,6 +6178,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static SpeedMessage2GroupedMessage ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private SpeedMessage2GroupedMessage MakeReadOnly() {
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -6177,22 +6197,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new SpeedMessage2GroupedMessage();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(SpeedMessage2GroupedMessage cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      SpeedMessage2GroupedMessage result;
+      private bool resultIsReadOnly;
+      private SpeedMessage2GroupedMessage result;
       
       private SpeedMessage2GroupedMessage PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           SpeedMessage2GroupedMessage original = result;
           result = new SpeedMessage2GroupedMessage();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -6207,13 +6227,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new SpeedMessage2GroupedMessage();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -6229,11 +6249,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override SpeedMessage2GroupedMessage BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {

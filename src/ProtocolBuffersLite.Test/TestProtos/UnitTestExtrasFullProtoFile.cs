@@ -128,13 +128,13 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestInteropPerson : pb::ExtendableMessage<TestInteropPerson, TestInteropPerson.Builder> {
-    private static readonly TestInteropPerson defaultInstance = new Builder().BuildPartial();
+    private static readonly TestInteropPerson defaultInstance = new TestInteropPerson().MakeReadOnly();
     public static TestInteropPerson DefaultInstance {
       get { return defaultInstance; }
     }
     
     public override TestInteropPerson DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override TestInteropPerson ThisMessage {
@@ -166,13 +166,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class PhoneNumber : pb::GeneratedMessage<PhoneNumber, PhoneNumber.Builder> {
-        private static readonly PhoneNumber defaultInstance = new Builder().BuildPartial();
+        private static readonly PhoneNumber defaultInstance = new PhoneNumber().MakeReadOnly();
         public static PhoneNumber DefaultInstance {
           get { return defaultInstance; }
         }
         
         public override PhoneNumber DefaultInstanceForType {
-          get { return defaultInstance; }
+          get { return DefaultInstance; }
         }
         
         protected override PhoneNumber ThisMessage {
@@ -237,6 +237,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         public static PhoneNumber ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
+        private PhoneNumber MakeReadOnly() {
+          return this;
+        }
+        
         public static Builder CreateBuilder() { return new Builder(); }
         public override Builder ToBuilder() { return CreateBuilder(this); }
         public override Builder CreateBuilderForType() { return new Builder(); }
@@ -252,22 +256,22 @@ namespace Google.ProtocolBuffers.TestProtos {
             get { return this; }
           }
           public Builder() {
-            result = DefaultInstance ?? new PhoneNumber();
-            builderIsReadOnly = result == DefaultInstance;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
           }
           internal Builder(PhoneNumber cloneFrom) {
             result = cloneFrom;
-            builderIsReadOnly = true;
+            resultIsReadOnly = true;
           }
           
-          bool builderIsReadOnly;
-          PhoneNumber result;
+          private bool resultIsReadOnly;
+          private PhoneNumber result;
           
           private PhoneNumber PrepareBuilder() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               PhoneNumber original = result;
               result = new PhoneNumber();
-              builderIsReadOnly = false;
+              resultIsReadOnly = false;
               MergeFrom(original);
             }
             return result;
@@ -282,13 +286,13 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder Clear() {
-            result = DefaultInstance ?? new PhoneNumber();
-            builderIsReadOnly = true;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
             return this;
           }
           
           public override Builder Clone() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return new Builder(result);
             } else {
               return new Builder().MergeFrom(result);
@@ -304,11 +308,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override PhoneNumber BuildPartial() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return result;
             }
-            builderIsReadOnly = true;
-            return result;
+            resultIsReadOnly = true;
+            return result.MakeReadOnly();
           }
           
           
@@ -362,13 +366,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class Addresses : pb::GeneratedMessage<Addresses, Addresses.Builder> {
-        private static readonly Addresses defaultInstance = new Builder().BuildPartial();
+        private static readonly Addresses defaultInstance = new Addresses().MakeReadOnly();
         public static Addresses DefaultInstance {
           get { return defaultInstance; }
         }
         
         public override Addresses DefaultInstanceForType {
-          get { return defaultInstance; }
+          get { return DefaultInstance; }
         }
         
         protected override Addresses ThisMessage {
@@ -464,6 +468,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         public static Addresses ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
+        private Addresses MakeReadOnly() {
+          return this;
+        }
+        
         public static Builder CreateBuilder() { return new Builder(); }
         public override Builder ToBuilder() { return CreateBuilder(this); }
         public override Builder CreateBuilderForType() { return new Builder(); }
@@ -479,22 +487,22 @@ namespace Google.ProtocolBuffers.TestProtos {
             get { return this; }
           }
           public Builder() {
-            result = DefaultInstance ?? new Addresses();
-            builderIsReadOnly = result == DefaultInstance;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
           }
           internal Builder(Addresses cloneFrom) {
             result = cloneFrom;
-            builderIsReadOnly = true;
+            resultIsReadOnly = true;
           }
           
-          bool builderIsReadOnly;
-          Addresses result;
+          private bool resultIsReadOnly;
+          private Addresses result;
           
           private Addresses PrepareBuilder() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               Addresses original = result;
               result = new Addresses();
-              builderIsReadOnly = false;
+              resultIsReadOnly = false;
               MergeFrom(original);
             }
             return result;
@@ -509,13 +517,13 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder Clear() {
-            result = DefaultInstance ?? new Addresses();
-            builderIsReadOnly = true;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
             return this;
           }
           
           public override Builder Clone() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return new Builder(result);
             } else {
               return new Builder().MergeFrom(result);
@@ -531,11 +539,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Addresses BuildPartial() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return result;
             }
-            builderIsReadOnly = true;
-            return result;
+            resultIsReadOnly = true;
+            return result.MakeReadOnly();
           }
           
           
@@ -749,6 +757,13 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static TestInteropPerson ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private TestInteropPerson MakeReadOnly() {
+      codes_.MakeReadOnly();
+      phone_.MakeReadOnly();
+      addresses_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -764,22 +779,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new TestInteropPerson();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(TestInteropPerson cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      TestInteropPerson result;
+      private bool resultIsReadOnly;
+      private TestInteropPerson result;
       
       private TestInteropPerson PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           TestInteropPerson original = result;
           result = new TestInteropPerson();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -794,13 +809,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new TestInteropPerson();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -816,14 +831,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override TestInteropPerson BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.codes_.MakeReadOnly();
-        result.phone_.MakeReadOnly();
-        result.addresses_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       
@@ -1016,13 +1028,13 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestInteropEmployeeId : pb::GeneratedMessage<TestInteropEmployeeId, TestInteropEmployeeId.Builder> {
-    private static readonly TestInteropEmployeeId defaultInstance = new Builder().BuildPartial();
+    private static readonly TestInteropEmployeeId defaultInstance = new TestInteropEmployeeId().MakeReadOnly();
     public static TestInteropEmployeeId DefaultInstance {
       get { return defaultInstance; }
     }
     
     public override TestInteropEmployeeId DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override TestInteropEmployeeId ThisMessage {
@@ -1077,6 +1089,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static TestInteropEmployeeId ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private TestInteropEmployeeId MakeReadOnly() {
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -1092,22 +1108,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new TestInteropEmployeeId();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(TestInteropEmployeeId cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      TestInteropEmployeeId result;
+      private bool resultIsReadOnly;
+      private TestInteropEmployeeId result;
       
       private TestInteropEmployeeId PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           TestInteropEmployeeId original = result;
           result = new TestInteropEmployeeId();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -1122,13 +1138,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new TestInteropEmployeeId();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -1144,11 +1160,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override TestInteropEmployeeId BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       
@@ -1182,13 +1198,13 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestMissingFieldsA : pb::GeneratedMessage<TestMissingFieldsA, TestMissingFieldsA.Builder> {
-    private static readonly TestMissingFieldsA defaultInstance = new Builder().BuildPartial();
+    private static readonly TestMissingFieldsA defaultInstance = new TestMissingFieldsA().MakeReadOnly();
     public static TestMissingFieldsA DefaultInstance {
       get { return defaultInstance; }
     }
     
     public override TestMissingFieldsA DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override TestMissingFieldsA ThisMessage {
@@ -1212,13 +1228,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class SubA : pb::GeneratedMessage<SubA, SubA.Builder> {
-        private static readonly SubA defaultInstance = new Builder().BuildPartial();
+        private static readonly SubA defaultInstance = new SubA().MakeReadOnly();
         public static SubA DefaultInstance {
           get { return defaultInstance; }
         }
         
         public override SubA DefaultInstanceForType {
-          get { return defaultInstance; }
+          get { return DefaultInstance; }
         }
         
         protected override SubA ThisMessage {
@@ -1285,6 +1301,11 @@ namespace Google.ProtocolBuffers.TestProtos {
         public static SubA ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
+        private SubA MakeReadOnly() {
+          values_.MakeReadOnly();
+          return this;
+        }
+        
         public static Builder CreateBuilder() { return new Builder(); }
         public override Builder ToBuilder() { return CreateBuilder(this); }
         public override Builder CreateBuilderForType() { return new Builder(); }
@@ -1300,22 +1321,22 @@ namespace Google.ProtocolBuffers.TestProtos {
             get { return this; }
           }
           public Builder() {
-            result = DefaultInstance ?? new SubA();
-            builderIsReadOnly = result == DefaultInstance;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
           }
           internal Builder(SubA cloneFrom) {
             result = cloneFrom;
-            builderIsReadOnly = true;
+            resultIsReadOnly = true;
           }
           
-          bool builderIsReadOnly;
-          SubA result;
+          private bool resultIsReadOnly;
+          private SubA result;
           
           private SubA PrepareBuilder() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               SubA original = result;
               result = new SubA();
-              builderIsReadOnly = false;
+              resultIsReadOnly = false;
               MergeFrom(original);
             }
             return result;
@@ -1330,13 +1351,13 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder Clear() {
-            result = DefaultInstance ?? new SubA();
-            builderIsReadOnly = true;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
             return this;
           }
           
           public override Builder Clone() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return new Builder(result);
             } else {
               return new Builder().MergeFrom(result);
@@ -1352,12 +1373,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override SubA BuildPartial() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return result;
             }
-            result.values_.MakeReadOnly();
-            builderIsReadOnly = true;
-            return result;
+            resultIsReadOnly = true;
+            return result.MakeReadOnly();
           }
           
           
@@ -1453,12 +1473,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int TestAFieldNumber = 11;
     private bool hasTestA;
-    private global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA testA_ = global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA.DefaultInstance;
+    private global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA testA_;
     public bool HasTestA {
       get { return hasTestA; }
     }
     public global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA TestA {
-      get { return testA_; }
+      get { return testA_ ?? global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA.DefaultInstance; }
     }
     
     public static TestMissingFieldsA ParseFrom(pb::ByteString data) {
@@ -1491,6 +1511,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static TestMissingFieldsA ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private TestMissingFieldsA MakeReadOnly() {
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -1506,22 +1530,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new TestMissingFieldsA();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(TestMissingFieldsA cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      TestMissingFieldsA result;
+      private bool resultIsReadOnly;
+      private TestMissingFieldsA result;
       
       private TestMissingFieldsA PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           TestMissingFieldsA original = result;
           result = new TestMissingFieldsA();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -1536,13 +1560,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new TestMissingFieldsA();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -1558,11 +1582,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override TestMissingFieldsA BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       
@@ -1664,7 +1688,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       public Builder ClearTestA() {
         PrepareBuilder();
         result.hasTestA = false;
-        result.testA_ = global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsA.Types.SubA.DefaultInstance;
+        result.testA_ = null;
         return this;
       }
     }
@@ -1677,13 +1701,13 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestMissingFieldsB : pb::GeneratedMessage<TestMissingFieldsB, TestMissingFieldsB.Builder> {
-    private static readonly TestMissingFieldsB defaultInstance = new Builder().BuildPartial();
+    private static readonly TestMissingFieldsB defaultInstance = new TestMissingFieldsB().MakeReadOnly();
     public static TestMissingFieldsB DefaultInstance {
       get { return defaultInstance; }
     }
     
     public override TestMissingFieldsB DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override TestMissingFieldsB ThisMessage {
@@ -1707,13 +1731,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class SubB : pb::GeneratedMessage<SubB, SubB.Builder> {
-        private static readonly SubB defaultInstance = new Builder().BuildPartial();
+        private static readonly SubB defaultInstance = new SubB().MakeReadOnly();
         public static SubB DefaultInstance {
           get { return defaultInstance; }
         }
         
         public override SubB DefaultInstanceForType {
-          get { return defaultInstance; }
+          get { return DefaultInstance; }
         }
         
         protected override SubB ThisMessage {
@@ -1770,6 +1794,11 @@ namespace Google.ProtocolBuffers.TestProtos {
         public static SubB ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
+        private SubB MakeReadOnly() {
+          values_.MakeReadOnly();
+          return this;
+        }
+        
         public static Builder CreateBuilder() { return new Builder(); }
         public override Builder ToBuilder() { return CreateBuilder(this); }
         public override Builder CreateBuilderForType() { return new Builder(); }
@@ -1785,22 +1814,22 @@ namespace Google.ProtocolBuffers.TestProtos {
             get { return this; }
           }
           public Builder() {
-            result = DefaultInstance ?? new SubB();
-            builderIsReadOnly = result == DefaultInstance;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
           }
           internal Builder(SubB cloneFrom) {
             result = cloneFrom;
-            builderIsReadOnly = true;
+            resultIsReadOnly = true;
           }
           
-          bool builderIsReadOnly;
-          SubB result;
+          private bool resultIsReadOnly;
+          private SubB result;
           
           private SubB PrepareBuilder() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               SubB original = result;
               result = new SubB();
-              builderIsReadOnly = false;
+              resultIsReadOnly = false;
               MergeFrom(original);
             }
             return result;
@@ -1815,13 +1844,13 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder Clear() {
-            result = DefaultInstance ?? new SubB();
-            builderIsReadOnly = true;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
             return this;
           }
           
           public override Builder Clone() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return new Builder(result);
             } else {
               return new Builder().MergeFrom(result);
@@ -1837,12 +1866,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override SubB BuildPartial() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return result;
             }
-            result.values_.MakeReadOnly();
-            builderIsReadOnly = true;
-            return result;
+            resultIsReadOnly = true;
+            return result.MakeReadOnly();
           }
           
           
@@ -1918,12 +1946,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int TestBFieldNumber = 12;
     private bool hasTestB;
-    private global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB testB_ = global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB.DefaultInstance;
+    private global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB testB_;
     public bool HasTestB {
       get { return hasTestB; }
     }
     public global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB TestB {
-      get { return testB_; }
+      get { return testB_ ?? global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB.DefaultInstance; }
     }
     
     public static TestMissingFieldsB ParseFrom(pb::ByteString data) {
@@ -1956,6 +1984,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static TestMissingFieldsB ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private TestMissingFieldsB MakeReadOnly() {
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -1971,22 +2003,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new TestMissingFieldsB();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(TestMissingFieldsB cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      TestMissingFieldsB result;
+      private bool resultIsReadOnly;
+      private TestMissingFieldsB result;
       
       private TestMissingFieldsB PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           TestMissingFieldsB original = result;
           result = new TestMissingFieldsB();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -2001,13 +2033,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new TestMissingFieldsB();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -2023,11 +2055,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override TestMissingFieldsB BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       
@@ -2129,7 +2161,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       public Builder ClearTestB() {
         PrepareBuilder();
         result.hasTestB = false;
-        result.testB_ = global::Google.ProtocolBuffers.TestProtos.TestMissingFieldsB.Types.SubB.DefaultInstance;
+        result.testB_ = null;
         return this;
       }
     }
