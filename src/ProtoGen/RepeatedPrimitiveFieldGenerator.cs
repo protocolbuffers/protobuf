@@ -119,7 +119,7 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         public void GenerateBuildingCode(TextGenerator writer)
         {
-            writer.WriteLine("result.{0}_.MakeReadOnly();", Name);
+            writer.WriteLine("{0}_.MakeReadOnly();", Name);
         }
 
         public void GenerateParsingCode(TextGenerator writer)
