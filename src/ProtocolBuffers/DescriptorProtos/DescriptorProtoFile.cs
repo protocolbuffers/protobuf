@@ -233,6 +233,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FileDescriptorSet : pb::GeneratedMessage<FileDescriptorSet, FileDescriptorSet.Builder> {
+    private FileDescriptorSet() { }
     private static readonly FileDescriptorSet defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _fileDescriptorSetFieldNames = new string[] { "file" };
     private static readonly uint[] _fileDescriptorSetFieldTags = new uint[] { 10 };
@@ -498,6 +499,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FileDescriptorProto : pb::GeneratedMessage<FileDescriptorProto, FileDescriptorProto.Builder> {
+    private FileDescriptorProto() { }
     private static readonly FileDescriptorProto defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _fileDescriptorProtoFieldNames = new string[] { "dependency", "enum_type", "extension", "message_type", "name", "options", "package", "service" };
     private static readonly uint[] _fileDescriptorProtoFieldTags = new uint[] { 26, 42, 58, 34, 10, 66, 18, 50 };
@@ -1174,6 +1176,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class DescriptorProto : pb::GeneratedMessage<DescriptorProto, DescriptorProto.Builder> {
+    private DescriptorProto() { }
     private static readonly DescriptorProto defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _descriptorProtoFieldNames = new string[] { "enum_type", "extension", "extension_range", "field", "name", "nested_type", "options" };
     private static readonly uint[] _descriptorProtoFieldTags = new uint[] { 34, 50, 42, 18, 10, 26, 58 };
@@ -1206,6 +1209,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class ExtensionRange : pb::GeneratedMessage<ExtensionRange, ExtensionRange.Builder> {
+        private ExtensionRange() { }
         private static readonly ExtensionRange defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _extensionRangeFieldNames = new string[] { "end", "start" };
         private static readonly uint[] _extensionRangeFieldTags = new uint[] { 16, 8 };
@@ -2101,6 +2105,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FieldDescriptorProto : pb::GeneratedMessage<FieldDescriptorProto, FieldDescriptorProto.Builder> {
+    private FieldDescriptorProto() { }
     private static readonly FieldDescriptorProto defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _fieldDescriptorProtoFieldNames = new string[] { "default_value", "extendee", "label", "name", "number", "options", "type", "type_name" };
     private static readonly uint[] _fieldDescriptorProtoFieldTags = new uint[] { 58, 18, 32, 10, 24, 66, 40, 50 };
@@ -2712,6 +2717,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class EnumDescriptorProto : pb::GeneratedMessage<EnumDescriptorProto, EnumDescriptorProto.Builder> {
+    private EnumDescriptorProto() { }
     private static readonly EnumDescriptorProto defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _enumDescriptorProtoFieldNames = new string[] { "name", "options", "value" };
     private static readonly uint[] _enumDescriptorProtoFieldTags = new uint[] { 10, 26, 18 };
@@ -3086,6 +3092,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class EnumValueDescriptorProto : pb::GeneratedMessage<EnumValueDescriptorProto, EnumValueDescriptorProto.Builder> {
+    private EnumValueDescriptorProto() { }
     private static readonly EnumValueDescriptorProto defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _enumValueDescriptorProtoFieldNames = new string[] { "name", "number", "options" };
     private static readonly uint[] _enumValueDescriptorProtoFieldTags = new uint[] { 10, 16, 26 };
@@ -3434,6 +3441,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ServiceDescriptorProto : pb::GeneratedMessage<ServiceDescriptorProto, ServiceDescriptorProto.Builder> {
+    private ServiceDescriptorProto() { }
     private static readonly ServiceDescriptorProto defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _serviceDescriptorProtoFieldNames = new string[] { "method", "name", "options" };
     private static readonly uint[] _serviceDescriptorProtoFieldTags = new uint[] { 18, 10, 26 };
@@ -3808,6 +3816,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class MethodDescriptorProto : pb::GeneratedMessage<MethodDescriptorProto, MethodDescriptorProto.Builder> {
+    private MethodDescriptorProto() { }
     private static readonly MethodDescriptorProto defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _methodDescriptorProtoFieldNames = new string[] { "input_type", "name", "options", "output_type" };
     private static readonly uint[] _methodDescriptorProtoFieldTags = new uint[] { 18, 10, 34, 26 };
@@ -4199,6 +4208,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FileOptions : pb::ExtendableMessage<FileOptions, FileOptions.Builder> {
+    private FileOptions() { }
     private static readonly FileOptions defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _fileOptionsFieldNames = new string[] { "cc_generic_services", "java_generic_services", "java_multiple_files", "java_outer_classname", "java_package", "optimize_for", "py_generic_services", "uninterpreted_option" };
     private static readonly uint[] _fileOptionsFieldTags = new uint[] { 128, 136, 80, 66, 10, 72, 144, 7994 };
@@ -4782,6 +4792,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class MessageOptions : pb::ExtendableMessage<MessageOptions, MessageOptions.Builder> {
+    private MessageOptions() { }
     private static readonly MessageOptions defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _messageOptionsFieldNames = new string[] { "message_set_wire_format", "no_standard_descriptor_accessor", "uninterpreted_option" };
     private static readonly uint[] _messageOptionsFieldTags = new uint[] { 8, 16, 7994 };
@@ -5134,6 +5145,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FieldOptions : pb::ExtendableMessage<FieldOptions, FieldOptions.Builder> {
+    private FieldOptions() { }
     private static readonly FieldOptions defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _fieldOptionsFieldNames = new string[] { "ctype", "deprecated", "experimental_map_key", "packed", "uninterpreted_option" };
     private static readonly uint[] _fieldOptionsFieldTags = new uint[] { 8, 24, 74, 16, 7994 };
@@ -5593,6 +5605,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class EnumOptions : pb::ExtendableMessage<EnumOptions, EnumOptions.Builder> {
+    private EnumOptions() { }
     private static readonly EnumOptions defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _enumOptionsFieldNames = new string[] { "uninterpreted_option" };
     private static readonly uint[] _enumOptionsFieldTags = new uint[] { 7994 };
@@ -5863,6 +5876,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class EnumValueOptions : pb::ExtendableMessage<EnumValueOptions, EnumValueOptions.Builder> {
+    private EnumValueOptions() { }
     private static readonly EnumValueOptions defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _enumValueOptionsFieldNames = new string[] { "uninterpreted_option" };
     private static readonly uint[] _enumValueOptionsFieldTags = new uint[] { 7994 };
@@ -6133,6 +6147,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ServiceOptions : pb::ExtendableMessage<ServiceOptions, ServiceOptions.Builder> {
+    private ServiceOptions() { }
     private static readonly ServiceOptions defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _serviceOptionsFieldNames = new string[] { "uninterpreted_option" };
     private static readonly uint[] _serviceOptionsFieldTags = new uint[] { 7994 };
@@ -6403,6 +6418,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class MethodOptions : pb::ExtendableMessage<MethodOptions, MethodOptions.Builder> {
+    private MethodOptions() { }
     private static readonly MethodOptions defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _methodOptionsFieldNames = new string[] { "uninterpreted_option" };
     private static readonly uint[] _methodOptionsFieldTags = new uint[] { 7994 };
@@ -6673,6 +6689,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class UninterpretedOption : pb::GeneratedMessage<UninterpretedOption, UninterpretedOption.Builder> {
+    private UninterpretedOption() { }
     private static readonly UninterpretedOption defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _uninterpretedOptionFieldNames = new string[] { "double_value", "identifier_value", "name", "negative_int_value", "positive_int_value", "string_value" };
     private static readonly uint[] _uninterpretedOptionFieldTags = new uint[] { 49, 26, 18, 40, 32, 58 };
@@ -6705,6 +6722,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class NamePart : pb::GeneratedMessage<NamePart, NamePart.Builder> {
+        private NamePart() { }
         private static readonly NamePart defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _namePartFieldNames = new string[] { "is_extension", "name_part" };
         private static readonly uint[] _namePartFieldTags = new uint[] { 16, 10 };

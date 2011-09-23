@@ -64,6 +64,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestEmbedOptimizedForSize : pb::GeneratedMessage<TestEmbedOptimizedForSize, TestEmbedOptimizedForSize.Builder> {
+    private TestEmbedOptimizedForSize() { }
     private static readonly TestEmbedOptimizedForSize defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testEmbedOptimizedForSizeFieldNames = new string[] { "optional_message", "repeated_message" };
     private static readonly uint[] _testEmbedOptimizedForSizeFieldTags = new uint[] { 10, 18 };

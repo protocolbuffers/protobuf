@@ -68,6 +68,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class Person : pb::GeneratedMessage<Person, Person.Builder> {
+    private Person() { }
     private static readonly Person defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _personFieldNames = new string[] { "email", "id", "name", "phone" };
     private static readonly uint[] _personFieldTags = new uint[] { 26, 16, 10, 34 };
@@ -108,6 +109,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class PhoneNumber : pb::GeneratedMessage<PhoneNumber, PhoneNumber.Builder> {
+        private PhoneNumber() { }
         private static readonly PhoneNumber defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _phoneNumberFieldNames = new string[] { "number", "type" };
         private static readonly uint[] _phoneNumberFieldTags = new uint[] { 10, 16 };
@@ -766,6 +768,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class AddressBook : pb::GeneratedMessage<AddressBook, AddressBook.Builder> {
+    private AddressBook() { }
     private static readonly AddressBook defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _addressBookFieldNames = new string[] { "person" };
     private static readonly uint[] _addressBookFieldTags = new uint[] { 10 };

@@ -1122,6 +1122,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestAllTypes : pb::GeneratedMessage<TestAllTypes, TestAllTypes.Builder> {
+    private TestAllTypes() { }
     private static readonly TestAllTypes defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testAllTypesFieldNames = new string[] { "default_bool", "default_bytes", "default_cord", "default_double", "default_fixed32", "default_fixed64", "default_float", "default_foreign_enum", "default_import_enum", "default_int32", "default_int64", "default_nested_enum", "default_sfixed32", "default_sfixed64", "default_sint32", "default_sint64", "default_string", "default_string_piece", "default_uint32", "default_uint64", "optional_bool", "optional_bytes", "optional_cord", "optional_double", "optional_fixed32", "optional_fixed64", "optional_float", "optional_foreign_enum", "optional_foreign_message", "optional_import_enum", "optional_import_message", "optional_int32", "optional_int64", "optional_nested_enum", "optional_nested_message", "optional_sfixed32", "optional_sfixed64", "optional_sint32", "optional_sint64", "optional_string", "optional_string_piece", "optional_uint32", "optional_uint64", "optionalgroup", "repeated_bool", "repeated_bytes", "repeated_cord", "repeated_double", "repeated_fixed32", "repeated_fixed64", "repeated_float", "repeated_foreign_enum", "repeated_foreign_message", "repeated_import_enum", "repeated_import_message", "repeated_int32", "repeated_int64", "repeated_nested_enum", "repeated_nested_message", "repeated_sfixed32", "repeated_sfixed64", "repeated_sint32", "repeated_sint64", "repeated_string", "repeated_string_piece", "repeated_uint32", "repeated_uint64", "repeatedgroup" };
     private static readonly uint[] _testAllTypesFieldTags = new uint[] { 584, 602, 682, 577, 541, 545, 573, 656, 664, 488, 496, 648, 557, 561, 520, 528, 594, 674, 504, 512, 104, 122, 202, 97, 61, 65, 93, 176, 154, 184, 162, 8, 16, 168, 146, 77, 81, 40, 48, 114, 194, 24, 32, 131, 344, 362, 442, 337, 301, 305, 333, 416, 394, 424, 402, 248, 256, 408, 386, 317, 321, 280, 288, 354, 434, 264, 272, 371 };
@@ -1162,6 +1163,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class NestedMessage : pb::GeneratedMessage<NestedMessage, NestedMessage.Builder> {
+        private NestedMessage() { }
         private static readonly NestedMessage defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _nestedMessageFieldNames = new string[] { "bb" };
         private static readonly uint[] _nestedMessageFieldTags = new uint[] { 8 };
@@ -1401,6 +1403,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class OptionalGroup : pb::GeneratedMessage<OptionalGroup, OptionalGroup.Builder> {
+        private OptionalGroup() { }
         private static readonly OptionalGroup defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _optionalGroupFieldNames = new string[] { "a" };
         private static readonly uint[] _optionalGroupFieldTags = new uint[] { 136 };
@@ -1640,6 +1643,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class RepeatedGroup : pb::GeneratedMessage<RepeatedGroup, RepeatedGroup.Builder> {
+        private RepeatedGroup() { }
         private static readonly RepeatedGroup defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _repeatedGroupFieldNames = new string[] { "a" };
         private static readonly uint[] _repeatedGroupFieldTags = new uint[] { 376 };
@@ -5496,6 +5500,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestDeprecatedFields : pb::GeneratedMessage<TestDeprecatedFields, TestDeprecatedFields.Builder> {
+    private TestDeprecatedFields() { }
     private static readonly TestDeprecatedFields defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testDeprecatedFieldsFieldNames = new string[] { "deprecated_int32" };
     private static readonly uint[] _testDeprecatedFieldsFieldTags = new uint[] { 8 };
@@ -5741,6 +5746,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ForeignMessage : pb::GeneratedMessage<ForeignMessage, ForeignMessage.Builder> {
+    private ForeignMessage() { }
     private static readonly ForeignMessage defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _foreignMessageFieldNames = new string[] { "c" };
     private static readonly uint[] _foreignMessageFieldTags = new uint[] { 8 };
@@ -5980,6 +5986,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestAllExtensions : pb::ExtendableMessage<TestAllExtensions, TestAllExtensions.Builder> {
+    private TestAllExtensions() { }
     private static readonly TestAllExtensions defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testAllExtensionsFieldNames = new string[] {  };
     private static readonly uint[] _testAllExtensionsFieldTags = new uint[] {  };
@@ -6183,6 +6190,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class OptionalGroup_extension : pb::GeneratedMessage<OptionalGroup_extension, OptionalGroup_extension.Builder> {
+    private OptionalGroup_extension() { }
     private static readonly OptionalGroup_extension defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _optionalGroupExtensionFieldNames = new string[] { "a" };
     private static readonly uint[] _optionalGroupExtensionFieldTags = new uint[] { 136 };
@@ -6422,6 +6430,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class RepeatedGroup_extension : pb::GeneratedMessage<RepeatedGroup_extension, RepeatedGroup_extension.Builder> {
+    private RepeatedGroup_extension() { }
     private static readonly RepeatedGroup_extension defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _repeatedGroupExtensionFieldNames = new string[] { "a" };
     private static readonly uint[] _repeatedGroupExtensionFieldTags = new uint[] { 376 };
@@ -6661,6 +6670,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestNestedExtension : pb::GeneratedMessage<TestNestedExtension, TestNestedExtension.Builder> {
+    private TestNestedExtension() { }
     private static readonly TestNestedExtension defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testNestedExtensionFieldNames = new string[] {  };
     private static readonly uint[] _testNestedExtensionFieldTags = new uint[] {  };
@@ -6861,6 +6871,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestRequired : pb::GeneratedMessage<TestRequired, TestRequired.Builder> {
+    private TestRequired() { }
     private static readonly TestRequired defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testRequiredFieldNames = new string[] { "a", "b", "c", "dummy10", "dummy11", "dummy12", "dummy13", "dummy14", "dummy15", "dummy16", "dummy17", "dummy18", "dummy19", "dummy2", "dummy20", "dummy21", "dummy22", "dummy23", "dummy24", "dummy25", "dummy26", "dummy27", "dummy28", "dummy29", "dummy30", "dummy31", "dummy32", "dummy4", "dummy5", "dummy6", "dummy7", "dummy8", "dummy9" };
     private static readonly uint[] _testRequiredFieldTags = new uint[] { 8, 24, 264, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 16, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 32, 40, 48, 56, 64, 72 };
@@ -8419,6 +8430,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestRequiredForeign : pb::GeneratedMessage<TestRequiredForeign, TestRequiredForeign.Builder> {
+    private TestRequiredForeign() { }
     private static readonly TestRequiredForeign defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testRequiredForeignFieldNames = new string[] { "dummy", "optional_message", "repeated_message" };
     private static readonly uint[] _testRequiredForeignFieldTags = new uint[] { 24, 10, 18 };
@@ -8792,6 +8804,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestForeignNested : pb::GeneratedMessage<TestForeignNested, TestForeignNested.Builder> {
+    private TestForeignNested() { }
     private static readonly TestForeignNested defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testForeignNestedFieldNames = new string[] { "foreign_nested" };
     private static readonly uint[] _testForeignNestedFieldTags = new uint[] { 10 };
@@ -9054,6 +9067,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestEmptyMessage : pb::GeneratedMessage<TestEmptyMessage, TestEmptyMessage.Builder> {
+    private TestEmptyMessage() { }
     private static readonly TestEmptyMessage defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testEmptyMessageFieldNames = new string[] {  };
     private static readonly uint[] _testEmptyMessageFieldTags = new uint[] {  };
@@ -9252,6 +9266,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestEmptyMessageWithExtensions : pb::ExtendableMessage<TestEmptyMessageWithExtensions, TestEmptyMessageWithExtensions.Builder> {
+    private TestEmptyMessageWithExtensions() { }
     private static readonly TestEmptyMessageWithExtensions defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testEmptyMessageWithExtensionsFieldNames = new string[] {  };
     private static readonly uint[] _testEmptyMessageWithExtensionsFieldTags = new uint[] {  };
@@ -9455,6 +9470,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestMultipleExtensionRanges : pb::ExtendableMessage<TestMultipleExtensionRanges, TestMultipleExtensionRanges.Builder> {
+    private TestMultipleExtensionRanges() { }
     private static readonly TestMultipleExtensionRanges defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testMultipleExtensionRangesFieldNames = new string[] {  };
     private static readonly uint[] _testMultipleExtensionRangesFieldTags = new uint[] {  };
@@ -9660,6 +9676,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestReallyLargeTagNumber : pb::GeneratedMessage<TestReallyLargeTagNumber, TestReallyLargeTagNumber.Builder> {
+    private TestReallyLargeTagNumber() { }
     private static readonly TestReallyLargeTagNumber defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testReallyLargeTagNumberFieldNames = new string[] { "a", "bb" };
     private static readonly uint[] _testReallyLargeTagNumberFieldTags = new uint[] { 8, 2147483640 };
@@ -9940,6 +9957,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestRecursiveMessage : pb::GeneratedMessage<TestRecursiveMessage, TestRecursiveMessage.Builder> {
+    private TestRecursiveMessage() { }
     private static readonly TestRecursiveMessage defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testRecursiveMessageFieldNames = new string[] { "a", "i" };
     private static readonly uint[] _testRecursiveMessageFieldTags = new uint[] { 10, 16 };
@@ -10243,6 +10261,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestMutualRecursionA : pb::GeneratedMessage<TestMutualRecursionA, TestMutualRecursionA.Builder> {
+    private TestMutualRecursionA() { }
     private static readonly TestMutualRecursionA defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testMutualRecursionAFieldNames = new string[] { "bb" };
     private static readonly uint[] _testMutualRecursionAFieldTags = new uint[] { 10 };
@@ -10505,6 +10524,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestMutualRecursionB : pb::GeneratedMessage<TestMutualRecursionB, TestMutualRecursionB.Builder> {
+    private TestMutualRecursionB() { }
     private static readonly TestMutualRecursionB defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testMutualRecursionBFieldNames = new string[] { "a", "optional_int32" };
     private static readonly uint[] _testMutualRecursionBFieldTags = new uint[] { 10, 16 };
@@ -10808,6 +10828,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestDupFieldNumber : pb::GeneratedMessage<TestDupFieldNumber, TestDupFieldNumber.Builder> {
+    private TestDupFieldNumber() { }
     private static readonly TestDupFieldNumber defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testDupFieldNumberFieldNames = new string[] { "a", "bar", "foo" };
     private static readonly uint[] _testDupFieldNumberFieldTags = new uint[] { 8, 27, 19 };
@@ -10840,6 +10861,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class Foo : pb::GeneratedMessage<Foo, Foo.Builder> {
+        private Foo() { }
         private static readonly Foo defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _fooFieldNames = new string[] { "a" };
         private static readonly uint[] _fooFieldTags = new uint[] { 8 };
@@ -11079,6 +11101,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class Bar : pb::GeneratedMessage<Bar, Bar.Builder> {
+        private Bar() { }
         private static readonly Bar defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _barFieldNames = new string[] { "a" };
         private static readonly uint[] _barFieldTags = new uint[] { 8 };
@@ -11661,6 +11684,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestNestedMessageHasBits : pb::GeneratedMessage<TestNestedMessageHasBits, TestNestedMessageHasBits.Builder> {
+    private TestNestedMessageHasBits() { }
     private static readonly TestNestedMessageHasBits defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testNestedMessageHasBitsFieldNames = new string[] { "optional_nested_message" };
     private static readonly uint[] _testNestedMessageHasBitsFieldTags = new uint[] { 10 };
@@ -11693,6 +11717,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class NestedMessage : pb::GeneratedMessage<NestedMessage, NestedMessage.Builder> {
+        private NestedMessage() { }
         private static readonly NestedMessage defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _nestedMessageFieldNames = new string[] { "nestedmessage_repeated_foreignmessage", "nestedmessage_repeated_int32" };
         private static readonly uint[] _nestedMessageFieldTags = new uint[] { 18, 8 };
@@ -12251,6 +12276,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestCamelCaseFieldNames : pb::GeneratedMessage<TestCamelCaseFieldNames, TestCamelCaseFieldNames.Builder> {
+    private TestCamelCaseFieldNames() { }
     private static readonly TestCamelCaseFieldNames defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testCamelCaseFieldNamesFieldNames = new string[] { "CordField", "EnumField", "MessageField", "PrimitiveField", "RepeatedCordField", "RepeatedEnumField", "RepeatedMessageField", "RepeatedPrimitiveField", "RepeatedStringField", "RepeatedStringPieceField", "StringField", "StringPieceField" };
     private static readonly uint[] _testCamelCaseFieldNamesFieldTags = new uint[] { 50, 24, 34, 8, 98, 72, 82, 56, 66, 90, 18, 42 };
@@ -13097,6 +13123,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestFieldOrderings : pb::ExtendableMessage<TestFieldOrderings, TestFieldOrderings.Builder> {
+    private TestFieldOrderings() { }
     private static readonly TestFieldOrderings defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testFieldOrderingsFieldNames = new string[] { "my_float", "my_int", "my_string" };
     private static readonly uint[] _testFieldOrderingsFieldTags = new uint[] { 813, 8, 90 };
@@ -13425,6 +13452,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestExtremeDefaultValues : pb::GeneratedMessage<TestExtremeDefaultValues, TestExtremeDefaultValues.Builder> {
+    private TestExtremeDefaultValues() { }
     private static readonly TestExtremeDefaultValues defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testExtremeDefaultValuesFieldNames = new string[] { "escaped_bytes", "inf_double", "inf_float", "large_float", "large_uint32", "large_uint64", "nan_double", "nan_float", "neg_inf_double", "neg_inf_float", "negative_float", "negative_one_float", "one_float", "small_float", "small_int32", "small_int64", "small_negative_float", "utf8_string", "zero_float" };
     private static readonly uint[] _testExtremeDefaultValuesFieldTags = new uint[] { 10, 113, 141, 101, 16, 24, 129, 157, 121, 149, 93, 85, 69, 77, 32, 40, 109, 50, 61 };
@@ -14410,6 +14438,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class OneString : pb::GeneratedMessage<OneString, OneString.Builder> {
+    private OneString() { }
     private static readonly OneString defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _oneStringFieldNames = new string[] { "data" };
     private static readonly uint[] _oneStringFieldTags = new uint[] { 10 };
@@ -14650,6 +14679,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class OneBytes : pb::GeneratedMessage<OneBytes, OneBytes.Builder> {
+    private OneBytes() { }
     private static readonly OneBytes defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _oneBytesFieldNames = new string[] { "data" };
     private static readonly uint[] _oneBytesFieldTags = new uint[] { 10 };
@@ -14890,6 +14920,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestPackedTypes : pb::GeneratedMessage<TestPackedTypes, TestPackedTypes.Builder> {
+    private TestPackedTypes() { }
     private static readonly TestPackedTypes defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testPackedTypesFieldNames = new string[] { "packed_bool", "packed_double", "packed_enum", "packed_fixed32", "packed_fixed64", "packed_float", "packed_int32", "packed_int64", "packed_sfixed32", "packed_sfixed64", "packed_sint32", "packed_sint64", "packed_uint32", "packed_uint64" };
     private static readonly uint[] _testPackedTypesFieldTags = new uint[] { 818, 810, 826, 770, 778, 802, 722, 730, 786, 794, 754, 762, 738, 746 };
@@ -15980,6 +16011,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestUnpackedTypes : pb::GeneratedMessage<TestUnpackedTypes, TestUnpackedTypes.Builder> {
+    private TestUnpackedTypes() { }
     private static readonly TestUnpackedTypes defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testUnpackedTypesFieldNames = new string[] { "unpacked_bool", "unpacked_double", "unpacked_enum", "unpacked_fixed32", "unpacked_fixed64", "unpacked_float", "unpacked_int32", "unpacked_int64", "unpacked_sfixed32", "unpacked_sfixed64", "unpacked_sint32", "unpacked_sint64", "unpacked_uint32", "unpacked_uint64" };
     private static readonly uint[] _testUnpackedTypesFieldTags = new uint[] { 816, 809, 824, 773, 777, 805, 720, 728, 789, 793, 752, 760, 736, 744 };
@@ -17015,6 +17047,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestPackedExtensions : pb::ExtendableMessage<TestPackedExtensions, TestPackedExtensions.Builder> {
+    private TestPackedExtensions() { }
     private static readonly TestPackedExtensions defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testPackedExtensionsFieldNames = new string[] {  };
     private static readonly uint[] _testPackedExtensionsFieldTags = new uint[] {  };
@@ -17218,6 +17251,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestUnpackedExtensions : pb::ExtendableMessage<TestUnpackedExtensions, TestUnpackedExtensions.Builder> {
+    private TestUnpackedExtensions() { }
     private static readonly TestUnpackedExtensions defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testUnpackedExtensionsFieldNames = new string[] {  };
     private static readonly uint[] _testUnpackedExtensionsFieldTags = new uint[] {  };
@@ -17421,6 +17455,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestDynamicExtensions : pb::GeneratedMessage<TestDynamicExtensions, TestDynamicExtensions.Builder> {
+    private TestDynamicExtensions() { }
     private static readonly TestDynamicExtensions defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testDynamicExtensionsFieldNames = new string[] { "dynamic_enum_extension", "dynamic_message_extension", "enum_extension", "message_extension", "packed_extension", "repeated_extension", "scalar_extension" };
     private static readonly uint[] _testDynamicExtensionsFieldTags = new uint[] { 16016, 16034, 16008, 16026, 16050, 16042, 16005 };
@@ -17461,6 +17496,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class DynamicMessageType : pb::GeneratedMessage<DynamicMessageType, DynamicMessageType.Builder> {
+        private DynamicMessageType() { }
         private static readonly DynamicMessageType defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _dynamicMessageTypeFieldNames = new string[] { "dynamic_field" };
         private static readonly uint[] _dynamicMessageTypeFieldTags = new uint[] { 16800 };
@@ -18265,6 +18301,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestRepeatedScalarDifferentTagSizes : pb::GeneratedMessage<TestRepeatedScalarDifferentTagSizes, TestRepeatedScalarDifferentTagSizes.Builder> {
+    private TestRepeatedScalarDifferentTagSizes() { }
     private static readonly TestRepeatedScalarDifferentTagSizes defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testRepeatedScalarDifferentTagSizesFieldNames = new string[] { "repeated_fixed32", "repeated_fixed64", "repeated_float", "repeated_int32", "repeated_int64", "repeated_uint64" };
     private static readonly uint[] _testRepeatedScalarDifferentTagSizesFieldTags = new uint[] { 101, 16369, 2097141, 104, 16376, 2097144 };
@@ -18826,6 +18863,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FooRequest : pb::GeneratedMessage<FooRequest, FooRequest.Builder> {
+    private FooRequest() { }
     private static readonly FooRequest defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _fooRequestFieldNames = new string[] {  };
     private static readonly uint[] _fooRequestFieldTags = new uint[] {  };
@@ -19024,6 +19062,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FooResponse : pb::GeneratedMessage<FooResponse, FooResponse.Builder> {
+    private FooResponse() { }
     private static readonly FooResponse defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _fooResponseFieldNames = new string[] {  };
     private static readonly uint[] _fooResponseFieldTags = new uint[] {  };
@@ -19222,6 +19261,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class BarRequest : pb::GeneratedMessage<BarRequest, BarRequest.Builder> {
+    private BarRequest() { }
     private static readonly BarRequest defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _barRequestFieldNames = new string[] {  };
     private static readonly uint[] _barRequestFieldTags = new uint[] {  };
@@ -19420,6 +19460,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class BarResponse : pb::GeneratedMessage<BarResponse, BarResponse.Builder> {
+    private BarResponse() { }
     private static readonly BarResponse defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _barResponseFieldNames = new string[] {  };
     private static readonly uint[] _barResponseFieldTags = new uint[] {  };

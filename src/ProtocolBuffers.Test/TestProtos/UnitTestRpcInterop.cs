@@ -83,6 +83,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SearchRequest : pb::GeneratedMessage<SearchRequest, SearchRequest.Builder> {
+    private SearchRequest() { }
     private static readonly SearchRequest defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _searchRequestFieldNames = new string[] { "Criteria" };
     private static readonly uint[] _searchRequestFieldTags = new uint[] { 10 };
@@ -340,6 +341,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SearchResponse : pb::GeneratedMessage<SearchResponse, SearchResponse.Builder> {
+    private SearchResponse() { }
     private static readonly SearchResponse defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _searchResponseFieldNames = new string[] { "results" };
     private static readonly uint[] _searchResponseFieldTags = new uint[] { 10 };
@@ -372,6 +374,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class ResultItem : pb::GeneratedMessage<ResultItem, ResultItem.Builder> {
+        private ResultItem() { }
         private static readonly ResultItem defaultInstance = new Builder().BuildPartial();
         private static readonly string[] _resultItemFieldNames = new string[] { "name", "url" };
         private static readonly uint[] _resultItemFieldTags = new uint[] { 18, 10 };
@@ -896,6 +899,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class RefineSearchRequest : pb::GeneratedMessage<RefineSearchRequest, RefineSearchRequest.Builder> {
+    private RefineSearchRequest() { }
     private static readonly RefineSearchRequest defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _refineSearchRequestFieldNames = new string[] { "Criteria", "previous_results" };
     private static readonly uint[] _refineSearchRequestFieldTags = new uint[] { 10, 18 };

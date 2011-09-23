@@ -125,6 +125,7 @@ namespace UnitTest.Issues.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class A : pb::GeneratedMessage<A, A.Builder> {
+    private A() { }
     private static readonly A defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _aFieldNames = new string[] { "_A" };
     private static readonly uint[] _aFieldTags = new uint[] { 8 };
@@ -364,6 +365,7 @@ namespace UnitTest.Issues.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class B : pb::GeneratedMessage<B, B.Builder> {
+    private B() { }
     private static readonly B defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _bFieldNames = new string[] { "B_" };
     private static readonly uint[] _bFieldTags = new uint[] { 8 };
@@ -603,6 +605,7 @@ namespace UnitTest.Issues.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class AB : pb::GeneratedMessage<AB, AB.Builder> {
+    private AB() { }
     private static readonly AB defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _aBFieldNames = new string[] { "a_b" };
     private static readonly uint[] _aBFieldTags = new uint[] { 8 };
@@ -842,6 +845,7 @@ namespace UnitTest.Issues.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class NumberField : pb::GeneratedMessage<NumberField, NumberField.Builder> {
+    private NumberField() { }
     private static readonly NumberField defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _numberFieldFieldNames = new string[] { "_01" };
     private static readonly uint[] _numberFieldFieldTags = new uint[] { 8 };
@@ -1085,6 +1089,7 @@ namespace UnitTest.Issues.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class NegativeEnumMessage : pb::GeneratedMessage<NegativeEnumMessage, NegativeEnumMessage.Builder> {
+    private NegativeEnumMessage() { }
     private static readonly NegativeEnumMessage defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _negativeEnumMessageFieldNames = new string[] { "packed_values", "value", "values" };
     private static readonly uint[] _negativeEnumMessageFieldTags = new uint[] { 26, 8, 16 };
@@ -1473,6 +1478,7 @@ namespace UnitTest.Issues.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class DeprecatedChild : pb::GeneratedMessage<DeprecatedChild, DeprecatedChild.Builder> {
+    private DeprecatedChild() { }
     private static readonly DeprecatedChild defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _deprecatedChildFieldNames = new string[] {  };
     private static readonly uint[] _deprecatedChildFieldTags = new uint[] {  };
@@ -1671,6 +1677,7 @@ namespace UnitTest.Issues.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class DeprecatedFieldsMessage : pb::GeneratedMessage<DeprecatedFieldsMessage, DeprecatedFieldsMessage.Builder> {
+    private DeprecatedFieldsMessage() { }
     private static readonly DeprecatedFieldsMessage defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _deprecatedFieldsMessageFieldNames = new string[] { "EnumArray", "EnumValue", "MessageArray", "MessageValue", "PrimitiveArray", "PrimitiveValue" };
     private static readonly uint[] _deprecatedFieldsMessageFieldTags = new uint[] { 48, 40, 34, 26, 16, 8 };

@@ -81,6 +81,7 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestMessage : pb::ExtendableMessage<TestMessage, TestMessage.Builder> {
+    private TestMessage() { }
     private static readonly TestMessage defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testMessageFieldNames = new string[] { "a" };
     private static readonly uint[] _testMessageFieldTags = new uint[] { 8 };

@@ -85,6 +85,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestOptimizedForSize : pb::ExtendableMessage<TestOptimizedForSize, TestOptimizedForSize.Builder> {
+    private TestOptimizedForSize() { }
     private static readonly TestOptimizedForSize defaultInstance = new Builder().BuildPartial();
     public static TestOptimizedForSize DefaultInstance {
       get { return defaultInstance; }
@@ -272,6 +273,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestRequiredOptimizedForSize : pb::GeneratedMessage<TestRequiredOptimizedForSize, TestRequiredOptimizedForSize.Builder> {
+    private TestRequiredOptimizedForSize() { }
     private static readonly TestRequiredOptimizedForSize defaultInstance = new Builder().BuildPartial();
     public static TestRequiredOptimizedForSize DefaultInstance {
       get { return defaultInstance; }
@@ -409,6 +411,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestOptionalOptimizedForSize : pb::GeneratedMessage<TestOptionalOptimizedForSize, TestOptionalOptimizedForSize.Builder> {
+    private TestOptionalOptimizedForSize() { }
     private static readonly TestOptionalOptimizedForSize defaultInstance = new Builder().BuildPartial();
     public static TestOptionalOptimizedForSize DefaultInstance {
       get { return defaultInstance; }

@@ -32,6 +32,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class TestLiteImportsNonlite : pb::GeneratedMessageLite<TestLiteImportsNonlite, TestLiteImportsNonlite.Builder> {
+    private TestLiteImportsNonlite() { }
     private static readonly TestLiteImportsNonlite defaultInstance = new Builder().BuildPartial();
     private static readonly string[] _testLiteImportsNonliteFieldNames = new string[] { "message" };
     private static readonly uint[] _testLiteImportsNonliteFieldTags = new uint[] { 10 };
