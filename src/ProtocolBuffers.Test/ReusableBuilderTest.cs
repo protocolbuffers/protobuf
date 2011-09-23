@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Google.ProtocolBuffers.Collections;
 using NUnit.Framework;
 using Google.ProtocolBuffers.TestProtos;
 using Google.ProtocolBuffers.Serialization;
@@ -10,6 +11,15 @@ namespace Google.ProtocolBuffers
     [TestFixture]
     public class ReusableBuilderTest
     {
+        [Test]
+        public void TestModifyDefaultInstance()
+        {
+            //verify that the default instance has correctly been marked as read-only
+            Assert.AreEqual(typeof(PopsicleList<bool>), TestAllTypes.DefaultInstance.RepeatedBoolList.GetType());
+            PopsicleList<bool> list = (PopsicleList<bool>)TestAllTypes.DefaultInstance.RepeatedBoolList;
+            Assert.IsTrue(list.IsReadOnly);
+        }
+
         [Test]
         public void TestUnmodifiedDefaultInstance()
         {
