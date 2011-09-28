@@ -127,7 +127,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CSharpFileOptions : pb::GeneratedMessage<CSharpFileOptions, CSharpFileOptions.Builder> {
     private CSharpFileOptions() { }
-    private static readonly CSharpFileOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly CSharpFileOptions defaultInstance = new CSharpFileOptions().MakeReadOnly();
     private static readonly string[] _cSharpFileOptionsFieldNames = new string[] { "add_serializable", "cls_compliance", "code_contracts", "expand_namespace_directories", "file_extension", "ignore_google_protobuf", "multiple_files", "namespace", "nest_classes", "output_directory", "public_classes", "service_generator_type", "umbrella_classname", "umbrella_namespace" };
     private static readonly uint[] _cSharpFileOptionsFieldTags = new uint[] { 72, 64, 48, 56, 1770, 1792, 32, 10, 40, 1786, 24, 1800, 18, 1778 };
     public static CSharpFileOptions DefaultInstance {
@@ -135,7 +135,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override CSharpFileOptions DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override CSharpFileOptions ThisMessage {
@@ -429,6 +429,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static CSharpFileOptions ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private CSharpFileOptions MakeReadOnly() {
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -444,22 +448,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new CSharpFileOptions();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(CSharpFileOptions cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      CSharpFileOptions result;
+      private bool resultIsReadOnly;
+      private CSharpFileOptions result;
       
       private CSharpFileOptions PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           CSharpFileOptions original = result;
           result = new CSharpFileOptions();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -474,13 +478,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new CSharpFileOptions();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -496,11 +500,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override CSharpFileOptions BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -969,7 +973,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CSharpFieldOptions : pb::GeneratedMessage<CSharpFieldOptions, CSharpFieldOptions.Builder> {
     private CSharpFieldOptions() { }
-    private static readonly CSharpFieldOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly CSharpFieldOptions defaultInstance = new CSharpFieldOptions().MakeReadOnly();
     private static readonly string[] _cSharpFieldOptionsFieldNames = new string[] { "property_name" };
     private static readonly uint[] _cSharpFieldOptionsFieldTags = new uint[] { 10 };
     public static CSharpFieldOptions DefaultInstance {
@@ -977,7 +981,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override CSharpFieldOptions DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override CSharpFieldOptions ThisMessage {
@@ -1063,6 +1067,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static CSharpFieldOptions ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private CSharpFieldOptions MakeReadOnly() {
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -1078,22 +1086,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new CSharpFieldOptions();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(CSharpFieldOptions cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      CSharpFieldOptions result;
+      private bool resultIsReadOnly;
+      private CSharpFieldOptions result;
       
       private CSharpFieldOptions PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           CSharpFieldOptions original = result;
           result = new CSharpFieldOptions();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -1108,13 +1116,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new CSharpFieldOptions();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -1130,11 +1138,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override CSharpFieldOptions BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -1240,7 +1248,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CSharpServiceOptions : pb::GeneratedMessage<CSharpServiceOptions, CSharpServiceOptions.Builder> {
     private CSharpServiceOptions() { }
-    private static readonly CSharpServiceOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly CSharpServiceOptions defaultInstance = new CSharpServiceOptions().MakeReadOnly();
     private static readonly string[] _cSharpServiceOptionsFieldNames = new string[] { "interface_id" };
     private static readonly uint[] _cSharpServiceOptionsFieldTags = new uint[] { 10 };
     public static CSharpServiceOptions DefaultInstance {
@@ -1248,7 +1256,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override CSharpServiceOptions DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override CSharpServiceOptions ThisMessage {
@@ -1334,6 +1342,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static CSharpServiceOptions ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private CSharpServiceOptions MakeReadOnly() {
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -1349,22 +1361,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new CSharpServiceOptions();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(CSharpServiceOptions cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      CSharpServiceOptions result;
+      private bool resultIsReadOnly;
+      private CSharpServiceOptions result;
       
       private CSharpServiceOptions PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           CSharpServiceOptions original = result;
           result = new CSharpServiceOptions();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -1379,13 +1391,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new CSharpServiceOptions();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -1401,11 +1413,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override CSharpServiceOptions BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -1511,7 +1523,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class CSharpMethodOptions : pb::GeneratedMessage<CSharpMethodOptions, CSharpMethodOptions.Builder> {
     private CSharpMethodOptions() { }
-    private static readonly CSharpMethodOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly CSharpMethodOptions defaultInstance = new CSharpMethodOptions().MakeReadOnly();
     private static readonly string[] _cSharpMethodOptionsFieldNames = new string[] { "dispatch_id" };
     private static readonly uint[] _cSharpMethodOptionsFieldTags = new uint[] { 8 };
     public static CSharpMethodOptions DefaultInstance {
@@ -1519,7 +1531,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override CSharpMethodOptions DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override CSharpMethodOptions ThisMessage {
@@ -1605,6 +1617,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static CSharpMethodOptions ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private CSharpMethodOptions MakeReadOnly() {
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -1620,22 +1636,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new CSharpMethodOptions();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(CSharpMethodOptions cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      CSharpMethodOptions result;
+      private bool resultIsReadOnly;
+      private CSharpMethodOptions result;
       
       private CSharpMethodOptions PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           CSharpMethodOptions original = result;
           result = new CSharpMethodOptions();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -1650,13 +1666,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new CSharpMethodOptions();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -1672,11 +1688,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override CSharpMethodOptions BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {

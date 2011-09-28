@@ -48,14 +48,14 @@ namespace Google.ProtocolBuffers.ProtoGen
         public void GenerateMembers(TextGenerator writer)
         {
             writer.WriteLine("private bool has{0};", PropertyName);
-            writer.WriteLine("private {0} {1}_ = {2};", TypeName, Name, DefaultValue);
+            writer.WriteLine("private {0} {1}_;", TypeName, Name);
             AddDeprecatedFlag(writer);
             writer.WriteLine("public bool Has{0} {{", PropertyName);
             writer.WriteLine("  get {{ return has{0}; }}", PropertyName);
             writer.WriteLine("}");
             AddDeprecatedFlag(writer);
             writer.WriteLine("public {0} {1} {{", TypeName, PropertyName);
-            writer.WriteLine("  get {{ return {0}_; }}", Name);
+            writer.WriteLine("  get {{ return {0}_ ?? {1}; }}", Name, DefaultValue);
             writer.WriteLine("}");
         }
 
@@ -104,7 +104,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("public Builder Clear{0}() {{", PropertyName);
             writer.WriteLine("  PrepareBuilder();");
             writer.WriteLine("  result.has{0} = false;", PropertyName);
-            writer.WriteLine("  result.{0}_ = {1};", Name, DefaultValue);
+            writer.WriteLine("  result.{0}_ = null;", Name);
             writer.WriteLine("  return this;");
             writer.WriteLine("}");
         }

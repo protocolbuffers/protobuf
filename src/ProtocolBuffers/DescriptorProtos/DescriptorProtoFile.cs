@@ -234,7 +234,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FileDescriptorSet : pb::GeneratedMessage<FileDescriptorSet, FileDescriptorSet.Builder> {
     private FileDescriptorSet() { }
-    private static readonly FileDescriptorSet defaultInstance = new Builder().BuildPartial();
+    private static readonly FileDescriptorSet defaultInstance = new FileDescriptorSet().MakeReadOnly();
     private static readonly string[] _fileDescriptorSetFieldNames = new string[] { "file" };
     private static readonly uint[] _fileDescriptorSetFieldTags = new uint[] { 10 };
     public static FileDescriptorSet DefaultInstance {
@@ -242,7 +242,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override FileDescriptorSet DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override FileDescriptorSet ThisMessage {
@@ -333,6 +333,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static FileDescriptorSet ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private FileDescriptorSet MakeReadOnly() {
+      file_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -348,22 +353,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new FileDescriptorSet();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(FileDescriptorSet cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      FileDescriptorSet result;
+      private bool resultIsReadOnly;
+      private FileDescriptorSet result;
       
       private FileDescriptorSet PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           FileDescriptorSet original = result;
           result = new FileDescriptorSet();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -378,13 +383,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new FileDescriptorSet();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -400,12 +405,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override FileDescriptorSet BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.file_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -534,7 +538,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FileDescriptorProto : pb::GeneratedMessage<FileDescriptorProto, FileDescriptorProto.Builder> {
     private FileDescriptorProto() { }
-    private static readonly FileDescriptorProto defaultInstance = new Builder().BuildPartial();
+    private static readonly FileDescriptorProto defaultInstance = new FileDescriptorProto().MakeReadOnly();
     private static readonly string[] _fileDescriptorProtoFieldNames = new string[] { "dependency", "enum_type", "extension", "message_type", "name", "options", "package", "service" };
     private static readonly uint[] _fileDescriptorProtoFieldTags = new uint[] { 26, 42, 58, 34, 10, 66, 18, 50 };
     public static FileDescriptorProto DefaultInstance {
@@ -542,7 +546,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override FileDescriptorProto DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override FileDescriptorProto ThisMessage {
@@ -639,12 +643,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int OptionsFieldNumber = 8;
     private bool hasOptions;
-    private global::Google.ProtocolBuffers.DescriptorProtos.FileOptions options_ = global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.DefaultInstance;
+    private global::Google.ProtocolBuffers.DescriptorProtos.FileOptions options_;
     public bool HasOptions {
       get { return hasOptions; }
     }
     public global::Google.ProtocolBuffers.DescriptorProtos.FileOptions Options {
-      get { return options_; }
+      get { return options_ ?? global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.DefaultInstance; }
     }
     
     public override bool IsInitialized {
@@ -770,6 +774,15 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static FileDescriptorProto ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private FileDescriptorProto MakeReadOnly() {
+      dependency_.MakeReadOnly();
+      messageType_.MakeReadOnly();
+      enumType_.MakeReadOnly();
+      service_.MakeReadOnly();
+      extension_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -785,22 +798,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new FileDescriptorProto();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(FileDescriptorProto cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      FileDescriptorProto result;
+      private bool resultIsReadOnly;
+      private FileDescriptorProto result;
       
       private FileDescriptorProto PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           FileDescriptorProto original = result;
           result = new FileDescriptorProto();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -815,13 +828,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new FileDescriptorProto();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -837,16 +850,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override FileDescriptorProto BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.dependency_.MakeReadOnly();
-        result.messageType_.MakeReadOnly();
-        result.enumType_.MakeReadOnly();
-        result.service_.MakeReadOnly();
-        result.extension_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -1261,7 +1269,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public Builder ClearOptions() {
         PrepareBuilder();
         result.hasOptions = false;
-        result.options_ = global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.DefaultInstance;
+        result.options_ = null;
         return this;
       }
     }
@@ -1275,7 +1283,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class DescriptorProto : pb::GeneratedMessage<DescriptorProto, DescriptorProto.Builder> {
     private DescriptorProto() { }
-    private static readonly DescriptorProto defaultInstance = new Builder().BuildPartial();
+    private static readonly DescriptorProto defaultInstance = new DescriptorProto().MakeReadOnly();
     private static readonly string[] _descriptorProtoFieldNames = new string[] { "enum_type", "extension", "extension_range", "field", "name", "nested_type", "options" };
     private static readonly uint[] _descriptorProtoFieldTags = new uint[] { 34, 50, 42, 18, 10, 26, 58 };
     public static DescriptorProto DefaultInstance {
@@ -1283,7 +1291,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override DescriptorProto DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override DescriptorProto ThisMessage {
@@ -1308,7 +1316,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class ExtensionRange : pb::GeneratedMessage<ExtensionRange, ExtensionRange.Builder> {
         private ExtensionRange() { }
-        private static readonly ExtensionRange defaultInstance = new Builder().BuildPartial();
+        private static readonly ExtensionRange defaultInstance = new ExtensionRange().MakeReadOnly();
         private static readonly string[] _extensionRangeFieldNames = new string[] { "end", "start" };
         private static readonly uint[] _extensionRangeFieldTags = new uint[] { 16, 8 };
         public static ExtensionRange DefaultInstance {
@@ -1316,7 +1324,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         
         public override ExtensionRange DefaultInstanceForType {
-          get { return defaultInstance; }
+          get { return DefaultInstance; }
         }
         
         protected override ExtensionRange ThisMessage {
@@ -1418,6 +1426,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         public static ExtensionRange ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
+        private ExtensionRange MakeReadOnly() {
+          return this;
+        }
+        
         public static Builder CreateBuilder() { return new Builder(); }
         public override Builder ToBuilder() { return CreateBuilder(this); }
         public override Builder CreateBuilderForType() { return new Builder(); }
@@ -1433,22 +1445,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
             get { return this; }
           }
           public Builder() {
-            result = DefaultInstance ?? new ExtensionRange();
-            builderIsReadOnly = result == DefaultInstance;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
           }
           internal Builder(ExtensionRange cloneFrom) {
             result = cloneFrom;
-            builderIsReadOnly = true;
+            resultIsReadOnly = true;
           }
           
-          bool builderIsReadOnly;
-          ExtensionRange result;
+          private bool resultIsReadOnly;
+          private ExtensionRange result;
           
           private ExtensionRange PrepareBuilder() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               ExtensionRange original = result;
               result = new ExtensionRange();
-              builderIsReadOnly = false;
+              resultIsReadOnly = false;
               MergeFrom(original);
             }
             return result;
@@ -1463,13 +1475,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           }
           
           public override Builder Clear() {
-            result = DefaultInstance ?? new ExtensionRange();
-            builderIsReadOnly = true;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
             return this;
           }
           
           public override Builder Clone() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return new Builder(result);
             } else {
               return new Builder().MergeFrom(result);
@@ -1485,11 +1497,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           }
           
           public override ExtensionRange BuildPartial() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return result;
             }
-            builderIsReadOnly = true;
-            return result;
+            resultIsReadOnly = true;
+            return result.MakeReadOnly();
           }
           
           public override Builder MergeFrom(pb::IMessage other) {
@@ -1691,12 +1703,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int OptionsFieldNumber = 7;
     private bool hasOptions;
-    private global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions options_ = global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions.DefaultInstance;
+    private global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions options_;
     public bool HasOptions {
       get { return hasOptions; }
     }
     public global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions Options {
-      get { return options_; }
+      get { return options_ ?? global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions.DefaultInstance; }
     }
     
     public override bool IsInitialized {
@@ -1811,6 +1823,15 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static DescriptorProto ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private DescriptorProto MakeReadOnly() {
+      field_.MakeReadOnly();
+      extension_.MakeReadOnly();
+      nestedType_.MakeReadOnly();
+      enumType_.MakeReadOnly();
+      extensionRange_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -1826,22 +1847,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new DescriptorProto();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(DescriptorProto cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      DescriptorProto result;
+      private bool resultIsReadOnly;
+      private DescriptorProto result;
       
       private DescriptorProto PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           DescriptorProto original = result;
           result = new DescriptorProto();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -1856,13 +1877,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new DescriptorProto();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -1878,16 +1899,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override DescriptorProto BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.field_.MakeReadOnly();
-        result.extension_.MakeReadOnly();
-        result.nestedType_.MakeReadOnly();
-        result.enumType_.MakeReadOnly();
-        result.extensionRange_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -2286,7 +2302,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public Builder ClearOptions() {
         PrepareBuilder();
         result.hasOptions = false;
-        result.options_ = global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions.DefaultInstance;
+        result.options_ = null;
         return this;
       }
     }
@@ -2300,7 +2316,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FieldDescriptorProto : pb::GeneratedMessage<FieldDescriptorProto, FieldDescriptorProto.Builder> {
     private FieldDescriptorProto() { }
-    private static readonly FieldDescriptorProto defaultInstance = new Builder().BuildPartial();
+    private static readonly FieldDescriptorProto defaultInstance = new FieldDescriptorProto().MakeReadOnly();
     private static readonly string[] _fieldDescriptorProtoFieldNames = new string[] { "default_value", "extendee", "label", "name", "number", "options", "type", "type_name" };
     private static readonly uint[] _fieldDescriptorProtoFieldTags = new uint[] { 58, 18, 32, 10, 24, 66, 40, 50 };
     public static FieldDescriptorProto DefaultInstance {
@@ -2308,7 +2324,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override FieldDescriptorProto DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override FieldDescriptorProto ThisMessage {
@@ -2434,12 +2450,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int OptionsFieldNumber = 8;
     private bool hasOptions;
-    private global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions options_ = global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.DefaultInstance;
+    private global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions options_;
     public bool HasOptions {
       get { return hasOptions; }
     }
     public global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions Options {
-      get { return options_; }
+      get { return options_ ?? global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.DefaultInstance; }
     }
     
     public override bool IsInitialized {
@@ -2548,6 +2564,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static FieldDescriptorProto ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private FieldDescriptorProto MakeReadOnly() {
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -2563,22 +2583,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new FieldDescriptorProto();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(FieldDescriptorProto cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      FieldDescriptorProto result;
+      private bool resultIsReadOnly;
+      private FieldDescriptorProto result;
       
       private FieldDescriptorProto PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           FieldDescriptorProto original = result;
           result = new FieldDescriptorProto();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -2593,13 +2613,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new FieldDescriptorProto();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -2615,11 +2635,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override FieldDescriptorProto BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -2944,7 +2964,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public Builder ClearOptions() {
         PrepareBuilder();
         result.hasOptions = false;
-        result.options_ = global::Google.ProtocolBuffers.DescriptorProtos.FieldOptions.DefaultInstance;
+        result.options_ = null;
         return this;
       }
     }
@@ -2958,7 +2978,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class EnumDescriptorProto : pb::GeneratedMessage<EnumDescriptorProto, EnumDescriptorProto.Builder> {
     private EnumDescriptorProto() { }
-    private static readonly EnumDescriptorProto defaultInstance = new Builder().BuildPartial();
+    private static readonly EnumDescriptorProto defaultInstance = new EnumDescriptorProto().MakeReadOnly();
     private static readonly string[] _enumDescriptorProtoFieldNames = new string[] { "name", "options", "value" };
     private static readonly uint[] _enumDescriptorProtoFieldTags = new uint[] { 10, 26, 18 };
     public static EnumDescriptorProto DefaultInstance {
@@ -2966,7 +2986,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override EnumDescriptorProto DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override EnumDescriptorProto ThisMessage {
@@ -3005,12 +3025,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int OptionsFieldNumber = 3;
     private bool hasOptions;
-    private global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions options_ = global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.DefaultInstance;
+    private global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions options_;
     public bool HasOptions {
       get { return hasOptions; }
     }
     public global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions Options {
-      get { return options_; }
+      get { return options_ ?? global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.DefaultInstance; }
     }
     
     public override bool IsInitialized {
@@ -3092,6 +3112,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static EnumDescriptorProto ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private EnumDescriptorProto MakeReadOnly() {
+      value_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -3107,22 +3132,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new EnumDescriptorProto();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(EnumDescriptorProto cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      EnumDescriptorProto result;
+      private bool resultIsReadOnly;
+      private EnumDescriptorProto result;
       
       private EnumDescriptorProto PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           EnumDescriptorProto original = result;
           result = new EnumDescriptorProto();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -3137,13 +3162,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new EnumDescriptorProto();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -3159,12 +3184,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override EnumDescriptorProto BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.value_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -3359,7 +3383,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public Builder ClearOptions() {
         PrepareBuilder();
         result.hasOptions = false;
-        result.options_ = global::Google.ProtocolBuffers.DescriptorProtos.EnumOptions.DefaultInstance;
+        result.options_ = null;
         return this;
       }
     }
@@ -3373,7 +3397,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class EnumValueDescriptorProto : pb::GeneratedMessage<EnumValueDescriptorProto, EnumValueDescriptorProto.Builder> {
     private EnumValueDescriptorProto() { }
-    private static readonly EnumValueDescriptorProto defaultInstance = new Builder().BuildPartial();
+    private static readonly EnumValueDescriptorProto defaultInstance = new EnumValueDescriptorProto().MakeReadOnly();
     private static readonly string[] _enumValueDescriptorProtoFieldNames = new string[] { "name", "number", "options" };
     private static readonly uint[] _enumValueDescriptorProtoFieldTags = new uint[] { 10, 16, 26 };
     public static EnumValueDescriptorProto DefaultInstance {
@@ -3381,7 +3405,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override EnumValueDescriptorProto DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override EnumValueDescriptorProto ThisMessage {
@@ -3418,12 +3442,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int OptionsFieldNumber = 3;
     private bool hasOptions;
-    private global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions options_ = global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.DefaultInstance;
+    private global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions options_;
     public bool HasOptions {
       get { return hasOptions; }
     }
     public global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions Options {
-      get { return options_; }
+      get { return options_ ?? global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.DefaultInstance; }
     }
     
     public override bool IsInitialized {
@@ -3502,6 +3526,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static EnumValueDescriptorProto ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private EnumValueDescriptorProto MakeReadOnly() {
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -3517,22 +3545,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new EnumValueDescriptorProto();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(EnumValueDescriptorProto cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      EnumValueDescriptorProto result;
+      private bool resultIsReadOnly;
+      private EnumValueDescriptorProto result;
       
       private EnumValueDescriptorProto PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           EnumValueDescriptorProto original = result;
           result = new EnumValueDescriptorProto();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -3547,13 +3575,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new EnumValueDescriptorProto();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -3569,11 +3597,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override EnumValueDescriptorProto BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -3744,7 +3772,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public Builder ClearOptions() {
         PrepareBuilder();
         result.hasOptions = false;
-        result.options_ = global::Google.ProtocolBuffers.DescriptorProtos.EnumValueOptions.DefaultInstance;
+        result.options_ = null;
         return this;
       }
     }
@@ -3758,7 +3786,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ServiceDescriptorProto : pb::GeneratedMessage<ServiceDescriptorProto, ServiceDescriptorProto.Builder> {
     private ServiceDescriptorProto() { }
-    private static readonly ServiceDescriptorProto defaultInstance = new Builder().BuildPartial();
+    private static readonly ServiceDescriptorProto defaultInstance = new ServiceDescriptorProto().MakeReadOnly();
     private static readonly string[] _serviceDescriptorProtoFieldNames = new string[] { "method", "name", "options" };
     private static readonly uint[] _serviceDescriptorProtoFieldTags = new uint[] { 18, 10, 26 };
     public static ServiceDescriptorProto DefaultInstance {
@@ -3766,7 +3794,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override ServiceDescriptorProto DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override ServiceDescriptorProto ThisMessage {
@@ -3805,12 +3833,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int OptionsFieldNumber = 3;
     private bool hasOptions;
-    private global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions options_ = global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.DefaultInstance;
+    private global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions options_;
     public bool HasOptions {
       get { return hasOptions; }
     }
     public global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions Options {
-      get { return options_; }
+      get { return options_ ?? global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.DefaultInstance; }
     }
     
     public override bool IsInitialized {
@@ -3892,6 +3920,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static ServiceDescriptorProto ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private ServiceDescriptorProto MakeReadOnly() {
+      method_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -3907,22 +3940,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new ServiceDescriptorProto();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(ServiceDescriptorProto cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      ServiceDescriptorProto result;
+      private bool resultIsReadOnly;
+      private ServiceDescriptorProto result;
       
       private ServiceDescriptorProto PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           ServiceDescriptorProto original = result;
           result = new ServiceDescriptorProto();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -3937,13 +3970,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new ServiceDescriptorProto();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -3959,12 +3992,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override ServiceDescriptorProto BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.method_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -4159,7 +4191,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public Builder ClearOptions() {
         PrepareBuilder();
         result.hasOptions = false;
-        result.options_ = global::Google.ProtocolBuffers.DescriptorProtos.ServiceOptions.DefaultInstance;
+        result.options_ = null;
         return this;
       }
     }
@@ -4173,7 +4205,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class MethodDescriptorProto : pb::GeneratedMessage<MethodDescriptorProto, MethodDescriptorProto.Builder> {
     private MethodDescriptorProto() { }
-    private static readonly MethodDescriptorProto defaultInstance = new Builder().BuildPartial();
+    private static readonly MethodDescriptorProto defaultInstance = new MethodDescriptorProto().MakeReadOnly();
     private static readonly string[] _methodDescriptorProtoFieldNames = new string[] { "input_type", "name", "options", "output_type" };
     private static readonly uint[] _methodDescriptorProtoFieldTags = new uint[] { 18, 10, 34, 26 };
     public static MethodDescriptorProto DefaultInstance {
@@ -4181,7 +4213,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override MethodDescriptorProto DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override MethodDescriptorProto ThisMessage {
@@ -4228,12 +4260,12 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int OptionsFieldNumber = 4;
     private bool hasOptions;
-    private global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions options_ = global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions.DefaultInstance;
+    private global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions options_;
     public bool HasOptions {
       get { return hasOptions; }
     }
     public global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions Options {
-      get { return options_; }
+      get { return options_ ?? global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions.DefaultInstance; }
     }
     
     public override bool IsInitialized {
@@ -4318,6 +4350,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static MethodDescriptorProto ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private MethodDescriptorProto MakeReadOnly() {
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -4333,22 +4369,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new MethodDescriptorProto();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(MethodDescriptorProto cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      MethodDescriptorProto result;
+      private bool resultIsReadOnly;
+      private MethodDescriptorProto result;
       
       private MethodDescriptorProto PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           MethodDescriptorProto original = result;
           result = new MethodDescriptorProto();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -4363,13 +4399,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new MethodDescriptorProto();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -4385,11 +4421,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override MethodDescriptorProto BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -4589,7 +4625,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public Builder ClearOptions() {
         PrepareBuilder();
         result.hasOptions = false;
-        result.options_ = global::Google.ProtocolBuffers.DescriptorProtos.MethodOptions.DefaultInstance;
+        result.options_ = null;
         return this;
       }
     }
@@ -4603,7 +4639,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FileOptions : pb::ExtendableMessage<FileOptions, FileOptions.Builder> {
     private FileOptions() { }
-    private static readonly FileOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly FileOptions defaultInstance = new FileOptions().MakeReadOnly();
     private static readonly string[] _fileOptionsFieldNames = new string[] { "cc_generic_services", "java_generic_services", "java_multiple_files", "java_outer_classname", "java_package", "optimize_for", "py_generic_services", "uninterpreted_option" };
     private static readonly uint[] _fileOptionsFieldTags = new uint[] { 128, 136, 80, 66, 10, 72, 144, 7994 };
     public static FileOptions DefaultInstance {
@@ -4611,7 +4647,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override FileOptions DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override FileOptions ThisMessage {
@@ -4834,6 +4870,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static FileOptions ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private FileOptions MakeReadOnly() {
+      uninterpretedOption_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -4849,22 +4890,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new FileOptions();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(FileOptions cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      FileOptions result;
+      private bool resultIsReadOnly;
+      private FileOptions result;
       
       private FileOptions PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           FileOptions original = result;
           result = new FileOptions();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -4879,13 +4920,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new FileOptions();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -4901,12 +4942,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override FileOptions BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.uninterpretedOption_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -5235,7 +5275,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class MessageOptions : pb::ExtendableMessage<MessageOptions, MessageOptions.Builder> {
     private MessageOptions() { }
-    private static readonly MessageOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly MessageOptions defaultInstance = new MessageOptions().MakeReadOnly();
     private static readonly string[] _messageOptionsFieldNames = new string[] { "message_set_wire_format", "no_standard_descriptor_accessor", "uninterpreted_option" };
     private static readonly uint[] _messageOptionsFieldTags = new uint[] { 8, 16, 7994 };
     public static MessageOptions DefaultInstance {
@@ -5243,7 +5283,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override MessageOptions DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override MessageOptions ThisMessage {
@@ -5370,6 +5410,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static MessageOptions ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private MessageOptions MakeReadOnly() {
+      uninterpretedOption_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -5385,22 +5430,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new MessageOptions();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(MessageOptions cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      MessageOptions result;
+      private bool resultIsReadOnly;
+      private MessageOptions result;
       
       private MessageOptions PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           MessageOptions original = result;
           result = new MessageOptions();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -5415,13 +5460,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new MessageOptions();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -5437,12 +5482,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override MessageOptions BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.uninterpretedOption_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -5626,7 +5670,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class FieldOptions : pb::ExtendableMessage<FieldOptions, FieldOptions.Builder> {
     private FieldOptions() { }
-    private static readonly FieldOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly FieldOptions defaultInstance = new FieldOptions().MakeReadOnly();
     private static readonly string[] _fieldOptionsFieldNames = new string[] { "ctype", "deprecated", "experimental_map_key", "packed", "uninterpreted_option" };
     private static readonly uint[] _fieldOptionsFieldTags = new uint[] { 8, 24, 74, 16, 7994 };
     public static FieldOptions DefaultInstance {
@@ -5634,7 +5678,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override FieldOptions DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override FieldOptions ThisMessage {
@@ -5809,6 +5853,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static FieldOptions ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private FieldOptions MakeReadOnly() {
+      uninterpretedOption_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -5824,22 +5873,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new FieldOptions();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(FieldOptions cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      FieldOptions result;
+      private bool resultIsReadOnly;
+      private FieldOptions result;
       
       private FieldOptions PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           FieldOptions original = result;
           result = new FieldOptions();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -5854,13 +5903,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new FieldOptions();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -5876,12 +5925,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override FieldOptions BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.uninterpretedOption_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -6128,7 +6176,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class EnumOptions : pb::ExtendableMessage<EnumOptions, EnumOptions.Builder> {
     private EnumOptions() { }
-    private static readonly EnumOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly EnumOptions defaultInstance = new EnumOptions().MakeReadOnly();
     private static readonly string[] _enumOptionsFieldNames = new string[] { "uninterpreted_option" };
     private static readonly uint[] _enumOptionsFieldTags = new uint[] { 7994 };
     public static EnumOptions DefaultInstance {
@@ -6136,7 +6184,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override EnumOptions DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override EnumOptions ThisMessage {
@@ -6231,6 +6279,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static EnumOptions ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private EnumOptions MakeReadOnly() {
+      uninterpretedOption_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -6246,22 +6299,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new EnumOptions();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(EnumOptions cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      EnumOptions result;
+      private bool resultIsReadOnly;
+      private EnumOptions result;
       
       private EnumOptions PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           EnumOptions original = result;
           result = new EnumOptions();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -6276,13 +6329,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new EnumOptions();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -6298,12 +6351,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override EnumOptions BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.uninterpretedOption_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -6433,7 +6485,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class EnumValueOptions : pb::ExtendableMessage<EnumValueOptions, EnumValueOptions.Builder> {
     private EnumValueOptions() { }
-    private static readonly EnumValueOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly EnumValueOptions defaultInstance = new EnumValueOptions().MakeReadOnly();
     private static readonly string[] _enumValueOptionsFieldNames = new string[] { "uninterpreted_option" };
     private static readonly uint[] _enumValueOptionsFieldTags = new uint[] { 7994 };
     public static EnumValueOptions DefaultInstance {
@@ -6441,7 +6493,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override EnumValueOptions DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override EnumValueOptions ThisMessage {
@@ -6536,6 +6588,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static EnumValueOptions ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private EnumValueOptions MakeReadOnly() {
+      uninterpretedOption_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -6551,22 +6608,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new EnumValueOptions();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(EnumValueOptions cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      EnumValueOptions result;
+      private bool resultIsReadOnly;
+      private EnumValueOptions result;
       
       private EnumValueOptions PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           EnumValueOptions original = result;
           result = new EnumValueOptions();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -6581,13 +6638,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new EnumValueOptions();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -6603,12 +6660,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override EnumValueOptions BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.uninterpretedOption_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -6738,7 +6794,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ServiceOptions : pb::ExtendableMessage<ServiceOptions, ServiceOptions.Builder> {
     private ServiceOptions() { }
-    private static readonly ServiceOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly ServiceOptions defaultInstance = new ServiceOptions().MakeReadOnly();
     private static readonly string[] _serviceOptionsFieldNames = new string[] { "uninterpreted_option" };
     private static readonly uint[] _serviceOptionsFieldTags = new uint[] { 7994 };
     public static ServiceOptions DefaultInstance {
@@ -6746,7 +6802,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override ServiceOptions DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override ServiceOptions ThisMessage {
@@ -6841,6 +6897,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static ServiceOptions ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private ServiceOptions MakeReadOnly() {
+      uninterpretedOption_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -6856,22 +6917,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new ServiceOptions();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(ServiceOptions cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      ServiceOptions result;
+      private bool resultIsReadOnly;
+      private ServiceOptions result;
       
       private ServiceOptions PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           ServiceOptions original = result;
           result = new ServiceOptions();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -6886,13 +6947,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new ServiceOptions();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -6908,12 +6969,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override ServiceOptions BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.uninterpretedOption_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -7043,7 +7103,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class MethodOptions : pb::ExtendableMessage<MethodOptions, MethodOptions.Builder> {
     private MethodOptions() { }
-    private static readonly MethodOptions defaultInstance = new Builder().BuildPartial();
+    private static readonly MethodOptions defaultInstance = new MethodOptions().MakeReadOnly();
     private static readonly string[] _methodOptionsFieldNames = new string[] { "uninterpreted_option" };
     private static readonly uint[] _methodOptionsFieldTags = new uint[] { 7994 };
     public static MethodOptions DefaultInstance {
@@ -7051,7 +7111,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override MethodOptions DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override MethodOptions ThisMessage {
@@ -7146,6 +7206,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static MethodOptions ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private MethodOptions MakeReadOnly() {
+      uninterpretedOption_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -7161,22 +7226,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new MethodOptions();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(MethodOptions cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      MethodOptions result;
+      private bool resultIsReadOnly;
+      private MethodOptions result;
       
       private MethodOptions PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           MethodOptions original = result;
           result = new MethodOptions();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -7191,13 +7256,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new MethodOptions();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -7213,12 +7278,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override MethodOptions BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.uninterpretedOption_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -7348,7 +7412,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class UninterpretedOption : pb::GeneratedMessage<UninterpretedOption, UninterpretedOption.Builder> {
     private UninterpretedOption() { }
-    private static readonly UninterpretedOption defaultInstance = new Builder().BuildPartial();
+    private static readonly UninterpretedOption defaultInstance = new UninterpretedOption().MakeReadOnly();
     private static readonly string[] _uninterpretedOptionFieldNames = new string[] { "double_value", "identifier_value", "name", "negative_int_value", "positive_int_value", "string_value" };
     private static readonly uint[] _uninterpretedOptionFieldTags = new uint[] { 49, 26, 18, 40, 32, 58 };
     public static UninterpretedOption DefaultInstance {
@@ -7356,7 +7420,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override UninterpretedOption DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override UninterpretedOption ThisMessage {
@@ -7381,7 +7445,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class NamePart : pb::GeneratedMessage<NamePart, NamePart.Builder> {
         private NamePart() { }
-        private static readonly NamePart defaultInstance = new Builder().BuildPartial();
+        private static readonly NamePart defaultInstance = new NamePart().MakeReadOnly();
         private static readonly string[] _namePartFieldNames = new string[] { "is_extension", "name_part" };
         private static readonly uint[] _namePartFieldTags = new uint[] { 16, 10 };
         public static NamePart DefaultInstance {
@@ -7389,7 +7453,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         
         public override NamePart DefaultInstanceForType {
-          get { return defaultInstance; }
+          get { return DefaultInstance; }
         }
         
         protected override NamePart ThisMessage {
@@ -7493,6 +7557,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         public static NamePart ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
+        private NamePart MakeReadOnly() {
+          return this;
+        }
+        
         public static Builder CreateBuilder() { return new Builder(); }
         public override Builder ToBuilder() { return CreateBuilder(this); }
         public override Builder CreateBuilderForType() { return new Builder(); }
@@ -7508,22 +7576,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
             get { return this; }
           }
           public Builder() {
-            result = DefaultInstance ?? new NamePart();
-            builderIsReadOnly = result == DefaultInstance;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
           }
           internal Builder(NamePart cloneFrom) {
             result = cloneFrom;
-            builderIsReadOnly = true;
+            resultIsReadOnly = true;
           }
           
-          bool builderIsReadOnly;
-          NamePart result;
+          private bool resultIsReadOnly;
+          private NamePart result;
           
           private NamePart PrepareBuilder() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               NamePart original = result;
               result = new NamePart();
-              builderIsReadOnly = false;
+              resultIsReadOnly = false;
               MergeFrom(original);
             }
             return result;
@@ -7538,13 +7606,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           }
           
           public override Builder Clear() {
-            result = DefaultInstance ?? new NamePart();
-            builderIsReadOnly = true;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
             return this;
           }
           
           public override Builder Clone() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return new Builder(result);
             } else {
               return new Builder().MergeFrom(result);
@@ -7560,11 +7628,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           }
           
           public override NamePart BuildPartial() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return result;
             }
-            builderIsReadOnly = true;
-            return result;
+            resultIsReadOnly = true;
+            return result.MakeReadOnly();
           }
           
           public override Builder MergeFrom(pb::IMessage other) {
@@ -7852,6 +7920,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     public static UninterpretedOption ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private UninterpretedOption MakeReadOnly() {
+      name_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -7867,22 +7940,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new UninterpretedOption();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(UninterpretedOption cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      UninterpretedOption result;
+      private bool resultIsReadOnly;
+      private UninterpretedOption result;
       
       private UninterpretedOption PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           UninterpretedOption original = result;
           result = new UninterpretedOption();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -7897,13 +7970,13 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new UninterpretedOption();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -7919,12 +7992,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       }
       
       public override UninterpretedOption BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.name_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {

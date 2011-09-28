@@ -1,16 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using Google.ProtocolBuffers.Collections;
 using NUnit.Framework;
 using Google.ProtocolBuffers.TestProtos;
 using Google.ProtocolBuffers.Serialization;
+using UnitTest.Issues.TestProtos;
 
 namespace Google.ProtocolBuffers
 {
     [TestFixture]
     public class ReusableBuilderTest
     {
+        [Test, Description("Issue 28: Circular message dependencies result in null defaults for DefaultInstance")]
+        public void EnsureStaticCicularReference()
+        {
+            MyMessageAReferenceB ab = MyMessageAReferenceB.DefaultInstance;
+            Assert.IsNotNull(ab);
+            Assert.IsNotNull(ab.Value);
+            MyMessageBReferenceA ba = MyMessageBReferenceA.DefaultInstance;
+            Assert.IsNotNull(ba);
+            Assert.IsNotNull(ba.Value);
+        }
+
         [Test]
         public void TestModifyDefaultInstance()
         {

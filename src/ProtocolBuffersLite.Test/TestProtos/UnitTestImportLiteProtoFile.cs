@@ -44,7 +44,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class ImportMessageLite : pb::GeneratedMessageLite<ImportMessageLite, ImportMessageLite.Builder> {
     private ImportMessageLite() { }
-    private static readonly ImportMessageLite defaultInstance = new Builder().BuildPartial();
+    private static readonly ImportMessageLite defaultInstance = new ImportMessageLite().MakeReadOnly();
     private static readonly string[] _importMessageLiteFieldNames = new string[] { "d" };
     private static readonly uint[] _importMessageLiteFieldTags = new uint[] { 8 };
     public static ImportMessageLite DefaultInstance {
@@ -52,7 +52,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override ImportMessageLite DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override ImportMessageLite ThisMessage {
@@ -147,6 +147,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static ImportMessageLite ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private ImportMessageLite MakeReadOnly() {
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -162,22 +166,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new ImportMessageLite();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(ImportMessageLite cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      ImportMessageLite result;
+      private bool resultIsReadOnly;
+      private ImportMessageLite result;
       
       private ImportMessageLite PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           ImportMessageLite original = result;
           result = new ImportMessageLite();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -192,13 +196,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new ImportMessageLite();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -210,11 +214,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override ImportMessageLite BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessageLite other) {

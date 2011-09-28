@@ -69,7 +69,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class Person : pb::GeneratedMessage<Person, Person.Builder> {
     private Person() { }
-    private static readonly Person defaultInstance = new Builder().BuildPartial();
+    private static readonly Person defaultInstance = new Person().MakeReadOnly();
     private static readonly string[] _personFieldNames = new string[] { "email", "id", "name", "phone" };
     private static readonly uint[] _personFieldTags = new uint[] { 26, 16, 10, 34 };
     public static Person DefaultInstance {
@@ -77,7 +77,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
     
     public override Person DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override Person ThisMessage {
@@ -110,7 +110,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class PhoneNumber : pb::GeneratedMessage<PhoneNumber, PhoneNumber.Builder> {
         private PhoneNumber() { }
-        private static readonly PhoneNumber defaultInstance = new Builder().BuildPartial();
+        private static readonly PhoneNumber defaultInstance = new PhoneNumber().MakeReadOnly();
         private static readonly string[] _phoneNumberFieldNames = new string[] { "number", "type" };
         private static readonly uint[] _phoneNumberFieldTags = new uint[] { 10, 16 };
         public static PhoneNumber DefaultInstance {
@@ -118,7 +118,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         }
         
         public override PhoneNumber DefaultInstanceForType {
-          get { return defaultInstance; }
+          get { return DefaultInstance; }
         }
         
         protected override PhoneNumber ThisMessage {
@@ -221,6 +221,10 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         public static PhoneNumber ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
+        private PhoneNumber MakeReadOnly() {
+          return this;
+        }
+        
         public static Builder CreateBuilder() { return new Builder(); }
         public override Builder ToBuilder() { return CreateBuilder(this); }
         public override Builder CreateBuilderForType() { return new Builder(); }
@@ -236,22 +240,22 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
             get { return this; }
           }
           public Builder() {
-            result = DefaultInstance ?? new PhoneNumber();
-            builderIsReadOnly = result == DefaultInstance;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
           }
           internal Builder(PhoneNumber cloneFrom) {
             result = cloneFrom;
-            builderIsReadOnly = true;
+            resultIsReadOnly = true;
           }
           
-          bool builderIsReadOnly;
-          PhoneNumber result;
+          private bool resultIsReadOnly;
+          private PhoneNumber result;
           
           private PhoneNumber PrepareBuilder() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               PhoneNumber original = result;
               result = new PhoneNumber();
-              builderIsReadOnly = false;
+              resultIsReadOnly = false;
               MergeFrom(original);
             }
             return result;
@@ -266,13 +270,13 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           }
           
           public override Builder Clear() {
-            result = DefaultInstance ?? new PhoneNumber();
-            builderIsReadOnly = true;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
             return this;
           }
           
           public override Builder Clone() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return new Builder(result);
             } else {
               return new Builder().MergeFrom(result);
@@ -288,11 +292,11 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           }
           
           public override PhoneNumber BuildPartial() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return result;
             }
-            builderIsReadOnly = true;
-            return result;
+            resultIsReadOnly = true;
+            return result.MakeReadOnly();
           }
           
           public override Builder MergeFrom(pb::IMessage other) {
@@ -557,6 +561,11 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     public static Person ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private Person MakeReadOnly() {
+      phone_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -572,22 +581,22 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new Person();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(Person cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      Person result;
+      private bool resultIsReadOnly;
+      private Person result;
       
       private Person PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           Person original = result;
           result = new Person();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -602,13 +611,13 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new Person();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -624,12 +633,11 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       
       public override Person BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.phone_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -841,7 +849,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class AddressBook : pb::GeneratedMessage<AddressBook, AddressBook.Builder> {
     private AddressBook() { }
-    private static readonly AddressBook defaultInstance = new Builder().BuildPartial();
+    private static readonly AddressBook defaultInstance = new AddressBook().MakeReadOnly();
     private static readonly string[] _addressBookFieldNames = new string[] { "person" };
     private static readonly uint[] _addressBookFieldTags = new uint[] { 10 };
     public static AddressBook DefaultInstance {
@@ -849,7 +857,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
     
     public override AddressBook DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override AddressBook ThisMessage {
@@ -940,6 +948,11 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     public static AddressBook ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private AddressBook MakeReadOnly() {
+      person_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -955,22 +968,22 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new AddressBook();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(AddressBook cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      AddressBook result;
+      private bool resultIsReadOnly;
+      private AddressBook result;
       
       private AddressBook PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           AddressBook original = result;
           result = new AddressBook();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -985,13 +998,13 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new AddressBook();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -1007,12 +1020,11 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       
       public override AddressBook BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.person_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       public override Builder MergeFrom(pb::IMessage other) {

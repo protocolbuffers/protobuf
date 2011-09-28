@@ -183,7 +183,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.Indent();
             writer.WriteLine("private {0}() {{ }}", ClassName);
             // Must call BuildPartial() to make sure all lists are made read-only
-            writer.WriteLine("private static readonly {0} defaultInstance = new Builder().BuildPartial();", ClassName);
+            writer.WriteLine("private static readonly {0} defaultInstance = new {0}().MakeReadOnly();", ClassName);
 
             if (OptimizeSpeed)
             {
@@ -204,7 +204,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("}");
             writer.WriteLine();
             writer.WriteLine("public override {0} DefaultInstanceForType {{", ClassName);
-            writer.WriteLine("  get { return defaultInstance; }");
+            writer.WriteLine("  get { return DefaultInstance; }");
             writer.WriteLine("}");
             writer.WriteLine();
             writer.WriteLine("protected override {0} ThisMessage {{", ClassName);
@@ -552,6 +552,17 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         private void GenerateBuilder(TextGenerator writer)
         {
+            writer.WriteLine("private {0} MakeReadOnly() {{", ClassName);
+            writer.Indent();
+            foreach (FieldDescriptor field in Descriptor.Fields)
+            {
+                CreateFieldGenerator(field).GenerateBuildingCode(writer);
+            }
+            writer.WriteLine("return this;");
+            writer.Outdent();
+            writer.WriteLine("}");
+            writer.WriteLine();
+
             writer.WriteLine("public static Builder CreateBuilder() { return new Builder(); }");
             writer.WriteLine("public override Builder ToBuilder() { return CreateBuilder(this); }");
             writer.WriteLine("public override Builder CreateBuilderForType() { return new Builder(); }");
@@ -594,23 +605,23 @@ namespace Google.ProtocolBuffers.ProtoGen
             //default constructor
             writer.WriteLine("public Builder() {");
             //Durring static initialization of message, DefaultInstance is expected to return null.
-            writer.WriteLine("  result = DefaultInstance ?? new {0}();", ClassName);
-            writer.WriteLine("  builderIsReadOnly = result == DefaultInstance;");
+            writer.WriteLine("  result = DefaultInstance;");
+            writer.WriteLine("  resultIsReadOnly = true;");
             writer.WriteLine("}");
             //clone constructor
             writer.WriteLine("internal Builder({0} cloneFrom) {{", ClassName);
             writer.WriteLine("  result = cloneFrom;");
-            writer.WriteLine("  builderIsReadOnly = true;");
+            writer.WriteLine("  resultIsReadOnly = true;");
             writer.WriteLine("}");
             writer.WriteLine();
-            writer.WriteLine("bool builderIsReadOnly;");
-            writer.WriteLine("{0} result;", ClassName);
+            writer.WriteLine("private bool resultIsReadOnly;");
+            writer.WriteLine("private {0} result;", ClassName);
             writer.WriteLine();
             writer.WriteLine("private {0} PrepareBuilder() {{", ClassName);
-            writer.WriteLine("  if (builderIsReadOnly) {");
+            writer.WriteLine("  if (resultIsReadOnly) {");
             writer.WriteLine("    {0} original = result;", ClassName);
             writer.WriteLine("    result = new {0}();", ClassName);
-            writer.WriteLine("    builderIsReadOnly = false;");
+            writer.WriteLine("    resultIsReadOnly = false;");
             writer.WriteLine("    MergeFrom(original);");
             writer.WriteLine("  }");
             writer.WriteLine("  return result;");
@@ -626,13 +637,13 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine();
             //Not actually expecting that DefaultInstance would ever be null here; however, we will ensure it does not break
             writer.WriteLine("public override Builder Clear() {");
-            writer.WriteLine("  result = DefaultInstance ?? new {0}();", ClassName);
-            writer.WriteLine("  builderIsReadOnly = true;");
+            writer.WriteLine("  result = DefaultInstance;", ClassName);
+            writer.WriteLine("  resultIsReadOnly = true;");
             writer.WriteLine("  return this;");
             writer.WriteLine("}");
             writer.WriteLine();
             writer.WriteLine("public override Builder Clone() {");
-            writer.WriteLine("  if (builderIsReadOnly) {");
+            writer.WriteLine("  if (resultIsReadOnly) {");
             writer.WriteLine("    return new Builder(result);");
             writer.WriteLine("  } else {");
             writer.WriteLine("    return new Builder().MergeFrom(result);");
@@ -653,15 +664,11 @@ namespace Google.ProtocolBuffers.ProtoGen
 
             writer.WriteLine("public override {0} BuildPartial() {{", ClassName);
             writer.Indent();
-            writer.WriteLine("if (builderIsReadOnly) {");
+            writer.WriteLine("if (resultIsReadOnly) {");
             writer.WriteLine("  return result;");
             writer.WriteLine("}");
-            foreach (FieldDescriptor field in Descriptor.Fields)
-            {
-                CreateFieldGenerator(field).GenerateBuildingCode(writer);
-            }
-            writer.WriteLine("builderIsReadOnly = true;");
-            writer.WriteLine("return result;");
+            writer.WriteLine("resultIsReadOnly = true;");
+            writer.WriteLine("return result.MakeReadOnly();");
             writer.Outdent();
             writer.WriteLine("}");
             writer.WriteLine();

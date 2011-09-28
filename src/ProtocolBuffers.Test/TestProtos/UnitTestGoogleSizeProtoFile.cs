@@ -138,13 +138,13 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SizeMessage1 : pb::GeneratedMessage<SizeMessage1, SizeMessage1.Builder> {
     private SizeMessage1() { }
-    private static readonly SizeMessage1 defaultInstance = new Builder().BuildPartial();
+    private static readonly SizeMessage1 defaultInstance = new SizeMessage1().MakeReadOnly();
     public static SizeMessage1 DefaultInstance {
       get { return defaultInstance; }
     }
     
     public override SizeMessage1 DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override SizeMessage1 ThisMessage {
@@ -505,12 +505,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field15FieldNumber = 15;
     private bool hasField15;
-    private global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage field15_ = global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage.DefaultInstance;
+    private global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage field15_;
     public bool HasField15 {
       get { return hasField15; }
     }
     public global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage Field15 {
-      get { return field15_; }
+      get { return field15_ ?? global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage.DefaultInstance; }
     }
     
     public const int Field78FieldNumber = 78;
@@ -603,6 +603,11 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static SizeMessage1 ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private SizeMessage1 MakeReadOnly() {
+      field5_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -618,22 +623,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new SizeMessage1();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(SizeMessage1 cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      SizeMessage1 result;
+      private bool resultIsReadOnly;
+      private SizeMessage1 result;
       
       private SizeMessage1 PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           SizeMessage1 original = result;
           result = new SizeMessage1();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -648,13 +653,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new SizeMessage1();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -670,12 +675,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override SizeMessage1 BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.field5_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       
@@ -1417,7 +1421,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       public Builder ClearField15() {
         PrepareBuilder();
         result.hasField15 = false;
-        result.field15_ = global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage.DefaultInstance;
+        result.field15_ = null;
         return this;
       }
       
@@ -1552,13 +1556,13 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SizeMessage1SubMessage : pb::GeneratedMessage<SizeMessage1SubMessage, SizeMessage1SubMessage.Builder> {
     private SizeMessage1SubMessage() { }
-    private static readonly SizeMessage1SubMessage defaultInstance = new Builder().BuildPartial();
+    private static readonly SizeMessage1SubMessage defaultInstance = new SizeMessage1SubMessage().MakeReadOnly();
     public static SizeMessage1SubMessage DefaultInstance {
       get { return defaultInstance; }
     }
     
     public override SizeMessage1SubMessage DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override SizeMessage1SubMessage ThisMessage {
@@ -1807,6 +1811,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static SizeMessage1SubMessage ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private SizeMessage1SubMessage MakeReadOnly() {
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -1822,22 +1830,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new SizeMessage1SubMessage();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(SizeMessage1SubMessage cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      SizeMessage1SubMessage result;
+      private bool resultIsReadOnly;
+      private SizeMessage1SubMessage result;
       
       private SizeMessage1SubMessage PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           SizeMessage1SubMessage original = result;
           result = new SizeMessage1SubMessage();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -1852,13 +1860,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new SizeMessage1SubMessage();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -1874,11 +1882,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override SizeMessage1SubMessage BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       
@@ -2302,13 +2310,13 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SizeMessage2 : pb::GeneratedMessage<SizeMessage2, SizeMessage2.Builder> {
     private SizeMessage2() { }
-    private static readonly SizeMessage2 defaultInstance = new Builder().BuildPartial();
+    private static readonly SizeMessage2 defaultInstance = new SizeMessage2().MakeReadOnly();
     public static SizeMessage2 DefaultInstance {
       get { return defaultInstance; }
     }
     
     public override SizeMessage2 DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override SizeMessage2 ThisMessage {
@@ -2333,13 +2341,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
       public sealed partial class Group1 : pb::GeneratedMessage<Group1, Group1.Builder> {
         private Group1() { }
-        private static readonly Group1 defaultInstance = new Builder().BuildPartial();
+        private static readonly Group1 defaultInstance = new Group1().MakeReadOnly();
         public static Group1 DefaultInstance {
           get { return defaultInstance; }
         }
         
         public override Group1 DefaultInstanceForType {
-          get { return defaultInstance; }
+          get { return DefaultInstance; }
         }
         
         protected override Group1 ThisMessage {
@@ -2513,12 +2521,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int Field31FieldNumber = 31;
         private bool hasField31;
-        private global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage field31_ = global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage.DefaultInstance;
+        private global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage field31_;
         public bool HasField31 {
           get { return hasField31; }
         }
         public global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage Field31 {
-          get { return field31_; }
+          get { return field31_ ?? global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage.DefaultInstance; }
         }
         
         public static Group1 ParseFrom(pb::ByteString data) {
@@ -2551,6 +2559,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         public static Group1 ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
           return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
         }
+        private Group1 MakeReadOnly() {
+          field14_.MakeReadOnly();
+          field22_.MakeReadOnly();
+          field73_.MakeReadOnly();
+          return this;
+        }
+        
         public static Builder CreateBuilder() { return new Builder(); }
         public override Builder ToBuilder() { return CreateBuilder(this); }
         public override Builder CreateBuilderForType() { return new Builder(); }
@@ -2566,22 +2581,22 @@ namespace Google.ProtocolBuffers.TestProtos {
             get { return this; }
           }
           public Builder() {
-            result = DefaultInstance ?? new Group1();
-            builderIsReadOnly = result == DefaultInstance;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
           }
           internal Builder(Group1 cloneFrom) {
             result = cloneFrom;
-            builderIsReadOnly = true;
+            resultIsReadOnly = true;
           }
           
-          bool builderIsReadOnly;
-          Group1 result;
+          private bool resultIsReadOnly;
+          private Group1 result;
           
           private Group1 PrepareBuilder() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               Group1 original = result;
               result = new Group1();
-              builderIsReadOnly = false;
+              resultIsReadOnly = false;
               MergeFrom(original);
             }
             return result;
@@ -2596,13 +2611,13 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Builder Clear() {
-            result = DefaultInstance ?? new Group1();
-            builderIsReadOnly = true;
+            result = DefaultInstance;
+            resultIsReadOnly = true;
             return this;
           }
           
           public override Builder Clone() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return new Builder(result);
             } else {
               return new Builder().MergeFrom(result);
@@ -2618,14 +2633,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override Group1 BuildPartial() {
-            if (builderIsReadOnly) {
+            if (resultIsReadOnly) {
               return result;
             }
-            result.field14_.MakeReadOnly();
-            result.field22_.MakeReadOnly();
-            result.field73_.MakeReadOnly();
-            builderIsReadOnly = true;
-            return result;
+            resultIsReadOnly = true;
+            return result.MakeReadOnly();
           }
           
           
@@ -3007,7 +3019,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           public Builder ClearField31() {
             PrepareBuilder();
             result.hasField31 = false;
-            result.field31_ = global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage.DefaultInstance;
+            result.field31_ = null;
             return this;
           }
         }
@@ -3357,6 +3369,14 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static SizeMessage2 ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private SizeMessage2 MakeReadOnly() {
+      group1_.MakeReadOnly();
+      field128_.MakeReadOnly();
+      field127_.MakeReadOnly();
+      field130_.MakeReadOnly();
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -3372,22 +3392,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new SizeMessage2();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(SizeMessage2 cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      SizeMessage2 result;
+      private bool resultIsReadOnly;
+      private SizeMessage2 result;
       
       private SizeMessage2 PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           SizeMessage2 original = result;
           result = new SizeMessage2();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -3402,13 +3422,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new SizeMessage2();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -3424,15 +3444,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override SizeMessage2 BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        result.group1_.MakeReadOnly();
-        result.field128_.MakeReadOnly();
-        result.field127_.MakeReadOnly();
-        result.field130_.MakeReadOnly();
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       
@@ -4107,13 +4123,13 @@ namespace Google.ProtocolBuffers.TestProtos {
   [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
   public sealed partial class SizeMessage2GroupedMessage : pb::GeneratedMessage<SizeMessage2GroupedMessage, SizeMessage2GroupedMessage.Builder> {
     private SizeMessage2GroupedMessage() { }
-    private static readonly SizeMessage2GroupedMessage defaultInstance = new Builder().BuildPartial();
+    private static readonly SizeMessage2GroupedMessage defaultInstance = new SizeMessage2GroupedMessage().MakeReadOnly();
     public static SizeMessage2GroupedMessage DefaultInstance {
       get { return defaultInstance; }
     }
     
     public override SizeMessage2GroupedMessage DefaultInstanceForType {
-      get { return defaultInstance; }
+      get { return DefaultInstance; }
     }
     
     protected override SizeMessage2GroupedMessage ThisMessage {
@@ -4268,6 +4284,10 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static SizeMessage2GroupedMessage ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
       return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
     }
+    private SizeMessage2GroupedMessage MakeReadOnly() {
+      return this;
+    }
+    
     public static Builder CreateBuilder() { return new Builder(); }
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
@@ -4283,22 +4303,22 @@ namespace Google.ProtocolBuffers.TestProtos {
         get { return this; }
       }
       public Builder() {
-        result = DefaultInstance ?? new SizeMessage2GroupedMessage();
-        builderIsReadOnly = result == DefaultInstance;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
       }
       internal Builder(SizeMessage2GroupedMessage cloneFrom) {
         result = cloneFrom;
-        builderIsReadOnly = true;
+        resultIsReadOnly = true;
       }
       
-      bool builderIsReadOnly;
-      SizeMessage2GroupedMessage result;
+      private bool resultIsReadOnly;
+      private SizeMessage2GroupedMessage result;
       
       private SizeMessage2GroupedMessage PrepareBuilder() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           SizeMessage2GroupedMessage original = result;
           result = new SizeMessage2GroupedMessage();
-          builderIsReadOnly = false;
+          resultIsReadOnly = false;
           MergeFrom(original);
         }
         return result;
@@ -4313,13 +4333,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder Clear() {
-        result = DefaultInstance ?? new SizeMessage2GroupedMessage();
-        builderIsReadOnly = true;
+        result = DefaultInstance;
+        resultIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return new Builder(result);
         } else {
           return new Builder().MergeFrom(result);
@@ -4335,11 +4355,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override SizeMessage2GroupedMessage BuildPartial() {
-        if (builderIsReadOnly) {
+        if (resultIsReadOnly) {
           return result;
         }
-        builderIsReadOnly = true;
-        return result;
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
       }
       
       
