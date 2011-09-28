@@ -42,7 +42,7 @@ namespace Google.ProtocolBuffers
     /// Non-generic interface used for all parts of the API which don't require
     /// any type knowledge.
     /// </summary>
-    public interface IMessageLite
+    public partial interface IMessageLite
     {
         /// <summary>
         /// Returns true iff all required fields in the message and all embedded

@@ -61,6 +61,7 @@
     <Compile Include="ExtendableBuilderLiteTest.cs" />
     <Compile Include="ExtendableMessageLiteTest.cs" />
     <Compile Include="LiteTest.cs" />
+    <Compile Include="SerializableLiteTest.cs" />
     <Compile Include="TestLiteByApi.cs" />
     <Compile Include="TestProtos\UnitTestExtrasLiteProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />

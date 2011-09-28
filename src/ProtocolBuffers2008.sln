@@ -23,7 +23,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unittest", "unittest", "{C8
 		..\protos\extest\unittest_generic_services.proto = ..\protos\extest\unittest_generic_services.proto
 		..\protos\google\protobuf\unittest_import.proto = ..\protos\google\protobuf\unittest_import.proto
 		..\protos\google\protobuf\unittest_import_lite.proto = ..\protos\google\protobuf\unittest_import_lite.proto
-		..\protos\extest\unittest_issues.proto = ..\protos\extest\unittest_issues.proto
 		..\protos\google\protobuf\unittest_lite.proto = ..\protos\google\protobuf\unittest_lite.proto
 		..\protos\google\protobuf\unittest_lite_imports_nonlite.proto = ..\protos\google\protobuf\unittest_lite_imports_nonlite.proto
 		..\protos\google\protobuf\unittest_mset.proto = ..\protos\google\protobuf\unittest_mset.proto

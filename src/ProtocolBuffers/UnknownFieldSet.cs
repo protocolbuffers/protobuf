@@ -53,7 +53,7 @@ namespace Google.ProtocolBuffers
     /// 
     /// Most users will never need to use this class directly.
     /// </summary>
-    public sealed class UnknownFieldSet : IMessageLite
+    public sealed partial class UnknownFieldSet : IMessageLite
     {
         private static readonly UnknownFieldSet defaultInstance =
             new UnknownFieldSet(new Dictionary<int, UnknownField>());
@@ -314,7 +314,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Builder for UnknownFieldSets.
         /// </summary>
-        public sealed class Builder : IBuilderLite
+        public sealed partial class Builder : IBuilderLite
         {
             /// <summary>
             /// Mapping from number to field. Note that by using a SortedList we ensure

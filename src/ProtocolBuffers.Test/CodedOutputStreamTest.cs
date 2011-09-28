@@ -34,6 +34,8 @@
 
 #endregion
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
@@ -287,6 +289,83 @@ namespace Google.ProtocolBuffers
                             CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(856912304801416L)));
             Assert.AreEqual(-75123905439571256L,
                             CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-75123905439571256L)));
+        }
+
+        [Test]
+        public void TestNegativeEnumNoTag()
+        {
+            Assert.AreEqual(10, CodedOutputStream.ComputeInt32SizeNoTag(-2));
+            Assert.AreEqual(10, CodedOutputStream.ComputeEnumSizeNoTag(-2));
+
+            byte[] bytes = new byte[10];
+            CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
+            output.WriteEnumNoTag(-2);
+
+            Assert.AreEqual(0, output.SpaceLeft);
+            Assert.AreEqual("FE-FF-FF-FF-FF-FF-FF-FF-FF-01", BitConverter.ToString(bytes));
+        }
+
+        [Test]
+        public void TestNegativeEnumWithTag()
+        {
+            Assert.AreEqual(11, CodedOutputStream.ComputeInt32Size(8, -2));
+            Assert.AreEqual(11, CodedOutputStream.ComputeEnumSize(8, -2));
+
+            byte[] bytes = new byte[11];
+            CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
+            output.WriteEnum(8, "", -2, -2);
+
+            Assert.AreEqual(0, output.SpaceLeft);
+            //fyi, 0x40 == 0x08 << 3 + 0, field num + wire format shift
+            Assert.AreEqual("40-FE-FF-FF-FF-FF-FF-FF-FF-FF-01", BitConverter.ToString(bytes));
+        }
+
+        [Test]
+        public void TestNegativeEnumArrayPacked()
+        {
+            int arraySize = 1 + (10 * 5);
+            int msgSize = 1 + 1 + arraySize;
+            byte[] bytes = new byte[msgSize];
+            CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
+            output.WritePackedEnumArray(8, "", arraySize, new int[] { 0, -1, -2, -3, -4, -5 });
+
+            Assert.AreEqual(0, output.SpaceLeft);
+
+            CodedInputStream input = CodedInputStream.CreateInstance(bytes);
+            uint tag;
+            string name;
+            Assert.IsTrue(input.ReadTag(out tag, out name));
+
+            List<int> values = new List<int>();
+            input.ReadInt32Array(tag, name, values);
+
+            Assert.AreEqual(6, values.Count);
+            for (int i = 0; i > -6; i--)
+                Assert.AreEqual(i, values[Math.Abs(i)]);
+        }
+
+        [Test]
+        public void TestNegativeEnumArray()
+        {
+            int arraySize = 1 + 1 + (11 * 5);
+            int msgSize = arraySize;
+            byte[] bytes = new byte[msgSize];
+            CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
+            output.WriteEnumArray(8, "", new int[] { 0, -1, -2, -3, -4, -5 });
+
+            Assert.AreEqual(0, output.SpaceLeft);
+
+            CodedInputStream input = CodedInputStream.CreateInstance(bytes);
+            uint tag;
+            string name;
+            Assert.IsTrue(input.ReadTag(out tag, out name));
+
+            List<int> values = new List<int>();
+            input.ReadInt32Array(tag, name, values);
+
+            Assert.AreEqual(6, values.Count);
+            for (int i = 0; i > -6; i--)
+                Assert.AreEqual(i, values[Math.Abs(i)]);
         }
     }
 }

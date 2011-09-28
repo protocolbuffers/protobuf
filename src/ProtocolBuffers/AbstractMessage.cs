@@ -46,7 +46,7 @@ namespace Google.ProtocolBuffers
     /// <summary>
     /// Implementation of the non-generic IMessage interface as far as possible.
     /// </summary>
-    public abstract class AbstractMessage<TMessage, TBuilder> : AbstractMessageLite<TMessage, TBuilder>,
+    public abstract partial class AbstractMessage<TMessage, TBuilder> : AbstractMessageLite<TMessage, TBuilder>,
                                                                 IMessage<TMessage, TBuilder>
         where TMessage : AbstractMessage<TMessage, TBuilder>
         where TBuilder : AbstractBuilder<TMessage, TBuilder>

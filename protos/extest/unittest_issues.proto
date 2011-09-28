@@ -86,3 +86,47 @@ message NumberField {
     optional int32 _01 = 1;
 }
 
+// Issue 28: Circular message dependencies result in null defaults for DefaultInstance
+
+message MyMessageAReferenceB {
+    required MyMessageBReferenceA value = 1;
+}
+
+message MyMessageBReferenceA {
+    required MyMessageAReferenceB value = 1;
+}
+
+// issue 19 - negative enum values
+
+enum NegativeEnum {
+    FiveBelow = -5;
+    MinusOne = -1;
+    Zero = 0;
+}
+
+message NegativeEnumMessage { 
+    optional NegativeEnum value = 1;
+    repeated NegativeEnum values = 2;
+    repeated NegativeEnum packed_values = 3 [packed=true];
+}
+
+// Issue 21: http://code.google.com/p/protobuf-csharp-port/issues/detail?id=21
+// Decorate fields with [deprecated=true] as [System.Obsolete]
+
+message DeprecatedChild {
+}
+
+enum DeprecatedEnum {
+    one = 1;
+}
+
+message DeprecatedFieldsMessage {
+    optional int32 PrimitiveValue = 1 [deprecated = true];
+    repeated int32 PrimitiveArray = 2 [deprecated = true];
+
+    optional DeprecatedChild MessageValue = 3 [deprecated = true];
+    repeated DeprecatedChild MessageArray = 4 [deprecated = true];
+
+    optional DeprecatedEnum EnumValue = 5 [deprecated = true];
+    repeated DeprecatedEnum EnumArray = 6 [deprecated = true];
+}

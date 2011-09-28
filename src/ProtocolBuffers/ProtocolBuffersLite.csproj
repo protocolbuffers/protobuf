@@ -86,6 +86,7 @@
     <Compile Include="Collections\Lists.cs" />
     <Compile Include="Collections\PopsicleList.cs" />
     <Compile Include="Collections\ReadOnlyDictionary.cs" />
+    <Compile Include="CustomSerialization.cs" />
     <Compile Include="Descriptors\FieldMappingAttribute.cs" />
     <Compile Include="Descriptors\FieldType.cs" />
     <Compile Include="Descriptors\MappedType.cs" />

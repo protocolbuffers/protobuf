@@ -47,7 +47,7 @@ namespace Google.ProtocolBuffers
     /// most of the IBuilder interface using reflection. Users can ignore this class
     /// as an implementation detail.
     /// </summary>
-    public abstract class GeneratedBuilder<TMessage, TBuilder> : AbstractBuilder<TMessage, TBuilder>
+    public abstract partial class GeneratedBuilder<TMessage, TBuilder> : AbstractBuilder<TMessage, TBuilder>
         where TMessage : GeneratedMessage<TMessage, TBuilder>
         where TBuilder : GeneratedBuilder<TMessage, TBuilder>, new()
     {
@@ -58,12 +58,7 @@ namespace Google.ProtocolBuffers
 
         protected internal FieldAccessorTable<TMessage, TBuilder> InternalFieldAccessors
         {
-            get { return MessageBeingBuilt.FieldAccessorsFromBuilder; }
-        }
-
-        public override bool IsInitialized
-        {
-            get { return MessageBeingBuilt.IsInitialized; }
+            get { return DefaultInstanceForType.FieldAccessorsFromBuilder; }
         }
 
         public override IDictionary<FieldDescriptor, object> AllFields
@@ -85,32 +80,6 @@ namespace Google.ProtocolBuffers
         }
 
         /// <summary>
-        /// Adds all of the specified values to the given collection.
-        /// </summary>
-        /// <exception cref="ArgumentNullException">Any element of the list is null</exception>
-        protected void AddRange<T>(IEnumerable<T> source, IList<T> destination)
-        {
-            ThrowHelper.ThrowIfNull(source);
-            // We only need to check this for nullable types.
-            if (default(T) == null)
-            {
-                ThrowHelper.ThrowIfAnyNull(source);
-            }
-            List<T> list = destination as List<T>;
-            if (list != null)
-            {
-                list.AddRange(source);
-            }
-            else
-            {
-                foreach (T element in source)
-                {
-                    destination.Add(element);
-                }
-            }
-        }
-
-        /// <summary>
         /// Called by derived classes to parse an unknown field.
         /// </summary>
         /// <returns>true unless the tag is an end-group tag</returns>
@@ -123,7 +92,7 @@ namespace Google.ProtocolBuffers
 
         public override MessageDescriptor DescriptorForType
         {
-            get { return MessageBeingBuilt.DescriptorForType; }
+            get { return DefaultInstanceForType.DescriptorForType; }
         }
 
         public override int GetRepeatedFieldCount(FieldDescriptor field)
@@ -230,7 +199,7 @@ namespace Google.ProtocolBuffers
         public override TMessage Build()
         {
             // If the message is null, we'll throw a more appropriate exception in BuildPartial.
-            if (MessageBeingBuilt != null && !IsInitialized)
+            if (!IsInitialized)
             {
                 throw new UninitializedMessageException(MessageBeingBuilt);
             }
