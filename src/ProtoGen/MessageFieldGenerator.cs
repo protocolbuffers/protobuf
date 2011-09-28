@@ -73,6 +73,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             AddDeprecatedFlag(writer);
             writer.WriteLine("public Builder Set{0}({1} value) {{", PropertyName, TypeName);
             AddNullCheck(writer);
+            writer.WriteLine("  PrepareBuilder();");
             writer.WriteLine("  result.has{0} = true;", PropertyName);
             writer.WriteLine("  result.{0}_ = value;", Name);
             writer.WriteLine("  return this;");
@@ -80,6 +81,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             AddDeprecatedFlag(writer);
             writer.WriteLine("public Builder Set{0}({1}.Builder builderForValue) {{", PropertyName, TypeName);
             AddNullCheck(writer, "builderForValue");
+            writer.WriteLine("  PrepareBuilder();");
             writer.WriteLine("  result.has{0} = true;", PropertyName);
             writer.WriteLine("  result.{0}_ = builderForValue.Build();", Name);
             writer.WriteLine("  return this;");
@@ -87,6 +89,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             AddDeprecatedFlag(writer);
             writer.WriteLine("public Builder Merge{0}({1} value) {{", PropertyName, TypeName);
             AddNullCheck(writer);
+            writer.WriteLine("  PrepareBuilder();");
             writer.WriteLine("  if (result.has{0} &&", PropertyName);
             writer.WriteLine("      result.{0}_ != {1}) {{", Name, DefaultValue);
             writer.WriteLine("      result.{0}_ = {1}.CreateBuilder(result.{0}_).MergeFrom(value).BuildPartial();", Name,
@@ -99,6 +102,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("}");
             AddDeprecatedFlag(writer);
             writer.WriteLine("public Builder Clear{0}() {{", PropertyName);
+            writer.WriteLine("  PrepareBuilder();");
             writer.WriteLine("  result.has{0} = false;", PropertyName);
             writer.WriteLine("  result.{0}_ = {1};", Name, DefaultValue);
             writer.WriteLine("  return this;");

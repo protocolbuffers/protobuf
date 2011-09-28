@@ -191,7 +191,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     public override Builder ToBuilder() { return CreateBuilder(this); }
     public override Builder CreateBuilderForType() { return new Builder(); }
     public static Builder CreateBuilder(OptionsMessage prototype) {
-      return (Builder) new Builder().MergeFrom(prototype);
+      return new Builder(prototype);
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -201,21 +201,48 @@ namespace Google.ProtocolBuffers.TestProtos {
       protected override Builder ThisBuilder {
         get { return this; }
       }
-      public Builder() {}
+      public Builder() {
+        result = DefaultInstance ?? new OptionsMessage();
+        builderIsReadOnly = result == DefaultInstance;
+      }
+      internal Builder(OptionsMessage cloneFrom) {
+        result = cloneFrom;
+        builderIsReadOnly = true;
+      }
       
-      OptionsMessage result = new OptionsMessage();
+      bool builderIsReadOnly;
+      OptionsMessage result;
+      
+      private OptionsMessage PrepareBuilder() {
+        if (builderIsReadOnly) {
+          OptionsMessage original = result;
+          result = new OptionsMessage();
+          builderIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
       
       protected override OptionsMessage MessageBeingBuilt {
-        get { return result; }
+        get { return PrepareBuilder(); }
       }
       
       public override Builder Clear() {
-        result = new OptionsMessage();
+        result = DefaultInstance ?? new OptionsMessage();
+        builderIsReadOnly = true;
         return this;
       }
       
       public override Builder Clone() {
-        return new Builder().MergeFrom(result);
+        if (builderIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
@@ -227,12 +254,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override OptionsMessage BuildPartial() {
-        if (result == null) {
-          throw new global::System.InvalidOperationException("build() has already been called on this Builder");
+        if (builderIsReadOnly) {
+          return result;
         }
-        OptionsMessage returnMe = result;
-        result = null;
-        return returnMe;
+        builderIsReadOnly = true;
+        return result;
       }
       
       public override Builder MergeFrom(pb::IMessage other) {
@@ -246,6 +272,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       public override Builder MergeFrom(OptionsMessage other) {
         if (other == global::Google.ProtocolBuffers.TestProtos.OptionsMessage.DefaultInstance) return this;
+        PrepareBuilder();
         if (other.HasNormal) {
           Normal = other.Normal;
         }
@@ -264,6 +291,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
         pb::UnknownFieldSet.Builder unknownFields = null;
         uint tag;
         string field_name;
@@ -328,11 +356,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder SetNormal(string value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
         result.hasNormal = true;
         result.normal_ = value;
         return this;
       }
       public Builder ClearNormal() {
+        PrepareBuilder();
         result.hasNormal = false;
         result.normal_ = "";
         return this;
@@ -347,11 +377,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder SetOptionsMessage_(string value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
         result.hasOptionsMessage_ = true;
         result.optionsMessage_ = value;
         return this;
       }
       public Builder ClearOptionsMessage_() {
+        PrepareBuilder();
         result.hasOptionsMessage_ = false;
         result.optionsMessage_ = "";
         return this;
@@ -366,11 +398,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       public Builder SetCustomName(string value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
         result.hasCustomName = true;
         result.customized_ = value;
         return this;
       }
       public Builder ClearCustomName() {
+        PrepareBuilder();
         result.hasCustomName = false;
         result.customized_ = "";
         return this;

@@ -556,7 +556,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("public override Builder ToBuilder() { return CreateBuilder(this); }");
             writer.WriteLine("public override Builder CreateBuilderForType() { return new Builder(); }");
             writer.WriteLine("public static Builder CreateBuilder({0} prototype) {{", ClassName);
-            writer.WriteLine("  return (Builder) new Builder().MergeFrom(prototype);");
+            writer.WriteLine("  return new Builder(prototype);");
             writer.WriteLine("}");
             writer.WriteLine();
             if (Descriptor.File.CSharpOptions.AddSerializable)
@@ -591,21 +591,52 @@ namespace Google.ProtocolBuffers.ProtoGen
 
         private void GenerateCommonBuilderMethods(TextGenerator writer)
         {
-            writer.WriteLine("public Builder() {{}}", ClassAccessLevel);
-            writer.WriteLine();
-            writer.WriteLine("{0} result = new {0}();", ClassName);
-            writer.WriteLine();
-            writer.WriteLine("protected override {0} MessageBeingBuilt {{", ClassName);
-            writer.WriteLine("  get { return result; }");
+            //default constructor
+            writer.WriteLine("public Builder() {");
+            //Durring static initialization of message, DefaultInstance is expected to return null.
+            writer.WriteLine("  result = DefaultInstance ?? new {0}();", ClassName);
+            writer.WriteLine("  builderIsReadOnly = result == DefaultInstance;");
+            writer.WriteLine("}");
+            //clone constructor
+            writer.WriteLine("internal Builder({0} cloneFrom) {{", ClassName);
+            writer.WriteLine("  result = cloneFrom;");
+            writer.WriteLine("  builderIsReadOnly = true;");
             writer.WriteLine("}");
             writer.WriteLine();
+            writer.WriteLine("bool builderIsReadOnly;");
+            writer.WriteLine("{0} result;", ClassName);
+            writer.WriteLine();
+            writer.WriteLine("private {0} PrepareBuilder() {{", ClassName);
+            writer.WriteLine("  if (builderIsReadOnly) {");
+            writer.WriteLine("    {0} original = result;", ClassName);
+            writer.WriteLine("    result = new {0}();", ClassName);
+            writer.WriteLine("    builderIsReadOnly = false;");
+            writer.WriteLine("    MergeFrom(original);");
+            writer.WriteLine("  }");
+            writer.WriteLine("  return result;");
+            writer.WriteLine("}");
+            writer.WriteLine();
+            writer.WriteLine("public override bool IsInitialized {");
+            writer.WriteLine("  get { return result.IsInitialized; }");
+            writer.WriteLine("}");
+            writer.WriteLine();
+            writer.WriteLine("protected override {0} MessageBeingBuilt {{", ClassName);
+            writer.WriteLine("  get { return PrepareBuilder(); }");
+            writer.WriteLine("}");
+            writer.WriteLine();
+            //Not actually expecting that DefaultInstance would ever be null here; however, we will ensure it does not break
             writer.WriteLine("public override Builder Clear() {");
-            writer.WriteLine("  result = new {0}();", ClassName);
+            writer.WriteLine("  result = DefaultInstance ?? new {0}();", ClassName);
+            writer.WriteLine("  builderIsReadOnly = true;");
             writer.WriteLine("  return this;");
             writer.WriteLine("}");
             writer.WriteLine();
             writer.WriteLine("public override Builder Clone() {");
-            writer.WriteLine("  return new Builder().MergeFrom(result);");
+            writer.WriteLine("  if (builderIsReadOnly) {");
+            writer.WriteLine("    return new Builder(result);");
+            writer.WriteLine("  } else {");
+            writer.WriteLine("    return new Builder().MergeFrom(result);");
+            writer.WriteLine("  }");
             writer.WriteLine("}");
             writer.WriteLine();
             if (!UseLiteRuntime)
@@ -622,17 +653,15 @@ namespace Google.ProtocolBuffers.ProtoGen
 
             writer.WriteLine("public override {0} BuildPartial() {{", ClassName);
             writer.Indent();
-            writer.WriteLine("if (result == null) {");
-            writer.WriteLine(
-                "  throw new global::System.InvalidOperationException(\"build() has already been called on this Builder\");");
+            writer.WriteLine("if (builderIsReadOnly) {");
+            writer.WriteLine("  return result;");
             writer.WriteLine("}");
             foreach (FieldDescriptor field in Descriptor.Fields)
             {
                 CreateFieldGenerator(field).GenerateBuildingCode(writer);
             }
-            writer.WriteLine("{0} returnMe = result;", ClassName);
-            writer.WriteLine("result = null;");
-            writer.WriteLine("return returnMe;");
+            writer.WriteLine("builderIsReadOnly = true;");
+            writer.WriteLine("return result;");
             writer.Outdent();
             writer.WriteLine("}");
             writer.WriteLine();
@@ -653,6 +682,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                 // fields are set so we can skip the merge.
                 writer.Indent();
                 writer.WriteLine("if (other == {0}.DefaultInstance) return this;", FullClassName);
+                writer.WriteLine("PrepareBuilder();");
                 foreach (FieldDescriptor field in Descriptor.Fields)
                 {
                     CreateFieldGenerator(field).GenerateMergingCode(writer);
@@ -685,6 +715,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine(
                 "public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {");
             writer.Indent();
+            writer.WriteLine("PrepareBuilder();");
             if (!UseLiteRuntime)
             {
                 writer.WriteLine("pb::UnknownFieldSet.Builder unknownFields = null;");

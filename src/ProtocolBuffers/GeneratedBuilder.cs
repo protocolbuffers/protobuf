@@ -58,12 +58,7 @@ namespace Google.ProtocolBuffers
 
         protected internal FieldAccessorTable<TMessage, TBuilder> InternalFieldAccessors
         {
-            get { return MessageBeingBuilt.FieldAccessorsFromBuilder; }
-        }
-
-        public override bool IsInitialized
-        {
-            get { return MessageBeingBuilt.IsInitialized; }
+            get { return DefaultInstanceForType.FieldAccessorsFromBuilder; }
         }
 
         public override IDictionary<FieldDescriptor, object> AllFields
@@ -97,7 +92,7 @@ namespace Google.ProtocolBuffers
 
         public override MessageDescriptor DescriptorForType
         {
-            get { return MessageBeingBuilt.DescriptorForType; }
+            get { return DefaultInstanceForType.DescriptorForType; }
         }
 
         public override int GetRepeatedFieldCount(FieldDescriptor field)
@@ -204,7 +199,7 @@ namespace Google.ProtocolBuffers
         public override TMessage Build()
         {
             // If the message is null, we'll throw a more appropriate exception in BuildPartial.
-            if (MessageBeingBuilt != null && !IsInitialized)
+            if (!IsInitialized)
             {
                 throw new UninitializedMessageException(MessageBeingBuilt);
             }
