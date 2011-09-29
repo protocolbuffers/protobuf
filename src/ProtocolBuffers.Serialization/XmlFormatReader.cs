@@ -14,16 +14,16 @@ namespace Google.ProtocolBuffers.Serialization
     {
         public const string DefaultRootElementName = XmlFormatWriter.DefaultRootElementName;
         private readonly XmlReader _input;
-        private readonly Stack<ElementStack> _elements;
+        private readonly Stack<ElementStackEntry> _elements;
         private string _rootElementName;
 
-        private struct ElementStack
+        private struct ElementStackEntry
         {
             public readonly string LocalName;
             public readonly int Depth;
             public readonly bool IsEmpty;
 
-            public ElementStack(string localName, int depth, bool isEmpty) : this()
+            public ElementStackEntry(string localName, int depth, bool isEmpty) : this()
             {
                 LocalName = localName;
                 IsEmpty = isEmpty;
@@ -87,7 +87,7 @@ namespace Google.ProtocolBuffers.Serialization
         {
             _input = input;
             _rootElementName = DefaultRootElementName;
-            _elements = new Stack<ElementStack>();
+            _elements = new Stack<ElementStackEntry>();
             Options = XmlReaderOptions.None;
         }
 
@@ -144,7 +144,7 @@ namespace Google.ProtocolBuffers.Serialization
                 continue;
             }
             Assert(_input.IsStartElement() && _input.LocalName == element);
-            _elements.Push(new ElementStack(element, _input.Depth, _input.IsEmptyElement));
+            _elements.Push(new ElementStackEntry(element, _input.Depth, _input.IsEmptyElement));
             _input.Read();
         }
 
@@ -156,7 +156,7 @@ namespace Google.ProtocolBuffers.Serialization
         {
             Assert(_elements.Count > 0);
 
-            ElementStack stop = _elements.Peek();
+            ElementStackEntry stop = _elements.Peek();
             while (_input.NodeType != XmlNodeType.EndElement && _input.NodeType != XmlNodeType.Element
                    && _input.Depth > stop.Depth && _input.Read())
             {
@@ -211,10 +211,10 @@ namespace Google.ProtocolBuffers.Serialization
         /// </remarks>
         protected override bool PeekNext(out string field)
         {
-            ElementStack stopNode;
+            ElementStackEntry stopNode;
             if (_elements.Count == 0)
             {
-                stopNode = new ElementStack(null, _input.Depth - 1, false);
+                stopNode = new ElementStackEntry(null, _input.Depth - 1, false);
             }
             else
             {

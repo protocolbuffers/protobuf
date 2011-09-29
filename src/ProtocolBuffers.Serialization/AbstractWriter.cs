@@ -12,29 +12,12 @@ namespace Google.ProtocolBuffers.Serialization
     /// <summary>
     /// Provides a base class for writers that performs some basic type dispatching
     /// </summary>
-    public abstract class AbstractWriter : ICodedOutputStream, IDisposable
+    public abstract class AbstractWriter : ICodedOutputStream
     {
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-            Flush();
-            Dispose(true);
-        }
-
         /// <summary>
         /// Completes any pending write operations
         /// </summary>
         public virtual void Flush()
-        {
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        protected virtual void Dispose(bool disposing)
         {
         }
 

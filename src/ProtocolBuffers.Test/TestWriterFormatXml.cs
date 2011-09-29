@@ -46,8 +46,8 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             using (TextWriter output = new StringWriter())
-            using (AbstractWriter writer = XmlFormatWriter.CreateInstance(output))
             {
+                ICodedOutputStream writer = XmlFormatWriter.CreateInstance(output);
                 writer.WriteMessageStart();      //manually begin the message, output is '{'
 
                 ICodedOutputStream stream = writer;

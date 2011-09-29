@@ -72,24 +72,6 @@ namespace Google.ProtocolBuffers.Serialization
         }
 
         /// <summary>
-        /// Closes the underlying XmlTextWriter
-        /// </summary>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                while (_messageOpenCount > 0)
-                {
-                    WriteMessageEnd();
-                }
-
-                _output.Close();
-            }
-
-            base.Dispose(disposing);
-        }
-
-        /// <summary>
         /// Gets or sets the default element name to use when using the Merge&lt;TBuilder>()
         /// </summary>
         public string RootElementName

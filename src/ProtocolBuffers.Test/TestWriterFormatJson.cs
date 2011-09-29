@@ -43,8 +43,8 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             using (TextWriter output = new StringWriter())
-            using (AbstractWriter writer = JsonFormatWriter.CreateInstance(output))
             {
+                ICodedOutputStream writer = JsonFormatWriter.CreateInstance(output);
                 writer.WriteMessageStart();      //manually begin the message, output is '{'
                 
                 writer.Flush();

@@ -8,7 +8,7 @@ namespace Google.ProtocolBuffers.Serialization.Http
     /// <summary>
     /// Defines control information for the various formatting used with HTTP services
     /// </summary>
-    public struct MessageFormatOptions
+    public class MessageFormatOptions
     {
         /// <summary>The mime type for xml content</summary>
         /// <remarks>Other valid xml mime types include: application/binary, application/x-protobuf</remarks>
