@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
@@ -11,6 +11,7 @@ namespace Google.ProtocolBuffers.Serialization
     public class JsonFormatReader : AbstractTextReader
     {
         private readonly JsonCursor _input;
+        // The expected token that ends the current item, either ']' or '}'
         private readonly Stack<int> _stopChar;
 
         private enum ReaderState
@@ -101,17 +102,33 @@ namespace Google.ProtocolBuffers.Serialization
         }
 
         /// <summary>
-        /// Merges the contents of stream into the provided message builder
+        /// Reads the root-message preamble specific to this formatter
         /// </summary>
-        public override TBuilder Merge<TBuilder>(TBuilder builder, ExtensionRegistry registry)
+        public override void ReadMessageStart()
         {
             _input.Consume('{');
             _stopChar.Push('}');
 
             _state = ReaderState.BeginObject;
-            builder.WeakMergeFrom(this, registry);
-            _input.Consume((char) _stopChar.Pop());
+        }
+
+        /// <summary>
+        /// Reads the root-message close specific to this formatter
+        /// </summary>
+        public override void ReadMessageEnd()
+        {
+            _input.Consume((char)_stopChar.Pop());
             _state = ReaderState.EndValue;
+        }
+
+        /// <summary>
+        /// Merges the contents of stream into the provided message builder
+        /// </summary>
+        public override TBuilder Merge<TBuilder>(TBuilder builder, ExtensionRegistry registry)
+        {
+            ReadMessageStart();
+            builder.WeakMergeFrom(this, registry);
+            ReadMessageEnd();
             return builder;
         }
 

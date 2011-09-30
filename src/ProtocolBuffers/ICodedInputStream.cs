@@ -46,6 +46,24 @@ namespace Google.ProtocolBuffers
     public interface ICodedInputStream
     {
         /// <summary>
+        /// Reads any message initialization data expected from the input stream
+        /// </summary>
+        /// <remarks>
+        /// This is primarily used by text formats and unnecessary for protobuffers' own
+        /// binary format.  The API for MessageStart/End was added for consistent handling
+        /// of output streams regardless of the actual writer implementation.
+        /// </remarks>
+        void ReadMessageStart();
+        /// <summary>
+        /// Reads any message finalization data expected from the input stream
+        /// </summary>
+        /// <remarks>
+        /// This is primarily used by text formats and unnecessary for protobuffers' own
+        /// binary format.  The API for MessageStart/End was added for consistent handling
+        /// of output streams regardless of the actual writer implementation.
+        /// </remarks>
+        void ReadMessageEnd();
+        /// <summary>
         /// Attempt to read a field tag, returning false if we have reached the end
         /// of the input data.
         /// </summary>

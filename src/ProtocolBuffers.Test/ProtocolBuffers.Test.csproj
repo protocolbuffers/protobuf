@@ -88,6 +88,8 @@
     </Compile>
     <Compile Include="Compatibility\TextCompatibilityTests.cs" />
     <Compile Include="Compatibility\XmlCompatibilityTests.cs" />
+    <Compile Include="TestRpcForMimeTypes.cs" />
+    <Compile Include="TestReaderForUrlEncoded.cs" />
     <Compile Include="CSharpOptionsTest.cs" />
     <Compile Include="DeprecatedMemberTest.cs" />
     <Compile Include="DescriptorsTest.cs" />
@@ -107,6 +109,7 @@
     <Compile Include="SerializableTest.cs" />
     <Compile Include="ServiceTest.cs" />
     <Compile Include="TestCornerCases.cs" />
+    <Compile Include="TestMimeMessageFormats.cs" />
     <Compile Include="TestProtos\UnitTestCSharpOptionsProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestCustomOptionsProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestEmbedOptimizeForProtoFile.cs" />

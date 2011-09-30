@@ -125,6 +125,9 @@ namespace Google.ProtocolBuffers
         }
 
         #endregion
+        
+        void ICodedOutputStream.WriteMessageStart() { }
+        void ICodedOutputStream.WriteMessageEnd() { Flush(); }
 
         #region Writing of unknown fields
 
