@@ -27,6 +27,7 @@ namespace Google.ProtocolBuffers.Serialization.Http
             ICodedInputStream codedInput = MessageFormatFactory.CreateInputStream(options, contentType, input);
             codedInput.ReadMessageStart();
             IMessageLite response = stub.CallMethod(methodName, codedInput, options.ExtensionRegistry);
+            codedInput.ReadMessageEnd();
             response.WriteTo(options, responseType, output);
         }
     }

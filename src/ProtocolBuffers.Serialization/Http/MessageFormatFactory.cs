@@ -44,7 +44,9 @@ namespace Google.ProtocolBuffers.Serialization.Http
         {
             ICodedInputStream codedInput = CreateInputStream(options, contentType, input);
             codedInput.ReadMessageStart();
-            return (TBuilder)builder.WeakMergeFrom(codedInput, options.ExtensionRegistry);
+            builder.WeakMergeFrom(codedInput, options.ExtensionRegistry);
+            codedInput.ReadMessageEnd();
+            return builder;
         }
         
         /// <summary>
@@ -110,6 +112,7 @@ namespace Google.ProtocolBuffers.Serialization.Http
 
             // Write the closing message fragment
             codedOutput.WriteMessageEnd();
+            codedOutput.Flush();
         }
 
         private static ICodedInputStream ContentTypeToInputStream(string contentType, MessageFormatOptions options, Stream input)
