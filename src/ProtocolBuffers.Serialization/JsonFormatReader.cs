@@ -11,6 +11,7 @@ namespace Google.ProtocolBuffers.Serialization
     public class JsonFormatReader : AbstractTextReader
     {
         private readonly JsonCursor _input;
+        // The expected token that ends the current item, either ']' or '}'
         private readonly Stack<int> _stopChar;
 
         private enum ReaderState

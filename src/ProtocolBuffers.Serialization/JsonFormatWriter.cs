@@ -168,7 +168,9 @@ namespace Google.ProtocolBuffers.Serialization
 
         #endregion
 
+        //Tracks the writer depth and the array element count at that depth.
         private readonly List<int> _counter;
+        //True if the top-level of the writer is an array as opposed to a single message.
         private bool _isArray;
 
         /// <summary>

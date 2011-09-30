@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using System.Diagnostics;
 
 namespace Google.ProtocolBuffers.Serialization
 {
@@ -14,7 +15,9 @@ namespace Google.ProtocolBuffers.Serialization
     {
         public const string DefaultRootElementName = XmlFormatWriter.DefaultRootElementName;
         private readonly XmlReader _input;
+        // Tracks the message element for each nested message read
         private readonly Stack<ElementStackEntry> _elements;
+        // The default element name for ReadMessageStart
         private string _rootElementName;
 
         private struct ElementStackEntry
@@ -118,6 +121,7 @@ namespace Google.ProtocolBuffers.Serialization
             }
         }
 
+        [DebuggerNonUserCode]
         private static void Assert(bool cond)
         {
             if (!cond)

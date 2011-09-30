@@ -16,9 +16,11 @@ namespace Google.ProtocolBuffers.Serialization
     {
         private static readonly Encoding DefaultEncoding = new UTF8Encoding(false);
         public const string DefaultRootElementName = "root";
-        private const int NestedArrayFlag = 0x0001;
+
         private readonly XmlWriter _output;
+        // The default element name used for WriteMessageStart
         private string _rootElementName;
+        // Used to assert matching WriteMessageStart/WriteMessageEnd calls
         private int _messageOpenCount;
 
         private static XmlWriterSettings DefaultSettings(Encoding encoding)
@@ -119,7 +121,7 @@ namespace Google.ProtocolBuffers.Serialization
         /// </summary>
         public override void WriteMessageStart()
         {
-            StartMessage(_rootElementName);
+            WriteMessageStart(_rootElementName);
         }
 
         /// <summary>
@@ -127,7 +129,7 @@ namespace Google.ProtocolBuffers.Serialization
         /// After this call you can call IMessageLite.MergeTo(...) and  complete the message with 
         /// a call to WriteMessageEnd().
         /// </summary>
-        public void StartMessage(string elementName)
+        public void WriteMessageStart(string elementName)
         {
             if (TestOption(XmlWriterOptions.OutputJsonTypes))
             {
@@ -169,7 +171,7 @@ namespace Google.ProtocolBuffers.Serialization
         /// </summary>
         public void WriteMessage(string elementName, IMessageLite message)
         {
-            StartMessage(elementName);
+            WriteMessageStart(elementName);
             message.WriteTo(this);
             WriteMessageEnd();
         }
