@@ -315,10 +315,14 @@ namespace Google.ProtocolBuffers.Serialization
             }
             else
             {
+                string found;
                 ReadMessageStart(field);
-                foreach (string item in NonNestedArrayItems("item"))
+                if (PeekNext(out found) && found == "item")
                 {
-                    yield return item;
+                    foreach (string item in NonNestedArrayItems("item"))
+                    {
+                        yield return item;
+                    }
                 }
                 ReadMessageEnd();
             }

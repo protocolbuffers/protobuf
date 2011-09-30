@@ -194,7 +194,9 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             StringWriter sw = new StringWriter();
-            XmlFormatWriter.CreateInstance(sw).WriteMessage("root", message);
+            XmlWriter xwtr = XmlWriter.Create(sw, new XmlWriterSettings {Indent = true, IndentChars = "  "});
+
+            XmlFormatWriter.CreateInstance(xwtr).WriteMessage("root", message);
 
             string xml = sw.ToString();
 
@@ -221,7 +223,9 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             StringWriter sw = new StringWriter();
-            XmlFormatWriter.CreateInstance(sw)
+            XmlWriter xwtr = XmlWriter.Create(sw, new XmlWriterSettings { Indent = true, IndentChars = "  " });
+
+            XmlFormatWriter.CreateInstance(xwtr)
                 .SetOptions(XmlWriterOptions.OutputNestedArrays | XmlWriterOptions.OutputEnumValues)
                 .WriteMessage("root", message);
 
