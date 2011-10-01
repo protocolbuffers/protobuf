@@ -17,12 +17,6 @@ namespace Google.ProtocolBuffers.Serialization
         
         /// <summary> Constructs a new reader </summary>
         protected AbstractReader() { MaxDepth = DefaultMaxDepth; }
-        /// <summary> Constructs a new child reader </summary>
-        protected AbstractReader(AbstractReader copyFrom)
-        {
-            _depth = copyFrom._depth + 1;
-            MaxDepth = copyFrom.MaxDepth;
-        }
 
         /// <summary> Gets or sets the maximum recursion depth allowed </summary>
         public int MaxDepth { get; set; }
@@ -112,6 +106,16 @@ namespace Google.ProtocolBuffers.Serialization
         /// Merges the input stream into the provided IBuilderLite 
         /// </summary>
         protected abstract bool ReadMessage(IBuilderLite builder, ExtensionRegistry registry);
+        
+        /// <summary>
+        /// Reads the root-message preamble specific to this formatter
+        /// </summary>
+        public abstract void ReadMessageStart();
+
+        /// <summary>
+        /// Reads the root-message close specific to this formatter
+        /// </summary>
+        public abstract void ReadMessageEnd();
 
         /// <summary>
         /// Merges the input stream into the provided IBuilderLite 

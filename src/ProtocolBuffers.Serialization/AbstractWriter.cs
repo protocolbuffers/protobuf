@@ -12,18 +12,8 @@ namespace Google.ProtocolBuffers.Serialization
     /// <summary>
     /// Provides a base class for writers that performs some basic type dispatching
     /// </summary>
-    public abstract class AbstractWriter : ICodedOutputStream, IDisposable
+    public abstract class AbstractWriter : ICodedOutputStream
     {
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-            Flush();
-            Dispose(true);
-        }
-
         /// <summary>
         /// Completes any pending write operations
         /// </summary>
@@ -32,16 +22,29 @@ namespace Google.ProtocolBuffers.Serialization
         }
 
         /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        protected virtual void Dispose(bool disposing)
-        {
-        }
-
-        /// <summary>
         /// Writes the message to the the formatted stream.
         /// </summary>
         public abstract void WriteMessage(IMessageLite message);
+
+        /// <summary>
+        /// Used to write any nessary root-message preamble. After this call you can call 
+        /// IMessageLite.MergeTo(...) and complete the message with a call to WriteMessageEnd().
+        /// These three calls are identical to just calling WriteMessage(message);
+        /// </summary>
+        /// <example>
+        /// AbstractWriter writer;
+        /// writer.WriteMessageStart();
+        /// message.WriteTo(writer);
+        /// writer.WriteMessageEnd();
+        /// // ... or, but not both ...
+        /// writer.WriteMessage(message);
+        /// </example>
+        public abstract void WriteMessageStart();
+
+        /// <summary>
+        /// Used to complete a root-message previously started with a call to WriteMessageStart()
+        /// </summary>
+        public abstract void WriteMessageEnd();
 
         /// <summary>
         /// Writes a Boolean value

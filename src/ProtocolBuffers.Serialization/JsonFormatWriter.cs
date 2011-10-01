@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -101,7 +101,7 @@ namespace Google.ProtocolBuffers.Serialization
         private class JsonStreamWriter : JsonFormatWriter
         {
 #if SILVERLIGHT2 || COMPACT_FRAMEWORK_35
-            static readonly Encoding Encoding = Encoding.UTF8;
+            static readonly Encoding Encoding = new UTF8Encoding(false);
 #else
             private static readonly Encoding Encoding = Encoding.ASCII;
 #endif
@@ -168,7 +168,9 @@ namespace Google.ProtocolBuffers.Serialization
 
         #endregion
 
+        //Tracks the writer depth and the array element count at that depth.
         private readonly List<int> _counter;
+        //True if the top-level of the writer is an array as opposed to a single message.
         private bool _isArray;
 
         /// <summary>
@@ -243,7 +245,7 @@ namespace Google.ProtocolBuffers.Serialization
         {
             if (_counter.Count == 0)
             {
-                throw new InvalidOperationException("Missmatched open/close in Json writer.");
+                throw new InvalidOperationException("Mismatched open/close in Json writer.");
             }
 
             int index = _counter.Count - 1;
@@ -445,13 +447,31 @@ namespace Google.ProtocolBuffers.Serialization
         /// </summary>
         public override void WriteMessage(IMessageLite message)
         {
+            WriteMessageStart();
+            message.WriteTo(this);
+            WriteMessageEnd();
+        }
+
+        /// <summary>
+        /// Used to write the root-message preamble, in json this is the left-curly brace '{'.
+        /// After this call you can call IMessageLite.MergeTo(...) and complete the message with
+        /// a call to WriteMessageEnd().
+        /// </summary>
+        public override void WriteMessageStart()
+        {
             if (_isArray)
             {
                 Seperator();
             }
             WriteToOutput("{");
             _counter.Add(0);
-            message.WriteTo(this);
+        }
+
+        /// <summary>
+        /// Used to complete a root-message previously started with a call to WriteMessageStart()
+        /// </summary>
+        public override void WriteMessageEnd()
+        {
             _counter.RemoveAt(_counter.Count - 1);
             WriteLine("}");
             Flush();

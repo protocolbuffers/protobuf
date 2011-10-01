@@ -35,6 +35,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 
 internal delegate void Action();
@@ -93,6 +94,64 @@ namespace Google.ProtocolBuffers.Collections
             Assert.AreEqual(-1, list.IndexOf(""));
             Assert.IsFalse(list.IsReadOnly);
         }
+
+        [Test]
+        public void DoesNotAddNullEnumerable()
+        {
+            PopsicleList<string> list = new PopsicleList<string>();
+            try
+            {
+                list.Add((IEnumerable<string>)null);
+            }
+            catch (ArgumentNullException)
+            { return; }
+
+            Assert.Fail("List should not allow nulls.");
+        }
+
+        [Test]
+        public void DoesNotAddRangeWithNull()
+        {
+            PopsicleList<string> list = new PopsicleList<string>();
+            try
+            {
+                list.Add(new[] { "a", "b", null });
+            }
+            catch (ArgumentNullException)
+            { return; }
+
+            Assert.Fail("List should not allow nulls.");
+        }
+
+        [Test]
+        public void DoesNotAddNull()
+        {
+            PopsicleList<string> list = new PopsicleList<string>();
+            try
+            {
+                list.Add((string)null);
+            }
+            catch (ArgumentNullException)
+            { return; }
+
+            Assert.Fail("List should not allow nulls.");
+        }
+
+        [Test]
+        public void DoesNotSetNull()
+        {
+            PopsicleList<string> list = new PopsicleList<string>();
+            list.Add("a");
+            try
+            {
+                list[0] = null;
+            }
+            catch (ArgumentNullException)
+            { return; }
+
+            Assert.Fail("List should not allow nulls.");
+        }
+
 
         private static void AssertNotSupported(Action action)
         {

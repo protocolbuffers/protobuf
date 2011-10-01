@@ -45,7 +45,7 @@ namespace Google.ProtocolBuffers
 {
     /* 
      * Specialized handing of *all* message types.  Messages are serialized into a byte[] and stored
-     * into the SerializationInfo, they are then reconstituded by an IObjectReference class after
+     * into the SerializationInfo, and are then reconstituted by an IObjectReference class after
      * deserialization.  IDeserializationCallback is supported on both the Builder and Message.
      */
     [Serializable]
@@ -71,22 +71,23 @@ namespace Google.ProtocolBuffers
                 _initialized = info.GetBoolean("initialized");
             }
 
-            Object IObjectReference.GetRealObject(StreamingContext context)
+            object IObjectReference.GetRealObject(StreamingContext context)
             {
                 ExtensionRegistry registry = context.Context as ExtensionRegistry;
                 TBuilder builder = TemplateInstance.DefaultInstanceForType.CreateBuilderForType();
                 builder.MergeFrom(_message, registry ?? ExtensionRegistry.Empty);
 
-                if (builder is IDeserializationCallback)
+                IDeserializationCallback callback = builder as IDeserializationCallback;
+                if(callback != null)
                 {
-                    ((IDeserializationCallback) builder).OnDeserialization(context);
+                    callback.OnDeserialization(context);
                 }
 
                 TMessage message = _initialized ? builder.Build() : builder.BuildPartial();
-
-                if (message is IDeserializationCallback)
+                callback = message as IDeserializationCallback;
+                if (callback != null)
                 {
-                    ((IDeserializationCallback) message).OnDeserialization(context);
+                    callback.OnDeserialization(context);
                 }
 
                 return message;
@@ -119,15 +120,16 @@ namespace Google.ProtocolBuffers
                 _message = (byte[])info.GetValue("message", typeof(byte[]));
             }
 
-            Object IObjectReference.GetRealObject(StreamingContext context)
+            object IObjectReference.GetRealObject(StreamingContext context)
             {
                 ExtensionRegistry registry = context.Context as ExtensionRegistry;
                 TBuilder builder = TemplateInstance.DefaultInstanceForType.CreateBuilderForType();
                 builder.MergeFrom(_message, registry ?? ExtensionRegistry.Empty);
 
-                if (builder is IDeserializationCallback)
+                IDeserializationCallback callback = builder as IDeserializationCallback;
+                if(callback != null)
                 {
-                    ((IDeserializationCallback) builder).OnDeserialization(context);
+                    callback.OnDeserialization(context);
                 }
 
                 return builder;

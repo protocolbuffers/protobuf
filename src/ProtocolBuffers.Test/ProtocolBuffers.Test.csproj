@@ -45,9 +45,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\Debug\Google.ProtocolBuffers.Test.XML</DocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -57,9 +55,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\Release\Google.ProtocolBuffers.Test.XML</DocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="nunit.framework, Version=2.2.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77">
@@ -92,11 +88,15 @@
     </Compile>
     <Compile Include="Compatibility\TextCompatibilityTests.cs" />
     <Compile Include="Compatibility\XmlCompatibilityTests.cs" />
+    <Compile Include="TestRpcForMimeTypes.cs" />
+    <Compile Include="TestReaderForUrlEncoded.cs" />
     <Compile Include="CSharpOptionsTest.cs" />
+    <Compile Include="DeprecatedMemberTest.cs" />
     <Compile Include="DescriptorsTest.cs" />
     <Compile Include="Descriptors\MessageDescriptorTest.cs" />
     <Compile Include="DynamicMessageTest.cs" />
     <Compile Include="ExtendableMessageTest.cs" />
+    <Compile Include="GeneratedBuilderTest.cs" />
     <Compile Include="GeneratedMessageTest.cs" />
     <Compile Include="MessageStreamIteratorTest.cs" />
     <Compile Include="MessageStreamWriterTest.cs" />
@@ -105,8 +105,11 @@
     <Compile Include="NameHelpersTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReflectionTester.cs" />
+    <Compile Include="ReusableBuilderTest.cs" />
     <Compile Include="SerializableTest.cs" />
     <Compile Include="ServiceTest.cs" />
+    <Compile Include="TestCornerCases.cs" />
+    <Compile Include="TestMimeMessageFormats.cs" />
     <Compile Include="TestProtos\UnitTestCSharpOptionsProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestCustomOptionsProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestEmbedOptimizeForProtoFile.cs" />

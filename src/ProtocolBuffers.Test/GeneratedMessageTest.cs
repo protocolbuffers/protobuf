@@ -112,22 +112,6 @@ namespace Google.ProtocolBuffers
         }
 
         [Test]
-        public void DoubleBuildError()
-        {
-            TestAllTypes.Builder builder = new TestAllTypes.Builder();
-            builder.Build();
-            try
-            {
-                builder.Build();
-                Assert.Fail("Should have thrown exception.");
-            }
-            catch (InvalidOperationException)
-            {
-                // Success.
-            }
-        }
-
-        [Test]
         public void DefaultInstance()
         {
             Assert.AreSame(TestAllTypes.DefaultInstance, TestAllTypes.DefaultInstance.DefaultInstanceForType);

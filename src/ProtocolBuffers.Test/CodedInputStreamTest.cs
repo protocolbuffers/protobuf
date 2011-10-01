@@ -35,6 +35,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
@@ -532,5 +533,77 @@ namespace Google.ProtocolBuffers
                 return base.Read(buffer, offset, Math.Min(count, blockSize));
             }
         }
+
+        enum TestNegEnum { None = 0, Value = -2 }
+
+        [Test]
+        public void TestNegativeEnum()
+        {
+            byte[] bytes = new byte[10] { 0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01 };
+            CodedInputStream input = CodedInputStream.CreateInstance(bytes);
+            object unk;
+            TestNegEnum val = TestNegEnum.None;
+
+            Assert.IsTrue(input.ReadEnum(ref val, out unk));
+            Assert.IsTrue(input.IsAtEnd);
+            Assert.AreEqual(TestNegEnum.Value, val);
+        }
+
+        [Test]
+        public void TestNegativeEnumPackedArray()
+        {
+            int arraySize = 1 + (10 * 5);
+            int msgSize = 1 + 1 + arraySize;
+            byte[] bytes = new byte[msgSize];
+            CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
+            output.WritePackedInt32Array(8, "", arraySize, new int[] { 0, -1, -2, -3, -4, -5 });
+
+            Assert.AreEqual(0, output.SpaceLeft);
+
+            CodedInputStream input = CodedInputStream.CreateInstance(bytes);
+            uint tag;
+            string name;
+            Assert.IsTrue(input.ReadTag(out tag, out name));
+
+            List<TestNegEnum> values = new List<TestNegEnum>();
+            ICollection<object> unk;
+            input.ReadEnumArray(tag, name, values, out unk);
+
+            Assert.AreEqual(2, values.Count);
+            Assert.AreEqual(TestNegEnum.None, values[0]);
+            Assert.AreEqual(TestNegEnum.Value, values[1]);
+
+            Assert.IsNotNull(unk);
+            Assert.AreEqual(4, unk.Count);
+        }
+
+        [Test]
+        public void TestNegativeEnumArray()
+        {
+            int arraySize = 1 + 1 + (11 * 5);
+            int msgSize = arraySize;
+            byte[] bytes = new byte[msgSize];
+            CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
+            output.WriteInt32Array(8, "", new int[] { 0, -1, -2, -3, -4, -5 });
+
+            Assert.AreEqual(0, output.SpaceLeft);
+
+            CodedInputStream input = CodedInputStream.CreateInstance(bytes);
+            uint tag;
+            string name;
+            Assert.IsTrue(input.ReadTag(out tag, out name));
+
+            List<TestNegEnum> values = new List<TestNegEnum>();
+            ICollection<object> unk;
+            input.ReadEnumArray(tag, name, values, out unk);
+
+            Assert.AreEqual(2, values.Count);
+            Assert.AreEqual(TestNegEnum.None, values[0]);
+            Assert.AreEqual(TestNegEnum.Value, values[1]);
+
+            Assert.IsNotNull(unk);
+            Assert.AreEqual(4, unk.Count);
+        }
+
     }
 }

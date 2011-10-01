@@ -105,7 +105,7 @@ namespace Google.ProtocolBuffers
         /// well give up on replying to it. This method must be called on the server
         /// side only. The server should still call the final "done" callback.
         /// </summary>
-        bool isCanceled();
+        bool IsCanceled();
 
         /// <summary>
         /// Requests that the given callback be called when the RPC is canceled.

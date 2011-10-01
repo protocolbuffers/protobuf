@@ -125,6 +125,9 @@ namespace Google.ProtocolBuffers
         }
 
         #endregion
+        
+        void ICodedOutputStream.WriteMessageStart() { }
+        void ICodedOutputStream.WriteMessageEnd() { Flush(); }
 
         #region Writing of unknown fields
 
@@ -373,7 +376,7 @@ namespace Google.ProtocolBuffers
         public void WriteEnum(int fieldNumber, string fieldName, int value, object rawValue)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Varint);
-            WriteRawVarint32((uint) value);
+            WriteInt32NoTag(value);
         }
 
         public void WriteSFixed32(int fieldNumber, string fieldName, int value)
@@ -648,7 +651,7 @@ namespace Google.ProtocolBuffers
 
         public void WriteEnumNoTag(int value)
         {
-            WriteRawVarint32((uint) value);
+            WriteInt32NoTag(value);
         }
 
         public void WriteSFixed32NoTag(int value)

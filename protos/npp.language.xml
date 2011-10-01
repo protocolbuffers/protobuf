@@ -1,0 +1,44 @@
+<NotepadPlus>
+<!--
+Defines syntax highlighting for Notepad++.
+1. Install Notepad++ from http://notepad-plus-plus.org
+2. Open Notepad++, from the View menu, select "User-Defined Dialog..."
+3. Click the "Import..." button and select this file
+4. Restart Notepad++
+5. Open and edit any *.proto file
+-->
+    <UserLang name="Proto Buffer" ext="proto">
+        <Settings>
+            <Global caseIgnored="no" />
+            <TreatAsSymbol comment="no" commentLine="yes" />
+            <Prefix words1="no" words2="no" words3="no" words4="yes" />
+        </Settings>
+        <KeywordLists>
+            <Keywords name="Delimiters">[00]00</Keywords>
+            <Keywords name="Folder+">{</Keywords>
+            <Keywords name="Folder-">}</Keywords>
+            <Keywords name="Operators">=</Keywords>
+            <Keywords name="Comment"> 1option 1package 1import 2; 0//</Keywords>
+            <Keywords name="Words1">message enum service extend</Keywords>
+            <Keywords name="Words2">required optional repeated extensions to rpc returns</Keywords>
+            <Keywords name="Words3">double float int32 int64 uint32 uint64 sint32 sint64 fixed32 fixed64 sfixed32 sfixed64 bool string bytes</Keywords>
+            <Keywords name="Words4"></Keywords>
+        </KeywordLists>
+        <Styles>
+            <WordsStyle name="DEFAULT" styleID="11" fgColor="000000" bgColor="FFFFFF" fontStyle="0" />
+            <WordsStyle name="FOLDEROPEN" styleID="12" fgColor="000000" bgColor="FFFFFF" fontStyle="1" />
+            <WordsStyle name="FOLDERCLOSE" styleID="13" fgColor="000000" bgColor="FFFFFF" fontStyle="1" />
+            <WordsStyle name="KEYWORD1" styleID="5" fgColor="0000FF" bgColor="FFFFFF" fontStyle="0" />
+            <WordsStyle name="KEYWORD2" styleID="6" fgColor="0080C0" bgColor="FFFFFF" fontStyle="0" />
+            <WordsStyle name="KEYWORD3" styleID="7" fgColor="0000FF" bgColor="FFFFFF" fontStyle="0" />
+            <WordsStyle name="KEYWORD4" styleID="8" fgColor="008040" bgColor="FFFFFF" fontStyle="0" />
+            <WordsStyle name="COMMENT" styleID="1" fgColor="008000" bgColor="FFFFFF" fontStyle="0" />
+            <WordsStyle name="COMMENT LINE" styleID="2" fgColor="949494" bgColor="FFFFFF" fontStyle="0" />
+            <WordsStyle name="NUMBER" styleID="4" fgColor="FF0000" bgColor="FFFFFF" fontStyle="0" />
+            <WordsStyle name="OPERATOR" styleID="10" fgColor="000000" bgColor="FFFFFF" fontStyle="0" />
+            <WordsStyle name="DELIMINER1" styleID="14" fgColor="800080" bgColor="FFFFFF" fontStyle="0" />
+            <WordsStyle name="DELIMINER2" styleID="15" fgColor="808080" bgColor="FFFFFF" fontStyle="0" />
+            <WordsStyle name="DELIMINER3" styleID="16" fgColor="000000" bgColor="FFFFFF" fontStyle="0" />
+        </Styles>
+    </UserLang>
+</NotepadPlus>

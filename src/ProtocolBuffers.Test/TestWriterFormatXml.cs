@@ -13,6 +13,65 @@ namespace Google.ProtocolBuffers
     public class TestWriterFormatXml
     {
         [Test]
+        public void Example_FromXml()
+        {
+            TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
+
+            XmlReader rdr = XmlReader.Create(new StringReader(@"<root><valid>true</valid></root>"));
+            builder.MergeFromXml(rdr);
+
+            TestXmlMessage message = builder.Build();
+            Assert.AreEqual(true, message.Valid);
+        }
+
+        [Test]
+        public void Example_ToXml()
+        {
+            TestXmlMessage message =
+                TestXmlMessage.CreateBuilder()
+                .SetValid(true)
+                .Build();
+
+            string Xml = message.ToXml();
+
+            Assert.AreEqual(@"<root><valid>true</valid></root>", Xml);
+        }
+
+        [Test]
+        public void Example_WriteXmlUsingICodedOutputStream()
+        {
+            TestXmlMessage message =
+                TestXmlMessage.CreateBuilder()
+                .SetValid(true)
+                .Build();
+
+            using (TextWriter output = new StringWriter())
+            {
+                ICodedOutputStream writer = XmlFormatWriter.CreateInstance(output);
+                writer.WriteMessageStart();      //manually begin the message, output is '{'
+
+                ICodedOutputStream stream = writer;
+                message.WriteTo(stream);         //write the message normally
+
+                writer.WriteMessageEnd();        //manually write the end message '}'
+                Assert.AreEqual(@"<root><valid>true</valid></root>", output.ToString());
+            }
+        }
+
+        [Test]
+        public void Example_ReadXmlUsingICodedInputStream()
+        {
+            TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
+            ICodedInputStream reader = XmlFormatReader.CreateInstance(@"<root><valid>true</valid></root>");
+
+            reader.ReadMessageStart();  //manually read the begin the message '{'
+
+            builder.MergeFrom(reader);  //read the message normally
+
+            reader.ReadMessageEnd();    //manually read the end message '}'
+        }
+
+        [Test]
         public void TestToXmlParseFromXml()
         {
             TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
@@ -135,7 +194,9 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             StringWriter sw = new StringWriter();
-            XmlFormatWriter.CreateInstance(sw).WriteMessage("root", message);
+            XmlWriter xwtr = XmlWriter.Create(sw, new XmlWriterSettings {Indent = true, IndentChars = "  "});
+
+            XmlFormatWriter.CreateInstance(xwtr).WriteMessage("root", message);
 
             string xml = sw.ToString();
 
@@ -162,7 +223,9 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             StringWriter sw = new StringWriter();
-            XmlFormatWriter.CreateInstance(sw)
+            XmlWriter xwtr = XmlWriter.Create(sw, new XmlWriterSettings { Indent = true, IndentChars = "  " });
+
+            XmlFormatWriter.CreateInstance(xwtr)
                 .SetOptions(XmlWriterOptions.OutputNestedArrays | XmlWriterOptions.OutputEnumValues)
                 .WriteMessage("root", message);
 
@@ -324,6 +387,60 @@ namespace Google.ProtocolBuffers
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
             Assert.AreEqual(message, copy);
         }
+        [Test]
+        public void TestXmlReadEmptyRoot()
+        {
+            TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
+            ICodedInputStream reader = XmlFormatReader.CreateInstance(@"<root/>");
+
+            reader.ReadMessageStart();  //manually read the begin the message '{'
+
+            builder.MergeFrom(reader);  //write the message normally
+
+            reader.ReadMessageEnd();    //manually read the end message '}'
+        }
+
+        [Test]
+        public void TestXmlReadEmptyChild()
+        {
+            TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
+            ICodedInputStream reader = XmlFormatReader.CreateInstance(@"<root><text /></root>");
+
+            reader.ReadMessageStart();  //manually read the begin the message '{'
+
+            builder.MergeFrom(reader);  //write the message normally
+            Assert.IsTrue(builder.HasText);
+            Assert.AreEqual(String.Empty, builder.Text);
+        }
+
+        [Test]
+        public void TestXmlReadWriteWithoutRoot()
+        {
+            TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
+            TestXmlMessage message = builder.SetText("abc").SetNumber(123).Build();
+
+            string xml;
+            using (StringWriter sw = new StringWriter())
+            {
+                ICodedOutputStream output = XmlFormatWriter.CreateInstance(
+                    XmlWriter.Create(sw, new XmlWriterSettings() { ConformanceLevel = ConformanceLevel.Fragment }));
+
+                message.WriteTo(output);
+                output.Flush();
+                xml = sw.ToString();
+            }
+            Assert.AreEqual("<text>abc</text><number>123</number>", xml);
+
+            TestXmlMessage copy;
+            using (XmlReader xr = XmlReader.Create(new StringReader(xml), new XmlReaderSettings() { ConformanceLevel = ConformanceLevel.Fragment }))
+            {
+                ICodedInputStream input = XmlFormatReader.CreateInstance(xr);
+                copy = TestXmlMessage.CreateBuilder().MergeFrom(input).Build();
+            }
+
+            Assert.AreEqual(message, copy);
+        }
+
         [Test, ExpectedException(typeof(RecursionLimitExceededException))]
         public void TestRecursiveLimit()
         {
