@@ -101,7 +101,6 @@
     <Compile Include="Http\FormUrlEncodedReader.cs" />
     <Compile Include="Http\MessageFormatFactory.cs" />
     <Compile Include="Http\MessageFormatOptions.cs" />
-    <Compile Include="Http\ServiceExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AbstractReader.cs" />
     <Compile Include="AbstractTextReader.cs" />

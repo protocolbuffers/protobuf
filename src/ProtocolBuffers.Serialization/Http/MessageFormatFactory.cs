@@ -30,24 +30,6 @@ namespace Google.ProtocolBuffers.Serialization.Http
 
             return codedInput;
         }
-
-        /// <summary>
-        /// Merges the message from the input stream based on the contentType provided
-        /// </summary>
-        /// <typeparam name="TBuilder">A type derived from IBuilderLite</typeparam>
-        /// <param name="builder">An instance of a message builder</param>
-        /// <param name="options">Options specific to reading this message and/or content type</param>
-        /// <param name="contentType">The mime type of the input stream content</param>
-        /// <param name="input">The stream to read the message from</param>
-        /// <returns>The same builder instance that was supplied in the builder parameter</returns>
-        public static TBuilder MergeFrom<TBuilder>(this TBuilder builder, MessageFormatOptions options, string contentType, Stream input) where TBuilder : IBuilderLite
-        {
-            ICodedInputStream codedInput = CreateInputStream(options, contentType, input);
-            codedInput.ReadMessageStart();
-            builder.WeakMergeFrom(codedInput, options.ExtensionRegistry);
-            codedInput.ReadMessageEnd();
-            return builder;
-        }
         
         /// <summary>
         /// Writes the message instance to the stream using the content type provided
@@ -91,28 +73,6 @@ namespace Google.ProtocolBuffers.Serialization.Http
             }
 
             return codedOutput;
-        }
-
-        /// <summary>
-        /// Writes the message instance to the stream using the content type provided
-        /// </summary>
-        /// <param name="message">An instance of a message</param>
-        /// <param name="options">Options specific to writing this message and/or content type</param>
-        /// <param name="contentType">The mime type of the content to be written</param>
-        /// <param name="output">The stream to write the message to</param>
-        public static void WriteTo(this IMessageLite message, MessageFormatOptions options, string contentType, Stream output)
-        {
-            ICodedOutputStream codedOutput = CreateOutputStream(options, contentType, output);
-
-            // Output the appropriate message preamble
-            codedOutput.WriteMessageStart();
-
-            // Write the message content to the output
-            message.WriteTo(codedOutput);
-
-            // Write the closing message fragment
-            codedOutput.WriteMessageEnd();
-            codedOutput.Flush();
         }
 
         private static ICodedInputStream ContentTypeToInputStream(string contentType, MessageFormatOptions options, Stream input)
