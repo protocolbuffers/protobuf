@@ -93,11 +93,11 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        private readonly Dictionary<int, IEnumLite> items;
+        private readonly SortedList<int, IEnumLite> items;
 
         public EnumLiteMap()
         {
-            items = new Dictionary<int, IEnumLite>();
+            items = new SortedList<int, IEnumLite>();
 #if SILVERLIGHT2
     // Silverlight doesn't support Enum.GetValues
     // TODO(jonskeet): Validate that this reflection is permitted, e.g. in Windows Phone 7

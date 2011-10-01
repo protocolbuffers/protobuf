@@ -110,6 +110,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="InvalidProtocolBufferException.cs" />
+    <Compile Include="SortedList.cs" />
     <Compile Include="ThrowHelper.cs" />
     <Compile Include="UninitializedMessageException.cs" />
     <Compile Include="WireFormat.cs" />
