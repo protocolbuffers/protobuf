@@ -37,6 +37,7 @@
     <WorkingDirectories Include="$(BuildOutputDirectory)" />
 
     <Protos Include="$(ProtosDirectory)\extest\unittest_issues.proto" />
+    <Protos Include="$(ProtosDirectory)\extest\unittest_extras.proto" />
     <Protos Include="$(ProtosDirectory)\extest\unittest_extras_full.proto" />
     <Protos Include="$(ProtosDirectory)\extest\unittest_extras_lite.proto" />
     <Protos Include="$(ProtosDirectory)\extest\unittest_extras_xmltest.proto" />
@@ -72,6 +73,9 @@
       <TargetDirectory>$(SourceDirectory)\AddressBook</TargetDirectory>
     </GeneratedSource>
     <!-- Unit test -->
+    <GeneratedSource Include="$(BuildTempDirectory)\UnitTestExtrasProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
     <GeneratedSource Include="$(BuildTempDirectory)\UnitTestExtrasIssuesProtoFile.cs">
       <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
     </GeneratedSource>
