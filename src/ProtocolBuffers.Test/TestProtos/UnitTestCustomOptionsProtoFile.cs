@@ -48,7 +48,16 @@ namespace Google.ProtocolBuffers.TestProtos {
       registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt2);
       registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt3);
       registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt6);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Fileopt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Msgopt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Fieldopt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.EnumoptRenamed);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Enumvalopt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Serviceopt);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Methodopt);
       registry.Add(global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2.Types.ComplexOptionType4.ComplexOpt4);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.AggregateMessageSetElement.MessageSetExtension);
+      registry.Add(global::Google.ProtocolBuffers.TestProtos.Aggregate.Nested);
     }
     #endregion
     #region Extensions
@@ -124,6 +133,20 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3> ComplexOpt3;
     public const int ComplexOpt6FieldNumber = 7595468;
     public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.ComplexOpt6> ComplexOpt6;
+    public const int FileoptFieldNumber = 15478479;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.Aggregate> Fileopt;
+    public const int MsgoptFieldNumber = 15480088;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.Aggregate> Msgopt;
+    public const int FieldoptFieldNumber = 15481374;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.Aggregate> Fieldopt;
+    public const int EnumoptRenamedFieldNumber = 15483218;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.Aggregate> EnumoptRenamed;
+    public const int EnumvaloptFieldNumber = 15486921;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.Aggregate> Enumvalopt;
+    public const int ServiceoptFieldNumber = 15497145;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.Aggregate> Serviceopt;
+    public const int MethodoptFieldNumber = 15512713;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.Aggregate> Methodopt;
     #endregion
     
     #region Static variables
@@ -161,6 +184,14 @@ namespace Google.ProtocolBuffers.TestProtos {
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ComplexOpt6, global::Google.ProtocolBuffers.TestProtos.ComplexOpt6.Builder> internal__static_protobuf_unittest_ComplexOpt6__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_protobuf_unittest_VariousComplexOptions__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.VariousComplexOptions, global::Google.ProtocolBuffers.TestProtos.VariousComplexOptions.Builder> internal__static_protobuf_unittest_VariousComplexOptions__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_AggregateMessageSet__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet, global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet.Builder> internal__static_protobuf_unittest_AggregateMessageSet__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_AggregateMessageSetElement__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.AggregateMessageSetElement, global::Google.ProtocolBuffers.TestProtos.AggregateMessageSetElement.Builder> internal__static_protobuf_unittest_AggregateMessageSetElement__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_Aggregate__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.Aggregate, global::Google.ProtocolBuffers.TestProtos.Aggregate.Builder> internal__static_protobuf_unittest_Aggregate__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_AggregateMessage__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.AggregateMessage, global::Google.ProtocolBuffers.TestProtos.AggregateMessage.Builder> internal__static_protobuf_unittest_AggregateMessage__FieldAccessorTable;
     #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
@@ -209,63 +240,97 @@ namespace Google.ProtocolBuffers.TestProtos {
           "HNKojx0DCLMP+t6QHQIICfrekB0EExgWFKr9kB0DENsHqv2QHQb45pcdjgWq" + 
           "/ZAdBQoDCOcFqv2QHQgKBtiFnh3PD6r9kB0KCgiS9Z0dAwjYD6r9kB0IwqyX" + 
           "HQMI5QWq/ZAdC8Kslx0G2IWeHc4Pqv2QHQ3CrJcdCJL1nR0DCMkQqv2QHQUa" + 
-          "AwjBAqLilR0CCCqi4pUdBtiFnh3EAqLilR0IkvWdHQMI7AYqNgoKTWV0aG9k" + 
-          "T3B0MRITCg9NRVRIT0RPUFQxX1ZBTDEQARITCg9NRVRIT0RPUFQxX1ZBTDIQ" + 
-          "AjKOAQocVGVzdFNlcnZpY2VXaXRoQ3VzdG9tT3B0aW9ucxJjCgNGb28SKS5w" + 
-          "cm90b2J1Zl91bml0dGVzdC5DdXN0b21PcHRpb25Gb29SZXF1ZXN0GioucHJv" + 
-          "dG9idWZfdW5pdHRlc3QuQ3VzdG9tT3B0aW9uRm9vUmVzcG9uc2UiBeD6jB4C" + 
-          "GgmQsose09uAy0k6MgoJZmlsZV9vcHQxEhwuZ29vZ2xlLnByb3RvYnVmLkZp" + 
-          "bGVPcHRpb25zGI6d2AMgASgEOjgKDG1lc3NhZ2Vfb3B0MRIfLmdvb2dsZS5w" + 
-          "cm90b2J1Zi5NZXNzYWdlT3B0aW9ucxicrdgDIAEoBTo0CgpmaWVsZF9vcHQx" + 
-          "Eh0uZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucxiIvNgDIAEoBjo4Cgpm" + 
-          "aWVsZF9vcHQyEh0uZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucxi5odkD" + 
-          "IAEoBToCNDI6MgoJZW51bV9vcHQxEhwuZ29vZ2xlLnByb3RvYnVmLkVudW1P" + 
-          "cHRpb25zGOie2QMgASgPOjwKD2VudW1fdmFsdWVfb3B0MRIhLmdvb2dsZS5w" + 
-          "cm90b2J1Zi5FbnVtVmFsdWVPcHRpb25zGOagXyABKAU6OAoMc2VydmljZV9v" + 
-          "cHQxEh8uZ29vZ2xlLnByb3RvYnVmLlNlcnZpY2VPcHRpb25zGKK24QMgASgS" + 
-          "OlUKC21ldGhvZF9vcHQxEh4uZ29vZ2xlLnByb3RvYnVmLk1ldGhvZE9wdGlv" + 
-          "bnMYrM/hAyABKA4yHS5wcm90b2J1Zl91bml0dGVzdC5NZXRob2RPcHQxOjQK" + 
-          "CGJvb2xfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGOqr" + 
-          "1gMgASgIOjUKCWludDMyX29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdl" + 
-          "T3B0aW9ucxjtqNYDIAEoBTo1CglpbnQ2NF9vcHQSHy5nb29nbGUucHJvdG9i" + 
-          "dWYuTWVzc2FnZU9wdGlvbnMYxqfWAyABKAM6NgoKdWludDMyX29wdBIfLmdv" + 
-          "b2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxiwotYDIAEoDTo2Cgp1aW50" + 
-          "NjRfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGN+O1gMg" + 
-          "ASgEOjYKCnNpbnQzMl9vcHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9w" + 
-          "dGlvbnMYwIjWAyABKBE6NgoKc2ludDY0X29wdBIfLmdvb2dsZS5wcm90b2J1" + 
-          "Zi5NZXNzYWdlT3B0aW9ucxj/gtYDIAEoEjo3CgtmaXhlZDMyX29wdBIfLmdv" + 
-          "b2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxjT/tUDIAEoBzo3CgtmaXhl" + 
-          "ZDY0X29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxji/dUD" + 
-          "IAEoBjo4CgxzZml4ZWQzMl9vcHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2Fn" + 
-          "ZU9wdGlvbnMY1fHVAyABKA86OAoMc2ZpeGVkNjRfb3B0Eh8uZ29vZ2xlLnBy" + 
-          "b3RvYnVmLk1lc3NhZ2VPcHRpb25zGOOK1QMgASgQOjUKCWZsb2F0X29wdBIf" + 
-          "Lmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxj+u9QDIAEoAjo2Cgpk" + 
-          "b3VibGVfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGM2r" + 
-          "1AMgASgBOjYKCnN0cmluZ19vcHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2Fn" + 
-          "ZU9wdGlvbnMYxavUAyABKAk6NQoJYnl0ZXNfb3B0Eh8uZ29vZ2xlLnByb3Rv" + 
-          "YnVmLk1lc3NhZ2VPcHRpb25zGJar1AMgASgMOnAKCGVudW1fb3B0Eh8uZ29v" + 
-          "Z2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGJGr1AMgASgOMjoucHJvdG9i" + 
-          "dWZfdW5pdHRlc3QuRHVtbXlNZXNzYWdlQ29udGFpbmluZ0VudW0uVGVzdEVu" + 
-          "dW1UeXBlOnAKEG1lc3NhZ2VfdHlwZV9vcHQSHy5nb29nbGUucHJvdG9idWYu" + 
-          "TWVzc2FnZU9wdGlvbnMYr/LTAyABKAsyMi5wcm90b2J1Zl91bml0dGVzdC5E" + 
-          "dW1teU1lc3NhZ2VJbnZhbGlkQXNPcHRpb25UeXBlOjYKBHF1dXgSJS5wcm90" + 
-          "b2J1Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlwZTEY2+DTAyABKAU6XgoF" + 
-          "Y29yZ2USJS5wcm90b2J1Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlwZTEY" + 
-          "0t7TAyABKAsyJS5wcm90b2J1Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlw" + 
-          "ZTM6OAoGZ3JhdWx0EiUucHJvdG9idWZfdW5pdHRlc3QuQ29tcGxleE9wdGlv" + 
-          "blR5cGUyGO/80gMgASgFOl8KBmdhcnBseRIlLnByb3RvYnVmX3VuaXR0ZXN0" + 
-          "LkNvbXBsZXhPcHRpb25UeXBlMhjI9dIDIAEoCzIlLnByb3RvYnVmX3VuaXR0" + 
-          "ZXN0LkNvbXBsZXhPcHRpb25UeXBlMTpfCgxjb21wbGV4X29wdDESHy5nb29n" + 
-          "bGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYpNzSAyABKAsyJS5wcm90b2J1" + 
-          "Zl91bml0dGVzdC5Db21wbGV4T3B0aW9uVHlwZTE6XwoMY29tcGxleF9vcHQy" + 
-          "Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGNWP0gMgASgLMiUu" + 
-          "cHJvdG9idWZfdW5pdHRlc3QuQ29tcGxleE9wdGlvblR5cGUyOl8KDGNvbXBs" + 
-          "ZXhfb3B0MxIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxjvi9ID" + 
-          "IAEoCzIlLnByb3RvYnVmX3VuaXR0ZXN0LkNvbXBsZXhPcHRpb25UeXBlMzpX" + 
-          "Cgtjb21wbGV4b3B0NhIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9u" + 
-          "cxjMy88DIAEoCjIeLnByb3RvYnVmX3VuaXR0ZXN0LkNvbXBsZXhPcHQ2Qk/C" + 
-          "PkMKIUdvb2dsZS5Qcm90b2NvbEJ1ZmZlcnMuVGVzdFByb3RvcxIeVW5pdFRl" + 
-          "c3RDdXN0b21PcHRpb25zUHJvdG9GaWxl8OjBHeqtwOUk");
+          "AwjBAqLilR0CCCqi4pUdBtiFnh3EAqLilR0IkvWdHQMI7AYiIwoTQWdncmVn" + 
+          "YXRlTWVzc2FnZVNldCoICAQQgICAgAI6AggBIqABChpBZ2dyZWdhdGVNZXNz" + 
+          "YWdlU2V0RWxlbWVudBIJCgFzGAEgASgJMncKFW1lc3NhZ2Vfc2V0X2V4dGVu" + 
+          "c2lvbhImLnByb3RvYnVmX3VuaXR0ZXN0LkFnZ3JlZ2F0ZU1lc3NhZ2VTZXQY" + 
+          "9uuuByABKAsyLS5wcm90b2J1Zl91bml0dGVzdC5BZ2dyZWdhdGVNZXNzYWdl" + 
+          "U2V0RWxlbWVudCL9AQoJQWdncmVnYXRlEgkKAWkYASABKAUSCQoBcxgCIAEo" + 
+          "CRIpCgNzdWIYAyABKAsyHC5wcm90b2J1Zl91bml0dGVzdC5BZ2dyZWdhdGUS" + 
+          "KgoEZmlsZRgEIAEoCzIcLmdvb2dsZS5wcm90b2J1Zi5GaWxlT3B0aW9ucxI0" + 
+          "CgRtc2V0GAUgASgLMiYucHJvdG9idWZfdW5pdHRlc3QuQWdncmVnYXRlTWVz" + 
+          "c2FnZVNldDJNCgZuZXN0ZWQSHC5nb29nbGUucHJvdG9idWYuRmlsZU9wdGlv" + 
+          "bnMYp9GwByABKAsyHC5wcm90b2J1Zl91bml0dGVzdC5BZ2dyZWdhdGUiWQoQ" + 
+          "QWdncmVnYXRlTWVzc2FnZRIpCglmaWVsZG5hbWUYASABKAVCFvKhhzsREg9G" + 
+          "aWVsZEFubm90YXRpb246GsLRhjsVCGUSEU1lc3NhZ2VBbm5vdGF0aW9uKjYK" + 
+          "Ck1ldGhvZE9wdDESEwoPTUVUSE9ET1BUMV9WQUwxEAESEwoPTUVUSE9ET1BU" + 
+          "MV9WQUwyEAIqTQoNQWdncmVnYXRlRW51bRIlCgVWQUxVRRABGhrK/Ik7FRIT" + 
+          "RW51bVZhbHVlQW5ub3RhdGlvbhoVkpWIOxASDkVudW1Bbm5vdGF0aW9uMo4B" + 
+          "ChxUZXN0U2VydmljZVdpdGhDdXN0b21PcHRpb25zEmMKA0ZvbxIpLnByb3Rv" + 
+          "YnVmX3VuaXR0ZXN0LkN1c3RvbU9wdGlvbkZvb1JlcXVlc3QaKi5wcm90b2J1" + 
+          "Zl91bml0dGVzdC5DdXN0b21PcHRpb25Gb29SZXNwb25zZSIF4PqMHgIaCZCy" + 
+          "ix7T24DLSTKZAQoQQWdncmVnYXRlU2VydmljZRJrCgZNZXRob2QSIy5wcm90" + 
+          "b2J1Zl91bml0dGVzdC5BZ2dyZWdhdGVNZXNzYWdlGiMucHJvdG9idWZfdW5p" + 
+          "dHRlc3QuQWdncmVnYXRlTWVzc2FnZSIXysiWOxISEE1ldGhvZEFubm90YXRp" + 
+          "b24aGMr7jjsTEhFTZXJ2aWNlQW5ub3RhdGlvbjoyCglmaWxlX29wdDESHC5n" + 
+          "b29nbGUucHJvdG9idWYuRmlsZU9wdGlvbnMYjp3YAyABKAQ6OAoMbWVzc2Fn" + 
+          "ZV9vcHQxEh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGJyt2AMg" + 
+          "ASgFOjQKCmZpZWxkX29wdDESHS5nb29nbGUucHJvdG9idWYuRmllbGRPcHRp" + 
+          "b25zGIi82AMgASgGOjgKCmZpZWxkX29wdDISHS5nb29nbGUucHJvdG9idWYu" + 
+          "RmllbGRPcHRpb25zGLmh2QMgASgFOgI0MjoyCgllbnVtX29wdDESHC5nb29n" + 
+          "bGUucHJvdG9idWYuRW51bU9wdGlvbnMY6J7ZAyABKA86PAoPZW51bV92YWx1" + 
+          "ZV9vcHQxEiEuZ29vZ2xlLnByb3RvYnVmLkVudW1WYWx1ZU9wdGlvbnMY5qBf" + 
+          "IAEoBTo4CgxzZXJ2aWNlX29wdDESHy5nb29nbGUucHJvdG9idWYuU2Vydmlj" + 
+          "ZU9wdGlvbnMYorbhAyABKBI6VQoLbWV0aG9kX29wdDESHi5nb29nbGUucHJv" + 
+          "dG9idWYuTWV0aG9kT3B0aW9ucxisz+EDIAEoDjIdLnByb3RvYnVmX3VuaXR0" + 
+          "ZXN0Lk1ldGhvZE9wdDE6NAoIYm9vbF9vcHQSHy5nb29nbGUucHJvdG9idWYu" + 
+          "TWVzc2FnZU9wdGlvbnMY6qvWAyABKAg6NQoJaW50MzJfb3B0Eh8uZ29vZ2xl" + 
+          "LnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGO2o1gMgASgFOjUKCWludDY0X29w" + 
+          "dBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxjGp9YDIAEoAzo2" + 
+          "Cgp1aW50MzJfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25z" + 
+          "GLCi1gMgASgNOjYKCnVpbnQ2NF9vcHQSHy5nb29nbGUucHJvdG9idWYuTWVz" + 
+          "c2FnZU9wdGlvbnMY347WAyABKAQ6NgoKc2ludDMyX29wdBIfLmdvb2dsZS5w" + 
+          "cm90b2J1Zi5NZXNzYWdlT3B0aW9ucxjAiNYDIAEoETo2CgpzaW50NjRfb3B0" + 
+          "Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGP+C1gMgASgSOjcK" + 
+          "C2ZpeGVkMzJfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25z" + 
+          "GNP+1QMgASgHOjcKC2ZpeGVkNjRfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1l" + 
+          "c3NhZ2VPcHRpb25zGOL91QMgASgGOjgKDHNmaXhlZDMyX29wdBIfLmdvb2ds" + 
+          "ZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxjV8dUDIAEoDzo4CgxzZml4ZWQ2" + 
+          "NF9vcHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMY44rVAyAB" + 
+          "KBA6NQoJZmxvYXRfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRp" + 
+          "b25zGP671AMgASgCOjYKCmRvdWJsZV9vcHQSHy5nb29nbGUucHJvdG9idWYu" + 
+          "TWVzc2FnZU9wdGlvbnMYzavUAyABKAE6NgoKc3RyaW5nX29wdBIfLmdvb2ds" + 
+          "ZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxjFq9QDIAEoCTo1CglieXRlc19v" + 
+          "cHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYlqvUAyABKAw6" + 
+          "cAoIZW51bV9vcHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMY" + 
+          "kavUAyABKA4yOi5wcm90b2J1Zl91bml0dGVzdC5EdW1teU1lc3NhZ2VDb250" + 
+          "YWluaW5nRW51bS5UZXN0RW51bVR5cGU6cAoQbWVzc2FnZV90eXBlX29wdBIf" + 
+          "Lmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxiv8tMDIAEoCzIyLnBy" + 
+          "b3RvYnVmX3VuaXR0ZXN0LkR1bW15TWVzc2FnZUludmFsaWRBc09wdGlvblR5" + 
+          "cGU6NgoEcXV1eBIlLnByb3RvYnVmX3VuaXR0ZXN0LkNvbXBsZXhPcHRpb25U" + 
+          "eXBlMRjb4NMDIAEoBTpeCgVjb3JnZRIlLnByb3RvYnVmX3VuaXR0ZXN0LkNv" + 
+          "bXBsZXhPcHRpb25UeXBlMRjS3tMDIAEoCzIlLnByb3RvYnVmX3VuaXR0ZXN0" + 
+          "LkNvbXBsZXhPcHRpb25UeXBlMzo4CgZncmF1bHQSJS5wcm90b2J1Zl91bml0" + 
+          "dGVzdC5Db21wbGV4T3B0aW9uVHlwZTIY7/zSAyABKAU6XwoGZ2FycGx5EiUu" + 
+          "cHJvdG9idWZfdW5pdHRlc3QuQ29tcGxleE9wdGlvblR5cGUyGMj10gMgASgL" + 
+          "MiUucHJvdG9idWZfdW5pdHRlc3QuQ29tcGxleE9wdGlvblR5cGUxOl8KDGNv" + 
+          "bXBsZXhfb3B0MRIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxik" + 
+          "3NIDIAEoCzIlLnByb3RvYnVmX3VuaXR0ZXN0LkNvbXBsZXhPcHRpb25UeXBl" + 
+          "MTpfCgxjb21wbGV4X29wdDISHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9w" + 
+          "dGlvbnMY1Y/SAyABKAsyJS5wcm90b2J1Zl91bml0dGVzdC5Db21wbGV4T3B0" + 
+          "aW9uVHlwZTI6XwoMY29tcGxleF9vcHQzEh8uZ29vZ2xlLnByb3RvYnVmLk1l" + 
+          "c3NhZ2VPcHRpb25zGO+L0gMgASgLMiUucHJvdG9idWZfdW5pdHRlc3QuQ29t" + 
+          "cGxleE9wdGlvblR5cGUzOlcKC2NvbXBsZXhvcHQ2Eh8uZ29vZ2xlLnByb3Rv" + 
+          "YnVmLk1lc3NhZ2VPcHRpb25zGMzLzwMgASgKMh4ucHJvdG9idWZfdW5pdHRl" + 
+          "c3QuQ29tcGxleE9wdDY6TgoHZmlsZW9wdBIcLmdvb2dsZS5wcm90b2J1Zi5G" + 
+          "aWxlT3B0aW9ucxjP3bAHIAEoCzIcLnByb3RvYnVmX3VuaXR0ZXN0LkFnZ3Jl" + 
+          "Z2F0ZTpQCgZtc2dvcHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlv" + 
+          "bnMYmOqwByABKAsyHC5wcm90b2J1Zl91bml0dGVzdC5BZ2dyZWdhdGU6UAoI" + 
+          "ZmllbGRvcHQSHS5nb29nbGUucHJvdG9idWYuRmllbGRPcHRpb25zGJ70sAcg" + 
+          "ASgLMhwucHJvdG9idWZfdW5pdHRlc3QuQWdncmVnYXRlOlYKD2VudW1vcHRf" + 
+          "cmVuYW1lZBIcLmdvb2dsZS5wcm90b2J1Zi5FbnVtT3B0aW9ucxjSgrEHIAEo" + 
+          "CzIcLnByb3RvYnVmX3VuaXR0ZXN0LkFnZ3JlZ2F0ZTpWCgplbnVtdmFsb3B0" + 
+          "EiEuZ29vZ2xlLnByb3RvYnVmLkVudW1WYWx1ZU9wdGlvbnMYyZ+xByABKAsy" + 
+          "HC5wcm90b2J1Zl91bml0dGVzdC5BZ2dyZWdhdGU6VAoKc2VydmljZW9wdBIf" + 
+          "Lmdvb2dsZS5wcm90b2J1Zi5TZXJ2aWNlT3B0aW9ucxi577EHIAEoCzIcLnBy" + 
+          "b3RvYnVmX3VuaXR0ZXN0LkFnZ3JlZ2F0ZTpSCgltZXRob2RvcHQSHi5nb29n" + 
+          "bGUucHJvdG9idWYuTWV0aG9kT3B0aW9ucxiJ6bIHIAEoCzIcLnByb3RvYnVm" + 
+          "X3VuaXR0ZXN0LkFnZ3JlZ2F0ZULNAYABAYgBAZABAcI+QwohR29vZ2xlLlBy" + 
+          "b3RvY29sQnVmZmVycy5UZXN0UHJvdG9zEh5Vbml0VGVzdEN1c3RvbU9wdGlv" + 
+          "bnNQcm90b0ZpbGXw6MEd6q3A5ST67IU7cAhkEg5GaWxlQW5ub3RhdGlvbhoW" + 
+          "EhROZXN0ZWRGaWxlQW5ub3RhdGlvbiIe+uyFOxkSF0ZpbGVFeHRlbnNpb25B" + 
+          "bm5vdGF0aW9uKiQLEPbrrgcaGwoZRW1iZWRkZWRNZXNzYWdlU2V0RWxlbWVu" + 
+          "dAw=");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_protobuf_unittest_TestMessageWithCustomOptions__Descriptor = Descriptor.MessageTypes[0];
@@ -337,6 +402,24 @@ namespace Google.ProtocolBuffers.TestProtos {
         internal__static_protobuf_unittest_VariousComplexOptions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.VariousComplexOptions, global::Google.ProtocolBuffers.TestProtos.VariousComplexOptions.Builder>(internal__static_protobuf_unittest_VariousComplexOptions__Descriptor,
                 new string[] { });
+        internal__static_protobuf_unittest_AggregateMessageSet__Descriptor = Descriptor.MessageTypes[15];
+        internal__static_protobuf_unittest_AggregateMessageSet__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet, global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet.Builder>(internal__static_protobuf_unittest_AggregateMessageSet__Descriptor,
+                new string[] { });
+        internal__static_protobuf_unittest_AggregateMessageSetElement__Descriptor = Descriptor.MessageTypes[16];
+        internal__static_protobuf_unittest_AggregateMessageSetElement__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.AggregateMessageSetElement, global::Google.ProtocolBuffers.TestProtos.AggregateMessageSetElement.Builder>(internal__static_protobuf_unittest_AggregateMessageSetElement__Descriptor,
+                new string[] { "S", });
+        global::Google.ProtocolBuffers.TestProtos.AggregateMessageSetElement.MessageSetExtension = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.AggregateMessageSetElement>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.AggregateMessageSetElement.Descriptor.Extensions[0]);
+        internal__static_protobuf_unittest_Aggregate__Descriptor = Descriptor.MessageTypes[17];
+        internal__static_protobuf_unittest_Aggregate__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.Aggregate, global::Google.ProtocolBuffers.TestProtos.Aggregate.Builder>(internal__static_protobuf_unittest_Aggregate__Descriptor,
+                new string[] { "I", "S", "Sub", "File", "Mset", });
+        global::Google.ProtocolBuffers.TestProtos.Aggregate.Nested = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.Aggregate>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.Aggregate.Descriptor.Extensions[0]);
+        internal__static_protobuf_unittest_AggregateMessage__Descriptor = Descriptor.MessageTypes[18];
+        internal__static_protobuf_unittest_AggregateMessage__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.AggregateMessage, global::Google.ProtocolBuffers.TestProtos.AggregateMessage.Builder>(internal__static_protobuf_unittest_AggregateMessage__Descriptor,
+                new string[] { "Fieldname", });
         global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.FileOpt1 = pb::GeneratedSingleExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[0]);
         global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.MessageOpt1 = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[1]);
         global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.FieldOpt1 = pb::GeneratedSingleExtension<ulong>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[2]);
@@ -370,6 +453,13 @@ namespace Google.ProtocolBuffers.TestProtos {
         global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt2 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType2>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[30]);
         global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt3 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOptionType3>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[31]);
         global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.ComplexOpt6 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.ComplexOpt6>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[32]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Fileopt = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.Aggregate>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[33]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Msgopt = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.Aggregate>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[34]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Fieldopt = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.Aggregate>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[35]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.EnumoptRenamed = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.Aggregate>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[36]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Enumvalopt = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.Aggregate>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[37]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Serviceopt = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.Aggregate>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[38]);
+        global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Methodopt = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.Aggregate>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor.Extensions[39]);
         pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
         RegisterAllExtensions(registry);
         global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.RegisterAllExtensions(registry);
@@ -391,6 +481,12 @@ namespace Google.ProtocolBuffers.TestProtos {
   public enum MethodOpt1 {
     METHODOPT1_VAL1 = 1,
     METHODOPT1_VAL2 = 2,
+  }
+  
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+  public enum AggregateEnum {
+    VALUE = 1,
   }
   
   #endregion
@@ -4976,9 +5072,1330 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+  public sealed partial class AggregateMessageSet : pb::ExtendableMessage<AggregateMessageSet, AggregateMessageSet.Builder> {
+    private AggregateMessageSet() { }
+    private static readonly AggregateMessageSet defaultInstance = new AggregateMessageSet().MakeReadOnly();
+    private static readonly string[] _aggregateMessageSetFieldNames = new string[] {  };
+    private static readonly uint[] _aggregateMessageSetFieldTags = new uint[] {  };
+    public static AggregateMessageSet DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override AggregateMessageSet DefaultInstanceForType {
+      get { return DefaultInstance; }
+    }
+    
+    protected override AggregateMessageSet ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_AggregateMessageSet__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<AggregateMessageSet, AggregateMessageSet.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_AggregateMessageSet__FieldAccessorTable; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        if (!ExtensionsAreInitialized) return false;
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::ICodedOutputStream output) {
+      int size = SerializedSize;
+      string[] field_names = _aggregateMessageSetFieldNames;
+      pb::ExtendableMessage<AggregateMessageSet, AggregateMessageSet.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
+      extensionWriter.WriteUntil(536870912, output);
+      UnknownFields.WriteAsMessageSetTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        size += ExtensionsSerializedSize;
+        size += UnknownFields.SerializedSizeAsMessageSet;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static AggregateMessageSet ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static AggregateMessageSet ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static AggregateMessageSet ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static AggregateMessageSet ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static AggregateMessageSet ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static AggregateMessageSet ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static AggregateMessageSet ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static AggregateMessageSet ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static AggregateMessageSet ParseFrom(pb::ICodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static AggregateMessageSet ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    private AggregateMessageSet MakeReadOnly() {
+      return this;
+    }
+    
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(AggregateMessageSet prototype) {
+      return new Builder(prototype);
+    }
+    
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+    public sealed partial class Builder : pb::ExtendableBuilder<AggregateMessageSet, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {
+        result = DefaultInstance;
+        resultIsReadOnly = true;
+      }
+      internal Builder(AggregateMessageSet cloneFrom) {
+        result = cloneFrom;
+        resultIsReadOnly = true;
+      }
+      
+      private bool resultIsReadOnly;
+      private AggregateMessageSet result;
+      
+      private AggregateMessageSet PrepareBuilder() {
+        if (resultIsReadOnly) {
+          AggregateMessageSet original = result;
+          result = new AggregateMessageSet();
+          resultIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
+      
+      protected override AggregateMessageSet MessageBeingBuilt {
+        get { return PrepareBuilder(); }
+      }
+      
+      public override Builder Clear() {
+        result = DefaultInstance;
+        resultIsReadOnly = true;
+        return this;
+      }
+      
+      public override Builder Clone() {
+        if (resultIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet.Descriptor; }
+      }
+      
+      public override AggregateMessageSet DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet.DefaultInstance; }
+      }
+      
+      public override AggregateMessageSet BuildPartial() {
+        if (resultIsReadOnly) {
+          return result;
+        }
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is AggregateMessageSet) {
+          return MergeFrom((AggregateMessageSet) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(AggregateMessageSet other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet.DefaultInstance) return this;
+        PrepareBuilder();
+          this.MergeExtensionFields(other);
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_aggregateMessageSetFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _aggregateMessageSetFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
+          switch (tag) {
+            case 0: {
+              throw pb::InvalidProtocolBufferException.InvalidTag();
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              break;
+            }
+          }
+        }
+        
+        if (unknownFields != null) {
+          this.UnknownFields = unknownFields.Build();
+        }
+        return this;
+      }
+      
+    }
+    static AggregateMessageSet() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
+    }
+  }
+  
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+  public sealed partial class AggregateMessageSetElement : pb::GeneratedMessage<AggregateMessageSetElement, AggregateMessageSetElement.Builder> {
+    private AggregateMessageSetElement() { }
+    private static readonly AggregateMessageSetElement defaultInstance = new AggregateMessageSetElement().MakeReadOnly();
+    private static readonly string[] _aggregateMessageSetElementFieldNames = new string[] { "s" };
+    private static readonly uint[] _aggregateMessageSetElementFieldTags = new uint[] { 10 };
+    public static AggregateMessageSetElement DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override AggregateMessageSetElement DefaultInstanceForType {
+      get { return DefaultInstance; }
+    }
+    
+    protected override AggregateMessageSetElement ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_AggregateMessageSetElement__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<AggregateMessageSetElement, AggregateMessageSetElement.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_AggregateMessageSetElement__FieldAccessorTable; }
+    }
+    
+    public const int MessageSetExtensionFieldNumber = 15447542;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.AggregateMessageSetElement> MessageSetExtension;
+    public const int SFieldNumber = 1;
+    private bool hasS;
+    private string s_ = "";
+    public bool HasS {
+      get { return hasS; }
+    }
+    public string S {
+      get { return s_; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::ICodedOutputStream output) {
+      int size = SerializedSize;
+      string[] field_names = _aggregateMessageSetElementFieldNames;
+      if (hasS) {
+        output.WriteString(1, field_names[0], S);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (hasS) {
+          size += pb::CodedOutputStream.ComputeStringSize(1, S);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static AggregateMessageSetElement ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static AggregateMessageSetElement ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static AggregateMessageSetElement ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static AggregateMessageSetElement ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static AggregateMessageSetElement ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static AggregateMessageSetElement ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static AggregateMessageSetElement ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static AggregateMessageSetElement ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static AggregateMessageSetElement ParseFrom(pb::ICodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static AggregateMessageSetElement ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    private AggregateMessageSetElement MakeReadOnly() {
+      return this;
+    }
+    
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(AggregateMessageSetElement prototype) {
+      return new Builder(prototype);
+    }
+    
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+    public sealed partial class Builder : pb::GeneratedBuilder<AggregateMessageSetElement, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {
+        result = DefaultInstance;
+        resultIsReadOnly = true;
+      }
+      internal Builder(AggregateMessageSetElement cloneFrom) {
+        result = cloneFrom;
+        resultIsReadOnly = true;
+      }
+      
+      private bool resultIsReadOnly;
+      private AggregateMessageSetElement result;
+      
+      private AggregateMessageSetElement PrepareBuilder() {
+        if (resultIsReadOnly) {
+          AggregateMessageSetElement original = result;
+          result = new AggregateMessageSetElement();
+          resultIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
+      
+      protected override AggregateMessageSetElement MessageBeingBuilt {
+        get { return PrepareBuilder(); }
+      }
+      
+      public override Builder Clear() {
+        result = DefaultInstance;
+        resultIsReadOnly = true;
+        return this;
+      }
+      
+      public override Builder Clone() {
+        if (resultIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.AggregateMessageSetElement.Descriptor; }
+      }
+      
+      public override AggregateMessageSetElement DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.AggregateMessageSetElement.DefaultInstance; }
+      }
+      
+      public override AggregateMessageSetElement BuildPartial() {
+        if (resultIsReadOnly) {
+          return result;
+        }
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is AggregateMessageSetElement) {
+          return MergeFrom((AggregateMessageSetElement) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(AggregateMessageSetElement other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.AggregateMessageSetElement.DefaultInstance) return this;
+        PrepareBuilder();
+        if (other.HasS) {
+          S = other.S;
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_aggregateMessageSetElementFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _aggregateMessageSetElementFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
+          switch (tag) {
+            case 0: {
+              throw pb::InvalidProtocolBufferException.InvalidTag();
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              break;
+            }
+            case 10: {
+              result.hasS = input.ReadString(ref result.s_);
+              break;
+            }
+          }
+        }
+        
+        if (unknownFields != null) {
+          this.UnknownFields = unknownFields.Build();
+        }
+        return this;
+      }
+      
+      
+      public bool HasS {
+        get { return result.hasS; }
+      }
+      public string S {
+        get { return result.S; }
+        set { SetS(value); }
+      }
+      public Builder SetS(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        result.hasS = true;
+        result.s_ = value;
+        return this;
+      }
+      public Builder ClearS() {
+        PrepareBuilder();
+        result.hasS = false;
+        result.s_ = "";
+        return this;
+      }
+    }
+    static AggregateMessageSetElement() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
+    }
+  }
+  
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+  public sealed partial class Aggregate : pb::GeneratedMessage<Aggregate, Aggregate.Builder> {
+    private Aggregate() { }
+    private static readonly Aggregate defaultInstance = new Aggregate().MakeReadOnly();
+    private static readonly string[] _aggregateFieldNames = new string[] { "file", "i", "mset", "s", "sub" };
+    private static readonly uint[] _aggregateFieldTags = new uint[] { 34, 8, 42, 18, 26 };
+    public static Aggregate DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override Aggregate DefaultInstanceForType {
+      get { return DefaultInstance; }
+    }
+    
+    protected override Aggregate ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_Aggregate__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<Aggregate, Aggregate.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_Aggregate__FieldAccessorTable; }
+    }
+    
+    public const int NestedFieldNumber = 15476903;
+    public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.Aggregate> Nested;
+    public const int IFieldNumber = 1;
+    private bool hasI;
+    private int i_;
+    public bool HasI {
+      get { return hasI; }
+    }
+    public int I {
+      get { return i_; }
+    }
+    
+    public const int SFieldNumber = 2;
+    private bool hasS;
+    private string s_ = "";
+    public bool HasS {
+      get { return hasS; }
+    }
+    public string S {
+      get { return s_; }
+    }
+    
+    public const int SubFieldNumber = 3;
+    private bool hasSub;
+    private global::Google.ProtocolBuffers.TestProtos.Aggregate sub_;
+    public bool HasSub {
+      get { return hasSub; }
+    }
+    public global::Google.ProtocolBuffers.TestProtos.Aggregate Sub {
+      get { return sub_ ?? global::Google.ProtocolBuffers.TestProtos.Aggregate.DefaultInstance; }
+    }
+    
+    public const int FileFieldNumber = 4;
+    private bool hasFile;
+    private global::Google.ProtocolBuffers.DescriptorProtos.FileOptions file_;
+    public bool HasFile {
+      get { return hasFile; }
+    }
+    public global::Google.ProtocolBuffers.DescriptorProtos.FileOptions File {
+      get { return file_ ?? global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.DefaultInstance; }
+    }
+    
+    public const int MsetFieldNumber = 5;
+    private bool hasMset;
+    private global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet mset_;
+    public bool HasMset {
+      get { return hasMset; }
+    }
+    public global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet Mset {
+      get { return mset_ ?? global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet.DefaultInstance; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        if (HasSub) {
+          if (!Sub.IsInitialized) return false;
+        }
+        if (HasFile) {
+          if (!File.IsInitialized) return false;
+        }
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::ICodedOutputStream output) {
+      int size = SerializedSize;
+      string[] field_names = _aggregateFieldNames;
+      if (hasI) {
+        output.WriteInt32(1, field_names[1], I);
+      }
+      if (hasS) {
+        output.WriteString(2, field_names[3], S);
+      }
+      if (hasSub) {
+        output.WriteMessage(3, field_names[4], Sub);
+      }
+      if (hasFile) {
+        output.WriteMessage(4, field_names[0], File);
+      }
+      if (hasMset) {
+        output.WriteMessage(5, field_names[2], Mset);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (hasI) {
+          size += pb::CodedOutputStream.ComputeInt32Size(1, I);
+        }
+        if (hasS) {
+          size += pb::CodedOutputStream.ComputeStringSize(2, S);
+        }
+        if (hasSub) {
+          size += pb::CodedOutputStream.ComputeMessageSize(3, Sub);
+        }
+        if (hasFile) {
+          size += pb::CodedOutputStream.ComputeMessageSize(4, File);
+        }
+        if (hasMset) {
+          size += pb::CodedOutputStream.ComputeMessageSize(5, Mset);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static Aggregate ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static Aggregate ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static Aggregate ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static Aggregate ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static Aggregate ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static Aggregate ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static Aggregate ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static Aggregate ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static Aggregate ParseFrom(pb::ICodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static Aggregate ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    private Aggregate MakeReadOnly() {
+      return this;
+    }
+    
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(Aggregate prototype) {
+      return new Builder(prototype);
+    }
+    
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+    public sealed partial class Builder : pb::GeneratedBuilder<Aggregate, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {
+        result = DefaultInstance;
+        resultIsReadOnly = true;
+      }
+      internal Builder(Aggregate cloneFrom) {
+        result = cloneFrom;
+        resultIsReadOnly = true;
+      }
+      
+      private bool resultIsReadOnly;
+      private Aggregate result;
+      
+      private Aggregate PrepareBuilder() {
+        if (resultIsReadOnly) {
+          Aggregate original = result;
+          result = new Aggregate();
+          resultIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
+      
+      protected override Aggregate MessageBeingBuilt {
+        get { return PrepareBuilder(); }
+      }
+      
+      public override Builder Clear() {
+        result = DefaultInstance;
+        resultIsReadOnly = true;
+        return this;
+      }
+      
+      public override Builder Clone() {
+        if (resultIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.Aggregate.Descriptor; }
+      }
+      
+      public override Aggregate DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.Aggregate.DefaultInstance; }
+      }
+      
+      public override Aggregate BuildPartial() {
+        if (resultIsReadOnly) {
+          return result;
+        }
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is Aggregate) {
+          return MergeFrom((Aggregate) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(Aggregate other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.Aggregate.DefaultInstance) return this;
+        PrepareBuilder();
+        if (other.HasI) {
+          I = other.I;
+        }
+        if (other.HasS) {
+          S = other.S;
+        }
+        if (other.HasSub) {
+          MergeSub(other.Sub);
+        }
+        if (other.HasFile) {
+          MergeFile(other.File);
+        }
+        if (other.HasMset) {
+          MergeMset(other.Mset);
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_aggregateFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _aggregateFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
+          switch (tag) {
+            case 0: {
+              throw pb::InvalidProtocolBufferException.InvalidTag();
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              break;
+            }
+            case 8: {
+              result.hasI = input.ReadInt32(ref result.i_);
+              break;
+            }
+            case 18: {
+              result.hasS = input.ReadString(ref result.s_);
+              break;
+            }
+            case 26: {
+              global::Google.ProtocolBuffers.TestProtos.Aggregate.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.Aggregate.CreateBuilder();
+              if (result.hasSub) {
+                subBuilder.MergeFrom(Sub);
+              }
+              input.ReadMessage(subBuilder, extensionRegistry);
+              Sub = subBuilder.BuildPartial();
+              break;
+            }
+            case 34: {
+              global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.CreateBuilder();
+              if (result.hasFile) {
+                subBuilder.MergeFrom(File);
+              }
+              input.ReadMessage(subBuilder, extensionRegistry);
+              File = subBuilder.BuildPartial();
+              break;
+            }
+            case 42: {
+              global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet.CreateBuilder();
+              if (result.hasMset) {
+                subBuilder.MergeFrom(Mset);
+              }
+              input.ReadMessage(subBuilder, extensionRegistry);
+              Mset = subBuilder.BuildPartial();
+              break;
+            }
+          }
+        }
+        
+        if (unknownFields != null) {
+          this.UnknownFields = unknownFields.Build();
+        }
+        return this;
+      }
+      
+      
+      public bool HasI {
+        get { return result.hasI; }
+      }
+      public int I {
+        get { return result.I; }
+        set { SetI(value); }
+      }
+      public Builder SetI(int value) {
+        PrepareBuilder();
+        result.hasI = true;
+        result.i_ = value;
+        return this;
+      }
+      public Builder ClearI() {
+        PrepareBuilder();
+        result.hasI = false;
+        result.i_ = 0;
+        return this;
+      }
+      
+      public bool HasS {
+        get { return result.hasS; }
+      }
+      public string S {
+        get { return result.S; }
+        set { SetS(value); }
+      }
+      public Builder SetS(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        result.hasS = true;
+        result.s_ = value;
+        return this;
+      }
+      public Builder ClearS() {
+        PrepareBuilder();
+        result.hasS = false;
+        result.s_ = "";
+        return this;
+      }
+      
+      public bool HasSub {
+       get { return result.hasSub; }
+      }
+      public global::Google.ProtocolBuffers.TestProtos.Aggregate Sub {
+        get { return result.Sub; }
+        set { SetSub(value); }
+      }
+      public Builder SetSub(global::Google.ProtocolBuffers.TestProtos.Aggregate value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        result.hasSub = true;
+        result.sub_ = value;
+        return this;
+      }
+      public Builder SetSub(global::Google.ProtocolBuffers.TestProtos.Aggregate.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        PrepareBuilder();
+        result.hasSub = true;
+        result.sub_ = builderForValue.Build();
+        return this;
+      }
+      public Builder MergeSub(global::Google.ProtocolBuffers.TestProtos.Aggregate value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        if (result.hasSub &&
+            result.sub_ != global::Google.ProtocolBuffers.TestProtos.Aggregate.DefaultInstance) {
+            result.sub_ = global::Google.ProtocolBuffers.TestProtos.Aggregate.CreateBuilder(result.sub_).MergeFrom(value).BuildPartial();
+        } else {
+          result.sub_ = value;
+        }
+        result.hasSub = true;
+        return this;
+      }
+      public Builder ClearSub() {
+        PrepareBuilder();
+        result.hasSub = false;
+        result.sub_ = null;
+        return this;
+      }
+      
+      public bool HasFile {
+       get { return result.hasFile; }
+      }
+      public global::Google.ProtocolBuffers.DescriptorProtos.FileOptions File {
+        get { return result.File; }
+        set { SetFile(value); }
+      }
+      public Builder SetFile(global::Google.ProtocolBuffers.DescriptorProtos.FileOptions value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        result.hasFile = true;
+        result.file_ = value;
+        return this;
+      }
+      public Builder SetFile(global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        PrepareBuilder();
+        result.hasFile = true;
+        result.file_ = builderForValue.Build();
+        return this;
+      }
+      public Builder MergeFile(global::Google.ProtocolBuffers.DescriptorProtos.FileOptions value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        if (result.hasFile &&
+            result.file_ != global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.DefaultInstance) {
+            result.file_ = global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.CreateBuilder(result.file_).MergeFrom(value).BuildPartial();
+        } else {
+          result.file_ = value;
+        }
+        result.hasFile = true;
+        return this;
+      }
+      public Builder ClearFile() {
+        PrepareBuilder();
+        result.hasFile = false;
+        result.file_ = null;
+        return this;
+      }
+      
+      public bool HasMset {
+       get { return result.hasMset; }
+      }
+      public global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet Mset {
+        get { return result.Mset; }
+        set { SetMset(value); }
+      }
+      public Builder SetMset(global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        result.hasMset = true;
+        result.mset_ = value;
+        return this;
+      }
+      public Builder SetMset(global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        PrepareBuilder();
+        result.hasMset = true;
+        result.mset_ = builderForValue.Build();
+        return this;
+      }
+      public Builder MergeMset(global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        if (result.hasMset &&
+            result.mset_ != global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet.DefaultInstance) {
+            result.mset_ = global::Google.ProtocolBuffers.TestProtos.AggregateMessageSet.CreateBuilder(result.mset_).MergeFrom(value).BuildPartial();
+        } else {
+          result.mset_ = value;
+        }
+        result.hasMset = true;
+        return this;
+      }
+      public Builder ClearMset() {
+        PrepareBuilder();
+        result.hasMset = false;
+        result.mset_ = null;
+        return this;
+      }
+    }
+    static Aggregate() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
+    }
+  }
+  
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+  public sealed partial class AggregateMessage : pb::GeneratedMessage<AggregateMessage, AggregateMessage.Builder> {
+    private AggregateMessage() { }
+    private static readonly AggregateMessage defaultInstance = new AggregateMessage().MakeReadOnly();
+    private static readonly string[] _aggregateMessageFieldNames = new string[] { "fieldname" };
+    private static readonly uint[] _aggregateMessageFieldTags = new uint[] { 8 };
+    public static AggregateMessage DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override AggregateMessage DefaultInstanceForType {
+      get { return DefaultInstance; }
+    }
+    
+    protected override AggregateMessage ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_AggregateMessage__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<AggregateMessage, AggregateMessage.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.internal__static_protobuf_unittest_AggregateMessage__FieldAccessorTable; }
+    }
+    
+    public const int FieldnameFieldNumber = 1;
+    private bool hasFieldname;
+    private int fieldname_;
+    public bool HasFieldname {
+      get { return hasFieldname; }
+    }
+    public int Fieldname {
+      get { return fieldname_; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::ICodedOutputStream output) {
+      int size = SerializedSize;
+      string[] field_names = _aggregateMessageFieldNames;
+      if (hasFieldname) {
+        output.WriteInt32(1, field_names[0], Fieldname);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (hasFieldname) {
+          size += pb::CodedOutputStream.ComputeInt32Size(1, Fieldname);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static AggregateMessage ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static AggregateMessage ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static AggregateMessage ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static AggregateMessage ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static AggregateMessage ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static AggregateMessage ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static AggregateMessage ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static AggregateMessage ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static AggregateMessage ParseFrom(pb::ICodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static AggregateMessage ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    private AggregateMessage MakeReadOnly() {
+      return this;
+    }
+    
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(AggregateMessage prototype) {
+      return new Builder(prototype);
+    }
+    
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+    public sealed partial class Builder : pb::GeneratedBuilder<AggregateMessage, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {
+        result = DefaultInstance;
+        resultIsReadOnly = true;
+      }
+      internal Builder(AggregateMessage cloneFrom) {
+        result = cloneFrom;
+        resultIsReadOnly = true;
+      }
+      
+      private bool resultIsReadOnly;
+      private AggregateMessage result;
+      
+      private AggregateMessage PrepareBuilder() {
+        if (resultIsReadOnly) {
+          AggregateMessage original = result;
+          result = new AggregateMessage();
+          resultIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
+      
+      protected override AggregateMessage MessageBeingBuilt {
+        get { return PrepareBuilder(); }
+      }
+      
+      public override Builder Clear() {
+        result = DefaultInstance;
+        resultIsReadOnly = true;
+        return this;
+      }
+      
+      public override Builder Clone() {
+        if (resultIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.AggregateMessage.Descriptor; }
+      }
+      
+      public override AggregateMessage DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.AggregateMessage.DefaultInstance; }
+      }
+      
+      public override AggregateMessage BuildPartial() {
+        if (resultIsReadOnly) {
+          return result;
+        }
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is AggregateMessage) {
+          return MergeFrom((AggregateMessage) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(AggregateMessage other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.AggregateMessage.DefaultInstance) return this;
+        PrepareBuilder();
+        if (other.HasFieldname) {
+          Fieldname = other.Fieldname;
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_aggregateMessageFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _aggregateMessageFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
+          switch (tag) {
+            case 0: {
+              throw pb::InvalidProtocolBufferException.InvalidTag();
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              break;
+            }
+            case 8: {
+              result.hasFieldname = input.ReadInt32(ref result.fieldname_);
+              break;
+            }
+          }
+        }
+        
+        if (unknownFields != null) {
+          this.UnknownFields = unknownFields.Build();
+        }
+        return this;
+      }
+      
+      
+      public bool HasFieldname {
+        get { return result.hasFieldname; }
+      }
+      public int Fieldname {
+        get { return result.Fieldname; }
+        set { SetFieldname(value); }
+      }
+      public Builder SetFieldname(int value) {
+        PrepareBuilder();
+        result.hasFieldname = true;
+        result.fieldname_ = value;
+        return this;
+      }
+      public Builder ClearFieldname() {
+        PrepareBuilder();
+        result.hasFieldname = false;
+        result.fieldname_ = 0;
+        return this;
+      }
+    }
+    static AggregateMessage() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestCustomOptionsProtoFile.Descriptor, null);
+    }
+  }
+  
   #endregion
   
   #region Services
+  /*
+  * Service generation is now disabled by default, use the following option to enable:
+  * option (google.protobuf.csharp_file_options).service_generator_type = GENERIC;
+  */
   /*
   * Service generation is now disabled by default, use the following option to enable:
   * option (google.protobuf.csharp_file_options).service_generator_type = GENERIC;

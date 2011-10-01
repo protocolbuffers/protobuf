@@ -43,10 +43,10 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
           "b3RvYnVmLm5vX2dlbmVyaWNfc2VydmljZXNfdGVzdC5UZXN0TWVzc2FnZRo1" + 
           "Lmdvb2dsZS5wcm90b2J1Zi5ub19nZW5lcmljX3NlcnZpY2VzX3Rlc3QuVGVz" + 
           "dE1lc3NhZ2U6TgoOdGVzdF9leHRlbnNpb24SNS5nb29nbGUucHJvdG9idWYu" + 
-          "bm9fZ2VuZXJpY19zZXJ2aWNlc190ZXN0LlRlc3RNZXNzYWdlGOgHIAEoBUJk" + 
-          "gAEAiAEAkAEAwj5YCjJHb29nbGUuUHJvdG9jb2xCdWZmZXJzLlRlc3RQcm90" + 
-          "b3MuTm9HZW5lcmljU2VydmljZRIiVW5pdFRlc3ROb0dlbmVyaWNTZXJ2aWNl" + 
-          "c1Byb3RvRmlsZQ==");
+          "bm9fZ2VuZXJpY19zZXJ2aWNlc190ZXN0LlRlc3RNZXNzYWdlGOgHIAEoBUJb" + 
+          "wj5YCjJHb29nbGUuUHJvdG9jb2xCdWZmZXJzLlRlc3RQcm90b3MuTm9HZW5l" + 
+          "cmljU2VydmljZRIiVW5pdFRlc3ROb0dlbmVyaWNTZXJ2aWNlc1Byb3RvRmls" + 
+          "ZQ==");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_google_protobuf_no_generic_services_test_TestMessage__Descriptor = Descriptor.MessageTypes[0];

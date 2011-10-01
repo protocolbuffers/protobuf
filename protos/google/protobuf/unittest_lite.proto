@@ -178,23 +178,6 @@ message TestPackedTypesLite {
   repeated ForeignEnumLite packed_enum  = 103 [packed = true];
 }
 
-message TestUnpackedTypesLite {
-  repeated    int32 unpacked_int32    =  90;
-  repeated    int64 unpacked_int64    =  91;
-  repeated   uint32 unpacked_uint32   =  92;
-  repeated   uint64 unpacked_uint64   =  93;
-  repeated   sint32 unpacked_sint32   =  94;
-  repeated   sint64 unpacked_sint64   =  95;
-  repeated  fixed32 unpacked_fixed32  =  96;
-  repeated  fixed64 unpacked_fixed64  =  97;
-  repeated sfixed32 unpacked_sfixed32 =  98;
-  repeated sfixed64 unpacked_sfixed64 =  99;
-  repeated    float unpacked_float    = 100;
-  repeated   double unpacked_double   = 101;
-  repeated     bool unpacked_bool     = 102;
-  repeated ForeignEnumLite unpacked_enum  = 103;
-}
-
 message TestAllExtensionsLite {
   extensions 1 to max;
 }
@@ -320,27 +303,6 @@ extend TestPackedExtensionsLite {
   repeated   double packed_double_extension_lite   = 101 [packed = true];
   repeated     bool packed_bool_extension_lite     = 102 [packed = true];
   repeated ForeignEnumLite packed_enum_extension_lite = 103 [packed = true];
-}
-
-message TestUnpackedExtensionsLite {
-  extensions 1 to max;
-}
-
-extend TestUnpackedExtensionsLite {
-  repeated    int32 unpacked_int32_extension_lite    =  90;
-  repeated    int64 unpacked_int64_extension_lite    =  91;
-  repeated   uint32 unpacked_uint32_extension_lite   =  92;
-  repeated   uint64 unpacked_uint64_extension_lite   =  93;
-  repeated   sint32 unpacked_sint32_extension_lite   =  94;
-  repeated   sint64 unpacked_sint64_extension_lite   =  95;
-  repeated  fixed32 unpacked_fixed32_extension_lite  =  96;
-  repeated  fixed64 unpacked_fixed64_extension_lite  =  97;
-  repeated sfixed32 unpacked_sfixed32_extension_lite =  98;
-  repeated sfixed64 unpacked_sfixed64_extension_lite =  99;
-  repeated    float unpacked_float_extension_lite    = 100;
-  repeated   double unpacked_double_extension_lite   = 101;
-  repeated     bool unpacked_bool_extension_lite     = 102;
-  repeated ForeignEnumLite unpacked_enum_extension_lite = 103;
 }
 
 message TestNestedExtensionLite {

@@ -88,6 +88,7 @@
     </Compile>
     <Compile Include="Compatibility\TextCompatibilityTests.cs" />
     <Compile Include="Compatibility\XmlCompatibilityTests.cs" />
+    <Compile Include="TestProtos\UnitTestExtrasProtoFile.cs" />
     <Compile Include="TestRpcForMimeTypes.cs" />
     <Compile Include="TestReaderForUrlEncoded.cs" />
     <Compile Include="CSharpOptionsTest.cs" />
