@@ -11,7 +11,7 @@
     <copyright>Copyright 2008 Google Inc.  All rights reserved.</copyright>
     <tags>Protocol Buffers Binary Serialization Format Google</tags>
 
-    <title>Google Protocol Buffers</title>
+    <title>Google.ProtocolBuffersLite</title>
     <summary>A managed code generator and library for Google's data interchange format.</summary>
     <description><![CDATA[
 Protocol Buffers is a binary serialization format and technology, released to the open source community by Google in 2008.  
