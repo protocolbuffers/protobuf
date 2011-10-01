@@ -87,8 +87,12 @@ namespace Google.ProtocolBuffers
 
         public static FieldSet CreateInstance()
         {
+#if SILVERLIGHT2
+            return new FieldSet(new Dictionary<IFieldDescriptorLite, object>());
+#else
             // Use SortedList to keep fields in the canonical order
             return new FieldSet(new SortedList<IFieldDescriptorLite, object>());
+#endif
         }
 
         /// <summary>
@@ -309,7 +313,16 @@ namespace Google.ProtocolBuffers
         /// </summary>
         internal IEnumerator<KeyValuePair<IFieldDescriptorLite, object>> GetEnumerator()
         {
+#if SILVERLIGHT2
+            List<KeyValuePair<IFieldDescriptorLite, object>> result = new List<KeyValuePair<IFieldDescriptorLite, object>>(fields);
+            result.Sort(
+                delegate(KeyValuePair<IFieldDescriptorLite, object> a, KeyValuePair<IFieldDescriptorLite, object> b)
+                { return a.Key.CompareTo(b.Key); }
+            );
+            return result.GetEnumerator();
+#else
             return fields.GetEnumerator();
+#endif
         }
 
         /// <summary>
@@ -461,9 +474,12 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public void WriteTo(ICodedOutputStream output)
         {
-            foreach (KeyValuePair<IFieldDescriptorLite, object> entry in fields)
+            using (IEnumerator<KeyValuePair<IFieldDescriptorLite, object>> e = GetEnumerator())
             {
-                WriteField(entry.Key, entry.Value, output);
+                while (e.MoveNext())
+                {
+                    WriteField(e.Current.Key, e.Current.Value, output);
+                }
             }
         }
 
