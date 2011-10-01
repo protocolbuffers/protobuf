@@ -4,7 +4,7 @@
     <id>Google.ProtocolBuffersLite</id>
     <version>$version$</version>
     <owners>Jon Skeet</owners>
-    <authors>Jon Skeet, Roger Knapp</authors>
+    <authors>Jon Skeet</authors>
     <licenseUrl>http://code.google.com/p/protobuf-csharp-port/source/browse/license.txt</licenseUrl>
     <projectUrl>http://code.google.com/p/protobuf-csharp-port/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
