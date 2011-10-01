@@ -133,6 +133,7 @@ namespace Google.ProtocolBuffers
             byte[] bytes = TestUtil.GetPackedSet().ToByteArray();
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
             UnitTestProtoFile.RegisterAllExtensions(registry);
+            UnitTestExtrasProtoFile.RegisterAllExtensions(registry);
             TestUnpackedExtensions message = TestUnpackedExtensions.ParseFrom(bytes, registry);
             TestUtil.AssertUnpackedExtensionsSet(message);
         }
