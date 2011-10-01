@@ -123,8 +123,8 @@ namespace Google.ProtocolBuffers
 
             void IHttpTransfer.Execute(string method, string contentType, Stream input, string acceptType, Stream output)
             {
-                //Extension for: Google.ProtocolBuffers.Serialization.Http.ServiceExtensions.HttpCallMethod(_stub,
-                _stub.HttpCallMethod(
+                //3.5: _stub.HttpCallMethod(
+                Extensions.HttpCallMethod(_stub,
                     method, Options,
                     contentType, input,
                     acceptType, output
@@ -165,14 +165,14 @@ namespace Google.ProtocolBuffers
                 MemoryStream output = new MemoryStream();
 
                 //Write to _mimeType format
-                request.WriteTo(Options, _mimeType, input);
+                Extensions.WriteTo(request, Options, _mimeType, input);
 
                 input.Position = 0;
                 _wire.Execute(method, _mimeType, input, _mimeType, output);
 
                 //Read from _mimeType format
                 output.Position = 0;
-                response.MergeFrom(Options, _mimeType, output);
+                Extensions.MergeFrom(response, Options, _mimeType, output);
                 
                 return response.Build();
             }

@@ -90,8 +90,8 @@ namespace Google.ProtocolBuffers
 
             TestAllTypes m2 = b1.Build();
             
-            Assert.AreEqual("{\"optional_foreign_message\":{},\"repeated_int32\":[2],\"default_int32\":1}", m1.ToJson());
-            Assert.AreEqual("{\"optional_foreign_message\":{\"c\":7},\"repeated_int32\":[2,6],\"default_int32\":5}", m2.ToJson());
+            Assert.AreEqual("{\"optional_foreign_message\":{},\"repeated_int32\":[2],\"default_int32\":1}", Extensions.ToJson(m1));
+            Assert.AreEqual("{\"optional_foreign_message\":{\"c\":7},\"repeated_int32\":[2,6],\"default_int32\":5}", Extensions.ToJson(m2));
         }
 
         [Test]

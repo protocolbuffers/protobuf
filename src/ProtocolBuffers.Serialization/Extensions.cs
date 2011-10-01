@@ -17,7 +17,11 @@ namespace Google.ProtocolBuffers
         /// Serializes the message to JSON text.  This is a trivial wrapper
         /// around Serialization.JsonFormatWriter.WriteMessage.
         /// </summary>
-        public static string ToJson(this IMessageLite message)
+        public static string ToJson(
+#if !NET20
+            this
+#endif
+            IMessageLite message)
         {
             JsonFormatWriter w = JsonFormatWriter.CreateInstance();
             w.WriteMessage(message);
@@ -27,7 +31,11 @@ namespace Google.ProtocolBuffers
         /// Serializes the message to XML text.  This is a trivial wrapper
         /// around Serialization.XmlFormatWriter.WriteMessage.
         /// </summary>
-        public static string ToXml(this IMessageLite message)
+        public static string ToXml(
+#if !NET20
+            this
+#endif
+            IMessageLite message)
         {
             StringWriter w = new StringWriter(new StringBuilder(4096));
             XmlFormatWriter.CreateInstance(w).WriteMessage(message);
@@ -37,7 +45,11 @@ namespace Google.ProtocolBuffers
         /// Serializes the message to XML text using the element name provided.
         /// This is a trivial wrapper around Serialization.XmlFormatWriter.WriteMessage.
         /// </summary>
-        public static string ToXml(this IMessageLite message, string rootElementName)
+        public static string ToXml(
+#if !NET20
+            this
+#endif
+            IMessageLite message, string rootElementName)
         {
             StringWriter w = new StringWriter(new StringBuilder(4096));
             XmlFormatWriter.CreateInstance(w).WriteMessage(rootElementName, message);
@@ -51,7 +63,11 @@ namespace Google.ProtocolBuffers
         /// <param name="options">Options specific to writing this message and/or content type</param>
         /// <param name="contentType">The mime type of the content to be written</param>
         /// <param name="output">The stream to write the message to</param>
-        public static void WriteTo(this IMessageLite message, MessageFormatOptions options, string contentType, Stream output)
+        public static void WriteTo(
+#if !NET20
+            this
+#endif
+            IMessageLite message, MessageFormatOptions options, string contentType, Stream output)
         {
             ICodedOutputStream codedOutput = MessageFormatFactory.CreateOutputStream(options, contentType, output);
 
@@ -71,7 +87,11 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Merges a JSON object into this builder and returns
         /// </summary>
-        public static TBuilder MergeFromJson<TBuilder>(this TBuilder builder, string jsonText) where TBuilder : IBuilderLite
+        public static TBuilder MergeFromJson<TBuilder>(
+#if !NET20
+            this
+#endif
+            TBuilder builder, string jsonText) where TBuilder : IBuilderLite
         {
             return JsonFormatReader.CreateInstance(jsonText)
                 .Merge(builder);
@@ -79,14 +99,22 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Merges a JSON object into this builder and returns
         /// </summary>
-        public static TBuilder MergeFromJson<TBuilder>(this TBuilder builder, TextReader reader) where TBuilder : IBuilderLite
+        public static TBuilder MergeFromJson<TBuilder>(
+#if !NET20
+            this
+#endif
+            TBuilder builder, TextReader reader) where TBuilder : IBuilderLite
         {
             return MergeFromJson(builder, reader, ExtensionRegistry.Empty);
         }
         /// <summary>
         /// Merges a JSON object into this builder using the extensions provided and returns
         /// </summary>
-        public static TBuilder MergeFromJson<TBuilder>(this TBuilder builder, TextReader reader, ExtensionRegistry extensionRegistry) where TBuilder : IBuilderLite
+        public static TBuilder MergeFromJson<TBuilder>(
+#if !NET20
+            this
+#endif
+            TBuilder builder, TextReader reader, ExtensionRegistry extensionRegistry) where TBuilder : IBuilderLite
         {
             return JsonFormatReader.CreateInstance(reader)
                 .Merge(builder, extensionRegistry);
@@ -95,7 +123,11 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Merges an XML object into this builder and returns
         /// </summary>
-        public static TBuilder MergeFromXml<TBuilder>(this TBuilder builder, XmlReader reader) where TBuilder : IBuilderLite
+        public static TBuilder MergeFromXml<TBuilder>(
+#if !NET20
+            this
+#endif
+            TBuilder builder, XmlReader reader) where TBuilder : IBuilderLite
         {
             return MergeFromXml(builder, XmlFormatReader.DefaultRootElementName, reader, ExtensionRegistry.Empty);
         }
@@ -103,7 +135,11 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Merges an XML object into this builder and returns
         /// </summary>
-        public static TBuilder MergeFromXml<TBuilder>(this TBuilder builder, string rootElementName, XmlReader reader) where TBuilder : IBuilderLite
+        public static TBuilder MergeFromXml<TBuilder>(
+#if !NET20
+            this
+#endif
+            TBuilder builder, string rootElementName, XmlReader reader) where TBuilder : IBuilderLite
         {
             return MergeFromXml(builder, rootElementName, reader, ExtensionRegistry.Empty);
         }
@@ -111,8 +147,12 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Merges an XML object into this builder using the extensions provided and returns
         /// </summary>
-        public static TBuilder MergeFromXml<TBuilder>(this TBuilder builder, string rootElementName, XmlReader reader,
-                                            ExtensionRegistry extensionRegistry) where TBuilder : IBuilderLite
+        public static TBuilder MergeFromXml<TBuilder>(
+#if !NET20
+            this
+#endif
+            TBuilder builder, string rootElementName, XmlReader reader,
+            ExtensionRegistry extensionRegistry) where TBuilder : IBuilderLite
         {
             return XmlFormatReader.CreateInstance(reader)
                 .Merge(rootElementName, builder, extensionRegistry);
@@ -127,7 +167,11 @@ namespace Google.ProtocolBuffers
         /// <param name="contentType">The mime type of the input stream content</param>
         /// <param name="input">The stream to read the message from</param>
         /// <returns>The same builder instance that was supplied in the builder parameter</returns>
-        public static TBuilder MergeFrom<TBuilder>(this TBuilder builder, MessageFormatOptions options, string contentType, Stream input) where TBuilder : IBuilderLite
+        public static TBuilder MergeFrom<TBuilder>(
+#if !NET20
+            this
+#endif
+            TBuilder builder, MessageFormatOptions options, string contentType, Stream input) where TBuilder : IBuilderLite
         {
             ICodedInputStream codedInput = MessageFormatFactory.CreateInputStream(options, contentType, input);
             codedInput.ReadMessageStart();
@@ -150,14 +194,18 @@ namespace Google.ProtocolBuffers
         /// <param name="input">The input stream</param>
         /// <param name="responseType">The mime type for the output stream</param>
         /// <param name="output">The output stream</param>
-        public static void HttpCallMethod(this IRpcServerStub stub, string methodName, MessageFormatOptions options,
+        public static void HttpCallMethod(
+#if !NET20
+            this
+#endif
+            IRpcServerStub stub, string methodName, MessageFormatOptions options,
             string contentType, Stream input, string responseType, Stream output)
         {
             ICodedInputStream codedInput = MessageFormatFactory.CreateInputStream(options, contentType, input);
             codedInput.ReadMessageStart();
             IMessageLite response = stub.CallMethod(methodName, codedInput, options.ExtensionRegistry);
             codedInput.ReadMessageEnd();
-            response.WriteTo(options, responseType, output);
+            WriteTo(response, options, responseType, output);
         }
 
         #endregion
