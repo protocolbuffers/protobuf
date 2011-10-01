@@ -54,6 +54,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder> internal__static_google_protobuf_UninterpretedOption__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_google_protobuf_UninterpretedOption_NamePart__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart.Builder> internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_SourceCodeInfo__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo, global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Builder> internal__static_google_protobuf_SourceCodeInfo__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_google_protobuf_SourceCodeInfo_Location__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location, global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location.Builder> internal__static_google_protobuf_SourceCodeInfo_Location__FieldAccessorTable;
     #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
@@ -65,7 +69,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           "CiBnb29nbGUvcHJvdG9idWYvZGVzY3JpcHRvci5wcm90bxIPZ29vZ2xlLnBy" + 
           "b3RvYnVmIkcKEUZpbGVEZXNjcmlwdG9yU2V0EjIKBGZpbGUYASADKAsyJC5n" + 
-          "b29nbGUucHJvdG9idWYuRmlsZURlc2NyaXB0b3JQcm90byLcAgoTRmlsZURl" + 
+          "b29nbGUucHJvdG9idWYuRmlsZURlc2NyaXB0b3JQcm90byKXAwoTRmlsZURl" + 
           "c2NyaXB0b3JQcm90bxIMCgRuYW1lGAEgASgJEg8KB3BhY2thZ2UYAiABKAkS" + 
           "EgoKZGVwZW5kZW5jeRgDIAMoCRI2CgxtZXNzYWdlX3R5cGUYBCADKAsyIC5n" + 
           "b29nbGUucHJvdG9idWYuRGVzY3JpcHRvclByb3RvEjcKCWVudW1fdHlwZRgF" + 
@@ -73,78 +77,84 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           "B3NlcnZpY2UYBiADKAsyJy5nb29nbGUucHJvdG9idWYuU2VydmljZURlc2Ny" + 
           "aXB0b3JQcm90bxI4CglleHRlbnNpb24YByADKAsyJS5nb29nbGUucHJvdG9i" + 
           "dWYuRmllbGREZXNjcmlwdG9yUHJvdG8SLQoHb3B0aW9ucxgIIAEoCzIcLmdv" + 
-          "b2dsZS5wcm90b2J1Zi5GaWxlT3B0aW9ucyKpAwoPRGVzY3JpcHRvclByb3Rv" + 
-          "EgwKBG5hbWUYASABKAkSNAoFZmllbGQYAiADKAsyJS5nb29nbGUucHJvdG9i" + 
-          "dWYuRmllbGREZXNjcmlwdG9yUHJvdG8SOAoJZXh0ZW5zaW9uGAYgAygLMiUu" + 
-          "Z29vZ2xlLnByb3RvYnVmLkZpZWxkRGVzY3JpcHRvclByb3RvEjUKC25lc3Rl" + 
-          "ZF90eXBlGAMgAygLMiAuZ29vZ2xlLnByb3RvYnVmLkRlc2NyaXB0b3JQcm90" + 
-          "bxI3CgllbnVtX3R5cGUYBCADKAsyJC5nb29nbGUucHJvdG9idWYuRW51bURl" + 
-          "c2NyaXB0b3JQcm90bxJICg9leHRlbnNpb25fcmFuZ2UYBSADKAsyLy5nb29n" + 
-          "bGUucHJvdG9idWYuRGVzY3JpcHRvclByb3RvLkV4dGVuc2lvblJhbmdlEjAK" + 
-          "B29wdGlvbnMYByABKAsyHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlv" + 
-          "bnMaLAoORXh0ZW5zaW9uUmFuZ2USDQoFc3RhcnQYASABKAUSCwoDZW5kGAIg" + 
-          "ASgFIpQFChRGaWVsZERlc2NyaXB0b3JQcm90bxIMCgRuYW1lGAEgASgJEg4K" + 
-          "Bm51bWJlchgDIAEoBRI6CgVsYWJlbBgEIAEoDjIrLmdvb2dsZS5wcm90b2J1" + 
-          "Zi5GaWVsZERlc2NyaXB0b3JQcm90by5MYWJlbBI4CgR0eXBlGAUgASgOMiou" + 
-          "Z29vZ2xlLnByb3RvYnVmLkZpZWxkRGVzY3JpcHRvclByb3RvLlR5cGUSEQoJ" + 
-          "dHlwZV9uYW1lGAYgASgJEhAKCGV4dGVuZGVlGAIgASgJEhUKDWRlZmF1bHRf" + 
-          "dmFsdWUYByABKAkSLgoHb3B0aW9ucxgIIAEoCzIdLmdvb2dsZS5wcm90b2J1" + 
-          "Zi5GaWVsZE9wdGlvbnMitgIKBFR5cGUSDwoLVFlQRV9ET1VCTEUQARIOCgpU" + 
-          "WVBFX0ZMT0FUEAISDgoKVFlQRV9JTlQ2NBADEg8KC1RZUEVfVUlOVDY0EAQS" + 
-          "DgoKVFlQRV9JTlQzMhAFEhAKDFRZUEVfRklYRUQ2NBAGEhAKDFRZUEVfRklY" + 
-          "RUQzMhAHEg0KCVRZUEVfQk9PTBAIEg8KC1RZUEVfU1RSSU5HEAkSDgoKVFlQ" + 
-          "RV9HUk9VUBAKEhAKDFRZUEVfTUVTU0FHRRALEg4KClRZUEVfQllURVMQDBIP" + 
-          "CgtUWVBFX1VJTlQzMhANEg0KCVRZUEVfRU5VTRAOEhEKDVRZUEVfU0ZJWEVE" + 
-          "MzIQDxIRCg1UWVBFX1NGSVhFRDY0EBASDwoLVFlQRV9TSU5UMzIQERIPCgtU" + 
-          "WVBFX1NJTlQ2NBASIkMKBUxhYmVsEhIKDkxBQkVMX09QVElPTkFMEAESEgoO" + 
-          "TEFCRUxfUkVRVUlSRUQQAhISCg5MQUJFTF9SRVBFQVRFRBADIowBChNFbnVt" + 
-          "RGVzY3JpcHRvclByb3RvEgwKBG5hbWUYASABKAkSOAoFdmFsdWUYAiADKAsy" + 
-          "KS5nb29nbGUucHJvdG9idWYuRW51bVZhbHVlRGVzY3JpcHRvclByb3RvEi0K" + 
-          "B29wdGlvbnMYAyABKAsyHC5nb29nbGUucHJvdG9idWYuRW51bU9wdGlvbnMi" + 
-          "bAoYRW51bVZhbHVlRGVzY3JpcHRvclByb3RvEgwKBG5hbWUYASABKAkSDgoG" + 
-          "bnVtYmVyGAIgASgFEjIKB29wdGlvbnMYAyABKAsyIS5nb29nbGUucHJvdG9i" + 
-          "dWYuRW51bVZhbHVlT3B0aW9ucyKQAQoWU2VydmljZURlc2NyaXB0b3JQcm90" + 
-          "bxIMCgRuYW1lGAEgASgJEjYKBm1ldGhvZBgCIAMoCzImLmdvb2dsZS5wcm90" + 
-          "b2J1Zi5NZXRob2REZXNjcmlwdG9yUHJvdG8SMAoHb3B0aW9ucxgDIAEoCzIf" + 
-          "Lmdvb2dsZS5wcm90b2J1Zi5TZXJ2aWNlT3B0aW9ucyJ/ChVNZXRob2REZXNj" + 
-          "cmlwdG9yUHJvdG8SDAoEbmFtZRgBIAEoCRISCgppbnB1dF90eXBlGAIgASgJ" + 
-          "EhMKC291dHB1dF90eXBlGAMgASgJEi8KB29wdGlvbnMYBCABKAsyHi5nb29n" + 
-          "bGUucHJvdG9idWYuTWV0aG9kT3B0aW9ucyKkAwoLRmlsZU9wdGlvbnMSFAoM" + 
-          "amF2YV9wYWNrYWdlGAEgASgJEhwKFGphdmFfb3V0ZXJfY2xhc3NuYW1lGAgg" + 
-          "ASgJEiIKE2phdmFfbXVsdGlwbGVfZmlsZXMYCiABKAg6BWZhbHNlEkYKDG9w" + 
-          "dGltaXplX2ZvchgJIAEoDjIpLmdvb2dsZS5wcm90b2J1Zi5GaWxlT3B0aW9u" + 
-          "cy5PcHRpbWl6ZU1vZGU6BVNQRUVEEiEKE2NjX2dlbmVyaWNfc2VydmljZXMY" + 
-          "ECABKAg6BHRydWUSIwoVamF2YV9nZW5lcmljX3NlcnZpY2VzGBEgASgIOgR0" + 
-          "cnVlEiEKE3B5X2dlbmVyaWNfc2VydmljZXMYEiABKAg6BHRydWUSQwoUdW5p" + 
+          "b2dsZS5wcm90b2J1Zi5GaWxlT3B0aW9ucxI5ChBzb3VyY2VfY29kZV9pbmZv" + 
+          "GAkgASgLMh8uZ29vZ2xlLnByb3RvYnVmLlNvdXJjZUNvZGVJbmZvIqkDCg9E" + 
+          "ZXNjcmlwdG9yUHJvdG8SDAoEbmFtZRgBIAEoCRI0CgVmaWVsZBgCIAMoCzIl" + 
+          "Lmdvb2dsZS5wcm90b2J1Zi5GaWVsZERlc2NyaXB0b3JQcm90bxI4CglleHRl" + 
+          "bnNpb24YBiADKAsyJS5nb29nbGUucHJvdG9idWYuRmllbGREZXNjcmlwdG9y" + 
+          "UHJvdG8SNQoLbmVzdGVkX3R5cGUYAyADKAsyIC5nb29nbGUucHJvdG9idWYu" + 
+          "RGVzY3JpcHRvclByb3RvEjcKCWVudW1fdHlwZRgEIAMoCzIkLmdvb2dsZS5w" + 
+          "cm90b2J1Zi5FbnVtRGVzY3JpcHRvclByb3RvEkgKD2V4dGVuc2lvbl9yYW5n" + 
+          "ZRgFIAMoCzIvLmdvb2dsZS5wcm90b2J1Zi5EZXNjcmlwdG9yUHJvdG8uRXh0" + 
+          "ZW5zaW9uUmFuZ2USMAoHb3B0aW9ucxgHIAEoCzIfLmdvb2dsZS5wcm90b2J1" + 
+          "Zi5NZXNzYWdlT3B0aW9ucxosCg5FeHRlbnNpb25SYW5nZRINCgVzdGFydBgB" + 
+          "IAEoBRILCgNlbmQYAiABKAUilAUKFEZpZWxkRGVzY3JpcHRvclByb3RvEgwK" + 
+          "BG5hbWUYASABKAkSDgoGbnVtYmVyGAMgASgFEjoKBWxhYmVsGAQgASgOMisu" + 
+          "Z29vZ2xlLnByb3RvYnVmLkZpZWxkRGVzY3JpcHRvclByb3RvLkxhYmVsEjgK" + 
+          "BHR5cGUYBSABKA4yKi5nb29nbGUucHJvdG9idWYuRmllbGREZXNjcmlwdG9y" + 
+          "UHJvdG8uVHlwZRIRCgl0eXBlX25hbWUYBiABKAkSEAoIZXh0ZW5kZWUYAiAB" + 
+          "KAkSFQoNZGVmYXVsdF92YWx1ZRgHIAEoCRIuCgdvcHRpb25zGAggASgLMh0u" + 
+          "Z29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucyK2AgoEVHlwZRIPCgtUWVBF" + 
+          "X0RPVUJMRRABEg4KClRZUEVfRkxPQVQQAhIOCgpUWVBFX0lOVDY0EAMSDwoL" + 
+          "VFlQRV9VSU5UNjQQBBIOCgpUWVBFX0lOVDMyEAUSEAoMVFlQRV9GSVhFRDY0" + 
+          "EAYSEAoMVFlQRV9GSVhFRDMyEAcSDQoJVFlQRV9CT09MEAgSDwoLVFlQRV9T" + 
+          "VFJJTkcQCRIOCgpUWVBFX0dST1VQEAoSEAoMVFlQRV9NRVNTQUdFEAsSDgoK" + 
+          "VFlQRV9CWVRFUxAMEg8KC1RZUEVfVUlOVDMyEA0SDQoJVFlQRV9FTlVNEA4S" + 
+          "EQoNVFlQRV9TRklYRUQzMhAPEhEKDVRZUEVfU0ZJWEVENjQQEBIPCgtUWVBF" + 
+          "X1NJTlQzMhAREg8KC1RZUEVfU0lOVDY0EBIiQwoFTGFiZWwSEgoOTEFCRUxf" + 
+          "T1BUSU9OQUwQARISCg5MQUJFTF9SRVFVSVJFRBACEhIKDkxBQkVMX1JFUEVB" + 
+          "VEVEEAMijAEKE0VudW1EZXNjcmlwdG9yUHJvdG8SDAoEbmFtZRgBIAEoCRI4" + 
+          "CgV2YWx1ZRgCIAMoCzIpLmdvb2dsZS5wcm90b2J1Zi5FbnVtVmFsdWVEZXNj" + 
+          "cmlwdG9yUHJvdG8SLQoHb3B0aW9ucxgDIAEoCzIcLmdvb2dsZS5wcm90b2J1" + 
+          "Zi5FbnVtT3B0aW9ucyJsChhFbnVtVmFsdWVEZXNjcmlwdG9yUHJvdG8SDAoE" + 
+          "bmFtZRgBIAEoCRIOCgZudW1iZXIYAiABKAUSMgoHb3B0aW9ucxgDIAEoCzIh" + 
+          "Lmdvb2dsZS5wcm90b2J1Zi5FbnVtVmFsdWVPcHRpb25zIpABChZTZXJ2aWNl" + 
+          "RGVzY3JpcHRvclByb3RvEgwKBG5hbWUYASABKAkSNgoGbWV0aG9kGAIgAygL" + 
+          "MiYuZ29vZ2xlLnByb3RvYnVmLk1ldGhvZERlc2NyaXB0b3JQcm90bxIwCgdv" + 
+          "cHRpb25zGAMgASgLMh8uZ29vZ2xlLnByb3RvYnVmLlNlcnZpY2VPcHRpb25z" + 
+          "In8KFU1ldGhvZERlc2NyaXB0b3JQcm90bxIMCgRuYW1lGAEgASgJEhIKCmlu" + 
+          "cHV0X3R5cGUYAiABKAkSEwoLb3V0cHV0X3R5cGUYAyABKAkSLwoHb3B0aW9u" + 
+          "cxgEIAEoCzIeLmdvb2dsZS5wcm90b2J1Zi5NZXRob2RPcHRpb25zItUDCgtG" + 
+          "aWxlT3B0aW9ucxIUCgxqYXZhX3BhY2thZ2UYASABKAkSHAoUamF2YV9vdXRl" + 
+          "cl9jbGFzc25hbWUYCCABKAkSIgoTamF2YV9tdWx0aXBsZV9maWxlcxgKIAEo" + 
+          "CDoFZmFsc2USLAodamF2YV9nZW5lcmF0ZV9lcXVhbHNfYW5kX2hhc2gYFCAB" + 
+          "KAg6BWZhbHNlEkYKDG9wdGltaXplX2ZvchgJIAEoDjIpLmdvb2dsZS5wcm90" + 
+          "b2J1Zi5GaWxlT3B0aW9ucy5PcHRpbWl6ZU1vZGU6BVNQRUVEEiIKE2NjX2dl" + 
+          "bmVyaWNfc2VydmljZXMYECABKAg6BWZhbHNlEiQKFWphdmFfZ2VuZXJpY19z" + 
+          "ZXJ2aWNlcxgRIAEoCDoFZmFsc2USIgoTcHlfZ2VuZXJpY19zZXJ2aWNlcxgS" + 
+          "IAEoCDoFZmFsc2USQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQu" + 
+          "Z29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24iOgoMT3B0aW1p" + 
+          "emVNb2RlEgkKBVNQRUVEEAESDQoJQ09ERV9TSVpFEAISEAoMTElURV9SVU5U" + 
+          "SU1FEAMqCQjoBxCAgICAAiK4AQoOTWVzc2FnZU9wdGlvbnMSJgoXbWVzc2Fn" + 
+          "ZV9zZXRfd2lyZV9mb3JtYXQYASABKAg6BWZhbHNlEi4KH25vX3N0YW5kYXJk" + 
+          "X2Rlc2NyaXB0b3JfYWNjZXNzb3IYAiABKAg6BWZhbHNlEkMKFHVuaW50ZXJw" + 
+          "cmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVy" + 
+          "cHJldGVkT3B0aW9uKgkI6AcQgICAgAIilAIKDEZpZWxkT3B0aW9ucxI6CgVj" + 
+          "dHlwZRgBIAEoDjIjLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9wdGlvbnMuQ1R5" + 
+          "cGU6BlNUUklORxIOCgZwYWNrZWQYAiABKAgSGQoKZGVwcmVjYXRlZBgDIAEo" + 
+          "CDoFZmFsc2USHAoUZXhwZXJpbWVudGFsX21hcF9rZXkYCSABKAkSQwoUdW5p" + 
           "bnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVu" + 
-          "aW50ZXJwcmV0ZWRPcHRpb24iOgoMT3B0aW1pemVNb2RlEgkKBVNQRUVEEAES" + 
-          "DQoJQ09ERV9TSVpFEAISEAoMTElURV9SVU5USU1FEAMqCQjoBxCAgICAAiK4" + 
-          "AQoOTWVzc2FnZU9wdGlvbnMSJgoXbWVzc2FnZV9zZXRfd2lyZV9mb3JtYXQY" + 
-          "ASABKAg6BWZhbHNlEi4KH25vX3N0YW5kYXJkX2Rlc2NyaXB0b3JfYWNjZXNz" + 
-          "b3IYAiABKAg6BWZhbHNlEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMo" + 
-          "CzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQ" + 
-          "gICAgAIilAIKDEZpZWxkT3B0aW9ucxI6CgVjdHlwZRgBIAEoDjIjLmdvb2ds" + 
-          "ZS5wcm90b2J1Zi5GaWVsZE9wdGlvbnMuQ1R5cGU6BlNUUklORxIOCgZwYWNr" + 
-          "ZWQYAiABKAgSGQoKZGVwcmVjYXRlZBgDIAEoCDoFZmFsc2USHAoUZXhwZXJp" + 
-          "bWVudGFsX21hcF9rZXkYCSABKAkSQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y" + 
-          "5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24i" + 
-          "LwoFQ1R5cGUSCgoGU1RSSU5HEAASCAoEQ09SRBABEhAKDFNUUklOR19QSUVD" + 
-          "RRACKgkI6AcQgICAgAIiXQoLRW51bU9wdGlvbnMSQwoUdW5pbnRlcnByZXRl" + 
-          "ZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0" + 
-          "ZWRPcHRpb24qCQjoBxCAgICAAiJiChBFbnVtVmFsdWVPcHRpb25zEkMKFHVu" + 
-          "aW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5V" + 
-          "bmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIiYAoOU2VydmljZU9wdGlv" + 
+          "aW50ZXJwcmV0ZWRPcHRpb24iLwoFQ1R5cGUSCgoGU1RSSU5HEAASCAoEQ09S" + 
+          "RBABEhAKDFNUUklOR19QSUVDRRACKgkI6AcQgICAgAIiXQoLRW51bU9wdGlv" + 
           "bnMSQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnBy" + 
-          "b3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICAAiJfCg1NZXRo" + 
-          "b2RPcHRpb25zEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdv" + 
-          "b2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIi" + 
-          "hQIKE1VuaW50ZXJwcmV0ZWRPcHRpb24SOwoEbmFtZRgCIAMoCzItLmdvb2ds" + 
-          "ZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uLk5hbWVQYXJ0EhgKEGlk" + 
-          "ZW50aWZpZXJfdmFsdWUYAyABKAkSGgoScG9zaXRpdmVfaW50X3ZhbHVlGAQg" + 
-          "ASgEEhoKEm5lZ2F0aXZlX2ludF92YWx1ZRgFIAEoAxIUCgxkb3VibGVfdmFs" + 
-          "dWUYBiABKAESFAoMc3RyaW5nX3ZhbHVlGAcgASgMGjMKCE5hbWVQYXJ0EhEK" + 
-          "CW5hbWVfcGFydBgBIAIoCRIUCgxpc19leHRlbnNpb24YAiACKAhCKQoTY29t" + 
-          "Lmdvb2dsZS5wcm90b2J1ZkIQRGVzY3JpcHRvclByb3Rvc0gB");
+          "b3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICAAiJiChBFbnVt" + 
+          "VmFsdWVPcHRpb25zEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIk" + 
+          "Lmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICA" + 
+          "gAIiYAoOU2VydmljZU9wdGlvbnMSQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y" + 
+          "5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24q" + 
+          "CQjoBxCAgICAAiJfCg1NZXRob2RPcHRpb25zEkMKFHVuaW50ZXJwcmV0ZWRf" + 
+          "b3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVk" + 
+          "T3B0aW9uKgkI6AcQgICAgAIingIKE1VuaW50ZXJwcmV0ZWRPcHRpb24SOwoE" + 
+          "bmFtZRgCIAMoCzItLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0" + 
+          "aW9uLk5hbWVQYXJ0EhgKEGlkZW50aWZpZXJfdmFsdWUYAyABKAkSGgoScG9z" + 
+          "aXRpdmVfaW50X3ZhbHVlGAQgASgEEhoKEm5lZ2F0aXZlX2ludF92YWx1ZRgF" + 
+          "IAEoAxIUCgxkb3VibGVfdmFsdWUYBiABKAESFAoMc3RyaW5nX3ZhbHVlGAcg" + 
+          "ASgMEhcKD2FnZ3JlZ2F0ZV92YWx1ZRgIIAEoCRozCghOYW1lUGFydBIRCglu" + 
+          "YW1lX3BhcnQYASACKAkSFAoMaXNfZXh0ZW5zaW9uGAIgAigIInwKDlNvdXJj" + 
+          "ZUNvZGVJbmZvEjoKCGxvY2F0aW9uGAEgAygLMiguZ29vZ2xlLnByb3RvYnVm" + 
+          "LlNvdXJjZUNvZGVJbmZvLkxvY2F0aW9uGi4KCExvY2F0aW9uEhAKBHBhdGgY" + 
+          "ASADKAVCAhABEhAKBHNwYW4YAiADKAVCAhABQikKE2NvbS5nb29nbGUucHJv" + 
+          "dG9idWZCEERlc2NyaXB0b3JQcm90b3NIAQ==");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_google_protobuf_FileDescriptorSet__Descriptor = Descriptor.MessageTypes[0];
@@ -154,7 +164,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         internal__static_google_protobuf_FileDescriptorProto__Descriptor = Descriptor.MessageTypes[1];
         internal__static_google_protobuf_FileDescriptorProto__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto.Builder>(internal__static_google_protobuf_FileDescriptorProto__Descriptor,
-                new string[] { "Name", "Package", "Dependency", "MessageType", "EnumType", "Service", "Extension", "Options", });
+                new string[] { "Name", "Package", "Dependency", "MessageType", "EnumType", "Service", "Extension", "Options", "SourceCodeInfo", });
         internal__static_google_protobuf_DescriptorProto__Descriptor = Descriptor.MessageTypes[2];
         internal__static_google_protobuf_DescriptorProto__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto, global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Builder>(internal__static_google_protobuf_DescriptorProto__Descriptor,
@@ -186,7 +196,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         internal__static_google_protobuf_FileOptions__Descriptor = Descriptor.MessageTypes[8];
         internal__static_google_protobuf_FileOptions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.FileOptions, global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Builder>(internal__static_google_protobuf_FileOptions__Descriptor,
-                new string[] { "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "OptimizeFor", "CcGenericServices", "JavaGenericServices", "PyGenericServices", "UninterpretedOption", });
+                new string[] { "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "JavaGenerateEqualsAndHash", "OptimizeFor", "CcGenericServices", "JavaGenericServices", "PyGenericServices", "UninterpretedOption", });
         internal__static_google_protobuf_MessageOptions__Descriptor = Descriptor.MessageTypes[9];
         internal__static_google_protobuf_MessageOptions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions, global::Google.ProtocolBuffers.DescriptorProtos.MessageOptions.Builder>(internal__static_google_protobuf_MessageOptions__Descriptor,
@@ -214,11 +224,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         internal__static_google_protobuf_UninterpretedOption__Descriptor = Descriptor.MessageTypes[15];
         internal__static_google_protobuf_UninterpretedOption__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Builder>(internal__static_google_protobuf_UninterpretedOption__Descriptor,
-                new string[] { "Name", "IdentifierValue", "PositiveIntValue", "NegativeIntValue", "DoubleValue", "StringValue", });
+                new string[] { "Name", "IdentifierValue", "PositiveIntValue", "NegativeIntValue", "DoubleValue", "StringValue", "AggregateValue", });
         internal__static_google_protobuf_UninterpretedOption_NamePart__Descriptor = internal__static_google_protobuf_UninterpretedOption__Descriptor.NestedTypes[0];
         internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart.Builder>(internal__static_google_protobuf_UninterpretedOption_NamePart__Descriptor,
                 new string[] { "NamePart_", "IsExtension", });
+        internal__static_google_protobuf_SourceCodeInfo__Descriptor = Descriptor.MessageTypes[16];
+        internal__static_google_protobuf_SourceCodeInfo__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo, global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Builder>(internal__static_google_protobuf_SourceCodeInfo__Descriptor,
+                new string[] { "Location", });
+        internal__static_google_protobuf_SourceCodeInfo_Location__Descriptor = internal__static_google_protobuf_SourceCodeInfo__Descriptor.NestedTypes[0];
+        internal__static_google_protobuf_SourceCodeInfo_Location__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location, global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location.Builder>(internal__static_google_protobuf_SourceCodeInfo_Location__Descriptor,
+                new string[] { "Path", "Span", });
         return null;
       };
       pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
@@ -539,8 +557,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   public sealed partial class FileDescriptorProto : pb::GeneratedMessage<FileDescriptorProto, FileDescriptorProto.Builder> {
     private FileDescriptorProto() { }
     private static readonly FileDescriptorProto defaultInstance = new FileDescriptorProto().MakeReadOnly();
-    private static readonly string[] _fileDescriptorProtoFieldNames = new string[] { "dependency", "enum_type", "extension", "message_type", "name", "options", "package", "service" };
-    private static readonly uint[] _fileDescriptorProtoFieldTags = new uint[] { 26, 42, 58, 34, 10, 66, 18, 50 };
+    private static readonly string[] _fileDescriptorProtoFieldNames = new string[] { "dependency", "enum_type", "extension", "message_type", "name", "options", "package", "service", "source_code_info" };
+    private static readonly uint[] _fileDescriptorProtoFieldTags = new uint[] { 26, 42, 58, 34, 10, 66, 18, 50, 74 };
     public static FileDescriptorProto DefaultInstance {
       get { return defaultInstance; }
     }
@@ -651,6 +669,16 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return options_ ?? global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.DefaultInstance; }
     }
     
+    public const int SourceCodeInfoFieldNumber = 9;
+    private bool hasSourceCodeInfo;
+    private global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo sourceCodeInfo_;
+    public bool HasSourceCodeInfo {
+      get { return hasSourceCodeInfo; }
+    }
+    public global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo SourceCodeInfo {
+      get { return sourceCodeInfo_ ?? global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.DefaultInstance; }
+    }
+    
     public override bool IsInitialized {
       get {
         foreach (global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto element in MessageTypeList) {
@@ -699,6 +727,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       if (hasOptions) {
         output.WriteMessage(8, field_names[5], Options);
       }
+      if (hasSourceCodeInfo) {
+        output.WriteMessage(9, field_names[8], SourceCodeInfo);
+      }
       UnknownFields.WriteTo(output);
     }
     
@@ -737,6 +768,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         if (hasOptions) {
           size += pb::CodedOutputStream.ComputeMessageSize(8, Options);
+        }
+        if (hasSourceCodeInfo) {
+          size += pb::CodedOutputStream.ComputeMessageSize(9, SourceCodeInfo);
         }
         size += UnknownFields.SerializedSize;
         memoizedSerializedSize = size;
@@ -893,6 +927,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.HasOptions) {
           MergeOptions(other.Options);
         }
+        if (other.HasSourceCodeInfo) {
+          MergeSourceCodeInfo(other.SourceCodeInfo);
+        }
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -971,6 +1008,15 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               }
               input.ReadMessage(subBuilder, extensionRegistry);
               Options = subBuilder.BuildPartial();
+              break;
+            }
+            case 74: {
+              global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Builder subBuilder = global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.CreateBuilder();
+              if (result.hasSourceCodeInfo) {
+                subBuilder.MergeFrom(SourceCodeInfo);
+              }
+              input.ReadMessage(subBuilder, extensionRegistry);
+              SourceCodeInfo = subBuilder.BuildPartial();
               break;
             }
           }
@@ -1270,6 +1316,46 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         PrepareBuilder();
         result.hasOptions = false;
         result.options_ = null;
+        return this;
+      }
+      
+      public bool HasSourceCodeInfo {
+       get { return result.hasSourceCodeInfo; }
+      }
+      public global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo SourceCodeInfo {
+        get { return result.SourceCodeInfo; }
+        set { SetSourceCodeInfo(value); }
+      }
+      public Builder SetSourceCodeInfo(global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        result.hasSourceCodeInfo = true;
+        result.sourceCodeInfo_ = value;
+        return this;
+      }
+      public Builder SetSourceCodeInfo(global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        PrepareBuilder();
+        result.hasSourceCodeInfo = true;
+        result.sourceCodeInfo_ = builderForValue.Build();
+        return this;
+      }
+      public Builder MergeSourceCodeInfo(global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        if (result.hasSourceCodeInfo &&
+            result.sourceCodeInfo_ != global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.DefaultInstance) {
+            result.sourceCodeInfo_ = global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.CreateBuilder(result.sourceCodeInfo_).MergeFrom(value).BuildPartial();
+        } else {
+          result.sourceCodeInfo_ = value;
+        }
+        result.hasSourceCodeInfo = true;
+        return this;
+      }
+      public Builder ClearSourceCodeInfo() {
+        PrepareBuilder();
+        result.hasSourceCodeInfo = false;
+        result.sourceCodeInfo_ = null;
         return this;
       }
     }
@@ -4640,8 +4726,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   public sealed partial class FileOptions : pb::ExtendableMessage<FileOptions, FileOptions.Builder> {
     private FileOptions() { }
     private static readonly FileOptions defaultInstance = new FileOptions().MakeReadOnly();
-    private static readonly string[] _fileOptionsFieldNames = new string[] { "cc_generic_services", "java_generic_services", "java_multiple_files", "java_outer_classname", "java_package", "optimize_for", "py_generic_services", "uninterpreted_option" };
-    private static readonly uint[] _fileOptionsFieldTags = new uint[] { 128, 136, 80, 66, 10, 72, 144, 7994 };
+    private static readonly string[] _fileOptionsFieldNames = new string[] { "cc_generic_services", "java_generate_equals_and_hash", "java_generic_services", "java_multiple_files", "java_outer_classname", "java_package", "optimize_for", "py_generic_services", "uninterpreted_option" };
+    private static readonly uint[] _fileOptionsFieldTags = new uint[] { 128, 160, 136, 80, 66, 10, 72, 144, 7994 };
     public static FileOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -4708,6 +4794,16 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return javaMultipleFiles_; }
     }
     
+    public const int JavaGenerateEqualsAndHashFieldNumber = 20;
+    private bool hasJavaGenerateEqualsAndHash;
+    private bool javaGenerateEqualsAndHash_;
+    public bool HasJavaGenerateEqualsAndHash {
+      get { return hasJavaGenerateEqualsAndHash; }
+    }
+    public bool JavaGenerateEqualsAndHash {
+      get { return javaGenerateEqualsAndHash_; }
+    }
+    
     public const int OptimizeForFieldNumber = 9;
     private bool hasOptimizeFor;
     private global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode optimizeFor_ = global::Google.ProtocolBuffers.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED;
@@ -4720,7 +4816,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int CcGenericServicesFieldNumber = 16;
     private bool hasCcGenericServices;
-    private bool ccGenericServices_ = true;
+    private bool ccGenericServices_;
     public bool HasCcGenericServices {
       get { return hasCcGenericServices; }
     }
@@ -4730,7 +4826,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int JavaGenericServicesFieldNumber = 17;
     private bool hasJavaGenericServices;
-    private bool javaGenericServices_ = true;
+    private bool javaGenericServices_;
     public bool HasJavaGenericServices {
       get { return hasJavaGenericServices; }
     }
@@ -4740,7 +4836,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     public const int PyGenericServicesFieldNumber = 18;
     private bool hasPyGenericServices;
-    private bool pyGenericServices_ = true;
+    private bool pyGenericServices_;
     public bool HasPyGenericServices {
       get { return hasPyGenericServices; }
     }
@@ -4775,28 +4871,31 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       string[] field_names = _fileOptionsFieldNames;
       pb::ExtendableMessage<FileOptions, FileOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (hasJavaPackage) {
-        output.WriteString(1, field_names[4], JavaPackage);
+        output.WriteString(1, field_names[5], JavaPackage);
       }
       if (hasJavaOuterClassname) {
-        output.WriteString(8, field_names[3], JavaOuterClassname);
+        output.WriteString(8, field_names[4], JavaOuterClassname);
       }
       if (hasOptimizeFor) {
-        output.WriteEnum(9, field_names[5], (int) OptimizeFor, OptimizeFor);
+        output.WriteEnum(9, field_names[6], (int) OptimizeFor, OptimizeFor);
       }
       if (hasJavaMultipleFiles) {
-        output.WriteBool(10, field_names[2], JavaMultipleFiles);
+        output.WriteBool(10, field_names[3], JavaMultipleFiles);
       }
       if (hasCcGenericServices) {
         output.WriteBool(16, field_names[0], CcGenericServices);
       }
       if (hasJavaGenericServices) {
-        output.WriteBool(17, field_names[1], JavaGenericServices);
+        output.WriteBool(17, field_names[2], JavaGenericServices);
       }
       if (hasPyGenericServices) {
-        output.WriteBool(18, field_names[6], PyGenericServices);
+        output.WriteBool(18, field_names[7], PyGenericServices);
+      }
+      if (hasJavaGenerateEqualsAndHash) {
+        output.WriteBool(20, field_names[1], JavaGenerateEqualsAndHash);
       }
       if (uninterpretedOption_.Count > 0) {
-        output.WriteMessageArray(999, field_names[7], uninterpretedOption_);
+        output.WriteMessageArray(999, field_names[8], uninterpretedOption_);
       }
       extensionWriter.WriteUntil(536870912, output);
       UnknownFields.WriteTo(output);
@@ -4817,6 +4916,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         if (hasJavaMultipleFiles) {
           size += pb::CodedOutputStream.ComputeBoolSize(10, JavaMultipleFiles);
+        }
+        if (hasJavaGenerateEqualsAndHash) {
+          size += pb::CodedOutputStream.ComputeBoolSize(20, JavaGenerateEqualsAndHash);
         }
         if (hasOptimizeFor) {
           size += pb::CodedOutputStream.ComputeEnumSize(9, (int) OptimizeFor);
@@ -4970,6 +5072,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.HasJavaMultipleFiles) {
           JavaMultipleFiles = other.JavaMultipleFiles;
         }
+        if (other.HasJavaGenerateEqualsAndHash) {
+          JavaGenerateEqualsAndHash = other.JavaGenerateEqualsAndHash;
+        }
         if (other.HasOptimizeFor) {
           OptimizeFor = other.OptimizeFor;
         }
@@ -5065,6 +5170,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
               result.hasPyGenericServices = input.ReadBool(ref result.pyGenericServices_);
               break;
             }
+            case 160: {
+              result.hasJavaGenerateEqualsAndHash = input.ReadBool(ref result.javaGenerateEqualsAndHash_);
+              break;
+            }
             case 7994: {
               input.ReadMessageArray(tag, field_name, result.uninterpretedOption_, global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.DefaultInstance, extensionRegistry);
               break;
@@ -5141,6 +5250,26 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         return this;
       }
       
+      public bool HasJavaGenerateEqualsAndHash {
+        get { return result.hasJavaGenerateEqualsAndHash; }
+      }
+      public bool JavaGenerateEqualsAndHash {
+        get { return result.JavaGenerateEqualsAndHash; }
+        set { SetJavaGenerateEqualsAndHash(value); }
+      }
+      public Builder SetJavaGenerateEqualsAndHash(bool value) {
+        PrepareBuilder();
+        result.hasJavaGenerateEqualsAndHash = true;
+        result.javaGenerateEqualsAndHash_ = value;
+        return this;
+      }
+      public Builder ClearJavaGenerateEqualsAndHash() {
+        PrepareBuilder();
+        result.hasJavaGenerateEqualsAndHash = false;
+        result.javaGenerateEqualsAndHash_ = false;
+        return this;
+      }
+      
       public bool HasOptimizeFor {
        get { return result.hasOptimizeFor; }
       }
@@ -5177,7 +5306,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public Builder ClearCcGenericServices() {
         PrepareBuilder();
         result.hasCcGenericServices = false;
-        result.ccGenericServices_ = true;
+        result.ccGenericServices_ = false;
         return this;
       }
       
@@ -5197,7 +5326,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public Builder ClearJavaGenericServices() {
         PrepareBuilder();
         result.hasJavaGenericServices = false;
-        result.javaGenericServices_ = true;
+        result.javaGenericServices_ = false;
         return this;
       }
       
@@ -5217,7 +5346,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       public Builder ClearPyGenericServices() {
         PrepareBuilder();
         result.hasPyGenericServices = false;
-        result.pyGenericServices_ = true;
+        result.pyGenericServices_ = false;
         return this;
       }
       
@@ -7413,8 +7542,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   public sealed partial class UninterpretedOption : pb::GeneratedMessage<UninterpretedOption, UninterpretedOption.Builder> {
     private UninterpretedOption() { }
     private static readonly UninterpretedOption defaultInstance = new UninterpretedOption().MakeReadOnly();
-    private static readonly string[] _uninterpretedOptionFieldNames = new string[] { "double_value", "identifier_value", "name", "negative_int_value", "positive_int_value", "string_value" };
-    private static readonly uint[] _uninterpretedOptionFieldTags = new uint[] { 49, 26, 18, 40, 32, 58 };
+    private static readonly string[] _uninterpretedOptionFieldNames = new string[] { "aggregate_value", "double_value", "identifier_value", "name", "negative_int_value", "positive_int_value", "string_value" };
+    private static readonly uint[] _uninterpretedOptionFieldTags = new uint[] { 66, 49, 26, 18, 40, 32, 58 };
     public static UninterpretedOption DefaultInstance {
       get { return defaultInstance; }
     }
@@ -7826,6 +7955,16 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return stringValue_; }
     }
     
+    public const int AggregateValueFieldNumber = 8;
+    private bool hasAggregateValue;
+    private string aggregateValue_ = "";
+    public bool HasAggregateValue {
+      get { return hasAggregateValue; }
+    }
+    public string AggregateValue {
+      get { return aggregateValue_; }
+    }
+    
     public override bool IsInitialized {
       get {
         foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart element in NameList) {
@@ -7839,22 +7978,25 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       int size = SerializedSize;
       string[] field_names = _uninterpretedOptionFieldNames;
       if (name_.Count > 0) {
-        output.WriteMessageArray(2, field_names[2], name_);
+        output.WriteMessageArray(2, field_names[3], name_);
       }
       if (hasIdentifierValue) {
-        output.WriteString(3, field_names[1], IdentifierValue);
+        output.WriteString(3, field_names[2], IdentifierValue);
       }
       if (hasPositiveIntValue) {
-        output.WriteUInt64(4, field_names[4], PositiveIntValue);
+        output.WriteUInt64(4, field_names[5], PositiveIntValue);
       }
       if (hasNegativeIntValue) {
-        output.WriteInt64(5, field_names[3], NegativeIntValue);
+        output.WriteInt64(5, field_names[4], NegativeIntValue);
       }
       if (hasDoubleValue) {
-        output.WriteDouble(6, field_names[0], DoubleValue);
+        output.WriteDouble(6, field_names[1], DoubleValue);
       }
       if (hasStringValue) {
-        output.WriteBytes(7, field_names[5], StringValue);
+        output.WriteBytes(7, field_names[6], StringValue);
+      }
+      if (hasAggregateValue) {
+        output.WriteString(8, field_names[0], AggregateValue);
       }
       UnknownFields.WriteTo(output);
     }
@@ -7883,6 +8025,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         if (hasStringValue) {
           size += pb::CodedOutputStream.ComputeBytesSize(7, StringValue);
+        }
+        if (hasAggregateValue) {
+          size += pb::CodedOutputStream.ComputeStringSize(8, AggregateValue);
         }
         size += UnknownFields.SerializedSize;
         memoizedSerializedSize = size;
@@ -8029,6 +8174,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.HasStringValue) {
           StringValue = other.StringValue;
         }
+        if (other.HasAggregateValue) {
+          AggregateValue = other.AggregateValue;
+        }
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -8094,6 +8242,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
             }
             case 58: {
               result.hasStringValue = input.ReadBytes(ref result.stringValue_);
+              break;
+            }
+            case 66: {
+              result.hasAggregateValue = input.ReadString(ref result.aggregateValue_);
               break;
             }
           }
@@ -8253,8 +8405,701 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         result.stringValue_ = pb::ByteString.Empty;
         return this;
       }
+      
+      public bool HasAggregateValue {
+        get { return result.hasAggregateValue; }
+      }
+      public string AggregateValue {
+        get { return result.AggregateValue; }
+        set { SetAggregateValue(value); }
+      }
+      public Builder SetAggregateValue(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        result.hasAggregateValue = true;
+        result.aggregateValue_ = value;
+        return this;
+      }
+      public Builder ClearAggregateValue() {
+        PrepareBuilder();
+        result.hasAggregateValue = false;
+        result.aggregateValue_ = "";
+        return this;
+      }
     }
     static UninterpretedOption() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
+    }
+  }
+  
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+  public sealed partial class SourceCodeInfo : pb::GeneratedMessage<SourceCodeInfo, SourceCodeInfo.Builder> {
+    private SourceCodeInfo() { }
+    private static readonly SourceCodeInfo defaultInstance = new SourceCodeInfo().MakeReadOnly();
+    private static readonly string[] _sourceCodeInfoFieldNames = new string[] { "location" };
+    private static readonly uint[] _sourceCodeInfoFieldTags = new uint[] { 10 };
+    public static SourceCodeInfo DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override SourceCodeInfo DefaultInstanceForType {
+      get { return DefaultInstance; }
+    }
+    
+    protected override SourceCodeInfo ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_SourceCodeInfo__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<SourceCodeInfo, SourceCodeInfo.Builder> InternalFieldAccessors {
+      get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_SourceCodeInfo__FieldAccessorTable; }
+    }
+    
+    #region Nested types
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+    public static class Types {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+      public sealed partial class Location : pb::GeneratedMessage<Location, Location.Builder> {
+        private Location() { }
+        private static readonly Location defaultInstance = new Location().MakeReadOnly();
+        private static readonly string[] _locationFieldNames = new string[] { "path", "span" };
+        private static readonly uint[] _locationFieldTags = new uint[] { 10, 18 };
+        public static Location DefaultInstance {
+          get { return defaultInstance; }
+        }
+        
+        public override Location DefaultInstanceForType {
+          get { return DefaultInstance; }
+        }
+        
+        protected override Location ThisMessage {
+          get { return this; }
+        }
+        
+        public static pbd::MessageDescriptor Descriptor {
+          get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_SourceCodeInfo_Location__Descriptor; }
+        }
+        
+        protected override pb::FieldAccess.FieldAccessorTable<Location, Location.Builder> InternalFieldAccessors {
+          get { return global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_SourceCodeInfo_Location__FieldAccessorTable; }
+        }
+        
+        public const int PathFieldNumber = 1;
+        private int pathMemoizedSerializedSize;
+        private pbc::PopsicleList<int> path_ = new pbc::PopsicleList<int>();
+        public scg::IList<int> PathList {
+          get { return pbc::Lists.AsReadOnly(path_); }
+        }
+        public int PathCount {
+          get { return path_.Count; }
+        }
+        public int GetPath(int index) {
+          return path_[index];
+        }
+        
+        public const int SpanFieldNumber = 2;
+        private int spanMemoizedSerializedSize;
+        private pbc::PopsicleList<int> span_ = new pbc::PopsicleList<int>();
+        public scg::IList<int> SpanList {
+          get { return pbc::Lists.AsReadOnly(span_); }
+        }
+        public int SpanCount {
+          get { return span_.Count; }
+        }
+        public int GetSpan(int index) {
+          return span_[index];
+        }
+        
+        public override bool IsInitialized {
+          get {
+            return true;
+          }
+        }
+        
+        public override void WriteTo(pb::ICodedOutputStream output) {
+          int size = SerializedSize;
+          string[] field_names = _locationFieldNames;
+          if (path_.Count > 0) {
+            output.WritePackedInt32Array(1, field_names[0], pathMemoizedSerializedSize, path_);
+          }
+          if (span_.Count > 0) {
+            output.WritePackedInt32Array(2, field_names[1], spanMemoizedSerializedSize, span_);
+          }
+          UnknownFields.WriteTo(output);
+        }
+        
+        private int memoizedSerializedSize = -1;
+        public override int SerializedSize {
+          get {
+            int size = memoizedSerializedSize;
+            if (size != -1) return size;
+            
+            size = 0;
+            {
+              int dataSize = 0;
+              foreach (int element in PathList) {
+                dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+              }
+              size += dataSize;
+              if (path_.Count != 0) {
+                size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+              }
+              pathMemoizedSerializedSize = dataSize;
+            }
+            {
+              int dataSize = 0;
+              foreach (int element in SpanList) {
+                dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+              }
+              size += dataSize;
+              if (span_.Count != 0) {
+                size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+              }
+              spanMemoizedSerializedSize = dataSize;
+            }
+            size += UnknownFields.SerializedSize;
+            memoizedSerializedSize = size;
+            return size;
+          }
+        }
+        
+        public static Location ParseFrom(pb::ByteString data) {
+          return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+        }
+        public static Location ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+          return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+        }
+        public static Location ParseFrom(byte[] data) {
+          return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+        }
+        public static Location ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+          return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+        }
+        public static Location ParseFrom(global::System.IO.Stream input) {
+          return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+        }
+        public static Location ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+          return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+        }
+        public static Location ParseDelimitedFrom(global::System.IO.Stream input) {
+          return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+        }
+        public static Location ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+          return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+        }
+        public static Location ParseFrom(pb::ICodedInputStream input) {
+          return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+        }
+        public static Location ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+          return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+        }
+        private Location MakeReadOnly() {
+          path_.MakeReadOnly();
+          span_.MakeReadOnly();
+          return this;
+        }
+        
+        public static Builder CreateBuilder() { return new Builder(); }
+        public override Builder ToBuilder() { return CreateBuilder(this); }
+        public override Builder CreateBuilderForType() { return new Builder(); }
+        public static Builder CreateBuilder(Location prototype) {
+          return new Builder(prototype);
+        }
+        
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+        public sealed partial class Builder : pb::GeneratedBuilder<Location, Builder> {
+          protected override Builder ThisBuilder {
+            get { return this; }
+          }
+          public Builder() {
+            result = DefaultInstance;
+            resultIsReadOnly = true;
+          }
+          internal Builder(Location cloneFrom) {
+            result = cloneFrom;
+            resultIsReadOnly = true;
+          }
+          
+          private bool resultIsReadOnly;
+          private Location result;
+          
+          private Location PrepareBuilder() {
+            if (resultIsReadOnly) {
+              Location original = result;
+              result = new Location();
+              resultIsReadOnly = false;
+              MergeFrom(original);
+            }
+            return result;
+          }
+          
+          public override bool IsInitialized {
+            get { return result.IsInitialized; }
+          }
+          
+          protected override Location MessageBeingBuilt {
+            get { return PrepareBuilder(); }
+          }
+          
+          public override Builder Clear() {
+            result = DefaultInstance;
+            resultIsReadOnly = true;
+            return this;
+          }
+          
+          public override Builder Clone() {
+            if (resultIsReadOnly) {
+              return new Builder(result);
+            } else {
+              return new Builder().MergeFrom(result);
+            }
+          }
+          
+          public override pbd::MessageDescriptor DescriptorForType {
+            get { return global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location.Descriptor; }
+          }
+          
+          public override Location DefaultInstanceForType {
+            get { return global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location.DefaultInstance; }
+          }
+          
+          public override Location BuildPartial() {
+            if (resultIsReadOnly) {
+              return result;
+            }
+            resultIsReadOnly = true;
+            return result.MakeReadOnly();
+          }
+          
+          public override Builder MergeFrom(pb::IMessage other) {
+            if (other is Location) {
+              return MergeFrom((Location) other);
+            } else {
+              base.MergeFrom(other);
+              return this;
+            }
+          }
+          
+          public override Builder MergeFrom(Location other) {
+            if (other == global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location.DefaultInstance) return this;
+            PrepareBuilder();
+            if (other.path_.Count != 0) {
+              result.path_.Add(other.path_);
+            }
+            if (other.span_.Count != 0) {
+              result.span_.Add(other.span_);
+            }
+            this.MergeUnknownFields(other.UnknownFields);
+            return this;
+          }
+          
+          public override Builder MergeFrom(pb::ICodedInputStream input) {
+            return MergeFrom(input, pb::ExtensionRegistry.Empty);
+          }
+          
+          public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+            PrepareBuilder();
+            pb::UnknownFieldSet.Builder unknownFields = null;
+            uint tag;
+            string field_name;
+            while (input.ReadTag(out tag, out field_name)) {
+              if(tag == 0 && field_name != null) {
+                int field_ordinal = global::System.Array.BinarySearch(_locationFieldNames, field_name, global::System.StringComparer.Ordinal);
+                if(field_ordinal >= 0)
+                  tag = _locationFieldTags[field_ordinal];
+                else {
+                  if (unknownFields == null) {
+                    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                  }
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+                  continue;
+                }
+              }
+              switch (tag) {
+                case 0: {
+                  throw pb::InvalidProtocolBufferException.InvalidTag();
+                }
+                default: {
+                  if (pb::WireFormat.IsEndGroupTag(tag)) {
+                    if (unknownFields != null) {
+                      this.UnknownFields = unknownFields.Build();
+                    }
+                    return this;
+                  }
+                  if (unknownFields == null) {
+                    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                  }
+                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+                  break;
+                }
+                case 10:
+                case 8: {
+                  input.ReadInt32Array(tag, field_name, result.path_);
+                  break;
+                }
+                case 18:
+                case 16: {
+                  input.ReadInt32Array(tag, field_name, result.span_);
+                  break;
+                }
+              }
+            }
+            
+            if (unknownFields != null) {
+              this.UnknownFields = unknownFields.Build();
+            }
+            return this;
+          }
+          
+          
+          public pbc::IPopsicleList<int> PathList {
+            get { return PrepareBuilder().path_; }
+          }
+          public int PathCount {
+            get { return result.PathCount; }
+          }
+          public int GetPath(int index) {
+            return result.GetPath(index);
+          }
+          public Builder SetPath(int index, int value) {
+            PrepareBuilder();
+            result.path_[index] = value;
+            return this;
+          }
+          public Builder AddPath(int value) {
+            PrepareBuilder();
+            result.path_.Add(value);
+            return this;
+          }
+          public Builder AddRangePath(scg::IEnumerable<int> values) {
+            PrepareBuilder();
+            result.path_.Add(values);
+            return this;
+          }
+          public Builder ClearPath() {
+            PrepareBuilder();
+            result.path_.Clear();
+            return this;
+          }
+          
+          public pbc::IPopsicleList<int> SpanList {
+            get { return PrepareBuilder().span_; }
+          }
+          public int SpanCount {
+            get { return result.SpanCount; }
+          }
+          public int GetSpan(int index) {
+            return result.GetSpan(index);
+          }
+          public Builder SetSpan(int index, int value) {
+            PrepareBuilder();
+            result.span_[index] = value;
+            return this;
+          }
+          public Builder AddSpan(int value) {
+            PrepareBuilder();
+            result.span_.Add(value);
+            return this;
+          }
+          public Builder AddRangeSpan(scg::IEnumerable<int> values) {
+            PrepareBuilder();
+            result.span_.Add(values);
+            return this;
+          }
+          public Builder ClearSpan() {
+            PrepareBuilder();
+            result.span_.Clear();
+            return this;
+          }
+        }
+        static Location() {
+          object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
+        }
+      }
+      
+    }
+    #endregion
+    
+    public const int LocationFieldNumber = 1;
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location> location_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location>();
+    public scg::IList<global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location> LocationList {
+      get { return location_; }
+    }
+    public int LocationCount {
+      get { return location_.Count; }
+    }
+    public global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location GetLocation(int index) {
+      return location_[index];
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::ICodedOutputStream output) {
+      int size = SerializedSize;
+      string[] field_names = _sourceCodeInfoFieldNames;
+      if (location_.Count > 0) {
+        output.WriteMessageArray(1, field_names[0], location_);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        foreach (global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location element in LocationList) {
+          size += pb::CodedOutputStream.ComputeMessageSize(1, element);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static SourceCodeInfo ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static SourceCodeInfo ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static SourceCodeInfo ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static SourceCodeInfo ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static SourceCodeInfo ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static SourceCodeInfo ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static SourceCodeInfo ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static SourceCodeInfo ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static SourceCodeInfo ParseFrom(pb::ICodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static SourceCodeInfo ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    private SourceCodeInfo MakeReadOnly() {
+      location_.MakeReadOnly();
+      return this;
+    }
+    
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(SourceCodeInfo prototype) {
+      return new Builder(prototype);
+    }
+    
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.3.0.277")]
+    public sealed partial class Builder : pb::GeneratedBuilder<SourceCodeInfo, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {
+        result = DefaultInstance;
+        resultIsReadOnly = true;
+      }
+      internal Builder(SourceCodeInfo cloneFrom) {
+        result = cloneFrom;
+        resultIsReadOnly = true;
+      }
+      
+      private bool resultIsReadOnly;
+      private SourceCodeInfo result;
+      
+      private SourceCodeInfo PrepareBuilder() {
+        if (resultIsReadOnly) {
+          SourceCodeInfo original = result;
+          result = new SourceCodeInfo();
+          resultIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
+      
+      protected override SourceCodeInfo MessageBeingBuilt {
+        get { return PrepareBuilder(); }
+      }
+      
+      public override Builder Clear() {
+        result = DefaultInstance;
+        resultIsReadOnly = true;
+        return this;
+      }
+      
+      public override Builder Clone() {
+        if (resultIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Descriptor; }
+      }
+      
+      public override SourceCodeInfo DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.DefaultInstance; }
+      }
+      
+      public override SourceCodeInfo BuildPartial() {
+        if (resultIsReadOnly) {
+          return result;
+        }
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is SourceCodeInfo) {
+          return MergeFrom((SourceCodeInfo) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(SourceCodeInfo other) {
+        if (other == global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.DefaultInstance) return this;
+        PrepareBuilder();
+        if (other.location_.Count != 0) {
+          result.location_.Add(other.location_);
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_sourceCodeInfoFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _sourceCodeInfoFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
+          switch (tag) {
+            case 0: {
+              throw pb::InvalidProtocolBufferException.InvalidTag();
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              break;
+            }
+            case 10: {
+              input.ReadMessageArray(tag, field_name, result.location_, global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location.DefaultInstance, extensionRegistry);
+              break;
+            }
+          }
+        }
+        
+        if (unknownFields != null) {
+          this.UnknownFields = unknownFields.Build();
+        }
+        return this;
+      }
+      
+      
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location> LocationList {
+        get { return PrepareBuilder().location_; }
+      }
+      public int LocationCount {
+        get { return result.LocationCount; }
+      }
+      public global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location GetLocation(int index) {
+        return result.GetLocation(index);
+      }
+      public Builder SetLocation(int index, global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        result.location_[index] = value;
+        return this;
+      }
+      public Builder SetLocation(int index, global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        PrepareBuilder();
+        result.location_[index] = builderForValue.Build();
+        return this;
+      }
+      public Builder AddLocation(global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        result.location_.Add(value);
+        return this;
+      }
+      public Builder AddLocation(global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        PrepareBuilder();
+        result.location_.Add(builderForValue.Build());
+        return this;
+      }
+      public Builder AddRangeLocation(scg::IEnumerable<global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location> values) {
+        PrepareBuilder();
+        result.location_.Add(values);
+        return this;
+      }
+      public Builder ClearLocation() {
+        PrepareBuilder();
+        result.location_.Clear();
+        return this;
+      }
+    }
+    static SourceCodeInfo() {
       object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProtoFile.Descriptor, null);
     }
   }
