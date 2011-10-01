@@ -43,6 +43,7 @@
     <Protos Include="$(ProtosDirectory)\extest\unittest_extras_xmltest.proto" />
     <Protos Include="$(ProtosDirectory)\extest\unittest_generic_services.proto" />
     <Protos Include="$(ProtosDirectory)\extest\unittest_rpc_interop.proto" />
+    <Protos Include="$(ProtosDirectory)\extest\unittest_rpc_interop_lite.proto" />
     <Protos Include="$(ProtosDirectory)\google\protobuf\descriptor.proto" />
     <Protos Include="$(ProtosDirectory)\google\protobuf\csharp_options.proto" />
     <Protos Include="$(ProtosDirectory)\google\protobuf\unittest.proto" />
@@ -114,6 +115,9 @@
     </GeneratedSource>
     <GeneratedSource Include="$(BuildTempDirectory)\UnitTestRpcInterop.cs">
       <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(BuildTempDirectory)\UnitTestRpcInteropLite.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
     </GeneratedSource>
     <GeneratedSource Include="$(BuildTempDirectory)\UnitTestGenericServices.cs">
       <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>

@@ -66,8 +66,15 @@
     <Compile Include="TestProtos\UnitTestExtrasLiteProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestLiteProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestRpcInteropLite.cs" />
+    <Compile Include="TestRpcForMimeTypes.cs" />
+    <Compile Include="TestRpcGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ProtocolBuffers.Serialization\ProtocolBuffersLite.Serialization.csproj">
+      <Project>{E067A59D-9D0A-4A1F-92B1-38E4457241D1}</Project>
+      <Name>ProtocolBuffersLite.Serialization</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffersLite.csproj">
       <Project>{6969BDCE-D925-43F3-94AC-A531E6DF2591}</Project>
       <Name>ProtocolBuffersLite</Name>
