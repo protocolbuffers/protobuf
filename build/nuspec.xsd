@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- original location: https://hg01.codeplex.com/nuget/raw-file/tip/src/Core/Authoring/nuspec.xsd -->
+<xs:schema id="nuspec" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="package">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="metadata" maxOccurs="1" minOccurs="1">
+                    <xs:complexType>
+                        <xs:all>
+                            <xs:element name="id" maxOccurs="1" minOccurs="1" type="xs:string" />
+                            <xs:element name="version" maxOccurs="1" minOccurs="1" type="xs:string" />
+                            <xs:element name="title" maxOccurs="1" minOccurs="0" type="xs:string" />
+                            <xs:element name="authors" maxOccurs="1" minOccurs="1" type="xs:string" />
+                            <xs:element name="owners" maxOccurs="1" minOccurs="0" type="xs:string" />
+                            <xs:element name="licenseUrl" maxOccurs="1" minOccurs="0" type="xs:anyURI" />
+                            <xs:element name="projectUrl" maxOccurs="1" minOccurs="0" type="xs:anyURI" />
+                            <xs:element name="iconUrl" maxOccurs="1" minOccurs="0" type="xs:anyURI" />
+                            <xs:element name="requireLicenseAcceptance" maxOccurs="1" minOccurs="0" type="xs:boolean" />
+                            <xs:element name="description" maxOccurs="1" minOccurs="1" type="xs:string" />
+                            <xs:element name="summary" maxOccurs="1" minOccurs="0" type="xs:string" />
+                            <xs:element name="releaseNotes" maxOccurs="1" minOccurs="0" type="xs:string" />
+                            <xs:element name="copyright" maxOccurs="1" minOccurs="0" type="xs:string" />
+                            <xs:element name="language" maxOccurs="1" minOccurs="0" type="xs:string" default="en-US" />
+                            <xs:element name="tags" maxOccurs="1" minOccurs="0" type="xs:string" />
+                            <xs:element name="dependencies" maxOccurs="1" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="dependency" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:attribute name="id" type="xs:string" use="required" />
+                                                <xs:attribute name="version" type="xs:string" use="optional" />
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="frameworkAssemblies" maxOccurs="1" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="frameworkAssembly" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:attribute name="assemblyName" type="xs:string" use="required" />
+                                                <xs:attribute name="targetFramework" type="xs:string" use="optional" />
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="references" maxOccurs="1" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="reference" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:attribute name="file" type="xs:string" use="required" />
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:all>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="files" minOccurs="0" maxOccurs="1" nillable="true">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="file" minOccurs="0" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:attribute name="src" use="required" type="xs:string" />
+                                    <xs:attribute name="target" use="optional" type="xs:string" />
+                                    <xs:attribute name="exclude" use="optional" type="xs:string" />
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

@@ -99,6 +99,7 @@
     <Compile Include="GeneratedMessageLite.cs" />
     <Compile Include="ICodedInputStream.cs" />
     <Compile Include="ICodedOutputStream.cs" />
+    <Compile Include="IRpcDispatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ByteString.cs" />
     <Compile Include="CodedInputStream.cs" />
@@ -109,6 +110,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="InvalidProtocolBufferException.cs" />
+    <Compile Include="SortedList.cs" />
     <Compile Include="ThrowHelper.cs" />
     <Compile Include="UninitializedMessageException.cs" />
     <Compile Include="WireFormat.cs" />
