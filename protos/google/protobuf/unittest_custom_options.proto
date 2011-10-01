@@ -325,7 +325,7 @@ message Aggregate {
 extend google.protobuf.FileOptions      { optional Aggregate fileopt    = 15478479; }
 extend google.protobuf.MessageOptions   { optional Aggregate msgopt     = 15480088; }
 extend google.protobuf.FieldOptions     { optional Aggregate fieldopt   = 15481374; }
-extend google.protobuf.EnumOptions      { optional Aggregate enumopt    = 15483218; }
+extend google.protobuf.EnumOptions      { optional Aggregate enumopt_renamed    = 15483218; }
 extend google.protobuf.EnumValueOptions { optional Aggregate enumvalopt = 15486921; }
 extend google.protobuf.ServiceOptions   { optional Aggregate serviceopt = 15497145; }
 extend google.protobuf.MethodOptions    { optional Aggregate methodopt  = 15512713; }
@@ -367,6 +367,6 @@ service AggregateService {
 }
 
 enum AggregateEnum {
-  option (enumopt) = { s:'EnumAnnotation' };
+  option (enumopt_renamed) = { s:'EnumAnnotation' };
   VALUE = 1 [(enumvalopt) = { s:'EnumValueAnnotation' }];
 }
