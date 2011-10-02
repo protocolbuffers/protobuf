@@ -43,23 +43,29 @@ Language Guide  - http://code.google.com/apis/protocolbuffers/docs/proto.html
   </metadata>
   <files>
     <!-- Release Binaries -->
-    <file src="..\build_output\Package\Release\Google.ProtocolBuffersLite.???" target="lib\net20" />
-    <file src="..\build_output\Package\Release\Google.ProtocolBuffersLite.Serialization.???" target="lib\net20" />
+    <file src="..\build_output\v2.0\Release\Google.ProtocolBuffersLite.???" target="lib\net20" />
+    <file src="..\build_output\v2.0\Release\Google.ProtocolBuffersLite.Serialization.???" target="lib\net20" />
+    <file src="..\build_output\v3.5\Release\Google.ProtocolBuffersLite.???" target="lib\net35" />
+    <file src="..\build_output\v3.5\Release\Google.ProtocolBuffersLite.Serialization.???" target="lib\net35" />
+    <file src="..\build_output\v4.0\Release\Google.ProtocolBuffersLite.???" target="lib\net40" />
+    <file src="..\build_output\v4.0\Release\Google.ProtocolBuffersLite.Serialization.???" target="lib\net40" />
     <!-- Silverlight Binaries -->
-    <file src="..\build_output\Package\Release_Silverlight2\Google.ProtocolBuffersLite.???" target="lib\sl20" />
-    <file src="..\build_output\Package\Release_Silverlight2\Google.ProtocolBuffersLite.Serialization.???" target="lib\sl20" />
+    <file src="..\build_output\v2.0\Release_Silverlight\Google.ProtocolBuffersLite.???" target="lib\sl20" />
+    <file src="..\build_output\v2.0\Release_Silverlight\Google.ProtocolBuffersLite.Serialization.???" target="lib\sl20" />
+    <file src="..\build_output\v3.5\Release_Silverlight\Google.ProtocolBuffersLite.???" target="lib\sl30" />
+    <file src="..\build_output\v3.5\Release_Silverlight\Google.ProtocolBuffersLite.Serialization.???" target="lib\sl30" />
+    <file src="..\build_output\v4.0\Release_Silverlight\Google.ProtocolBuffersLite.???" target="lib\sl40" />
+    <file src="..\build_output\v4.0\Release_Silverlight\Google.ProtocolBuffersLite.Serialization.???" target="lib\sl40" />
     <!-- Tools -->
     <file src="..\lib\Protoc.exe" target="tools" />
-    <file src="..\build_output\Package\Release\Google.ProtocolBuffers.dll" target="tools" />
-    <file src="..\build_output\Package\Release\ProtoGen.exe" target="tools" />
-    <file src="..\build_output\Package\Release\ProtoGen.exe.config" target="tools" />
+    <file src="..\build_output\ProtoGen\*" target="tools" />
     <!-- Content -->
     <file src="..\CHANGES.txt" target="content"/>
     <file src="..\license.txt" target="content\licenses"/>
     <file src="..\lib\protoc-license.txt" target="content\licenses"/>
     <file src="..\protos\google\protobuf\descriptor.proto" target="content\protos\google\protobuf" />
     <file src="..\protos\google\protobuf\csharp_options.proto" target="content\protos\google\protobuf" />
-	
+
     <file src="..\src\ProtocolBuffers\**\*.cs" target="src\ProtocolBuffers\"/>
     <file src="..\src\ProtocolBuffers.Serialization\**\*.cs" target="src\ProtocolBuffers.Serialization\"/>
   </files>
