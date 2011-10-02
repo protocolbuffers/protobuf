@@ -100,7 +100,7 @@ namespace Google.ProtocolBuffers.Serialization
 
         private class JsonStreamWriter : JsonFormatWriter
         {
-#if SILVERLIGHT2 || COMPACT_FRAMEWORK_35
+#if SILVERLIGHT || COMPACT_FRAMEWORK_35
             static readonly Encoding Encoding = new UTF8Encoding(false);
 #else
             private static readonly Encoding Encoding = Encoding.ASCII;

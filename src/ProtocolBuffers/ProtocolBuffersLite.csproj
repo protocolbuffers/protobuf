@@ -50,7 +50,7 @@
     <OutputPath>bin\Debug_Silverlight\</OutputPath>
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
-    <DefineConstants>DEBUG;TRACE;SILVERLIGHT2;LITE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;SILVERLIGHT;LITE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -62,7 +62,7 @@
     <OutputPath>bin\Release_Silverlight\</OutputPath>
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
-    <DefineConstants>TRACE;SILVERLIGHT2;LITE</DefineConstants>
+    <DefineConstants>TRACE;SILVERLIGHT;LITE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
