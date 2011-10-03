@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<manifest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <assembly>
+    <name>Microsoft.Silverlight.Testing</name>
+    <version>2.0.5.0</version>
+    <publickeytoken>31bf3856ad364e35</publickeytoken>
+    <relpath>Microsoft.Silverlight.Testing.dll</relpath>
+    <extension downloadUri="Microsoft.Silverlight.Testing.zip" />
+  </assembly>
+
+</manifest>
