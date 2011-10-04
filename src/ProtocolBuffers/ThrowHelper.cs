@@ -79,5 +79,14 @@ namespace Google.ProtocolBuffers
                 }
             }
         }
+
+        public static Exception CreateMissingMethod(Type type, string methodName)
+        {
+#if SILVERLIGHT
+            return new MissingMethodException(String.Format("The method '{0}' was not found on type {1}", methodName, type));
+#else
+            return new MissingMethodException(String.Format("{0}", type), methodName);
+#endif
+        }
     }
 }

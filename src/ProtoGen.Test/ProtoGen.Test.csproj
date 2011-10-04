@@ -55,15 +55,15 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.framework, Version=2.2.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77">
+    <Reference Include="nunit.framework">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\NUnit 2.2.8.0\nunit.framework.dll</HintPath>
+      <HintPath>..\..\lib\NUnit\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="Rhino.Mocks, Version=3.5.0.2, Culture=neutral, PublicKeyToken=0b3305902db7183f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\Rhino.Mocks.dll</HintPath>
     </Reference>
-	  <Reference Include="mscorlib" />
+    <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -121,4 +121,10 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <StartAction>Program</StartAction>
+    <StartProgram>$(ProjectDir)..\..\lib\NUnit\tools\nunit-console.exe</StartProgram>
+    <StartArguments>/nologo /noshadow /labels /wait $(AssemblyName).dll</StartArguments>
+    <StartWorkingDirectory>$(ProjectDir)$(OutputPath)</StartWorkingDirectory>
+  </PropertyGroup>
 </Project>

@@ -37,9 +37,10 @@
 using System;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhino.Mocks;
 using Rhino.Mocks.Constraints;
+using Is = Rhino.Mocks.Constraints.Is;
 
 namespace Google.ProtocolBuffers
 {
@@ -47,7 +48,7 @@ namespace Google.ProtocolBuffers
     /// Tests for generated service classes.
     /// TODO(jonskeet): Convert the mocking tests using Rhino.Mocks.
     /// </summary>
-    [TestFixture]
+    [TestClass]
     public class ServiceTest
     {
         private delegate void Action<T1, T2>(T1 t1, T2 t2);
@@ -55,7 +56,7 @@ namespace Google.ProtocolBuffers
         private static readonly MethodDescriptor FooDescriptor = TestGenericService.Descriptor.Methods[0];
         private static readonly MethodDescriptor BarDescriptor = TestGenericService.Descriptor.Methods[1];
 
-        [Test]
+        [TestMethod]
         public void GetRequestPrototype()
         {
             TestGenericService service = new TestServiceImpl();
@@ -64,7 +65,7 @@ namespace Google.ProtocolBuffers
             Assert.AreSame(service.GetRequestPrototype(BarDescriptor), BarRequest.DefaultInstance);
         }
 
-        [Test]
+        [TestMethod]
         public void GetResponsePrototype()
         {
             TestGenericService service = new TestServiceImpl();
@@ -73,7 +74,7 @@ namespace Google.ProtocolBuffers
             Assert.AreSame(service.GetResponsePrototype(BarDescriptor), BarResponse.DefaultInstance);
         }
 
-        [Test]
+        [TestMethod]
         public void CallMethodFoo()
         {
             MockRepository mocks = new MockRepository();
@@ -117,8 +118,8 @@ namespace Google.ProtocolBuffers
         /// that the choice between Foo and Bar is arbitrary, hence the lack of a corresponding Bar
         /// test.
         /// </summary>
-        [Test]
-        [Ignore("Crashes Mono - needs further investigation")]
+        [TestMethod]
+        [Ignore, System.ComponentModel.Description("Crashes Mono - needs further investigation")]
         public void GeneratedStubFooCall()
         {
             FooRequest fooRequest = FooRequest.CreateBuilder().Build();
@@ -144,7 +145,7 @@ namespace Google.ProtocolBuffers
             mocks.VerifyAll();
         }
 
-        [Test]
+        [TestMethod]
         public void CallMethodBar()
         {
             MockRepository mocks = new MockRepository();

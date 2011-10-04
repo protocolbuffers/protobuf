@@ -37,7 +37,9 @@
 using System;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+#pragma warning disable 618 // Disable warning about obsolete use miss-matched assert arguments
 
 namespace Google.ProtocolBuffers
 {
@@ -472,7 +474,7 @@ namespace Google.ProtocolBuffers
 
             Assert.AreEqual(101, message[f("optional_int32")]);
             Assert.AreEqual(102L, message[f("optional_int64")]);
-            Assert.AreEqual(103U, message[f("optional_uint32")]);
+            Assert.AreEqual(103u, message[f("optional_uint32")]);
             Assert.AreEqual(104UL, message[f("optional_uint64")]);
             Assert.AreEqual(105, message[f("optional_sint32")]);
             Assert.AreEqual(106L, message[f("optional_sint64")]);
@@ -957,28 +959,30 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(2, message.GetRepeatedFieldCount(f("packed_double")));
             Assert.AreEqual(2, message.GetRepeatedFieldCount(f("packed_bool")));
             Assert.AreEqual(2, message.GetRepeatedFieldCount(f("packed_enum")));
+
             Assert.AreEqual(601, message[f("packed_int32"), 0]);
             Assert.AreEqual(602L, message[f("packed_int64"), 0]);
-            Assert.AreEqual(603, message[f("packed_uint32"), 0]);
-            Assert.AreEqual(604L, message[f("packed_uint64"), 0]);
+            Assert.AreEqual(603u, message[f("packed_uint32"), 0]);
+            Assert.AreEqual(604uL, message[f("packed_uint64"), 0]);
             Assert.AreEqual(605, message[f("packed_sint32"), 0]);
             Assert.AreEqual(606L, message[f("packed_sint64"), 0]);
-            Assert.AreEqual(607, message[f("packed_fixed32"), 0]);
-            Assert.AreEqual(608L, message[f("packed_fixed64"), 0]);
+            Assert.AreEqual(607u, message[f("packed_fixed32"), 0]);
+            Assert.AreEqual(608uL, message[f("packed_fixed64"), 0]);
             Assert.AreEqual(609, message[f("packed_sfixed32"), 0]);
             Assert.AreEqual(610L, message[f("packed_sfixed64"), 0]);
             Assert.AreEqual(611F, message[f("packed_float"), 0]);
             Assert.AreEqual(612D, message[f("packed_double"), 0]);
             Assert.AreEqual(true, message[f("packed_bool"), 0]);
             Assert.AreEqual(foreignBar, message[f("packed_enum"), 0]);
+
             Assert.AreEqual(701, message[f("packed_int32"), 1]);
             Assert.AreEqual(702L, message[f("packed_int64"), 1]);
-            Assert.AreEqual(703, message[f("packed_uint32"), 1]);
-            Assert.AreEqual(704L, message[f("packed_uint64"), 1]);
+            Assert.AreEqual(703u, message[f("packed_uint32"), 1]);
+            Assert.AreEqual(704uL, message[f("packed_uint64"), 1]);
             Assert.AreEqual(705, message[f("packed_sint32"), 1]);
             Assert.AreEqual(706L, message[f("packed_sint64"), 1]);
-            Assert.AreEqual(707, message[f("packed_fixed32"), 1]);
-            Assert.AreEqual(708L, message[f("packed_fixed64"), 1]);
+            Assert.AreEqual(707u, message[f("packed_fixed32"), 1]);
+            Assert.AreEqual(708uL, message[f("packed_fixed64"), 1]);
             Assert.AreEqual(709, message[f("packed_sfixed32"), 1]);
             Assert.AreEqual(710L, message[f("packed_sfixed64"), 1]);
             Assert.AreEqual(711F, message[f("packed_float"), 1]);

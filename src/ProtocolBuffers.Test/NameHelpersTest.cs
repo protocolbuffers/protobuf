@@ -34,14 +34,14 @@
 
 #endregion
 
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Google.ProtocolBuffers
 {
-    [TestFixture]
+    [TestClass]
     public class NameHelpersTest
     {
-        [Test]
+        [TestMethod]
         public void UnderscoresToPascalCase()
         {
             Assert.AreEqual("FooBar", NameHelpers.UnderscoresToPascalCase("Foo_bar"));
@@ -55,7 +55,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual("_1Bar", NameHelpers.UnderscoresToPascalCase("_1_bar"));
         }
 
-        [Test]
+        [TestMethod]
         public void UnderscoresToCamelCase()
         {
             Assert.AreEqual("fooBar", NameHelpers.UnderscoresToCamelCase("Foo_bar"));
@@ -69,7 +69,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual("_1Bar", NameHelpers.UnderscoresToCamelCase("_1_bar"));
         }
 
-        [Test]
+        [TestMethod]
         public void StripSuffix()
         {
             string text = "FooBar";

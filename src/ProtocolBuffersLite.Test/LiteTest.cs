@@ -39,7 +39,7 @@ using System.Collections.Generic;
 using System.IO;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Google.ProtocolBuffers
 {
@@ -47,10 +47,10 @@ namespace Google.ProtocolBuffers
     /// Miscellaneous tests for message operations that apply to both
     /// generated and dynamic messages.
     /// </summary>
-    [TestFixture]
+    [TestClass]
     public class LiteTest
     {
-        [Test]
+        [TestMethod]
         public void TestLite()
         {
             // Since lite messages are a subset of regular messages, we can mostly
@@ -79,7 +79,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(7, message2.OptionalNestedMessage.Bb);
         }
 
-        [Test]
+        [TestMethod]
         public void TestLiteExtensions()
         {
             // TODO(kenton):  Unlike other features of the lite library, extensions are

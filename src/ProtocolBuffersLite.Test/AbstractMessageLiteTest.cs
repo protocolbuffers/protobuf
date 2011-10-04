@@ -39,14 +39,14 @@ using System.Collections.Generic;
 using System.IO;
 using Google.ProtocolBuffers;
 using Google.ProtocolBuffers.TestProtos;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Google.ProtocolBuffers
 {
-    [TestFixture]
+    [TestClass]
     public class AbstractMessageLiteTest
     {
-        [Test]
+        [TestMethod]
         public void TestMessageLiteToByteString()
         {
             TestRequiredLite msg = TestRequiredLite.CreateBuilder()
@@ -62,7 +62,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual((int) ExtraEnum.EXLITE_BAZ, b[3]);
         }
 
-        [Test]
+        [TestMethod]
         public void TestMessageLiteToByteArray()
         {
             TestRequiredLite msg = TestRequiredLite.CreateBuilder()
@@ -75,7 +75,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(b, copy);
         }
 
-        [Test]
+        [TestMethod]
         public void TestMessageLiteWriteTo()
         {
             TestRequiredLite msg = TestRequiredLite.CreateBuilder()
@@ -85,10 +85,10 @@ namespace Google.ProtocolBuffers
 
             MemoryStream ms = new MemoryStream();
             msg.WriteTo(ms);
-            Assert.AreEqual(msg.ToByteArray(), ms.ToArray());
+            TestUtil.AssertBytesEqual(msg.ToByteArray(), ms.ToArray());
         }
 
-        [Test]
+        [TestMethod]
         public void TestMessageLiteWriteDelimitedTo()
         {
             TestRequiredLite msg = TestRequiredLite.CreateBuilder()
@@ -104,17 +104,17 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(4, buffer[0]);
             byte[] msgBytes = new byte[4];
             Array.Copy(buffer, 1, msgBytes, 0, 4);
-            Assert.AreEqual(msg.ToByteArray(), msgBytes);
+            TestUtil.AssertBytesEqual(msg.ToByteArray(), msgBytes);
         }
 
-        [Test]
+        [TestMethod]
         public void TestIMessageLiteWeakCreateBuilderForType()
         {
             IMessageLite msg = TestRequiredLite.DefaultInstance;
             Assert.AreEqual(typeof (TestRequiredLite.Builder), msg.WeakCreateBuilderForType().GetType());
         }
 
-        [Test]
+        [TestMethod]
         public void TestMessageLiteWeakToBuilder()
         {
             IMessageLite msg = TestRequiredLite.CreateBuilder()
@@ -123,10 +123,10 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             IMessageLite copy = msg.WeakToBuilder().WeakBuild();
-            Assert.AreEqual(msg.ToByteArray(), copy.ToByteArray());
+            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
         }
 
-        [Test]
+        [TestMethod]
         public void TestMessageLiteWeakDefaultInstanceForType()
         {
             IMessageLite msg = TestRequiredLite.DefaultInstance;

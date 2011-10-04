@@ -66,7 +66,7 @@ Targets For GenerateSource
 *********************************************************************************************** -->
 
   <Target Name="_BuildProtoGen">
-    <MSBuild Targets="Build" ToolsVersion="3.5"
+    <MSBuild Targets="Rebuild" ToolsVersion="3.5"
              Projects="$(ProjectDirectory)\src\ProtocolBuffers\ProtocolBuffers.csproj;$(ProjectDirectory)\src\ProtoGen\ProtoGen.csproj" 
              Properties="Step=_BuildProtoGen;Configuration=Release;Platform=AnyCPU;TargetFrameworkVersion=v2.0;DebugType=none;DocumentationFile=;TreatWarningsAsErrors=true;OutputPath=$(BuildOutputDirectory)\ProtoGen;" />
   </Target>
@@ -93,13 +93,18 @@ Targets For GenerateSource
 Targets For Test
 *********************************************************************************************** -->
   
-  <Target Name="_Test" Condition="$(BuildConfiguration)=='Debug' or $(BuildConfiguration)=='Release'">
+  <Target Name="_Test">
     <CallTarget Targets="_RunTests" />
   </Target>
 
   <Target Name="_RunTests">
+    <!-- NUnit -->
     <Copy SourceFiles="$(NUnitExeConfig)" DestinationFiles="$(NUnitExePath).config" />
-    <Exec Command="&quot;$(NUnitExePath)&quot; /nologo /noshadow %(TestContainer.Identity) /xml:$(BuildTempDirectory)\%(TestContainer.Filename).$(BuildConfiguration).xml" />
+    <Exec Condition="$(BuildConfiguration)=='Debug' or $(BuildConfiguration)=='Release'"
+      Command="&quot;$(NUnitExePath)&quot; /nologo /noshadow %(TestContainer.Identity) /xml:$(BuildTempDirectory)\%(TestContainer.Filename).xml" />
+    <!-- StatLight -->
+    <Exec Condition="$(BuildConfiguration)=='Debug_Silverlight' or $(BuildConfiguration)=='Release_Silverlight'"
+      Command="&quot;$(StatLightExePath)&quot; -x %(StatLightTestContainer.Identity) --ReportOutputFileType=NUnit --ReportOutputFile=$(BuildTempDirectory)\%(StatLightTestContainer.Filename).xml" />
   </Target>
 
 <!-- **********************************************************************************************
@@ -120,7 +125,6 @@ Targets For Package
     <Copy SourceFiles="@(StaticPackageItem)" DestinationFolder="$(BuildOutputPackage)\%(StaticPackageItem.TargetDirectory)\%(StaticPackageItem.RecursiveDir)" />
     <Exec Command="&quot;$(ZipExePath)&quot; a -tzip ..\$(PackageName).zip * -r" WorkingDirectory="$(BuildOutputPackage)" />
   </Target>
-
 
 <!-- **********************************************************************************************
 Targets For Benchmark

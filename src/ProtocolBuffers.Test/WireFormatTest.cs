@@ -38,17 +38,17 @@ using System.IO;
 using System.Reflection;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Google.ProtocolBuffers
 {
-    [TestFixture]
+    [TestClass]
     public class WireFormatTest
     {
         /// <summary>
         /// Keeps the attributes on FieldType and the switch statement in WireFormat in sync.
         /// </summary>
-        [Test]
+        [TestMethod]
         public void FieldTypeToWireTypeMapping()
         {
             foreach (FieldInfo field in typeof (FieldType).GetFields(BindingFlags.Static | BindingFlags.Public))
@@ -60,7 +60,7 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [Test]
+        [TestMethod]
         public void Serialization()
         {
             TestAllTypes message = TestUtil.GetAllSet();
@@ -73,7 +73,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertAllFieldsSet(message2);
         }
 
-        [Test]
+        [TestMethod]
         public void SerializationPacked()
         {
             TestPackedTypes message = TestUtil.GetPackedSet();
@@ -83,7 +83,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertPackedFieldsSet(message2);
         }
 
-        [Test]
+        [TestMethod]
         public void SerializeExtensions()
         {
             // TestAllTypes and TestAllExtensions should have compatible wire formats,
@@ -98,7 +98,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertAllFieldsSet(message2);
         }
 
-        [Test]
+        [TestMethod]
         public void SerializePackedExtensions()
         {
             // TestPackedTypes and TestPackedExtensions should have compatible wire
@@ -112,7 +112,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(rawBytes, rawBytes2);
         }
 
-        [Test]
+        [TestMethod]
         public void SerializeDelimited()
         {
             MemoryStream stream = new MemoryStream();
@@ -130,7 +130,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(-1, stream.ReadByte());
         }
 
-        [Test]
+        [TestMethod]
         public void ParseExtensions()
         {
             // TestAllTypes and TestAllExtensions should have compatible wire formats,
@@ -149,7 +149,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertAllExtensionsSet(message2);
         }
 
-        [Test]
+        [TestMethod]
         public void ParsePackedExtensions()
         {
             // Ensure that packed extensions can be properly parsed.
@@ -162,7 +162,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertPackedExtensionsSet(message2);
         }
 
-        [Test]
+        [TestMethod]
         public void ExtensionsSerializedSize()
         {
             Assert.AreEqual(TestUtil.GetAllSet().SerializedSize, TestUtil.GetAllExtensionsSet().SerializedSize);
@@ -183,7 +183,7 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [Test]
+        [TestMethod]
         public void InterleavedFieldsAndExtensions()
         {
             // Tests that fields are written in order even when extension ranges
@@ -214,7 +214,7 @@ namespace Google.ProtocolBuffers
         private static readonly int TypeId1 = TestMessageSetExtension1.Descriptor.Extensions[0].FieldNumber;
         private static readonly int TypeId2 = TestMessageSetExtension2.Descriptor.Extensions[0].FieldNumber;
 
-        [Test]
+        [TestMethod]
         public void SerializeMessageSet()
         {
             // Set up a TestMessageSet with two known messages and an unknown one.
@@ -256,7 +256,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual("bar", raw.GetItem(2).Message.ToStringUtf8());
         }
 
-        [Test]
+        [TestMethod]
         public void ParseMessageSet()
         {
             ExtensionRegistry extensionRegistry = ExtensionRegistry.CreateInstance();
