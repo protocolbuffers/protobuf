@@ -1,0 +1,37 @@
+// Additional options required for C# generation. File from copyright
+// line onwards is as per original distribution.
+import "google/protobuf/csharp_options.proto";
+option (google.protobuf.csharp_file_options).namespace = "Google.ProtocolBuffers.TestProtos";
+option (google.protobuf.csharp_file_options).umbrella_classname = "UnitTestExtrasProtoFile";
+option (google.protobuf.csharp_file_options).add_serializable = true;
+
+package protobuf_unittest_extra;
+
+option java_package = "com.google.protobuf";
+
+message TestUnpackedExtensions {
+  extensions 1 to max;
+}
+
+extend TestUnpackedExtensions {
+  repeated    int32 unpacked_int32_extension    =  90;
+  repeated    int64 unpacked_int64_extension    =  91;
+  repeated   uint32 unpacked_uint32_extension   =  92;
+  repeated   uint64 unpacked_uint64_extension   =  93;
+  repeated   sint32 unpacked_sint32_extension   =  94;
+  repeated   sint64 unpacked_sint64_extension   =  95;
+  repeated  fixed32 unpacked_fixed32_extension  =  96;
+  repeated  fixed64 unpacked_fixed64_extension  =  97;
+  repeated sfixed32 unpacked_sfixed32_extension =  98;
+  repeated sfixed64 unpacked_sfixed64_extension =  99;
+  repeated    float unpacked_float_extension    = 100;
+  repeated   double unpacked_double_extension   = 101;
+  repeated     bool unpacked_bool_extension     = 102;
+  repeated UnpackedExtensionsForeignEnum unpacked_enum_extension  = 103;
+}
+
+enum UnpackedExtensionsForeignEnum {
+  FOREIGN_FOO = 4;
+  FOREIGN_BAR = 5;
+  FOREIGN_BAZ = 6;
+}

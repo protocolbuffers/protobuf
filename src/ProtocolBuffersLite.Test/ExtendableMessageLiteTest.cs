@@ -348,6 +348,7 @@ namespace Google.ProtocolBuffers
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
             UnitTestLiteProtoFile.RegisterAllExtensions(registry);
+            UnitTestExtrasLiteProtoFile.RegisterAllExtensions(registry);
 
             TestUnpackedExtensionsLite unpacked = TestUnpackedExtensionsLite.ParseFrom(original.ToByteArray(), registry);
 
