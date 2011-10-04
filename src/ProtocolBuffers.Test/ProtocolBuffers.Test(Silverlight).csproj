@@ -117,6 +117,7 @@
     <Compile Include="ReflectionTester.cs" />
     <Compile Include="ReusableBuilderTest.cs" />
     <Compile Include="SerializableAttribute.cs" />
+    <Compile Include="ServiceTest.cs" />
     <Compile Include="TestCornerCases.cs" />
     <Compile Include="TestMimeMessageFormats.cs" />
     <Compile Include="TestProtos\UnitTestCSharpOptionsProtoFile.cs" />
