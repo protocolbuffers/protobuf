@@ -7,7 +7,7 @@ namespace Google.ProtocolBuffers.Serialization
     /// <summary>
     /// The exception raised when a recursion limit is reached while parsing input.
     /// </summary>
-#if !SILVERLIGHT2
+#if !SILVERLIGHT
     [Serializable]
 #endif
     public sealed class RecursionLimitExceededException : FormatException
@@ -18,7 +18,7 @@ namespace Google.ProtocolBuffers.Serialization
         {
         }
 
-#if !SILVERLIGHT2
+#if !SILVERLIGHT
         private RecursionLimitExceededException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
             : base(info, context)
         {

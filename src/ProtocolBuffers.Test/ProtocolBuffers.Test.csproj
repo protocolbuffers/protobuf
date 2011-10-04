@@ -81,11 +81,7 @@
     <Compile Include="Compatibility\CompatibilityTests.cs" />
     <Compile Include="Compatibility\DictionaryCompatibilityTests.cs" />
     <Compile Include="Compatibility\JsonCompatibilityTests.cs" />
-    <Compile Include="Compatibility\TestResources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>TestResources.resx</DependentUpon>
-    </Compile>
+    <Compile Include="Compatibility\TestResources.cs" />
     <Compile Include="Compatibility\TextCompatibilityTests.cs" />
     <Compile Include="Compatibility\XmlCompatibilityTests.cs" />
     <Compile Include="TestProtos\UnitTestExtrasProtoFile.cs" />
@@ -163,14 +159,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Compatibility\google_message1.dat" />
-    <None Include="Compatibility\google_message2.dat" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Compatibility\TestResources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>TestResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <EmbeddedResource Include="Compatibility\google_message1.dat" />
+    <EmbeddedResource Include="Compatibility\google_message2.dat" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Debug' " />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Release' " />

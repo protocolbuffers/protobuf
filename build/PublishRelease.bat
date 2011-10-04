@@ -22,19 +22,24 @@ CMD.exe /Q /C "CD .. && lib\StampVersion.exe /major:2 /minor:4 /build:1 /revisio
 IF EXIST "C:\Program Files\Microsoft SDKs\Windows\v7.0\Bin\sn.exe" SET WIN7SDK_DIR=C:\Program Files\Microsoft SDKs\Windows\v7.0\Bin\
 
 IF NOT EXIST "..\release-key" hg clone https://bitbucket.org/rknapp/protobuf-csharp-port-keyfile ..\release-key
-SET PROTOBUF_KEY_FILE="/p:AssemblyOriginatorKeyFile=%~dp0..\release-key\Google.ProtocolBuffers.snk"
 
 MD "%2"
-CMD.exe /Q /C "GenerateCompletePackage.bat"
-COPY /y ..\build_output\AllBinariesAndSource.zip %2\protobuf-csharp-port-%2-full-binaries.zip
-CMD.exe /Q /C "GenerateReleasePackage.bat"
-COPY /y ..\build_output\ReleaseBinaries.zip %2\protobuf-csharp-port-%2-release-binaries.zip
+CMD.exe /Q /C "BuildAll.bat /verbosity:minimal "/p:AssemblyOriginatorKeyFile=%~dp0..\release-key\Google.ProtocolBuffers.snk"
+
+COPY /y ..\build_output\Release-v2.0.zip %2\protobuf-csharp-port-%2-net20-release-binaries.zip
+COPY /y ..\build_output\Release-v3.5.zip %2\protobuf-csharp-port-%2-net35-release-binaries.zip
+COPY /y ..\build_output\Release-v4.0.zip %2\protobuf-csharp-port-%2-net40-release-binaries.zip
+
+COPY /y ..\build_output\Full-v2.0.zip %2\protobuf-csharp-port-%2-net20-full-binaries.zip
+COPY /y ..\build_output\Full-v3.5.zip %2\protobuf-csharp-port-%2-net35-full-binaries.zip
+COPY /y ..\build_output\Full-v4.0.zip %2\protobuf-csharp-port-%2-net40-full-binaries.zip
+
 ..\lib\NuGet.exe pack Google.ProtocolBuffers.nuspec -Symbols -Version %2 -NoPackageAnalysis -OutputDirectory %2
 ..\lib\NuGet.exe pack Google.ProtocolBuffersLite.nuspec -Symbols -Version %2 -NoPackageAnalysis -OutputDirectory %2
+
 hg archive %2\protobuf-csharp-port-%2-source.zip
 
-SET PROTOBUF_KEY_FILE=
-"%WIN7SDK_DIR%sn.exe" -T ..\build_output\Package\Release\Google.ProtocolBuffers.dll
+"%WIN7SDK_DIR%sn.exe" -T ..\build_output\v2.0\Release\Google.ProtocolBuffers.dll
 @ECHO.
 @ECHO ***********************************************************
 @ECHO IMPORTANT: Verify the above key output is: 55f7125234beb589
@@ -61,8 +66,12 @@ hg push
 SET GOOGLEUPLOAD=python.exe googlecode_upload.py --project protobuf-csharp-port --user "%3" --password "%4"
 
 %GOOGLEUPLOAD% --labels Type-Source,Featured --summary "Version %2 source" %2\protobuf-csharp-port-%2-source.zip
-%GOOGLEUPLOAD% --labels Type-Executable,Featured --summary "Version %2 binaries (all configurations)" %2\protobuf-csharp-port-%2-full-binaries.zip
-%GOOGLEUPLOAD% --labels Type-Executable,Featured --summary "Version %2 binaries (release only)" %2\protobuf-csharp-port-%2-release-binaries.zip
+%GOOGLEUPLOAD% --labels Type-Executable,Featured --summary "Version %2 binaries for .NET 2.0 (all configurations)" %2\protobuf-csharp-port-%2-net20-full-binaries.zip
+%GOOGLEUPLOAD% --labels Type-Executable,Featured --summary "Version %2 binaries for .NET 3.5 (all configurations)" %2\protobuf-csharp-port-%2-net35-full-binaries.zip
+%GOOGLEUPLOAD% --labels Type-Executable,Featured --summary "Version %2 binaries for .NET 4.0 (all configurations)" %2\protobuf-csharp-port-%2-net40-full-binaries.zip
+%GOOGLEUPLOAD% --labels Type-Executable,Featured --summary "Version %2 binaries for .NET 2.0 (release only)" %2\protobuf-csharp-port-%2-net20-release-binaries.zip
+%GOOGLEUPLOAD% --labels Type-Executable,Featured --summary "Version %2 binaries for .NET 3.5 (release only)" %2\protobuf-csharp-port-%2-net35-release-binaries.zip
+%GOOGLEUPLOAD% --labels Type-Executable,Featured --summary "Version %2 binaries for .NET 4.0 (release only)" %2\protobuf-csharp-port-%2-net40-release-binaries.zip
 
 @SET GOOGLEUPLOAD=
 @ECHO.

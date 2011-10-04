@@ -40,7 +40,7 @@ using System.Runtime.Serialization;
 /*
  * This entire source file is not supported on the Silverlight platform
  */
-#if !SILVERLIGHT2
+#if !SILVERLIGHT
 namespace Google.ProtocolBuffers
 {
     /* 

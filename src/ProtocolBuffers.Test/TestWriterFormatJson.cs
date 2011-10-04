@@ -15,7 +15,8 @@ namespace Google.ProtocolBuffers
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
 
-            builder.MergeFromJson(@"{""valid"":true}");
+            //3.5: builder.MergeFromJson(@"{""valid"":true}");
+            Extensions.MergeFromJson(builder, @"{""valid"":true}");
             
             TestXmlMessage message = builder.Build();
             Assert.AreEqual(true, message.Valid);
@@ -29,7 +30,8 @@ namespace Google.ProtocolBuffers
                 .SetValid(true)
                 .Build();
 
-            string json = message.ToJson();
+            //3.5: string json = message.ToJson();
+            string json = Extensions.ToJson(message);
 
             Assert.AreEqual(@"{""valid"":true}", json);
         }
@@ -100,9 +102,9 @@ namespace Google.ProtocolBuffers
         public void TestToJsonParseFromJson()
         {
             TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
-            string json = msg.ToJson();
+            string json = Extensions.ToJson(msg);
             Assert.AreEqual("{\"default_bool\":true}", json);
-            TestAllTypes copy = new TestAllTypes.Builder().MergeFromJson(json).Build();
+            TestAllTypes copy = Extensions.MergeFromJson(new TestAllTypes.Builder(), json).Build();
             Assert.IsTrue(copy.HasDefaultBool && copy.DefaultBool);
             Assert.AreEqual(msg, copy);
         }
@@ -111,9 +113,9 @@ namespace Google.ProtocolBuffers
         public void TestToJsonParseFromJsonReader()
         {
             TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
-            string json = msg.ToJson();
+            string json = Extensions.ToJson(msg);
             Assert.AreEqual("{\"default_bool\":true}", json);
-            TestAllTypes copy = new TestAllTypes.Builder().MergeFromJson(new StringReader(json)).Build();
+            TestAllTypes copy = Extensions.MergeFromJson(new TestAllTypes.Builder(), new StringReader(json)).Build();
             Assert.IsTrue(copy.HasDefaultBool && copy.DefaultBool);
             Assert.AreEqual(msg, copy);
         }
@@ -429,7 +431,7 @@ namespace Google.ProtocolBuffers
             StringBuilder sb = new StringBuilder(8192);
             for (int i = 0; i < 80; i++)
                 sb.Append("{\"child\":");
-            TestXmlRescursive msg = new TestXmlRescursive.Builder().MergeFromJson(sb.ToString()).Build();
+            TestXmlRescursive msg = Extensions.MergeFromJson(new TestXmlRescursive.Builder(), sb.ToString()).Build();
         }
         [Test, ExpectedException(typeof(FormatException))]
         public void FailWithEmptyText()

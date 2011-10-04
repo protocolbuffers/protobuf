@@ -56,6 +56,12 @@
     <Compile Include="..\ProtocolBuffers.Test\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\ProtocolBuffers.Test\TestRpcForMimeTypes.cs">
+      <Link>TestRpcForMimeTypes.cs</Link>
+    </Compile>
+    <Compile Include="..\ProtocolBuffers.Test\TestRpcGenerator.cs">
+      <Link>TestRpcGenerator.cs</Link>
+    </Compile>
     <Compile Include="AbstractBuilderLiteTest.cs" />
     <Compile Include="AbstractMessageLiteTest.cs" />
     <Compile Include="ExtendableBuilderLiteTest.cs" />
@@ -67,8 +73,6 @@
     <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestLiteProtoFile.cs" />
     <Compile Include="TestProtos\UnitTestRpcInteropLite.cs" />
-    <Compile Include="TestRpcForMimeTypes.cs" />
-    <Compile Include="TestRpcGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProtocolBuffers.Serialization\ProtocolBuffersLite.Serialization.csproj">
