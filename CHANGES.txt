@@ -9,13 +9,8 @@ For more information about Protocol Buffers in general, visit the project page
 for the C++, Java and Python project:
 http://protobuf.googlecode.com
 ===============================================================================
-RELEASE NOTES - Version TBD
+RELEASE NOTES - Version 2.4.1.TBD
 ===============================================================================
-
-(PENDING MERGE)
-- Issue 20:	Support for decorating classes [Serializable]
-- Issue 22:	Reusable Builder classes
-- Issue 24:	Support for using Json/Xml formats with ICodedInputStream
 
 Features:
 - Added option service_generator_type to control service generation with
@@ -30,7 +25,12 @@ Features:
   reading and writing messages to/from XML, JSON, IDictionary<,> and others.
 - Several performance related fixes and tweeks
 - Issue 3:	Add option to mark generated code with attribute
+- Issue 20:	Support for decorating classes [Serializable]
 - Issue 21:	Decorate fields with [deprecated=true] as [System.Obsolete]
+- Issue 22:	Reusable Builder classes
+- Issue 24:	Support for using Json/Xml formats with ICodedInputStream
+- Issue 25: Added support for NuGet packages
+- Issue 31: Upgraded protoc.exe and descriptor to 2.4.1
 
 Fixes:
 - Issue 13:	Message with Field same name as message causes uncompilable .cs
@@ -39,14 +39,20 @@ Fixes:
 - Issue 26:	AddRange in GeneratedBuilder iterates twice.
 - Issue 27:	Remove XML documentation output from test projects to clear 
   warnings/errors.
+- Issue 28: Circular message dependencies result in null default values for 
+  Message fields.
+- Issue 29: Message classes generated have a public default constructor.
+- Issue 35: Fixed a bug in ProtoGen handling of arguments with trailing \
 - Big-endian support for float, and double on Silverlight
 - Packed and Unpacked parsing allow for all repeated, as per version 2.3
 - Fix for leaving Builder a public ctor on internal classes for use with
   generic "where T: new()" constraints.
 
 Other:
+- Changed the code signing key to a privately held key
 - Reformatted all code and line-endings to C# defaults
 - Reworking of performance benchmarks to produce reliable results, option /v2
+- Issue 34: Silverlight assemblies are now unit tested
 
 ===============================================================================
 RELEASE NOTES - Version 2.3.0.277
