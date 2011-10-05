@@ -41,7 +41,8 @@ Fixes:
   warnings/errors.
 - Issue 28: Circular message dependencies result in null default values for 
   Message fields.
-- Issue 29: Message classes generated have a public default constructor.
+- Issue 29: Message classes generated have a public default constructor.  You
+  can disable private ctor generation with the option generate_private_ctor.
 - Issue 35: Fixed a bug in ProtoGen handling of arguments with trailing \
 - Big-endian support for float, and double on Silverlight
 - Packed and Unpacked parsing allow for all repeated, as per version 2.3
