@@ -9,7 +9,7 @@ _ReSharper.*
 *.user
 *.suo
 
-lib/NUnit 2.2.8.0/nunit-console.exe.config
+lib/NUnit/tools/nunit-console.exe.config
 
 
 syntax: regexp
