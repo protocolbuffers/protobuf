@@ -38,11 +38,11 @@ using System;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Google.ProtocolBuffers
 {
-    [TestFixture]
+    [TestClass]
     public class UnknownFieldSetTest
     {
         private MessageDescriptor descriptor;
@@ -57,7 +57,7 @@ namespace Google.ProtocolBuffers
 
         private UnknownFieldSet unknownFields;
 
-        [SetUp]
+        [TestInitialize]
         public void SetUp()
         {
             descriptor = TestAllTypes.Descriptor;
@@ -105,7 +105,7 @@ namespace Google.ProtocolBuffers
 
         // =================================================================
 
-        [Test]
+        [TestMethod]
         public void Varint()
         {
             UnknownField field = GetField("optional_int32");
@@ -113,23 +113,23 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(allFields.OptionalInt32, (long) field.VarintList[0]);
         }
 
-        [Test]
+        [TestMethod]
         public void Fixed32()
         {
             UnknownField field = GetField("optional_fixed32");
             Assert.AreEqual(1, field.Fixed32List.Count);
-            Assert.AreEqual(allFields.OptionalFixed32, (int) field.Fixed32List[0]);
+            Assert.AreEqual<long>(allFields.OptionalFixed32, (int) field.Fixed32List[0]);
         }
 
-        [Test]
+        [TestMethod]
         public void Fixed64()
         {
             UnknownField field = GetField("optional_fixed64");
             Assert.AreEqual(1, field.Fixed64List.Count);
-            Assert.AreEqual(allFields.OptionalFixed64, (long) field.Fixed64List[0]);
+            Assert.AreEqual((long)allFields.OptionalFixed64, (long)field.Fixed64List[0]);
         }
 
-        [Test]
+        [TestMethod]
         public void LengthDelimited()
         {
             UnknownField field = GetField("optional_bytes");
@@ -137,7 +137,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(allFields.OptionalBytes, field.LengthDelimitedList[0]);
         }
 
-        [Test]
+        [TestMethod]
         public void Group()
         {
             FieldDescriptor nestedFieldDescriptor =
@@ -156,7 +156,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(allFields.OptionalGroup.A, (long) nestedField.VarintList[0]);
         }
 
-        [Test]
+        [TestMethod]
         public void Serialize()
         {
             // Check that serializing the UnknownFieldSet produces the original data again.
@@ -164,7 +164,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(allFieldsData, data);
         }
 
-        [Test]
+        [TestMethod]
         public void CopyFrom()
         {
             TestEmptyMessage message =
@@ -173,7 +173,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(emptyMessage.ToString(), message.ToString());
         }
 
-        [Test]
+        [TestMethod]
         public void MergeFrom()
         {
             TestEmptyMessage source =
@@ -210,7 +210,7 @@ namespace Google.ProtocolBuffers
                 destination.ToString());
         }
 
-        [Test]
+        [TestMethod]
         public void Clear()
         {
             UnknownFieldSet fields =
@@ -218,7 +218,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(0, fields.FieldDictionary.Count);
         }
 
-        [Test]
+        [TestMethod]
         public void ClearMessage()
         {
             TestEmptyMessage message =
@@ -226,7 +226,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(0, message.SerializedSize);
         }
 
-        [Test]
+        [TestMethod]
         public void ParseKnownAndUnknown()
         {
             // Test mixing known and unknown fields when parsing.
@@ -248,7 +248,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(654321, (long) field.VarintList[0]);
         }
 
-        [Test]
+        [TestMethod]
         public void WrongTypeTreatedAsUnknown()
         {
             // Test that fields of the wrong wire type are treated like unknown fields
@@ -263,7 +263,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(emptyMessage.ToString(), allTypesMessage.ToString());
         }
 
-        [Test]
+        [TestMethod]
         public void UnknownExtensions()
         {
             // Make sure fields are properly parsed to the UnknownFieldSet even when
@@ -277,7 +277,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(allFieldsData, message.ToByteString());
         }
 
-        [Test]
+        [TestMethod]
         public void WrongExtensionTypeTreatedAsUnknown()
         {
             // Test that fields of the wrong wire type are treated like unknown fields
@@ -293,7 +293,7 @@ namespace Google.ProtocolBuffers
                             allExtensionsMessage.ToString());
         }
 
-        [Test]
+        [TestMethod]
         public void ParseUnknownEnumValue()
         {
             FieldDescriptor singularField =
@@ -342,7 +342,7 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [Test]
+        [TestMethod]
         public void LargeVarint()
         {
             ByteString data =
@@ -359,7 +359,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(0x7FFFFFFFFFFFFFFFUL, field.VarintList[0]);
         }
 
-        [Test]
+        [TestMethod]
         public void EqualsAndHashCode()
         {
             UnknownField fixed32Field = UnknownField.CreateBuilder().AddFixed32(1).Build();

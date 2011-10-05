@@ -14,11 +14,7 @@
     <FileAlignment>512</FileAlignment>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\keys\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
     <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation />
-    <SilverlightVersion Condition=" '$(SilverlightVersion)' == '' ">v2.0</SilverlightVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -27,7 +23,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
-    <DefineConstants>TRACE;DEBUG;LITE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;LITE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -43,37 +39,10 @@
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_Silverlight|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug_Silverlight\</OutputPath>
-    <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
-    <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
-    <DefineConstants>DEBUG;TRACE;SILVERLIGHT;LITE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <NoStdLib>true</NoStdLib>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Silverlight|AnyCPU'">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release_Silverlight\</OutputPath>
-    <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
-    <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
-    <DefineConstants>TRACE;SILVERLIGHT;LITE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <NoStdLib>true</NoStdLib>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractBuilderLite.cs" />
@@ -106,19 +75,14 @@
     <Compile Include="CodedOutputStream.cs" />
     <Compile Include="ExtensionRegistryLite.cs" />
     <Compile Include="IBuilderLite.cs" />
-    <Compile Include="IMessageLite.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="IMessageLite.cs" />
     <Compile Include="InvalidProtocolBufferException.cs" />
     <Compile Include="SortedList.cs" />
     <Compile Include="ThrowHelper.cs" />
     <Compile Include="UninitializedMessageException.cs" />
     <Compile Include="WireFormat.cs" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Debug' " />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Release' " />
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" Condition=" '$(Configuration)' == 'Debug_Silverlight' " />
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" Condition=" '$(Configuration)' == 'Release_Silverlight' " />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

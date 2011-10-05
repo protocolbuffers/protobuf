@@ -35,16 +35,16 @@
 #endregion
 
 using System.IO;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.TestProtos;
 
 namespace Google.ProtocolBuffers
 {
-    [TestFixture]
+    [TestClass]
     public class MissingFieldAndExtensionTest
     {
-        [Test]
+        [TestMethod]
         public void TestRecoverMissingExtensions()
         {
             const int optionalInt32 = 12345678;
@@ -66,7 +66,7 @@ namespace Google.ProtocolBuffers
 
             //Even though copy does not understand the typees they serialize correctly
             byte[] copybits = copy.ToByteArray();
-            Assert.AreEqual(bits, copybits);
+            TestUtil.AssertBytesEqual(bits, copybits);
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
             UnitTestProtoFile.RegisterAllExtensions(registry);
@@ -77,20 +77,20 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(3, copy.GetExtensionCount(UnitTestProtoFile.RepeatedDoubleExtension));
 
             Assert.AreEqual(msg, copy);
-            Assert.AreEqual(bits, copy.ToByteArray());
+            TestUtil.AssertBytesEqual(bits, copy.ToByteArray());
 
             //If we modify the object this should all continue to work as before
             copybits = copy.ToBuilder().Build().ToByteArray();
-            Assert.AreEqual(bits, copybits);
+            TestUtil.AssertBytesEqual(bits, copybits);
 
             //If we replace extension the object this should all continue to work as before
             copybits = copy.ToBuilder()
                 .SetExtension(UnitTestProtoFile.OptionalInt32Extension, optionalInt32)
                 .Build().ToByteArray();
-            Assert.AreEqual(bits, copybits);
+            TestUtil.AssertBytesEqual(bits, copybits);
         }
 
-        [Test]
+        [TestMethod]
         public void TestRecoverMissingFields()
         {
             TestMissingFieldsA msga = TestMissingFieldsA.CreateBuilder()
@@ -109,7 +109,7 @@ namespace Google.ProtocolBuffers
                             msgb.UnknownFields[TestMissingFieldsA.EmailFieldNumber].LengthDelimitedList[0].ToStringUtf8());
 
             //serializes exactly the same (at least for this simple example)
-            Assert.AreEqual(msga.ToByteArray(), msgb.ToByteArray());
+            TestUtil.AssertBytesEqual(msga.ToByteArray(), msgb.ToByteArray());
             Assert.AreEqual(msga, TestMissingFieldsA.ParseFrom(msgb.ToByteArray()));
 
             //now re-create an exact copy of A from serialized B
@@ -147,7 +147,7 @@ namespace Google.ProtocolBuffers
                                 ());
         }
 
-        [Test]
+        [TestMethod]
         public void TestRecoverMissingMessage()
         {
             TestMissingFieldsA.Types.SubA suba =
@@ -170,7 +170,7 @@ namespace Google.ProtocolBuffers
                                 ());
 
             //serializes exactly the same (at least for this simple example)
-            Assert.AreEqual(msga.ToByteArray(), msgb.ToByteArray());
+            TestUtil.AssertBytesEqual(msga.ToByteArray(), msgb.ToByteArray());
             Assert.AreEqual(msga, TestMissingFieldsA.ParseFrom(msgb.ToByteArray()));
 
             //now re-create an exact copy of A from serialized B
@@ -194,7 +194,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual("Name", copya.Name);
             Assert.AreEqual(suba, copya.TestA);
             Assert.AreEqual(1, copya.UnknownFields.FieldDictionary.Count);
-            Assert.AreEqual(subb.ToByteArray(),
+            TestUtil.AssertBytesEqual(subb.ToByteArray(),
                             copya.UnknownFields[TestMissingFieldsB.TestBFieldNumber].LengthDelimitedList[0].ToByteArray());
 
             //Lastly we can even still trip back to type B and see all fields:
@@ -206,7 +206,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(1, copyb.UnknownFields.FieldDictionary.Count);
         }
 
-        [Test]
+        [TestMethod]
         public void TestRestoreFromOtherType()
         {
             TestInteropPerson person = TestInteropPerson.CreateBuilder()
@@ -234,7 +234,7 @@ namespace Google.ProtocolBuffers
 
             TestInteropPerson copy = TestInteropPerson.ParseFrom(temp.ToByteArray(), registry);
             Assert.AreEqual(person, copy);
-            Assert.AreEqual(person.ToByteArray(), copy.ToByteArray());
+            TestUtil.AssertBytesEqual(person.ToByteArray(), copy.ToByteArray());
         }
     }
 }

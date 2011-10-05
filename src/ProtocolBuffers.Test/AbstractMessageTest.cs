@@ -38,15 +38,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Google.ProtocolBuffers.Descriptors;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Google.ProtocolBuffers.TestProtos;
 
 namespace Google.ProtocolBuffers
 {
-    [TestFixture]
+    [TestClass]
     public class AbstractMessageTest
     {
-        [Test]
+        [TestMethod]
         public void Clear()
         {
             AbstractMessageWrapper message =
@@ -54,7 +54,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertClear((TestAllTypes) message.WrappedMessage);
         }
 
-        [Test]
+        [TestMethod]
         public void Copy()
         {
             AbstractMessageWrapper message =
@@ -62,14 +62,14 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertAllFieldsSet((TestAllTypes) message.WrappedMessage);
         }
 
-        [Test]
+        [TestMethod]
         public void CreateAndBuild()
         {
             TestAllTypes.CreateBuilder()
                 .Build();
         }
 
-        [Test]
+        [TestMethod]
         public void SerializedSize()
         {
             TestAllTypes message = TestUtil.GetAllSet();
@@ -78,7 +78,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(message.SerializedSize, abstractMessage.SerializedSize);
         }
 
-        [Test]
+        [TestMethod]
         public void Serialization()
         {
             IMessage abstractMessage = new AbstractMessageWrapper(TestUtil.GetAllSet());
@@ -86,7 +86,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(TestUtil.GetAllSet().ToByteString(), abstractMessage.ToByteString());
         }
 
-        [Test]
+        [TestMethod]
         public void Parsing()
         {
             IBuilder builder = new AbstractMessageWrapper.Builder(TestAllTypes.CreateBuilder());
@@ -95,7 +95,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertAllFieldsSet((TestAllTypes) message.WrappedMessage);
         }
 
-        [Test]
+        [TestMethod]
         public void PackedSerialization()
         {
             IMessage abstractMessage = new AbstractMessageWrapper(TestUtil.GetPackedSet());
@@ -103,7 +103,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(TestUtil.GetPackedSet().ToByteString(), abstractMessage.ToByteString());
         }
 
-        [Test]
+        [TestMethod]
         public void PackedParsing()
         {
             AbstractMessageWrapper.Builder builder = new AbstractMessageWrapper.Builder(TestPackedTypes.CreateBuilder());
@@ -111,7 +111,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertPackedFieldsSet((TestPackedTypes)message.WrappedMessage);
         }
 
-        [Test]
+        [TestMethod]
         public void UnpackedParsingOfPackedInput()
         {
             byte[] bytes = TestUtil.GetPackedSet().ToByteArray();
@@ -119,7 +119,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertUnpackedFieldsSet(message);
         }
 
-        [Test]
+        [TestMethod]
         public void PackedParsingOfUnpackedInput()
         {
             byte[] bytes = TestUnpackedTypes.ParseFrom(TestUtil.GetPackedSet().ToByteArray()).ToByteArray();
@@ -127,7 +127,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertPackedFieldsSet(message);
         }
 
-        [Test]
+        [TestMethod]
         public void UnpackedParsingOfPackedInputExtensions()
         {
             byte[] bytes = TestUtil.GetPackedSet().ToByteArray();
@@ -138,7 +138,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertUnpackedExtensionsSet(message);
         }
 
-        [Test]
+        [TestMethod]
         public void PackedParsingOfUnpackedInputExtensions()
         {
             byte[] bytes = TestUnpackedTypes.ParseFrom(TestUtil.GetPackedSet().ToByteArray()).ToByteArray();
@@ -148,7 +148,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertPackedExtensionsSet(message);
         }
 
-        [Test]
+        [TestMethod]
         public void OptimizedForSize()
         {
             // We're mostly only Checking that this class was compiled successfully.
@@ -165,7 +165,7 @@ namespace Google.ProtocolBuffers
         private static readonly TestRequired TestRequiredInitialized =
             TestRequired.CreateBuilder().SetA(1).SetB(2).SetC(3).Build();
 
-        [Test]
+        [TestMethod]
         public void IsInitialized()
         {
             TestRequired.Builder builder = TestRequired.CreateBuilder();
@@ -180,7 +180,7 @@ namespace Google.ProtocolBuffers
             Assert.IsTrue(abstractBuilder.IsInitialized);
         }
 
-        [Test]
+        [TestMethod]
         public void ForeignIsInitialized()
         {
             TestRequiredForeign.Builder builder = TestRequiredForeign.CreateBuilder();
@@ -227,7 +227,7 @@ namespace Google.ProtocolBuffers
                                                "repeated_string: \"qux\"\n" +
                                                "repeated_string: \"bar\"\n";
 
-        [Test]
+        [TestMethod]
         public void MergeFrom()
         {
             AbstractMessageWrapper result = (AbstractMessageWrapper)
@@ -241,7 +241,7 @@ namespace Google.ProtocolBuffers
         // -----------------------------------------------------------------
         // Tests for equals and hashCode
 
-        [Test]
+        [TestMethod]
         public void EqualsAndHashCode()
         {
             TestAllTypes a = TestUtil.GetAllSet();

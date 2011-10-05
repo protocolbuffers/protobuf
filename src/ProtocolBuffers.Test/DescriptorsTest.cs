@@ -37,7 +37,7 @@
 using System.Text;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Google.ProtocolBuffers
 {
@@ -45,10 +45,10 @@ namespace Google.ProtocolBuffers
     /// Tests for descriptors. (Not in its own namespace or broken up into individual classes as the
     /// size doesn't warrant it. On the other hand, this makes me feel a bit dirty...)
     /// </summary>
-    [TestFixture]
+    [TestClass]
     public class DescriptorsTest
     {
-        [Test]
+        [TestMethod]
         public void FileDescriptor()
         {
             FileDescriptor file = UnitTestProtoFile.Descriptor;
@@ -109,7 +109,7 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [Test]
+        [TestMethod]
         public void MessageDescriptor()
         {
             MessageDescriptor messageType = TestAllTypes.Descriptor;
@@ -154,7 +154,7 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [Test]
+        [TestMethod]
         public void FieldDescriptor()
         {
             MessageDescriptor messageType = TestAllTypes.Descriptor;
@@ -212,7 +212,7 @@ namespace Google.ProtocolBuffers
                             nestedExtension.ExtensionScope);
         }
 
-        [Test]
+        [TestMethod]
         public void FieldDescriptorLabel()
         {
             FieldDescriptor requiredField =
@@ -229,25 +229,25 @@ namespace Google.ProtocolBuffers
             Assert.IsFalse(repeatedField.IsRequired);
             Assert.IsTrue(repeatedField.IsRepeated);
         }
-
-        [Test]
+#if !SILVERLIGHT
+        [TestMethod]
         public void FieldDescriptorDefault()
         {
             MessageDescriptor d = TestAllTypes.Descriptor;
             Assert.IsFalse(d.FindDescriptor<FieldDescriptor>("optional_int32").HasDefaultValue);
-            Assert.AreEqual(0, d.FindDescriptor<FieldDescriptor>("optional_int32").DefaultValue);
+            Assert.AreEqual<object>(0, d.FindDescriptor<FieldDescriptor>("optional_int32").DefaultValue);
             Assert.IsTrue(d.FindDescriptor<FieldDescriptor>("default_int32").HasDefaultValue);
-            Assert.AreEqual(41, d.FindDescriptor<FieldDescriptor>("default_int32").DefaultValue);
+            Assert.AreEqual<object>(41, d.FindDescriptor<FieldDescriptor>("default_int32").DefaultValue);
 
             d = TestExtremeDefaultValues.Descriptor;
-            Assert.AreEqual(
-                ByteString.CopyFrom("\u0000\u0001\u0007\b\f\n\r\t\u000b\\\'\"\u00fe", Encoding.GetEncoding(28591)),
+            Assert.AreEqual<object>(
+                ByteString.CopyFrom("\u0000\u0001\u0007\b\f\n\r\t\u000b\\\'\"\u00fe", Encoding.GetEncoding("iso-8859-1")),
                 d.FindDescriptor<FieldDescriptor>("escaped_bytes").DefaultValue);
-            Assert.AreEqual(uint.MaxValue, d.FindDescriptor<FieldDescriptor>("large_uint32").DefaultValue);
-            Assert.AreEqual(ulong.MaxValue, d.FindDescriptor<FieldDescriptor>("large_uint64").DefaultValue);
+            Assert.AreEqual<object>(uint.MaxValue, d.FindDescriptor<FieldDescriptor>("large_uint32").DefaultValue);
+            Assert.AreEqual<object>(ulong.MaxValue, d.FindDescriptor<FieldDescriptor>("large_uint64").DefaultValue);
         }
-
-        [Test]
+#endif
+        [TestMethod]
         public void EnumDescriptor()
         {
             // Note: this test is a bit different to the Java version because there's no static way of getting to the descriptor
@@ -280,7 +280,7 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [Test]
+        [TestMethod]
         public void ServiceDescriptor()
         {
             ServiceDescriptor service = TestGenericService.Descriptor;
@@ -311,7 +311,7 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [Test]
+        [TestMethod]
         public void CustomOptions()
         {
             MessageDescriptor descriptor = TestMessageWithCustomOptions.Descriptor;
@@ -323,7 +323,7 @@ namespace Google.ProtocolBuffers
             Assert.IsNotNull(field);
 
             Assert.IsTrue(field.Options.HasExtension(UnitTestCustomOptionsProtoFile.FieldOpt1));
-            Assert.AreEqual(8765432109L, field.Options.GetExtension(UnitTestCustomOptionsProtoFile.FieldOpt1));
+            Assert.AreEqual(8765432109uL, field.Options.GetExtension(UnitTestCustomOptionsProtoFile.FieldOpt1));
 
             // TODO: Write out enum descriptors
             /*

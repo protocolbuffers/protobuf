@@ -37,9 +37,7 @@
 using System;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
-using NUnit.Framework;
-using Rhino.Mocks;
-using Rhino.Mocks.Constraints;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Google.ProtocolBuffers
 {
@@ -47,7 +45,7 @@ namespace Google.ProtocolBuffers
     /// Tests for generated service classes.
     /// TODO(jonskeet): Convert the mocking tests using Rhino.Mocks.
     /// </summary>
-    [TestFixture]
+    [TestClass]
     public class ServiceTest
     {
         private delegate void Action<T1, T2>(T1 t1, T2 t2);
@@ -55,7 +53,7 @@ namespace Google.ProtocolBuffers
         private static readonly MethodDescriptor FooDescriptor = TestGenericService.Descriptor.Methods[0];
         private static readonly MethodDescriptor BarDescriptor = TestGenericService.Descriptor.Methods[1];
 
-        [Test]
+        [TestMethod]
         public void GetRequestPrototype()
         {
             TestGenericService service = new TestServiceImpl();
@@ -64,7 +62,7 @@ namespace Google.ProtocolBuffers
             Assert.AreSame(service.GetRequestPrototype(BarDescriptor), BarRequest.DefaultInstance);
         }
 
-        [Test]
+        [TestMethod]
         public void GetResponsePrototype()
         {
             TestGenericService service = new TestServiceImpl();
@@ -73,13 +71,12 @@ namespace Google.ProtocolBuffers
             Assert.AreSame(service.GetResponsePrototype(BarDescriptor), BarResponse.DefaultInstance);
         }
 
-        [Test]
+        [TestMethod]
         public void CallMethodFoo()
         {
-            MockRepository mocks = new MockRepository();
             FooRequest fooRequest = FooRequest.CreateBuilder().Build();
             FooResponse fooResponse = FooResponse.CreateBuilder().Build();
-            IRpcController controller = mocks.StrictMock<IRpcController>();
+            IRpcController controller = new RpcTestController();
 
             bool fooCalled = false;
 
@@ -97,60 +94,18 @@ namespace Google.ProtocolBuffers
                                                     doneHandlerCalled = true;
                                                 });
 
-            using (mocks.Record())
-            {
-                // No mock interactions to record
-            }
-
             service.CallMethod(FooDescriptor, controller, fooRequest, doneHandler);
 
             Assert.IsTrue(doneHandlerCalled);
             Assert.IsTrue(fooCalled);
-            mocks.VerifyAll();
         }
 
-        private delegate void CallFooDelegate(MethodDescriptor descriptor, IRpcController controller,
-                                              IMessage request, IMessage response, Action<IMessage> doneHandler);
-
-        /// <summary>
-        /// Tests the generated stub handling of Foo. By this stage we're reasonably confident
-        /// that the choice between Foo and Bar is arbitrary, hence the lack of a corresponding Bar
-        /// test.
-        /// </summary>
-        [Test]
-        [Ignore("Crashes Mono - needs further investigation")]
-        public void GeneratedStubFooCall()
-        {
-            FooRequest fooRequest = FooRequest.CreateBuilder().Build();
-            MockRepository mocks = new MockRepository();
-            IRpcChannel mockChannel = mocks.StrictMock<IRpcChannel>();
-            IRpcController mockController = mocks.StrictMock<IRpcController>();
-            TestGenericService service = TestGenericService.CreateStub(mockChannel);
-            Action<FooResponse> doneHandler = mocks.StrictMock<Action<FooResponse>>();
-
-            using (mocks.Record())
-            {
-                // Nasty way of mocking out "the channel calls the done handler".
-                Expect.Call(() => mockChannel.CallMethod(null, null, null, null, null))
-                    .IgnoreArguments()
-                    .Constraints(Is.Same(FooDescriptor), Is.Same(mockController), Is.Same(fooRequest),
-                                 Is.Same(FooResponse.DefaultInstance), Is.Anything())
-                    .Do((CallFooDelegate) ((p1, p2, p3, response, done) => done(response)));
-                doneHandler(FooResponse.DefaultInstance);
-            }
-
-            service.Foo(mockController, fooRequest, doneHandler);
-
-            mocks.VerifyAll();
-        }
-
-        [Test]
+        [TestMethod]
         public void CallMethodBar()
         {
-            MockRepository mocks = new MockRepository();
             BarRequest barRequest = BarRequest.CreateBuilder().Build();
             BarResponse barResponse = BarResponse.CreateBuilder().Build();
-            IRpcController controller = mocks.StrictMock<IRpcController>();
+            IRpcController controller = new RpcTestController();
 
             bool barCalled = false;
 
@@ -168,19 +123,109 @@ namespace Google.ProtocolBuffers
                                                     doneHandlerCalled = true;
                                                 });
 
-            using (mocks.Record())
-            {
-                // No mock interactions to record
-            }
-
             service.CallMethod(BarDescriptor, controller, barRequest, doneHandler);
 
             Assert.IsTrue(doneHandlerCalled);
             Assert.IsTrue(barCalled);
-            mocks.VerifyAll();
         }
 
+        [TestMethod]
+        public void GeneratedStubFooCall()
+        {
+            IRpcChannel channel = new RpcTestChannel();
+            IRpcController controller = new RpcTestController();
+            TestGenericService service = TestGenericService.CreateStub(channel);
+            FooResponse fooResponse = null;
+            Action<FooResponse> doneHandler = r => fooResponse = r;
 
+            service.Foo(controller, FooRequest.DefaultInstance, doneHandler);
+
+            Assert.IsNotNull(fooResponse);
+            Assert.IsFalse(controller.Failed);
+        }
+
+        [TestMethod]
+        public void GeneratedStubBarCallFails()
+        {
+            IRpcChannel channel = new RpcTestChannel();
+            IRpcController controller = new RpcTestController();
+            TestGenericService service = TestGenericService.CreateStub(channel);
+            BarResponse barResponse = null;
+            Action<BarResponse> doneHandler = r => barResponse = r;
+
+            service.Bar(controller, BarRequest.DefaultInstance, doneHandler);
+
+            Assert.IsNull(barResponse);
+            Assert.IsTrue(controller.Failed);
+        }
+
+        #region RpcTestController
+        private class RpcTestController : IRpcController
+        {
+            public string TestFailedReason { get; set; }
+            public bool TestCancelled { get; set; }
+            public Action<object> TestCancelledCallback { get; set; }
+
+            void IRpcController.Reset()
+            {
+                TestFailedReason = null;
+                TestCancelled = false;
+                TestCancelledCallback = null;
+            }
+
+            bool IRpcController.Failed
+            {
+                get { return TestFailedReason != null; }
+            }
+
+            string IRpcController.ErrorText
+            {
+                get { return TestFailedReason; }
+            }
+
+            void IRpcController.StartCancel()
+            {
+                TestCancelled = true;
+                if (TestCancelledCallback != null)
+                    TestCancelledCallback(this);
+            }
+
+            void IRpcController.SetFailed(string reason)
+            {
+                TestFailedReason = reason;
+            }
+
+            bool IRpcController.IsCanceled()
+            {
+                return TestCancelled;
+            }
+
+            void IRpcController.NotifyOnCancel(Action<object> callback)
+            {
+                TestCancelledCallback = callback;
+            }
+        }
+        #endregion
+        #region RpcTestChannel
+        private class RpcTestChannel : IRpcChannel
+        {
+            public MethodDescriptor TestMethodCalled { get; set; }
+
+            void IRpcChannel.CallMethod(MethodDescriptor method, IRpcController controller, IMessage request, IMessage responsePrototype, Action<IMessage> done)
+            {
+                TestMethodCalled = method;
+                try
+                {
+                    done(FooResponse.DefaultInstance);
+                }
+                catch (Exception e)
+                {
+                    controller.SetFailed(e.Message);
+                }
+            }
+        }
+        #endregion
+        #region TestServiceImpl
         private class TestServiceImpl : TestGenericService
         {
             private readonly Action<FooRequest, Action<FooResponse>> fooHandler;
@@ -212,5 +257,6 @@ namespace Google.ProtocolBuffers
                 barHandler(request, done);
             }
         }
+        #endregion
     }
 }

@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using Google.ProtocolBuffers.Collections;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Google.ProtocolBuffers.TestProtos;
 using Google.ProtocolBuffers.Serialization;
 using UnitTest.Issues.TestProtos;
 
 namespace Google.ProtocolBuffers
 {
-    [TestFixture]
+    [TestClass]
     public class ReusableBuilderTest
     {
-        [Test, Description("Issue 28: Circular message dependencies result in null defaults for DefaultInstance")]
+        [TestMethod, System.ComponentModel.Description("Issue 28: Circular message dependencies result in null defaults for DefaultInstance")]
         public void EnsureStaticCicularReference()
         {
             MyMessageAReferenceB ab = MyMessageAReferenceB.DefaultInstance;
@@ -24,7 +24,7 @@ namespace Google.ProtocolBuffers
             Assert.IsNotNull(ba.Value);
         }
 
-        [Test]
+        [TestMethod]
         public void TestModifyDefaultInstance()
         {
             //verify that the default instance has correctly been marked as read-only
@@ -33,7 +33,7 @@ namespace Google.ProtocolBuffers
             Assert.IsTrue(list.IsReadOnly);
         }
 
-        [Test]
+        [TestMethod]
         public void TestUnmodifiedDefaultInstance()
         {
             //Simply calling ToBuilder().Build() no longer creates a copy of the message
@@ -41,7 +41,7 @@ namespace Google.ProtocolBuffers
             Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Test]
+        [TestMethod]
         public void BuildMultipleWithoutChange()
         {
             //Calling Build() or BuildPartial() does not require a copy of the message
@@ -55,7 +55,7 @@ namespace Google.ProtocolBuffers
             Assert.IsTrue(ReferenceEquals(first, builder.BuildPartial().ToBuilder().Build()));
         }
 
-        [Test]
+        [TestMethod]
         public void MergeFromDefaultInstance()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
@@ -64,7 +64,7 @@ namespace Google.ProtocolBuffers
             Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Test]
+        [TestMethod]
         public void BuildNewBuilderIsDefaultInstance()
         {
             Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, new TestAllTypes.Builder().Build()));
@@ -74,7 +74,7 @@ namespace Google.ProtocolBuffers
                 TestAllTypes.CreateBuilder().SetOptionalBool(true).Build().ToBuilder().Clear().Build()));
         }
 
-        [Test]
+        [TestMethod]
         public void BuildModifyAndRebuild()
         {
             TestAllTypes.Builder b1 = new TestAllTypes.Builder();
@@ -94,7 +94,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual("{\"optional_foreign_message\":{\"c\":7},\"repeated_int32\":[2,6],\"default_int32\":5}", Extensions.ToJson(m2));
         }
 
-        [Test]
+        [TestMethod]
         public void CloneOnChangePrimitive()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
@@ -103,7 +103,7 @@ namespace Google.ProtocolBuffers
             Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Test]
+        [TestMethod]
         public void CloneOnAddRepeatedBool()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
@@ -112,7 +112,7 @@ namespace Google.ProtocolBuffers
             Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Test]
+        [TestMethod]
         public void CloneOnGetRepeatedBoolList()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
@@ -121,7 +121,7 @@ namespace Google.ProtocolBuffers
             Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Test]
+        [TestMethod]
         public void CloneOnChangeMessage()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
@@ -130,7 +130,7 @@ namespace Google.ProtocolBuffers
             Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Test]
+        [TestMethod]
         public void CloneOnClearMessage()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
@@ -139,7 +139,7 @@ namespace Google.ProtocolBuffers
             Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Test]
+        [TestMethod]
         public void CloneOnGetRepeatedForeignMessageList()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
@@ -148,7 +148,7 @@ namespace Google.ProtocolBuffers
             Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Test]
+        [TestMethod]
         public void CloneOnChangeEnumValue()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
@@ -157,7 +157,7 @@ namespace Google.ProtocolBuffers
             Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Test]
+        [TestMethod]
         public void CloneOnGetRepeatedForeignEnumList()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();

@@ -159,8 +159,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                     writer.WriteLine("public {0}(pb::IRpcDispatch dispatch) : this(dispatch, true) {{", Descriptor.Name);
                     writer.WriteLine("}");
                     writer.WriteLine("public {0}(pb::IRpcDispatch dispatch, bool dispose) {{", Descriptor.Name);
-                    writer.WriteLine(
-                        "  if (null == (this.dispatch = dispatch)) throw new global::System.ArgumentNullException();");
+                    writer.WriteLine("  pb::ThrowHelper.ThrowIfNull(this.dispatch = dispatch, \"dispatch\");");
                     writer.WriteLine("  this.dispose = dispose && dispatch is global::System.IDisposable;");
                     writer.WriteLine("}");
                     writer.WriteLine();
@@ -209,8 +208,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                                      Descriptor.Name);
                     writer.WriteLine("}");
                     writer.WriteLine("public Dispatch(I{0} implementation, bool dispose) {{", Descriptor.Name);
-                    writer.WriteLine(
-                        "  if (null == (this.implementation = implementation)) throw new global::System.ArgumentNullException();");
+                    writer.WriteLine("  pb::ThrowHelper.ThrowIfNull(this.implementation = implementation, \"implementation\");");
                     writer.WriteLine("  this.dispose = dispose && implementation is global::System.IDisposable;");
                     writer.WriteLine("}");
                     writer.WriteLine();
@@ -235,9 +233,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                             method.Name, NameHelpers.UnderscoresToPascalCase(method.Name),
                             GetClassName(method.InputType));
                     }
-                    writer.WriteLine(
-                        "default: throw new global::System.MissingMethodException(typeof(I{0}).FullName, methodName);",
-                        Descriptor.Name);
+                    writer.WriteLine("default: throw pb::ThrowHelper.CreateMissingMethod(typeof(I{0}), methodName);", Descriptor.Name);
                     writer.Outdent();
                     writer.WriteLine("}"); //end switch
                     writer.Outdent();
@@ -272,8 +268,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                     writer.WriteLine("public ServerStub(pb::IRpcDispatch implementation) : this(implementation, true) {");
                     writer.WriteLine("}");
                     writer.WriteLine("public ServerStub(pb::IRpcDispatch implementation, bool dispose) {");
-                    writer.WriteLine(
-                        "  if (null == (this.implementation = implementation)) throw new global::System.ArgumentNullException();");
+                    writer.WriteLine("  pb::ThrowHelper.ThrowIfNull(this.implementation = implementation, \"implementation\");");
                     writer.WriteLine("  this.dispose = dispose && implementation is global::System.IDisposable;");
                     writer.WriteLine("}");
                     writer.WriteLine();
@@ -296,9 +291,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                             "case \"{0}\": return implementation.CallMethod(methodName, {1}.ParseFrom(input, registry), {2}.CreateBuilder());",
                             method.Name, GetClassName(method.InputType), GetClassName(method.OutputType));
                     }
-                    writer.WriteLine(
-                        "default: throw new global::System.MissingMethodException(typeof(I{0}).FullName, methodName);",
-                        Descriptor.Name);
+                    writer.WriteLine("default: throw pb::ThrowHelper.CreateMissingMethod(typeof(I{0}), methodName);", Descriptor.Name);
                     writer.Outdent();
                     writer.WriteLine("}"); //end switch
                     writer.Outdent();

@@ -38,7 +38,7 @@ using System;
 using Google.ProtocolBuffers;
 using Google.ProtocolBuffers.Serialization.Http;
 using Google.ProtocolBuffers.TestProtos;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 using Google.ProtocolBuffers.Serialization;
 using System.Text;
@@ -49,7 +49,7 @@ namespace Google.ProtocolBuffers
     /// This class verifies the correct code is generated from unittest_rpc_interop.proto and provides a small demonstration
     /// of using the new IRpcDispatch to write a client/server
     /// </summary>
-    [TestFixture]
+    [TestClass]
     public class TestRpcForMimeTypes
     {
         /// <summary>
@@ -181,7 +181,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Test sending and recieving messages via text/json
         /// </summary>
-        [Test]
+        [TestMethod]
         public void TestClientServerWithJsonFormat()
         {
             ExampleHttpServer server = new ExampleHttpServer(new ExampleSearchImpl());
@@ -210,7 +210,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Test sending and recieving messages via text/json
         /// </summary>
-        [Test]
+        [TestMethod]
         public void TestClientServerWithXmlFormat()
         {
             ExampleHttpServer server = new ExampleHttpServer(new ExampleSearchImpl());
@@ -239,7 +239,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Test sending and recieving messages via text/json
         /// </summary>
-        [Test]
+        [TestMethod]
         public void TestClientServerWithProtoFormat()
         {
             ExampleHttpServer server = new ExampleHttpServer(new ExampleSearchImpl());
@@ -268,7 +268,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Test sending and recieving messages via text/json
         /// </summary>
-        [Test]
+        [TestMethod]
         public void TestClientServerWithCustomFormat()
         {
             ExampleHttpServer server = new ExampleHttpServer(new ExampleSearchImpl());
@@ -308,7 +308,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Test sending and recieving messages via text/json
         /// </summary>
-        [Test]
+        [TestMethod]
         public void TestServerWithUriFormat()
         {
             ExampleHttpServer server = new ExampleHttpServer(new ExampleSearchImpl());
@@ -336,7 +336,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Test sending and recieving messages via text/json
         /// </summary>
-        [Test, ExpectedException(typeof(ArgumentOutOfRangeException))]
+        [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void TestInvalidMimeType()
         {
             ExampleHttpServer server = new ExampleHttpServer(new ExampleSearchImpl());
@@ -357,7 +357,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Test sending and recieving messages via text/json
         /// </summary>
-        [Test]
+        [TestMethod]
         public void TestDefaultMimeType()
         {
             ExampleHttpServer server = new ExampleHttpServer(new ExampleSearchImpl());

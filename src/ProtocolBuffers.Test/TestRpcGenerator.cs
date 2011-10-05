@@ -37,7 +37,7 @@
 using System;
 using Google.ProtocolBuffers;
 using Google.ProtocolBuffers.TestProtos;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Google.ProtocolBuffers
 {
@@ -45,7 +45,7 @@ namespace Google.ProtocolBuffers
     /// This class verifies the correct code is generated from unittest_rpc_interop.proto and provides a small demonstration
     /// of using the new IRpcDispatch to write a client/server
     /// </summary>
-    [TestFixture]
+    [TestClass]
     public class TestRpcGenerator
     {
         /// <summary>
@@ -142,7 +142,7 @@ namespace Google.ProtocolBuffers
         /// Put it all together to create one seamless client/server experience full of rich-type goodness ;)
         /// All you need to do is send/recieve the method name and message bytes across the wire.
         /// </summary>
-        [Test]
+        [TestMethod]
         public void TestClientServerDispatch()
         {
             ExampleServerHost server = new ExampleServerHost(new ExampleSearchImpl());

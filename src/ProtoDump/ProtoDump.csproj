@@ -53,7 +53,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-	  <Reference Include="mscorlib" />
+    <Reference Include="mscorlib" />
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>

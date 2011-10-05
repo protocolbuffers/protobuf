@@ -39,22 +39,23 @@ using System.Collections.Generic;
 using System.Text;
 using Google.ProtocolBuffers;
 using Google.ProtocolBuffers.TestProtos;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Google.ProtocolBuffers
 {
-    [TestFixture]
+    [TestClass]
     public class ExtendableMessageLiteTest
     {
-        [Test, Ignore("Not implemented, no assertion made"), ExpectedException(typeof (ArgumentException))]
-        public void ExtensionWriterInvalidExtension()
-        {
-            TestPackedExtensionsLite.CreateBuilder()[
-                UnitTestLiteProtoFile.OptionalForeignMessageExtensionLite.Descriptor] =
-                ForeignMessageLite.DefaultInstance;
-        }
+        //The lite framework does not make this assertion
+        //[TestMethod, Ignore, ExpectedException(typeof (ArgumentException))]
+        //public void ExtensionWriterInvalidExtension()
+        //{
+        //    TestPackedExtensionsLite.CreateBuilder()[
+        //        UnitTestLiteProtoFile.OptionalForeignMessageExtensionLite.Descriptor] =
+        //        ForeignMessageLite.DefaultInstance;
+        //}
 
-        [Test]
+        [TestMethod]
         public void ExtensionWriterTestMessages()
         {
             TestAllExtensionsLite.Builder b = TestAllExtensionsLite.CreateBuilder().SetExtension(
@@ -66,10 +67,10 @@ namespace Google.ProtocolBuffers
             UnitTestLiteProtoFile.RegisterAllExtensions(registry);
 
             copy = TestAllExtensionsLite.ParseFrom(msg.ToByteArray(), registry);
-            Assert.AreEqual(msg.ToByteArray(), copy.ToByteArray());
+            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
         }
 
-        [Test]
+        [TestMethod]
         public void ExtensionWriterIsInitialized()
         {
             Assert.IsTrue(ForeignMessageLite.DefaultInstance.IsInitialized);
@@ -79,7 +80,7 @@ namespace Google.ProtocolBuffers
                               .IsInitialized);
         }
 
-        [Test]
+        [TestMethod]
         public void ExtensionWriterTestSetExtensionLists()
         {
             TestAllExtensionsLite msg, copy;
@@ -95,13 +96,13 @@ namespace Google.ProtocolBuffers
             UnitTestLiteProtoFile.RegisterAllExtensions(registry);
 
             copy = TestAllExtensionsLite.ParseFrom(msg.ToByteArray(), registry);
-            Assert.AreEqual(msg.ToByteArray(), copy.ToByteArray());
+            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
 
             Assert.AreEqual(ForeignEnumLite.FOREIGN_LITE_FOO,
                             copy.GetExtension(UnitTestLiteProtoFile.RepeatedForeignEnumExtensionLite, 1));
         }
 
-        [Test]
+        [TestMethod]
         public void ExtensionWriterTest()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder()
@@ -180,7 +181,7 @@ namespace Google.ProtocolBuffers
                 TestAllExtensionsLite.CreateBuilder().MergeFrom(msg.ToByteArray(), registry);
             TestAllExtensionsLite copy = copyBuilder.Build();
 
-            Assert.AreEqual(msg.ToByteArray(), copy.ToByteArray());
+            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
 
             Assert.AreEqual(true, copy.GetExtension(UnitTestLiteProtoFile.DefaultBoolExtensionLite));
             Assert.AreEqual(ByteString.CopyFromUtf8("123"),
@@ -323,7 +324,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(123u, copy.GetExtension(UnitTestLiteProtoFile.PackedUint64ExtensionLite, 1));
         }
 
-        [Test]
+        [TestMethod]
         public void ExtensionWriterTestPacked()
         {
             TestPackedExtensionsLite msg = BuildPackedExtensions();
@@ -335,12 +336,12 @@ namespace Google.ProtocolBuffers
                 TestPackedExtensionsLite.CreateBuilder().MergeFrom(msg.ToByteArray(), registry);
             TestPackedExtensionsLite copy = copyBuilder.Build();
 
-            Assert.AreEqual(msg.ToByteArray(), copy.ToByteArray());
+            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
 
             AssertPackedExtensions(copy);
         }
 
-        [Test]
+        [TestMethod]
         public void TestUnpackedAndPackedExtensions()
         {
             TestPackedExtensionsLite original = BuildPackedExtensions();
@@ -355,18 +356,18 @@ namespace Google.ProtocolBuffers
             TestPackedExtensionsLite packed = TestPackedExtensionsLite.ParseFrom(unpacked.ToByteArray(), registry);
 
             Assert.AreEqual(original, packed);
-            Assert.AreEqual(original.ToByteArray(), packed.ToByteArray());
+            TestUtil.AssertBytesEqual(original.ToByteArray(), packed.ToByteArray());
             AssertPackedExtensions(packed);
         }
 
-        [Test]
+        [TestMethod]
         public void TestUnpackedFromPackedInput()
         {
             byte[] packedData = BuildPackedExtensions().ToByteArray();
 
             TestUnpackedTypesLite unpacked = TestUnpackedTypesLite.ParseFrom(packedData);
             TestPackedTypesLite packed = TestPackedTypesLite.ParseFrom(unpacked.ToByteArray());
-            Assert.AreEqual(packedData, packed.ToByteArray());
+            TestUtil.AssertBytesEqual(packedData, packed.ToByteArray());
             
             unpacked = TestUnpackedTypesLite.ParseFrom(packed.ToByteArray());
 

@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UnitTest.Issues.TestProtos;
 
 namespace Google.ProtocolBuffers
 {
-    [TestFixture]
+    [TestClass]
     public class DeprecatedMemberTest
     {
         private static void AssertIsDeprecated(ICustomAttributeProvider member)
@@ -16,7 +16,7 @@ namespace Google.ProtocolBuffers
             Assert.IsTrue(member.IsDefined(typeof(ObsoleteAttribute), false), "Member not obsolete: " + member);
         }
 
-        [Test]
+        [TestMethod]
         public void TestDepreatedPrimitiveValue()
         {
             AssertIsDeprecated(typeof(DeprecatedFieldsMessage).GetProperty("HasPrimitiveValue"));
@@ -27,7 +27,7 @@ namespace Google.ProtocolBuffers
             AssertIsDeprecated(typeof(DeprecatedFieldsMessage.Builder).GetMethod("ClearPrimitiveValue"));
             AssertIsDeprecated(typeof(DeprecatedFieldsMessage.Builder).GetMethod("SetPrimitiveValue"));
         }
-        [Test]
+        [TestMethod]
         public void TestDepreatedPrimitiveArray()
         {
             AssertIsDeprecated(typeof(DeprecatedFieldsMessage).GetProperty("PrimitiveArrayList"));
@@ -42,7 +42,7 @@ namespace Google.ProtocolBuffers
             AssertIsDeprecated(typeof(DeprecatedFieldsMessage.Builder).GetMethod("AddRangePrimitiveArray"));
             AssertIsDeprecated(typeof(DeprecatedFieldsMessage.Builder).GetMethod("ClearPrimitiveArray"));
         }
-        [Test]
+        [TestMethod]
         public void TestDepreatedMessageValue()
         {
             AssertIsDeprecated(typeof(DeprecatedFieldsMessage).GetProperty("HasMessageValue"));
@@ -55,7 +55,7 @@ namespace Google.ProtocolBuffers
             AssertIsDeprecated(typeof(DeprecatedFieldsMessage.Builder).GetMethod("SetMessageValue", new[] { typeof(DeprecatedChild) }));
             AssertIsDeprecated(typeof(DeprecatedFieldsMessage.Builder).GetMethod("SetMessageValue", new[] { typeof(DeprecatedChild.Builder) }));
         }
-        [Test]
+        [TestMethod]
         public void TestDepreatedMessageArray()
         {
             AssertIsDeprecated(typeof(DeprecatedFieldsMessage).GetProperty("MessageArrayList"));
@@ -72,7 +72,7 @@ namespace Google.ProtocolBuffers
             AssertIsDeprecated(typeof(DeprecatedFieldsMessage.Builder).GetMethod("AddRangeMessageArray"));
             AssertIsDeprecated(typeof(DeprecatedFieldsMessage.Builder).GetMethod("ClearMessageArray"));
         }
-        [Test]
+        [TestMethod]
         public void TestDepreatedEnumValue()
         {
             AssertIsDeprecated(typeof(DeprecatedFieldsMessage).GetProperty("HasEnumValue"));
@@ -83,7 +83,7 @@ namespace Google.ProtocolBuffers
             AssertIsDeprecated(typeof(DeprecatedFieldsMessage.Builder).GetMethod("ClearEnumValue"));
             AssertIsDeprecated(typeof(DeprecatedFieldsMessage.Builder).GetMethod("SetEnumValue"));
         }
-        [Test]
+        [TestMethod]
         public void TestDepreatedEnumArray()
         {
             AssertIsDeprecated(typeof(DeprecatedFieldsMessage).GetProperty("EnumArrayList"));

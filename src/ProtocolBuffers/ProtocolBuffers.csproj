@@ -14,27 +14,7 @@
     <FileAlignment>512</FileAlignment>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\keys\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <SilverlightVersion Condition=" '$(SilverlightVersion)' == '' ">v2.0</SilverlightVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -47,7 +27,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -59,32 +38,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_Silverlight|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug_Silverlight\</OutputPath>
-    <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
-    <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
-    <DefineConstants>DEBUG;TRACE;SILVERLIGHT</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <NoStdLib>true</NoStdLib>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Silverlight|AnyCPU'">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release_Silverlight\</OutputPath>
-    <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
-    <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
-    <DefineConstants>TRACE;SILVERLIGHT</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <NoStdLib>true</NoStdLib>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -93,13 +46,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractBuilder.cs" />
-    <Compile Include="AbstractBuilderLite.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="AbstractBuilderLite.cs" />
     <Compile Include="AbstractMessage.cs" />
-    <Compile Include="AbstractMessageLite.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="AbstractMessageLite.cs" />
     <Compile Include="ByteArray.cs" />
     <Compile Include="ByteString.cs" />
     <Compile Include="Collections\Enumerables.cs" />
@@ -140,9 +89,7 @@
     <Compile Include="ExtendableBuilderLite.cs" />
     <Compile Include="ExtendableMessage.cs" />
     <Compile Include="ExtendableMessageLite.cs" />
-    <Compile Include="ExtensionInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="ExtensionInfo.cs" />
     <Compile Include="ExtensionRegistry.cs" />
     <Compile Include="ExtensionRegistryLite.cs" />
     <Compile Include="FieldAccess\ReflectionUtil.cs" />
@@ -164,9 +111,7 @@
     <Compile Include="GeneratedMessage.cs" />
     <Compile Include="IBuilder.cs" />
     <Compile Include="GeneratedExtensionBase.cs" />
-    <Compile Include="IBuilderLite.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="IBuilderLite.cs" />
     <Compile Include="ICodedInputStream.cs" />
     <Compile Include="ICodedOutputStream.cs" />
     <Compile Include="IMessage.cs" />
@@ -193,27 +138,7 @@
     <Compile Include="UnknownFieldSet.cs" />
     <Compile Include="WireFormat.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Debug' " />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Release' " />
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" Condition=" '$(Configuration)' == 'Debug_Silverlight' " />
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" Condition=" '$(Configuration)' == 'Release_Silverlight' " />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

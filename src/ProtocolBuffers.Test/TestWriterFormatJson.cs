@@ -2,15 +2,15 @@ using System;
 using System.IO;
 using System.Text;
 using Google.ProtocolBuffers.Serialization;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Google.ProtocolBuffers.TestProtos;
 
 namespace Google.ProtocolBuffers
 {
-    [TestFixture]
+    [TestClass]
     public class TestWriterFormatJson
     {
-        [Test]
+        [TestMethod]
         public void Example_FromJson()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
@@ -22,7 +22,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(true, message.Valid);
         }
 
-        [Test]
+        [TestMethod]
         public void Example_ToJson()
         {
             TestXmlMessage message = 
@@ -36,7 +36,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(@"{""valid"":true}", json);
         }
 
-        [Test]
+        [TestMethod]
         public void Example_WriteJsonUsingICodedOutputStream()
         {
             TestXmlMessage message =
@@ -63,7 +63,7 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [Test]
+        [TestMethod]
         public void Example_ReadJsonUsingICodedInputStream()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
@@ -98,7 +98,7 @@ namespace Google.ProtocolBuffers
                 Assert.IsTrue(Content.IndexOf(expect) >= 0, "Expected to find content '{0}' in: \r\n{1}", expect, Content);
         }
 
-        [Test]
+        [TestMethod]
         public void TestToJsonParseFromJson()
         {
             TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
@@ -109,7 +109,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(msg, copy);
         }
 
-        [Test]
+        [TestMethod]
         public void TestToJsonParseFromJsonReader()
         {
             TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
@@ -120,7 +120,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(msg, copy);
         }
 
-        [Test]
+        [TestMethod]
         public void TestJsonFormatted()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -143,7 +143,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(message, copy);
         }
 
-        [Test]
+        [TestMethod]
         public void TestEmptyMessage()
         {
             FormatterAssert(
@@ -152,7 +152,7 @@ namespace Google.ProtocolBuffers
                 @"{}"
                 );
         }
-        [Test]
+        [TestMethod]
         public void TestRepeatedField()
         {
             FormatterAssert(
@@ -163,7 +163,7 @@ namespace Google.ProtocolBuffers
                 @"{""options"":[""ONE"",""TWO""]}"
                 );
         }
-        [Test]
+        [TestMethod]
         public void TestNestedEmptyMessage()
         {
             FormatterAssert(
@@ -173,7 +173,7 @@ namespace Google.ProtocolBuffers
                 @"{""child"":{}}"
                 );
         }
-        [Test]
+        [TestMethod]
         public void TestNestedMessage()
         {
             FormatterAssert(
@@ -183,7 +183,7 @@ namespace Google.ProtocolBuffers
                 @"{""child"":{""options"":[""TWO""]}}"
                 );
         }
-        [Test]
+        [TestMethod]
         public void TestBooleanTypes()
         {
             FormatterAssert(
@@ -193,7 +193,7 @@ namespace Google.ProtocolBuffers
                 @"{""valid"":true}"
                 );
         }
-        [Test]
+        [TestMethod]
         public void TestFullMessage()
         {
             FormatterAssert(
@@ -222,7 +222,7 @@ namespace Google.ProtocolBuffers
                 0x1010101010L.ToString()
                 );
         }
-        [Test]
+        [TestMethod]
         public void TestMessageWithXmlText()
         {
             FormatterAssert(
@@ -232,7 +232,7 @@ namespace Google.ProtocolBuffers
                 @"{""text"":""<text><\/text>""}"
                 );
         }
-        [Test]
+        [TestMethod]
         public void TestWithEscapeChars()
         {
             FormatterAssert(
@@ -242,7 +242,7 @@ namespace Google.ProtocolBuffers
                 "{\"text\":\" \\t <- \\\"leading space and trailing\\\" -> \\\\ \\uef54 \\u0000 \\u00ff \\uffff \\b \\f \\r \\n \\t \"}"
                 );
         }
-        [Test]
+        [TestMethod]
         public void TestWithExtensionText()
         {
             FormatterAssert(
@@ -253,7 +253,7 @@ namespace Google.ProtocolBuffers
                 @"{""valid"":false,""extension_text"":"" extension text value ! ""}"
                 );
         }
-        [Test]
+        [TestMethod]
         public void TestWithExtensionNumber()
         {
             FormatterAssert(
@@ -264,7 +264,7 @@ namespace Google.ProtocolBuffers
                 @"{""number"":42}"
                 );
         }
-        [Test]
+        [TestMethod]
         public void TestWithExtensionArray()
         {
             FormatterAssert(
@@ -276,7 +276,7 @@ namespace Google.ProtocolBuffers
                 @"{""extension_number"":[100,101,102]}"
                 );
         }
-        [Test]
+        [TestMethod]
         public void TestWithExtensionEnum()
         {
             FormatterAssert(
@@ -286,7 +286,7 @@ namespace Google.ProtocolBuffers
                 @"{""extension_enum"":""ONE""}"
                 );
         }
-        [Test]
+        [TestMethod]
         public void TestMessageWithExtensions()
         {
             FormatterAssert(
@@ -308,7 +308,7 @@ namespace Google.ProtocolBuffers
                 @"""extension_message"":{""number"":42}"
                 );
         }
-        [Test]
+        [TestMethod]
         public void TestMessageMissingExtensions()
         {
             TestXmlMessage original = TestXmlMessage.CreateBuilder()
@@ -340,7 +340,7 @@ namespace Google.ProtocolBuffers
             Assert.AreNotEqual(original, copy);
             Assert.AreEqual(message, copy);
         }
-        [Test]
+        [TestMethod]
         public void TestMergeFields()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
@@ -350,7 +350,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual("text", builder.Text);
             Assert.AreEqual(411, builder.Number);
         }
-        [Test]
+        [TestMethod]
         public void TestMessageArray()
         {
             JsonFormatWriter writer = JsonFormatWriter.CreateInstance().Formatted();
@@ -374,7 +374,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(3, ordinal);
             Assert.AreEqual(3, builder.TextlinesCount);
         }
-        [Test]
+        [TestMethod]
         public void TestNestedMessageArray()
         {
             JsonFormatWriter writer = JsonFormatWriter.CreateInstance();
@@ -403,7 +403,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(3, ordinal);
             Assert.AreEqual(3, builder.TextlinesCount);
         }
-        [Test]
+        [TestMethod]
         public void TestReadWriteJsonWithoutRoot()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
@@ -425,7 +425,7 @@ namespace Google.ProtocolBuffers
 
             Assert.AreEqual(message, copy);
         }
-        [Test,ExpectedException(typeof(RecursionLimitExceededException))]
+        [TestMethod,ExpectedException(typeof(RecursionLimitExceededException))]
         public void TestRecursiveLimit()
         {
             StringBuilder sb = new StringBuilder(8192);
@@ -433,25 +433,25 @@ namespace Google.ProtocolBuffers
                 sb.Append("{\"child\":");
             TestXmlRescursive msg = Extensions.MergeFromJson(new TestXmlRescursive.Builder(), sb.ToString()).Build();
         }
-        [Test, ExpectedException(typeof(FormatException))]
+        [TestMethod, ExpectedException(typeof(FormatException))]
         public void FailWithEmptyText()
         {
             JsonFormatReader.CreateInstance("")
                 .Merge(TestXmlMessage.CreateBuilder());
         }
-        [Test, ExpectedException(typeof(FormatException))]
+        [TestMethod, ExpectedException(typeof(FormatException))]
         public void FailWithUnexpectedValue()
         {
             JsonFormatReader.CreateInstance("{{}}")
                 .Merge(TestXmlMessage.CreateBuilder());
         }
-        [Test, ExpectedException(typeof(FormatException))]
+        [TestMethod, ExpectedException(typeof(FormatException))]
         public void FailWithUnQuotedName()
         {
             JsonFormatReader.CreateInstance("{name:{}}")
                 .Merge(TestXmlMessage.CreateBuilder());
         }
-        [Test, ExpectedException(typeof(FormatException))]
+        [TestMethod, ExpectedException(typeof(FormatException))]
         public void FailWithUnexpectedType()
         {
             JsonFormatReader.CreateInstance("{\"valid\":{}}")

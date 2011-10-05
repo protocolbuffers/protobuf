@@ -41,8 +41,9 @@
     <ProtocExePath>$(LibDirectory)\protoc.exe</ProtocExePath>
     <ProtogenExePath>$(BuildOutputDirectory)\ProtoGen\protogen.exe</ProtogenExePath>
     <ProtoBenchExePath>$(BuildTempDirectory)\ProtoBench.exe</ProtoBenchExePath>
-    <NUnitExePath>$(LibDirectory)\NUnit 2.2.8.0\nunit-console.exe</NUnitExePath>
-    <NUnitExeConfig>$(LibDirectory)\NUnit 2.2.8.0\nunit-console.$(ForcedFrameworkVersion).config</NUnitExeConfig>
+    <NUnitExePath>$(LibDirectory)\NUnit\tools\nunit-console.exe</NUnitExePath>
+    <NUnitExeConfig>$(LibDirectory)\NUnit-config\nunit-console.$(ForcedFrameworkVersion).config</NUnitExeConfig>
+    <StatLightExePath>$(LibDirectory)\StatLight\tools\StatLight.exe</StatLightExePath>
     <ZipExePath>$(LibDirectory)\7-Zip 9.20\7za.exe</ZipExePath>
   </PropertyGroup>
 
@@ -171,6 +172,10 @@
     <TestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffersMixedLite.Test.dll" />
     <TestContainer Include="$(SourceDirectory)\ProtoGen.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.ProtoGen.Test.dll" />
 
+    <StatLightTestContainer Include="$(SourceDirectory)\ProtocolBuffers.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffers.Test.xap" />
+    <StatLightTestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffersLite.Test.xap" />
+    <StatLightTestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(BuildConfiguration)\Google.ProtocolBuffersLiteMixed.Test.xap" />
+
     <DynamicPackageItem Include="$(SourceDirectory)\ProtocolBuffers\bin\$(BuildConfiguration)\Google.ProtocolBuffers.*" />
     <DynamicPackageItem Include="$(SourceDirectory)\ProtocolBuffers\bin\$(BuildConfiguration)\Google.ProtocolBuffersLite.*" />
     <DynamicPackageItem Include="$(SourceDirectory)\ProtocolBuffers.Serialization\bin\$(BuildConfiguration)\Google.ProtocolBuffers.Serialization.*" />
@@ -200,7 +205,7 @@
   <!-- targets -->
   <Target Name="Clean" DependsOnTargets="_Clean" />
   <Target Name="Build" DependsOnTargets="GenerateSource;_Compile;_Test" />
-  <Target Name="Test" DependsOnTargets="_RunTests" />
+  <Target Name="Test" DependsOnTargets="_Test" />
   <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
   <Target Name="GenerateSource" DependsOnTargets="_BuildProtoGen;_GenerateSource;_CopyGeneratedSource" />
   <Target Name="BuildPackage" DependsOnTargets="PrepareOutputDirectory;PreparePackageComponent;GeneratePackage" />

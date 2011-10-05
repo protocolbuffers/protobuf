@@ -37,18 +37,18 @@
 using System;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.TestProtos;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Google.ProtocolBuffers
 {
-    [TestFixture]
+    [TestClass]
     public class DynamicMessageTest
     {
         private ReflectionTester reflectionTester;
         private ReflectionTester extensionsReflectionTester;
         private ReflectionTester packedReflectionTester;
 
-        [SetUp]
+        [TestInitialize]
         public void SetUp()
         {
             reflectionTester = ReflectionTester.CreateTestAllTypesInstance();
@@ -56,7 +56,7 @@ namespace Google.ProtocolBuffers
             packedReflectionTester = ReflectionTester.CreateTestPackedTypesInstance();
         }
 
-        [Test]
+        [TestMethod]
         public void DynamicMessageAccessors()
         {
             IBuilder builder = DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
@@ -65,7 +65,7 @@ namespace Google.ProtocolBuffers
             reflectionTester.AssertAllFieldsSetViaReflection(message);
         }
 
-        [Test]
+        [TestMethod]
         public void DoubleBuildError()
         {
             DynamicMessage.Builder builder = DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
@@ -81,14 +81,14 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [Test]
+        [TestMethod]
         public void DynamicMessageSettersRejectNull()
         {
             IBuilder builder = DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
             reflectionTester.AssertReflectionSettersRejectNull(builder);
         }
 
-        [Test]
+        [TestMethod]
         public void DynamicMessageExtensionAccessors()
         {
             // We don't need to extensively test DynamicMessage's handling of
@@ -100,14 +100,14 @@ namespace Google.ProtocolBuffers
             extensionsReflectionTester.AssertAllFieldsSetViaReflection(message);
         }
 
-        [Test]
+        [TestMethod]
         public void DynamicMessageExtensionSettersRejectNull()
         {
             IBuilder builder = DynamicMessage.CreateBuilder(TestAllExtensions.Descriptor);
             extensionsReflectionTester.AssertReflectionSettersRejectNull(builder);
         }
 
-        [Test]
+        [TestMethod]
         public void DynamicMessageRepeatedSetters()
         {
             IBuilder builder = DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
@@ -117,21 +117,21 @@ namespace Google.ProtocolBuffers
             reflectionTester.AssertRepeatedFieldsModifiedViaReflection(message);
         }
 
-        [Test]
+        [TestMethod]
         public void DynamicMessageRepeatedSettersRejectNull()
         {
             IBuilder builder = DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
             reflectionTester.AssertReflectionRepeatedSettersRejectNull(builder);
         }
 
-        [Test]
+        [TestMethod]
         public void DynamicMessageDefaults()
         {
             reflectionTester.AssertClearViaReflection(DynamicMessage.GetDefaultInstance(TestAllTypes.Descriptor));
             reflectionTester.AssertClearViaReflection(DynamicMessage.CreateBuilder(TestAllTypes.Descriptor).Build());
         }
 
-        [Test]
+        [TestMethod]
         public void DynamicMessageSerializedSize()
         {
             TestAllTypes message = TestUtil.GetAllSet();
@@ -143,7 +143,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(message.SerializedSize, dynamicMessage.SerializedSize);
         }
 
-        [Test]
+        [TestMethod]
         public void DynamicMessageSerialization()
         {
             IBuilder builder = DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
@@ -159,7 +159,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(TestUtil.GetAllSet().ToByteString(), rawBytes);
         }
 
-        [Test]
+        [TestMethod]
         public void DynamicMessageParsing()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
@@ -172,7 +172,7 @@ namespace Google.ProtocolBuffers
             reflectionTester.AssertAllFieldsSetViaReflection(message2);
         }
 
-        [Test]
+        [TestMethod]
         public void DynamicMessagePackedSerialization()
         {
             IBuilder builder = DynamicMessage.CreateBuilder(TestPackedTypes.Descriptor);
@@ -188,7 +188,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(TestUtil.GetPackedSet().ToByteString(), rawBytes);
         }
 
-        [Test]
+        [TestMethod]
         public void testDynamicMessagePackedParsing()
         {
             TestPackedTypes.Builder builder = TestPackedTypes.CreateBuilder();
@@ -201,7 +201,7 @@ namespace Google.ProtocolBuffers
             packedReflectionTester.AssertPackedFieldsSetViaReflection(message2);
         }
 
-        [Test]
+        [TestMethod]
         public void DynamicMessageCopy()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
@@ -212,7 +212,7 @@ namespace Google.ProtocolBuffers
             reflectionTester.AssertAllFieldsSetViaReflection(copy);
         }
 
-        [Test]
+        [TestMethod]
         public void ToBuilder()
         {
             DynamicMessage.Builder builder =

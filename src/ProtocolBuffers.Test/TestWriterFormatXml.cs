@@ -4,15 +4,15 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using Google.ProtocolBuffers.Serialization;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Google.ProtocolBuffers.TestProtos;
 
 namespace Google.ProtocolBuffers
 {
-    [TestFixture]
+    [TestClass]
     public class TestWriterFormatXml
     {
-        [Test]
+        [TestMethod]
         public void Example_FromXml()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
@@ -25,7 +25,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(true, message.Valid);
         }
 
-        [Test]
+        [TestMethod]
         public void Example_ToXml()
         {
             TestXmlMessage message =
@@ -39,7 +39,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(@"<root><valid>true</valid></root>", Xml);
         }
 
-        [Test]
+        [TestMethod]
         public void Example_WriteXmlUsingICodedOutputStream()
         {
             TestXmlMessage message =
@@ -60,7 +60,7 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [Test]
+        [TestMethod]
         public void Example_ReadXmlUsingICodedInputStream()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
@@ -73,7 +73,7 @@ namespace Google.ProtocolBuffers
             reader.ReadMessageEnd();    //manually read the end message '}'
         }
 
-        [Test]
+        [TestMethod]
         public void TestToXmlParseFromXml()
         {
             TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
@@ -84,7 +84,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(msg, copy);
         }
 
-        [Test]
+        [TestMethod]
         public void TestToXmlParseFromXmlWithRootName()
         {
             TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
@@ -95,14 +95,14 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(msg, copy);
         }
 
-        [Test]
+        [TestMethod]
         public void TestEmptyMessage()
         {
             TestXmlChild message = TestXmlChild.CreateBuilder()
                 .Build();
 
             StringWriter sw = new StringWriter();
-            XmlTextWriter xw = new XmlTextWriter(sw);
+            XmlWriter xw = XmlWriter.Create(sw);
 
             //When we call message.WriteTo, we are responsible for the root element
             xw.WriteStartElement("root");
@@ -115,7 +115,7 @@ namespace Google.ProtocolBuffers
             TestXmlChild copy = rdr.Merge(TestXmlChild.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
-        [Test]
+        [TestMethod]
         public void TestRepeatedField()
         {
             TestXmlChild message = TestXmlChild.CreateBuilder()
@@ -132,7 +132,7 @@ namespace Google.ProtocolBuffers
             TestXmlChild copy = rdr.Merge(TestXmlChild.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
-        [Test]
+        [TestMethod]
         public void TestNestedEmptyMessage()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -147,7 +147,7 @@ namespace Google.ProtocolBuffers
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
-        [Test]
+        [TestMethod]
         public void TestNestedMessage()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -162,7 +162,7 @@ namespace Google.ProtocolBuffers
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
-        [Test]
+        [TestMethod]
         public void TestBooleanTypes()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -177,7 +177,7 @@ namespace Google.ProtocolBuffers
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
-        [Test]
+        [TestMethod]
         public void TestFullMessage()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -206,7 +206,7 @@ namespace Google.ProtocolBuffers
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
-        [Test]
+        [TestMethod]
         public void TestFullMessageWithRichTypes()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -238,7 +238,7 @@ namespace Google.ProtocolBuffers
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
-        [Test]
+        [TestMethod]
         public void TestFullMessageWithUnknownFields()
         {
             TestXmlMessage origial = TestXmlMessage.CreateBuilder()
@@ -281,7 +281,7 @@ namespace Google.ProtocolBuffers
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
             Assert.AreEqual(TestXmlMessage.DefaultInstance, copy);
         }
-        [Test]
+        [TestMethod]
         public void TestMessageWithXmlText()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -296,7 +296,7 @@ namespace Google.ProtocolBuffers
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
-        [Test]
+        [TestMethod]
         public void TestXmlWithWhitespace()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -311,7 +311,7 @@ namespace Google.ProtocolBuffers
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
             Assert.AreEqual(message, copy);
         }
-        [Test]
+        [TestMethod]
         public void TestXmlWithExtensionText()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -330,7 +330,7 @@ namespace Google.ProtocolBuffers
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
             Assert.AreEqual(message, copy);
         }
-        [Test]
+        [TestMethod]
         public void TestXmlWithExtensionMessage()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -349,7 +349,7 @@ namespace Google.ProtocolBuffers
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
             Assert.AreEqual(message, copy);
         }
-        [Test]
+        [TestMethod]
         public void TestXmlWithExtensionArray()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -370,7 +370,7 @@ namespace Google.ProtocolBuffers
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
             Assert.AreEqual(message, copy);
         }
-        [Test]
+        [TestMethod]
         public void TestXmlWithExtensionEnum()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -389,7 +389,7 @@ namespace Google.ProtocolBuffers
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
             Assert.AreEqual(message, copy);
         }
-        [Test]
+        [TestMethod]
         public void TestXmlReadEmptyRoot()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
@@ -402,7 +402,7 @@ namespace Google.ProtocolBuffers
             reader.ReadMessageEnd();    //manually read the end message '}'
         }
 
-        [Test]
+        [TestMethod]
         public void TestXmlReadEmptyChild()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
@@ -415,7 +415,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(String.Empty, builder.Text);
         }
 
-        [Test]
+        [TestMethod]
         public void TestXmlReadWriteWithoutRoot()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
@@ -443,7 +443,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(message, copy);
         }
 
-        [Test, ExpectedException(typeof(RecursionLimitExceededException))]
+        [TestMethod, ExpectedException(typeof(RecursionLimitExceededException))]
         public void TestRecursiveLimit()
         {
             StringBuilder sb = new StringBuilder(8192);

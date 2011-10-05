@@ -58,13 +58,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.framework, Version=2.2.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77">
+    <Reference Include="nunit.framework">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\NUnit 2.2.8.0\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="Rhino.Mocks, Version=3.5.0.2, Culture=neutral, PublicKeyToken=0b3305902db7183f, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\Rhino.Mocks.dll</HintPath>
+      <HintPath>..\..\lib\NUnit\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
@@ -72,6 +68,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\lib\NUnit-config\Microsoft.VisualStudio.TestTools.cs">
+      <Link>Microsoft.VisualStudio.TestTools.cs</Link>
+    </Compile>
     <Compile Include="AbstractMessageTest.cs" />
     <Compile Include="ByteStringTest.cs" />
     <Compile Include="CodedInputStreamTest.cs" />
@@ -162,8 +161,7 @@
     <EmbeddedResource Include="Compatibility\google_message1.dat" />
     <EmbeddedResource Include="Compatibility\google_message2.dat" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Debug' " />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition=" '$(Configuration)' == 'Release' " />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -171,4 +169,10 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <StartAction>Program</StartAction>
+    <StartProgram>$(ProjectDir)..\..\lib\NUnit\tools\nunit-console.exe</StartProgram>
+    <StartArguments>/nologo /noshadow /labels /wait $(AssemblyName).dll</StartArguments>
+    <StartWorkingDirectory>$(ProjectDir)$(OutputPath)</StartWorkingDirectory>
+  </PropertyGroup>
 </Project>
