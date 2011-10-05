@@ -41,6 +41,9 @@ message CSharpFileOptions {
   
   // Generate messages/builders with the [Serializable] attribute
   optional bool add_serializable = 9 [default = false];
+  
+  // Generates a private ctor for Message types
+  optional bool generate_private_ctor = 10 [default = true];
 
   // The extension that should be appended to the umbrella_classname when creating files.
   optional string file_extension = 221 [default = ".cs"];

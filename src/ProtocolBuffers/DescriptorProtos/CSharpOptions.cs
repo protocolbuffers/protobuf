@@ -52,37 +52,37 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           "CiRnb29nbGUvcHJvdG9idWYvY3NoYXJwX29wdGlvbnMucHJvdG8SD2dvb2ds" + 
           "ZS5wcm90b2J1ZhogZ29vZ2xlL3Byb3RvYnVmL2Rlc2NyaXB0b3IucHJvdG8i" + 
-          "1wMKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
+          "/AMKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
           "bWJyZWxsYV9jbGFzc25hbWUYAiABKAkSHAoOcHVibGljX2NsYXNzZXMYAyAB" + 
           "KAg6BHRydWUSFgoObXVsdGlwbGVfZmlsZXMYBCABKAgSFAoMbmVzdF9jbGFz" + 
           "c2VzGAUgASgIEhYKDmNvZGVfY29udHJhY3RzGAYgASgIEiQKHGV4cGFuZF9u" + 
           "YW1lc3BhY2VfZGlyZWN0b3JpZXMYByABKAgSHAoOY2xzX2NvbXBsaWFuY2UY" + 
           "CCABKAg6BHRydWUSHwoQYWRkX3NlcmlhbGl6YWJsZRgJIAEoCDoFZmFsc2US" + 
-          "HAoOZmlsZV9leHRlbnNpb24Y3QEgASgJOgMuY3MSGwoSdW1icmVsbGFfbmFt" + 
-          "ZXNwYWNlGN4BIAEoCRIcChBvdXRwdXRfZGlyZWN0b3J5GN8BIAEoCToBLhIm" + 
-          "ChZpZ25vcmVfZ29vZ2xlX3Byb3RvYnVmGOABIAEoCDoFZmFsc2USSQoWc2Vy" + 
-          "dmljZV9nZW5lcmF0b3JfdHlwZRjhASABKA4yIi5nb29nbGUucHJvdG9idWYu" + 
-          "Q1NoYXJwU2VydmljZVR5cGU6BE5PTkUiKwoSQ1NoYXJwRmllbGRPcHRpb25z" + 
-          "EhUKDXByb3BlcnR5X25hbWUYASABKAkiLAoUQ1NoYXJwU2VydmljZU9wdGlv" + 
-          "bnMSFAoMaW50ZXJmYWNlX2lkGAEgASgJIioKE0NTaGFycE1ldGhvZE9wdGlv" + 
-          "bnMSEwoLZGlzcGF0Y2hfaWQYASABKAUqSwoRQ1NoYXJwU2VydmljZVR5cGUS" + 
-          "CAoETk9ORRAAEgsKB0dFTkVSSUMQARINCglJTlRFUkZBQ0UQAhIQCgxJUlBD" + 
-          "RElTUEFUQ0gQAzpeChNjc2hhcnBfZmlsZV9vcHRpb25zEhwuZ29vZ2xlLnBy" + 
-          "b3RvYnVmLkZpbGVPcHRpb25zGOgHIAEoCzIiLmdvb2dsZS5wcm90b2J1Zi5D" + 
-          "U2hhcnBGaWxlT3B0aW9uczphChRjc2hhcnBfZmllbGRfb3B0aW9ucxIdLmdv" + 
-          "b2dsZS5wcm90b2J1Zi5GaWVsZE9wdGlvbnMY6AcgASgLMiMuZ29vZ2xlLnBy" + 
-          "b3RvYnVmLkNTaGFycEZpZWxkT3B0aW9uczpnChZjc2hhcnBfc2VydmljZV9v" + 
-          "cHRpb25zEh8uZ29vZ2xlLnByb3RvYnVmLlNlcnZpY2VPcHRpb25zGOgHIAEo" + 
-          "CzIlLmdvb2dsZS5wcm90b2J1Zi5DU2hhcnBTZXJ2aWNlT3B0aW9uczpkChVj" + 
-          "c2hhcnBfbWV0aG9kX29wdGlvbnMSHi5nb29nbGUucHJvdG9idWYuTWV0aG9k" + 
-          "T3B0aW9ucxjoByABKAsyJC5nb29nbGUucHJvdG9idWYuQ1NoYXJwTWV0aG9k" + 
-          "T3B0aW9ucw==");
+          "IwoVZ2VuZXJhdGVfcHJpdmF0ZV9jdG9yGAogASgIOgR0cnVlEhwKDmZpbGVf" + 
+          "ZXh0ZW5zaW9uGN0BIAEoCToDLmNzEhsKEnVtYnJlbGxhX25hbWVzcGFjZRje" + 
+          "ASABKAkSHAoQb3V0cHV0X2RpcmVjdG9yeRjfASABKAk6AS4SJgoWaWdub3Jl" + 
+          "X2dvb2dsZV9wcm90b2J1ZhjgASABKAg6BWZhbHNlEkkKFnNlcnZpY2VfZ2Vu" + 
+          "ZXJhdG9yX3R5cGUY4QEgASgOMiIuZ29vZ2xlLnByb3RvYnVmLkNTaGFycFNl" + 
+          "cnZpY2VUeXBlOgROT05FIisKEkNTaGFycEZpZWxkT3B0aW9ucxIVCg1wcm9w" + 
+          "ZXJ0eV9uYW1lGAEgASgJIiwKFENTaGFycFNlcnZpY2VPcHRpb25zEhQKDGlu" + 
+          "dGVyZmFjZV9pZBgBIAEoCSIqChNDU2hhcnBNZXRob2RPcHRpb25zEhMKC2Rp" + 
+          "c3BhdGNoX2lkGAEgASgFKksKEUNTaGFycFNlcnZpY2VUeXBlEggKBE5PTkUQ" + 
+          "ABILCgdHRU5FUklDEAESDQoJSU5URVJGQUNFEAISEAoMSVJQQ0RJU1BBVENI" + 
+          "EAM6XgoTY3NoYXJwX2ZpbGVfb3B0aW9ucxIcLmdvb2dsZS5wcm90b2J1Zi5G" + 
+          "aWxlT3B0aW9ucxjoByABKAsyIi5nb29nbGUucHJvdG9idWYuQ1NoYXJwRmls" + 
+          "ZU9wdGlvbnM6YQoUY3NoYXJwX2ZpZWxkX29wdGlvbnMSHS5nb29nbGUucHJv" + 
+          "dG9idWYuRmllbGRPcHRpb25zGOgHIAEoCzIjLmdvb2dsZS5wcm90b2J1Zi5D" + 
+          "U2hhcnBGaWVsZE9wdGlvbnM6ZwoWY3NoYXJwX3NlcnZpY2Vfb3B0aW9ucxIf" + 
+          "Lmdvb2dsZS5wcm90b2J1Zi5TZXJ2aWNlT3B0aW9ucxjoByABKAsyJS5nb29n" + 
+          "bGUucHJvdG9idWYuQ1NoYXJwU2VydmljZU9wdGlvbnM6ZAoVY3NoYXJwX21l" + 
+          "dGhvZF9vcHRpb25zEh4uZ29vZ2xlLnByb3RvYnVmLk1ldGhvZE9wdGlvbnMY" + 
+          "6AcgASgLMiQuZ29vZ2xlLnByb3RvYnVmLkNTaGFycE1ldGhvZE9wdGlvbnM=");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_google_protobuf_CSharpFileOptions__Descriptor = Descriptor.MessageTypes[0];
         internal__static_google_protobuf_CSharpFileOptions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions.Builder>(internal__static_google_protobuf_CSharpFileOptions__Descriptor,
-                new string[] { "Namespace", "UmbrellaClassname", "PublicClasses", "MultipleFiles", "NestClasses", "CodeContracts", "ExpandNamespaceDirectories", "ClsCompliance", "AddSerializable", "FileExtension", "UmbrellaNamespace", "OutputDirectory", "IgnoreGoogleProtobuf", "ServiceGeneratorType", });
+                new string[] { "Namespace", "UmbrellaClassname", "PublicClasses", "MultipleFiles", "NestClasses", "CodeContracts", "ExpandNamespaceDirectories", "ClsCompliance", "AddSerializable", "GeneratePrivateCtor", "FileExtension", "UmbrellaNamespace", "OutputDirectory", "IgnoreGoogleProtobuf", "ServiceGeneratorType", });
         internal__static_google_protobuf_CSharpFieldOptions__Descriptor = Descriptor.MessageTypes[1];
         internal__static_google_protobuf_CSharpFieldOptions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions.Builder>(internal__static_google_protobuf_CSharpFieldOptions__Descriptor,
@@ -128,8 +128,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   public sealed partial class CSharpFileOptions : pb::GeneratedMessage<CSharpFileOptions, CSharpFileOptions.Builder> {
     private CSharpFileOptions() { }
     private static readonly CSharpFileOptions defaultInstance = new CSharpFileOptions().MakeReadOnly();
-    private static readonly string[] _cSharpFileOptionsFieldNames = new string[] { "add_serializable", "cls_compliance", "code_contracts", "expand_namespace_directories", "file_extension", "ignore_google_protobuf", "multiple_files", "namespace", "nest_classes", "output_directory", "public_classes", "service_generator_type", "umbrella_classname", "umbrella_namespace" };
-    private static readonly uint[] _cSharpFileOptionsFieldTags = new uint[] { 72, 64, 48, 56, 1770, 1792, 32, 10, 40, 1786, 24, 1800, 18, 1778 };
+    private static readonly string[] _cSharpFileOptionsFieldNames = new string[] { "add_serializable", "cls_compliance", "code_contracts", "expand_namespace_directories", "file_extension", "generate_private_ctor", "ignore_google_protobuf", "multiple_files", "namespace", "nest_classes", "output_directory", "public_classes", "service_generator_type", "umbrella_classname", "umbrella_namespace" };
+    private static readonly uint[] _cSharpFileOptionsFieldTags = new uint[] { 72, 64, 48, 56, 1770, 80, 1792, 32, 10, 40, 1786, 24, 1800, 18, 1778 };
     public static CSharpFileOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -240,6 +240,16 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return addSerializable_; }
     }
     
+    public const int GeneratePrivateCtorFieldNumber = 10;
+    private bool hasGeneratePrivateCtor;
+    private bool generatePrivateCtor_ = true;
+    public bool HasGeneratePrivateCtor {
+      get { return hasGeneratePrivateCtor; }
+    }
+    public bool GeneratePrivateCtor {
+      get { return generatePrivateCtor_; }
+    }
+    
     public const int FileExtensionFieldNumber = 221;
     private bool hasFileExtension;
     private string fileExtension_ = ".cs";
@@ -300,19 +310,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       int size = SerializedSize;
       string[] field_names = _cSharpFileOptionsFieldNames;
       if (hasNamespace) {
-        output.WriteString(1, field_names[7], Namespace);
+        output.WriteString(1, field_names[8], Namespace);
       }
       if (hasUmbrellaClassname) {
-        output.WriteString(2, field_names[12], UmbrellaClassname);
+        output.WriteString(2, field_names[13], UmbrellaClassname);
       }
       if (hasPublicClasses) {
-        output.WriteBool(3, field_names[10], PublicClasses);
+        output.WriteBool(3, field_names[11], PublicClasses);
       }
       if (hasMultipleFiles) {
-        output.WriteBool(4, field_names[6], MultipleFiles);
+        output.WriteBool(4, field_names[7], MultipleFiles);
       }
       if (hasNestClasses) {
-        output.WriteBool(5, field_names[8], NestClasses);
+        output.WriteBool(5, field_names[9], NestClasses);
       }
       if (hasCodeContracts) {
         output.WriteBool(6, field_names[2], CodeContracts);
@@ -326,20 +336,23 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       if (hasAddSerializable) {
         output.WriteBool(9, field_names[0], AddSerializable);
       }
+      if (hasGeneratePrivateCtor) {
+        output.WriteBool(10, field_names[5], GeneratePrivateCtor);
+      }
       if (hasFileExtension) {
         output.WriteString(221, field_names[4], FileExtension);
       }
       if (hasUmbrellaNamespace) {
-        output.WriteString(222, field_names[13], UmbrellaNamespace);
+        output.WriteString(222, field_names[14], UmbrellaNamespace);
       }
       if (hasOutputDirectory) {
-        output.WriteString(223, field_names[9], OutputDirectory);
+        output.WriteString(223, field_names[10], OutputDirectory);
       }
       if (hasIgnoreGoogleProtobuf) {
-        output.WriteBool(224, field_names[5], IgnoreGoogleProtobuf);
+        output.WriteBool(224, field_names[6], IgnoreGoogleProtobuf);
       }
       if (hasServiceGeneratorType) {
-        output.WriteEnum(225, field_names[11], (int) ServiceGeneratorType, ServiceGeneratorType);
+        output.WriteEnum(225, field_names[12], (int) ServiceGeneratorType, ServiceGeneratorType);
       }
       UnknownFields.WriteTo(output);
     }
@@ -377,6 +390,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         if (hasAddSerializable) {
           size += pb::CodedOutputStream.ComputeBoolSize(9, AddSerializable);
+        }
+        if (hasGeneratePrivateCtor) {
+          size += pb::CodedOutputStream.ComputeBoolSize(10, GeneratePrivateCtor);
         }
         if (hasFileExtension) {
           size += pb::CodedOutputStream.ComputeStringSize(221, FileExtension);
@@ -546,6 +562,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.HasAddSerializable) {
           AddSerializable = other.AddSerializable;
         }
+        if (other.HasGeneratePrivateCtor) {
+          GeneratePrivateCtor = other.GeneratePrivateCtor;
+        }
         if (other.HasFileExtension) {
           FileExtension = other.FileExtension;
         }
@@ -638,6 +657,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
             }
             case 72: {
               result.hasAddSerializable = input.ReadBool(ref result.addSerializable_);
+              break;
+            }
+            case 80: {
+              result.hasGeneratePrivateCtor = input.ReadBool(ref result.generatePrivateCtor_);
               break;
             }
             case 1770: {
@@ -857,6 +880,26 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         PrepareBuilder();
         result.hasAddSerializable = false;
         result.addSerializable_ = false;
+        return this;
+      }
+      
+      public bool HasGeneratePrivateCtor {
+        get { return result.hasGeneratePrivateCtor; }
+      }
+      public bool GeneratePrivateCtor {
+        get { return result.GeneratePrivateCtor; }
+        set { SetGeneratePrivateCtor(value); }
+      }
+      public Builder SetGeneratePrivateCtor(bool value) {
+        PrepareBuilder();
+        result.hasGeneratePrivateCtor = true;
+        result.generatePrivateCtor_ = value;
+        return this;
+      }
+      public Builder ClearGeneratePrivateCtor() {
+        PrepareBuilder();
+        result.hasGeneratePrivateCtor = false;
+        result.generatePrivateCtor_ = true;
         return this;
       }
       
