@@ -10,6 +10,7 @@ Targets For FullBuild
     <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;TargetVersion=2" Targets="_BuildAllConfigurations" />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;TargetVersion=3" Targets="_BuildAllConfigurations" />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;TargetVersion=4" Targets="_BuildAllConfigurations" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="" Targets="_CompletePackages" />
   </Target>
 
   <Target Name="_BuildAllConfigurations">
@@ -126,6 +127,67 @@ Targets For Package
     <Exec Command="&quot;$(ZipExePath)&quot; a -tzip ..\$(PackageName).zip * -r" WorkingDirectory="$(BuildOutputPackage)" />
   </Target>
 
+  <Target Name="_CompletePackages">
+    <ItemGroup>
+      <ReleasePackageItem Include="$(BuildOutputDirectory)\ProtoGen\*">
+        <TargetDirectory>\Protoc</TargetDirectory>
+      </ReleasePackageItem>
+      <!-- RELEASE -->
+      <ReleasePackageItem Include="$(BuildOutputDirectory)\v2.0\Release\*">
+        <TargetDirectory>\Release\v2.0</TargetDirectory>
+      </ReleasePackageItem>
+      <ReleasePackageItem Include="$(BuildOutputDirectory)\v2.0\Release_Silverlight\*">
+        <TargetDirectory>\Release_Silverlight\v2.0</TargetDirectory>
+      </ReleasePackageItem>
+      <ReleasePackageItem Include="$(BuildOutputDirectory)\v3.5\Release\*">
+        <TargetDirectory>\Release\v3.5</TargetDirectory>
+      </ReleasePackageItem>
+      <ReleasePackageItem Include="$(BuildOutputDirectory)\v3.5\Release_Silverlight\*">
+        <TargetDirectory>\Release_Silverlight\v3.0</TargetDirectory>
+      </ReleasePackageItem>
+      <ReleasePackageItem Include="$(BuildOutputDirectory)\v4.0\Release\*">
+        <TargetDirectory>\Release\v4.0</TargetDirectory>
+      </ReleasePackageItem>
+      <ReleasePackageItem Include="$(BuildOutputDirectory)\v4.0\Release_Silverlight\*">
+        <TargetDirectory>\Release_Silverlight\v4.0</TargetDirectory>
+      </ReleasePackageItem>
+      <!-- DEBUG -->
+      <DebugPackageItem Include="$(BuildOutputDirectory)\v2.0\Debug\*">
+        <TargetDirectory>\Debug\v2.0</TargetDirectory>
+      </DebugPackageItem>
+      <DebugPackageItem Include="$(BuildOutputDirectory)\v2.0\Debug_Silverlight\*">
+        <TargetDirectory>\Debug_Silverlight\v2.0</TargetDirectory>
+      </DebugPackageItem>
+      <DebugPackageItem Include="$(BuildOutputDirectory)\v3.5\Debug\*">
+        <TargetDirectory>\Debug\v3.5</TargetDirectory>
+      </DebugPackageItem>
+      <DebugPackageItem Include="$(BuildOutputDirectory)\v3.5\Debug_Silverlight\*">
+        <TargetDirectory>\Debug_Silverlight\v3.0</TargetDirectory>
+      </DebugPackageItem>
+      <DebugPackageItem Include="$(BuildOutputDirectory)\v4.0\Debug\*">
+        <TargetDirectory>\Debug\v4.0</TargetDirectory>
+      </DebugPackageItem>
+      <DebugPackageItem Include="$(BuildOutputDirectory)\v4.0\Debug_Silverlight\*">
+        <TargetDirectory>\Debug_Silverlight\v4.0</TargetDirectory>
+      </DebugPackageItem>
+    </ItemGroup>
+    
+    <RemoveDir Directories="$(BuildOutputDirectory)\Release;$(BuildOutputDirectory)\Full" ContinueOnError="true" />
+    <MakeDir Directories="$(BuildOutputDirectory)\Release;$(BuildOutputDirectory)\Full" ContinueOnError="true" />
+
+    <!-- Copy files for Release -->
+    <Copy SourceFiles="@(StaticPackageItem)" DestinationFolder="$(BuildOutputDirectory)\Release\%(StaticPackageItem.TargetDirectory)\%(StaticPackageItem.RecursiveDir)" />
+    <Copy SourceFiles="@(ReleasePackageItem)" DestinationFolder="$(BuildOutputDirectory)\Release\%(ReleasePackageItem.TargetDirectory)\%(ReleasePackageItem.RecursiveDir)" />
+    <Exec Command="&quot;$(ZipExePath)&quot; a -tzip $(BuildOutputDirectory)\release-binaries.zip * -r" WorkingDirectory="$(BuildOutputDirectory)\Release" />
+
+    <!-- Copy files for Debug -->
+    <Copy SourceFiles="@(StaticPackageItem)" DestinationFolder="$(BuildOutputDirectory)\Full\%(StaticPackageItem.TargetDirectory)\%(StaticPackageItem.RecursiveDir)" />
+    <Copy SourceFiles="@(ReleasePackageItem)" DestinationFolder="$(BuildOutputDirectory)\Full\%(ReleasePackageItem.TargetDirectory)\%(ReleasePackageItem.RecursiveDir)" />
+    <Copy SourceFiles="@(DebugPackageItem)" DestinationFolder="$(BuildOutputDirectory)\Full\%(DebugPackageItem.TargetDirectory)\%(DebugPackageItem.RecursiveDir)" />
+    <Exec Command="&quot;$(ZipExePath)&quot; a -tzip $(BuildOutputDirectory)\full-binaries.zip * -r" WorkingDirectory="$(BuildOutputDirectory)\Full" />
+
+  </Target>
+  
 <!-- **********************************************************************************************
 Targets For Benchmark
 *********************************************************************************************** -->
