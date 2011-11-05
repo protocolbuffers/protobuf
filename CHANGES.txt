@@ -9,7 +9,7 @@ For more information about Protocol Buffers in general, visit the project page
 for the C++, Java and Python project:
 http://protobuf.googlecode.com
 ===============================================================================
-RELEASE NOTES - Version 2.4.1.TBD
+RELEASE NOTES - Version 2.4.1.473
 ===============================================================================
 
 Features:
