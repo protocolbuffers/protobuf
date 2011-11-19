@@ -495,7 +495,7 @@ bool upb_msgdef_setextrange(upb_msgdef *m, uint32_t start, uint32_t end) {
   return true;
 }
 
-bool upb_msgdef_addfields(upb_msgdef *m, upb_fielddef **fields, int n) {
+bool upb_msgdef_addfields(upb_msgdef *m, upb_fielddef *const *fields, int n) {
   // Check constraints for all fields before performing any action.
   for (int i = 0; i < n; i++) {
     upb_fielddef *f = fields[i];
@@ -729,7 +729,6 @@ bool upb_symtab_dfs(upb_def *def, upb_def **open_defs, int n,
   bool replacing = (upb_strtable_lookup(addtab, m->base.fqname) != NULL);
   if (needcopy && !replacing) {
     upb_symtab_ent e = {upb_def_dup(def)};
-    //fprintf(stderr, "Replacing def: %p\n", e.def);
     upb_strtable_insert(addtab, def->fqname, &e);
     replacing = true;
   }
@@ -798,9 +797,6 @@ bool upb_symtab_add(upb_symtab *s, upb_def **defs, int n, upb_status *status) {
 
       // Check the type of the found def.
       upb_fieldtype_t expected = upb_issubmsg(f) ? UPB_DEF_MSG : UPB_DEF_ENUM;
-      //fprintf(stderr, "found: %p\n", found);
-      //fprintf(stderr, "found->def: %p\n", found->def);
-      //fprintf(stderr, "found->def->type: %d\n", found->def->type);
       if(found->def->type != expected) {
         upb_status_seterrliteral(status, "Unexpected type");
         return false;
@@ -821,7 +817,6 @@ bool upb_symtab_add(upb_symtab *s, upb_def **defs, int n, upb_status *status) {
       upb_deflist_push(&s->olddefs, symtab_e->def);
       symtab_e->def = tmptab_e->def;
     } else {
-      //fprintf(stderr, "Inserting def: %p\n", tmptab_e->def);
       upb_strtable_insert(&s->symtab, tmptab_e->def->fqname, tmptab_e);
     }
   }

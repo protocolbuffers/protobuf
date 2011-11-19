@@ -15,7 +15,6 @@
 bool benchmark = false;
 #define CPU_TIME_PER_TEST 0.5
 
-using std::string;
 using std::vector;
 
 typedef struct {
@@ -34,15 +33,15 @@ double get_usertime()
 }
 
 /* num_entries must be a power of 2. */
-void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
+void test_strtable(const vector<std::string>& keys, uint32_t num_to_insert)
 {
   /* Initialize structures. */
   upb_strtable table;
-  std::map<string, int32_t> m;
+  std::map<std::string, int32_t> m;
   upb_strtable_init(&table, 0, sizeof(strtable_entry));
-  std::set<string> all;
+  std::set<std::string> all;
   for(size_t i = 0; i < num_to_insert; i++) {
-    const string& key = keys[i];
+    const std::string& key = keys[i];
     all.insert(key);
     strtable_entry e;
     e.value = key[0];
@@ -52,8 +51,9 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
 
   /* Test correctness. */
   for(uint32_t i = 0; i < keys.size(); i++) {
-    const string& key = keys[i];
-    strtable_entry *e = (strtable_entry*)upb_strtable_lookup(&table, key.c_str());
+    const std::string& key = keys[i];
+    strtable_entry *e =
+        (strtable_entry*)upb_strtable_lookup(&table, key.c_str());
     if(m.find(key) != m.end()) { /* Assume map implementation is correct. */
       assert(e);
       assert(e->value == key[0]);
@@ -67,8 +67,8 @@ void test_strtable(const vector<string>& keys, uint32_t num_to_insert)
   for(upb_strtable_begin(&iter, &table); !upb_strtable_done(&iter);
       upb_strtable_next(&iter)) {
     const char *key = upb_strtable_iter_key(&iter);
-    string tmp(key, strlen(key));
-    std::set<string>::iterator i = all.find(tmp);
+    std::string tmp(key, strlen(key));
+    std::set<std::string>::iterator i = all.find(tmp);
     assert(i != all.end());
     all.erase(i);
   }
@@ -135,7 +135,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc)
   printf("%s\n", desc);
 
   /* Test performance. We only test lookups for keys that are known to exist. */
-  uint16_t rand_order[num_entries];
+  uint16_t *rand_order = new uint16_t[num_entries];
   for(uint16_t i = 0; i < num_entries; i++) {
     rand_order[i] = i;
   }
@@ -155,8 +155,12 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc)
   fflush(stdout);
   double before = get_usertime();
   unsigned int i;
+
+#define MAYBE_BREAK \
+    if ((i & time_mask) == 0 && (get_usertime() - before) > CPU_TIME_PER_TEST) \
+      break;
   for(i = 0; true; i++) {
-    if ((i & time_mask) == 0 && (get_usertime() - before) > CPU_TIME_PER_TEST) break;
+    MAYBE_BREAK;
     int32_t key = keys[i & mask];
     inttable_entry *e = (inttable_entry*)upb_inttable_lookup(&table, key);
     x += (uintptr_t)e;
@@ -168,7 +172,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc)
   fflush(stdout);
   before = get_usertime();
   for(i = 0; true; i++) {
-    if ((i & time_mask) == 0 && (get_usertime() - before) > CPU_TIME_PER_TEST) break;
+    MAYBE_BREAK;
     int32_t key = keys[rand_order[i & mask]];
     inttable_entry *e = (inttable_entry*)upb_inttable_lookup(&table, key);
     x += (uintptr_t)e;
@@ -180,7 +184,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc)
   fflush(stdout);
   before = get_usertime();
   for(i = 0; true; i++) {
-    if ((i & time_mask) == 0 && (get_usertime() - before) > CPU_TIME_PER_TEST) break;
+    MAYBE_BREAK;
     int32_t key = keys[i & mask];
     x += m[key];
   }
@@ -191,7 +195,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc)
   fflush(stdout);
   before = get_usertime();
   for(i = 0; true; i++) {
-    if ((i & time_mask) == 0 && (get_usertime() - before) > CPU_TIME_PER_TEST) break;
+    MAYBE_BREAK;
     int32_t key = keys[rand_order[i & mask]];
     x += m[key];
   }
@@ -202,7 +206,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc)
   fflush(stdout);
   before = get_usertime();
   for(i = 0; true; i++) {
-    if ((i & time_mask) == 0 && (get_usertime() - before) > CPU_TIME_PER_TEST) break;
+    MAYBE_BREAK;
     int32_t key = keys[rand_order[i & mask]];
     x += hm[key];
   }
@@ -213,13 +217,14 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc)
   fflush(stdout);
   before = get_usertime();
   for(i = 0; true; i++) {
-    if ((i & time_mask) == 0 && (get_usertime() - before) > CPU_TIME_PER_TEST) break;
+    MAYBE_BREAK;
     int32_t key = keys[rand_order[i & mask]];
     x += hm[key];
   }
   total = get_usertime() - before;
   printf("%s/s\n\n", eng(i/total, 3, false));
   upb_inttable_free(&table);
+  delete rand_order;
 }
 
 int32_t *get_contiguous_keys(int32_t num)
@@ -236,7 +241,7 @@ int main(int argc, char *argv[])
     if (strcmp(argv[i], "--benchmark") == 0) benchmark = true;
   }
 
-  vector<string> keys;
+  vector<std::string> keys;
   keys.push_back("google.protobuf.FileDescriptorSet");
   keys.push_back("google.protobuf.FileDescriptorProto");
   keys.push_back("google.protobuf.DescriptorProto");

@@ -277,7 +277,7 @@ bool upb_msgdef_setextrange(upb_msgdef *m, uint32_t start, uint32_t end);
 // number must be set, and the message may not already contain any field with
 // this name or number, and this fielddef may not be part of another message,
 // otherwise false is returned and no action is performed.
-bool upb_msgdef_addfields(upb_msgdef *m, upb_fielddef **f, int n);
+bool upb_msgdef_addfields(upb_msgdef *m, upb_fielddef *const *f, int n);
 INLINE bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f) {
   return upb_msgdef_addfields(m, &f, 1);
 }

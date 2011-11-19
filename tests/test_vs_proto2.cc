@@ -8,15 +8,15 @@
  */
 
 #include <assert.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <google/protobuf/descriptor.h>
+#include "benchmarks/google_messages.pb.h"
 #include "upb/def.h"
 #include "upb/msg.h"
 #include "upb/pb/glue.h"
 #include "upb_test.h"
-
-#include MESSAGE_HFILE
 
 size_t string_size;
 
@@ -87,7 +87,6 @@ void compare_arrays(const google::protobuf::Reflection *r,
   ASSERT(upb_seq_done(iter));
 }
 
-#include <inttypes.h>
 void compare_values(const google::protobuf::Reflection *r,
                     const google::protobuf::Message& proto2_msg,
                     const google::protobuf::FieldDescriptor *proto2_f,
@@ -200,32 +199,25 @@ void parse_and_compare(MESSAGE_CIDENT *proto2_msg,
 
 int main(int argc, char *argv[])
 {
-  // Change cwd to where the binary is.
-  (void)argc;
-  char *lastslash = strrchr(argv[0], '/');
-  char *progname = argv[0];
-  if(lastslash) {
-    *lastslash = '\0';
-    if(chdir(argv[0]) < 0) {
-      fprintf(stderr, "Error changing directory to %s.\n", argv[0]);
-      return 1;
-    }
-    *lastslash = '/';
-    progname = lastslash + 3;  /* "/b_" */
+  if (argc < 3) {
+    fprintf(stderr, "Usage: test_vs_proto2 <descriptor file> <message file>\n");
+    return 1;
   }
+  const char *descriptor_file = argv[1];
+  const char *message_file = argv[2];
 
   // Initialize upb state, parse descriptor.
   upb_status status = UPB_STATUS_INIT;
   upb_symtab *symtab = upb_symtab_new();
   size_t fds_len;
-  const char *fds = upb_readfile(MESSAGE_DESCRIPTOR_FILE, &fds_len);
+  const char *fds = upb_readfile(descriptor_file, &fds_len);
   if(fds == NULL) {
-    fprintf(stderr, "Couldn't read " MESSAGE_DESCRIPTOR_FILE ".\n");
+    fprintf(stderr, "Couldn't read %s.\n", descriptor_file);
     return 1;
   }
   upb_load_descriptor_into_symtab(symtab, fds, fds_len, &status);
   if(!upb_ok(&status)) {
-    fprintf(stderr, "Error importing " MESSAGE_DESCRIPTOR_FILE ": %s",
+    fprintf(stderr, "Error importing %s: %s", descriptor_file,
             upb_status_getstr(&status));
     return 1;
   }
@@ -240,9 +232,9 @@ int main(int argc, char *argv[])
 
   // Read the message data itself.
   size_t len;
-  const char *str = upb_readfile(MESSAGE_FILE, &len);
+  const char *str = upb_readfile(message_file, &len);
   if(str == NULL) {
-    fprintf(stderr, "Error reading " MESSAGE_FILE "\n");
+    fprintf(stderr, "Error reading %s\n", message_file);
     return 1;
   }
 

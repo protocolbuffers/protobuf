@@ -9,11 +9,13 @@
 #include "upb/pb/glue.h"
 #include "upb_test.h"
 
+const char *descriptor_file;
+
 static upb_symtab *load_test_proto() {
   upb_symtab *s = upb_symtab_new();
   ASSERT(s);
   upb_status status = UPB_STATUS_INIT;
-  if (!upb_load_descriptor_file_into_symtab(s, "tests/test.proto.pb", &status)) {
+  if (!upb_load_descriptor_file_into_symtab(s, descriptor_file, &status)) {
     fprintf(stderr, "Error loading descriptor file: %s\n", upb_status_getstr(&status));
     exit(1);
   }
@@ -91,8 +93,13 @@ static void test_upb_two_fielddefs() {
   upb_fielddef_unref(f2);
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+  if (argc < 2) {
+    fprintf(stderr, "Usage: test_cpp <descriptor file>\n");
+    return 1;
+  }
+  descriptor_file = argv[1];
 #define TEST(func) do { \
   int assertions_before = num_assertions; \
   printf("Running " #func "..."); fflush(stdout); \

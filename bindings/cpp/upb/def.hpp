@@ -69,8 +69,10 @@ class FieldDef : public upb_fielddef {
 
   MessageDef* message() { return (MessageDef*)upb_fielddef_msgdef(this); }
   const MessageDef* message() const { return (MessageDef*)upb_fielddef_msgdef(this); }
-  //Def* subdef() { return upb_fielddef_subdef(this); }
-  //const Def* subdef() { return upb_fielddef_subdef(this); }
+
+  // Will be added once upb::Def is defined:
+  // Def* subdef() { return upb_fielddef_subdef(this); }
+  // const Def* subdef() { return upb_fielddef_subdef(this); }
 
   // Returns true if this FieldDef is finalized
   bool IsFinalized() const { return upb_fielddef_finalized(this); }
@@ -127,13 +129,11 @@ class MessageDef : public upb_msgdef {
   // name and number must be set, and the message may not already contain any
   // field with this name or number, and this fielddef may not be part of
   // another message, otherwise false is returned and no action is performed.
-  bool AddFields(FieldDef** f, int n) {
+  bool AddFields(FieldDef*const * f, int n) {
     return upb_msgdef_addfields(this, (upb_fielddef**)f, n);
   }
   bool AddFields(const std::vector<FieldDef*>& fields) {
-    FieldDef *arr[fields.size()];
-    std::copy(fields.begin(), fields.end(), arr);
-    return AddFields(arr, fields.size());
+    return AddFields(&fields[0], fields.size());
   }
 
   // Lookup fields by name or number, returning NULL if no such field exists.
