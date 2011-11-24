@@ -24,6 +24,7 @@
 #include <google/protobuf/descriptor.h>
 #undef private
 
+char *str;
 static size_t len;
 MESSAGE_CIDENT msg[NUM_MESSAGES];
 MESSAGE_CIDENT msg2;
@@ -53,9 +54,13 @@ upb_flow_t proto2_setstr(void *m, upb_value fval, upb_value val) {
   const upb_fielddef *f = upb_value_getfielddef(fval);
   std::string **str = (std::string**)UPB_INDEX(m, f->offset, 1);
   if (*str == f->default_ptr) *str = new std::string;
-  const upb_strref *ref = upb_value_getstrref(val);
+  const upb_byteregion *ref = upb_value_getbyteregion(val);
+  uint32_t len;
+  (*str)->assign(
+      upb_byteregion_getptr(ref, upb_byteregion_startofs(ref), &len),
+      upb_byteregion_len(ref));
+  assert(len == upb_byteregion_len(ref));
   // XXX: only supports contiguous strings atm.
-  (*str)->assign(ref->ptr, ref->len);
   return UPB_CONTINUE;
 }
 
@@ -64,9 +69,13 @@ upb_flow_t proto2_append_str(void *_r, upb_value fval, upb_value val) {
   typedef google::protobuf::RepeatedPtrField<std::string> R;
   (void)fval;
   R *r = (R*)_r;
-  const upb_strref *ref = upb_value_getstrref(val);
+  const upb_byteregion *ref = upb_value_getbyteregion(val);
   // XXX: only supports contiguous strings atm.
-  r->Add()->assign(ref->ptr, ref->len);
+  uint32_t len;
+  r->Add()->assign(
+      upb_byteregion_getptr(ref, upb_byteregion_startofs(ref), &len),
+      upb_byteregion_len(ref));
+  assert(len == upb_byteregion_len(ref));
   return UPB_CONTINUE;
 }
 
@@ -265,7 +274,7 @@ static bool initialize()
   upb_symtab_unref(s);
 
   // Read the message data itself.
-  char *str = upb_readfile(MESSAGE_FILE, &len);
+  str = upb_readfile(MESSAGE_FILE, &len);
   if(str == NULL) {
     fprintf(stderr, "Error reading " MESSAGE_FILE "\n");
     return false;
@@ -275,7 +284,6 @@ static bool initialize()
   msg2.ParseFromArray(str, len);
 
   upb_stringsrc_init(&strsrc);
-  upb_stringsrc_reset(&strsrc, str, len);
   upb_handlers *h = upb_handlers_new();
   upb_accessors_reghandlers(h, def);
   if (!JIT) h->should_jit = false;
@@ -296,8 +304,8 @@ static size_t run(int i)
   (void)i;
   upb_status status = UPB_STATUS_INIT;
   msg[i % NUM_MESSAGES].Clear();
-  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc),
-                    0, UPB_NONDELIMITED, &msg[i % NUM_MESSAGES]);
+  upb_stringsrc_reset(&strsrc, str, len);
+  upb_decoder_reset(&d, upb_stringsrc_allbytes(&strsrc), &msg[i % NUM_MESSAGES]);
   upb_decoder_decode(&d, &status);
   if(!upb_ok(&status)) goto err;
   return len;

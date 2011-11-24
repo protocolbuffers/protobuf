@@ -324,13 +324,13 @@ typedef struct {
   uint16_t fieldindex;
 
   bool is_sequence;   // frame represents seq or submsg? (f might be both).
-  bool is_packed;     // !upb_issubmsg(f) && end_ofs != UINT64_MAX (strings aren't pushed)
+  bool is_packed;     // !upb_issubmsg(f) && end_ofs != UINT64_MAX
+                      // (strings aren't pushed).
 } upb_dispatcher_frame;
 
-// Called when some of the input needs to be skipped.  All frames from
-// top to bottom, inclusive, should be skipped.
-typedef void upb_skip_handler(void *, upb_dispatcher_frame *top,
-                              upb_dispatcher_frame *bottom);
+// Called when some of the input needs to be skipped.  All frames from the
+// current top to "bottom", inclusive, should be skipped.
+typedef void upb_skip_handler(void *, upb_dispatcher_frame *bottom);
 typedef void upb_exit_handler(void *);
 
 typedef struct {

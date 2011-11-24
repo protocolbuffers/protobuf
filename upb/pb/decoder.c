@@ -45,27 +45,29 @@ static void upb_decoder_abort(upb_decoder *d, const char *msg) {
 
 /* Buffering ******************************************************************/
 
-// We operate on one buffer at a time, which may be a subset of the bytesrc
-// region we have ref'd.  When data for the buffer is completely gone we pull
-// the next one.  When we've committed our progress we release our ref on any
-// previous buffers' regions.
+// We operate on one buffer at a time, which may be a subset of the currently
+// loaded byteregion data.  When data for the buffer is completely gone we pull
+// the next one.  When we've committed our progress we discard any previous
+// buffers' regions.
 
-static size_t upb_decoder_bufleft(upb_decoder *d) { return d->end - d->ptr; }
-static void upb_decoder_advance(upb_decoder *d, size_t len) {
-  assert((size_t)(d->end - d->ptr) >= len);
+static uint32_t upb_decoder_bufleft(upb_decoder *d) { return d->end - d->ptr; }
+static void upb_decoder_advance(upb_decoder *d, uint32_t len) {
+  assert(upb_decoder_bufleft(d) >= len);
   d->ptr += len;
 }
 
-size_t upb_decoder_offset(upb_decoder *d) {
-  size_t offset = d->bufstart_ofs;
-  if (d->ptr) offset += (d->ptr - d->buf);
-  return offset;
+uint64_t upb_decoder_offset(upb_decoder *d) {
+  return d->bufstart_ofs + (d->ptr - d->buf);
+}
+
+uint64_t upb_decoder_bufendofs(upb_decoder *d) {
+  return d->bufstart_ofs + (d->end - d->buf);
 }
 
 static void upb_decoder_setmsgend(upb_decoder *d) {
   upb_dispatcher_frame *f = d->dispatcher.top;
-  size_t delimlen = f->end_ofs - d->bufstart_ofs;
-  size_t buflen = d->end - d->buf;
+  uint32_t delimlen = f->end_ofs - d->bufstart_ofs;
+  uint32_t buflen = d->end - d->buf;
   d->delim_end = (f->end_ofs != UPB_NONDELIMITED && delimlen <= buflen) ?
       d->buf + delimlen : NULL;  // NULL if not in this buf.
   d->top_is_packed = f->is_packed;
@@ -73,24 +75,25 @@ static void upb_decoder_setmsgend(upb_decoder *d) {
 
 static bool upb_trypullbuf(upb_decoder *d) {
   assert(upb_decoder_bufleft(d) == 0);
-  if (d->bufend_ofs == d->refend_ofs) {
-    size_t read = upb_bytesrc_fetch(d->bytesrc, d->refend_ofs, d->status);
-    if (read <= 0) {
-      d->ptr = NULL;
-      d->end = NULL;
-      if (read == 0) return false;  // EOF
-      upb_decoder_exit(d);  // Non-EOF error.
-    }
-    d->refend_ofs += read;
+  d->bufstart_ofs = upb_decoder_offset(d);
+  d->buf = NULL;
+  d->ptr = NULL;
+  d->end = NULL;
+  if (upb_byteregion_available(d->input, upb_decoder_offset(d)) == 0 &&
+      !upb_byteregion_fetch(d->input, d->status)) {
+    if (upb_eof(d->status)) return false;
+    upb_decoder_exit(d);  // Non-EOF error.
   }
-  d->bufstart_ofs = d->bufend_ofs;
-  size_t len;
-  d->buf = upb_bytesrc_getptr(d->bytesrc, d->bufstart_ofs, &len);
+  uint32_t len;
+  d->buf = upb_byteregion_getptr(d->input, d->bufstart_ofs, &len);
   assert(len > 0);
-  d->bufend_ofs = d->bufstart_ofs + len;
   d->ptr = d->buf;
   d->end = d->buf + len;
 #ifdef UPB_USE_JIT_X64
+  // If we start parsing a value, we can parse up to 20 bytes without
+  // having to bounds-check anything (2 10-byte varints).  Since the
+  // JIT bounds-checks only *between* values (and for strings), the
+  // JIT bails if there are not 20 bytes available.
   d->jit_end = d->end - 20;
 #endif
   upb_decoder_setmsgend(d);
@@ -101,14 +104,19 @@ static void upb_pullbuf(upb_decoder *d) {
   if (!upb_trypullbuf(d)) upb_decoder_abort(d, "Unexpected EOF");
 }
 
-void upb_decoder_commit(upb_decoder *d) {
-  d->completed_ptr = d->ptr;
-  if (d->refstart_ofs < d->bufstart_ofs) {
-    // Drop our ref on the previous buf's region.
-    upb_bytesrc_refregion(d->bytesrc, d->bufstart_ofs, d->refend_ofs);
-    upb_bytesrc_unrefregion(d->bytesrc, d->refstart_ofs, d->refend_ofs);
-    d->refstart_ofs = d->bufstart_ofs;
+void upb_decoder_skipto(upb_decoder *d, uint64_t ofs) {
+  if (ofs < upb_decoder_bufendofs(d)) {
+    upb_decoder_advance(d, ofs - upb_decoder_offset(d));
+  } else {
+    d->buf = NULL;
+    d->ptr = NULL;
+    d->end = NULL;
+    d->bufstart_ofs = ofs;
   }
+}
+
+void upb_decoder_checkpoint(upb_decoder *d) {
+  upb_byteregion_discard(d->input, upb_decoder_offset(d));
 }
 
 
@@ -151,11 +159,12 @@ done:
   return ret;
 }
 
+// Returns true on success or false if we've hit a valid EOF.
 FORCEINLINE bool upb_trydecode_varint32(upb_decoder *d, uint32_t *val) {
-  if (upb_decoder_bufleft(d) == 0 && upb_dispatcher_islegalend(&d->dispatcher)) {
-    // Check for our two successful end-of-message conditions
-    // (user-specified EOM and bytesrc EOF).
-    if (d->bufend_ofs == d->end_ofs || !upb_trypullbuf(d)) return false;
+  if (upb_decoder_bufleft(d) == 0 &&
+      upb_dispatcher_islegalend(&d->dispatcher) &&
+      !upb_trypullbuf(d)) {
+    return false;
   }
   *val = upb_decode_varint32(d);
   return true;
@@ -212,26 +221,15 @@ FORCEINLINE uint64_t upb_decode_fixed64(upb_decoder *d) {
   return u64;  // TODO: proper byte swapping
 }
 
-INLINE upb_strref *upb_decode_string(upb_decoder *d) {
+INLINE upb_byteregion *upb_decode_string(upb_decoder *d) {
   uint32_t strlen = upb_decode_varint32(d);
-  d->strref.stream_offset = upb_decoder_offset(d);
-  d->strref.len = strlen;
-  if (upb_decoder_bufleft(d) == 0) upb_pullbuf(d);
-  if (upb_decoder_bufleft(d) >= strlen) {
-    // Fast case.
-    d->strref.ptr = d->ptr;
-    upb_decoder_advance(d, strlen);
-  } else {
-    // Slow case.
-    while (1) {
-      size_t consume = UPB_MIN(upb_decoder_bufleft(d), strlen);
-      upb_decoder_advance(d, consume);
-      strlen -= consume;
-      if (strlen == 0) break;
-      upb_pullbuf(d);
-    }
-  }
-  return &d->strref;
+  uint64_t offset = upb_decoder_offset(d);
+  upb_byteregion_reset(&d->str_byteregion, d->input, offset, strlen);
+  // Could make it an option on the callback whether we fetchall() first or not.
+  upb_byteregion_fetchall(&d->str_byteregion, d->status);
+  if (!upb_ok(d->status)) upb_decoder_exit(d);
+  upb_decoder_skipto(d, offset + strlen);
+  return &d->str_byteregion;
 }
 
 INLINE void upb_push(upb_decoder *d, upb_fhandlers *f, uint64_t end) {
@@ -272,7 +270,7 @@ T(DOUBLE,   fixed64, double, upb_asdouble)
 T(FLOAT,    fixed32, float,  upb_asfloat)
 T(SINT32,   varint,  int32,  upb_zzdec_32)
 T(SINT64,   varint,  int64,  upb_zzdec_64)
-T(STRING,   string,  strref, upb_strref*)
+T(STRING,   string,  byteregion, upb_byteregion*)
 
 static void upb_decode_GROUP(upb_decoder *d, upb_fhandlers *f) {
   upb_push(d, f, UPB_NONDELIMITED);
@@ -352,10 +350,10 @@ INLINE upb_fhandlers *upb_decode_tag(upb_decoder *d) {
       case UPB_WIRE_TYPE_DELIMITED:
         upb_decoder_advance(d, upb_decode_varint32(d)); break;
       default:
-        upb_decoder_abort(d, "Invavlid wire type");
+        upb_decoder_abort(d, "Invalid wire type");
     }
     // TODO: deliver to unknown field callback.
-    upb_decoder_commit(d);
+    upb_decoder_checkpoint(d);
     upb_decoder_checkdelim(d);
   }
 }
@@ -380,24 +378,18 @@ void upb_decoder_decode(upb_decoder *d, upb_status *status) {
       return;
     }
     f->decode(d, f);
-    upb_decoder_commit(d);
+    upb_decoder_checkpoint(d);
   }
 }
 
-static void upb_decoder_skip(void *_d, upb_dispatcher_frame *top,
-                             upb_dispatcher_frame *bottom) {
-  (void)top;
-  (void)bottom;
-  (void)_d;
-#if 0
+static void upb_decoder_skip(void *_d, upb_dispatcher_frame *f) {
   upb_decoder *d = _d;
-  // TODO
-  if (bottom->end_offset == UPB_NONDELIMITED) {
-    // TODO: support skipping groups.
-    abort();
+  if (f->end_ofs != UPB_NONDELIMITED) {
+    upb_decoder_skipto(d, d->dispatcher.top->end_ofs);
+  } else {
+    // TODO: how to support skipping groups?  Dispatcher could drop callbacks,
+    // or it could be special-cased inside the decoder.
   }
-  d->ptr = d->buf.ptr + bottom->end_offset;
-#endif
 }
 
 void upb_decoder_init(upb_decoder *d, upb_handlers *handlers) {
@@ -423,24 +415,19 @@ void upb_decoder_init(upb_decoder *d, upb_handlers *handlers) {
   }
 }
 
-void upb_decoder_reset(upb_decoder *d, upb_bytesrc *bytesrc, uint64_t start_ofs,
-                       uint64_t end_ofs, void *closure) {
+void upb_decoder_reset(upb_decoder *d, upb_byteregion *input, void *closure) {
   upb_dispatcher_frame *f = upb_dispatcher_reset(&d->dispatcher, closure);
-  f->end_ofs = end_ofs;
-  d->end_ofs = end_ofs;
-  d->refstart_ofs = start_ofs;
-  d->refend_ofs = start_ofs;
-  d->bufstart_ofs = start_ofs;
-  d->bufend_ofs = start_ofs;
-  d->bytesrc = bytesrc;
+  f->end_ofs = UPB_NONDELIMITED;
+  d->input = input;
+  d->bufstart_ofs = upb_byteregion_startofs(input);
   d->buf = NULL;
   d->ptr = NULL;
-  d->end = NULL;  // Force a buffer pull.
+  d->end = NULL;        // Force a buffer pull.
+  d->delim_end = NULL;  // But don't let end-of-message get triggered.
+  d->str_byteregion.bytesrc = input->bytesrc;
 #ifdef UPB_USE_JIT_X64
   d->jit_end = NULL;
 #endif
-  d->delim_end = NULL;  // But don't let end-of-message get triggered.
-  d->strref.bytesrc = bytesrc;
 }
 
 void upb_decoder_uninit(upb_decoder *d) {

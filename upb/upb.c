@@ -71,8 +71,9 @@ void upb_status_seterrliteral(upb_status *status, const char *msg) {
   status->space = NULL;
 }
 
-void upb_status_copy(upb_status *to, upb_status *from) {
+void upb_status_copy(upb_status *to, const upb_status *from) {
   to->status = from->status;
+  to->eof = from->eof;
   to->code = from->code;
   to->space = from->space;
   if (from->str == from->buf) {
@@ -100,6 +101,7 @@ const char *upb_status_getstr(const upb_status *_status) {
 
 void upb_status_clear(upb_status *status) {
   status->status = UPB_OK;
+  status->eof = false;
   status->code = 0;
   status->space = NULL;
   status->str = NULL;
@@ -124,7 +126,7 @@ void upb_status_fromerrno(upb_status *status) {
 
 upb_errorspace upb_posix_errorspace = {"POSIX", NULL};  // TODO
 
-int upb_vrprintf(char **buf, size_t *size, size_t ofs,
+int upb_vrprintf(char **buf, uint32_t *size, uint32_t ofs,
                  const char *fmt, va_list args) {
   // Try once without reallocating.  We have to va_copy because we might have
   // to call vsnprintf again.

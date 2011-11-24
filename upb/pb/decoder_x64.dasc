@@ -129,7 +129,7 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |.define PTR,       rbx
 |.define CLOSURE,   r12
 |.type   FRAME,     upb_dispatcher_frame, r13
-|.type   STRREF,    upb_strref, r14
+|.type   BYTEREGION,upb_byteregion, r14
 |.type   DECODER,   upb_decoder, r15
 |.type   STDARRAY,  upb_stdarray
 |
@@ -365,23 +365,26 @@ static void upb_decoder_jit_decodefield(upb_decoder *d, upb_mhandlers *m,
       // robust checks.
       |  mov  ecx, dword [PTR + tag_size]
       |  decode_loaded_varint tag_size
+      |  mov  rdi, DECODER->effective_end
+      |  sub  rdi, rax
+      |  cmp  ARG3_64, rdi  // if (len > d->effective_end - str)
+      |  ja   ->exit_jit    // Can't deliver, whole string not in buf.
+
+      // Update PTR to point past end of string.
       |  mov  rdi, rax
       |  add  rdi, ARG3_64
-      |  mov  STRREF->len, ARG3_32
-      |  mov  STRREF->ptr, rax
-      |  sub  rax, DECODER->buf
-      |  add  eax, DECODER->bufstart_ofs  // = d->ptr - d->buf + d->bufstart_ofs
-      |  mov  STRREF->stream_offset, eax
-      |  mov  ARG3_64, STRREF
-      |  cmp  rdi, DECODER->effective_end
-      |  ja   ->exit_jit   // Can't deliver, whole string not in buf.
       |  mov  PTR, rdi
-      break;
 
-    case UPB_TYPE_ENDGROUP:  // A pseudo-type.
-      |  add  PTR, tag_size
-      |  jmp  =>m->jit_endofmsg_pclabel
-      return;
+      // Populate BYTEREGION appropriately.
+      |  sub  rax, DECODER->buf
+      |  add  rax, DECODER->bufstart_ofs  // = d->ptr - d->buf + d->bufstart_ofs
+      |  mov  BYTEREGION->start, rax
+      |  mov  BYTEREGION->discard, rax
+      |  add  rax, ARG3_64
+      |  mov  BYTEREGION->end, rax
+      |  mov  BYTEREGION->fetch, rax // Fast path ensures whole string is loaded
+      |  mov  ARG3_64, BYTEREGION
+      break;
 
     // Will dispatch callbacks and call submessage in a second.
     case UPB_TYPE(MESSAGE):
@@ -471,7 +474,6 @@ static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
       |  callp f->endsubmsg
     }
     |   popframe upb_fhandlers_getmsg(f)
-
   } else {
     |  mov ARG1_64, CLOSURE
     // Test for callbacks we can specialize.
@@ -522,8 +524,8 @@ static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
 }
 
 // PTR should point to the beginning of the tag.
-static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_tag,
-                                  upb_mhandlers *m,
+static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag,
+                                  uint32_t next_tag, upb_mhandlers *m,
                                   upb_fhandlers *f, upb_fhandlers *next_f) {
   // PC-label for the dispatch table.
   // We check the wire type (which must be loaded in edx) because the
@@ -546,7 +548,14 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag, uint32_t next_ta
 
   |1:  // Label for repeating this field.
 
-  upb_decoder_jit_decodefield(d, m, f->type, upb_value_size(tag));
+  int tag_size = upb_value_size(tag);
+  if (f->type == UPB_TYPE_ENDGROUP) {
+    |  add  PTR, tag_size
+    |  jmp  =>m->jit_endofmsg_pclabel
+    return;
+  }
+
+  upb_decoder_jit_decodefield(d, m, f->type, tag_size);
   upb_decoder_jit_callcb(d, f);
 
   // Epilogue: load next tag, check for repeated field.
@@ -673,7 +682,7 @@ static void upb_decoder_jit(upb_decoder *d) {
   |  sub   rsp, 8
   |  mov   DECODER, ARG1_64
   |  mov   FRAME, DECODER:ARG1_64->dispatcher.top
-  |  lea   STRREF, DECODER:ARG1_64->strref
+  |  lea   BYTEREGION, DECODER:ARG1_64->str_byteregion
   |  mov   CLOSURE, FRAME->closure
   |  mov   PTR, DECODER->ptr
 

@@ -16,15 +16,16 @@ static upb_symtab *load_test_proto() {
   ASSERT(s);
   upb_status status = UPB_STATUS_INIT;
   if (!upb_load_descriptor_file_into_symtab(s, descriptor_file, &status)) {
-    fprintf(stderr, "Error loading descriptor file: %s\n", upb_status_getstr(&status));
+    fprintf(stderr, "Error loading descriptor file: %s\n",
+            upb_status_getstr(&status));
     exit(1);
   }
   upb_status_uninit(&status);
   return s;
 }
 
-static upb_flow_t upb_test_onvalue(void *closure, upb_value fval, upb_value val) {
-  (void)closure;
+static upb_flow_t upb_test_onvalue(void *c, upb_value fval, upb_value val) {
+  (void)c;
   (void)fval;
   (void)val;
   return UPB_CONTINUE;
@@ -56,6 +57,7 @@ static void test_upb_symtab() {
   upb_symtab_unref(s);
   const upb_msgdef *m = upb_downcast_msgdef_const(def);
   upb_msg_iter i = upb_msg_begin(m);
+  ASSERT(!upb_msg_done(i));
   upb_fielddef *f = upb_msg_iter_field(i);
   ASSERT(upb_hassubdef(f));
   upb_def *def2 = f->def;

@@ -14,29 +14,33 @@
 // We can make this configurable if necessary.
 #define BUF_SIZE 32768
 
-char *upb_strref_dup(const struct _upb_strref *r) {
-  char *ret = (char*)malloc(r->len + 1);
-  upb_bytesrc_read(r->bytesrc, r->stream_offset, r->len, ret);
-  ret[r->len] = '\0';
+char *upb_byteregion_strdup(const struct _upb_byteregion *r) {
+  char *ret = malloc(upb_byteregion_len(r) + 1);
+  upb_byteregion_copyall(r, ret);
+  ret[upb_byteregion_len(r)] = '\0';
   return ret;
 }
 
-upb_strref *upb_strref_new(const char *str) {
-  return upb_strref_newl(str, strlen(str));
+upb_byteregion *upb_byteregion_new(const void *str) {
+  return upb_byteregion_newl(str, strlen(str));
 }
 
-upb_strref *upb_strref_newl(const void *str, size_t len) {
-  upb_strref *s = malloc(sizeof(*s));
-  s->bytesrc = NULL;
-  s->ptr = malloc(len);
-  memcpy((void*)s->ptr, str, len);
-  return s;
+upb_byteregion *upb_byteregion_newl(const void *str, uint32_t len) {
+  upb_stringsrc *src = malloc(sizeof(*src));
+  upb_stringsrc_init(src);
+  char *ptr = malloc(len + 1);
+  memcpy(ptr, str, len);
+  ptr[len] = '\0';
+  upb_stringsrc_reset(src, ptr, len);
+  return upb_stringsrc_allbytes(src);
 }
 
-void upb_strref_free(upb_strref *ref) {
-  if (!ref) return;
-  free((char*)ref->ptr);
-  free(ref);
+void upb_byteregion_free(upb_byteregion *r) {
+  if (!r) return;
+  uint32_t len;
+  free((char*)upb_byteregion_getptr(r, 0, &len));
+  upb_stringsrc_uninit((upb_stringsrc*)r->bytesrc);
+  free(r->bytesrc);
 }
 
 void upb_bytesink_init(upb_bytesink *sink, upb_bytesink_vtbl *vtbl) {
@@ -47,6 +51,31 @@ void upb_bytesink_init(upb_bytesink *sink, upb_bytesink_vtbl *vtbl) {
 void upb_bytesink_uninit(upb_bytesink *sink) {
   upb_status_uninit(&sink->status);
 }
+
+void upb_byteregion_reset(upb_byteregion *r, const upb_byteregion *src,
+                          uint64_t ofs, uint64_t len) {
+  assert(ofs >= upb_byteregion_startofs(src));
+  assert(len <= upb_byteregion_remaining(src, ofs));
+  r->bytesrc = src->bytesrc;
+  r->toplevel = false;
+  r->start = ofs;
+  r->discard = ofs;
+  r->end = ofs + len;
+  r->fetch = UPB_MIN(src->fetch, r->end);
+}
+
+bool upb_byteregion_fetch(upb_byteregion *r, upb_status *s) {
+  uint64_t fetchable = upb_byteregion_remaining(r, r->fetch);
+  if (fetchable == 0) {
+    upb_status_seteof(s);
+    return false;
+  }
+  uint64_t num = upb_bytesrc_fetch(r->bytesrc, r->fetch, s);
+  if (num == 0) return false;
+  r->fetch += UPB_MIN(num, fetchable);
+  return true;
+}
+
 
 /* upb_stdio ******************************************************************/
 
@@ -86,61 +115,52 @@ static upb_stdio_buf *upb_stdio_rotatebufs(upb_stdio *s) {
   return s->bufs[s->nbuf-num_reused];
 }
 
-size_t upb_stdio_fetch(void *src, uint64_t ofs, upb_status *s) {
+void upb_stdio_discard(void *src, uint64_t ofs) {
+  (void)src;
+  (void)ofs;
+}
+
+uint32_t upb_stdio_fetch(void *src, uint64_t ofs, upb_status *s) {
   (void)ofs;
   upb_stdio *stdio = (upb_stdio*)src;
   upb_stdio_buf *buf = upb_stdio_rotatebufs(stdio);
-  size_t read = fread(&buf->data, 1, BUF_SIZE, stdio->file);
-  if(read < (size_t)BUF_SIZE) {
+  uint32_t read = fread(&buf->data, 1, BUF_SIZE, stdio->file);
+  buf->len = read;
+  if(read < (uint32_t)BUF_SIZE) {
     // Error or EOF.
-    if(feof(stdio->file)) return 0;
+    if(feof(stdio->file)) {
+      upb_status_seteof(s);
+      return read;
+    }
     if(ferror(stdio->file)) {
       upb_status_fromerrno(s);
-      return -1;
+      return 0;
     }
     assert(false);
   }
-  buf->len = read;
   return buf->ofs + buf->len;
 }
 
-void upb_stdio_read(const void *src, uint64_t src_ofs, size_t len, char *dst) {
-  upb_stdio_buf *buf = upb_stdio_findbuf(src, src_ofs);
-  src_ofs -= buf->ofs;
-  memcpy(dst, &buf->data[src_ofs], BUF_SIZE - src_ofs);
-  len -= (BUF_SIZE - src_ofs);
-  dst += (BUF_SIZE - src_ofs);
+void upb_stdio_read(const void *src, uint64_t ofs, uint32_t len, char *dst) {
+  upb_stdio_buf *buf = upb_stdio_findbuf(src, ofs);
+  ofs -= buf->ofs;
+  memcpy(dst, buf->data + ofs, BUF_SIZE - ofs);
+  len -= (BUF_SIZE - ofs);
+  dst += (BUF_SIZE - ofs);
   while (len > 0) {
     ++buf;
-    size_t bytes = UPB_MIN(len, BUF_SIZE);
+    uint32_t bytes = UPB_MIN(len, BUF_SIZE);
     memcpy(dst, buf->data, bytes);
     len -= bytes;
     dst += bytes;
   }
 }
 
-const char *upb_stdio_getptr(void *src, uint64_t ofs, size_t *len) {
+const char *upb_stdio_getptr(const void *src, uint64_t ofs, uint32_t *len) {
   upb_stdio_buf *buf = upb_stdio_findbuf(src, ofs);
   ofs -= buf->ofs;
   *len = BUF_SIZE - ofs;
   return &buf->data[ofs];
-}
-
-void upb_stdio_refregion(void *src, uint64_t ofs, size_t len) {
-  upb_stdio_buf *buf = upb_stdio_findbuf(src, ofs);
-  len -= (BUF_SIZE - ofs);
-  ++buf->refcount;
-  while (len > 0) {
-    len -= BUF_SIZE;
-    ++buf;
-    ++buf->refcount;
-  }
-}
-
-void upb_stdio_unrefregion(void *src, uint64_t ofs, size_t len) {
-  (void)src;
-  (void)ofs;
-  (void)len;
 }
 
 #if 0
@@ -154,7 +174,6 @@ upb_strlen_t upb_stdio_putstr(upb_bytesink *sink, upb_string *str, upb_status *s
   }
   return written;
 }
-#endif
 
 uint32_t upb_stdio_vprintf(upb_bytesink *sink, upb_status *status,
                            const char *fmt, va_list args) {
@@ -166,16 +185,14 @@ uint32_t upb_stdio_vprintf(upb_bytesink *sink, upb_status *status,
   }
   return written;
 }
+#endif
 
 void upb_stdio_init(upb_stdio *stdio) {
   static upb_bytesrc_vtbl bytesrc_vtbl = {
-    upb_stdio_fetch,
-    upb_stdio_read,
-    upb_stdio_getptr,
-    upb_stdio_refregion,
-    upb_stdio_unrefregion,
-    NULL,
-    NULL
+    &upb_stdio_fetch,
+    &upb_stdio_discard,
+    &upb_stdio_read,
+    &upb_stdio_getptr,
   };
   upb_bytesrc_init(&stdio->src, &bytesrc_vtbl);
 
@@ -209,26 +226,32 @@ void upb_stdio_uninit(upb_stdio *stdio) {
   stdio->file = NULL;
 }
 
-upb_bytesrc* upb_stdio_bytesrc(upb_stdio *stdio) { return &stdio->src; }
+upb_byteregion* upb_stdio_allbytes(upb_stdio *stdio) { return &stdio->byteregion; }
 upb_bytesink* upb_stdio_bytesink(upb_stdio *stdio) { return &stdio->sink; }
 
 
 /* upb_stringsrc **************************************************************/
 
-size_t upb_stringsrc_fetch(void *_src, uint64_t ofs, upb_status *s) {
+uint32_t upb_stringsrc_fetch(void *_src, uint64_t ofs, upb_status *s) {
   upb_stringsrc *src = _src;
-  (void)s;  // No errors can occur.
+  upb_status_seteof(s);
   return src->len - ofs;
 }
 
-void upb_stringsrc_read(const void *_src, uint64_t src_ofs,
-                        size_t len, char *dst) {
+void upb_stringsrc_read(const void *_src, uint64_t ofs,
+                        uint32_t len, char *dst) {
   const upb_stringsrc *src = _src;
-  memcpy(dst, src->str + src_ofs, len);
+  assert(ofs + len <= src->len);
+  memcpy(dst, src->str + ofs, len);
 }
 
-const char *upb_stringsrc_getptr(void *_src, uint64_t ofs, size_t *len) {
-  upb_stringsrc *src = _src;
+void upb_stringsrc_discard(void *src, uint64_t ofs) {
+  (void)src;
+  (void)ofs;
+}
+
+const char *upb_stringsrc_getptr(const void *_s, uint64_t ofs, uint32_t *len) {
+  const upb_stringsrc *src = _s;
   *len = src->len - ofs;
   return src->str + ofs;
 }
@@ -236,17 +259,23 @@ const char *upb_stringsrc_getptr(void *_src, uint64_t ofs, size_t *len) {
 void upb_stringsrc_init(upb_stringsrc *s) {
   static upb_bytesrc_vtbl vtbl = {
     &upb_stringsrc_fetch,
+    &upb_stringsrc_discard,
     &upb_stringsrc_read,
     &upb_stringsrc_getptr,
-    NULL, NULL, NULL, NULL
   };
   upb_bytesrc_init(&s->bytesrc, &vtbl);
   s->str = NULL;
+  s->byteregion.bytesrc = &s->bytesrc;
+  s->byteregion.toplevel = true;
 }
 
-void upb_stringsrc_reset(upb_stringsrc *s, const char *str, size_t len) {
+void upb_stringsrc_reset(upb_stringsrc *s, const char *str, uint32_t len) {
   s->str = str;
   s->len = len;
+  s->byteregion.start = 0;
+  s->byteregion.discard = 0;
+  s->byteregion.fetch = 0;
+  s->byteregion.end = len;
 }
 
 void upb_stringsrc_uninit(upb_stringsrc *s) { (void)s; }
@@ -262,7 +291,7 @@ void upb_stringsink_uninit(upb_stringsink *s) {
   free(s->str);
 }
 
-void upb_stringsink_reset(upb_stringsink *s, char *str, size_t size) {
+void upb_stringsink_reset(upb_stringsink *s, char *str, uint32_t size) {
   free(s->str);
   s->str = str;
   s->len = 0;

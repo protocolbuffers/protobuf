@@ -5,7 +5,7 @@
  * Author: Josh Haberman <jhaberman@gmail.com>
  *
  * upb_decoder implements a high performance, streaming decoder for protobuf
- * data that works by getting its input data from a upb_bytesrc and calling
+ * data that works by getting its input data from a upb_byteregion and calling
  * into a upb_handlers.
  */
 
@@ -26,24 +26,14 @@ extern "C" {
 struct dasm_State;
 
 typedef struct _upb_decoder {
-  upb_bytesrc *bytesrc;       // Source of our serialized data.
-  upb_dispatcher dispatcher;  // Dispatcher to which we push parsed data.
-  upb_status *status;         // Where we will store any errors that occur.
-  upb_strref strref;          // For passing string data to callbacks.
-
-  // Offsets for the bytesrc region we currently have ref'd.
-  uint64_t refstart_ofs, refend_ofs;
+  upb_byteregion *input;          // Input data (serialized).
+  upb_dispatcher dispatcher;      // Dispatcher to which we push parsed data.
+  upb_status     *status;         // Where we will store any errors that occur.
+  upb_byteregion str_byteregion;  // For passing string data to callbacks.
 
   // Current input buffer and its stream offset.
   const char *buf, *ptr, *end;
-  uint64_t bufstart_ofs, bufend_ofs;
-
-  // Stream offset for the end of the top-level message, if any.
-  uint64_t end_ofs;
-
-  // Buf offset as of which we've delivered calbacks; needed for rollback if
-  // a callback returns UPB_BREAK.
-  const char *completed_ptr;
+  uint64_t bufstart_ofs;
 
   // End of the delimited region, relative to ptr, or NULL if not in this buf.
   const char *delim_end;
@@ -65,10 +55,6 @@ typedef struct _upb_decoder {
   sigjmp_buf exitjmp;
 } upb_decoder;
 
-// Used for frames that have no specific end offset: groups, repeated primitive
-// fields inside groups, and the top-level message.
-#define UPB_NONDELIMITED UINT64_MAX
-
 // Initializes/uninitializes a decoder for calling into the given handlers
 // or to write into the given msgdef, given its accessors).  Takes a ref
 // on the handlers.
@@ -77,13 +63,13 @@ void upb_decoder_uninit(upb_decoder *d);
 
 // Resets the internal state of an already-allocated decoder.  This puts it in a
 // state where it has not seen any data, and expects the next data to be from
-// the beginning of a new protobuf.  Parsers must be reset before they can be
-// used.  A decoder can be reset multiple times.
-//
-// Pass UINT64_MAX for end_ofs to indicate a non-delimited top-level message.
-void upb_decoder_reset(upb_decoder *d, upb_bytesrc *src, uint64_t start_ofs,
-                       uint64_t end_ofs, void *closure);
+// the beginning of a new protobuf.  Decoders must be reset before they can be
+// used.  A decoder can be reset multiple times.  "input" must live until the
+// decoder is reset again (or destroyed).
+void upb_decoder_reset(upb_decoder *d, upb_byteregion *input, void *closure);
 
+// Decodes serialized data (calling handlers as the data is parsed) until error
+// or EOF (see *status for details).
 void upb_decoder_decode(upb_decoder *d, upb_status *status);
 
 #ifdef __cplusplus

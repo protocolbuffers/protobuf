@@ -23,7 +23,7 @@ void upb_strtomsg(const char *str, size_t len, void *msg, const upb_msgdef *md,
   upb_accessors_reghandlers(h, md);
   upb_decoder_init(&d, h);
   upb_handlers_unref(h);
-  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), 0, UINT64_MAX, msg);
+  upb_decoder_reset(&d, upb_stringsrc_allbytes(&strsrc), msg);
   upb_decoder_decode(&d, status);
 
   upb_stringsrc_uninit(&strsrc);
@@ -84,16 +84,19 @@ upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
   upb_handlers_unref(h);
   upb_descreader r;
   upb_descreader_init(&r);
-  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc), 0, UINT64_MAX, &r);
+  upb_decoder_reset(&d, upb_stringsrc_allbytes(&strsrc), &r);
 
   upb_decoder_decode(&d, status);
+  upb_stringsrc_uninit(&strsrc);
+  upb_decoder_uninit(&d);
+  if (!upb_ok(status)) {
+    upb_descreader_uninit(&r);
+    return NULL;
+  }
   upb_def **defs = upb_descreader_getdefs(&r, n);
   upb_def **defscopy = malloc(sizeof(upb_def*) * (*n));
   memcpy(defscopy, defs, sizeof(upb_def*) * (*n));
-
   upb_descreader_uninit(&r);
-  upb_stringsrc_uninit(&strsrc);
-  upb_decoder_uninit(&d);
 
   // Set default accessors and layouts on all messages.
   for(int i = 0; i < *n; i++) {

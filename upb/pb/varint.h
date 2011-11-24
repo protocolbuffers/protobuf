@@ -113,7 +113,7 @@ INLINE upb_decoderet upb_vdecode_max8_fast(upb_decoderet r) {
 
 /* Encoding *******************************************************************/
 
-INLINE size_t upb_value_size(uint64_t val) {
+INLINE int upb_value_size(uint64_t val) {
 #ifdef __GNUC__
   int high_bit = 63 - __builtin_clzll(val);  // 0-based, undef if val == 0.
 #else

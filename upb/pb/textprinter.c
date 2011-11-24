@@ -35,15 +35,16 @@ err:
   return -1;
 }
 
-static int upb_textprinter_putescaped(upb_textprinter *p, const upb_strref *strref,
+static int upb_textprinter_putescaped(upb_textprinter *p,
+                                      const upb_byteregion *bytes,
                                       bool preserve_utf8) {
   // Based on CEscapeInternal() from Google's protobuf release.
   // TODO; we could read directly from a bytesrc's buffer instead.
-  // TODO; we could write strrefs to the sink when possible.
+  // TODO; we could write byteregions to the sink when possible.
   char dstbuf[4096], *dst = dstbuf, *dstend = dstbuf + sizeof(dstbuf);
-  char *buf = malloc(strref->len), *src = buf;
-  char *end = src + strref->len;
-  upb_bytesrc_read(strref->bytesrc, strref->stream_offset, strref->len, buf);
+  char *buf = malloc(upb_byteregion_len(bytes)), *src = buf;
+  char *end = src + upb_byteregion_len(bytes);
+  upb_byteregion_copyall(bytes, buf);
 
   // I think hex is prettier and more useful, but proto2 uses octal; should
   // investigate whether it can parse hex also.
@@ -142,7 +143,7 @@ static upb_flow_t upb_textprinter_putstr(void *_p, upb_value fval,
   uint64_t start_ofs = upb_bytesink_getoffset(p->sink);
   const upb_fielddef *f = upb_value_getfielddef(fval);
   CHECK(upb_bytesink_putc(p->sink, '"'));
-  CHECK(upb_textprinter_putescaped(p, upb_value_getstrref(val),
+  CHECK(upb_textprinter_putescaped(p, upb_value_getbyteregion(val),
                                    f->type == UPB_TYPE(STRING)));
   CHECK(upb_bytesink_putc(p->sink, '"'));
   return UPB_CONTINUE;

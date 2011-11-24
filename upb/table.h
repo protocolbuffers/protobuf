@@ -20,6 +20,7 @@
 #define UPB_TABLE_H_
 
 #include <assert.h>
+#include <stddef.h>
 #include "upb.h"
 
 #ifdef __cplusplus

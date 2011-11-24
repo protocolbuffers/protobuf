@@ -76,8 +76,7 @@ static size_t run(int i)
   (void)i;
   upb_status status = UPB_STATUS_INIT;
   upb_stringsrc_reset(&stringsrc, input_str, input_len);
-  upb_decoder_reset(&decoder, upb_stringsrc_bytesrc(&stringsrc),
-                    0, UPB_NONDELIMITED, NULL);
+  upb_decoder_reset(&decoder, upb_stringsrc_allbytes(&stringsrc), NULL);
   upb_decoder_decode(&decoder, &status);
   if(!upb_ok(&status)) goto err;
   return input_len;

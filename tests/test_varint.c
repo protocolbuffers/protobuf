@@ -4,6 +4,7 @@
  * Copyright (c) 2011 Google Inc.  See LICENSE for details.
  */
 
+#include <stdio.h>
 #include "upb/pb/varint.h"
 #include "upb_test.h"
 

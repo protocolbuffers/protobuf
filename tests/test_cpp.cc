@@ -7,6 +7,7 @@
  * Tests for C++ wrappers.
  */
 
+#include <stdio.h>
 #include <iostream>
 #include "upb/def.hpp"
 #include "upb/pb/glue.hpp"

@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
 
   upb_decoder d;
   upb_decoder_init(&d, handlers);
-  upb_decoder_reset(&d, upb_stdio_bytesrc(&in), 0, UPB_NONDELIMITED, p);
+  upb_decoder_reset(&d, upb_stdio_allbytes(&in), p);
 
   upb_status_clear(&status);
   upb_decoder_decode(&d, &status);

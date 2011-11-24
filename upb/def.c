@@ -251,7 +251,8 @@ static void upb_fielddef_init_default(upb_fielddef *f) {
     case UPB_TYPE(FIXED32): upb_value_setuint32(&f->defaultval, 0); break;
     case UPB_TYPE(BOOL): upb_value_setbool(&f->defaultval, false); break;
     case UPB_TYPE(STRING):
-    case UPB_TYPE(BYTES): upb_value_setstrref(&f->defaultval, upb_strref_new("")); break;
+    case UPB_TYPE(BYTES):
+        upb_value_setbyteregion(&f->defaultval, upb_byteregion_new("")); break;
     case UPB_TYPE(GROUP):
     case UPB_TYPE(MESSAGE): upb_value_setptr(&f->defaultval, NULL); break;
   }
@@ -260,7 +261,7 @@ static void upb_fielddef_init_default(upb_fielddef *f) {
 
 static void upb_fielddef_uninit_default(upb_fielddef *f) {
   if (upb_isstring(f) || f->default_is_symbolic) {
-    upb_strref_free((upb_strref*)upb_value_getstrref(f->defaultval));
+    upb_byteregion_free(upb_value_getbyteregion(f->defaultval));
   }
 }
 
@@ -324,24 +325,29 @@ static bool upb_fielddef_resolve(upb_fielddef *f, upb_def *def, upb_status *s) {
   f->def = def;
   if (f->type == UPB_TYPE(ENUM) && f->default_is_symbolic) {
     // Resolve the enum's default from a string to an integer.
-    upb_strref *str = (upb_strref*)upb_value_getstrref(f->defaultval);
-    assert(str);  // Should point to either a real default or the empty string.
+    upb_byteregion *bytes = upb_value_getbyteregion(f->defaultval);
+    assert(bytes);  // Points to either a real default or the empty string.
     upb_enumdef *e = upb_downcast_enumdef(f->def);
     int32_t val = 0;
     // Could do a sanity check that the default value does not have embedded
     // NULLs.
-    if (str->ptr[0] == '\0') {
+    if (upb_byteregion_len(bytes) == 0) {
       upb_value_setint32(&f->defaultval, e->defaultval);
     } else {
-      bool success = upb_enumdef_ntoi(e, str->ptr, &val);
+      uint32_t len;
+      // ptr is guaranteed to be NULL-terminated because the byteregion was
+      // created with upb_byteregion_newl().
+      const char *ptr = upb_byteregion_getptr(bytes, 0, &len);
+      assert(len == upb_byteregion_len(bytes));  // Should all be in one chunk.
+      bool success = upb_enumdef_ntoi(e, ptr, &val);
       if (!success) {
         upb_status_seterrf(
-            s, "Default enum value (%s) is not a member of the enum", str);
+            s, "Default enum value (%s) is not a member of the enum", ptr);
         return false;
       }
       upb_value_setint32(&f->defaultval, val);
     }
-    upb_strref_free(str);
+    upb_byteregion_free(bytes);
   }
   return true;
 }
@@ -381,10 +387,10 @@ void upb_fielddef_setdefault(upb_fielddef *f, upb_value value) {
 
 void upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len) {
   assert(upb_isstring(f) || f->type == UPB_TYPE(ENUM));
-  const upb_strref *ref = upb_value_getstrref(f->defaultval);
-  assert(ref);
-  upb_strref_free((upb_strref*)ref);
-  upb_value_setstrref(&f->defaultval, upb_strref_newl(str, len));
+  upb_byteregion *bytes = upb_value_getbyteregion(f->defaultval);
+  assert(bytes);
+  upb_byteregion_free(bytes);
+  upb_value_setbyteregion(&f->defaultval, upb_byteregion_newl(str, len));
   f->default_is_symbolic = true;
 }
 

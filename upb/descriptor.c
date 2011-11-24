@@ -123,7 +123,8 @@ static upb_flow_t upb_descreader_FileDescriptorProto_package(void *_r,
                                                              upb_value val) {
   (void)fval;
   upb_descreader *r = _r;
-  upb_descreader_setscopename(r, upb_strref_dup(upb_value_getstrref(val)));
+  upb_descreader_setscopename(
+      r, upb_byteregion_strdup(upb_value_getbyteregion(val)));
   return UPB_CONTINUE;
 }
 
@@ -180,7 +181,7 @@ static upb_flow_t upb_enumdef_EnumValueDescriptorProto_name(void *_r,
   (void)fval;
   upb_descreader *r = _r;
   free(r->name);
-  r->name = upb_strref_dup(upb_value_getstrref(val));
+  r->name = upb_byteregion_strdup(upb_value_getbyteregion(val));
   r->saw_name = true;
   return UPB_CONTINUE;
 }
@@ -259,7 +260,7 @@ static upb_flow_t upb_enumdef_EnumDescriptorProto_name(void *_r,
   upb_descreader *r = _r;
   upb_enumdef *e = upb_downcast_enumdef(upb_descreader_last(r));
   free(e->base.fqname);
-  e->base.fqname = upb_strref_dup(upb_value_getstrref(val));
+  e->base.fqname = upb_byteregion_strdup(upb_value_getbyteregion(val));
   return UPB_CONTINUE;
 }
 
@@ -423,7 +424,7 @@ static upb_flow_t upb_fielddef_onnumber(void *_r, upb_value fval, upb_value val)
 static upb_flow_t upb_fielddef_onname(void *_r, upb_value fval, upb_value val) {
   (void)fval;
   upb_descreader *r = _r;
-  char *name = upb_strref_dup(upb_value_getstrref(val));
+  char *name = upb_byteregion_strdup(upb_value_getbyteregion(val));
   upb_fielddef_setname(r->f, name);
   free(name);
   return UPB_CONTINUE;
@@ -433,7 +434,7 @@ static upb_flow_t upb_fielddef_ontypename(void *_r, upb_value fval,
                                           upb_value val) {
   (void)fval;
   upb_descreader *r = _r;
-  char *name = upb_strref_dup(upb_value_getstrref(val));
+  char *name = upb_byteregion_strdup(upb_value_getbyteregion(val));
   upb_fielddef_settypename(r->f, name);
   free(name);
   return UPB_CONTINUE;
@@ -446,7 +447,7 @@ static upb_flow_t upb_fielddef_ondefaultval(void *_r, upb_value fval,
   // Have to convert from string to the correct type, but we might not know the
   // type yet.
   free(r->default_string);
-  r->default_string = upb_strref_dup(upb_value_getstrref(val));
+  r->default_string = upb_byteregion_strdup(upb_value_getbyteregion(val));
   return UPB_CONTINUE;
 }
 
@@ -499,7 +500,7 @@ static upb_flow_t upb_msgdef_onname(void *_r, upb_value fval, upb_value val) {
   assert(val.type == UPB_TYPE(STRING));
   upb_msgdef *m = upb_descreader_top(r);
   free(m->base.fqname);
-  m->base.fqname = upb_strref_dup(upb_value_getstrref(val));
+  m->base.fqname = upb_byteregion_strdup(upb_value_getbyteregion(val));
   upb_descreader_setscopename(r, strdup(m->base.fqname));
   return UPB_CONTINUE;
 }

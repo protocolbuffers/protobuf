@@ -12,7 +12,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>  // only for size_t.
 #include <assert.h>
 #include <stdarg.h>
 #include "descriptor_const.h"
@@ -40,7 +39,7 @@ INLINE void nop_printf(const char *fmt, ...) { (void)fmt; }
 #endif
 
 // Rounds val up to the next multiple of align.
-INLINE size_t upb_align_up(size_t val, size_t align) {
+INLINE uint32_t upb_align_up(uint32_t val, uint32_t align) {
   return val % align == 0 ? val : val + align - (val % align);
 }
 
@@ -124,7 +123,7 @@ extern const upb_type_info upb_types[];
 
 /* upb_value ******************************************************************/
 
-struct _upb_strref;
+struct _upb_byteregion;
 struct _upb_fielddef;
 
 // Special constants for the upb_value.type field.  These must not conflict
@@ -144,7 +143,7 @@ typedef struct {
     int64_t int64;
     uint32_t uint32;
     bool _bool;
-    const struct _upb_strref *strref;
+    struct _upb_byteregion *byteregion;
     const struct _upb_fielddef *fielddef;
     void *_void;
   } val;
@@ -194,11 +193,13 @@ UPB_VALUE_ACCESSORS(uint32, uint32, uint32_t, UPB_TYPE(UINT32));
 UPB_VALUE_ACCESSORS(uint64, uint64, uint64_t, UPB_TYPE(UINT64));
 UPB_VALUE_ACCESSORS(bool, _bool, bool, UPB_TYPE(BOOL));
 UPB_VALUE_ACCESSORS(ptr, _void, void*, UPB_VALUETYPE_PTR);
+UPB_VALUE_ACCESSORS(byteregion, byteregion, struct _upb_byteregion*,
+                    UPB_TYPE(STRING));
 
-// upb_fielddef and upb_strref should never be modified from a callback
+// upb_fielddef should never be modified from a callback
 // (ie. when they're getting passed through a upb_value).
-UPB_VALUE_ACCESSORS(strref, strref, const struct _upb_strref*, UPB_TYPE(STRING));
-UPB_VALUE_ACCESSORS(fielddef, fielddef, const struct _upb_fielddef*, UPB_VALUETYPE_FIELDDEF);
+UPB_VALUE_ACCESSORS(fielddef, fielddef, const struct _upb_fielddef*,
+                    UPB_VALUETYPE_FIELDDEF);
 
 extern upb_value UPB_NO_VALUE;
 
@@ -215,43 +216,46 @@ typedef struct {
   const char *name;
   // Writes a NULL-terminated string to "buf" containing an error message for
   // the given error code, returning false if the message was too large to fit.
-  bool (*code_to_string)(int code, char *buf, size_t len);
+  bool (*code_to_string)(int code, char *buf, uint32_t len);
 } upb_errorspace;
 
-// TODO: consider adding error space and code, to let ie. errno be stored
-// as a proper code, or application-specific error codes.
 typedef struct {
   char status;
+  bool eof;
   int code;   // Can be set to a more specific code (defined by error space).
   upb_errorspace *space;
   const char *str;  // NULL when no message is present.  NULL-terminated.
   char *buf;        // Owned by the status.
-  size_t bufsize;
+  uint32_t bufsize;
 } upb_status;
 
-#define UPB_STATUS_INIT {UPB_OK, 0, NULL, NULL, NULL, 0}
+#define UPB_STATUS_INIT {UPB_OK, false, 0, NULL, NULL, NULL, 0}
 
 void upb_status_init(upb_status *status);
 void upb_status_uninit(upb_status *status);
 
-INLINE bool upb_ok(upb_status *status) { return status->code == UPB_OK; }
+INLINE bool upb_ok(const upb_status *status) { return status->code == UPB_OK; }
+INLINE bool upb_eof(const upb_status *status) { return status->eof; }
 
 void upb_status_clear(upb_status *status);
 void upb_status_seterrliteral(upb_status *status, const char *msg);
 void upb_status_seterrf(upb_status *s, const char *msg, ...);
 void upb_status_setcode(upb_status *s, upb_errorspace *space, int code);
+INLINE void upb_status_seteof(upb_status *s) { s->eof = true; }
 // The returned string is invalidated by any other call into the status.
 const char *upb_status_getstr(const upb_status *s);
-void upb_status_copy(upb_status *to, upb_status *from);
+void upb_status_copy(upb_status *to, const upb_status *from);
 
 extern upb_errorspace upb_posix_errorspace;
 void upb_status_fromerrno(upb_status *status);
 
-// Like vaprintf, but uses *buf (which can be NULL) as a starting point and
-// reallocates it only if the new value will not fit.  "size" is updated to
-// reflect the allocated size of the buffer.  Returns false on memory alloc
-// failure.
-int upb_vrprintf(char **buf, size_t *size, size_t ofs,
+// Like vasprintf (which allocates a string large enough for the result), but
+// uses *buf (which can be NULL) as a starting point and reallocates it only if
+// the new value will not fit.  "size" is updated to reflect the allocated size
+// of the buffer.  Starts writing at the given offset into the string; bytes
+// preceding this offset are unaffected.  Returns the new length of the string,
+// or -1 on memory allocation failure.
+int upb_vrprintf(char **buf, uint32_t *size, uint32_t ofs,
                  const char *fmt, va_list args);
 
 #ifdef __cplusplus

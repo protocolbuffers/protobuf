@@ -151,13 +151,14 @@ static void _upb_stdmsg_setstr(void *_dst, upb_value src) {
     *dstp = dst;
   }
   dst->len = 0;
-  const upb_strref *ref = upb_value_getstrref(src);
-  if (ref->len > dst->size) {
-    dst->size = ref->len;
+  const upb_byteregion *bytes = upb_value_getbyteregion(src);
+  uint32_t len = upb_byteregion_len(bytes);
+  if (len > dst->size) {
+    dst->size = len;
     dst->ptr = realloc(dst->ptr, dst->size);
   }
-  dst->len = ref->len;
-  upb_bytesrc_read(ref->bytesrc, ref->stream_offset, ref->len, dst->ptr);
+  dst->len = len;
+  upb_byteregion_copyall(bytes, dst->ptr);
 }
 
 upb_flow_t upb_stdmsg_setstr(void *_m, upb_value fval, upb_value val) {
