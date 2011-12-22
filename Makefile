@@ -211,7 +211,7 @@ VARIADIC_TESTS= \
   tests/t.test_vs_proto2.googlemessage1 \
   tests/t.test_vs_proto2.googlemessage2 \
 
-TESTS=$(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS) $(VARIADIC_TESTS)
+TESTS=$(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS) $(VARIADIC_TESTS) $(SLOW_TESTS)
 tests: $(TESTS)
 $(TESTS): $(LIBUPB)
 tests/tests: tests/test.proto.pb
