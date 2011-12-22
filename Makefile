@@ -199,11 +199,9 @@ SIMPLE_TESTS= \
   tests/test_varint \
   tests/tests \
 
-INTERACTIVE_TESTS= \
+# Too many tests in this binary to run Valgrind (it takes minutes).
+SLOW_TESTS= \
   tests/test_decoder \
-
-#  tests/test_stream \
-
 
 SIMPLE_CXX_TESTS= \
   tests/test_table \
@@ -214,9 +212,7 @@ VARIADIC_TESTS= \
   tests/t.test_vs_proto2.googlemessage2 \
 
 TESTS=$(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS) $(VARIADIC_TESTS)
-
-
-tests: $(TESTS) $(INTERACTIVE_TESTS)
+tests: $(TESTS)
 $(TESTS): $(LIBUPB)
 tests/tests: tests/test.proto.pb
 
@@ -228,13 +224,21 @@ VALGRIND=valgrind --leak-check=full --error-exitcode=1
 test: tests
 	@echo Running all tests under valgrind.
 	@set -e  # Abort on error.
-	@for test in $(TESTS); do \
+	@for test in $(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS); do \
 	  if [ -x ./$$test ] ; then \
-	    echo !!! $(VALGRIND) ./$$test; \
-	    $(VALGRIND) ./$$test || exit 1; \
+	    echo !!! $(VALGRIND) ./$$test tests/test.proto.pb; \
+	    $(VALGRIND) ./$$test tests/test.proto.pb || exit 1; \
 	  fi \
-	done; \
-	echo "All tests passed!"
+	done;
+	@for test in "$(SLOW_TESTS)"; do \
+	  if [ -x ./$$test ] ; then \
+	    echo !!! ./$$test; \
+	    ./$$test || exit 1; \
+	  fi \
+	done;
+	@$(VALGRIND) tests/t.test_vs_proto2.googlemessage1 benchmarks/google_messages.proto.pb benchmarks/google_message1.dat
+	@$(VALGRIND) tests/t.test_vs_proto2.googlemessage2 benchmarks/google_messages.proto.pb benchmarks/google_message2.dat
+	@echo "All tests passed!"
 
 tests/t.test_vs_proto2.googlemessage1 \
 tests/t.test_vs_proto2.googlemessage2: \

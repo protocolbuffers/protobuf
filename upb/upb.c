@@ -142,7 +142,8 @@ bool upb_errno_is_wouldblock() {
 bool upb_posix_codetostr(int code, char *buf, size_t len) {
   if (strerror_r(code, buf, len) == -1) {
     if (errno == EINVAL) {
-      return snprintf(buf, len, "Invalid POSIX error number %d\n", code) >= len;
+      int n = snprintf(buf, len, "Invalid POSIX error number %d\n", code);
+      return n >= (int)len;
     } else if (errno == ERANGE) {
       return false;
     }

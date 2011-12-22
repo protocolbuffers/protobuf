@@ -12,6 +12,8 @@ static size_t len;
 static void *msg[NUM_MESSAGES];
 static upb_stringsrc strsrc;
 static upb_decoder d;
+static upb_decoderplan *p;
+char *str;
 
 static bool initialize()
 {
@@ -33,7 +35,7 @@ static bool initialize()
   upb_symtab_unref(s);
 
   // Read the message data itself.
-  char *str = upb_readfile(MESSAGE_FILE, &len);
+  str = upb_readfile(MESSAGE_FILE, &len);
   if(str == NULL) {
     fprintf(stderr, "Error reading " MESSAGE_FILE "\n");
     return false;
@@ -43,12 +45,12 @@ static bool initialize()
     msg[i] = upb_stdmsg_new(def);
 
   upb_stringsrc_init(&strsrc);
-  upb_stringsrc_reset(&strsrc, str, len);
   upb_handlers *h = upb_handlers_new();
   upb_accessors_reghandlers(h, def);
-  if (!JIT) h->should_jit = false;
-  upb_decoder_init(&d, h);
+  p = upb_decoderplan_new(h, JIT);
+  upb_decoder_init(&d);
   upb_handlers_unref(h);
+  upb_decoder_resetplan(&d, p, 0);
 
   if (!BYREF) {
     // TODO: use byref/byval accessors.
@@ -63,6 +65,8 @@ static void cleanup()
   upb_def_unref(UPB_UPCAST(def));
   upb_stringsrc_uninit(&strsrc);
   upb_decoder_uninit(&d);
+  upb_decoderplan_unref(p);
+  free(str);
 }
 
 static size_t run(int i)
@@ -70,10 +74,9 @@ static size_t run(int i)
   upb_status status = UPB_STATUS_INIT;
   i %= NUM_MESSAGES;
   upb_msg_clear(msg[i], def);
-  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc),
-                    0, UPB_NONDELIMITED, msg[i]);
-  upb_decoder_decode(&d, &status);
-  if(!upb_ok(&status)) goto err;
+  upb_stringsrc_reset(&strsrc, str, len);
+  upb_decoder_resetinput(&d, upb_stringsrc_allbytes(&strsrc), msg[i]);
+  if (upb_decoder_decode(&d) != UPB_OK) goto err;
   return len;
 
 err:

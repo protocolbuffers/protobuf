@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/wire_format_lite.h>
-#include "upb/benchmarks/google_messages.pb.h"
+#include "benchmarks/google_messages.pb.h"
 #include "upb/def.h"
 #include "upb/msg.h"
 #include "upb/pb/glue.h"

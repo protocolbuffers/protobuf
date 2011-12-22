@@ -12,6 +12,7 @@ static size_t input_len;
 static const upb_msgdef *def;
 static upb_decoder decoder;
 static upb_stringsrc stringsrc;
+static upb_decoderplan *plan;
 
 static upb_sflow_t startsubmsg(void *_m, upb_value fval) {
   (void)_m;
@@ -53,11 +54,12 @@ static bool initialize()
   }
 
   upb_handlers *handlers = upb_handlers_new();
-  if (!JIT) handlers->should_jit = false;
   // Cause all messages to be read, but do nothing when they are.
   upb_handlerset hset = {NULL, NULL, value, startsubmsg, NULL, NULL, NULL};
   upb_handlers_reghandlerset(handlers, def, &hset);
-  upb_decoder_init(&decoder, handlers);
+  upb_decoder_init(&decoder);
+  plan = upb_decoderplan_new(handlers, JIT);
+  upb_decoder_resetplan(&decoder, plan, 0);
   upb_handlers_unref(handlers);
   upb_stringsrc_init(&stringsrc);
   return true;
@@ -68,6 +70,7 @@ static void cleanup()
   free(input_str);
   upb_def_unref(UPB_UPCAST(def));
   upb_decoder_uninit(&decoder);
+  upb_decoderplan_unref(plan);
   upb_stringsrc_uninit(&stringsrc);
 }
 
@@ -76,10 +79,8 @@ static size_t run(int i)
   (void)i;
   upb_status status = UPB_STATUS_INIT;
   upb_stringsrc_reset(&stringsrc, input_str, input_len);
-  upb_decoder_reset(&decoder, upb_stringsrc_bytesrc(&stringsrc),
-                    0, UPB_NONDELIMITED, NULL);
-  upb_decoder_decode(&decoder, &status);
-  if(!upb_ok(&status)) goto err;
+  upb_decoder_resetinput(&decoder, upb_stringsrc_allbytes(&stringsrc), NULL);
+  if (upb_decoder_decode(&decoder) != UPB_OK) goto err;
   return input_len;
 
 err:

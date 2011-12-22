@@ -30,6 +30,8 @@ MESSAGE_CIDENT msg2;
 static upb_stringsrc strsrc;
 static upb_decoder d;
 static const upb_msgdef *def;
+static upb_decoderplan *p;
+char *str;
 
 #define PROTO2_APPEND(type, ctype) \
   upb_flow_t proto2_append_ ## type(void *_r, upb_value fval, upb_value val) { \
@@ -53,9 +55,13 @@ upb_flow_t proto2_setstr(void *m, upb_value fval, upb_value val) {
   const upb_fielddef *f = upb_value_getfielddef(fval);
   std::string **str = (std::string**)UPB_INDEX(m, f->offset, 1);
   if (*str == f->default_ptr) *str = new std::string;
-  const upb_strref *ref = upb_value_getstrref(val);
+  const upb_byteregion *reg = upb_value_getbyteregion(val);
+  size_t len;
+  (*str)->assign(
+      upb_byteregion_getptr(reg, upb_byteregion_startofs(reg), &len),
+      upb_byteregion_len(reg));
   // XXX: only supports contiguous strings atm.
-  (*str)->assign(ref->ptr, ref->len);
+  assert(len == upb_byteregion_len(reg));
   return UPB_CONTINUE;
 }
 
@@ -64,9 +70,13 @@ upb_flow_t proto2_append_str(void *_r, upb_value fval, upb_value val) {
   typedef google::protobuf::RepeatedPtrField<std::string> R;
   (void)fval;
   R *r = (R*)_r;
-  const upb_strref *ref = upb_value_getstrref(val);
+  const upb_byteregion *reg = upb_value_getbyteregion(val);
+  size_t len;
+  r->Add()->assign(
+      upb_byteregion_getptr(reg, upb_byteregion_startofs(reg), &len),
+      upb_byteregion_len(reg));
   // XXX: only supports contiguous strings atm.
-  r->Add()->assign(ref->ptr, ref->len);
+  assert(len == upb_byteregion_len(reg));
   return UPB_CONTINUE;
 }
 
@@ -265,7 +275,7 @@ static bool initialize()
   upb_symtab_unref(s);
 
   // Read the message data itself.
-  char *str = upb_readfile(MESSAGE_FILE, &len);
+  str = upb_readfile(MESSAGE_FILE, &len);
   if(str == NULL) {
     fprintf(stderr, "Error reading " MESSAGE_FILE "\n");
     return false;
@@ -275,11 +285,11 @@ static bool initialize()
   msg2.ParseFromArray(str, len);
 
   upb_stringsrc_init(&strsrc);
-  upb_stringsrc_reset(&strsrc, str, len);
   upb_handlers *h = upb_handlers_new();
   upb_accessors_reghandlers(h, def);
-  if (!JIT) h->should_jit = false;
-  upb_decoder_init(&d, h);
+  p = upb_decoderplan_new(h, JIT);
+  upb_decoder_init(&d);
+  upb_decoder_resetplan(&d, p, 0);
   upb_handlers_unref(h);
 
   return true;
@@ -289,6 +299,8 @@ static void cleanup() {
   upb_stringsrc_uninit(&strsrc);
   upb_decoder_uninit(&d);
   upb_def_unref(UPB_UPCAST(def));
+  upb_decoderplan_unref(p);
+  free(str);
 }
 
 static size_t run(int i)
@@ -296,10 +308,10 @@ static size_t run(int i)
   (void)i;
   upb_status status = UPB_STATUS_INIT;
   msg[i % NUM_MESSAGES].Clear();
-  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc),
-                    0, UPB_NONDELIMITED, &msg[i % NUM_MESSAGES]);
-  upb_decoder_decode(&d, &status);
-  if(!upb_ok(&status)) goto err;
+  upb_stringsrc_reset(&strsrc, str, len);
+  upb_decoder_resetinput(
+      &d, upb_stringsrc_allbytes(&strsrc), &msg[i % NUM_MESSAGES]);
+  if (upb_decoder_decode(&d) != UPB_OK) goto err;
   return len;
 
 err:

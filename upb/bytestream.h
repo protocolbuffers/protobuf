@@ -372,7 +372,8 @@ INLINE int upb_bytesink_putc(upb_bytesink *sink, char ch) {
 }
 
 INLINE int upb_bytesink_putrepeated(upb_bytesink *sink, char ch, int len) {
-  for (int i = 0; i < len; i++)
+  int i;
+  for (i = 0; i < len; i++)
     if (upb_bytesink_write(sink, &ch, 1) < 0)
       return -1;
   return len;

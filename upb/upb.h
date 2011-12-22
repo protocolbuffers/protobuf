@@ -262,7 +262,7 @@ void upb_status_copy(upb_status *to, const upb_status *from);
 
 extern upb_errorspace upb_posix_errorspace;
 void upb_status_fromerrno(upb_status *status);
-bool upb_errno_is_wouldblock();
+bool upb_errno_is_wouldblock(void);
 
 // Like vasprintf (which allocates a string large enough for the result), but
 // uses *buf (which can be NULL) as a starting point and reallocates it only if

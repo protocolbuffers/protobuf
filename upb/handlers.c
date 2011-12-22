@@ -187,6 +187,7 @@ upb_dispatcher_frame *upb_dispatcher_reset(upb_dispatcher *d, void *closure,
 }
 
 void upb_dispatcher_uninit(upb_dispatcher *d) {
+  (void)d;
 }
 
 void upb_dispatch_startmsg(upb_dispatcher *d) {

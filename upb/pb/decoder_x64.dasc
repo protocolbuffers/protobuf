@@ -308,7 +308,6 @@ static void upb_assert_notnull(void *addr) { assert(addr != NULL); }
 
 // Decodes the next val into ARG3, advances PTR.
 static void upb_decoderplan_jit_decodefield(upb_decoderplan *plan,
-                                            upb_mhandlers *m,
                                             uint8_t type, size_t tag_size) {
   // Decode the value into arg 3 for the callback.
   switch (type) {
@@ -559,7 +558,7 @@ static void upb_decoderplan_jit_field(upb_decoderplan *plan, uint64_t tag,
     return;
   }
 
-  upb_decoderplan_jit_decodefield(plan, m, f->type, tag_size);
+  upb_decoderplan_jit_decodefield(plan, f->type, tag_size);
   upb_decoderplan_jit_callcb(plan, f);
 
   // Epilogue: load next tag, check for repeated field.

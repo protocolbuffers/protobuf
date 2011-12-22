@@ -96,7 +96,12 @@ void upb_decoderplan_unref(upb_decoderplan *p) {
 }
 
 bool upb_decoderplan_hasjitcode(upb_decoderplan *p) {
+#ifdef UPB_USE_JIT_X64
   return p->jit_code != NULL;
+#else
+  (void)p;
+  return false;
+#endif
 }
 
 
@@ -537,6 +542,7 @@ void upb_decoder_resetplan(upb_decoder *d, upb_decoderplan *p, int msg_offset) {
 void upb_decoder_resetinput(upb_decoder *d, upb_byteregion *input,
                             void *closure) {
   assert(d->plan);
+  assert(upb_byteregion_discardofs(input) == upb_byteregion_startofs(input));
   upb_dispatcher_frame *f =
       upb_dispatcher_reset(&d->dispatcher, closure, d->plan->handlers->msgs[0]);
   upb_status_clear(&d->status);

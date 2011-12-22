@@ -37,15 +37,11 @@ static uint32_t lupb_touint32(lua_State *L, int narg, const char *name) {
   return n;
 }
 
-static void lupb_pushstring(lua_State *L, const upb_strref *ref) {
-  if (ref->ptr) {
-    lua_pushlstring(L, ref->ptr, ref->len);
-  } else {
-    // Lua requires a continguous string; must copy+allocate.
-    char *str = upb_strref_dup(ref);
-    lua_pushlstring(L, str, ref->len);
-    free(str);
-  }
+static void lupb_pushstring(lua_State *L, const upb_byteregion *r) {
+  // TODO: could avoid a copy in the case that the string is contiguous.
+  char *str = upb_byteregion_strdup(r);
+  lua_pushlstring(L, str, upb_byteregion_len(r));
+  free(str);
 }
 
 static void lupb_pushvalue(lua_State *L, upb_value val, upb_fielddef *f) {
@@ -77,7 +73,7 @@ static void lupb_pushvalue(lua_State *L, upb_value val, upb_fielddef *f) {
 
 // Returns a scalar value (ie. not a submessage) as a upb_value.
 static upb_value lupb_getvalue(lua_State *L, int narg, upb_fielddef *f,
-                               upb_strref *ref) {
+                               upb_byteregion *ref) {
   assert(!upb_issubmsg(f));
   upb_value val;
   if (upb_fielddef_type(f) == UPB_TYPE(BOOL)) {
@@ -139,7 +135,7 @@ static upb_value lupb_getvalue(lua_State *L, int narg, upb_fielddef *f,
 }
 
 static void lupb_typecheck(lua_State *L, int narg, upb_fielddef *f) {
-  upb_strref ref;
+  upb_byteregion ref;
   lupb_getvalue(L, narg, f, &ref);
 }
 
@@ -302,8 +298,8 @@ static void lupb_fielddef_set(lua_State *L, upb_fielddef *f,
   } else if (streql(field, "default_value")) {
     if (!upb_fielddef_type(f))
       luaL_error(L, "Must set type before setting default_value");
-    upb_strref ref;
-    upb_fielddef_setdefault(f, lupb_getvalue(L, narg, f, &ref));
+    upb_byteregion region;
+    upb_fielddef_setdefault(f, lupb_getvalue(L, narg, f, &region));
   } else {
     luaL_error(L, "Cannot set fielddef member '%s'", field);
   }
@@ -782,7 +778,7 @@ static upb_flow_t lupb_msg_string(void *m, upb_value fval, upb_value val,
   lua_State *L = *(lua_State**)m;
   int offset = array ? lua_rawlen(L, -1) : f->offset;
   if (!lua_checkstack(L, 1)) luaL_error(L, "stack full");
-  lupb_pushstring(L, upb_value_getstrref(val));
+  lupb_pushstring(L, upb_value_getbyteregion(val));
   lua_rawseti(L, -2, offset);
   return UPB_CONTINUE;
 }

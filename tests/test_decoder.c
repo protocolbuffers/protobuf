@@ -165,6 +165,7 @@ upb_sflow_t startsubmsg(void *closure, upb_value fval) {
 }
 
 upb_flow_t endsubmsg(void *closure, upb_value fval) {
+  (void)fval;
   buffer_appendf(closure, "} ");
   return UPB_CONTINUE;
 }
@@ -175,6 +176,7 @@ upb_sflow_t startseq(void *closure, upb_value fval) {
 }
 
 upb_flow_t endseq(void *closure, upb_value fval) {
+  (void)fval;
   buffer_appendf(closure, "] ");
   return UPB_CONTINUE;
 }
