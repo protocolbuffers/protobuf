@@ -25,7 +25,7 @@ upb_byteregion *upb_byteregion_new(const void *str) {
   return upb_byteregion_newl(str, strlen(str));
 }
 
-upb_byteregion *upb_byteregion_newl(const void *str, uint32_t len) {
+upb_byteregion *upb_byteregion_newl(const void *str, size_t len) {
   upb_stringsrc *src = malloc(sizeof(*src));
   upb_stringsrc_init(src);
   char *ptr = malloc(len + 1);
@@ -37,7 +37,7 @@ upb_byteregion *upb_byteregion_newl(const void *str, uint32_t len) {
 
 void upb_byteregion_free(upb_byteregion *r) {
   if (!r) return;
-  uint32_t len;
+  size_t len;
   free((char*)upb_byteregion_getptr(r, 0, &len));
   upb_stringsrc_uninit((upb_stringsrc*)r->bytesrc);
   free(r->bytesrc);
@@ -64,16 +64,14 @@ void upb_byteregion_reset(upb_byteregion *r, const upb_byteregion *src,
   r->fetch = UPB_MIN(src->fetch, r->end);
 }
 
-bool upb_byteregion_fetch(upb_byteregion *r, upb_status *s) {
+upb_bytesuccess_t upb_byteregion_fetch(upb_byteregion *r) {
   uint64_t fetchable = upb_byteregion_remaining(r, r->fetch);
-  if (fetchable == 0) {
-    upb_status_seteof(s);
-    return false;
-  }
-  uint64_t num = upb_bytesrc_fetch(r->bytesrc, r->fetch, s);
-  if (num == 0) return false;
-  r->fetch += UPB_MIN(num, fetchable);
-  return true;
+  if (fetchable == 0) return UPB_BYTE_EOF;
+  size_t fetched;
+  upb_bytesuccess_t ret = upb_bytesrc_fetch(r->bytesrc, r->fetch, &fetched);
+  if (ret != UPB_BYTE_OK) return false;
+  r->fetch += UPB_MIN(fetched, fetchable);
+  return UPB_BYTE_OK;
 }
 
 
@@ -93,10 +91,10 @@ static upb_stdio_buf *upb_stdio_findbuf(const upb_stdio *s, uint64_t ofs) {
 
 static upb_stdio_buf *upb_stdio_rotatebufs(upb_stdio *s) {
   upb_stdio_buf **reuse = NULL;  // XXX
-  uint32_t num_reused = 0, num_inuse = 0;
+  int num_reused = 0, num_inuse = 0;
 
   // Could sweep only a subset of bufs if this was a hotspot.
-  for (uint32_t i = 0; i < s->nbuf; i++) {
+  for (int i = 0; i < s->nbuf; i++) {
     upb_stdio_buf *buf = s->bufs[i];
     if (buf->refcount > 0) {
       s->bufs[num_inuse++] = buf;
@@ -120,28 +118,37 @@ void upb_stdio_discard(void *src, uint64_t ofs) {
   (void)ofs;
 }
 
-uint32_t upb_stdio_fetch(void *src, uint64_t ofs, upb_status *s) {
+upb_bytesuccess_t upb_stdio_fetch(void *src, uint64_t ofs, size_t *bytes_read) {
   (void)ofs;
   upb_stdio *stdio = (upb_stdio*)src;
   upb_stdio_buf *buf = upb_stdio_rotatebufs(stdio);
-  uint32_t read = fread(&buf->data, 1, BUF_SIZE, stdio->file);
-  buf->len = read;
-  if(read < (uint32_t)BUF_SIZE) {
+retry:
+  *bytes_read = fread(&buf->data, 1, BUF_SIZE, stdio->file);
+  buf->len = *bytes_read;
+  if (*bytes_read < (size_t)BUF_SIZE) {
     // Error or EOF.
-    if(feof(stdio->file)) {
-      upb_status_seteof(s);
-      return read;
+    if (feof(stdio->file)) {
+      upb_status_seteof(&stdio->src.status);
+      return UPB_BYTE_EOF;
     }
-    if(ferror(stdio->file)) {
-      upb_status_fromerrno(s);
-      return 0;
+    if (ferror(stdio->file)) {
+#ifdef EINTR
+      // If we encounter a client who doesn't want to retry EINTR, we can easily
+      // add a boolean property of the stdio that controls this behavior.
+      if (errno == EINTR) {
+        clearerr(stdio->file);
+        goto retry;
+      }
+#endif
+      upb_status_fromerrno(&stdio->src.status);
+      return upb_errno_is_wouldblock() ? UPB_BYTE_WOULDBLOCK : UPB_BYTE_ERROR;
     }
     assert(false);
   }
-  return buf->ofs + buf->len;
+  return UPB_BYTE_OK;
 }
 
-void upb_stdio_read(const void *src, uint64_t ofs, uint32_t len, char *dst) {
+void upb_stdio_copy(const void *src, uint64_t ofs, size_t len, char *dst) {
   upb_stdio_buf *buf = upb_stdio_findbuf(src, ofs);
   ofs -= buf->ofs;
   memcpy(dst, buf->data + ofs, BUF_SIZE - ofs);
@@ -149,14 +156,14 @@ void upb_stdio_read(const void *src, uint64_t ofs, uint32_t len, char *dst) {
   dst += (BUF_SIZE - ofs);
   while (len > 0) {
     ++buf;
-    uint32_t bytes = UPB_MIN(len, BUF_SIZE);
+    size_t bytes = UPB_MIN(len, BUF_SIZE);
     memcpy(dst, buf->data, bytes);
     len -= bytes;
     dst += bytes;
   }
 }
 
-const char *upb_stdio_getptr(const void *src, uint64_t ofs, uint32_t *len) {
+const char *upb_stdio_getptr(const void *src, uint64_t ofs, size_t *len) {
   upb_stdio_buf *buf = upb_stdio_findbuf(src, ofs);
   ofs -= buf->ofs;
   *len = BUF_SIZE - ofs;
@@ -168,7 +175,7 @@ upb_strlen_t upb_stdio_putstr(upb_bytesink *sink, upb_string *str, upb_status *s
   upb_stdio *stdio = (upb_stdio*)((char*)sink - offsetof(upb_stdio, sink));
   upb_strlen_t len = upb_string_len(str);
   upb_strlen_t written = fwrite(upb_string_getrobuf(str), 1, len, stdio->file);
-  if(written < len) {
+  if (written < len) {
     upb_status_setf(status, UPB_ERROR, "Error writing to stdio stream.");
     return -1;
   }
@@ -191,7 +198,7 @@ void upb_stdio_init(upb_stdio *stdio) {
   static upb_bytesrc_vtbl bytesrc_vtbl = {
     &upb_stdio_fetch,
     &upb_stdio_discard,
-    &upb_stdio_read,
+    &upb_stdio_copy,
     &upb_stdio_getptr,
   };
   upb_bytesrc_init(&stdio->src, &bytesrc_vtbl);
@@ -226,20 +233,25 @@ void upb_stdio_uninit(upb_stdio *stdio) {
   stdio->file = NULL;
 }
 
-upb_byteregion* upb_stdio_allbytes(upb_stdio *stdio) { return &stdio->byteregion; }
+upb_bytesrc* upb_stdio_bytesrc(upb_stdio *stdio) { return &stdio->src; }
 upb_bytesink* upb_stdio_bytesink(upb_stdio *stdio) { return &stdio->sink; }
 
 
 /* upb_stringsrc **************************************************************/
 
-uint32_t upb_stringsrc_fetch(void *_src, uint64_t ofs, upb_status *s) {
+upb_bytesuccess_t upb_stringsrc_fetch(void *_src, uint64_t ofs, size_t *read) {
   upb_stringsrc *src = _src;
-  upb_status_seteof(s);
-  return src->len - ofs;
+  assert(ofs < src->len);
+  if (ofs == src->len) {
+    upb_status_seteof(&src->bytesrc.status);
+    return UPB_BYTE_EOF;
+  }
+  *read = src->len - ofs;
+  return UPB_BYTE_OK;
 }
 
-void upb_stringsrc_read(const void *_src, uint64_t ofs,
-                        uint32_t len, char *dst) {
+void upb_stringsrc_copy(const void *_src, uint64_t ofs,
+                        size_t len, char *dst) {
   const upb_stringsrc *src = _src;
   assert(ofs + len <= src->len);
   memcpy(dst, src->str + ofs, len);
@@ -250,7 +262,7 @@ void upb_stringsrc_discard(void *src, uint64_t ofs) {
   (void)ofs;
 }
 
-const char *upb_stringsrc_getptr(const void *_s, uint64_t ofs, uint32_t *len) {
+const char *upb_stringsrc_getptr(const void *_s, uint64_t ofs, size_t *len) {
   const upb_stringsrc *src = _s;
   *len = src->len - ofs;
   return src->str + ofs;
@@ -260,7 +272,7 @@ void upb_stringsrc_init(upb_stringsrc *s) {
   static upb_bytesrc_vtbl vtbl = {
     &upb_stringsrc_fetch,
     &upb_stringsrc_discard,
-    &upb_stringsrc_read,
+    &upb_stringsrc_copy,
     &upb_stringsrc_getptr,
   };
   upb_bytesrc_init(&s->bytesrc, &vtbl);
@@ -269,7 +281,7 @@ void upb_stringsrc_init(upb_stringsrc *s) {
   s->byteregion.toplevel = true;
 }
 
-void upb_stringsrc_reset(upb_stringsrc *s, const char *str, uint32_t len) {
+void upb_stringsrc_reset(upb_stringsrc *s, const char *str, size_t len) {
   s->str = str;
   s->len = len;
   s->byteregion.start = 0;
@@ -280,18 +292,13 @@ void upb_stringsrc_reset(upb_stringsrc *s, const char *str, uint32_t len) {
 
 void upb_stringsrc_uninit(upb_stringsrc *s) { (void)s; }
 
-upb_bytesrc *upb_stringsrc_bytesrc(upb_stringsrc *s) {
-  return &s->bytesrc;
-}
-
-
 /* upb_stringsink *************************************************************/
 
 void upb_stringsink_uninit(upb_stringsink *s) {
   free(s->str);
 }
 
-void upb_stringsink_reset(upb_stringsink *s, char *str, uint32_t size) {
+void upb_stringsink_reset(upb_stringsink *s, char *str, size_t size) {
   free(s->str);
   s->str = str;
   s->len = 0;

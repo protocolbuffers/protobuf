@@ -7,15 +7,19 @@
  * given proto type and input protobuf.
  */
 
+#define __STDC_LIMIT_MACROS  // So we get UINT32_MAX
 #include <assert.h>
 #include <inttypes.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <google/protobuf/descriptor.h>
-#include "benchmarks/google_messages.pb.h"
+#include <google/protobuf/wire_format_lite.h>
+#include "upb/benchmarks/google_messages.pb.h"
 #include "upb/def.h"
 #include "upb/msg.h"
 #include "upb/pb/glue.h"
+#include "upb/pb/varint.h"
 #include "upb_test.h"
 
 size_t string_size;
@@ -179,13 +183,13 @@ void compare(const google::protobuf::Message& proto2_msg,
 
 void parse_and_compare(MESSAGE_CIDENT *proto2_msg,
                        void *upb_msg, const upb_msgdef *upb_md,
-                       const char *str, size_t len)
+                       const char *str, size_t len, bool allow_jit)
 {
   // Parse to both proto2 and upb.
   ASSERT(proto2_msg->ParseFromArray(str, len));
   upb_status status = UPB_STATUS_INIT;
   upb_msg_clear(upb_msg, upb_md);
-  upb_strtomsg(str, len, upb_msg, upb_md, &status);
+  upb_strtomsg(str, len, upb_msg, upb_md, allow_jit, &status);
   if (!upb_ok(&status)) {
     fprintf(stderr, "Error parsing protobuf: %s", upb_status_getstr(&status));
     exit(1);
@@ -241,8 +245,10 @@ int main(int argc, char *argv[])
   // Run twice to test proper object reuse.
   MESSAGE_CIDENT proto2_msg;
   void *upb_msg = upb_stdmsg_new(msgdef);
-  parse_and_compare(&proto2_msg, upb_msg, msgdef, str, len);
-  parse_and_compare(&proto2_msg, upb_msg, msgdef, str, len);
+  parse_and_compare(&proto2_msg, upb_msg, msgdef, str, len, true);
+  parse_and_compare(&proto2_msg, upb_msg, msgdef, str, len, false);
+  parse_and_compare(&proto2_msg, upb_msg, msgdef, str, len, true);
+  parse_and_compare(&proto2_msg, upb_msg, msgdef, str, len, false);
   printf("All tests passed, %d assertions.\n", num_assertions);
 
   upb_stdmsg_free(upb_msg, msgdef);
@@ -250,6 +256,17 @@ int main(int argc, char *argv[])
   free((void*)str);
   upb_symtab_unref(symtab);
   upb_status_uninit(&status);
+
+  // Test Zig-Zag encoding/decoding.
+  for (uint64_t num = 5; num * 1.5 > num; num *= 1.5) {
+    ASSERT(upb_zzenc_64(num) ==
+           google::protobuf::internal::WireFormatLite::ZigZagEncode64(num));
+    if (num < UINT32_MAX) {
+      ASSERT(upb_zzenc_32(num) ==
+             google::protobuf::internal::WireFormatLite::ZigZagEncode32(num));
+    }
+  }
+
   google::protobuf::ShutdownProtobufLibrary();
 
   return 0;

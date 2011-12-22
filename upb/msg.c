@@ -86,14 +86,16 @@ void upb_stdmsg_sethas(void *_m, upb_value fval) {
   assert(_m != NULL);
   char *m = _m;
   const upb_fielddef *f = upb_value_getfielddef(fval);
-  if (f->hasbit >= 0) m[f->hasbit / 8] |= (1 << (f->hasbit % 8));
+  if (f->hasbit >= 0)
+    m[(uint32_t)f->hasbit / 8] |= (1 << ((uint32_t)f->hasbit % 8));
 }
 
 bool upb_stdmsg_has(const void *_m, upb_value fval) {
   assert(_m != NULL);
   const char *m = _m;
   const upb_fielddef *f = upb_value_getfielddef(fval);
-  return f->hasbit < 0 || (m[f->hasbit / 8] & (1 << (f->hasbit % 8)));
+  return f->hasbit < 0 ||
+      (m[(uint32_t)f->hasbit / 8] & (1 << ((uint32_t)f->hasbit % 8)));
 }
 
 #define UPB_ACCESSORS(type, ctype)                                            \

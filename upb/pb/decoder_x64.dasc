@@ -4,20 +4,15 @@
 |// Copyright (c) 2011 Google Inc.  See LICENSE for details.
 |// Author: Josh Haberman <jhaberman@gmail.com>
 |//
-|// JIT compiler for upb_decoder on x86.  Given a upb_handlers object,
-|// generates code specialized to parsing the specific message and
-|// calling specific handlers.
+|// JIT compiler for upb_decoder on x86.  Given a upb_decoderplan object (which
+|// contains an embedded set of upb_handlers), generates code specialized to
+|// parsing the specific message and calling specific handlers.
 |//
 |// Since the JIT can call other functions (the JIT'ted code is not a leaf
 |// function) we must respect alignment rules.  On OS X, this means aligning
 |// the stack to 16 bytes.
 
-#define UPB_NONE -1
-#define UPB_MULTIPLE -2
-#define UPB_TOPLEVEL_ONE -3
-
 #include <sys/mman.h>
-#include "dynasm/dasm_proto.h"
 #include "dynasm/dasm_x86.h"
 
 #ifndef MAP_ANONYMOUS
@@ -73,15 +68,15 @@ gdb_jit_descriptor __jit_debug_descriptor = {1, GDB_JIT_NOACTION, NULL, NULL};
 
 void __attribute__((noinline)) __jit_debug_register_code() { __asm__ __volatile__(""); }
 
-void upb_reg_jit_gdb(upb_decoder *d) {
+void upb_reg_jit_gdb(upb_decoderplan *plan) {
   // Create debug info.
   size_t elf_len = sizeof(upb_jit_debug_elf_file);
-  d->debug_info = malloc(elf_len);
-  memcpy(d->debug_info, upb_jit_debug_elf_file, elf_len);
-  uint64_t *p = (void*)d->debug_info;
-  for (; (void*)(p+1) <= (void*)d->debug_info + elf_len; ++p) {
-    if (*p == 0x12345678) { *p = (uintptr_t)d->jit_code; }
-    if (*p == 0x321) { *p = d->jit_size; }
+  plan->debug_info = malloc(elf_len);
+  memcpy(plan->debug_info, upb_jit_debug_elf_file, elf_len);
+  uint64_t *p = (void*)plan->debug_info;
+  for (; (void*)(p+1) <= (void*)plan->debug_info + elf_len; ++p) {
+    if (*p == 0x12345678) { *p = (uintptr_t)plan->jit_code; }
+    if (*p == 0x321) { *p = plan->jit_size; }
   }
 
   // Register the JIT-ted code with GDB.
@@ -89,7 +84,7 @@ void upb_reg_jit_gdb(upb_decoder *d) {
   e->next_entry = __jit_debug_descriptor.first_entry;
   e->prev_entry = NULL;
   if (e->next_entry) e->next_entry->prev_entry = e;
-  e->symfile_addr = d->debug_info;
+  e->symfile_addr = plan->debug_info;
   e->symfile_size = elf_len;
   __jit_debug_descriptor.first_entry = e;
   __jit_debug_descriptor.relevant_entry = e;
@@ -99,11 +94,16 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 
 #else
 
-void upb_reg_jit_gdb(upb_decoder *d) {
-  (void)d;
+void upb_reg_jit_gdb(upb_decoderplan *plan) {
+  (void)plan;
 }
 
 #endif
+
+// Has to be a separate function, otherwise GCC will complain about
+// expressions like (&foo != NULL) because they will never evaluate
+// to false.
+static void upb_assert_notnull(void *addr) { assert(addr != NULL); }
 
 |.arch x64
 |.actionlist upb_jit_actionlist
@@ -126,7 +126,7 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |// ALL of the code in this file uses these register allocations.
 |// When we "call" within this file, we do not use regular calling
 |// conventions, but of course when calling to user callbacks we must.
-|.define PTR,       rbx
+|.define PTR,       rbx  // Writing this to DECODER->ptr commits our progress.
 |.define CLOSURE,   r12
 |.type   FRAME,     upb_dispatcher_frame, r13
 |.type   BYTEREGION,upb_byteregion, r14
@@ -134,6 +134,7 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |.type   STDARRAY,  upb_stdarray
 |
 |.macro callp, addr
+|| upb_assert_notnull(addr);
 || if ((uintptr_t)addr < 0xffffffff) {
      |  call   &addr
 || } else {
@@ -191,11 +192,12 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |  decode_loaded_varint, 0
 |  mov  ecx, edx
 |  shr  ecx, 3
-|  and  edx, 0x7
+|  and  edx, 0x7   // For the type check that will happen later.
 |  cmp  ecx, m->max_field_number  // Bounds-check the field.
 |  ja   ->exit_jit                // In the future; could be unknown label
 || if ((uintptr_t)m->tablearray < 0xffffffff) {
-|    mov  rax, qword [rcx*8 + m->tablearray]  // TODO: support hybrid array/hash tables.
+|    // TODO: support hybrid array/hash tables.
+|    mov  rax, qword [rcx*8 + m->tablearray]
 || } else {
 |    mov64  rax, (uintptr_t)m->tablearray
 |    mov  rax, qword [rax + rcx*8]
@@ -217,8 +219,9 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |  lea   rax, [FRAME + sizeof(upb_dispatcher_frame)]  // rax for shorter addressing.
 |  cmp   rax, qword DECODER->dispatcher.limit
 |  jae   ->exit_jit  // Frame stack overflow.
-|  mov   qword FRAME:rax->f, f
-|  mov   dword FRAME:rax->end_ofs, end_offset_
+|  mov64 r8, (uintptr_t)f
+|  mov   qword FRAME:rax->f, r8
+|  mov   qword FRAME:rax->end_ofs, end_offset_
 |  mov   byte FRAME:rax->is_sequence, is_sequence_
 |  mov   DECODER->dispatcher.top, rax
 |  mov   FRAME, rax
@@ -294,7 +297,7 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 |
 |.macro sethas, reg, hasbit
 || if (hasbit >= 0) {
-|    or   byte [reg + (hasbit / 8)], (1 << (hasbit % 8))
+|    or   byte [reg + ((uint32_t)hasbit / 8)], (1 << ((uint32_t)hasbit % 8))
 || }
 |.endmacro
 
@@ -304,8 +307,9 @@ void upb_reg_jit_gdb(upb_decoder *d) {
 #include "upb/msg.h"
 
 // Decodes the next val into ARG3, advances PTR.
-static void upb_decoder_jit_decodefield(upb_decoder *d, upb_mhandlers *m,
-                                        uint8_t type, size_t tag_size) {
+static void upb_decoderplan_jit_decodefield(upb_decoderplan *plan,
+                                            upb_mhandlers *m,
+                                            uint8_t type, size_t tag_size) {
   // Decode the value into arg 3 for the callback.
   switch (type) {
     case UPB_TYPE(DOUBLE):
@@ -365,9 +369,9 @@ static void upb_decoder_jit_decodefield(upb_decoder *d, upb_mhandlers *m,
       // robust checks.
       |  mov  ecx, dword [PTR + tag_size]
       |  decode_loaded_varint tag_size
-      |  mov  rdi, DECODER->effective_end
+      |  mov  rdi, DECODER->end
       |  sub  rdi, rax
-      |  cmp  ARG3_64, rdi  // if (len > d->effective_end - str)
+      |  cmp  ARG3_64, rdi  // if (len > d->end - str)
       |  ja   ->exit_jit    // Can't deliver, whole string not in buf.
 
       // Update PTR to point past end of string.
@@ -401,8 +405,8 @@ static void upb_decoder_jit_decodefield(upb_decoder *d, upb_mhandlers *m,
 #if 0
 // These appear not to speed things up, but keeping around for
 // further experimentation.
-static void upb_decoder_jit_doappend(upb_decoder *d, uint8_t size,
-                                     upb_fhandlers *f) {
+static void upb_decoderplan_jit_doappend(upb_decoderplan *plan, uint8_t size,
+                                         upb_fhandlers *f) {
   |  mov   eax, STDARRAY:ARG1_64->len
   |  cmp   eax, STDARRAY:ARG1_64->size
   |  jne   >2
@@ -434,18 +438,19 @@ static void upb_decoder_jit_doappend(upb_decoder *d, uint8_t size,
 }
 #endif
 
-static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
+static void upb_decoderplan_jit_callcb(upb_decoderplan *plan,
+                                       upb_fhandlers *f) {
   // Call callbacks.
   if (upb_issubmsgtype(f->type)) {
     if (f->type == UPB_TYPE(MESSAGE)) {
       |   mov   rsi, PTR
       |   sub   rsi, DECODER->buf
-      |   add   esi, ARG3_32   // = (d->ptr - d->buf) + delim_len
+      |   add   rsi, ARG3_64   // = (d->ptr - d->buf) + delim_len
     } else {
       assert(f->type == UPB_TYPE(GROUP));
-      |   mov   esi, UPB_NONDELIMITED
+      |   mov   rsi, UPB_NONDELIMITED
     }
-    |  pushframe  f, esi, false
+    |  pushframe  f, rsi, false
 
     // Call startsubmsg handler (if any).
     if (f->startsubmsg) {
@@ -456,15 +461,11 @@ static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
       |  mov  CLOSURE, rdx
     }
     |  mov   qword FRAME->closure, CLOSURE
+    // TODO: Handle UPB_SKIPSUBMSG, UPB_BREAK
+    |  mov   DECODER->ptr, PTR
 
     const upb_mhandlers *sub_m = upb_fhandlers_getsubmsg(f);
-    if (sub_m->jit_parent_field_done_pclabel != UPB_MULTIPLE) {
-      |  jmp   =>sub_m->jit_startmsg_pclabel;
-    } else {
-      |  call  =>sub_m->jit_startmsg_pclabel;
-    }
-
-    |=>f->jit_submsg_done_pclabel:
+    |  call  =>sub_m->jit_startmsg_pclabel;
 
     // Call endsubmsg handler (if any).
     if (f->endsubmsg) {
@@ -474,6 +475,8 @@ static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
       |  callp f->endsubmsg
     }
     |   popframe upb_fhandlers_getmsg(f)
+    // TODO: Handle UPB_SKIPSUBMSG, UPB_BREAK
+    |  mov   DECODER->ptr, PTR
   } else {
     |  mov ARG1_64, CLOSURE
     // Test for callbacks we can specialize.
@@ -499,15 +502,15 @@ static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
         f->value == &upb_stdmsg_setuint64_r ||
         f->value == &upb_stdmsg_setptr_r ||
         f->value == &upb_stdmsg_setdouble_r) {
-      upb_decoder_jit_doappend(d, 8, f);
+      upb_decoderplan_jit_doappend(plan, 8, f);
     } else if (f->value == &upb_stdmsg_setint32_r ||
                f->value == &upb_stdmsg_setuint32_r ||
                f->value == &upb_stdmsg_setfloat_r) {
-      upb_decoder_jit_doappend(d, 4, f);
+      upb_decoderplan_jit_doappend(plan, 4, f);
     } else if (f->value == &upb_stdmsg_setbool_r) {
-      upb_decoder_jit_doappend(d, 1, f);
+      upb_decoderplan_jit_doappend(plan, 1, f);
 #endif
-    } else {
+    } else if (f->value) {
       // Load closure and fval into arg registers.
       ||#ifndef NDEBUG
       ||// Since upb_value carries type information in debug mode
@@ -519,14 +522,15 @@ static void upb_decoder_jit_callcb(upb_decoder *d, upb_fhandlers *f) {
       |  callp  f->value
     }
     |  sethas CLOSURE, f->valuehasbit
+    // TODO: Handle UPB_SKIPSUBMSG, UPB_BREAK
+    |  mov   DECODER->ptr, PTR
   }
-  // TODO: Handle UPB_SKIPSUBMSG, UPB_BREAK
 }
 
 // PTR should point to the beginning of the tag.
-static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag,
-                                  uint32_t next_tag, upb_mhandlers *m,
-                                  upb_fhandlers *f, upb_fhandlers *next_f) {
+static void upb_decoderplan_jit_field(upb_decoderplan *plan, uint64_t tag,
+                                      uint64_t next_tag, upb_mhandlers *m,
+                                      upb_fhandlers *f, upb_fhandlers *next_f) {
   // PC-label for the dispatch table.
   // We check the wire type (which must be loaded in edx) because the
   // table is keyed on field number, not type.
@@ -535,8 +539,8 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag,
   |  jne  ->exit_jit     // In the future: could be an unknown field or packed.
   |=>f->jit_pclabel_notypecheck:
   if (f->repeated) {
-    |  mov   esi, FRAME->end_ofs
-    |  pushframe  f, esi, true
+    |  mov   rsi, FRAME->end_ofs
+    |  pushframe  f, rsi, true
     if (f->startseq) {
       |  mov   ARG1_64, CLOSURE
       |  loadfval f
@@ -555,8 +559,8 @@ static void upb_decoder_jit_field(upb_decoder *d, uint32_t tag,
     return;
   }
 
-  upb_decoder_jit_decodefield(d, m, f->type, tag_size);
-  upb_decoder_jit_callcb(d, f);
+  upb_decoderplan_jit_decodefield(plan, m, f->type, tag_size);
+  upb_decoderplan_jit_callcb(plan, f);
 
   // Epilogue: load next tag, check for repeated field.
   |  check_eob   m
@@ -586,13 +590,11 @@ static int upb_compare_uint32(const void *a, const void *b) {
   return *(uint32_t*)a - *(uint32_t*)b;
 }
 
-static void upb_decoder_jit_msg(upb_decoder *d, upb_mhandlers *m) {
+static void upb_decoderplan_jit_msg(upb_decoderplan *plan, upb_mhandlers *m) {
   |=>m->jit_startmsg_pclabel:
+  // There was a call to get here, so we need to align the stack.
+  |  sub  rsp, 8
 
-  if (m->jit_parent_field_done_pclabel == UPB_MULTIPLE) {
-    // There was a call to get here, so we need to align the stack.
-    |  sub  rsp, 8
-  }
   // Call startmsg handler (if any):
   if (m->startmsg) {
     // upb_flow_t startmsg(void *closure);
@@ -615,23 +617,30 @@ static void upb_decoder_jit_msg(upb_decoder *d, upb_mhandlers *m) {
   int num_keys = upb_inttable_count(&m->fieldtab);
   uint32_t *keys = malloc(num_keys * sizeof(*keys));
   int idx = 0;
-  for(upb_inttable_iter i = upb_inttable_begin(&m->fieldtab); !upb_inttable_done(i);
+  for(upb_inttable_iter i = upb_inttable_begin(&m->fieldtab);
+      !upb_inttable_done(i);
       i = upb_inttable_next(&m->fieldtab, i)) {
     keys[idx++] = upb_inttable_iter_key(i);
   }
   qsort(keys, num_keys, sizeof(uint32_t), &upb_compare_uint32);
 
   upb_fhandlers *last_f = NULL;
-  uint32_t last_tag = 0;
+  uint64_t last_encoded_tag = 0;
   for(int i = 0; i < num_keys; i++) {
-    uint32_t key = keys[i];
-    upb_fhandlers *f = upb_inttable_lookup(&m->fieldtab, key);
-    uint32_t tag = upb_vencode32(key);
-    if (last_f) upb_decoder_jit_field(d, last_tag, tag, m, last_f, f);
-    last_tag = tag;
+    uint32_t fieldnum = keys[i];
+    upb_itofhandlers_ent *e = upb_inttable_lookup(&m->fieldtab, fieldnum);
+    upb_fhandlers *f = e->f;
+    assert(f->number == fieldnum);
+    uint32_t tag = (f->number << 3) | upb_types[f->type].native_wire_type;
+    uint64_t encoded_tag = upb_vencode32(tag);
+    // No tag should be greater than 5 bytes.
+    assert(encoded_tag <= 0xffffffffff);
+    if (last_f) upb_decoderplan_jit_field(
+        plan, last_encoded_tag, encoded_tag, m, last_f, f);
+    last_encoded_tag = encoded_tag;
     last_f = f;
   }
-  upb_decoder_jit_field(d, last_tag, 0, m, last_f, NULL);
+  upb_decoderplan_jit_field(plan, last_encoded_tag, 0, m, last_f, NULL);
 
   free(keys);
 
@@ -655,22 +664,29 @@ static void upb_decoder_jit_msg(upb_decoder *d, upb_mhandlers *m) {
     |  callp m->endmsg
   }
 
-  if (m->jit_parent_field_done_pclabel == UPB_MULTIPLE) {
-    // Counter previous alignment.
-    |  add  rsp, 8
-    |  ret
-  } else if (m->jit_parent_field_done_pclabel == UPB_TOPLEVEL_ONE) {
-    |  jmp  ->exit_jit
-  } else {
-    |  jmp  =>m->jit_parent_field_done_pclabel
+  if (m->is_group) {
+    // Advance past the "end group" tag.
+    // TODO: Handle UPB_BREAK
+    |  mov   DECODER->ptr, PTR
   }
 
+  // Counter previous alignment.
+  |  add  rsp, 8
+  |  ret
 }
 
-static const char *dbgfmt =
-    "JIT encountered unknown field!  wt=%d, fn=%d\n";
-
-static void upb_decoder_jit(upb_decoder *d) {
+static void upb_decoderplan_jit(upb_decoderplan *plan) {
+  // The JIT prologue/epilogue trampoline that is generated in this function
+  // does not depend on the handlers, so it will never vary.  Ideally we would
+  // put it in an object file and just link it into upb so we could have only a
+  // single copy of it instead of one copy for each decoderplan.  But our
+  // options for doing that are undesirable: GCC inline assembly is
+  // complicated, not portable to other compilers, and comes with subtle
+  // caveats about incorrect things what the optimizer might do if you eg.
+  // execute non-local jumps.  Putting this code in a .s file would force us to
+  // calculate the structure offsets ourself instead of symbolically
+  // (ie. [r15 + 0xcd] instead of DECODER->ptr).  So we tolerate a bit of
+  // unnecessary duplication/redundancy.
   |  push  rbp
   |  mov   rbp, rsp
   |  push  r15
@@ -686,18 +702,14 @@ static void upb_decoder_jit(upb_decoder *d) {
   |  mov   CLOSURE, FRAME->closure
   |  mov   PTR, DECODER->ptr
 
-  upb_handlers *h = d->dispatcher.handlers;
-  if (h->msgs[0]->jit_parent_field_done_pclabel == UPB_MULTIPLE) {
-    |  call  =>h->msgs[0]->jit_startmsg_pclabel
-    |  jmp   ->exit_jit
-  }
-
   // TODO: push return addresses for re-entry (will be necessary for multiple
   // buffer support).
-  for (int i = 0; i < h->msgs_len; i++) upb_decoder_jit_msg(d, h->msgs[i]);
+  |  call  ARG2_64
 
   |->exit_jit:
-  |  mov   DECODER->ptr, PTR
+  // Restore stack pointer to where it was before any "call" instructions
+  // inside our generated code.
+  |  lea   rsp, [rbp - 48]
   // Counter previous alignment.
   |  add   rsp, 8
   |  pop   rbx
@@ -707,122 +719,128 @@ static void upb_decoder_jit(upb_decoder *d) {
   |  pop   r15
   |  leave
   |  ret
-  |=>0:
-  |  mov rdi, stderr
-  |  mov rsi, dbgfmt
-  |  callp  fprintf
-  |  callp  abort
+
+  upb_handlers *h = plan->handlers;
+  for (int i = 0; i < h->msgs_len; i++)
+    upb_decoderplan_jit_msg(plan, h->msgs[i]);
 }
 
-void upb_decoder_jit_assignfieldlabs(upb_fhandlers *f,
-                                     uint32_t *pclabel_count) {
+static void upb_decoderplan_jit_assignfieldlabs(upb_fhandlers *f,
+                                                uint32_t *pclabel_count) {
   f->jit_pclabel = (*pclabel_count)++;
   f->jit_pclabel_notypecheck = (*pclabel_count)++;
-  f->jit_submsg_done_pclabel = (*pclabel_count)++;
 }
 
-void upb_decoder_jit_assignmsglabs(upb_mhandlers *m, uint32_t *pclabel_count) {
+static void upb_decoderplan_jit_assignmsglabs(upb_mhandlers *m,
+                                              uint32_t *pclabel_count) {
   m->jit_startmsg_pclabel = (*pclabel_count)++;
   m->jit_endofbuf_pclabel = (*pclabel_count)++;
   m->jit_endofmsg_pclabel = (*pclabel_count)++;
   m->jit_dyndispatch_pclabel = (*pclabel_count)++;
   m->jit_unknownfield_pclabel = (*pclabel_count)++;
-  m->jit_parent_field_done_pclabel = UPB_NONE;
   m->max_field_number = 0;
   upb_inttable_iter i;
   for(i = upb_inttable_begin(&m->fieldtab); !upb_inttable_done(i);
       i = upb_inttable_next(&m->fieldtab, i)) {
     uint32_t key = upb_inttable_iter_key(i);
     m->max_field_number = UPB_MAX(m->max_field_number, key);
-    upb_fhandlers *f = upb_inttable_iter_value(i);
-    upb_decoder_jit_assignfieldlabs(f, pclabel_count);
+    upb_itofhandlers_ent *e = upb_inttable_iter_value(i);
+    upb_decoderplan_jit_assignfieldlabs(e->f, pclabel_count);
   }
-  // XXX: Won't work for large field numbers; will need to use a upb_table.
+  // TODO: support large field numbers by either using a hash table or
+  // generating code for a binary search.  For now large field numbers
+  // will just fall back to the table decoder.
+  m->max_field_number = UPB_MIN(m->max_field_number, 16000);
   m->tablearray = malloc((m->max_field_number + 1) * sizeof(void*));
 }
 
-// Second pass: for messages that have only one parent, link them to the field
-// from which they are called.
-void upb_decoder_jit_assignmsglabs2(upb_mhandlers *m) {
-  upb_inttable_iter i;
-  for(i = upb_inttable_begin(&m->fieldtab); !upb_inttable_done(i);
-      i = upb_inttable_next(&m->fieldtab, i)) {
-    upb_fhandlers *f = upb_inttable_iter_value(i);
-    if (upb_issubmsgtype(f->type)) {
-      upb_mhandlers *sub_m = upb_fhandlers_getsubmsg(f);
-      if (sub_m->jit_parent_field_done_pclabel == UPB_NONE) {
-        sub_m->jit_parent_field_done_pclabel = f->jit_submsg_done_pclabel;
-      } else {
-        sub_m->jit_parent_field_done_pclabel = UPB_MULTIPLE;
-      }
-    }
-  }
-}
-
-void upb_decoder_makejit(upb_decoder *d) {
-  d->debug_info = NULL;
+static void upb_decoderplan_makejit(upb_decoderplan *plan) {
+  plan->debug_info = NULL;
 
   // Assign pclabels.
-  uint32_t pclabel_count = 1;
-  upb_handlers *h = d->dispatcher.handlers;
+  uint32_t pclabel_count = 0;
+  upb_handlers *h = plan->handlers;
   for (int i = 0; i < h->msgs_len; i++)
-    upb_decoder_jit_assignmsglabs(h->msgs[i], &pclabel_count);
-  for (int i = 0; i < h->msgs_len; i++)
-    upb_decoder_jit_assignmsglabs2(h->msgs[i]);
-
-  if (h->msgs[0]->jit_parent_field_done_pclabel == UPB_NONE) {
-    h->msgs[0]->jit_parent_field_done_pclabel = UPB_TOPLEVEL_ONE;
-  }
+    upb_decoderplan_jit_assignmsglabs(h->msgs[i], &pclabel_count);
 
   void **globals = malloc(UPB_JIT_GLOBAL__MAX * sizeof(*globals));
-  dasm_init(d, 1);
-  dasm_setupglobal(d, globals, UPB_JIT_GLOBAL__MAX);
-  dasm_growpc(d, pclabel_count);
-  dasm_setup(d, upb_jit_actionlist);
+  dasm_init(plan, 1);
+  dasm_setupglobal(plan, globals, UPB_JIT_GLOBAL__MAX);
+  dasm_growpc(plan, pclabel_count);
+  dasm_setup(plan, upb_jit_actionlist);
 
-  upb_decoder_jit(d);
+  upb_decoderplan_jit(plan);
 
-  dasm_link(d, &d->jit_size);
+  int dasm_status = dasm_link(plan, &plan->jit_size);
+  (void)dasm_status;
+  assert(dasm_status == DASM_S_OK);
 
-  d->jit_code = mmap(NULL, d->jit_size, PROT_READ | PROT_WRITE,
-                     MAP_32BIT | MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
+  plan->jit_code = mmap(NULL, plan->jit_size, PROT_READ | PROT_WRITE,
+                        MAP_32BIT | MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
 
-  upb_reg_jit_gdb(d);
+  upb_reg_jit_gdb(plan);
 
-  dasm_encode(d, d->jit_code);
+  dasm_encode(plan, plan->jit_code);
 
   // Create dispatch tables.
   for (int i = 0; i < h->msgs_len; i++) {
     upb_mhandlers *m = h->msgs[i];
+    m->jit_func =
+        plan->jit_code + dasm_getpclabel(plan, m->jit_startmsg_pclabel);
     for (uint32_t j = 0; j <= m->max_field_number; j++) {
-      upb_fhandlers *f = NULL;
-      for (int k = 0; k < 8; k++) {
-        f = upb_inttable_lookup(&m->fieldtab, (j << 3) | k);
-        if (f) break;
-      }
+      upb_itofhandlers_ent *e = upb_inttable_lookup(&m->fieldtab, j);
+      upb_fhandlers *f = e ? e->f : NULL;
       if (f) {
-        m->tablearray[j] = d->jit_code + dasm_getpclabel(d, f->jit_pclabel);
+        m->tablearray[j] =
+            plan->jit_code + dasm_getpclabel(plan, f->jit_pclabel);
       } else {
-        // Don't handle unknown fields yet.
-        m->tablearray[j] = d->jit_code + dasm_getpclabel(d, 0);
+        // TODO: extend the JIT to handle unknown fields.
+        // For the moment we exit the JIT for any unknown field.
+        m->tablearray[j] = globals[UPB_JIT_GLOBAL_exit_jit];
       }
     }
   }
 
-  dasm_free(d);
+  dasm_free(plan);
   free(globals);
 
-  mprotect(d->jit_code, d->jit_size, PROT_EXEC | PROT_READ);
+  mprotect(plan->jit_code, plan->jit_size, PROT_EXEC | PROT_READ);
 
   // View with: objdump -M intel -D -b binary -mi386 -Mx86-64 /tmp/machine-code
   // Or: ndisasm -b 64 /tmp/machine-code
   FILE *f = fopen("/tmp/machine-code", "wb");
-  fwrite(d->jit_code, d->jit_size, 1, f);
+  fwrite(plan->jit_code, plan->jit_size, 1, f);
   fclose(f);
 }
 
-void upb_decoder_freejit(upb_decoder *d) {
-  munmap(d->jit_code, d->jit_size);
-  free(d->debug_info);
+static void upb_decoderplan_freejit(upb_decoderplan *plan) {
+  munmap(plan->jit_code, plan->jit_size);
+  free(plan->debug_info);
   // TODO: unregister
+}
+
+static void upb_decoder_enterjit(upb_decoder *d) {
+  if (d->plan->jit_code &&
+      d->dispatcher.top == d->dispatcher.stack &&
+      d->ptr && d->ptr < d->jit_end) {
+#ifndef NDEBUG
+    register uint64_t rbx asm ("rbx") = 11;
+    register uint64_t r12 asm ("r12") = 12;
+    register uint64_t r13 asm ("r13") = 13;
+    register uint64_t r14 asm ("r14") = 14;
+    register uint64_t r15 asm ("r15") = 15;
+#endif
+    // Decodes as many fields as possible, updating d->ptr appropriately,
+    // before falling through to the slow(er) path.
+    void (*upb_jit_decode)(upb_decoder *d, void*) = (void*)d->plan->jit_code;
+    upb_jit_decode(d, d->plan->handlers->msgs[d->msg_offset]->jit_func);
+    assert(d->ptr <= d->end);
+
+    // Test that callee-save registers were properly restored.
+    assert(rbx == 11);
+    assert(r12 == 12);
+    assert(r13 == 13);
+    assert(r14 == 14);
+    assert(r15 == 15);
+  }
 }

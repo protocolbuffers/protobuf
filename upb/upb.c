@@ -15,29 +15,32 @@
 #include "upb/bytestream.h"
 
 #define alignof(t) offsetof(struct { char c; t x; }, x)
-#define TYPE_INFO(wire_type, ctype, inmemory_type) \
-    {alignof(ctype), sizeof(ctype), wire_type, UPB_TYPE(inmemory_type), #ctype},
+#define TYPE_INFO(wire_type, ctype, inmemory_type, is_numeric) \
+    {alignof(ctype), sizeof(ctype), wire_type, UPB_TYPE(inmemory_type), \
+     #ctype, is_numeric},
 
 const upb_type_info upb_types[] = {
-  TYPE_INFO(UPB_WIRE_TYPE_END_GROUP,   void*,     MESSAGE)   // ENDGROUP (fake)
-  TYPE_INFO(UPB_WIRE_TYPE_64BIT,       double,    DOUBLE)    // DOUBLE
-  TYPE_INFO(UPB_WIRE_TYPE_32BIT,       float,     FLOAT)     // FLOAT
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int64_t,   INT64)     // INT64
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint64_t,  UINT64)    // UINT64
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int32_t,   INT32)     // INT32
-  TYPE_INFO(UPB_WIRE_TYPE_64BIT,       uint64_t,  UINT64)    // FIXED64
-  TYPE_INFO(UPB_WIRE_TYPE_32BIT,       uint32_t,  UINT32)    // FIXED32
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      bool,      BOOL)      // BOOL
-  TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     STRING)    // STRING
-  TYPE_INFO(UPB_WIRE_TYPE_START_GROUP, void*,     MESSAGE)   // GROUP
-  TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     MESSAGE)   // MESSAGE
-  TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     STRING)    // BYTES
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint32_t,  UINT32)    // UINT32
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint32_t,  INT32)     // ENUM
-  TYPE_INFO(UPB_WIRE_TYPE_32BIT,       int32_t,   INT32)     // SFIXED32
-  TYPE_INFO(UPB_WIRE_TYPE_64BIT,       int64_t,   INT64)     // SFIXED64
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int32_t,   INT32)     // SINT32
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int64_t,   INT64)     // SINT64
+  // END_GROUP is not real, but used to signify the pseudo-field that
+  // ends a group from within the group.
+  TYPE_INFO(UPB_WIRE_TYPE_END_GROUP,   void*,     MESSAGE, false)   // ENDGROUP
+  TYPE_INFO(UPB_WIRE_TYPE_64BIT,       double,    DOUBLE,  true)    // DOUBLE
+  TYPE_INFO(UPB_WIRE_TYPE_32BIT,       float,     FLOAT,   true)    // FLOAT
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int64_t,   INT64,   true)    // INT64
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint64_t,  UINT64,  true)    // UINT64
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int32_t,   INT32,   true)    // INT32
+  TYPE_INFO(UPB_WIRE_TYPE_64BIT,       uint64_t,  UINT64,  true)    // FIXED64
+  TYPE_INFO(UPB_WIRE_TYPE_32BIT,       uint32_t,  UINT32,  true)    // FIXED32
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      bool,      BOOL,    true)    // BOOL
+  TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     STRING,  false)   // STRING
+  TYPE_INFO(UPB_WIRE_TYPE_START_GROUP, void*,     MESSAGE, false)   // GROUP
+  TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     MESSAGE, false)   // MESSAGE
+  TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     STRING,  false)   // BYTES
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint32_t,  UINT32,  true)    // UINT32
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint32_t,  INT32,   true)    // ENUM
+  TYPE_INFO(UPB_WIRE_TYPE_32BIT,       int32_t,   INT32,   true)    // SFIXED32
+  TYPE_INFO(UPB_WIRE_TYPE_64BIT,       int64_t,   INT64,   true)    // SFIXED64
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int32_t,   INT32,   true)    // SINT32
+  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int64_t,   INT64,   true)    // SINT64
 };
 
 #ifdef NDEBUG
@@ -66,13 +69,13 @@ void upb_status_seterrf(upb_status *s, const char *msg, ...) {
 }
 
 void upb_status_seterrliteral(upb_status *status, const char *msg) {
-  status->code = UPB_ERROR;
+  status->error = true;
   status->str = msg;
   status->space = NULL;
 }
 
 void upb_status_copy(upb_status *to, const upb_status *from) {
-  to->status = from->status;
+  to->error = from->error;
   to->eof = from->eof;
   to->code = from->code;
   to->space = from->space;
@@ -92,15 +95,20 @@ const char *upb_status_getstr(const upb_status *_status) {
   // Function is logically const but can modify internal state to materialize
   // the string.
   upb_status *status = (upb_status*)_status;
-  if (status->str == NULL && status->space && status->space->code_to_string) {
-    status->space->code_to_string(status->code, status->buf, status->bufsize);
-    status->str = status->buf;
+  if (status->str == NULL && status->space) {
+    if (status->space->code_to_string) {
+      status->space->code_to_string(status->code, status->buf, status->bufsize);
+      status->str = status->buf;
+    } else {
+      upb_status_seterrf(status, "No message, error space=%s, code=%d\n",
+                         status->space->name, status->code);
+    }
   }
   return status->str;
 }
 
 void upb_status_clear(upb_status *status) {
-  status->status = UPB_OK;
+  status->error = false;
   status->eof = false;
   status->code = 0;
   status->space = NULL;
@@ -114,19 +122,38 @@ void upb_status_setcode(upb_status *status, upb_errorspace *space, int code) {
 }
 
 void upb_status_fromerrno(upb_status *status) {
-  if (errno == 0) {
-    status->status = UPB_OK;
-  } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
-    status->status = UPB_WOULDBLOCK;
-  } else {
-    status->status = UPB_ERROR;
+  if (errno != 0 && !upb_errno_is_wouldblock()) {
+    status->error = true;
+    upb_status_setcode(status, &upb_posix_errorspace, errno);
   }
-  upb_status_setcode(status, &upb_posix_errorspace, errno);
 }
 
-upb_errorspace upb_posix_errorspace = {"POSIX", NULL};  // TODO
+bool upb_errno_is_wouldblock() {
+  return
+#ifdef EAGAIN
+      errno == EAGAIN ||
+#endif
+#ifdef EWOULDBLOCK
+      errno == EWOULDBLOCK ||
+#endif
+      false;
+}
 
-int upb_vrprintf(char **buf, uint32_t *size, uint32_t ofs,
+bool upb_posix_codetostr(int code, char *buf, size_t len) {
+  if (strerror_r(code, buf, len) == -1) {
+    if (errno == EINVAL) {
+      return snprintf(buf, len, "Invalid POSIX error number %d\n", code) >= len;
+    } else if (errno == ERANGE) {
+      return false;
+    }
+    assert(false);
+  }
+  return true;
+}
+
+upb_errorspace upb_posix_errorspace = {"POSIX", &upb_posix_codetostr};
+
+int upb_vrprintf(char **buf, size_t *size, size_t ofs,
                  const char *fmt, va_list args) {
   // Try once without reallocating.  We have to va_copy because we might have
   // to call vsnprintf again.
@@ -141,7 +168,7 @@ int upb_vrprintf(char **buf, uint32_t *size, uint32_t ofs,
     // Need to print again, because some characters were truncated.  vsnprintf
     // will not write the entire string unless you give it space to store the
     // NULL terminator also.
-    while (*size < (ofs + true_len + 1)) *size = UPB_MAX(*size * 2, 2);
+    *size = (ofs + true_len + 1);
     char *newbuf = realloc(*buf, *size);
     if (!newbuf) return -1;
     vsnprintf(newbuf + ofs, true_len + 1, fmt, args);

@@ -63,11 +63,17 @@
 // +------------------------
 // | nondelimited region   Z   <-- won't return EOF until data source hits EOF.
 // +------------------------
+//
+// TODO: if 64-bit math for stream offsets is a performance issue on
+// non-64-bit machines, we could introduce a upb_off_t typedef that can be
+// defined as a 32-bit type for applications that don't need to handle
+// streams longer than 4GB.
 
 
 #ifndef UPB_BYTESTREAM_H
 #define UPB_BYTESTREAM_H
 
+#include <errno.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -79,6 +85,12 @@
 extern "C" {
 #endif
 
+typedef enum {
+  UPB_BYTE_OK = UPB_OK,
+  UPB_BYTE_WOULDBLOCK = UPB_SUSPENDED,
+  UPB_BYTE_ERROR = UPB_ERROR,
+  UPB_BYTE_EOF
+} upb_bytesuccess_t;
 
 /* upb_bytesrc ****************************************************************/
 
@@ -90,10 +102,10 @@ extern "C" {
 // upb_bytesrc is a virtual base class with implementations that get data from
 // eg. a string, a cord, a file descriptor, a FILE*, etc.
 
-typedef uint32_t upb_bytesrc_fetch_func(void*, uint64_t, upb_status*);
+typedef upb_bytesuccess_t upb_bytesrc_fetch_func(void*, uint64_t, size_t*);
 typedef void upb_bytesrc_discard_func(void*, uint64_t);
-typedef void upb_bytesrc_copy_func(const void*, uint64_t, uint32_t, char*);
-typedef const char *upb_bytesrc_getptr_func(const void*, uint64_t, uint32_t*);
+typedef void upb_bytesrc_copy_func(const void*, uint64_t, size_t, char*);
+typedef const char *upb_bytesrc_getptr_func(const void*, uint64_t, size_t*);
 typedef struct _upb_bytesrc_vtbl {
   upb_bytesrc_fetch_func     *fetch;
   upb_bytesrc_discard_func   *discard;
@@ -102,21 +114,27 @@ typedef struct _upb_bytesrc_vtbl {
 } upb_bytesrc_vtbl;
 
 typedef struct {
-  upb_bytesrc_vtbl  *vtbl;
+  const upb_bytesrc_vtbl  *vtbl;
+  upb_status status;
 } upb_bytesrc;
 
-INLINE void upb_bytesrc_init(upb_bytesrc *src, upb_bytesrc_vtbl *vtbl) {
+INLINE void upb_bytesrc_init(upb_bytesrc *src, const upb_bytesrc_vtbl *vtbl) {
   src->vtbl = vtbl;
+  upb_status_init(&src->status);
 }
 
-// Fetches at least one byte starting at ofs, returning the actual number of
-// bytes fetched (or 0 on EOF or error: see *s for details).  Some bytesrc's
-// may set EOF on *s after a successful read if no further data is available,
-// but not all bytesrc's support this.  It is valid for bytes to be fetched
-// multiple times, as long as the bytes have not been previously discarded.
-INLINE uint32_t upb_bytesrc_fetch(upb_bytesrc *src, uint64_t ofs,
-                                  upb_status *s) {
-  return src->vtbl->fetch(src, ofs, s);
+INLINE void upb_bytesrc_uninit(upb_bytesrc *src) {
+  upb_status_uninit(&src->status);
+}
+
+// Fetches at least one byte starting at ofs, returning the success or failure
+// of the operation.  If UPB_BYTE_OK is returned, *read indicates the number of
+// of bytes successfully fetched; any error or EOF status will be reflected in
+// upb_bytesrc_status().  It is valid for bytes to be fetched multiple times,
+// as long as the bytes have not been previously discarded.
+INLINE upb_bytesuccess_t upb_bytesrc_fetch(upb_bytesrc *src, uint64_t ofs,
+                                           size_t *read) {
+  return src->vtbl->fetch(src, ofs, read);
 }
 
 // Discards all data prior to ofs (except data that is pinned, if pinning
@@ -127,7 +145,7 @@ INLINE void upb_bytesrc_discard(upb_bytesrc *src, uint64_t ofs) {
 
 // Copies "len" bytes of data from ofs to "dst", which must be at least "len"
 // bytes long.  The given region must not be discarded.
-INLINE void upb_bytesrc_copy(const upb_bytesrc *src, uint64_t ofs, uint32_t len,
+INLINE void upb_bytesrc_copy(const upb_bytesrc *src, uint64_t ofs, size_t len,
                              char *dst) {
   src->vtbl->copy(src, ofs, len, dst);
 }
@@ -138,7 +156,7 @@ INLINE void upb_bytesrc_copy(const upb_bytesrc *src, uint64_t ofs, uint32_t len,
 // part of the returned buffer is discarded, only the non-discarded bytes
 // remain valid).
 INLINE const char *upb_bytesrc_getptr(const upb_bytesrc *src, uint64_t ofs,
-                                      uint32_t *len) {
+                                      size_t *len) {
   return src->vtbl->getptr(src, ofs, len);
 }
 
@@ -148,14 +166,14 @@ INLINE const char *upb_bytesrc_getptr(const upb_bytesrc *src, uint64_t ofs,
 // // is guaranteed that the region will not be discarded (nor will the bytesrc
 // // be destroyed) until the region is unpinned.  However, not all bytesrc's
 // // support pinning; a false return indicates that a pin was not possible.
-// INLINE bool upb_bytesrc_pin(upb_bytesrc *src, uint64_t ofs, uint32_t len) {
+// INLINE bool upb_bytesrc_pin(upb_bytesrc *src, uint64_t ofs, size_t len) {
 //   return src->vtbl->refregion(src, ofs, len);
 // }
 //
 // // Releases some number of pinned bytes from the beginning of a pinned
 // // region (which may be fewer than the total number of bytes pinned).
-// INLINE void upb_bytesrc_unpin(upb_bytesrc *src, uint64_t ofs, uint32_t len,
-//                               uint32_t bytes_to_release) {
+// INLINE void upb_bytesrc_unpin(upb_bytesrc *src, uint64_t ofs, size_t len,
+//                               size_t bytes_to_release) {
 //   src->vtbl->unpin(src, ofs, len);
 // }
 //
@@ -173,7 +191,7 @@ typedef struct _upb_byteregion {
   uint64_t fetch;
   uint64_t end;         // UPB_NONDELIMITED if nondelimited.
   upb_bytesrc *bytesrc;
-  bool toplevel;        // If true, discards hit the underlying byteregion.
+  bool toplevel;        // If true, discards hit the underlying bytesrc.
 } upb_byteregion;
 
 // Initializes a byteregion.  Its initial value will be empty.  No methods may
@@ -225,14 +243,17 @@ void upb_byteregion_release(upb_byteregion *r);
 // Attempts to fetch more data, extending the fetched range of this byteregion.
 // Returns true if the fetched region was extended by at least one byte, false
 // on EOF or error (see *s for details).
-bool upb_byteregion_fetch(upb_byteregion *r, upb_status *s);
+upb_bytesuccess_t upb_byteregion_fetch(upb_byteregion *r);
 
-// Fetches all remaining data for "r", returning false if the operation failed
-// (see "*s" for details).  May only be used on delimited byteregions.
-INLINE bool upb_byteregion_fetchall(upb_byteregion *r, upb_status *s) {
+// Fetches all remaining data for "r", returning the success of the operation
+// May only be used on delimited byteregions.
+INLINE upb_bytesuccess_t upb_byteregion_fetchall(upb_byteregion *r) {
   assert(upb_byteregion_len(r) != UPB_NONDELIMITED);
-  while (upb_byteregion_fetch(r, s)) ;  // Empty body.
-  return upb_eof(s);
+  upb_bytesuccess_t ret;
+  do {
+    ret = upb_byteregion_fetch(r);
+  } while (ret == UPB_BYTE_OK);
+  return ret == UPB_BYTE_EOF ? UPB_BYTE_OK : ret;
 }
 
 // Discards bytes from the byteregion up until ofs (which must be greater or
@@ -243,13 +264,14 @@ INLINE void upb_byteregion_discard(upb_byteregion *r, uint64_t ofs) {
   assert(ofs >= upb_byteregion_discardofs(r));
   assert(ofs <= upb_byteregion_endofs(r));
   r->discard = ofs;
+  if (ofs > r->fetch) r->fetch = ofs;
   if (r->toplevel) upb_bytesrc_discard(r->bytesrc, ofs);
 }
 
 // Copies "len" bytes of data into "dst", starting at ofs.  The specified
 // region must be available.
 INLINE void upb_byteregion_copy(const upb_byteregion *r, uint64_t ofs,
-                                uint32_t len, char *dst) {
+                                size_t len, char *dst) {
   assert(ofs >= upb_byteregion_discardofs(r));
   assert(len <= upb_byteregion_available(r, ofs));
   upb_bytesrc_copy(r->bytesrc, ofs, len, dst);
@@ -268,7 +290,7 @@ INLINE void upb_byteregion_copyall(const upb_byteregion *r, char *dst) {
 // or when the bytes are discarded.  If the byteregion is not currently pinned,
 // the pointer is only valid for the lifetime of the parent byteregion.
 INLINE const char *upb_byteregion_getptr(const upb_byteregion *r,
-                                         uint64_t ofs, uint32_t *len) {
+                                         uint64_t ofs, size_t *len) {
   assert(ofs >= upb_byteregion_discardofs(r));
   const char *ret = upb_bytesrc_getptr(r->bytesrc, ofs, len);
   *len = UPB_MIN(*len, upb_byteregion_available(r, ofs));
@@ -295,7 +317,7 @@ INLINE const char *upb_byteregion_getptr(const upb_byteregion *r,
 // The string data in the returned region is guaranteed to be contiguous and
 // NULL-terminated.
 upb_byteregion *upb_byteregion_new(const void *str);
-upb_byteregion *upb_byteregion_newl(const void *str, uint32_t len);
+upb_byteregion *upb_byteregion_newl(const void *str, size_t len);
 // May *only* be called on a byteregion created with upb_byteregion_new[l]()!
 void upb_byteregion_free(upb_byteregion *r);
 
@@ -399,7 +421,7 @@ INLINE void upb_bytesink_rewind(upb_bytesink *sink, uint64_t offset) {
 
 typedef struct {
   uint64_t ofs;
-  uint32_t len;
+  size_t len;
   uint32_t refcount;
   char data[];
 } upb_stdio_buf;
@@ -414,7 +436,6 @@ typedef struct {
   bool should_close;
   upb_stdio_buf **bufs;
   uint32_t nbuf, szbuf;
-  upb_byteregion byteregion;
 } upb_stdio;
 
 void upb_stdio_init(upb_stdio *stdio);
@@ -433,7 +454,7 @@ void upb_stdio_reset(upb_stdio *stdio, FILE *file);
 void upb_stdio_open(upb_stdio *stdio, const char *filename, const char *mode,
                     upb_status *s);
 
-upb_byteregion *upb_stdio_allbytes(upb_stdio *stdio);
+upb_bytesrc *upb_stdio_bytesrc(upb_stdio *stdio);
 upb_bytesink *upb_stdio_bytesink(upb_stdio *stdio);
 
 
@@ -444,7 +465,7 @@ upb_bytesink *upb_stdio_bytesink(upb_stdio *stdio);
 typedef struct {
   upb_bytesrc bytesrc;
   const char *str;
-  uint32_t len;
+  size_t len;
   upb_byteregion byteregion;
 } upb_stringsrc;
 
@@ -454,7 +475,11 @@ void upb_stringsrc_uninit(upb_stringsrc *s);
 
 // Resets the stringsrc to a state where it will vend the given string.  The
 // string data must be valid until the stringsrc is reset again or destroyed.
-void upb_stringsrc_reset(upb_stringsrc *s, const char *str, uint32_t len);
+void upb_stringsrc_reset(upb_stringsrc *s, const char *str, size_t len);
+
+INLINE upb_bytesrc *upb_stringsrc_bytesrc(upb_stringsrc *s) {
+  return &s->bytesrc;
+}
 
 // Returns the top-level upb_byteregion* for this stringsrc.  Invalidated when
 // the stringsrc is reset.
@@ -468,7 +493,7 @@ INLINE upb_byteregion *upb_stringsrc_allbytes(upb_stringsrc *s) {
 struct _upb_stringsink {
   upb_bytesink bytesink;
   char *str;
-  uint32_t len, size;
+  size_t len, size;
 };
 typedef struct _upb_stringsink upb_stringsink;
 
@@ -478,12 +503,12 @@ void upb_stringsink_uninit(upb_stringsink *s);
 
 // Resets the sink's string to "str", which the sink takes ownership of.
 // "str" may be NULL, which will make the sink allocate a new string.
-void upb_stringsink_reset(upb_stringsink *s, char *str, uint32_t len);
+void upb_stringsink_reset(upb_stringsink *s, char *str, size_t len);
 
 // Releases ownership of the returned string (which is "len" bytes long) and
 // resets the internal string to be empty again (as if reset were called with
 // NULL).
-const char *upb_stringsink_release(upb_stringsink *s, uint32_t *len);
+const char *upb_stringsink_release(upb_stringsink *s, size_t *len);
 
 // Returns the upb_bytesink* for this stringsrc.  Invalidated by reset above.
 upb_bytesink *upb_stringsink_bytesink(upb_stringsink *s);

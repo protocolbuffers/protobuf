@@ -36,8 +36,8 @@ extern "C" {
 
 // Decodes the given string, which must be in protobuf binary format, to the
 // given upb_msg with msgdef "md", storing the status of the operation in "s".
-void upb_strtomsg(const char *str, size_t len, void *msg,
-                  const upb_msgdef *md, upb_status *s);
+bool upb_strtomsg(const char *str, size_t len, void *msg,
+                  const upb_msgdef *md, bool allow_jit, upb_status *s);
 
 // Parses the given file into a new message of the given type.  Caller owns
 // the returned message (or NULL if an error occurred).

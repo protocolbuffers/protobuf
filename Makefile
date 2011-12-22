@@ -162,13 +162,9 @@ upb/pb/jit_debug_elf_file.o: upb/pb/jit_debug_elf_file.s
 	$(E) GAS $<
 	$(Q) gcc -c upb/pb/jit_debug_elf_file.s -o upb/pb/jit_debug_elf_file.o
 
-upb/pb/jit_debug_elf_file2.o: upb/pb/jit_debug_elf_file.o
-	$(E) OBJCOPY $<
-	$(Q) objcopy --change-section-address .text=0x12345678 $< $@
-
-upb/pb/jit_debug_elf_file.h: upb/pb/jit_debug_elf_file2.o
+upb/pb/jit_debug_elf_file.h: upb/pb/jit_debug_elf_file.o
 	$(E) XXD $<
-	$(Q) xxd -i < upb/pb/jit_debug_elf_file2.o > upb/pb/jit_debug_elf_file.h
+	$(Q) xxd -i < upb/pb/jit_debug_elf_file.o > upb/pb/jit_debug_elf_file.h
 upb/pb/decoder_x64.h: upb/pb/jit_debug_elf_file.h
 endif
 
@@ -232,15 +228,13 @@ VALGRIND=valgrind --leak-check=full --error-exitcode=1
 test: tests
 	@echo Running all tests under valgrind.
 	@set -e  # Abort on error.
-	@for test in $(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS); do \
+	@for test in $(TESTS); do \
 	  if [ -x ./$$test ] ; then \
 	    echo !!! $(VALGRIND) ./$$test; \
-	    $(VALGRIND) ./$$test tests/test.proto.pb || exit 1; \
+	    $(VALGRIND) ./$$test || exit 1; \
 	  fi \
 	done; \
-	$(VALGRIND) ./tests/t.test_vs_proto2.googlemessage1 benchmarks/google_messages.proto.pb benchmarks/google_message1.dat
-	$(VALGRIND) ./tests/t.test_vs_proto2.googlemessage2 benchmarks/google_messages.proto.pb benchmarks/google_message2.dat
-	@echo "All tests passed!"
+	echo "All tests passed!"
 
 tests/t.test_vs_proto2.googlemessage1 \
 tests/t.test_vs_proto2.googlemessage2: \

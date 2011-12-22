@@ -9,7 +9,11 @@
 
 #include <stdio.h>
 #include <iostream>
+#include "upb/bytestream.hpp"
 #include "upb/def.hpp"
+#include "upb/handlers.hpp"
+#include "upb/upb.hpp"
+#include "upb/pb/decoder.hpp"
 #include "upb/pb/glue.hpp"
 
 static void TestSymbolTable(const char *descriptor_file) {
@@ -26,11 +30,22 @@ static void TestSymbolTable(const char *descriptor_file) {
   md->Unref();
 }
 
+static void TestByteStream() {
+  upb::StringSource stringsrc;
+  stringsrc.Reset("testing", 7);
+  upb::ByteRegion* byteregion = stringsrc.AllBytes();
+  assert(byteregion->FetchAll() == UPB_BYTE_OK);
+  char* str = byteregion->StrDup();
+  assert(strcmp(str, "testing") == 0);
+  free(str);
+}
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     fprintf(stderr, "Usage: test_cpp <descriptor file>\n");
     return 1;
   }
   TestSymbolTable(argv[1]);
+  TestByteStream();
   return 0;
 }

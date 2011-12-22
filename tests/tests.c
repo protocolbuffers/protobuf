@@ -39,9 +39,13 @@ static void test_upb_jit() {
   upb_handlers *h = upb_handlers_new();
   upb_handlerset hset = {NULL, NULL, &upb_test_onvalue, NULL, NULL, NULL, NULL};
   upb_handlers_reghandlerset(h, upb_downcast_msgdef_const(def), &hset);
-  upb_decoder d;
-  upb_decoder_init(&d, h);
-  upb_decoder_uninit(&d);
+  upb_decoderplan *p = upb_decoderplan_new(h, true);
+#ifdef UPB_USE_JIT_X64
+  ASSERT(upb_decoderplan_hasjitcode(p));
+#else
+  ASSERT(!upb_decoderplan_hasjitcode(p));
+#endif
+  upb_decoderplan_unref(p);
   upb_symtab_unref(s);
   upb_def_unref(def);
   upb_handlers_unref(h);

@@ -10,10 +10,12 @@
 #ifndef UPB_H_
 #define UPB_H_
 
-#include <stdbool.h>
-#include <stdint.h>
 #include <assert.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 #include "descriptor_const.h"
 #include "atomic.h"
 
@@ -24,6 +26,12 @@ extern "C" {
 // inline if possible, emit standalone code if required.
 #ifndef INLINE
 #define INLINE static inline
+#endif
+
+#ifdef __GNUC__
+#define UPB_NORETURN __attribute__((__noreturn__))
+#else
+#define UPB_NORETURN
 #endif
 
 #define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))
@@ -115,6 +123,7 @@ typedef struct {
   uint8_t native_wire_type;
   uint8_t inmemory_type;    // For example, INT32, SINT32, and SFIXED32 -> INT32
   const char *ctype;
+  bool is_numeric;  // Only numeric types can be packed.
 } upb_type_info;
 
 // A static array of info about all of the field types, indexed by type number.
@@ -176,6 +185,7 @@ typedef struct {
     return val.val.membername; \
   } \
   INLINE void upb_value_set ## name(upb_value *val, ctype cval) { \
+    memset(val, 0, sizeof(*val)); \
     SET_TYPE(val->type, proto_type); \
     val->val.membername = cval; \
   } \
@@ -206,27 +216,31 @@ extern upb_value UPB_NO_VALUE;
 
 /* upb_status *****************************************************************/
 
-enum {
+typedef enum {
   UPB_OK,          // The operation completed successfully.
-  UPB_WOULDBLOCK,  // Stream is nonblocking and the operation would block.
+  UPB_SUSPENDED,   // The operation was suspended and may be resumed later.
   UPB_ERROR,       // An error occurred.
-};
+} upb_success_t;
 
 typedef struct {
   const char *name;
   // Writes a NULL-terminated string to "buf" containing an error message for
   // the given error code, returning false if the message was too large to fit.
-  bool (*code_to_string)(int code, char *buf, uint32_t len);
+  bool (*code_to_string)(int code, char *buf, size_t len);
 } upb_errorspace;
 
 typedef struct {
-  char status;
+  bool error;
   bool eof;
-  int code;   // Can be set to a more specific code (defined by error space).
+
+  // Specific status code defined by some error space (optional).
+  int code;
   upb_errorspace *space;
+
+  // Error message (optional).
   const char *str;  // NULL when no message is present.  NULL-terminated.
   char *buf;        // Owned by the status.
-  uint32_t bufsize;
+  size_t bufsize;
 } upb_status;
 
 #define UPB_STATUS_INIT {UPB_OK, false, 0, NULL, NULL, NULL, 0}
@@ -234,7 +248,7 @@ typedef struct {
 void upb_status_init(upb_status *status);
 void upb_status_uninit(upb_status *status);
 
-INLINE bool upb_ok(const upb_status *status) { return status->code == UPB_OK; }
+INLINE bool upb_ok(const upb_status *status) { return !status->error; }
 INLINE bool upb_eof(const upb_status *status) { return status->eof; }
 
 void upb_status_clear(upb_status *status);
@@ -248,6 +262,7 @@ void upb_status_copy(upb_status *to, const upb_status *from);
 
 extern upb_errorspace upb_posix_errorspace;
 void upb_status_fromerrno(upb_status *status);
+bool upb_errno_is_wouldblock();
 
 // Like vasprintf (which allocates a string large enough for the result), but
 // uses *buf (which can be NULL) as a starting point and reallocates it only if
@@ -255,7 +270,7 @@ void upb_status_fromerrno(upb_status *status);
 // of the buffer.  Starts writing at the given offset into the string; bytes
 // preceding this offset are unaffected.  Returns the new length of the string,
 // or -1 on memory allocation failure.
-int upb_vrprintf(char **buf, uint32_t *size, uint32_t ofs,
+int upb_vrprintf(char **buf, size_t *size, size_t ofs,
                  const char *fmt, va_list args);
 
 #ifdef __cplusplus

@@ -8,7 +8,6 @@
 #include "upb/pb/glue.h"
 
 static const upb_msgdef *def;
-char *str;
 static size_t len;
 static void *msg[NUM_MESSAGES];
 static upb_stringsrc strsrc;
@@ -34,7 +33,7 @@ static bool initialize()
   upb_symtab_unref(s);
 
   // Read the message data itself.
-  str = upb_readfile(MESSAGE_FILE, &len);
+  char *str = upb_readfile(MESSAGE_FILE, &len);
   if(str == NULL) {
     fprintf(stderr, "Error reading " MESSAGE_FILE "\n");
     return false;
@@ -44,6 +43,7 @@ static bool initialize()
     msg[i] = upb_stdmsg_new(def);
 
   upb_stringsrc_init(&strsrc);
+  upb_stringsrc_reset(&strsrc, str, len);
   upb_handlers *h = upb_handlers_new();
   upb_accessors_reghandlers(h, def);
   if (!JIT) h->should_jit = false;
@@ -70,8 +70,8 @@ static size_t run(int i)
   upb_status status = UPB_STATUS_INIT;
   i %= NUM_MESSAGES;
   upb_msg_clear(msg[i], def);
-  upb_stringsrc_reset(&strsrc, str, len);
-  upb_decoder_reset(&d, upb_stringsrc_allbytes(&strsrc), msg[i]);
+  upb_decoder_reset(&d, upb_stringsrc_bytesrc(&strsrc),
+                    0, UPB_NONDELIMITED, msg[i]);
   upb_decoder_decode(&d, &status);
   if(!upb_ok(&status)) goto err;
   return len;

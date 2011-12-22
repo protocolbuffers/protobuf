@@ -132,13 +132,15 @@ typedef upb_flow_t (upb_endfield_handler)(void *closure, upb_value fval);
 
 // A upb_fhandlers object represents the set of handlers associated with one
 // specific message field.
+//
+// TODO: remove upb_decoder-specific fields from this, and instead have
+// upb_decoderplan make a deep copy of the whole graph with its own fields
+// added.
 struct _upb_decoder;
 struct _upb_mhandlers;
 typedef struct _upb_fieldent {
-  bool junk;
   upb_fieldtype_t type;
   bool repeated;
-  bool is_repeated_primitive;
   upb_atomic_t refcount;
   uint32_t number;
   int32_t valuehasbit;
@@ -157,6 +159,11 @@ typedef struct _upb_fieldent {
 #endif
   void (*decode)(struct _upb_decoder *d, struct _upb_fieldent *f);
 } upb_fhandlers;
+
+typedef struct {
+  bool junk;  // Stolen by table impl; see table.h for details.
+  upb_fhandlers *f;
+} upb_itofhandlers_ent;
 
 // fhandlers are created as part of a upb_handlers instance, but can be ref'd
 // and unref'd to prolong the life of the handlers.
@@ -194,16 +201,18 @@ typedef struct _upb_mhandlers {
   upb_inttable fieldtab;  // Maps field number -> upb_fhandlers.
   bool is_group;
 #ifdef UPB_USE_JIT_X64
-  uint32_t jit_startmsg_pclabel;
-  uint32_t jit_endofbuf_pclabel;
-  uint32_t jit_endofmsg_pclabel;
-  uint32_t jit_dyndispatch_pclabel;
-  uint32_t jit_unknownfield_pclabel;
-  int32_t jit_parent_field_done_pclabel;
+  // Used inside the JIT to track labels (jmp targets) in the generated code.
+  uint32_t jit_startmsg_pclabel;  // Starting a parse of this (sub-)message.
+  uint32_t jit_endofbuf_pclabel;  // ptr hitend, but delim_end or jit_end?
+  uint32_t jit_endofmsg_pclabel;  // Done parsing this (sub-)message.
+  uint32_t jit_dyndispatch_pclabel;  // Dispatch by table lookup.
+  uint32_t jit_unknownfield_pclabel;  // Parsed an unknown field.
   uint32_t max_field_number;
   // Currently keyed on field number.  Could also try keying it
   // on encoded or decoded tag, or on encoded field number.
   void **tablearray;
+  // Pointer to the JIT code for parsing this message.
+  void *jit_func;
 #endif
 } upb_mhandlers;
 
@@ -316,62 +325,47 @@ INLINE upb_mhandlers *upb_handlers_reghandlerset(upb_handlers *h, const upb_msgd
 typedef struct {
   upb_fhandlers *f;
   void *closure;
-
-  // Members to use as the data source requires.
-  void *srcclosure;
   uint64_t end_ofs;
-  uint16_t msgindex;
-  uint16_t fieldindex;
-
   bool is_sequence;   // frame represents seq or submsg? (f might be both).
   bool is_packed;     // !upb_issubmsg(f) && end_ofs != UINT64_MAX
                       // (strings aren't pushed).
 } upb_dispatcher_frame;
 
-// Called when some of the input needs to be skipped.  All frames from the
-// current top to "bottom", inclusive, should be skipped.
-typedef void upb_skip_handler(void *, upb_dispatcher_frame *bottom);
 typedef void upb_exit_handler(void *);
 
 typedef struct {
   upb_dispatcher_frame *top, *limit;
 
-  upb_handlers *handlers;
-
   // Msg and dispatch table for the current level.
   upb_mhandlers *msgent;
-  upb_inttable *dispatch_table;
-  upb_skip_handler *skip;
-  upb_exit_handler *exit;
+  upb_mhandlers *toplevel_msgent;
+  upb_exit_handler UPB_NORETURN *exitjmp;
   void *srcclosure;
   bool top_is_implicit;
 
   // Stack.
-  upb_status status;
+  upb_status *status;
   upb_dispatcher_frame stack[UPB_MAX_NESTING];
 } upb_dispatcher;
 
-void upb_dispatcher_init(upb_dispatcher *d, upb_handlers *h,
-                         upb_skip_handler *skip, upb_exit_handler *exit,
-                         void *closure);
-upb_dispatcher_frame *upb_dispatcher_reset(upb_dispatcher *d, void *topclosure);
+// Caller retains ownership of the status object.
+void upb_dispatcher_init(upb_dispatcher *d, upb_status *status,
+                         upb_exit_handler UPB_NORETURN *exit, void *closure);
+upb_dispatcher_frame *upb_dispatcher_reset(upb_dispatcher *d, void *topclosure,
+                                           upb_mhandlers *top_msg);
 void upb_dispatcher_uninit(upb_dispatcher *d);
 
 // Tests whether the message could legally end here (either the stack is empty
 // or the only open stack frame is implicit).
 bool upb_dispatcher_islegalend(upb_dispatcher *d);
 
-// Looks up a field by number for the current message.
-INLINE upb_fhandlers *upb_dispatcher_lookup(upb_dispatcher *d, uint32_t n) {
-  return (upb_fhandlers*)upb_inttable_fastlookup(
-      d->dispatch_table, n, sizeof(upb_fhandlers));
-}
-
-void _upb_dispatcher_unwind(upb_dispatcher *d, upb_flow_t flow);
+// Unwinds one or more stack frames based on the given flow constant that was
+// just returned from a handler.  Calls end handlers as appropriate.
+void _upb_dispatcher_abortjmp(upb_dispatcher *d) UPB_NORETURN;
 
 INLINE void _upb_dispatcher_sethas(void *_p, int32_t hasbit) {
   char *p = (char*)_p;
-  if (hasbit >= 0) p[hasbit / 8] |= (1 << (hasbit % 8));
+  if (hasbit >= 0) p[(uint32_t)hasbit / 8] |= (1 << ((uint32_t)hasbit % 8));
 }
 
 // Dispatch functions -- call the user handler and handle errors.
@@ -380,11 +374,12 @@ INLINE void upb_dispatch_value(upb_dispatcher *d, upb_fhandlers *f,
   upb_flow_t flow = UPB_CONTINUE;
   if (f->value) flow = f->value(d->top->closure, f->fval, val);
   _upb_dispatcher_sethas(d->top->closure, f->valuehasbit);
-  if (flow != UPB_CONTINUE) _upb_dispatcher_unwind(d, flow);
+  if (flow != UPB_CONTINUE) _upb_dispatcher_abortjmp(d);
 }
 void upb_dispatch_startmsg(upb_dispatcher *d);
 void upb_dispatch_endmsg(upb_dispatcher *d, upb_status *status);
-upb_dispatcher_frame *upb_dispatch_startsubmsg(upb_dispatcher *d, upb_fhandlers *f);
+upb_dispatcher_frame *upb_dispatch_startsubmsg(upb_dispatcher *d,
+                                               upb_fhandlers *f);
 upb_dispatcher_frame *upb_dispatch_endsubmsg(upb_dispatcher *d);
 upb_dispatcher_frame *upb_dispatch_startseq(upb_dispatcher *d, upb_fhandlers *f);
 upb_dispatcher_frame *upb_dispatch_endseq(upb_dispatcher *d);

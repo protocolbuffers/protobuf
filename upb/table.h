@@ -127,6 +127,8 @@ INLINE bool _upb_inttable_isarrkey(const upb_inttable *t, uint32_t k) {
 // We have the caller specify the entry_size because fixing this as a literal
 // (instead of reading table->entry_size) gives the compiler more ability to
 // optimize.
+//
+// Note: All returned pointers are invalidated by inserts!
 INLINE void *_upb_inttable_fastlookup(const upb_inttable *t, uint32_t key,
                                       size_t entry_size, size_t value_size) {
   upb_inttable_value *arrval =
@@ -203,8 +205,11 @@ typedef struct {
 } upb_inttable_iter;
 
 upb_inttable_iter upb_inttable_begin(const upb_inttable *t);
-upb_inttable_iter upb_inttable_next(const upb_inttable *t, upb_inttable_iter iter);
-INLINE bool upb_inttable_done(upb_inttable_iter iter) { return iter.value == NULL; }
+upb_inttable_iter upb_inttable_next(const upb_inttable *t,
+                                    upb_inttable_iter iter);
+INLINE bool upb_inttable_done(upb_inttable_iter iter) {
+  return iter.value == NULL;
+}
 INLINE uint32_t upb_inttable_iter_key(upb_inttable_iter iter) {
   return iter.key;
 }

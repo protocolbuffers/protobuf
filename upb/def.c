@@ -334,7 +334,7 @@ static bool upb_fielddef_resolve(upb_fielddef *f, upb_def *def, upb_status *s) {
     if (upb_byteregion_len(bytes) == 0) {
       upb_value_setint32(&f->defaultval, e->defaultval);
     } else {
-      uint32_t len;
+      size_t len;
       // ptr is guaranteed to be NULL-terminated because the byteregion was
       // created with upb_byteregion_newl().
       const char *ptr = upb_byteregion_getptr(bytes, 0, &len);

@@ -19,6 +19,18 @@
 extern "C" {
 #endif
 
+// The maximum number of bytes that it takes to encode a 64-bit varint.
+// Note that with a better encoding this could be 9 (TODO: write up a
+// wiki document about this).
+#define UPB_PB_VARINT_MAX_LEN 10
+
+/* Zig-zag encoding/decoding **************************************************/
+
+INLINE int32_t upb_zzdec_32(uint32_t n) { return (n >> 1) ^ -(int32_t)(n & 1); }
+INLINE int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
+INLINE uint32_t upb_zzenc_32(int32_t n) { return (n << 1) ^ (n >> 31); }
+INLINE uint64_t upb_zzenc_64(int64_t n) { return (n << 1) ^ (n >> 63); }
+
 /* Decoding *******************************************************************/
 
 // All decoding functions return this struct by value.
@@ -56,7 +68,7 @@ done:
 INLINE upb_decoderet upb_vdecode_branch64(const char *p) {
   uint64_t val;
   uint64_t b;
-  upb_decoderet r = {(void*)0, 0};
+  upb_decoderet r = {NULL, 0};
   b = *(p++); val  = (b & 0x7f)      ; if(!(b & 0x80)) goto done;
   b = *(p++); val |= (b & 0x7f) <<  7; if(!(b & 0x80)) goto done;
   b = *(p++); val |= (b & 0x7f) << 14; if(!(b & 0x80)) goto done;
@@ -124,16 +136,32 @@ INLINE int upb_value_size(uint64_t val) {
   return val == 0 ? 1 : high_bit / 8 + 1;
 }
 
-// Encodes a 32-bit varint, *not* sign-extended.
-INLINE uint64_t upb_vencode32(uint32_t val) {
-  uint64_t ret = 0;
-  for (int bitpos = 0; val; bitpos+=8, val >>=7) {
-    if (bitpos > 0) ret |= (1 << (bitpos-1));
-    ret |= (val & 0x7f) << bitpos;
+// Encodes a 64-bit varint into buf (which must be >=UPB_PB_VARINT_MAX_LEN
+// bytes long), returning how many bytes were used.
+//
+// TODO: benchmark and optimize if necessary.
+INLINE size_t upb_vencode64(uint64_t val, char *buf) {
+  if (val == 0) { buf[0] = 0; return 1; }
+  size_t i = 0;
+  while (val) {
+    uint8_t byte = val & 0x7f;
+    val >>= 7;
+    if (val) byte |= 0x80;
+    buf[i++] = byte;
   }
-  return ret;
+  return i;
 }
 
+// Encodes a 32-bit varint, *not* sign-extended.
+INLINE uint64_t upb_vencode32(uint32_t val) {
+  char buf[UPB_PB_VARINT_MAX_LEN];
+  size_t bytes = upb_vencode64(val, buf);
+  uint64_t ret = 0;
+  assert(bytes <= 5);
+  memcpy(&ret, buf, bytes);
+  assert(ret <= 0xffffffffff);
+  return ret;
+}
 
 #ifdef __cplusplus
 }  /* extern "C" */

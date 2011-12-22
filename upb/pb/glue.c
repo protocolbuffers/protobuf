@@ -12,8 +12,8 @@
 #include "upb/pb/glue.h"
 #include "upb/pb/textprinter.h"
 
-void upb_strtomsg(const char *str, size_t len, void *msg, const upb_msgdef *md,
-                  upb_status *status) {
+bool upb_strtomsg(const char *str, size_t len, void *msg, const upb_msgdef *md,
+                  bool allow_jit, upb_status *status) {
   upb_stringsrc strsrc;
   upb_stringsrc_init(&strsrc);
   upb_stringsrc_reset(&strsrc, str, len);
@@ -21,13 +21,21 @@ void upb_strtomsg(const char *str, size_t len, void *msg, const upb_msgdef *md,
   upb_decoder d;
   upb_handlers *h = upb_handlers_new();
   upb_accessors_reghandlers(h, md);
-  upb_decoder_init(&d, h);
+  upb_decoderplan *p = upb_decoderplan_new(h, allow_jit);
+  upb_decoder_init(&d);
   upb_handlers_unref(h);
-  upb_decoder_reset(&d, upb_stringsrc_allbytes(&strsrc), msg);
-  upb_decoder_decode(&d, status);
+  upb_decoder_resetplan(&d, p, 0);
+  upb_decoder_resetinput(&d, upb_stringsrc_allbytes(&strsrc), msg);
+  upb_success_t ret = upb_decoder_decode(&d);
+  // stringsrc and the handlers registered by upb_accessors_reghandlers()
+  // should not suspend.
+  assert((ret == UPB_OK) == upb_ok(upb_decoder_status(&d)));
+  if (status) upb_status_copy(status, upb_decoder_status(&d));
 
   upb_stringsrc_uninit(&strsrc);
   upb_decoder_uninit(&d);
+  upb_decoderplan_unref(p);
+  return ret == UPB_OK;
 }
 
 void *upb_filetonewmsg(const char *fname, const upb_msgdef *md, upb_status *s) {
@@ -35,7 +43,7 @@ void *upb_filetonewmsg(const char *fname, const upb_msgdef *md, upb_status *s) {
   size_t len;
   char *data = upb_readfile(fname, &len);
   if (!data) goto err;
-  upb_strtomsg(data, len, msg, md, s);
+  upb_strtomsg(data, len, msg, md, false, s);
   if (!upb_ok(s)) goto err;
   return msg;
 
@@ -69,7 +77,6 @@ void upb_msgtotext(upb_string *str, upb_msg *msg, upb_msgdef *md,
 }
 #endif
 
-// TODO: read->load.
 upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
                                         upb_status *status) {
   upb_stringsrc strsrc;
@@ -79,17 +86,21 @@ upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
   upb_handlers *h = upb_handlers_new();
   upb_descreader_reghandlers(h);
 
+  upb_decoderplan *p = upb_decoderplan_new(h, false);
   upb_decoder d;
-  upb_decoder_init(&d, h);
+  upb_decoder_init(&d);
   upb_handlers_unref(h);
   upb_descreader r;
   upb_descreader_init(&r);
-  upb_decoder_reset(&d, upb_stringsrc_allbytes(&strsrc), &r);
+  upb_decoder_resetplan(&d, p, 0);
+  upb_decoder_resetinput(&d, upb_stringsrc_allbytes(&strsrc), &r);
 
-  upb_decoder_decode(&d, status);
+  upb_success_t ret = upb_decoder_decode(&d);
+  if (status) upb_status_copy(status, upb_decoder_status(&d));
   upb_stringsrc_uninit(&strsrc);
   upb_decoder_uninit(&d);
-  if (!upb_ok(status)) {
+  upb_decoderplan_unref(p);
+  if (ret != UPB_OK) {
     upb_descreader_uninit(&r);
     return NULL;
   }
