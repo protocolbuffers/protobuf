@@ -109,7 +109,7 @@ typedef struct _upb_fielddef {
   uint8_t label;         // Use UPB_LABEL() constants.
   int16_t hasbit;
   uint16_t offset;
-  bool default_is_symbolic;
+  bool default_is_string;
   bool active;
   int32_t number;
   char *name;
@@ -161,7 +161,7 @@ INLINE upb_value upb_fielddef_default(const upb_fielddef *f) {
 // returns true, the default returned from upb_fielddef_default() is a string,
 // otherwise it is an integer.
 INLINE bool upb_fielddef_default_is_symbolic(const upb_fielddef *f) {
-  return f->default_is_symbolic;
+  return f->default_is_string;
 }
 
 // The enum or submessage def for this field, if any.  Only meaningful for

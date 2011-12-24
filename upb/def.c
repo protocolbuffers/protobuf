@@ -235,6 +235,7 @@ upb_fielddef *upb_fielddef_new() {
 }
 
 static void upb_fielddef_init_default(upb_fielddef *f) {
+  f->default_is_string = false;
   switch (upb_fielddef_type(f)) {
     case UPB_TYPE(DOUBLE): upb_value_setdouble(&f->defaultval, 0); break;
     case UPB_TYPE(FLOAT): upb_value_setfloat(&f->defaultval, 0); break;
@@ -252,15 +253,16 @@ static void upb_fielddef_init_default(upb_fielddef *f) {
     case UPB_TYPE(BOOL): upb_value_setbool(&f->defaultval, false); break;
     case UPB_TYPE(STRING):
     case UPB_TYPE(BYTES):
-        upb_value_setbyteregion(&f->defaultval, upb_byteregion_new("")); break;
+      f->default_is_string = true;
+      upb_value_setbyteregion(&f->defaultval, upb_byteregion_new(""));
+      break;
     case UPB_TYPE(GROUP):
     case UPB_TYPE(MESSAGE): upb_value_setptr(&f->defaultval, NULL); break;
   }
-  f->default_is_symbolic = false;
 }
 
 static void upb_fielddef_uninit_default(upb_fielddef *f) {
-  if (upb_isstring(f) || f->default_is_symbolic) {
+  if (f->default_is_string) {
     upb_byteregion_free(upb_value_getbyteregion(f->defaultval));
   }
 }
@@ -323,7 +325,7 @@ static bool upb_fielddef_resolve(upb_fielddef *f, upb_def *def, upb_status *s) {
   assert(upb_dyncast_unresolveddef(f->def));
   upb_def_unref(f->def);
   f->def = def;
-  if (f->type == UPB_TYPE(ENUM) && f->default_is_symbolic) {
+  if (f->type == UPB_TYPE(ENUM) && f->default_is_string) {
     // Resolve the enum's default from a string to an integer.
     upb_byteregion *bytes = upb_value_getbyteregion(f->defaultval);
     assert(bytes);  // Points to either a real default or the empty string.
@@ -347,6 +349,7 @@ static bool upb_fielddef_resolve(upb_fielddef *f, upb_def *def, upb_status *s) {
       }
       upb_value_setint32(&f->defaultval, val);
     }
+    f->default_is_string = false;
     upb_byteregion_free(bytes);
   }
   return true;
@@ -387,11 +390,13 @@ void upb_fielddef_setdefault(upb_fielddef *f, upb_value value) {
 
 void upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len) {
   assert(upb_isstring(f) || f->type == UPB_TYPE(ENUM));
-  upb_byteregion *bytes = upb_value_getbyteregion(f->defaultval);
-  assert(bytes);
-  upb_byteregion_free(bytes);
+  if (f->default_is_string) {
+    upb_byteregion *bytes = upb_value_getbyteregion(f->defaultval);
+    assert(bytes);
+    upb_byteregion_free(bytes);
+  }
   upb_value_setbyteregion(&f->defaultval, upb_byteregion_newl(str, len));
-  f->default_is_symbolic = true;
+  f->default_is_string = true;
 }
 
 void upb_fielddef_setdefaultcstr(upb_fielddef *f, const char *str) {
