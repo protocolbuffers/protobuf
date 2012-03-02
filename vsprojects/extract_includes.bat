@@ -7,8 +7,11 @@ md include\google\protobuf\compiler
 md include\google\protobuf\compiler\cpp
 md include\google\protobuf\compiler\java
 md include\google\protobuf\compiler\python
+copy ..\src\google\protobuf\stubs\atomicops.h include\google\protobuf\stubs\atomicops.h
+copy ..\src\google\protobuf\stubs\atomicops_internals_x86_msvc.h include\google\protobuf\stubs\atomicops_internals_x86_msvc.h
 copy ..\src\google\protobuf\stubs\common.h include\google\protobuf\stubs\common.h
 copy ..\src\google\protobuf\stubs\once.h include\google\protobuf\stubs\once.h
+copy ..\src\google\protobuf\stubs\platform_macros.h include\google\protobuf\stubs\platform_macros.h
 copy ..\src\google\protobuf\descriptor.h include\google\protobuf\descriptor.h
 copy ..\src\google\protobuf\descriptor.pb.h include\google\protobuf\descriptor.pb.h
 copy ..\src\google\protobuf\descriptor_database.h include\google\protobuf\descriptor_database.h
