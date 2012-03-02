@@ -188,6 +188,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\stubs\atomicops.h"
+			>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\stubs\atomicops_internals_x86_msvc.h"
+			>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\stubs\platform_macros.h"
+			>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\repeated_field.h"
 				>
 			</File>
@@ -245,6 +257,10 @@
 			</File>
 			<File
 				RelativePath="..\src\google\protobuf\stubs\once.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\stubs\atomicops_internals_x86_msvc.cc"
 				>
 			</File>
 			<File
