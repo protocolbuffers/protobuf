@@ -680,6 +680,21 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // If negative, 10 bytes.  Otheriwse, same as VarintSize32().
   static int VarintSize32SignExtended(int32 value);
 
+  // Compile-time equivalent of VarintSize32().
+  template <uint32 Value>
+  struct StaticVarintSize32 {
+    static const int value =
+        (Value < (1 << 7))
+            ? 1
+            : (Value < (1 << 14))
+                ? 2
+                : (Value < (1 << 21))
+                    ? 3
+                    : (Value < (1 << 28))
+                        ? 4
+                        : 5;
+  };
+
   // Returns the total number of bytes written since this object was created.
   inline int ByteCount() const;
 
