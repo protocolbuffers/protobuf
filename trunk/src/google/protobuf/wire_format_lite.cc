@@ -56,10 +56,10 @@ const int WireFormatLite::kMessageSetMessageTag;
 #endif
 
 const int WireFormatLite::kMessageSetItemTagsSize =
-  io::CodedOutputStream::VarintSize32(kMessageSetItemStartTag) +
-  io::CodedOutputStream::VarintSize32(kMessageSetItemEndTag) +
-  io::CodedOutputStream::VarintSize32(kMessageSetTypeIdTag) +
-  io::CodedOutputStream::VarintSize32(kMessageSetMessageTag);
+  io::CodedOutputStream::StaticVarintSize32<kMessageSetItemStartTag>::value +
+  io::CodedOutputStream::StaticVarintSize32<kMessageSetItemEndTag>::value +
+  io::CodedOutputStream::StaticVarintSize32<kMessageSetTypeIdTag>::value +
+  io::CodedOutputStream::StaticVarintSize32<kMessageSetMessageTag>::value;
 
 const WireFormatLite::CppType
 WireFormatLite::kFieldTypeToCppTypeMap[MAX_FIELD_TYPE + 1] = {
