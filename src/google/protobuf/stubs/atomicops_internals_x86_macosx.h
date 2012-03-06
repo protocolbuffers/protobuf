@@ -252,7 +252,7 @@ inline AtomicWord Barrier_AtomicIncrement(volatile AtomicWord* ptr,
 inline AtomicWord Acquire_CompareAndSwap(volatile AtomicWord* ptr,
                                          AtomicWord old_value,
                                          AtomicWord new_value) {
-  return v8::internal::Acquire_CompareAndSwap(
+  return Acquire_CompareAndSwap(
       reinterpret_cast<volatile AtomicWordCastType*>(ptr),
       old_value, new_value);
 }
@@ -260,7 +260,7 @@ inline AtomicWord Acquire_CompareAndSwap(volatile AtomicWord* ptr,
 inline AtomicWord Release_CompareAndSwap(volatile AtomicWord* ptr,
                                          AtomicWord old_value,
                                          AtomicWord new_value) {
-  return v8::internal::Release_CompareAndSwap(
+  return Release_CompareAndSwap(
       reinterpret_cast<volatile AtomicWordCastType*>(ptr),
       old_value, new_value);
 }
@@ -271,12 +271,12 @@ inline void NoBarrier_Store(volatile AtomicWord* ptr, AtomicWord value) {
 }
 
 inline void Acquire_Store(volatile AtomicWord* ptr, AtomicWord value) {
-  return v8::internal::Acquire_Store(
+  return Acquire_Store(
       reinterpret_cast<volatile AtomicWordCastType*>(ptr), value);
 }
 
 inline void Release_Store(volatile AtomicWord* ptr, AtomicWord value) {
-  return v8::internal::Release_Store(
+  return Release_Store(
       reinterpret_cast<volatile AtomicWordCastType*>(ptr), value);
 }
 
@@ -286,12 +286,12 @@ inline AtomicWord NoBarrier_Load(volatile const AtomicWord* ptr) {
 }
 
 inline AtomicWord Acquire_Load(volatile const AtomicWord* ptr) {
-  return v8::internal::Acquire_Load(
+  return Acquire_Load(
       reinterpret_cast<volatile const AtomicWordCastType*>(ptr));
 }
 
 inline AtomicWord Release_Load(volatile const AtomicWord* ptr) {
-  return v8::internal::Release_Load(
+  return Release_Load(
       reinterpret_cast<volatile const AtomicWordCastType*>(ptr));
 }
 

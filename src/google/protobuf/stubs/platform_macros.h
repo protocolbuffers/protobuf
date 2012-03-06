@@ -55,7 +55,7 @@
 #define GOOGLE_PROTOBUF_HOST_ARCH_MIPS 1
 #define GOOGLE_PROTOBUF_HOST_ARCH_32_BIT 1
 #else
-#error Host architecture was not detected as supported by v8
+#error Host architecture was not detected as supported by protobuf
 #endif
 
 // Target architecture detection. This may be set externally. If not, detect
@@ -74,7 +74,7 @@
 #elif defined(__MIPSEL__)
 #define GOOGLE_PROTOBUF_TARGET_ARCH_MIPS 1
 #else
-#error Target architecture was not detected as supported by v8
+#error Target architecture was not detected as supported by protobuf
 #endif
 #endif
 
@@ -111,7 +111,7 @@
 #endif
 #elif GOOGLE_PROTOBUF_TARGET_ARCH_MIPS
 #else
-#error Target architecture is not supported by v8
+#error Target architecture is not supported by protobuf
 #endif
 
 #if (defined(__APPLE__) && defined(__MACH__)) || \
