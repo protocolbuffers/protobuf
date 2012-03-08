@@ -33,6 +33,8 @@
 
 #include <google/protobuf/stubs/atomicops.h>
 
+#ifdef GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_X86_MSVC_H_
+
 #include <windows.h>
 
 namespace google {
@@ -103,4 +105,5 @@ Atomic64 Barrier_AtomicIncrement(volatile Atomic64* ptr,
 }  // namespace protobuf
 }  // namespace google
 
+#endif  // GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_X86_MSVC_H_
 #endif  // GOOGLE_PROTOBUF_NO_THREADSAFETY
