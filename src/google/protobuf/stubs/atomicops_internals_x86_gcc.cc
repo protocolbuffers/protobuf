@@ -33,7 +33,7 @@
 
 #include <cstring>
 
-#include "atomicops.h"
+#include <google/protobuf/stubs/atomicops.h>
 
 // This file only makes sense with atomicops_internals_x86_gcc.h -- it
 // depends on structs that are defined in that file.  If atomicops.h
