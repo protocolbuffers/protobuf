@@ -207,11 +207,12 @@ class ByteRegion : public upb_byteregion {
 
   template <typename T> void AssignToString(T* str) {
     uint64_t ofs = start_ofs();
-    str->clear();
-    str->reserve(Length());
+    size_t len;
+    const char *ptr = GetPtr(ofs, &len);
+    str->assign(ptr, len);
+    ofs += len;
     while (ofs < end_ofs()) {
-      size_t len;
-      const char *ptr = GetPtr(ofs, &len);
+      ptr = GetPtr(ofs, &len);
       str->append(ptr, len);
       ofs += len;
     }
