@@ -1,7 +1,7 @@
 /*
 ** DynASM ARM encoding engine.
-** Copyright (C) 2005-2011 Mike Pall. All rights reserved.
-** Released under the MIT/X license. See dynasm.lua for full copyright notice.
+** Copyright (C) 2005-2012 Mike Pall. All rights reserved.
+** Released under the MIT license. See dynasm.lua for full copyright notice.
 */
 
 #include <stddef.h>
@@ -360,7 +360,7 @@ int dasm_encode(Dst_DECL, void *buffer)
 	case DASM_STOP: case DASM_SECTION: goto stop;
 	case DASM_ESC: *cp++ = *p++; break;
 	case DASM_REL_EXT:
-	  n = DASM_EXTERN(Dst, (unsigned char *)cp, (ins & 2047), 1);
+	  n = DASM_EXTERN(Dst, (unsigned char *)cp, (ins&2047), !(ins&2048));
 	  goto patchrel;
 	case DASM_ALIGN:
 	  ins &= 255; while ((((char *)cp - base) & ins)) *cp++ = 0xe1a00000;
@@ -369,10 +369,18 @@ int dasm_encode(Dst_DECL, void *buffer)
 	  CK(n >= 0, UNDEF_LG);
 	case DASM_REL_PC:
 	  CK(n >= 0, UNDEF_PC);
-	  n = *DASM_POS2PTR(D, n) - (int)((char *)cp - base);
+	  n = *DASM_POS2PTR(D, n) - (int)((char *)cp - base) - 4;
 	patchrel:
-	  CK((n & 3) == 0 && ((n-4+0x02000000) >> 26) == 0, RANGE_REL);
-	  cp[-1] |= (((n-4) >> 2) & 0x00ffffff);
+	  if ((ins & 0x800) == 0) {
+	    CK((n & 3) == 0 && ((n+0x02000000) >> 26) == 0, RANGE_REL);
+	    cp[-1] |= ((n >> 2) & 0x00ffffff);
+	  } else if ((ins & 0x1000)) {
+	    CK((n & 3) == 0 && -256 <= n && n <= 256, RANGE_REL);
+	    goto patchimml8;
+	  } else {
+	    CK((n & 3) == 0 && -4096 <= n && n <= 4096, RANGE_REL);
+	    goto patchimml12;
+	  }
 	  break;
 	case DASM_LABEL_LG:
 	  ins &= 2047; if (ins >= 20) D->globals[ins-10] = (void *)(base + n);
@@ -387,11 +395,11 @@ int dasm_encode(Dst_DECL, void *buffer)
 	case DASM_IMM16:
 	  cp[-1] |= ((n & 0xf000) << 4) | (n & 0x0fff);
 	  break;
-	case DASM_IMML8:
+	case DASM_IMML8: patchimml8:
 	  cp[-1] |= n >= 0 ? (0x00800000 | (n & 0x0f) | ((n & 0xf0) << 4)) :
 			     ((-n & 0x0f) | ((-n & 0xf0) << 4));
 	  break;
-	case DASM_IMML12:
+	case DASM_IMML12: patchimml12:
 	  cp[-1] |= n >= 0 ? (0x00800000 | n) : (-n);
 	  break;
 	default: *cp++ = ins; break;

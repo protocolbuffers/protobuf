@@ -1,7 +1,7 @@
 /*
 ** DynASM PPC encoding engine.
-** Copyright (C) 2005-2011 Mike Pall. All rights reserved.
-** Released under the MIT/X license. See dynasm.lua for full copyright notice.
+** Copyright (C) 2005-2012 Mike Pall. All rights reserved.
+** Released under the MIT license. See dynasm.lua for full copyright notice.
 */
 
 #include <stddef.h>
@@ -233,6 +233,9 @@ void dasm_put(Dst_DECL, int start, ...)
       case DASM_IMM:
 #ifdef DASM_CHECKS
 	CK((n & ((1<<((ins>>10)&31))-1)) == 0, RANGE_I);
+#endif
+	n >>= ((ins>>10)&31);
+#ifdef DASM_CHECKS
 	if (ins & 0x8000)
 	  CK(((n + (1<<(((ins>>5)&31)-1)))>>((ins>>5)&31)) == 0, RANGE_I);
 	else
@@ -339,7 +342,7 @@ int dasm_encode(Dst_DECL, void *buffer)
 	case DASM_STOP: case DASM_SECTION: goto stop;
 	case DASM_ESC: *cp++ = *p++; break;
 	case DASM_REL_EXT:
-	  n = DASM_EXTERN(Dst, (unsigned char *)cp, (ins & 2047), 1);
+	  n = DASM_EXTERN(Dst, (unsigned char *)cp, (ins & 2047), 1) - 4;
 	  goto patchrel;
 	case DASM_ALIGN:
 	  ins &= 255; while ((((char *)cp - base) & ins)) *cp++ = 0x60000000;
@@ -360,7 +363,7 @@ int dasm_encode(Dst_DECL, void *buffer)
 	  break;
 	case DASM_LABEL_PC: break;
 	case DASM_IMM:
-	  cp[-1] |= ((n>>((ins>>10)&31)) & ((1<<((ins>>5)&31))-1)) << (ins&31);
+	  cp[-1] |= (n & ((1<<((ins>>5)&31))-1)) << (ins&31);
 	  break;
 	default: *cp++ = ins; break;
 	}

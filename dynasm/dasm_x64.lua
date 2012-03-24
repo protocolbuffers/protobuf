@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 -- DynASM x64 module.
 --
--- Copyright (C) 2005-2011 Mike Pall. All rights reserved.
+-- Copyright (C) 2005-2012 Mike Pall. All rights reserved.
 -- See dynasm.lua for full copyright notice.
 ------------------------------------------------------------------------------
 -- This module just sets 64 bit mode for the combined x86/x64 module.
