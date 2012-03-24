@@ -44,7 +44,7 @@ template <typename T> static FieldHandlers::ValueHandler* GetValueHandler();
 // C++ type.
 #define GET_VALUE_HANDLER(type, ctype) \
     template <> \
-    FieldHandlers::ValueHandler* GetValueHandler<ctype>() { \
+    inline FieldHandlers::ValueHandler* GetValueHandler<ctype>() { \
       return &upb_stdmsg_set ## type; \
     }
 
