@@ -1,84 +1,17 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * Copyright (c) 2010 Google Inc.  See LICENSE for details.
+ * Copyright (c) 2010-2012 Google Inc.  See LICENSE for details.
  * Author: Josh Haberman <jhaberman@gmail.com>
  */
 
 #include "upb/bytestream.h"
-#include "upb/descriptor.h"
-#include "upb/msg.h"
+#include "upb/descriptor/reader.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/glue.h"
-#include "upb/pb/textprinter.h"
-
-bool upb_strtomsg(const char *str, size_t len, void *msg, const upb_msgdef *md,
-                  bool allow_jit, upb_status *status) {
-  upb_stringsrc strsrc;
-  upb_stringsrc_init(&strsrc);
-  upb_stringsrc_reset(&strsrc, str, len);
-
-  upb_decoder d;
-  upb_handlers *h = upb_handlers_new();
-  upb_accessors_reghandlers(h, md);
-  upb_decoderplan *p = upb_decoderplan_new(h, allow_jit);
-  upb_decoder_init(&d);
-  upb_handlers_unref(h);
-  upb_decoder_resetplan(&d, p, 0);
-  upb_decoder_resetinput(&d, upb_stringsrc_allbytes(&strsrc), msg);
-  upb_success_t ret = upb_decoder_decode(&d);
-  // stringsrc and the handlers registered by upb_accessors_reghandlers()
-  // should not suspend.
-  assert((ret == UPB_OK) == upb_ok(upb_decoder_status(&d)));
-  if (status) upb_status_copy(status, upb_decoder_status(&d));
-
-  upb_stringsrc_uninit(&strsrc);
-  upb_decoder_uninit(&d);
-  upb_decoderplan_unref(p);
-  return ret == UPB_OK;
-}
-
-void *upb_filetonewmsg(const char *fname, const upb_msgdef *md, upb_status *s) {
-  void *msg = upb_stdmsg_new(md);
-  size_t len;
-  char *data = upb_readfile(fname, &len);
-  if (!data) goto err;
-  upb_strtomsg(data, len, msg, md, false, s);
-  if (!upb_ok(s)) goto err;
-  return msg;
-
-err:
-  upb_stdmsg_free(msg, md);
-  return NULL;
-}
-
-#if 0
-void upb_msgtotext(upb_string *str, upb_msg *msg, upb_msgdef *md,
-                   bool single_line) {
-  upb_stringsink strsink;
-  upb_stringsink_init(&strsink);
-  upb_stringsink_reset(&strsink, str);
-
-  upb_textprinter *p = upb_textprinter_new();
-  upb_handlers *h = upb_handlers_new();
-  upb_textprinter_reghandlers(h, md);
-  upb_textprinter_reset(p, upb_stringsink_bytesink(&strsink), single_line);
-
-  upb_status status = UPB_STATUS_INIT;
-  upb_msg_runhandlers(msg, md, h, p, &status);
-  // None of {upb_msg_runhandlers, upb_textprinter, upb_stringsink} should be
-  // capable of returning an error.
-  assert(upb_ok(&status));
-  upb_status_uninit(&status);
-
-  upb_stringsink_uninit(&strsink);
-  upb_textprinter_free(p);
-  upb_handlers_unref(h);
-}
-#endif
 
 upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
-                                        upb_status *status) {
+                                        void *owner, upb_status *status) {
   upb_stringsrc strsrc;
   upb_stringsrc_init(&strsrc);
   upb_stringsrc_reset(&strsrc, str, len);
@@ -104,24 +37,10 @@ upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
     upb_descreader_uninit(&r);
     return NULL;
   }
-  upb_def **defs = upb_descreader_getdefs(&r, n);
+  upb_def **defs = upb_descreader_getdefs(&r, owner, n);
   upb_def **defscopy = malloc(sizeof(upb_def*) * (*n));
   memcpy(defscopy, defs, sizeof(upb_def*) * (*n));
   upb_descreader_uninit(&r);
-
-  // Set default accessors and layouts on all messages.
-  for(int i = 0; i < *n; i++) {
-    upb_def *def = defscopy[i];
-    upb_msgdef *md = upb_dyncast_msgdef(def);
-    if (!md) continue;
-    // For field in msgdef:
-    upb_msg_iter i;
-    for(i = upb_msg_begin(md); !upb_msg_done(i); i = upb_msg_next(md, i)) {
-      upb_fielddef *f = upb_msg_iter_field(i);
-      upb_fielddef_setaccessor(f, upb_stdmsg_accessor(f));
-    }
-    upb_msgdef_layout(md);
-  }
 
   return defscopy;
 }
@@ -129,10 +48,9 @@ upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
 bool upb_load_descriptor_into_symtab(upb_symtab *s, const char *str, size_t len,
                                      upb_status *status) {
   int n;
-  upb_def **defs = upb_load_defs_from_descriptor(str, len, &n, status);
+  upb_def **defs = upb_load_defs_from_descriptor(str, len, &n, &defs, status);
   if (!defs) return false;
-  bool success = upb_symtab_add(s, defs, n, status);
-  for(int i = 0; i < n; i++) upb_def_unref(defs[i]);
+  bool success = upb_symtab_add(s, defs, n, &defs, status);
   free(defs);
   return success;
 }

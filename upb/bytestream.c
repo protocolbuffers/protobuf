@@ -32,8 +32,6 @@ upb_byteregion *upb_byteregion_newl(const void *str, size_t len) {
   memcpy(ptr, str, len);
   ptr[len] = '\0';
   upb_stringsrc_reset(src, ptr, len);
-  upb_byteregion_fetch(upb_stringsrc_allbytes(src));
-  assert(len == upb_byteregion_available(upb_stringsrc_allbytes(src), 0));
   return upb_stringsrc_allbytes(src);
 }
 
@@ -93,10 +91,10 @@ static upb_stdio_buf *upb_stdio_findbuf(const upb_stdio *s, uint64_t ofs) {
 
 static upb_stdio_buf *upb_stdio_rotatebufs(upb_stdio *s) {
   upb_stdio_buf **reuse = NULL;  // XXX
-  uint32_t num_reused = 0, num_inuse = 0;
+  int num_reused = 0, num_inuse = 0;
 
   // Could sweep only a subset of bufs if this was a hotspot.
-  for (uint32_t i = 0; i < s->nbuf; i++) {
+  for (int i = 0; i < s->nbuf; i++) {
     upb_stdio_buf *buf = s->bufs[i];
     if (buf->refcount > 0) {
       s->bufs[num_inuse++] = buf;
@@ -243,10 +241,9 @@ upb_bytesink* upb_stdio_bytesink(upb_stdio *stdio) { return &stdio->sink; }
 
 upb_bytesuccess_t upb_stringsrc_fetch(void *_src, uint64_t ofs, size_t *read) {
   upb_stringsrc *src = _src;
-  assert(ofs <= src->len);
+  assert(ofs < src->len);
   if (ofs == src->len) {
     upb_status_seteof(&src->bytesrc.status);
-    *read = 0;
     return UPB_BYTE_EOF;
   }
   *read = src->len - ofs;

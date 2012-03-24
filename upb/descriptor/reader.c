@@ -8,13 +8,14 @@
 #include <stdlib.h>
 #include <errno.h>
 #include "upb/def.h"
-#include "upb/descriptor.h"
+#include "upb/descriptor/descriptor_const.h"
+#include "upb/descriptor/reader.h"
 
 // Returns a newly allocated string that joins input strings together, for example:
 //   join("Foo.Bar", "Baz") -> "Foo.Bar.Baz"
 //   join("", "Baz") -> "Baz"
 // Caller owns a ref on the returned string. */
-static char *upb_join(char *base, char *name) {
+static char *upb_join(const char *base, const char *name) {
   if (!base || strlen(base) == 0) {
     return strdup(name);
   } else {
@@ -27,6 +28,36 @@ static char *upb_join(char *base, char *name) {
   }
 }
 
+void upb_deflist_init(upb_deflist *l) {
+  l->size = 8;
+  l->defs = malloc(l->size * sizeof(void*));
+  l->len = 0;
+  l->owned = true;
+}
+
+void upb_deflist_uninit(upb_deflist *l) {
+  if (l->owned)
+    for(size_t i = 0; i < l->len; i++)
+      upb_def_unref(l->defs[i], &l->defs);
+  free(l->defs);
+}
+
+void upb_deflist_push(upb_deflist *l, upb_def *d) {
+  if(l->len == l->size) {
+    l->size *= 2;
+    l->defs = realloc(l->defs, l->size * sizeof(void*));
+  }
+  l->defs[l->len++] = d;
+}
+
+void upb_deflist_donaterefs(upb_deflist *l, void *owner) {
+  assert(l->owned);
+  for (size_t i = 0; i < l->len; i++)
+    upb_def_donateref(l->defs[i], &l->defs, owner);
+  l->owned = false;
+}
+
+
 /* upb_descreader  ************************************************************/
 
 static upb_def *upb_deflist_last(upb_deflist *l) {
@@ -37,8 +68,8 @@ static upb_def *upb_deflist_last(upb_deflist *l) {
 static void upb_deflist_qualify(upb_deflist *l, char *str, int32_t start) {
   for(uint32_t i = start; i < l->len; i++) {
     upb_def *def = l->defs[i];
-    char *name = def->fqname;
-    def->fqname = upb_join(str, name);
+    char *name = upb_join(str, upb_def_fullname(def));
+    upb_def_setfullname(def, name);
     free(name);
   }
 }
@@ -66,9 +97,9 @@ void upb_descreader_uninit(upb_descreader *r) {
   }
 }
 
-upb_def **upb_descreader_getdefs(upb_descreader *r, int *n) {
+upb_def **upb_descreader_getdefs(upb_descreader *r, void *owner, int *n) {
   *n = r->defs.len;
-  r->defs.len = 0;
+  upb_deflist_donaterefs(&r->defs, owner);
   return r->defs.defs;
 }
 
@@ -204,7 +235,7 @@ static void upb_enumdef_EnumValueDescriptorProto_endmsg(void *_r,
     return;
   }
   upb_enumdef *e = upb_downcast_enumdef(upb_descreader_last(r));
-  if (upb_inttable_count(&e->iton) == 0) {
+  if (upb_enumdef_numvals(e) == 0) {
     // The default value of an enum (in the absence of an explicit default) is
     // its first listed value.
     upb_enumdef_setdefault(e, r->number);
@@ -236,18 +267,18 @@ static upb_mhandlers *upb_enumdef_register_EnumValueDescriptorProto(
 // google.protobuf.EnumDescriptorProto.
 static upb_flow_t upb_enumdef_EnumDescriptorProto_startmsg(void *_r) {
   upb_descreader *r = _r;
-  upb_deflist_push(&r->defs, UPB_UPCAST(upb_enumdef_new()));
+  upb_deflist_push(&r->defs, UPB_UPCAST(upb_enumdef_new(&r->defs)));
   return UPB_CONTINUE;
 }
 
 static void upb_enumdef_EnumDescriptorProto_endmsg(void *_r, upb_status *status) {
   upb_descreader *r = _r;
   upb_enumdef *e = upb_downcast_enumdef(upb_descreader_last(r));
-  if (upb_descreader_last((upb_descreader*)_r)->fqname == NULL) {
+  if (upb_def_fullname(upb_descreader_last((upb_descreader*)_r)) == NULL) {
     upb_status_seterrliteral(status, "Enum had no name.");
     return;
   }
-  if (upb_inttable_count(&e->iton) == 0) {
+  if (upb_enumdef_numvals(e) == 0) {
     upb_status_seterrliteral(status, "Enum had no values.");
     return;
   }
@@ -258,9 +289,9 @@ static upb_flow_t upb_enumdef_EnumDescriptorProto_name(void *_r,
                                                        upb_value val) {
   (void)fval;
   upb_descreader *r = _r;
-  upb_enumdef *e = upb_downcast_enumdef(upb_descreader_last(r));
-  free(e->base.fqname);
-  e->base.fqname = upb_byteregion_strdup(upb_value_getbyteregion(val));
+  char *fullname = upb_byteregion_strdup(upb_value_getbyteregion(val));
+  upb_def_setfullname(upb_descreader_last(r), fullname);
+  free(fullname);
   return UPB_CONTINUE;
 }
 
@@ -284,7 +315,7 @@ static upb_mhandlers *upb_enumdef_register_EnumDescriptorProto(upb_handlers *h) 
 
 static upb_flow_t upb_fielddef_startmsg(void *_r) {
   upb_descreader *r = _r;
-  r->f = upb_fielddef_new();
+  r->f = upb_fielddef_new(&r->defs);
   free(r->default_string);
   r->default_string = NULL;
   return UPB_CONTINUE;
@@ -370,13 +401,12 @@ static void upb_fielddef_endmsg(void *_r, upb_status *status) {
   upb_descreader *r = _r;
   upb_fielddef *f = r->f;
   // TODO: verify that all required fields were present.
-  assert(f->number != -1 && f->name != NULL);
-  assert((f->def != NULL) == upb_hassubdef(f));
+  assert(f->number != -1 && upb_fielddef_name(f) != NULL);
+  assert((upb_fielddef_subtypename(f) != NULL) == upb_hassubdef(f));
 
   // Field was successfully read, add it as a field of the msgdef.
   upb_msgdef *m = upb_descreader_top(r);
-  upb_msgdef_addfield(m, f);
-  upb_fielddef_unref(f);
+  upb_msgdef_addfield(m, f, &r->defs);
   r->f = NULL;
 
   if (r->default_string) {
@@ -435,7 +465,7 @@ static upb_flow_t upb_fielddef_ontypename(void *_r, upb_value fval,
   (void)fval;
   upb_descreader *r = _r;
   char *name = upb_byteregion_strdup(upb_value_getbyteregion(val));
-  upb_fielddef_settypename(r->f, name);
+  upb_fielddef_setsubtypename(r->f, name);
   free(name);
   return UPB_CONTINUE;
 }
@@ -479,7 +509,7 @@ static upb_mhandlers *upb_fielddef_register_FieldDescriptorProto(
 // google.protobuf.DescriptorProto.
 static upb_flow_t upb_msgdef_startmsg(void *_r) {
   upb_descreader *r = _r;
-  upb_deflist_push(&r->defs, UPB_UPCAST(upb_msgdef_new()));
+  upb_deflist_push(&r->defs, UPB_UPCAST(upb_msgdef_new(&r->defs)));
   upb_descreader_startcontainer(r);
   return UPB_CONTINUE;
 }
@@ -487,7 +517,7 @@ static upb_flow_t upb_msgdef_startmsg(void *_r) {
 static void upb_msgdef_endmsg(void *_r, upb_status *status) {
   upb_descreader *r = _r;
   upb_msgdef *m = upb_descreader_top(r);
-  if(!m->base.fqname) {
+  if(!upb_def_fullname(UPB_UPCAST(m))) {
     upb_status_seterrliteral(status, "Encountered message with no name.");
     return;
   }
@@ -497,11 +527,10 @@ static void upb_msgdef_endmsg(void *_r, upb_status *status) {
 static upb_flow_t upb_msgdef_onname(void *_r, upb_value fval, upb_value val) {
   (void)fval;
   upb_descreader *r = _r;
-  assert(val.type == UPB_TYPE(STRING));
   upb_msgdef *m = upb_descreader_top(r);
-  free(m->base.fqname);
-  m->base.fqname = upb_byteregion_strdup(upb_value_getbyteregion(val));
-  upb_descreader_setscopename(r, strdup(m->base.fqname));
+  char *name = upb_byteregion_strdup(upb_value_getbyteregion(val));
+  upb_def_setfullname(UPB_UPCAST(m), name);
+  upb_descreader_setscopename(r, name);  // Passes ownership of name.
   return UPB_CONTINUE;
 }
 
@@ -530,4 +559,3 @@ static upb_mhandlers *upb_msgdef_register_DescriptorProto(upb_handlers *h) {
 }
 #undef FNUM
 #undef FTYPE
-

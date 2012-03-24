@@ -68,6 +68,7 @@
 
 #include "upb/bytestream.h"
 #include "upb/upb.hpp"
+#include <string>
 
 namespace upb {
 
@@ -204,6 +205,18 @@ class ByteRegion : public upb_byteregion {
     return upb_byteregion_strdup(this);
   }
 
+  template <typename T> void AssignToString(T* str) {
+    uint64_t ofs = start_ofs();
+    str->clear();
+    str->reserve(Length());
+    while (ofs < end_ofs()) {
+      size_t len;
+      const char *ptr = GetPtr(ofs, &len);
+      str->append(ptr, len);
+      ofs += len;
+    }
+  }
+
   // TODO: add if/when there is a demonstrated need.
   //
   // // Pins this byteregion's bytes in memory, allowing it to outlive its
@@ -220,10 +233,22 @@ class ByteRegion : public upb_byteregion {
 class StringSource : public upb_stringsrc {
  public:
   StringSource() : upb_stringsrc() { upb_stringsrc_init(this); }
+  template <typename T> explicit StringSource(const T& str) {
+    upb_stringsrc_init(this);
+    Reset(str);
+  }
+  StringSource(const char *data, size_t len) {
+    upb_stringsrc_init(this);
+    Reset(data, len);
+  }
   ~StringSource() { upb_stringsrc_uninit(this); }
 
   void Reset(const char* data, size_t len) {
     upb_stringsrc_reset(this, data, len);
+  }
+
+  template <typename T> void Reset(const T& str) {
+    Reset(str.c_str(), str.size());
   }
 
   ByteRegion* AllBytes() {
@@ -232,6 +257,14 @@ class StringSource : public upb_stringsrc {
 
   upb_bytesrc* ByteSource() { return upb_stringsrc_bytesrc(this); }
 };
+
+template <> inline ByteRegion* GetValue<ByteRegion*>(Value v) {
+  return static_cast<ByteRegion*>(upb_value_getbyteregion(v));
+}
+
+template <> inline Value MakeValue<ByteRegion*>(ByteRegion* v) {
+  return upb_value_byteregion(v);
+}
 
 }  // namespace upb
 

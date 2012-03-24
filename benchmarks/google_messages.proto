@@ -3,6 +3,11 @@ package benchmarks;
 
 option optimize_for = SPEED;
 
+enum Foo {
+  FOO_VALUE = 1;
+  FOO_VALUE2 = 2;
+}
+
 message SpeedMessage1 {
   required string field1 = 1;
   optional string field9 = 9;
@@ -45,6 +50,7 @@ message SpeedMessage1 {
   optional int32 field128 = 128 [default=0];
   optional string field129 = 129 [default="xxxxxxxxxxxxxxxxxxxxx"];
   optional int32 field131 = 131 [default=0];
+  optional Foo field132 = 132 [default=FOO_VALUE];
 }
 
 message SpeedMessage1SubMessage {

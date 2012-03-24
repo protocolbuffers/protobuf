@@ -13,7 +13,7 @@
 
 static upb_mhandlers *upb_mhandlers_new() {
   upb_mhandlers *m = malloc(sizeof(*m));
-  upb_inttable_init(&m->fieldtab, 8, sizeof(upb_itofhandlers_ent));
+  upb_inttable_init(&m->fieldtab);
   m->startmsg = NULL;
   m->endmsg = NULL;
   m->is_group = false;
@@ -26,20 +26,19 @@ static upb_mhandlers *upb_mhandlers_new() {
 static upb_fhandlers *_upb_mhandlers_newfhandlers(upb_mhandlers *m, uint32_t n,
                                                   upb_fieldtype_t type,
                                                   bool repeated) {
-  upb_itofhandlers_ent *e = upb_inttable_lookup(&m->fieldtab, n);
+  const upb_value *v = upb_inttable_lookup(&m->fieldtab, n);
   // TODO: design/refine the API for changing the set of fields or modifying
   // existing handlers.
-  if (e) return NULL;
-  upb_fhandlers new_f = {type, repeated, UPB_ATOMIC_INIT(0),
+  if (v) return NULL;
+  upb_fhandlers new_f = {type, repeated, 0,
       n, -1, m, NULL, UPB_NO_VALUE, NULL, NULL, NULL, NULL, NULL,
 #ifdef UPB_USE_JIT_X64
       0, 0, 0,
 #endif
-      NULL};
+  };
   upb_fhandlers *ptr = malloc(sizeof(*ptr));
   memcpy(ptr, &new_f, sizeof(upb_fhandlers));
-  upb_itofhandlers_ent ent = {false, ptr};
-  upb_inttable_insert(&m->fieldtab, n, &ent);
+  upb_inttable_insert(&m->fieldtab, n, upb_value_ptr(ptr));
   return ptr;
 }
 
@@ -64,12 +63,17 @@ upb_fhandlers *upb_mhandlers_newfhandlers_subm(upb_mhandlers *m, uint32_t n,
   return f;
 }
 
+upb_fhandlers *upb_mhandlers_lookup(const upb_mhandlers *m, uint32_t n) {
+  const upb_value *v = upb_inttable_lookup(&m->fieldtab, n);
+  return v ? upb_value_getptr(*v) : NULL;
+}
+
 
 /* upb_handlers ***************************************************************/
 
 upb_handlers *upb_handlers_new() {
   upb_handlers *h = malloc(sizeof(*h));
-  upb_atomic_init(&h->refcount, 1);
+  h->refcount = 1;
   h->msgs_len = 0;
   h->msgs_size = 4;
   h->msgs = malloc(h->msgs_size * sizeof(*h->msgs));
@@ -77,19 +81,18 @@ upb_handlers *upb_handlers_new() {
   return h;
 }
 
-void upb_handlers_ref(upb_handlers *h) { upb_atomic_ref(&h->refcount); }
+void upb_handlers_ref(upb_handlers *h) { h->refcount++; }
 
 void upb_handlers_unref(upb_handlers *h) {
-  if (upb_atomic_unref(&h->refcount)) {
+  if (--h->refcount == 0) {
     for (int i = 0; i < h->msgs_len; i++) {
       upb_mhandlers *mh = h->msgs[i];
-      for(upb_inttable_iter j = upb_inttable_begin(&mh->fieldtab);
-          !upb_inttable_done(j);
-          j = upb_inttable_next(&mh->fieldtab, j)) {
-        upb_itofhandlers_ent *e = upb_inttable_iter_value(j);
-        free(e->f);
+      upb_inttable_iter j;
+      upb_inttable_begin(&j, &mh->fieldtab);
+      for(; !upb_inttable_done(&j); upb_inttable_next(&j)) {
+        free(upb_value_getptr(upb_inttable_iter_value(&j)));
       }
-      upb_inttable_free(&mh->fieldtab);
+      upb_inttable_uninit(&mh->fieldtab);
 #ifdef UPB_USE_JIT_X64
       free(mh->tablearray);
 #endif
@@ -110,31 +113,28 @@ upb_mhandlers *upb_handlers_newmhandlers(upb_handlers *h) {
   return mh;
 }
 
-typedef struct {
-  upb_mhandlers *mh;
-} upb_mtab_ent;
-
 static upb_mhandlers *upb_regmsg_dfs(upb_handlers *h, const upb_msgdef *m,
                                      upb_onmsgreg *msgreg_cb,
                                      upb_onfieldreg *fieldreg_cb,
                                      void *closure, upb_strtable *mtab) {
   upb_mhandlers *mh = upb_handlers_newmhandlers(h);
-  upb_mtab_ent e = {mh};
-  upb_strtable_insert(mtab, m->base.fqname, &e);
+  upb_strtable_insert(mtab, upb_def_fullname(UPB_UPCAST(m)), upb_value_ptr(mh));
   if (msgreg_cb) msgreg_cb(closure, mh, m);
   upb_msg_iter i;
-  for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
-    upb_fielddef *f = upb_msg_iter_field(i);
+  for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
+    upb_fielddef *f = upb_msg_iter_field(&i);
     upb_fhandlers *fh;
     if (upb_issubmsg(f)) {
       upb_mhandlers *sub_mh;
-      upb_mtab_ent *subm_ent;
+      const upb_value *subm_ent;
       // The table lookup is necessary to break the DFS for type cycles.
-      if ((subm_ent = upb_strtable_lookup(mtab, f->def->fqname)) != NULL) {
-        sub_mh = subm_ent->mh;
+      const char *subname = upb_def_fullname(upb_fielddef_subdef(f));
+      if ((subm_ent = upb_strtable_lookup(mtab, subname)) != NULL) {
+        sub_mh = upb_value_getptr(*subm_ent);
       } else {
-        sub_mh = upb_regmsg_dfs(h, upb_downcast_msgdef(f->def), msgreg_cb,
-                                fieldreg_cb, closure, mtab);
+        sub_mh = upb_regmsg_dfs(
+            h, upb_downcast_msgdef_const(upb_fielddef_subdef(f)),
+            msgreg_cb, fieldreg_cb, closure, mtab);
       }
       fh = upb_mhandlers_newfhandlers_subm(
           mh, f->number, f->type, upb_isseq(f), sub_mh);
@@ -151,10 +151,10 @@ upb_mhandlers *upb_handlers_regmsgdef(upb_handlers *h, const upb_msgdef *m,
                                       upb_onfieldreg *fieldreg_cb,
                                       void *closure) {
   upb_strtable mtab;
-  upb_strtable_init(&mtab, 8, sizeof(upb_mtab_ent));
+  upb_strtable_init(&mtab);
   upb_mhandlers *ret =
       upb_regmsg_dfs(h, m, msgreg_cb, fieldreg_cb, closure, &mtab);
-  upb_strtable_free(&mtab);
+  upb_strtable_uninit(&mtab);
   return ret;
 }
 
@@ -212,6 +212,7 @@ upb_dispatcher_frame *upb_dispatch_startseq(upb_dispatcher *d,
 
   upb_sflow_t sflow = UPB_CONTINUE_WITH(d->top->closure);
   if (f->startseq) sflow = f->startseq(d->top->closure, f->fval);
+  _upb_dispatcher_sethas(d->top->closure, f->hasbit);
   if (sflow.flow != UPB_CONTINUE) {
     _upb_dispatcher_abortjmp(d);
   }
@@ -247,6 +248,7 @@ upb_dispatcher_frame *upb_dispatch_startsubmsg(upb_dispatcher *d,
 
   upb_sflow_t sflow = UPB_CONTINUE_WITH(d->top->closure);
   if (f->startsubmsg) sflow = f->startsubmsg(d->top->closure, f->fval);
+  _upb_dispatcher_sethas(d->top->closure, f->hasbit);
   if (sflow.flow != UPB_CONTINUE) {
     _upb_dispatcher_abortjmp(d);
   }

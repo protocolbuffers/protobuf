@@ -68,34 +68,18 @@ typedef struct _upb_accessor_vtbl {
   upb_seqget_handler     *seqget;
 } upb_accessor_vtbl;
 
-// Registers handlers for writing into a message of the given type.
+// Registers handlers for writing into a message of the given type using
+// whatever accessors it has defined.
 upb_mhandlers *upb_accessors_reghandlers(upb_handlers *h, const upb_msgdef *m);
-
-// Returns an stdmsg accessor for the given fielddef.
-upb_accessor_vtbl *upb_stdmsg_accessor(upb_fielddef *f);
-
-
-/* upb_msg/upb_seq ************************************************************/
-
-// upb_msg and upb_seq allow for generic access to a message through its
-// accessor vtable.  Note that these do *not* allow you to create, destroy, or
-// take references on the objects -- these operations are specifically outside
-// the scope of what the accessors define.
-
-// Clears all hasbits.
-// TODO: Add a separate function for setting primitive values back to their
-// defaults (but not strings, submessages, or arrays).
-void upb_msg_clear(void *msg, const upb_msgdef *md);
 
 INLINE void upb_msg_clearbit(void *msg, const upb_fielddef *f) {
   ((char*)msg)[f->hasbit / 8] &= ~(1 << (f->hasbit % 8));
 }
 
-// Could add a method that recursively clears submessages, strings, and
-// arrays if desired.  This could be a win if you wanted to merge without
-// needing hasbits, because during parsing you would never clear submessages
-// or arrays.  Also this could be desired to provide proto2 operations on
-// generated messages.
+/* upb_msg/upb_seq ************************************************************/
+
+// These accessor functions are simply convenience methods for reading or
+// writing to a message through its accessors.
 
 INLINE bool upb_msg_has(const void *m, const upb_fielddef *f) {
   return f->accessor && f->accessor->has(m, f->fval);
@@ -148,65 +132,11 @@ INLINE bool upb_msg_get_named(const void *m, const upb_msgdef *md,
   return true;
 }
 
-
-/* upb_msgvisitor *************************************************************/
-
-// A upb_msgvisitor reads data from an in-memory structure using its accessors,
-// pushing the results to a given set of upb_handlers.
-// TODO: not yet implemented.
-
-typedef struct {
-  upb_fhandlers *fh;
-  upb_fielddef *f;
-  uint16_t msgindex;  // Only when upb_issubmsg(f).
-} upb_msgvisitor_field;
-
-typedef struct {
-  upb_msgvisitor_field *fields;
-  int fields_len;
-} upb_msgvisitor_msg;
-
-typedef struct {
-  uint16_t msgindex;
-  uint16_t fieldindex;
-  uint32_t arrayindex;  // UINT32_MAX if not an array frame.
-} upb_msgvisitor_frame;
-
-typedef struct {
-  upb_msgvisitor_msg *messages;
-  int messages_len;
-  upb_dispatcher dispatcher;
-} upb_msgvisitor;
-
-// Initializes a msgvisitor that will push data from messages of the given
-// msgdef to the given set of handlers.
-void upb_msgvisitor_init(upb_msgvisitor *v, upb_msgdef *md, upb_handlers *h);
-void upb_msgvisitor_uninit(upb_msgvisitor *v);
-
-void upb_msgvisitor_reset(upb_msgvisitor *v, void *m);
-void upb_msgvisitor_visit(upb_msgvisitor *v, upb_status *status);
-
-
-/* Standard writers. **********************************************************/
-
-// Allocates a new stdmsg.
-void *upb_stdmsg_new(const upb_msgdef *md);
-
-// Recursively frees any strings or submessages that the message refers to.
-void upb_stdmsg_free(void *m, const upb_msgdef *md);
-
-void upb_stdmsg_sethas(void *_m, upb_value fval);
-
-// "hasbit" must be <= UPB_MAX_FIELDS.  If it is <0, this field has no hasbit.
-upb_value upb_stdmsg_packfval(int16_t hasbit, uint16_t value_offset);
-upb_value upb_stdmsg_packfval_subm(int16_t hasbit, uint16_t value_offset,
-                                   uint16_t subm_size, uint8_t subm_setbytes);
-
 // Value writers for every in-memory type: write the data to a known offset
-// from the closure "c" and set the hasbit (if any).
-// TODO: can we get away with having only one for int64, uint64, double, etc?
-// The main thing in the way atm is that the upb_value is strongly typed.
-// in debug mode.
+// from the closure "c."
+//
+// TODO(haberman): instead of having standard writer functions, should we have
+// a bool in the accessor that says "write raw value to the field's offset"?
 upb_flow_t upb_stdmsg_setint64(void *c, upb_value fval, upb_value val);
 upb_flow_t upb_stdmsg_setint32(void *c, upb_value fval, upb_value val);
 upb_flow_t upb_stdmsg_setuint64(void *c, upb_value fval, upb_value val);
@@ -215,94 +145,6 @@ upb_flow_t upb_stdmsg_setdouble(void *c, upb_value fval, upb_value val);
 upb_flow_t upb_stdmsg_setfloat(void *c, upb_value fval, upb_value val);
 upb_flow_t upb_stdmsg_setbool(void *c, upb_value fval, upb_value val);
 upb_flow_t upb_stdmsg_setptr(void *c, upb_value fval, upb_value val);
-
-// Value writers for repeated fields: the closure points to a standard array
-// struct, appends the value to the end of the array, resizing with realloc()
-// if necessary.
-typedef struct {
-  char *ptr;
-  uint32_t len;   // Number of elements present.
-  uint32_t size;  // Number of elements allocated.
-} upb_stdarray;
-
-void *upb_stdarray_append(upb_stdarray *a, size_t type_size);
-
-upb_flow_t upb_stdmsg_setint64_r(void *c, upb_value fval, upb_value val);
-upb_flow_t upb_stdmsg_setint32_r(void *c, upb_value fval, upb_value val);
-upb_flow_t upb_stdmsg_setuint64_r(void *c, upb_value fval, upb_value val);
-upb_flow_t upb_stdmsg_setuint32_r(void *c, upb_value fval, upb_value val);
-upb_flow_t upb_stdmsg_setdouble_r(void *c, upb_value fval, upb_value val);
-upb_flow_t upb_stdmsg_setfloat_r(void *c, upb_value fval, upb_value val);
-upb_flow_t upb_stdmsg_setbool_r(void *c, upb_value fval, upb_value val);
-upb_flow_t upb_stdmsg_setptr_r(void *c, upb_value fval, upb_value val);
-
-// Writers for C strings (NULL-terminated): we can find a char* at a known
-// offset from the closure "c".  Calls realloc() on the pointer to allocate
-// the memory (TODO: investigate whether checking malloc_usable_size() would
-// be cheaper than realloc()).  Also sets the hasbit, if any.
-//
-// Since the string is NULL terminated and does not store an explicit length,
-// these are not suitable for binary data that can contain NULLs.
-upb_flow_t upb_stdmsg_setcstr(void *c, upb_value fval, upb_value val);
-upb_flow_t upb_stdmsg_setcstr_r(void *c, upb_value fval, upb_value val);
-
-// Writers for length-delimited strings: we explicitly store the length, so
-// the data can contain NULLs.  Stores the data using upb_stdarray
-// which is located at a known offset from the closure "c" (note that it
-// is included inline rather than pointed to).  Also sets the hasbit, if any.
-upb_flow_t upb_stdmsg_setstr(void *c, upb_value fval, upb_value val);
-upb_flow_t upb_stdmsg_setstr_r(void *c, upb_value fval, upb_value val);
-
-// Writers for startseq and startmsg which allocate (or reuse, if possible)
-// a sub data structure (upb_stdarray or a submessage, respectively),
-// setting the hasbit.  If the hasbit is already set, the existing data
-// structure is used verbatim.  If the hasbit is not already set, the pointer
-// is checked for NULL.  If it is NULL, a new substructure is allocated,
-// cleared, and used.  If it is not NULL, the existing substructure is
-// cleared and reused.
-//
-// If there is no hasbit, we always behave as if the hasbit was not set,
-// so any existing data for this array or submessage is cleared.  In most
-// cases this will be fine since each array or non-repeated submessage should
-// occur at most once in the stream.  But if the client is using "concatenation
-// as merging", it will want to make sure hasbits are allocated so merges can
-// happen appropriately.
-//
-// If there was a demand for the behavior that absence of a hasbit acts as if
-// the bit was always set, we could provide that also.  But Clear() would need
-// to act recursively, which is less efficient since it requires an extra pass
-// over the tree.
-upb_sflow_t upb_stdmsg_startseq(void *c, upb_value fval);
-upb_sflow_t upb_stdmsg_startsubmsg(void *c, upb_value fval);
-upb_sflow_t upb_stdmsg_startsubmsg_r(void *c, upb_value fval);
-
-
-/* Standard readers. **********************************************************/
-
-bool upb_stdmsg_has(const void *c, upb_value fval);
-const void *upb_stdmsg_seqbegin(const void *c);
-
-upb_value upb_stdmsg_getint64(const void *c, upb_value fval);
-upb_value upb_stdmsg_getint32(const void *c, upb_value fval);
-upb_value upb_stdmsg_getuint64(const void *c, upb_value fval);
-upb_value upb_stdmsg_getuint32(const void *c, upb_value fval);
-upb_value upb_stdmsg_getdouble(const void *c, upb_value fval);
-upb_value upb_stdmsg_getfloat(const void *c, upb_value fval);
-upb_value upb_stdmsg_getbool(const void *c, upb_value fval);
-upb_value upb_stdmsg_getptr(const void *c, upb_value fval);
-
-const void *upb_stdmsg_8byte_seqnext(const void *c, const void *iter);
-const void *upb_stdmsg_4byte_seqnext(const void *c, const void *iter);
-const void *upb_stdmsg_1byte_seqnext(const void *c, const void *iter);
-
-upb_value upb_stdmsg_seqgetint64(const void *c);
-upb_value upb_stdmsg_seqgetint32(const void *c);
-upb_value upb_stdmsg_seqgetuint64(const void *c);
-upb_value upb_stdmsg_seqgetuint32(const void *c);
-upb_value upb_stdmsg_seqgetdouble(const void *c);
-upb_value upb_stdmsg_seqgetfloat(const void *c);
-upb_value upb_stdmsg_seqgetbool(const void *c);
-upb_value upb_stdmsg_seqgetptr(const void *c);
 
 #ifdef __cplusplus
 }  /* extern "C" */

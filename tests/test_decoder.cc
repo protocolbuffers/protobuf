@@ -21,6 +21,10 @@
  *   of submsg/sequences, etc.
  */
 
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS  // For PRIuS, etc.
+#endif
+
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -32,95 +36,133 @@
 #include "upb/upb.h"
 #include "upb_test.h"
 
+// Copied from decoder.c, since this is not a public interface.
 typedef struct {
-  char *buf;
-  size_t len;
-} buffer;
+  uint8_t native_wire_type;
+  bool is_numeric;
+} upb_decoder_typeinfo;
 
-// Mem is initialized to NULL.
-buffer *buffer_new(size_t len) {
-  buffer *buf = malloc(sizeof(*buf));
-  buf->buf = malloc(len);
-  buf->len = len;
-  memset(buf->buf, 0, buf->len);
-  return buf;
-}
+static const upb_decoder_typeinfo upb_decoder_types[] = {
+  {UPB_WIRE_TYPE_END_GROUP,   false},  // ENDGROUP
+  {UPB_WIRE_TYPE_64BIT,       true},   // DOUBLE
+  {UPB_WIRE_TYPE_32BIT,       true},   // FLOAT
+  {UPB_WIRE_TYPE_VARINT,      true},   // INT64
+  {UPB_WIRE_TYPE_VARINT,      true},   // UINT64
+  {UPB_WIRE_TYPE_VARINT,      true},   // INT32
+  {UPB_WIRE_TYPE_64BIT,       true},   // FIXED64
+  {UPB_WIRE_TYPE_32BIT,       true},   // FIXED32
+  {UPB_WIRE_TYPE_VARINT,      true},   // BOOL
+  {UPB_WIRE_TYPE_DELIMITED,   false},  // STRING
+  {UPB_WIRE_TYPE_START_GROUP, false},  // GROUP
+  {UPB_WIRE_TYPE_DELIMITED,   false},  // MESSAGE
+  {UPB_WIRE_TYPE_DELIMITED,   false},  // BYTES
+  {UPB_WIRE_TYPE_VARINT,      true},   // UINT32
+  {UPB_WIRE_TYPE_VARINT,      true},   // ENUM
+  {UPB_WIRE_TYPE_32BIT,       true},   // SFIXED32
+  {UPB_WIRE_TYPE_64BIT,       true},   // SFIXED64
+  {UPB_WIRE_TYPE_VARINT,      true},   // SINT32
+  {UPB_WIRE_TYPE_VARINT,      true},   // SINT64
+};
 
-buffer *buffer_new2(const void *data, size_t len) {
-  buffer *buf = buffer_new(len);
-  memcpy(buf->buf, data, len);
-  return buf;
-}
 
-buffer *buffer_new3(const char *data) {
-  return buffer_new2(data, strlen(data));
-}
+class buffer {
+ public:
+  buffer(const void *data, size_t len) : len_(0) { append(data, len); }
+  explicit buffer(const char *data) : len_(0) { append(data); }
+  explicit buffer(size_t len) : len_(len) { memset(buf_, 0, len); }
+  buffer(const buffer& buf) : len_(0) { append(buf); }
+  buffer() : len_(0) {}
 
-buffer *buffer_dup(buffer *buf) { return buffer_new2(buf->buf, buf->len); }
+  void append(const void *data, size_t len) {
+    ASSERT_NOCOUNT(len + len_ < sizeof(buf_));
+    memcpy(buf_ + len_, data, len);
+    len_ += len;
+    buf_[len_] = NULL;
+  }
 
-void buffer_free(buffer *buf) {
-  free(buf->buf);
-  free(buf);
-}
+  void append(const buffer& buf) {
+    append(buf.buf_, buf.len_);
+  }
 
-void buffer_appendf(buffer *buf, const char *fmt, ...) {
-  va_list args;
-  va_start(args, fmt);
-  size_t size = buf->len;
-  buf->len += upb_vrprintf(&buf->buf, &size, buf->len, fmt, args);
-  va_end(args);
-}
+  void append(const char *str) {
+    append(str, strlen(str));
+  }
 
-void buffer_cat(buffer *buf, buffer *buf2) {
-  size_t newlen = buf->len + buf2->len;
-  buf->buf = realloc(buf->buf, newlen);
-  memcpy(buf->buf + buf->len, buf2->buf, buf2->len);
-  buf->len = newlen;
-  buffer_free(buf2);
-}
+  void vappendf(const char *fmt, va_list args) {
+    size_t avail = sizeof(buf_) - len_;
+    size_t size = vsnprintf(buf_ + len_, avail, fmt, args);
+    ASSERT_NOCOUNT(avail > size);
+    len_ += size;
+  }
 
-bool buffer_eql(buffer *buf, buffer *buf2) {
-  return buf->len == buf2->len && memcmp(buf->buf, buf2->buf, buf->len) == 0;
-}
+  void appendf(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    vappendf(fmt, args);
+    va_end(args);
+  }
+
+  void assign(const buffer& buf) {
+    clear();
+    append(buf);
+  }
+
+  bool eql(const buffer& other) const {
+    return len_ == other.len_ && memcmp(buf_, other.buf_, len_) == 0;
+  }
+
+  void clear() { len_ = 0; }
+  size_t len() const { return len_; }
+  const char *buf() const { return buf_; }
+
+ private:
+  // Has to be big enough for the largest string used in the test.
+  char buf_[32768];
+  size_t len_;
+};
 
 
 /* Routines for building arbitrary protos *************************************/
 
-buffer *cat(buffer *arg1, ...) {
-  va_list ap;
-  buffer *arg;
-  va_start(ap, arg1);
-  while ((arg = va_arg(ap, buffer*)) != NULL) {
-    buffer_cat(arg1, arg);
-  }
-  va_end(ap);
-  return arg1;
+const buffer empty;
+
+buffer cat(const buffer& a, const buffer& b,
+           const buffer& c = empty,
+           const buffer& d = empty,
+           const buffer& e = empty) {
+  buffer ret;
+  ret.append(a);
+  ret.append(b);
+  ret.append(c);
+  ret.append(d);
+  ret.append(e);
+  return ret;
 }
 
-buffer *varint(uint64_t x) {
-  buffer *buf = buffer_new(UPB_PB_VARINT_MAX_LEN + 1);
-  buf->len = upb_vencode64(x, buf->buf);
-  return buf;
+buffer varint(uint64_t x) {
+  char buf[UPB_PB_VARINT_MAX_LEN];
+  size_t len = upb_vencode64(x, buf);
+  return buffer(buf, len);
 }
 
 // TODO: proper byte-swapping for big-endian machines.
-buffer *fixed32(void *data) { return buffer_new2(data, 4); }
-buffer *fixed64(void *data) { return buffer_new2(data, 8); }
+buffer fixed32(void *data) { return buffer(data, 4); }
+buffer fixed64(void *data) { return buffer(data, 8); }
 
-buffer *delim(buffer *buf) { return cat( varint(buf->len), buf, NULL ); }
-buffer *uint32(uint32_t u32) { return fixed32(&u32); }
-buffer *uint64(uint64_t u64) { return fixed64(&u64); }
-buffer *flt(float f) { return fixed32(&f); }
-buffer *dbl(double d) { return fixed64(&d); }
-buffer *zz32(int32_t x) { return varint(upb_zzenc_32(x)); }
-buffer *zz64(int64_t x) { return varint(upb_zzenc_64(x)); }
+buffer delim(const buffer& buf) { return cat(varint(buf.len()), buf); }
+buffer uint32(uint32_t u32) { return fixed32(&u32); }
+buffer uint64(uint64_t u64) { return fixed64(&u64); }
+buffer flt(float f) { return fixed32(&f); }
+buffer dbl(double d) { return fixed64(&d); }
+buffer zz32(int32_t x) { return varint(upb_zzenc_32(x)); }
+buffer zz64(int64_t x) { return varint(upb_zzenc_64(x)); }
 
-buffer *tag(uint32_t fieldnum, char wire_type) {
+buffer tag(uint32_t fieldnum, char wire_type) {
   return varint((fieldnum << 3) | wire_type);
 }
 
-buffer *submsg(uint32_t fn, buffer *buf) {
-  return cat( tag(fn, UPB_WIRE_TYPE_DELIMITED), delim(buf), NULL );
+buffer submsg(uint32_t fn, const buffer& buf) {
+  return cat( tag(fn, UPB_WIRE_TYPE_DELIMITED), delim(buf) );
 }
 
 
@@ -128,11 +170,26 @@ buffer *submsg(uint32_t fn, buffer *buf) {
 
 // The handlers simply append to a string indicating what handlers were called.
 // This string is similar to protobuf text format but fields are referred to by
-// number instead of name and sequences are explicitly delimited.
+// number instead of name and sequences are explicitly delimited.  We indent
+// using the closure depth to test that the stack of closures is properly
+// handled.
+
+int closures[UPB_MAX_NESTING];
+buffer output;
+
+void indentbuf(buffer *buf, int depth) {
+  for (int i = 0; i < depth; i++)
+    buf->append("  ", 2);
+}
+
+void indent(void *depth) {
+  indentbuf(&output, *(int*)depth);
+}
 
 #define VALUE_HANDLER(member, fmt) \
   upb_flow_t value_ ## member(void *closure, upb_value fval, upb_value val) { \
-    buffer_appendf(closure, "%" PRIu32 ":%" fmt "; ",                         \
+    indent(closure);                                                          \
+    output.appendf("%" PRIu32 ":%" fmt "\n",                                  \
                    upb_value_getuint32(fval), upb_value_get ## member(val));  \
     return UPB_CONTINUE;                                                      \
   }
@@ -145,7 +202,8 @@ VALUE_HANDLER(float, "g")
 VALUE_HANDLER(double, "g")
 
 upb_flow_t value_bool(void *closure, upb_value fval, upb_value val) {
-  buffer_appendf(closure, "%" PRIu32 ":%s; ",
+  indent(closure);
+  output.appendf("%" PRIu32 ":%s\n",
                  upb_value_getuint32(fval),
                  upb_value_getbool(val) ? "true" : "false");
   return UPB_CONTINUE;
@@ -153,32 +211,47 @@ upb_flow_t value_bool(void *closure, upb_value fval, upb_value val) {
 
 upb_flow_t value_string(void *closure, upb_value fval, upb_value val) {
   // Note: won't work with strings that contain NULL.
+  indent(closure);
   char *str = upb_byteregion_strdup(upb_value_getbyteregion(val));
-  buffer_appendf(closure, "%" PRIu32 ":%s; ", upb_value_getuint32(fval), str);
+  output.appendf("%" PRIu32 ":%s\n", upb_value_getuint32(fval), str);
   free(str);
   return UPB_CONTINUE;
 }
 
 upb_sflow_t startsubmsg(void *closure, upb_value fval) {
-  buffer_appendf(closure, "%" PRIu32 ":{ ", upb_value_getuint32(fval));
-  return UPB_CONTINUE_WITH(closure);
+  indent(closure);
+  output.appendf("%" PRIu32 ":{\n", upb_value_getuint32(fval));
+  return UPB_CONTINUE_WITH(((int*)closure) + 1);
 }
 
 upb_flow_t endsubmsg(void *closure, upb_value fval) {
-  (void)fval;
-  buffer_appendf(closure, "} ");
+  indent(closure);
+  output.append("}\n");
   return UPB_CONTINUE;
 }
 
 upb_sflow_t startseq(void *closure, upb_value fval) {
-  buffer_appendf(closure, "%" PRIu32 ":[ ", upb_value_getuint32(fval));
-  return UPB_CONTINUE_WITH(closure);
+  indent(closure);
+  output.appendf("%" PRIu32 ":[\n", upb_value_getuint32(fval));
+  return UPB_CONTINUE_WITH(((int*)closure) + 1);
 }
 
 upb_flow_t endseq(void *closure, upb_value fval) {
-  (void)fval;
-  buffer_appendf(closure, "] ");
+  indent(closure);
+  output.append("]\n");
   return UPB_CONTINUE;
+}
+
+upb_flow_t startmsg(void *closure) {
+  indent(closure);
+  output.append("<\n");
+  return UPB_CONTINUE;
+}
+
+void endmsg(void *closure, upb_status *status) {
+  (void)status;
+  indent(closure);
+  output.append(">\n");
 }
 
 void doreg(upb_mhandlers *m, uint32_t num, upb_fieldtype_t type, bool repeated,
@@ -221,6 +294,9 @@ void reg_subm(upb_mhandlers *m, uint32_t num, upb_fieldtype_t type,
 }
 
 void reghandlers(upb_mhandlers *m) {
+  upb_mhandlers_setstartmsg(m, &startmsg);
+  upb_mhandlers_setendmsg(m, &endmsg);
+
   // Register handlers for each type.
   reg(m, UPB_TYPE(DOUBLE),   &value_double);
   reg(m, UPB_TYPE(FLOAT),    &value_float);
@@ -267,7 +343,7 @@ size_t upb_seamsrc_avail(const upb_seamsrc *src, size_t ofs) {
 }
 
 upb_bytesuccess_t upb_seamsrc_fetch(void *_src, uint64_t ofs, size_t *read) {
-  upb_seamsrc *src = _src;
+  upb_seamsrc *src = (upb_seamsrc*)_src;
   assert(ofs < src->len);
   if (ofs == src->len) {
     upb_status_seteof(&src->bytesrc.status);
@@ -279,7 +355,7 @@ upb_bytesuccess_t upb_seamsrc_fetch(void *_src, uint64_t ofs, size_t *read) {
 
 void upb_seamsrc_copy(const void *_src, uint64_t ofs,
                       size_t len, char *dst) {
-  const upb_seamsrc *src = _src;
+  const upb_seamsrc *src = (const upb_seamsrc*)_src;
   assert(ofs + len <= src->len);
   memcpy(dst, src->str + ofs, len);
 }
@@ -290,7 +366,7 @@ void upb_seamsrc_discard(void *src, uint64_t ofs) {
 }
 
 const char *upb_seamsrc_getptr(const void *_s, uint64_t ofs, size_t *len) {
-  const upb_seamsrc *src = _s;
+  const upb_seamsrc *src = (const upb_seamsrc*)_s;
   *len = upb_seamsrc_avail(src, ofs);
   return src->str + ofs;
 }
@@ -314,7 +390,7 @@ void upb_seamsrc_init(upb_seamsrc *s, const char *str, size_t len) {
 }
 
 void upb_seamsrc_resetseams(upb_seamsrc *s, size_t seam1, size_t seam2) {
-  ASSERT(seam1 <= seam2);
+  assert(seam1 <= seam2);
   s->seam1 = seam1;
   s->seam2 = seam2;
   s->byteregion.discard = 0;
@@ -337,83 +413,68 @@ upb_byteregion *upb_seamsrc_allbytes(upb_seamsrc *s) {
 /* Running of test cases ******************************************************/
 
 upb_decoderplan *plan;
-
-void run_decoder(buffer *proto, buffer *expected_output) {
+#define LINE(x) x "\n"
+void run_decoder(const buffer& proto, const buffer* expected_output) {
   upb_seamsrc src;
-  upb_seamsrc_init(&src, proto->buf, proto->len);
+  upb_seamsrc_init(&src, proto.buf(), proto.len());
   upb_decoder d;
   upb_decoder_init(&d);
   upb_decoder_resetplan(&d, plan, 0);
-  for (size_t i = 0; i < proto->len; i++) {
-    for (size_t j = i; j < proto->len; j++) {
+  for (size_t i = 0; i < proto.len(); i++) {
+    for (size_t j = i; j < UPB_MIN(proto.len(), i + 5); j++) {
       upb_seamsrc_resetseams(&src, i, j);
       upb_byteregion *input = upb_seamsrc_allbytes(&src);
-      buffer *output = buffer_new(0);
-      upb_decoder_resetinput(&d, input, output);
+      output.clear();
+      upb_decoder_resetinput(&d, input, &closures[0]);
       upb_success_t success = UPB_SUSPENDED;
       while (success == UPB_SUSPENDED)
         success = upb_decoder_decode(&d);
       ASSERT(upb_ok(upb_decoder_status(&d)) == (success == UPB_OK));
       if (expected_output) {
-        ASSERT(success == UPB_OK);
+        ASSERT_STATUS(success == UPB_OK, upb_decoder_status(&d));
         // The input should be fully consumed.
         ASSERT(upb_byteregion_fetchofs(input) == upb_byteregion_endofs(input));
         ASSERT(upb_byteregion_discardofs(input) ==
                upb_byteregion_endofs(input));
-        if (!buffer_eql(output, expected_output)) {
+        if (!output.eql(*expected_output)) {
           fprintf(stderr, "Text mismatch: '%s' vs '%s'\n",
-                  output->buf, expected_output->buf);
+                  output.buf(), expected_output->buf());
         }
-        ASSERT(strcmp(output->buf, expected_output->buf) == 0);
+        ASSERT(output.eql(*expected_output));
       } else {
         ASSERT(success == UPB_ERROR);
       }
-      buffer_free(output);
     }
   }
-  upb_seamsrc_uninit(&src);
   upb_decoder_uninit(&d);
-  buffer_free(proto);
+  upb_seamsrc_uninit(&src);
 }
 
-void assert_successful_parse_at_eof(buffer *proto, const char *expected_fmt,
-                                    va_list args) {
-  buffer *expected_text = buffer_new(0);
-  size_t size = expected_text->len;
-  expected_text->len += upb_vrprintf(&expected_text->buf, &size,
-                                     expected_text->len, expected_fmt, args);
-  run_decoder(proto, expected_text);
-  buffer_free(expected_text);
+const static buffer thirty_byte_nop = buffer(cat(
+    tag(NOP_FIELD, UPB_WIRE_TYPE_DELIMITED), delim(buffer(30)) ));
+
+void assert_successful_parse(const buffer& proto,
+                             const char *expected_fmt, ...) {
+  buffer expected_text;
+  va_list args;
+  va_start(args, expected_fmt);
+  expected_text.vappendf(expected_fmt, args);
+  va_end(args);
+  // The JIT is only used for data >=20 bytes from end-of-buffer, so
+  // repeat once with no-op padding data at the end of buffer.
+  run_decoder(proto, &expected_text);
+  run_decoder(cat( proto, thirty_byte_nop ), &expected_text);
 }
 
-void assert_does_not_parse_at_eof(buffer *proto) {
+void assert_does_not_parse_at_eof(const buffer& proto) {
   run_decoder(proto, NULL);
 }
 
-void assert_successful_parse(buffer *proto, const char *expected_fmt, ...) {
+void assert_does_not_parse(const buffer& proto) {
   // The JIT is only used for data >=20 bytes from end-of-buffer, so
   // repeat once with no-op padding data at the end of buffer.
-  va_list args, args2;
-  va_start(args, expected_fmt);
-  va_copy(args2, args);
-  assert_successful_parse_at_eof(buffer_dup(proto), expected_fmt, args);
-  assert_successful_parse_at_eof(
-      cat( proto,
-           tag(NOP_FIELD, UPB_WIRE_TYPE_DELIMITED), delim(buffer_new(30)),
-           NULL ),
-      expected_fmt, args2);
-  va_end(args);
-  va_end(args2);
-}
-
-void assert_does_not_parse(buffer *proto) {
-  // The JIT is only used for data >=20 bytes from end-of-buffer, so
-  // repeat once with no-op padding data at the end of buffer.
-  assert_does_not_parse_at_eof(buffer_dup(proto));
-  assert_does_not_parse_at_eof(
-      cat( proto,
-           tag(NOP_FIELD, UPB_WIRE_TYPE_DELIMITED), delim( buffer_new(30)),
-           NULL ));
+  assert_does_not_parse_at_eof(proto);
+  assert_does_not_parse_at_eof(cat( proto, thirty_byte_nop ));
 }
 
 
@@ -421,19 +482,19 @@ void assert_does_not_parse(buffer *proto) {
 
 void test_premature_eof_for_type(upb_fieldtype_t type) {
   // Incomplete values for each wire type.
-  static const char *incompletes[] = {
-    "\x80",    // UPB_WIRE_TYPE_VARINT
-    "abcdefg", // UPB_WIRE_TYPE_64BIT
-    "\x80",    // UPB_WIRE_TYPE_DELIMITED (partial length)
-    NULL,      // UPB_WIRE_TYPE_START_GROUP (no value required)
-    NULL,      // UPB_WIRE_TYPE_END_GROUP (no value required)
-    "abc"      // UPB_WIRE_TYPE_32BIT
+  static const buffer incompletes[6] = {
+    buffer("\x80"),     // UPB_WIRE_TYPE_VARINT
+    buffer("abcdefg"),  // UPB_WIRE_TYPE_64BIT
+    buffer("\x80"),     // UPB_WIRE_TYPE_DELIMITED (partial length)
+    buffer(),           // UPB_WIRE_TYPE_START_GROUP (no value required)
+    buffer(),           // UPB_WIRE_TYPE_END_GROUP (no value required)
+    buffer("abc")       // UPB_WIRE_TYPE_32BIT
   };
 
   uint32_t fieldnum = type;
   uint32_t rep_fieldnum = rep_fn(type);
-  int wire_type = upb_types[type].native_wire_type;
-  const char *incomplete = incompletes[wire_type];
+  int wire_type = upb_decoder_types[type].native_wire_type;
+  const buffer& incomplete = incompletes[wire_type];
 
   // EOF before a known non-repeated value.
   assert_does_not_parse_at_eof(tag(fieldnum, wire_type));
@@ -446,108 +507,128 @@ void test_premature_eof_for_type(upb_fieldtype_t type) {
 
   // EOF inside a known non-repeated value.
   assert_does_not_parse_at_eof(
-      cat( tag(fieldnum, wire_type), buffer_new3(incomplete), NULL ));
+      cat( tag(fieldnum, wire_type), incomplete ));
 
   // EOF inside a known repeated value.
   assert_does_not_parse_at_eof(
-      cat( tag(rep_fieldnum, wire_type), buffer_new3(incomplete), NULL ));
+      cat( tag(rep_fieldnum, wire_type), incomplete ));
 
   // EOF inside an unknown value.
   assert_does_not_parse_at_eof(
-      cat( tag(UNKNOWN_FIELD, wire_type), buffer_new3(incomplete), NULL ));
+      cat( tag(UNKNOWN_FIELD, wire_type), incomplete ));
 
   if (wire_type == UPB_WIRE_TYPE_DELIMITED) {
     // EOF in the middle of delimited data for known non-repeated value.
     assert_does_not_parse_at_eof(
-        cat( tag(fieldnum, wire_type), varint(1), NULL ));
+        cat( tag(fieldnum, wire_type), varint(1) ));
 
     // EOF in the middle of delimited data for known repeated value.
     assert_does_not_parse_at_eof(
-        cat( tag(rep_fieldnum, wire_type), varint(1), NULL ));
+        cat( tag(rep_fieldnum, wire_type), varint(1) ));
 
     // EOF in the middle of delimited data for unknown value.
     assert_does_not_parse_at_eof(
-        cat( tag(UNKNOWN_FIELD, wire_type), varint(1), NULL ));
+        cat( tag(UNKNOWN_FIELD, wire_type), varint(1) ));
 
     if (type == UPB_TYPE(MESSAGE)) {
       // Submessage ends in the middle of a value.
-      buffer *incomplete_submsg =
+      buffer incomplete_submsg =
           cat ( tag(UPB_TYPE(INT32), UPB_WIRE_TYPE_VARINT),
-                buffer_new3(incompletes[UPB_WIRE_TYPE_VARINT]), NULL );
+                incompletes[UPB_WIRE_TYPE_VARINT] );
       assert_does_not_parse(
           cat( tag(fieldnum, UPB_WIRE_TYPE_DELIMITED),
-               varint(incomplete_submsg->len),
-               incomplete_submsg, NULL ));
+               varint(incomplete_submsg.len()),
+               incomplete_submsg ));
     }
   } else {
     // Packed region ends in the middle of a value.
     assert_does_not_parse(
         cat( tag(rep_fieldnum, UPB_WIRE_TYPE_DELIMITED),
-             varint(strlen(incomplete)),
-             buffer_new3(incomplete), NULL ));
+             varint(incomplete.len()),
+             incomplete ));
 
     // EOF in the middle of packed region.
     assert_does_not_parse_at_eof(
-        cat( tag(rep_fieldnum, UPB_WIRE_TYPE_DELIMITED), varint(1), NULL ));
+        cat( tag(rep_fieldnum, UPB_WIRE_TYPE_DELIMITED), varint(1) ));
   }
 }
 
 // "33" and "66" are just two random values that all numeric types can
 // represent.
 void test_valid_data_for_type(upb_fieldtype_t type,
-                              buffer *enc33, buffer *enc66) {
+                              const buffer& enc33, const buffer& enc66) {
   uint32_t fieldnum = type;
   uint32_t rep_fieldnum = rep_fn(type);
-  int wire_type = upb_types[type].native_wire_type;
+  int wire_type = upb_decoder_types[type].native_wire_type;
 
   // Non-repeated
   assert_successful_parse(
-      cat( tag(fieldnum, wire_type), buffer_dup(enc33),
-           tag(fieldnum, wire_type), buffer_dup(enc66), NULL ),
-      "%u:33; %u:66; ", fieldnum, fieldnum);
+      cat( tag(fieldnum, wire_type), enc33,
+           tag(fieldnum, wire_type), enc66 ),
+      LINE("<")
+      LINE("%u:33")
+      LINE("%u:66")
+      LINE(">"), fieldnum, fieldnum);
 
   // Non-packed repeated.
   assert_successful_parse(
-      cat( tag(rep_fieldnum, wire_type), buffer_dup(enc33),
-           tag(rep_fieldnum, wire_type), buffer_dup(enc66), NULL ),
-      "%u:[ %u:33; %u:66; ] ", rep_fieldnum, rep_fieldnum, rep_fieldnum);
+      cat( tag(rep_fieldnum, wire_type), enc33,
+           tag(rep_fieldnum, wire_type), enc66 ),
+      LINE("<")
+      LINE("%u:[")
+      LINE("  %u:33")
+      LINE("  %u:66")
+      LINE("]")
+      LINE(">"), rep_fieldnum, rep_fieldnum, rep_fieldnum);
 
   // Packed repeated.
   assert_successful_parse(
       cat( tag(rep_fieldnum, UPB_WIRE_TYPE_DELIMITED),
-           delim(cat( buffer_dup(enc33), buffer_dup(enc66), NULL )), NULL ),
-      "%u:[ %u:33; %u:66; ] ", rep_fieldnum, rep_fieldnum, rep_fieldnum);
-
-  buffer_free(enc33);
-  buffer_free(enc66);
+           delim(cat( enc33, enc66 )) ),
+      LINE("<")
+      LINE("%u:[")
+      LINE("  %u:33")
+      LINE("  %u:66")
+      LINE("]")
+      LINE(">"), rep_fieldnum, rep_fieldnum, rep_fieldnum);
 }
 
 void test_valid_data_for_signed_type(upb_fieldtype_t type,
-                                     buffer *enc33, buffer *enc66) {
+                                     const buffer& enc33, const buffer& enc66) {
   uint32_t fieldnum = type;
   uint32_t rep_fieldnum = rep_fn(type);
-  int wire_type = upb_types[type].native_wire_type;
+  int wire_type = upb_decoder_types[type].native_wire_type;
 
   // Non-repeated
   assert_successful_parse(
-      cat( tag(fieldnum, wire_type), buffer_dup(enc33),
-           tag(fieldnum, wire_type), buffer_dup(enc66), NULL ),
-      "%u:33; %u:-66; ", fieldnum, fieldnum);
+      cat( tag(fieldnum, wire_type), enc33,
+           tag(fieldnum, wire_type), enc66 ),
+      LINE("<")
+      LINE("%u:33")
+      LINE("%u:-66")
+      LINE(">"), fieldnum, fieldnum);
 
   // Non-packed repeated.
   assert_successful_parse(
-      cat( tag(rep_fieldnum, wire_type), buffer_dup(enc33),
-           tag(rep_fieldnum, wire_type), buffer_dup(enc66), NULL ),
-      "%u:[ %u:33; %u:-66; ] ", rep_fieldnum, rep_fieldnum, rep_fieldnum);
+      cat( tag(rep_fieldnum, wire_type), enc33,
+           tag(rep_fieldnum, wire_type), enc66 ),
+      LINE("<")
+      LINE("%u:[")
+      LINE("  %u:33")
+      LINE("  %u:-66")
+      LINE("]")
+      LINE(">"), rep_fieldnum, rep_fieldnum, rep_fieldnum);
 
   // Packed repeated.
   assert_successful_parse(
       cat( tag(rep_fieldnum, UPB_WIRE_TYPE_DELIMITED),
-           delim(cat( buffer_dup(enc33), buffer_dup(enc66), NULL )), NULL ),
-      "%u:[ %u:33; %u:-66; ] ", rep_fieldnum, rep_fieldnum, rep_fieldnum);
-
-  buffer_free(enc33);
-  buffer_free(enc66);
+           delim(cat( enc33, enc66 )) ),
+      LINE("<")
+      LINE("%u:[")
+      LINE("  %u:33")
+      LINE("  %u:-66")
+      LINE("]")
+      LINE(">"), rep_fieldnum, rep_fieldnum, rep_fieldnum);
 }
 
 // Test that invalid protobufs are properly detected (without crashing) and
@@ -571,7 +652,7 @@ void test_invalid() {
   test_premature_eof_for_type(UPB_TYPE(SINT64));
 
   // EOF inside a tag's varint.
-  assert_does_not_parse_at_eof( buffer_new3("\x80") );
+  assert_does_not_parse_at_eof( buffer("\x80") );
 
   // EOF inside a known group.
   assert_does_not_parse_at_eof( tag(4, UPB_WIRE_TYPE_START_GROUP) );
@@ -584,33 +665,19 @@ void test_invalid() {
 
   // Field number is 0.
   assert_does_not_parse(
-      cat( tag(0, UPB_WIRE_TYPE_DELIMITED), varint(0), NULL ));
+      cat( tag(0, UPB_WIRE_TYPE_DELIMITED), varint(0) ));
 
   // Field number is too large.
   assert_does_not_parse(
       cat( tag(UPB_MAX_FIELDNUMBER + 1, UPB_WIRE_TYPE_DELIMITED),
-           varint(0), NULL ));
+           varint(0) ));
 
   // Test exceeding the resource limit of stack depth.
-  buffer *buf = buffer_new3("");
+  buffer buf;
   for (int i = 0; i < UPB_MAX_NESTING; i++) {
-    buf = submsg(UPB_TYPE(MESSAGE), buf);
+    buf.assign(submsg(UPB_TYPE(MESSAGE), buf));
   }
   assert_does_not_parse(buf);
-
-  // Staying within the stack limit should work properly.
-  buf = buffer_new3("");
-  buffer *textbuf = buffer_new3("");
-  int total = UPB_MAX_NESTING - 1;
-  for (int i = 0; i < total; i++) {
-    buf = submsg(UPB_TYPE(MESSAGE), buf);
-    buffer_appendf(textbuf, "%u:{ ", UPB_TYPE(MESSAGE));
-  }
-  for (int i = 0; i < total; i++) {
-    buffer_appendf(textbuf, "} ");
-  }
-  assert_successful_parse(buf, "%s", textbuf->buf);
-  buffer_free(textbuf);
 }
 
 void test_valid() {
@@ -629,16 +696,80 @@ void test_valid() {
   test_valid_data_for_type(UPB_TYPE(FIXED64), uint64(33), uint64(66));
   test_valid_data_for_type(UPB_TYPE(FIXED32), uint32(33), uint32(66));
 
+  // Test implicit startseq/endseq.
+  uint32_t repfl_fn = rep_fn(UPB_TYPE(FLOAT));
+  uint32_t repdb_fn = rep_fn(UPB_TYPE(DOUBLE));
+  assert_successful_parse(
+      cat( tag(repfl_fn, UPB_WIRE_TYPE_32BIT), flt(33),
+           tag(repdb_fn, UPB_WIRE_TYPE_64BIT), dbl(66) ),
+      LINE("<")
+      LINE("%u:[")
+      LINE("  %u:33")
+      LINE("]")
+      LINE("%u:[")
+      LINE("  %u:66")
+      LINE("]")
+      LINE(">"), repfl_fn, repfl_fn, repdb_fn, repdb_fn);
+
   // Submessage tests.
   uint32_t msg_fn = UPB_TYPE(MESSAGE);
   assert_successful_parse(
-      submsg(msg_fn, submsg(msg_fn, submsg(msg_fn, buffer_new3("")))),
-      "%u:{ %u:{ %u:{ } } } ", msg_fn, msg_fn, msg_fn);
+      submsg(msg_fn, submsg(msg_fn, submsg(msg_fn, buffer()))),
+      LINE("<")
+      LINE("%u:{")
+      LINE("  <")
+      LINE("  %u:{")
+      LINE("    <")
+      LINE("    %u:{")
+      LINE("      <")
+      LINE("      >")
+      LINE("    }")
+      LINE("    >")
+      LINE("  }")
+      LINE("  >")
+      LINE("}")
+      LINE(">"), msg_fn, msg_fn, msg_fn);
 
   uint32_t repm_fn = rep_fn(UPB_TYPE(MESSAGE));
   assert_successful_parse(
-      submsg(repm_fn, submsg(repm_fn, buffer_new3(""))),
-      "%u:[ %u:{ %u:[ %u:{ } ] } ] ", repm_fn, repm_fn, repm_fn, repm_fn);
+      submsg(repm_fn, submsg(repm_fn, buffer())),
+      LINE("<")
+      LINE("%u:[")
+      LINE("  %u:{")
+      LINE("    <")
+      LINE("    %u:[")
+      LINE("      %u:{")
+      LINE("        <")
+      LINE("        >")
+      LINE("      }")
+      LINE("    ]")
+      LINE("    >")
+      LINE("  }")
+      LINE("]")
+      LINE(">"), repm_fn, repm_fn, repm_fn, repm_fn);
+
+  // Staying within the stack limit should work properly.
+  buffer buf;
+  buffer textbuf;
+  int total = UPB_MAX_NESTING - 1;
+  for (int i = 0; i < total; i++) {
+    buf.assign(submsg(UPB_TYPE(MESSAGE), buf));
+    indentbuf(&textbuf, i);
+    textbuf.append("<\n");
+    indentbuf(&textbuf, i);
+    textbuf.appendf("%u:{\n", UPB_TYPE(MESSAGE));
+  }
+  indentbuf(&textbuf, total);
+  textbuf.append("<\n");
+  indentbuf(&textbuf, total);
+  textbuf.append(">\n");
+  for (int i = 0; i < total; i++) {
+    indentbuf(&textbuf, total - i - 1);
+    textbuf.append("}\n");
+    indentbuf(&textbuf, total - i - 1);
+    textbuf.append(">\n");
+  }
+  assert_successful_parse(buf, "%s", textbuf.buf());
 }
 
 void run_tests() {
@@ -647,9 +778,16 @@ void run_tests() {
 }
 
 int main() {
+  for (int i = 0; i < UPB_MAX_NESTING; i++) {
+    closures[i] = i;
+  }
   // Construct decoder plan.
   upb_handlers *h = upb_handlers_new();
   reghandlers(upb_handlers_newmhandlers(h));
+
+  // Create an empty handlers to make sure that the decoder can handle empty
+  // messages.
+  upb_handlers_newmhandlers(h);
 
   // Test without JIT.
   plan = upb_decoderplan_new(h, false);
@@ -658,6 +796,11 @@ int main() {
 
   // Test JIT.
   plan = upb_decoderplan_new(h, true);
+#ifdef UPB_USE_JIT_X64
+  ASSERT(upb_decoderplan_hasjitcode(plan));
+#else
+  ASSERT(!upb_decoderplan_hasjitcode(plan));
+#endif
   run_tests();
   upb_decoderplan_unref(plan);
 

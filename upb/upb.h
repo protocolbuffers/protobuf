@@ -15,9 +15,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <string.h>
-#include "descriptor_const.h"
-#include "atomic.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,20 +33,6 @@ extern "C" {
 
 #define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))
 #define UPB_MIN(x, y) ((x) < (y) ? (x) : (y))
-#define UPB_INDEX(base, i, m) (void*)((char*)(base) + ((i)*(m)))
-
-INLINE void nop_printf(const char *fmt, ...) { (void)fmt; }
-
-#ifdef NDEBUG
-#define DEBUGPRINTF nop_printf
-#else
-#define DEBUGPRINTF printf
-#endif
-
-// Rounds val up to the next multiple of align.
-INLINE uint32_t upb_align_up(uint32_t val, uint32_t align) {
-  return val % align == 0 ? val : val + align - (val % align);
-}
 
 // The maximum that any submessages can be nested.  Matches proto2's limit.
 // At the moment this specifies the size of several statically-sized arrays
@@ -94,73 +77,46 @@ INLINE uint32_t upb_align_up(uint32_t val, uint32_t align) {
 #define UPB_MAX_TYPE_DEPTH 64
 
 
-/* Fundamental types and type constants. **************************************/
-
-// A list of types as they are encoded on-the-wire.
-enum upb_wire_type {
-  UPB_WIRE_TYPE_VARINT      = 0,
-  UPB_WIRE_TYPE_64BIT       = 1,
-  UPB_WIRE_TYPE_DELIMITED   = 2,
-  UPB_WIRE_TYPE_START_GROUP = 3,
-  UPB_WIRE_TYPE_END_GROUP   = 4,
-  UPB_WIRE_TYPE_32BIT       = 5,
-};
-
-// Type of a field as defined in a .proto file.  eg. string, int32, etc.  The
-// integers that represent this are defined by descriptor.proto.  Note that
-// descriptor.proto reserves "0" for errors, and we use it to represent
-// exceptional circumstances.
-typedef uint8_t upb_fieldtype_t;
-
-// For referencing the type constants tersely.
-#define UPB_TYPE(type) GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_TYPE_ ## type
-#define UPB_LABEL(type) GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_LABEL_LABEL_ ## type
-
-// Info for a given field type.
-typedef struct {
-  uint8_t align;
-  uint8_t size;
-  uint8_t native_wire_type;
-  uint8_t inmemory_type;    // For example, INT32, SINT32, and SFIXED32 -> INT32
-  const char *ctype;
-  bool is_numeric;  // Only numeric types can be packed.
-} upb_type_info;
-
-// A static array of info about all of the field types, indexed by type number.
-extern const upb_type_info upb_types[];
-
-
 /* upb_value ******************************************************************/
+
+// Clients should not need to access these enum values; they are used internally
+// to do typechecks of upb_value accesses.
+typedef enum {
+  UPB_CTYPE_INT32 = 1,
+  UPB_CTYPE_INT64 = 2,
+  UPB_CTYPE_UINT32 = 3,
+  UPB_CTYPE_UINT64 = 4,
+  UPB_CTYPE_DOUBLE = 5,
+  UPB_CTYPE_FLOAT = 6,
+  UPB_CTYPE_BOOL = 7,
+  UPB_CTYPE_PTR = 8,
+  UPB_CTYPE_BYTEREGION = 9,
+  UPB_CTYPE_FIELDDEF = 10,
+} upb_ctype_t;
 
 struct _upb_byteregion;
 struct _upb_fielddef;
-
-// Special constants for the upb_value.type field.  These must not conflict
-// with any members of FieldDescriptorProto.Type.
-#define UPB_TYPE_ENDGROUP 0
-#define UPB_VALUETYPE_FIELDDEF 32
-#define UPB_VALUETYPE_PTR 33
 
 // A single .proto value.  The owner must have an out-of-band way of knowing
 // the type, so that it knows which union member to use.
 typedef struct {
   union {
     uint64_t uint64;
-    double _double;
-    float _float;
     int32_t int32;
     int64_t int64;
     uint32_t uint32;
+    double _double;
+    float _float;
     bool _bool;
+    void *_void;
     struct _upb_byteregion *byteregion;
     const struct _upb_fielddef *fielddef;
-    void *_void;
   } val;
 
 #ifndef NDEBUG
   // In debug mode we carry the value type around also so we can check accesses
   // to be sure the right member is being read.
-  char type;
+  upb_ctype_t type;
 #endif
 } upb_value;
 
@@ -185,7 +141,7 @@ typedef struct {
     return val.val.membername; \
   } \
   INLINE void upb_value_set ## name(upb_value *val, ctype cval) { \
-    memset(val, 0, sizeof(*val)); \
+    val->val.uint64 = 0; \
     SET_TYPE(val->type, proto_type); \
     val->val.membername = cval; \
   } \
@@ -195,21 +151,23 @@ typedef struct {
     return ret; \
   }
 
-UPB_VALUE_ACCESSORS(double, _double, double, UPB_TYPE(DOUBLE));
-UPB_VALUE_ACCESSORS(float, _float, float, UPB_TYPE(FLOAT));
-UPB_VALUE_ACCESSORS(int32, int32, int32_t, UPB_TYPE(INT32));
-UPB_VALUE_ACCESSORS(int64, int64, int64_t, UPB_TYPE(INT64));
-UPB_VALUE_ACCESSORS(uint32, uint32, uint32_t, UPB_TYPE(UINT32));
-UPB_VALUE_ACCESSORS(uint64, uint64, uint64_t, UPB_TYPE(UINT64));
-UPB_VALUE_ACCESSORS(bool, _bool, bool, UPB_TYPE(BOOL));
-UPB_VALUE_ACCESSORS(ptr, _void, void*, UPB_VALUETYPE_PTR);
+UPB_VALUE_ACCESSORS(int32,  int32,   int32_t,  UPB_CTYPE_INT32);
+UPB_VALUE_ACCESSORS(int64,  int64,   int64_t,  UPB_CTYPE_INT64);
+UPB_VALUE_ACCESSORS(uint32, uint32,  uint32_t, UPB_CTYPE_UINT32);
+UPB_VALUE_ACCESSORS(uint64, uint64,  uint64_t, UPB_CTYPE_UINT64);
+UPB_VALUE_ACCESSORS(double, _double, double,   UPB_CTYPE_DOUBLE);
+UPB_VALUE_ACCESSORS(float,  _float,  float,    UPB_CTYPE_FLOAT);
+UPB_VALUE_ACCESSORS(bool,   _bool,   bool,     UPB_CTYPE_BOOL);
+UPB_VALUE_ACCESSORS(ptr,    _void,   void*,    UPB_CTYPE_PTR);
 UPB_VALUE_ACCESSORS(byteregion, byteregion, struct _upb_byteregion*,
-                    UPB_TYPE(STRING));
+                    UPB_CTYPE_BYTEREGION);
 
 // upb_fielddef should never be modified from a callback
 // (ie. when they're getting passed through a upb_value).
 UPB_VALUE_ACCESSORS(fielddef, fielddef, const struct _upb_fielddef*,
-                    UPB_VALUETYPE_FIELDDEF);
+                    UPB_CTYPE_FIELDDEF);
+
+#undef UPB_VALUE_ACCESSORS
 
 extern upb_value UPB_NO_VALUE;
 
@@ -262,7 +220,7 @@ void upb_status_copy(upb_status *to, const upb_status *from);
 
 extern upb_errorspace upb_posix_errorspace;
 void upb_status_fromerrno(upb_status *status);
-bool upb_errno_is_wouldblock(void);
+bool upb_errno_is_wouldblock();
 
 // Like vasprintf (which allocates a string large enough for the result), but
 // uses *buf (which can be NULL) as a starting point and reallocates it only if

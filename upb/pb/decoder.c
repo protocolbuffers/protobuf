@@ -13,6 +13,33 @@
 #include "upb/pb/decoder.h"
 #include "upb/pb/varint.h"
 
+typedef struct {
+  uint8_t native_wire_type;
+  bool is_numeric;
+} upb_decoder_typeinfo;
+
+static const upb_decoder_typeinfo upb_decoder_types[] = {
+  {UPB_WIRE_TYPE_END_GROUP,   false},  // ENDGROUP
+  {UPB_WIRE_TYPE_64BIT,       true},   // DOUBLE
+  {UPB_WIRE_TYPE_32BIT,       true},   // FLOAT
+  {UPB_WIRE_TYPE_VARINT,      true},   // INT64
+  {UPB_WIRE_TYPE_VARINT,      true},   // UINT64
+  {UPB_WIRE_TYPE_VARINT,      true},   // INT32
+  {UPB_WIRE_TYPE_64BIT,       true},   // FIXED64
+  {UPB_WIRE_TYPE_32BIT,       true},   // FIXED32
+  {UPB_WIRE_TYPE_VARINT,      true},   // BOOL
+  {UPB_WIRE_TYPE_DELIMITED,   false},  // STRING
+  {UPB_WIRE_TYPE_START_GROUP, false},  // GROUP
+  {UPB_WIRE_TYPE_DELIMITED,   false},  // MESSAGE
+  {UPB_WIRE_TYPE_DELIMITED,   false},  // BYTES
+  {UPB_WIRE_TYPE_VARINT,      true},   // UINT32
+  {UPB_WIRE_TYPE_VARINT,      true},   // ENUM
+  {UPB_WIRE_TYPE_32BIT,       true},   // SFIXED32
+  {UPB_WIRE_TYPE_64BIT,       true},   // SFIXED64
+  {UPB_WIRE_TYPE_VARINT,      true},   // SINT32
+  {UPB_WIRE_TYPE_VARINT,      true},   // SINT64
+};
+
 /* upb_decoderplan ************************************************************/
 
 #ifdef UPB_USE_JIT_X64
@@ -32,37 +59,6 @@
 #include "upb/pb/decoder_x64.h"
 #endif
 
-typedef struct {
-  upb_fhandlers base;
-  void (*decode)(struct _upb_decoder *d, struct _upb_fieldent *f);
-#ifdef UPB_USE_JIT_X64
-  uint32_t jit_pclabel;
-  uint32_t jit_pclabel_notypecheck;
-#endif
-} upb_dplanfield;
-
-typedef struct {
-  upb_mhandlers base;
-#ifdef UPB_USE_JIT_X64
-  uint32_t jit_startmsg_pclabel;
-  uint32_t jit_endofbuf_pclabel;
-  uint32_t jit_endofmsg_pclabel;
-  uint32_t jit_dyndispatch_pclabel;
-  uint32_t jit_unknownfield_pclabel;
-  int32_t jit_parent_field_done_pclabel;
-  uint32_t max_field_number;
-  // Currently keyed on field number.  Could also try keying it
-  // on encoded or decoded tag, or on encoded field number.
-  void **tablearray;
-#endif
-} upb_dplanmsg;
-
-static void *upb_decoderplan_fptrs[];
-
-void upb_decoderplan_initfhandlers(upb_fhandlers *f) {
-  f->decode = upb_decoderplan_fptrs[f->type];
-}
-
 upb_decoderplan *upb_decoderplan_new(upb_handlers *h, bool allowjit) {
   upb_decoderplan *p = malloc(sizeof(*p));
   p->handlers = h;
@@ -72,17 +68,6 @@ upb_decoderplan *upb_decoderplan_new(upb_handlers *h, bool allowjit) {
   p->jit_code = NULL;
   if (allowjit) upb_decoderplan_makejit(p);
 #endif
-  // Set function pointers for each field's decode function.
-  for (int i = 0; i < h->msgs_len; i++) {
-    upb_mhandlers *m = h->msgs[i];
-    for(upb_inttable_iter i = upb_inttable_begin(&m->fieldtab);
-        !upb_inttable_done(i);
-        i = upb_inttable_next(&m->fieldtab, i)) {
-      upb_itofhandlers_ent *e = upb_inttable_iter_value(i);
-      upb_fhandlers *f = e->f;
-      upb_decoderplan_initfhandlers(f);
-    }
-  }
   return p;
 }
 
@@ -396,14 +381,6 @@ static void upb_decode_MESSAGE(upb_decoder *d, upb_fhandlers *f) {
   upb_push_msg(d, f, upb_decoder_offset(d) + len);
 }
 
-#define F(type) &upb_decode_ ## type
-static void *upb_decoderplan_fptrs[] = {
-    &upb_endgroup, F(DOUBLE), F(FLOAT), F(INT64),
-    F(UINT64), F(INT32), F(FIXED64), F(FIXED32), F(BOOL), F(STRING),
-    F(GROUP), F(MESSAGE), F(STRING), F(UINT32), F(ENUM), F(SFIXED32),
-    F(SFIXED64), F(SINT32), F(SINT64)};
-#undef F
-
 
 /* The main decoding loop *****************************************************/
 
@@ -431,16 +408,18 @@ INLINE upb_fhandlers *upb_decode_tag(upb_decoder *d) {
     if (!upb_trydecode_varint32(d, &tag)) return NULL;
     uint8_t wire_type = tag & 0x7;
     uint32_t fieldnum = tag >> 3;
-    upb_itofhandlers_ent *e = upb_inttable_fastlookup(
-        d->dispatch_table, fieldnum, sizeof(upb_itofhandlers_ent));
-    upb_fhandlers *f = e ? e->f : NULL;
+    const upb_value *val = upb_inttable_lookup32(d->dispatch_table, fieldnum);
+    upb_fhandlers *f = val ? upb_value_getptr(*val) : NULL;
+    bool is_packed = false;
 
     if (f) {
       // Wire type check.
-      if (wire_type == upb_types[f->type].native_wire_type ||
-          (wire_type == UPB_WIRE_TYPE_DELIMITED &&
-           upb_types[f->type].is_numeric)) {
+      if (wire_type == upb_decoder_types[f->type].native_wire_type) {
         // Wire type is ok.
+      } else if ((wire_type == UPB_WIRE_TYPE_DELIMITED &&
+                 upb_decoder_types[f->type].is_numeric)) {
+        // Wire type is ok (and packed).
+        is_packed = true;
       } else {
         f = NULL;
       }
@@ -453,19 +432,18 @@ INLINE upb_fhandlers *upb_decode_tag(upb_decoder *d) {
     if (fr->is_sequence && fr->f != f) {
       upb_dispatch_endseq(&d->dispatcher);
       upb_decoder_setmsgend(d);
+      fr = d->dispatcher.top;
     }
-    if (f && f->repeated && (!fr->is_sequence || fr->f != f)) {
-      uint64_t old_end = d->dispatcher.top->end_ofs;
-      upb_dispatcher_frame *fr = upb_dispatch_startseq(&d->dispatcher, f);
-      if (wire_type != UPB_WIRE_TYPE_DELIMITED ||
-          upb_issubmsgtype(f->type) || upb_isstringtype(f->type)) {
-        // Non-packed field -- this tag pertains to only a single message.
-        fr->end_ofs = old_end;
-      } else {
+    if (f && f->repeated && !fr->is_sequence) {
+      upb_dispatcher_frame *fr2 = upb_dispatch_startseq(&d->dispatcher, f);
+      if (is_packed) {
         // Packed primitive field.
         uint32_t len = upb_decode_varint32(d);
-        fr->end_ofs = upb_decoder_offset(d) + len;
-        fr->is_packed = true;
+        fr2->end_ofs = upb_decoder_offset(d) + len;
+        fr2->is_packed = true;
+      } else {
+        // Non-packed field -- this tag pertains to only a single message.
+        fr2->end_ofs = fr->end_ofs;
       }
       upb_decoder_setmsgend(d);
     }
@@ -513,13 +491,37 @@ upb_success_t upb_decoder_decode(upb_decoder *d) {
     if (!d->top_is_packed) f = upb_decode_tag(d);
     if (!f) {
       // Sucessful EOF.  We may need to dispatch a top-level implicit frame.
-      if (d->dispatcher.top == d->dispatcher.stack + 1) {
-        assert(d->dispatcher.top->is_sequence);
+      if (d->dispatcher.top->is_sequence) {
+        assert(d->dispatcher.top == d->dispatcher.stack + 1);
         upb_dispatch_endseq(&d->dispatcher);
       }
+      assert(d->dispatcher.top == d->dispatcher.stack);
+      upb_dispatch_endmsg(&d->dispatcher, &d->status);
       return UPB_OK;
     }
-    f->decode(d, f);
+
+    switch (f->type) {
+      case UPB_TYPE_ENDGROUP:  upb_endgroup(d, f);        break;
+      case UPB_TYPE(DOUBLE):   upb_decode_DOUBLE(d, f);   break;
+      case UPB_TYPE(FLOAT):    upb_decode_FLOAT(d, f);    break;
+      case UPB_TYPE(INT64):    upb_decode_INT64(d, f);    break;
+      case UPB_TYPE(UINT64):   upb_decode_UINT64(d, f);   break;
+      case UPB_TYPE(INT32):    upb_decode_INT32(d, f);    break;
+      case UPB_TYPE(FIXED64):  upb_decode_FIXED64(d, f);  break;
+      case UPB_TYPE(FIXED32):  upb_decode_FIXED32(d, f);  break;
+      case UPB_TYPE(BOOL):     upb_decode_BOOL(d, f);     break;
+      case UPB_TYPE(STRING):
+      case UPB_TYPE(BYTES):    upb_decode_STRING(d, f);   break;
+      case UPB_TYPE(GROUP):    upb_decode_GROUP(d, f);    break;
+      case UPB_TYPE(MESSAGE):  upb_decode_MESSAGE(d, f);  break;
+      case UPB_TYPE(UINT32):   upb_decode_UINT32(d, f);   break;
+      case UPB_TYPE(ENUM):     upb_decode_ENUM(d, f);     break;
+      case UPB_TYPE(SFIXED32): upb_decode_SFIXED32(d, f); break;
+      case UPB_TYPE(SFIXED64): upb_decode_SFIXED64(d, f); break;
+      case UPB_TYPE(SINT32):   upb_decode_SINT32(d, f);   break;
+      case UPB_TYPE(SINT64):   upb_decode_SINT64(d, f);   break;
+      case UPB_TYPE_NONE: assert(false); break;
+    }
     upb_decoder_checkpoint(d);
   }
 }
@@ -542,7 +544,6 @@ void upb_decoder_resetplan(upb_decoder *d, upb_decoderplan *p, int msg_offset) {
 void upb_decoder_resetinput(upb_decoder *d, upb_byteregion *input,
                             void *closure) {
   assert(d->plan);
-  assert(upb_byteregion_discardofs(input) == upb_byteregion_startofs(input));
   upb_dispatcher_frame *f =
       upb_dispatcher_reset(&d->dispatcher, closure, d->plan->handlers->msgs[0]);
   upb_status_clear(&d->status);

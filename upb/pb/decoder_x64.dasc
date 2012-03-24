@@ -9,8 +9,8 @@
 |// parsing the specific message and calling specific handlers.
 |//
 |// Since the JIT can call other functions (the JIT'ted code is not a leaf
-|// function) we must respect alignment rules.  On OS X, this means aligning
-|// the stack to 16 bytes.
+|// function) we must respect alignment rules.  All x86-64 systems require
+|// 16-byte stack alignment.
 
 #include <sys/mman.h>
 #include "dynasm/dasm_x86.h"
@@ -103,7 +103,7 @@ void upb_reg_jit_gdb(upb_decoderplan *plan) {
 // Has to be a separate function, otherwise GCC will complain about
 // expressions like (&foo != NULL) because they will never evaluate
 // to false.
-static void upb_assert_notnull(void *addr) { assert(addr != NULL); }
+static void upb_assert_notnull(void *addr) { assert(addr != NULL); (void)addr; }
 
 |.arch x64
 |.actionlist upb_jit_actionlist
@@ -401,45 +401,10 @@ static void upb_decoderplan_jit_decodefield(upb_decoderplan *plan,
   }
 }
 
-#if 0
-// These appear not to speed things up, but keeping around for
-// further experimentation.
-static void upb_decoderplan_jit_doappend(upb_decoderplan *plan, uint8_t size,
-                                         upb_fhandlers *f) {
-  |  mov   eax, STDARRAY:ARG1_64->len
-  |  cmp   eax, STDARRAY:ARG1_64->size
-  |  jne   >2
-  // If array is full, fall back to actual function.
-  |  loadfval f
-  |  callp  f->value
-  |  jmp   >3
-  |2:
-  |  mov   rcx, STDARRAY:ARG1_64->ptr
-  |  mov   esi, eax
-  |  add   eax, 1
-
-  switch (size) {
-    case 8:
-      |  mov   [rcx + rsi * 8], ARG3_64
-      break;
-
-    case 4:
-      |  mov   [rcx + rsi * 4], ARG3_32
-      break;
-
-    case 1:
-      |  mov   [rcx + rsi * 4], ARG3_8
-      break;
-  }
-
-  |  mov   STDARRAY:ARG1_64->len, eax
-  |3:
-}
-#endif
-
 static void upb_decoderplan_jit_callcb(upb_decoderplan *plan,
                                        upb_fhandlers *f) {
-  // Call callbacks.
+  // Call callbacks.  Specializing the append accessors didn't yield a speed
+  // increase in benchmarks.
   if (upb_issubmsgtype(f->type)) {
     if (f->type == UPB_TYPE(MESSAGE)) {
       |   mov   rsi, PTR
@@ -457,7 +422,10 @@ static void upb_decoderplan_jit_callcb(upb_decoderplan *plan,
       |  mov   ARG1_64, CLOSURE
       |  loadfval f
       |  callp f->startsubmsg
+      |  sethas CLOSURE, f->hasbit
       |  mov  CLOSURE, rdx
+    } else {
+      |  sethas CLOSURE, f->hasbit
     }
     |  mov   qword FRAME->closure, CLOSURE
     // TODO: Handle UPB_SKIPSUBMSG, UPB_BREAK
@@ -465,6 +433,7 @@ static void upb_decoderplan_jit_callcb(upb_decoderplan *plan,
 
     const upb_mhandlers *sub_m = upb_fhandlers_getsubmsg(f);
     |  call  =>sub_m->jit_startmsg_pclabel;
+    |  popframe upb_fhandlers_getmsg(f)
 
     // Call endsubmsg handler (if any).
     if (f->endsubmsg) {
@@ -473,7 +442,6 @@ static void upb_decoderplan_jit_callcb(upb_decoderplan *plan,
       |  loadfval  f
       |  callp f->endsubmsg
     }
-    |   popframe upb_fhandlers_getmsg(f)
     // TODO: Handle UPB_SKIPSUBMSG, UPB_BREAK
     |  mov   DECODER->ptr, PTR
   } else {
@@ -494,21 +462,6 @@ static void upb_decoderplan_jit_callcb(upb_decoderplan *plan,
     } else if (f->value == &upb_stdmsg_setbool) {
       const upb_fielddef *fd = upb_value_getfielddef(f->fval);
       |  mov   [ARG1_64 + fd->offset], ARG3_8
-#if 0
-    // These appear not to speed things up, but keeping around for
-    // further experimentation.
-    } else if (f->value == &upb_stdmsg_setint64_r ||
-        f->value == &upb_stdmsg_setuint64_r ||
-        f->value == &upb_stdmsg_setptr_r ||
-        f->value == &upb_stdmsg_setdouble_r) {
-      upb_decoderplan_jit_doappend(plan, 8, f);
-    } else if (f->value == &upb_stdmsg_setint32_r ||
-               f->value == &upb_stdmsg_setuint32_r ||
-               f->value == &upb_stdmsg_setfloat_r) {
-      upb_decoderplan_jit_doappend(plan, 4, f);
-    } else if (f->value == &upb_stdmsg_setbool_r) {
-      upb_decoderplan_jit_doappend(plan, 1, f);
-#endif
     } else if (f->value) {
       // Load closure and fval into arg registers.
       ||#ifndef NDEBUG
@@ -520,16 +473,26 @@ static void upb_decoderplan_jit_callcb(upb_decoderplan *plan,
       |  loadfval f
       |  callp  f->value
     }
-    |  sethas CLOSURE, f->valuehasbit
+    |  sethas CLOSURE, f->hasbit
     // TODO: Handle UPB_SKIPSUBMSG, UPB_BREAK
     |  mov   DECODER->ptr, PTR
   }
 }
 
+static uint64_t upb_get_encoded_tag(upb_fhandlers *f) {
+  uint32_t tag = (f->number << 3) | upb_decoder_types[f->type].native_wire_type;
+  uint64_t encoded_tag = upb_vencode32(tag);
+  // No tag should be greater than 5 bytes.
+  assert(encoded_tag <= 0xffffffffff);
+  return encoded_tag;
+}
+
 // PTR should point to the beginning of the tag.
-static void upb_decoderplan_jit_field(upb_decoderplan *plan, uint64_t tag,
-                                      uint64_t next_tag, upb_mhandlers *m,
+static void upb_decoderplan_jit_field(upb_decoderplan *plan, upb_mhandlers *m,
                                       upb_fhandlers *f, upb_fhandlers *next_f) {
+  uint64_t tag = upb_get_encoded_tag(f);
+  uint64_t next_tag = next_f ? upb_get_encoded_tag(next_f) : 0;
+
   // PC-label for the dispatch table.
   // We check the wire type (which must be loaded in edx) because the
   // table is keyed on field number, not type.
@@ -541,10 +504,13 @@ static void upb_decoderplan_jit_field(upb_decoderplan *plan, uint64_t tag,
     |  mov   rsi, FRAME->end_ofs
     |  pushframe  f, rsi, true
     if (f->startseq) {
-      |  mov   ARG1_64, CLOSURE
+      |  mov    ARG1_64, CLOSURE
       |  loadfval f
-      |  callp f->startseq
-      |  mov   CLOSURE, rdx
+      |  callp  f->startseq
+      |  sethas CLOSURE, f->hasbit
+      |  mov    CLOSURE, rdx
+    } else {
+      |  sethas CLOSURE, f->hasbit
     }
     |  mov   qword FRAME->closure, CLOSURE
   }
@@ -590,6 +556,11 @@ static int upb_compare_uint32(const void *a, const void *b) {
 }
 
 static void upb_decoderplan_jit_msg(upb_decoderplan *plan, upb_mhandlers *m) {
+  |=>m->jit_afterstartmsg_pclabel:
+  // There was a call to get here, so we need to align the stack.
+  |  sub  rsp, 8
+  |  jmp  >1
+
   |=>m->jit_startmsg_pclabel:
   // There was a call to get here, so we need to align the stack.
   |  sub  rsp, 8
@@ -602,6 +573,7 @@ static void upb_decoderplan_jit_msg(upb_decoderplan *plan, upb_mhandlers *m) {
     // TODO: Handle UPB_SKIPSUBMSG, UPB_BREAK
   }
 
+  |1:
   |  setmsgend  m
   |  check_eob   m
   |  mov    ecx, dword [PTR]
@@ -616,30 +588,19 @@ static void upb_decoderplan_jit_msg(upb_decoderplan *plan, upb_mhandlers *m) {
   int num_keys = upb_inttable_count(&m->fieldtab);
   uint32_t *keys = malloc(num_keys * sizeof(*keys));
   int idx = 0;
-  for(upb_inttable_iter i = upb_inttable_begin(&m->fieldtab);
-      !upb_inttable_done(i);
-      i = upb_inttable_next(&m->fieldtab, i)) {
-    keys[idx++] = upb_inttable_iter_key(i);
+  upb_inttable_iter i;
+  upb_inttable_begin(&i, &m->fieldtab);
+  for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
+    keys[idx++] = upb_inttable_iter_key(&i);
   }
   qsort(keys, num_keys, sizeof(uint32_t), &upb_compare_uint32);
 
-  upb_fhandlers *last_f = NULL;
-  uint64_t last_encoded_tag = 0;
   for(int i = 0; i < num_keys; i++) {
-    uint32_t fieldnum = keys[i];
-    upb_itofhandlers_ent *e = upb_inttable_lookup(&m->fieldtab, fieldnum);
-    upb_fhandlers *f = e->f;
-    assert(f->number == fieldnum);
-    uint32_t tag = (f->number << 3) | upb_types[f->type].native_wire_type;
-    uint64_t encoded_tag = upb_vencode32(tag);
-    // No tag should be greater than 5 bytes.
-    assert(encoded_tag <= 0xffffffffff);
-    if (last_f) upb_decoderplan_jit_field(
-        plan, last_encoded_tag, encoded_tag, m, last_f, f);
-    last_encoded_tag = encoded_tag;
-    last_f = f;
+    upb_fhandlers *f = upb_mhandlers_lookup(m, keys[i]);
+    upb_fhandlers *next_f =
+        (i + 1 < num_keys) ? upb_mhandlers_lookup(m, keys[i + 1]) : NULL;
+    upb_decoderplan_jit_field(plan, m, f, next_f);
   }
-  upb_decoderplan_jit_field(plan, last_encoded_tag, 0, m, last_f, NULL);
 
   free(keys);
 
@@ -733,18 +694,19 @@ static void upb_decoderplan_jit_assignfieldlabs(upb_fhandlers *f,
 static void upb_decoderplan_jit_assignmsglabs(upb_mhandlers *m,
                                               uint32_t *pclabel_count) {
   m->jit_startmsg_pclabel = (*pclabel_count)++;
+  m->jit_afterstartmsg_pclabel = (*pclabel_count)++;
   m->jit_endofbuf_pclabel = (*pclabel_count)++;
   m->jit_endofmsg_pclabel = (*pclabel_count)++;
   m->jit_dyndispatch_pclabel = (*pclabel_count)++;
   m->jit_unknownfield_pclabel = (*pclabel_count)++;
   m->max_field_number = 0;
   upb_inttable_iter i;
-  for(i = upb_inttable_begin(&m->fieldtab); !upb_inttable_done(i);
-      i = upb_inttable_next(&m->fieldtab, i)) {
-    uint32_t key = upb_inttable_iter_key(i);
+  upb_inttable_begin(&i, &m->fieldtab);
+  for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
+    uint32_t key = upb_inttable_iter_key(&i);
     m->max_field_number = UPB_MAX(m->max_field_number, key);
-    upb_itofhandlers_ent *e = upb_inttable_iter_value(i);
-    upb_decoderplan_jit_assignfieldlabs(e->f, pclabel_count);
+    upb_fhandlers *f = upb_value_getptr(upb_inttable_iter_value(&i));
+    upb_decoderplan_jit_assignfieldlabs(f, pclabel_count);
   }
   // TODO: support large field numbers by either using a hash table or
   // generating code for a binary search.  For now large field numbers
@@ -784,11 +746,12 @@ static void upb_decoderplan_makejit(upb_decoderplan *plan) {
   // Create dispatch tables.
   for (int i = 0; i < h->msgs_len; i++) {
     upb_mhandlers *m = h->msgs[i];
+    // We jump to after the startmsg handler since it is called before entering
+    // the JIT (either by upb_decoder or by a previous call to the JIT).
     m->jit_func =
-        plan->jit_code + dasm_getpclabel(plan, m->jit_startmsg_pclabel);
+        plan->jit_code + dasm_getpclabel(plan, m->jit_afterstartmsg_pclabel);
     for (uint32_t j = 0; j <= m->max_field_number; j++) {
-      upb_itofhandlers_ent *e = upb_inttable_lookup(&m->fieldtab, j);
-      upb_fhandlers *f = e ? e->f : NULL;
+      upb_fhandlers *f = upb_mhandlers_lookup(m, j);
       if (f) {
         m->tablearray[j] =
             plan->jit_code + dasm_getpclabel(plan, f->jit_pclabel);

@@ -83,11 +83,15 @@ deps: Makefile $(ALLSRC)
 CORE= \
   upb/upb.c \
   upb/handlers.c \
-  upb/descriptor.c \
+  upb/descriptor/reader.c \
   upb/table.c \
+  upb/refcount.c \
   upb/def.c \
   upb/msg.c \
   upb/bytestream.c \
+  bindings/cpp/upb/proto2_bridge.cc \
+
+# TODO: the proto2 bridge should be built as a separate library.
 
 # Library for the protocol buffer format (both text and binary).
 PB= \
@@ -122,8 +126,9 @@ LIBUPB_PIC=upb/libupb_pic.a
 lib: $(LIBUPB)
 
 
-OBJ=$(patsubst %.c,%.o,$(SRC))
-PICOBJ=$(patsubst %.c,%.lo,$(SRC))
+OBJ=$(patsubst %.c,%.o,$(SRC)) $(patsubst %.cc,%.o,$(SRC))
+PICOBJ=$(patsubst %.c,%.lo,$(SRC)) $(patsubst %.cc,%.lo,$(SRC))
+
 
 ifdef USE_JIT
 upb/pb/decoder.o upb/pb/decoder.lo: upb/pb/decoder_x64.h
@@ -139,9 +144,17 @@ $(LIBUPB_PIC): $(PICOBJ)
 	$(E) CC $<
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
+%.o : %.cc
+	$(E) CXX $<
+	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+
 %.lo : %.c
 	$(E) 'CC -fPIC' $<
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $< -fPIC
+
+%.o : %.cc
+	$(E) CXX $<
+	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $< -fPIC
 
 # Override the optimization level for def.o, because it is not in the
 # critical path but gets very large when -O3 is used.
@@ -197,47 +210,39 @@ tests/test.proto.pb: tests/test.proto
 SIMPLE_TESTS= \
   tests/test_def \
   tests/test_varint \
-  tests/tests \
-
-# Too many tests in this binary to run Valgrind (it takes minutes).
-SLOW_TESTS= \
-  tests/test_decoder \
 
 SIMPLE_CXX_TESTS= \
   tests/test_table \
   tests/test_cpp \
+  tests/test_decoder \
 
 VARIADIC_TESTS= \
   tests/t.test_vs_proto2.googlemessage1 \
   tests/t.test_vs_proto2.googlemessage2 \
 
-TESTS=$(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS) $(VARIADIC_TESTS) $(SLOW_TESTS)
-tests: $(TESTS)
+TESTS=$(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS) $(VARIADIC_TESTS)
+
+
+tests: $(TESTS) $(INTERACTIVE_TESTS)
 $(TESTS): $(LIBUPB)
-tests/tests: tests/test.proto.pb
+tests/test_def: tests/test.proto.pb
 
 $(SIMPLE_TESTS): % : %.c
 	$(E) CC $<
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $< $(LIBUPB)
 
-VALGRIND=valgrind --leak-check=full --error-exitcode=1 
+VALGRIND=valgrind --leak-check=full --error-exitcode=1
 test: tests
 	@echo Running all tests under valgrind.
 	@set -e  # Abort on error.
 	@for test in $(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS); do \
 	  if [ -x ./$$test ] ; then \
-	    echo !!! $(VALGRIND) ./$$test tests/test.proto.pb; \
+	    echo !!! $(VALGRIND) ./$$test; \
 	    $(VALGRIND) ./$$test tests/test.proto.pb || exit 1; \
 	  fi \
 	done;
-	@for test in "$(SLOW_TESTS)"; do \
-	  if [ -x ./$$test ] ; then \
-	    echo !!! ./$$test; \
-	    ./$$test || exit 1; \
-	  fi \
-	done;
-	@$(VALGRIND) tests/t.test_vs_proto2.googlemessage1 benchmarks/google_messages.proto.pb benchmarks/google_message1.dat
-	@$(VALGRIND) tests/t.test_vs_proto2.googlemessage2 benchmarks/google_messages.proto.pb benchmarks/google_message2.dat
+	@$(VALGRIND) ./tests/t.test_vs_proto2.googlemessage1 benchmarks/google_message1.dat || exit 1;
+	@$(VALGRIND) ./tests/t.test_vs_proto2.googlemessage2 benchmarks/google_message2.dat || exit 1;
 	@echo "All tests passed!"
 
 tests/t.test_vs_proto2.googlemessage1 \
@@ -273,15 +278,11 @@ tests/tests: upb/libupb.a
 # Benchmarks
 UPB_BENCHMARKS=benchmarks/b.parsestream_googlemessage1.upb_table \
                benchmarks/b.parsestream_googlemessage2.upb_table \
-               benchmarks/b.parsetostruct_googlemessage1.upb_table_byval \
-               benchmarks/b.parsetostruct_googlemessage2.upb_table_byval \
 
 ifdef USE_JIT
 UPB_BENCHMARKS += \
                benchmarks/b.parsestream_googlemessage1.upb_jit \
                benchmarks/b.parsestream_googlemessage2.upb_jit \
-               benchmarks/b.parsetostruct_googlemessage1.upb_jit_byval \
-               benchmarks/b.parsetostruct_googlemessage2.upb_jit_byval \
                benchmarks/b.parsetoproto2_googlemessage1.upb_jit \
                benchmarks/b.parsetoproto2_googlemessage2.upb_jit
 endif
@@ -318,21 +319,21 @@ benchmarks/google_messages.pb.cc: benchmarks/google_messages.proto
 # want to make these command-line parameters -- it makes it more annoying to
 # debug or profile them.
 
-benchmarks/b.parsetostruct_googlemessage1.upb_table_byval \
-benchmarks/b.parsetostruct_googlemessage2.upb_table_byval: \
+benchmarks/b.parsetostruct_googlemessage1.upb_table \
+benchmarks/b.parsetostruct_googlemessage2.upb_table: \
     benchmarks/parsetostruct.upb.c $(LIBUPB) benchmarks/google_messages.proto.pb
-	$(E) 'CC benchmarks/parsetostruct.upb.c (benchmarks.SpeedMessage1, byval, nojit)'
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.upb_table_byval $< \
+	$(E) 'CC benchmarks/parsetostruct.upb.c (benchmarks.SpeedMessage1, nojit)'
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.upb_table $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"google_message1.dat\" \
-	  -DBYREF=false -DJIT=false $(LIBUPB)
-	$(E) 'CC benchmarks/parsetostruct.upb.c (benchmarks.SpeedMessage2, byref, nojit)'
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.upb_table_byval $< \
+	  -DJIT=false $(LIBUPB)
+	$(E) 'CC benchmarks/parsetostruct.upb.c (benchmarks.SpeedMessage2, nojit)'
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.upb_table $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"google_message2.dat\" \
-	  -DBYREF=false -DJIT=false $(LIBUPB)
+	  -DJIT=false $(LIBUPB)
 
 benchmarks/b.parsestream_googlemessage1.upb_table \
 benchmarks/b.parsestream_googlemessage2.upb_table: \
@@ -351,21 +352,21 @@ benchmarks/b.parsestream_googlemessage2.upb_table: \
 	  $(LIBUPB)
 
 ifdef USE_JIT
-benchmarks/b.parsetostruct_googlemessage1.upb_jit_byval \
-benchmarks/b.parsetostruct_googlemessage2.upb_jit_byval: \
+benchmarks/b.parsetostruct_googlemessage1.upb_jit \
+benchmarks/b.parsetostruct_googlemessage2.upb_jit: \
     benchmarks/parsetostruct.upb.c $(LIBUPB) benchmarks/google_messages.proto.pb
-	$(E) 'CC benchmarks/parsetostruct.upb.c (benchmarks.SpeedMessage1, byref, jit)'
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.upb_jit_byval $< \
+	$(E) 'CC benchmarks/parsetostruct.upb.c (benchmarks.SpeedMessage1, jit)'
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage1.upb_jit $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"google_message1.dat\" -DJIT=true \
-	  -DBYREF=true -DJIT=true $(LIBUPB)
-	$(E) 'CC benchmarks/parsetostruct.upb.c (benchmarks.SpeedMessage2, byval, jit)'
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.upb_jit_byval $< \
+	  -DJIT=true $(LIBUPB)
+	$(E) 'CC benchmarks/parsetostruct.upb.c (benchmarks.SpeedMessage2, jit)'
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o benchmarks/b.parsetostruct_googlemessage2.upb_jit $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
 	  -DMESSAGE_DESCRIPTOR_FILE=\"google_messages.proto.pb\" \
 	  -DMESSAGE_FILE=\"google_message2.dat\" -DJIT=true \
-	  -DBYREF=false -DJIT=true $(LIBUPB)
+	  -DJIT=true $(LIBUPB)
 
 benchmarks/b.parsestream_googlemessage1.upb_jit \
 benchmarks/b.parsestream_googlemessage2.upb_jit: \

@@ -39,7 +39,7 @@ static bool initialize()
     return false;
   }
 
-  def = upb_dyncast_msgdef_const(upb_symtab_lookup(s, MESSAGE_NAME));
+  def = upb_dyncast_msgdef_const(upb_symtab_lookup(s, MESSAGE_NAME, &def));
   if(!def) {
     fprintf(stderr, "Error finding symbol '%s'.\n", MESSAGE_NAME);
     return false;
@@ -68,7 +68,7 @@ static bool initialize()
 static void cleanup()
 {
   free(input_str);
-  upb_def_unref(UPB_UPCAST(def));
+  upb_def_unref(UPB_UPCAST(def), &def);
   upb_decoder_uninit(&decoder);
   upb_decoderplan_unref(plan);
   upb_stringsrc_uninit(&stringsrc);

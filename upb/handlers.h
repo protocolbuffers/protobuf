@@ -9,6 +9,10 @@
  * for each message and/or field as the data is being parsed or iterated over,
  * without having to know the source format that we are parsing from.  This
  * decouples the parsing logic from the processing logic.
+ *
+ * TODO: should we allow handlers to longjmp()?  Would be necessary to eg. let
+ * a Lua handler "yield" from the current coroutine.  I *think* everything
+ * would "just work" with our current decoder.
  */
 
 #ifndef UPB_HANDLERS_H
@@ -141,9 +145,9 @@ struct _upb_mhandlers;
 typedef struct _upb_fieldent {
   upb_fieldtype_t type;
   bool repeated;
-  upb_atomic_t refcount;
+  uint32_t refcount;
   uint32_t number;
-  int32_t valuehasbit;
+  int32_t hasbit;
   struct _upb_mhandlers *msg;
   struct _upb_mhandlers *submsg;  // Set iff upb_issubmsgtype(type) == true.
   upb_value fval;
@@ -157,13 +161,7 @@ typedef struct _upb_fieldent {
   uint32_t jit_pclabel_notypecheck;
   uint32_t jit_submsg_done_pclabel;
 #endif
-  void (*decode)(struct _upb_decoder *d, struct _upb_fieldent *f);
 } upb_fhandlers;
-
-typedef struct {
-  bool junk;  // Stolen by table impl; see table.h for details.
-  upb_fhandlers *f;
-} upb_itofhandlers_ent;
 
 // fhandlers are created as part of a upb_handlers instance, but can be ref'd
 // and unref'd to prolong the life of the handlers.
@@ -174,6 +172,8 @@ void upb_fhandlers_unref(upb_fhandlers *m);
 #define UPB_FHANDLERS_ACCESSORS(name, type) \
   INLINE void upb_fhandlers_set ## name(upb_fhandlers *f, type v){f->name = v;} \
   INLINE type upb_fhandlers_get ## name(const upb_fhandlers *f) { return f->name; }
+// TODO(haberman): need a way of keeping the fval alive even if a plan outlasts
+// the handlers.
 UPB_FHANDLERS_ACCESSORS(fval, upb_value)
 UPB_FHANDLERS_ACCESSORS(value, upb_value_handler*)
 UPB_FHANDLERS_ACCESSORS(startsubmsg, upb_startfield_handler*)
@@ -182,11 +182,13 @@ UPB_FHANDLERS_ACCESSORS(startseq, upb_startfield_handler*)
 UPB_FHANDLERS_ACCESSORS(endseq, upb_endfield_handler*)
 UPB_FHANDLERS_ACCESSORS(msg, struct _upb_mhandlers*)
 UPB_FHANDLERS_ACCESSORS(submsg, struct _upb_mhandlers*)
-// If set to >= 0, the hasbit will automatically be set after the corresponding
-// callback is called (when a JIT is enabled, this can be significantly more
-// efficient than setting the hasbit yourself inside the callback).  Could add
-// this for seq and submsg also, but doesn't look like a win at the moment.
-UPB_FHANDLERS_ACCESSORS(valuehasbit, int32_t)
+// If set to >= 0, the hasbit will automatically be set when the corresponding
+// field is parsed (when a JIT is enabled, this can be significantly more
+// efficient than setting the hasbit yourself inside the callback).  For values
+// it is undefined whether the hasbit is set before or after the callback is
+// called.  For seq and submsg, the hasbit is set *after* the start handler is
+// called, but before any of the handlers for the submsg or sequence.
+UPB_FHANDLERS_ACCESSORS(hasbit, int32_t)
 
 
 /* upb_mhandlers **************************************************************/
@@ -195,7 +197,7 @@ UPB_FHANDLERS_ACCESSORS(valuehasbit, int32_t)
 // message in the graph of messages.
 
 typedef struct _upb_mhandlers {
-  upb_atomic_t refcount;
+  uint32_t refcount;
   upb_startmsg_handler *startmsg;
   upb_endmsg_handler *endmsg;
   upb_inttable fieldtab;  // Maps field number -> upb_fhandlers.
@@ -203,6 +205,7 @@ typedef struct _upb_mhandlers {
 #ifdef UPB_USE_JIT_X64
   // Used inside the JIT to track labels (jmp targets) in the generated code.
   uint32_t jit_startmsg_pclabel;  // Starting a parse of this (sub-)message.
+  uint32_t jit_afterstartmsg_pclabel;  // After calling the startmsg handler.
   uint32_t jit_endofbuf_pclabel;  // ptr hitend, but delim_end or jit_end?
   uint32_t jit_endofmsg_pclabel;  // Done parsing this (sub-)message.
   uint32_t jit_dyndispatch_pclabel;  // Dispatch by table lookup.
@@ -240,11 +243,14 @@ upb_fhandlers *upb_mhandlers_newfhandlers_subm(upb_mhandlers *m, uint32_t n,
 UPB_MHANDLERS_ACCESSORS(startmsg, upb_startmsg_handler*);
 UPB_MHANDLERS_ACCESSORS(endmsg, upb_endmsg_handler*);
 
+// Returns fhandlers for the given field, or NULL if none.
+upb_fhandlers *upb_mhandlers_lookup(const upb_mhandlers *m, uint32_t n);
+
 
 /* upb_handlers ***************************************************************/
 
 struct _upb_handlers {
-  upb_atomic_t refcount;
+  uint32_t refcount;
   upb_mhandlers **msgs;  // Array of msgdefs, [0]=toplevel.
   int msgs_len, msgs_size;
   bool should_jit;
@@ -267,8 +273,10 @@ upb_mhandlers *upb_handlers_getmhandlers(upb_handlers *h, int index);
 // with "fieldreg_cb"
 //
 // See upb_handlers_reghandlerset() below for an example.
-typedef void upb_onmsgreg(void *closure, upb_mhandlers *mh, const upb_msgdef *m);
-typedef void upb_onfieldreg(void *closure, upb_fhandlers *mh, const upb_fielddef *m);
+typedef void upb_onmsgreg(
+    void *closure, upb_mhandlers *mh, const upb_msgdef *m);
+typedef void upb_onfieldreg(
+    void *closure, upb_fhandlers *fh, const upb_fielddef *f);
 upb_mhandlers *upb_handlers_regmsgdef(upb_handlers *h, const upb_msgdef *m,
                                       upb_onmsgreg *msgreg_cb,
                                       upb_onfieldreg *fieldreg_cb,
@@ -305,8 +313,8 @@ INLINE void upb_onfreg_hset(void *c, upb_fhandlers *fh, const upb_fielddef *f) {
   upb_value_setfielddef(&val, f);
   upb_fhandlers_setfval(fh, val);
 }
-INLINE upb_mhandlers *upb_handlers_reghandlerset(upb_handlers *h, const upb_msgdef *m,
-                                                 upb_handlerset *hs) {
+INLINE upb_mhandlers *upb_handlers_reghandlerset(
+    upb_handlers *h, const upb_msgdef *m, upb_handlerset *hs) {
   return upb_handlers_regmsgdef(h, m, &upb_onmreg_hset, &upb_onfreg_hset, hs);
 }
 
@@ -373,7 +381,7 @@ INLINE void upb_dispatch_value(upb_dispatcher *d, upb_fhandlers *f,
                                upb_value val) {
   upb_flow_t flow = UPB_CONTINUE;
   if (f->value) flow = f->value(d->top->closure, f->fval, val);
-  _upb_dispatcher_sethas(d->top->closure, f->valuehasbit);
+  _upb_dispatcher_sethas(d->top->closure, f->hasbit);
   if (flow != UPB_CONTINUE) _upb_dispatcher_abortjmp(d);
 }
 void upb_dispatch_startmsg(upb_dispatcher *d);
@@ -381,7 +389,8 @@ void upb_dispatch_endmsg(upb_dispatcher *d, upb_status *status);
 upb_dispatcher_frame *upb_dispatch_startsubmsg(upb_dispatcher *d,
                                                upb_fhandlers *f);
 upb_dispatcher_frame *upb_dispatch_endsubmsg(upb_dispatcher *d);
-upb_dispatcher_frame *upb_dispatch_startseq(upb_dispatcher *d, upb_fhandlers *f);
+upb_dispatcher_frame *upb_dispatch_startseq(upb_dispatcher *d,
+                                            upb_fhandlers *f);
 upb_dispatcher_frame *upb_dispatch_endseq(upb_dispatcher *d);
 
 #ifdef __cplusplus

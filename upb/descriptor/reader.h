@@ -4,9 +4,9 @@
  * Copyright (c) 2011 Google Inc.  See LICENSE for details.
  * Author: Josh Haberman <jhaberman@gmail.com>
  *
- * Routines for building defs by parsing descriptors in descriptor.proto format.
- * This only needs to use the public API of upb_symtab.  Later we may also
- * add routines for dumping a symtab to a descriptor.
+ * upb_descreader provides a set of sink handlers that will build defs from a
+ * data source that uses the descriptor.proto schema (like a protobuf binary
+ * descriptor).
  */
 
 #ifndef UPB_DESCRIPTOR_H
@@ -18,6 +18,20 @@
 extern "C" {
 #endif
 
+/* upb_deflist ****************************************************************/
+
+// upb_deflist is an internal-only dynamic array for storing a growing list of
+// upb_defs.
+typedef struct {
+  upb_def **defs;
+  size_t len;
+  size_t size;
+  bool owned;
+} upb_deflist;
+
+void upb_deflist_init(upb_deflist *l);
+void upb_deflist_uninit(upb_deflist *l);
+void upb_deflist_push(upb_deflist *l, upb_def *d);
 
 /* upb_descreader  ************************************************************/
 
@@ -56,11 +70,11 @@ void upb_descreader_uninit(upb_descreader *r);
 upb_mhandlers *upb_descreader_reghandlers(upb_handlers *h);
 
 // Gets the array of defs that have been parsed and removes them from the
-// descreader.  Ownership of the defs is passed to the caller, but the
-// ownership of the returned array is retained and is invalidated by any other
-// call into the descreader.  The defs will not have been resolved, and are
-// ready to be added to a symtab.
-upb_def **upb_descreader_getdefs(upb_descreader *r, int *n);
+// descreader.  Ownership of the defs is passed to the caller using the given
+// owner), but the ownership of the returned array is retained and is
+// invalidated by any other call into the descreader.  The defs will not have
+// been resolved, and are ready to be added to a symtab.
+upb_def **upb_descreader_getdefs(upb_descreader *r, void *owner, int *n);
 
 #ifdef __cplusplus
 }  /* extern "C" */

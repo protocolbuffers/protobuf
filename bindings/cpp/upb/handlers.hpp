@@ -15,11 +15,16 @@
 
 #include "upb/handlers.h"
 
+#include "upb/upb.hpp"
+
 namespace upb {
 
 typedef upb_fieldtype_t FieldType;
 typedef upb_flow_t Flow;
+typedef upb_sflow_t SubFlow;
 class MessageHandlers;
+class MessageDef;
+class FieldDef;
 
 class FieldHandlers : public upb_fhandlers {
  public:
@@ -68,18 +73,24 @@ class FieldHandlers : public upb_fhandlers {
   MessageHandlers* GetSubMessageHandlers() const;
   // If set to >=0, the given hasbit will be set after the value callback is
   // called (offset relative to the current closure).
-  int32_t GetValueHasbit() const { return upb_fhandlers_getvaluehasbit(this); }
-  void SetValueHasbit(int32_t bit) { upb_fhandlers_setvaluehasbit(this, bit); }
+  int32_t GetHasbit() const { return upb_fhandlers_gethasbit(this); }
+  void SetHasbit(int32_t bit) { upb_fhandlers_sethasbit(this, bit); }
 
  private:
-  FieldHandlers();  // Only created by upb::Handlers.
-  ~FieldHandlers(); // Only destroyed by refcounting.
+  UPB_DISALLOW_CONSTRUCT_AND_DESTRUCT(FieldHandlers);
 };
 
 class MessageHandlers : public upb_mhandlers {
  public:
   typedef upb_startmsg_handler StartMessageHandler;
   typedef upb_endmsg_handler EndMessageHandler;
+
+  static MessageHandlers* Cast(upb_mhandlers* mh) {
+    return static_cast<MessageHandlers*>(mh);
+  }
+  static const MessageHandlers* Cast(const upb_mhandlers* mh) {
+    return static_cast<const MessageHandlers*>(mh);
+  }
 
   // The MessageHandlers will live at least as long as the upb::Handlers to
   // which it belongs, but can be Ref'd/Unref'd to make it live longer (which
@@ -89,7 +100,7 @@ class MessageHandlers : public upb_mhandlers {
 
   // Functions to set this message's handlers.
   // These return "this" so they can be conveniently chained, eg.
-  //   handlers->NewMessage()
+  //   handlers->NewMessageHandlers()
   //       ->SetStartMessageHandler(&StartMessage)
   //       ->SetEndMessageHandler(&EndMessage);
   MessageHandlers* SetStartMessageHandler(StartMessageHandler* h) {
@@ -111,13 +122,13 @@ class MessageHandlers : public upb_mhandlers {
   FieldHandlers* NewFieldHandlersForSubmessage(uint32_t n, const char *name,
                                                FieldType type, bool repeated,
                                                MessageHandlers* subm) {
+    (void)name;
     return static_cast<FieldHandlers*>(
         upb_mhandlers_newfhandlers_subm(this, n, type, repeated, subm));
   }
 
  private:
-  MessageHandlers();  // Only created by upb::Handlers.
-  ~MessageHandlers(); // Only destroyed by refcounting.
+  UPB_DISALLOW_CONSTRUCT_AND_DESTRUCT(MessageHandlers);
 };
 
 class Handlers : public upb_handlers {
@@ -134,17 +145,29 @@ class Handlers : public upb_handlers {
     return static_cast<MessageHandlers*>(upb_handlers_newmhandlers(this));
   }
 
+  // Convenience function for registering handlers for all messages and fields
+  // in a MessageDef and all its children.  For every registered message,
+  // OnMessage will be called on the visitor with newly-created MessageHandlers
+  // and MessageDef. Likewise with OnField will be called with newly-created
+  // FieldHandlers and FieldDef for each field.
+  class MessageRegistrationVisitor {
+   public:
+    virtual ~MessageRegistrationVisitor() {}
+    virtual void OnMessage(MessageHandlers* mh, const MessageDef* m) = 0;
+    virtual void OnField(FieldHandlers* fh, const FieldDef* f) = 0;
+  };
+  MessageHandlers* RegisterMessageDef(const MessageDef& m,
+                                      MessageRegistrationVisitor* visitor);
+
  private:
-  Handlers();  // Only created by Handlers::New().
-  ~Handlers(); // Only destroyed by refcounting.
+  UPB_DISALLOW_CONSTRUCT_AND_DESTRUCT(Handlers);
 };
 
-
-MessageHandlers* FieldHandlers::GetMessageHandlers() const {
+inline MessageHandlers* FieldHandlers::GetMessageHandlers() const {
   return static_cast<MessageHandlers*>(upb_fhandlers_getmsg(this));
 }
 
-MessageHandlers* FieldHandlers::GetSubMessageHandlers() const {
+inline MessageHandlers* FieldHandlers::GetSubMessageHandlers() const {
   return static_cast<MessageHandlers*>(upb_fhandlers_getsubmsg(this));
 }
 

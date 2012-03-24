@@ -612,9 +612,8 @@ static upb_sflow_t PyUpb_Message_StartRepeatedSubmessage(void *a, upb_value fval
 static upb_flow_t PyUpb_Message_StringValue(void *m, upb_value fval, upb_value val) {
   PyObject **str = PyUpb_Accessor_GetPtr(m, fval);
   if (*str) { Py_DECREF(*str); }
-  upb_byteregion *r = upb_value_getbyteregion(val);
-  *str = PyString_FromStringAndSize(NULL, upb_byteregion_len(r));
-  upb_byteregion_copyall(r, PyString_AsString(*str));
+  *str = PyString_FromStringAndSize(NULL, upb_value_getstrref(val)->len);
+  upb_strref_read(upb_value_getstrref(val), PyString_AsString(*str));
   upb_stdmsg_sethas(m, fval);
   return UPB_CONTINUE;
 }
@@ -622,9 +621,8 @@ static upb_flow_t PyUpb_Message_StringValue(void *m, upb_value fval, upb_value v
 static upb_flow_t PyUpb_Message_AppendStringValue(void *a, upb_value fval, upb_value val) {
   (void)fval;
   PyObject **elem = upb_stdarray_append(a, sizeof(void*));
-  upb_byteregion *r = upb_value_getbyteregion(val);
-  *elem = PyString_FromStringAndSize(NULL, upb_byteregion_len(r));
-  upb_byteregion_copyall(r, PyString_AsString(*elem));
+  *elem = PyString_FromStringAndSize(NULL, upb_value_getstrref(val)->len);
+  upb_strref_read(upb_value_getstrref(val), PyString_AsString(*elem));
   return UPB_CONTINUE;
 }
 

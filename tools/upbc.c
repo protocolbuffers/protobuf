@@ -55,7 +55,7 @@ static void write_const_h(const upb_def *defs[], int num_entries,
   for(int i = 0; i < num_entries; i++) {  /* Foreach enum */
     if(defs[i]->type != UPB_DEF_ENUM) continue;
     const upb_enumdef *enumdef = upb_downcast_enumdef_const(defs[i]);
-    char *enum_name = strdup(upb_def_fqname(UPB_UPCAST(enumdef)));
+    char *enum_name = strdup(upb_def_fullname(UPB_UPCAST(enumdef)));
     char *enum_val_prefix = strdup(enum_name);
     to_cident(enum_name);
     to_preproc(enum_val_prefix);
@@ -63,11 +63,12 @@ static void write_const_h(const upb_def *defs[], int num_entries,
     fprintf(stream, "typedef enum %s {\n", enum_name);
     bool first = true;
     /* Foreach enum value. */
-    for (upb_enum_iter iter = upb_enum_begin(enumdef);
-         !upb_enum_done(iter);
-         iter = upb_enum_next(enumdef, iter)) {
-      char *value_name = strdup(upb_enum_iter_name(iter));
-      uint32_t value = upb_enum_iter_number(iter);
+    upb_enum_iter iter;
+    for (upb_enum_begin(&iter, enumdef);
+         !upb_enum_done(&iter);
+         upb_enum_next(&iter)) {
+      char *value_name = strdup(upb_enum_iter_name(&iter));
+      uint32_t value = upb_enum_iter_number(&iter);
       to_preproc(value_name);
       /* "  GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_TYPE_UINT32 = 13," */
       if (!first) fputs(",\n", stream);
@@ -85,20 +86,20 @@ static void write_const_h(const upb_def *defs[], int num_entries,
   for(int i = 0; i < num_entries; i++) {  /* Foreach enum */
     const upb_msgdef *m = upb_dyncast_msgdef_const(defs[i]);
     if(!m) continue;
-    char *msg_name = strdup(upb_def_fqname(UPB_UPCAST(m)));
+    char *msg_name = strdup(upb_def_fullname(UPB_UPCAST(m)));
     char *msg_val_prefix = strdup(msg_name);
     to_preproc(msg_val_prefix);
     upb_msg_iter i;
-    for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
-      upb_fielddef *f = upb_msg_iter_field(i);
-      char *preproc_field_name = strdup(f->name);
+    for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
+      upb_fielddef *f = upb_msg_iter_field(&i);
+      char *preproc_field_name = strdup(upb_fielddef_name(f));
       to_preproc(preproc_field_name);
       fprintf(stream, "#define %s_%s__FIELDNUM %d\n",
               msg_val_prefix, preproc_field_name, upb_fielddef_number(f));
       fprintf(stream, "#define %s_%s__FIELDNAME \"%s\"\n",
-              msg_val_prefix, preproc_field_name, f->name);
+              msg_val_prefix, preproc_field_name, upb_fielddef_name(f));
       fprintf(stream, "#define %s_%s__FIELDTYPE %d\n\n",
-              msg_val_prefix, preproc_field_name, f->type);
+              msg_val_prefix, preproc_field_name, upb_fielddef_type(f));
       free(preproc_field_name);
     }
     free(msg_val_prefix);
@@ -123,13 +124,13 @@ const char usage[] =
   "                     of using the input file as a basename.\n"
 ;
 
-void usage_err(char *err) {
+void usage_err(const char *err) {
   fprintf(stderr, "upbc: %s\n\n", err);
   fputs(usage, stderr);
   exit(1);
 }
 
-void error(char *err, ...) {
+void error(const char *err, ...) {
   va_list args;
   va_start(args, err);
   fprintf(stderr, "upbc: ");
@@ -175,8 +176,8 @@ int main(int argc, char *argv[]) {
   upb_status_uninit(&status);
 
   /* Emit output files. */
-  const int maxsize = 256;
-  char h_const_filename[maxsize];
+  char h_const_filename[256];
+  const int maxsize = sizeof(h_const_filename);
   if(snprintf(h_const_filename, maxsize, "%s_const.h", outfile_base) >= maxsize)
     error("File base too long.\n");
 
@@ -184,9 +185,9 @@ int main(int argc, char *argv[]) {
   if(!h_const_file) error("Failed to open _const.h output file\n");
 
   int symcount;
-  const upb_def **defs = upb_symtab_getdefs(s, &symcount, UPB_DEF_ANY);
+  const upb_def **defs = upb_symtab_getdefs(s, &symcount, UPB_DEF_ANY, &defs);
   write_const_h(defs, symcount, h_const_filename, h_const_file);
-  for (int i = 0; i < symcount; i++) upb_def_unref(defs[i]);
+  for (int i = 0; i < symcount; i++) upb_def_unref(defs[i], &defs);
   free(defs);
   free(descriptor);
   upb_symtab_unref(s);

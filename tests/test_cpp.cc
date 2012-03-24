@@ -15,6 +15,7 @@
 #include "upb/upb.hpp"
 #include "upb/pb/decoder.hpp"
 #include "upb/pb/glue.hpp"
+#include "upb_test.h"
 
 static void TestSymbolTable(const char *descriptor_file) {
   upb::SymbolTable *s = upb::SymbolTable::New();
@@ -23,20 +24,20 @@ static void TestSymbolTable(const char *descriptor_file) {
     std::cerr << "Couldn't load descriptor: " << status;
     exit(1);
   }
-  const upb::MessageDef *md = s->LookupMessage("A");
-  assert(md);
+  const upb::MessageDef *md = s->LookupMessage("A", &md);
+  ASSERT(md);
 
   s->Unref();
-  md->Unref();
+  md->Unref(&md);
 }
 
 static void TestByteStream() {
   upb::StringSource stringsrc;
   stringsrc.Reset("testing", 7);
   upb::ByteRegion* byteregion = stringsrc.AllBytes();
-  assert(byteregion->FetchAll() == UPB_BYTE_OK);
+  ASSERT(byteregion->FetchAll() == UPB_BYTE_OK);
   char* str = byteregion->StrDup();
-  assert(strcmp(str, "testing") == 0);
+  ASSERT(strcmp(str, "testing") == 0);
   free(str);
 }
 

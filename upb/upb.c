@@ -1,47 +1,17 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * Copyright (c) 2009 Google Inc.  See LICENSE for details.
+ * Copyright (c) 2009-2012 Google Inc.  See LICENSE for details.
  * Author: Josh Haberman <jhaberman@gmail.com>
  */
 
 #include <errno.h>
 #include <stdarg.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "upb/descriptor_const.h"
 #include "upb/upb.h"
-#include "upb/bytestream.h"
-
-#define alignof(t) offsetof(struct { char c; t x; }, x)
-#define TYPE_INFO(wire_type, ctype, inmemory_type, is_numeric) \
-    {alignof(ctype), sizeof(ctype), wire_type, UPB_TYPE(inmemory_type), \
-     #ctype, is_numeric},
-
-const upb_type_info upb_types[] = {
-  // END_GROUP is not real, but used to signify the pseudo-field that
-  // ends a group from within the group.
-  TYPE_INFO(UPB_WIRE_TYPE_END_GROUP,   void*,     MESSAGE, false)   // ENDGROUP
-  TYPE_INFO(UPB_WIRE_TYPE_64BIT,       double,    DOUBLE,  true)    // DOUBLE
-  TYPE_INFO(UPB_WIRE_TYPE_32BIT,       float,     FLOAT,   true)    // FLOAT
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int64_t,   INT64,   true)    // INT64
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint64_t,  UINT64,  true)    // UINT64
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int32_t,   INT32,   true)    // INT32
-  TYPE_INFO(UPB_WIRE_TYPE_64BIT,       uint64_t,  UINT64,  true)    // FIXED64
-  TYPE_INFO(UPB_WIRE_TYPE_32BIT,       uint32_t,  UINT32,  true)    // FIXED32
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      bool,      BOOL,    true)    // BOOL
-  TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     STRING,  false)   // STRING
-  TYPE_INFO(UPB_WIRE_TYPE_START_GROUP, void*,     MESSAGE, false)   // GROUP
-  TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     MESSAGE, false)   // MESSAGE
-  TYPE_INFO(UPB_WIRE_TYPE_DELIMITED,   void*,     STRING,  false)   // BYTES
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint32_t,  UINT32,  true)    // UINT32
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      uint32_t,  INT32,   true)    // ENUM
-  TYPE_INFO(UPB_WIRE_TYPE_32BIT,       int32_t,   INT32,   true)    // SFIXED32
-  TYPE_INFO(UPB_WIRE_TYPE_64BIT,       int64_t,   INT64,   true)    // SFIXED64
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int32_t,   INT32,   true)    // SINT32
-  TYPE_INFO(UPB_WIRE_TYPE_VARINT,      int64_t,   INT64,   true)    // SINT64
-};
 
 #ifdef NDEBUG
 upb_value UPB_NO_VALUE = {{0}};
@@ -142,8 +112,9 @@ bool upb_errno_is_wouldblock() {
 bool upb_posix_codetostr(int code, char *buf, size_t len) {
   if (strerror_r(code, buf, len) == -1) {
     if (errno == EINVAL) {
-      int n = snprintf(buf, len, "Invalid POSIX error number %d\n", code);
-      return n >= (int)len;
+      size_t actual_len =
+          snprintf(buf, len, "Invalid POSIX error number %d\n", code);
+      return actual_len >= len;
     } else if (errno == ERANGE) {
       return false;
     }

@@ -1,7 +1,7 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * Copyright (c) 2011 Google Inc.  See LICENSE for details.
+ * Copyright (c) 2011-2012 Google Inc.  See LICENSE for details.
  * Author: Josh Haberman <jhaberman@gmail.com>
  *
  * upb's core components like upb_decoder and upb_msg are carefully designed to
@@ -34,25 +34,12 @@
 extern "C" {
 #endif
 
-// Decodes the given string, which must be in protobuf binary format, to the
-// given upb_msg with msgdef "md", storing the status of the operation in "s".
-bool upb_strtomsg(const char *str, size_t len, void *msg,
-                  const upb_msgdef *md, bool allow_jit, upb_status *s);
-
-// Parses the given file into a new message of the given type.  Caller owns
-// the returned message (or NULL if an error occurred).
-void *upb_filetonewmsg(const char *fname, const upb_msgdef *md, upb_status *s);
-
-//void upb_msgtotext(struct _upb_string *str, void *msg,
-//                   struct _upb_msgdef *md, bool single_line);
-
-
 // Loads all defs from the given protobuf binary descriptor, setting default
 // accessors and a default layout on all messages.  The caller owns the
 // returned array of defs, which will be of length *n.  On error NULL is
 // returned and status is set (if non-NULL).
 upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
-                                        upb_status *status);
+                                        void *owner, upb_status *status);
 
 // Like the previous but also adds the loaded defs to the given symtab.
 bool upb_load_descriptor_into_symtab(upb_symtab *symtab, const char *str,

@@ -96,7 +96,7 @@ err:
     const upb_fielddef *f = upb_value_getfielddef(fval);                     \
     uint64_t start_ofs = upb_bytesink_getoffset(p->sink);                    \
     CHECK(upb_textprinter_indent(p));                                        \
-    CHECK(upb_bytesink_writestr(p->sink, f->name));                          \
+    CHECK(upb_bytesink_writestr(p->sink, upb_fielddef_name(f)));             \
     CHECK(upb_bytesink_writestr(p->sink, ": "));                             \
     CHECK(upb_bytesink_printf(p->sink, fmt, upb_value_get ## member(val)));  \
     CHECK(upb_textprinter_endfield(p));                                      \
@@ -124,7 +124,8 @@ static upb_flow_t upb_textprinter_putenum(void *_p, upb_value fval,
   upb_textprinter *p = _p;
   uint64_t start_ofs = upb_bytesink_getoffset(p->sink);
   const upb_fielddef *f = upb_value_getfielddef(fval);
-  upb_enumdef *enum_def = upb_downcast_enumdef(f->def);
+  const upb_enumdef *enum_def =
+      upb_downcast_enumdef_const(upb_fielddef_subdef(f));
   const char *label = upb_enumdef_iton(enum_def, upb_value_getint32(val));
   if (label) {
     CHECK(upb_bytesink_writestr(p->sink, label));
@@ -157,7 +158,7 @@ static upb_sflow_t upb_textprinter_startsubmsg(void *_p, upb_value fval) {
   uint64_t start_ofs = upb_bytesink_getoffset(p->sink);
   const upb_fielddef *f = upb_value_getfielddef(fval);
   CHECK(upb_textprinter_indent(p));
-  CHECK(upb_bytesink_printf(p->sink, "%s {", f->name));
+  CHECK(upb_bytesink_printf(p->sink, "%s {", upb_fielddef_name(f)));
   if (!p->single_line)
     CHECK(upb_bytesink_putc(p->sink, '\n'));
   p->indent_depth++;
