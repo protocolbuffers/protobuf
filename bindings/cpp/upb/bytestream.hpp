@@ -209,6 +209,10 @@ class ByteRegion : public upb_byteregion {
     uint64_t ofs = start_ofs();
     size_t len;
     const char *ptr = GetPtr(ofs, &len);
+    // Emperically calling reserve() here is counterproductive and slows down
+    // benchmarks.  If the parsing is happening in a tight loop that is reusing
+    // the string object, there is probably enough data reserved already and
+    // the reserve() call is extra overhead.
     str->assign(ptr, len);
     ofs += len;
     while (ofs < end_ofs()) {

@@ -91,40 +91,6 @@ void upb_status_setcode(upb_status *status, upb_errorspace *space, int code) {
   status->str = NULL;
 }
 
-void upb_status_fromerrno(upb_status *status) {
-  if (errno != 0 && !upb_errno_is_wouldblock()) {
-    status->error = true;
-    upb_status_setcode(status, &upb_posix_errorspace, errno);
-  }
-}
-
-bool upb_errno_is_wouldblock() {
-  return
-#ifdef EAGAIN
-      errno == EAGAIN ||
-#endif
-#ifdef EWOULDBLOCK
-      errno == EWOULDBLOCK ||
-#endif
-      false;
-}
-
-bool upb_posix_codetostr(int code, char *buf, size_t len) {
-  if (strerror_r(code, buf, len) == -1) {
-    if (errno == EINVAL) {
-      size_t actual_len =
-          snprintf(buf, len, "Invalid POSIX error number %d\n", code);
-      return actual_len >= len;
-    } else if (errno == ERANGE) {
-      return false;
-    }
-    assert(false);
-  }
-  return true;
-}
-
-upb_errorspace upb_posix_errorspace = {"POSIX", &upb_posix_codetostr};
-
 int upb_vrprintf(char **buf, size_t *size, size_t ofs,
                  const char *fmt, va_list args) {
   // Try once without reallocating.  We have to va_copy because we might have

@@ -1,0 +1,15 @@
+This directory contains code that is ANSI C but uses parts of the
+standard library that are not available to very limited environments
+like Linux Kernel modules.  The standard calls environments like this
+"freestanding implementations."
+
+This does *not* imply that the upb core can be compiled directly on a
+freestanding implementation.  Even the core uses library functions
+that are not directly available on freestanding implementations
+(notably malloc()/free(), vsnprintf(), and assert()).  So compiling on
+freestanding implementations may require implementing compatibility
+versions of functions like malloc().
+
+Also, Linux is not technically a freestanding implementation either,
+since it does not accept functions that return float or double on
+x86-64 (these use SSE registers which are disabled in kernel mode).

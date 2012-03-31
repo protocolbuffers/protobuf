@@ -18,7 +18,7 @@
 #include "upb_test.h"
 
 static void TestSymbolTable(const char *descriptor_file) {
-  upb::SymbolTable *s = upb::SymbolTable::New();
+  upb::SymbolTable *s = upb::SymbolTable::New(&s);
   upb::Status status;
   if (!upb::LoadDescriptorFileIntoSymtab(s, descriptor_file, &status)) {
     std::cerr << "Couldn't load descriptor: " << status;
@@ -27,7 +27,7 @@ static void TestSymbolTable(const char *descriptor_file) {
   const upb::MessageDef *md = s->LookupMessage("A", &md);
   ASSERT(md);
 
-  s->Unref();
+  s->Unref(&s);
   md->Unref(&md);
 }
 

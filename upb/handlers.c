@@ -11,7 +11,7 @@
 
 /* upb_mhandlers **************************************************************/
 
-static upb_mhandlers *upb_mhandlers_new() {
+static upb_mhandlers *upb_mhandlers_new(void) {
   upb_mhandlers *m = malloc(sizeof(*m));
   upb_inttable_init(&m->fieldtab);
   m->startmsg = NULL;

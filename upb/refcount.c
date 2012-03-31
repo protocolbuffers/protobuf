@@ -6,7 +6,6 @@
  */
 
 #include <stdlib.h>
-#include <limits.h>
 #include "upb/refcount.h"
 
 // TODO(haberman): require client to define these if ref debugging is on.
@@ -120,56 +119,10 @@ bool upb_refcount_findscc(upb_refcount **refs, int n, upb_getsuccessors *func) {
   return true;
 }
 
-
-/* upb_refcount  **************************************************************/
-
-bool upb_refcount_init(upb_refcount *r, void *owner) {
-  r->count = malloc(sizeof(uint32_t));
-  if (!r->count) return false;
-  // Initializing this here means upb_refcount_findscc() can only run once for
-  // each refcount; may need to revise this to be more flexible.
-  r->index = UPB_INDEX_UNDEFINED;
-  r->next = r;
 #ifdef UPB_DEBUG_REFS
-  // We don't detect malloc() failures for UPB_DEBUG_REFS.
-  upb_inttable_init(&r->refs);
-  *r->count = 0;
-  upb_refcount_ref(r, owner);
-#else
-  *r->count = 1;
-#endif
-  return true;
-}
-
-void upb_refcount_uninit(upb_refcount *r) {
-  (void)r;
-#ifdef UPB_DEBUG_REFS
-  assert(upb_inttable_count(&r->refs) == 0);
-  upb_inttable_uninit(&r->refs);
-#endif
-}
-
-// Moves an existing ref from ref_donor to new_owner, without changing the
-// overall ref count.
-void upb_refcount_donateref(upb_refcount *r, void *from, void *to) {
-  (void)r; (void)from; (void)to;
-  assert(from != to);
-#ifdef UPB_DEBUG_REFS
-  upb_refcount_ref(r, to);
-  upb_refcount_unref(r, from);
-#endif
-}
-
-// Thread-safe operations //////////////////////////////////////////////////////
-
-// Ref and unref are thread-safe.
-void upb_refcount_ref(upb_refcount *r, void *owner) {
-  (void)owner;
-  upb_atomic_inc(r->count);
-#ifdef UPB_DEBUG_REFS
-  UPB_LOCK;
+static void upb_refcount_track(const upb_refcount *r, const void *owner) {
   // Caller must not already own a ref.
-  assert(upb_inttable_lookup(&r->refs, (uintptr_t)owner) == NULL);
+  assert(upb_inttable_lookup(r->refs, (uintptr_t)owner) == NULL);
 
   // If a ref is leaked we want to blame the leak on the whoever leaked the
   // ref, not on who originally allocated the refcounted object.  We accomplish
@@ -193,30 +146,89 @@ void upb_refcount_ref(upb_refcount *r, void *owner) {
   // malloc'd memory will appear to be indirectly leaked and the object itself
   // will still be considered the primary leak.  We hide this pointer from
   // Valgrind (et all) by doing a bitwise not on it.
-  upb_refcount **target = malloc(sizeof(void*));
+  const upb_refcount **target = malloc(sizeof(void*));
   uintptr_t obfuscated = ~(uintptr_t)target;
   *target = r;
-  upb_inttable_insert(&r->refs, (uintptr_t)owner, upb_value_uint64(obfuscated));
-  UPB_UNLOCK;
-#endif
+  upb_inttable_insert(r->refs, (uintptr_t)owner, upb_value_uint64(obfuscated));
 }
 
-bool upb_refcount_unref(upb_refcount *r, void *owner) {
-  (void)owner;
-  bool ret = upb_atomic_dec(r->count);
-#ifdef UPB_DEBUG_REFS
-  UPB_LOCK;
+static void upb_refcount_untrack(const upb_refcount *r, const void *owner) {
   upb_value v;
-  bool success = upb_inttable_remove(&r->refs, (uintptr_t)owner, &v);
+  bool success = upb_inttable_remove(r->refs, (uintptr_t)owner, &v);
   assert(success);
   if (success) {
     // Must un-obfuscate the pointer (see above).
     free((void*)(~upb_value_getuint64(v)));
   }
+}
+#endif
+
+
+/* upb_refcount  **************************************************************/
+
+bool upb_refcount_init(upb_refcount *r, const void *owner) {
+  (void)owner;
+  r->count = malloc(sizeof(uint32_t));
+  if (!r->count) return false;
+  // Initializing this here means upb_refcount_findscc() can only run once for
+  // each refcount; may need to revise this to be more flexible.
+  r->index = UPB_INDEX_UNDEFINED;
+  r->next = r;
+#ifdef UPB_DEBUG_REFS
+  // We don't detect malloc() failures for UPB_DEBUG_REFS.
+  r->refs = malloc(sizeof(*r->refs));
+  upb_inttable_init(r->refs);
+  *r->count = 0;
+  upb_refcount_ref(r, owner);
+#else
+  *r->count = 1;
+#endif
+  return true;
+}
+
+void upb_refcount_uninit(upb_refcount *r) {
+  (void)r;
+#ifdef UPB_DEBUG_REFS
+  assert(upb_inttable_count(r->refs) == 0);
+  upb_inttable_uninit(r->refs);
+  free(r->refs);
+#endif
+}
+
+// Thread-safe operations //////////////////////////////////////////////////////
+
+void upb_refcount_ref(const upb_refcount *r, const void *owner) {
+  (void)owner;
+  upb_atomic_inc(r->count);
+#ifdef UPB_DEBUG_REFS
+  UPB_LOCK;
+  upb_refcount_track(r, owner);
+  UPB_UNLOCK;
+#endif
+}
+
+bool upb_refcount_unref(const upb_refcount *r, const void *owner) {
+  (void)owner;
+  bool ret = upb_atomic_dec(r->count);
+#ifdef UPB_DEBUG_REFS
+  UPB_LOCK;
+  upb_refcount_untrack(r, owner);
   UPB_UNLOCK;
 #endif
   if (ret) free(r->count);
   return ret;
+}
+
+void upb_refcount_donateref(
+    const upb_refcount *r, const void *from, const void *to) {
+  (void)r; (void)from; (void)to;
+  assert(from != to);
+#ifdef UPB_DEBUG_REFS
+  UPB_LOCK;
+  upb_refcount_track(r, to);
+  upb_refcount_untrack(r, from);
+  UPB_UNLOCK;
+#endif
 }
 
 bool upb_refcount_merged(const upb_refcount *r, const upb_refcount *r2) {

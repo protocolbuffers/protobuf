@@ -74,13 +74,13 @@ typedef struct _upb_def {
 
 #define UPB_UPCAST(ptr) (&(ptr)->base)
 
-// Call to ref/unref a def.  Can be used at any time, but is not thread-safe
-// until the def is finalized.  While a def is finalized, everything reachable
-// from that def is guaranteed to be alive.
-void upb_def_ref(const upb_def *def, void *owner);
-void upb_def_unref(const upb_def *def, void *owner);
-void upb_def_donateref(const upb_def *def, void *from, void *to);
-upb_def *upb_def_dup(const upb_def *def, void *owner);
+// Call to ref/unref a def.  These are thread-safe.  If the def is finalized,
+// it is guaranteed that any def reachable from a live def is also live.
+void upb_def_ref(const upb_def *def, const void *owner);
+void upb_def_unref(const upb_def *def, const void *owner);
+void upb_def_donateref(const upb_def *def, const void *from, const void *to);
+
+upb_def *upb_def_dup(const upb_def *def, const void *owner);
 
 // A def is mutable until it has been finalized.
 bool upb_def_ismutable(const upb_def *def);
@@ -189,12 +189,12 @@ typedef struct _upb_fielddef {
 } upb_fielddef;
 
 // Returns NULL if memory allocation failed.
-upb_fielddef *upb_fielddef_new(void *owner);
+upb_fielddef *upb_fielddef_new(const void *owner);
 
-INLINE void upb_fielddef_ref(upb_fielddef *f, void *owner) {
+INLINE void upb_fielddef_ref(upb_fielddef *f, const void *owner) {
   upb_def_ref(UPB_UPCAST(f), owner);
 }
-INLINE void upb_fielddef_unref(upb_fielddef *f, void *owner) {
+INLINE void upb_fielddef_unref(upb_fielddef *f, const void *owner) {
   upb_def_unref(UPB_UPCAST(f), owner);
 }
 
@@ -203,7 +203,7 @@ INLINE void upb_fielddef_unref(upb_fielddef *f, void *owner) {
 // wasn't already.  If the subdef is set but has no name (which is possible
 // since msgdefs are not required to have a name) the new fielddef's subdef
 // will be unset.
-upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, void *owner);
+upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner);
 
 INLINE bool upb_fielddef_ismutable(const upb_fielddef *f) {
   return upb_def_ismutable(UPB_UPCAST(f));
@@ -366,13 +366,13 @@ typedef struct _upb_msgdef {
 } upb_msgdef;
 
 // Returns NULL if memory allocation failed.
-upb_msgdef *upb_msgdef_new(void *owner);
+upb_msgdef *upb_msgdef_new(const void *owner);
 
-INLINE void upb_msgdef_unref(const upb_msgdef *md, void *owner) {
-  upb_def_unref(UPB_UPCAST(md), owner);
-}
-INLINE void upb_msgdef_ref(const upb_msgdef *md, void *owner) {
+INLINE void upb_msgdef_ref(const upb_msgdef *md, const void *owner) {
   upb_def_ref(UPB_UPCAST(md), owner);
+}
+INLINE void upb_msgdef_unref(const upb_msgdef *md, const void *owner) {
+  upb_def_unref(UPB_UPCAST(md), owner);
 }
 
 // Returns a new msgdef that is a copy of the given msgdef (and a copy of all
@@ -380,7 +380,7 @@ INLINE void upb_msgdef_ref(const upb_msgdef *md, void *owner) {
 // just the name of the submessage.  Returns NULL if memory allocation failed.
 // This can be put back into another symtab and the names will be re-resolved
 // in the new context.
-upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, void *owner);
+upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner);
 
 // Read accessors.  May be called at any time.
 INLINE size_t upb_msgdef_size(const upb_msgdef *m) { return m->size; }
@@ -407,9 +407,9 @@ bool upb_msgdef_setextrange(upb_msgdef *m, uint32_t start, uint32_t end);
 // non-NULL, caller passes a ref on the fielddef from ref_donor to the msgdef,
 // otherwise caller retains its reference(s) on the defs in f.
 bool upb_msgdef_addfields(
-    upb_msgdef *m, upb_fielddef *const *f, int n, void *ref_donor);
+    upb_msgdef *m, upb_fielddef *const *f, int n, const void *ref_donor);
 INLINE bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f,
-                                void *ref_donor) {
+                                const void *ref_donor) {
   return upb_msgdef_addfields(m, &f, 1, ref_donor);
 }
 
@@ -460,14 +460,14 @@ typedef struct _upb_enumdef {
 } upb_enumdef;
 
 // Returns NULL if memory allocation failed.
-upb_enumdef *upb_enumdef_new(void *owner);
-INLINE void upb_enumdef_ref(const upb_enumdef *e, void *owner) {
+upb_enumdef *upb_enumdef_new(const void *owner);
+INLINE void upb_enumdef_ref(const upb_enumdef *e, const void *owner) {
   upb_def_ref(&e->base, owner);
 }
-INLINE void upb_enumdef_unref(const upb_enumdef *e, void *owner) {
+INLINE void upb_enumdef_unref(const upb_enumdef *e, const void *owner) {
   upb_def_unref(&e->base, owner);
 }
-upb_enumdef *upb_enumdef_dup(const upb_enumdef *e, void *owner);
+upb_enumdef *upb_enumdef_dup(const upb_enumdef *e, const void *owner);
 
 INLINE int32_t upb_enumdef_default(const upb_enumdef *e) {
   return e->defaultval;
@@ -525,13 +525,15 @@ INLINE int32_t upb_enum_iter_number(upb_enum_iter *iter) {
 // always create such tables themselves, but upb_symtab has logic for resolving
 // symbolic references, which is nontrivial.
 typedef struct {
-  uint32_t refcount;
+  upb_refcount refcount;
   upb_strtable symtab;
 } upb_symtab;
 
-upb_symtab *upb_symtab_new(void);
-void upb_symtab_ref(const upb_symtab *s);
-void upb_symtab_unref(const upb_symtab *s);
+upb_symtab *upb_symtab_new(const void *owner);
+void upb_symtab_ref(const upb_symtab *s, const void *owner);
+void upb_symtab_unref(const upb_symtab *s, const void *owner);
+void upb_symtab_donateref(
+    const upb_symtab *s, const void *from, const void *to);
 
 // Resolves the given symbol using the rules described in descriptor.proto,
 // namely:
@@ -544,15 +546,15 @@ void upb_symtab_unref(const upb_symtab *s);
 // If a def is found, the caller owns one ref on the returned def, owned by
 // owner.  Otherwise returns NULL.
 const upb_def *upb_symtab_resolve(const upb_symtab *s, const char *base,
-                                  const char *sym, void *owner);
+                                  const char *sym, const void *owner);
 
 // Finds an entry in the symbol table with this exact name.  If a def is found,
 // the caller owns one ref on the returned def, owned by owner.  Otherwise
 // returns NULL.
 const upb_def *upb_symtab_lookup(
-    const upb_symtab *s, const char *sym, void *owner);
+    const upb_symtab *s, const char *sym, const void *owner);
 const upb_msgdef *upb_symtab_lookupmsg(
-    const upb_symtab *s, const char *sym, void *owner);
+    const upb_symtab *s, const char *sym, const void *owner);
 
 // Gets an array of pointers to all currently active defs in this symtab.  The
 // caller owns the returned array (which is of length *count) as well as a ref
@@ -560,7 +562,7 @@ const upb_msgdef *upb_symtab_lookupmsg(
 // all types are returned, otherwise only defs of the required type are
 // returned.
 const upb_def **upb_symtab_getdefs(
-    const upb_symtab *s, int *n, upb_deftype_t type, void *owner);
+    const upb_symtab *s, int *n, upb_deftype_t type, const void *owner);
 
 // Adds the given defs to the symtab, resolving all symbols (including enum
 // default values) and finalizing the defs.  Only one def per name may be in

@@ -28,7 +28,9 @@ typedef struct _upb_refcount {
   uint16_t index;    // For SCC algorithm.
   uint16_t lowlink;  // For SCC algorithm.
 #ifdef UPB_DEBUG_REFS
-  upb_inttable refs;
+  // Make this a pointer so that we can modify it inside of const methods
+  // without ugly casts.
+  upb_inttable *refs;
 #endif
 } upb_refcount;
 
@@ -36,14 +38,10 @@ typedef struct _upb_refcount {
 
 // Initializes the refcount with a single ref for the given owner.  Returns
 // NULL if memory could not be allocated.
-bool upb_refcount_init(upb_refcount *r, void *owner);
+bool upb_refcount_init(upb_refcount *r, const void *owner);
 
 // Uninitializes the refcount.  May only be called after unref() returns true.
 void upb_refcount_uninit(upb_refcount *r);
-
-// Moves an existing ref from ref_donor to new_owner, without changing the
-// overall ref count.
-void upb_refcount_donateref(upb_refcount *r, void *from, void *to);
 
 // Finds strongly-connected components among some set of objects and merges all
 // refcounts that share a SCC.  The given function will be called when the
@@ -59,10 +57,15 @@ void upb_refcount_visit(upb_refcount *obj, upb_refcount *subobj, void *closure);
 
 // Increases the ref count, the new ref is owned by "owner" which must not
 // already own a ref.  Circular reference chains are not allowed.
-void upb_refcount_ref(upb_refcount *r, void *owner);
+void upb_refcount_ref(const upb_refcount *r, const void *owner);
 
 // Release a ref owned by owner, returns true if that was the last ref.
-bool upb_refcount_unref(upb_refcount *r, void *owner);
+bool upb_refcount_unref(const upb_refcount *r, const void *owner);
+
+// Moves an existing ref from ref_donor to new_owner, without changing the
+// overall ref count.
+void upb_refcount_donateref(
+    const upb_refcount *r, const void *from, const void *to);
 
 // Returns true if these two objects share a refcount.
 bool upb_refcount_merged(const upb_refcount *r, const upb_refcount *r2);

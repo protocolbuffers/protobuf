@@ -86,6 +86,7 @@ static upb_value *upb_table_lookup(const upb_table *t, upb_tabkey key,
 // The given key must not already exist in the table.
 static void upb_table_insert(upb_table *t, upb_tabkey key, upb_value val,
                              upb_hashfunc_t *hash, upb_eqlfunc_t *eql) {
+  (void)eql;
   assert(upb_table_lookup(t, key, hash, eql) == NULL);
   t->count++;
   upb_tabent *mainpos_e = hash(t, key);

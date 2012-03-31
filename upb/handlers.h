@@ -18,7 +18,6 @@
 #ifndef UPB_HANDLERS_H
 #define UPB_HANDLERS_H
 
-#include <limits.h>
 #include "upb/upb.h"
 #include "upb/def.h"
 #include "upb/bytestream.h"

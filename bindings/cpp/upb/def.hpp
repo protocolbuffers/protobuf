@@ -60,12 +60,14 @@ class FieldDef : public upb_fielddef {
     return static_cast<const FieldDef*>(f);
   }
 
-  static FieldDef* New(void *owner) { return Cast(upb_fielddef_new(owner)); }
-  FieldDef* Dup(void *owner) const {
+  static FieldDef* New(const void *owner) {
+    return Cast(upb_fielddef_new(owner));
+  }
+  FieldDef* Dup(const void *owner) const {
     return Cast(upb_fielddef_dup(this, owner));
   }
-  void Ref(void *owner) { upb_fielddef_ref(this, owner); }
-  void Unref(void *owner) { upb_fielddef_unref(this, owner); }
+  void Ref(const void *owner) { upb_fielddef_ref(this, owner); }
+  void Unref(const void *owner) { upb_fielddef_unref(this, owner); }
 
   bool IsMutable() const { return upb_fielddef_ismutable(this); }
   bool IsFinalized() const { return upb_fielddef_isfinalized(this); }
@@ -194,8 +196,8 @@ class Def : public upb_def {
     return static_cast<const Def*>(def);
   }
 
-  void Ref(void *owner) const { upb_def_ref(this, owner); }
-  void Unref(void *owner) const { upb_def_unref(this, owner); }
+  void Ref(const void *owner) const { upb_def_ref(this, owner); }
+  void Unref(const void *owner) const { upb_def_unref(this, owner); }
 
   void set_full_name(const char *name) { upb_def_setfullname(this, name); }
   void set_full_name(const std::string& name) {
@@ -247,8 +249,8 @@ class MessageDef : public upb_msgdef {
     return Cast(upb_msgdef_dup(this, owner));
   }
 
-  void Ref(void *owner) const { upb_msgdef_ref(this, owner); }
-  void Unref(void *owner) const { upb_msgdef_unref(this, owner); }
+  void Ref(const void *owner) const { upb_msgdef_ref(this, owner); }
+  void Unref(const void *owner) const { upb_msgdef_unref(this, owner); }
 
   // Read accessors -- may be called at any time.
 
@@ -281,11 +283,13 @@ class MessageDef : public upb_msgdef {
   // be set, and the message may not already contain any field with this name
   // or number, and this FieldDef may not be part of another message, otherwise
   // false is returned and the MessageDef is unchanged.
-  bool AddField(FieldDef* f, void *owner) { return AddFields(&f, 1, owner); }
-  bool AddFields(FieldDef*const * f, int n, void *owner) {
+  bool AddField(FieldDef* f, const void *owner) {
+    return AddFields(&f, 1, owner);
+  }
+  bool AddFields(FieldDef*const * f, int n, const void *owner) {
     return upb_msgdef_addfields(this, (upb_fielddef*const*)f, n, owner);
   }
-  bool AddFields(const std::vector<FieldDef*>& fields, void *owner) {
+  bool AddFields(const std::vector<FieldDef*>& fields, const void *owner) {
     return AddFields(&fields[0], fields.size(), owner);
   }
 
@@ -344,11 +348,13 @@ class EnumDef : public upb_enumdef {
     return static_cast<const EnumDef*>(e);
   }
 
-  static EnumDef* New(void *owner) { return Cast(upb_enumdef_new(owner)); }
+  static EnumDef* New(const void *owner) { return Cast(upb_enumdef_new(owner)); }
 
-  void Ref(void *owner) { upb_enumdef_ref(this, owner); }
-  void Unref(void *owner) { upb_enumdef_unref(this, owner); }
-  EnumDef* Dup(void *owner) const { return Cast(upb_enumdef_dup(this, owner)); }
+  void Ref(const void *owner) { upb_enumdef_ref(this, owner); }
+  void Unref(const void *owner) { upb_enumdef_unref(this, owner); }
+  EnumDef* Dup(const void *owner) const {
+    return Cast(upb_enumdef_dup(this, owner));
+  }
 
   Def* AsDef() { return Def::Cast(UPB_UPCAST(this)); }
   const Def* AsDef() const { return Def::Cast(UPB_UPCAST(this)); }
@@ -397,10 +403,15 @@ class SymbolTable : public upb_symtab {
     return static_cast<const SymbolTable*>(s);
   }
 
-  static SymbolTable* New() { return Cast(upb_symtab_new()); }
+  static SymbolTable* New(const void *owner) {
+    return Cast(upb_symtab_new(owner));
+  }
 
-  void Ref() const { upb_symtab_unref(this); }
-  void Unref() const { upb_symtab_unref(this); }
+  void Ref(const void *owner) const { upb_symtab_unref(this, owner); }
+  void Unref(const void *owner) const { upb_symtab_unref(this, owner); }
+  void DonateRef(const void *from, const void *to) const {
+    upb_symtab_donateref(this, from, to);
+  }
 
   // Adds the given defs to the symtab, resolving all symbols.  Only one def
   // per name may be in the list, but defs can replace existing defs in the

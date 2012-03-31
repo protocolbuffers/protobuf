@@ -16,16 +16,16 @@
 const char *descriptor_file;
 
 static void test_empty_symtab() {
-  upb_symtab *s = upb_symtab_new();
+  upb_symtab *s = upb_symtab_new(&s);
   int count;
   const upb_def **defs = upb_symtab_getdefs(s, &count, UPB_DEF_ANY, NULL);
   ASSERT(count == 0);
   free(defs);
-  upb_symtab_unref(s);
+  upb_symtab_unref(s, &s);
 }
 
-static upb_symtab *load_test_proto() {
-  upb_symtab *s = upb_symtab_new();
+static upb_symtab *load_test_proto(void *owner) {
+  upb_symtab *s = upb_symtab_new(owner);
   ASSERT(s);
   upb_status status = UPB_STATUS_INIT;
   if (!upb_load_descriptor_file_into_symtab(s, descriptor_file, &status)) {
@@ -38,14 +38,14 @@ static upb_symtab *load_test_proto() {
 }
 
 static void test_cycles() {
-  upb_symtab *s = load_test_proto();
+  upb_symtab *s = load_test_proto(&s);
 
   // Test cycle detection by making a cyclic def's main refcount go to zero
   // and then be incremented to one again.
   const upb_def *def = upb_symtab_lookup(s, "A", &def);
   ASSERT(def);
   ASSERT(upb_def_isfinalized(def));
-  upb_symtab_unref(s);
+  upb_symtab_unref(s, &s);
 
   // Message A has only one subfield: "optional B b = 1".
   const upb_msgdef *m = upb_downcast_msgdef_const(def);
@@ -62,14 +62,14 @@ static void test_cycles() {
 }
 
 static void test_fielddef_unref() {
-  upb_symtab *s = load_test_proto();
+  upb_symtab *s = load_test_proto(&s);
   const upb_msgdef *md = upb_symtab_lookupmsg(s, "A", &md);
   upb_fielddef *f = upb_msgdef_itof(md, 1);
   upb_fielddef_ref(f, &f);
 
   // Unref symtab and msgdef; now fielddef is the only thing keeping the msgdef
   // alive.
-  upb_symtab_unref(s);
+  upb_symtab_unref(s, &s);
   upb_msgdef_unref(md, &md);
   // Check that md is still alive.
   ASSERT(strcmp(upb_def_fullname(UPB_UPCAST(md)), "A") == 0);
@@ -125,7 +125,7 @@ INLINE upb_enumdef *upb_enumdef_newnamed(const char *name, void *owner) {
 }
 
 void test_replacement() {
-  upb_symtab *s = upb_symtab_new();
+  upb_symtab *s = upb_symtab_new(&s);
 
   upb_msgdef *m = upb_msgdef_newnamed("MyMessage", &s);
   upb_msgdef_addfield(m, newfield(
@@ -156,7 +156,7 @@ void test_replacement() {
   ASSERT(m3 == m2);
   upb_msgdef_unref(m3, &m3);
 
-  upb_symtab_unref(s);
+  upb_symtab_unref(s, &s);
 }
 
 int main(int argc, char *argv[]) {

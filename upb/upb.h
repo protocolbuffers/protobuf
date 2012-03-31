@@ -31,6 +31,10 @@ extern "C" {
 #define UPB_NORETURN
 #endif
 
+#ifndef UINT16_MAX
+#define UINT16_MAX 65535
+#endif
+
 #define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))
 #define UPB_MIN(x, y) ((x) < (y) ? (x) : (y))
 
@@ -135,11 +139,7 @@ typedef struct {
 // // Construct a new upb_value from an int32.
 // upb_value upb_value_int32(int32_t val);
 
-#define UPB_VALUE_ACCESSORS(name, membername, ctype, proto_type) \
-  INLINE ctype upb_value_get ## name(upb_value val) { \
-    assert(val.type == proto_type); \
-    return val.val.membername; \
-  } \
+#define WRITERS(name, membername, ctype, proto_type) \
   INLINE void upb_value_set ## name(upb_value *val, ctype cval) { \
     val->val.uint64 = 0; \
     SET_TYPE(val->type, proto_type); \
@@ -151,23 +151,51 @@ typedef struct {
     return ret; \
   }
 
-UPB_VALUE_ACCESSORS(int32,  int32,   int32_t,  UPB_CTYPE_INT32);
-UPB_VALUE_ACCESSORS(int64,  int64,   int64_t,  UPB_CTYPE_INT64);
-UPB_VALUE_ACCESSORS(uint32, uint32,  uint32_t, UPB_CTYPE_UINT32);
-UPB_VALUE_ACCESSORS(uint64, uint64,  uint64_t, UPB_CTYPE_UINT64);
-UPB_VALUE_ACCESSORS(double, _double, double,   UPB_CTYPE_DOUBLE);
-UPB_VALUE_ACCESSORS(float,  _float,  float,    UPB_CTYPE_FLOAT);
-UPB_VALUE_ACCESSORS(bool,   _bool,   bool,     UPB_CTYPE_BOOL);
-UPB_VALUE_ACCESSORS(ptr,    _void,   void*,    UPB_CTYPE_PTR);
-UPB_VALUE_ACCESSORS(byteregion, byteregion, struct _upb_byteregion*,
-                    UPB_CTYPE_BYTEREGION);
+#define ALL(name, membername, ctype, proto_type) \
+  /* Can't reuse WRITERS() here unfortunately because "bool" is a macro \
+   * that expands to _Bool, so it ends up defining eg. upb_value_set_Bool */ \
+  INLINE void upb_value_set ## name(upb_value *val, ctype cval) { \
+    val->val.uint64 = 0; \
+    SET_TYPE(val->type, proto_type); \
+    val->val.membername = cval; \
+  } \
+  INLINE upb_value upb_value_ ## name(ctype val) { \
+    upb_value ret; \
+    upb_value_set ## name(&ret, val); \
+    return ret; \
+  } \
+  INLINE ctype upb_value_get ## name(upb_value val) { \
+    assert(val.type == proto_type); \
+    return val.val.membername; \
+  }
+
+ALL(int32,  int32,   int32_t,  UPB_CTYPE_INT32);
+ALL(int64,  int64,   int64_t,  UPB_CTYPE_INT64);
+ALL(uint32, uint32,  uint32_t, UPB_CTYPE_UINT32);
+ALL(uint64, uint64,  uint64_t, UPB_CTYPE_UINT64);
+ALL(bool,   _bool,   bool,     UPB_CTYPE_BOOL);
+ALL(ptr,    _void,   void*,    UPB_CTYPE_PTR);
+ALL(byteregion, byteregion, struct _upb_byteregion*, UPB_CTYPE_BYTEREGION);
 
 // upb_fielddef should never be modified from a callback
 // (ie. when they're getting passed through a upb_value).
-UPB_VALUE_ACCESSORS(fielddef, fielddef, const struct _upb_fielddef*,
-                    UPB_CTYPE_FIELDDEF);
+ALL(fielddef, fielddef, const struct _upb_fielddef*, UPB_CTYPE_FIELDDEF);
 
-#undef UPB_VALUE_ACCESSORS
+#ifdef __KERNEL__
+// Linux kernel modules are compiled without SSE and therefore are incapable
+// of compiling functions that return floating-point values, so we define as
+// macros instead and lose the type check.
+WRITERS(double, _double, double,   UPB_CTYPE_DOUBLE);
+WRITERS(float,  _float,  float,    UPB_CTYPE_FLOAT);
+#define upb_value_getdouble(v) (v.val._double)
+#define upb_value_getfloat(v) (v.val._float)
+#else
+ALL(double, _double, double,   UPB_CTYPE_DOUBLE);
+ALL(float,  _float,  float,    UPB_CTYPE_FLOAT);
+#endif  /* __KERNEL__ */
+
+#undef WRITERS
+#undef ALL
 
 extern upb_value UPB_NO_VALUE;
 
@@ -217,10 +245,6 @@ INLINE void upb_status_seteof(upb_status *s) { s->eof = true; }
 // The returned string is invalidated by any other call into the status.
 const char *upb_status_getstr(const upb_status *s);
 void upb_status_copy(upb_status *to, const upb_status *from);
-
-extern upb_errorspace upb_posix_errorspace;
-void upb_status_fromerrno(upb_status *status);
-bool upb_errno_is_wouldblock();
 
 // Like vasprintf (which allocates a string large enough for the result), but
 // uses *buf (which can be NULL) as a starting point and reallocates it only if

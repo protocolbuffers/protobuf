@@ -81,14 +81,16 @@ deps: Makefile $(ALLSRC)
 
 # The core library.
 CORE= \
-  upb/upb.c \
-  upb/handlers.c \
-  upb/descriptor/reader.c \
-  upb/table.c \
-  upb/refcount.c \
-  upb/def.c \
-  upb/msg.c \
   upb/bytestream.c \
+  upb/def.c \
+  upb/descriptor/reader.c \
+  upb/handlers.c \
+  upb/msg.c \
+  upb/refcount.c \
+  upb/stdc/error.c \
+  upb/stdc/io.c \
+  upb/table.c \
+  upb/upb.c \
   bindings/cpp/upb/proto2_bridge.cc \
 
 # TODO: the proto2 bridge should be built as a separate library.

@@ -31,7 +31,7 @@ static bool initialize()
 {
   // Initialize upb state, decode descriptor.
   upb_status status = UPB_STATUS_INIT;
-  upb_symtab *s = upb_symtab_new();
+  upb_symtab *s = upb_symtab_new(&s);
   upb_load_descriptor_file_into_symtab(s, MESSAGE_DESCRIPTOR_FILE, &status);
   if(!upb_ok(&status)) {
     fprintf(stderr, "Error reading descriptor: %s\n",
@@ -44,7 +44,7 @@ static bool initialize()
     fprintf(stderr, "Error finding symbol '%s'.\n", MESSAGE_NAME);
     return false;
   }
-  upb_symtab_unref(s);
+  upb_symtab_unref(s, &s);
 
   // Read the message data itself.
   input_str = upb_readfile(MESSAGE_FILE, &input_len);

@@ -59,24 +59,12 @@ bool upb_def_setfullname(upb_def *def, const char *fullname) {
   return true;
 }
 
-upb_def *upb_def_dup(const upb_def *def, void *o) {
-  switch (def->type) {
-    case UPB_DEF_MSG:
-      return UPB_UPCAST(upb_msgdef_dup(upb_downcast_msgdef_const(def), o));
-    case UPB_DEF_FIELD:
-      return UPB_UPCAST(upb_fielddef_dup(upb_downcast_fielddef_const(def), o));
-    case UPB_DEF_ENUM:
-      return UPB_UPCAST(upb_enumdef_dup(upb_downcast_enumdef_const(def), o));
-    default: assert(false); return NULL;
-  }
-}
-
-void upb_def_ref(const upb_def *_def, void *owner) {
+void upb_def_ref(const upb_def *_def, const void *owner) {
   upb_def *def = (upb_def*)_def;
   upb_refcount_ref(&def->refcount, owner);
 }
 
-void upb_def_unref(const upb_def *_def, void *owner) {
+void upb_def_unref(const upb_def *_def, const void *owner) {
   upb_def *def = (upb_def*)_def;
   if (!def) return;
   if (!upb_refcount_unref(&def->refcount, owner)) return;
@@ -95,7 +83,24 @@ void upb_def_unref(const upb_def *_def, void *owner) {
   } while(def != base);
 }
 
-static bool upb_def_init(upb_def *def, upb_deftype_t type, void *owner) {
+void upb_def_donateref(const upb_def *_def, const void *from, const void *to) {
+  upb_def *def = (upb_def*)_def;
+  upb_refcount_donateref(&def->refcount, from, to);
+}
+
+upb_def *upb_def_dup(const upb_def *def, const void *o) {
+  switch (def->type) {
+    case UPB_DEF_MSG:
+      return UPB_UPCAST(upb_msgdef_dup(upb_downcast_msgdef_const(def), o));
+    case UPB_DEF_FIELD:
+      return UPB_UPCAST(upb_fielddef_dup(upb_downcast_fielddef_const(def), o));
+    case UPB_DEF_ENUM:
+      return UPB_UPCAST(upb_enumdef_dup(upb_downcast_enumdef_const(def), o));
+    default: assert(false); return NULL;
+  }
+}
+
+static bool upb_def_init(upb_def *def, upb_deftype_t type, const void *owner) {
   def->type = type;
   def->is_finalized = false;
   def->fullname = NULL;
@@ -105,11 +110,6 @@ static bool upb_def_init(upb_def *def, upb_deftype_t type, void *owner) {
 static void upb_def_uninit(upb_def *def) {
   upb_refcount_uninit(&def->refcount);
   free(def->fullname);
-}
-
-void upb_def_donateref(const upb_def *_def, void *from, void *to) {
-  upb_def *def = (upb_def*)_def;
-  upb_refcount_donateref(&def->refcount, from, to);
 }
 
 static void upb_def_getsuccessors(upb_refcount *refcount, void *closure) {
@@ -236,7 +236,7 @@ err:
 
 /* upb_enumdef ****************************************************************/
 
-upb_enumdef *upb_enumdef_new(void *owner) {
+upb_enumdef *upb_enumdef_new(const void *owner) {
   upb_enumdef *e = malloc(sizeof(*e));
   if (!e) return NULL;
   if (!upb_def_init(&e->base, UPB_DEF_ENUM, owner)) goto err2;
@@ -264,7 +264,7 @@ static void upb_enumdef_free(upb_enumdef *e) {
   free(e);
 }
 
-upb_enumdef *upb_enumdef_dup(const upb_enumdef *e, void *owner) {
+upb_enumdef *upb_enumdef_dup(const upb_enumdef *e, const void *owner) {
   upb_enumdef *new_e = upb_enumdef_new(owner);
   if (!new_e) return NULL;
   upb_enum_iter i;
@@ -349,7 +349,7 @@ const upb_typeinfo upb_types[UPB_NUM_TYPES] = {
 
 static void upb_fielddef_init_default(upb_fielddef *f);
 
-upb_fielddef *upb_fielddef_new(void *owner) {
+upb_fielddef *upb_fielddef_new(const void *owner) {
   upb_fielddef *f = malloc(sizeof(*f));
   if (!f) return NULL;
   if (!upb_def_init(UPB_UPCAST(f), UPB_DEF_FIELD, owner)) {
@@ -389,7 +389,7 @@ static void upb_fielddef_free(upb_fielddef *f) {
   free(f);
 }
 
-upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, void *owner) {
+upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner) {
   upb_fielddef *newf = upb_fielddef_new(owner);
   if (!newf) return NULL;
   upb_fielddef_settype(newf, upb_fielddef_type(f));
@@ -626,7 +626,7 @@ bool upb_fielddef_setsubtypename(upb_fielddef *f, const char *name) {
 
 /* upb_msgdef *****************************************************************/
 
-upb_msgdef *upb_msgdef_new(void *owner) {
+upb_msgdef *upb_msgdef_new(const void *owner) {
   upb_msgdef *m = malloc(sizeof(*m));
   if (!m) return NULL;
   if (!upb_def_init(&m->base, UPB_DEF_MSG, owner)) goto err2;
@@ -652,7 +652,7 @@ static void upb_msgdef_free(upb_msgdef *m) {
   free(m);
 }
 
-upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, void *owner) {
+upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner) {
   upb_msgdef *newm = upb_msgdef_new(owner);
   if (!newm) return NULL;
   upb_msgdef_setsize(newm, upb_msgdef_size(m));
@@ -693,7 +693,7 @@ bool upb_msgdef_setextrange(upb_msgdef *m, uint32_t start, uint32_t end) {
 }
 
 bool upb_msgdef_addfields(upb_msgdef *m, upb_fielddef *const *fields, int n,
-                          void *ref_donor) {
+                          const void *ref_donor) {
   // Check constraints for all fields before performing any action.
   for (int i = 0; i < n; i++) {
     upb_fielddef *f = fields[i];
@@ -725,36 +725,37 @@ void upb_msg_next(upb_msg_iter *iter) { upb_inttable_next(iter); }
 
 /* upb_symtab *****************************************************************/
 
-static void upb_symtab_free(upb_symtab *s) {
-  upb_strtable_iter i;
-  upb_strtable_begin(&i, &s->symtab);
-  for (; !upb_strtable_done(&i); upb_strtable_next(&i))
-    upb_def_unref(upb_value_getptr(upb_strtable_iter_value(&i)), s);
-  upb_strtable_uninit(&s->symtab);
-  free(s);
-}
-
-void upb_symtab_ref(const upb_symtab *_s) {
-  upb_symtab *s = (upb_symtab*)_s;
-  s->refcount++;
-}
-
-void upb_symtab_unref(const upb_symtab *_s) {
-  upb_symtab *s = (upb_symtab*)_s;
-  if(s && --s->refcount == 0) {
-    upb_symtab_free(s);
-  }
-}
-
-upb_symtab *upb_symtab_new() {
+upb_symtab *upb_symtab_new(const void *owner) {
   upb_symtab *s = malloc(sizeof(*s));
-  s->refcount = 1;
+  upb_refcount_init(&s->refcount, owner);
   upb_strtable_init(&s->symtab);
   return s;
 }
 
+void upb_symtab_ref(const upb_symtab *s, const void *owner) {
+  upb_refcount_ref(&s->refcount, owner);
+}
+
+void upb_symtab_unref(const upb_symtab *s, const void *owner) {
+  if(s && upb_refcount_unref(&s->refcount, owner)) {
+    upb_symtab *destroying = (upb_symtab*)s;
+    upb_strtable_iter i;
+    upb_strtable_begin(&i, &destroying->symtab);
+    for (; !upb_strtable_done(&i); upb_strtable_next(&i))
+      upb_def_unref(upb_value_getptr(upb_strtable_iter_value(&i)), s);
+    upb_strtable_uninit(&destroying->symtab);
+    upb_refcount_uninit(&destroying->refcount);
+    free(destroying);
+  }
+}
+
+void upb_symtab_donateref(
+    const upb_symtab *s, const void *from, const void *to) {
+  upb_refcount_donateref(&s->refcount, from, to);
+}
+
 const upb_def **upb_symtab_getdefs(const upb_symtab *s, int *count,
-                                   upb_deftype_t type, void *owner) {
+                                   upb_deftype_t type, const void *owner) {
   int total = upb_strtable_count(&s->symtab);
   // We may only use part of this, depending on how many symbols are of the
   // correct type.
@@ -775,7 +776,7 @@ const upb_def **upb_symtab_getdefs(const upb_symtab *s, int *count,
 }
 
 const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym,
-                                 void *owner) {
+                                 const void *owner) {
   const upb_value *v = upb_strtable_lookup(&s->symtab, sym);
   upb_def *ret = v ? upb_value_getptr(*v) : NULL;
   if (ret) upb_def_ref(ret, owner);
@@ -783,7 +784,7 @@ const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym,
 }
 
 const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym,
-                                       void *owner) {
+                                       const void *owner) {
   const upb_value *v = upb_strtable_lookup(&s->symtab, sym);
   upb_def *def = v ? upb_value_getptr(*v) : NULL;
   upb_msgdef *ret = NULL;
@@ -814,7 +815,7 @@ static upb_def *upb_resolvename(const upb_strtable *t,
 }
 
 const upb_def *upb_symtab_resolve(const upb_symtab *s, const char *base,
-                                  const char *sym, void *owner) {
+                                  const char *sym, const void *owner) {
   upb_def *ret = upb_resolvename(&s->symtab, base, sym);
   if (ret) upb_def_ref(ret, owner);
   return ret;
@@ -829,7 +830,7 @@ const upb_def *upb_symtab_resolve(const upb_symtab *s, const char *base,
 //
 // Returns true if defs that can reach "def" need to be duplicated into deftab.
 static bool upb_resolve_dfs(const upb_def *def, upb_strtable *deftab,
-                            void *new_owner, upb_inttable *seen,
+                            const void *new_owner, upb_inttable *seen,
                             upb_status *s) {
   // Memoize results of this function for efficiency (since we're traversing a
   // DAG this is not needed to limit the depth of the search).
