@@ -1,6 +1,7 @@
 obj-m = upb.o
 
 upb-objs = \
+  setjmp.o \
   ../../upb/upb.o \
   ../../upb/bytestream.o \
   ../../upb/def.o \
