@@ -5,13 +5,16 @@
  * Author: Josh Haberman <jhaberman@gmail.com>
  */
 
-#include <inttypes.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include "upb/bytestream.h"
 #include "upb/msg.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/varint.h"
+
+#ifndef UINT32_MAX
+#define UINT32_MAX 0xffffffff
+#endif
 
 typedef struct {
   uint8_t native_wire_type;
@@ -97,13 +100,13 @@ bool upb_decoderplan_hasjitcode(upb_decoderplan *p) {
 // configuration.  But emperically on a Core i7, performance increases 30-50%
 // with these annotations.  Every instance where these appear, gcc 4.2.1 made
 // the wrong decision and degraded performance in benchmarks.
-#define FORCEINLINE static __attribute__((always_inline))
-#define NOINLINE static __attribute__((noinline))
+#define FORCEINLINE static __attribute__((__always_inline__))
+#define NOINLINE static __attribute__((__noinline__))
 
 UPB_NORETURN static void upb_decoder_exitjmp(upb_decoder *d) {
   // Resumable decoder would back out to completed_ptr (and possibly get a
   // previous buffer).
-  siglongjmp(d->exitjmp, 1);
+  _longjmp(d->exitjmp, 1);
 }
 UPB_NORETURN static void upb_decoder_exitjmp2(void *d) {
   upb_decoder_exitjmp(d);
@@ -348,9 +351,6 @@ INLINE void upb_push_msg(upb_decoder *d, upb_fhandlers *f, uint64_t end) {
     upb_dispatch_value(&d->dispatcher, f, val); \
   } \
 
-static double  upb_asdouble(uint64_t n) { double d; memcpy(&d, &n, 8); return d; }
-static float   upb_asfloat(uint32_t n)  { float  f; memcpy(&f, &n, 4); return f; }
-
 T(INT32,    varint,  int32,  int32_t)
 T(INT64,    varint,  int64,  int64_t)
 T(UINT32,   varint,  uint32, uint32_t)
@@ -361,12 +361,29 @@ T(SFIXED32, fixed32, int32,  int32_t)
 T(SFIXED64, fixed64, int64,  int64_t)
 T(BOOL,     varint,  bool,   bool)
 T(ENUM,     varint,  int32,  int32_t)
-T(DOUBLE,   fixed64, double, upb_asdouble)
-T(FLOAT,    fixed32, float,  upb_asfloat)
 T(SINT32,   varint,  int32,  upb_zzdec_32)
 T(SINT64,   varint,  int64,  upb_zzdec_64)
 T(STRING,   string,  byteregion, upb_byteregion*)
+
 #undef T
+
+INLINE void upb_decode_DOUBLE(upb_decoder *d, upb_fhandlers *f) {
+  upb_value val;
+  double dbl;
+  uint64_t wireval = upb_decode_fixed64(d);
+  memcpy(&dbl, &wireval, 8);
+  upb_value_setdouble(&val, dbl);
+  upb_dispatch_value(&d->dispatcher, f, val);
+}
+
+INLINE void upb_decode_FLOAT(upb_decoder *d, upb_fhandlers *f) {
+  upb_value val;
+  float flt;
+  uint64_t wireval = upb_decode_fixed32(d);
+  memcpy(&flt, &wireval, 4);
+  upb_value_setfloat(&val, flt);
+  upb_dispatch_value(&d->dispatcher, f, val);
+}
 
 static void upb_decode_GROUP(upb_decoder *d, upb_fhandlers *f) {
   upb_push_msg(d, f, UPB_NONDELIMITED);
@@ -474,7 +491,7 @@ INLINE upb_fhandlers *upb_decode_tag(upb_decoder *d) {
 
 upb_success_t upb_decoder_decode(upb_decoder *d) {
   assert(d->input);
-  if (sigsetjmp(d->exitjmp, 0)) {
+  if (_setjmp(d->exitjmp)) {
     assert(!upb_ok(&d->status));
     return UPB_ERROR;
   }

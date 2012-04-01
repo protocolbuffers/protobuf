@@ -74,7 +74,7 @@ typedef struct _upb_decoder {
 #endif
 
   // For exiting the decoder on error.
-  sigjmp_buf exitjmp;
+  jmp_buf exitjmp;
 } upb_decoder;
 
 void upb_decoder_init(upb_decoder *d);

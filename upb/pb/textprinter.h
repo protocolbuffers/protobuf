@@ -18,7 +18,7 @@ extern "C" {
 struct _upb_textprinter;
 typedef struct _upb_textprinter upb_textprinter;
 
-upb_textprinter *upb_textprinter_new();
+upb_textprinter *upb_textprinter_new(void);
 void upb_textprinter_free(upb_textprinter *p);
 void upb_textprinter_reset(upb_textprinter *p, upb_bytesink *sink,
                            bool single_line);

@@ -41,7 +41,7 @@ static int upb_textprinter_putescaped(upb_textprinter *p,
   // Based on CEscapeInternal() from Google's protobuf release.
   // TODO; we could read directly from a bytesrc's buffer instead.
   // TODO; we could write byteregions to the sink when possible.
-  char dstbuf[4096], *dst = dstbuf, *dstend = dstbuf + sizeof(dstbuf);
+  char dstbuf[512], *dst = dstbuf, *dstend = dstbuf + sizeof(dstbuf);
   char *buf = malloc(upb_byteregion_len(bytes)), *src = buf;
   char *end = src + upb_byteregion_len(bytes);
   upb_byteregion_copyall(bytes, buf);
@@ -182,7 +182,7 @@ err:
   return UPB_BREAK;
 }
 
-upb_textprinter *upb_textprinter_new() {
+upb_textprinter *upb_textprinter_new(void) {
   upb_textprinter *p = malloc(sizeof(*p));
   return p;
 }

@@ -8,6 +8,9 @@ upb-objs = \
   ../../upb/table.o \
   ../../upb/refcount.o \
   ../../upb/msg.o \
+  ../../upb/pb/decoder.o \
+  ../../upb/pb/textprinter.o \
+  ../../upb/pb/varint.o \
 
 KVERSION = $(shell uname -r)
 
