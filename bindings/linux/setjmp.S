@@ -30,6 +30,8 @@
  * $FreeBSD$
  */
 
+.globl _setjmp, _longjmp
+
 _setjmp:
   movq    %rbx,0(%rdi)                    /* save rbx */
   movq    %rsp,8(%rdi)                    /* save rsp */
