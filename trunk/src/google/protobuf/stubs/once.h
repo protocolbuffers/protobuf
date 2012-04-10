@@ -37,16 +37,22 @@
 //
 // This is basically a portable version of pthread_once().
 //
-// This header declares three things:
+// This header declares:
 // * A type called ProtobufOnceType.
 // * A macro GOOGLE_PROTOBUF_DECLARE_ONCE() which declares a variable of type
 //   ProtobufOnceType.  This is the only legal way to declare such a variable.
-//   The macro may only be used at the global scope (you cannot create local
-//   or class member variables of this type).
-// * A function GogoleOnceInit(ProtobufOnceType* once, void (*init_func)()).
+//   The macro may only be used at the global scope (you cannot create local or
+//   class member variables of this type).
+// * A function GoogleOnceInit(ProtobufOnceType* once, void (*init_func)()).
 //   This function, when invoked multiple times given the same ProtobufOnceType
 //   object, will invoke init_func on the first call only, and will make sure
 //   none of the calls return before that first call to init_func has finished.
+// * The user can provide a parameter which GoogleOnceInit() forwards to the
+//   user-provided function when it is called. Usage example:
+//     int a = 10;
+//     GoogleOnceInit(&my_once, &MyFunctionExpectingIntArgument, &a);
+// * This implementation guarantees that ProtobufOnceType is a POD (i.e. no
+//   static initializer generated).
 //
 // This implements a way to perform lazy initialization.  It's more efficient
 // than using mutexes as no lock is needed if initialization has already
@@ -72,50 +78,68 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_ONCE_H__
 #define GOOGLE_PROTOBUF_STUBS_ONCE_H__
 
+#include <google/protobuf/stubs/atomicops.h>
 #include <google/protobuf/stubs/common.h>
-
-#ifndef _WIN32
-#include <pthread.h>
-#endif
 
 namespace google {
 namespace protobuf {
 
-#ifdef _WIN32
+#ifdef GOOGLE_PROTOBUF_NO_THREAD_SAFETY
 
-struct ProtobufOnceInternal;
+typedef bool ProtobufOnceType;
 
-struct LIBPROTOBUF_EXPORT ProtobufOnceType {
-  ProtobufOnceType();
-  ~ProtobufOnceType();
-  void Init(void (*init_func)());
-
-  volatile bool initialized_;
-  ProtobufOnceInternal* internal_;
-};
-
-#define GOOGLE_PROTOBUF_DECLARE_ONCE(NAME)                    \
-  ::google::protobuf::ProtobufOnceType NAME
+#define GOOGLE_PROTOBUF_ONCE_INIT false
 
 inline void GoogleOnceInit(ProtobufOnceType* once, void (*init_func)()) {
-  // Note:  Double-checked locking is safe on x86.
-  if (!once->initialized_) {
-    once->Init(init_func);
+  if (!*once) {
+    *once = true;
+    init_func();
+  }
+}
+
+template <typename Arg>
+inline void GoogleOnceInit(ProtobufOnceType* once, void (*init_func)(Arg),
+    Arg arg) {
+  if (!*once) {
+    *once = true;
+    init_func(arg);
   }
 }
 
 #else
 
-typedef pthread_once_t ProtobufOnceType;
+enum {
+  ONCE_STATE_UNINITIALIZED = 0,
+  ONCE_STATE_EXECUTING_CLOSURE = 1,
+  ONCE_STATE_DONE = 2
+};
 
-#define GOOGLE_PROTOBUF_DECLARE_ONCE(NAME)                    \
-  pthread_once_t NAME = PTHREAD_ONCE_INIT
+typedef internal::AtomicWord ProtobufOnceType;
+
+#define GOOGLE_PROTOBUF_ONCE_INIT ::google::protobuf::ONCE_STATE_UNINITIALIZED
+
+void GoogleOnceInitImpl(ProtobufOnceType* once, Closure* closure);
 
 inline void GoogleOnceInit(ProtobufOnceType* once, void (*init_func)()) {
-  pthread_once(once, init_func);
+  if (internal::Acquire_Load(once) != ONCE_STATE_DONE) {
+    internal::FunctionClosure0 func(init_func, false);
+    GoogleOnceInitImpl(once, &func);
+  }
 }
 
-#endif
+template <typename Arg>
+inline void GoogleOnceInit(ProtobufOnceType* once, void (*init_func)(Arg*),
+    Arg* arg) {
+  if (internal::Acquire_Load(once) != ONCE_STATE_DONE) {
+    internal::FunctionClosure1<Arg*> func(init_func, false, arg);
+    GoogleOnceInitImpl(once, &func);
+  }
+}
+
+#endif  // GOOGLE_PROTOBUF_NO_THREAD_SAFETY
+
+#define GOOGLE_PROTOBUF_DECLARE_ONCE(NAME) \
+  ::google::protobuf::ProtobufOnceType NAME = GOOGLE_PROTOBUF_ONCE_INIT
 
 }  // namespace protobuf
 }  // namespace google
