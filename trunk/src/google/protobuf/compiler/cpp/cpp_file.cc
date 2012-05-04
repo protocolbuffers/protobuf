@@ -381,11 +381,12 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
 
 void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
   // AddDescriptors() is a file-level procedure which adds the encoded
-  // FileDescriptorProto for this .proto file to the global DescriptorPool
-  // for generated files (DescriptorPool::generated_pool()).  It always runs
-  // at static initialization time, so all files will be registered before
-  // main() starts.  This procedure also constructs default instances and
-  // registers extensions.
+  // FileDescriptorProto for this .proto file to the global DescriptorPool for
+  // generated files (DescriptorPool::generated_pool()). It either runs at
+  // static initialization time (by default) or when default_instance() is
+  // called for the first time (in LITE_RUNTIME mode with
+  // GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER flag enabled). This procedure also
+  // constructs default instances and registers extensions.
   //
   // Its sibling, AssignDescriptors(), actually pulls the compiled
   // FileDescriptor from the DescriptorPool and uses it to populate all of
@@ -489,22 +490,27 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
 
   printer->Outdent();
   printer->Print(
-    "}\n");
+    "}\n\n");
 
   // -----------------------------------------------------------------
 
   // Now generate the AddDescriptors() function.
-  printer->Print(
-    "\n"
+  PrintHandlingOptionalStaticInitializers(
+    file_, printer,
+    // With static initializers.
+    // Note that we don't need any special synchronization in the following code
+    // because it is called at static init time before any threads exist.
     "void $adddescriptorsname$() {\n"
-    // We don't need any special synchronization here because this code is
-    // called at static init time before any threads exist.
     "  static bool already_here = false;\n"
     "  if (already_here) return;\n"
     "  already_here = true;\n"
-    "  GOOGLE_PROTOBUF_VERIFY_VERSION;\n"
-    "\n",
+    "  GOOGLE_PROTOBUF_VERIFY_VERSION;\n",
+    // Without.
+    "void $adddescriptorsname$_impl() {\n"
+    "  GOOGLE_PROTOBUF_VERIFY_VERSION;\n",
+    // Vars.
     "adddescriptorsname", GlobalAddDescriptorsName(file_->name()));
+
   printer->Indent();
 
   // Call the AddDescriptors() methods for all of our dependencies, to make
@@ -572,17 +578,27 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
     "shutdownfilename", GlobalShutdownFileName(file_->name()));
 
   printer->Outdent();
-
   printer->Print(
     "}\n"
-    "\n"
+    "\n");
+
+  PrintHandlingOptionalStaticInitializers(
+    file_, printer,
+    // With static initializers.
     "// Force AddDescriptors() to be called at static initialization time.\n"
     "struct StaticDescriptorInitializer_$filename$ {\n"
     "  StaticDescriptorInitializer_$filename$() {\n"
     "    $adddescriptorsname$();\n"
     "  }\n"
-    "} static_descriptor_initializer_$filename$_;\n"
-    "\n",
+    "} static_descriptor_initializer_$filename$_;\n",
+    // Without.
+    "::google::protobuf::GoogleOnceType $adddescriptorsname$_once_ =\n"
+    "    GOOGLE_PROTOBUF_ONCE_INIT;\n"
+    "void $adddescriptorsname$() {\n"
+    "  ::google::protobuf::GoogleOnceInit(&$adddescriptorsname$_once_,\n"
+    "                 &$adddescriptorsname$_impl);\n"
+    "}\n",
+    // Vars.
     "adddescriptorsname", GlobalAddDescriptorsName(file_->name()),
     "filename", FilenameIdentifier(file_->name()));
 }

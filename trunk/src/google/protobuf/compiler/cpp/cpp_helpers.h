@@ -35,12 +35,18 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__
 
+#include <map>
 #include <string>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 
 namespace google {
 namespace protobuf {
+
+namespace io {
+class Printer;
+}
+
 namespace compiler {
 namespace cpp {
 
@@ -150,6 +156,22 @@ inline bool HasFastArraySerialization(const FileDescriptor* file) {
   return file->options().optimize_for() == FileOptions::SPEED;
 }
 
+// Returns whether we have to generate code with static initializers.
+bool StaticInitializersForced(const FileDescriptor* file);
+
+// Prints 'with_static_init' if static initializers have to be used for the
+// provided file. Otherwise emits both 'with_static_init' and
+// 'without_static_init' using #ifdef.
+void PrintHandlingOptionalStaticInitializers(
+    const FileDescriptor* file, io::Printer* printer,
+    const char* with_static_init, const char* without_static_init,
+    const char* var1 = NULL, const string& val1 = "",
+    const char* var2 = NULL, const string& val2 = "");
+
+void PrintHandlingOptionalStaticInitializers(
+    const map<string, string>& vars, const FileDescriptor* file,
+    io::Printer* printer, const char* with_static_init,
+    const char* without_static_init);
 
 }  // namespace cpp
 }  // namespace compiler

@@ -33,10 +33,12 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <limits>
+#include <map>
 #include <vector>
 #include <google/protobuf/stubs/hash.h>
 
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
+#include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
@@ -103,6 +105,20 @@ string UnderscoresToCamelCase(const string& input, bool cap_next_letter) {
     }
   }
   return result;
+}
+
+// Returns whether the provided descriptor has an extension. This includes its
+// nested types.
+bool HasExtension(const Descriptor* descriptor) {
+  if (descriptor->extension_count() > 0) {
+    return true;
+  }
+  for (int i = 0; i < descriptor->nested_type_count(); ++i) {
+    if (HasExtension(descriptor->nested_type(i))) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -339,6 +355,50 @@ string GlobalShutdownFileName(const string& filename) {
 // Escape C++ trigraphs by escaping question marks to \?
 string EscapeTrigraphs(const string& to_escape) {
   return StringReplace(to_escape, "?", "\\?", true);
+}
+
+bool StaticInitializersForced(const FileDescriptor* file) {
+  if (HasDescriptorMethods(file) || file->extension_count() > 0) {
+    return true;
+  }
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    if (HasExtension(file->message_type(i))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void PrintHandlingOptionalStaticInitializers(
+    const FileDescriptor* file, io::Printer* printer,
+    const char* with_static_init, const char* without_static_init,
+    const char* var1, const string& val1,
+    const char* var2, const string& val2) {
+  map<string, string> vars;
+  if (var1) {
+    vars[var1] = val1;
+  }
+  if (var2) {
+    vars[var2] = val2;
+  }
+  PrintHandlingOptionalStaticInitializers(
+      vars, file, printer, with_static_init, without_static_init);
+}
+
+void PrintHandlingOptionalStaticInitializers(
+    const map<string, string>& vars, const FileDescriptor* file,
+    io::Printer* printer, const char* with_static_init,
+    const char* without_static_init) {
+  if (StaticInitializersForced(file)) {
+    printer->Print(vars, with_static_init);
+  } else {
+    printer->Print(vars, (string(
+      "#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER\n") +
+      without_static_init +
+      "#else\n" +
+      with_static_init +
+      "#endif\n").c_str());
+  }
 }
 
 }  // namespace cpp

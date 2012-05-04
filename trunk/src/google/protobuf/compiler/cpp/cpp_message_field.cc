@@ -82,8 +82,16 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
 void MessageFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   printer->Print(variables_,
-    "inline const $type$& $classname$::$name$() const {\n"
-    "  return $name$_ != NULL ? *$name$_ : *default_instance_->$name$_;\n"
+    "inline const $type$& $classname$::$name$() const {\n");
+
+  PrintHandlingOptionalStaticInitializers(
+    variables_, descriptor_->file(), printer,
+    // With static initializers.
+    "  return $name$_ != NULL ? *$name$_ : *default_instance_->$name$_;\n",
+    // Without.
+    "  return $name$_ != NULL ? *$name$_ : *default_instance().$name$_;\n");
+
+  printer->Print(variables_,
     "}\n"
     "inline $type$* $classname$::mutable_$name$() {\n"
     "  set_has_$name$();\n"

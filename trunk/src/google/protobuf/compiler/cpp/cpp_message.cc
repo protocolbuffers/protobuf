@@ -493,6 +493,19 @@ GenerateClassDefinition(io::Printer* printer) {
     "static const $classname$& default_instance();\n"
     "\n");
 
+  if (!StaticInitializersForced(descriptor_->file())) {
+    printer->Print(vars,
+      "#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER\n"
+      "// Returns the internal default instance pointer. This function can\n"
+      "// return NULL thus should not be used by the user. This is intended\n"
+      "// for Protobuf internal code. Please use default_instance() declared\n"
+      "// above instead.\n"
+      "static inline const $classname$* internal_default_instance() {\n"
+      "  return default_instance_;\n"
+      "}\n"
+      "#endif\n"
+      "\n");
+  }
 
   printer->Print(vars,
     "void Swap($classname$* other);\n"
@@ -660,11 +673,17 @@ GenerateClassDefinition(io::Printer* printer) {
   // Declare AddDescriptors(), BuildDescriptors(), and ShutdownFile() as
   // friends so that they can access private static variables like
   // default_instance_ and reflection_.
-  printer->Print(
+  PrintHandlingOptionalStaticInitializers(
+    descriptor_->file(), printer,
+    // With static initializers.
     "friend void $dllexport_decl$ $adddescriptorsname$();\n",
+    // Without.
+    "friend void $dllexport_decl$ $adddescriptorsname$_impl();\n",
+    // Vars.
     "dllexport_decl", dllexport_decl_,
     "adddescriptorsname",
-      GlobalAddDescriptorsName(descriptor_->file()->name()));
+    GlobalAddDescriptorsName(descriptor_->file()->name()));
+
   printer->Print(
     "friend void $assigndescriptorsname$();\n"
     "friend void $shutdownfilename$();\n"
@@ -981,8 +1000,12 @@ GenerateSharedDestructorCode(io::Printer* printer) {
                      .GenerateDestructorCode(printer);
   }
 
-  printer->Print(
-    "if (this != default_instance_) {\n");
+  PrintHandlingOptionalStaticInitializers(
+    descriptor_->file(), printer,
+    // With static initializers.
+    "if (this != default_instance_) {\n",
+    // Without.
+    "if (this != &default_instance()) {\n");
 
   // We need to delete all embedded messages.
   // TODO(kenton):  If we make unset messages point at default instances
@@ -1034,10 +1057,16 @@ GenerateStructors(io::Printer* printer) {
 
     if (!field->is_repeated() &&
         field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      printer->Print(
-          "  $name$_ = const_cast< $type$*>(&$type$::default_instance());\n",
-          "name", FieldName(field),
-          "type", FieldMessageTypeName(field));
+      PrintHandlingOptionalStaticInitializers(
+        descriptor_->file(), printer,
+        // With static initializers.
+        "  $name$_ = const_cast< $type$*>(&$type$::default_instance());\n",
+        // Without.
+        "  $name$_ = const_cast< $type$*>(\n"
+        "      $type$::internal_default_instance());\n",
+        // Vars.
+        "name", FieldName(field),
+        "type", FieldMessageTypeName(field));
     }
   }
   printer->Print(
@@ -1093,8 +1122,20 @@ GenerateStructors(io::Printer* printer) {
   }
 
   printer->Print(
-    "const $classname$& $classname$::default_instance() {\n"
-    "  if (default_instance_ == NULL) $adddescriptorsname$();"
+    "const $classname$& $classname$::default_instance() {\n",
+    "classname", classname_);
+
+  PrintHandlingOptionalStaticInitializers(
+    descriptor_->file(), printer,
+    // With static initializers.
+    "  if (default_instance_ == NULL) $adddescriptorsname$();\n",
+    // Without.
+    "  $adddescriptorsname$();\n",
+    // Vars.
+    "adddescriptorsname",
+    GlobalAddDescriptorsName(descriptor_->file()->name()));
+
+  printer->Print(
     "  return *default_instance_;\n"
     "}\n"
     "\n"
@@ -1106,7 +1147,6 @@ GenerateStructors(io::Printer* printer) {
     "classname", classname_,
     "adddescriptorsname",
     GlobalAddDescriptorsName(descriptor_->file()->name()));
-
 }
 
 void MessageGenerator::
@@ -1377,11 +1417,22 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
     // Special-case MessageSet.
     printer->Print(
       "bool $classname$::MergePartialFromCodedStream(\n"
-      "    ::google::protobuf::io::CodedInputStream* input) {\n"
-      "  return _extensions_.ParseMessageSet(input, default_instance_,\n"
-      "                                      mutable_unknown_fields());\n"
-      "}\n",
+      "    ::google::protobuf::io::CodedInputStream* input) {\n",
       "classname", classname_);
+
+    PrintHandlingOptionalStaticInitializers(
+      descriptor_->file(), printer,
+      // With static initializers.
+      "  return _extensions_.ParseMessageSet(input, default_instance_,\n"
+      "                                      mutable_unknown_fields());\n",
+      // Without.
+      "  return _extensions_.ParseMessageSet(input, &default_instance(),\n"
+      "                                      mutable_unknown_fields());\n",
+      // Vars.
+      "classname", classname_);
+
+    printer->Print(
+      "}\n");
     return;
   }
 
@@ -1541,12 +1592,21 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
     }
     printer->Print(") {\n");
     if (HasUnknownFields(descriptor_->file())) {
-      printer->Print(
+      PrintHandlingOptionalStaticInitializers(
+        descriptor_->file(), printer,
+        // With static initializers.
         "  DO_(_extensions_.ParseField(tag, input, default_instance_,\n"
+        "                              mutable_unknown_fields()));\n",
+        // Without.
+        "  DO_(_extensions_.ParseField(tag, input, &default_instance(),\n"
         "                              mutable_unknown_fields()));\n");
     } else {
-      printer->Print(
-        "  DO_(_extensions_.ParseField(tag, input, default_instance_));\n");
+      PrintHandlingOptionalStaticInitializers(
+        descriptor_->file(), printer,
+        // With static initializers.
+        "  DO_(_extensions_.ParseField(tag, input, default_instance_));\n",
+        // Without.
+        "  DO_(_extensions_.ParseField(tag, input, &default_instance()));\n");
     }
     printer->Print(
       "  continue;\n"

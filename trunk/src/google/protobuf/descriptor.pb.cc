@@ -553,7 +553,6 @@ void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto() {
   if (already_here) return;
   already_here = true;
   GOOGLE_PROTOBUF_VERIFY_VERSION;
-
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n google/protobuf/descriptor.proto\022\017goog"
     "le.protobuf\"G\n\021FileDescriptorSet\0222\n\004file"
@@ -706,7 +705,6 @@ struct StaticDescriptorInitializer_google_2fprotobuf_2fdescriptor_2eproto {
   }
 } static_descriptor_initializer_google_2fprotobuf_2fdescriptor_2eproto_;
 
-
 // ===================================================================
 
 #ifndef _MSC_VER
@@ -752,7 +750,8 @@ const ::google::protobuf::Descriptor* FileDescriptorSet::descriptor() {
 }
 
 const FileDescriptorSet& FileDescriptorSet::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 FileDescriptorSet* FileDescriptorSet::default_instance_ = NULL;
@@ -979,7 +978,8 @@ const ::google::protobuf::Descriptor* FileDescriptorProto::descriptor() {
 }
 
 const FileDescriptorProto& FileDescriptorProto::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 FileDescriptorProto* FileDescriptorProto::default_instance_ = NULL;
@@ -1559,7 +1559,8 @@ const ::google::protobuf::Descriptor* DescriptorProto_ExtensionRange::descriptor
 }
 
 const DescriptorProto_ExtensionRange& DescriptorProto_ExtensionRange::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 DescriptorProto_ExtensionRange* DescriptorProto_ExtensionRange::default_instance_ = NULL;
@@ -1816,7 +1817,8 @@ const ::google::protobuf::Descriptor* DescriptorProto::descriptor() {
 }
 
 const DescriptorProto& DescriptorProto::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 DescriptorProto* DescriptorProto::default_instance_ = NULL;
@@ -2392,7 +2394,8 @@ const ::google::protobuf::Descriptor* FieldDescriptorProto::descriptor() {
 }
 
 const FieldDescriptorProto& FieldDescriptorProto::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 FieldDescriptorProto* FieldDescriptorProto::default_instance_ = NULL;
@@ -2947,7 +2950,8 @@ const ::google::protobuf::Descriptor* EnumDescriptorProto::descriptor() {
 }
 
 const EnumDescriptorProto& EnumDescriptorProto::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 EnumDescriptorProto* EnumDescriptorProto::default_instance_ = NULL;
@@ -3263,7 +3267,8 @@ const ::google::protobuf::Descriptor* EnumValueDescriptorProto::descriptor() {
 }
 
 const EnumValueDescriptorProto& EnumValueDescriptorProto::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 EnumValueDescriptorProto* EnumValueDescriptorProto::default_instance_ = NULL;
@@ -3574,7 +3579,8 @@ const ::google::protobuf::Descriptor* ServiceDescriptorProto::descriptor() {
 }
 
 const ServiceDescriptorProto& ServiceDescriptorProto::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 ServiceDescriptorProto* ServiceDescriptorProto::default_instance_ = NULL;
@@ -3898,7 +3904,8 @@ const ::google::protobuf::Descriptor* MethodDescriptorProto::descriptor() {
 }
 
 const MethodDescriptorProto& MethodDescriptorProto::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 MethodDescriptorProto* MethodDescriptorProto::default_instance_ = NULL;
@@ -4311,7 +4318,8 @@ const ::google::protobuf::Descriptor* FileOptions::descriptor() {
 }
 
 const FileOptions& FileOptions::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 FileOptions* FileOptions::default_instance_ = NULL;
@@ -4872,7 +4880,8 @@ const ::google::protobuf::Descriptor* MessageOptions::descriptor() {
 }
 
 const MessageOptions& MessageOptions::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 MessageOptions* MessageOptions::default_instance_ = NULL;
@@ -5207,7 +5216,8 @@ const ::google::protobuf::Descriptor* FieldOptions::descriptor() {
 }
 
 const FieldOptions& FieldOptions::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 FieldOptions* FieldOptions::default_instance_ = NULL;
@@ -5604,7 +5614,8 @@ const ::google::protobuf::Descriptor* EnumOptions::descriptor() {
 }
 
 const EnumOptions& EnumOptions::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 EnumOptions* EnumOptions::default_instance_ = NULL;
@@ -5828,7 +5839,8 @@ const ::google::protobuf::Descriptor* EnumValueOptions::descriptor() {
 }
 
 const EnumValueOptions& EnumValueOptions::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 EnumValueOptions* EnumValueOptions::default_instance_ = NULL;
@@ -6052,7 +6064,8 @@ const ::google::protobuf::Descriptor* ServiceOptions::descriptor() {
 }
 
 const ServiceOptions& ServiceOptions::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 ServiceOptions* ServiceOptions::default_instance_ = NULL;
@@ -6276,7 +6289,8 @@ const ::google::protobuf::Descriptor* MethodOptions::descriptor() {
 }
 
 const MethodOptions& MethodOptions::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 MethodOptions* MethodOptions::default_instance_ = NULL;
@@ -6506,7 +6520,8 @@ const ::google::protobuf::Descriptor* UninterpretedOption_NamePart::descriptor()
 }
 
 const UninterpretedOption_NamePart& UninterpretedOption_NamePart::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 UninterpretedOption_NamePart* UninterpretedOption_NamePart::default_instance_ = NULL;
@@ -6784,7 +6799,8 @@ const ::google::protobuf::Descriptor* UninterpretedOption::descriptor() {
 }
 
 const UninterpretedOption& UninterpretedOption::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 UninterpretedOption* UninterpretedOption::default_instance_ = NULL;
@@ -7255,7 +7271,8 @@ const ::google::protobuf::Descriptor* SourceCodeInfo_Location::descriptor() {
 }
 
 const SourceCodeInfo_Location& SourceCodeInfo_Location::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 SourceCodeInfo_Location* SourceCodeInfo_Location::default_instance_ = NULL;
@@ -7543,7 +7560,8 @@ const ::google::protobuf::Descriptor* SourceCodeInfo::descriptor() {
 }
 
 const SourceCodeInfo& SourceCodeInfo::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();  return *default_instance_;
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  return *default_instance_;
 }
 
 SourceCodeInfo* SourceCodeInfo::default_instance_ = NULL;
