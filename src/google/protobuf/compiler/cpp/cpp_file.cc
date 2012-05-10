@@ -592,8 +592,7 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
     "  }\n"
     "} static_descriptor_initializer_$filename$_;\n",
     // Without.
-    "::google::protobuf::GoogleOnceType $adddescriptorsname$_once_ =\n"
-    "    GOOGLE_PROTOBUF_ONCE_INIT;\n"
+    "GOOGLE_PROTOBUF_DECLARE_ONCE($adddescriptorsname$_once_);\n"
     "void $adddescriptorsname$() {\n"
     "  ::google::protobuf::GoogleOnceInit(&$adddescriptorsname$_once_,\n"
     "                 &$adddescriptorsname$_impl);\n"
