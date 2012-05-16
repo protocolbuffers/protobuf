@@ -243,7 +243,8 @@ bool CodeGeneratorRequest::MergePartialFromCodedStream(
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->add_file_to_generate()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->file_to_generate(0).data(), this->file_to_generate(0).length(),
+            this->file_to_generate(this->file_to_generate_size() - 1).data(),
+            this->file_to_generate(this->file_to_generate_size() - 1).length(),
             ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;

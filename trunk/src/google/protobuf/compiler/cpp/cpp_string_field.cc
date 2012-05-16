@@ -398,7 +398,8 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
       descriptor_->type() == FieldDescriptor::TYPE_STRING) {
     printer->Print(variables_,
       "::google::protobuf::internal::WireFormat::VerifyUTF8String(\n"
-      "  this->$name$(0).data(), this->$name$(0).length(),\n"
+      "  this->$name$(this->$name$_size() - 1).data(),\n"
+      "  this->$name$(this->$name$_size() - 1).length(),\n"
       "  ::google::protobuf::internal::WireFormat::PARSE);\n");
   }
 }
