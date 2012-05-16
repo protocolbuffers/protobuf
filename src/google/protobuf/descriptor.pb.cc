@@ -1065,7 +1065,8 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->add_dependency()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->dependency(0).data(), this->dependency(0).length(),
+            this->dependency(this->dependency_size() - 1).data(),
+            this->dependency(this->dependency_size() - 1).length(),
             ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
