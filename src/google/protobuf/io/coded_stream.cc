@@ -452,7 +452,7 @@ bool CodedInputStream::ReadVarint64Fallback(uint64* value) {
 
     // We have overrun the maximum size of a varint (10 bytes).  The data
     // must be corrupt.
-    return NULL;
+    return false;
 
    done:
     Advance(ptr - buffer_);
