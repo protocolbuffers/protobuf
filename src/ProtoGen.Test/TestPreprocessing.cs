@@ -112,7 +112,7 @@ message MyMessage {
                 args.Add(String.Format(@"""/out:{0}""", tempDll.TempPath));
                 args.Add("/r:System.dll");
                 args.Add(String.Format(@"""/r:{0}""",
-                                       typeof (Google.ProtocolBuffers.DescriptorProtos.DescriptorProto).Assembly.
+                                       typeof(Google.ProtocolBuffers.DescriptorProtos.DescriptorProto).Assembly.
                                            Location));
                 args.AddRange(sources);
 
@@ -162,7 +162,7 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
@@ -188,7 +188,7 @@ message " +
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple." + test, true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple.Proto." + test, true, true);
             }
@@ -206,7 +206,7 @@ message " +
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("MyNewNamespace.MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("MyNewNamespace." + test, true, true);
             }
@@ -224,7 +224,7 @@ message " +
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple.MyUmbrellaClassname", true, true);
             }
@@ -242,7 +242,7 @@ message " +
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple." + test + "+MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
@@ -260,7 +260,7 @@ message " +
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
@@ -290,7 +290,7 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath, "/warnaserror+");
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
@@ -308,7 +308,7 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
@@ -326,7 +326,7 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple.MyUmbrella.Namespace." + test, true, true);
             }
@@ -344,7 +344,7 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple." + test + "+MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
@@ -387,7 +387,7 @@ message " +
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
@@ -421,7 +421,7 @@ option (google.protobuf.csharp_file_options).namespace = ""MyNewNamespace"";
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("MyNewNamespace.MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("MyNewNamespace." + test, true, true);
             }
@@ -493,7 +493,7 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("MyNewNamespace.MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("MyNewNamespace." + test, true, true);
             }
@@ -532,7 +532,7 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("MyNewNamespace.MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("MyNewNamespace." + test, true, true);
             }
@@ -560,7 +560,7 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
@@ -580,7 +580,7 @@ message MyMessage {
                 Assembly a = RunCsc(0, source.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple." + test, true, true);
             }
@@ -620,10 +620,10 @@ message MyMessageList {
                 Assembly a = RunCsc(0, source1.TempPath, source2.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t1 = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t1), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t1), "Expect an IMessage");
                 //assert that the message type is in the expected namespace
                 Type t2 = a.GetType("nunit.simple.MyMessageList", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t2), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t2), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple.Proto.MyMessage", true, true);
                 a.GetType("nunit.simple.Proto.MyMessageList", true, true);
@@ -664,10 +664,10 @@ message MyMessageList {
                 Assembly a = RunCsc(0, source1.TempPath, source2.TempPath);
                 //assert that the message type is in the expected namespace
                 Type t1 = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t1), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t1), "Expect an IMessage");
                 //assert that the message type is in the expected namespace
                 Type t2 = a.GetType("nunit.simple.MyMessageList", true, true);
-                Assert.IsTrue(typeof (IMessage).IsAssignableFrom(t2), "Expect an IMessage");
+                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t2), "Expect an IMessage");
                 //assert that we can find the static descriptor type
                 a.GetType("nunit.simple.Proto.MyMessage", true, true);
                 a.GetType("nunit.simple.Proto.MyMessageList", true, true);

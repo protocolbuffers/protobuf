@@ -56,8 +56,8 @@ namespace Google.ProtocolBuffers.FieldAccess
         public static Func<T, object> CreateUpcastDelegate<T>(MethodInfo method)
         {
             // The tricky bit is invoking CreateCreateUpcastDelegateImpl with the right type parameters
-            MethodInfo openImpl = typeof (ReflectionUtil).GetMethod("CreateUpcastDelegateImpl");
-            MethodInfo closedImpl = openImpl.MakeGenericMethod(typeof (T), method.ReturnType);
+            MethodInfo openImpl = typeof(ReflectionUtil).GetMethod("CreateUpcastDelegateImpl");
+            MethodInfo closedImpl = openImpl.MakeGenericMethod(typeof(T), method.ReturnType);
             return (Func<T, object>) closedImpl.Invoke(null, new object[] {method});
         }
 
@@ -71,7 +71,7 @@ namespace Google.ProtocolBuffers.FieldAccess
             // Convert the reflection call into an open delegate, i.e. instead of calling x.Method()
             // we'll call getter(x).
             Func<TSource, TResult> getter =
-                (Func<TSource, TResult>) Delegate.CreateDelegate(typeof (Func<TSource, TResult>), null, method);
+                (Func<TSource, TResult>) Delegate.CreateDelegate(typeof(Func<TSource, TResult>), null, method);
 
             // Implicit upcast to object (within the delegate)
             return delegate(TSource source) { return getter(source); };
@@ -83,8 +83,8 @@ namespace Google.ProtocolBuffers.FieldAccess
         /// </summary>
         public static Action<T, object> CreateDowncastDelegate<T>(MethodInfo method)
         {
-            MethodInfo openImpl = typeof (ReflectionUtil).GetMethod("CreateDowncastDelegateImpl");
-            MethodInfo closedImpl = openImpl.MakeGenericMethod(typeof (T), method.GetParameters()[0].ParameterType);
+            MethodInfo openImpl = typeof(ReflectionUtil).GetMethod("CreateDowncastDelegateImpl");
+            MethodInfo closedImpl = openImpl.MakeGenericMethod(typeof(T), method.GetParameters()[0].ParameterType);
             return (Action<T, object>) closedImpl.Invoke(null, new object[] {method});
         }
 
@@ -93,7 +93,7 @@ namespace Google.ProtocolBuffers.FieldAccess
             // Convert the reflection call into an open delegate, i.e. instead of calling x.Method(y) we'll
             // call Method(x, y)
             Action<TSource, TParam> call =
-                (Action<TSource, TParam>) Delegate.CreateDelegate(typeof (Action<TSource, TParam>), null, method);
+                (Action<TSource, TParam>) Delegate.CreateDelegate(typeof(Action<TSource, TParam>), null, method);
 
             return delegate(TSource source, object parameter) { call(source, (TParam) parameter); };
         }
@@ -104,8 +104,8 @@ namespace Google.ProtocolBuffers.FieldAccess
         /// </summary>
         public static Action<T, object> CreateDowncastDelegateIgnoringReturn<T>(MethodInfo method)
         {
-            MethodInfo openImpl = typeof (ReflectionUtil).GetMethod("CreateDowncastDelegateIgnoringReturnImpl");
-            MethodInfo closedImpl = openImpl.MakeGenericMethod(typeof (T), method.GetParameters()[0].ParameterType,
+            MethodInfo openImpl = typeof(ReflectionUtil).GetMethod("CreateDowncastDelegateIgnoringReturnImpl");
+            MethodInfo closedImpl = openImpl.MakeGenericMethod(typeof(T), method.GetParameters()[0].ParameterType,
                                                                method.ReturnType);
             return (Action<T, object>) closedImpl.Invoke(null, new object[] {method});
         }
@@ -116,7 +116,7 @@ namespace Google.ProtocolBuffers.FieldAccess
             // Convert the reflection call into an open delegate, i.e. instead of calling x.Method(y) we'll
             // call Method(x, y)
             Func<TSource, TParam, TReturn> call = (Func<TSource, TParam, TReturn>)
-                                                  Delegate.CreateDelegate(typeof (Func<TSource, TParam, TReturn>), null,
+                                                  Delegate.CreateDelegate(typeof(Func<TSource, TParam, TReturn>), null,
                                                                           method);
 
             return delegate(TSource source, object parameter) { call(source, (TParam) parameter); };
@@ -127,14 +127,14 @@ namespace Google.ProtocolBuffers.FieldAccess
         /// </summary>
         public static Func<IBuilder> CreateStaticUpcastDelegate(MethodInfo method)
         {
-            MethodInfo openImpl = typeof (ReflectionUtil).GetMethod("CreateStaticUpcastDelegateImpl");
+            MethodInfo openImpl = typeof(ReflectionUtil).GetMethod("CreateStaticUpcastDelegateImpl");
             MethodInfo closedImpl = openImpl.MakeGenericMethod(method.ReturnType);
             return (Func<IBuilder>) closedImpl.Invoke(null, new object[] {method});
         }
 
         public static Func<IBuilder> CreateStaticUpcastDelegateImpl<T>(MethodInfo method)
         {
-            Func<T> call = (Func<T>) Delegate.CreateDelegate(typeof (Func<T>), null, method);
+            Func<T> call = (Func<T>) Delegate.CreateDelegate(typeof(Func<T>), null, method);
             return delegate { return (IBuilder) call(); };
         }
     }

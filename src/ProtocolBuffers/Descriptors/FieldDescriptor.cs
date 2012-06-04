@@ -441,11 +441,11 @@ namespace Google.ProtocolBuffers.Descriptors
         private static IDictionary<FieldType, MappedType> MapFieldTypes()
         {
             var map = new Dictionary<FieldType, MappedType>();
-            foreach (FieldInfo field in typeof (FieldType).GetFields(BindingFlags.Static | BindingFlags.Public))
+            foreach (FieldInfo field in typeof(FieldType).GetFields(BindingFlags.Static | BindingFlags.Public))
             {
                 FieldType fieldType = (FieldType) field.GetValue(null);
                 FieldMappingAttribute mapping =
-                    (FieldMappingAttribute) field.GetCustomAttributes(typeof (FieldMappingAttribute), false)[0];
+                    (FieldMappingAttribute) field.GetCustomAttributes(typeof(FieldMappingAttribute), false)[0];
                 map[fieldType] = mapping.MappedType;
             }
             return Dictionaries.AsReadOnly(map);

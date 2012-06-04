@@ -44,7 +44,7 @@ namespace Google.ProtocolBuffers
     /// </remarks>
     public sealed class GeneratedSingleExtension<TExtension> : GeneratedExtensionBase<TExtension>
     {
-        internal GeneratedSingleExtension(FieldDescriptor descriptor) : base(descriptor, typeof (TExtension))
+        internal GeneratedSingleExtension(FieldDescriptor descriptor) : base(descriptor, typeof(TExtension))
         {
         }
 

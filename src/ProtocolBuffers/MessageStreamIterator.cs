@@ -84,16 +84,16 @@ namespace Google.ProtocolBuffers
                 Type builderType = FindBuilderType();
 
                 // Yes, it's redundant to find this again, but it's only the once...
-                MethodInfo createBuilderMethod = typeof (TMessage).GetMethod("CreateBuilder", EmptyTypes);
+                MethodInfo createBuilderMethod = typeof(TMessage).GetMethod("CreateBuilder", EmptyTypes);
                 Delegate builderBuilder = Delegate.CreateDelegate(
-                    typeof (Func<>).MakeGenericType(builderType), null, createBuilderMethod);
+                    typeof(Func<>).MakeGenericType(builderType), null, createBuilderMethod);
 
-                MethodInfo buildMethod = typeof (MessageStreamIterator<TMessage>)
+                MethodInfo buildMethod = typeof(MessageStreamIterator<TMessage>)
                     .GetMethod("BuildImpl", BindingFlags.Static | BindingFlags.NonPublic)
-                    .MakeGenericMethod(typeof (TMessage), builderType);
+                    .MakeGenericMethod(typeof(TMessage), builderType);
 
                 return (Func<CodedInputStream, ExtensionRegistry, TMessage>) Delegate.CreateDelegate(
-                    typeof (Func<CodedInputStream, ExtensionRegistry, TMessage>), builderBuilder, buildMethod);
+                    typeof(Func<CodedInputStream, ExtensionRegistry, TMessage>), builderBuilder, buildMethod);
             }
             catch (ArgumentException e)
             {
@@ -116,28 +116,28 @@ namespace Google.ProtocolBuffers
         /// </summary>
         private static Type FindBuilderType()
         {
-            MethodInfo createBuilderMethod = typeof (TMessage).GetMethod("CreateBuilder", EmptyTypes);
+            MethodInfo createBuilderMethod = typeof(TMessage).GetMethod("CreateBuilder", EmptyTypes);
             if (createBuilderMethod == null)
             {
-                throw new ArgumentException("Message type " + typeof (TMessage).FullName +
+                throw new ArgumentException("Message type " + typeof(TMessage).FullName +
                                             " has no CreateBuilder method.");
             }
-            if (createBuilderMethod.ReturnType == typeof (void))
+            if (createBuilderMethod.ReturnType == typeof(void))
             {
-                throw new ArgumentException("CreateBuilder method in " + typeof (TMessage).FullName +
+                throw new ArgumentException("CreateBuilder method in " + typeof(TMessage).FullName +
                                             " has void return type");
             }
             Type builderType = createBuilderMethod.ReturnType;
-            Type messageInterface = typeof (IMessage<,>).MakeGenericType(typeof (TMessage), builderType);
-            Type builderInterface = typeof (IBuilder<,>).MakeGenericType(typeof (TMessage), builderType);
-            if (Array.IndexOf(typeof (TMessage).GetInterfaces(), messageInterface) == -1)
+            Type messageInterface = typeof(IMessage<,>).MakeGenericType(typeof(TMessage), builderType);
+            Type builderInterface = typeof(IBuilder<,>).MakeGenericType(typeof(TMessage), builderType);
+            if (Array.IndexOf(typeof(TMessage).GetInterfaces(), messageInterface) == -1)
             {
-                throw new ArgumentException("Message type " + typeof (TMessage) + " doesn't implement " +
+                throw new ArgumentException("Message type " + typeof(TMessage) + " doesn't implement " +
                                             messageInterface.FullName);
             }
             if (Array.IndexOf(builderType.GetInterfaces(), builderInterface) == -1)
             {
-                throw new ArgumentException("Builder type " + typeof (TMessage) + " doesn't implement " +
+                throw new ArgumentException("Builder type " + typeof(TMessage) + " doesn't implement " +
                                             builderInterface.FullName);
             }
             return builderType;

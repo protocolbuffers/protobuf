@@ -207,7 +207,7 @@ namespace Google.ProtocolBuffers.Serialization
 
             //exponent representation of integer number:
             if (value != null && type == JsonCursor.JsType.Number &&
-                (typeInfo != typeof (double) && typeInfo != typeof (float)) &&
+                (typeInfo != typeof(double) && typeInfo != typeof(float)) &&
                 value.IndexOf("e", StringComparison.OrdinalIgnoreCase) > 0)
             {
                 value = XmlConvert.ToString((long) Math.Round(XmlConvert.ToDouble(value), 0));

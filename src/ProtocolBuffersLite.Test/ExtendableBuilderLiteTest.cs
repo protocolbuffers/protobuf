@@ -128,7 +128,7 @@ namespace Google.ProtocolBuffers
                 Assert.AreEqual(i, builder.GetExtension(UnitTestLiteProtoFile.RepeatedInt32ExtensionLite, i));
         }
 
-        [TestMethod, ExpectedException(typeof (ArgumentOutOfRangeException))]
+        [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void TestGetExtensionTIndexOutOfRange()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder();
@@ -154,7 +154,7 @@ namespace Google.ProtocolBuffers
                 Assert.AreEqual(5 + i, builder.GetExtension(UnitTestLiteProtoFile.RepeatedInt32ExtensionLite, i));
         }
 
-        [TestMethod, ExpectedException(typeof (ArgumentOutOfRangeException))]
+        [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void TestSetExtensionTIndexOutOfRange()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder();
@@ -209,7 +209,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(123, builder.GetExtension(UnitTestLiteProtoFile.RepeatedInt32ExtensionLite, 0));
         }
 
-        [TestMethod, ExpectedException(typeof (ArgumentOutOfRangeException))]
+        [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void TestIndexedByDescriptorAndOrdinalOutOfRange()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder();

@@ -44,14 +44,14 @@ namespace Google.ProtocolBuffers
     public class MessageUtilTest
     {
         [TestMethod]
-        [ExpectedException(typeof (ArgumentNullException))]
+        [ExpectedException(typeof(ArgumentNullException))]
         public void NullTypeName()
         {
             MessageUtil.GetDefaultMessage((string) null);
         }
 
         [TestMethod]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void InvalidTypeName()
         {
             MessageUtil.GetDefaultMessage("invalidtypename");
@@ -61,27 +61,27 @@ namespace Google.ProtocolBuffers
         public void ValidTypeName()
         {
             Assert.AreSame(TestAllTypes.DefaultInstance,
-                           MessageUtil.GetDefaultMessage(typeof (TestAllTypes).AssemblyQualifiedName));
+                           MessageUtil.GetDefaultMessage(typeof(TestAllTypes).AssemblyQualifiedName));
         }
 
         [TestMethod]
-        [ExpectedException(typeof (ArgumentNullException))]
+        [ExpectedException(typeof(ArgumentNullException))]
         public void NullType()
         {
             MessageUtil.GetDefaultMessage((Type) null);
         }
 
         [TestMethod]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void NonMessageType()
         {
-            MessageUtil.GetDefaultMessage(typeof (string));
+            MessageUtil.GetDefaultMessage(typeof(string));
         }
 
         [TestMethod]
         public void ValidType()
         {
-            Assert.AreSame(TestAllTypes.DefaultInstance, MessageUtil.GetDefaultMessage(typeof (TestAllTypes)));
+            Assert.AreSame(TestAllTypes.DefaultInstance, MessageUtil.GetDefaultMessage(typeof(TestAllTypes)));
         }
     }
 }

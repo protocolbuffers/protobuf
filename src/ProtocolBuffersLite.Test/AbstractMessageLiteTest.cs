@@ -111,7 +111,7 @@ namespace Google.ProtocolBuffers
         public void TestIMessageLiteWeakCreateBuilderForType()
         {
             IMessageLite msg = TestRequiredLite.DefaultInstance;
-            Assert.AreEqual(typeof (TestRequiredLite.Builder), msg.WeakCreateBuilderForType().GetType());
+            Assert.AreEqual(typeof(TestRequiredLite.Builder), msg.WeakCreateBuilderForType().GetType());
         }
 
         [TestMethod]

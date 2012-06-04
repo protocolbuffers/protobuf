@@ -85,7 +85,7 @@ namespace Google.ProtocolBuffers
                 if (defaultInstanceProperty == null)
                 {
                     throw new ArgumentException("No public static DefaultInstance property for type " +
-                                                typeof (TExtension).Name);
+                                                typeof(TExtension).Name);
                 }
 
                 messageDefaultInstance = (IMessageLite) defaultInstanceProperty.GetValue(null, null);

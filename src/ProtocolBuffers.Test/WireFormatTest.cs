@@ -51,11 +51,11 @@ namespace Google.ProtocolBuffers
         [TestMethod]
         public void FieldTypeToWireTypeMapping()
         {
-            foreach (FieldInfo field in typeof (FieldType).GetFields(BindingFlags.Static | BindingFlags.Public))
+            foreach (FieldInfo field in typeof(FieldType).GetFields(BindingFlags.Static | BindingFlags.Public))
             {
                 FieldType fieldType = (FieldType) field.GetValue(null);
                 FieldMappingAttribute mapping =
-                    (FieldMappingAttribute) field.GetCustomAttributes(typeof (FieldMappingAttribute), false)[0];
+                    (FieldMappingAttribute) field.GetCustomAttributes(typeof(FieldMappingAttribute), false)[0];
                 Assert.AreEqual(mapping.WireType, WireFormat.GetWireType(fieldType));
             }
         }

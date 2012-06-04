@@ -82,7 +82,7 @@ namespace Google.ProtocolBuffers.Serialization
                 {
                     if (obj is IConvertible)
                     {
-                        value = (T) Convert.ChangeType(obj, typeof (T), CultureInfo.InvariantCulture);
+                        value = (T) Convert.ChangeType(obj, typeof(T), CultureInfo.InvariantCulture);
                     }
                     else
                     {
@@ -207,7 +207,7 @@ namespace Google.ProtocolBuffers.Serialization
             object[] array = null;
             if (GetValue(ref array))
             {
-                if (typeof (T) == typeof (ByteString))
+                if (typeof(T) == typeof(ByteString))
                 {
                     ICollection<ByteString> output = (ICollection<ByteString>) items;
                     foreach (byte[] item in array)
