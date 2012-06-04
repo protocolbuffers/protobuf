@@ -66,14 +66,14 @@ namespace Google.ProtocolBuffers.FieldAccess
 
         internal RepeatedPrimitiveAccessor(string name)
         {
-            PropertyInfo messageProperty = typeof (TMessage).GetProperty(name + "List");
-            PropertyInfo builderProperty = typeof (TBuilder).GetProperty(name + "List");
-            PropertyInfo countProperty = typeof (TMessage).GetProperty(name + "Count");
-            MethodInfo clearMethod = typeof (TBuilder).GetMethod("Clear" + name, EmptyTypes);
-            getElementMethod = typeof (TMessage).GetMethod("Get" + name, new Type[] {typeof (int)});
+            PropertyInfo messageProperty = typeof(TMessage).GetProperty(name + "List", ReflectionUtil.EmptyTypes);
+            PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name + "List", ReflectionUtil.EmptyTypes);
+            PropertyInfo countProperty = typeof(TMessage).GetProperty(name + "Count", ReflectionUtil.EmptyTypes);
+            MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name, EmptyTypes);
+            getElementMethod = typeof(TMessage).GetMethod("Get" + name, new Type[] {typeof(int)});
             clrType = getElementMethod.ReturnType;
-            MethodInfo addMethod = typeof (TBuilder).GetMethod("Add" + name, new Type[] {ClrType});
-            setElementMethod = typeof (TBuilder).GetMethod("Set" + name, new Type[] {typeof (int), ClrType});
+            MethodInfo addMethod = typeof(TBuilder).GetMethod("Add" + name, new Type[] {ClrType});
+            setElementMethod = typeof(TBuilder).GetMethod("Set" + name, new Type[] {typeof(int), ClrType});
             if (messageProperty == null
                 || builderProperty == null
                 || countProperty == null
@@ -85,9 +85,9 @@ namespace Google.ProtocolBuffers.FieldAccess
                 throw new ArgumentException("Not all required properties/methods available");
             }
             clearDelegate =
-                (Func<TBuilder, IBuilder>) Delegate.CreateDelegate(typeof (Func<TBuilder, IBuilder>), null, clearMethod);
+                (Func<TBuilder, IBuilder>) Delegate.CreateDelegate(typeof(Func<TBuilder, IBuilder>), null, clearMethod);
             countDelegate = (Func<TMessage, int>) Delegate.CreateDelegate
-                                                      (typeof (Func<TMessage, int>), null, countProperty.GetGetMethod());
+                                                      (typeof(Func<TMessage, int>), null, countProperty.GetGetMethod());
             getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
             addValueDelegate = ReflectionUtil.CreateDowncastDelegateIgnoringReturn<TBuilder>(addMethod);
             getRepeatedWrapperDelegate = ReflectionUtil.CreateUpcastDelegate<TBuilder>(builderProperty.GetGetMethod());

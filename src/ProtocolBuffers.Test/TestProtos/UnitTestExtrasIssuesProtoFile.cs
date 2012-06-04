@@ -36,6 +36,8 @@ namespace UnitTest.Issues.TestProtos {
     internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.DeprecatedChild, global::UnitTest.Issues.TestProtos.DeprecatedChild.Builder> internal__static_unittest_issues_DeprecatedChild__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_unittest_issues_DeprecatedFieldsMessage__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage, global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage.Builder> internal__static_unittest_issues_DeprecatedFieldsMessage__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_unittest_issues_ItemField__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.ItemField, global::UnitTest.Issues.TestProtos.ItemField.Builder> internal__static_unittest_issues_ItemField__FieldAccessorTable;
     #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
@@ -63,11 +65,11 @@ namespace UnitTest.Issues.TestProtos {
           "eRgEIAMoCzIgLnVuaXR0ZXN0X2lzc3Vlcy5EZXByZWNhdGVkQ2hpbGRCAhgB" + 
           "EjYKCUVudW1WYWx1ZRgFIAEoDjIfLnVuaXR0ZXN0X2lzc3Vlcy5EZXByZWNh" + 
           "dGVkRW51bUICGAESNgoJRW51bUFycmF5GAYgAygOMh8udW5pdHRlc3RfaXNz" + 
-          "dWVzLkRlcHJlY2F0ZWRFbnVtQgIYASpHCgxOZWdhdGl2ZUVudW0SFgoJRml2" + 
-          "ZUJlbG93EPv//////////wESFQoITWludXNPbmUQ////////////ARIICgRa" + 
-          "ZXJvEAAqGQoORGVwcmVjYXRlZEVudW0SBwoDb25lEAFCQEgBwj47ChpVbml0" + 
-          "VGVzdC5Jc3N1ZXMuVGVzdFByb3RvcxIdVW5pdFRlc3RFeHRyYXNJc3N1ZXNQ" + 
-          "cm90b0ZpbGU=");
+          "dWVzLkRlcHJlY2F0ZWRFbnVtQgIYASIZCglJdGVtRmllbGQSDAoEaXRlbRgB" + 
+          "IAEoBSpHCgxOZWdhdGl2ZUVudW0SFgoJRml2ZUJlbG93EPv//////////wES" + 
+          "FQoITWludXNPbmUQ////////////ARIICgRaZXJvEAAqGQoORGVwcmVjYXRl" + 
+          "ZEVudW0SBwoDb25lEAFCQEgBwj47ChpVbml0VGVzdC5Jc3N1ZXMuVGVzdFBy" + 
+          "b3RvcxIdVW5pdFRlc3RFeHRyYXNJc3N1ZXNQcm90b0ZpbGU=");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_unittest_issues_A__Descriptor = Descriptor.MessageTypes[0];
@@ -106,6 +108,10 @@ namespace UnitTest.Issues.TestProtos {
         internal__static_unittest_issues_DeprecatedFieldsMessage__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage, global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage.Builder>(internal__static_unittest_issues_DeprecatedFieldsMessage__Descriptor,
                 new string[] { "PrimitiveValue", "PrimitiveArray", "MessageValue", "MessageArray", "EnumValue", "EnumArray", });
+        internal__static_unittest_issues_ItemField__Descriptor = Descriptor.MessageTypes[9];
+        internal__static_unittest_issues_ItemField__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.ItemField, global::UnitTest.Issues.TestProtos.ItemField.Builder>(internal__static_unittest_issues_ItemField__Descriptor,
+                new string[] { "Item", });
         pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
         RegisterAllExtensions(registry);
         global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.RegisterAllExtensions(registry);
@@ -3147,6 +3153,280 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
     static DeprecatedFieldsMessage() {
+      object.ReferenceEquals(global::UnitTest.Issues.TestProtos.UnitTestExtrasIssuesProtoFile.Descriptor, null);
+    }
+  }
+  
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
+  public sealed partial class ItemField : pb::GeneratedMessage<ItemField, ItemField.Builder> {
+    private ItemField() { }
+    private static readonly ItemField defaultInstance = new ItemField().MakeReadOnly();
+    private static readonly string[] _itemFieldFieldNames = new string[] { "item" };
+    private static readonly uint[] _itemFieldFieldTags = new uint[] { 8 };
+    public static ItemField DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override ItemField DefaultInstanceForType {
+      get { return DefaultInstance; }
+    }
+    
+    protected override ItemField ThisMessage {
+      get { return this; }
+    }
+    
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::UnitTest.Issues.TestProtos.UnitTestExtrasIssuesProtoFile.internal__static_unittest_issues_ItemField__Descriptor; }
+    }
+    
+    protected override pb::FieldAccess.FieldAccessorTable<ItemField, ItemField.Builder> InternalFieldAccessors {
+      get { return global::UnitTest.Issues.TestProtos.UnitTestExtrasIssuesProtoFile.internal__static_unittest_issues_ItemField__FieldAccessorTable; }
+    }
+    
+    public const int ItemFieldNumber = 1;
+    private bool hasItem;
+    private int item_;
+    public bool HasItem {
+      get { return hasItem; }
+    }
+    public int Item {
+      get { return item_; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::ICodedOutputStream output) {
+      int size = SerializedSize;
+      string[] field_names = _itemFieldFieldNames;
+      if (hasItem) {
+        output.WriteInt32(1, field_names[0], Item);
+      }
+      UnknownFields.WriteTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (hasItem) {
+          size += pb::CodedOutputStream.ComputeInt32Size(1, Item);
+        }
+        size += UnknownFields.SerializedSize;
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    public static ItemField ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static ItemField ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static ItemField ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static ItemField ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static ItemField ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static ItemField ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static ItemField ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static ItemField ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static ItemField ParseFrom(pb::ICodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static ItemField ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    private ItemField MakeReadOnly() {
+      return this;
+    }
+    
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(ItemField prototype) {
+      return new Builder(prototype);
+    }
+    
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
+    public sealed partial class Builder : pb::GeneratedBuilder<ItemField, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {
+        result = DefaultInstance;
+        resultIsReadOnly = true;
+      }
+      internal Builder(ItemField cloneFrom) {
+        result = cloneFrom;
+        resultIsReadOnly = true;
+      }
+      
+      private bool resultIsReadOnly;
+      private ItemField result;
+      
+      private ItemField PrepareBuilder() {
+        if (resultIsReadOnly) {
+          ItemField original = result;
+          result = new ItemField();
+          resultIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
+      
+      protected override ItemField MessageBeingBuilt {
+        get { return PrepareBuilder(); }
+      }
+      
+      public override Builder Clear() {
+        result = DefaultInstance;
+        resultIsReadOnly = true;
+        return this;
+      }
+      
+      public override Builder Clone() {
+        if (resultIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
+      }
+      
+      public override pbd::MessageDescriptor DescriptorForType {
+        get { return global::UnitTest.Issues.TestProtos.ItemField.Descriptor; }
+      }
+      
+      public override ItemField DefaultInstanceForType {
+        get { return global::UnitTest.Issues.TestProtos.ItemField.DefaultInstance; }
+      }
+      
+      public override ItemField BuildPartial() {
+        if (resultIsReadOnly) {
+          return result;
+        }
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
+      }
+      
+      public override Builder MergeFrom(pb::IMessage other) {
+        if (other is ItemField) {
+          return MergeFrom((ItemField) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(ItemField other) {
+        if (other == global::UnitTest.Issues.TestProtos.ItemField.DefaultInstance) return this;
+        PrepareBuilder();
+        if (other.HasItem) {
+          Item = other.Item;
+        }
+        this.MergeUnknownFields(other.UnknownFields);
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
+        pb::UnknownFieldSet.Builder unknownFields = null;
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_itemFieldFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _itemFieldFieldTags[field_ordinal];
+            else {
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
+          switch (tag) {
+            case 0: {
+              throw pb::InvalidProtocolBufferException.InvalidTag();
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                if (unknownFields != null) {
+                  this.UnknownFields = unknownFields.Build();
+                }
+                return this;
+              }
+              if (unknownFields == null) {
+                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+              }
+              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
+              break;
+            }
+            case 8: {
+              result.hasItem = input.ReadInt32(ref result.item_);
+              break;
+            }
+          }
+        }
+        
+        if (unknownFields != null) {
+          this.UnknownFields = unknownFields.Build();
+        }
+        return this;
+      }
+      
+      
+      public bool HasItem {
+        get { return result.hasItem; }
+      }
+      public int Item {
+        get { return result.Item; }
+        set { SetItem(value); }
+      }
+      public Builder SetItem(int value) {
+        PrepareBuilder();
+        result.hasItem = true;
+        result.item_ = value;
+        return this;
+      }
+      public Builder ClearItem() {
+        PrepareBuilder();
+        result.hasItem = false;
+        result.item_ = 0;
+        return this;
+      }
+    }
+    static ItemField() {
       object.ReferenceEquals(global::UnitTest.Issues.TestProtos.UnitTestExtrasIssuesProtoFile.Descriptor, null);
     }
   }

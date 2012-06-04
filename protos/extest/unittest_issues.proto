@@ -130,3 +130,8 @@ message DeprecatedFieldsMessage {
     optional DeprecatedEnum EnumValue = 5 [deprecated = true];
     repeated DeprecatedEnum EnumArray = 6 [deprecated = true];
 }
+
+// Issue 45: http://code.google.com/p/protobuf-csharp-port/issues/detail?id=45
+message ItemField {
+  optional int32 item = 1;
+}
