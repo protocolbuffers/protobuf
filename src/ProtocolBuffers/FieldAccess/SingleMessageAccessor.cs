@@ -50,7 +50,7 @@ namespace Google.ProtocolBuffers.FieldAccess
 
         internal SingleMessageAccessor(string name) : base(name)
         {
-            MethodInfo createBuilderMethod = ClrType.GetMethod("CreateBuilder", EmptyTypes);
+            MethodInfo createBuilderMethod = ClrType.GetMethod("CreateBuilder", ReflectionUtil.EmptyTypes);
             if (createBuilderMethod == null)
             {
                 throw new ArgumentException("No public static CreateBuilder method declared in " + ClrType.Name);

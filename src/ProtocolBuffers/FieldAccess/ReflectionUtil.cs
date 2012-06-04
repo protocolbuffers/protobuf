@@ -45,6 +45,11 @@ namespace Google.ProtocolBuffers.FieldAccess
     internal static class ReflectionUtil
     {
         /// <summary>
+        /// Empty Type[] used when calling GetProperty to force property instead of indexer fetching.
+        /// </summary>
+        internal static readonly Type[] EmptyTypes = new Type[0];
+
+        /// <summary>
         /// Creates a delegate which will execute the given method and then return
         /// the result as an object.
         /// </summary>
