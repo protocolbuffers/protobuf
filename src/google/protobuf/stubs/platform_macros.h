@@ -1,17 +1,20 @@
-// Copyright 2011 the V8 authors. All rights reserved.
+// Protocol Buffers - Google's data interchange format
+// Copyright 2012 Google Inc.  All rights reserved.
+// http://code.google.com/p/protobuf/
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
 //
 //     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
+// notice, this list of conditions and the following disclaimer.
 //     * Redistributions in binary form must reproduce the above
-//       copyright notice, this list of conditions and the following
-//       disclaimer in the documentation and/or other materials provided
-//       with the distribution.
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
 //     * Neither the name of Google Inc. nor the names of its
-//       contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -117,6 +120,10 @@
 #if (defined(__APPLE__) && defined(__MACH__)) || \
     defined(__FreeBSD__) || defined(__OpenBSD__)
 #define GOOGLE_PROTOBUF_USING_BSD_ABI
+#endif
+
+#if defined(__APPLE__)
+#define GOOGLE_PROTOBUF_OS_APPLE
 #endif
 
 #endif  // GOOGLE_PROTOBUF_PLATFORM_MACROS_H_
