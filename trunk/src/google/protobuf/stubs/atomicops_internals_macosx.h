@@ -1,17 +1,20 @@
-// Copyright 2010 the V8 project authors. All rights reserved.
+// Protocol Buffers - Google's data interchange format
+// Copyright 2012 Google Inc.  All rights reserved.
+// http://code.google.com/p/protobuf/
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
 //
 //     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
+// notice, this list of conditions and the following disclaimer.
 //     * Redistributions in binary form must reproduce the above
-//       copyright notice, this list of conditions and the following
-//       disclaimer in the documentation and/or other materials provided
-//       with the distribution.
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
 //     * Neither the name of Google Inc. nor the names of its
-//       contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -27,8 +30,8 @@
 
 // This file is an internal atomic implementation, use atomicops.h instead.
 
-#ifndef GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_X86_MACOSX_H_
-#define GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_X86_MACOSX_H_
+#ifndef GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_MACOSX_H_
+#define GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_MACOSX_H_
 
 #include <libkern/OSAtomic.h>
 
@@ -214,91 +217,8 @@ inline Atomic64 Release_Load(volatile const Atomic64* ptr) {
 
 #endif  // defined(__LP64__)
 
-// MacOS uses long for intptr_t, AtomicWord and Atomic32 are always different
-// on the Mac, even when they are the same size.  We need to explicitly cast
-// from AtomicWord to Atomic32/64 to implement the AtomicWord interface.
-#ifdef __LP64__
-#define AtomicWordCastType Atomic64
-#else
-#define AtomicWordCastType Atomic32
-#endif
-
-inline AtomicWord NoBarrier_CompareAndSwap(volatile AtomicWord* ptr,
-                                           AtomicWord old_value,
-                                           AtomicWord new_value) {
-  return NoBarrier_CompareAndSwap(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr),
-      old_value, new_value);
-}
-
-inline AtomicWord NoBarrier_AtomicExchange(volatile AtomicWord* ptr,
-                                           AtomicWord new_value) {
-  return NoBarrier_AtomicExchange(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr), new_value);
-}
-
-inline AtomicWord NoBarrier_AtomicIncrement(volatile AtomicWord* ptr,
-                                            AtomicWord increment) {
-  return NoBarrier_AtomicIncrement(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr), increment);
-}
-
-inline AtomicWord Barrier_AtomicIncrement(volatile AtomicWord* ptr,
-                                          AtomicWord increment) {
-  return Barrier_AtomicIncrement(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr), increment);
-}
-
-inline AtomicWord Acquire_CompareAndSwap(volatile AtomicWord* ptr,
-                                         AtomicWord old_value,
-                                         AtomicWord new_value) {
-  return Acquire_CompareAndSwap(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr),
-      old_value, new_value);
-}
-
-inline AtomicWord Release_CompareAndSwap(volatile AtomicWord* ptr,
-                                         AtomicWord old_value,
-                                         AtomicWord new_value) {
-  return Release_CompareAndSwap(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr),
-      old_value, new_value);
-}
-
-inline void NoBarrier_Store(volatile AtomicWord* ptr, AtomicWord value) {
-  NoBarrier_Store(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr), value);
-}
-
-inline void Acquire_Store(volatile AtomicWord* ptr, AtomicWord value) {
-  return Acquire_Store(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr), value);
-}
-
-inline void Release_Store(volatile AtomicWord* ptr, AtomicWord value) {
-  return Release_Store(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr), value);
-}
-
-inline AtomicWord NoBarrier_Load(volatile const AtomicWord* ptr) {
-  return NoBarrier_Load(
-      reinterpret_cast<volatile const AtomicWordCastType*>(ptr));
-}
-
-inline AtomicWord Acquire_Load(volatile const AtomicWord* ptr) {
-  return Acquire_Load(
-      reinterpret_cast<volatile const AtomicWordCastType*>(ptr));
-}
-
-inline AtomicWord Release_Load(volatile const AtomicWord* ptr) {
-  return Release_Load(
-      reinterpret_cast<volatile const AtomicWordCastType*>(ptr));
-}
-
-#undef AtomicWordCastType
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_X86_MACOSX_H_
+#endif  // GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_MACOSX_H_
