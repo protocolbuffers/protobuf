@@ -180,14 +180,7 @@ LOCAL_SRC_FILES := $(CC_LITE_SRC_FILES)
 
 LOCAL_C_INCLUDES := \
     $(LOCAL_PATH)/android \
-    bionic \
     $(LOCAL_PATH)/src
-
-LOCAL_SHARED_LIBRARIES := \
-    libcutils libutils
-
-LOCAL_C_INCLUDES += external/stlport/stlport
-LOCAL_SHARED_LIBRARIES += libstlport
 
 # Define the header files to be copied
 #LOCAL_COPY_HEADERS := \
@@ -203,6 +196,15 @@ LOCAL_SHARED_LIBRARIES += libstlport
 
 LOCAL_CFLAGS := -DGOOGLE_PROTOBUF_NO_RTTI
 
+ifeq ($(TARGET_ARCH),arm)
+# These are the minimum versions and don't need to be update.
+LOCAL_NDK_VERSION := 4
+LOCAL_SDK_VERSION := 8
+endif
+
+LOCAL_SHARED_LIBRARIES += libstlport
+
+include external/stlport/libstlport.mk
 include $(BUILD_STATIC_LIBRARY)
 
 # C++ full library
@@ -242,15 +244,11 @@ LOCAL_SRC_FILES := \
 
 LOCAL_C_INCLUDES := \
     $(LOCAL_PATH)/android \
-    bionic \
     external/zlib \
     $(LOCAL_PATH)/src
 
 LOCAL_SHARED_LIBRARIES := \
-    libz libcutils libutils
-
-LOCAL_C_INCLUDES += external/stlport/stlport
-LOCAL_SHARED_LIBRARIES += libstlport
+    libz libstlport
 
 # Define the header files to be copied
 #LOCAL_COPY_HEADERS := \
@@ -266,6 +264,13 @@ LOCAL_SHARED_LIBRARIES += libstlport
 
 LOCAL_CFLAGS := -DGOOGLE_PROTOBUF_NO_RTTI
 
+ifeq ($(TARGET_ARCH),arm)
+# These are the minimum versions and don't need to be update.
+LOCAL_NDK_VERSION := 4
+LOCAL_SDK_VERSION := 8
+endif
+
+include external/stlport/libstlport.mk
 include $(BUILD_STATIC_LIBRARY)
 
 # Android Protocol buffer compiler, aprotoc (host executable)
