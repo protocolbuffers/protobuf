@@ -14,6 +14,7 @@ AC_PREREQ(2.59)
 # the size of one file name in the dist tarfile over the 99-char limit.)
 AC_INIT([Protocol Buffers],[2.4.2-pre],[protobuf@googlegroups.com],[protobuf])
 
+AM_MAINTAINER_MODE([enable])
 
 AC_CONFIG_SRCDIR(src/google/protobuf/message.cc)
 AC_CONFIG_HEADERS([config.h])
