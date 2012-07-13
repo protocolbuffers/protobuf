@@ -71,8 +71,8 @@ syn match   pbInt     /\<0[xX]\x+\>/
 syn match   pbFloat   /\<-\?\d*\(\.\d*\)\?/
 syn region  pbComment start="\/\*" end="\*\/" contains=@pbCommentGrp
 syn region  pbComment start="//" skip="\\$" end="$" keepend contains=@pbCommentGrp
-syn region  pbString  start=/"/ skip=/\\"/ end=/"/
-syn region  pbString  start=/'/ skip=/\\'/ end=/'/
+syn region  pbString  start=/"/ skip=/\\./ end=/"/
+syn region  pbString  start=/'/ skip=/\\./ end=/'/
 
 if version >= 508 || !exists("did_proto_syn_inits")
   if version < 508
