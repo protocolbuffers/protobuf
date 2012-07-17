@@ -63,12 +63,12 @@ namespace protobuf {
 namespace internal {
 
 typedef int32 Atomic32;
-#ifdef GOOGLE_PROTOBUF_HOST_ARCH_64_BIT
+#ifdef GOOGLE_PROTOBUF_ARCH_64_BIT
 // We need to be able to go between Atomic64 and AtomicWord implicitly.  This
 // means Atomic64 and AtomicWord should be the same type on 64-bit.
-#if defined(__APPLE__)
-// MacOS is an exception to the implicit conversion rule above,
-// because it uses long for intptr_t.
+#if defined(GOOGLE_PROTOBUF_OS_NACL)
+// NaCl's intptr_t is not actually 64-bits on 64-bit!
+// http://code.google.com/p/nativeclient/issues/detail?id=1162
 typedef int64 Atomic64;
 #else
 typedef intptr_t Atomic64;
@@ -130,7 +130,7 @@ Atomic32 Acquire_Load(volatile const Atomic32* ptr);
 Atomic32 Release_Load(volatile const Atomic32* ptr);
 
 // 64-bit atomic operations (only available on 64-bit processors).
-#ifdef GOOGLE_PROTOBUF_HOST_ARCH_64_BIT
+#ifdef GOOGLE_PROTOBUF_ARCH_64_BIT
 Atomic64 NoBarrier_CompareAndSwap(volatile Atomic64* ptr,
                                   Atomic64 old_value,
                                   Atomic64 new_value);
@@ -150,7 +150,7 @@ void Release_Store(volatile Atomic64* ptr, Atomic64 value);
 Atomic64 NoBarrier_Load(volatile const Atomic64* ptr);
 Atomic64 Acquire_Load(volatile const Atomic64* ptr);
 Atomic64 Release_Load(volatile const Atomic64* ptr);
-#endif  // GOOGLE_PROTOBUF_HOST_ARCH_64_BIT
+#endif  // GOOGLE_PROTOBUF_ARCH_64_BIT
 
 }  // namespace internal
 }  // namespace protobuf
@@ -162,8 +162,7 @@ Atomic64 Release_Load(volatile const Atomic64* ptr);
 
 // MSVC.
 #if defined(_MSC_VER)
-#if defined(GOOGLE_PROTOBUF_HOST_ARCH_IA32) || \
-    defined(GOOGLE_PROTOBUF_HOST_ARCH_X64)
+#if defined(GOOGLE_PROTOBUF_ARCH_IA32) || defined(GOOGLE_PROTOBUF_ARCH_X64)
 #include <google/protobuf/stubs/atomicops_internals_x86_msvc.h>
 #else
 GOOGLE_PROTOBUF_ATOMICOPS_ERROR
@@ -175,12 +174,11 @@ GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 
 // GCC.
 #elif defined(__GNUC__)
-#if defined(GOOGLE_PROTOBUF_HOST_ARCH_IA32) || \
-    defined(GOOGLE_PROTOBUF_HOST_ARCH_X64)
+#if defined(GOOGLE_PROTOBUF_ARCH_IA32) || defined(GOOGLE_PROTOBUF_ARCH_X64)
 #include <google/protobuf/stubs/atomicops_internals_x86_gcc.h>
-#elif defined(GOOGLE_PROTOBUF_HOST_ARCH_ARM)
+#elif defined(GOOGLE_PROTOBUF_ARCH_ARM)
 #include <google/protobuf/stubs/atomicops_internals_arm_gcc.h>
-#elif defined(GOOGLE_PROTOBUF_HOST_ARCH_MIPS)
+#elif defined(GOOGLE_PROTOBUF_ARCH_MIPS)
 #include <google/protobuf/stubs/atomicops_internals_mips_gcc.h>
 #else
 GOOGLE_PROTOBUF_ATOMICOPS_ERROR
