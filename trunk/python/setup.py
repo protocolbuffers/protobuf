@@ -1,17 +1,27 @@
 #! /usr/bin/python
 #
 # See README for usage instructions.
-
-# We must use setuptools, not distutils, because we need to use the
-# namespace_packages option for the "google" package.
-from ez_setup import use_setuptools
-use_setuptools()
-
-from setuptools import setup, Extension
-from distutils.spawn import find_executable
 import sys
 import os
 import subprocess
+
+# We must use setuptools, not distutils, because we need to use the
+# namespace_packages option for the "google" package.
+try:
+  from setuptools import setup, Extension
+except ImportError:
+  try:
+    from ez_setup import use_setuptools
+    use_setuptools()
+    from setuptools import setup, Extension
+  except ImportError:
+    sys.stderr.write(
+        "Could not import setuptools; make sure you have setuptools or "
+        "ez_setup installed.\n")
+    raise
+from distutils.command.clean import clean as _clean
+from distutils.command.build_py import build_py as _build_py
+from distutils.spawn import find_executable
 
 maintainer_email = "protobuf@googlegroups.com"
 
@@ -34,14 +44,14 @@ def generate_proto(source):
 
   output = source.replace(".proto", "_pb2.py").replace("../src/", "")
 
-  if not os.path.exists(source):
-    print "Can't find required file: " + source
-    sys.exit(-1)
-
   if (not os.path.exists(output) or
       (os.path.exists(source) and
        os.path.getmtime(source) > os.path.getmtime(output))):
     print "Generating %s..." % output
+
+    if not os.path.exists(source):
+      sys.stderr.write("Can't find required file: %s\n" % source)
+      sys.exit(-1)
 
     if protoc == None:
       sys.stderr.write(
@@ -88,22 +98,31 @@ def MakeTestSuite():
 
   return suite
 
-if __name__ == '__main__':
-  # TODO(kenton):  Integrate this into setuptools somehow?
-  if len(sys.argv) >= 2 and sys.argv[1] == "clean":
-    # Delete generated _pb2.py files and .pyc files in the code tree.
+
+class clean(_clean):
+  def run(self):
+    # Delete generated files in the code tree.
     for (dirpath, dirnames, filenames) in os.walk("."):
       for filename in filenames:
         filepath = os.path.join(dirpath, filename)
         if filepath.endswith("_pb2.py") or filepath.endswith(".pyc") or \
-          filepath.endswith(".so") or filepath.endswith(".o"):
+          filepath.endswith(".so") or filepath.endswith(".o") or \
+          filepath.endswith('google/protobuf/compiler/__init__.py'):
           os.remove(filepath)
-  else:
+    # _clean is an old-style class, so super() doesn't work.
+    _clean.run(self)
+
+class build_py(_build_py):
+  def run(self):
     # Generate necessary .proto file if it doesn't exist.
-    # TODO(kenton):  Maybe we should hook this into a distutils command?
     generate_proto("../src/google/protobuf/descriptor.proto")
     generate_proto("../src/google/protobuf/compiler/plugin.proto")
+    # Make sure google.protobuf.compiler is a valid package.
+    open('google/protobuf/compiler/__init__.py', 'a').close()
+    # _build_py is an old-style class, so super() doesn't work.
+    _build_py.run(self)
 
+if __name__ == '__main__':
   ext_module_list = []
 
   # C++ implementation extension
@@ -141,6 +160,8 @@ if __name__ == '__main__':
           'google.protobuf.service',
           'google.protobuf.service_reflection',
           'google.protobuf.text_format' ],
+        cmdclass = { 'clean': clean, 'build_py': build_py },
+        install_requires = ['setuptools'],
         ext_modules = ext_module_list,
         url = 'http://code.google.com/p/protobuf/',
         maintainer = maintainer_email,
