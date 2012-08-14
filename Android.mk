@@ -198,13 +198,12 @@ LOCAL_CFLAGS := -DGOOGLE_PROTOBUF_NO_RTTI
 
 ifeq ($(TARGET_ARCH),arm)
 # These are the minimum versions and don't need to be update.
-LOCAL_NDK_VERSION := 4
 LOCAL_SDK_VERSION := 8
+LOCAL_NDK_STL_VARIANT := stlport_static
+else
+include external/stlport/libstlport.mk
 endif
 
-LOCAL_SHARED_LIBRARIES += libstlport
-
-include external/stlport/libstlport.mk
 include $(BUILD_STATIC_LIBRARY)
 
 # C++ full library
@@ -247,9 +246,6 @@ LOCAL_C_INCLUDES := \
     external/zlib \
     $(LOCAL_PATH)/src
 
-LOCAL_SHARED_LIBRARIES := \
-    libz libstlport
-
 # Define the header files to be copied
 #LOCAL_COPY_HEADERS := \
 #    src/google/protobuf/stubs/once.h \
@@ -266,11 +262,12 @@ LOCAL_CFLAGS := -DGOOGLE_PROTOBUF_NO_RTTI
 
 ifeq ($(TARGET_ARCH),arm)
 # These are the minimum versions and don't need to be update.
-LOCAL_NDK_VERSION := 4
 LOCAL_SDK_VERSION := 8
+LOCAL_NDK_STL_VARIANT := stlport_static
+else
+include external/stlport/libstlport.mk
 endif
 
-include external/stlport/libstlport.mk
 include $(BUILD_STATIC_LIBRARY)
 
 # Android Protocol buffer compiler, aprotoc (host executable)
