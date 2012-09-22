@@ -85,6 +85,12 @@ message TestAllTypesLite {
   optional string optional_string_piece = 24 [ctype=STRING_PIECE];
   optional string optional_cord = 25 [ctype=CORD];
 
+  // Defined in unittest_import_public.proto
+  optional protobuf_unittest_import.PublicImportMessageLite
+      optional_public_import_message = 26;
+
+  optional NestedMessage optional_lazy_message = 27 [lazy=true];
+
   // Repeated
   repeated    int32 repeated_int32    = 31;
   repeated    int64 repeated_int64    = 32;
@@ -117,6 +123,8 @@ message TestAllTypesLite {
 
   repeated string repeated_string_piece = 54 [ctype=STRING_PIECE];
   repeated string repeated_cord = 55 [ctype=CORD];
+
+  repeated NestedMessage repeated_lazy_message = 57 [lazy=true];
 
   // Singular with defaults
   optional    int32 default_int32    = 61 [default =  41    ];
@@ -213,6 +221,12 @@ extend TestAllExtensionsLite {
       [ctype=STRING_PIECE];
   optional string optional_cord_extension_lite = 25 [ctype=CORD];
 
+  optional protobuf_unittest_import.PublicImportMessageLite
+    optional_public_import_message_extension_lite = 26;
+
+  optional TestAllTypesLite.NestedMessage
+    optional_lazy_message_extension_lite = 27 [lazy=true];
+
   // Repeated
   repeated    int32 repeated_int32_extension_lite    = 31;
   repeated    int64 repeated_int64_extension_lite    = 32;
@@ -248,6 +262,9 @@ extend TestAllExtensionsLite {
   repeated string repeated_string_piece_extension_lite = 54
       [ctype=STRING_PIECE];
   repeated string repeated_cord_extension_lite = 55 [ctype=CORD];
+
+  repeated TestAllTypesLite.NestedMessage
+    repeated_lazy_message_extension_lite = 57 [lazy=true];
 
   // Singular with defaults
   optional    int32 default_int32_extension_lite    = 61 [default =  41    ];
@@ -309,4 +326,35 @@ message TestNestedExtensionLite {
 // point this failed).
 message TestDeprecatedLite {
   optional int32 deprecated_field = 1 [deprecated = true];
+}
+
+// See the comments of the same type in unittest.proto.
+message TestParsingMergeLite {
+  message RepeatedFieldsGenerator {
+    repeated TestAllTypesLite field1 = 1;
+    repeated TestAllTypesLite field2 = 2;
+    repeated TestAllTypesLite field3 = 3;
+    repeated group Group1 = 10 {
+      optional TestAllTypesLite field1 = 11;
+    }
+    repeated group Group2 = 20 {
+      optional TestAllTypesLite field1 = 21;
+    }
+    repeated TestAllTypesLite ext1 = 1000;
+    repeated TestAllTypesLite ext2 = 1001;
+  }
+  required TestAllTypesLite required_all_types = 1;
+  optional TestAllTypesLite optional_all_types = 2;
+  repeated TestAllTypesLite repeated_all_types = 3;
+  optional group OptionalGroup = 10 {
+    optional TestAllTypesLite optional_group_all_types = 11;
+  }
+  repeated group RepeatedGroup = 20 {
+    optional TestAllTypesLite repeated_group_all_types = 21;
+  }
+  extensions 1000 to max;
+  extend TestParsingMergeLite {
+    optional TestAllTypesLite optional_ext = 1000;
+    repeated TestAllTypesLite repeated_ext = 1001;
+  }
 }

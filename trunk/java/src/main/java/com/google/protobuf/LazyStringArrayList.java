@@ -33,8 +33,9 @@ package com.google.protobuf;
 import java.util.List;
 import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.RandomAccess;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.RandomAccess;
 
 /**
  * An implementation of {@link LazyStringList} that wraps an ArrayList. Each
@@ -72,6 +73,11 @@ public class LazyStringArrayList extends AbstractList<String>
     list = new ArrayList<Object>();
   }
 
+  public LazyStringArrayList(LazyStringList from) {
+    list = new ArrayList<Object>(from.size());
+    addAll(from);
+  }
+
   public LazyStringArrayList(List<String> from) {
     list = new ArrayList<Object>(from);
   }
@@ -84,7 +90,7 @@ public class LazyStringArrayList extends AbstractList<String>
     } else {
       ByteString bs = (ByteString) o;
       String s = bs.toStringUtf8();
-      if (Internal.isValidUtf8(bs)) {
+      if (bs.isValidUtf8()) {
         list.set(index, s);
       }
       return s;
@@ -109,8 +115,21 @@ public class LazyStringArrayList extends AbstractList<String>
   }
 
   @Override
+  public boolean addAll(Collection<? extends String> c) {
+    // The default implementation of AbstractCollection.addAll(Collection)
+    // delegates to add(Object). This implementation instead delegates to
+    // addAll(int, Collection), which makes a special case for Collections
+    // which are instances of LazyStringList.
+    return addAll(size(), c);
+  }
+
+  @Override
   public boolean addAll(int index, Collection<? extends String> c) {
-    boolean ret = list.addAll(index, c);
+    // When copying from another LazyStringList, directly copy the underlying
+    // elements rather than forcing each element to be decoded to a String.
+    Collection<?> collection = c instanceof LazyStringList
+        ? ((LazyStringList) c).getUnderlyingElements() : c;
+    boolean ret = list.addAll(index, collection);
     modCount++;
     return ret;
   }
@@ -151,5 +170,10 @@ public class LazyStringArrayList extends AbstractList<String>
     } else {
       return ((ByteString) o).toStringUtf8();
     }
+  }
+
+  @Override
+  public List<?> getUnderlyingElements() {
+    return Collections.unmodifiableList(list);
   }
 }

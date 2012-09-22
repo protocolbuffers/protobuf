@@ -30,6 +30,12 @@
 [protobuf_unittest.optional_import_enum_extension]: IMPORT_BAZ
 [protobuf_unittest.optional_string_piece_extension]: "124"
 [protobuf_unittest.optional_cord_extension]: "125"
+[protobuf_unittest.optional_public_import_message_extension] {
+  e: 126
+}
+[protobuf_unittest.optional_lazy_message_extension] {
+  bb: 127
+}
 [protobuf_unittest.repeated_int32_extension]: 201
 [protobuf_unittest.repeated_int32_extension]: 301
 [protobuf_unittest.repeated_int64_extension]: 202
@@ -94,6 +100,12 @@
 [protobuf_unittest.repeated_string_piece_extension]: "324"
 [protobuf_unittest.repeated_cord_extension]: "225"
 [protobuf_unittest.repeated_cord_extension]: "325"
+[protobuf_unittest.repeated_lazy_message_extension] {
+  bb: 227
+}
+[protobuf_unittest.repeated_lazy_message_extension] {
+  bb: 327
+}
 [protobuf_unittest.default_int32_extension]: 401
 [protobuf_unittest.default_int64_extension]: 402
 [protobuf_unittest.default_uint32_extension]: 403

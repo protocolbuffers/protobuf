@@ -32,13 +32,14 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/stubs/stl_util-inl.h>
+
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/wire_format.h>
+#include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
 namespace protobuf {
@@ -59,6 +60,14 @@ void UnknownFieldSet::ClearFallback() {
   fields_->clear();
 }
 
+void UnknownFieldSet::ClearAndFreeMemory() {
+  if (fields_ != NULL) {
+    Clear();
+    delete fields_;
+    fields_ = NULL;
+  }
+}
+
 void UnknownFieldSet::MergeFrom(const UnknownFieldSet& other) {
   for (int i = 0; i < other.field_count(); i++) {
     AddField(other.field(i));
@@ -73,8 +82,9 @@ int UnknownFieldSet::SpaceUsedExcludingSelf() const {
     const UnknownField& field = (*fields_)[i];
     switch (field.type()) {
       case UnknownField::TYPE_LENGTH_DELIMITED:
-        total_size += sizeof(*field.length_delimited_) +
-          internal::StringSpaceUsedExcludingSelf(*field.length_delimited_);
+        total_size += sizeof(*field.length_delimited_.string_value_) +
+                      internal::StringSpaceUsedExcludingSelf(
+                          *field.length_delimited_.string_value_);
         break;
       case UnknownField::TYPE_GROUP:
         total_size += field.group_->SpaceUsed();
@@ -122,10 +132,11 @@ string* UnknownFieldSet::AddLengthDelimited(int number) {
   UnknownField field;
   field.number_ = number;
   field.type_ = UnknownField::TYPE_LENGTH_DELIMITED;
-  field.length_delimited_ = new string;
+  field.length_delimited_.string_value_ = new string;
   fields_->push_back(field);
-  return field.length_delimited_;
+  return field.length_delimited_.string_value_;
 }
+
 
 UnknownFieldSet* UnknownFieldSet::AddGroup(int number) {
   if (fields_ == NULL) fields_ = new vector<UnknownField>;
@@ -141,6 +152,39 @@ void UnknownFieldSet::AddField(const UnknownField& field) {
   if (fields_ == NULL) fields_ = new vector<UnknownField>;
   fields_->push_back(field);
   fields_->back().DeepCopy();
+}
+
+void UnknownFieldSet::DeleteSubrange(int start, int num) {
+  GOOGLE_DCHECK(fields_ != NULL);
+  // Delete the specified fields.
+  for (int i = 0; i < num; ++i) {
+    (*fields_)[i + start].Delete();
+  }
+  // Slide down the remaining fields.
+  for (int i = start + num; i < fields_->size(); ++i) {
+    (*fields_)[i - num] = (*fields_)[i];
+  }
+  // Pop off the # of deleted fields.
+  for (int i = 0; i < num; ++i) {
+    fields_->pop_back();
+  }
+}
+
+void UnknownFieldSet::DeleteByNumber(int number) {
+  if (fields_ == NULL) return;
+  int left = 0;  // The number of fields left after deletion.
+  for (int i = 0; i < fields_->size(); ++i) {
+    UnknownField* field = &(*fields_)[i];
+    if (field->number() == number) {
+      field->Delete();
+    } else {
+      if (i != left) {
+        (*fields_)[left] = (*fields_)[i];
+      }
+      ++left;
+    }
+  }
+  fields_->resize(left);
 }
 
 bool UnknownFieldSet::MergeFromCodedStream(io::CodedInputStream* input) {
@@ -174,7 +218,7 @@ bool UnknownFieldSet::ParseFromArray(const void* data, int size) {
 void UnknownField::Delete() {
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
-      delete length_delimited_;
+      delete length_delimited_.string_value_;
       break;
     case UnknownField::TYPE_GROUP:
       delete group_;
@@ -187,7 +231,8 @@ void UnknownField::Delete() {
 void UnknownField::DeepCopy() {
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
-      length_delimited_ = new string(*length_delimited_);
+      length_delimited_.string_value_ = new string(
+          *length_delimited_.string_value_);
       break;
     case UnknownField::TYPE_GROUP: {
       UnknownFieldSet* group = new UnknownFieldSet;
@@ -198,6 +243,23 @@ void UnknownField::DeepCopy() {
     default:
       break;
   }
+}
+
+
+void UnknownField::SerializeLengthDelimitedNoTag(
+    io::CodedOutputStream* output) const {
+  GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type_);
+  const string& data = *length_delimited_.string_value_;
+  output->WriteVarint32(data.size());
+  output->WriteString(data);
+}
+
+uint8* UnknownField::SerializeLengthDelimitedNoTagToArray(uint8* target) const {
+  GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type_);
+  const string& data = *length_delimited_.string_value_;
+  target = io::CodedOutputStream::WriteVarint32ToArray(data.size(), target);
+  target = io::CodedOutputStream::WriteStringToArray(data, target);
+  return target;
 }
 
 }  // namespace protobuf

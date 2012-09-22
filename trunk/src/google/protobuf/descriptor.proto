@@ -59,6 +59,11 @@ message FileDescriptorProto {
 
   // Names of files imported by this file.
   repeated string dependency = 3;
+  // Indexes of the public imported files in the dependency list above.
+  repeated int32 public_dependency = 10;
+  // Indexes of the weak imported files in the dependency list.
+  // For Google-internal migration only. Do not use.
+  repeated int32 weak_dependency = 11;
 
   // All top-level definitions in this file.
   repeated DescriptorProto message_type = 4;
@@ -101,13 +106,13 @@ message FieldDescriptorProto {
     // Order is weird for historical reasons.
     TYPE_DOUBLE         = 1;
     TYPE_FLOAT          = 2;
-    TYPE_INT64          = 3;   // Not ZigZag encoded.  Negative numbers
-                               // take 10 bytes.  Use TYPE_SINT64 if negative
-                               // values are likely.
+    // Not ZigZag encoded.  Negative numbers take 10 bytes.  Use TYPE_SINT64 if
+    // negative values are likely.
+    TYPE_INT64          = 3;
     TYPE_UINT64         = 4;
-    TYPE_INT32          = 5;   // Not ZigZag encoded.  Negative numbers
-                               // take 10 bytes.  Use TYPE_SINT32 if negative
-                               // values are likely.
+    // Not ZigZag encoded.  Negative numbers take 10 bytes.  Use TYPE_SINT32 if
+    // negative values are likely.
+    TYPE_INT32          = 5;
     TYPE_FIXED64        = 6;
     TYPE_FIXED32        = 7;
     TYPE_BOOL           = 8;
@@ -199,6 +204,7 @@ message MethodDescriptorProto {
   optional MethodOptions options = 4;
 }
 
+
 // ===================================================================
 // Options
 
@@ -271,6 +277,9 @@ message FileOptions {
   }
   optional OptimizeMode optimize_for = 9 [default=SPEED];
 
+  // Sets the Go package where structs generated from this .proto will be
+  // placed.  There is no default.
+  optional string go_package = 11;
 
 
 
@@ -349,6 +358,37 @@ message FieldOptions {
   optional bool packed = 2;
 
 
+
+  // Should this field be parsed lazily?  Lazy applies only to message-type
+  // fields.  It means that when the outer message is initially parsed, the
+  // inner message's contents will not be parsed but instead stored in encoded
+  // form.  The inner message will actually be parsed when it is first accessed.
+  //
+  // This is only a hint.  Implementations are free to choose whether to use
+  // eager or lazy parsing regardless of the value of this option.  However,
+  // setting this option true suggests that the protocol author believes that
+  // using lazy parsing on this field is worth the additional bookkeeping
+  // overhead typically needed to implement it.
+  //
+  // This option does not affect the public interface of any generated code;
+  // all method signatures remain the same.  Furthermore, thread-safety of the
+  // interface is not affected by this option; const methods remain safe to
+  // call from multiple threads concurrently, while non-const methods continue
+  // to require exclusive access.
+  //
+  //
+  // Note that implementations may choose not to check required fields within
+  // a lazy sub-message.  That is, calling IsInitialized() on the outher message
+  // may return true even if the inner message has missing required fields.
+  // This is necessary because otherwise the inner message would have to be
+  // parsed in order to perform the check, defeating the purpose of lazy
+  // parsing.  An implementation which chooses not to check required fields
+  // must be consistent about it.  That is, for any particular sub-message, the
+  // implementation must either *always* check its required fields, or *never*
+  // check its required fields, regardless of whether or not the message has
+  // been parsed.
+  optional bool lazy = 5 [default=false];
+
   // Is this field deprecated?
   // Depending on the target platform, this can emit Deprecated annotations
   // for accessors, or it will be completely ignored; in the very least, this
@@ -369,6 +409,9 @@ message FieldOptions {
   // TODO: Fully-implement this, then remove the "experimental_" prefix.
   optional string experimental_map_key = 9;
 
+  // For Google-internal migration only. Do not use.
+  optional bool weak = 10 [default=false];
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -377,6 +420,10 @@ message FieldOptions {
 }
 
 message EnumOptions {
+
+  // Set this option to false to disallow mapping different tag names to a same
+  // value.
+  optional bool allow_alias = 2 [default=true];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -420,6 +467,7 @@ message MethodOptions {
   // Clients can define custom options in extensions of this message. See above.
   extensions 1000 to max;
 }
+
 
 // A message representing a option the parser does not recognize. This only
 // appears in options protos created by the compiler::Parser class.
@@ -532,7 +580,41 @@ message SourceCodeInfo {
     // 1 to each before displaying to a user.
     repeated int32 span = 2 [packed=true];
 
-    // TODO(kenton):  Record comments appearing before and after the
-    // declaration.
+    // If this SourceCodeInfo represents a complete declaration, these are any
+    // comments appearing before and after the declaration which appear to be
+    // attached to the declaration.
+    //
+    // A series of line comments appearing on consecutive lines, with no other
+    // tokens appearing on those lines, will be treated as a single comment.
+    //
+    // Only the comment content is provided; comment markers (e.g. //) are
+    // stripped out.  For block comments, leading whitespace and an asterisk
+    // will be stripped from the beginning of each line other than the first.
+    // Newlines are included in the output.
+    //
+    // Examples:
+    //
+    //   optional int32 foo = 1;  // Comment attached to foo.
+    //   // Comment attached to bar.
+    //   optional int32 bar = 2;
+    //
+    //   optional string baz = 3;
+    //   // Comment attached to baz.
+    //   // Another line attached to baz.
+    //
+    //   // Comment attached to qux.
+    //   //
+    //   // Another line attached to qux.
+    //   optional double qux = 4;
+    //
+    //   optional string corge = 5;
+    //   /* Block comment attached
+    //    * to corge.  Leading asterisks
+    //    * will be removed. */
+    //   /* Block comment attached to
+    //    * grault. */
+    //   optional int32 grault = 6;
+    optional string leading_comments = 3;
+    optional string trailing_comments = 4;
   }
 }

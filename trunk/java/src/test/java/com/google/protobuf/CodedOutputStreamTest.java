@@ -30,8 +30,10 @@
 
 package com.google.protobuf;
 
+import protobuf_unittest.UnittestProto.SparseEnumMessage;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
+import protobuf_unittest.UnittestProto.TestSparseEnum;
 
 import junit.framework.TestCase;
 
@@ -302,17 +304,14 @@ public class CodedOutputStreamTest extends TestCase {
   }
 
   /** Test writing a message containing a negative enum value. This used to
-   * fail because the size was not properly computed as a sign-extended varint. */
+   * fail because the size was not properly computed as a sign-extended varint.
+   */
   public void testWriteMessageWithNegativeEnumValue() throws Exception {
-    protobuf_unittest.UnittestProto.SparseEnumMessage message =
-        protobuf_unittest.UnittestProto.SparseEnumMessage.newBuilder()
-        .setSparseEnum(protobuf_unittest.UnittestProto.TestSparseEnum.SPARSE_E)
-        .build();
+    SparseEnumMessage message = SparseEnumMessage.newBuilder()
+        .setSparseEnum(TestSparseEnum.SPARSE_E) .build();
     assertTrue(message.getSparseEnum().getNumber() < 0);
     byte[] rawBytes = message.toByteArray();
-    protobuf_unittest.UnittestProto.SparseEnumMessage message2 =
-        protobuf_unittest.UnittestProto.SparseEnumMessage.parseFrom(rawBytes);
-    assertEquals(protobuf_unittest.UnittestProto.TestSparseEnum.SPARSE_E,
-                 message2.getSparseEnum());
+    SparseEnumMessage message2 = SparseEnumMessage.parseFrom(rawBytes);
+    assertEquals(TestSparseEnum.SPARSE_E, message2.getSparseEnum());
   }
 }

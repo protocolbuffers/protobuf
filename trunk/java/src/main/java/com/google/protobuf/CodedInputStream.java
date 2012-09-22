@@ -243,6 +243,23 @@ public final class CodedInputStream {
     --recursionDepth;
   }
 
+  /** Read a {@code group} field value from the stream. */
+  public <T extends MessageLite> T readGroup(
+      final int fieldNumber,
+      final Parser<T> parser,
+      final ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    if (recursionDepth >= recursionLimit) {
+      throw InvalidProtocolBufferException.recursionLimitExceeded();
+    }
+    ++recursionDepth;
+    T result = parser.parsePartialFrom(this, extensionRegistry);
+    checkLastTagWas(
+      WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
+    --recursionDepth;
+    return result;
+  }
+
   /**
    * Reads a {@code group} field value from the stream and merges it into the
    * given {@link UnknownFieldSet}.
@@ -276,6 +293,24 @@ public final class CodedInputStream {
     checkLastTagWas(0);
     --recursionDepth;
     popLimit(oldLimit);
+  }
+
+  /** Read an embedded message field value from the stream. */
+  public <T extends MessageLite> T readMessage(
+      final Parser<T> parser,
+      final ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    int length = readRawVarint32();
+    if (recursionDepth >= recursionLimit) {
+      throw InvalidProtocolBufferException.recursionLimitExceeded();
+    }
+    final int oldLimit = pushLimit(length);
+    ++recursionDepth;
+    T result = parser.parsePartialFrom(this, extensionRegistry);
+    checkLastTagWas(0);
+    --recursionDepth;
+    popLimit(oldLimit);
+    return result;
   }
 
   /** Read a {@code bytes} field value from the stream. */
@@ -601,7 +636,7 @@ public final class CodedInputStream {
    * refreshing its buffer.  If you need to prevent reading past a certain
    * point in the underlying {@code InputStream} (e.g. because you expect it to
    * contain more data after the end of the message which you need to handle
-   * differently) then you must place a wrapper around you {@code InputStream}
+   * differently) then you must place a wrapper around your {@code InputStream}
    * which limits the amount of data that can be read from it.
    *
    * @return the old limit.
@@ -676,7 +711,7 @@ public final class CodedInputStream {
 
   /**
    * Called with {@code this.buffer} is empty to read more bytes from the
-   * input.  If {@code mustSucceed} is true, refillBuffer() gurantees that
+   * input.  If {@code mustSucceed} is true, refillBuffer() guarantees that
    * either there will be at least one byte in the buffer when it returns
    * or it will throw an exception.  If {@code mustSucceed} is false,
    * refillBuffer() returns false if no more bytes were available.
@@ -879,7 +914,7 @@ public final class CodedInputStream {
         refillBuffer(true);
       }
 
-      bufferPos = size - pos; 
+      bufferPos = size - pos;
     }
   }
 }

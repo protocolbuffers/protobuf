@@ -30,6 +30,7 @@
 
 package com.google.protobuf;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,6 +44,24 @@ public interface MessageOrBuilder extends MessageLiteOrBuilder {
   // (From MessageLite, re-declared here only for return type covariance.)
   //@Override (Java 1.6 override semantics, but we must support 1.5)
   Message getDefaultInstanceForType();
+
+  /**
+   * Returns a list of field paths (e.g. "foo.bar.baz") of required fields
+   * which are not set in this message.  You should call
+   * {@link MessageLiteOrBuilder#isInitialized()} first to check if there
+   * are any missing fields, as that method is likely to be much faster
+   * than this one even when the message is fully-initialized.
+   */
+  List<String> findInitializationErrors();
+
+  /**
+   * Returns a comma-delimited list of required fields which are not set
+   * in this message object.  You should call
+   * {@link MessageLiteOrBuilder#isInitialized()} first to check if there
+   * are any missing fields, as that method is likely to be much faster
+   * than this one even when the message is fully-initialized.
+   */
+  String getInitializationErrorString();
 
   /**
    * Get the message's type's descriptor.  This differs from the
@@ -80,7 +99,7 @@ public interface MessageOrBuilder extends MessageLiteOrBuilder {
   /**
    * Obtains the value of the given field, or the default value if it is
    * not set.  For primitive fields, the boxed primitive value is returned.
-   * For enum fields, the EnumValueDescriptor for the value is returend. For
+   * For enum fields, the EnumValueDescriptor for the value is returned. For
    * embedded message fields, the sub-message is returned.  For repeated
    * fields, a java.util.List is returned.
    */
@@ -98,7 +117,7 @@ public interface MessageOrBuilder extends MessageLiteOrBuilder {
   /**
    * Gets an element of a repeated field.  For primitive fields, the boxed
    * primitive value is returned.  For enum fields, the EnumValueDescriptor
-   * for the value is returend. For embedded message fields, the sub-message
+   * for the value is returned. For embedded message fields, the sub-message
    * is returned.
    * @throws IllegalArgumentException The field is not a repeated field, or
    *           {@code field.getContainingType() != getDescriptorForType()}.

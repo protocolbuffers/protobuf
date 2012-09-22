@@ -49,7 +49,6 @@ double NaN() {
 
 const ::std::string kEmptyString;
 
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

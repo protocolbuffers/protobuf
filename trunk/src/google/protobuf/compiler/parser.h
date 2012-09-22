@@ -116,6 +116,8 @@ class LIBPROTOBUF_EXPORT Parser {
   }
 
  private:
+  class LocationRecorder;
+
   // =================================================================
   // Error recovery helpers
 
@@ -164,6 +166,8 @@ class LIBPROTOBUF_EXPORT Parser {
   bool ConsumeIdentifier(string* output, const char* error);
   // Consume an integer and store its value in "output".
   bool ConsumeInteger(int* output, const char* error);
+  // Consume a signed integer and store its value in "output".
+  bool ConsumeSignedInteger(int* output, const char* error);
   // Consume a 64-bit integer and store its value in "output".  If the value
   // is greater than max_value, an error will be reported.
   bool ConsumeInteger64(uint64 max_value, uint64* output, const char* error);
@@ -172,6 +176,20 @@ class LIBPROTOBUF_EXPORT Parser {
   bool ConsumeNumber(double* output, const char* error);
   // Consume a string literal and store its (unescaped) value in "output".
   bool ConsumeString(string* output, const char* error);
+
+  // Consume a token representing the end of the statement.  Comments between
+  // this token and the next will be harvested for documentation.  The given
+  // LocationRecorder should refer to the declaration that was just parsed;
+  // it will be populated with these comments.
+  //
+  // TODO(kenton):  The LocationRecorder is const because historically locations
+  //   have been passed around by const reference, for no particularly good
+  //   reason.  We should probably go through and change them all to mutable
+  //   pointer to make this more intuitive.
+  bool TryConsumeEndOfDeclaration(const char* text,
+                                  const LocationRecorder* location);
+  bool ConsumeEndOfDeclaration(const char* text,
+                               const LocationRecorder* location);
 
   // -----------------------------------------------------------------
   // Error logging helpers
@@ -227,6 +245,14 @@ class LIBPROTOBUF_EXPORT Parser {
     void RecordLegacyLocation(const Message* descriptor,
         DescriptorPool::ErrorCollector::ErrorLocation location);
 
+    // Attaches leading and trailing comments to the location.  The two strings
+    // will be swapped into place, so after this is called *leading and
+    // *trailing will be empty.
+    //
+    // TODO(kenton):  See comment on TryConsumeEndOfDeclaration(), above, for
+    //   why this is const.
+    void AttachComments(string* leading, string* trailing) const;
+
    private:
     Parser* parser_;
     SourceCodeInfo::Location* location_;
@@ -265,9 +291,10 @@ class LIBPROTOBUF_EXPORT Parser {
                               const LocationRecorder& service_location);
   bool ParsePackage(FileDescriptorProto* file,
                     const LocationRecorder& root_location);
-  bool ParseImport(string* import_filename,
-                   const LocationRecorder& root_location,
-                   int index);
+  bool ParseImport(RepeatedPtrField<string>* dependency,
+                   RepeatedField<int32>* public_dependency,
+                   RepeatedField<int32>* weak_dependency,
+                   const LocationRecorder& root_location);
   bool ParseOption(Message* options,
                    const LocationRecorder& options_location);
 
@@ -329,6 +356,12 @@ class LIBPROTOBUF_EXPORT Parser {
   bool ParseServiceMethod(MethodDescriptorProto* method,
                           const LocationRecorder& method_location);
 
+
+  // Parse options of a single method or stream.
+  bool ParseOptions(const LocationRecorder& parent_location,
+                    const int optionsFieldNumber,
+                    Message* mutable_options);
+
   // Parse "required", "optional", or "repeated" and fill in "label"
   // with the value.
   bool ParseLabel(FieldDescriptorProto::Label* label);
@@ -351,11 +384,17 @@ class LIBPROTOBUF_EXPORT Parser {
   bool ParseDefaultAssignment(FieldDescriptorProto* field,
                               const LocationRecorder& field_location);
 
+  enum OptionStyle {
+    OPTION_ASSIGNMENT,  // just "name = value"
+    OPTION_STATEMENT    // "option name = value;"
+  };
+
   // Parse a single option name/value pair, e.g. "ctype = CORD".  The name
   // identifies a field of the given Message, and the value of that field
   // is set to the parsed value.
-  bool ParseOptionAssignment(Message* options,
-                             const LocationRecorder& options_location);
+  bool ParseOption(Message* options,
+                   const LocationRecorder& options_location,
+                   OptionStyle style);
 
   // Parses a single part of a multipart option name. A multipart name consists
   // of names separated by dots. Each name is either an identifier or a series
@@ -386,6 +425,10 @@ class LIBPROTOBUF_EXPORT Parser {
   bool require_syntax_identifier_;
   bool stop_after_syntax_identifier_;
   string syntax_identifier_;
+
+  // Leading doc comments for the next declaration.  These are not complete
+  // yet; use ConsumeEndOfDeclaration() to get the complete comments.
+  string upcoming_doc_comments_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Parser);
 };

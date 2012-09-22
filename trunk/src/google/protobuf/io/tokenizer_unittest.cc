@@ -32,9 +32,10 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <vector>
-#include <math.h>
 #include <limits.h>
+#include <math.h>
+
+#include <vector>
 
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -514,6 +515,217 @@ TEST_1D(TokenizerTest, ShCommentStyle, kBlockSizes) {
 
 // -------------------------------------------------------------------
 
+// In each case, the input is expected to have two tokens named "prev" and
+// "next" with comments in between.
+struct DocCommentCase {
+  string input;
+
+  const char* prev_trailing_comments;
+  const char* detached_comments[10];
+  const char* next_leading_comments;
+};
+
+inline ostream& operator<<(ostream& out,
+                           const DocCommentCase& test_case) {
+  return out << CEscape(test_case.input);
+}
+
+DocCommentCase kDocCommentCases[] = {
+  {
+    "prev next",
+
+    "",
+    {},
+    ""
+      },
+
+        {
+      "prev /* ignored */ next",
+
+      "",
+      {},
+      ""
+        },
+
+          {
+        "prev // trailing comment\n"
+            "next",
+
+            " trailing comment\n",
+            {},
+            ""
+          },
+
+            {
+          "prev\n"
+              "// leading comment\n"
+              "// line 2\n"
+              "next",
+
+              "",
+              {},
+              " leading comment\n"
+              " line 2\n"
+            },
+
+              {
+            "prev\n"
+                "// trailing comment\n"
+                "// line 2\n"
+                "\n"
+                "next",
+
+                " trailing comment\n"
+                " line 2\n",
+                {},
+                ""
+              },
+
+                {
+              "prev // trailing comment\n"
+                  "// leading comment\n"
+                  "// line 2\n"
+                  "next",
+
+                  " trailing comment\n",
+                  {},
+                  " leading comment\n"
+                  " line 2\n"
+                },
+
+                  {
+                "prev /* trailing block comment */\n"
+                    "/* leading block comment\n"
+                    " * line 2\n"
+                    " * line 3 */"
+                    "next",
+
+                    " trailing block comment ",
+                    {},
+                    " leading block comment\n"
+                    " line 2\n"
+                    " line 3 "
+                  },
+
+                    {
+                  "prev\n"
+                      "/* trailing block comment\n"
+                      " * line 2\n"
+                      " * line 3\n"
+                      " */\n"
+                      "/* leading block comment\n"
+                      " * line 2\n"
+                      " * line 3 */"
+                      "next",
+
+                      " trailing block comment\n"
+                      " line 2\n"
+                      " line 3\n",
+                      {},
+                      " leading block comment\n"
+                      " line 2\n"
+                      " line 3 "
+                    },
+
+                      {
+                    "prev\n"
+                        "// trailing comment\n"
+                        "\n"
+                        "// detached comment\n"
+                        "// line 2\n"
+                        "\n"
+                        "// second detached comment\n"
+                        "/* third detached comment\n"
+                        " * line 2 */\n"
+                        "// leading comment\n"
+                        "next",
+
+                        " trailing comment\n",
+                        {
+                      " detached comment\n"
+                          " line 2\n",
+                          " second detached comment\n",
+                          " third detached comment\n"
+                          " line 2 "
+                        },
+                          " leading comment\n"
+                        },
+
+                          {
+                        "prev /**/\n"
+                            "\n"
+                            "// detached comment\n"
+                            "\n"
+                            "// leading comment\n"
+                            "next",
+
+                            "",
+                            {
+                          " detached comment\n"
+                            },
+                              " leading comment\n"
+                            },
+
+                              {
+                            "prev /**/\n"
+                                "// leading comment\n"
+                                "next",
+
+                                "",
+                                {},
+                                " leading comment\n"
+                              },
+                              };
+
+TEST_2D(TokenizerTest, DocComments, kDocCommentCases, kBlockSizes) {
+  // Set up the tokenizer.
+  TestInputStream input(kDocCommentCases_case.input.data(),
+                        kDocCommentCases_case.input.size(),
+                        kBlockSizes_case);
+  TestErrorCollector error_collector;
+  Tokenizer tokenizer(&input, &error_collector);
+
+  // Set up a second tokenizer where we'll pass all NULLs to NextWithComments().
+  TestInputStream input2(kDocCommentCases_case.input.data(),
+                        kDocCommentCases_case.input.size(),
+                        kBlockSizes_case);
+  Tokenizer tokenizer2(&input2, &error_collector);
+
+  tokenizer.Next();
+  tokenizer2.Next();
+
+  EXPECT_EQ("prev", tokenizer.current().text);
+  EXPECT_EQ("prev", tokenizer2.current().text);
+
+  string prev_trailing_comments;
+  vector<string> detached_comments;
+  string next_leading_comments;
+  tokenizer.NextWithComments(&prev_trailing_comments, &detached_comments,
+                             &next_leading_comments);
+  tokenizer2.NextWithComments(NULL, NULL, NULL);
+  EXPECT_EQ("next", tokenizer.current().text);
+  EXPECT_EQ("next", tokenizer2.current().text);
+
+  EXPECT_EQ(kDocCommentCases_case.prev_trailing_comments,
+            prev_trailing_comments);
+
+  for (int i = 0; i < detached_comments.size(); i++) {
+    ASSERT_LT(i, GOOGLE_ARRAYSIZE(kDocCommentCases));
+    ASSERT_TRUE(kDocCommentCases_case.detached_comments[i] != NULL);
+    EXPECT_EQ(kDocCommentCases_case.detached_comments[i],
+              detached_comments[i]);
+  }
+
+  // Verify that we matched all the detached comments.
+  EXPECT_EQ(NULL,
+      kDocCommentCases_case.detached_comments[detached_comments.size()]);
+
+  EXPECT_EQ(kDocCommentCases_case.next_leading_comments,
+            next_leading_comments);
+}
+
+// -------------------------------------------------------------------
+
 // Test parse helpers.  It's not really worth setting up a full data-driven
 // test here.
 TEST_F(TokenizerTest, ParseInteger) {
@@ -614,6 +826,22 @@ TEST_F(TokenizerTest, ParseString) {
   Tokenizer::ParseString("'\\", &output);
   EXPECT_EQ("\\", output);
 
+  // Experiment with Unicode escapes. Here are one-, two- and three-byte Unicode
+  // characters.
+  Tokenizer::ParseString("'\\u0024\\u00a2\\u20ac\\U00024b62XX'", &output);
+  EXPECT_EQ("$¢€𤭢XX", output);
+  // Same thing encoded using UTF16.
+  Tokenizer::ParseString("'\\u0024\\u00a2\\u20ac\\ud852\\udf62XX'", &output);
+  EXPECT_EQ("$¢€𤭢XX", output);
+  // Here's some broken UTF16; there's a head surrogate with no tail surrogate.
+  // We just output this as if it were UTF8; it's not a defined code point, but
+  // it has a defined encoding.
+  Tokenizer::ParseString("'\\ud852XX'", &output);
+  EXPECT_EQ("\xed\xa1\x92XX", output);
+  // Malformed escape: Demons may fly out of the nose.
+  Tokenizer::ParseString("\\u0", &output);
+  EXPECT_EQ("u0", output);
+
   // Test invalid strings that will never be tokenized as strings.
 #ifdef GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
   EXPECT_DEBUG_DEATH(Tokenizer::ParseString("", &output),
@@ -658,6 +886,12 @@ ErrorCase kErrorCases[] = {
     "0:4: String literals cannot cross line boundaries.\n" },
   { "'bar\nfoo", true,
     "0:4: String literals cannot cross line boundaries.\n" },
+  { "'\\u01' foo", true,
+    "0:5: Expected four hex digits for \\u escape sequence.\n" },
+  { "'\\u01' foo", true,
+    "0:5: Expected four hex digits for \\u escape sequence.\n" },
+  { "'\\uXYZ' foo", true,
+    "0:3: Expected four hex digits for \\u escape sequence.\n" },
 
   // Integer errors.
   { "123foo", true,
@@ -734,7 +968,7 @@ TEST_2D(TokenizerTest, Errors, kErrorCases, kBlockSizes) {
   }
 
   // Check that the errors match what was expected.
-  EXPECT_EQ(error_collector.text_, kErrorCases_case.errors);
+  EXPECT_EQ(kErrorCases_case.errors, error_collector.text_);
 
   // If the error was recoverable, make sure we saw "foo" after it.
   if (kErrorCases_case.recoverable) {
@@ -759,6 +993,7 @@ TEST_1D(TokenizerTest, BackUpOnDestruction, kBlockSizes) {
   // Only "foo" should have been read.
   EXPECT_EQ(strlen("foo"), input.ByteCount());
 }
+
 
 }  // namespace
 }  // namespace io

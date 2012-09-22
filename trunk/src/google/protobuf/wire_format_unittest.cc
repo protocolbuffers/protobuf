@@ -44,7 +44,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/stl_util-inl.h>
+#include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
 namespace protobuf {
@@ -480,6 +480,54 @@ TEST(WireFormatTest, ParseMessageSet) {
   EXPECT_EQ(message_set.DebugString(), dynamic_message_set.DebugString());
 }
 
+TEST(WireFormatTest, ParseMessageSetWithReverseTagOrder) {
+  string data;
+  {
+    unittest::TestMessageSetExtension1 message;
+    message.set_i(123);
+    // Build a MessageSet manually with its message content put before its
+    // type_id.
+    io::StringOutputStream output_stream(&data);
+    io::CodedOutputStream coded_output(&output_stream);
+    coded_output.WriteTag(WireFormatLite::kMessageSetItemStartTag);
+    // Write the message content first.
+    WireFormatLite::WriteTag(WireFormatLite::kMessageSetMessageNumber,
+                             WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+                             &coded_output);
+    coded_output.WriteVarint32(message.ByteSize());
+    message.SerializeWithCachedSizes(&coded_output);
+    // Write the type id.
+    uint32_t type_id = message.GetDescriptor()->extension(0)->number();
+    WireFormatLite::WriteUInt32(WireFormatLite::kMessageSetTypeIdNumber,
+                                type_id, &coded_output);
+    coded_output.WriteTag(WireFormatLite::kMessageSetItemEndTag);
+  }
+  {
+    unittest::TestMessageSet message_set;
+    ASSERT_TRUE(message_set.ParseFromString(data));
+
+    EXPECT_EQ(123, message_set.GetExtension(
+        unittest::TestMessageSetExtension1::message_set_extension).i());
+  }
+  {
+    // Test parse the message via Reflection.
+    unittest::TestMessageSet message_set;
+    io::CodedInputStream input(
+        reinterpret_cast<const uint8*>(data.data()), data.size());
+    EXPECT_TRUE(WireFormat::ParseAndMergePartial(&input, &message_set));
+    EXPECT_TRUE(input.ConsumedEntireMessage());
+
+    EXPECT_EQ(123, message_set.GetExtension(
+        unittest::TestMessageSetExtension1::message_set_extension).i());
+  }
+}
+
+TEST(WireFormatTest, ParseBrokenMessageSet) {
+  unittest::TestMessageSet message_set;
+  string input("goodbye");  // Invalid wire format data.
+  EXPECT_FALSE(message_set.ParseFromString(input));
+}
+
 TEST(WireFormatTest, RecursionLimit) {
   unittest::TestRecursiveMessage message;
   message.mutable_a()->mutable_a()->mutable_a()->mutable_a()->set_i(1);
@@ -800,6 +848,10 @@ bool ReadMessage(const string &wire_buffer, T *message) {
   return message->ParseFromArray(wire_buffer.data(), wire_buffer.size());
 }
 
+bool StartsWith(const string& s, const string& prefix) {
+  return s.substr(0, prefix.length()) == prefix;
+}
+
 TEST(Utf8ValidationTest, WriteInvalidUTF8String) {
   string wire_buffer;
   protobuf_unittest::OneString input;
@@ -811,11 +863,10 @@ TEST(Utf8ValidationTest, WriteInvalidUTF8String) {
   }
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
   ASSERT_EQ(1, errors.size());
-  EXPECT_EQ("Encountered string containing invalid UTF-8 data while "
-            "serializing protocol buffer. Strings must contain only UTF-8; "
-            "use the 'bytes' type for raw bytes.",
-            errors[0]);
-
+  EXPECT_TRUE(StartsWith(errors[0],
+                         "String field contains invalid UTF-8 data when "
+                         "serializing a protocol buffer. Use the "
+                         "'bytes' type if you intend to send raw bytes."));
 #else
   ASSERT_EQ(0, errors.size());
 #endif  // GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
@@ -834,10 +885,10 @@ TEST(Utf8ValidationTest, ReadInvalidUTF8String) {
   }
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
   ASSERT_EQ(1, errors.size());
-  EXPECT_EQ("Encountered string containing invalid UTF-8 data while "
-            "parsing protocol buffer. Strings must contain only UTF-8; "
-            "use the 'bytes' type for raw bytes.",
-            errors[0]);
+  EXPECT_TRUE(StartsWith(errors[0],
+                         "String field contains invalid UTF-8 data when "
+                         "parsing a protocol buffer. Use the "
+                         "'bytes' type if you intend to send raw bytes."));
 
 #else
   ASSERT_EQ(0, errors.size());
@@ -897,6 +948,28 @@ TEST(Utf8ValidationTest, ReadArbitraryBytes) {
   }
   ASSERT_EQ(0, errors.size());
   EXPECT_EQ(input.data(), output.data());
+}
+
+TEST(Utf8ValidationTest, ParseRepeatedString) {
+  protobuf_unittest::MoreBytes input;
+  input.add_data(kValidUTF8String);
+  input.add_data(kInvalidUTF8String);
+  input.add_data(kInvalidUTF8String);
+  string wire_buffer = input.SerializeAsString();
+
+  protobuf_unittest::MoreString output;
+  vector<string> errors;
+  {
+    ScopedMemoryLog log;
+    ReadMessage(wire_buffer, &output);
+    errors = log.GetMessages(ERROR);
+  }
+#ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+  ASSERT_EQ(2, errors.size());
+#else
+  ASSERT_EQ(0, errors.size());
+#endif  // GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+  EXPECT_EQ(wire_buffer, output.SerializeAsString());
 }
 
 }  // namespace

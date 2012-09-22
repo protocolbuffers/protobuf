@@ -341,6 +341,12 @@ inline To down_cast(From* f) {                   // so we only accept pointers
   return static_cast<To>(f);
 }
 
+// Simplified down_cast for reference type.
+template<typename To, typename From>
+inline To down_cast(From& f) {
+  return static_cast<To>(f);
+}
+
 }  // namespace internal
 
 // We made these internal so that they would show up as such in the docs,
@@ -686,6 +692,7 @@ class LIBPROTOBUF_EXPORT LogFinisher {
 #undef GOOGLE_CHECK_LE
 #undef GOOGLE_CHECK_GT
 #undef GOOGLE_CHECK_GE
+#undef GOOGLE_CHECK_NOTNULL
 
 #undef GOOGLE_DLOG
 #undef GOOGLE_DCHECK
@@ -711,6 +718,18 @@ class LIBPROTOBUF_EXPORT LogFinisher {
 #define GOOGLE_CHECK_LE(A, B) GOOGLE_CHECK((A) <= (B))
 #define GOOGLE_CHECK_GT(A, B) GOOGLE_CHECK((A) >  (B))
 #define GOOGLE_CHECK_GE(A, B) GOOGLE_CHECK((A) >= (B))
+
+namespace internal {
+template<typename T>
+T* CheckNotNull(const char *file, int line, const char *name, T* val) {
+  if (val == NULL) {
+    GOOGLE_LOG(FATAL) << name;
+  }
+  return val;
+}
+}  // namespace internal
+#define GOOGLE_CHECK_NOTNULL(A) \
+  internal::CheckNotNull(__FILE__, __LINE__, "'" #A "' must not be NULL", (A))
 
 #ifdef NDEBUG
 
@@ -1136,25 +1155,19 @@ using internal::WriterMutexLock;
 using internal::MutexLockMaybe;
 
 // ===================================================================
-// from google3/base/type_traits.h
+// from google3/util/utf8/public/unilib.h
 
 namespace internal {
-
-// Specified by TR1 [4.7.4] Pointer modifications.
-template<typename T> struct remove_pointer { typedef T type; };
-template<typename T> struct remove_pointer<T*> { typedef T type; };
-template<typename T> struct remove_pointer<T* const> { typedef T type; };
-template<typename T> struct remove_pointer<T* volatile> { typedef T type; };
-template<typename T> struct remove_pointer<T* const volatile> {
-  typedef T type; };
-
-// ===================================================================
 
 // Checks if the buffer contains structurally-valid UTF-8.  Implemented in
 // structurally_valid.cc.
 LIBPROTOBUF_EXPORT bool IsStructurallyValidUTF8(const char* buf, int len);
 
 }  // namespace internal
+
+// ===================================================================
+// from google3/util/endian/endian.h
+LIBPROTOBUF_EXPORT uint32 ghtonl(uint32 x);
 
 // ===================================================================
 // Shutdown support.

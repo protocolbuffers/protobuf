@@ -95,6 +95,9 @@ class MessageGenerator {
       UseMemoization useMemoization);
   void GenerateEqualsAndHashCode(io::Printer* printer);
 
+  void GenerateParser(io::Printer* printer);
+  void GenerateParsingConstructor(io::Printer* printer);
+
   const Descriptor* descriptor_;
   FieldGeneratorMap field_generators_;
 

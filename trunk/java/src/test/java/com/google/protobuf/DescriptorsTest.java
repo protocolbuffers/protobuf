@@ -31,6 +31,8 @@
 package com.google.protobuf;
 
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
+import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
+import com.google.protobuf.DescriptorProtos.EnumValueDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
 import com.google.protobuf.Descriptors.DescriptorValidationException;
@@ -60,6 +62,7 @@ import junit.framework.TestCase;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Unit test for {@link Descriptors}.
@@ -426,7 +429,7 @@ public class DescriptorsTest extends TestCase {
         UnittestEnormousDescriptor.getDescriptor()
           .toProto().getSerializedSize() > 65536);
   }
-  
+
   /**
    * Tests that the DescriptorValidationException works as intended.
    */
@@ -445,7 +448,7 @@ public class DescriptorsTest extends TestCase {
         .build())
       .build();
     try {
-      Descriptors.FileDescriptor.buildFrom(fileDescriptorProto, 
+      Descriptors.FileDescriptor.buildFrom(fileDescriptorProto,
           new FileDescriptor[0]);
       fail("DescriptorValidationException expected");
     } catch (DescriptorValidationException e) {
@@ -456,5 +459,190 @@ public class DescriptorsTest extends TestCase {
       assertTrue(e.getCause() instanceof NumberFormatException);
       assertTrue(e.getCause().getMessage().indexOf("invalid") != -1);
     }
+  }
+
+  /**
+   * Tests the translate/crosslink for an example where a message field's name
+   * and type name are the same.
+   */
+  public void testDescriptorComplexCrosslink() throws Exception {
+    FileDescriptorProto fileDescriptorProto = FileDescriptorProto.newBuilder()
+      .setName("foo.proto")
+      .addMessageType(DescriptorProto.newBuilder()
+        .setName("Foo")
+        .addField(FieldDescriptorProto.newBuilder()
+          .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+          .setType(FieldDescriptorProto.Type.TYPE_INT32)
+          .setName("foo")
+          .setNumber(1)
+          .build())
+        .build())
+      .addMessageType(DescriptorProto.newBuilder()
+        .setName("Bar")
+        .addField(FieldDescriptorProto.newBuilder()
+          .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+          .setTypeName("Foo")
+          .setName("Foo")
+          .setNumber(1)
+          .build())
+        .build())
+      .build();
+    // translate and crosslink
+    FileDescriptor file =
+      Descriptors.FileDescriptor.buildFrom(fileDescriptorProto, 
+          new FileDescriptor[0]);
+    // verify resulting descriptors
+    assertNotNull(file);
+    List<Descriptor> msglist = file.getMessageTypes();
+    assertNotNull(msglist);
+    assertTrue(msglist.size() == 2);
+    boolean barFound = false;
+    for (Descriptor desc : msglist) {
+      if (desc.getName().equals("Bar")) {
+        barFound = true;
+        assertNotNull(desc.getFields());
+        List<FieldDescriptor> fieldlist = desc.getFields();
+        assertNotNull(fieldlist);
+        assertTrue(fieldlist.size() == 1);
+        assertTrue(fieldlist.get(0).getType() == FieldDescriptor.Type.MESSAGE);
+        assertTrue(fieldlist.get(0).getMessageType().getName().equals("Foo"));
+      }
+    }
+    assertTrue(barFound);
+  }
+  
+  public void testInvalidPublicDependency() throws Exception {
+    FileDescriptorProto fooProto = FileDescriptorProto.newBuilder()
+        .setName("foo.proto") .build();
+    FileDescriptorProto barProto = FileDescriptorProto.newBuilder()
+        .setName("boo.proto")
+        .addDependency("foo.proto")
+        .addPublicDependency(1)  // Error, should be 0.
+        .build();
+    FileDescriptor fooFile = Descriptors.FileDescriptor.buildFrom(fooProto,
+        new FileDescriptor[0]);
+    try {
+      Descriptors.FileDescriptor.buildFrom(barProto,
+          new FileDescriptor[] {fooFile});
+      fail("DescriptorValidationException expected");
+    } catch (DescriptorValidationException e) {
+      assertTrue(
+          e.getMessage().indexOf("Invalid public dependency index.") != -1);
+    }
+  }
+
+  public void testHiddenDependency() throws Exception {
+    FileDescriptorProto barProto = FileDescriptorProto.newBuilder()
+        .setName("bar.proto")
+        .addMessageType(DescriptorProto.newBuilder().setName("Bar"))
+        .build();
+    FileDescriptorProto forwardProto = FileDescriptorProto.newBuilder()
+        .setName("forward.proto")
+        .addDependency("bar.proto")
+        .build();
+    FileDescriptorProto fooProto = FileDescriptorProto.newBuilder()
+        .setName("foo.proto")
+        .addDependency("forward.proto")
+        .addMessageType(DescriptorProto.newBuilder()
+            .setName("Foo")
+            .addField(FieldDescriptorProto.newBuilder()
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setTypeName("Bar")
+                .setName("bar")
+                .setNumber(1)))
+        .build();
+    FileDescriptor barFile = Descriptors.FileDescriptor.buildFrom(
+        barProto, new FileDescriptor[0]);
+    FileDescriptor forwardFile = Descriptors.FileDescriptor.buildFrom(
+        forwardProto, new FileDescriptor[] {barFile});
+
+    try {
+      Descriptors.FileDescriptor.buildFrom(
+          fooProto, new FileDescriptor[] {forwardFile});
+      fail("DescriptorValidationException expected");
+    } catch (DescriptorValidationException e) {
+      assertTrue(e.getMessage().indexOf("Bar") != -1);
+      assertTrue(e.getMessage().indexOf("is not defined") != -1);
+    }
+  }
+
+  public void testPublicDependency() throws Exception {
+    FileDescriptorProto barProto = FileDescriptorProto.newBuilder()
+        .setName("bar.proto")
+        .addMessageType(DescriptorProto.newBuilder().setName("Bar"))
+        .build();
+    FileDescriptorProto forwardProto = FileDescriptorProto.newBuilder()
+        .setName("forward.proto")
+        .addDependency("bar.proto")
+        .addPublicDependency(0)
+        .build();
+    FileDescriptorProto fooProto = FileDescriptorProto.newBuilder()
+        .setName("foo.proto")
+        .addDependency("forward.proto")
+        .addMessageType(DescriptorProto.newBuilder()
+            .setName("Foo")
+            .addField(FieldDescriptorProto.newBuilder()
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setTypeName("Bar")
+                .setName("bar")
+                .setNumber(1)))
+        .build();
+    FileDescriptor barFile = Descriptors.FileDescriptor.buildFrom(
+        barProto, new FileDescriptor[0]);
+    FileDescriptor forwardFile = Descriptors.FileDescriptor.buildFrom(
+        forwardProto, new FileDescriptor[]{barFile});
+    Descriptors.FileDescriptor.buildFrom(
+        fooProto, new FileDescriptor[] {forwardFile});
+  }
+  
+  /**
+   * Tests the translate/crosslink for an example with a more complex namespace
+   * referencing.
+   */
+  public void testComplexNamespacePublicDependency() throws Exception {
+    FileDescriptorProto fooProto = FileDescriptorProto.newBuilder()
+        .setName("bar.proto")
+        .setPackage("a.b.c.d.bar.shared")
+        .addEnumType(EnumDescriptorProto.newBuilder()
+            .setName("MyEnum")
+            .addValue(EnumValueDescriptorProto.newBuilder()
+                .setName("BLAH")
+                .setNumber(1)))
+        .build();
+    FileDescriptorProto barProto = FileDescriptorProto.newBuilder()
+        .setName("foo.proto")
+        .addDependency("bar.proto")
+        .setPackage("a.b.c.d.foo.shared")
+        .addMessageType(DescriptorProto.newBuilder()
+            .setName("MyMessage")
+            .addField(FieldDescriptorProto.newBuilder()
+                .setLabel(FieldDescriptorProto.Label.LABEL_REPEATED)
+                .setTypeName("bar.shared.MyEnum")
+                .setName("MyField")
+                .setNumber(1)))
+        .build();
+    // translate and crosslink
+    FileDescriptor fooFile = Descriptors.FileDescriptor.buildFrom(
+        fooProto, new FileDescriptor[0]);
+    FileDescriptor barFile = Descriptors.FileDescriptor.buildFrom(
+        barProto, new FileDescriptor[]{fooFile});
+    // verify resulting descriptors
+    assertNotNull(barFile);
+    List<Descriptor> msglist = barFile.getMessageTypes();
+    assertNotNull(msglist);
+    assertTrue(msglist.size() == 1);
+    Descriptor desc = msglist.get(0);
+    if (desc.getName().equals("MyMessage")) {
+      assertNotNull(desc.getFields());
+      List<FieldDescriptor> fieldlist = desc.getFields();
+      assertNotNull(fieldlist);
+      assertTrue(fieldlist.size() == 1);
+      FieldDescriptor field = fieldlist.get(0);
+      assertTrue(field.getType() == FieldDescriptor.Type.ENUM);
+      assertTrue(field.getEnumType().getName().equals("MyEnum"));
+      assertTrue(field.getEnumType().getFile().getName().equals("bar.proto"));
+      assertTrue(field.getEnumType().getFile().getPackage().equals(
+          "a.b.c.d.bar.shared"));
+    }   
   }
 }

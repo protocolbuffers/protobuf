@@ -33,7 +33,7 @@ package com.google.protobuf;
 import java.util.List;
 
 /**
- * An interface extending List&lt;String&gt; that also provides access to the
+ * An interface extending {@code List<String>} that also provides access to the
  * items of the list as UTF8-encoded ByteString objects. This is used by the
  * protocol buffer implementation to support lazily converting bytes parsed
  * over the wire to String objects until needed and also increases the
@@ -41,9 +41,9 @@ import java.util.List;
  * ByteString is already cached.
  * <p>
  * This only adds additional methods that are required for the use in the
- * protocol buffer code in order to be able successfuly round trip byte arrays
+ * protocol buffer code in order to be able successfully round trip byte arrays
  * through parsing and serialization without conversion to strings. It's not
- * attempting to support the functionality of say List&ltByteString&gt, hence
+ * attempting to support the functionality of say {@code List<ByteString>}, hence
  * why only these two very specific methods are added.
  *
  * @author jonp@google.com (Jon Perlow)
@@ -56,7 +56,7 @@ public interface LazyStringList extends List<String> {
    * @param index index of the element to return
    * @return the element at the specified position in this list
    * @throws IndexOutOfBoundsException if the index is out of range
-   *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
+   *         ({@code index < 0 || index >= size()})
    */
   ByteString getByteString(int index);
 
@@ -69,4 +69,13 @@ public interface LazyStringList extends List<String> {
    *         is not supported by this list
    */
   void add(ByteString element);
+
+  /**
+   * Returns an unmodifiable List of the underlying elements, each of
+   * which is either a {@code String} or its equivalent UTF-8 encoded
+   * {@code ByteString}. It is an error for the caller to modify the returned
+   * List, and attempting to do so will result in an
+   * {@link UnsupportedOperationException}.
+   */
+  List<?> getUnderlyingElements();
 }

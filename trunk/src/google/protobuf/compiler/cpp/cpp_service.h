@@ -38,6 +38,7 @@
 #include <map>
 #include <string>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/compiler/cpp/cpp_options.h>
 #include <google/protobuf/descriptor.h>
 
 namespace google {
@@ -55,7 +56,7 @@ class ServiceGenerator {
  public:
   // See generator.cc for the meaning of dllexport_decl.
   explicit ServiceGenerator(const ServiceDescriptor* descriptor,
-                            const string& dllexport_decl);
+                            const Options& options);
   ~ServiceGenerator();
 
   // Header stuff.

@@ -90,12 +90,16 @@ template <typename Key, typename Data,
           typename HashFcn = hash<Key>,
           typename EqualKey = int >
 class hash_map : public std::map<Key, Data, HashFcn> {
+ public:
+  hash_map(int = 0) {}
 };
 
 template <typename Key,
           typename HashFcn = hash<Key>,
           typename EqualKey = int >
 class hash_set : public std::set<Key, HashFcn> {
+ public:
+  hash_set(int = 0) {}
 };
 
 #elif defined(_MSC_VER) && !defined(_STLPORT_VERSION)
@@ -123,6 +127,8 @@ template <typename Key, typename Data,
           typename EqualKey = int >
 class hash_map : public HASH_NAMESPACE::hash_map<
     Key, Data, HashFcn> {
+ public:
+  hash_map(int = 0) {}
 };
 
 template <typename Key,
@@ -130,6 +136,8 @@ template <typename Key,
           typename EqualKey = int >
 class hash_set : public HASH_NAMESPACE::hash_set<
     Key, HashFcn> {
+ public:
+  hash_set(int = 0) {}
 };
 
 #else
@@ -163,6 +171,8 @@ template <typename Key, typename Data,
           typename EqualKey = std::equal_to<Key> >
 class hash_map : public HASH_NAMESPACE::HASH_MAP_CLASS<
     Key, Data, HashFcn, EqualKey> {
+ public:
+  hash_map(int = 0) {}
 };
 
 template <typename Key,
@@ -170,6 +180,8 @@ template <typename Key,
           typename EqualKey = std::equal_to<Key> >
 class hash_set : public HASH_NAMESPACE::HASH_SET_CLASS<
     Key, HashFcn, EqualKey> {
+ public:
+  hash_set(int = 0) {}
 };
 
 #endif

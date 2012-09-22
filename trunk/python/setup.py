@@ -63,19 +63,26 @@ def generate_proto(source):
     if subprocess.call(protoc_command) != 0:
       sys.exit(-1)
 
+def GenerateUnittestProtos():
+  generate_proto("../src/google/protobuf/unittest.proto")
+  generate_proto("../src/google/protobuf/unittest_custom_options.proto")
+  generate_proto("../src/google/protobuf/unittest_import.proto")
+  generate_proto("../src/google/protobuf/unittest_import_public.proto")
+  generate_proto("../src/google/protobuf/unittest_mset.proto")
+  generate_proto("../src/google/protobuf/unittest_no_generic_services.proto")
+  generate_proto("google/protobuf/internal/test_bad_identifiers.proto")
+  generate_proto("google/protobuf/internal/more_extensions.proto")
+  generate_proto("google/protobuf/internal/more_extensions_dynamic.proto")
+  generate_proto("google/protobuf/internal/more_messages.proto")
+  generate_proto("google/protobuf/internal/factory_test1.proto")
+  generate_proto("google/protobuf/internal/factory_test2.proto")
+
 def MakeTestSuite():
   # This is apparently needed on some systems to make sure that the tests
   # work even if a previous version is already installed.
   if 'google' in sys.modules:
     del sys.modules['google']
-
-  generate_proto("../src/google/protobuf/unittest.proto")
-  generate_proto("../src/google/protobuf/unittest_custom_options.proto")
-  generate_proto("../src/google/protobuf/unittest_import.proto")
-  generate_proto("../src/google/protobuf/unittest_mset.proto")
-  generate_proto("../src/google/protobuf/unittest_no_generic_services.proto")
-  generate_proto("google/protobuf/internal/more_extensions.proto")
-  generate_proto("google/protobuf/internal/more_messages.proto")
+  GenerateUnittestProtos()
 
   import unittest
   import google.protobuf.internal.generator_test     as generator_test
@@ -85,6 +92,14 @@ def MakeTestSuite():
     as service_reflection_test
   import google.protobuf.internal.text_format_test   as text_format_test
   import google.protobuf.internal.wire_format_test   as wire_format_test
+  import google.protobuf.internal.unknown_fields_test as unknown_fields_test
+  import google.protobuf.internal.descriptor_database_test \
+      as descriptor_database_test
+  import google.protobuf.internal.descriptor_pool_test as descriptor_pool_test
+  import google.protobuf.internal.message_factory_test as message_factory_test
+  import google.protobuf.internal.message_cpp_test as message_cpp_test
+  import google.protobuf.internal.reflection_cpp_generated_test \
+      as reflection_cpp_generated_test
 
   loader = unittest.defaultTestLoader
   suite = unittest.TestSuite()
@@ -117,6 +132,8 @@ class build_py(_build_py):
     # Generate necessary .proto file if it doesn't exist.
     generate_proto("../src/google/protobuf/descriptor.proto")
     generate_proto("../src/google/protobuf/compiler/plugin.proto")
+
+    GenerateUnittestProtos()
     # Make sure google.protobuf.compiler is a valid package.
     open('google/protobuf/compiler/__init__.py', 'a').close()
     # _build_py is an old-style class, so super() doesn't work.
@@ -156,6 +173,9 @@ if __name__ == '__main__':
           'google.protobuf.descriptor_pb2',
           'google.protobuf.compiler.plugin_pb2',
           'google.protobuf.message',
+          'google.protobuf.descriptor_database',
+          'google.protobuf.descriptor_pool',
+          'google.protobuf.message_factory',
           'google.protobuf.reflection',
           'google.protobuf.service',
           'google.protobuf.service_reflection',

@@ -32,6 +32,9 @@ package com.google.protobuf;
 
 import junit.framework.TestCase;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Tests for {@link LazyStringArrayList}.
  *
@@ -114,5 +117,46 @@ public class LazyStringArrayListTest extends TestCase {
     // Once cached, ByteString should stay cached.
     assertSame(aPrimeByteString, list.getByteString(0));
     assertSame(bPrimeByteString, list.getByteString(1));
+  }
+
+  public void testCopyConstructorCopiesByReference() {
+    LazyStringArrayList list1 = new LazyStringArrayList();
+    list1.add(STRING_A);
+    list1.add(BYTE_STRING_B);
+    list1.add(BYTE_STRING_C);
+
+    LazyStringArrayList list2 = new LazyStringArrayList(list1);
+    assertEquals(3, list2.size());
+    assertSame(STRING_A, list2.get(0));
+    assertSame(BYTE_STRING_B, list2.getByteString(1));
+    assertSame(BYTE_STRING_C, list2.getByteString(2));
+  }
+
+  public void testListCopyConstructor() {
+    List<String> list1 = new ArrayList<String>();
+    list1.add(STRING_A);
+    list1.add(STRING_B);
+    list1.add(STRING_C);
+
+    LazyStringArrayList list2 = new LazyStringArrayList(list1);
+    assertEquals(3, list2.size());
+    assertSame(STRING_A, list2.get(0));
+    assertSame(STRING_B, list2.get(1));
+    assertSame(STRING_C, list2.get(2));
+  }
+
+  public void testAddAllCopiesByReferenceIfPossible() {
+    LazyStringArrayList list1 = new LazyStringArrayList();
+    list1.add(STRING_A);
+    list1.add(BYTE_STRING_B);
+    list1.add(BYTE_STRING_C);
+
+    LazyStringArrayList list2 = new LazyStringArrayList();
+    list2.addAll(list1);
+
+    assertEquals(3, list2.size());
+    assertSame(STRING_A, list2.get(0));
+    assertSame(BYTE_STRING_B, list2.getByteString(1));
+    assertSame(BYTE_STRING_C, list2.getByteString(2));
   }
 }

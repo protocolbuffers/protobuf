@@ -199,16 +199,6 @@ GzipOutputStream::GzipOutputStream(ZeroCopyOutputStream* sub_stream,
   Init(sub_stream, options);
 }
 
-GzipOutputStream::GzipOutputStream(
-    ZeroCopyOutputStream* sub_stream, Format format, int buffer_size) {
-  Options options;
-  options.format = format;
-  if (buffer_size != -1) {
-    options.buffer_size = buffer_size;
-  }
-  Init(sub_stream, options);
-}
-
 void GzipOutputStream::Init(ZeroCopyOutputStream* sub_stream,
                             const Options& options) {
   sub_stream_ = sub_stream;
@@ -309,10 +299,11 @@ int64 GzipOutputStream::ByteCount() const {
 }
 
 bool GzipOutputStream::Flush() {
-  do {
-    zerror_ = Deflate(Z_FULL_FLUSH);
-  } while (zerror_ == Z_OK);
-  return zerror_ == Z_OK;
+  zerror_ = Deflate(Z_FULL_FLUSH);
+  // Return true if the flush succeeded or if it was a no-op.
+  return  (zerror_ == Z_OK) ||
+      (zerror_ == Z_BUF_ERROR && zcontext_.avail_in == 0 &&
+       zcontext_.avail_out != 0);
 }
 
 bool GzipOutputStream::Close() {

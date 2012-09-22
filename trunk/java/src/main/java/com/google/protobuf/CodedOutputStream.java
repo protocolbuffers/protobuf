@@ -30,10 +30,10 @@
 
 package com.google.protobuf;
 
-import java.io.OutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Encodes and writes protocol message fields.
@@ -540,6 +540,15 @@ public final class CodedOutputStream {
   }
 
   /**
+   * Compute the number of bytes that would be needed to encode an
+   * embedded message in lazy field, including tag.
+   */
+  public static int computeLazyFieldSize(final int fieldNumber,
+                                         final LazyField value) {
+    return computeTagSize(fieldNumber) + computeLazyFieldSizeNoTag(value);
+  }
+
+  /**
    * Compute the number of bytes that would be needed to encode a
    * {@code uint32} field, including tag.
    */
@@ -614,6 +623,18 @@ public final class CodedOutputStream {
            computeBytesSize(WireFormat.MESSAGE_SET_MESSAGE, value);
   }
 
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * lazily parsed MessageSet extension field to the stream.  For
+   * historical reasons, the wire format differs from normal fields.
+   */
+  public static int computeLazyFieldMessageSetExtensionSize(
+      final int fieldNumber, final LazyField value) {
+    return computeTagSize(WireFormat.MESSAGE_SET_ITEM) * 2 +
+           computeUInt32Size(WireFormat.MESSAGE_SET_TYPE_ID, fieldNumber) +
+           computeLazyFieldSize(WireFormat.MESSAGE_SET_MESSAGE, value);
+  }
+  
   // -----------------------------------------------------------------
 
   /**
@@ -725,6 +746,15 @@ public final class CodedOutputStream {
    * message field.
    */
   public static int computeMessageSizeNoTag(final MessageLite value) {
+    final int size = value.getSerializedSize();
+    return computeRawVarint32Size(size) + size;
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an embedded
+   * message stored in lazy field.
+   */
+  public static int computeLazyFieldSizeNoTag(final LazyField value) {
     final int size = value.getSerializedSize();
     return computeRawVarint32Size(size) + size;
   }

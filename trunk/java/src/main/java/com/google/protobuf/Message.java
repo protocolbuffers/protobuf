@@ -50,25 +50,28 @@ import java.util.Map;
  */
 public interface Message extends MessageLite, MessageOrBuilder {
 
+  // (From MessageLite, re-declared here only for return type covariance.)
+  Parser<? extends Message> getParserForType();
+
   // -----------------------------------------------------------------
   // Comparison and hashing
 
   /**
    * Compares the specified object with this message for equality.  Returns
-   * <tt>true</tt> if the given object is a message of the same type (as
+   * {@code true} if the given object is a message of the same type (as
    * defined by {@code getDescriptorForType()}) and has identical values for
    * all of its fields.  Subclasses must implement this; inheriting
    * {@code Object.equals()} is incorrect.
    *
    * @param other object to be compared for equality with this message
-   * @return <tt>true</tt> if the specified object is equal to this message
+   * @return {@code true} if the specified object is equal to this message
    */
   @Override
   boolean equals(Object other);
 
   /**
    * Returns the hash code value for this message.  The hash code of a message
-   * should mix the message's type (object identity of the decsriptor) with its
+   * should mix the message's type (object identity of the descriptor) with its
    * contents (known and unknown field values).  Subclasses must implement this;
    * inheriting {@code Object.hashCode()} is incorrect.
    *
@@ -83,7 +86,8 @@ public interface Message extends MessageLite, MessageOrBuilder {
 
   /**
    * Converts the message to a string in protocol buffer text format. This is
-   * just a trivial wrapper around {@link TextFormat#printToString(Message)}.
+   * just a trivial wrapper around {@link
+   * TextFormat#printToString(MessageOrBuilder)}.
    */
   @Override
   String toString();
@@ -143,6 +147,24 @@ public interface Message extends MessageLite, MessageOrBuilder {
      * setRepeatedField(), or addRepeatedField().
      */
     Builder newBuilderForField(Descriptors.FieldDescriptor field);
+
+    /**
+     * Get a nested builder instance for the given field.
+     * <p>
+     * Normally, we hold a reference to the immutable message object for the
+     * message type field. Some implementations(the generated message builders),
+     * however, can also hold a reference to the builder object (a nested
+     * builder) for the field.
+     * <p>
+     * If the field is already backed up by a nested builder, the nested builder
+     * will be returned. Otherwise, a new field builder will be created and
+     * returned. The original message field (if exist) will be merged into the
+     * field builder, which will then be nested into its parent builder.
+     * <p>
+     * NOTE: implementations that do not support nested builders will throw
+     * <code>UnsupportedException</code>.
+     */
+    Builder getFieldBuilder(Descriptors.FieldDescriptor field);
 
     /**
      * Sets a field to the given value.  The value must be of the correct type

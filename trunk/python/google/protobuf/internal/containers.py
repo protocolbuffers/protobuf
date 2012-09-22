@@ -78,8 +78,13 @@ class BaseContainer(object):
   def __repr__(self):
     return repr(self._values)
 
-  def sort(self, sort_function=cmp):
-    self._values.sort(sort_function)
+  def sort(self, *args, **kwargs):
+    # Continue to support the old sort_function keyword argument.
+    # This is expected to be a rare occurrence, so use LBYL to avoid
+    # the overhead of actually catching KeyError.
+    if 'sort_function' in kwargs:
+      kwargs['cmp'] = kwargs.pop('sort_function')
+    self._values.sort(*args, **kwargs)
 
 
 class RepeatedScalarFieldContainer(BaseContainer):
@@ -234,6 +239,11 @@ class RepeatedCompositeFieldContainer(BaseContainer):
     one, copying each individual message.
     """
     self.extend(other._values)
+
+  def remove(self, elem):
+    """Removes an item from the list. Similar to list.remove()."""
+    self._values.remove(elem)
+    self._message_listener.Modified()
 
   def __getslice__(self, start, stop):
     """Retrieves the subset of items from between the specified indices."""

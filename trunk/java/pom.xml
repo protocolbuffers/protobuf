@@ -102,6 +102,7 @@
                   <arg value="--proto_path=src/test/java" />
                   <arg value="../src/google/protobuf/unittest.proto" />
                   <arg value="../src/google/protobuf/unittest_import.proto" />
+                  <arg value="../src/google/protobuf/unittest_import_public.proto" />
                   <arg value="../src/google/protobuf/unittest_mset.proto" />
                   <arg
                     value="src/test/java/com/google/protobuf/multiple_files_test.proto" />
@@ -117,6 +118,7 @@
                     value="../src/google/protobuf/unittest_custom_options.proto" />
                   <arg value="../src/google/protobuf/unittest_lite.proto" />
                   <arg value="../src/google/protobuf/unittest_import_lite.proto" />
+                  <arg value="../src/google/protobuf/unittest_import_public_lite.proto" />
                   <arg value="../src/google/protobuf/unittest_lite_imports_nonlite.proto" />
                   <arg value="../src/google/protobuf/unittest_enormous_descriptor.proto" />
                   <arg value="../src/google/protobuf/unittest_no_generic_services.proto" />
@@ -158,6 +160,13 @@
                 <include>**/UninitializedMessageException.java</include>
                 <include>**/UnmodifiableLazyStringList.java</include>
                 <include>**/WireFormat.java</include>
+                <include>**/Parser.java</include>
+                <include>**/AbstractParser.java</include>
+                <include>**/BoundedByteString.java</include>
+                <include>**/LiteralByteString.java</include>
+                <include>**/RopeByteString.java</include>
+                <include>**/Utf8.java</include>
+                <include>**/LazyField.java</include>
               </includes>
               <testIncludes>
                 <testInclude>**/LiteTest.java</testInclude>

@@ -177,6 +177,18 @@ string ToJavaName(const string& full_name, const FileDescriptor* file) {
   return result;
 }
 
+string ClassName(const Descriptor* descriptor) {
+  return ToJavaName(descriptor->full_name(), descriptor->file());
+}
+
+string ClassName(const EnumDescriptor* descriptor) {
+  return ToJavaName(descriptor->full_name(), descriptor->file());
+}
+
+string ClassName(const ServiceDescriptor* descriptor) {
+  return ToJavaName(descriptor->full_name(), descriptor->file());
+}
+
 string ClassName(const FileDescriptor* descriptor) {
   string result = FileJavaPackage(descriptor);
   if (!result.empty()) result += '.';
@@ -326,14 +338,14 @@ string DefaultValue(const FieldDescriptor* field) {
         } else {
           // See comments in Internal.java for gory details.
           return strings::Substitute(
-            "com.google.protobuf.Internal.stringDefaultValue(\"$0\")",
-            CEscape(field->default_value_string()));
+              "com.google.protobuf.Internal.stringDefaultValue(\"$0\")",
+              CEscape(field->default_value_string()));
         }
       }
 
     case FieldDescriptor::CPPTYPE_ENUM:
       return ClassName(field->enum_type()) + "." +
-             field->default_value_enum()->name();
+          field->default_value_enum()->name();
 
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return ClassName(field->message_type()) + ".getDefaultInstance()";
@@ -427,8 +439,10 @@ string GetBitFieldNameForBit(int bitIndex) {
   return GetBitFieldName(bitIndex / 32);
 }
 
-string GenerateGetBit(int bitIndex) {
-  string varName = GetBitFieldNameForBit(bitIndex);
+namespace {
+
+string GenerateGetBitInternal(const string& prefix, int bitIndex) {
+  string varName = prefix + GetBitFieldNameForBit(bitIndex);
   int bitInVarIndex = bitIndex % 32;
 
   string mask = bit_masks[bitInVarIndex];
@@ -436,13 +450,23 @@ string GenerateGetBit(int bitIndex) {
   return result;
 }
 
-string GenerateSetBit(int bitIndex) {
-  string varName = GetBitFieldNameForBit(bitIndex);
+string GenerateSetBitInternal(const string& prefix, int bitIndex) {
+  string varName = prefix + GetBitFieldNameForBit(bitIndex);
   int bitInVarIndex = bitIndex % 32;
 
   string mask = bit_masks[bitInVarIndex];
   string result = varName + " |= " + mask;
   return result;
+}
+
+}  // namespace
+
+string GenerateGetBit(int bitIndex) {
+  return GenerateGetBitInternal("", bitIndex);
+}
+
+string GenerateSetBit(int bitIndex) {
+  return GenerateSetBitInternal("", bitIndex);
 }
 
 string GenerateClearBit(int bitIndex) {
@@ -455,21 +479,19 @@ string GenerateClearBit(int bitIndex) {
 }
 
 string GenerateGetBitFromLocal(int bitIndex) {
-  string varName = "from_" + GetBitFieldNameForBit(bitIndex);
-  int bitInVarIndex = bitIndex % 32;
-
-  string mask = bit_masks[bitInVarIndex];
-  string result = "((" + varName + " & " + mask + ") == " + mask + ")";
-  return result;
+  return GenerateGetBitInternal("from_", bitIndex);
 }
 
 string GenerateSetBitToLocal(int bitIndex) {
-  string varName = "to_" + GetBitFieldNameForBit(bitIndex);
-  int bitInVarIndex = bitIndex % 32;
+  return GenerateSetBitInternal("to_", bitIndex);
+}
 
-  string mask = bit_masks[bitInVarIndex];
-  string result = varName + " |= " + mask;
-  return result;
+string GenerateGetBitMutableLocal(int bitIndex) {
+  return GenerateGetBitInternal("mutable_", bitIndex);
+}
+
+string GenerateSetBitMutableLocal(int bitIndex) {
+  return GenerateSetBitInternal("mutable_", bitIndex);
 }
 
 }  // namespace java

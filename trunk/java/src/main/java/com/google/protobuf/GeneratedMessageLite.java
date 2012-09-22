@@ -55,6 +55,29 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
   protected GeneratedMessageLite(Builder builder) {
   }
 
+  public Parser<? extends MessageLite> getParserForType() {
+    throw new UnsupportedOperationException(
+        "This is supposed to be overridden by subclasses.");
+  }
+
+  /**
+   * Called by subclasses to parse an unknown field.
+   * @return {@code true} unless the tag is an end-group tag.
+   */
+  protected boolean parseUnknownField(
+      CodedInputStream input,
+      ExtensionRegistryLite extensionRegistry,
+      int tag) throws IOException {
+    return input.skipField(tag);
+  }
+
+  /**
+   * Used by parsing constructors in generated classes.
+   */
+  protected void makeExtensionsImmutable() {
+    // Noop for messages without extensions.
+  }
+
   @SuppressWarnings("unchecked")
   public abstract static class Builder<MessageType extends GeneratedMessageLite,
                                        BuilderType extends Builder>
@@ -86,9 +109,9 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
      * @return {@code true} unless the tag is an end-group tag.
      */
     protected boolean parseUnknownField(
-        final CodedInputStream input,
-        final ExtensionRegistryLite extensionRegistry,
-        final int tag) throws IOException {
+        CodedInputStream input,
+        ExtensionRegistryLite extensionRegistry,
+        int tag) throws IOException {
       return input.skipField(tag);
     }
   }
@@ -191,6 +214,31 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
     /** Called by subclasses to check if all extensions are initialized. */
     protected boolean extensionsAreInitialized() {
       return extensions.isInitialized();
+    }
+
+    /**
+     * Called by subclasses to parse an unknown field or an extension.
+     * @return {@code true} unless the tag is an end-group tag.
+     */
+    @Override
+    protected boolean parseUnknownField(
+        CodedInputStream input,
+        ExtensionRegistryLite extensionRegistry,
+        int tag) throws IOException {
+      return GeneratedMessageLite.parseUnknownField(
+          extensions,
+          getDefaultInstanceForType(),
+          input,
+          extensionRegistry,
+          tag);
+    }
+
+    /**
+     * Used by parsing constructors in generated classes.
+     */
+    @Override
+    protected void makeExtensionsImmutable() {
+      extensions.makeImmutable();
     }
 
     /**
@@ -400,121 +448,139 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
      */
     @Override
     protected boolean parseUnknownField(
-        final CodedInputStream input,
-        final ExtensionRegistryLite extensionRegistry,
-        final int tag) throws IOException {
-      final int wireType = WireFormat.getTagWireType(tag);
-      final int fieldNumber = WireFormat.getTagFieldNumber(tag);
-
-      final GeneratedExtension<MessageType, ?> extension =
-        extensionRegistry.findLiteExtensionByNumber(
-            getDefaultInstanceForType(), fieldNumber);
-
-      boolean unknown = false;
-      boolean packed = false;
-      if (extension == null) {
-        unknown = true;  // Unknown field.
-      } else if (wireType == FieldSet.getWireFormatForFieldType(
-                   extension.descriptor.getLiteType(),
-                   false  /* isPacked */)) {
-        packed = false;  // Normal, unpacked value.
-      } else if (extension.descriptor.isRepeated &&
-                 extension.descriptor.type.isPackable() &&
-                 wireType == FieldSet.getWireFormatForFieldType(
-                   extension.descriptor.getLiteType(),
-                   true  /* isPacked */)) {
-        packed = true;  // Packed value.
-      } else {
-        unknown = true;  // Wrong wire type.
-      }
-
-      if (unknown) {  // Unknown field or wrong wire type.  Skip.
-        return input.skipField(tag);
-      }
-
-      if (packed) {
-        final int length = input.readRawVarint32();
-        final int limit = input.pushLimit(length);
-        if (extension.descriptor.getLiteType() == WireFormat.FieldType.ENUM) {
-          while (input.getBytesUntilLimit() > 0) {
-            final int rawValue = input.readEnum();
-            final Object value =
-                extension.descriptor.getEnumType().findValueByNumber(rawValue);
-            if (value == null) {
-              // If the number isn't recognized as a valid value for this
-              // enum, drop it (don't even add it to unknownFields).
-              return true;
-            }
-            ensureExtensionsIsMutable();
-            extensions.addRepeatedField(extension.descriptor, value);
-          }
-        } else {
-          while (input.getBytesUntilLimit() > 0) {
-            final Object value =
-              FieldSet.readPrimitiveField(input,
-                                          extension.descriptor.getLiteType());
-            ensureExtensionsIsMutable();
-            extensions.addRepeatedField(extension.descriptor, value);
-          }
-        }
-        input.popLimit(limit);
-      } else {
-        final Object value;
-        switch (extension.descriptor.getLiteJavaType()) {
-          case MESSAGE: {
-            MessageLite.Builder subBuilder = null;
-            if (!extension.descriptor.isRepeated()) {
-              MessageLite existingValue =
-                  (MessageLite) extensions.getField(extension.descriptor);
-              if (existingValue != null) {
-                subBuilder = existingValue.toBuilder();
-              }
-            }
-            if (subBuilder == null) {
-              subBuilder = extension.messageDefaultInstance.newBuilderForType();
-            }
-            if (extension.descriptor.getLiteType() ==
-                WireFormat.FieldType.GROUP) {
-              input.readGroup(extension.getNumber(),
-                              subBuilder, extensionRegistry);
-            } else {
-              input.readMessage(subBuilder, extensionRegistry);
-            }
-            value = subBuilder.build();
-            break;
-          }
-          case ENUM:
-            final int rawValue = input.readEnum();
-            value = extension.descriptor.getEnumType()
-                             .findValueByNumber(rawValue);
-            // If the number isn't recognized as a valid value for this enum,
-            // drop it.
-            if (value == null) {
-              return true;
-            }
-            break;
-          default:
-            value = FieldSet.readPrimitiveField(input,
-                extension.descriptor.getLiteType());
-            break;
-        }
-
-        if (extension.descriptor.isRepeated()) {
-          ensureExtensionsIsMutable();
-          extensions.addRepeatedField(extension.descriptor, value);
-        } else {
-          ensureExtensionsIsMutable();
-          extensions.setField(extension.descriptor, value);
-        }
-      }
-
-      return true;
+        CodedInputStream input,
+        ExtensionRegistryLite extensionRegistry,
+        int tag) throws IOException {
+      ensureExtensionsIsMutable();
+      return GeneratedMessageLite.parseUnknownField(
+          extensions,
+          getDefaultInstanceForType(),
+          input,
+          extensionRegistry,
+          tag);
     }
 
     protected final void mergeExtensionFields(final MessageType other) {
       ensureExtensionsIsMutable();
       extensions.mergeFrom(((ExtendableMessage) other).extensions);
     }
+  }
+
+  // -----------------------------------------------------------------
+
+  /**
+   * Parse an unknown field or an extension.
+   * @return {@code true} unless the tag is an end-group tag.
+   */
+  private static <MessageType extends MessageLite>
+      boolean parseUnknownField(
+          FieldSet<ExtensionDescriptor> extensions,
+          MessageType defaultInstance,
+          CodedInputStream input,
+          ExtensionRegistryLite extensionRegistry,
+          int tag) throws IOException {
+    int wireType = WireFormat.getTagWireType(tag);
+    int fieldNumber = WireFormat.getTagFieldNumber(tag);
+
+    GeneratedExtension<MessageType, ?> extension =
+      extensionRegistry.findLiteExtensionByNumber(
+          defaultInstance, fieldNumber);
+
+    boolean unknown = false;
+    boolean packed = false;
+    if (extension == null) {
+      unknown = true;  // Unknown field.
+    } else if (wireType == FieldSet.getWireFormatForFieldType(
+                 extension.descriptor.getLiteType(),
+                 false  /* isPacked */)) {
+      packed = false;  // Normal, unpacked value.
+    } else if (extension.descriptor.isRepeated &&
+               extension.descriptor.type.isPackable() &&
+               wireType == FieldSet.getWireFormatForFieldType(
+                 extension.descriptor.getLiteType(),
+                 true  /* isPacked */)) {
+      packed = true;  // Packed value.
+    } else {
+      unknown = true;  // Wrong wire type.
+    }
+
+    if (unknown) {  // Unknown field or wrong wire type.  Skip.
+      return input.skipField(tag);
+    }
+
+    if (packed) {
+      int length = input.readRawVarint32();
+      int limit = input.pushLimit(length);
+      if (extension.descriptor.getLiteType() == WireFormat.FieldType.ENUM) {
+        while (input.getBytesUntilLimit() > 0) {
+          int rawValue = input.readEnum();
+          Object value =
+              extension.descriptor.getEnumType().findValueByNumber(rawValue);
+          if (value == null) {
+            // If the number isn't recognized as a valid value for this
+            // enum, drop it (don't even add it to unknownFields).
+            return true;
+          }
+          extensions.addRepeatedField(extension.descriptor, value);
+        }
+      } else {
+        while (input.getBytesUntilLimit() > 0) {
+          Object value =
+            FieldSet.readPrimitiveField(input,
+                                        extension.descriptor.getLiteType());
+          extensions.addRepeatedField(extension.descriptor, value);
+        }
+      }
+      input.popLimit(limit);
+    } else {
+      Object value;
+      switch (extension.descriptor.getLiteJavaType()) {
+        case MESSAGE: {
+          MessageLite.Builder subBuilder = null;
+          if (!extension.descriptor.isRepeated()) {
+            MessageLite existingValue =
+                (MessageLite) extensions.getField(extension.descriptor);
+            if (existingValue != null) {
+              subBuilder = existingValue.toBuilder();
+            }
+          }
+          if (subBuilder == null) {
+            subBuilder = extension.messageDefaultInstance.newBuilderForType();
+          }
+          if (extension.descriptor.getLiteType() ==
+              WireFormat.FieldType.GROUP) {
+            input.readGroup(extension.getNumber(),
+                            subBuilder, extensionRegistry);
+          } else {
+            input.readMessage(subBuilder, extensionRegistry);
+          }
+          value = subBuilder.build();
+          break;
+        }
+        case ENUM:
+          int rawValue = input.readEnum();
+          value = extension.descriptor.getEnumType()
+                           .findValueByNumber(rawValue);
+          // If the number isn't recognized as a valid value for this enum,
+          // drop it.
+          if (value == null) {
+            return true;
+          }
+          break;
+        default:
+          value = FieldSet.readPrimitiveField(input,
+              extension.descriptor.getLiteType());
+          break;
+      }
+
+      if (extension.descriptor.isRepeated()) {
+        extensions.addRepeatedField(extension.descriptor, value);
+      } else {
+        extensions.setField(extension.descriptor, value);
+      }
+    }
+
+    return true;
   }
 
   // -----------------------------------------------------------------
@@ -722,7 +788,7 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
   /**
    * Replaces this object in the output stream with a serialized form.
    * Part of Java's serialization magic.  Generated sub-classes must override
-   * this method by calling <code>return super.writeReplace();</code>
+   * this method by calling {@code return super.writeReplace();}
    * @return a SerializedForm of this message
    */
   protected Object writeReplace() throws ObjectStreamException {

@@ -42,8 +42,8 @@ from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
 
 
-def SetAllFields(message):
-  """Sets every field in the message to a unique value.
+def SetAllNonLazyFields(message):
+  """Sets every non-lazy field in the message to a unique value.
 
   Args:
     message: A unittest_pb2.TestAllTypes instance.
@@ -79,6 +79,7 @@ def SetAllFields(message):
   message.optional_nested_message.bb = 118
   message.optional_foreign_message.c = 119
   message.optional_import_message.d = 120
+  message.optional_public_import_message.e = 126
 
   message.optional_nested_enum = unittest_pb2.TestAllTypes.BAZ
   message.optional_foreign_enum = unittest_pb2.FOREIGN_BAZ
@@ -111,6 +112,7 @@ def SetAllFields(message):
   message.repeated_nested_message.add().bb = 218
   message.repeated_foreign_message.add().c = 219
   message.repeated_import_message.add().d = 220
+  message.repeated_lazy_message.add().bb = 227
 
   message.repeated_nested_enum.append(unittest_pb2.TestAllTypes.BAR)
   message.repeated_foreign_enum.append(unittest_pb2.FOREIGN_BAR)
@@ -140,6 +142,7 @@ def SetAllFields(message):
   message.repeated_nested_message.add().bb = 318
   message.repeated_foreign_message.add().c = 319
   message.repeated_import_message.add().d = 320
+  message.repeated_lazy_message.add().bb = 327
 
   message.repeated_nested_enum.append(unittest_pb2.TestAllTypes.BAZ)
   message.repeated_foreign_enum.append(unittest_pb2.FOREIGN_BAZ)
@@ -174,6 +177,11 @@ def SetAllFields(message):
 
   message.default_string_piece = '424'
   message.default_cord = '425'
+
+
+def SetAllFields(message):
+  SetAllNonLazyFields(message)
+  message.optional_lazy_message.bb = 127
 
 
 def SetAllExtensions(message):
@@ -211,6 +219,8 @@ def SetAllExtensions(message):
   extensions[pb2.optional_nested_message_extension].bb = 118
   extensions[pb2.optional_foreign_message_extension].c = 119
   extensions[pb2.optional_import_message_extension].d = 120
+  extensions[pb2.optional_public_import_message_extension].e = 126
+  extensions[pb2.optional_lazy_message_extension].bb = 127
 
   extensions[pb2.optional_nested_enum_extension] = pb2.TestAllTypes.BAZ
   extensions[pb2.optional_nested_enum_extension] = pb2.TestAllTypes.BAZ
@@ -244,6 +254,7 @@ def SetAllExtensions(message):
   extensions[pb2.repeated_nested_message_extension].add().bb = 218
   extensions[pb2.repeated_foreign_message_extension].add().c = 219
   extensions[pb2.repeated_import_message_extension].add().d = 220
+  extensions[pb2.repeated_lazy_message_extension].add().bb = 227
 
   extensions[pb2.repeated_nested_enum_extension].append(pb2.TestAllTypes.BAR)
   extensions[pb2.repeated_foreign_enum_extension].append(pb2.FOREIGN_BAR)
@@ -273,6 +284,7 @@ def SetAllExtensions(message):
   extensions[pb2.repeated_nested_message_extension].add().bb = 318
   extensions[pb2.repeated_foreign_message_extension].add().c = 319
   extensions[pb2.repeated_import_message_extension].add().d = 320
+  extensions[pb2.repeated_lazy_message_extension].add().bb = 327
 
   extensions[pb2.repeated_nested_enum_extension].append(pb2.TestAllTypes.BAZ)
   extensions[pb2.repeated_foreign_enum_extension].append(pb2.FOREIGN_BAZ)
@@ -407,6 +419,8 @@ def ExpectAllFieldsSet(test_case, message):
   test_case.assertEqual(118, message.optional_nested_message.bb)
   test_case.assertEqual(119, message.optional_foreign_message.c)
   test_case.assertEqual(120, message.optional_import_message.d)
+  test_case.assertEqual(126, message.optional_public_import_message.e)
+  test_case.assertEqual(127, message.optional_lazy_message.bb)
 
   test_case.assertEqual(unittest_pb2.TestAllTypes.BAZ,
                         message.optional_nested_enum)
@@ -464,6 +478,7 @@ def ExpectAllFieldsSet(test_case, message):
   test_case.assertEqual(218, message.repeated_nested_message[0].bb)
   test_case.assertEqual(219, message.repeated_foreign_message[0].c)
   test_case.assertEqual(220, message.repeated_import_message[0].d)
+  test_case.assertEqual(227, message.repeated_lazy_message[0].bb)
 
   test_case.assertEqual(unittest_pb2.TestAllTypes.BAR,
                         message.repeated_nested_enum[0])
@@ -492,6 +507,7 @@ def ExpectAllFieldsSet(test_case, message):
   test_case.assertEqual(318, message.repeated_nested_message[1].bb)
   test_case.assertEqual(319, message.repeated_foreign_message[1].c)
   test_case.assertEqual(320, message.repeated_import_message[1].d)
+  test_case.assertEqual(327, message.repeated_lazy_message[1].bb)
 
   test_case.assertEqual(unittest_pb2.TestAllTypes.BAZ,
                         message.repeated_nested_enum[1])

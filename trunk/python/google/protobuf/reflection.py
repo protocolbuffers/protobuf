@@ -50,13 +50,20 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 from google.protobuf.internal import api_implementation
 from google.protobuf import descriptor as descriptor_mod
+from google.protobuf import message
+
 _FieldDescriptor = descriptor_mod.FieldDescriptor
 
 
 if api_implementation.Type() == 'cpp':
-  from google.protobuf.internal import cpp_message
-  _NewMessage = cpp_message.NewMessage
-  _InitMessage = cpp_message.InitMessage
+  if api_implementation.Version() == 2:
+    from google.protobuf.internal.cpp import cpp_message
+    _NewMessage = cpp_message.NewMessage
+    _InitMessage = cpp_message.InitMessage
+  else:
+    from google.protobuf.internal import cpp_message
+    _NewMessage = cpp_message.NewMessage
+    _InitMessage = cpp_message.InitMessage
 else:
   from google.protobuf.internal import python_message
   _NewMessage = python_message.NewMessage
@@ -112,7 +119,7 @@ class GeneratedProtocolMessageType(type):
       Newly-allocated class.
     """
     descriptor = dictionary[GeneratedProtocolMessageType._DESCRIPTOR_KEY]
-    _NewMessage(descriptor, dictionary)
+    bases = _NewMessage(bases, descriptor, dictionary)
     superclass = super(GeneratedProtocolMessageType, cls)
 
     new_class = superclass.__new__(cls, name, bases, dictionary)
@@ -140,3 +147,23 @@ class GeneratedProtocolMessageType(type):
     _InitMessage(descriptor, cls)
     superclass = super(GeneratedProtocolMessageType, cls)
     superclass.__init__(name, bases, dictionary)
+
+
+def ParseMessage(descriptor, byte_str):
+  """Generate a new Message instance from this Descriptor and a byte string.
+
+  Args:
+    descriptor: Protobuf Descriptor object
+    byte_str: Serialized protocol buffer byte string
+
+  Returns:
+    Newly created protobuf Message object.
+  """
+
+  class _ResultClass(message.Message):
+    __metaclass__ = GeneratedProtocolMessageType
+    DESCRIPTOR = descriptor
+
+  new_msg = _ResultClass()
+  new_msg.ParseFromString(byte_str)
+  return new_msg

@@ -122,23 +122,27 @@ string GlobalShutdownFileName(const string& filename);
 string EscapeTrigraphs(const string& to_escape);
 
 // Do message classes in this file keep track of unknown fields?
-inline bool HasUnknownFields(const FileDescriptor *file) {
+inline bool HasUnknownFields(const FileDescriptor* file) {
   return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
 }
 
+
+// Does this file have any enum type definitions?
+bool HasEnumDefinitions(const FileDescriptor* file);
+
 // Does this file have generated parsing, serialization, and other
 // standard methods for which reflection-based fallback implementations exist?
-inline bool HasGeneratedMethods(const FileDescriptor *file) {
+inline bool HasGeneratedMethods(const FileDescriptor* file) {
   return file->options().optimize_for() != FileOptions::CODE_SIZE;
 }
 
-// Do message classes in this file have descriptor and refelction methods?
-inline bool HasDescriptorMethods(const FileDescriptor *file) {
+// Do message classes in this file have descriptor and reflection methods?
+inline bool HasDescriptorMethods(const FileDescriptor* file) {
   return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
 }
 
 // Should we generate generic services for this file?
-inline bool HasGenericServices(const FileDescriptor *file) {
+inline bool HasGenericServices(const FileDescriptor* file) {
   return file->service_count() > 0 &&
          file->options().optimize_for() != FileOptions::LITE_RUNTIME &&
          file->options().cc_generic_services();
@@ -172,6 +176,7 @@ void PrintHandlingOptionalStaticInitializers(
     const map<string, string>& vars, const FileDescriptor* file,
     io::Printer* printer, const char* with_static_init,
     const char* without_static_init);
+
 
 }  // namespace cpp
 }  // namespace compiler

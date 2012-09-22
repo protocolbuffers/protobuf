@@ -207,9 +207,9 @@ static PyMethodDef CMessageMethods[] = {
           "Clears and sets the values of a repeated scalar field."),
   CMETHOD(ByteSize, METH_NOARGS,
           "Returns the size of the message in bytes."),
-  CMETHOD(Clear, METH_NOARGS,
+  CMETHOD(Clear, METH_O,
           "Clears a protocol message."),
-  CMETHOD(ClearField, METH_O,
+  CMETHOD(ClearField, METH_VARARGS,
           "Clears a protocol message field by name."),
   CMETHOD(ClearFieldByDescriptor, METH_O,
           "Clears a protocol message field by descriptor."),
@@ -274,7 +274,7 @@ static PyMemberDef CMessageMembers[] = {
 PyTypeObject CMessage_Type = {
   PyObject_HEAD_INIT(&PyType_Type)
   0,
-  C("google3.net.google.protobuf.python.internal."
+  C("google.protobuf.internal."
     "_net_proto2___python."
     "CMessage"),                       // tp_name
   sizeof(CMessage),                    //  tp_basicsize
@@ -319,14 +319,12 @@ PyTypeObject CMessage_Type = {
 // ------ Helper Functions:
 
 static void FormatTypeError(PyObject* arg, char* expected_types) {
-  PyObject* s = PyObject_Str(PyObject_Type(arg));
-  PyObject* repr = PyObject_Repr(PyObject_Type(arg));
+  PyObject* repr = PyObject_Repr(arg);
   PyErr_Format(PyExc_TypeError,
                "%.100s has type %.100s, but expected one of: %s",
                PyString_AS_STRING(repr),
-               PyString_AS_STRING(s),
+               arg->ob_type->tp_name,
                expected_types);
-  Py_DECREF(s);
   Py_DECREF(repr);
 }
 
@@ -398,6 +396,28 @@ static const google::protobuf::Message* CreateMessage(const char* message_type) 
   return global_message_factory->GetPrototype(descriptor);
 }
 
+static void ReleaseSubMessage(google::protobuf::Message* message,
+                           const google::protobuf::FieldDescriptor* field_descriptor,
+                           CMessage* child_cmessage) {
+  Message* released_message = message->GetReflection()->ReleaseMessage(
+      message, field_descriptor, global_message_factory);
+  GOOGLE_DCHECK(child_cmessage->message != NULL);
+  // ReleaseMessage will return NULL which differs from
+  // child_cmessage->message, if the field does not exist.  In this case,
+  // the latter points to the default instance via a const_cast<>, so we
+  // have to reset it to a new mutable object since we are taking ownership.
+  if (released_message == NULL) {
+    const Message* prototype = global_message_factory->GetPrototype(
+        child_cmessage->message->GetDescriptor());
+    GOOGLE_DCHECK(prototype != NULL);
+    child_cmessage->message = prototype->New();
+  }
+  child_cmessage->parent = NULL;
+  child_cmessage->parent_field = NULL;
+  child_cmessage->free_message = true;
+  child_cmessage->read_only = false;
+}
+
 static bool CheckAndSetString(
     PyObject* arg, google::protobuf::Message* message,
     const google::protobuf::FieldDescriptor* descriptor,
@@ -407,6 +427,9 @@ static bool CheckAndSetString(
   GOOGLE_DCHECK(descriptor->type() == google::protobuf::FieldDescriptor::TYPE_STRING ||
          descriptor->type() == google::protobuf::FieldDescriptor::TYPE_BYTES);
   if (descriptor->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
+#else
+  if (descriptor->file()->options().cc_api_version() == 2 &&
+      descriptor->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
     if (!PyString_Check(arg) && !PyUnicode_Check(arg)) {
       FormatTypeError(arg, "str, unicode");
       return false;
@@ -434,6 +457,9 @@ static bool CheckAndSetString(
 
   PyObject* encoded_string = NULL;
   if (descriptor->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
+#else
+  if (descriptor->file()->options().cc_api_version() == 2 &&
+      descriptor->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
     if (PyString_Check(arg)) {
       encoded_string = PyString_AsEncodedObject(arg, "utf-8", NULL);
     } else {
@@ -504,8 +530,6 @@ static void AssureWritable(CMessage* self) {
   self->message = reflection->MutableMessage(
       message, self->parent_field->descriptor, global_message_factory);
   self->read_only = false;
-  self->parent = NULL;
-  self->parent_field = NULL;
 }
 
 static PyObject* InternalGetScalar(
@@ -955,9 +979,41 @@ static void CMessageDealloc(CMessage* self) {
 
 // ------ Methods:
 
-static PyObject* CMessage_Clear(CMessage* self, PyObject* args) {
+static PyObject* CMessage_Clear(CMessage* self, PyObject* arg) {
   AssureWritable(self);
-  self->message->Clear();
+  google::protobuf::Message* message = self->message;
+
+  // This block of code is equivalent to the following:
+  // for cfield_descriptor, child_cmessage in arg:
+  //   ReleaseSubMessage(cfield_descriptor, child_cmessage)
+  if (!PyList_Check(arg)) {
+    PyErr_SetString(PyExc_TypeError, "Must be a list");
+    return NULL;
+  }
+  PyObject* messages_to_clear = arg;
+  Py_ssize_t num_messages_to_clear = PyList_GET_SIZE(messages_to_clear);
+  for(int i = 0; i < num_messages_to_clear; ++i) {
+    PyObject* message_tuple = PyList_GET_ITEM(messages_to_clear, i);
+    if (!PyTuple_Check(message_tuple) || PyTuple_GET_SIZE(message_tuple) != 2) {
+      PyErr_SetString(PyExc_TypeError, "Must be a tuple of size 2");
+      return NULL;
+    }
+
+    PyObject* py_cfield_descriptor = PyTuple_GET_ITEM(message_tuple, 0);
+    PyObject* py_child_cmessage = PyTuple_GET_ITEM(message_tuple, 1);
+    if (!PyObject_TypeCheck(py_cfield_descriptor, &CFieldDescriptor_Type) ||
+        !PyObject_TypeCheck(py_child_cmessage, &CMessage_Type)) {
+      PyErr_SetString(PyExc_ValueError, "Invalid Tuple");
+      return NULL;
+    }
+
+    CFieldDescriptor* cfield_descriptor = reinterpret_cast<CFieldDescriptor *>(
+        py_cfield_descriptor);
+    CMessage* child_cmessage = reinterpret_cast<CMessage *>(py_child_cmessage);
+    ReleaseSubMessage(message, cfield_descriptor->descriptor, child_cmessage);
+  }
+
+  message->Clear();
   Py_RETURN_NONE;
 }
 
@@ -1039,9 +1095,11 @@ static PyObject* CMessage_ClearFieldByDescriptor(
   Py_RETURN_NONE;
 }
 
-static PyObject* CMessage_ClearField(CMessage* self, PyObject* arg) {
+static PyObject* CMessage_ClearField(CMessage* self, PyObject* args) {
   char* field_name;
-  if (PyString_AsStringAndSize(arg, &field_name, NULL) < 0) {
+  CMessage* child_cmessage = NULL;
+  if (!PyArg_ParseTuple(args, C("s|O!:ClearField"), &field_name,
+                        &CMessage_Type, &child_cmessage)) {
     return NULL;
   }
 
@@ -1054,7 +1112,11 @@ static PyObject* CMessage_ClearField(CMessage* self, PyObject* arg) {
     return NULL;
   }
 
-  message->GetReflection()->ClearField(message, field_descriptor);
+  if (child_cmessage != NULL && !FIELD_IS_REPEATED(field_descriptor)) {
+    ReleaseSubMessage(message, field_descriptor, child_cmessage);
+  } else {
+    message->GetReflection()->ClearField(message, field_descriptor);
+  }
   Py_RETURN_NONE;
 }
 
@@ -1313,6 +1375,7 @@ static PyObject* CMessage_MergeFromString(CMessage* self, PyObject* arg) {
   AssureWritable(self);
   google::protobuf::io::CodedInputStream input(
       reinterpret_cast<const uint8*>(data), data_length);
+  input.SetExtensionRegistry(GetDescriptorPool(), global_message_factory);
   bool success = self->message->MergePartialFromCodedStream(&input);
   if (success) {
     return PyInt_FromLong(self->message->ByteSize());

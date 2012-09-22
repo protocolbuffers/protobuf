@@ -59,6 +59,10 @@ namespace compiler {
 //     MockCodeGenerator_Exit." to stderr and then calls exit(123).
 //   MockCodeGenerator_Abort:  Generate() prints "Saw message type
 //     MockCodeGenerator_Abort." to stderr and then calls abort().
+//   MockCodeGenerator_HasSourceCodeInfo:  Causes Generate() to abort after
+//     printing "Saw message type MockCodeGenerator_HasSourceCodeInfo: FOO." to
+//     stderr, where FOO is "1" if the supplied FileDescriptorProto has source
+//     code info, and "0" otherwise.
 class MockCodeGenerator : public CodeGenerator {
  public:
   MockCodeGenerator(const string& name);

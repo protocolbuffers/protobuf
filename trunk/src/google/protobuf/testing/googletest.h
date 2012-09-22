@@ -34,6 +34,7 @@
 #ifndef GOOGLE_PROTOBUF_GOOGLETEST_H__
 #define GOOGLE_PROTOBUF_GOOGLETEST_H__
 
+#include <map>
 #include <vector>
 #include <google/protobuf/stubs/common.h>
 
@@ -60,6 +61,7 @@ string GetCapturedTestStderr();
 // ScopedMemoryLog refers to LOGLEVEL_ERROR as just ERROR.
 #undef ERROR  // defend against promiscuous windows.h
 static const LogLevel ERROR = LOGLEVEL_ERROR;
+static const LogLevel WARNING = LOGLEVEL_WARNING;
 
 // Receives copies of all LOG(ERROR) messages while in scope.  Sample usage:
 //   {
@@ -74,14 +76,11 @@ class ScopedMemoryLog {
   ScopedMemoryLog();
   virtual ~ScopedMemoryLog();
 
-  // Fetches all messages logged.  The internal version of this class
-  // would only fetch messages at the given security level, but the protobuf
-  // open source version ignores the argument since we always pass ERROR
-  // anyway.
-  const vector<string>& GetMessages(LogLevel dummy) const;
+  // Fetches all messages with the given severity level.
+  const vector<string>& GetMessages(LogLevel error);
 
  private:
-  vector<string> messages_;
+  map<LogLevel, vector<string> > messages_;
   LogHandler* old_handler_;
 
   static void HandleLog(LogLevel level, const char* filename, int line,

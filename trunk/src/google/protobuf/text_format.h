@@ -38,7 +38,10 @@
 #ifndef GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 #define GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 
+#include <map>
 #include <string>
+#include <vector>
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/descriptor.h>
 
@@ -220,6 +223,57 @@ class LIBPROTOBUF_EXPORT TextFormat {
         const string& name) const = 0;
   };
 
+  // A location in the parsed text.
+  struct ParseLocation {
+    int line;
+    int column;
+
+    ParseLocation() : line(-1), column(-1) {}
+    ParseLocation(int line_param, int column_param)
+        : line(line_param), column(column_param) {}
+  };
+
+  // Data structure which is populated with the locations of each field
+  // value parsed from the text.
+  class LIBPROTOBUF_EXPORT ParseInfoTree {
+   public:
+    ParseInfoTree();
+    ~ParseInfoTree();
+
+    // Returns the parse location for index-th value of the field in the parsed
+    // text. If none exists, returns a location with line = -1. Index should be
+    // -1 for not-repeated fields.
+    ParseLocation GetLocation(const FieldDescriptor* field, int index) const;
+
+    // Returns the parse info tree for the given field, which must be a message
+    // type. The nested information tree is owned by the root tree and will be
+    // deleted when it is deleted.
+    ParseInfoTree* GetTreeForNested(const FieldDescriptor* field,
+                                    int index) const;
+
+   private:
+    // Allow the text format parser to record information into the tree.
+    friend class TextFormat;
+
+    // Records the starting location of a single value for a field.
+    void RecordLocation(const FieldDescriptor* field, ParseLocation location);
+
+    // Create and records a nested tree for a nested message field.
+    ParseInfoTree* CreateNested(const FieldDescriptor* field);
+
+    // Defines the map from the index-th field descriptor to its parse location.
+    typedef map<const FieldDescriptor*, vector<ParseLocation> > LocationMap;
+
+    // Defines the map from the index-th field descriptor to the nested parse
+    // info tree.
+    typedef map<const FieldDescriptor*, vector<ParseInfoTree*> > NestedMap;
+
+    LocationMap locations_;
+    NestedMap nested_;
+
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ParseInfoTree);
+  };
+
   // For more control over parsing, use this class.
   class LIBPROTOBUF_EXPORT Parser {
    public:
@@ -248,6 +302,12 @@ class LIBPROTOBUF_EXPORT TextFormat {
       finder_ = finder;
     }
 
+    // Sets where location information about the parse will be written. If NULL
+    // (the default), then no location will be written.
+    void WriteLocationsTo(ParseInfoTree* tree) {
+      parse_info_tree_ = tree;
+    }
+
     // Normally parsing fails if, after parsing, output->IsInitialized()
     // returns false.  Call AllowPartialMessage(true) to skip this check.
     void AllowPartialMessage(bool allow) {
@@ -258,6 +318,7 @@ class LIBPROTOBUF_EXPORT TextFormat {
     bool ParseFieldValueFromString(const string& input,
                                    const FieldDescriptor* field,
                                    Message* output);
+
 
    private:
     // Forward declaration of an internal class used to parse text
@@ -272,7 +333,9 @@ class LIBPROTOBUF_EXPORT TextFormat {
 
     io::ErrorCollector* error_collector_;
     Finder* finder_;
+    ParseInfoTree* parse_info_tree_;
     bool allow_partial_;
+    bool allow_unknown_field_;
   };
 
  private:

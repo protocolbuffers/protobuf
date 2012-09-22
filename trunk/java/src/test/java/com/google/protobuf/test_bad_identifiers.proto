@@ -46,6 +46,23 @@ option java_outer_classname = "TestBadIdentifiersProto";
 message TestMessage {
 }
 
+message Descriptor {
+  option no_standard_descriptor_accessor = true;
+  optional string descriptor = 1;
+  message NestedDescriptor {
+    option no_standard_descriptor_accessor = true;
+    optional string descriptor = 1;
+  }
+  optional NestedDescriptor nested_descriptor = 2;
+}
+
+message Parser {
+  enum ParserEnum {
+    PARSER = 1;
+  }
+  optional ParserEnum parser = 1;
+}
+
 message Deprecated {
   enum TestEnum {
     FOO = 1;
@@ -62,6 +79,7 @@ message Override {
 
 message Object {
   optional int32 object = 1;
+  optional string string_object = 2;
 }
 
 message String {

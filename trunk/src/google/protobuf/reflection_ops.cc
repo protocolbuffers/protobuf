@@ -32,8 +32,12 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <string>
+#include <vector>
+
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/stubs/strutil.h>
 
@@ -151,11 +155,12 @@ bool ReflectionOps::IsInitialized(const Message& message) {
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+
       if (field->is_repeated()) {
         int size = reflection->FieldSize(message, field);
 
-        for (int i = 0; i < size; i++) {
-          if (!reflection->GetRepeatedMessage(message, field, i)
+        for (int j = 0; j < size; j++) {
+          if (!reflection->GetRepeatedMessage(message, field, j)
                           .IsInitialized()) {
             return false;
           }
@@ -183,8 +188,8 @@ void ReflectionOps::DiscardUnknownFields(Message* message) {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       if (field->is_repeated()) {
         int size = reflection->FieldSize(*message, field);
-        for (int i = 0; i < size; i++) {
-          reflection->MutableRepeatedMessage(message, field, i)
+        for (int j = 0; j < size; j++) {
+          reflection->MutableRepeatedMessage(message, field, j)
                     ->DiscardUnknownFields();
         }
       } else {
@@ -240,11 +245,11 @@ void ReflectionOps::FindInitializationErrors(
       if (field->is_repeated()) {
         int size = reflection->FieldSize(message, field);
 
-        for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
           const Message& sub_message =
-            reflection->GetRepeatedMessage(message, field, i);
+            reflection->GetRepeatedMessage(message, field, j);
           FindInitializationErrors(sub_message,
-                                   SubMessagePrefix(prefix, field, i),
+                                   SubMessagePrefix(prefix, field, j),
                                    errors);
         }
       } else {

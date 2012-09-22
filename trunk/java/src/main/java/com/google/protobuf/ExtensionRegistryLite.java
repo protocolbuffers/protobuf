@@ -43,7 +43,7 @@ import java.util.Map;
  * make sense to mix the two, since if you have any regular types in your
  * program, you then require the full runtime and lose all the benefits of
  * the lite runtime, so you might as well make all your types be regular types.
- * However, in some cases (e.g. when depending on multiple third-patry libraries
+ * However, in some cases (e.g. when depending on multiple third-party libraries
  * where one uses lite types and one uses regular), you may find yourself
  * wanting to mix the two.  In this case things get more complicated.
  * <p>
@@ -71,6 +71,22 @@ import java.util.Map;
  * @author kenton@google.com Kenton Varda
  */
 public class ExtensionRegistryLite {
+
+  // Set true to enable lazy parsing feature for MessageSet.
+  //
+  // TODO(xiangl): Now we use a global flag to control whether enable lazy
+  // parsing feature for MessageSet, which may be too crude for some
+  // applications. Need to support this feature on smaller granularity.
+  private static volatile boolean eagerlyParseMessageSets = false;
+
+  public static boolean isEagerlyParseMessageSets() {
+    return eagerlyParseMessageSets;
+  }
+
+  public static void setEagerlyParseMessageSets(boolean isEagerlyParse) {
+    eagerlyParseMessageSets = isEagerlyParse;
+  }
+
   /** Construct a new, empty instance. */
   public static ExtensionRegistryLite newInstance() {
     return new ExtensionRegistryLite();

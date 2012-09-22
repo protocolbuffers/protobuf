@@ -37,22 +37,22 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * <code>RepeatedFieldBuilder</code> implements a structure that a protocol
+ * {@code RepeatedFieldBuilder} implements a structure that a protocol
  * message uses to hold a repeated field of other protocol messages. It supports
  * the classical use case of adding immutable {@link Message}'s to the
  * repeated field and is highly optimized around this (no extra memory
  * allocations and sharing of immutable arrays).
  * <br>
  * It also supports the additional use case of adding a {@link Message.Builder}
- * to the repeated field and deferring conversion of that <code>Builder</code>
- * to an immutable <code>Message</code>. In this way, it's possible to maintain
- * a tree of <code>Builder</code>'s that acts as a fully read/write data
+ * to the repeated field and deferring conversion of that {@code Builder}
+ * to an immutable {@code Message}. In this way, it's possible to maintain
+ * a tree of {@code Builder}'s that acts as a fully read/write data
  * structure.
  * <br>
  * Logically, one can think of a tree of builders as converting the entire tree
  * to messages when build is called on the root or when any method is called
  * that desires a Message instead of a Builder. In terms of the implementation,
- * the <code>SingleFieldBuilder</code> and <code>RepeatedFieldBuilder</code>
+ * the {@code SingleFieldBuilder} and {@code RepeatedFieldBuilder}
  * classes cache messages that were created so that messages only need to be
  * created when some change occured in its builder or a builder for one of its
  * descendants.
@@ -192,7 +192,7 @@ public class RepeatedFieldBuilder
 
   /**
    * Get the message at the specified index. If the message is currently stored
-   * as a <code>Builder</code>, it is converted to a <code>Message</code> by
+   * as a {@code Builder}, it is converted to a {@code Message} by
    * calling {@link Message.Builder#buildPartial} on it.
    *
    * @param index the index of the message to get
@@ -204,7 +204,7 @@ public class RepeatedFieldBuilder
 
   /**
    * Get the message at the specified index. If the message is currently stored
-   * as a <code>Builder</code>, it is converted to a <code>Message</code> by
+   * as a {@code Builder}, it is converted to a {@code Message} by
    * calling {@link Message.Builder#buildPartial} on it.
    *
    * @param index the index of the message to get

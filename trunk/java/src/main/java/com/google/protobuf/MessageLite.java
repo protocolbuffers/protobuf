@@ -79,6 +79,12 @@ public interface MessageLite extends MessageLiteOrBuilder {
    */
   int getSerializedSize();
 
+
+  /**
+   * Gets the parser for a message of the same type as this message.
+   */
+  Parser<? extends MessageLite> getParserForType();
+
   // -----------------------------------------------------------------
   // Convenience methods.
 
@@ -144,11 +150,8 @@ public interface MessageLite extends MessageLiteOrBuilder {
     Builder clear();
 
     /**
-     * Construct the final message.  Once this is called, the Builder is no
-     * longer valid, and calling any other method will result in undefined
-     * behavior and may throw a NullPointerException.  If you need to continue
-     * working with the builder after calling {@code build()}, {@code clone()}
-     * it first.
+     * Constructs the message based on the state of the Builder. Subsequent
+     * changes to the Builder will not affect the returned message.
      * @throws UninitializedMessageException The message is missing one or more
      *         required fields (i.e. {@link #isInitialized()} returns false).
      *         Use {@link #buildPartial()} to bypass this check.
@@ -158,11 +161,7 @@ public interface MessageLite extends MessageLiteOrBuilder {
     /**
      * Like {@link #build()}, but does not throw an exception if the message
      * is missing required fields.  Instead, a partial message is returned.
-     * Once this is called, the Builder is no longer valid, and calling any
-     * will result in undefined behavior and may throw a NullPointerException.
-     *
-     * If you need to continue working with the builder after calling
-     * {@code buildPartial()}, {@code clone()} it first.
+     * Subsequent changes to the Builder will not affect the returned message.
      */
     MessageLite buildPartial();
 
@@ -174,7 +173,7 @@ public interface MessageLite extends MessageLiteOrBuilder {
 
     /**
      * Parses a message of this type from the input and merges it with this
-     * message, as if using {@link Builder#mergeFrom(MessageLite)}.
+     * message.
      *
      * <p>Warning:  This does not verify that all required fields are present in
      * the input message.  If you call {@link #build()} without setting all
@@ -184,11 +183,6 @@ public interface MessageLite extends MessageLiteOrBuilder {
      * <ul>
      *   <li>Call {@link #isInitialized()} to verify that all required fields
      *       are set before building.
-     *   <li>Parse the message separately using one of the static
-     *       {@code parseFrom} methods, then use {@link #mergeFrom(MessageLite)}
-     *       to merge it with this one.  {@code parseFrom} will throw an
-     *       {@link InvalidProtocolBufferException} (an {@code IOException})
-     *       if some required fields are missing.
      *   <li>Use {@code buildPartial()} to build, which ignores missing
      *       required fields.
      * </ul>
@@ -225,7 +219,7 @@ public interface MessageLite extends MessageLiteOrBuilder {
     /**
      * Parse {@code data} as a message of this type and merge it with the
      * message being built.  This is just a small wrapper around
-     * {@link #mergeFrom(CodedInputStream,ExtensionRegistry)}.
+     * {@link #mergeFrom(CodedInputStream,ExtensionRegistryLite)}.
      *
      * @return this
      */
@@ -255,7 +249,7 @@ public interface MessageLite extends MessageLiteOrBuilder {
     /**
      * Parse {@code data} as a message of this type and merge it with the
      * message being built.  This is just a small wrapper around
-     * {@link #mergeFrom(CodedInputStream,ExtensionRegistry)}.
+     * {@link #mergeFrom(CodedInputStream,ExtensionRegistryLite)}.
      *
      * @return this
      */
@@ -266,7 +260,7 @@ public interface MessageLite extends MessageLiteOrBuilder {
     /**
      * Parse {@code data} as a message of this type and merge it with the
      * message being built.  This is just a small wrapper around
-     * {@link #mergeFrom(CodedInputStream,ExtensionRegistry)}.
+     * {@link #mergeFrom(CodedInputStream,ExtensionRegistryLite)}.
      *
      * @return this
      */
@@ -293,7 +287,7 @@ public interface MessageLite extends MessageLiteOrBuilder {
     /**
      * Parse a message of this type from {@code input} and merge it with the
      * message being built.  This is just a small wrapper around
-     * {@link #mergeFrom(CodedInputStream,ExtensionRegistry)}.
+     * {@link #mergeFrom(CodedInputStream,ExtensionRegistryLite)}.
      *
      * @return this
      */
@@ -308,9 +302,9 @@ public interface MessageLite extends MessageLiteOrBuilder {
      * {@link MessageLite#writeDelimitedTo(OutputStream)} to write messages in
      * this format.
      *
-     * @returns True if successful, or false if the stream is at EOF when the
-     *          method starts.  Any other error (including reaching EOF during
-     *          parsing) will cause an exception to be thrown.
+     * @return True if successful, or false if the stream is at EOF when the
+     *         method starts.  Any other error (including reaching EOF during
+     *         parsing) will cause an exception to be thrown.
      */
     boolean mergeDelimitedFrom(InputStream input)
                                throws IOException;
