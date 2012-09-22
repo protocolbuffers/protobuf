@@ -48,6 +48,7 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/descriptor.pb.h>
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -103,6 +104,13 @@ struct ExtensionRangeSorter {
   }
 };
 
+// Returns true if the "required" restriction check should be ignored for the
+// given field.
+inline static bool ShouldIgnoreRequiredFieldCheck(
+    const FieldDescriptor* field) {
+  return false;
+}
+
 // Returns true if the message type has any required fields.  If it doesn't,
 // we can optimize out calls to its IsInitialized() method.
 //
@@ -129,7 +137,8 @@ static bool HasRequiredFields(
     if (field->is_required()) {
       return true;
     }
-    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+        !ShouldIgnoreRequiredFieldCheck(field)) {
       if (HasRequiredFields(field->message_type(), already_seen)) {
         return true;
       }
@@ -280,11 +289,11 @@ void OptimizePadding(vector<const FieldDescriptor*>* fields) {
 // ===================================================================
 
 MessageGenerator::MessageGenerator(const Descriptor* descriptor,
-                                   const string& dllexport_decl)
+                                   const Options& options)
   : descriptor_(descriptor),
     classname_(ClassName(descriptor, false)),
-    dllexport_decl_(dllexport_decl),
-    field_generators_(descriptor),
+    options_(options),
+    field_generators_(descriptor, options),
     nested_generators_(new scoped_ptr<MessageGenerator>[
       descriptor->nested_type_count()]),
     enum_generators_(new scoped_ptr<EnumGenerator>[
@@ -294,17 +303,17 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
 
   for (int i = 0; i < descriptor->nested_type_count(); i++) {
     nested_generators_[i].reset(
-      new MessageGenerator(descriptor->nested_type(i), dllexport_decl));
+      new MessageGenerator(descriptor->nested_type(i), options));
   }
 
   for (int i = 0; i < descriptor->enum_type_count(); i++) {
     enum_generators_[i].reset(
-      new EnumGenerator(descriptor->enum_type(i), dllexport_decl));
+      new EnumGenerator(descriptor->enum_type(i), options));
   }
 
   for (int i = 0; i < descriptor->extension_count(); i++) {
     extension_generators_[i].reset(
-      new ExtensionGenerator(descriptor->extension(i), dllexport_decl));
+      new ExtensionGenerator(descriptor->extension(i), options));
   }
 }
 
@@ -349,7 +358,7 @@ GenerateFieldAccessorDeclarations(io::Printer* printer) {
     PrintFieldComment(printer, field);
 
     map<string, string> vars;
-    SetCommonFieldVariables(field, &vars);
+    SetCommonFieldVariables(field, &vars, options_);
     vars["constant_name"] = FieldConstantName(field);
 
     if (field->is_repeated()) {
@@ -386,7 +395,7 @@ GenerateFieldAccessorDefinitions(io::Printer* printer) {
     PrintFieldComment(printer, field);
 
     map<string, string> vars;
-    SetCommonFieldVariables(field, &vars);
+    SetCommonFieldVariables(field, &vars, options_);
 
     // Generate has_$name$() or $name$_size().
     if (field->is_repeated()) {
@@ -446,10 +455,10 @@ GenerateClassDefinition(io::Printer* printer) {
   map<string, string> vars;
   vars["classname"] = classname_;
   vars["field_count"] = SimpleItoa(descriptor_->field_count());
-  if (dllexport_decl_.empty()) {
+  if (options_.dllexport_decl.empty()) {
     vars["dllexport"] = "";
   } else {
-    vars["dllexport"] = dllexport_decl_ + " ";
+    vars["dllexport"] = options_.dllexport_decl + " ";
   }
   vars["superclass"] = SuperClassName(descriptor_);
 
@@ -506,6 +515,7 @@ GenerateClassDefinition(io::Printer* printer) {
       "#endif\n"
       "\n");
   }
+
 
   printer->Print(vars,
     "void Swap($classname$* other);\n"
@@ -605,6 +615,7 @@ GenerateClassDefinition(io::Printer* printer) {
   printer->Print(" private:\n");
   printer->Indent();
 
+
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (!descriptor_->field(i)->is_repeated()) {
       printer->Print(
@@ -680,7 +691,7 @@ GenerateClassDefinition(io::Printer* printer) {
     // Without.
     "friend void $dllexport_decl$ $adddescriptorsname$_impl();\n",
     // Vars.
-    "dllexport_decl", dllexport_decl_,
+    "dllexport_decl", options_.dllexport_decl,
     "adddescriptorsname",
     GlobalAddDescriptorsName(descriptor_->file()->name()));
 
@@ -772,9 +783,11 @@ GenerateDescriptorInitializer(io::Printer* printer, int index) {
     printer->Print(vars,
       "    -1,\n");
   }
+  printer->Print(
+    "    ::google::protobuf::DescriptorPool::generated_pool(),\n");
   printer->Print(vars,
-    "    ::google::protobuf::DescriptorPool::generated_pool(),\n"
-    "    ::google::protobuf::MessageFactory::generated_factory(),\n"
+    "    ::google::protobuf::MessageFactory::generated_factory(),\n");
+  printer->Print(vars,
     "    sizeof($classname$));\n");
 
   // Handle nested types.
@@ -803,6 +816,13 @@ GenerateTypeRegistrations(io::Printer* printer) {
 
 void MessageGenerator::
 GenerateDefaultInstanceAllocator(io::Printer* printer) {
+  // Construct the default instances of all fields, as they will be used
+  // when creating the default instance of the entire message.
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    field_generators_.get(descriptor_->field(i))
+                     .GenerateDefaultInstanceAllocator(printer);
+  }
+
   // Construct the default instance.  We can't call InitAsDefaultInstance() yet
   // because we need to make sure all default instances that this one might
   // depend on are constructed first.
@@ -844,6 +864,12 @@ GenerateShutdownCode(io::Printer* printer) {
     printer->Print(
       "delete $classname$_reflection_;\n",
       "classname", classname_);
+  }
+
+  // Handle default instances of fields.
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    field_generators_.get(descriptor_->field(i))
+                     .GenerateShutdownCode(printer);
   }
 
   // Handle nested types.
@@ -1957,6 +1983,7 @@ GenerateIsInitialized(io::Printer* printer) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+        !ShouldIgnoreRequiredFieldCheck(field) &&
         HasRequiredFields(field->message_type())) {
       if (field->is_repeated()) {
         printer->Print(

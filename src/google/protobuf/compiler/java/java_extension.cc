@@ -33,6 +33,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/compiler/java/java_extension.h>
+#include <google/protobuf/compiler/java/java_doc_comment.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/io/printer.h>
@@ -130,6 +131,7 @@ void ExtensionGenerator::Generate(io::Printer* printer) {
   printer->Print(vars,
       "public static final int $constant_name$ = $number$;\n");
 
+  WriteFieldDocComment(printer, descriptor_);
   if (HasDescriptorMethods(descriptor_->file())) {
     // Non-lite extensions
     if (descriptor_->extension_scope() == NULL) {

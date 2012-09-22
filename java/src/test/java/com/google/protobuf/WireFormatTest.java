@@ -34,6 +34,7 @@ import junit.framework.TestCase;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
@@ -328,7 +329,17 @@ public class WireFormatTest extends TestCase {
   private static final int TYPE_ID_2 =
     TestMessageSetExtension2.getDescriptor().getExtensions().get(0).getNumber();
 
-  public void testSerializeMessageSet() throws Exception {
+  public void testSerializeMessageSetEagerly() throws Exception {
+    testSerializeMessageSetWithFlag(true);
+  }
+
+  public void testSerializeMessageSetNotEagerly() throws Exception {
+    testSerializeMessageSetWithFlag(false);
+  }
+
+  private void testSerializeMessageSetWithFlag(boolean eagerParsing)
+      throws Exception {
+    ExtensionRegistryLite.setEagerlyParseMessageSets(eagerParsing);
     // Set up a TestMessageSet with two known messages and an unknown one.
     TestMessageSet messageSet =
       TestMessageSet.newBuilder()
@@ -372,7 +383,17 @@ public class WireFormatTest extends TestCase {
     assertEquals("bar", raw.getItem(2).getMessage().toStringUtf8());
   }
 
-  public void testParseMessageSet() throws Exception {
+  public void testParseMessageSetEagerly() throws Exception {
+    testParseMessageSetWithFlag(true);
+  }
+
+  public void testParseMessageSetNotEagerly()throws Exception {
+    testParseMessageSetWithFlag(false);
+  }
+
+  private void testParseMessageSetWithFlag(boolean eagerParsing)
+      throws Exception {
+    ExtensionRegistryLite.setEagerlyParseMessageSets(eagerParsing);
     ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
     extensionRegistry.add(TestMessageSetExtension1.messageSetExtension);
     extensionRegistry.add(TestMessageSetExtension2.messageSetExtension);
@@ -423,5 +444,137 @@ public class WireFormatTest extends TestCase {
     UnknownFieldSet.Field field = unknownFields.getField(UNKNOWN_TYPE_ID);
     assertEquals(1, field.getLengthDelimitedList().size());
     assertEquals("bar", field.getLengthDelimitedList().get(0).toStringUtf8());
+  }
+
+  public void testParseMessageSetExtensionEagerly() throws Exception {
+    testParseMessageSetExtensionWithFlag(true);
+  }
+
+  public void testParseMessageSetExtensionNotEagerly() throws Exception {
+    testParseMessageSetExtensionWithFlag(false);
+  }
+
+  private void testParseMessageSetExtensionWithFlag(boolean eagerParsing)
+      throws Exception {
+    ExtensionRegistryLite.setEagerlyParseMessageSets(eagerParsing);
+    ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
+    extensionRegistry.add(TestMessageSetExtension1.messageSetExtension);
+
+    // Set up a RawMessageSet with a known messages.
+    int TYPE_ID_1 =
+        TestMessageSetExtension1
+            .getDescriptor().getExtensions().get(0).getNumber();
+    RawMessageSet raw =
+      RawMessageSet.newBuilder()
+        .addItem(
+          RawMessageSet.Item.newBuilder()
+            .setTypeId(TYPE_ID_1)
+            .setMessage(
+              TestMessageSetExtension1.newBuilder()
+                .setI(123)
+                .build().toByteString())
+            .build())
+        .build();
+
+    ByteString data = raw.toByteString();
+
+    // Parse as a TestMessageSet and check the contents.
+    TestMessageSet messageSet =
+        TestMessageSet.parseFrom(data, extensionRegistry);
+    assertEquals(123, messageSet.getExtension(
+        TestMessageSetExtension1.messageSetExtension).getI());
+  }
+
+  public void testMergeLazyMessageSetExtensionEagerly() throws Exception {
+    testMergeLazyMessageSetExtensionWithFlag(true);
+  }
+
+  public void testMergeLazyMessageSetExtensionNotEagerly() throws Exception {
+    testMergeLazyMessageSetExtensionWithFlag(false);
+  }
+
+  private void testMergeLazyMessageSetExtensionWithFlag(boolean eagerParsing)
+      throws Exception {
+    ExtensionRegistryLite.setEagerlyParseMessageSets(eagerParsing);
+    ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
+    extensionRegistry.add(TestMessageSetExtension1.messageSetExtension);
+
+    // Set up a RawMessageSet with a known messages.
+    int TYPE_ID_1 =
+        TestMessageSetExtension1
+            .getDescriptor().getExtensions().get(0).getNumber();
+    RawMessageSet raw =
+      RawMessageSet.newBuilder()
+        .addItem(
+          RawMessageSet.Item.newBuilder()
+            .setTypeId(TYPE_ID_1)
+            .setMessage(
+              TestMessageSetExtension1.newBuilder()
+                .setI(123)
+                .build().toByteString())
+            .build())
+        .build();
+
+    ByteString data = raw.toByteString();
+
+    // Parse as a TestMessageSet and store value into lazy field
+    TestMessageSet messageSet =
+        TestMessageSet.parseFrom(data, extensionRegistry);
+    // Merge lazy field check the contents.
+    messageSet =
+        messageSet.toBuilder().mergeFrom(data, extensionRegistry).build();
+    assertEquals(123, messageSet.getExtension(
+        TestMessageSetExtension1.messageSetExtension).getI());
+  }
+
+  public void testMergeMessageSetExtensionEagerly() throws Exception {
+    testMergeMessageSetExtensionWithFlag(true);
+  }
+
+  public void testMergeMessageSetExtensionNotEagerly() throws Exception {
+    testMergeMessageSetExtensionWithFlag(false);
+  }
+
+  private void testMergeMessageSetExtensionWithFlag(boolean eagerParsing)
+      throws Exception {
+    ExtensionRegistryLite.setEagerlyParseMessageSets(eagerParsing);
+    ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
+    extensionRegistry.add(TestMessageSetExtension1.messageSetExtension);
+
+    // Set up a RawMessageSet with a known messages.
+    int TYPE_ID_1 =
+        TestMessageSetExtension1
+            .getDescriptor().getExtensions().get(0).getNumber();
+    RawMessageSet raw =
+      RawMessageSet.newBuilder()
+        .addItem(
+          RawMessageSet.Item.newBuilder()
+            .setTypeId(TYPE_ID_1)
+            .setMessage(
+              TestMessageSetExtension1.newBuilder()
+                .setI(123)
+                .build().toByteString())
+            .build())
+        .build();
+
+    // Serialize RawMessageSet unnormally (message value before type id)
+    ByteString.CodedBuilder out = ByteString.newCodedBuilder(
+        raw.getSerializedSize());
+    CodedOutputStream output = out.getCodedOutput();
+    List<RawMessageSet.Item> items = raw.getItemList();
+    for (int i = 0; i < items.size(); i++) {
+      RawMessageSet.Item item = items.get(i);
+      output.writeTag(1, WireFormat.WIRETYPE_START_GROUP);
+      output.writeBytes(3, item.getMessage());
+      output.writeInt32(2, item.getTypeId());
+      output.writeTag(1, WireFormat.WIRETYPE_END_GROUP);
+    }
+    ByteString data = out.build();
+
+    // Merge bytes into TestMessageSet and check the contents.
+    TestMessageSet messageSet =
+        TestMessageSet.newBuilder().mergeFrom(data, extensionRegistry).build();
+    assertEquals(123, messageSet.getExtension(
+        TestMessageSetExtension1.messageSetExtension).getI());
   }
 }

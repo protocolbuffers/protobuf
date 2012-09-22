@@ -57,9 +57,9 @@ string ExtendeeClassName(const FieldDescriptor* descriptor) {
 }  // anonymous namespace
 
 ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
-                                       const string& dllexport_decl)
+                                       const Options& options)
   : descriptor_(descriptor),
-    dllexport_decl_(dllexport_decl) {
+    options_(options) {
   // Construct type_traits_.
   if (descriptor_->is_repeated()) {
     type_traits_ = "Repeated";
@@ -106,8 +106,8 @@ void ExtensionGenerator::GenerateDeclaration(io::Printer* printer) {
   // export/import specifier.
   if (descriptor_->extension_scope() == NULL) {
     vars["qualifier"] = "extern";
-    if (!dllexport_decl_.empty()) {
-      vars["qualifier"] = dllexport_decl_ + " " + vars["qualifier"];
+    if (!options_.dllexport_decl.empty()) {
+      vars["qualifier"] = options_.dllexport_decl + " " + vars["qualifier"];
     }
   } else {
     vars["qualifier"] = "static";

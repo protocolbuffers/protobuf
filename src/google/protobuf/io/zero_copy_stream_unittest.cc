@@ -370,6 +370,100 @@ TEST_F(IoTest, GzipIo) {
   delete [] buffer;
 }
 
+TEST_F(IoTest, GzipIoWithFlush) {
+  const int kBufferSize = 2*1024;
+  uint8* buffer = new uint8[kBufferSize];
+  // We start with i = 4 as we want a block size > 6. With block size <= 6
+  // Flush() fills up the entire 2K buffer with flush markers and the test
+  // fails. See documentation for Flush() for more detail.
+  for (int i = 4; i < kBlockSizeCount; i++) {
+    for (int j = 0; j < kBlockSizeCount; j++) {
+      for (int z = 0; z < kBlockSizeCount; z++) {
+        int gzip_buffer_size = kBlockSizes[z];
+        int size;
+        {
+          ArrayOutputStream output(buffer, kBufferSize, kBlockSizes[i]);
+          GzipOutputStream::Options options;
+          options.format = GzipOutputStream::GZIP;
+          if (gzip_buffer_size != -1) {
+            options.buffer_size = gzip_buffer_size;
+          }
+          GzipOutputStream gzout(&output, options);
+          WriteStuff(&gzout);
+          EXPECT_TRUE(gzout.Flush());
+          gzout.Close();
+          size = output.ByteCount();
+        }
+        {
+          ArrayInputStream input(buffer, size, kBlockSizes[j]);
+          GzipInputStream gzin(
+              &input, GzipInputStream::GZIP, gzip_buffer_size);
+          ReadStuff(&gzin);
+        }
+      }
+    }
+  }
+  delete [] buffer;
+}
+
+TEST_F(IoTest, GzipIoContiguousFlushes) {
+  const int kBufferSize = 2*1024;
+  uint8* buffer = new uint8[kBufferSize];
+
+  int block_size = kBlockSizes[4];
+  int gzip_buffer_size = block_size;
+  int size;
+
+  ArrayOutputStream output(buffer, kBufferSize, block_size);
+  GzipOutputStream::Options options;
+  options.format = GzipOutputStream::GZIP;
+  if (gzip_buffer_size != -1) {
+    options.buffer_size = gzip_buffer_size;
+  }
+  GzipOutputStream gzout(&output, options);
+  WriteStuff(&gzout);
+  EXPECT_TRUE(gzout.Flush());
+  EXPECT_TRUE(gzout.Flush());
+  gzout.Close();
+  size = output.ByteCount();
+
+  ArrayInputStream input(buffer, size, block_size);
+  GzipInputStream gzin(
+      &input, GzipInputStream::GZIP, gzip_buffer_size);
+  ReadStuff(&gzin);
+
+  delete [] buffer;
+}
+
+TEST_F(IoTest, GzipIoReadAfterFlush) {
+  const int kBufferSize = 2*1024;
+  uint8* buffer = new uint8[kBufferSize];
+
+  int block_size = kBlockSizes[4];
+  int gzip_buffer_size = block_size;
+  int size;
+  ArrayOutputStream output(buffer, kBufferSize, block_size);
+  GzipOutputStream::Options options;
+  options.format = GzipOutputStream::GZIP;
+  if (gzip_buffer_size != -1) {
+    options.buffer_size = gzip_buffer_size;
+  }
+
+  GzipOutputStream gzout(&output, options);
+  WriteStuff(&gzout);
+  EXPECT_TRUE(gzout.Flush());
+  size = output.ByteCount();
+
+  ArrayInputStream input(buffer, size, block_size);
+  GzipInputStream gzin(
+      &input, GzipInputStream::GZIP, gzip_buffer_size);
+  ReadStuff(&gzin);
+
+  gzout.Close();
+
+  delete [] buffer;
+}
+
 TEST_F(IoTest, ZlibIo) {
   const int kBufferSize = 2*1024;
   uint8* buffer = new uint8[kBufferSize];

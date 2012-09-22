@@ -73,11 +73,15 @@ class DynamicMessageTest : public testing::Test {
     // unittest_import.proto.
     FileDescriptorProto unittest_file;
     FileDescriptorProto unittest_import_file;
+    FileDescriptorProto unittest_import_public_file;
 
     unittest::TestAllTypes::descriptor()->file()->CopyTo(&unittest_file);
     unittest_import::ImportMessage::descriptor()->file()->CopyTo(
       &unittest_import_file);
+    unittest_import::PublicImportMessage::descriptor()->file()->CopyTo(
+      &unittest_import_public_file);
 
+    ASSERT_TRUE(pool_.BuildFile(unittest_import_public_file) != NULL);
     ASSERT_TRUE(pool_.BuildFile(unittest_import_file) != NULL);
     ASSERT_TRUE(pool_.BuildFile(unittest_file) != NULL);
 

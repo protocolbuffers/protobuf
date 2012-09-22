@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
 import com.google.protobuf.test.UnittestImport;
 import protobuf_unittest.EnumWithNoOuter;
@@ -53,6 +55,7 @@ import protobuf_unittest.UnittestProto.ForeignMessage;
 import protobuf_unittest.UnittestProto.ForeignMessageOrBuilder;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
+import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import protobuf_unittest.UnittestProto.TestAllTypesOrBuilder;
 import protobuf_unittest.UnittestProto.TestExtremeDefaultValues;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
@@ -178,6 +181,33 @@ public class GeneratedMessageTest extends TestCase {
     assertIsUnmodifiable(value.getRepeatedImportEnumList());
     assertIsUnmodifiable(value.getRepeatedForeignMessageList());
     assertIsUnmodifiable(value.getRepeatedFloatList());
+  }
+
+  public void testParsedMessagesAreImmutable() throws Exception {
+    TestAllTypes value = TestAllTypes.PARSER.parseFrom(
+        TestUtil.getAllSet().toByteString());
+    assertIsUnmodifiable(value.getRepeatedInt32List());
+    assertIsUnmodifiable(value.getRepeatedInt64List());
+    assertIsUnmodifiable(value.getRepeatedUint32List());
+    assertIsUnmodifiable(value.getRepeatedUint64List());
+    assertIsUnmodifiable(value.getRepeatedSint32List());
+    assertIsUnmodifiable(value.getRepeatedSint64List());
+    assertIsUnmodifiable(value.getRepeatedFixed32List());
+    assertIsUnmodifiable(value.getRepeatedFixed64List());
+    assertIsUnmodifiable(value.getRepeatedSfixed32List());
+    assertIsUnmodifiable(value.getRepeatedSfixed64List());
+    assertIsUnmodifiable(value.getRepeatedFloatList());
+    assertIsUnmodifiable(value.getRepeatedDoubleList());
+    assertIsUnmodifiable(value.getRepeatedBoolList());
+    assertIsUnmodifiable(value.getRepeatedStringList());
+    assertIsUnmodifiable(value.getRepeatedBytesList());
+    assertIsUnmodifiable(value.getRepeatedGroupList());
+    assertIsUnmodifiable(value.getRepeatedNestedMessageList());
+    assertIsUnmodifiable(value.getRepeatedForeignMessageList());
+    assertIsUnmodifiable(value.getRepeatedImportMessageList());
+    assertIsUnmodifiable(value.getRepeatedNestedEnumList());
+    assertIsUnmodifiable(value.getRepeatedForeignEnumList());
+    assertIsUnmodifiable(value.getRepeatedImportEnumList());
   }
 
   private void assertIsUnmodifiable(List<?> list) {
@@ -881,7 +911,7 @@ public class GeneratedMessageTest extends TestCase {
     builder.setOptionalNestedMessage(nestedMessage1);
     assertEquals(3, mockParent.getInvalidationCount());
 
-    // primitive repated
+    // primitive repeated
     builder.buildPartial();
     builder.addRepeatedInt32(2);
     builder.addRepeatedInt32(3);
@@ -976,5 +1006,141 @@ public class GeneratedMessageTest extends TestCase {
     assertSame(b0, messageOrBuilderList.get(0));
     assertSame(b1, messageOrBuilderList.get(1));
     assertSame(m2, messageOrBuilderList.get(2));
+  }
+
+  public void testGetFieldBuilder() {
+    Descriptor descriptor = TestAllTypes.getDescriptor();
+
+    FieldDescriptor fieldDescriptor =
+        descriptor.findFieldByName("optional_nested_message");
+    FieldDescriptor foreignFieldDescriptor =
+        descriptor.findFieldByName("optional_foreign_message");
+    FieldDescriptor importFieldDescriptor =
+        descriptor.findFieldByName("optional_import_message");
+
+    // Mutate the message with new field builder
+    // Mutate nested message
+    TestAllTypes.Builder builder1 = TestAllTypes.newBuilder();
+    Message.Builder fieldBuilder1 = builder1.newBuilderForField(fieldDescriptor)
+        .mergeFrom((Message) builder1.getField(fieldDescriptor));
+    FieldDescriptor subFieldDescriptor1 =
+        fieldBuilder1.getDescriptorForType().findFieldByName("bb");
+    fieldBuilder1.setField(subFieldDescriptor1, 1);
+    builder1.setField(fieldDescriptor, fieldBuilder1.build());
+
+    // Mutate foreign message
+    Message.Builder foreignFieldBuilder1 = builder1.newBuilderForField(
+        foreignFieldDescriptor)
+        .mergeFrom((Message) builder1.getField(foreignFieldDescriptor));
+    FieldDescriptor subForeignFieldDescriptor1 =
+        foreignFieldBuilder1.getDescriptorForType().findFieldByName("c");
+    foreignFieldBuilder1.setField(subForeignFieldDescriptor1, 2);
+    builder1.setField(foreignFieldDescriptor, foreignFieldBuilder1.build());
+
+    // Mutate import message
+    Message.Builder importFieldBuilder1 = builder1.newBuilderForField(
+        importFieldDescriptor)
+        .mergeFrom((Message) builder1.getField(importFieldDescriptor));
+    FieldDescriptor subImportFieldDescriptor1 =
+        importFieldBuilder1.getDescriptorForType().findFieldByName("d");
+    importFieldBuilder1.setField(subImportFieldDescriptor1, 3);
+    builder1.setField(importFieldDescriptor, importFieldBuilder1.build());
+
+    Message newMessage1 = builder1.build();
+
+    // Mutate the message with existing field builder
+    // Mutate nested message
+    TestAllTypes.Builder builder2 = TestAllTypes.newBuilder();
+    Message.Builder fieldBuilder2 = builder2.getFieldBuilder(fieldDescriptor);
+    FieldDescriptor subFieldDescriptor2 =
+        fieldBuilder2.getDescriptorForType().findFieldByName("bb");
+    fieldBuilder2.setField(subFieldDescriptor2, 1);
+    builder2.setField(fieldDescriptor, fieldBuilder2.build());
+
+    // Mutate foreign message
+    Message.Builder foreignFieldBuilder2 = builder2.newBuilderForField(
+        foreignFieldDescriptor)
+        .mergeFrom((Message) builder2.getField(foreignFieldDescriptor));
+    FieldDescriptor subForeignFieldDescriptor2 =
+        foreignFieldBuilder2.getDescriptorForType().findFieldByName("c");
+    foreignFieldBuilder2.setField(subForeignFieldDescriptor2, 2);
+    builder2.setField(foreignFieldDescriptor, foreignFieldBuilder2.build());
+
+    // Mutate import message
+    Message.Builder importFieldBuilder2 = builder2.newBuilderForField(
+        importFieldDescriptor)
+        .mergeFrom((Message) builder2.getField(importFieldDescriptor));
+    FieldDescriptor subImportFieldDescriptor2 =
+        importFieldBuilder2.getDescriptorForType().findFieldByName("d");
+    importFieldBuilder2.setField(subImportFieldDescriptor2, 3);
+    builder2.setField(importFieldDescriptor, importFieldBuilder2.build());
+
+    Message newMessage2 = builder2.build();
+
+    // These two messages should be equal.
+    assertEquals(newMessage1, newMessage2);
+  }
+
+  public void testGetFieldBuilderWithInitializedValue() {
+    Descriptor descriptor = TestAllTypes.getDescriptor();
+    FieldDescriptor fieldDescriptor =
+        descriptor.findFieldByName("optional_nested_message");
+
+    // Before setting field, builder is initialized by default value. 
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    NestedMessage.Builder fieldBuilder =
+        (NestedMessage.Builder) builder.getFieldBuilder(fieldDescriptor);
+    assertEquals(0, fieldBuilder.getBb());
+
+    // Setting field value with new field builder instance.
+    builder = TestAllTypes.newBuilder();
+    NestedMessage.Builder newFieldBuilder =
+        builder.getOptionalNestedMessageBuilder();
+    newFieldBuilder.setBb(2);
+    // Then get the field builder instance by getFieldBuilder().
+    fieldBuilder =
+        (NestedMessage.Builder) builder.getFieldBuilder(fieldDescriptor);
+    // It should contain new value.
+    assertEquals(2, fieldBuilder.getBb());
+    // These two builder should be equal.
+    assertSame(fieldBuilder, newFieldBuilder);
+  }
+
+  public void testGetFieldBuilderNotSupportedException() {
+    Descriptor descriptor = TestAllTypes.getDescriptor();
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    try {
+      builder.getFieldBuilder(descriptor.findFieldByName("optional_int32"));
+      fail("Exception was not thrown");
+    } catch (UnsupportedOperationException e) {
+      // We expect this exception.
+    }
+    try {
+      builder.getFieldBuilder(
+          descriptor.findFieldByName("optional_nested_enum"));
+      fail("Exception was not thrown");
+    } catch (UnsupportedOperationException e) {
+      // We expect this exception.
+    }
+    try {
+      builder.getFieldBuilder(descriptor.findFieldByName("repeated_int32"));
+      fail("Exception was not thrown");
+    } catch (UnsupportedOperationException e) {
+      // We expect this exception.
+    }
+    try {
+      builder.getFieldBuilder(
+          descriptor.findFieldByName("repeated_nested_enum"));
+      fail("Exception was not thrown");
+    } catch (UnsupportedOperationException e) {
+      // We expect this exception.
+    }
+    try {
+      builder.getFieldBuilder(
+          descriptor.findFieldByName("repeated_nested_message"));
+      fail("Exception was not thrown");
+    } catch (UnsupportedOperationException e) {
+      // We expect this exception.
+    }
   }
 }

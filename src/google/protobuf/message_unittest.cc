@@ -257,6 +257,78 @@ TEST(MessageTest, ParseFailsOnInvalidMessageEnd) {
   EXPECT_FALSE(message.ParseFromArray("\014", 1));
 }
 
+namespace {
+
+void ExpectMessageMerged(const unittest::TestAllTypes& message) {
+  EXPECT_EQ(3, message.optional_int32());
+  EXPECT_EQ(2, message.optional_int64());
+  EXPECT_EQ("hello", message.optional_string());
+}
+
+void AssignParsingMergeMessages(
+    unittest::TestAllTypes* msg1,
+    unittest::TestAllTypes* msg2,
+    unittest::TestAllTypes* msg3) {
+  msg1->set_optional_int32(1);
+  msg2->set_optional_int64(2);
+  msg3->set_optional_int32(3);
+  msg3->set_optional_string("hello");
+}
+
+}  // namespace
+
+// Test that if an optional or required message/group field appears multiple
+// times in the input, they need to be merged.
+TEST(MessageTest, ParsingMerge) {
+  unittest::TestParsingMerge::RepeatedFieldsGenerator generator;
+  unittest::TestAllTypes* msg1;
+  unittest::TestAllTypes* msg2;
+  unittest::TestAllTypes* msg3;
+
+#define ASSIGN_REPEATED_FIELD(FIELD)                \
+  msg1 = generator.add_##FIELD();                   \
+  msg2 = generator.add_##FIELD();                   \
+  msg3 = generator.add_##FIELD();                   \
+  AssignParsingMergeMessages(msg1, msg2, msg3)
+
+  ASSIGN_REPEATED_FIELD(field1);
+  ASSIGN_REPEATED_FIELD(field2);
+  ASSIGN_REPEATED_FIELD(field3);
+  ASSIGN_REPEATED_FIELD(ext1);
+  ASSIGN_REPEATED_FIELD(ext2);
+
+#undef ASSIGN_REPEATED_FIELD
+#define ASSIGN_REPEATED_GROUP(FIELD)                \
+  msg1 = generator.add_##FIELD()->mutable_field1(); \
+  msg2 = generator.add_##FIELD()->mutable_field1(); \
+  msg3 = generator.add_##FIELD()->mutable_field1(); \
+  AssignParsingMergeMessages(msg1, msg2, msg3)
+
+  ASSIGN_REPEATED_GROUP(group1);
+  ASSIGN_REPEATED_GROUP(group2);
+
+#undef ASSIGN_REPEATED_GROUP
+
+  string buffer;
+  generator.SerializeToString(&buffer);
+  unittest::TestParsingMerge parsing_merge;
+  parsing_merge.ParseFromString(buffer);
+
+  // Required and optional fields should be merged.
+  ExpectMessageMerged(parsing_merge.required_all_types());
+  ExpectMessageMerged(parsing_merge.optional_all_types());
+  ExpectMessageMerged(
+      parsing_merge.optionalgroup().optional_group_all_types());
+  ExpectMessageMerged(
+      parsing_merge.GetExtension(unittest::TestParsingMerge::optional_ext));
+
+  // Repeated fields should not be merged.
+  EXPECT_EQ(3, parsing_merge.repeated_all_types_size());
+  EXPECT_EQ(3, parsing_merge.repeatedgroup_size());
+  EXPECT_EQ(3, parsing_merge.ExtensionSize(
+      unittest::TestParsingMerge::repeated_ext));
+}
+
 TEST(MessageFactoryTest, GeneratedFactoryLookup) {
   EXPECT_EQ(
     MessageFactory::generated_factory()->GetPrototype(
@@ -276,6 +348,7 @@ TEST(MessageFactoryTest, GeneratedFactoryUnknownType) {
   EXPECT_TRUE(
     MessageFactory::generated_factory()->GetPrototype(descriptor) == NULL);
 }
+
 
 }  // namespace protobuf
 }  // namespace google

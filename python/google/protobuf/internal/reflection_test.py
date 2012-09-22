@@ -37,6 +37,7 @@ pure-Python protocol compiler.
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
+import gc
 import operator
 import struct
 
@@ -318,15 +319,6 @@ class ReflectionTest(unittest.TestCase):
       # ...and ensure that the scalar field has returned to its default.
       self.assertEqual(0, getattr(composite_field, scalar_field_name))
 
-      # Finally, ensure that modifications to the old composite field object
-      # don't have any effect on the parent. Possible only with the pure-python
-      # implementation of the API.
-      #
-      # (NOTE that when we clear the composite field in the parent, we actually
-      # don't recursively clear down the tree.  Instead, we just disconnect the
-      # cleared composite from the tree.)
-      if api_implementation.Type() != 'python':
-        return
       self.assertTrue(old_composite_field is not composite_field)
       setattr(old_composite_field, scalar_field_name, new_val)
       self.assertTrue(not composite_field.HasField(scalar_field_name))
@@ -348,8 +340,6 @@ class ReflectionTest(unittest.TestCase):
     nested.bb = 23
 
   def testDisconnectingNestedMessageBeforeSettingField(self):
-    if api_implementation.Type() != 'python':
-      return
     proto = unittest_pb2.TestAllTypes()
     nested = proto.optional_nested_message
     proto.ClearField('optional_nested_message')  # Should disconnect from parent
@@ -357,6 +347,64 @@ class ReflectionTest(unittest.TestCase):
     nested.bb = 23
     self.assertTrue(not proto.HasField('optional_nested_message'))
     self.assertEqual(0, proto.optional_nested_message.bb)
+
+  def testGetDefaultMessageAfterDisconnectingDefaultMessage(self):
+    proto = unittest_pb2.TestAllTypes()
+    nested = proto.optional_nested_message
+    proto.ClearField('optional_nested_message')
+    del proto
+    del nested
+    # Force a garbage collect so that the underlying CMessages are freed along
+    # with the Messages they point to. This is to make sure we're not deleting
+    # default message instances.
+    gc.collect()
+    proto = unittest_pb2.TestAllTypes()
+    nested = proto.optional_nested_message
+
+  def testDisconnectingNestedMessageAfterSettingField(self):
+    proto = unittest_pb2.TestAllTypes()
+    nested = proto.optional_nested_message
+    nested.bb = 5
+    self.assertTrue(proto.HasField('optional_nested_message'))
+    proto.ClearField('optional_nested_message')  # Should disconnect from parent
+    self.assertEqual(5, nested.bb)
+    self.assertEqual(0, proto.optional_nested_message.bb)
+    self.assertTrue(nested is not proto.optional_nested_message)
+    nested.bb = 23
+    self.assertTrue(not proto.HasField('optional_nested_message'))
+    self.assertEqual(0, proto.optional_nested_message.bb)
+
+  def testDisconnectingNestedMessageBeforeGettingField(self):
+    proto = unittest_pb2.TestAllTypes()
+    self.assertTrue(not proto.HasField('optional_nested_message'))
+    proto.ClearField('optional_nested_message')
+    self.assertTrue(not proto.HasField('optional_nested_message'))
+
+  def testDisconnectingNestedMessageAfterMerge(self):
+    # This test exercises the code path that does not use ReleaseMessage().
+    # The underlying fear is that if we use ReleaseMessage() incorrectly,
+    # we will have memory leaks.  It's hard to check that that doesn't happen,
+    # but at least we can exercise that code path to make sure it works.
+    proto1 = unittest_pb2.TestAllTypes()
+    proto2 = unittest_pb2.TestAllTypes()
+    proto2.optional_nested_message.bb = 5
+    proto1.MergeFrom(proto2)
+    self.assertTrue(proto1.HasField('optional_nested_message'))
+    proto1.ClearField('optional_nested_message')
+    self.assertTrue(not proto1.HasField('optional_nested_message'))
+
+  def testDisconnectingLazyNestedMessage(self):
+    # This test exercises releasing a nested message that is lazy. This test
+    # only exercises real code in the C++ implementation as Python does not
+    # support lazy parsing, but the current C++ implementation results in
+    # memory corruption and a crash.
+    if api_implementation.Type() != 'python':
+      return
+    proto = unittest_pb2.TestAllTypes()
+    proto.optional_lazy_message.bb = 5
+    proto.ClearField('optional_lazy_message')
+    del proto
+    gc.collect()
 
   def testHasBitsWhenModifyingRepeatedFields(self):
     # Test nesting when we add an element to a repeated field in a submessage.
@@ -635,6 +683,77 @@ class ReflectionTest(unittest.TestCase):
     self.assertEqual(3, proto.BAZ)
     self.assertEqual(3, unittest_pb2.TestAllTypes.BAZ)
 
+  def testEnum_Name(self):
+    self.assertEqual('FOREIGN_FOO',
+                     unittest_pb2.ForeignEnum.Name(unittest_pb2.FOREIGN_FOO))
+    self.assertEqual('FOREIGN_BAR',
+                     unittest_pb2.ForeignEnum.Name(unittest_pb2.FOREIGN_BAR))
+    self.assertEqual('FOREIGN_BAZ',
+                     unittest_pb2.ForeignEnum.Name(unittest_pb2.FOREIGN_BAZ))
+    self.assertRaises(ValueError,
+                      unittest_pb2.ForeignEnum.Name, 11312)
+
+    proto = unittest_pb2.TestAllTypes()
+    self.assertEqual('FOO',
+                     proto.NestedEnum.Name(proto.FOO))
+    self.assertEqual('FOO',
+                     unittest_pb2.TestAllTypes.NestedEnum.Name(proto.FOO))
+    self.assertEqual('BAR',
+                     proto.NestedEnum.Name(proto.BAR))
+    self.assertEqual('BAR',
+                     unittest_pb2.TestAllTypes.NestedEnum.Name(proto.BAR))
+    self.assertEqual('BAZ',
+                     proto.NestedEnum.Name(proto.BAZ))
+    self.assertEqual('BAZ',
+                     unittest_pb2.TestAllTypes.NestedEnum.Name(proto.BAZ))
+    self.assertRaises(ValueError,
+                      proto.NestedEnum.Name, 11312)
+    self.assertRaises(ValueError,
+                      unittest_pb2.TestAllTypes.NestedEnum.Name, 11312)
+
+  def testEnum_Value(self):
+    self.assertEqual(unittest_pb2.FOREIGN_FOO,
+                     unittest_pb2.ForeignEnum.Value('FOREIGN_FOO'))
+    self.assertEqual(unittest_pb2.FOREIGN_BAR,
+                     unittest_pb2.ForeignEnum.Value('FOREIGN_BAR'))
+    self.assertEqual(unittest_pb2.FOREIGN_BAZ,
+                     unittest_pb2.ForeignEnum.Value('FOREIGN_BAZ'))
+    self.assertRaises(ValueError,
+                      unittest_pb2.ForeignEnum.Value, 'FO')
+
+    proto = unittest_pb2.TestAllTypes()
+    self.assertEqual(proto.FOO,
+                     proto.NestedEnum.Value('FOO'))
+    self.assertEqual(proto.FOO,
+                     unittest_pb2.TestAllTypes.NestedEnum.Value('FOO'))
+    self.assertEqual(proto.BAR,
+                     proto.NestedEnum.Value('BAR'))
+    self.assertEqual(proto.BAR,
+                     unittest_pb2.TestAllTypes.NestedEnum.Value('BAR'))
+    self.assertEqual(proto.BAZ,
+                     proto.NestedEnum.Value('BAZ'))
+    self.assertEqual(proto.BAZ,
+                     unittest_pb2.TestAllTypes.NestedEnum.Value('BAZ'))
+    self.assertRaises(ValueError,
+                      proto.NestedEnum.Value, 'Foo')
+    self.assertRaises(ValueError,
+                      unittest_pb2.TestAllTypes.NestedEnum.Value, 'Foo')
+
+  def testEnum_KeysAndValues(self):
+    self.assertEqual(['FOREIGN_FOO', 'FOREIGN_BAR', 'FOREIGN_BAZ'],
+                     unittest_pb2.ForeignEnum.keys())
+    self.assertEqual([4, 5, 6],
+                     unittest_pb2.ForeignEnum.values())
+    self.assertEqual([('FOREIGN_FOO', 4), ('FOREIGN_BAR', 5),
+                      ('FOREIGN_BAZ', 6)],
+                     unittest_pb2.ForeignEnum.items())
+
+    proto = unittest_pb2.TestAllTypes()
+    self.assertEqual(['FOO', 'BAR', 'BAZ'], proto.NestedEnum.keys())
+    self.assertEqual([1, 2, 3], proto.NestedEnum.values())
+    self.assertEqual([('FOO', 1), ('BAR', 2), ('BAZ', 3)],
+                     proto.NestedEnum.items())
+
   def testRepeatedScalars(self):
     proto = unittest_pb2.TestAllTypes()
 
@@ -826,6 +945,35 @@ class ReflectionTest(unittest.TestCase):
     self.assertEqual(1, len(proto.repeated_nested_message))
     self.assertEqual(23, proto.repeated_nested_message[0].bb)
 
+  def testRepeatedCompositeRemove(self):
+    proto = unittest_pb2.TestAllTypes()
+
+    self.assertEqual(0, len(proto.repeated_nested_message))
+    m0 = proto.repeated_nested_message.add()
+    # Need to set some differentiating variable so m0 != m1 != m2:
+    m0.bb = len(proto.repeated_nested_message)
+    m1 = proto.repeated_nested_message.add()
+    m1.bb = len(proto.repeated_nested_message)
+    self.assertTrue(m0 != m1)
+    m2 = proto.repeated_nested_message.add()
+    m2.bb = len(proto.repeated_nested_message)
+    self.assertListsEqual([m0, m1, m2], proto.repeated_nested_message)
+
+    self.assertEqual(3, len(proto.repeated_nested_message))
+    proto.repeated_nested_message.remove(m0)
+    self.assertEqual(2, len(proto.repeated_nested_message))
+    self.assertEqual(m1, proto.repeated_nested_message[0])
+    self.assertEqual(m2, proto.repeated_nested_message[1])
+
+    # Removing m0 again or removing None should raise error
+    self.assertRaises(ValueError, proto.repeated_nested_message.remove, m0)
+    self.assertRaises(ValueError, proto.repeated_nested_message.remove, None)
+    self.assertEqual(2, len(proto.repeated_nested_message))
+
+    proto.repeated_nested_message.remove(m2)
+    self.assertEqual(1, len(proto.repeated_nested_message))
+    self.assertEqual(m1, proto.repeated_nested_message[0])
+
   def testHandWrittenReflection(self):
     # Hand written extensions are only supported by the pure-Python
     # implementation of the API.
@@ -855,6 +1003,68 @@ class ReflectionTest(unittest.TestCase):
     myproto_instance.foo_field = 23
     self.assertEqual(23, myproto_instance.foo_field)
     self.assertTrue(myproto_instance.HasField('foo_field'))
+
+  def testDescriptorProtoSupport(self):
+    # Hand written descriptors/reflection are only supported by the pure-Python
+    # implementation of the API.
+    if api_implementation.Type() != 'python':
+      return
+
+    def AddDescriptorField(proto, field_name, field_type):
+      AddDescriptorField.field_index += 1
+      new_field = proto.field.add()
+      new_field.name = field_name
+      new_field.type = field_type
+      new_field.number = AddDescriptorField.field_index
+      new_field.label = descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL
+
+    AddDescriptorField.field_index = 0
+
+    desc_proto = descriptor_pb2.DescriptorProto()
+    desc_proto.name = 'Car'
+    fdp = descriptor_pb2.FieldDescriptorProto
+    AddDescriptorField(desc_proto, 'name', fdp.TYPE_STRING)
+    AddDescriptorField(desc_proto, 'year', fdp.TYPE_INT64)
+    AddDescriptorField(desc_proto, 'automatic', fdp.TYPE_BOOL)
+    AddDescriptorField(desc_proto, 'price', fdp.TYPE_DOUBLE)
+    # Add a repeated field
+    AddDescriptorField.field_index += 1
+    new_field = desc_proto.field.add()
+    new_field.name = 'owners'
+    new_field.type = fdp.TYPE_STRING
+    new_field.number = AddDescriptorField.field_index
+    new_field.label = descriptor_pb2.FieldDescriptorProto.LABEL_REPEATED
+
+    desc = descriptor.MakeDescriptor(desc_proto)
+    self.assertTrue(desc.fields_by_name.has_key('name'))
+    self.assertTrue(desc.fields_by_name.has_key('year'))
+    self.assertTrue(desc.fields_by_name.has_key('automatic'))
+    self.assertTrue(desc.fields_by_name.has_key('price'))
+    self.assertTrue(desc.fields_by_name.has_key('owners'))
+
+    class CarMessage(message.Message):
+      __metaclass__ = reflection.GeneratedProtocolMessageType
+      DESCRIPTOR = desc
+
+    prius = CarMessage()
+    prius.name = 'prius'
+    prius.year = 2010
+    prius.automatic = True
+    prius.price = 25134.75
+    prius.owners.extend(['bob', 'susan'])
+
+    serialized_prius = prius.SerializeToString()
+    new_prius = reflection.ParseMessage(desc, serialized_prius)
+    self.assertTrue(new_prius is not prius)
+    self.assertEqual(prius, new_prius)
+
+    # these are unnecessary assuming message equality works as advertised but
+    # explicitly check to be safe since we're mucking about in metaclass foo
+    self.assertEqual(prius.name, new_prius.name)
+    self.assertEqual(prius.year, new_prius.year)
+    self.assertEqual(prius.automatic, new_prius.automatic)
+    self.assertEqual(prius.price, new_prius.price)
+    self.assertEqual(prius.owners, new_prius.owners)
 
   def testTopLevelExtensionsForOptionalScalar(self):
     extendee_proto = unittest_pb2.TestAllExtensions()
@@ -1243,7 +1453,12 @@ class ReflectionTest(unittest.TestCase):
 
   def testClear(self):
     proto = unittest_pb2.TestAllTypes()
-    test_util.SetAllFields(proto)
+    # C++ implementation does not support lazy fields right now so leave it
+    # out for now.
+    if api_implementation.Type() == 'python':
+      test_util.SetAllFields(proto)
+    else:
+      test_util.SetAllNonLazyFields(proto)
     # Clear the message.
     proto.Clear()
     self.assertEquals(proto.ByteSize(), 0)
@@ -1258,6 +1473,33 @@ class ReflectionTest(unittest.TestCase):
     self.assertEquals(proto.ByteSize(), 0)
     empty_proto = unittest_pb2.TestAllExtensions()
     self.assertEquals(proto, empty_proto)
+
+  def testDisconnectingBeforeClear(self):
+    proto = unittest_pb2.TestAllTypes()
+    nested = proto.optional_nested_message
+    proto.Clear()
+    self.assertTrue(nested is not proto.optional_nested_message)
+    nested.bb = 23
+    self.assertTrue(not proto.HasField('optional_nested_message'))
+    self.assertEqual(0, proto.optional_nested_message.bb)
+
+    proto = unittest_pb2.TestAllTypes()
+    nested = proto.optional_nested_message
+    nested.bb = 5
+    foreign = proto.optional_foreign_message
+    foreign.c = 6
+
+    proto.Clear()
+    self.assertTrue(nested is not proto.optional_nested_message)
+    self.assertTrue(foreign is not proto.optional_foreign_message)
+    self.assertEqual(5, nested.bb)
+    self.assertEqual(6, foreign.c)
+    nested.bb = 15
+    foreign.c = 16
+    self.assertTrue(not proto.HasField('optional_nested_message'))
+    self.assertEqual(0, proto.optional_nested_message.bb)
+    self.assertTrue(not proto.HasField('optional_foreign_message'))
+    self.assertEqual(0, proto.optional_foreign_message.c)
 
   def assertInitialized(self, proto):
     self.assertTrue(proto.IsInitialized())
@@ -1408,7 +1650,7 @@ class ReflectionTest(unittest.TestCase):
     unicode_decode_failed = False
     try:
       message2.MergeFromString(bytes)
-    except UnicodeDecodeError, e:
+    except UnicodeDecodeError as e:
       unicode_decode_failed = True
     string_field = message2.str
     self.assertTrue(unicode_decode_failed or type(string_field) == str)
@@ -2119,7 +2361,7 @@ class SerializationTest(unittest.TestCase):
     """This method checks if the excpetion type and message are as expected."""
     try:
       callable_obj()
-    except exc_class, ex:
+    except exc_class as ex:
       # Check if the exception message is the right one.
       self.assertEqual(exception, str(ex))
       return
@@ -2131,15 +2373,22 @@ class SerializationTest(unittest.TestCase):
     self._CheckRaises(
         message.EncodeError,
         proto.SerializeToString,
-        'Message is missing required fields: a,b,c')
+        'Message protobuf_unittest.TestRequired is missing required fields: '
+        'a,b,c')
     # Shouldn't raise exceptions.
     partial = proto.SerializePartialToString()
+
+    proto2 = unittest_pb2.TestRequired()
+    self.assertFalse(proto2.HasField('a'))
+    # proto2 ParseFromString does not check that required fields are set.
+    proto2.ParseFromString(partial)
+    self.assertFalse(proto2.HasField('a'))
 
     proto.a = 1
     self._CheckRaises(
         message.EncodeError,
         proto.SerializeToString,
-        'Message is missing required fields: b,c')
+        'Message protobuf_unittest.TestRequired is missing required fields: b,c')
     # Shouldn't raise exceptions.
     partial = proto.SerializePartialToString()
 
@@ -2147,7 +2396,7 @@ class SerializationTest(unittest.TestCase):
     self._CheckRaises(
         message.EncodeError,
         proto.SerializeToString,
-        'Message is missing required fields: c')
+        'Message protobuf_unittest.TestRequired is missing required fields: c')
     # Shouldn't raise exceptions.
     partial = proto.SerializePartialToString()
 
@@ -2176,7 +2425,8 @@ class SerializationTest(unittest.TestCase):
     self._CheckRaises(
         message.EncodeError,
         proto.SerializeToString,
-        'Message is missing required fields: '
+        'Message protobuf_unittest.TestRequiredForeign '
+        'is missing required fields: '
         'optional_message.b,optional_message.c')
 
     proto.optional_message.b = 2
@@ -2188,7 +2438,7 @@ class SerializationTest(unittest.TestCase):
     self._CheckRaises(
         message.EncodeError,
         proto.SerializeToString,
-        'Message is missing required fields: '
+        'Message protobuf_unittest.TestRequiredForeign is missing required fields: '
         'repeated_message[0].b,repeated_message[0].c,'
         'repeated_message[1].a,repeated_message[1].c')
 

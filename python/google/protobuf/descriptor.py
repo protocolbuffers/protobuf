@@ -39,11 +39,18 @@ from google.protobuf.internal import api_implementation
 
 
 if api_implementation.Type() == 'cpp':
-  from google.protobuf.internal import cpp_message
+  if api_implementation.Version() == 2:
+    from google.protobuf.internal.cpp import _message
+  else:
+    from google.protobuf.internal import cpp_message
 
 
 class Error(Exception):
   """Base error for this module."""
+
+
+class TypeTransformationError(Error):
+  """Error transforming between python proto type and corresponding C++ type."""
 
 
 class DescriptorBase(object):
@@ -65,6 +72,18 @@ class DescriptorBase(object):
     """Initialize the descriptor given its options message and the name of the
     class of the options message. The name of the class is required in case
     the options message is None and has to be created.
+    """
+    self._options = options
+    self._options_class_name = options_class_name
+
+    # Does this descriptor have non-default options?
+    self.has_options = options is not None
+
+  def _SetOptions(self, options, options_class_name):
+    """Sets the descriptor's options
+
+    This function is used in generated proto2 files to update descriptor
+    options. It must not be used outside proto2.
     """
     self._options = options
     self._options_class_name = options_class_name
@@ -250,6 +269,24 @@ class Descriptor(_NestedDescriptorBase):
     self._serialized_start = serialized_start
     self._serialized_end = serialized_end
 
+  def EnumValueName(self, enum, value):
+    """Returns the string name of an enum value.
+
+    This is just a small helper method to simplify a common operation.
+
+    Args:
+      enum: string name of the Enum.
+      value: int, value of the enum.
+
+    Returns:
+      string name of the enum value.
+
+    Raises:
+      KeyError if either the Enum doesn't exist or the value is not a valid
+        value for the enum.
+    """
+    return self.enum_types_by_name[enum].values_by_number[value].name
+
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.DescriptorProto.
 
@@ -275,7 +312,7 @@ class FieldDescriptor(DescriptorBase):
 
   """Descriptor for a single field in a .proto file.
 
-  A FieldDescriptor instance has the following attriubtes:
+  A FieldDescriptor instance has the following attributes:
 
     name: (str) Name of this field, exactly as it appears in .proto.
     full_name: (str) Name of this field, including containing scope.  This is
@@ -358,6 +395,27 @@ class FieldDescriptor(DescriptorBase):
   CPPTYPE_MESSAGE     = 10
   MAX_CPPTYPE         = 10
 
+  _PYTHON_TO_CPP_PROTO_TYPE_MAP = {
+      TYPE_DOUBLE: CPPTYPE_DOUBLE,
+      TYPE_FLOAT: CPPTYPE_FLOAT,
+      TYPE_ENUM: CPPTYPE_ENUM,
+      TYPE_INT64: CPPTYPE_INT64,
+      TYPE_SINT64: CPPTYPE_INT64,
+      TYPE_SFIXED64: CPPTYPE_INT64,
+      TYPE_UINT64: CPPTYPE_UINT64,
+      TYPE_FIXED64: CPPTYPE_UINT64,
+      TYPE_INT32: CPPTYPE_INT32,
+      TYPE_SFIXED32: CPPTYPE_INT32,
+      TYPE_SINT32: CPPTYPE_INT32,
+      TYPE_UINT32: CPPTYPE_UINT32,
+      TYPE_FIXED32: CPPTYPE_UINT32,
+      TYPE_BYTES: CPPTYPE_STRING,
+      TYPE_STRING: CPPTYPE_STRING,
+      TYPE_BOOL: CPPTYPE_BOOL,
+      TYPE_MESSAGE: CPPTYPE_MESSAGE,
+      TYPE_GROUP: CPPTYPE_MESSAGE
+      }
+
   # Must be consistent with C++ FieldDescriptor::Label enum in
   # descriptor.h.
   #
@@ -395,11 +453,37 @@ class FieldDescriptor(DescriptorBase):
     self.extension_scope = extension_scope
     if api_implementation.Type() == 'cpp':
       if is_extension:
-        self._cdescriptor = cpp_message.GetExtensionDescriptor(full_name)
+        if api_implementation.Version() == 2:
+          self._cdescriptor = _message.GetExtensionDescriptor(full_name)
+        else:
+          self._cdescriptor = cpp_message.GetExtensionDescriptor(full_name)
       else:
-        self._cdescriptor = cpp_message.GetFieldDescriptor(full_name)
+        if api_implementation.Version() == 2:
+          self._cdescriptor = _message.GetFieldDescriptor(full_name)
+        else:
+          self._cdescriptor = cpp_message.GetFieldDescriptor(full_name)
     else:
       self._cdescriptor = None
+
+  @staticmethod
+  def ProtoTypeToCppProtoType(proto_type):
+    """Converts from a Python proto type to a C++ Proto Type.
+
+    The Python ProtocolBuffer classes specify both the 'Python' datatype and the
+    'C++' datatype - and they're not the same. This helper method should
+    translate from one to another.
+
+    Args:
+      proto_type: the Python proto type (descriptor.FieldDescriptor.TYPE_*)
+    Returns:
+      descriptor.FieldDescriptor.CPPTYPE_*, the C++ type.
+    Raises:
+      TypeTransformationError: when the Python proto type isn't known.
+    """
+    try:
+      return FieldDescriptor._PYTHON_TO_CPP_PROTO_TYPE_MAP[proto_type]
+    except KeyError:
+      raise TypeTransformationError('Unknown proto_type: %s' % proto_type)
 
 
 class EnumDescriptor(_NestedDescriptorBase):
@@ -577,7 +661,10 @@ class FileDescriptor(DescriptorBase):
     self.serialized_pb = serialized_pb
     if (api_implementation.Type() == 'cpp' and
         self.serialized_pb is not None):
-      cpp_message.BuildFile(self.serialized_pb)
+      if api_implementation.Version() == 2:
+        _message.BuildFile(self.serialized_pb)
+      else:
+        cpp_message.BuildFile(self.serialized_pb)
 
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.FileDescriptorProto.
@@ -596,3 +683,31 @@ def _ParseOptions(message, string):
   """
   message.ParseFromString(string)
   return message
+
+
+def MakeDescriptor(desc_proto, package=''):
+  """Make a protobuf Descriptor given a DescriptorProto protobuf.
+
+  Args:
+    desc_proto: The descriptor_pb2.DescriptorProto protobuf message.
+    package: Optional package name for the new message Descriptor (string).
+
+  Returns:
+    A Descriptor for protobuf messages.
+  """
+  full_message_name = [desc_proto.name]
+  if package: full_message_name.insert(0, package)
+  fields = []
+  for field_proto in desc_proto.field:
+    full_name = '.'.join(full_message_name + [field_proto.name])
+    field = FieldDescriptor(
+        field_proto.name, full_name, field_proto.number - 1,
+        field_proto.number, field_proto.type,
+        FieldDescriptor.ProtoTypeToCppProtoType(field_proto.type),
+        field_proto.label, None, None, None, None, False, None,
+        has_default_value=False)
+    fields.append(field)
+
+  desc_name = '.'.join(full_message_name)
+  return Descriptor(desc_proto.name, desc_name, None, None, fields,
+                    [], [], [])

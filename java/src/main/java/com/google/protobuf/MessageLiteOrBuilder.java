@@ -52,6 +52,8 @@ public interface MessageLiteOrBuilder {
   /**
    * Returns true if all required fields in the message and all embedded
    * messages are set, false otherwise.
+   *
+   * <p>See also: {@link MessageOrBuilder#getInitializationErrorString()}
    */
   boolean isInitialized();
 

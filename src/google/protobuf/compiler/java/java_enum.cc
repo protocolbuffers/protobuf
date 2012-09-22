@@ -36,6 +36,7 @@
 #include <string>
 
 #include <google/protobuf/compiler/java/java_enum.h>
+#include <google/protobuf/compiler/java/java_doc_comment.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -67,6 +68,7 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor)
 EnumGenerator::~EnumGenerator() {}
 
 void EnumGenerator::Generate(io::Printer* printer) {
+  WriteEnumDocComment(printer, descriptor_);
   if (HasDescriptorMethods(descriptor_)) {
     printer->Print(
       "public enum $classname$\n"
@@ -85,6 +87,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
     vars["name"] = canonical_values_[i]->name();
     vars["index"] = SimpleItoa(canonical_values_[i]->index());
     vars["number"] = SimpleItoa(canonical_values_[i]->number());
+    WriteEnumValueDocComment(printer, canonical_values_[i]);
     printer->Print(vars,
       "$name$($index$, $number$),\n");
   }
@@ -100,6 +103,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
     vars["classname"] = descriptor_->name();
     vars["name"] = aliases_[i].value->name();
     vars["canonical_name"] = aliases_[i].canonical_value->name();
+    WriteEnumValueDocComment(printer, aliases_[i].value);
     printer->Print(vars,
       "public static final $classname$ $name$ = $canonical_name$;\n");
   }
@@ -108,6 +112,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
     map<string, string> vars;
     vars["name"] = descriptor_->value(i)->name();
     vars["number"] = SimpleItoa(descriptor_->value(i)->number());
+    WriteEnumValueDocComment(printer, descriptor_->value(i));
     printer->Print(vars,
       "public static final int $name$_VALUE = $number$;\n");
   }
@@ -187,18 +192,29 @@ void EnumGenerator::Generate(io::Printer* printer) {
     printer->Print(
       "}\n"
       "\n"
-      "private static final $classname$[] VALUES = {\n"
-      "  ",
+      "private static final $classname$[] VALUES = ",
       "classname", descriptor_->name());
 
-    for (int i = 0; i < descriptor_->value_count(); i++) {
-      printer->Print("$name$, ",
-        "name", descriptor_->value(i)->name());
+    if (CanUseEnumValues()) {
+      // If the constants we are going to output are exactly the ones we
+      // have declared in the Java enum in the same order, then we can use
+      // the values() method that the Java compiler automatically generates
+      // for every enum.
+      printer->Print("values();\n");
+    } else {
+      printer->Print(
+        "{\n"
+        "  ");
+      for (int i = 0; i < descriptor_->value_count(); i++) {
+        printer->Print("$name$, ",
+          "name", descriptor_->value(i)->name());
+      }
+      printer->Print(
+          "\n"
+          "};\n");
     }
 
     printer->Print(
-      "\n"
-      "};\n"
       "\n"
       "public static $classname$ valueOf(\n"
       "    com.google.protobuf.Descriptors.EnumValueDescriptor desc) {\n"
@@ -235,6 +251,18 @@ void EnumGenerator::Generate(io::Printer* printer) {
 
   printer->Outdent();
   printer->Print("}\n\n");
+}
+
+bool EnumGenerator::CanUseEnumValues() {
+  if (canonical_values_.size() != descriptor_->value_count()) {
+    return false;
+  }
+  for (int i = 0; i < descriptor_->value_count(); i++) {
+    if (descriptor_->value(i)->name() != canonical_values_[i]->name()) {
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace java

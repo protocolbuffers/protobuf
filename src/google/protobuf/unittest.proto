@@ -103,6 +103,12 @@ message TestAllTypes {
   optional string optional_string_piece = 24 [ctype=STRING_PIECE];
   optional string optional_cord = 25 [ctype=CORD];
 
+  // Defined in unittest_import_public.proto
+  optional protobuf_unittest_import.PublicImportMessage
+      optional_public_import_message = 26;
+
+  optional NestedMessage optional_lazy_message = 27 [lazy=true];
+
   // Repeated
   repeated    int32 repeated_int32    = 31;
   repeated    int64 repeated_int64    = 32;
@@ -134,6 +140,8 @@ message TestAllTypes {
 
   repeated string repeated_string_piece = 54 [ctype=STRING_PIECE];
   repeated string repeated_cord = 55 [ctype=CORD];
+
+  repeated NestedMessage repeated_lazy_message = 57 [lazy=true];
 
   // Singular with defaults
   optional    int32 default_int32    = 61 [default =  41    ];
@@ -216,6 +224,12 @@ extend TestAllExtensions {
   optional string optional_string_piece_extension = 24 [ctype=STRING_PIECE];
   optional string optional_cord_extension = 25 [ctype=CORD];
 
+  optional protobuf_unittest_import.PublicImportMessage
+    optional_public_import_message_extension = 26;
+
+  optional TestAllTypes.NestedMessage
+    optional_lazy_message_extension = 27 [lazy=true];
+
   // Repeated
   repeated    int32 repeated_int32_extension    = 31;
   repeated    int64 repeated_int64_extension    = 32;
@@ -249,6 +263,9 @@ extend TestAllExtensions {
 
   repeated string repeated_string_piece_extension = 54 [ctype=STRING_PIECE];
   repeated string repeated_cord_extension = 55 [ctype=CORD];
+
+  repeated TestAllTypes.NestedMessage
+    repeated_lazy_message_extension = 57 [lazy=true];
 
   // Singular with defaults
   optional    int32 default_int32_extension    = 61 [default =  41    ];
@@ -397,6 +414,13 @@ message TestDupFieldNumber {                        // NO_PROTO1
   optional group Bar = 3 { optional int32 a = 1; }  // NO_PROTO1
 }                                                   // NO_PROTO1
 
+// Additional messages for testing lazy fields.
+message TestEagerMessage {
+  optional TestAllTypes sub_message = 1 [lazy=false];
+}
+message TestLazyMessage {
+  optional TestAllTypes sub_message = 1 [lazy=true];
+}
 
 // Needed for a Python test.
 message TestNestedMessageHasBits {
@@ -470,6 +494,8 @@ message TestExtremeDefaultValues {
   optional uint64 large_uint64 = 3 [default = 0xFFFFFFFFFFFFFFFF];
   optional  int32 small_int32  = 4 [default = -0x7FFFFFFF];
   optional  int64 small_int64  = 5 [default = -0x7FFFFFFFFFFFFFFF];
+  optional  int32 really_small_int32 = 21 [default = -0x80000000];
+  optional  int64 really_small_int64 = 22 [default = -0x8000000000000000];
 
   // The default value here is UTF-8 for "\u1234".  (We could also just type
   // the UTF-8 text directly into this text file rather than escape it, but
@@ -500,6 +526,14 @@ message TestExtremeDefaultValues {
   // Note that in .proto file, "\?" is a valid way to escape ? in string
   // literals.
   optional string cpp_trigraph = 20 [default = "? \? ?? \?? \??? ??/ ?\?-"];
+
+  // String defaults containing the character '\000'
+  optional string string_with_zero       = 23 [default = "hel\000lo"];
+  optional  bytes bytes_with_zero        = 24 [default = "wor\000ld"];
+  optional string string_piece_with_zero = 25 [ctype=STRING_PIECE,
+                                               default="ab\000c"];
+  optional string cord_with_zero         = 26 [ctype=CORD,
+                                               default="12\0003"];
 }
 
 message SparseEnumMessage {
@@ -511,9 +545,18 @@ message OneString {
   optional string data = 1;
 }
 
+message MoreString {
+  repeated string data = 1;
+}
+
 message OneBytes {
   optional bytes data = 1;
 }
+
+message MoreBytes {
+  repeated bytes data = 1;
+}
+
 
 // Test messages for packed fields
 
@@ -615,10 +658,55 @@ message TestRepeatedScalarDifferentTagSizes {
   repeated uint64  repeated_uint64  = 262143;
 }
 
+// Test that if an optional or required message/group field appears multiple
+// times in the input, they need to be merged.
+message TestParsingMerge {
+  // RepeatedFieldsGenerator defines matching field types as TestParsingMerge,
+  // except that all fields are repeated. In the tests, we will serialize the
+  // RepeatedFieldsGenerator to bytes, and parse the bytes to TestParsingMerge.
+  // Repeated fields in RepeatedFieldsGenerator are expected to be merged into
+  // the corresponding required/optional fields in TestParsingMerge.
+  message RepeatedFieldsGenerator {
+    repeated TestAllTypes field1 = 1;
+    repeated TestAllTypes field2 = 2;
+    repeated TestAllTypes field3 = 3;
+    repeated group Group1 = 10 {
+      optional TestAllTypes field1 = 11;
+    }
+    repeated group Group2 = 20 {
+      optional TestAllTypes field1 = 21;
+    }
+    repeated TestAllTypes ext1 = 1000;
+    repeated TestAllTypes ext2 = 1001;
+  }
+  required TestAllTypes required_all_types = 1;
+  optional TestAllTypes optional_all_types = 2;
+  repeated TestAllTypes repeated_all_types = 3;
+  optional group OptionalGroup = 10 {
+    optional TestAllTypes optional_group_all_types = 11;
+  }
+  repeated group RepeatedGroup = 20 {
+    optional TestAllTypes repeated_group_all_types = 21;
+  }
+  extensions 1000 to max;
+  extend TestParsingMerge {
+    optional TestAllTypes optional_ext = 1000;
+    repeated TestAllTypes repeated_ext = 1001;
+  }
+}
+
+message TestCommentInjectionMessage {
+  // */ <- This should not close the generated doc comment
+  optional string a = 1 [default="*/ <- Neither should this."];
+}
+
 
 // Test that RPC services work.
 message FooRequest  {}
 message FooResponse {}
+
+message FooClientMessage {}
+message FooServerMessage{}
 
 service TestService {
   rpc Foo(FooRequest) returns (FooResponse);

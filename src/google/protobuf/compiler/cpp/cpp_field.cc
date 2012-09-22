@@ -52,7 +52,8 @@ namespace cpp {
 using internal::WireFormat;
 
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
-                             map<string, string>* variables) {
+                             map<string, string>* variables,
+                             const Options& options) {
   (*variables)["name"] = FieldName(descriptor);
   (*variables)["index"] = SimpleItoa(descriptor->index());
   (*variables)["number"] = SimpleItoa(descriptor->number());
@@ -64,6 +65,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["deprecation"] = descriptor->options().deprecated()
       ? " PROTOBUF_DEPRECATED" : "";
 
+  (*variables)["cppget"] = "Get";
 }
 
 FieldGenerator::~FieldGenerator() {}
@@ -80,46 +82,47 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
 
 }
 
-FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor)
+FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,
+                                     const Options& options)
   : descriptor_(descriptor),
-    field_generators_(
-      new scoped_ptr<FieldGenerator>[descriptor->field_count()]) {
+    field_generators_(new scoped_ptr<FieldGenerator>[descriptor->field_count()]) {
   // Construct all the FieldGenerators.
   for (int i = 0; i < descriptor->field_count(); i++) {
-    field_generators_[i].reset(MakeGenerator(descriptor->field(i)));
+    field_generators_[i].reset(MakeGenerator(descriptor->field(i), options));
   }
 }
 
-FieldGenerator* FieldGeneratorMap::MakeGenerator(const FieldDescriptor* field) {
+FieldGenerator* FieldGeneratorMap::MakeGenerator(const FieldDescriptor* field,
+                                                 const Options& options) {
   if (field->is_repeated()) {
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        return new RepeatedMessageFieldGenerator(field);
+        return new RepeatedMessageFieldGenerator(field, options);
       case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
           default:  // RepeatedStringFieldGenerator handles unknown ctypes.
           case FieldOptions::STRING:
-            return new RepeatedStringFieldGenerator(field);
+            return new RepeatedStringFieldGenerator(field, options);
         }
       case FieldDescriptor::CPPTYPE_ENUM:
-        return new RepeatedEnumFieldGenerator(field);
+        return new RepeatedEnumFieldGenerator(field, options);
       default:
-        return new RepeatedPrimitiveFieldGenerator(field);
+        return new RepeatedPrimitiveFieldGenerator(field, options);
     }
   } else {
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        return new MessageFieldGenerator(field);
+        return new MessageFieldGenerator(field, options);
       case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
           default:  // StringFieldGenerator handles unknown ctypes.
           case FieldOptions::STRING:
-            return new StringFieldGenerator(field);
+            return new StringFieldGenerator(field, options);
         }
       case FieldDescriptor::CPPTYPE_ENUM:
-        return new EnumFieldGenerator(field);
+        return new EnumFieldGenerator(field, options);
       default:
-        return new PrimitiveFieldGenerator(field);
+        return new PrimitiveFieldGenerator(field, options);
     }
   }
 }

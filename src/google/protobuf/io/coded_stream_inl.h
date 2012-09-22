@@ -38,7 +38,7 @@
 
 #include <google/protobuf/io/coded_stream.h>
 #include <string>
-#include <google/protobuf/stubs/stl_util-inl.h>
+#include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
 namespace protobuf {

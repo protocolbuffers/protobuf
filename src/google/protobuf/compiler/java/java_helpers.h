@@ -78,19 +78,14 @@ string ToJavaName(const string& full_name, const FileDescriptor* file);
 
 // These return the fully-qualified class name corresponding to the given
 // descriptor.
-inline string ClassName(const Descriptor* descriptor) {
-  return ToJavaName(descriptor->full_name(), descriptor->file());
-}
-inline string ClassName(const EnumDescriptor* descriptor) {
-  return ToJavaName(descriptor->full_name(), descriptor->file());
-}
-inline string ClassName(const ServiceDescriptor* descriptor) {
-  return ToJavaName(descriptor->full_name(), descriptor->file());
-}
+string ClassName(const Descriptor* descriptor);
+string ClassName(const EnumDescriptor* descriptor);
+string ClassName(const ServiceDescriptor* descriptor);
+string ClassName(const FileDescriptor* descriptor);
+
 inline string ExtensionIdentifierName(const FieldDescriptor* descriptor) {
   return ToJavaName(descriptor->full_name(), descriptor->file());
 }
-string ClassName(const FileDescriptor* descriptor);
 
 // Get the unqualified name that should be used for a field's field
 // number constant.
@@ -204,6 +199,18 @@ string GenerateGetBitFromLocal(int bitIndex);
 // the message.
 // Example: "to_bitField1_ = (to_bitField1_ | 0x04)"
 string GenerateSetBitToLocal(int bitIndex);
+
+// Does the same as GenerateGetBit but operates on the bit field on a local
+// variable. This is used by the parsing constructor to record if a repeated
+// field is mutable.
+// Example: "((mutable_bitField1_ & 0x04) == 0x04)"
+string GenerateGetBitMutableLocal(int bitIndex);
+
+// Does the same as GenerateSetBit but operates on the bit field on a local
+// variable. This is used by the parsing constructor to record if a repeated
+// field is mutable.
+// Example: "mutable_bitField1_ = (mutable_bitField1_ | 0x04)"
+string GenerateSetBitMutableLocal(int bitIndex);
 
 }  // namespace java
 }  // namespace compiler

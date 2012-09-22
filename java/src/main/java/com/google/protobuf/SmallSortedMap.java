@@ -51,14 +51,14 @@ import java.util.SortedMap;
  * remaining entries are stored in an overflow map. Iteration over the entries
  * in the map should be done as follows:
  *
- * <pre>
- * for (int i = 0; i &lt; fieldMap.getNumArrayEntries(); i++) {
+ * <pre>   {@code
+ * for (int i = 0; i < fieldMap.getNumArrayEntries(); i++) {
  *   process(fieldMap.getArrayEntryAt(i));
  * }
- * for (Map.Entry&lt;K, V&gt; entry : fieldMap.getOverflowEntries()) {
+ * for (Map.Entry<K, V> entry : fieldMap.getOverflowEntries()) {
  *   process(entry);
  * }
- * </pre>
+ * }</pre>
  *
  * The resulting iteration is in order of ascending field tag number. The
  * object returned by {@link #entrySet()} adheres to the same contract but is
@@ -394,7 +394,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
 
   /**
    * Entry implementation that implements Comparable in order to support
-   * binary search witin the entry array. Also checks mutability in
+   * binary search within the entry array. Also checks mutability in
    * {@link #setValue()}.
    */
   private class Entry implements Map.Entry<K, V>, Comparable<Entry> {

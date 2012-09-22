@@ -36,6 +36,7 @@
 #include <string>
 
 #include <google/protobuf/compiler/java/java_enum_field.h>
+#include <google/protobuf/compiler/java/java_doc_comment.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/io/printer.h>
@@ -75,6 +76,7 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
 
   // For singular messages and builders, one bit is used for the hasField bit.
   (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
+  (*variables)["set_has_field_bit_message"] = GenerateSetBit(messageBitIndex);
 
   (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
   (*variables)["set_has_field_bit_builder"] = GenerateSetBit(builderBitIndex);
@@ -85,6 +87,13 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
   (*variables)["get_mutable_bit_builder"] = GenerateGetBit(builderBitIndex);
   (*variables)["set_mutable_bit_builder"] = GenerateSetBit(builderBitIndex);
   (*variables)["clear_mutable_bit_builder"] = GenerateClearBit(builderBitIndex);
+
+  // For repeated fields, one bit is used for whether the array is immutable
+  // in the parsing constructor.
+  (*variables)["get_mutable_bit_parser"] =
+      GenerateGetBitMutableLocal(builderBitIndex);
+  (*variables)["set_mutable_bit_parser"] =
+      GenerateSetBitMutableLocal(builderBitIndex);
 
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
@@ -117,18 +126,25 @@ int EnumFieldGenerator::GetNumBitsForBuilder() const {
 
 void EnumFieldGenerator::
 GenerateInterfaceMembers(io::Printer* printer) const {
+  WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-    "$deprecation$boolean has$capitalized_name$();\n"
+    "$deprecation$boolean has$capitalized_name$();\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$$type$ get$capitalized_name$();\n");
 }
 
 void EnumFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private $type$ $name$_;\n"
+    "private $type$ $name$_;\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public boolean has$capitalized_name$() {\n"
     "  return $get_has_field_bit_message$;\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public $type$ get$capitalized_name$() {\n"
     "  return $name$_;\n"
     "}\n");
@@ -137,13 +153,19 @@ GenerateMembers(io::Printer* printer) const {
 void EnumFieldGenerator::
 GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private $type$ $name$_ = $default$;\n"
+    "private $type$ $name$_ = $default$;\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public boolean has$capitalized_name$() {\n"
     "  return $get_has_field_bit_builder$;\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public $type$ get$capitalized_name$() {\n"
     "  return $name$_;\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$($type$ value) {\n"
     "  if (value == null) {\n"
     "    throw new NullPointerException();\n"
@@ -152,7 +174,9 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $name$_ = value;\n"
     "  $on_changed$\n"
     "  return this;\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public Builder clear$capitalized_name$() {\n"
     "  $clear_has_field_bit_builder$;\n"
     "  $name$_ = $default$;\n"
@@ -210,9 +234,14 @@ GenerateParsingCode(io::Printer* printer) const {
       "if (value != null) {\n");
   }
   printer->Print(variables_,
-    "  $set_has_field_bit_builder$;\n"
+    "  $set_has_field_bit_message$;\n"
     "  $name$_ = value;\n"
     "}\n");
+}
+
+void EnumFieldGenerator::
+GenerateParsingDoneCode(io::Printer* printer) const {
+  // noop for enums
 }
 
 void EnumFieldGenerator::
@@ -273,22 +302,33 @@ int RepeatedEnumFieldGenerator::GetNumBitsForBuilder() const {
 
 void RepeatedEnumFieldGenerator::
 GenerateInterfaceMembers(io::Printer* printer) const {
+  WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-    "$deprecation$java.util.List<$type$> get$capitalized_name$List();\n"
-    "$deprecation$int get$capitalized_name$Count();\n"
+    "$deprecation$java.util.List<$type$> get$capitalized_name$List();\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
+    "$deprecation$int get$capitalized_name$Count();\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$$type$ get$capitalized_name$(int index);\n");
 }
 
 void RepeatedEnumFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private java.util.List<$type$> $name$_;\n"
+    "private java.util.List<$type$> $name$_;\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public java.util.List<$type$> get$capitalized_name$List() {\n"
     "  return $name$_;\n"   // note:  unmodifiable list
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public int get$capitalized_name$Count() {\n"
     "  return $name$_.size();\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public $type$ get$capitalized_name$(int index) {\n"
     "  return $name$_.get(index);\n"
     "}\n");
@@ -320,21 +360,29 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "    $name$_ = new java.util.ArrayList<$type$>($name$_);\n"
     "    $set_mutable_bit_builder$;\n"
     "  }\n"
-    "}\n"
+    "}\n");
 
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     // Note:  We return an unmodifiable list because otherwise the caller
     //   could hold on to the returned list and modify it after the message
     //   has been built, thus mutating the message which is supposed to be
     //   immutable.
     "$deprecation$public java.util.List<$type$> get$capitalized_name$List() {\n"
     "  return java.util.Collections.unmodifiableList($name$_);\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public int get$capitalized_name$Count() {\n"
     "  return $name$_.size();\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public $type$ get$capitalized_name$(int index) {\n"
     "  return $name$_.get(index);\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$(\n"
     "    int index, $type$ value) {\n"
     "  if (value == null) {\n"
@@ -344,7 +392,9 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $name$_.set(index, value);\n"
     "  $on_changed$\n"
     "  return this;\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public Builder add$capitalized_name$($type$ value) {\n"
     "  if (value == null) {\n"
     "    throw new NullPointerException();\n"
@@ -353,14 +403,18 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $name$_.add(value);\n"
     "  $on_changed$\n"
     "  return this;\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public Builder addAll$capitalized_name$(\n"
     "    java.lang.Iterable<? extends $type$> values) {\n"
     "  ensure$capitalized_name$IsMutable();\n"
     "  super.addAll(values, $name$_);\n"
     "  $on_changed$\n"
     "  return this;\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public Builder clear$capitalized_name$() {\n"
     "  $name$_ = java.util.Collections.emptyList();\n"
     "  $clear_mutable_bit_builder$;\n"
@@ -434,7 +488,11 @@ GenerateParsingCode(io::Printer* printer) const {
       "if (value != null) {\n");
   }
   printer->Print(variables_,
-    "  add$capitalized_name$(value);\n"
+    "  if (!$get_mutable_bit_parser$) {\n"
+    "    $name$_ = new java.util.ArrayList<$type$>();\n"
+    "    $set_mutable_bit_parser$;\n"
+    "  }\n"
+    "  $name$_.add(value);\n"
     "}\n");
 }
 
@@ -454,6 +512,14 @@ GenerateParsingCodeFromPacked(io::Printer* printer) const {
   printer->Print(variables_,
     "}\n"
     "input.popLimit(oldLimit);\n");
+}
+
+void RepeatedEnumFieldGenerator::
+GenerateParsingDoneCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($get_mutable_bit_parser$) {\n"
+    "  $name$_ = java.util.Collections.unmodifiableList($name$_);\n"
+    "}\n");
 }
 
 void RepeatedEnumFieldGenerator::

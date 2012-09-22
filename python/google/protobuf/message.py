@@ -73,6 +73,7 @@ class Message(object):
     return clone
 
   def __eq__(self, other_msg):
+    """Recursively compares two messages by value and structure."""
     raise NotImplementedError
 
   def __ne__(self, other_msg):
@@ -83,9 +84,11 @@ class Message(object):
     raise TypeError('unhashable object')
 
   def __str__(self):
+    """Outputs a human-readable representation of the message."""
     raise NotImplementedError
 
   def __unicode__(self):
+    """Outputs a human-readable representation of the message."""
     raise NotImplementedError
 
   def MergeFrom(self, other_msg):
@@ -266,3 +269,12 @@ class Message(object):
     via a previous _SetListener() call.
     """
     raise NotImplementedError
+
+  def __getstate__(self):
+    """Support the pickle protocol."""
+    return dict(serialized=self.SerializePartialToString())
+
+  def __setstate__(self, state):
+    """Support the pickle protocol."""
+    self.__init__()
+    self.ParseFromString(state['serialized'])

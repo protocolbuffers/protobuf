@@ -40,6 +40,7 @@
 #define GOOGLE_PROTOBUF_WIRE_FORMAT_H__
 
 #include <string>
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
@@ -253,7 +254,7 @@ class LIBPROTOBUF_EXPORT UnknownFieldSetFieldSkipper : public FieldSkipper {
   virtual bool SkipMessage(io::CodedInputStream* input);
   virtual void SkipUnknownEnum(int field_number, int value);
 
- private:
+ protected:
   UnknownFieldSet* unknown_fields_;
 };
 

@@ -31,6 +31,7 @@
 // Author: petar@google.com (Petar Petrov)
 
 #include <Python.h>
+#include <string>
 
 #include <google/protobuf/pyext/python_descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -40,6 +41,7 @@
 namespace google {
 namespace protobuf {
 namespace python {
+
 
 static void CFieldDescriptorDealloc(CFieldDescriptor* self);
 
@@ -93,7 +95,7 @@ static PyGetSetDef CFieldDescriptorGetters[] = {
 PyTypeObject CFieldDescriptor_Type = {
   PyObject_HEAD_INIT(&PyType_Type)
   0,
-  C("google3.net.google.protobuf.python.internal."
+  C("google.protobuf.internal."
     "_net_proto2___python."
     "CFieldDescriptor"),                // tp_name
   sizeof(CFieldDescriptor),             // tp_basicsize
@@ -181,6 +183,8 @@ static PyObject* CDescriptorPool_FindFieldByName(
   const google::protobuf::FieldDescriptor* field_descriptor = NULL;
 
   field_descriptor = self->pool->FindFieldByName(full_field_name);
+
+
   if (field_descriptor == NULL) {
     PyErr_Format(PyExc_TypeError, "Couldn't find field %.200s",
                  full_field_name);
@@ -223,7 +227,7 @@ static PyMethodDef CDescriptorPoolMethods[] = {
 PyTypeObject CDescriptorPool_Type = {
   PyObject_HEAD_INIT(&PyType_Type)
   0,
-  C("google3.net.google.protobuf.python.internal."
+  C("google.protobuf.internal."
     "_net_proto2___python."
     "CFieldDescriptor"),               // tp_name
   sizeof(CDescriptorPool),             // tp_basicsize
@@ -301,7 +305,6 @@ PyObject* Python_BuildFile(PyObject* ignored, PyObject* arg) {
     return NULL;
   }
 
-  // If this file is already in the generated pool, don't add it again.
   if (google::protobuf::DescriptorPool::generated_pool()->FindFileByName(
       file_proto.name()) != NULL) {
     Py_RETURN_NONE;

@@ -39,7 +39,7 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/stl_util-inl.h>
+#include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/stubs/map-util.h>
 
 namespace google {

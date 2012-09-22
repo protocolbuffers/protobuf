@@ -33,13 +33,14 @@
 #include <google/protobuf/compiler/mock_code_generator.h>
 
 #include <google/protobuf/testing/file.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/stl_util-inl.h>
+#include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
 namespace protobuf {
@@ -131,6 +132,15 @@ bool MockCodeGenerator::Generate(
         exit(123);
       } else if (command == "Abort") {
         cerr << "Saw message type MockCodeGenerator_Abort." << endl;
+        abort();
+      } else if (command == "HasSourceCodeInfo") {
+        FileDescriptorProto file_descriptor_proto;
+        file->CopySourceCodeInfoTo(&file_descriptor_proto);
+        bool has_source_code_info =
+            file_descriptor_proto.has_source_code_info() &&
+            file_descriptor_proto.source_code_info().location_size() > 0;
+        cerr << "Saw message type MockCodeGenerator_HasSourceCodeInfo: "
+             << has_source_code_info << "." << endl;
         abort();
       } else {
         GOOGLE_LOG(FATAL) << "Unknown MockCodeGenerator command: " << command;

@@ -33,6 +33,7 @@
 #include <google/protobuf/compiler/subprocess.h>
 
 #include <algorithm>
+#include <iostream>
 
 #ifndef _WIN32
 #include <errno.h>

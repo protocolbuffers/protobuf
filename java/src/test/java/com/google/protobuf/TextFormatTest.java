@@ -121,6 +121,18 @@ public class TextFormatTest extends TestCase {
     assertEquals(allFieldsSetText, javaText);
   }
 
+  /** Print TestAllTypes as Builder and compare with golden file. */
+  public void testPrintMessageBuilder() throws Exception {
+    String javaText = TextFormat.printToString(TestUtil.getAllSetBuilder());
+
+    // Java likes to add a trailing ".0" to floats and doubles.  C printf
+    // (with %g format) does not.  Our golden files are used for both
+    // C++ and Java TextFormat classes, so we need to conform.
+    javaText = javaText.replace(".0\n", "\n");
+
+    assertEquals(allFieldsSetText, javaText);
+  }
+
   /** Print TestAllExtensions and compare with golden file. */
   public void testPrintExtensions() throws Exception {
     String javaText = TextFormat.printToString(TestUtil.getAllExtensionsSet());
@@ -748,5 +760,27 @@ public class TextFormatTest extends TestCase {
         + " 8: 1 8: 2 8: 3 15: 12379813812177893520 15: 0xabcd1234 15:"
         + " 0xabcdef1234567890",
         TextFormat.shortDebugString(makeUnknownFieldSet()));
+  }
+
+  public void testPrintToUnicodeString() {
+    assertEquals(
+        "optional_string: \"abc\u3042efg\"\n" +
+        "optional_bytes: \"\\343\\201\\202\"\n" +
+        "repeated_string: \"\u3093XYZ\"\n",
+        TextFormat.printToUnicodeString(TestAllTypes.newBuilder()
+            .setOptionalString("abc\u3042efg")
+            .setOptionalBytes(bytes(0xe3, 0x81, 0x82))
+            .addRepeatedString("\u3093XYZ")
+            .build()));
+  }
+
+  public void testPrintToUnicodeString_unknown() {
+    assertEquals(
+        "1: \"\\343\\201\\202\"\n",
+        TextFormat.printToUnicodeString(UnknownFieldSet.newBuilder()
+            .addField(1,
+                UnknownFieldSet.Field.newBuilder()
+                .addLengthDelimited(bytes(0xe3, 0x81, 0x82)).build())
+            .build()));
   }
 }

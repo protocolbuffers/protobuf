@@ -42,8 +42,10 @@ further ensures that we can use Python protocol message objects as we expect.
 __author__ = 'robinson@google.com (Will Robinson)'
 
 import unittest
+from google.protobuf.internal import test_bad_identifiers_pb2
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_import_pb2
+from google.protobuf import unittest_import_public_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_no_generic_services_pb2
@@ -239,6 +241,29 @@ class GeneratorTest(unittest.TestCase):
         unittest_pb2._TESTALLTYPES_NESTEDMESSAGE.name in
         file_type.message_types_by_name)
 
+  def testPublicImports(self):
+    # Test public imports as embedded message.
+    all_type_proto = unittest_pb2.TestAllTypes()
+    self.assertEqual(0, all_type_proto.optional_public_import_message.e)
+
+    # PublicImportMessage is actually defined in unittest_import_public_pb2
+    # module, and is public imported by unittest_import_pb2 module.
+    public_import_proto = unittest_import_pb2.PublicImportMessage()
+    self.assertEqual(0, public_import_proto.e)
+    self.assertTrue(unittest_import_public_pb2.PublicImportMessage is
+                    unittest_import_pb2.PublicImportMessage)
+
+  def testBadIdentifiers(self):
+    # We're just testing that the code was imported without problems.
+    message = test_bad_identifiers_pb2.TestBadIdentifiers()
+    self.assertEqual(message.Extensions[test_bad_identifiers_pb2.message],
+                     "foo")
+    self.assertEqual(message.Extensions[test_bad_identifiers_pb2.descriptor],
+                     "bar")
+    self.assertEqual(message.Extensions[test_bad_identifiers_pb2.reflection],
+                     "baz")
+    self.assertEqual(message.Extensions[test_bad_identifiers_pb2.service],
+                     "qux")
 
 if __name__ == '__main__':
   unittest.main()

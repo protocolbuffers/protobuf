@@ -40,6 +40,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/compiler/cpp/cpp_options.h>
 
 namespace google {
 namespace protobuf {
@@ -57,7 +58,8 @@ namespace cpp {
 // ['name', 'index', 'number', 'classname', 'declared_type', 'tag_size',
 // 'deprecation'].
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
-                             map<string, string>* variables);
+                             map<string, string>* variables,
+                             const Options& options);
 
 class FieldGenerator {
  public:
@@ -114,6 +116,13 @@ class FieldGenerator {
   // Most field types don't need this, so the default implementation is empty.
   virtual void GenerateDestructorCode(io::Printer* printer) const {}
 
+  // Generate code that allocates the fields's default instance.
+  virtual void GenerateDefaultInstanceAllocator(io::Printer* printer) const {}
+
+  // Generate code that should be run when ShutdownProtobufLibrary() is called,
+  // to delete all dynamically-allocated objects.
+  virtual void GenerateShutdownCode(io::Printer* printer) const {}
+
   // Generate lines to decode this field, which will be placed inside the
   // message's MergeFromCodedStream() method.
   virtual void GenerateMergeFromCodedStream(io::Printer* printer) const = 0;
@@ -144,7 +153,7 @@ class FieldGenerator {
 // Convenience class which constructs FieldGenerators for a Descriptor.
 class FieldGeneratorMap {
  public:
-  explicit FieldGeneratorMap(const Descriptor* descriptor);
+  explicit FieldGeneratorMap(const Descriptor* descriptor, const Options& options);
   ~FieldGeneratorMap();
 
   const FieldGenerator& get(const FieldDescriptor* field) const;
@@ -153,7 +162,8 @@ class FieldGeneratorMap {
   const Descriptor* descriptor_;
   scoped_array<scoped_ptr<FieldGenerator> > field_generators_;
 
-  static FieldGenerator* MakeGenerator(const FieldDescriptor* field);
+  static FieldGenerator* MakeGenerator(const FieldDescriptor* field,
+                                       const Options& options);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGeneratorMap);
 };

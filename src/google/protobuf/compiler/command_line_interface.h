@@ -112,6 +112,19 @@ class LIBPROTOC_EXPORT CommandLineInterface {
                          CodeGenerator* generator,
                          const string& help_text);
 
+  // Register a code generator for a language.
+  // Besides flag_name you can specify another option_flag_name that could be
+  // used to pass extra parameters to the registered code generator.
+  // Suppose you have registered a generator by calling:
+  //   command_line_interface.RegisterGenerator("--foo_out", "--foo_opt", ...)
+  // Then you could invoke the compiler with a command like:
+  //   protoc --foo_out=enable_bar:outdir --foo_opt=enable_baz
+  // This will pass "enable_bar,enable_baz" as the parameter to the generator.
+  void RegisterGenerator(const string& flag_name,
+                         const string& option_flag_name,
+                         CodeGenerator* generator,
+                         const string& help_text);
+
   // Enables "plugins".  In this mode, if a command-line flag ends with "_out"
   // but does not match any registered generator, the compiler will attempt to
   // find a "plugin" to implement the generator.  Plugins are just executables.
@@ -186,8 +199,15 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   bool MakeInputsBeProtoPathRelative(
     DiskSourceTree* source_tree);
 
+  // Return status for ParseArguments() and InterpretArgument().
+  enum ParseArgumentStatus {
+    PARSE_ARGUMENT_DONE_AND_CONTINUE,
+    PARSE_ARGUMENT_DONE_AND_EXIT,
+    PARSE_ARGUMENT_FAIL
+  };
+
   // Parse all command-line arguments.
-  bool ParseArguments(int argc, const char* const argv[]);
+  ParseArgumentStatus ParseArguments(int argc, const char* const argv[]);
 
   // Parses a command-line argument into a name/value pair.  Returns
   // true if the next argument in the argv should be used as the value,
@@ -203,7 +223,8 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   bool ParseArgument(const char* arg, string* name, string* value);
 
   // Interprets arguments parsed with ParseArgument.
-  bool InterpretArgument(const string& name, const string& value);
+  ParseArgumentStatus InterpretArgument(const string& name,
+                                        const string& value);
 
   // Print the --help text to stderr.
   void PrintHelpText();
@@ -230,9 +251,11 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // protos will be ordered such that every file is listed before any file that
   // depends on it, so that you can call DescriptorPool::BuildFile() on them
   // in order.  Any files in *already_seen will not be added, and each file
-  // added will be inserted into *already_seen.
+  // added will be inserted into *already_seen.  If include_source_code_info is
+  // true then include the source code information in the FileDescriptorProtos.
   static void GetTransitiveDependencies(
       const FileDescriptor* file,
+      bool include_source_code_info,
       set<const FileDescriptor*>* already_seen,
       RepeatedPtrField<FileDescriptorProto>* output);
 
@@ -244,13 +267,21 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // Version info set with SetVersionInfo().
   string version_info_;
 
-  // Map from flag names to registered generators.
+  // Registered generators.
   struct GeneratorInfo {
+    string flag_name;
+    string option_flag_name;
     CodeGenerator* generator;
     string help_text;
   };
   typedef map<string, GeneratorInfo> GeneratorMap;
-  GeneratorMap generators_;
+  GeneratorMap generators_by_flag_name_;
+  GeneratorMap generators_by_option_name_;
+  // A map from generator names to the parameters specified using the option
+  // flag. For example, if the user invokes the compiler with:
+  //   protoc --foo_out=outputdir --foo_opt=enable_bar ...
+  // Then there will be an entry ("--foo_out", "enable_bar") in this map.
+  map<string, string> generator_parameters_;
 
   // See AllowPlugins().  If this is empty, plugins aren't allowed.
   string plugin_prefix_;
@@ -301,6 +332,10 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // write all transitive dependencies to the DescriptorSet.  Otherwise, only
   // the .proto files listed on the command-line are added.
   bool imports_in_descriptor_set_;
+
+  // True if --include_source_info was given, meaning that we should not strip
+  // SourceCodeInfo from the DescriptorSet.
+  bool source_info_in_descriptor_set_;
 
   // Was the --disallow_services flag used?
   bool disallow_services_;

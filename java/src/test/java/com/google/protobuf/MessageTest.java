@@ -38,6 +38,8 @@ import protobuf_unittest.UnittestProto.ForeignMessage;
 
 import junit.framework.TestCase;
 
+import java.util.List;
+
 /**
  * Misc. unit tests for message operations that apply to both generated
  * and dynamic messages.
@@ -309,5 +311,43 @@ public class MessageTest extends TestCase {
     } catch (InvalidProtocolBufferException e) {
       assertEquals("Message missing required fields: a, b, c", e.getMessage());
     }
+  }
+  
+  /** Test reading unset repeated message from DynamicMessage. */
+  public void testDynamicRepeatedMessageNull() throws Exception {
+    Descriptors.Descriptor descriptor = TestRequired.getDescriptor();
+    DynamicMessage result =
+      DynamicMessage.newBuilder(TestAllTypes.getDescriptor())
+        .mergeFrom(DynamicMessage.newBuilder(MERGE_SOURCE).build())
+        .build();
+
+    assertTrue(result.getField(result.getDescriptorForType()
+        .findFieldByName("repeated_foreign_message")) instanceof List<?>);
+    assertEquals(result.getRepeatedFieldCount(result.getDescriptorForType()
+        .findFieldByName("repeated_foreign_message")), 0);
+  }
+  
+  /** Test reading repeated message from DynamicMessage. */
+  public void testDynamicRepeatedMessageNotNull() throws Exception {
+
+    TestAllTypes REPEATED_NESTED =
+      TestAllTypes.newBuilder()
+        .setOptionalInt32(1)
+        .setOptionalString("foo")
+        .setOptionalForeignMessage(ForeignMessage.getDefaultInstance())
+        .addRepeatedString("bar")
+        .addRepeatedForeignMessage(ForeignMessage.getDefaultInstance())
+        .addRepeatedForeignMessage(ForeignMessage.getDefaultInstance())
+        .build();
+    Descriptors.Descriptor descriptor = TestRequired.getDescriptor();
+    DynamicMessage result =
+      DynamicMessage.newBuilder(TestAllTypes.getDescriptor())
+        .mergeFrom(DynamicMessage.newBuilder(REPEATED_NESTED).build())
+        .build();
+
+    assertTrue(result.getField(result.getDescriptorForType()
+        .findFieldByName("repeated_foreign_message")) instanceof List<?>);
+    assertEquals(result.getRepeatedFieldCount(result.getDescriptorForType()
+        .findFieldByName("repeated_foreign_message")), 2);
   }
 }

@@ -168,6 +168,18 @@ LIBPROTOBUF_EXPORT string StringReplace(const string& s, const string& oldsub,
 LIBPROTOBUF_EXPORT void SplitStringUsing(const string& full, const char* delim,
                                          vector<string>* res);
 
+// Split a string using one or more byte delimiters, presented
+// as a nul-terminated c string. Append the components to 'result'.
+// If there are consecutive delimiters, this function will return
+// corresponding empty strings.  If you want to drop the empty
+// strings, try SplitStringUsing().
+//
+// If "full" is the empty string, yields an empty string as the only value.
+// ----------------------------------------------------------------------
+LIBPROTOBUF_EXPORT void SplitStringAllowEmpty(const string& full,
+                                              const char* delim,
+                                              vector<string>* result);
+
 // ----------------------------------------------------------------------
 // JoinStrings()
 //    These methods concatenate a vector of strings into a C++ string, using
@@ -453,5 +465,3 @@ LIBPROTOBUF_EXPORT double NoLocaleStrtod(const char* text, char** endptr);
 }  // namespace google
 
 #endif  // GOOGLE_PROTOBUF_STUBS_STRUTIL_H__
-
-

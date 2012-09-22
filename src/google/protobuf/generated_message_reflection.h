@@ -40,17 +40,23 @@
 
 #include <string>
 #include <vector>
+#include <google/protobuf/stubs/common.h>
+// TODO(jasonh): Remove this once the compiler change to directly include this
+// is released to components.
+#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/unknown_field_set.h>
 
 
 namespace google {
+namespace upb {
+namespace proto2_bridge_opensource {
+class FieldAccessor;
+}  // namespace protobuf_bridge_google3
+}  // namespace upb
+
 namespace protobuf {
   class DescriptorPool;
-  // Generated code needs these to have been forward-declared.  Easier to do it
-  // here than to print them inside every .pb.h file.
-  class FileDescriptor;
-  class EnumDescriptor;
 }
 
 namespace protobuf {
@@ -141,6 +147,7 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
   int FieldSize(const Message& message, const FieldDescriptor* field) const;
   void ClearField(Message* message, const FieldDescriptor* field) const;
   void RemoveLast(Message* message, const FieldDescriptor* field) const;
+  Message* ReleaseLast(Message* message, const FieldDescriptor* field) const;
   void Swap(Message* message1, Message* message2) const;
   void SwapElements(Message* message, const FieldDescriptor* field,
             int index1, int index2) const;
@@ -192,6 +199,8 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
   void SetEnum  (Message* message, const FieldDescriptor* field,
                  const EnumValueDescriptor* value) const;
   Message* MutableMessage(Message* message, const FieldDescriptor* field,
+                          MessageFactory* factory = NULL) const;
+  Message* ReleaseMessage(Message* message, const FieldDescriptor* field,
                           MessageFactory* factory = NULL) const;
 
   int32  GetRepeatedInt32 (const Message& message,
@@ -270,8 +279,17 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
   const FieldDescriptor* FindKnownExtensionByName(const string& name) const;
   const FieldDescriptor* FindKnownExtensionByNumber(int number) const;
 
+ protected:
+  virtual void* MutableRawRepeatedField(
+      Message* message, const FieldDescriptor* field, FieldDescriptor::CppType,
+      int ctype, const Descriptor* desc) const;
+
  private:
   friend class GeneratedMessage;
+
+  // To parse directly into a proto2 generated class, FieldAccessor needs
+  // access to member offsets and hasbits.
+  friend class LIBPROTOBUF_EXPORT upb::proto2_bridge_opensource::FieldAccessor;
 
   const Descriptor* descriptor_;
   const Message* default_instance_;
@@ -293,7 +311,6 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
                           const FieldDescriptor* field) const;
   template <typename Type>
   inline const Type& DefaultRaw(const FieldDescriptor* field) const;
-  inline const Message* GetMessagePrototype(const FieldDescriptor* field) const;
 
   inline const uint32* GetHasBits(const Message& message) const;
   inline uint32* MutableHasBits(Message* message) const;
@@ -394,28 +411,6 @@ inline To dynamic_cast_if_available(From from) {
   return dynamic_cast<To>(from);
 #endif
 }
-
-// Helper for EnumType_Parse functions: try to parse the string 'name' as an
-// enum name of the given type, returning true and filling in value on success,
-// or returning false and leaving value unchanged on failure.
-LIBPROTOBUF_EXPORT bool ParseNamedEnum(const EnumDescriptor* descriptor,
-                    const string& name,
-                    int* value);
-
-template<typename EnumType>
-bool ParseNamedEnum(const EnumDescriptor* descriptor,
-                    const string& name,
-                    EnumType* value) {
-  int tmp;
-  if (!ParseNamedEnum(descriptor, name, &tmp)) return false;
-  *value = static_cast<EnumType>(tmp);
-  return true;
-}
-
-// Just a wrapper around printing the name of a value. The main point of this
-// function is not to be inlined, so that you can do this without including
-// descriptor.h.
-LIBPROTOBUF_EXPORT const string& NameOfEnum(const EnumDescriptor* descriptor, int value);
 
 }  // namespace internal
 }  // namespace protobuf

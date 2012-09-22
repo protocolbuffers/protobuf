@@ -46,8 +46,9 @@ namespace cpp {
 namespace {
 
 void SetEnumVariables(const FieldDescriptor* descriptor,
-                      map<string, string>* variables) {
-  SetCommonFieldVariables(descriptor, variables);
+                      map<string, string>* variables,
+                      const Options& options) {
+  SetCommonFieldVariables(descriptor, variables, options);
   const EnumValueDescriptor* default_value = descriptor->default_value_enum();
   (*variables)["type"] = ClassName(descriptor->enum_type(), true);
   (*variables)["default"] = SimpleItoa(default_value->number());
@@ -58,9 +59,10 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
 // ===================================================================
 
 EnumFieldGenerator::
-EnumFieldGenerator(const FieldDescriptor* descriptor)
+EnumFieldGenerator(const FieldDescriptor* descriptor,
+                   const Options& options)
   : descriptor_(descriptor) {
-  SetEnumVariables(descriptor, &variables_);
+  SetEnumVariables(descriptor, &variables_, options);
 }
 
 EnumFieldGenerator::~EnumFieldGenerator() {}
@@ -84,7 +86,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "  return static_cast< $type$ >($name$_);\n"
     "}\n"
     "inline void $classname$::set_$name$($type$ value) {\n"
-    "  GOOGLE_DCHECK($type$_IsValid(value));\n"
+    "  assert($type$_IsValid(value));\n"
     "  set_has_$name$();\n"
     "  $name$_ = value;\n"
     "}\n");
@@ -152,9 +154,10 @@ GenerateByteSize(io::Printer* printer) const {
 // ===================================================================
 
 RepeatedEnumFieldGenerator::
-RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor)
+RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor,
+                           const Options& options)
   : descriptor_(descriptor) {
-  SetEnumVariables(descriptor, &variables_);
+  SetEnumVariables(descriptor, &variables_, options);
 }
 
 RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {}
@@ -187,11 +190,11 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "  return static_cast< $type$ >($name$_.Get(index));\n"
     "}\n"
     "inline void $classname$::set_$name$(int index, $type$ value) {\n"
-    "  GOOGLE_DCHECK($type$_IsValid(value));\n"
+    "  assert($type$_IsValid(value));\n"
     "  $name$_.Set(index, value);\n"
     "}\n"
     "inline void $classname$::add_$name$($type$ value) {\n"
-    "  GOOGLE_DCHECK($type$_IsValid(value));\n"
+    "  assert($type$_IsValid(value));\n"
     "  $name$_.Add(value);\n"
     "}\n");
   printer->Print(variables_,
@@ -345,7 +348,9 @@ GenerateByteSize(io::Printer* printer) const {
       "  total_size += $tag_size$ +\n"
       "    ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);\n"
       "}\n"
+      "GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();\n"
       "_$name$_cached_byte_size_ = data_size;\n"
+      "GOOGLE_SAFE_CONCURRENT_WRITES_END();\n"
       "total_size += data_size;\n");
   } else {
     printer->Print(variables_,

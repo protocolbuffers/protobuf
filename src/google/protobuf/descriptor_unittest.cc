@@ -36,13 +36,15 @@
 
 #include <vector>
 
+#include <google/protobuf/compiler/importer.h>
+#include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/unittest_custom_options.pb.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/text_format.h>
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/unittest_custom_options.pb.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 
@@ -1518,9 +1520,8 @@ TEST_F(ExtensionDescriptorTest, FindAllExtensions) {
 
 class MiscTest : public testing::Test {
  protected:
-  // Function which makes a field of the given type just to find out what its
-  // cpp_type is.
-  FieldDescriptor::CppType GetCppTypeForFieldType(FieldDescriptor::Type type) {
+  // Function which makes a field descriptor of the given type.
+  const FieldDescriptor* GetFieldDescriptorOfType(FieldDescriptor::Type type) {
     FileDescriptorProto file_proto;
     file_proto.set_name("foo.proto");
     AddEmptyEnum(&file_proto, "DummyEnum");
@@ -1538,18 +1539,61 @@ class MiscTest : public testing::Test {
     }
 
     // Build the descriptors and get the pointers.
-    DescriptorPool pool;
-    const FileDescriptor* file = pool.BuildFile(file_proto);
+    pool_.reset(new DescriptorPool());
+    const FileDescriptor* file = pool_->BuildFile(file_proto);
 
     if (file != NULL &&
         file->message_type_count() == 1 &&
         file->message_type(0)->field_count() == 1) {
-      return file->message_type(0)->field(0)->cpp_type();
+      return file->message_type(0)->field(0);
     } else {
-      return static_cast<FieldDescriptor::CppType>(0);
+      return NULL;
     }
   }
+
+  const char* GetTypeNameForFieldType(FieldDescriptor::Type type) {
+    const FieldDescriptor* field = GetFieldDescriptorOfType(type);
+    return field != NULL ? field->type_name() : "";
+  }
+
+  FieldDescriptor::CppType GetCppTypeForFieldType(FieldDescriptor::Type type) {
+    const FieldDescriptor* field = GetFieldDescriptorOfType(type);
+    return field != NULL ? field->cpp_type() :
+        static_cast<FieldDescriptor::CppType>(0);
+  }
+
+  const char* GetCppTypeNameForFieldType(FieldDescriptor::Type type) {
+    const FieldDescriptor* field = GetFieldDescriptorOfType(type);
+    return field != NULL ? field->cpp_type_name() : "";
+  }
+
+  scoped_ptr<DescriptorPool> pool_;
 };
+
+TEST_F(MiscTest, TypeNames) {
+  // Test that correct type names are returned.
+
+  typedef FieldDescriptor FD;  // avoid ugly line wrapping
+
+  EXPECT_STREQ("double"  , GetTypeNameForFieldType(FD::TYPE_DOUBLE  ));
+  EXPECT_STREQ("float"   , GetTypeNameForFieldType(FD::TYPE_FLOAT   ));
+  EXPECT_STREQ("int64"   , GetTypeNameForFieldType(FD::TYPE_INT64   ));
+  EXPECT_STREQ("uint64"  , GetTypeNameForFieldType(FD::TYPE_UINT64  ));
+  EXPECT_STREQ("int32"   , GetTypeNameForFieldType(FD::TYPE_INT32   ));
+  EXPECT_STREQ("fixed64" , GetTypeNameForFieldType(FD::TYPE_FIXED64 ));
+  EXPECT_STREQ("fixed32" , GetTypeNameForFieldType(FD::TYPE_FIXED32 ));
+  EXPECT_STREQ("bool"    , GetTypeNameForFieldType(FD::TYPE_BOOL    ));
+  EXPECT_STREQ("string"  , GetTypeNameForFieldType(FD::TYPE_STRING  ));
+  EXPECT_STREQ("group"   , GetTypeNameForFieldType(FD::TYPE_GROUP   ));
+  EXPECT_STREQ("message" , GetTypeNameForFieldType(FD::TYPE_MESSAGE ));
+  EXPECT_STREQ("bytes"   , GetTypeNameForFieldType(FD::TYPE_BYTES   ));
+  EXPECT_STREQ("uint32"  , GetTypeNameForFieldType(FD::TYPE_UINT32  ));
+  EXPECT_STREQ("enum"    , GetTypeNameForFieldType(FD::TYPE_ENUM    ));
+  EXPECT_STREQ("sfixed32", GetTypeNameForFieldType(FD::TYPE_SFIXED32));
+  EXPECT_STREQ("sfixed64", GetTypeNameForFieldType(FD::TYPE_SFIXED64));
+  EXPECT_STREQ("sint32"  , GetTypeNameForFieldType(FD::TYPE_SINT32  ));
+  EXPECT_STREQ("sint64"  , GetTypeNameForFieldType(FD::TYPE_SINT64  ));
+}
 
 TEST_F(MiscTest, CppTypes) {
   // Test that CPP types are assigned correctly.
@@ -1574,6 +1618,31 @@ TEST_F(MiscTest, CppTypes) {
   EXPECT_EQ(FD::CPPTYPE_INT64  , GetCppTypeForFieldType(FD::TYPE_SFIXED64));
   EXPECT_EQ(FD::CPPTYPE_INT32  , GetCppTypeForFieldType(FD::TYPE_SINT32  ));
   EXPECT_EQ(FD::CPPTYPE_INT64  , GetCppTypeForFieldType(FD::TYPE_SINT64  ));
+}
+
+TEST_F(MiscTest, CppTypeNames) {
+  // Test that correct CPP type names are returned.
+
+  typedef FieldDescriptor FD;  // avoid ugly line wrapping
+
+  EXPECT_STREQ("double" , GetCppTypeNameForFieldType(FD::TYPE_DOUBLE  ));
+  EXPECT_STREQ("float"  , GetCppTypeNameForFieldType(FD::TYPE_FLOAT   ));
+  EXPECT_STREQ("int64"  , GetCppTypeNameForFieldType(FD::TYPE_INT64   ));
+  EXPECT_STREQ("uint64" , GetCppTypeNameForFieldType(FD::TYPE_UINT64  ));
+  EXPECT_STREQ("int32"  , GetCppTypeNameForFieldType(FD::TYPE_INT32   ));
+  EXPECT_STREQ("uint64" , GetCppTypeNameForFieldType(FD::TYPE_FIXED64 ));
+  EXPECT_STREQ("uint32" , GetCppTypeNameForFieldType(FD::TYPE_FIXED32 ));
+  EXPECT_STREQ("bool"   , GetCppTypeNameForFieldType(FD::TYPE_BOOL    ));
+  EXPECT_STREQ("string" , GetCppTypeNameForFieldType(FD::TYPE_STRING  ));
+  EXPECT_STREQ("message", GetCppTypeNameForFieldType(FD::TYPE_GROUP   ));
+  EXPECT_STREQ("message", GetCppTypeNameForFieldType(FD::TYPE_MESSAGE ));
+  EXPECT_STREQ("string" , GetCppTypeNameForFieldType(FD::TYPE_BYTES   ));
+  EXPECT_STREQ("uint32" , GetCppTypeNameForFieldType(FD::TYPE_UINT32  ));
+  EXPECT_STREQ("enum"   , GetCppTypeNameForFieldType(FD::TYPE_ENUM    ));
+  EXPECT_STREQ("int32"  , GetCppTypeNameForFieldType(FD::TYPE_SFIXED32));
+  EXPECT_STREQ("int64"  , GetCppTypeNameForFieldType(FD::TYPE_SFIXED64));
+  EXPECT_STREQ("int32"  , GetCppTypeNameForFieldType(FD::TYPE_SINT32  ));
+  EXPECT_STREQ("int64"  , GetCppTypeNameForFieldType(FD::TYPE_SINT64  ));
 }
 
 TEST_F(MiscTest, DefaultValues) {
@@ -1739,13 +1808,31 @@ TEST_F(MiscTest, FieldOptions) {
 }
 
 // ===================================================================
+enum DescriptorPoolMode {
+  NO_DATABASE,
+  FALLBACK_DATABASE
+};
 
-class AllowUnknownDependenciesTest : public testing::Test {
+class AllowUnknownDependenciesTest
+    : public testing::TestWithParam<DescriptorPoolMode> {
  protected:
+  DescriptorPoolMode mode() {
+    return GetParam();
+   }
+
   virtual void SetUp() {
     FileDescriptorProto foo_proto, bar_proto;
 
-    pool_.AllowUnknownDependencies();
+    switch (mode()) {
+      case NO_DATABASE:
+        pool_.reset(new DescriptorPool);
+        break;
+      case FALLBACK_DATABASE:
+        pool_.reset(new DescriptorPool(&db_));
+        break;
+    }
+
+    pool_->AllowUnknownDependencies();
 
     ASSERT_TRUE(TextFormat::ParseFromString(
       "name: 'foo.proto'"
@@ -1776,13 +1863,13 @@ class AllowUnknownDependenciesTest : public testing::Test {
       &bar_proto));
 
     // Collect pointers to stuff.
-    bar_file_ = pool_.BuildFile(bar_proto);
+    bar_file_ = BuildFile(bar_proto);
     ASSERT_TRUE(bar_file_ != NULL);
 
     ASSERT_EQ(1, bar_file_->message_type_count());
     bar_type_ = bar_file_->message_type(0);
 
-    foo_file_ = pool_.BuildFile(foo_proto);
+    foo_file_ = BuildFile(foo_proto);
     ASSERT_TRUE(foo_file_ != NULL);
 
     ASSERT_EQ(1, foo_file_->message_type_count());
@@ -1794,6 +1881,20 @@ class AllowUnknownDependenciesTest : public testing::Test {
     qux_field_ = foo_type_->field(2);
   }
 
+  const FileDescriptor* BuildFile(const FileDescriptorProto& proto) {
+    switch (mode()) {
+      case NO_DATABASE:
+        return pool_->BuildFile(proto);
+        break;
+      case FALLBACK_DATABASE: {
+        EXPECT_TRUE(db_.Add(proto));
+        return pool_->FindFileByName(proto.name());
+      }
+    }
+    GOOGLE_LOG(FATAL) << "Can't get here.";
+    return NULL;
+  }
+
   const FileDescriptor* bar_file_;
   const Descriptor* bar_type_;
   const FileDescriptor* foo_file_;
@@ -1802,10 +1903,11 @@ class AllowUnknownDependenciesTest : public testing::Test {
   const FieldDescriptor* baz_field_;
   const FieldDescriptor* qux_field_;
 
-  DescriptorPool pool_;
+  SimpleDescriptorDatabase db_;        // used if in FALLBACK_DATABASE mode.
+  scoped_ptr<DescriptorPool> pool_;
 };
 
-TEST_F(AllowUnknownDependenciesTest, PlaceholderFile) {
+TEST_P(AllowUnknownDependenciesTest, PlaceholderFile) {
   ASSERT_EQ(2, foo_file_->dependency_count());
   EXPECT_EQ(bar_file_, foo_file_->dependency(0));
 
@@ -1814,11 +1916,11 @@ TEST_F(AllowUnknownDependenciesTest, PlaceholderFile) {
   EXPECT_EQ(0, baz_file->message_type_count());
 
   // Placeholder files should not be findable.
-  EXPECT_EQ(bar_file_, pool_.FindFileByName(bar_file_->name()));
-  EXPECT_TRUE(pool_.FindFileByName(baz_file->name()) == NULL);
+  EXPECT_EQ(bar_file_, pool_->FindFileByName(bar_file_->name()));
+  EXPECT_TRUE(pool_->FindFileByName(baz_file->name()) == NULL);
 }
 
-TEST_F(AllowUnknownDependenciesTest, PlaceholderTypes) {
+TEST_P(AllowUnknownDependenciesTest, PlaceholderTypes) {
   ASSERT_EQ(FieldDescriptor::TYPE_MESSAGE, bar_field_->type());
   EXPECT_EQ(bar_type_, bar_field_->message_type());
 
@@ -1836,12 +1938,12 @@ TEST_F(AllowUnknownDependenciesTest, PlaceholderTypes) {
   EXPECT_EQ("corge.Qux.placeholder.proto", qux_type->file()->name());
 
   // Placeholder types should not be findable.
-  EXPECT_EQ(bar_type_, pool_.FindMessageTypeByName(bar_type_->full_name()));
-  EXPECT_TRUE(pool_.FindMessageTypeByName(baz_type->full_name()) == NULL);
-  EXPECT_TRUE(pool_.FindEnumTypeByName(qux_type->full_name()) == NULL);
+  EXPECT_EQ(bar_type_, pool_->FindMessageTypeByName(bar_type_->full_name()));
+  EXPECT_TRUE(pool_->FindMessageTypeByName(baz_type->full_name()) == NULL);
+  EXPECT_TRUE(pool_->FindEnumTypeByName(qux_type->full_name()) == NULL);
 }
 
-TEST_F(AllowUnknownDependenciesTest, CopyTo) {
+TEST_P(AllowUnknownDependenciesTest, CopyTo) {
   // FieldDescriptor::CopyTo() should write non-fully-qualified type names
   // for placeholder types which were not originally fully-qualified.
   FieldDescriptorProto proto;
@@ -1864,7 +1966,7 @@ TEST_F(AllowUnknownDependenciesTest, CopyTo) {
   EXPECT_EQ(FieldDescriptorProto::TYPE_ENUM, proto.type());
 }
 
-TEST_F(AllowUnknownDependenciesTest, CustomOptions) {
+TEST_P(AllowUnknownDependenciesTest, CustomOptions) {
   // Qux should still have the uninterpreted option attached.
   ASSERT_EQ(1, qux_field_->options().uninterpreted_option_size());
   const UninterpretedOption& option =
@@ -1873,7 +1975,7 @@ TEST_F(AllowUnknownDependenciesTest, CustomOptions) {
   EXPECT_EQ("grault", option.name(0).name_part());
 }
 
-TEST_F(AllowUnknownDependenciesTest, UnknownExtendee) {
+TEST_P(AllowUnknownDependenciesTest, UnknownExtendee) {
   // Test that we can extend an unknown type.  This is slightly tricky because
   // it means that the placeholder type must have an extension range.
 
@@ -1884,7 +1986,7 @@ TEST_F(AllowUnknownDependenciesTest, UnknownExtendee) {
     "extension { extendee: 'UnknownType' name:'some_extension' number:123"
     "            label:LABEL_OPTIONAL type:TYPE_INT32 }",
     &extension_proto));
-  const FileDescriptor* file = pool_.BuildFile(extension_proto);
+  const FileDescriptor* file = BuildFile(extension_proto);
 
   ASSERT_TRUE(file != NULL);
 
@@ -1896,7 +1998,7 @@ TEST_F(AllowUnknownDependenciesTest, UnknownExtendee) {
   EXPECT_EQ(FieldDescriptor::kMaxNumber + 1, extendee->extension_range(0)->end);
 }
 
-TEST_F(AllowUnknownDependenciesTest, CustomOption) {
+TEST_P(AllowUnknownDependenciesTest, CustomOption) {
   // Test that we can use a custom option without having parsed
   // descriptor.proto.
 
@@ -1937,7 +2039,7 @@ TEST_F(AllowUnknownDependenciesTest, CustomOption) {
     "}",
     &option_proto));
 
-  const FileDescriptor* file = pool_.BuildFile(option_proto);
+  const FileDescriptor* file = BuildFile(option_proto);
   ASSERT_TRUE(file != NULL);
 
   // Verify that no extension options were set, but they were left as
@@ -1948,6 +2050,81 @@ TEST_F(AllowUnknownDependenciesTest, CustomOption) {
   EXPECT_TRUE(file->options().has_optimize_for());
   EXPECT_EQ(2, file->options().uninterpreted_option_size());
 }
+
+TEST_P(AllowUnknownDependenciesTest,
+       UndeclaredDependencyTriggersBuildOfDependency) {
+  // Crazy case: suppose foo.proto refers to a symbol without declaring the
+  // dependency that finds it. In the event that the pool is backed by a
+  // DescriptorDatabase, the pool will attempt to find the symbol in the
+  // database. If successful, it will build the undeclared dependency to verify
+  // that the file does indeed contain the symbol. If that file fails to build,
+  // then its descriptors must be rolled back. However, we still want foo.proto
+  // to build successfully, since we are allowing unknown dependencies.
+
+  FileDescriptorProto undeclared_dep_proto;
+  // We make this file fail to build by giving it two fields with tag 1.
+  ASSERT_TRUE(TextFormat::ParseFromString(
+    "name: \"invalid_file_as_undeclared_dep.proto\" "
+    "package: \"undeclared\" "
+    "message_type: {  "
+    "  name: \"Quux\"  "
+    "  field { "
+    "    name:'qux' number:1 label:LABEL_OPTIONAL type: TYPE_INT32 "
+    "  }"
+    "  field { "
+    "    name:'quux' number:1 label:LABEL_OPTIONAL type: TYPE_INT64 "
+    "  }"
+    "}",
+    &undeclared_dep_proto));
+  // We can't use the BuildFile() helper because we don't actually want to build
+  // it into the descriptor pool in the fallback database case: it just needs to
+  // be sitting in the database so that it gets built during the building of
+  // test.proto below.
+  switch (mode()) {
+    case NO_DATABASE: {
+      ASSERT_TRUE(pool_->BuildFile(undeclared_dep_proto) == NULL);
+      break;
+    }
+    case FALLBACK_DATABASE: {
+      ASSERT_TRUE(db_.Add(undeclared_dep_proto));
+    }
+  }
+
+  FileDescriptorProto test_proto;
+  ASSERT_TRUE(TextFormat::ParseFromString(
+    "name: \"test.proto\" "
+    "message_type: { "
+    "  name: \"Corge\" "
+    "  field { "
+    "    name:'quux' number:1 label: LABEL_OPTIONAL "
+    "    type_name:'undeclared.Quux' type: TYPE_MESSAGE "
+    "  }"
+    "}",
+    &test_proto));
+
+  const FileDescriptor* file = BuildFile(test_proto);
+  ASSERT_TRUE(file != NULL);
+  GOOGLE_LOG(INFO) << file->DebugString();
+
+  EXPECT_EQ(0, file->dependency_count());
+  ASSERT_EQ(1, file->message_type_count());
+  const Descriptor* corge_desc = file->message_type(0);
+  ASSERT_EQ("Corge", corge_desc->name());
+  ASSERT_EQ(1, corge_desc->field_count());
+
+  const FieldDescriptor* quux_field = corge_desc->field(0);
+  ASSERT_EQ(FieldDescriptor::TYPE_MESSAGE, quux_field->type());
+  ASSERT_EQ("Quux", quux_field->message_type()->name());
+  ASSERT_EQ("undeclared.Quux", quux_field->message_type()->full_name());
+  EXPECT_EQ("undeclared.Quux.placeholder.proto",
+            quux_field->message_type()->file()->name());
+  // The place holder type should not be findable.
+  ASSERT_TRUE(pool_->FindMessageTypeByName("undeclared.Quux") == NULL);
+}
+
+INSTANTIATE_TEST_CASE_P(DatabaseSource,
+                        AllowUnknownDependenciesTest,
+                        testing::Values(NO_DATABASE, FALLBACK_DATABASE));
 
 // ===================================================================
 
@@ -2451,6 +2628,15 @@ TEST_F(ValidationErrorTest, UnknownDependency) {
     "bar.proto: bar.proto: OTHER: Import \"foo.proto\" has not been loaded.\n");
 }
 
+TEST_F(ValidationErrorTest, InvalidPublicDependencyIndex) {
+  BuildFile("name: \"foo.proto\"");
+  BuildFileWithErrors(
+    "name: \"bar.proto\" "
+    "dependency: \"foo.proto\" "
+    "public_dependency: 1",
+    "bar.proto: bar.proto: OTHER: Invalid public dependency index.\n");
+}
+
 TEST_F(ValidationErrorTest, ForeignUnimportedPackageNoCrash) {
   // Used to crash:  If we depend on a non-existent file and then refer to a
   // package defined in a file that we didn't import, and that package is
@@ -2829,6 +3015,164 @@ TEST_F(ValidationErrorTest, FieldTypeDefinedInUndeclaredDependency) {
       "necessary import.\n");
 }
 
+TEST_F(ValidationErrorTest, FieldTypeDefinedInIndirectDependency) {
+  // Test for hidden dependencies.
+  //
+  // // bar.proto
+  // message Bar{}
+  //
+  // // forward.proto
+  // import "bar.proto"
+  //
+  // // foo.proto
+  // import "forward.proto"
+  // message Foo {
+  //   optional Bar foo = 1;  // Error, needs to import bar.proto explicitly.
+  // }
+  //
+  BuildFile(
+    "name: \"bar.proto\" "
+    "message_type { name: \"Bar\" }");
+
+  BuildFile(
+    "name: \"forward.proto\""
+    "dependency: \"bar.proto\"");
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"forward.proto\" "
+    "message_type {"
+    "  name: \"Foo\""
+    "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type_name:\"Bar\" }"
+    "}",
+    "foo.proto: Foo.foo: TYPE: \"Bar\" seems to be defined in \"bar.proto\", "
+      "which is not imported by \"foo.proto\".  To use it here, please add the "
+      "necessary import.\n");
+}
+
+TEST_F(ValidationErrorTest, FieldTypeDefinedInPublicDependency) {
+  // Test for public dependencies.
+  //
+  // // bar.proto
+  // message Bar{}
+  //
+  // // forward.proto
+  // import public "bar.proto"
+  //
+  // // foo.proto
+  // import "forward.proto"
+  // message Foo {
+  //   optional Bar foo = 1;  // Correct. "bar.proto" is public imported into
+  //                          // forward.proto, so when "foo.proto" imports
+  //                          // "forward.proto", it imports "bar.proto" too.
+  // }
+  //
+  BuildFile(
+    "name: \"bar.proto\" "
+    "message_type { name: \"Bar\" }");
+
+  BuildFile(
+    "name: \"forward.proto\""
+    "dependency: \"bar.proto\" "
+    "public_dependency: 0");
+
+  BuildFile(
+    "name: \"foo.proto\" "
+    "dependency: \"forward.proto\" "
+    "message_type {"
+    "  name: \"Foo\""
+    "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type_name:\"Bar\" }"
+    "}");
+}
+
+TEST_F(ValidationErrorTest, FieldTypeDefinedInTransitivePublicDependency) {
+  // Test for public dependencies.
+  //
+  // // bar.proto
+  // message Bar{}
+  //
+  // // forward.proto
+  // import public "bar.proto"
+  //
+  // // forward2.proto
+  // import public "forward.proto"
+  //
+  // // foo.proto
+  // import "forward2.proto"
+  // message Foo {
+  //   optional Bar foo = 1;  // Correct, public imports are transitive.
+  // }
+  //
+  BuildFile(
+    "name: \"bar.proto\" "
+    "message_type { name: \"Bar\" }");
+
+  BuildFile(
+    "name: \"forward.proto\""
+    "dependency: \"bar.proto\" "
+    "public_dependency: 0");
+
+  BuildFile(
+    "name: \"forward2.proto\""
+    "dependency: \"forward.proto\" "
+    "public_dependency: 0");
+
+  BuildFile(
+    "name: \"foo.proto\" "
+    "dependency: \"forward2.proto\" "
+    "message_type {"
+    "  name: \"Foo\""
+    "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type_name:\"Bar\" }"
+    "}");
+}
+
+TEST_F(ValidationErrorTest,
+       FieldTypeDefinedInPrivateDependencyOfPublicDependency) {
+  // Test for public dependencies.
+  //
+  // // bar.proto
+  // message Bar{}
+  //
+  // // forward.proto
+  // import "bar.proto"
+  //
+  // // forward2.proto
+  // import public "forward.proto"
+  //
+  // // foo.proto
+  // import "forward2.proto"
+  // message Foo {
+  //   optional Bar foo = 1;  // Error, the "bar.proto" is not public imported
+  //                          // into "forward.proto", so will not be imported
+  //                          // into either "forward2.proto" or "foo.proto".
+  // }
+  //
+  BuildFile(
+    "name: \"bar.proto\" "
+    "message_type { name: \"Bar\" }");
+
+  BuildFile(
+    "name: \"forward.proto\""
+    "dependency: \"bar.proto\"");
+
+  BuildFile(
+    "name: \"forward2.proto\""
+    "dependency: \"forward.proto\" "
+    "public_dependency: 0");
+
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "dependency: \"forward2.proto\" "
+    "message_type {"
+    "  name: \"Foo\""
+    "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type_name:\"Bar\" }"
+    "}",
+    "foo.proto: Foo.foo: TYPE: \"Bar\" seems to be defined in \"bar.proto\", "
+      "which is not imported by \"foo.proto\".  To use it here, please add the "
+      "necessary import.\n");
+}
+
+
 TEST_F(ValidationErrorTest, SearchMostLocalFirst) {
   // The following should produce an error that Bar.Baz is not defined:
   //   message Bar { message Baz {} }
@@ -3031,7 +3375,8 @@ TEST_F(ValidationErrorTest, InputTypeNotDefined) {
     "  method { name: \"A\" input_type: \"Bar\" output_type: \"Foo\" }"
     "}",
 
-    "foo.proto: TestService.A: INPUT_TYPE: \"Bar\" is not defined.\n");
+    "foo.proto: TestService.A: INPUT_TYPE: \"Bar\" is not defined.\n"
+    );
 }
 
 TEST_F(ValidationErrorTest, InputTypeNotAMessage) {
@@ -3044,7 +3389,8 @@ TEST_F(ValidationErrorTest, InputTypeNotAMessage) {
     "  method { name: \"A\" input_type: \"Bar\" output_type: \"Foo\" }"
     "}",
 
-    "foo.proto: TestService.A: INPUT_TYPE: \"Bar\" is not a message type.\n");
+    "foo.proto: TestService.A: INPUT_TYPE: \"Bar\" is not a message type.\n"
+    );
 }
 
 TEST_F(ValidationErrorTest, OutputTypeNotDefined) {
@@ -3056,7 +3402,8 @@ TEST_F(ValidationErrorTest, OutputTypeNotDefined) {
     "  method { name: \"A\" input_type: \"Foo\" output_type: \"Bar\" }"
     "}",
 
-    "foo.proto: TestService.A: OUTPUT_TYPE: \"Bar\" is not defined.\n");
+    "foo.proto: TestService.A: OUTPUT_TYPE: \"Bar\" is not defined.\n"
+    );
 }
 
 TEST_F(ValidationErrorTest, OutputTypeNotAMessage) {
@@ -3069,8 +3416,10 @@ TEST_F(ValidationErrorTest, OutputTypeNotAMessage) {
     "  method { name: \"A\" input_type: \"Foo\" output_type: \"Bar\" }"
     "}",
 
-    "foo.proto: TestService.A: OUTPUT_TYPE: \"Bar\" is not a message type.\n");
+    "foo.proto: TestService.A: OUTPUT_TYPE: \"Bar\" is not a message type.\n"
+    );
 }
+
 
 TEST_F(ValidationErrorTest, IllegalPackedField) {
   BuildFileWithErrors(
@@ -3592,7 +3941,8 @@ TEST_F(ValidationErrorTest, RollbackAfterError) {
     "  }"
     "}",
 
-    "foo.proto: TestService.Baz: INPUT_TYPE: \"NoSuchType\" is not defined.\n");
+    "foo.proto: TestService.Baz: INPUT_TYPE: \"NoSuchType\" is not defined.\n"
+    );
 
   // Make sure that if we build the same file again with the error fixed,
   // it works.  If the above rollback was incomplete, then some symbols will
@@ -3641,6 +3991,19 @@ TEST_F(ValidationErrorTest, ErrorsReportedToLogError) {
   EXPECT_EQ("  Foo: \"Foo\" is already defined.", errors[1]);
 }
 
+TEST_F(ValidationErrorTest, DisallowEnumAlias) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "enum_type {"
+    "  name: \"Bar\""
+    "  value { name:\"ENUM_A\" number:0 }"
+    "  value { name:\"ENUM_B\" number:0 }"
+    "  options { allow_alias: false }"
+    "}",
+    "foo.proto: Bar: NUMBER: "
+    "\"ENUM_B\" uses the same enum value as \"ENUM_A\"\n");
+}
+
 // ===================================================================
 // DescriptorDatabase
 
@@ -3659,16 +4022,23 @@ class DatabaseBackedPoolTest : public testing::Test {
 
   virtual void SetUp() {
     AddToDatabase(&database_,
-      "name: \"foo.proto\" "
-      "message_type { name:\"Foo\" extension_range { start: 1 end: 100 } } "
-      "enum_type { name:\"TestEnum\" value { name:\"DUMMY\" number:0 } } "
-      "service { name:\"TestService\" } ");
+      "name: 'foo.proto' "
+      "message_type { name:'Foo' extension_range { start: 1 end: 100 } } "
+      "enum_type { name:'TestEnum' value { name:'DUMMY' number:0 } } "
+      "service { name:'TestService' } ");
     AddToDatabase(&database_,
-      "name: \"bar.proto\" "
-      "dependency: \"foo.proto\" "
-      "message_type { name:\"Bar\" } "
-      "extension { name:\"foo_ext\" extendee: \".Foo\" number:5 "
+      "name: 'bar.proto' "
+      "dependency: 'foo.proto' "
+      "message_type { name:'Bar' } "
+      "extension { name:'foo_ext' extendee: '.Foo' number:5 "
       "            label:LABEL_OPTIONAL type:TYPE_INT32 } ");
+    // Baz has an undeclared dependency on Foo.
+    AddToDatabase(&database_,
+      "name: 'baz.proto' "
+      "message_type { "
+      "  name:'Baz' "
+      "  field { name:'foo' number:1 label:LABEL_OPTIONAL type_name:'Foo' } "
+      "}");
   }
 
   // We can't inject a file containing errors into a DescriptorPool, so we
@@ -3907,6 +4277,33 @@ TEST_F(DatabaseBackedPoolTest, ErrorWithErrorCollector) {
     error_collector.text_);
 }
 
+TEST_F(DatabaseBackedPoolTest, UndeclaredDependencyOnUnbuiltType) {
+  // Check that we find and report undeclared dependencies on types that exist
+  // in the descriptor database but that have not not been built yet.
+  MockErrorCollector error_collector;
+  DescriptorPool pool(&database_, &error_collector);
+  EXPECT_TRUE(pool.FindMessageTypeByName("Baz") == NULL);
+  EXPECT_EQ(
+    "baz.proto: Baz.foo: TYPE: \"Foo\" seems to be defined in \"foo.proto\", "
+    "which is not imported by \"baz.proto\".  To use it here, please add "
+    "the necessary import.\n",
+    error_collector.text_);
+}
+
+TEST_F(DatabaseBackedPoolTest, RollbackAfterError) {
+  // Make sure that all traces of bad types are removed from the pool. This used
+  // to be b/4529436, due to the fact that a symbol resolution failure could
+  // potentially cause another file to be recursively built, which would trigger
+  // a checkpoint _past_ possibly invalid symbols.
+  // Baz is defined in the database, but the file is invalid because it is
+  // missing a necessary import.
+  DescriptorPool pool(&database_);
+  EXPECT_TRUE(pool.FindMessageTypeByName("Baz") == NULL);
+  // Make sure that searching again for the file or the type fails.
+  EXPECT_TRUE(pool.FindFileByName("baz.proto") == NULL);
+  EXPECT_TRUE(pool.FindMessageTypeByName("Baz") == NULL);
+}
+
 TEST_F(DatabaseBackedPoolTest, UnittestProto) {
   // Try to load all of unittest.proto from a DescriptorDatabase.  This should
   // thoroughly test all paths through DescriptorBuilder to insure that there
@@ -3963,6 +4360,16 @@ TEST_F(DatabaseBackedPoolTest, DoesntRetryDbUnnecessarily) {
   EXPECT_TRUE(file->FindEnumValueByName("NO_SUCH_VALUE") == NULL);
   EXPECT_TRUE(file->FindServiceByName("NO_SUCH_VALUE") == NULL);
   EXPECT_TRUE(file->FindExtensionByName("no_such_extension") == NULL);
+
+  EXPECT_TRUE(pool.FindFileContainingSymbol("Foo.no.such.field") == NULL);
+  EXPECT_TRUE(pool.FindFileContainingSymbol("Foo.no_such_field") == NULL);
+  EXPECT_TRUE(pool.FindMessageTypeByName("Foo.NoSuchMessageType") == NULL);
+  EXPECT_TRUE(pool.FindFieldByName("Foo.no_such_field") == NULL);
+  EXPECT_TRUE(pool.FindExtensionByName("Foo.no_such_extension") == NULL);
+  EXPECT_TRUE(pool.FindEnumTypeByName("Foo.NoSuchEnumType") == NULL);
+  EXPECT_TRUE(pool.FindEnumValueByName("Foo.NO_SUCH_VALUE") == NULL);
+  EXPECT_TRUE(pool.FindMethodByName("TestService.NoSuchMethod") == NULL);
+
   EXPECT_EQ(0, call_counter.call_count_);
 }
 
@@ -4024,6 +4431,219 @@ TEST_F(DatabaseBackedPoolTest, DoesntFallbackOnWrongType) {
   EXPECT_TRUE(pool.FindMethodByName("Foo") == NULL);
 
   EXPECT_EQ(0, call_counter.call_count_);
+}
+
+// ===================================================================
+
+class AbortingErrorCollector : public DescriptorPool::ErrorCollector {
+ public:
+  AbortingErrorCollector() {}
+
+  virtual void AddError(
+      const string &filename,
+      const string &element_name,
+      const Message *message,
+      ErrorLocation location,
+      const string &error_message) {
+    GOOGLE_LOG(FATAL) << "AddError() called unexpectedly: " << filename << ": "
+               << error_message;
+  }
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(AbortingErrorCollector);
+};
+
+// A source tree containing only one file.
+class SingletonSourceTree : public compiler::SourceTree {
+ public:
+  SingletonSourceTree(const string& filename, const string& contents)
+      : filename_(filename), contents_(contents) {}
+
+  virtual io::ZeroCopyInputStream* Open(const string& filename) {
+    return filename == filename_ ?
+        new io::ArrayInputStream(contents_.data(), contents_.size()) : NULL;
+  }
+
+ private:
+  const string filename_;
+  const string contents_;
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SingletonSourceTree);
+};
+
+const char *const kSourceLocationTestInput =
+  "syntax = \"proto2\";\n"
+  "message A {\n"
+  "  optional int32 a = 1;\n"
+  "  message B {\n"
+  "    required double b = 1;\n"
+  "  }\n"
+  "}\n"
+  "enum Indecision {\n"
+  "  YES   = 1;\n"
+  "  NO    = 2;\n"
+  "  MAYBE = 3;\n"
+  "}\n"
+  "service S {\n"
+  "  rpc Method(A) returns (A.B);\n"
+  // Put an empty line here to make the source location range match.
+  "\n"
+  "}\n";
+
+class SourceLocationTest : public testing::Test {
+ public:
+  SourceLocationTest()
+      : source_tree_("/test/test.proto", kSourceLocationTestInput),
+        db_(&source_tree_),
+        pool_(&db_, &collector_) {}
+
+  static string PrintSourceLocation(const SourceLocation &loc) {
+    return strings::Substitute("$0:$1-$2:$3",
+                               1 + loc.start_line,
+                               1 + loc.start_column,
+                               1 + loc.end_line,
+                               1 + loc.end_column);
+  }
+
+ private:
+  AbortingErrorCollector collector_;
+  SingletonSourceTree source_tree_;
+  compiler::SourceTreeDescriptorDatabase db_;
+
+ protected:
+  DescriptorPool pool_;
+};
+
+// TODO(adonovan): implement support for option fields and for
+// subparts of declarations.
+
+TEST_F(SourceLocationTest, GetSourceLocation) {
+  SourceLocation loc;
+
+  const FileDescriptor *file_desc =
+      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+
+  const Descriptor *a_desc = file_desc->FindMessageTypeByName("A");
+  EXPECT_TRUE(a_desc->GetSourceLocation(&loc));
+  EXPECT_EQ("2:1-7:2", PrintSourceLocation(loc));
+
+  const Descriptor *a_b_desc = a_desc->FindNestedTypeByName("B");
+  EXPECT_TRUE(a_b_desc->GetSourceLocation(&loc));
+  EXPECT_EQ("4:3-6:4", PrintSourceLocation(loc));
+
+  const EnumDescriptor *e_desc = file_desc->FindEnumTypeByName("Indecision");
+  EXPECT_TRUE(e_desc->GetSourceLocation(&loc));
+  EXPECT_EQ("8:1-12:2", PrintSourceLocation(loc));
+
+  const EnumValueDescriptor *yes_desc = e_desc->FindValueByName("YES");
+  EXPECT_TRUE(yes_desc->GetSourceLocation(&loc));
+  EXPECT_EQ("9:3-9:13", PrintSourceLocation(loc));
+
+  const ServiceDescriptor *s_desc = file_desc->FindServiceByName("S");
+  EXPECT_TRUE(s_desc->GetSourceLocation(&loc));
+  EXPECT_EQ("13:1-16:2", PrintSourceLocation(loc));
+
+  const MethodDescriptor *m_desc = s_desc->FindMethodByName("Method");
+  EXPECT_TRUE(m_desc->GetSourceLocation(&loc));
+  EXPECT_EQ("14:3-14:31", PrintSourceLocation(loc));
+
+}
+
+// Missing SourceCodeInfo doesn't cause crash:
+TEST_F(SourceLocationTest, GetSourceLocation_MissingSourceCodeInfo) {
+  SourceLocation loc;
+
+  const FileDescriptor *file_desc =
+      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+
+  FileDescriptorProto proto;
+  file_desc->CopyTo(&proto);  // Note, this discards the SourceCodeInfo.
+  EXPECT_FALSE(proto.has_source_code_info());
+
+  DescriptorPool bad1_pool(&pool_);
+  const FileDescriptor* bad1_file_desc =
+      GOOGLE_CHECK_NOTNULL(bad1_pool.BuildFile(proto));
+  const Descriptor *bad1_a_desc = bad1_file_desc->FindMessageTypeByName("A");
+  EXPECT_FALSE(bad1_a_desc->GetSourceLocation(&loc));
+}
+
+// Corrupt SourceCodeInfo doesn't cause crash:
+TEST_F(SourceLocationTest, GetSourceLocation_BogusSourceCodeInfo) {
+  SourceLocation loc;
+
+  const FileDescriptor *file_desc =
+      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+
+  FileDescriptorProto proto;
+  file_desc->CopyTo(&proto);  // Note, this discards the SourceCodeInfo.
+  EXPECT_FALSE(proto.has_source_code_info());
+  SourceCodeInfo_Location *loc_msg =
+      proto.mutable_source_code_info()->add_location();
+  loc_msg->add_path(1);
+  loc_msg->add_path(2);
+  loc_msg->add_path(3);
+  loc_msg->add_span(4);
+  loc_msg->add_span(5);
+  loc_msg->add_span(6);
+
+  DescriptorPool bad2_pool(&pool_);
+  const FileDescriptor* bad2_file_desc =
+      GOOGLE_CHECK_NOTNULL(bad2_pool.BuildFile(proto));
+  const Descriptor *bad2_a_desc = bad2_file_desc->FindMessageTypeByName("A");
+  EXPECT_FALSE(bad2_a_desc->GetSourceLocation(&loc));
+}
+
+// ===================================================================
+
+const char* const kCopySourceCodeInfoToTestInput =
+  "syntax = \"proto2\";\n"
+  "message Foo {}\n";
+
+// Required since source code information is not preserved by
+// FileDescriptorTest.
+class CopySourceCodeInfoToTest : public testing::Test {
+ public:
+  CopySourceCodeInfoToTest()
+      : source_tree_("/test/test.proto", kCopySourceCodeInfoToTestInput),
+        db_(&source_tree_),
+        pool_(&db_, &collector_) {}
+
+ private:
+  AbortingErrorCollector collector_;
+  SingletonSourceTree source_tree_;
+  compiler::SourceTreeDescriptorDatabase db_;
+
+ protected:
+  DescriptorPool pool_;
+};
+
+TEST_F(CopySourceCodeInfoToTest, CopyTo_DoesNotCopySourceCodeInfo) {
+  const FileDescriptor* file_desc =
+      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+  FileDescriptorProto file_desc_proto;
+  ASSERT_FALSE(file_desc_proto.has_source_code_info());
+
+  file_desc->CopyTo(&file_desc_proto);
+  EXPECT_FALSE(file_desc_proto.has_source_code_info());
+}
+
+TEST_F(CopySourceCodeInfoToTest, CopySourceCodeInfoTo) {
+  const FileDescriptor* file_desc =
+      GOOGLE_CHECK_NOTNULL(pool_.FindFileByName("/test/test.proto"));
+  FileDescriptorProto file_desc_proto;
+  ASSERT_FALSE(file_desc_proto.has_source_code_info());
+
+  file_desc->CopySourceCodeInfoTo(&file_desc_proto);
+  const SourceCodeInfo& info = file_desc_proto.source_code_info();
+  ASSERT_EQ(3, info.location_size());
+  // Get the Foo message location
+  const SourceCodeInfo_Location& foo_location = info.location(1);
+  ASSERT_EQ(2, foo_location.path_size());
+  EXPECT_EQ(FileDescriptorProto::kMessageTypeFieldNumber, foo_location.path(0));
+  EXPECT_EQ(0, foo_location.path(1));      // Foo is the first message defined
+  ASSERT_EQ(3, foo_location.span_size());  // Foo spans one line
+  EXPECT_EQ(1, foo_location.span(0));      // Foo is declared on line 1
+  EXPECT_EQ(0, foo_location.span(1));      // Foo starts at column 0
+  EXPECT_EQ(14, foo_location.span(2));     // Foo ends on column 14
 }
 
 // ===================================================================

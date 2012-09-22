@@ -33,9 +33,9 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <algorithm>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/generated_message_util.h>
@@ -321,7 +321,7 @@ void GeneratedMessageReflection::Swap(
        "descriptor.";
   GOOGLE_CHECK_EQ(message2->GetReflection(), this)
     << "Second argument to Swap() (of type \""
-    << message1->GetDescriptor()->full_name()
+    << message2->GetDescriptor()->full_name()
     << "\") is not compatible with this reflection object (which is for type \""
     << descriptor_->full_name()
     << "\").  Note that the exact same class is required; not just the same "
@@ -380,8 +380,11 @@ void GeneratedMessageReflection::Swap(
           SWAP_VALUES(DOUBLE, double);
           SWAP_VALUES(BOOL  , bool  );
           SWAP_VALUES(ENUM  , int   );
-          SWAP_VALUES(MESSAGE, Message*);
 #undef SWAP_VALUES
+        case FieldDescriptor::CPPTYPE_MESSAGE:
+          std::swap(*MutableRaw<Message*>(message1, field),
+                    *MutableRaw<Message*>(message2, field));
+          break;
 
         case FieldDescriptor::CPPTYPE_STRING:
           switch (field->options().ctype()) {
@@ -585,6 +588,20 @@ void GeneratedMessageReflection::RemoveLast(
             ->RemoveLast<GenericTypeHandler<Message> >();
         break;
     }
+  }
+}
+
+Message* GeneratedMessageReflection::ReleaseLast(
+    Message* message,
+    const FieldDescriptor* field) const {
+  USAGE_CHECK_ALL(ReleaseLast, REPEATED, MESSAGE);
+
+  if (field->is_extension()) {
+    return static_cast<Message*>(
+        MutableExtensionSet(message)->ReleaseLast(field->number()));
+  } else {
+    return MutableRaw<RepeatedPtrFieldBase>(message, field)
+        ->ReleaseLast<GenericTypeHandler<Message> >();
   }
 }
 
@@ -889,7 +906,9 @@ const EnumValueDescriptor* GeneratedMessageReflection::GetEnum(
   }
   const EnumValueDescriptor* result =
     field->enum_type()->FindValueByNumber(value);
-  GOOGLE_CHECK(result != NULL);
+  GOOGLE_CHECK(result != NULL) << "Value " << value << " is not valid for field "
+                        << field->full_name() << " of type "
+                        << field->enum_type()->full_name() << ".";
   return result;
 }
 
@@ -919,7 +938,9 @@ const EnumValueDescriptor* GeneratedMessageReflection::GetRepeatedEnum(
   }
   const EnumValueDescriptor* result =
     field->enum_type()->FindValueByNumber(value);
-  GOOGLE_CHECK(result != NULL);
+  GOOGLE_CHECK(result != NULL) << "Value " << value << " is not valid for field "
+                        << field->full_name() << " of type "
+                        << field->enum_type()->full_name() << ".";
   return result;
 }
 
@@ -960,13 +981,15 @@ const Message& GeneratedMessageReflection::GetMessage(
     MessageFactory* factory) const {
   USAGE_CHECK_ALL(GetMessage, SINGULAR, MESSAGE);
 
+  if (factory == NULL) factory = message_factory_;
+
   if (field->is_extension()) {
     return static_cast<const Message&>(
         GetExtensionSet(message).GetMessage(
-          field->number(), field->message_type(),
-          factory == NULL ? message_factory_ : factory));
+          field->number(), field->message_type(), factory));
   } else {
-    const Message* result = GetRaw<const Message*>(message, field);
+    const Message* result;
+    result = GetRaw<const Message*>(message, field);
     if (result == NULL) {
       result = DefaultRaw<const Message*>(field);
     }
@@ -979,17 +1002,40 @@ Message* GeneratedMessageReflection::MutableMessage(
     MessageFactory* factory) const {
   USAGE_CHECK_ALL(MutableMessage, SINGULAR, MESSAGE);
 
+  if (factory == NULL) factory = message_factory_;
+
   if (field->is_extension()) {
     return static_cast<Message*>(
-        MutableExtensionSet(message)->MutableMessage(field,
-          factory == NULL ? message_factory_ : factory));
+        MutableExtensionSet(message)->MutableMessage(field, factory));
   } else {
-    Message** result = MutableField<Message*>(message, field);
-    if (*result == NULL) {
+    Message* result;
+    Message** result_holder = MutableField<Message*>(message, field);
+    if (*result_holder == NULL) {
       const Message* default_message = DefaultRaw<const Message*>(field);
-      *result = default_message->New();
+      *result_holder = default_message->New();
     }
-    return *result;
+    result = *result_holder;
+    return result;
+  }
+}
+
+Message* GeneratedMessageReflection::ReleaseMessage(
+    Message* message,
+    const FieldDescriptor* field,
+    MessageFactory* factory) const {
+  USAGE_CHECK_ALL(ReleaseMessage, SINGULAR, MESSAGE);
+
+  if (factory == NULL) factory = message_factory_;
+
+  if (field->is_extension()) {
+    return static_cast<Message*>(
+        MutableExtensionSet(message)->ReleaseMessage(field, factory));
+  } else {
+    ClearBit(message, field);
+    Message** result = MutableRaw<Message*>(message, field);
+    Message* ret = *result;
+    *result = NULL;
+    return ret;
   }
 }
 
@@ -1034,7 +1080,7 @@ Message* GeneratedMessageReflection::AddMessage(
     // We can't use AddField<Message>() because RepeatedPtrFieldBase doesn't
     // know how to allocate one.
     RepeatedPtrFieldBase* repeated =
-      MutableRaw<RepeatedPtrFieldBase>(message, field);
+        MutableRaw<RepeatedPtrFieldBase>(message, field);
     Message* result = repeated->AddFromCleared<GenericTypeHandler<Message> >();
     if (result == NULL) {
       // We must allocate a new object.
@@ -1051,7 +1097,26 @@ Message* GeneratedMessageReflection::AddMessage(
   }
 }
 
-// -------------------------------------------------------------------
+void* GeneratedMessageReflection::MutableRawRepeatedField(
+    Message* message, const FieldDescriptor* field,
+    FieldDescriptor::CppType cpptype,
+    int ctype, const Descriptor* desc) const {
+  USAGE_CHECK_REPEATED("MutableRawRepeatedField");
+  if (field->cpp_type() != cpptype)
+    ReportReflectionUsageTypeError(descriptor_,
+        field, "MutableRawRepeatedField", cpptype);
+  if (ctype >= 0)
+    GOOGLE_CHECK_EQ(field->options().ctype(), ctype) << "subtype mismatch";
+  if (desc != NULL)
+    GOOGLE_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
+  if (field->is_extension())
+    return MutableExtensionSet(message)->MutableRawRepeatedField(
+        field->number());
+  else
+    return reinterpret_cast<uint8*>(message) + offsets_[field->index()];
+}
+
+// -----------------------------------------------------------------------------
 
 const FieldDescriptor* GeneratedMessageReflection::FindKnownExtensionByName(
     const string& name) const {

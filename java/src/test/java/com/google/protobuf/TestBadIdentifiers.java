@@ -35,7 +35,7 @@ import junit.framework.TestCase;
 /**
  * Tests that proto2 api generation doesn't cause compile errors when
  * compiling protocol buffers that have names that would otherwise conflict
- * if not fully qualified (like @Deprecated and @Override). 
+ * if not fully qualified (like @Deprecated and @Override).
  *
  * @author jonp@google.com (Jon Perlow)
  */
@@ -45,5 +45,19 @@ public class TestBadIdentifiers extends TestCase {
     // If this compiles, it means the generation was correct.
     TestBadIdentifiersProto.Deprecated.newBuilder();
     TestBadIdentifiersProto.Override.newBuilder();
-  } 
+  }
+
+  public void testGetDescriptor() {
+    Descriptors.FileDescriptor fileDescriptor =
+        TestBadIdentifiersProto.getDescriptor();
+    String descriptorField = TestBadIdentifiersProto.Descriptor
+        .getDefaultInstance().getDescriptor();
+    Descriptors.Descriptor protoDescriptor = TestBadIdentifiersProto.Descriptor
+        .getDefaultInstance().getDescriptorForType();
+    String nestedDescriptorField = TestBadIdentifiersProto.Descriptor
+        .NestedDescriptor.getDefaultInstance().getDescriptor();
+    Descriptors.Descriptor nestedProtoDescriptor = TestBadIdentifiersProto
+        .Descriptor.NestedDescriptor.getDefaultInstance()
+        .getDescriptorForType();
+  }
 }

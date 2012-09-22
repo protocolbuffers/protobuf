@@ -146,7 +146,7 @@ public final class WireFormat {
     public boolean isPackable() { return true; }
   }
 
-  // Field numbers for feilds in MessageSet wire format.
+  // Field numbers for fields in MessageSet wire format.
   static final int MESSAGE_SET_ITEM    = 1;
   static final int MESSAGE_SET_TYPE_ID = 2;
   static final int MESSAGE_SET_MESSAGE = 3;

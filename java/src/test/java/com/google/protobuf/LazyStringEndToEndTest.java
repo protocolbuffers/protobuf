@@ -50,6 +50,19 @@ public class LazyStringEndToEndTest extends TestCase {
           114, 4, -1, 0, -1, 0, -30, 2, 4, -1,
           0, -1, 0, -30, 2, 4, -1, 0, -1, 0, });
 
+  private ByteString encodedTestAllTypes;
+
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+    this.encodedTestAllTypes = UnittestProto.TestAllTypes.newBuilder()
+        .setOptionalString("foo")
+        .addRepeatedString("bar")
+        .addRepeatedString("baz")
+        .build()
+        .toByteString();
+  }
+
   /**
    * Tests that an invalid UTF8 string will roundtrip through a parse
    * and serialization.
@@ -111,5 +124,20 @@ public class LazyStringEndToEndTest extends TestCase {
     assertSame(aPrime, proto.getOptionalString());
     assertSame(bPrime, proto.getRepeatedString(0));
     assertSame(cPrime, proto.getRepeatedString(1));
+  }
+
+  public void testNoStringCachingIfOnlyBytesAccessed() throws Exception {
+    UnittestProto.TestAllTypes proto =
+        UnittestProto.TestAllTypes.parseFrom(encodedTestAllTypes);
+    ByteString optional = proto.getOptionalStringBytes();
+    assertSame(optional, proto.getOptionalStringBytes());
+    assertSame(optional, proto.toBuilder().getOptionalStringBytes());
+
+    ByteString repeated0 = proto.getRepeatedStringBytes(0);
+    ByteString repeated1 = proto.getRepeatedStringBytes(1);
+    assertSame(repeated0, proto.getRepeatedStringBytes(0));
+    assertSame(repeated1, proto.getRepeatedStringBytes(1));
+    assertSame(repeated0, proto.toBuilder().getRepeatedStringBytes(0));
+    assertSame(repeated1, proto.toBuilder().getRepeatedStringBytes(1));
   }
 }

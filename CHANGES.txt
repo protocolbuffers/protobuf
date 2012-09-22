@@ -1,3 +1,61 @@
+2012-09-19 version 2.5.0:
+
+  General
+  * New notion "import public" that allows a proto file to forward the content
+    it imports to its importers. For example,
+      // foo.proto
+      import public "bar.proto";
+      import "baz.proto";
+
+      // qux.proto
+      import "foo.proto";
+      // Stuff defined in bar.proto may be used in this file, but stuff from
+      // baz.proto may NOT be used without importing it explicitly.
+    This is useful for moving proto files. To move a proto file, just leave
+    a single "import public" in the old proto file.
+  * New enum option "allow_alias" that specifies whether different symbols can
+    be assigned the same numeric value. Default value is "true". Setting it to
+    false causes the compiler to reject enum definitions where multiple symbols
+    have the same numeric value.
+
+  C++
+  * New generated method set_allocated_foo(Type* foo) for message and string
+    fields. This method allows you to set the field to a pre-allocated object
+    and the containing message takes the ownership of that object.
+  * Added SetAllocatedExtension() and ReleaseExtension() to extensions API.
+  * Custom options are now formatted correctly when descriptors are printed in
+    text format.
+  * Various speed optimizations.
+
+  Java
+  * Comments in proto files are now collected and put into generated code as
+    comments for corresponding classes and data members.
+  * Added Parser to parse directly into messages without a Builder. For
+    example,
+      Foo foo = Foo.getParser().ParseFrom(input);
+    Using Parser is ~25% faster than using Builder to parse messages.
+  * Added getters/setters to access the underlying ByteString of a string field
+    directly.
+  * ByteString now supports more operations: substring(), prepend(), and
+    append(). The implementation of ByteString uses a binary tree structure
+    to support these operations efficiently.
+  * New method findInitializationErrors() that lists all missing required
+    fields.
+  * Various code size and speed optimizations.
+
+  Python
+  * Added support for dynamic message creation. DescriptorDatabase,
+    DescriptorPool, and MessageFactory work like their C++ couterparts to
+    simplify Descriptor construction from *DescriptorProtos, and MessageFactory
+    provides a message instance from a Descriptor.
+  * Added pickle support for protobuf messages.
+  * Unknown fields are now preserved after parsing.
+  * Fixed bug where custom options were not correctly populated. Custom
+    options can be accessed now.
+  * Added EnumTypeWrapper that provides better accessibility to enum types.
+  * Added ParseMessage(descriptor, bytes) to generate a new Message instance
+    from a descriptor and a byte string.
+
 2011-05-01 version 2.4.1:
 
   C++

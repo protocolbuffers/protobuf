@@ -49,6 +49,8 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/map-util.h>
+#include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
 namespace protobuf {
@@ -94,6 +96,73 @@ void Message::PrintDebugString() const {
 
 
 // ===========================================================================
+// Implementation of the parse information tree class.
+TextFormat::ParseInfoTree::ParseInfoTree() { }
+
+TextFormat::ParseInfoTree::~ParseInfoTree() {
+  // Remove any nested information trees, as they are owned by this tree.
+  for (NestedMap::iterator it = nested_.begin(); it != nested_.end(); ++it) {
+    STLDeleteElements(&(it->second));
+  }
+}
+
+void TextFormat::ParseInfoTree::RecordLocation(
+    const FieldDescriptor* field,
+    TextFormat::ParseLocation location) {
+  locations_[field].push_back(location);
+}
+
+TextFormat::ParseInfoTree* TextFormat::ParseInfoTree::CreateNested(
+    const FieldDescriptor* field) {
+  // Owned by us in the map.
+  TextFormat::ParseInfoTree* instance = new TextFormat::ParseInfoTree();
+  vector<TextFormat::ParseInfoTree*>* trees = &nested_[field];
+  GOOGLE_CHECK(trees);
+  trees->push_back(instance);
+  return instance;
+}
+
+void CheckFieldIndex(const FieldDescriptor* field, int index) {
+  if (field == NULL) { return; }
+
+  if (field->is_repeated() && index == -1) {
+    GOOGLE_LOG(DFATAL) << "Index must be in range of repeated field values. "
+                << "Field: " << field->name();
+  } else if (!field->is_repeated() && index != -1) {
+    GOOGLE_LOG(DFATAL) << "Index must be -1 for singular fields."
+                << "Field: " << field->name();
+  }
+}
+
+TextFormat::ParseLocation TextFormat::ParseInfoTree::GetLocation(
+    const FieldDescriptor* field, int index) const {
+  CheckFieldIndex(field, index);
+  if (index == -1) { index = 0; }
+
+  const vector<TextFormat::ParseLocation>* locations =
+      FindOrNull(locations_, field);
+  if (locations == NULL || index >= locations->size()) {
+    return TextFormat::ParseLocation();
+  }
+
+  return (*locations)[index];
+}
+
+TextFormat::ParseInfoTree* TextFormat::ParseInfoTree::GetTreeForNested(
+    const FieldDescriptor* field, int index) const {
+  CheckFieldIndex(field, index);
+  if (index == -1) { index = 0; }
+
+  const vector<TextFormat::ParseInfoTree*>* trees = FindOrNull(nested_, field);
+  if (trees == NULL || index >= trees->size()) {
+    return NULL;
+  }
+
+  return (*trees)[index];
+}
+
+
+// ===========================================================================
 // Internal class for parsing an ASCII representation of a Protocol Message.
 // This class makes use of the Protocol Message compiler's tokenizer found
 // in //google/protobuf/io/tokenizer.h. Note that class's Parse
@@ -120,13 +189,17 @@ class TextFormat::Parser::ParserImpl {
              io::ZeroCopyInputStream* input_stream,
              io::ErrorCollector* error_collector,
              TextFormat::Finder* finder,
-             SingularOverwritePolicy singular_overwrite_policy)
+             ParseInfoTree* parse_info_tree,
+             SingularOverwritePolicy singular_overwrite_policy,
+             bool allow_unknown_field)
     : error_collector_(error_collector),
       finder_(finder),
+      parse_info_tree_(parse_info_tree),
       tokenizer_error_collector_(this),
       tokenizer_(input_stream, &tokenizer_error_collector_),
       root_message_type_(root_message_type),
       singular_overwrite_policy_(singular_overwrite_policy),
+      allow_unknown_field_(allow_unknown_field),
       had_errors_(false) {
     // For backwards-compatibility with proto1, we need to allow the 'f' suffix
     // for floats.
@@ -240,6 +313,8 @@ class TextFormat::Parser::ParserImpl {
     string field_name;
 
     const FieldDescriptor* field = NULL;
+    int start_line = tokenizer_.current().line;
+    int start_column = tokenizer_.current().column;
 
     if (TryConsume("[")) {
       // Extension.
@@ -257,10 +332,16 @@ class TextFormat::Parser::ParserImpl {
                : reflection->FindKnownExtensionByName(field_name));
 
       if (field == NULL) {
-        ReportError("Extension \"" + field_name + "\" is not defined or "
-                    "is not an extension of \"" +
-                    descriptor->full_name() + "\".");
-        return false;
+        if (!allow_unknown_field_) {
+          ReportError("Extension \"" + field_name + "\" is not defined or "
+                      "is not an extension of \"" +
+                      descriptor->full_name() + "\".");
+          return false;
+        } else {
+          ReportWarning("Extension \"" + field_name + "\" is not defined or "
+                        "is not an extension of \"" +
+                        descriptor->full_name() + "\".");
+        }
       }
     } else {
       DO(ConsumeIdentifier(&field_name));
@@ -285,9 +366,30 @@ class TextFormat::Parser::ParserImpl {
       }
 
       if (field == NULL) {
-        ReportError("Message type \"" + descriptor->full_name() +
-                    "\" has no field named \"" + field_name + "\".");
-        return false;
+        if (!allow_unknown_field_) {
+          ReportError("Message type \"" + descriptor->full_name() +
+                      "\" has no field named \"" + field_name + "\".");
+          return false;
+        } else {
+          ReportWarning("Message type \"" + descriptor->full_name() +
+                        "\" has no field named \"" + field_name + "\".");
+        }
+      }
+    }
+
+    // Skips unknown field.
+    if (field == NULL) {
+      GOOGLE_CHECK(allow_unknown_field_);
+      // Try to guess the type of this field.
+      // If this field is not a message, there should be a ":" between the
+      // field name and the field value and also the field value should not
+      // start with "{" or "<" which indicates the begining of a message body.
+      // If there is no ":" or there is a "{" or "<" after ":", this field has
+      // to be a message or the input is ill-formed.
+      if (TryConsume(":") && !LookingAt("{") && !LookingAt("<")) {
+        return SkipFieldValue();
+      } else {
+        return SkipFieldMessage();
       }
     }
 
@@ -329,12 +431,61 @@ class TextFormat::Parser::ParserImpl {
                     + field_name + "\"");
     }
 
+    // If a parse info tree exists, add the location for the parsed
+    // field.
+    if (parse_info_tree_ != NULL) {
+      parse_info_tree_->RecordLocation(field,
+                                       ParseLocation(start_line, start_column));
+    }
+
+    return true;
+  }
+
+  // Skips the next field including the field's name and value.
+  bool SkipField() {
+    string field_name;
+    if (TryConsume("[")) {
+      // Extension name.
+      DO(ConsumeIdentifier(&field_name));
+      while (TryConsume(".")) {
+        string part;
+        DO(ConsumeIdentifier(&part));
+        field_name += ".";
+        field_name += part;
+      }
+      DO(Consume("]"));
+    } else {
+      DO(ConsumeIdentifier(&field_name));
+    }
+
+    // Try to guess the type of this field.
+    // If this field is not a message, there should be a ":" between the
+    // field name and the field value and also the field value should not
+    // start with "{" or "<" which indicates the begining of a message body.
+    // If there is no ":" or there is a "{" or "<" after ":", this field has
+    // to be a message or the input is ill-formed.
+    if (TryConsume(":") && !LookingAt("{") && !LookingAt("<")) {
+      DO(SkipFieldValue());
+    } else {
+      DO(SkipFieldMessage());
+    }
+    // For historical reasons, fields may optionally be separated by commas or
+    // semicolons.
+    TryConsume(";") || TryConsume(",");
     return true;
   }
 
   bool ConsumeFieldMessage(Message* message,
                            const Reflection* reflection,
                            const FieldDescriptor* field) {
+
+    // If the parse information tree is not NULL, create a nested one
+    // for the nested message.
+    ParseInfoTree* parent = parse_info_tree_;
+    if (parent != NULL) {
+      parse_info_tree_ = parent->CreateNested(field);
+    }
+
     string delimeter;
     if (TryConsume("<")) {
       delimeter = ">";
@@ -349,6 +500,26 @@ class TextFormat::Parser::ParserImpl {
       DO(ConsumeMessage(reflection->MutableMessage(message, field),
                         delimeter));
     }
+
+    // Reset the parse information tree.
+    parse_info_tree_ = parent;
+    return true;
+  }
+
+  // Skips the whole body of a message including the begining delimeter and
+  // the ending delimeter.
+  bool SkipFieldMessage() {
+    string delimeter;
+    if (TryConsume("<")) {
+      delimeter = ">";
+    } else {
+      DO(Consume("{"));
+      delimeter = "}";
+    }
+    while (!LookingAt(">") &&  !LookingAt("}")) {
+      DO(SkipField());
+    }
+    DO(Consume(delimeter));
     return true;
   }
 
@@ -479,6 +650,60 @@ class TextFormat::Parser::ParserImpl {
     return true;
   }
 
+  bool SkipFieldValue() {
+    if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
+      while (LookingAtType(io::Tokenizer::TYPE_STRING)) {
+        tokenizer_.Next();
+      }
+      return true;
+    }
+    // Possible field values other than string:
+    //   12345        => TYPE_INTEGER
+    //   -12345       => TYPE_SYMBOL + TYPE_INTEGER
+    //   1.2345       => TYPE_FLOAT
+    //   -1.2345      => TYPE_SYMBOL + TYPE_FLOAT
+    //   inf          => TYPE_IDENTIFIER
+    //   -inf         => TYPE_SYMBOL + TYPE_IDENTIFIER
+    //   TYPE_INTEGER => TYPE_IDENTIFIER
+    // Divides them into two group, one with TYPE_SYMBOL
+    // and the other without:
+    //   Group one:
+    //     12345        => TYPE_INTEGER
+    //     1.2345       => TYPE_FLOAT
+    //     inf          => TYPE_IDENTIFIER
+    //     TYPE_INTEGER => TYPE_IDENTIFIER
+    //   Group two:
+    //     -12345       => TYPE_SYMBOL + TYPE_INTEGER
+    //     -1.2345      => TYPE_SYMBOL + TYPE_FLOAT
+    //     -inf         => TYPE_SYMBOL + TYPE_IDENTIFIER
+    // As we can see, the field value consists of an optional '-' and one of
+    // TYPE_INTEGER, TYPE_FLOAT and TYPE_IDENTIFIER.
+    bool has_minus = TryConsume("-");
+    if (!LookingAtType(io::Tokenizer::TYPE_INTEGER) &&
+        !LookingAtType(io::Tokenizer::TYPE_FLOAT) &&
+        !LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
+      return false;
+    }
+    // Combination of '-' and TYPE_IDENTIFIER may result in an invalid field
+    // value while other combinations all generate valid values.
+    // We check if the value of this combination is valid here.
+    // TYPE_IDENTIFIER after a '-' should be one of the float values listed
+    // below:
+    //   inf, inff, infinity, nan
+    if (has_minus && LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
+      string text = tokenizer_.current().text;
+      LowerString(&text);
+      if (text != "inf" &&
+          text != "infinity" &&
+          text != "nan") {
+        ReportError("Invalid float number: " + text);
+        return false;
+      }
+    }
+    tokenizer_.Next();
+    return true;
+  }
+
   // Returns true if the current token's text is equal to that specified.
   bool LookingAt(const string& text) {
     return tokenizer_.current().text == text;
@@ -596,7 +821,8 @@ class TextFormat::Parser::ParserImpl {
     } else if (LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
       string text = tokenizer_.current().text;
       LowerString(&text);
-      if (text == "inf" || text == "infinity") {
+      if (text == "inf" ||
+          text == "infinity") {
         *value = std::numeric_limits<double>::infinity();
         tokenizer_.Next();
       } else if (text == "nan") {
@@ -670,10 +896,12 @@ class TextFormat::Parser::ParserImpl {
 
   io::ErrorCollector* error_collector_;
   TextFormat::Finder* finder_;
+  ParseInfoTree* parse_info_tree_;
   ParserErrorCollector tokenizer_error_collector_;
   io::Tokenizer tokenizer_;
   const Descriptor* root_message_type_;
   SingularOverwritePolicy singular_overwrite_policy_;
+  bool allow_unknown_field_;
   bool had_errors_;
 };
 
@@ -699,7 +927,7 @@ class TextFormat::Printer::TextGenerator {
   ~TextGenerator() {
     // Only BackUp() if we're sure we've successfully called Next() at least
     // once.
-    if (buffer_size_ > 0) {
+    if (!failed_ && buffer_size_ > 0) {
       output_->BackUp(buffer_size_);
     }
   }
@@ -809,7 +1037,9 @@ TextFormat::Finder::~Finder() {
 TextFormat::Parser::Parser()
   : error_collector_(NULL),
     finder_(NULL),
-    allow_partial_(false) {
+    parse_info_tree_(NULL),
+    allow_partial_(false),
+    allow_unknown_field_(false) {
 }
 
 TextFormat::Parser::~Parser() {}
@@ -818,7 +1048,9 @@ bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
                                Message* output) {
   output->Clear();
   ParserImpl parser(output->GetDescriptor(), input, error_collector_,
-                    finder_, ParserImpl::FORBID_SINGULAR_OVERWRITES);
+                    finder_, parse_info_tree_,
+                    ParserImpl::FORBID_SINGULAR_OVERWRITES,
+                    allow_unknown_field_);
   return MergeUsingImpl(input, output, &parser);
 }
 
@@ -831,7 +1063,9 @@ bool TextFormat::Parser::ParseFromString(const string& input,
 bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
                                Message* output) {
   ParserImpl parser(output->GetDescriptor(), input, error_collector_,
-                    finder_, ParserImpl::ALLOW_SINGULAR_OVERWRITES);
+                    finder_, parse_info_tree_,
+                    ParserImpl::ALLOW_SINGULAR_OVERWRITES,
+                    allow_unknown_field_);
   return MergeUsingImpl(input, output, &parser);
 }
 
@@ -861,7 +1095,9 @@ bool TextFormat::Parser::ParseFieldValueFromString(
     Message* output) {
   io::ArrayInputStream input_stream(input.data(), input.size());
   ParserImpl parser(output->GetDescriptor(), &input_stream, error_collector_,
-                    finder_, ParserImpl::ALLOW_SINGULAR_OVERWRITES);
+                    finder_, parse_info_tree_,
+                    ParserImpl::ALLOW_SINGULAR_OVERWRITES,
+                    allow_unknown_field_);
   return parser.ParseField(field, output);
 }
 

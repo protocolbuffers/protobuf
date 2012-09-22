@@ -30,6 +30,12 @@ optional_foreign_enum: FOREIGN_BAZ
 optional_import_enum: IMPORT_BAZ
 optional_string_piece: "124"
 optional_cord: "125"
+optional_public_import_message {
+  e: 126
+}
+optional_lazy_message {
+  bb: 127
+}
 repeated_int32: 201
 repeated_int32: 301
 repeated_int64: 202
@@ -94,6 +100,12 @@ repeated_string_piece: "224"
 repeated_string_piece: "324"
 repeated_cord: "225"
 repeated_cord: "325"
+repeated_lazy_message {
+  bb: 227
+}
+repeated_lazy_message {
+  bb: 327
+}
 default_int32: 401
 default_int64: 402
 default_uint32: 403

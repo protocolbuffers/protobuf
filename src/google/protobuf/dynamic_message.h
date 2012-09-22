@@ -68,7 +68,7 @@ class DescriptorPool;    // descriptor.h
 class LIBPROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
  public:
   // Construct a DynamicMessageFactory that will search for extensions in
-  // the DescriptorPool in which the exendee is defined.
+  // the DescriptorPool in which the extendee is defined.
   DynamicMessageFactory();
 
   // Construct a DynamicMessageFactory that will search for extensions in
@@ -102,7 +102,7 @@ class LIBPROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
   // object.  The returned object remains property of the factory and will
   // be destroyed when the factory is destroyed.  Also, any objects created
   // by calling the prototype's New() method share some data with the
-  // prototype, so these must be destoyed before the DynamicMessageFactory
+  // prototype, so these must be destroyed before the DynamicMessageFactory
   // is destroyed.
   //
   // The given descriptor must outlive the returned message, and hence must

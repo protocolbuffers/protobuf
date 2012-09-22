@@ -116,6 +116,12 @@ message CustomOptionFooRequest {
 message CustomOptionFooResponse {
 }
 
+message CustomOptionFooClientMessage {
+}
+
+message CustomOptionFooServerMessage {
+}
+
 service TestServiceWithCustomOptions {
   option (service_opt1) = -9876543210;
 
@@ -363,4 +369,19 @@ service AggregateService {
 enum AggregateEnum {
   option (enumopt) = { s:'EnumAnnotation' };
   VALUE = 1 [(enumvalopt) = { s:'EnumValueAnnotation' }];
+}
+
+// Test custom options for nested type.
+message NestedOptionType {
+  message NestedMessage {
+    option (message_opt1) = 1001;
+    optional int32 nested_field = 1 [(field_opt1) = 1002];
+  }
+  enum NestedEnum {
+    option (enum_opt1) = 1003;
+    NESTED_ENUM_VALUE = 1 [(enum_value_opt1) = 1004];
+  }
+  extend google.protobuf.FileOptions {
+    optional int32 nested_extension = 7912573 [(field_opt2) = 1005];
+  }
 }

@@ -94,6 +94,28 @@ class TextFormatTest(unittest.TestCase):
       '  }\n'
       '}\n')
 
+  def testPrintBadEnumValue(self):
+    message = unittest_pb2.TestAllTypes()
+    message.optional_nested_enum = 100
+    message.optional_foreign_enum = 101
+    message.optional_import_enum = 102
+    self.CompareToGoldenText(
+        text_format.MessageToString(message),
+        'optional_nested_enum: 100\n'
+        'optional_foreign_enum: 101\n'
+        'optional_import_enum: 102\n')
+
+  def testPrintBadEnumValueExtensions(self):
+    message = unittest_pb2.TestAllExtensions()
+    message.Extensions[unittest_pb2.optional_nested_enum_extension] = 100
+    message.Extensions[unittest_pb2.optional_foreign_enum_extension] = 101
+    message.Extensions[unittest_pb2.optional_import_enum_extension] = 102
+    self.CompareToGoldenText(
+        text_format.MessageToString(message),
+        '[protobuf_unittest.optional_nested_enum_extension]: 100\n'
+        '[protobuf_unittest.optional_foreign_enum_extension]: 101\n'
+        '[protobuf_unittest.optional_import_enum_extension]: 102\n')
+
   def testPrintExotic(self):
     message = unittest_pb2.TestAllTypes()
     message.repeated_int64.append(-9223372036854775808)
@@ -399,6 +421,14 @@ class TextFormatTest(unittest.TestCase):
          'has no value with number 100.'),
         text_format.Merge, text, message)
 
+  def testMergeBadIntValue(self):
+    message = unittest_pb2.TestAllTypes()
+    text = 'optional_int32: bork'
+    self.assertRaisesWithMessage(
+        text_format.ParseError,
+        ('1:17 : Couldn\'t parse integer: bork'),
+        text_format.Merge, text, message)
+
   def assertRaisesWithMessage(self, e_class, e, func, *args, **kwargs):
     """Same as assertRaises, but also compares the exception message."""
     if hasattr(e_class, '__name__'):
@@ -408,7 +438,7 @@ class TextFormatTest(unittest.TestCase):
 
     try:
       func(*args, **kwargs)
-    except e_class, expr:
+    except e_class as expr:
       if str(expr) != e:
         msg = '%s raised, but with wrong message: "%s" instead of "%s"'
         raise self.failureException(msg % (exc_name,
@@ -427,7 +457,7 @@ class TokenizerTest(unittest.TestCase):
             'identifiER_4 : 1.1e+2 ID5:-0.23 ID6:\'aaaa\\\'bbbb\'\n'
             'ID7 : "aa\\"bb"\n\n\n\n ID8: {A:inf B:-inf C:true D:false}\n'
             'ID9: 22 ID10: -111111111111111111 ID11: -22\n'
-            'ID12: 2222222222222222222 '
+            'ID12: 2222222222222222222 ID13: 1.23456f ID14: 1.2e+2f '
             'false_bool:  0 true_BOOL:t \n true_bool1:  1 false_BOOL1:f ' )
     tokenizer = text_format._Tokenizer(text)
     methods = [(tokenizer.ConsumeIdentifier, 'identifier1'),
@@ -456,10 +486,10 @@ class TokenizerTest(unittest.TestCase):
                '{',
                (tokenizer.ConsumeIdentifier, 'A'),
                ':',
-               (tokenizer.ConsumeFloat, text_format._INFINITY),
+               (tokenizer.ConsumeFloat, float('inf')),
                (tokenizer.ConsumeIdentifier, 'B'),
                ':',
-               (tokenizer.ConsumeFloat, -text_format._INFINITY),
+               (tokenizer.ConsumeFloat, -float('inf')),
                (tokenizer.ConsumeIdentifier, 'C'),
                ':',
                (tokenizer.ConsumeBool, True),
@@ -479,6 +509,12 @@ class TokenizerTest(unittest.TestCase):
                (tokenizer.ConsumeIdentifier, 'ID12'),
                ':',
                (tokenizer.ConsumeUint64, 2222222222222222222),
+               (tokenizer.ConsumeIdentifier, 'ID13'),
+               ':',
+               (tokenizer.ConsumeFloat, 1.23456),
+               (tokenizer.ConsumeIdentifier, 'ID14'),
+               ':',
+               (tokenizer.ConsumeFloat, 1.2e+2),
                (tokenizer.ConsumeIdentifier, 'false_bool'),
                ':',
                (tokenizer.ConsumeBool, False),
@@ -555,16 +591,6 @@ class TokenizerTest(unittest.TestCase):
     text = 'not-a-bool'
     tokenizer = text_format._Tokenizer(text)
     self.assertRaises(text_format.ParseError, tokenizer.ConsumeBool)
-
-  def testInfNan(self):
-    # Make sure our infinity and NaN definitions are sound.
-    self.assertEquals(float, type(text_format._INFINITY))
-    self.assertEquals(float, type(text_format._NAN))
-    self.assertTrue(text_format._NAN != text_format._NAN)
-
-    inf_times_zero = text_format._INFINITY * 0
-    self.assertTrue(inf_times_zero != inf_times_zero)
-    self.assertTrue(text_format._INFINITY > 0)
 
 
 if __name__ == '__main__':

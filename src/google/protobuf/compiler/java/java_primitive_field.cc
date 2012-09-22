@@ -36,6 +36,7 @@
 #include <string>
 
 #include <google/protobuf/compiler/java/java_primitive_field.h>
+#include <google/protobuf/compiler/java/java_doc_comment.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/io/printer.h>
@@ -197,6 +198,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
 
   // For singular messages and builders, one bit is used for the hasField bit.
   (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
+  (*variables)["set_has_field_bit_message"] = GenerateSetBit(messageBitIndex);
 
   (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
   (*variables)["set_has_field_bit_builder"] = GenerateSetBit(builderBitIndex);
@@ -207,6 +209,13 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   (*variables)["get_mutable_bit_builder"] = GenerateGetBit(builderBitIndex);
   (*variables)["set_mutable_bit_builder"] = GenerateSetBit(builderBitIndex);
   (*variables)["clear_mutable_bit_builder"] = GenerateClearBit(builderBitIndex);
+
+  // For repeated fields, one bit is used for whether the array is immutable
+  // in the parsing constructor.
+  (*variables)["get_mutable_bit_parser"] =
+      GenerateGetBitMutableLocal(builderBitIndex);
+  (*variables)["set_mutable_bit_parser"] =
+      GenerateSetBitMutableLocal(builderBitIndex);
 
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
@@ -240,19 +249,26 @@ int PrimitiveFieldGenerator::GetNumBitsForBuilder() const {
 
 void PrimitiveFieldGenerator::
 GenerateInterfaceMembers(io::Printer* printer) const {
+  WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-    "$deprecation$boolean has$capitalized_name$();\n"
+    "$deprecation$boolean has$capitalized_name$();\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$$type$ get$capitalized_name$();\n");
 }
 
 void PrimitiveFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private $field_type$ $name$_;\n"
+    "private $field_type$ $name$_;\n");
+
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public boolean has$capitalized_name$() {\n"
     "  return $get_has_field_bit_message$;\n"
     "}\n");
 
+  WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public $type$ get$capitalized_name$() {\n"
     "  return $name$_;\n"
@@ -262,16 +278,21 @@ GenerateMembers(io::Printer* printer) const {
 void PrimitiveFieldGenerator::
 GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private $field_type$ $name$_ $default_init$;\n"
+    "private $field_type$ $name$_ $default_init$;\n");
+
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public boolean has$capitalized_name$() {\n"
     "  return $get_has_field_bit_builder$;\n"
     "}\n");
 
+  WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public $type$ get$capitalized_name$() {\n"
     "  return $name$_;\n"
     "}\n");
 
+  WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$($type$ value) {\n"
     "$null_check$"
@@ -279,7 +300,10 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $name$_ = value;\n"
     "  $on_changed$\n"
     "  return this;\n"
-    "}\n"
+    "}\n");
+
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public Builder clear$capitalized_name$() {\n"
     "  $clear_has_field_bit_builder$;\n");
   JavaType type = GetJavaType(descriptor_);
@@ -335,8 +359,13 @@ GenerateBuildingCode(io::Printer* printer) const {
 void PrimitiveFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "$set_has_field_bit_builder$;\n"
+    "$set_has_field_bit_message$;\n"
     "$name$_ = input.read$capitalized_type$();\n");
+}
+
+void PrimitiveFieldGenerator::
+GenerateParsingDoneCode(io::Printer* printer) const {
+  // noop for primitives.
 }
 
 void PrimitiveFieldGenerator::
@@ -468,9 +497,14 @@ int RepeatedPrimitiveFieldGenerator::GetNumBitsForBuilder() const {
 
 void RepeatedPrimitiveFieldGenerator::
 GenerateInterfaceMembers(io::Printer* printer) const {
+  WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-    "$deprecation$java.util.List<$boxed_type$> get$capitalized_name$List();\n"
-    "$deprecation$int get$capitalized_name$Count();\n"
+    "$deprecation$java.util.List<$boxed_type$> get$capitalized_name$List();\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
+    "$deprecation$int get$capitalized_name$Count();\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$$type$ get$capitalized_name$(int index);\n");
 }
 
@@ -478,14 +512,20 @@ GenerateInterfaceMembers(io::Printer* printer) const {
 void RepeatedPrimitiveFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private $field_list_type$ $name$_;\n"
+    "private $field_list_type$ $name$_;\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public java.util.List<$boxed_type$>\n"
     "    get$capitalized_name$List() {\n"
     "  return $name$_;\n"   // note:  unmodifiable list
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public int get$capitalized_name$Count() {\n"
     "  return $name$_.size();\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public $type$ get$capitalized_name$(int index) {\n"
     "  return $name$_.get(index);\n"
     "}\n");
@@ -523,17 +563,24 @@ GenerateBuilderMembers(io::Printer* printer) const {
     //   could hold on to the returned list and modify it after the message
     //   has been built, thus mutating the message which is supposed to be
     //   immutable.
+  WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public java.util.List<$boxed_type$>\n"
     "    get$capitalized_name$List() {\n"
     "  return java.util.Collections.unmodifiableList($name$_);\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public int get$capitalized_name$Count() {\n"
     "  return $name$_.size();\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public $type$ get$capitalized_name$(int index) {\n"
     "  return $name$_.get(index);\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$(\n"
     "    int index, $type$ value) {\n"
     "$null_check$"
@@ -541,21 +588,27 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $name$_.set(index, value);\n"
     "  $on_changed$\n"
     "  return this;\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public Builder add$capitalized_name$($type$ value) {\n"
     "$null_check$"
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.add(value);\n"
     "  $on_changed$\n"
     "  return this;\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public Builder addAll$capitalized_name$(\n"
     "    java.lang.Iterable<? extends $boxed_type$> values) {\n"
     "  ensure$capitalized_name$IsMutable();\n"
     "  super.addAll(values, $name$_);\n"
     "  $on_changed$\n"
     "  return this;\n"
-    "}\n"
+    "}\n");
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(variables_,
     "$deprecation$public Builder clear$capitalized_name$() {\n"
     "  $name$_ = $empty_list$;\n"
     "  $clear_mutable_bit_builder$;\n"
@@ -616,7 +669,10 @@ GenerateBuildingCode(io::Printer* printer) const {
 void RepeatedPrimitiveFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "ensure$capitalized_name$IsMutable();\n"
+    "if (!$get_mutable_bit_parser$) {\n"
+    "  $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+    "  $set_mutable_bit_parser$;\n"
+    "}\n"
     "$name$_.add(input.read$capitalized_type$());\n");
 }
 
@@ -625,10 +681,22 @@ GenerateParsingCodeFromPacked(io::Printer* printer) const {
   printer->Print(variables_,
     "int length = input.readRawVarint32();\n"
     "int limit = input.pushLimit(length);\n"
+    "if (!$get_mutable_bit_parser$ && input.getBytesUntilLimit() > 0) {\n"
+    "  $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+    "  $set_mutable_bit_parser$;\n"
+    "}\n"
     "while (input.getBytesUntilLimit() > 0) {\n"
-    "  add$capitalized_name$(input.read$capitalized_type$());\n"
+    "  $name$_.add(input.read$capitalized_type$());\n"
     "}\n"
     "input.popLimit(limit);\n");
+}
+
+void RepeatedPrimitiveFieldGenerator::
+GenerateParsingDoneCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($get_mutable_bit_parser$) {\n"
+    "  $name$_ = java.util.Collections.unmodifiableList($name$_);\n"
+    "}\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::

@@ -56,9 +56,32 @@ if _implementation_type != 'python':
   #  _implementation_type = 'python'
 
 
+# This environment variable can be used to switch between the two
+# 'cpp' implementations. Right now only 1 and 2 are valid values. Any
+# other value will be ignored.
+_implementation_version_str = os.getenv(
+    'PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION',
+    '1')
+
+
+if _implementation_version_str not in ('1', '2'):
+  raise ValueError(
+      "unsupported PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION: '" +
+      _implementation_version_str + "' (supported versions: 1, 2)"
+      )
+
+
+_implementation_version = int(_implementation_version_str)
+
+
+
 # Usage of this function is discouraged. Clients shouldn't care which
 # implementation of the API is in use. Note that there is no guarantee
 # that differences between APIs will be maintained.
 # Please don't use this function if possible.
 def Type():
   return _implementation_type
+
+# See comment on 'Type' above.
+def Version():
+  return _implementation_version

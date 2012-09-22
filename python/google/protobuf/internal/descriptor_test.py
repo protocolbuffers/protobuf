@@ -35,6 +35,7 @@
 __author__ = 'robinson@google.com (Will Robinson)'
 
 import unittest
+from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pb2
@@ -101,6 +102,15 @@ class DescriptorTest(unittest.TestCase):
             self.my_method
         ])
 
+  def testEnumValueName(self):
+    self.assertEqual(self.my_message.EnumValueName('ForeignEnum', 4),
+                     'FOREIGN_FOO')
+
+    self.assertEqual(
+        self.my_message.enum_types_by_name[
+            'ForeignEnum'].values_by_number[4].name,
+        self.my_message.EnumValueName('ForeignEnum', 4))
+
   def testEnumFixups(self):
     self.assertEqual(self.my_enum, self.my_enum.values[0].type)
 
@@ -124,6 +134,257 @@ class DescriptorTest(unittest.TestCase):
                      descriptor_pb2.MethodOptions())
     self.assertEqual(self.my_service.GetOptions(),
                      descriptor_pb2.ServiceOptions())
+
+  def testSimpleCustomOptions(self):
+    file_descriptor = unittest_custom_options_pb2.DESCRIPTOR
+    message_descriptor =\
+        unittest_custom_options_pb2.TestMessageWithCustomOptions.DESCRIPTOR
+    field_descriptor = message_descriptor.fields_by_name["field1"]
+    enum_descriptor = message_descriptor.enum_types_by_name["AnEnum"]
+    enum_value_descriptor =\
+        message_descriptor.enum_values_by_name["ANENUM_VAL2"]
+    service_descriptor =\
+        unittest_custom_options_pb2.TestServiceWithCustomOptions.DESCRIPTOR
+    method_descriptor = service_descriptor.FindMethodByName("Foo")
+
+    file_options = file_descriptor.GetOptions()
+    file_opt1 = unittest_custom_options_pb2.file_opt1
+    self.assertEqual(9876543210, file_options.Extensions[file_opt1])
+    message_options = message_descriptor.GetOptions()
+    message_opt1 = unittest_custom_options_pb2.message_opt1
+    self.assertEqual(-56, message_options.Extensions[message_opt1])
+    field_options = field_descriptor.GetOptions()
+    field_opt1 = unittest_custom_options_pb2.field_opt1
+    self.assertEqual(8765432109, field_options.Extensions[field_opt1])
+    field_opt2 = unittest_custom_options_pb2.field_opt2
+    self.assertEqual(42, field_options.Extensions[field_opt2])
+    enum_options = enum_descriptor.GetOptions()
+    enum_opt1 = unittest_custom_options_pb2.enum_opt1
+    self.assertEqual(-789, enum_options.Extensions[enum_opt1])
+    enum_value_options = enum_value_descriptor.GetOptions()
+    enum_value_opt1 = unittest_custom_options_pb2.enum_value_opt1
+    self.assertEqual(123, enum_value_options.Extensions[enum_value_opt1])
+
+    service_options = service_descriptor.GetOptions()
+    service_opt1 = unittest_custom_options_pb2.service_opt1
+    self.assertEqual(-9876543210, service_options.Extensions[service_opt1])
+    method_options = method_descriptor.GetOptions()
+    method_opt1 = unittest_custom_options_pb2.method_opt1
+    self.assertEqual(unittest_custom_options_pb2.METHODOPT1_VAL2,
+                     method_options.Extensions[method_opt1])
+
+  def testDifferentCustomOptionTypes(self):
+    kint32min = -2**31
+    kint64min = -2**63
+    kint32max = 2**31 - 1
+    kint64max = 2**63 - 1
+    kuint32max = 2**32 - 1
+    kuint64max = 2**64 - 1
+
+    message_descriptor =\
+        unittest_custom_options_pb2.CustomOptionMinIntegerValues.DESCRIPTOR
+    message_options = message_descriptor.GetOptions()
+    self.assertEqual(False, message_options.Extensions[
+        unittest_custom_options_pb2.bool_opt])
+    self.assertEqual(kint32min, message_options.Extensions[
+        unittest_custom_options_pb2.int32_opt])
+    self.assertEqual(kint64min, message_options.Extensions[
+        unittest_custom_options_pb2.int64_opt])
+    self.assertEqual(0, message_options.Extensions[
+        unittest_custom_options_pb2.uint32_opt])
+    self.assertEqual(0, message_options.Extensions[
+        unittest_custom_options_pb2.uint64_opt])
+    self.assertEqual(kint32min, message_options.Extensions[
+        unittest_custom_options_pb2.sint32_opt])
+    self.assertEqual(kint64min, message_options.Extensions[
+        unittest_custom_options_pb2.sint64_opt])
+    self.assertEqual(0, message_options.Extensions[
+        unittest_custom_options_pb2.fixed32_opt])
+    self.assertEqual(0, message_options.Extensions[
+        unittest_custom_options_pb2.fixed64_opt])
+    self.assertEqual(kint32min, message_options.Extensions[
+        unittest_custom_options_pb2.sfixed32_opt])
+    self.assertEqual(kint64min, message_options.Extensions[
+        unittest_custom_options_pb2.sfixed64_opt])
+
+    message_descriptor =\
+        unittest_custom_options_pb2.CustomOptionMaxIntegerValues.DESCRIPTOR
+    message_options = message_descriptor.GetOptions()
+    self.assertEqual(True, message_options.Extensions[
+        unittest_custom_options_pb2.bool_opt])
+    self.assertEqual(kint32max, message_options.Extensions[
+        unittest_custom_options_pb2.int32_opt])
+    self.assertEqual(kint64max, message_options.Extensions[
+        unittest_custom_options_pb2.int64_opt])
+    self.assertEqual(kuint32max, message_options.Extensions[
+        unittest_custom_options_pb2.uint32_opt])
+    self.assertEqual(kuint64max, message_options.Extensions[
+        unittest_custom_options_pb2.uint64_opt])
+    self.assertEqual(kint32max, message_options.Extensions[
+        unittest_custom_options_pb2.sint32_opt])
+    self.assertEqual(kint64max, message_options.Extensions[
+        unittest_custom_options_pb2.sint64_opt])
+    self.assertEqual(kuint32max, message_options.Extensions[
+        unittest_custom_options_pb2.fixed32_opt])
+    self.assertEqual(kuint64max, message_options.Extensions[
+        unittest_custom_options_pb2.fixed64_opt])
+    self.assertEqual(kint32max, message_options.Extensions[
+        unittest_custom_options_pb2.sfixed32_opt])
+    self.assertEqual(kint64max, message_options.Extensions[
+        unittest_custom_options_pb2.sfixed64_opt])
+
+    message_descriptor =\
+        unittest_custom_options_pb2.CustomOptionOtherValues.DESCRIPTOR
+    message_options = message_descriptor.GetOptions()
+    self.assertEqual(-100, message_options.Extensions[
+        unittest_custom_options_pb2.int32_opt])
+    self.assertAlmostEqual(12.3456789, message_options.Extensions[
+        unittest_custom_options_pb2.float_opt], 6)
+    self.assertAlmostEqual(1.234567890123456789, message_options.Extensions[
+        unittest_custom_options_pb2.double_opt])
+    self.assertEqual("Hello, \"World\"", message_options.Extensions[
+        unittest_custom_options_pb2.string_opt])
+    self.assertEqual("Hello\0World", message_options.Extensions[
+        unittest_custom_options_pb2.bytes_opt])
+    dummy_enum = unittest_custom_options_pb2.DummyMessageContainingEnum
+    self.assertEqual(
+        dummy_enum.TEST_OPTION_ENUM_TYPE2,
+        message_options.Extensions[unittest_custom_options_pb2.enum_opt])
+
+    message_descriptor =\
+        unittest_custom_options_pb2.SettingRealsFromPositiveInts.DESCRIPTOR
+    message_options = message_descriptor.GetOptions()
+    self.assertAlmostEqual(12, message_options.Extensions[
+        unittest_custom_options_pb2.float_opt], 6)
+    self.assertAlmostEqual(154, message_options.Extensions[
+        unittest_custom_options_pb2.double_opt])
+
+    message_descriptor =\
+        unittest_custom_options_pb2.SettingRealsFromNegativeInts.DESCRIPTOR
+    message_options = message_descriptor.GetOptions()
+    self.assertAlmostEqual(-12, message_options.Extensions[
+        unittest_custom_options_pb2.float_opt], 6)
+    self.assertAlmostEqual(-154, message_options.Extensions[
+        unittest_custom_options_pb2.double_opt])
+
+  def testComplexExtensionOptions(self):
+    descriptor =\
+        unittest_custom_options_pb2.VariousComplexOptions.DESCRIPTOR
+    options = descriptor.GetOptions()
+    self.assertEqual(42, options.Extensions[
+        unittest_custom_options_pb2.complex_opt1].foo)
+    self.assertEqual(324, options.Extensions[
+        unittest_custom_options_pb2.complex_opt1].Extensions[
+            unittest_custom_options_pb2.quux])
+    self.assertEqual(876, options.Extensions[
+        unittest_custom_options_pb2.complex_opt1].Extensions[
+            unittest_custom_options_pb2.corge].qux)
+    self.assertEqual(987, options.Extensions[
+        unittest_custom_options_pb2.complex_opt2].baz)
+    self.assertEqual(654, options.Extensions[
+        unittest_custom_options_pb2.complex_opt2].Extensions[
+            unittest_custom_options_pb2.grault])
+    self.assertEqual(743, options.Extensions[
+        unittest_custom_options_pb2.complex_opt2].bar.foo)
+    self.assertEqual(1999, options.Extensions[
+        unittest_custom_options_pb2.complex_opt2].bar.Extensions[
+            unittest_custom_options_pb2.quux])
+    self.assertEqual(2008, options.Extensions[
+        unittest_custom_options_pb2.complex_opt2].bar.Extensions[
+            unittest_custom_options_pb2.corge].qux)
+    self.assertEqual(741, options.Extensions[
+        unittest_custom_options_pb2.complex_opt2].Extensions[
+            unittest_custom_options_pb2.garply].foo)
+    self.assertEqual(1998, options.Extensions[
+        unittest_custom_options_pb2.complex_opt2].Extensions[
+            unittest_custom_options_pb2.garply].Extensions[
+                unittest_custom_options_pb2.quux])
+    self.assertEqual(2121, options.Extensions[
+        unittest_custom_options_pb2.complex_opt2].Extensions[
+            unittest_custom_options_pb2.garply].Extensions[
+                unittest_custom_options_pb2.corge].qux)
+    self.assertEqual(1971, options.Extensions[
+        unittest_custom_options_pb2.ComplexOptionType2
+        .ComplexOptionType4.complex_opt4].waldo)
+    self.assertEqual(321, options.Extensions[
+        unittest_custom_options_pb2.complex_opt2].fred.waldo)
+    self.assertEqual(9, options.Extensions[
+        unittest_custom_options_pb2.complex_opt3].qux)
+    self.assertEqual(22, options.Extensions[
+        unittest_custom_options_pb2.complex_opt3].complexoptiontype5.plugh)
+    self.assertEqual(24, options.Extensions[
+        unittest_custom_options_pb2.complexopt6].xyzzy)
+
+  # Check that aggregate options were parsed and saved correctly in
+  # the appropriate descriptors.
+  def testAggregateOptions(self):
+    file_descriptor = unittest_custom_options_pb2.DESCRIPTOR
+    message_descriptor =\
+        unittest_custom_options_pb2.AggregateMessage.DESCRIPTOR
+    field_descriptor = message_descriptor.fields_by_name["fieldname"]
+    enum_descriptor = unittest_custom_options_pb2.AggregateEnum.DESCRIPTOR
+    enum_value_descriptor = enum_descriptor.values_by_name["VALUE"]
+    service_descriptor =\
+        unittest_custom_options_pb2.AggregateService.DESCRIPTOR
+    method_descriptor = service_descriptor.FindMethodByName("Method")
+
+    # Tests for the different types of data embedded in fileopt
+    file_options = file_descriptor.GetOptions().Extensions[
+        unittest_custom_options_pb2.fileopt]
+    self.assertEqual(100, file_options.i)
+    self.assertEqual("FileAnnotation", file_options.s)
+    self.assertEqual("NestedFileAnnotation", file_options.sub.s)
+    self.assertEqual("FileExtensionAnnotation", file_options.file.Extensions[
+        unittest_custom_options_pb2.fileopt].s)
+    self.assertEqual("EmbeddedMessageSetElement", file_options.mset.Extensions[
+        unittest_custom_options_pb2.AggregateMessageSetElement
+        .message_set_extension].s)
+
+    # Simple tests for all the other types of annotations
+    self.assertEqual(
+        "MessageAnnotation",
+        message_descriptor.GetOptions().Extensions[
+            unittest_custom_options_pb2.msgopt].s)
+    self.assertEqual(
+        "FieldAnnotation",
+        field_descriptor.GetOptions().Extensions[
+            unittest_custom_options_pb2.fieldopt].s)
+    self.assertEqual(
+        "EnumAnnotation",
+        enum_descriptor.GetOptions().Extensions[
+            unittest_custom_options_pb2.enumopt].s)
+    self.assertEqual(
+        "EnumValueAnnotation",
+        enum_value_descriptor.GetOptions().Extensions[
+            unittest_custom_options_pb2.enumvalopt].s)
+    self.assertEqual(
+        "ServiceAnnotation",
+        service_descriptor.GetOptions().Extensions[
+            unittest_custom_options_pb2.serviceopt].s)
+    self.assertEqual(
+        "MethodAnnotation",
+        method_descriptor.GetOptions().Extensions[
+            unittest_custom_options_pb2.methodopt].s)
+
+  def testNestedOptions(self):
+    nested_message =\
+        unittest_custom_options_pb2.NestedOptionType.NestedMessage.DESCRIPTOR
+    self.assertEqual(1001, nested_message.GetOptions().Extensions[
+        unittest_custom_options_pb2.message_opt1])
+    nested_field = nested_message.fields_by_name["nested_field"]
+    self.assertEqual(1002, nested_field.GetOptions().Extensions[
+        unittest_custom_options_pb2.field_opt1])
+    outer_message =\
+        unittest_custom_options_pb2.NestedOptionType.DESCRIPTOR
+    nested_enum = outer_message.enum_types_by_name["NestedEnum"]
+    self.assertEqual(1003, nested_enum.GetOptions().Extensions[
+        unittest_custom_options_pb2.enum_opt1])
+    nested_enum_value = outer_message.enum_values_by_name["NESTED_ENUM_VALUE"]
+    self.assertEqual(1004, nested_enum_value.GetOptions().Extensions[
+        unittest_custom_options_pb2.enum_value_opt1])
+    nested_extension = outer_message.extensions_by_name["nested_extension"]
+    self.assertEqual(1005, nested_extension.GetOptions().Extensions[
+        unittest_custom_options_pb2.field_opt2])
 
   def testFileDescriptorReferences(self):
     self.assertEqual(self.my_enum.file, self.my_file)
@@ -273,6 +534,7 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
     UNITTEST_IMPORT_FILE_DESCRIPTOR_ASCII = ("""
       name: 'google/protobuf/unittest_import.proto'
       package: 'protobuf_unittest_import'
+      dependency: 'google/protobuf/unittest_import_public.proto'
       message_type: <
         name: 'ImportMessage'
         field: <
@@ -302,6 +564,7 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
         java_package: 'com.google.protobuf.test'
         optimize_for: 1  # SPEED
       >
+      public_dependency: 0
       """)
 
     self._InternalTestCopyToProto(
@@ -328,6 +591,22 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
         unittest_pb2.TestService.DESCRIPTOR,
         descriptor_pb2.ServiceDescriptorProto,
         TEST_SERVICE_ASCII)
+
+
+class MakeDescriptorTest(unittest.TestCase):
+  def testMakeDescriptorWithUnsignedIntField(self):
+    file_descriptor_proto = descriptor_pb2.FileDescriptorProto()
+    file_descriptor_proto.name = 'Foo'
+    message_type = file_descriptor_proto.message_type.add()
+    message_type.name = file_descriptor_proto.name
+    field = message_type.field.add()
+    field.number = 1
+    field.name = 'uint64_field'
+    field.label = descriptor.FieldDescriptor.LABEL_REQUIRED
+    field.type = descriptor.FieldDescriptor.TYPE_UINT64
+    result = descriptor.MakeDescriptor(message_type)
+    self.assertEqual(result.fields[0].cpp_type,
+                     descriptor.FieldDescriptor.CPPTYPE_UINT64)
 
 
 if __name__ == '__main__':

@@ -34,6 +34,7 @@
 
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/unittest_mset.pb.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
@@ -46,9 +47,10 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/stl_util-inl.h>
+#include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
+
 namespace protobuf {
 namespace internal {
 namespace {
@@ -140,21 +142,96 @@ TEST(ExtensionSetTest, ClearOneField) {
   TestUtil::ExpectAllExtensionsSet(message);
 }
 
+TEST(ExtensionSetTest, SetAllocatedExtensin) {
+  unittest::TestAllExtensions message;
+  EXPECT_FALSE(message.HasExtension(
+      unittest::optional_foreign_message_extension));
+  // Add a extension using SetAllocatedExtension
+  unittest::ForeignMessage* foreign_message = new unittest::ForeignMessage();
+  message.SetAllocatedExtension(unittest::optional_foreign_message_extension,
+                                foreign_message);
+  EXPECT_TRUE(message.HasExtension(
+      unittest::optional_foreign_message_extension));
+  EXPECT_EQ(foreign_message,
+            message.MutableExtension(
+                unittest::optional_foreign_message_extension));
+  EXPECT_EQ(foreign_message,
+            &message.GetExtension(
+                unittest::optional_foreign_message_extension));
+
+  // SetAllocatedExtension should delete the previously existing extension.
+  // (We reply on unittest to check memory leaks for this case)
+  message.SetAllocatedExtension(unittest::optional_foreign_message_extension,
+                                 new unittest::ForeignMessage());
+
+  // SetAllocatedExtension with a NULL parameter is equivalent to ClearExtenion.
+  message.SetAllocatedExtension(unittest::optional_foreign_message_extension,
+                                 NULL);
+  EXPECT_FALSE(message.HasExtension(
+      unittest::optional_foreign_message_extension));
+}
+
+TEST(ExtensionSetTest, ReleaseExtension) {
+  unittest::TestMessageSet message;
+  EXPECT_FALSE(message.HasExtension(
+      unittest::TestMessageSetExtension1::message_set_extension));
+  // Add a extension using SetAllocatedExtension
+  unittest::TestMessageSetExtension1* extension =
+      new unittest::TestMessageSetExtension1();
+  message.SetAllocatedExtension(
+      unittest::TestMessageSetExtension1::message_set_extension,
+      extension);
+  EXPECT_TRUE(message.HasExtension(
+      unittest::TestMessageSetExtension1::message_set_extension));
+  // Release the extension using ReleaseExtension
+  unittest::TestMessageSetExtension1* released_extension =
+      message.ReleaseExtension(
+        unittest::TestMessageSetExtension1::message_set_extension);
+  EXPECT_EQ(extension, released_extension);
+  EXPECT_FALSE(message.HasExtension(
+      unittest::TestMessageSetExtension1::message_set_extension));
+  // ReleaseExtension will return the underlying object even after
+  // ClearExtension is called.
+  message.SetAllocatedExtension(
+      unittest::TestMessageSetExtension1::message_set_extension,
+      extension);
+  message.ClearExtension(
+      unittest::TestMessageSetExtension1::message_set_extension);
+  released_extension = message.ReleaseExtension(
+        unittest::TestMessageSetExtension1::message_set_extension);
+  EXPECT_TRUE(released_extension != NULL);
+  delete released_extension;
+}
+
+
 TEST(ExtensionSetTest, CopyFrom) {
   unittest::TestAllExtensions message1, message2;
-  string data;
 
   TestUtil::SetAllExtensions(&message1);
   message2.CopyFrom(message1);
   TestUtil::ExpectAllExtensionsSet(message2);
+  message2.CopyFrom(message1);  // exercise copy when fields already exist
+  TestUtil::ExpectAllExtensionsSet(message2);
+}
+
+TEST(ExtensioSetTest, CopyFromPacked) {
+  unittest::TestPackedExtensions message1, message2;
+
+  TestUtil::SetPackedExtensions(&message1);
+  message2.CopyFrom(message1);
+  TestUtil::ExpectPackedExtensionsSet(message2);
+  message2.CopyFrom(message1);  // exercise copy when fields already exist
+  TestUtil::ExpectPackedExtensionsSet(message2);
 }
 
 TEST(ExtensionSetTest, CopyFromUpcasted) {
   unittest::TestAllExtensions message1, message2;
-  string data;
   const Message& upcasted_message = message1;
 
   TestUtil::SetAllExtensions(&message1);
+  message2.CopyFrom(upcasted_message);
+  TestUtil::ExpectAllExtensionsSet(message2);
+  // exercise copy when fields already exist
   message2.CopyFrom(upcasted_message);
   TestUtil::ExpectAllExtensionsSet(message2);
 }
@@ -418,7 +495,8 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
     for (int i = 0; i < 16; ++i) {                                             \
       message.AddExtension(unittest::repeated_##type##_extension, value);      \
     }                                                                          \
-    int expected_size = sizeof(cpptype) * 16 + empty_repeated_field_size;      \
+    int expected_size = sizeof(cpptype) * (16 -                                \
+        kMinRepeatedFieldAllocationSize) + empty_repeated_field_size;          \
     EXPECT_EQ(expected_size, message.SpaceUsed()) << #type;                    \
   } while (0)
 
@@ -450,7 +528,8 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
     for (int i = 0; i < 16; ++i) {
       message.AddExtension(unittest::repeated_string_extension, value);
     }
-    min_expected_size += (sizeof(value) + value.size()) * 16;
+    min_expected_size += (sizeof(value) + value.size()) *
+        (16 - kMinRepeatedFieldAllocationSize);
     EXPECT_LE(min_expected_size, message.SpaceUsed());
   }
   // Repeated messages
@@ -465,7 +544,8 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
       message.AddExtension(unittest::repeated_foreign_message_extension)->
           CopyFrom(prototype);
     }
-    min_expected_size += 16 * prototype.SpaceUsed();
+    min_expected_size +=
+        (16 - kMinRepeatedFieldAllocationSize) * prototype.SpaceUsed();
     EXPECT_LE(min_expected_size, message.SpaceUsed());
   }
 }

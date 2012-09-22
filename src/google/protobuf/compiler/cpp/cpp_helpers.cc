@@ -148,7 +148,7 @@ string ClassName(const Descriptor* descriptor, bool qualified) {
 string ClassName(const EnumDescriptor* enum_descriptor, bool qualified) {
   if (enum_descriptor->containing_type() == NULL) {
     if (qualified) {
-      return DotsToColons(enum_descriptor->full_name());
+      return "::" + DotsToColons(enum_descriptor->full_name());
     } else {
       return enum_descriptor->name();
     }
@@ -259,10 +259,23 @@ const char* DeclaredTypeMethodName(FieldDescriptor::Type type) {
 string DefaultValue(const FieldDescriptor* field) {
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
+      // gcc rejects the decimal form of kint32min and kint64min.
+      if (field->default_value_int32() == kint32min) {
+        // Make sure we are in a 2's complement system.
+        GOOGLE_COMPILE_ASSERT(kint32min == -0x80000000, kint32min_value_error);
+        return "-0x80000000";
+      }
       return SimpleItoa(field->default_value_int32());
     case FieldDescriptor::CPPTYPE_UINT32:
       return SimpleItoa(field->default_value_uint32()) + "u";
     case FieldDescriptor::CPPTYPE_INT64:
+      // See the comments for CPPTYPE_INT32.
+      if (field->default_value_int64() == kint64min) {
+        // Make sure we are in a 2's complement system.
+        GOOGLE_COMPILE_ASSERT(kint64min == GOOGLE_LONGLONG(-0x8000000000000000),
+                       kint64min_value_error);
+        return "GOOGLE_LONGLONG(-0x8000000000000000)";
+      }
       return "GOOGLE_LONGLONG(" + SimpleItoa(field->default_value_int64()) + ")";
     case FieldDescriptor::CPPTYPE_UINT64:
       return "GOOGLE_ULONGLONG(" + SimpleItoa(field->default_value_uint64())+ ")";
@@ -308,8 +321,9 @@ string DefaultValue(const FieldDescriptor* field) {
           ClassName(field->enum_type(), true),
           field->default_value_enum()->number());
     case FieldDescriptor::CPPTYPE_STRING:
-      return "\"" + EscapeTrigraphs(CEscape(field->default_value_string())) +
-             "\"";
+      return "\"" + EscapeTrigraphs(
+        CEscape(field->default_value_string())) +
+        "\"";
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return FieldMessageTypeName(field) + "::default_instance()";
   }
@@ -399,6 +413,23 @@ void PrintHandlingOptionalStaticInitializers(
       with_static_init +
       "#endif\n").c_str());
   }
+}
+
+
+static bool HasEnumDefinitions(const Descriptor* message_type) {
+  if (message_type->enum_type_count() > 0) return true;
+  for (int i = 0; i < message_type->nested_type_count(); ++i) {
+    if (HasEnumDefinitions(message_type->nested_type(i))) return true;
+  }
+  return false;
+}
+
+bool HasEnumDefinitions(const FileDescriptor* file) {
+  if (file->enum_type_count() > 0) return true;
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    if (HasEnumDefinitions(file->message_type(i))) return true;
+  }
+  return false;
 }
 
 }  // namespace cpp

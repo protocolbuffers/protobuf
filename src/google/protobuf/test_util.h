@@ -43,13 +43,17 @@
 namespace google {
 namespace protobuf {
 
-namespace unittest = protobuf_unittest;
+namespace unittest = ::protobuf_unittest;
 namespace unittest_import = protobuf_unittest_import;
 
 class TestUtil {
  public:
   // Set every field in the message to a unique value.
   static void SetAllFields(unittest::TestAllTypes* message);
+  static void SetOptionalFields(unittest::TestAllTypes* message);
+  static void AddRepeatedFields1(unittest::TestAllTypes* message);
+  static void AddRepeatedFields2(unittest::TestAllTypes* message);
+  static void SetDefaultFields(unittest::TestAllTypes* message);
   static void SetAllExtensions(unittest::TestAllExtensions* message);
   static void SetAllFieldsAndExtensions(unittest::TestFieldOrderings* message);
   static void SetPackedFields(unittest::TestPackedTypes* message);
@@ -104,6 +108,10 @@ class TestUtil {
       const unittest::TestAllTypes& message);
   static void ExpectLastRepeatedExtensionsRemoved(
       const unittest::TestAllExtensions& message);
+  static void ExpectLastRepeatedsReleased(
+      const unittest::TestAllTypes& message);
+  static void ExpectLastRepeatedExtensionsReleased(
+      const unittest::TestAllExtensions& message);
 
   // Check that all repeated fields have had their first and last elements
   // swapped.
@@ -132,7 +140,17 @@ class TestUtil {
     void ExpectPackedClearViaReflection(const Message& message);
 
     void RemoveLastRepeatedsViaReflection(Message* message);
+    void ReleaseLastRepeatedsViaReflection(
+        Message* message, bool expect_extensions_notnull);
     void SwapRepeatedsViaReflection(Message* message);
+
+    enum MessageReleaseState {
+      IS_NULL,
+      CAN_BE_NULL,
+      NOT_NULL,
+    };
+    void ExpectMessagesReleasedViaReflection(
+        Message* message, MessageReleaseState expected_release_state);
 
    private:
     const FieldDescriptor* F(const string& name);
@@ -144,6 +162,7 @@ class TestUtil {
     const FieldDescriptor* nested_b_;
     const FieldDescriptor* foreign_c_;
     const FieldDescriptor* import_d_;
+    const FieldDescriptor* import_e_;
 
     const EnumValueDescriptor* nested_foo_;
     const EnumValueDescriptor* nested_bar_;

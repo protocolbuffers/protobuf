@@ -138,6 +138,11 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
   void PrintSerializedPbInterval(
       const DescriptorT& descriptor, DescriptorProtoT& proto) const;
 
+  void FixAllDescriptorOptions() const;
+  void FixOptionsForField(const FieldDescriptor& field) const;
+  void FixOptionsForEnum(const EnumDescriptor& descriptor) const;
+  void FixOptionsForMessage(const Descriptor& descriptor) const;
+
   // Very coarse-grained lock to ensure that Generate() is reentrant.
   // Guards file_, printer_ and file_descriptor_serialized_.
   mutable Mutex mutex_;

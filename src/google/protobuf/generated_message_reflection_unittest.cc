@@ -225,9 +225,57 @@ TEST(GeneratedMessageReflectionTest, RemoveLastExtensions) {
     unittest::TestAllExtensions::descriptor());
 
   TestUtil::SetAllExtensions(&message);
+
   reflection_tester.RemoveLastRepeatedsViaReflection(&message);
 
   TestUtil::ExpectLastRepeatedExtensionsRemoved(message);
+}
+
+TEST(GeneratedMessageReflectionTest, ReleaseLast) {
+  unittest::TestAllTypes message;
+  const Descriptor* descriptor = message.GetDescriptor();
+  TestUtil::ReflectionTester reflection_tester(descriptor);
+
+  TestUtil::SetAllFields(&message);
+
+  reflection_tester.ReleaseLastRepeatedsViaReflection(&message, false);
+
+  TestUtil::ExpectLastRepeatedsReleased(message);
+
+  // Now test that we actually release the right message.
+  message.Clear();
+  TestUtil::SetAllFields(&message);
+  ASSERT_EQ(2, message.repeated_foreign_message_size());
+  const protobuf_unittest::ForeignMessage* expected =
+      message.mutable_repeated_foreign_message(1);
+  scoped_ptr<Message> released(message.GetReflection()->ReleaseLast(
+      &message, descriptor->FindFieldByName("repeated_foreign_message")));
+  EXPECT_EQ(expected, released.get());
+}
+
+TEST(GeneratedMessageReflectionTest, ReleaseLastExtensions) {
+  unittest::TestAllExtensions message;
+  const Descriptor* descriptor = message.GetDescriptor();
+  TestUtil::ReflectionTester reflection_tester(descriptor);
+
+  TestUtil::SetAllExtensions(&message);
+
+  reflection_tester.ReleaseLastRepeatedsViaReflection(&message, true);
+
+  TestUtil::ExpectLastRepeatedExtensionsReleased(message);
+
+  // Now test that we actually release the right message.
+  message.Clear();
+  TestUtil::SetAllExtensions(&message);
+  ASSERT_EQ(2, message.ExtensionSize(
+      unittest::repeated_foreign_message_extension));
+  const protobuf_unittest::ForeignMessage* expected = message.MutableExtension(
+      unittest::repeated_foreign_message_extension, 1);
+  scoped_ptr<Message> released(message.GetReflection()->ReleaseLast(
+      &message, descriptor->file()->FindExtensionByName(
+          "repeated_foreign_message_extension")));
+  EXPECT_EQ(expected, released.get());
+
 }
 
 TEST(GeneratedMessageReflectionTest, SwapRepeatedElements) {
@@ -325,6 +373,58 @@ TEST(GeneratedMessageReflectionTest, FindKnownExtensionByName) {
   // other types.
   EXPECT_TRUE(unittest::TestAllTypes::default_instance().GetReflection()->
               FindKnownExtensionByName(extension1->full_name()) == NULL);
+}
+
+TEST(GeneratedMessageReflectionTest, ReleaseMessageTest) {
+  unittest::TestAllTypes message;
+  TestUtil::ReflectionTester reflection_tester(
+    unittest::TestAllTypes::descriptor());
+
+  // When nothing is set, we expect all released messages to be NULL.
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      &message, TestUtil::ReflectionTester::IS_NULL);
+
+  // After fields are set we should get non-NULL releases.
+  reflection_tester.SetAllFieldsViaReflection(&message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      &message, TestUtil::ReflectionTester::NOT_NULL);
+
+  // After Clear() we may or may not get a message from ReleaseMessage().
+  // This is implementation specific.
+  reflection_tester.SetAllFieldsViaReflection(&message);
+  message.Clear();
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      &message, TestUtil::ReflectionTester::CAN_BE_NULL);
+
+  // Test a different code path for setting after releasing.
+  TestUtil::SetAllFields(&message);
+  TestUtil::ExpectAllFieldsSet(message);
+}
+
+TEST(GeneratedMessageReflectionTest, ReleaseExtensionMessageTest) {
+  unittest::TestAllExtensions message;
+  TestUtil::ReflectionTester reflection_tester(
+    unittest::TestAllExtensions::descriptor());
+
+  // When nothing is set, we expect all released messages to be NULL.
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      &message, TestUtil::ReflectionTester::IS_NULL);
+
+  // After fields are set we should get non-NULL releases.
+  reflection_tester.SetAllFieldsViaReflection(&message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      &message, TestUtil::ReflectionTester::NOT_NULL);
+
+  // After Clear() we may or may not get a message from ReleaseMessage().
+  // This is implementation specific.
+  reflection_tester.SetAllFieldsViaReflection(&message);
+  message.Clear();
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      &message, TestUtil::ReflectionTester::CAN_BE_NULL);
+
+  // Test a different code path for setting after releasing.
+  TestUtil::SetAllExtensions(&message);
+  TestUtil::ExpectAllExtensionsSet(message);
 }
 
 #ifdef GTEST_HAS_DEATH_TEST

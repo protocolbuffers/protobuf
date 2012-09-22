@@ -103,7 +103,17 @@ message TestConflictingSymbolNames {
   message DO {}
   optional DO do = 32;
 
+  // Some template parameter names for extensions.
+  optional int32 field_type = 33;
+  optional bool is_packed = 34;
+
   extensions 1000 to max;
+}
+
+message TestConflictingSymbolNamesExtension {
+  extend TestConflictingSymbolNames {
+    repeated int32 repeated_int32_ext = 20423638 [packed=true];
+  }
 }
 
 message DummyMessage {}

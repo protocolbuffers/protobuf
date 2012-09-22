@@ -31,21 +31,21 @@
 package com.google.protobuf;
 
 /**
- * <code>SingleFieldBuilder</code> implements a structure that a protocol
+ * {@code SingleFieldBuilder} implements a structure that a protocol
  * message uses to hold a single field of another protocol message. It supports
  * the classical use case of setting an immutable {@link Message} as the value
  * of the field and is highly optimized around this.
  * <br>
  * It also supports the additional use case of setting a {@link Message.Builder}
- * as the field and deferring conversion of that <code>Builder</code>
- * to an immutable <code>Message</code>. In this way, it's possible to maintain
- * a tree of <code>Builder</code>'s that acts as a fully read/write data
+ * as the field and deferring conversion of that {@code Builder}
+ * to an immutable {@code Message}. In this way, it's possible to maintain
+ * a tree of {@code Builder}'s that acts as a fully read/write data
  * structure.
  * <br>
  * Logically, one can think of a tree of builders as converting the entire tree
  * to messages when build is called on the root or when any method is called
  * that desires a Message instead of a Builder. In terms of the implementation,
- * the <code>SingleFieldBuilder</code> and <code>RepeatedFieldBuilder</code>
+ * the {@code SingleFieldBuilder} and {@code RepeatedFieldBuilder}
  * classes cache messages that were created so that messages only need to be
  * created when some change occured in its builder or a builder for one of its
  * descendants.
@@ -99,7 +99,7 @@ public class SingleFieldBuilder
 
   /**
    * Get the message for the field. If the message is currently stored
-   * as a <code>Builder</code>, it is converted to a <code>Message</code> by
+   * as a {@code Builder}, it is converted to a {@code Message} by
    * calling {@link Message.Builder#buildPartial} on it. If no message has
    * been set, returns the default instance of the message.
    *

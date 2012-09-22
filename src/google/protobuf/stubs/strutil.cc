@@ -189,6 +189,44 @@ void SplitStringUsing(const string& full,
   SplitStringToIteratorUsing(full, delim, it);
 }
 
+// Split a string using a character delimiter. Append the components
+// to 'result'.  If there are consecutive delimiters, this function
+// will return corresponding empty strings. The string is split into
+// at most the specified number of pieces greedily. This means that the
+// last piece may possibly be split further. To split into as many pieces
+// as possible, specify 0 as the number of pieces.
+//
+// If "full" is the empty string, yields an empty string as the only value.
+//
+// If "pieces" is negative for some reason, it returns the whole string
+// ----------------------------------------------------------------------
+template <typename StringType, typename ITR>
+static inline
+void SplitStringToIteratorAllowEmpty(const StringType& full,
+                                     const char* delim,
+                                     int pieces,
+                                     ITR& result) {
+  string::size_type begin_index, end_index;
+  begin_index = 0;
+
+  for (int i = 0; (i < pieces-1) || (pieces == 0); i++) {
+    end_index = full.find_first_of(delim, begin_index);
+    if (end_index == string::npos) {
+      *result++ = full.substr(begin_index);
+      return;
+    }
+    *result++ = full.substr(begin_index, (end_index - begin_index));
+    begin_index = end_index + 1;
+  }
+  *result++ = full.substr(begin_index);
+}
+
+void SplitStringAllowEmpty(const string& full, const char* delim,
+                           vector<string>* result) {
+  back_insert_iterator<vector<string> > it(*result);
+  SplitStringToIteratorAllowEmpty(full, delim, 0, it);
+}
+
 // ----------------------------------------------------------------------
 // JoinStrings()
 //    This merges a vector of string components with delim inserted

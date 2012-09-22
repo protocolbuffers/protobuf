@@ -80,8 +80,9 @@ int FixedSize(FieldDescriptor::Type type) {
 }
 
 void SetPrimitiveVariables(const FieldDescriptor* descriptor,
-                           map<string, string>* variables) {
-  SetCommonFieldVariables(descriptor, variables);
+                           map<string, string>* variables,
+                           const Options& options) {
+  SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = PrimitiveTypeName(descriptor->cpp_type());
   (*variables)["default"] = DefaultValue(descriptor);
   (*variables)["tag"] = SimpleItoa(internal::WireFormat::MakeTag(descriptor));
@@ -99,9 +100,10 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
 // ===================================================================
 
 PrimitiveFieldGenerator::
-PrimitiveFieldGenerator(const FieldDescriptor* descriptor)
+PrimitiveFieldGenerator(const FieldDescriptor* descriptor,
+                        const Options& options)
   : descriptor_(descriptor) {
-  SetPrimitiveVariables(descriptor, &variables_);
+  SetPrimitiveVariables(descriptor, &variables_, options);
 }
 
 PrimitiveFieldGenerator::~PrimitiveFieldGenerator() {}
@@ -190,9 +192,10 @@ GenerateByteSize(io::Printer* printer) const {
 // ===================================================================
 
 RepeatedPrimitiveFieldGenerator::
-RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor)
+RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
+                                const Options& options)
   : descriptor_(descriptor) {
-  SetPrimitiveVariables(descriptor, &variables_);
+  SetPrimitiveVariables(descriptor, &variables_, options);
 
   if (descriptor->options().packed()) {
     variables_["packed_reader"] = "ReadPackedPrimitive";
@@ -366,7 +369,9 @@ GenerateByteSize(io::Printer* printer) const {
       "  total_size += $tag_size$ +\n"
       "    ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);\n"
       "}\n"
+      "GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();\n"
       "_$name$_cached_byte_size_ = data_size;\n"
+      "GOOGLE_SAFE_CONCURRENT_WRITES_END();\n"
       "total_size += data_size;\n");
   } else {
     printer->Print(variables_,

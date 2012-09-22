@@ -44,6 +44,8 @@
 // correctly and produces the interfaces we expect, which is why this test
 // is written this way.
 
+#include <google/protobuf/compiler/cpp/cpp_unittest.h>
+
 #include <vector>
 
 #include <google/protobuf/unittest.pb.h>
@@ -64,7 +66,7 @@
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/stl_util-inl.h>
+#include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
 namespace protobuf {
@@ -73,6 +75,8 @@ namespace cpp {
 
 // Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
 namespace cpp_unittest {
+
+namespace protobuf_unittest = ::protobuf_unittest;
 
 
 class MockErrorCollector : public MultiFileErrorCollector {
@@ -174,6 +178,15 @@ TEST(GeneratedMessageTest, Trigraph) {
   EXPECT_EQ("? ? ?? ?? ??? ?\?/ ?\?-", extreme_default.cpp_trigraph());
 }
 
+TEST(GeneratedMessageTest, ExtremeSmallIntegerDefault) {
+  const unittest::TestExtremeDefaultValues& extreme_default =
+      unittest::TestExtremeDefaultValues::default_instance();
+  EXPECT_EQ(-0x80000000, kint32min);
+  EXPECT_EQ(GOOGLE_LONGLONG(-0x8000000000000000), kint64min);
+  EXPECT_EQ(kint32min, extreme_default.really_small_int32());
+  EXPECT_EQ(kint64min, extreme_default.really_small_int64());
+}
+
 TEST(GeneratedMessageTest, Accessors) {
   // Set every field to a unique value then go back and check all those
   // values.
@@ -200,6 +213,13 @@ TEST(GeneratedMessageTest, MutableStringDefault) {
   message.Clear();
 
   EXPECT_EQ("hello", *message.mutable_default_string());
+}
+
+TEST(GeneratedMessageTest, StringDefaults) {
+  unittest::TestExtremeDefaultValues message;
+  // Check if '\000' can be used in default string value.
+  EXPECT_EQ(string("hel\000lo", 6), message.string_with_zero());
+  EXPECT_EQ(string("wor\000ld", 6), message.bytes_with_zero());
 }
 
 TEST(GeneratedMessageTest, ReleaseString) {
@@ -242,6 +262,49 @@ TEST(GeneratedMessageTest, ReleaseMessage) {
 
   EXPECT_EQ(NULL, message.release_optional_nested_message());
   EXPECT_FALSE(message.has_optional_nested_message());
+}
+
+TEST(GeneratedMessageTest, SetAllocatedString) {
+  // Check that set_allocated_foo() works for strings.
+  unittest::TestAllTypes message;
+
+  EXPECT_FALSE(message.has_optional_string());
+  const string kHello("hello");
+  message.set_optional_string(kHello);
+  EXPECT_TRUE(message.has_optional_string());
+
+  message.set_allocated_optional_string(NULL);
+  EXPECT_FALSE(message.has_optional_string());
+  EXPECT_EQ("", message.optional_string());
+
+  message.set_allocated_optional_string(new string(kHello));
+  EXPECT_TRUE(message.has_optional_string());
+  EXPECT_EQ(kHello, message.optional_string());
+}
+
+TEST(GeneratedMessageTest, SetAllocatedMessage) {
+  // Check that set_allocated_foo() can be called in all cases.
+  unittest::TestAllTypes message;
+
+  EXPECT_FALSE(message.has_optional_nested_message());
+
+  message.mutable_optional_nested_message()->set_bb(1);
+  EXPECT_TRUE(message.has_optional_nested_message());
+
+  message.set_allocated_optional_nested_message(NULL);
+  EXPECT_FALSE(message.has_optional_nested_message());
+  EXPECT_EQ(&unittest::TestAllTypes::NestedMessage::default_instance(),
+            &message.optional_nested_message());
+
+  message.mutable_optional_nested_message()->set_bb(1);
+  unittest::TestAllTypes::NestedMessage* nest =
+      message.release_optional_nested_message();
+  ASSERT_TRUE(nest != NULL);
+  EXPECT_FALSE(message.has_optional_nested_message());
+
+  message.set_allocated_optional_nested_message(nest);
+  EXPECT_TRUE(message.has_optional_nested_message());
+  EXPECT_EQ(1, message.optional_nested_message().bb());
 }
 
 TEST(GeneratedMessageTest, Clear) {
@@ -695,6 +758,13 @@ TEST(GeneratedMessageTest, TestConflictingSymbolNames) {
 
   message.set_friend_(5);
   EXPECT_EQ(5, message.friend_());
+
+  // Instantiate extension template functions to test conflicting template
+  // parameter names.
+  typedef protobuf_unittest::TestConflictingSymbolNamesExtension ExtensionMessage;
+  message.AddExtension(ExtensionMessage::repeated_int32_ext, 123);
+  EXPECT_EQ(123,
+            message.GetExtension(ExtensionMessage::repeated_int32_ext, 0));
 }
 
 #ifndef PROTOBUF_TEST_NO_DESCRIPTORS
@@ -869,11 +939,10 @@ TEST(GeneratedEnumTest, MinAndMax) {
   EXPECT_NE(null_pointer, &unittest::ForeignEnum_MAX);
   EXPECT_NE(null_pointer, &unittest::ForeignEnum_ARRAYSIZE);
 
-  // Make sure we can use _MIN, _MAX and _ARRAYSIZE as switch cases.
+  // Make sure we can use _MIN and _MAX as switch cases.
   switch (unittest::SPARSE_A) {
     case unittest::TestSparseEnum_MIN:
     case unittest::TestSparseEnum_MAX:
-    case unittest::TestSparseEnum_ARRAYSIZE:
       break;
     default:
       break;
