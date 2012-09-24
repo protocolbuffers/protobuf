@@ -204,7 +204,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\google\protobuf\stubs\stl_util-inl.h"
+				RelativePath="..\src\google\protobuf\stubs\stl_util.h"
 				>
 			</File>
 			<File
@@ -221,6 +221,18 @@
 			</File>
 			<File
 				RelativePath="..\src\google\protobuf\io\zero_copy_stream_impl_lite.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\stubs\stringprintf.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\stubs\template_util.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\stubs\type_traits.h"
 				>
 			</File>
 		</Filter>
@@ -277,6 +289,10 @@
 			</File>
 			<File
 				RelativePath="..\src\google\protobuf\io\zero_copy_stream_impl_lite.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\stubs\stringprintf.cc"
 				>
 			</File>
 		</Filter>

@@ -44,6 +44,11 @@ namespace protobuf {
 
 #ifdef _MSC_VER
 enum { IS_COMPILER_MSVC = 1 };
+#ifndef va_copy
+// Define va_copy for MSVC. This is a hack, assuming va_list is simply a
+// pointer into the stack and is safe to copy.
+#define va_copy(dest, src) ((dest) = (src))
+#endif
 #else
 enum { IS_COMPILER_MSVC = 0 };
 #endif
