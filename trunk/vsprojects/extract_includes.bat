@@ -17,6 +17,7 @@ copy ..\src\google\protobuf\descriptor.pb.h include\google\protobuf\descriptor.p
 copy ..\src\google\protobuf\descriptor_database.h include\google\protobuf\descriptor_database.h
 copy ..\src\google\protobuf\dynamic_message.h include\google\protobuf\dynamic_message.h
 copy ..\src\google\protobuf\extension_set.h include\google\protobuf\extension_set.h
+copy ..\src\google\protobuf\generated_enum_reflection.h include\google\protobuf\generated_enum_reflection.h
 copy ..\src\google\protobuf\generated_message_util.h include\google\protobuf\generated_message_util.h
 copy ..\src\google\protobuf\generated_message_reflection.h include\google\protobuf\generated_message_reflection.h
 copy ..\src\google\protobuf\message.h include\google\protobuf\message.h

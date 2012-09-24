@@ -171,10 +171,6 @@ class RepeatedField {
  private:
   static const int kInitialSize = 0;
 
-  // This cannot be the last attribute defined if kInitialSize is 0 or
-  // the checks elements_ != initial_space_ to delete are not valid.
-  Element  initial_space_[kInitialSize];
-
   Element* elements_;
   int      current_size_;
   int      total_size_;
@@ -316,10 +312,6 @@ class LIBPROTOBUF_EXPORT RepeatedPtrFieldBase {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedPtrFieldBase);
 
   static const int kInitialSize = 0;
-
-  // This cannot be the last attribute defined if kInitialSize is 0 or
-  // the checks elements_ != initial_space_ to delete are not valid.
-  void*  initial_space_[kInitialSize];
 
   void** elements_;
   int    current_size_;
@@ -557,14 +549,14 @@ class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
 
 template <typename Element>
 inline RepeatedField<Element>::RepeatedField()
-  : elements_(initial_space_),
+  : elements_(NULL),
     current_size_(0),
     total_size_(kInitialSize) {
 }
 
 template <typename Element>
 inline RepeatedField<Element>::RepeatedField(const RepeatedField& other)
-  : elements_(initial_space_),
+  : elements_(NULL),
     current_size_(0),
     total_size_(kInitialSize) {
   CopyFrom(other);
@@ -573,7 +565,7 @@ inline RepeatedField<Element>::RepeatedField(const RepeatedField& other)
 template <typename Element>
 template <typename Iter>
 inline RepeatedField<Element>::RepeatedField(Iter begin, const Iter& end)
-  : elements_(initial_space_),
+  : elements_(NULL),
     current_size_(0),
     total_size_(kInitialSize) {
   for (; begin != end; ++begin) {
@@ -583,9 +575,7 @@ inline RepeatedField<Element>::RepeatedField(Iter begin, const Iter& end)
 
 template <typename Element>
 RepeatedField<Element>::~RepeatedField() {
-  if (elements_ != initial_space_) {
-    delete [] elements_;
-  }
+  delete [] elements_;
 }
 
 template <typename Element>
@@ -682,9 +672,11 @@ inline void RepeatedField<Element>::Clear() {
 
 template <typename Element>
 inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
-  Reserve(current_size_ + other.current_size_);
-  CopyArray(elements_ + current_size_, other.elements_, other.current_size_);
-  current_size_ += other.current_size_;
+  if (other.current_size_ != 0) {
+    Reserve(current_size_ + other.current_size_);
+    CopyArray(elements_ + current_size_, other.elements_, other.current_size_);
+    current_size_ += other.current_size_;
+  }
 }
 
 template <typename Element>
@@ -710,27 +702,14 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
   Element* swap_elements     = elements_;
   int      swap_current_size = current_size_;
   int      swap_total_size   = total_size_;
-  // We may not be using initial_space_ but it's not worth checking.  Just
-  // copy it anyway.
-  Element swap_initial_space[kInitialSize];
-  MoveArray(swap_initial_space, initial_space_, kInitialSize);
 
   elements_     = other->elements_;
   current_size_ = other->current_size_;
   total_size_   = other->total_size_;
-  MoveArray(initial_space_, other->initial_space_, kInitialSize);
 
   other->elements_     = swap_elements;
   other->current_size_ = swap_current_size;
   other->total_size_   = swap_total_size;
-  MoveArray(other->initial_space_, swap_initial_space, kInitialSize);
-
-  if (elements_ == other->initial_space_) {
-    elements_ = initial_space_;
-  }
-  if (other->elements_ == initial_space_) {
-    other->elements_ = other->initial_space_;
-  }
 }
 
 template <typename Element>
@@ -761,7 +740,7 @@ RepeatedField<Element>::end() const {
 
 template <typename Element>
 inline int RepeatedField<Element>::SpaceUsedExcludingSelf() const {
-  return (elements_ != initial_space_) ? total_size_ * sizeof(elements_[0]) : 0;
+  return (elements_ != NULL) ? total_size_ * sizeof(elements_[0]) : 0;
 }
 
 // Avoid inlining of Reserve(): new, copy, and delete[] lead to a significant
@@ -774,8 +753,8 @@ void RepeatedField<Element>::Reserve(int new_size) {
   total_size_ = max(google::protobuf::internal::kMinRepeatedFieldAllocationSize,
                     max(total_size_ * 2, new_size));
   elements_ = new Element[total_size_];
-  MoveArray(elements_, old_elements, current_size_);
-  if (old_elements != initial_space_) {
+  if (old_elements != NULL) {
+    MoveArray(elements_, old_elements, current_size_);
     delete [] old_elements;
   }
 }
@@ -821,7 +800,7 @@ struct ElementCopier<Element, true> {
 namespace internal {
 
 inline RepeatedPtrFieldBase::RepeatedPtrFieldBase()
-  : elements_(initial_space_),
+  : elements_(NULL),
     current_size_(0),
     allocated_size_(0),
     total_size_(kInitialSize) {
@@ -832,9 +811,7 @@ void RepeatedPtrFieldBase::Destroy() {
   for (int i = 0; i < allocated_size_; i++) {
     TypeHandler::Delete(cast<TypeHandler>(elements_[i]));
   }
-  if (elements_ != initial_space_) {
-    delete [] elements_;
-  }
+  delete [] elements_;
 }
 
 inline int RepeatedPtrFieldBase::size() const {
@@ -930,7 +907,7 @@ inline void RepeatedPtrFieldBase::SwapElements(int index1, int index2) {
 template <typename TypeHandler>
 inline int RepeatedPtrFieldBase::SpaceUsedExcludingSelf() const {
   int allocated_bytes =
-      (elements_ != initial_space_) ? total_size_ * sizeof(elements_[0]) : 0;
+      (elements_ != NULL) ? total_size_ * sizeof(elements_[0]) : 0;
   for (int i = 0; i < allocated_size_; ++i) {
     allocated_bytes += TypeHandler::SpaceUsed(*cast<TypeHandler>(elements_[i]));
   }

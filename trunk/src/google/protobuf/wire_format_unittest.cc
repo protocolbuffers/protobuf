@@ -497,7 +497,7 @@ TEST(WireFormatTest, ParseMessageSetWithReverseTagOrder) {
     coded_output.WriteVarint32(message.ByteSize());
     message.SerializeWithCachedSizes(&coded_output);
     // Write the type id.
-    uint32_t type_id = message.GetDescriptor()->extension(0)->number();
+    uint32 type_id = message.GetDescriptor()->extension(0)->number();
     WireFormatLite::WriteUInt32(WireFormatLite::kMessageSetTypeIdNumber,
                                 type_id, &coded_output);
     coded_output.WriteTag(WireFormatLite::kMessageSetItemEndTag);

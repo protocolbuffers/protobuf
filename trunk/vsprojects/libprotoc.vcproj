@@ -208,6 +208,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\compiler\cpp\cpp_options.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\compiler\cpp\cpp_primitive_field.h"
 				>
 			</File>
@@ -265,6 +269,14 @@
 			</File>
 			<File
 				RelativePath="..\src\google\protobuf\compiler\java\java_string_field.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\compiler\java\java_doc_comment.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\compiler\java\java_doc_comment.cc"
 				>
 			</File>
 			<File
