@@ -926,7 +926,7 @@ CommandLineInterface::InterpretArgument(const string& name,
       string virtual_path;
       string disk_path;
 
-      int equals_pos = parts[i].find_first_of('=');
+      string::size_type equals_pos = parts[i].find_first_of('=');
       if (equals_pos == string::npos) {
         virtual_path = "";
         disk_path = parts[i];
