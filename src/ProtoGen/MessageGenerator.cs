@@ -242,7 +242,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                 writer.WriteLine("[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]");
                 writer.WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]",
                                  GetType().Assembly.GetName().Name, GetType().Assembly.GetName().Version);
-                writer.WriteLine("public static class Types {");
+                writer.WriteLine("public static partial class Types {");
                 writer.Indent();
                 WriteChildren(writer, null, Descriptor.EnumTypes);
                 WriteChildren(writer, null, Descriptor.NestedTypes);
