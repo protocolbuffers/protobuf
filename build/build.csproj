@@ -76,6 +76,7 @@
     <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_optimize_for.proto" />
     <Protos Include="$(ProtosDirectory)\google\test\google_size.proto" />
     <Protos Include="$(ProtosDirectory)\google\test\google_speed.proto" />
+    <Protos Include="$(ProtosDirectory)\tutorial\addressbook.proto" />
 
     <!-- Main protos -->
     <GeneratedSource Include="$(SourceTempDirectory)\CSharpOptions.cs">
