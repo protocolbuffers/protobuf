@@ -267,36 +267,6 @@ message " +
         }
 
         [Test]
-        public void TestProtoFileDisablingClsComplianceFlags()
-        {
-            string test = new StackFrame(false).GetMethod().Name;
-            Setup();
-            using (TempFile source = TempFile.Attach(test + ".cs"))
-            using (
-                ProtoFile proto = new ProtoFile(test + ".proto",
-                                                @"
-package nunit.simple;
-// Test a very simple message.
-message MyMessage {
-  optional uint32 name = 1;
-} ")
-                )
-            {
-                //CS3021: Warning as Error: xx does not need a CLSCompliant attribute because the assembly does not have a CLSCompliant attribute
-                RunProtoGen(0, proto.TempPath);
-                RunCsc(1, source.TempPath, "/warnaserror+");
-                //Now we know it fails, make it pass by turning off cls_compliance generation
-                RunProtoGen(0, proto.TempPath, "-cls_compliance:false");
-                Assembly a = RunCsc(0, source.TempPath, "/warnaserror+");
-                //assert that the message type is in the expected namespace
-                Type t = a.GetType("nunit.simple.MyMessage", true, true);
-                Assert.IsTrue(typeof(IMessage).IsAssignableFrom(t), "Expect an IMessage");
-                //assert that we can find the static descriptor type
-                a.GetType("nunit.simple." + test, true, true);
-            }
-        }
-
-        [Test]
         public void TestProtoFileWithNewExtension()
         {
             string test = new StackFrame(false).GetMethod().Name;
