@@ -26,6 +26,40 @@ namespace Google.ProtocolBuffers.Compatibility
         }
 
         [TestMethod]
+        public virtual void RoundTripWithEmptyChildMessageSize()
+        {
+            SizeMessage1 msg = SizeMessage1.CreateBuilder()
+                .SetField100(100)
+                .SetField15(SizeMessage1SubMessage.DefaultInstance)
+                .BuildPartial();
+            byte[] contents = msg.ToByteArray();
+            object content = SerializeMessage<SizeMessage1, SizeMessage1.Builder>(msg);
+
+            SizeMessage1 copy = DeserializeMessage<SizeMessage1, SizeMessage1.Builder>(content, SizeMessage1.CreateBuilder(), ExtensionRegistry.Empty).BuildPartial();
+
+            Assert.AreEqual(msg, copy);
+            AssertOutputEquals(content, SerializeMessage<SizeMessage1, SizeMessage1.Builder>(copy));
+            Assert.AreEqual(Convert.ToBase64String(contents), Convert.ToBase64String(copy.ToByteArray()));
+        }
+
+        [TestMethod]
+        public virtual void RoundTripWithEmptyChildMessageSpeed()
+        {
+            SpeedMessage1 msg = SpeedMessage1.CreateBuilder()
+                .SetField100(100)
+                .SetField15(SpeedMessage1SubMessage.DefaultInstance)
+                .BuildPartial();
+            byte[] contents = msg.ToByteArray();
+            object content = SerializeMessage<SpeedMessage1, SpeedMessage1.Builder>(msg);
+
+            SpeedMessage1 copy = DeserializeMessage<SpeedMessage1, SpeedMessage1.Builder>(content, SpeedMessage1.CreateBuilder(), ExtensionRegistry.Empty).BuildPartial();
+
+            Assert.AreEqual(msg, copy);
+            AssertOutputEquals(content, SerializeMessage<SpeedMessage1, SpeedMessage1.Builder>(copy));
+            Assert.AreEqual(Convert.ToBase64String(contents), Convert.ToBase64String(copy.ToByteArray()));
+        }
+
+        [TestMethod]
         public virtual void RoundTripMessage1OptimizeSize()
         {
             SizeMessage1 msg = SizeMessage1.CreateBuilder().MergeFrom(TestResources.google_message1).Build();

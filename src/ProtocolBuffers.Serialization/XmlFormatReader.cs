@@ -225,15 +225,18 @@ namespace Google.ProtocolBuffers.Serialization
                 stopNode = _elements.Peek();
             }
 
-            while (!_input.IsStartElement() && _input.Depth > stopNode.Depth && _input.Read())
+            if (!stopNode.IsEmpty)
             {
-                continue;
-            }
+                while (!_input.IsStartElement() && _input.Depth > stopNode.Depth && _input.Read())
+                {
+                    continue;
+                }
 
-            if (_input.IsStartElement())
-            {
-                field = _input.LocalName;
-                return true;
+                if (_input.IsStartElement() && _input.Depth > stopNode.Depth)
+                {
+                    field = _input.LocalName;
+                    return true;
+                }
             }
             field = null;
             return false;
