@@ -255,7 +255,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertBytesEqual(msg.ToByteArray(), TestRequiredLite.DefaultInstance.ToByteArray());
         }
 
-        [TestMethod, ExpectedException(typeof (UninitializedMessageException))]
+        [TestMethod, ExpectedException(typeof(UninitializedMessageException))]
         public void TestIBuilderLiteWeakBuildUninitialized()
         {
             IBuilderLite builder = TestRequiredLite.CreateBuilder();

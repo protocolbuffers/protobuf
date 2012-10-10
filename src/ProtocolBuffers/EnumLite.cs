@@ -107,7 +107,7 @@ namespace Google.ProtocolBuffers
                 items.Add(Convert.ToInt32(evalue), new EnumValue(evalue));
             }
 #else
-            foreach (TEnum evalue in Enum.GetValues(typeof (TEnum)))
+            foreach (TEnum evalue in Enum.GetValues(typeof(TEnum)))
             {
                 items.Add(Convert.ToInt32(evalue), new EnumValue(evalue));
             }
@@ -128,9 +128,9 @@ namespace Google.ProtocolBuffers
         public IEnumLite FindValueByName(string name)
         {
             IEnumLite val;
-            if (Enum.IsDefined(typeof (TEnum), name))
+            if (Enum.IsDefined(typeof(TEnum), name))
             {
-                return items.TryGetValue((int) Enum.Parse(typeof (TEnum), name, false), out val) ? val : null;
+                return items.TryGetValue((int) Enum.Parse(typeof(TEnum), name, false), out val) ? val : null;
             }
             return null;
         }

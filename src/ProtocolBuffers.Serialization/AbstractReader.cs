@@ -468,7 +468,7 @@ namespace Google.ProtocolBuffers.Serialization
             rawValue = null;
             if (ReadEnum(ref rawValue))
             {
-                if (Enum.IsDefined(typeof (T), rawValue))
+                if (Enum.IsDefined(typeof(T), rawValue))
                 {
                     if (rawValue is int)
                     {
@@ -476,7 +476,7 @@ namespace Google.ProtocolBuffers.Serialization
                     }
                     else if (rawValue is string)
                     {
-                        value = (T) Enum.Parse(typeof (T), (string) rawValue, false);
+                        value = (T) Enum.Parse(typeof(T), (string) rawValue, false);
                     }
                     else
                     {
@@ -565,7 +565,7 @@ namespace Google.ProtocolBuffers.Serialization
                     }
                     else if (rawValue is string)
                     {
-                        list.Add((T) Enum.Parse(typeof (T), (string) rawValue, false));
+                        list.Add((T) Enum.Parse(typeof(T), (string) rawValue, false));
                     }
                     else
                     {

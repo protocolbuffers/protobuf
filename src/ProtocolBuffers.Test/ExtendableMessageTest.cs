@@ -45,7 +45,7 @@ namespace Google.ProtocolBuffers
     [TestClass]
     public class ExtendableMessageTest
     {
-        [TestMethod, ExpectedException(typeof (ArgumentException))]
+        [TestMethod, ExpectedException(typeof(ArgumentException))]
         public void ExtensionWriterInvalidExtension()
         {
             TestPackedExtensions.CreateBuilder()[UnitTestProtoFile.OptionalForeignMessageExtension.Descriptor] =

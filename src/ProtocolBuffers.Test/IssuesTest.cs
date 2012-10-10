@@ -1,4 +1,4 @@
-#region Copyright notice and license
+﻿#region Copyright notice and license
 
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
@@ -34,54 +34,26 @@
 
 #endregion
 
-using System;
-using Google.ProtocolBuffers.TestProtos;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Google.ProtocolBuffers.Descriptors;
+using NUnit.Framework;
+using UnitTest.Issues.TestProtos;
 
 namespace Google.ProtocolBuffers
 {
-    [TestClass]
-    public class MessageUtilTest
+    /// <summary>
+    /// Tests for issues which aren't easily compartmentalized into other unit tests.
+    /// </summary>
+    [TestFixture]
+    public class IssuesTest
     {
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void NullTypeName()
+        // Issue 45
+        [Test]
+        public void FieldCalledItem()
         {
-            MessageUtil.GetDefaultMessage((string) null);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void InvalidTypeName()
-        {
-            MessageUtil.GetDefaultMessage("invalidtypename");
-        }
-
-        [TestMethod]
-        public void ValidTypeName()
-        {
-            Assert.AreSame(TestAllTypes.DefaultInstance,
-                           MessageUtil.GetDefaultMessage(typeof(TestAllTypes).AssemblyQualifiedName));
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void NullType()
-        {
-            MessageUtil.GetDefaultMessage((Type) null);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void NonMessageType()
-        {
-            MessageUtil.GetDefaultMessage(typeof(string));
-        }
-
-        [TestMethod]
-        public void ValidType()
-        {
-            Assert.AreSame(TestAllTypes.DefaultInstance, MessageUtil.GetDefaultMessage(typeof(TestAllTypes)));
+            ItemField message = new ItemField.Builder { Item = 3 }.Build();
+            FieldDescriptor field = ItemField.Descriptor.FindFieldByName("item");
+            Assert.IsNotNull(field);
+            Assert.AreEqual(3, message[field]);
         }
     }
 }

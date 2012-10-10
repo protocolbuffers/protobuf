@@ -467,7 +467,7 @@ namespace Google.ProtocolBuffers
             where T : struct, IComparable, IFormattable, IConvertible
         {
             int number = (int) ReadRawVarint32();
-            if (Enum.IsDefined(typeof (T), number))
+            if (Enum.IsDefined(typeof(T), number))
             {
                 unknown = null;
                 value = (T) (object) number;

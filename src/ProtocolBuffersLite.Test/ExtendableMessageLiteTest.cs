@@ -47,7 +47,7 @@ namespace Google.ProtocolBuffers
     public class ExtendableMessageLiteTest
     {
         //The lite framework does not make this assertion
-        //[TestMethod, Ignore, ExpectedException(typeof (ArgumentException))]
+        //[TestMethod, Ignore, ExpectedException(typeof(ArgumentException))]
         //public void ExtensionWriterInvalidExtension()
         //{
         //    TestPackedExtensionsLite.CreateBuilder()[

@@ -94,6 +94,7 @@
     <Compile Include="ExtendableMessageTest.cs" />
     <Compile Include="GeneratedBuilderTest.cs" />
     <Compile Include="GeneratedMessageTest.cs" />
+    <Compile Include="IssuesTest.cs" />
     <Compile Include="MessageStreamIteratorTest.cs" />
     <Compile Include="MessageStreamWriterTest.cs" />
     <Compile Include="MessageTest.cs" />

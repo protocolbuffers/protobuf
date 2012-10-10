@@ -46,7 +46,7 @@ namespace Google.ProtocolBuffers
     /// </summary>
     public sealed class GeneratedRepeatExtension<TExtensionElement> : GeneratedExtensionBase<IList<TExtensionElement>>
     {
-        private GeneratedRepeatExtension(FieldDescriptor field) : base(field, typeof (TExtensionElement))
+        private GeneratedRepeatExtension(FieldDescriptor field) : base(field, typeof(TExtensionElement))
         {
         }
 

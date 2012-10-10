@@ -65,7 +65,7 @@ namespace Google.ProtocolBuffers
                 throw new ArgumentException("Unable to get a default message for an abstract or generic type (" +
                                             type.FullName + ")");
             }
-            if (!typeof (IMessage).IsAssignableFrom(type))
+            if (!typeof(IMessage).IsAssignableFrom(type))
             {
                 throw new ArgumentException("Unable to get a default message for non-message type (" + type.FullName +
                                             ")");
