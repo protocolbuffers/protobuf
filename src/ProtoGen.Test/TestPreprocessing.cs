@@ -567,7 +567,7 @@ message MyMessage {
         }
 
         //Seems the --proto_path or -I option is non-functional for me.  Maybe others have luck?
-        [Test, Ignore("http://code.google.com/p/protobuf/issues/detail?id=40")]
+        [Test]
         public void TestProtoFileInDifferentDirectory()
         {
             string test = new StackFrame(false).GetMethod().Name;

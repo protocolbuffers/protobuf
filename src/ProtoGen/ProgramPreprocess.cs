@@ -84,6 +84,15 @@ namespace Google.ProtocolBuffers.ProtoGen
                     return 0;
                 }
 
+                string pathRoot = Environment.CurrentDirectory;
+                foreach(string arg in args)
+                {
+                    if (arg.StartsWith("--proto_path=", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        pathRoot = arg.Substring(13);
+                    }
+                }
+
                 foreach (string arg in args)
                 {
                     if (arg.StartsWith(ProtocDirectoryArg))
@@ -95,7 +104,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                     {
                         protocArgs.Add(arg);
                     }
-                    else if (File.Exists(arg) &&
+                    else if ((File.Exists(arg) || File.Exists(Path.Combine(pathRoot, arg))) &&
                              StringComparer.OrdinalIgnoreCase.Equals(".proto", Path.GetExtension(arg)))
                     {
                         if (tempFile == null)
@@ -105,7 +114,13 @@ namespace Google.ProtocolBuffers.ProtoGen
                             protocArgs.Add(String.Format("--descriptor_set_out={0}", tempFile));
                             protoGenArgs.Add(tempFile);
                         }
-                        protocArgs.Add(arg);
+                        string patharg = arg;
+                        if (!File.Exists(patharg))
+                        {
+                            patharg = Path.Combine(pathRoot, arg);
+                        }
+
+                        protocArgs.Add(patharg);
                     }
                     else
                     {
