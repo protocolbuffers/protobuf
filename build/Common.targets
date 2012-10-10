@@ -82,8 +82,6 @@ Targets For GenerateSource
     <Message Importance="high" Text="Generating source from proto files" />
     <Exec Command="$(ProtocExePath) --proto_path=$(ProtosDirectory) --descriptor_set_out=compiled.pb @(Protos->'%(RelativeDir)%(Filename)%(Extension)', ' ')" WorkingDirectory="$(SourceTempDirectory)" />
     <Exec Command="$(ProtogenExePath) compiled.pb" WorkingDirectory="$(SourceTempDirectory)" />
-    <!-- Generate the AddressBookProtos.cs directly -->
-    <Exec Command="$(ProtogenExePath) --protoc_dir=$(LibDirectory) --proto_path=$(ProtosDirectory) $(ProtosDirectory)\tutorial\addressbook.proto -namespace=Google.ProtocolBuffers.Examples.AddressBook -umbrella_classname=AddressBookProtos" WorkingDirectory="$(SourceTempDirectory)" />
   </Target>
 
   <Target Name="_CopyGeneratedSource" DependsOnTargets="_GenerateSource">
