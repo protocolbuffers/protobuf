@@ -66,9 +66,9 @@ namespace Google.ProtocolBuffers.FieldAccess
 
         internal RepeatedPrimitiveAccessor(string name)
         {
-            PropertyInfo messageProperty = typeof(TMessage).GetProperty(name + "List", ReflectionUtil.EmptyTypes);
-            PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name + "List", ReflectionUtil.EmptyTypes);
-            PropertyInfo countProperty = typeof(TMessage).GetProperty(name + "Count", ReflectionUtil.EmptyTypes);
+            PropertyInfo messageProperty = typeof(TMessage).GetProperty(name + "List");
+            PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name + "List");
+            PropertyInfo countProperty = typeof(TMessage).GetProperty(name + "Count");
             MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name, EmptyTypes);
             getElementMethod = typeof(TMessage).GetMethod("Get" + name, new Type[] {typeof(int)});
             clrType = getElementMethod.ReturnType;
