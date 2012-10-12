@@ -231,7 +231,7 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public bool ReadDouble(ref double value)
         {
-#if SILVERLIGHT || COMPACT_FRAMEWORK_35
+#if SILVERLIGHT || COMPACT_FRAMEWORK
             if (BitConverter.IsLittleEndian && 8 <= bufferSize - bufferPos)
             {
                 value = BitConverter.ToDouble(buffer, bufferPos);

@@ -196,7 +196,7 @@ namespace Google.ProtocolBuffers
                 0x9abcdef012345678UL);
         }
 
-#if !SILVERLIGHT
+#if !SILVERLIGHT && !COMPACT_FRAMEWORK
         [TestMethod]
         public void WriteWholeMessage()
         {

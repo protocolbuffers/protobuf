@@ -163,7 +163,7 @@ namespace Google.ProtocolBuffers.Serialization
             if (ReadAsText(ref text, typeof(Enum)))
             {
                 int number;
-                if (int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out number))
+                if (TryParseInt32(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out number))
                 {
                     value = number;
                     return true;

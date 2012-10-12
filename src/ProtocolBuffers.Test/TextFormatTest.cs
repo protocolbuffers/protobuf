@@ -41,6 +41,7 @@ using Google.ProtocolBuffers.TestProtos;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Globalization;
 using System.Threading;
+#if !SILVERLIGHT && !COMPACT_FRAMEWORK
 
 namespace Google.ProtocolBuffers
 {
@@ -175,7 +176,10 @@ namespace Google.ProtocolBuffers
         /// </summary>
         private static ByteString Bytes(string str)
         {
-            return ByteString.CopyFrom(Encoding.GetEncoding(28591).GetBytes(str));
+            byte[] bytes = new byte[str.Length];
+            for (int i = 0; i < bytes.Length; i++)
+                bytes[i] = (byte)str[i];
+            return ByteString.CopyFrom(bytes);
         }
 
         [TestMethod]
@@ -569,3 +573,4 @@ namespace Google.ProtocolBuffers
         }
     }
 }
+#endif

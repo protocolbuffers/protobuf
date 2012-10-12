@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !SILVERLIGHT && !COMPACT_FRAMEWORK
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
@@ -175,3 +176,4 @@ namespace Google.ProtocolBuffers
         }
     }
 }
+#endif

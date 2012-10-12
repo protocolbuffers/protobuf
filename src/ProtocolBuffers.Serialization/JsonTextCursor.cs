@@ -322,7 +322,7 @@ namespace Google.ProtocolBuffers.Serialization
                                 string hex = new string(new char[] {ReadChar(), ReadChar(), ReadChar(), ReadChar()});
                                 int result;
                                 Assert(
-                                    int.TryParse(hex, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture,
+                                    AbstractTextReader.TryParseInt32(hex, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture,
                                                  out result),
                                     "Expected a 4-character hex specifier.");
                                 sb.Add((char) result);

@@ -68,7 +68,7 @@ using System.Runtime.CompilerServices;
 // [assembly: AssemblyVersion("2.4.1.473")]
 
 [assembly: AssemblyVersion("2.4.1.473")]
-#if !COMPACT_FRAMEWORK_35
+#if !COMPACT_FRAMEWORK
 
 [assembly: AssemblyFileVersion("2.4.1.473")]
 #endif

@@ -1,6 +1,6 @@
 ﻿
 using System;
-
+#if !SILVERLIGHT && !COMPACT_FRAMEWORK
 namespace Microsoft.VisualStudio.TestTools.UnitTesting
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
@@ -51,3 +51,4 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         }
     }
 }
+#endif

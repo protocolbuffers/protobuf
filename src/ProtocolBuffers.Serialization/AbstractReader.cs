@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Google.ProtocolBuffers.Descriptors;
 
 //Disable CS3011: only CLS-compliant members can be abstract
@@ -697,5 +698,28 @@ namespace Google.ProtocolBuffers.Serialization
         }
 
         #endregion
+
+        internal static bool TryParseInt32(string text, out int number)
+        {
+            return TryParseInt32(text, NumberStyles.Any, CultureInfo.InvariantCulture, out number);
+        }
+
+        internal static bool TryParseInt32(string text, NumberStyles style, IFormatProvider format, out int number)
+        {
+#if COMPACT_FRAMEWORK
+                try 
+                {
+                    number = int.Parse(text, NumberStyles.Integer, CultureInfo.InvariantCulture); 
+                    return true;
+                }
+                catch 
+                {
+                    number = 0;
+                    return false; 
+                }
+#else
+                return int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out number);
+#endif
+        }
     }
 }

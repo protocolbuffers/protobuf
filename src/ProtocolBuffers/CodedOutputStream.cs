@@ -496,7 +496,7 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public void WriteDoubleNoTag(double value)
         {
-#if SILVERLIGHT || COMPACT_FRAMEWORK_35
+#if SILVERLIGHT || COMPACT_FRAMEWORK
             byte[] rawBytes = BitConverter.GetBytes(value);
             if (!BitConverter.IsLittleEndian) 
                 ByteArray.Reverse(rawBytes);

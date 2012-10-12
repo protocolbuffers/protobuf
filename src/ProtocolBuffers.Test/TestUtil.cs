@@ -49,12 +49,11 @@ using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 #endif
 
-
 namespace Google.ProtocolBuffers
 {
     internal static class TestUtil
     {
-#if !SILVERLIGHT
+#if !SILVERLIGHT && !COMPACT_FRAMEWORK
         private static string testDataDirectory;
 
         internal static string TestDataDirectory
@@ -1769,6 +1768,9 @@ namespace Google.ProtocolBuffers
 
         public static void TestInMultipleCultures(CultureAction test)
         {
+#if COMPACT_FRAMEWORK
+            test();
+#else
             CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
             foreach (string culture in TestCultures)
             {
@@ -1782,6 +1784,7 @@ namespace Google.ProtocolBuffers
                     Thread.CurrentThread.CurrentCulture = originalCulture;
                 }
             }
+#endif
         }
 
         /// <summary>

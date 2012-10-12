@@ -13,7 +13,8 @@ namespace Google.ProtocolBuffers
     [TestClass]
     public class ReusableBuilderTest
     {
-        [TestMethod, System.ComponentModel.Description("Issue 28: Circular message dependencies result in null defaults for DefaultInstance")]
+        //Issue 28: Circular message dependencies result in null defaults for DefaultInstance
+        [TestMethod]
         public void EnsureStaticCicularReference()
         {
             MyMessageAReferenceB ab = MyMessageAReferenceB.DefaultInstance;

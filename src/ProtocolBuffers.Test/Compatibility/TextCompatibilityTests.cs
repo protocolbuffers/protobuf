@@ -19,14 +19,15 @@ namespace Google.ProtocolBuffers.Compatibility
             TextFormat.Merge(new StringReader((string)message), registry, (IBuilder)builder);
             return builder;
         }
-
-        [TestMethod, System.ComponentModel.Description("This test can take a very long time to run.")]
+        //This test can take a very long time to run.
+        [TestMethod]
         public override void RoundTripMessage2OptimizeSize()
         {
             //base.RoundTripMessage2OptimizeSize();
         }
 
-        [TestMethod, System.ComponentModel.Description("This test can take a very long time to run.")]
+        //This test can take a very long time to run.
+        [TestMethod]
         public override void RoundTripMessage2OptimizeSpeed()
         {
             //base.RoundTripMessage2OptimizeSpeed();
