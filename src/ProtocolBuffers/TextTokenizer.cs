@@ -346,7 +346,7 @@ namespace Google.ProtocolBuffers
 
             try
             {
-                double result = double.Parse(currentToken, CultureInfo.InvariantCulture);
+                double result = double.Parse(currentToken, FrameworkPortability.InvariantCulture);
                 NextToken();
                 return result;
             }
@@ -387,7 +387,7 @@ namespace Google.ProtocolBuffers
 
             try
             {
-                float result = float.Parse(currentToken, CultureInfo.InvariantCulture);
+                float result = float.Parse(currentToken, FrameworkPortability.InvariantCulture);
                 NextToken();
                 return result;
             }

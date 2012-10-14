@@ -170,10 +170,10 @@ namespace Google.ProtocolBuffers
                     // the double to/from string will trim the precision to 6 places.  As with other numeric formats
                     // below, always use the invariant culture so it's predictable.
                 case FieldType.Float:
-                    generator.Print(((float) value).ToString("r", CultureInfo.InvariantCulture));
+                    generator.Print(((float)value).ToString("r", FrameworkPortability.InvariantCulture));
                     break;
                 case FieldType.Double:
-                    generator.Print(((double) value).ToString("r", CultureInfo.InvariantCulture));
+                    generator.Print(((double)value).ToString("r", FrameworkPortability.InvariantCulture));
                     break;
 
                 case FieldType.Int32:
@@ -188,7 +188,7 @@ namespace Google.ProtocolBuffers
                 case FieldType.Fixed64:
                     // The simple Object.ToString converts using the current culture.
                     // We want to always use the invariant culture so it's predictable.
-                    generator.Print(((IConvertible) value).ToString(CultureInfo.InvariantCulture));
+                    generator.Print(((IConvertible)value).ToString(FrameworkPortability.InvariantCulture));
                     break;
                 case FieldType.Bool:
                     // Explicitly use the Java true/false
@@ -314,7 +314,7 @@ namespace Google.ProtocolBuffers
                 case "nanf":
                     return float.NaN;
                 default:
-                    return float.Parse(text, CultureInfo.InvariantCulture);
+                    return float.Parse(text, FrameworkPortability.InvariantCulture);
             }
         }
 
@@ -331,7 +331,7 @@ namespace Google.ProtocolBuffers
                 case "nan":
                     return double.NaN;
                 default:
-                    return double.Parse(text, CultureInfo.InvariantCulture);
+                    return double.Parse(text, FrameworkPortability.InvariantCulture);
             }
         }
 
@@ -708,7 +708,7 @@ namespace Google.ProtocolBuffers
                 {
                     // Explicitly specify the invariant culture so that this code does not break when
                     // executing in Turkey.
-                    String lowerName = name.ToLower(CultureInfo.InvariantCulture);
+                    String lowerName = name.ToLower(FrameworkPortability.InvariantCulture);
                     field = type.FindDescriptor<FieldDescriptor>(lowerName);
                     // If the case-insensitive match worked but the field is NOT a group,
                     // TODO(jonskeet): What? Java comment ends here!

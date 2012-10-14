@@ -269,7 +269,7 @@ namespace Google.ProtocolBuffers.Serialization
         {
             int number;
             string temp;
-            if (null != (temp = _input.GetAttribute("value")) && TryParseInt32(temp, out number))
+            if (null != (temp = _input.GetAttribute("value")) && FrameworkPortability.TryParseInt32(temp, out number))
             {
                 Skip();
                 value = number;

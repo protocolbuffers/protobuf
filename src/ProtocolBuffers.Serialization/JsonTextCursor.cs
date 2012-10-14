@@ -195,7 +195,7 @@ namespace Google.ProtocolBuffers.Serialization
             if (!cond)
             {
                 throw new FormatException(
-                    String.Format(CultureInfo.InvariantCulture,
+                    String.Format(FrameworkPortability.InvariantCulture,
                                   "({0}:{1}) error: Unexpected token {2}, expected: {3}.",
                                   _lineNo, _linePos,
                                   CharDisplay(_next),
@@ -210,7 +210,7 @@ namespace Google.ProtocolBuffers.Serialization
             if (!cond)
             {
                 throw new FormatException(
-                    String.Format(CultureInfo.InvariantCulture,
+                    String.Format(FrameworkPortability.InvariantCulture,
                                   "({0},{1}) error: {2}", _lineNo, _linePos, message));
             }
         }
@@ -225,7 +225,7 @@ namespace Google.ProtocolBuffers.Serialization
                     format = String.Format(format, args);
                 }
                 throw new FormatException(
-                    String.Format(CultureInfo.InvariantCulture,
+                    String.Format(FrameworkPortability.InvariantCulture,
                                   "({0},{1}) error: {2}", _lineNo, _linePos, format));
             }
         }
@@ -322,7 +322,7 @@ namespace Google.ProtocolBuffers.Serialization
                                 string hex = new string(new char[] {ReadChar(), ReadChar(), ReadChar(), ReadChar()});
                                 int result;
                                 Assert(
-                                    AbstractTextReader.TryParseInt32(hex, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture,
+                                    FrameworkPortability.TryParseInt32(hex, NumberStyles.AllowHexSpecifier, FrameworkPortability.InvariantCulture,
                                                  out result),
                                     "Expected a 4-character hex specifier.");
                                 sb.Add((char) result);
