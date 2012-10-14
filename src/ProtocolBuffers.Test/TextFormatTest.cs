@@ -94,8 +94,8 @@ namespace Google.ProtocolBuffers
             TestUtil.TestInMultipleCultures(() =>
                                                 {
                                                     string text = TextFormat.PrintToString(TestUtil.GetAllSet());
-                                                    Assert.AreEqual(AllFieldsSetText.Replace("\r\n", "\n"),
-                                                                    text.Replace("\r\n", "\n"));
+                                                    Assert.AreEqual(AllFieldsSetText.Replace("\r\n", "\n").Trim(),
+                                                                    text.Replace("\r\n", "\n").Trim());
                                                 });
         }
 
@@ -107,7 +107,7 @@ namespace Google.ProtocolBuffers
         {
             string text = TextFormat.PrintToString(TestUtil.GetAllExtensionsSet());
 
-            Assert.AreEqual(AllExtensionsSetText.Replace("\r\n", "\n"), text.Replace("\r\n", "\n"));
+            Assert.AreEqual(AllExtensionsSetText.Replace("\r\n", "\n").Trim(), text.Replace("\r\n", "\n").Trim());
         }
 
         /// <summary>

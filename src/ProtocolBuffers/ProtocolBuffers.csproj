@@ -25,11 +25,12 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;$(EnvironmentFlavor);$(EnvironmentTemplate)</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoStdLib>true</NoStdLib>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -37,11 +38,12 @@
     <OutputPath>bin\Release\</OutputPath>
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;$(EnvironmentFlavor);$(EnvironmentTemplate)</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoStdLib>true</NoStdLib>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

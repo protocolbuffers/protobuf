@@ -38,9 +38,9 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("2.4.1.473")]
 
 [assembly: AssemblyVersion("2.4.1.473")]
-#if !COMPACT_FRAMEWORK
-[assembly: AssemblyFileVersion("2.4.1.473")]
 
+#if !NOFILEVERSION
+[assembly: AssemblyFileVersion("2.4.1.473")]
 #endif
 
 // We don't really need CLSCompliance, but if the assembly builds with no warnings,
