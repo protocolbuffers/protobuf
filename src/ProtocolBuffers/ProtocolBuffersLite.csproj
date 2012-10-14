@@ -65,6 +65,7 @@
     <Compile Include="ExtendableBuilderLite.cs" />
     <Compile Include="ExtendableMessageLite.cs" />
     <Compile Include="FieldSet.cs" />
+    <Compile Include="FrameworkPortability.cs" />
     <Compile Include="GeneratedBuilderLite.cs" />
     <Compile Include="GeneratedExtensionLite.cs" />
     <Compile Include="GeneratedMessageLite.cs" />

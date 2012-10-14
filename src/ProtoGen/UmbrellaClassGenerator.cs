@@ -167,9 +167,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                 writer.WriteLine("[global::System.Diagnostics.Contracts.ContractVerificationAttribute(false)]");
             }
             writer.WriteLine("[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]");
-            writer.WriteLine("[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]");
-            writer.WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]",
-                             GetType().Assembly.GetName().Name, GetType().Assembly.GetName().Version);
+            WriteGeneratedCodeAttributes(writer);
             writer.WriteLine("{0} static partial class {1} {{", ClassAccessLevel,
                              Descriptor.CSharpOptions.UmbrellaClassname);
             writer.WriteLine();

@@ -9,8 +9,6 @@ using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.TestProtos {
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public static partial class UnitTestXmlSerializerTestProtoFile {
   
     #region Extension registration
@@ -123,8 +121,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     
   }
   #region Enums
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public enum EnumOptions {
     ONE = 0,
     TWO = 1,
@@ -136,8 +132,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   #region Messages
   [global::System.SerializableAttribute()]
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class TestXmlChild : pb::GeneratedMessage<TestXmlChild, TestXmlChild.Builder> {
     private TestXmlChild() { }
     private static readonly TestXmlChild defaultInstance = new TestXmlChild().MakeReadOnly();
@@ -273,8 +267,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     [global::System.SerializableAttribute()]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<TestXmlChild, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -486,8 +478,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   [global::System.SerializableAttribute()]
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class TestXmlNoFields : pb::GeneratedMessage<TestXmlNoFields, TestXmlNoFields.Builder> {
     private TestXmlNoFields() { }
     private static readonly TestXmlNoFields defaultInstance = new TestXmlNoFields().MakeReadOnly();
@@ -581,8 +571,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     [global::System.SerializableAttribute()]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<TestXmlNoFields, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -719,8 +707,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   [global::System.SerializableAttribute()]
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class TestXmlRescursive : pb::GeneratedMessage<TestXmlRescursive, TestXmlRescursive.Builder> {
     private TestXmlRescursive() { }
     private static readonly TestXmlRescursive defaultInstance = new TestXmlRescursive().MakeReadOnly();
@@ -830,8 +816,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     [global::System.SerializableAttribute()]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<TestXmlRescursive, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1020,8 +1004,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   [global::System.SerializableAttribute()]
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class TestXmlMessage : pb::ExtendableMessage<TestXmlMessage, TestXmlMessage.Builder> {
     private TestXmlMessage() { }
     private static readonly TestXmlMessage defaultInstance = new TestXmlMessage().MakeReadOnly();
@@ -1049,13 +1031,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public static partial class Types {
       [global::System.SerializableAttribute()]
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public sealed partial class Children : pb::GeneratedMessage<Children, Children.Builder> {
         private Children() { }
         private static readonly Children defaultInstance = new Children().MakeReadOnly();
@@ -1191,8 +1169,6 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         [global::System.SerializableAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
         public sealed partial class Builder : pb::GeneratedBuilder<Children, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
@@ -1608,8 +1584,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     [global::System.SerializableAttribute()]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::ExtendableBuilder<TestXmlMessage, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -2009,8 +1983,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   [global::System.SerializableAttribute()]
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class TestXmlExtension : pb::GeneratedMessage<TestXmlExtension, TestXmlExtension.Builder> {
     private TestXmlExtension() { }
     private static readonly TestXmlExtension defaultInstance = new TestXmlExtension().MakeReadOnly();
@@ -2121,8 +2093,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     [global::System.SerializableAttribute()]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<TestXmlExtension, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }

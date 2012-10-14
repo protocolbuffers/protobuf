@@ -9,8 +9,6 @@ using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.TestProtos {
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public static partial class UnitTestExtrasProtoFile {
   
     #region Extension registration
@@ -147,8 +145,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     
   }
   #region Enums
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public enum UnpackedExtensionsForeignEnum {
     FOREIGN_FOO = 4,
     FOREIGN_BAR = 5,
@@ -160,8 +156,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   #region Messages
   [global::System.SerializableAttribute()]
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class TestUnpackedExtensions : pb::ExtendableMessage<TestUnpackedExtensions, TestUnpackedExtensions.Builder> {
     private TestUnpackedExtensions() { }
     private static readonly TestUnpackedExtensions defaultInstance = new TestUnpackedExtensions().MakeReadOnly();
@@ -259,8 +253,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     [global::System.SerializableAttribute()]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::ExtendableBuilder<TestUnpackedExtensions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }

@@ -9,8 +9,6 @@ using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.TestProtos {
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public static partial class UnitTestExtrasLiteProtoFile {
   
     #region Extension registration
@@ -215,8 +213,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     
   }
   #region Enums
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public enum ExtraEnum {
     DEFAULT = 10,
     EXLITE_FOO = 7,
@@ -224,8 +220,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     EXLITE_BAZ = 9,
   }
   
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public enum UnpackedTypesForeignEnumLite {
     FOREIGN_LITE_FOO = 4,
     FOREIGN_LITE_BAR = 5,
@@ -237,8 +231,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   #region Messages
   [global::System.SerializableAttribute()]
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class TestRequiredLite : pb::GeneratedMessageLite<TestRequiredLite, TestRequiredLite.Builder> {
     private TestRequiredLite() { }
     private static readonly TestRequiredLite defaultInstance = new TestRequiredLite().MakeReadOnly();
@@ -378,8 +370,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     [global::System.SerializableAttribute()]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilderLite<TestRequiredLite, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -556,8 +546,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   [global::System.SerializableAttribute()]
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class TestInteropPersonLite : pb::ExtendableMessageLite<TestInteropPersonLite, TestInteropPersonLite.Builder> {
     private TestInteropPersonLite() { }
     private static readonly TestInteropPersonLite defaultInstance = new TestInteropPersonLite().MakeReadOnly();
@@ -577,11 +565,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public static partial class Types {
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public enum PhoneType {
         MOBILE = 0,
         HOME = 1,
@@ -590,8 +574,6 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       [global::System.SerializableAttribute()]
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public sealed partial class PhoneNumber : pb::GeneratedMessageLite<PhoneNumber, PhoneNumber.Builder> {
         private PhoneNumber() { }
         private static readonly PhoneNumber defaultInstance = new PhoneNumber().MakeReadOnly();
@@ -730,8 +712,6 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         [global::System.SerializableAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
         public sealed partial class Builder : pb::GeneratedBuilderLite<PhoneNumber, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
@@ -909,8 +889,6 @@ namespace Google.ProtocolBuffers.TestProtos {
       
       [global::System.SerializableAttribute()]
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public sealed partial class Addresses : pb::GeneratedMessageLite<Addresses, Addresses.Builder> {
         private Addresses() { }
         private static readonly Addresses defaultInstance = new Addresses().MakeReadOnly();
@@ -1110,8 +1088,6 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         [global::System.SerializableAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
         public sealed partial class Builder : pb::GeneratedBuilderLite<Addresses, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
@@ -1607,8 +1583,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     [global::System.SerializableAttribute()]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::ExtendableBuilderLite<TestInteropPersonLite, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1951,8 +1925,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   [global::System.SerializableAttribute()]
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class TestInteropEmployeeIdLite : pb::GeneratedMessageLite<TestInteropEmployeeIdLite, TestInteropEmployeeIdLite.Builder> {
     private TestInteropEmployeeIdLite() { }
     private static readonly TestInteropEmployeeIdLite defaultInstance = new TestInteropEmployeeIdLite().MakeReadOnly();
@@ -2072,8 +2044,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     [global::System.SerializableAttribute()]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilderLite<TestInteropEmployeeIdLite, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -2220,8 +2190,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   [global::System.SerializableAttribute()]
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class TestUnpackedExtensionsLite : pb::ExtendableMessageLite<TestUnpackedExtensionsLite, TestUnpackedExtensionsLite.Builder> {
     private TestUnpackedExtensionsLite() { }
     private static readonly TestUnpackedExtensionsLite defaultInstance = new TestUnpackedExtensionsLite().MakeReadOnly();
@@ -2328,8 +2296,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     [global::System.SerializableAttribute()]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::ExtendableBuilderLite<TestUnpackedExtensionsLite, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -2449,8 +2415,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   [global::System.SerializableAttribute()]
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class TestUnpackedTypesLite : pb::GeneratedMessageLite<TestUnpackedTypesLite, TestUnpackedTypesLite.Builder> {
     private TestUnpackedTypesLite() { }
     private static readonly TestUnpackedTypesLite defaultInstance = new TestUnpackedTypesLite().MakeReadOnly();
@@ -2966,8 +2930,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     [global::System.SerializableAttribute()]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilderLite<TestUnpackedTypesLite, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }

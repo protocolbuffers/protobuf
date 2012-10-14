@@ -9,8 +9,6 @@ using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.TestProtos {
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public static partial class UnitTestGoogleSpeedProtoFile {
   
     #region Extension registration
@@ -134,8 +132,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class SpeedMessage1 : pb::GeneratedMessage<SpeedMessage1, SpeedMessage1.Builder> {
     private SpeedMessage1() { }
     private static readonly SpeedMessage1 defaultInstance = new SpeedMessage1().MakeReadOnly();
@@ -895,8 +891,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<SpeedMessage1, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -2188,8 +2182,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class SpeedMessage1SubMessage : pb::GeneratedMessage<SpeedMessage1SubMessage, SpeedMessage1SubMessage.Builder> {
     private SpeedMessage1SubMessage() { }
     private static readonly SpeedMessage1SubMessage defaultInstance = new SpeedMessage1SubMessage().MakeReadOnly();
@@ -2606,8 +2598,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<SpeedMessage1SubMessage, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -3293,8 +3283,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class SpeedMessage2 : pb::GeneratedMessage<SpeedMessage2, SpeedMessage2.Builder> {
     private SpeedMessage2() { }
     private static readonly SpeedMessage2 defaultInstance = new SpeedMessage2().MakeReadOnly();
@@ -3322,12 +3310,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public sealed partial class Group1 : pb::GeneratedMessage<Group1, Group1.Builder> {
         private Group1() { }
         private static readonly Group1 defaultInstance = new Group1().MakeReadOnly();
@@ -3703,8 +3687,6 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
         public sealed partial class Builder : pb::GeneratedBuilder<Group1, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
@@ -4916,8 +4898,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<SpeedMessage2, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -5925,8 +5905,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class SpeedMessage2GroupedMessage : pb::GeneratedMessage<SpeedMessage2GroupedMessage, SpeedMessage2GroupedMessage.Builder> {
     private SpeedMessage2GroupedMessage() { }
     private static readonly SpeedMessage2GroupedMessage defaultInstance = new SpeedMessage2GroupedMessage().MakeReadOnly();
@@ -6195,8 +6173,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<SpeedMessage2GroupedMessage, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }

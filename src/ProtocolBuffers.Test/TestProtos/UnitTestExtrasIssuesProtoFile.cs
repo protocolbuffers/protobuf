@@ -9,8 +9,6 @@ using scg = global::System.Collections.Generic;
 namespace UnitTest.Issues.TestProtos {
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public static partial class UnitTestExtrasIssuesProtoFile {
   
     #region Extension registration
@@ -126,16 +124,12 @@ namespace UnitTest.Issues.TestProtos {
     
   }
   #region Enums
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public enum NegativeEnum {
     FiveBelow = -5,
     MinusOne = -1,
     Zero = 0,
   }
   
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public enum DeprecatedEnum {
     one = 1,
   }
@@ -144,8 +138,6 @@ namespace UnitTest.Issues.TestProtos {
   
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class A : pb::GeneratedMessage<A, A.Builder> {
     private A() { }
     private static readonly A defaultInstance = new A().MakeReadOnly();
@@ -254,8 +246,6 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<A, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -418,8 +408,6 @@ namespace UnitTest.Issues.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class B : pb::GeneratedMessage<B, B.Builder> {
     private B() { }
     private static readonly B defaultInstance = new B().MakeReadOnly();
@@ -528,8 +516,6 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<B, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -692,8 +678,6 @@ namespace UnitTest.Issues.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class AB : pb::GeneratedMessage<AB, AB.Builder> {
     private AB() { }
     private static readonly AB defaultInstance = new AB().MakeReadOnly();
@@ -802,8 +786,6 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<AB, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -966,8 +948,6 @@ namespace UnitTest.Issues.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class NumberField : pb::GeneratedMessage<NumberField, NumberField.Builder> {
     private NumberField() { }
     private static readonly NumberField defaultInstance = new NumberField().MakeReadOnly();
@@ -1078,8 +1058,6 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<NumberField, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1244,8 +1222,6 @@ namespace UnitTest.Issues.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class MyMessageAReferenceB : pb::GeneratedMessage<MyMessageAReferenceB, MyMessageAReferenceB.Builder> {
     private MyMessageAReferenceB() { }
     private static readonly MyMessageAReferenceB defaultInstance = new MyMessageAReferenceB().MakeReadOnly();
@@ -1356,8 +1332,6 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<MyMessageAReferenceB, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1545,8 +1519,6 @@ namespace UnitTest.Issues.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class MyMessageBReferenceA : pb::GeneratedMessage<MyMessageBReferenceA, MyMessageBReferenceA.Builder> {
     private MyMessageBReferenceA() { }
     private static readonly MyMessageBReferenceA defaultInstance = new MyMessageBReferenceA().MakeReadOnly();
@@ -1657,8 +1629,6 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<MyMessageBReferenceA, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1846,8 +1816,6 @@ namespace UnitTest.Issues.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class NegativeEnumMessage : pb::GeneratedMessage<NegativeEnumMessage, NegativeEnumMessage.Builder> {
     private NegativeEnumMessage() { }
     private static readonly NegativeEnumMessage defaultInstance = new NegativeEnumMessage().MakeReadOnly();
@@ -2011,8 +1979,6 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<NegativeEnumMessage, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -2277,8 +2243,6 @@ namespace UnitTest.Issues.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class DeprecatedChild : pb::GeneratedMessage<DeprecatedChild, DeprecatedChild.Builder> {
     private DeprecatedChild() { }
     private static readonly DeprecatedChild defaultInstance = new DeprecatedChild().MakeReadOnly();
@@ -2371,8 +2335,6 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<DeprecatedChild, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -2508,8 +2470,6 @@ namespace UnitTest.Issues.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class DeprecatedFieldsMessage : pb::GeneratedMessage<DeprecatedFieldsMessage, DeprecatedFieldsMessage.Builder> {
     private DeprecatedFieldsMessage() { }
     private static readonly DeprecatedFieldsMessage defaultInstance = new DeprecatedFieldsMessage().MakeReadOnly();
@@ -2734,8 +2694,6 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<DeprecatedFieldsMessage, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -3158,8 +3116,6 @@ namespace UnitTest.Issues.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class ItemField : pb::GeneratedMessage<ItemField, ItemField.Builder> {
     private ItemField() { }
     private static readonly ItemField defaultInstance = new ItemField().MakeReadOnly();
@@ -3268,8 +3224,6 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<ItemField, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }

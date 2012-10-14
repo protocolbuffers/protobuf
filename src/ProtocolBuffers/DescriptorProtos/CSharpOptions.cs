@@ -9,8 +9,6 @@ using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.DescriptorProtos {
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public static partial class CSharpOptions {
   
     #region Extension registration
@@ -52,7 +50,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           "CiRnb29nbGUvcHJvdG9idWYvY3NoYXJwX29wdGlvbnMucHJvdG8SD2dvb2ds" + 
           "ZS5wcm90b2J1ZhogZ29vZ2xlL3Byb3RvYnVmL2Rlc2NyaXB0b3IucHJvdG8i" + 
-          "/AMKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
+          "pwQKEUNTaGFycEZpbGVPcHRpb25zEhEKCW5hbWVzcGFjZRgBIAEoCRIaChJ1" + 
           "bWJyZWxsYV9jbGFzc25hbWUYAiABKAkSHAoOcHVibGljX2NsYXNzZXMYAyAB" + 
           "KAg6BHRydWUSFgoObXVsdGlwbGVfZmlsZXMYBCABKAgSFAoMbmVzdF9jbGFz" + 
           "c2VzGAUgASgIEhYKDmNvZGVfY29udHJhY3RzGAYgASgIEiQKHGV4cGFuZF9u" + 
@@ -63,26 +61,27 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           "ASABKAkSHAoQb3V0cHV0X2RpcmVjdG9yeRjfASABKAk6AS4SJgoWaWdub3Jl" + 
           "X2dvb2dsZV9wcm90b2J1ZhjgASABKAg6BWZhbHNlEkkKFnNlcnZpY2VfZ2Vu" + 
           "ZXJhdG9yX3R5cGUY4QEgASgOMiIuZ29vZ2xlLnByb3RvYnVmLkNTaGFycFNl" + 
-          "cnZpY2VUeXBlOgROT05FIisKEkNTaGFycEZpZWxkT3B0aW9ucxIVCg1wcm9w" + 
-          "ZXJ0eV9uYW1lGAEgASgJIiwKFENTaGFycFNlcnZpY2VPcHRpb25zEhQKDGlu" + 
-          "dGVyZmFjZV9pZBgBIAEoCSIqChNDU2hhcnBNZXRob2RPcHRpb25zEhMKC2Rp" + 
-          "c3BhdGNoX2lkGAEgASgFKksKEUNTaGFycFNlcnZpY2VUeXBlEggKBE5PTkUQ" + 
-          "ABILCgdHRU5FUklDEAESDQoJSU5URVJGQUNFEAISEAoMSVJQQ0RJU1BBVENI" + 
-          "EAM6XgoTY3NoYXJwX2ZpbGVfb3B0aW9ucxIcLmdvb2dsZS5wcm90b2J1Zi5G" + 
-          "aWxlT3B0aW9ucxjoByABKAsyIi5nb29nbGUucHJvdG9idWYuQ1NoYXJwRmls" + 
-          "ZU9wdGlvbnM6YQoUY3NoYXJwX2ZpZWxkX29wdGlvbnMSHS5nb29nbGUucHJv" + 
-          "dG9idWYuRmllbGRPcHRpb25zGOgHIAEoCzIjLmdvb2dsZS5wcm90b2J1Zi5D" + 
-          "U2hhcnBGaWVsZE9wdGlvbnM6ZwoWY3NoYXJwX3NlcnZpY2Vfb3B0aW9ucxIf" + 
-          "Lmdvb2dsZS5wcm90b2J1Zi5TZXJ2aWNlT3B0aW9ucxjoByABKAsyJS5nb29n" + 
-          "bGUucHJvdG9idWYuQ1NoYXJwU2VydmljZU9wdGlvbnM6ZAoVY3NoYXJwX21l" + 
-          "dGhvZF9vcHRpb25zEh4uZ29vZ2xlLnByb3RvYnVmLk1ldGhvZE9wdGlvbnMY" + 
-          "6AcgASgLMiQuZ29vZ2xlLnByb3RvYnVmLkNTaGFycE1ldGhvZE9wdGlvbnM=");
+          "cnZpY2VUeXBlOgROT05FEikKGWdlbmVyYXRlZF9jb2RlX2F0dHJpYnV0ZXMY" + 
+          "4gEgASgIOgVmYWxzZSIrChJDU2hhcnBGaWVsZE9wdGlvbnMSFQoNcHJvcGVy" + 
+          "dHlfbmFtZRgBIAEoCSIsChRDU2hhcnBTZXJ2aWNlT3B0aW9ucxIUCgxpbnRl" + 
+          "cmZhY2VfaWQYASABKAkiKgoTQ1NoYXJwTWV0aG9kT3B0aW9ucxITCgtkaXNw" + 
+          "YXRjaF9pZBgBIAEoBSpLChFDU2hhcnBTZXJ2aWNlVHlwZRIICgROT05FEAAS" + 
+          "CwoHR0VORVJJQxABEg0KCUlOVEVSRkFDRRACEhAKDElSUENESVNQQVRDSBAD" + 
+          "Ol4KE2NzaGFycF9maWxlX29wdGlvbnMSHC5nb29nbGUucHJvdG9idWYuRmls" + 
+          "ZU9wdGlvbnMY6AcgASgLMiIuZ29vZ2xlLnByb3RvYnVmLkNTaGFycEZpbGVP" + 
+          "cHRpb25zOmEKFGNzaGFycF9maWVsZF9vcHRpb25zEh0uZ29vZ2xlLnByb3Rv" + 
+          "YnVmLkZpZWxkT3B0aW9ucxjoByABKAsyIy5nb29nbGUucHJvdG9idWYuQ1No" + 
+          "YXJwRmllbGRPcHRpb25zOmcKFmNzaGFycF9zZXJ2aWNlX29wdGlvbnMSHy5n" + 
+          "b29nbGUucHJvdG9idWYuU2VydmljZU9wdGlvbnMY6AcgASgLMiUuZ29vZ2xl" + 
+          "LnByb3RvYnVmLkNTaGFycFNlcnZpY2VPcHRpb25zOmQKFWNzaGFycF9tZXRo" + 
+          "b2Rfb3B0aW9ucxIeLmdvb2dsZS5wcm90b2J1Zi5NZXRob2RPcHRpb25zGOgH" + 
+          "IAEoCzIkLmdvb2dsZS5wcm90b2J1Zi5DU2hhcnBNZXRob2RPcHRpb25z");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_google_protobuf_CSharpFileOptions__Descriptor = Descriptor.MessageTypes[0];
         internal__static_google_protobuf_CSharpFileOptions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFileOptions.Builder>(internal__static_google_protobuf_CSharpFileOptions__Descriptor,
-                new string[] { "Namespace", "UmbrellaClassname", "PublicClasses", "MultipleFiles", "NestClasses", "CodeContracts", "ExpandNamespaceDirectories", "ClsCompliance", "AddSerializable", "GeneratePrivateCtor", "FileExtension", "UmbrellaNamespace", "OutputDirectory", "IgnoreGoogleProtobuf", "ServiceGeneratorType", });
+                new string[] { "Namespace", "UmbrellaClassname", "PublicClasses", "MultipleFiles", "NestClasses", "CodeContracts", "ExpandNamespaceDirectories", "ClsCompliance", "AddSerializable", "GeneratePrivateCtor", "FileExtension", "UmbrellaNamespace", "OutputDirectory", "IgnoreGoogleProtobuf", "ServiceGeneratorType", "GeneratedCodeAttributes", });
         internal__static_google_protobuf_CSharpFieldOptions__Descriptor = Descriptor.MessageTypes[1];
         internal__static_google_protobuf_CSharpFieldOptions__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions, global::Google.ProtocolBuffers.DescriptorProtos.CSharpFieldOptions.Builder>(internal__static_google_protobuf_CSharpFieldOptions__Descriptor,
@@ -110,8 +109,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
   }
   #region Enums
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public enum CSharpServiceType {
     NONE = 0,
     GENERIC = 1,
@@ -123,13 +120,11 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class CSharpFileOptions : pb::GeneratedMessage<CSharpFileOptions, CSharpFileOptions.Builder> {
     private CSharpFileOptions() { }
     private static readonly CSharpFileOptions defaultInstance = new CSharpFileOptions().MakeReadOnly();
-    private static readonly string[] _cSharpFileOptionsFieldNames = new string[] { "add_serializable", "cls_compliance", "code_contracts", "expand_namespace_directories", "file_extension", "generate_private_ctor", "ignore_google_protobuf", "multiple_files", "namespace", "nest_classes", "output_directory", "public_classes", "service_generator_type", "umbrella_classname", "umbrella_namespace" };
-    private static readonly uint[] _cSharpFileOptionsFieldTags = new uint[] { 72, 64, 48, 56, 1770, 80, 1792, 32, 10, 40, 1786, 24, 1800, 18, 1778 };
+    private static readonly string[] _cSharpFileOptionsFieldNames = new string[] { "add_serializable", "cls_compliance", "code_contracts", "expand_namespace_directories", "file_extension", "generate_private_ctor", "generated_code_attributes", "ignore_google_protobuf", "multiple_files", "namespace", "nest_classes", "output_directory", "public_classes", "service_generator_type", "umbrella_classname", "umbrella_namespace" };
+    private static readonly uint[] _cSharpFileOptionsFieldTags = new uint[] { 72, 64, 48, 56, 1770, 80, 1808, 1792, 32, 10, 40, 1786, 24, 1800, 18, 1778 };
     public static CSharpFileOptions DefaultInstance {
       get { return defaultInstance; }
     }
@@ -300,6 +295,16 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get { return serviceGeneratorType_; }
     }
     
+    public const int GeneratedCodeAttributesFieldNumber = 226;
+    private bool hasGeneratedCodeAttributes;
+    private bool generatedCodeAttributes_;
+    public bool HasGeneratedCodeAttributes {
+      get { return hasGeneratedCodeAttributes; }
+    }
+    public bool GeneratedCodeAttributes {
+      get { return generatedCodeAttributes_; }
+    }
+    
     public override bool IsInitialized {
       get {
         return true;
@@ -310,19 +315,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       int size = SerializedSize;
       string[] field_names = _cSharpFileOptionsFieldNames;
       if (hasNamespace) {
-        output.WriteString(1, field_names[8], Namespace);
+        output.WriteString(1, field_names[9], Namespace);
       }
       if (hasUmbrellaClassname) {
-        output.WriteString(2, field_names[13], UmbrellaClassname);
+        output.WriteString(2, field_names[14], UmbrellaClassname);
       }
       if (hasPublicClasses) {
-        output.WriteBool(3, field_names[11], PublicClasses);
+        output.WriteBool(3, field_names[12], PublicClasses);
       }
       if (hasMultipleFiles) {
-        output.WriteBool(4, field_names[7], MultipleFiles);
+        output.WriteBool(4, field_names[8], MultipleFiles);
       }
       if (hasNestClasses) {
-        output.WriteBool(5, field_names[9], NestClasses);
+        output.WriteBool(5, field_names[10], NestClasses);
       }
       if (hasCodeContracts) {
         output.WriteBool(6, field_names[2], CodeContracts);
@@ -343,16 +348,19 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         output.WriteString(221, field_names[4], FileExtension);
       }
       if (hasUmbrellaNamespace) {
-        output.WriteString(222, field_names[14], UmbrellaNamespace);
+        output.WriteString(222, field_names[15], UmbrellaNamespace);
       }
       if (hasOutputDirectory) {
-        output.WriteString(223, field_names[10], OutputDirectory);
+        output.WriteString(223, field_names[11], OutputDirectory);
       }
       if (hasIgnoreGoogleProtobuf) {
-        output.WriteBool(224, field_names[6], IgnoreGoogleProtobuf);
+        output.WriteBool(224, field_names[7], IgnoreGoogleProtobuf);
       }
       if (hasServiceGeneratorType) {
-        output.WriteEnum(225, field_names[12], (int) ServiceGeneratorType, ServiceGeneratorType);
+        output.WriteEnum(225, field_names[13], (int) ServiceGeneratorType, ServiceGeneratorType);
+      }
+      if (hasGeneratedCodeAttributes) {
+        output.WriteBool(226, field_names[6], GeneratedCodeAttributes);
       }
       UnknownFields.WriteTo(output);
     }
@@ -409,6 +417,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (hasServiceGeneratorType) {
           size += pb::CodedOutputStream.ComputeEnumSize(225, (int) ServiceGeneratorType);
         }
+        if (hasGeneratedCodeAttributes) {
+          size += pb::CodedOutputStream.ComputeBoolSize(226, GeneratedCodeAttributes);
+        }
         size += UnknownFields.SerializedSize;
         memoizedSerializedSize = size;
         return size;
@@ -457,8 +468,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<CSharpFileOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -580,6 +589,9 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         if (other.HasServiceGeneratorType) {
           ServiceGeneratorType = other.ServiceGeneratorType;
         }
+        if (other.HasGeneratedCodeAttributes) {
+          GeneratedCodeAttributes = other.GeneratedCodeAttributes;
+        }
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -689,6 +701,10 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
                 }
                 unknownFields.MergeVarintField(225, (ulong)(int)unknown);
               }
+              break;
+            }
+            case 1808: {
+              result.hasGeneratedCodeAttributes = input.ReadBool(ref result.generatedCodeAttributes_);
               break;
             }
           }
@@ -1005,6 +1021,26 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         result.serviceGeneratorType_ = global::Google.ProtocolBuffers.DescriptorProtos.CSharpServiceType.NONE;
         return this;
       }
+      
+      public bool HasGeneratedCodeAttributes {
+        get { return result.hasGeneratedCodeAttributes; }
+      }
+      public bool GeneratedCodeAttributes {
+        get { return result.GeneratedCodeAttributes; }
+        set { SetGeneratedCodeAttributes(value); }
+      }
+      public Builder SetGeneratedCodeAttributes(bool value) {
+        PrepareBuilder();
+        result.hasGeneratedCodeAttributes = true;
+        result.generatedCodeAttributes_ = value;
+        return this;
+      }
+      public Builder ClearGeneratedCodeAttributes() {
+        PrepareBuilder();
+        result.hasGeneratedCodeAttributes = false;
+        result.generatedCodeAttributes_ = false;
+        return this;
+      }
     }
     static CSharpFileOptions() {
       object.ReferenceEquals(global::Google.ProtocolBuffers.DescriptorProtos.CSharpOptions.Descriptor, null);
@@ -1012,8 +1048,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class CSharpFieldOptions : pb::GeneratedMessage<CSharpFieldOptions, CSharpFieldOptions.Builder> {
     private CSharpFieldOptions() { }
     private static readonly CSharpFieldOptions defaultInstance = new CSharpFieldOptions().MakeReadOnly();
@@ -1122,8 +1156,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<CSharpFieldOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1287,8 +1319,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class CSharpServiceOptions : pb::GeneratedMessage<CSharpServiceOptions, CSharpServiceOptions.Builder> {
     private CSharpServiceOptions() { }
     private static readonly CSharpServiceOptions defaultInstance = new CSharpServiceOptions().MakeReadOnly();
@@ -1397,8 +1427,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<CSharpServiceOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1562,8 +1590,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class CSharpMethodOptions : pb::GeneratedMessage<CSharpMethodOptions, CSharpMethodOptions.Builder> {
     private CSharpMethodOptions() { }
     private static readonly CSharpMethodOptions defaultInstance = new CSharpMethodOptions().MakeReadOnly();
@@ -1672,8 +1698,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<CSharpMethodOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }

@@ -51,6 +51,9 @@
     <Reference Include="System.Core" Condition="'$(TargetFrameworkVersion)' != 'v2.0'" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\ProtocolBuffers\FrameworkPortability.cs">
+      <Link>FrameworkPortability.cs</Link>
+    </Compile>
     <Compile Include="Extensions.cs" />
     <Compile Include="Http\FormUrlEncodedReader.cs" />
     <Compile Include="Http\MessageFormatFactory.cs" />

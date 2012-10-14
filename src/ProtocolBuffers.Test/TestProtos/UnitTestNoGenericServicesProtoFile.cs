@@ -9,8 +9,6 @@ using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public static partial class UnitTestNoGenericServicesProtoFile {
   
     #region Extension registration
@@ -68,8 +66,6 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
     
   }
   #region Enums
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public enum TestEnum {
     FOO = 1,
   }
@@ -78,8 +74,6 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
   
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class TestMessage : pb::ExtendableMessage<TestMessage, TestMessage.Builder> {
     private TestMessage() { }
     private static readonly TestMessage defaultInstance = new TestMessage().MakeReadOnly();
@@ -192,8 +186,6 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::ExtendableBuilder<TestMessage, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
