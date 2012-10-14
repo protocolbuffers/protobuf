@@ -2,14 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-#if SILVERLIGHT
-using TestClass = Microsoft.VisualStudio.TestTools.UnitTesting.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute;
-using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
-#else
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-#endif
-
 
 namespace Google.ProtocolBuffers.Compatibility
 {

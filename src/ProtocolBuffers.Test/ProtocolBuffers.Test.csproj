@@ -78,6 +78,11 @@
     <Compile Include="Compatibility\XmlCompatibilityTests.cs" />
     <Compile Include="SerializableAttribute.cs" />
     <Compile Include="TestProtos\UnitTestExtrasProtoFile.cs" />
+    <Compile Include="TestResources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TestResources.resx</DependentUpon>
+    </Compile>
     <Compile Include="TestRpcForMimeTypes.cs" />
     <Compile Include="TestReaderForUrlEncoded.cs" />
     <Compile Include="CSharpOptionsTest.cs" />
@@ -155,6 +160,20 @@
   <ItemGroup>
     <EmbeddedResource Include="Compatibility\google_message1.dat" />
     <EmbeddedResource Include="Compatibility\google_message2.dat" />
+    <EmbeddedResource Include="TestResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>TestResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\golden_message" />
+    <None Include="Resources\golden_packed_fields_message" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\text_format_unittest_data.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\text_format_unittest_extensions_data.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

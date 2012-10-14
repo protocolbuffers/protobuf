@@ -229,7 +229,6 @@ namespace Google.ProtocolBuffers
             Assert.IsFalse(repeatedField.IsRequired);
             Assert.IsTrue(repeatedField.IsRepeated);
         }
-#if !SILVERLIGHT
         [TestMethod]
         public void FieldDescriptorDefault()
         {
@@ -240,13 +239,12 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual<object>(41, d.FindDescriptor<FieldDescriptor>("default_int32").DefaultValue);
 
             d = TestExtremeDefaultValues.Descriptor;
-            Assert.AreEqual<object>(
-                ByteString.CopyFrom("\u0000\u0001\u0007\b\f\n\r\t\u000b\\\'\"\u00fe", Encoding.GetEncoding("iso-8859-1")),
+            Assert.AreEqual<object>(TestExtremeDefaultValues.DefaultInstance.EscapedBytes,
                 d.FindDescriptor<FieldDescriptor>("escaped_bytes").DefaultValue);
+
             Assert.AreEqual<object>(uint.MaxValue, d.FindDescriptor<FieldDescriptor>("large_uint32").DefaultValue);
             Assert.AreEqual<object>(ulong.MaxValue, d.FindDescriptor<FieldDescriptor>("large_uint64").DefaultValue);
         }
-#endif
         [TestMethod]
         public void EnumDescriptor()
         {

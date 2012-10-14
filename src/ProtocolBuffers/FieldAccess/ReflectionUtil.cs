@@ -63,8 +63,7 @@ namespace Google.ProtocolBuffers.FieldAccess
 
         /// <summary>
         /// Method used solely for implementing CreateUpcastDelegate. Public to avoid trust issues
-        /// in low-trust scenarios, e.g. Silverlight.
-        /// TODO(jonskeet): Check any of this actually works in Silverlight...
+        /// in low-trust scenarios.
         /// </summary>
         public static Func<TSource, object> CreateUpcastDelegateImpl<TSource, TResult>(MethodInfo method)
         {

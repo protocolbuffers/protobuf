@@ -42,7 +42,7 @@ using System.Text.RegularExpressions;
 namespace Google.ProtocolBuffers
 {
     /// <summary>
-    /// Class containing helpful workarounds for Silverlight compatibility
+    /// Class containing helpful workarounds for various platform compatibility
     /// </summary>
     internal static class FrameworkPortability
     {

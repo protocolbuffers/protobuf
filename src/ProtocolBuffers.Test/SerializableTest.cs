@@ -1,4 +1,4 @@
-﻿#if !SILVERLIGHT && !COMPACT_FRAMEWORK
+﻿#if !NOSERIALIZABLE
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -41,17 +41,14 @@ using Google.ProtocolBuffers.TestProtos;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Globalization;
 using System.Threading;
-#if !SILVERLIGHT && !COMPACT_FRAMEWORK
 
 namespace Google.ProtocolBuffers
 {
     [TestClass]
     public class TextFormatTest
     {
-        private static readonly string AllFieldsSetText = TestUtil.ReadTextFromFile("text_format_unittest_data.txt");
-
-        private static readonly string AllExtensionsSetText =
-            TestUtil.ReadTextFromFile("text_format_unittest_extensions_data.txt");
+        private static readonly string AllFieldsSetText = TestResources.text_format_unittest_data;
+        private static readonly string AllExtensionsSetText = TestResources.text_format_unittest_extensions_data;
 
         /// <summary>
         /// Note that this is slightly different to the Java - 123.0 becomes 123, and 1.23E17 becomes 1.23E+17.
@@ -573,4 +570,3 @@ namespace Google.ProtocolBuffers
         }
     }
 }
-#endif

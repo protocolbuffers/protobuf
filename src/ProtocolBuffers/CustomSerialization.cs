@@ -36,7 +36,7 @@
 /*
  * This entire source file is not supported on the Silverlight platform
  */
-#if !SILVERLIGHT && !COMPACT_FRAMEWORK
+#if !NOSERIALIZABLE
 
 using System;
 using System.Runtime.Serialization;

@@ -34,7 +34,7 @@
 
 #endregion
 
-#if SILVERLIGHT
+#if NOSORTEDLIST
 using System.Collections;
 using System.Collections.Generic;
 
@@ -45,8 +45,6 @@ namespace Google.ProtocolBuffers
     /// This is not particularly efficient: it wraps a normal dictionary
     /// for most operations, but sorts by key when either iterating or
     /// fetching the Keys/Values properties.
-    /// This is only used for Silverlight, which doesn't have the normal
-    /// sorted collections.
     /// </summary>
     internal sealed class SortedList<TKey, TValue> : IDictionary<TKey, TValue>
     {
