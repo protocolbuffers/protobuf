@@ -1823,6 +1823,13 @@ namespace Google.ProtocolBuffers
                 action();
                 Assert.Fail("Exception was not thrown");
             }
+            // Not a general case, however, Compact Framework v2 does use Invoke
+            catch (System.Reflection.TargetInvocationException te)
+            {
+                if (te.InnerException.GetType() != typeof(ArgumentNullException))
+                    throw;
+            }
+            // Normally expected exception
             catch (ArgumentNullException)
             {
                 // We expect this exception.
