@@ -69,9 +69,9 @@ namespace Google.ProtocolBuffers.FieldAccess
             clrType = messageProperty.PropertyType;
             hasDelegate =
                 (Func<TMessage, bool>)
-                Delegate.CreateDelegate(typeof(Func<TMessage, bool>), null, hasProperty.GetGetMethod());
+                FrameworkPortability.CreateDelegate(typeof(Func<TMessage, bool>), null, hasProperty.GetGetMethod());
             clearDelegate =
-                (Func<TBuilder, IBuilder>) Delegate.CreateDelegate(typeof(Func<TBuilder, IBuilder>), null, clearMethod);
+                (Func<TBuilder, IBuilder>)FrameworkPortability.CreateDelegate(typeof(Func<TBuilder, IBuilder>), null, clearMethod);
             getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
             setValueDelegate = ReflectionUtil.CreateDowncastDelegate<TBuilder>(builderProperty.GetSetMethod());
         }

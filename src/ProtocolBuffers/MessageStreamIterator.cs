@@ -38,7 +38,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 
 namespace Google.ProtocolBuffers
 {
@@ -56,122 +55,45 @@ namespace Google.ProtocolBuffers
         private readonly ExtensionRegistry extensionRegistry;
         private readonly int sizeLimit;
 
-        // Type.EmptyTypes isn't present on the compact framework
-        private static readonly Type[] EmptyTypes = new Type[0];
-
         /// <summary>
-        /// Delegate created via reflection trickery (once per type) to create a builder
-        /// and read a message from a CodedInputStream with it. Note that unlike in Java,
-        /// there's one static field per constructed type.
+        /// The default instance of TMessage type used to construct builders while reading
         /// </summary>
-        private static readonly Func<CodedInputStream, ExtensionRegistry, TMessage> messageReader = BuildMessageReader();
-
+        private static readonly TMessage defaultMessageInstance = CreateDefaultInstance();
         /// <summary>
-        /// Any exception (within reason) thrown within messageReader is caught and rethrown in the constructor.
+        /// Any exception (within reason) thrown in type ctor is caught and rethrown in the constructor.
         /// This makes life a lot simpler for the caller.
         /// </summary>
         private static Exception typeInitializationException;
 
+
         /// <summary>
-        /// Creates the delegate later used to read messages. This is only called once per type, but to
-        /// avoid exceptions occurring at confusing times, if this fails it will set typeInitializationException
-        /// to the appropriate error and return null.
+        /// Vastly simplified the reflection to simply obtain the default instance and use it to construct
+        /// the weak builder while simply casting the result.  Ideally this class should have required a 
+        /// TBuilder type argument with a new() constraint to construct the initial instance thereby the
+        /// reflection could be eliminated.
         /// </summary>
-        private static Func<CodedInputStream, ExtensionRegistry, TMessage> BuildMessageReader()
+        private static TMessage CreateDefaultInstance()
         {
             try
             {
-                Type builderType = FindBuilderType();
-
-                // Yes, it's redundant to find this again, but it's only the once...
-                MethodInfo createBuilderMethod = typeof(TMessage).GetMethod("CreateBuilder", EmptyTypes);
-                Delegate builderBuilder = Delegate.CreateDelegate(
-                    typeof(Func<>).MakeGenericType(builderType), null, createBuilderMethod);
-
-                MethodInfo buildMethod = typeof(MessageStreamIterator<TMessage>)
-                    .GetMethod("BuildImpl", BindingFlags.Static | BindingFlags.NonPublic)
-                    .MakeGenericMethod(typeof(TMessage), builderType);
-
-                return (Func<CodedInputStream, ExtensionRegistry, TMessage>) Delegate.CreateDelegate(
-                    typeof(Func<CodedInputStream, ExtensionRegistry, TMessage>), builderBuilder, buildMethod);
+                return (TMessage)typeof(TMessage)
+                                      .GetProperty("DefaultInstance", typeof(TMessage), new Type[0])
+                                      .GetValue(null, null);
             }
-            catch (ArgumentException e)
+            catch (Exception e)
             {
                 typeInitializationException = e;
+                return default(TMessage);
             }
-            catch (InvalidOperationException e)
-            {
-                typeInitializationException = e;
-            }
-            catch (InvalidCastException e)
-            {
-                // Can't see why this would happen, but best to know about it.
-                typeInitializationException = e;
-            }
-            return null;
         }
-
-        /// <summary>
-        /// Works out the builder type for TMessage, or throws an ArgumentException to explain why it can't.
-        /// </summary>
-        private static Type FindBuilderType()
-        {
-            MethodInfo createBuilderMethod = typeof(TMessage).GetMethod("CreateBuilder", EmptyTypes);
-            if (createBuilderMethod == null)
-            {
-                throw new ArgumentException("Message type " + typeof(TMessage).FullName +
-                                            " has no CreateBuilder method.");
-            }
-            if (createBuilderMethod.ReturnType == typeof(void))
-            {
-                throw new ArgumentException("CreateBuilder method in " + typeof(TMessage).FullName +
-                                            " has void return type");
-            }
-            Type builderType = createBuilderMethod.ReturnType;
-            Type messageInterface = typeof(IMessage<,>).MakeGenericType(typeof(TMessage), builderType);
-            Type builderInterface = typeof(IBuilder<,>).MakeGenericType(typeof(TMessage), builderType);
-            if (Array.IndexOf(typeof(TMessage).GetInterfaces(), messageInterface) == -1)
-            {
-                throw new ArgumentException("Message type " + typeof(TMessage) + " doesn't implement " +
-                                            messageInterface.FullName);
-            }
-            if (Array.IndexOf(builderType.GetInterfaces(), builderInterface) == -1)
-            {
-                throw new ArgumentException("Builder type " + typeof(TMessage) + " doesn't implement " +
-                                            builderInterface.FullName);
-            }
-            return builderType;
-        }
-
-// This is only ever fetched by reflection, so the compiler may
-// complain that it's unused
-#pragma warning disable 0169
-        /// <summary>
-        /// Method we'll use to build messageReader, with the first parameter fixed to TMessage.CreateBuilder. Note that we
-        /// have to introduce another type parameter (TMessage2) as we can't constrain TMessage for just a single method
-        /// (and we can't do it at the type level because we don't know TBuilder). However, by constraining TMessage2
-        /// to not only implement IMessage appropriately but also to derive from TMessage2, we can avoid doing a cast
-        /// for every message; the implicit reference conversion will be fine. In practice, TMessage2 and TMessage will
-        /// be the same type when we construct the generic method by reflection.
-        /// </summary>
-        private static TMessage BuildImpl<TMessage2, TBuilder>(Func<TBuilder> builderBuilder, CodedInputStream input,
-                                                               ExtensionRegistry registry)
-            where TBuilder : IBuilder<TMessage2, TBuilder>
-            where TMessage2 : TMessage, IMessage<TMessage2, TBuilder>
-        {
-            TBuilder builder = builderBuilder();
-            input.ReadMessage(builder, registry);
-            return builder.Build();
-        }
-#pragma warning restore 0414
 
         private static readonly uint ExpectedTag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
 
         private MessageStreamIterator(StreamProvider streamProvider, ExtensionRegistry extensionRegistry, int sizeLimit)
         {
-            if (messageReader == null)
+            if (ReferenceEquals(defaultMessageInstance, null))
             {
-                throw typeInitializationException;
+                throw new System.Reflection.TargetInvocationException(typeInitializationException);
             }
             this.streamProvider = streamProvider;
             this.extensionRegistry = extensionRegistry;
@@ -224,7 +146,9 @@ namespace Google.ProtocolBuffers
                 {
                     if ((tag == 0 && name == "item") || (tag == ExpectedTag))
                     {
-                        yield return messageReader(input, extensionRegistry);
+                        IBuilder builder = defaultMessageInstance.WeakCreateBuilderForType();
+                        input.ReadMessage(builder, extensionRegistry);
+                        yield return (TMessage)builder.WeakBuild();
                     }
                     else
                     {
