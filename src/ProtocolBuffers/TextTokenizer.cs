@@ -80,7 +80,7 @@ namespace Google.ProtocolBuffers
 
         // Note: atomic groups used to mimic possessive quantifiers in Java in both of these regexes
         internal static readonly Regex WhitespaceAndCommentPattern = new Regex("\\G(?>(\\s|(#.*$))+)",
-                                                                               SilverlightCompatibility.
+                                                                               FrameworkPortability.
                                                                                    CompiledRegexWhereAvailable |
                                                                                RegexOptions.Multiline);
 
@@ -89,18 +89,18 @@ namespace Google.ProtocolBuffers
             "\\G[0-9+-](?>[0-9a-zA-Z_.+-]*)|" + // a number
             "\\G\"(?>([^\"\\\n\\\\]|\\\\.)*)(\"|\\\\?$)|" + // a double-quoted string
             "\\G\'(?>([^\"\\\n\\\\]|\\\\.)*)(\'|\\\\?$)", // a single-quoted string
-            SilverlightCompatibility.CompiledRegexWhereAvailable | RegexOptions.Multiline);
+            FrameworkPortability.CompiledRegexWhereAvailable | RegexOptions.Multiline);
 
         private static readonly Regex DoubleInfinity = new Regex("^-?inf(inity)?$",
-                                                                 SilverlightCompatibility.CompiledRegexWhereAvailable |
+                                                                 FrameworkPortability.CompiledRegexWhereAvailable |
                                                                  RegexOptions.IgnoreCase);
 
         private static readonly Regex FloatInfinity = new Regex("^-?inf(inity)?f?$",
-                                                                SilverlightCompatibility.CompiledRegexWhereAvailable |
+                                                                FrameworkPortability.CompiledRegexWhereAvailable |
                                                                 RegexOptions.IgnoreCase);
 
         private static readonly Regex FloatNan = new Regex("^nanf?$",
-                                                           SilverlightCompatibility.CompiledRegexWhereAvailable |
+                                                           FrameworkPortability.CompiledRegexWhereAvailable |
                                                            RegexOptions.IgnoreCase);
 
         /** Construct a tokenizer that parses tokens from the given text. */

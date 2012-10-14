@@ -63,7 +63,6 @@ namespace Google.ProtocolBuffers.Serialization.Http
                                                          Encoding = new UTF8Encoding(false),
                                                          Indent = true,
                                                          IndentChars = "    ",
-                                                         NewLineChars = Environment.NewLine,
                                                      };
                     // Don't know how else to change xml writer options?
                     codedOutput = writer = XmlFormatWriter.CreateInstance(XmlWriter.Create(output, settings));

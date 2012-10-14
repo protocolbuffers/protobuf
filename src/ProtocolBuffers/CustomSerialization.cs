@@ -33,14 +33,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #endregion
-
-using System;
-using System.Runtime.Serialization;
-
 /*
  * This entire source file is not supported on the Silverlight platform
  */
 #if !SILVERLIGHT && !COMPACT_FRAMEWORK
+
+using System;
+using System.Runtime.Serialization;
+
 namespace Google.ProtocolBuffers
 {
     /* 

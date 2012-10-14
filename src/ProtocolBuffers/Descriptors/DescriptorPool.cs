@@ -167,7 +167,7 @@ namespace Google.ProtocolBuffers.Descriptors
         }
 
         private static readonly Regex ValidationRegex = new Regex("^[_A-Za-z][_A-Za-z0-9]*$",
-                                                                  SilverlightCompatibility.CompiledRegexWhereAvailable);
+                                                                  FrameworkPortability.CompiledRegexWhereAvailable);
 
         /// <summary>
         /// Verifies that the descriptor's name is valid (i.e. it contains

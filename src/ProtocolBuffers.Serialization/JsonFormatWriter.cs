@@ -226,7 +226,7 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary> Sets the output formatting to use Environment.NewLine with 4-character indentions </summary>
         public JsonFormatWriter Formatted()
         {
-            NewLine = Environment.NewLine;
+            NewLine = FrameworkPortability.NewLine;
             Indent = "    ";
             Whitespace = " ";
             return this;
