@@ -1,5 +1,5 @@
 ﻿using System;
-#if !SILVERLIGHT && !COMPACT_FRAMEWORK
+#if !NOSERIALIZABLE
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;

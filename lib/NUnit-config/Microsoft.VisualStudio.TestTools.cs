@@ -1,6 +1,6 @@
 ﻿
 using System;
-#if !SILVERLIGHT && !COMPACT_FRAMEWORK
+#if CLIENTPROFILE
 namespace Microsoft.VisualStudio.TestTools.UnitTesting
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]

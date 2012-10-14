@@ -34,7 +34,7 @@
 
 #endregion
 /*
- * This entire source file is not supported on the Silverlight platform
+ * This entire source file is not supported on some platform
  */
 #if !NOSERIALIZABLE
 

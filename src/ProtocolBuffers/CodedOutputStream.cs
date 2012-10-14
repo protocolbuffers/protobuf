@@ -496,27 +496,7 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public void WriteDoubleNoTag(double value)
         {
-#if SILVERLIGHT || COMPACT_FRAMEWORK
-            byte[] rawBytes = BitConverter.GetBytes(value);
-            if (!BitConverter.IsLittleEndian) 
-                ByteArray.Reverse(rawBytes);
-            
-            if (limit - position >= 8)
-            {
-                buffer[position++] = rawBytes[0];
-                buffer[position++] = rawBytes[1];
-                buffer[position++] = rawBytes[2];
-                buffer[position++] = rawBytes[3];
-                buffer[position++] = rawBytes[4];
-                buffer[position++] = rawBytes[5];
-                buffer[position++] = rawBytes[6];
-                buffer[position++] = rawBytes[7];
-            }
-            else
-                WriteRawBytes(rawBytes, 0, 8);
-#else
-            WriteRawLittleEndian64((ulong) BitConverter.DoubleToInt64Bits(value));
-#endif
+            WriteRawLittleEndian64((ulong)FrameworkPortability.DoubleToInt64(value));
         }
 
         /// <summary>
