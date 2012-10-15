@@ -52,10 +52,10 @@ namespace Google.ProtocolBuffers
         internal static readonly string NewLine = System.Environment.NewLine;
 #endif
 
-#if SILVERLIGHT
-        internal const RegexOptions CompiledRegexWhereAvailable = RegexOptions.None;
-#else
+#if CLIENTPROFILE
         internal const RegexOptions CompiledRegexWhereAvailable = RegexOptions.Compiled;
+#else
+        internal const RegexOptions CompiledRegexWhereAvailable = RegexOptions.None;
 #endif
 
         internal static CultureInfo InvariantCulture 
