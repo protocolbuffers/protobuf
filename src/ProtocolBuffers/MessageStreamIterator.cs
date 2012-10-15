@@ -124,10 +124,12 @@ namespace Google.ProtocolBuffers
             return new MessageStreamIterator<TMessage>(streamProvider, extensionRegistry, newSizeLimit);
         }
 
+#if CLIENTPROFILE
         public static MessageStreamIterator<TMessage> FromFile(string file)
         {
             return new MessageStreamIterator<TMessage>(() => File.OpenRead(file), ExtensionRegistry.Empty);
         }
+#endif
 
         public static MessageStreamIterator<TMessage> FromStreamProvider(StreamProvider streamProvider)
         {

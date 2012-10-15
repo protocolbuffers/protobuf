@@ -6,6 +6,15 @@ using Google.ProtocolBuffers.Collections;
 namespace Google.ProtocolBuffers.Serialization.Http
 {
     /// <summary>
+    /// A delegate used to specify a method that constructs an ICodedInputStream from a .NET Stream.
+    /// </summary>
+    public delegate ICodedInputStream CodedInputBuilder(Stream stream);
+    /// <summary>
+    /// A delegate used to specify a method that constructs an ICodedOutputStream from a .NET Stream.
+    /// </summary>
+    public delegate ICodedOutputStream CodedOutputBuilder(Stream stream);
+
+    /// <summary>
     /// Defines control information for the various formatting used with HTTP services
     /// </summary>
     public class MessageFormatOptions
@@ -32,9 +41,9 @@ namespace Google.ProtocolBuffers.Serialization.Http
         /// <summary>
         /// Default mime-type handling for input
         /// </summary>
-        private static readonly IDictionary<string, Converter<Stream, ICodedInputStream>> MimeInputDefaults =
-            new ReadOnlyDictionary<string, Converter<Stream, ICodedInputStream>>(
-            new Dictionary<string, Converter<Stream, ICodedInputStream>>(StringComparer.OrdinalIgnoreCase)
+        private static readonly IDictionary<string, CodedInputBuilder> MimeInputDefaults =
+            new ReadOnlyDictionary<string, CodedInputBuilder>(
+            new Dictionary<string, CodedInputBuilder>(StringComparer.OrdinalIgnoreCase)
                 {
                     {"application/json", JsonFormatReader.CreateInstance},
                     {"application/x-json", JsonFormatReader.CreateInstance},
@@ -55,9 +64,9 @@ namespace Google.ProtocolBuffers.Serialization.Http
         /// <summary>
         /// Default mime-type handling for output
         /// </summary>
-        private static readonly IDictionary<string, Converter<Stream, ICodedOutputStream>> MimeOutputDefaults =
-            new ReadOnlyDictionary<string, Converter<Stream, ICodedOutputStream>>(
-            new Dictionary<string, Converter<Stream, ICodedOutputStream>>(StringComparer.OrdinalIgnoreCase)
+        private static readonly IDictionary<string, CodedOutputBuilder> MimeOutputDefaults =
+            new ReadOnlyDictionary<string, CodedOutputBuilder>(
+            new Dictionary<string, CodedOutputBuilder>(StringComparer.OrdinalIgnoreCase)
                 {
                     {"application/json", JsonFormatWriter.CreateInstance},
                     {"application/x-json", JsonFormatWriter.CreateInstance},
@@ -81,35 +90,35 @@ namespace Google.ProtocolBuffers.Serialization.Http
         private string _xmlReaderRootElementName;
         private string _xmlWriterRootElementName;
         private ExtensionRegistry _extensionRegistry;
-        private Dictionary<string, Converter<Stream, ICodedInputStream>> _mimeInputTypes;
-        private Dictionary<string, Converter<Stream, ICodedOutputStream>> _mimeOutputTypes;
+        private Dictionary<string, CodedInputBuilder> _mimeInputTypes;
+        private Dictionary<string, CodedOutputBuilder> _mimeOutputTypes;
 
         /// <summary> Provides access to modify the mime-type input stream construction </summary>
-        public IDictionary<string, Converter<Stream, ICodedInputStream>> MimeInputTypes
+        public IDictionary<string, CodedInputBuilder> MimeInputTypes
         {
             get
             {
                 return _mimeInputTypes ??
-                    (_mimeInputTypes = new Dictionary<string, Converter<Stream, ICodedInputStream>>(
+                    (_mimeInputTypes = new Dictionary<string, CodedInputBuilder>(
                                            MimeInputDefaults, StringComparer.OrdinalIgnoreCase));
             }
         }
 
         /// <summary> Provides access to modify the mime-type input stream construction </summary>
-        public IDictionary<string, Converter<Stream, ICodedOutputStream>> MimeOutputTypes
+        public IDictionary<string, CodedOutputBuilder> MimeOutputTypes
         {
             get
             {
                 return _mimeOutputTypes ??
-                    (_mimeOutputTypes = new Dictionary<string, Converter<Stream, ICodedOutputStream>>(
+                    (_mimeOutputTypes = new Dictionary<string, CodedOutputBuilder>(
                                            MimeOutputDefaults, StringComparer.OrdinalIgnoreCase));
             }
         }
 
-        internal IDictionary<string, Converter<Stream, ICodedInputStream>> MimeInputTypesReadOnly
+        internal IDictionary<string, CodedInputBuilder> MimeInputTypesReadOnly
         { get { return _mimeInputTypes ?? MimeInputDefaults; } }
 
-        internal IDictionary<string, Converter<Stream, ICodedOutputStream>> MimeOutputTypesReadOnly
+        internal IDictionary<string, CodedOutputBuilder> MimeOutputTypesReadOnly
         { get { return _mimeOutputTypes ?? MimeOutputDefaults; } }
 
         /// <summary>

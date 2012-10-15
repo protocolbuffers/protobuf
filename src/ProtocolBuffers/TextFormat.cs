@@ -708,7 +708,7 @@ namespace Google.ProtocolBuffers
                 {
                     // Explicitly specify the invariant culture so that this code does not break when
                     // executing in Turkey.
-                    String lowerName = name.ToLower(FrameworkPortability.InvariantCulture);
+                    String lowerName = name.ToLowerInvariant();
                     field = type.FindDescriptor<FieldDescriptor>(lowerName);
                     // If the case-insensitive match worked but the field is NOT a group,
                     // TODO(jonskeet): What? Java comment ends here!

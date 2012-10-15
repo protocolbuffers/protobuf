@@ -449,7 +449,7 @@ namespace Google.ProtocolBuffers
         /// </summary>   
         [CLSCompliant(false)]
         public bool ReadEnum<T>(ref T value, out object unknown)
-            where T : struct, IComparable, IFormattable, IConvertible
+            where T : struct, IComparable, IFormattable
         {
             int number = (int) ReadRawVarint32();
             if (Enum.IsDefined(typeof(T), number))
@@ -882,7 +882,7 @@ namespace Google.ProtocolBuffers
         [CLSCompliant(false)]
         public void ReadEnumArray<T>(uint fieldTag, string fieldName, ICollection<T> list,
                                      out ICollection<object> unknown)
-            where T : struct, IComparable, IFormattable, IConvertible
+            where T : struct, IComparable, IFormattable
         {
             unknown = null;
             object unkval;

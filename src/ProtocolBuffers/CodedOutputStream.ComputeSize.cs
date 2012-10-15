@@ -575,7 +575,7 @@ namespace Google.ProtocolBuffers
                 case FieldType.Enum:
                     if (value is Enum)
                     {
-                        return ComputeEnumSize(fieldNumber, ((IConvertible)value).ToInt32(FrameworkPortability.InvariantCulture));
+                        return ComputeEnumSize(fieldNumber, Convert.ToInt32(value));
                     }
                     else
                     {
@@ -631,7 +631,7 @@ namespace Google.ProtocolBuffers
                 case FieldType.Enum:
                     if (value is Enum)
                     {
-                        return ComputeEnumSizeNoTag(((IConvertible)value).ToInt32(FrameworkPortability.InvariantCulture));
+                        return ComputeEnumSizeNoTag(Convert.ToInt32(value));
                     }
                     else
                     {

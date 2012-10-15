@@ -1280,9 +1280,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   #endregion
   
   #region Services
-  [global::System.Runtime.InteropServices.GuidAttribute("a65f0925-fd11-4f94-b166-89ac4f027205")]
   public partial interface ISearchService {
-    [global::System.Runtime.InteropServices.DispId(5)]
     global::Google.ProtocolBuffers.TestProtos.SearchResponse Search(global::Google.ProtocolBuffers.TestProtos.SearchRequest searchRequest);
     global::Google.ProtocolBuffers.TestProtos.SearchResponse RefineSearch(global::Google.ProtocolBuffers.TestProtos.RefineSearchRequest refineSearchRequest);
   }

@@ -78,7 +78,7 @@ namespace Google.ProtocolBuffers.Serialization.Http
         {
             contentType = (contentType ?? String.Empty).Split(';')[0].Trim();
 
-            Converter<Stream, ICodedInputStream> factory;
+            CodedInputBuilder factory;
             if(!options.MimeInputTypesReadOnly.TryGetValue(contentType, out factory) || factory == null)
             {
                 if(String.IsNullOrEmpty(options.DefaultContentType) ||
@@ -95,7 +95,7 @@ namespace Google.ProtocolBuffers.Serialization.Http
         {
             contentType = (contentType ?? String.Empty).Split(';')[0].Trim();
 
-            Converter<Stream, ICodedOutputStream> factory;
+            CodedOutputBuilder factory;
             if (!options.MimeOutputTypesReadOnly.TryGetValue(contentType, out factory) || factory == null)
             {
                 if (String.IsNullOrEmpty(options.DefaultContentType) ||

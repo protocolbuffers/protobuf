@@ -39,12 +39,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           "dHMYASADKAsyGi5TZWFyY2hSZXNwb25zZS5SZXN1bHRJdGVtGicKClJlc3Vs" + 
           "dEl0ZW0SCwoDdXJsGAEgAigJEgwKBG5hbWUYAiABKAkiUgoTUmVmaW5lU2Vh" + 
           "cmNoUmVxdWVzdBIQCghDcml0ZXJpYRgBIAMoCRIpChBwcmV2aW91c19yZXN1" + 
-          "bHRzGAIgAigLMg8uU2VhcmNoUmVzcG9uc2UypQEKDVNlYXJjaFNlcnZpY2US" + 
-          "MAoGU2VhcmNoEg4uU2VhcmNoUmVxdWVzdBoPLlNlYXJjaFJlc3BvbnNlIgXC" + 
-          "PgIIBRI1CgxSZWZpbmVTZWFyY2gSFC5SZWZpbmVTZWFyY2hSZXF1ZXN0Gg8u" + 
-          "U2VhcmNoUmVzcG9uc2UaK8I+KAome0E2NUYwOTI1LUZEMTEtNGY5NC1CMTY2" + 
-          "LTg5QUM0RjAyNzIwNX1CP0gBwj46CiFHb29nbGUuUHJvdG9jb2xCdWZmZXJz" + 
-          "LlRlc3RQcm90b3MSElVuaXRUZXN0UnBjSW50ZXJvcIgOAw==");
+          "bHRzGAIgAigLMg8uU2VhcmNoUmVzcG9uc2UycQoNU2VhcmNoU2VydmljZRIp" + 
+          "CgZTZWFyY2gSDi5TZWFyY2hSZXF1ZXN0Gg8uU2VhcmNoUmVzcG9uc2USNQoM" + 
+          "UmVmaW5lU2VhcmNoEhQuUmVmaW5lU2VhcmNoUmVxdWVzdBoPLlNlYXJjaFJl" + 
+          "c3BvbnNlQj9IAcI+OgohR29vZ2xlLlByb3RvY29sQnVmZmVycy5UZXN0UHJv" + 
+          "dG9zEhJVbml0VGVzdFJwY0ludGVyb3CIDgM=");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_SearchRequest__Descriptor = Descriptor.MessageTypes[0];
@@ -1352,9 +1351,7 @@ namespace Google.ProtocolBuffers.TestProtos {
   #endregion
   
   #region Services
-  [global::System.Runtime.InteropServices.GuidAttribute("a65f0925-fd11-4f94-b166-89ac4f027205")]
   public partial interface ISearchService {
-    [global::System.Runtime.InteropServices.DispId(5)]
     global::Google.ProtocolBuffers.TestProtos.SearchResponse Search(global::Google.ProtocolBuffers.TestProtos.SearchRequest searchRequest);
     global::Google.ProtocolBuffers.TestProtos.SearchResponse RefineSearch(global::Google.ProtocolBuffers.TestProtos.RefineSearchRequest refineSearchRequest);
   }

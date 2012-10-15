@@ -338,7 +338,7 @@ namespace Google.ProtocolBuffers
                 NextToken();
                 return negative ? double.NegativeInfinity : double.PositiveInfinity;
             }
-            if (currentToken.Equals("nan", StringComparison.InvariantCultureIgnoreCase))
+            if (currentToken.Equals("nan", StringComparison.OrdinalIgnoreCase))
             {
                 NextToken();
                 return Double.NaN;

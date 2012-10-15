@@ -27,8 +27,15 @@ message RefineSearchRequest {
 }
 
 service SearchService {
+  /*
+  Add this option to specify the GuidAttribute on the service interface
   option (google.protobuf.csharp_service_options).interface_id = "{A65F0925-FD11-4f94-B166-89AC4F027205}";
-  rpc Search (SearchRequest) returns (SearchResponse) { option (google.protobuf.csharp_method_options).dispatch_id = 5; };
+  */
+  rpc Search (SearchRequest) returns (SearchResponse) 
+  /*
+  Add this option to specify the DispIdAttribute on the service interface
+  { option (google.protobuf.csharp_method_options).dispatch_id = 5; } 
+  */ ;
   
   rpc RefineSearch (RefineSearchRequest) returns (SearchResponse);
 }

@@ -806,7 +806,7 @@ namespace Google.ProtocolBuffers
 
         [CLSCompliant(false)]
         public void WriteEnumArray<T>(int fieldNumber, string fieldName, IEnumerable<T> list)
-            where T : struct, IComparable, IFormattable, IConvertible
+            where T : struct, IComparable, IFormattable
         {
             if (list is ICastArray)
             {
@@ -1028,7 +1028,7 @@ namespace Google.ProtocolBuffers
 
         [CLSCompliant(false)]
         public void WritePackedEnumArray<T>(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<T> list)
-            where T : struct, IComparable, IFormattable, IConvertible
+            where T : struct, IComparable, IFormattable
         {
             WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
             WriteRawVarint32((uint) calculatedSize);

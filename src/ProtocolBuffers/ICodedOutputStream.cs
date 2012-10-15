@@ -292,7 +292,7 @@ namespace Google.ProtocolBuffers
         /// </summary>
         [CLSCompliant(false)]
         void WriteEnumArray<T>(int fieldNumber, string fieldName, IEnumerable<T> list)
-            where T : struct, IComparable, IFormattable, IConvertible;
+            where T : struct, IComparable, IFormattable;
 
         /// <summary>
         /// Writes a packed repeated primitive, including tag and length, to the stream.
@@ -369,6 +369,6 @@ namespace Google.ProtocolBuffers
         /// </summary>
         [CLSCompliant(false)]
         void WritePackedEnumArray<T>(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<T> list)
-            where T : struct, IComparable, IFormattable, IConvertible;
+            where T : struct, IComparable, IFormattable;
     }
 }
