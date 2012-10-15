@@ -93,51 +93,28 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        private readonly SortedList<int, IEnumLite> items;
-
-        public EnumLiteMap()
-        {
-            items = new SortedList<int, IEnumLite>();
-#if SILVERLIGHT || COMPACT_FRAMEWORK
-    // Silverlight doesn't support Enum.GetValues
-    // TODO(jonskeet): Validate that this reflection is permitted, e.g. in Windows Phone 7
-            foreach (System.Reflection.FieldInfo fi in typeof(TEnum).GetFields(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public))
-            {
-                TEnum evalue = (TEnum) fi.GetValue(null);
-                items.Add(Convert.ToInt32(evalue), new EnumValue(evalue));
-            }
-#else
-            foreach (TEnum evalue in Enum.GetValues(typeof(TEnum)))
-            {
-                items.Add(Convert.ToInt32(evalue), new EnumValue(evalue));
-            }
-#endif
-        }
-
-        IEnumLite IEnumLiteMap.FindValueByNumber(int number)
-        {
-            return FindValueByNumber(number);
-        }
-
         public IEnumLite FindValueByNumber(int number)
         {
-            IEnumLite val;
-            return items.TryGetValue(number, out val) ? val : null;
+            if (Enum.IsDefined(typeof(TEnum), number))
+            {
+                return new EnumValue((TEnum)(object)number);
+            }
+            return null;
         }
 
         public IEnumLite FindValueByName(string name)
         {
-            IEnumLite val;
             if (Enum.IsDefined(typeof(TEnum), name))
             {
-                return items.TryGetValue((int) Enum.Parse(typeof(TEnum), name, false), out val) ? val : null;
+                object evalue = Enum.Parse(typeof(TEnum), name, false);
+                return new EnumValue((TEnum)evalue);
             }
             return null;
         }
 
         public bool IsValidValue(IEnumLite value)
         {
-            return items.ContainsKey(value.Number);
+            return Enum.IsDefined(typeof(TEnum), value.Number);
         }
     }
 }
