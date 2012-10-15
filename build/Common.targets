@@ -7,21 +7,19 @@ Targets For FullBuild
 *********************************************************************************************** -->
 
   <Target Name="_FullBuild" DependsOnTargets="_CleanOutputDirectory;_BuildProtoGen;_GenerateSource;_CopyGeneratedSource">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;TargetVersion=2" Targets="_BuildAllConfigurations" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;TargetVersion=3" Targets="_BuildAllConfigurations" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;TargetVersion=4" Targets="_BuildAllConfigurations" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;TargetVersion=NET20;BuildTools=3.5" Targets="_BuildAllConfigurations" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;TargetVersion=CF35;BuildTools=3.5" Targets="_BuildAllConfigurations" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;TargetVersion=SL40;BuildTools=4.0" Targets="_BuildAllConfigurations" />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="" Targets="_CompletePackages" />
   </Target>
 
   <Target Name="_BuildAllConfigurations">
     <!-- Release Package -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;Platform=$(Platform);TargetVersion=$(TargetVersion);BuildConfiguration=Release" Targets="_BuildConfiguration" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;Platform=$(Platform);TargetVersion=$(TargetVersion);BuildConfiguration=Release_Silverlight" Targets="_BuildConfiguration" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;Platform=$(Platform);TargetVersion=$(TargetVersion);PackageName=Release-$(ForcedFrameworkVersion)" Targets="_GeneratePackage" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;Platform=$(Platform);TargetVersion=$(TargetVersion);BuildTools=$(BuildTools);BuildConfiguration=Release" Targets="_BuildConfiguration" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;Platform=$(Platform);TargetVersion=$(TargetVersion);PackageName=Release-$(TargetVersion)" Targets="_GeneratePackage" />
     <!-- Full Package -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;Platform=$(Platform);TargetVersion=$(TargetVersion);BuildConfiguration=Debug" Targets="_BuildConfiguration" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;Platform=$(Platform);TargetVersion=$(TargetVersion);BuildConfiguration=Debug_Silverlight" Targets="_BuildConfiguration" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;Platform=$(Platform);TargetVersion=$(TargetVersion);PackageName=Full-$(ForcedFrameworkVersion)" Targets="_GeneratePackage" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;Platform=$(Platform);TargetVersion=$(TargetVersion);BuildTools=$(BuildTools);BuildConfiguration=Debug" Targets="_BuildConfiguration" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;Platform=$(Platform);TargetVersion=$(TargetVersion);PackageName=Full-$(TargetVersion)" Targets="_GeneratePackage" />
   </Target>
 
   <Target Name="_BuildConfiguration" DependsOnTargets="_ReportConfig;_Clean;_BuildSolution;_Test;_PreparePackageComponent" />
@@ -29,7 +27,7 @@ Targets For FullBuild
   <Target Name="_ReportConfig">
     <Message Importance="high" Text="
 
-Building $(BuildConfiguration) configuration for .NET Framework $(ForcedFrameworkVersion) $(Platform)" />
+Building $(BuildConfiguration) configuration for .NET Framework $(TargetVersion) $(Platform)" />
   </Target>
 
 <!-- **********************************************************************************************
@@ -39,7 +37,7 @@ Targets For Build
   <Target Name="_BuildSolution">
     <Message Text="Running $(SolutionTarget) $(BuildConfiguration) with $(BuildTools) on $(SolutionFile)" Importance="normal" />
     <MSBuild Targets="$(SolutionTarget)" Projects="$(SolutionFile)" ToolsVersion="$(BuildTools)"
-             Properties="Configuration=$(BuildConfiguration);Platform=$(Platform);TargetFrameworkVersion=$(ForcedFrameworkVersion);TreatWarningsAsErrors=true;SilverlightVersion=$(SilverlightVersion)"
+             Properties="Configuration=$(BuildConfiguration);Platform=$(Platform);TreatWarningsAsErrors=true;"
              />
   </Target>
 
@@ -47,15 +45,15 @@ Targets For Build
     <RemoveDir Directories="@(WorkingDirectories)" Condition="Exists(%(WorkingDirectories.Identity))" />
     <MakeDir Directories="@(WorkingDirectories)" />
 
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Clean;BuildConfiguration=$(BuildConfiguration);Platform=$(Platform)" Targets="_BuildSolution" ContinueOnError="true" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Clean;BuildConfiguration=$(BuildConfiguration);Platform=$(Platform);TargetVersion=$(TargetVersion)" Targets="_BuildSolution" ContinueOnError="true" />
   </Target>
 
   <Target Name="_Compile">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;BuildConfiguration=$(BuildConfiguration);Platform=$(Platform)" Targets="_BuildSolution" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;BuildConfiguration=$(BuildConfiguration);Platform=$(Platform);TargetVersion=$(TargetVersion)" Targets="_BuildSolution" />
   </Target>
 
   <Target Name="Requires20">
-    <Error Text="Must be run with TargetVersion=2" Condition=" '$(TargetVersion)' != '2' " />
+    <Error Text="Must be run with TargetVersion=NET20" Condition=" '$(TargetVersion)' != 'NET20' " />
   </Target>
 
   <Target Name="RequiresRelease">
@@ -117,7 +115,7 @@ Targets For Package
   </Target>
   
   <Target Name="_PreparePackageComponent">
-    <Copy SourceFiles="@(DynamicPackageItem)" DestinationFolder="$(BuildOutputPackage)\$(BuildConfiguration)\%(DynamicPackageItem.TargetDirectory)\%(DynamicPackageItem.RecursiveDir)" />
+    <Copy SourceFiles="@(DynamicPackageItem)" DestinationFolder="$(BuildOutputPackage)\$(BuildConfiguration)\$(TargetVersion)\%(DynamicPackageItem.TargetDirectory)\%(DynamicPackageItem.RecursiveDir)" />
   </Target>
 
   <Target Name="_GeneratePackage">

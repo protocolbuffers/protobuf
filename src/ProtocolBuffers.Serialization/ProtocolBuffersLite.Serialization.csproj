@@ -22,7 +22,8 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\NET35\Debug</OutputPath>
+    <IntermediateOutputPath>obj\NET35\Debug\</IntermediateOutputPath>
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
     <DefineConstants>DEBUG;TRACE;LITE;$(EnvironmentFlavor);$(EnvironmentTemplate)</DefineConstants>
@@ -34,7 +35,8 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>bin\NET35\Release</OutputPath>
+    <IntermediateOutputPath>obj\NET35\Release\</IntermediateOutputPath>
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
     <DefineConstants>TRACE;LITE;$(EnvironmentFlavor);$(EnvironmentTemplate)</DefineConstants>
