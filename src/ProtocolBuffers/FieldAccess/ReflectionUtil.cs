@@ -136,7 +136,7 @@ namespace Google.ProtocolBuffers.FieldAccess
 
         internal static Func<TResult> CreateDelegateFunc<TResult>(MethodInfo method)
         {
-#if !NOCREATEDELEGATE
+#if !CF20
             object tdelegate = Delegate.CreateDelegate(typeof(Func<TResult>), null, method);
             return (Func<TResult>)tdelegate;
 #else
@@ -146,7 +146,7 @@ namespace Google.ProtocolBuffers.FieldAccess
 
         internal static Func<T, TResult> CreateDelegateFunc<T, TResult>(MethodInfo method)
         {
-#if !NOCREATEDELEGATE
+#if !CF20
             object tdelegate = Delegate.CreateDelegate(typeof(Func<T, TResult>), null, method);
             return (Func<T, TResult>)tdelegate;
 #else
@@ -160,7 +160,7 @@ namespace Google.ProtocolBuffers.FieldAccess
 
         internal static Func<T1, T2, TResult> CreateDelegateFunc<T1, T2, TResult>(MethodInfo method)
         {
-#if !NOCREATEDELEGATE
+#if !CF20
             object tdelegate = Delegate.CreateDelegate(typeof(Func<T1, T2, TResult>), null, method);
             return (Func<T1, T2, TResult>)tdelegate;
 #else
@@ -174,7 +174,7 @@ namespace Google.ProtocolBuffers.FieldAccess
 
         internal static Action<T1, T2> CreateDelegateAction<T1, T2>(MethodInfo method)
         {
-#if !NOCREATEDELEGATE
+#if !CF20
             object tdelegate = Delegate.CreateDelegate(typeof(Action<T1, T2>), null, method);
             return (Action<T1, T2>)tdelegate;
 #else
