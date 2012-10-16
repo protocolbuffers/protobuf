@@ -1,4 +1,6 @@
-﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" 
+         xmlns="http://schemas.microsoft.com/developer/msbuild/2003"
+         xmlns:cs="urn:schemas-csharp-project:template">
   <PropertyGroup>
     <EnvironmentFlavor>SILVERLIGHT</EnvironmentFlavor>
     <EnvironmentTemplate>SL40</EnvironmentTemplate>
@@ -21,6 +23,11 @@
     <DefineConstants>$(DefineConstants);NOSERIALIZABLE;NOSORTEDLIST</DefineConstants>
     <NoConfig>true</NoConfig>
   </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <!-- Preprocess include of silverlight testing -->
+  <cs:Import Project="SLTest.targets" cs:Precondition=" '$(ProjectType)' == 'TEST' " />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

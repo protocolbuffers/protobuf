@@ -23,6 +23,9 @@
     <DefineConstants>$(DefineConstants);NOSERIALIZABLE;NOFILEVERSION</DefineConstants>
     <NoConfig>true</NoConfig>
   </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Core" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>

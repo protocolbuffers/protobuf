@@ -1,4 +1,6 @@
-﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" 
+         xmlns="http://schemas.microsoft.com/developer/msbuild/2003"
+         xmlns:cs="urn:schemas-csharp-project:template">
   <PropertyGroup>
     <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
     <EnvironmentFlavor>PORTABLE_LIBRARY</EnvironmentFlavor>
@@ -17,7 +19,21 @@
     <IntermediateOutputPath>obj\PL40\Release\</IntermediateOutputPath>
     <DefineConstants>$(DefineConstants);NOSERIALIZABLE;NOSORTEDLIST</DefineConstants>
   </PropertyGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <ItemGroup>
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <Import cs:Precondition=" '$(ProjectType)' != 'TEST' "
+          Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <!-- Portable Library will be tested as silverlight -->
+  <PropertyGroup cs:Precondition=" '$(ProjectType)' == 'TEST' ">
+    <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <ValidateXaml>false</ValidateXaml>
+    <ThrowErrorsInValidation>false</ThrowErrorsInValidation>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <cs:Import Project="SLTest.targets" cs:Precondition=" '$(ProjectType)' == 'TEST' " />
+  <Import cs:Precondition=" '$(ProjectType)' == 'TEST' "
+          Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -25,4 +41,11 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ProjectExtensions cs:Precondition=" '$(ProjectType)' == 'TEST' ">
+    <VisualStudio>
+      <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
+        <SilverlightProjectProperties />
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

@@ -82,7 +82,7 @@ Target Versions
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetVersion)' == 'PL40' ">
     <BuildTools>4.0</BuildTools>
-    <TestFramework>NONE</TestFramework>
+    <TestFramework>SILVERLIGHT</TestFramework>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <BuildOutputDirectory>$(ProjectDirectory)\build_output\$(Configuration)\portable-net40+sl4+sl5+wp7+wp8+win8</BuildOutputDirectory>
   </PropertyGroup>
@@ -101,7 +101,7 @@ File Groups
 
     <StatLightTestContainer Include="$(SourceDirectory)\ProtocolBuffers.Test\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffers.Test.xap" />
     <StatLightTestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffersLite.Test.xap" />
-    <StatLightTestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffersLiteMixed.Test.xap" />
+    <StatLightTestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffersMixedLite.Test.xap" />
 
     <PublishItem Include="$(SourceDirectory)\ProtocolBuffers\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffers.dll" />
     <PublishItem Include="$(SourceDirectory)\ProtocolBuffers\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffers.pdb" />
@@ -160,7 +160,7 @@ Targets For Test
   </Target>
 
   <Target Name="_RunStatLight">
-    <Exec Condition=" 'a' == 'b' "
+    <Exec
       Command="&quot;$(StatLightExePath)&quot; -x %(StatLightTestContainer.Identity) --ReportOutputFileType=NUnit --ReportOutputFile=$(BuildTempDirectory)\%(StatLightTestContainer.Filename).xml" />
   </Target>
 

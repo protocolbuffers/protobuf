@@ -3,6 +3,7 @@
   <PropertyGroup>
     <EnvironmentFlavor>CLIENTPROFILE</EnvironmentFlavor>
     <EnvironmentTemplate>NET35</EnvironmentTemplate>
+    <ProjectType>TEST</ProjectType>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
@@ -112,7 +113,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(EnvironmentFlavor)' == 'CLIENTPROFILE' ">
     <StartAction>Program</StartAction>
     <StartProgram>$(ProjectDir)..\..\lib\NUnit\tools\nunit-console.exe</StartProgram>
     <StartArguments>/nologo /noshadow /labels /wait $(AssemblyName).dll</StartArguments>

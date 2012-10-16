@@ -14,4 +14,7 @@
     <IntermediateOutputPath>obj\NET35\Release\</IntermediateOutputPath>
     <DefineConstants>$(DefineConstants)</DefineConstants>
   </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Core" />
+  </ItemGroup>
 </Project>
