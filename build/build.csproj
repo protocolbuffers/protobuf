@@ -2,13 +2,14 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- build targets -->
-  <Target Name="CleanAll" DependsOnTargets="_CleanAll" />
-  <Target Name="BuildTools" DependsOnTargets="_BuildTools" /> 
+  <Target Name="Clean" DependsOnTargets="_CleanAll" />
+  <Target Name="BuildTools" DependsOnTargets="_BuildTools" />
   <Target Name="GenerateSource" DependsOnTargets="_GenerateSource;_CopyGeneratedSource" />
-  <Target Name="BuildAll" DependsOnTargets="BuildTools;GenerateSource;_CompileAll" />
-  <Target Name="RebuildAll" DependsOnTargets="CleanAll;BuildAll" />
+  <Target Name="RebuildSource" DependsOnTargets="Clean;BuildTools;GenerateSource" />
+  <Target Name="Build" DependsOnTargets="BuildTools;GenerateSource;_CompileAll" />
+  <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
   <Target Name="GeneratePackage" DependsOnTargets="_PackageAll;_GeneratePackage" />
-  <Target Name="FullBuild" DependsOnTargets="RebuildAll;GeneratePackage" />
+  <Target Name="FullBuild" DependsOnTargets="Rebuild;GeneratePackage" />
   <!-- misc targets -->
   <Target Name="RunBenchmarks" DependsOnTargets="_CleanAll;_BuildTools;_RunBenchmarks" />
 
