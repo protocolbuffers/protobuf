@@ -12,6 +12,8 @@
     <TestPageFileName>TestPage.html</TestPageFileName>
     <CreateTestPage>true</CreateTestPage>
     <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
+    <OutOfBrowserSettingsFile>Properties\OutOfBrowserSettings.xml</OutOfBrowserSettingsFile>
+    <EnableOutOfBrowser>true</EnableOutOfBrowser>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Windows" />
@@ -22,6 +24,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <None Include="Properties\AppManifest.xml" />
+    <None Include="Properties\OutOfBrowserSettings.xml" />
     <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

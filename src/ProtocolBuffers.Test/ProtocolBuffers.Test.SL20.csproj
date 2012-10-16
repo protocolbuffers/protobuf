@@ -2,7 +2,7 @@
   <PropertyGroup>
     <EnvironmentFlavor>SILVERLIGHT</EnvironmentFlavor>
     <EnvironmentTemplate>SL20</EnvironmentTemplate>
-    <ProjectType>TEST</ProjectType>
+    <EnvironmentProjectType>TEST</EnvironmentProjectType>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
@@ -29,6 +29,8 @@
     <TestPageFileName>TestPage.html</TestPageFileName>
     <CreateTestPage>true</CreateTestPage>
     <SilverlightVersion>v2.0</SilverlightVersion>
+    <OutOfBrowserSettingsFile>Properties\OutOfBrowserSettings.xml</OutOfBrowserSettingsFile>
+    <EnableOutOfBrowser>true</EnableOutOfBrowser>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -149,6 +151,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <None Include="Properties\AppManifest.xml" />
+    <None Include="Properties\OutOfBrowserSettings.xml" />
     <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -189,7 +192,9 @@
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
-        <SilverlightProjectProperties />
+        <SilverlightProjectProperties>
+          <StartAction>OfflineApplication</StartAction>
+        </SilverlightProjectProperties>
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>

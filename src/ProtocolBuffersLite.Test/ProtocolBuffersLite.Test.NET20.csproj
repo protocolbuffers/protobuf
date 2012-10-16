@@ -2,7 +2,7 @@
   <PropertyGroup>
     <EnvironmentFlavor>CLIENTPROFILE</EnvironmentFlavor>
     <EnvironmentTemplate>NET20</EnvironmentTemplate>
-    <ProjectType>TEST</ProjectType>
+    <EnvironmentProjectType>TEST</EnvironmentProjectType>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>

@@ -23,7 +23,7 @@
     <NoConfig>true</NoConfig>
   </PropertyGroup>
   <!-- Preprocess include of silverlight testing -->
-  <cs:Import Project="SLTest.targets" cs:Precondition=" '$(ProjectType)' == 'TEST' " />
+  <cs:Import Project="SLTest.targets" cs:Precondition=" '$(EnvironmentProjectType)' == 'TEST' " />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\v2.0\Microsoft.Silverlight.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -35,7 +35,9 @@
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
-        <SilverlightProjectProperties />
+        <SilverlightProjectProperties>
+          <StartAction>OfflineApplication</StartAction>
+        </SilverlightProjectProperties>
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>

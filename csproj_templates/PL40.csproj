@@ -22,17 +22,17 @@
   <ItemGroup>
     <Reference Include="System.Core" />
   </ItemGroup>
-  <Import cs:Precondition=" '$(ProjectType)' != 'TEST' "
+  <Import cs:Precondition=" '$(EnvironmentProjectType)' != 'TEST' "
           Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- Portable Library will be tested as silverlight -->
-  <PropertyGroup cs:Precondition=" '$(ProjectType)' == 'TEST' ">
+  <PropertyGroup cs:Precondition=" '$(EnvironmentProjectType)' == 'TEST' ">
     <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <ValidateXaml>false</ValidateXaml>
     <ThrowErrorsInValidation>false</ThrowErrorsInValidation>
     <TargetFrameworkProfile />
   </PropertyGroup>
-  <cs:Import Project="SLTest.targets" cs:Precondition=" '$(ProjectType)' == 'TEST' " />
-  <Import cs:Precondition=" '$(ProjectType)' == 'TEST' "
+  <cs:Import Project="SLTest.targets" cs:Precondition=" '$(EnvironmentProjectType)' == 'TEST' " />
+  <Import cs:Precondition=" '$(EnvironmentProjectType)' == 'TEST' "
           Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -41,7 +41,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <ProjectExtensions cs:Precondition=" '$(ProjectType)' == 'TEST' ">
+  <ProjectExtensions cs:Precondition=" '$(EnvironmentProjectType)' == 'TEST' ">
     <VisualStudio>
       <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
         <SilverlightProjectProperties />
