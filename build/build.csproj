@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <!-- build targets -->
+  <Target Name="CleanAll" DependsOnTargets="_CleanAll" />
+  <Target Name="BuildTools" DependsOnTargets="_BuildTools" /> 
+  <Target Name="GenerateSource" DependsOnTargets="_GenerateSource;_CopyGeneratedSource" />
+  <Target Name="BuildAll" DependsOnTargets="BuildTools;GenerateSource;_CompileAll" />
+  <Target Name="RebuildAll" DependsOnTargets="CleanAll;BuildAll" />
+  <Target Name="GeneratePackage" DependsOnTargets="_PackageAll;_GeneratePackage" />
+  <Target Name="FullBuild" DependsOnTargets="RebuildAll;GeneratePackage" />
+  <!-- misc targets -->
+  <Target Name="RunBenchmarks" DependsOnTargets="_CleanAll;_BuildTools;_RunBenchmarks" />
+
   <PropertyGroup>
     <ProjectName>Protocol Buffers</ProjectName>
-    <BuildConfiguration Condition=" '$(BuildConfiguration)' == '' ">Error</BuildConfiguration>
-    <Platform>Any CPU</Platform>
-    <!-- TargetFrameworkVersion -->
-    <TargetVersion Condition=" '$(TargetVersion)' == '' ">NET40</TargetVersion>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <TargetFrameworkVersion Condition=" '$(TargetVersion)' == 'NET35' ">v3.5</TargetFrameworkVersion>
-    <TargetFrameworkVersion Condition=" '$(TargetVersion)' == 'NET40' ">v4.0</TargetFrameworkVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">Any CPU</Platform>
+    
     <!--Directory Paths-->
     <ProjectDirectory>$(MSBuildProjectDirectory)\..</ProjectDirectory>
     <SourceDirectory>$(ProjectDirectory)\src</SourceDirectory>
@@ -17,7 +24,7 @@
     <ProtosDirectory>$(ProjectDirectory)\protos</ProtosDirectory>
 
     <SourceTempDirectory>$(ProjectDirectory)\build_temp\GeneratedSource</SourceTempDirectory>
-    <BuildTempDirectory>$(ProjectDirectory)\build_temp\$(BuildConfiguration)\$(TargetVersion)</BuildTempDirectory>
+    <BuildTempDirectory>$(ProjectDirectory)\build_temp</BuildTempDirectory>
     <BuildOutputDirectory>$(ProjectDirectory)\build_output</BuildOutputDirectory>
     <BuildOutputPackage>$(BuildOutputDirectory)</BuildOutputPackage>
 
@@ -25,26 +32,19 @@
     <BenchmarkOutputFile>$(BuildTempDirectory)\..\BenchmarkResults.txt</BenchmarkOutputFile>
     <BenchmarkProtosDirectory>$(ProjectDirectory)\benchmarks</BenchmarkProtosDirectory>
 
-    <PackageName Condition=" '$(PackageName)' == '' ">$(BuildConfiguration)</PackageName>
+    <PackageName Condition=" '$(PackageName)' == '' ">$(Configuration)</PackageName>
     
-    <!--File Paths-->
-    <SolutionFile>$(SourceDirectory)\ProtocolBuffersLibrary.$(TargetVersion).sln</SolutionFile>
-
     <!--Tool Paths-->
-    <ProtocExePath>$(LibDirectory)\protoc.exe</ProtocExePath>
-    <ProtogenExePath>$(BuildOutputDirectory)\ProtoGen\protogen.exe</ProtogenExePath>
-    <ProtoBenchExePath>$(BuildTempDirectory)\ProtoBench.exe</ProtoBenchExePath>
+    <ProtocExePath>$(BuildOutputDirectory)\tools\protoc.exe</ProtocExePath>
+    <ProtogenExePath>$(BuildOutputDirectory)\tools\protogen.exe</ProtogenExePath>
     <NUnitExePath>$(LibDirectory)\NUnit\tools\nunit-console.exe</NUnitExePath>
-    <NUnitExeConfig>$(LibDirectory)\NUnit-config\nunit-console.$(TargetFrameworkVersion).config</NUnitExeConfig>
-    <StatLightExePath>$(LibDirectory)\StatLight\tools\StatLight.exe</StatLightExePath>
     <ZipExePath>$(LibDirectory)\7-Zip 9.20\7za.exe</ZipExePath>
   </PropertyGroup>
 
   <Import Project="Common.targets"/>
 
+  <!-- Proto Files -->
   <ItemGroup>
-    <WorkingDirectories Include="$(BuildTempDirectory)" />
-
     <Protos Include="$(ProtosDirectory)\extest\unittest_issues.proto" />
     <Protos Include="$(ProtosDirectory)\extest\unittest_extras.proto" />
     <Protos Include="$(ProtosDirectory)\extest\unittest_extras_full.proto" />
@@ -70,7 +70,12 @@
     <Protos Include="$(ProtosDirectory)\google\test\google_size.proto" />
     <Protos Include="$(ProtosDirectory)\google\test\google_speed.proto" />
     <Protos Include="$(ProtosDirectory)\tutorial\addressbook.proto" />
-
+    <!-- for benchmark -->
+    <Protos Include="$(ProtosDirectory)\benchmarks\google_size.proto" />
+    <Protos Include="$(ProtosDirectory)\benchmarks\google_speed.proto" />
+  </ItemGroup>
+  <!-- Generated Source -->
+  <ItemGroup>
     <!-- Main protos -->
     <GeneratedSource Include="$(SourceTempDirectory)\CSharpOptions.cs">
       <TargetDirectory>$(SourceDirectory)\ProtocolBuffers\DescriptorProtos</TargetDirectory>
@@ -160,26 +165,21 @@
     <GeneratedSource Include="$(SourceTempDirectory)\UnitTestGoogleSpeedProtoFile.cs">
       <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
     </GeneratedSource>
-
-    <TestContainer Include="$(SourceDirectory)\ProtocolBuffers.Test\bin\$(TargetVersion)\$(BuildConfiguration)\Google.ProtocolBuffers.Test.dll" />
-    <TestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(TargetVersion)\$(BuildConfiguration)\Google.ProtocolBuffersLite.Test.dll" />
-    <TestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(TargetVersion)\$(BuildConfiguration)\Google.ProtocolBuffersMixedLite.Test.dll" />
-    <TestContainer Condition=" '$(TargetVersion)' == '' "
-      Include="$(SourceDirectory)\ProtoGen.Test\bin\$(TargetVersion)\$(BuildConfiguration)\Google.ProtocolBuffers.ProtoGen.Test.dll" />
-
-    <StatLightTestContainer Include="$(SourceDirectory)\ProtocolBuffers.Test\bin\$(TargetVersion)\$(BuildConfiguration)\Google.ProtocolBuffers.Test.xap" />
-    <StatLightTestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(TargetVersion)\$(BuildConfiguration)\Google.ProtocolBuffersLite.Test.xap" />
-    <StatLightTestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(TargetVersion)\$(BuildConfiguration)\Google.ProtocolBuffersLiteMixed.Test.xap" />
-
-    <DynamicPackageItem Include="$(SourceDirectory)\ProtocolBuffers\bin\$(TargetVersion)\$(BuildConfiguration)\Google.ProtocolBuffers.*" />
-    <DynamicPackageItem Include="$(SourceDirectory)\ProtocolBuffers\bin\$(TargetVersion)\$(BuildConfiguration)\Google.ProtocolBuffersLite.*" />
-    <DynamicPackageItem Include="$(SourceDirectory)\ProtocolBuffers.Serialization\bin\$(TargetVersion)\$(BuildConfiguration)\Google.ProtocolBuffers.Serialization.*" />
-    <DynamicPackageItem Include="$(SourceDirectory)\ProtocolBuffers.Serialization\bin\$(TargetVersion)\$(BuildConfiguration)\Google.ProtocolBuffersLite.Serialization.*" />
-    <DynamicPackageItem Include="$(SourceDirectory)\ProtoGen\bin\$(TargetVersion)\$(BuildConfiguration)\ProtoGen.*" />
-    <DynamicPackageItem Include="$(SourceDirectory)\ProtoMunge\bin\$(TargetVersion)\$(BuildConfiguration)\ProtoMunge.*" />
-    <DynamicPackageItem Include="$(SourceDirectory)\ProtoDump\bin\$(TargetVersion)\$(BuildConfiguration)\ProtoDump.*" />
-    <DynamicPackageItem Include="$(SourceDirectory)\ProtoBench\bin\$(TargetVersion)\$(BuildConfiguration)\ProtoBench.*" />
-
+    <GeneratedSource Include="$(SourceTempDirectory)\GoogleSizeProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtoBench\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\GoogleSpeedProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtoBench\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestImportProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtoBench\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtoBench\TestProtos</TargetDirectory>
+    </GeneratedSource>
+  </ItemGroup>
+  <!-- Package Items -->
+  <ItemGroup>
     <StaticPackageItem Include="$(ProjectDirectory)\CHANGES.txt" />
     <StaticPackageItem Include="$(ProjectDirectory)\license.txt" />
     <StaticPackageItem Include="$(ProjectDirectory)\protos\google\protobuf\descriptor.proto">
@@ -191,23 +191,44 @@
     <StaticPackageItem Include="$(ProjectDirectory)\protos\tutorial\addressbook.proto">
       <TargetDirectory>\protos\tutorial</TargetDirectory>
     </StaticPackageItem>
-    <StaticPackageItem Include="$(LibDirectory)\Protoc*">
-      <TargetDirectory>\Protoc</TargetDirectory>
-    </StaticPackageItem>
-    
   </ItemGroup>
+  <!-- Tools -->
+  <ItemGroup>
+    <ToolsTestContainer Include="$(SourceDirectory)\ProtoGen.Test\bin\NET35\Release\Google.ProtocolBuffers.ProtoGen.Test.dll" />
 
-  <!-- targets -->
-  <Target Name="Clean" DependsOnTargets="_Clean" />
-  <Target Name="Build" DependsOnTargets="GenerateSource;_Compile;_Test" />
-  <Target Name="Test" DependsOnTargets="_Test" />
-  <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
-  <Target Name="GenerateSource" DependsOnTargets="_BuildProtoGen;_GenerateSource;_CopyGeneratedSource" />
-  <Target Name="BuildPackage" DependsOnTargets="PrepareOutputDirectory;PreparePackageComponent;GeneratePackage" />
-  <Target Name="PrepareOutputDirectory" DependsOnTargets="_CleanOutputDirectory" />
-  <Target Name="PreparePackageComponent" DependsOnTargets="_PreparePackageComponent" />
-  <Target Name="GeneratePackage" DependsOnTargets="_GeneratePackage" />
-  <Target Name="RunBenchmarks" DependsOnTargets="Requires20;RequiresRelease;Rebuild;_RunBenchmarks" />
-  <Target Name="FullBuild" DependsOnTargets="_FullBuild" />
-
+    <ToolsOutputItem Include="$(SourceDirectory)\ProtocolBuffers\bin\NET35\Release\Google.ProtocolBuffers.dll" />
+    <ToolsOutputItem Include="$(SourceDirectory)\ProtocolBuffers.Serialization\bin\NET35\Release\Google.ProtocolBuffers.Serialization.dll" />
+    <ToolsOutputItem Include="$(SourceDirectory)\ProtoGen\bin\NET35\Release\ProtoGen.exe" />
+    <ToolsOutputItem Include="$(SourceDirectory)\ProtoGen\bin\NET35\Release\ProtoGen.exe.config" />
+    <ToolsOutputItem Include="$(SourceDirectory)\ProtoMunge\bin\NET35\Release\ProtoMunge.exe" />
+    <ToolsOutputItem Include="$(SourceDirectory)\ProtoDump\bin\NET35\Release\ProtoDump.exe" />
+    <ToolsOutputItem Include="$(SourceDirectory)\ProtoBench\bin\NET35\Release\ProtoBench.exe" />
+    <ToolsOutputItem Include="$(LibDirectory)\protoc.exe" />
+    <ToolsOutputItem Include="$(LibDirectory)\protoc-license.txt" />
+  </ItemGroup>
+  <!-- Temporary Directories -->
+  <ItemGroup>
+    <TempBuildFolder Include="$(BuildTempDirectory)" />
+    <TempBuildFolder Include="$(BuildOutputDirectory)" />
+    <TempBuildFolder Include="$(SourceDirectory)\AddressBook\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\AddressBook\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoBench\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoBench\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtocolBuffers\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtocolBuffers\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtocolBuffers.Serialization\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtocolBuffers.Serialization\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtocolBuffers.Test\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtocolBuffers.Test\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtocolBuffersLite.Test\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoDump\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoDump\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoGen\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoGen\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoGen.Test\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoGen.Test\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoMunge\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoMunge\bin" />
+  </ItemGroup>
 </Project>

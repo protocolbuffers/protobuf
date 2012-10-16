@@ -6,26 +6,26 @@ using pb = global::Google.ProtocolBuffers;
 using pbc = global::Google.ProtocolBuffers.Collections;
 using pbd = global::Google.ProtocolBuffers.Descriptors;
 using scg = global::System.Collections.Generic;
-namespace Google.ProtocolBuffers.TestProtos {
+namespace Google.ProtocolBuffers.ProtoBench {
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public static partial class UnitTestGoogleSizeProtoFile {
+  public static partial class GoogleSizeProtoFile {
   
     #region Extension registration
     public static void RegisterAllExtensions(pb::ExtensionRegistry registry) {
     }
     #endregion
     #region Static variables
-    internal static pbd::MessageDescriptor internal__static_unittest_google_size_SizeMessage1__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SizeMessage1, global::Google.ProtocolBuffers.TestProtos.SizeMessage1.Builder> internal__static_unittest_google_size_SizeMessage1__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_unittest_google_size_SizeMessage1SubMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage, global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage.Builder> internal__static_unittest_google_size_SizeMessage1SubMessage__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_unittest_google_size_SizeMessage2__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SizeMessage2, global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Builder> internal__static_unittest_google_size_SizeMessage2__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_unittest_google_size_SizeMessage2_Group1__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1, global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1.Builder> internal__static_unittest_google_size_SizeMessage2_Group1__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_unittest_google_size_SizeMessage2GroupedMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage, global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage.Builder> internal__static_unittest_google_size_SizeMessage2GroupedMessage__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_benchmarks_SizeMessage1__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SizeMessage1, global::Google.ProtocolBuffers.ProtoBench.SizeMessage1.Builder> internal__static_benchmarks_SizeMessage1__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_benchmarks_SizeMessage1SubMessage__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SizeMessage1SubMessage, global::Google.ProtocolBuffers.ProtoBench.SizeMessage1SubMessage.Builder> internal__static_benchmarks_SizeMessage1SubMessage__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_benchmarks_SizeMessage2__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SizeMessage2, global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Builder> internal__static_benchmarks_SizeMessage2__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_benchmarks_SizeMessage2_Group1__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1, global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1.Builder> internal__static_benchmarks_SizeMessage2_Group1__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_benchmarks_SizeMessage2GroupedMessage__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SizeMessage2GroupedMessage, global::Google.ProtocolBuffers.ProtoBench.SizeMessage2GroupedMessage.Builder> internal__static_benchmarks_SizeMessage2GroupedMessage__FieldAccessorTable;
     #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
@@ -33,90 +33,89 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     private static pbd::FileDescriptor descriptor;
     
-    static UnitTestGoogleSizeProtoFile() {
+    static GoogleSizeProtoFile() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
-          "Ch1nb29nbGUvdGVzdC9nb29nbGVfc2l6ZS5wcm90bxIUdW5pdHRlc3RfZ29v" + 
-          "Z2xlX3NpemUaJGdvb2dsZS9wcm90b2J1Zi9jc2hhcnBfb3B0aW9ucy5wcm90" + 
-          "byKABwoMU2l6ZU1lc3NhZ2UxEg4KBmZpZWxkMRgBIAIoCRIOCgZmaWVsZDkY" + 
-          "CSABKAkSDwoHZmllbGQxOBgSIAEoCRIWCgdmaWVsZDgwGFAgASgIOgVmYWxz" + 
-          "ZRIVCgdmaWVsZDgxGFEgASgIOgR0cnVlEg4KBmZpZWxkMhgCIAIoBRIOCgZm" + 
-          "aWVsZDMYAyACKAUSEQoIZmllbGQyODAYmAIgASgFEhEKBmZpZWxkNhgGIAEo" + 
-          "BToBMBIPCgdmaWVsZDIyGBYgASgDEg4KBmZpZWxkNBgEIAEoCRIOCgZmaWVs" + 
-          "ZDUYBSADKAYSFgoHZmllbGQ1ORg7IAEoCDoFZmFsc2USDgoGZmllbGQ3GAcg" + 
-          "ASgJEg8KB2ZpZWxkMTYYECABKAUSFAoIZmllbGQxMzAYggEgASgFOgEwEhUK" + 
-          "B2ZpZWxkMTIYDCABKAg6BHRydWUSFQoHZmllbGQxNxgRIAEoCDoEdHJ1ZRIV" + 
-          "CgdmaWVsZDEzGA0gASgIOgR0cnVlEhUKB2ZpZWxkMTQYDiABKAg6BHRydWUS" + 
-          "EwoIZmllbGQxMDQYaCABKAU6ATASEwoIZmllbGQxMDAYZCABKAU6ATASEwoI" + 
-          "ZmllbGQxMDEYZSABKAU6ATASEAoIZmllbGQxMDIYZiABKAkSEAoIZmllbGQx" + 
-          "MDMYZyABKAkSEgoHZmllbGQyORgdIAEoBToBMBIWCgdmaWVsZDMwGB4gASgI" + 
-          "OgVmYWxzZRITCgdmaWVsZDYwGDwgASgFOgItMRIVCghmaWVsZDI3MRiPAiAB" + 
-          "KAU6Ai0xEhUKCGZpZWxkMjcyGJACIAEoBToCLTESEQoIZmllbGQxNTAYlgEg" + 
-          "ASgFEhIKB2ZpZWxkMjMYFyABKAU6ATASFgoHZmllbGQyNBgYIAEoCDoFZmFs" + 
-          "c2USEgoHZmllbGQyNRgZIAEoBToBMBI9CgdmaWVsZDE1GA8gASgLMiwudW5p" + 
-          "dHRlc3RfZ29vZ2xlX3NpemUuU2l6ZU1lc3NhZ2UxU3ViTWVzc2FnZRIPCgdm" + 
-          "aWVsZDc4GE4gASgIEhIKB2ZpZWxkNjcYQyABKAU6ATASDwoHZmllbGQ2OBhE" + 
-          "IAEoBRIUCghmaWVsZDEyOBiAASABKAU6ATASKAoIZmllbGQxMjkYgQEgASgJ" + 
-          "OhV4eHh4eHh4eHh4eHh4eHh4eHh4eHgSFAoIZmllbGQxMzEYgwEgASgFOgEw" + 
-          "IqEDChZTaXplTWVzc2FnZTFTdWJNZXNzYWdlEhEKBmZpZWxkMRgBIAEoBToB" + 
-          "MBIRCgZmaWVsZDIYAiABKAU6ATASEQoGZmllbGQzGAMgASgFOgEwEg8KB2Zp" + 
-          "ZWxkMTUYDyABKAkSFQoHZmllbGQxMhgMIAEoCDoEdHJ1ZRIPCgdmaWVsZDEz" + 
-          "GA0gASgDEg8KB2ZpZWxkMTQYDiABKAMSDwoHZmllbGQxNhgQIAEoBRISCgdm" + 
-          "aWVsZDE5GBMgASgFOgEyEhUKB2ZpZWxkMjAYFCABKAg6BHRydWUSFQoHZmll" + 
-          "bGQyOBgcIAEoCDoEdHJ1ZRIPCgdmaWVsZDIxGBUgASgGEg8KB2ZpZWxkMjIY" + 
-          "FiABKAUSFgoHZmllbGQyMxgXIAEoCDoFZmFsc2USGAoIZmllbGQyMDYYzgEg" + 
-          "ASgIOgVmYWxzZRIRCghmaWVsZDIwMxjLASABKAcSEQoIZmllbGQyMDQYzAEg" + 
-          "ASgFEhEKCGZpZWxkMjA1GM0BIAEoCRIRCghmaWVsZDIwNxjPASABKAQSEQoI" + 
-          "ZmllbGQzMDAYrAIgASgEItsHCgxTaXplTWVzc2FnZTISDgoGZmllbGQxGAEg" + 
-          "ASgJEg4KBmZpZWxkMxgDIAEoAxIOCgZmaWVsZDQYBCABKAMSDwoHZmllbGQz" + 
-          "MBgeIAEoAxIWCgdmaWVsZDc1GEsgASgIOgVmYWxzZRIOCgZmaWVsZDYYBiAB" + 
-          "KAkSDgoGZmllbGQyGAIgASgMEhIKB2ZpZWxkMjEYFSABKAU6ATASDwoHZmll" + 
-          "bGQ3MRhHIAEoBRIPCgdmaWVsZDI1GBkgASgCEhMKCGZpZWxkMTA5GG0gASgF" + 
-          "OgEwEhQKCGZpZWxkMjEwGNIBIAEoBToBMBIUCghmaWVsZDIxMRjTASABKAU6" + 
-          "ATASFAoIZmllbGQyMTIY1AEgASgFOgEwEhQKCGZpZWxkMjEzGNUBIAEoBToB" + 
-          "MBIUCghmaWVsZDIxNhjYASABKAU6ATASFAoIZmllbGQyMTcY2QEgASgFOgEw" + 
-          "EhQKCGZpZWxkMjE4GNoBIAEoBToBMBIUCghmaWVsZDIyMBjcASABKAU6ATAS" + 
-          "FAoIZmllbGQyMjEY3QEgASgFOgEwEhQKCGZpZWxkMjIyGN4BIAEoAjoBMBIP" + 
-          "CgdmaWVsZDYzGD8gASgFEjkKBmdyb3VwMRgKIAMoCjIpLnVuaXR0ZXN0X2dv" + 
-          "b2dsZV9zaXplLlNpemVNZXNzYWdlMi5Hcm91cDESEQoIZmllbGQxMjgYgAEg" + 
-          "AygJEhEKCGZpZWxkMTMxGIMBIAEoAxIQCghmaWVsZDEyNxh/IAMoCRIRCghm" + 
-          "aWVsZDEyORiBASABKAUSEQoIZmllbGQxMzAYggEgAygDEhgKCGZpZWxkMjA1" + 
-          "GM0BIAEoCDoFZmFsc2USGAoIZmllbGQyMDYYzgEgASgIOgVmYWxzZRrMAgoG" + 
-          "R3JvdXAxEg8KB2ZpZWxkMTEYCyACKAISDwoHZmllbGQyNhgaIAEoAhIPCgdm" + 
-          "aWVsZDEyGAwgASgJEg8KB2ZpZWxkMTMYDSABKAkSDwoHZmllbGQxNBgOIAMo" + 
-          "CRIPCgdmaWVsZDE1GA8gAigEEg4KBmZpZWxkNRgFIAEoBRIPCgdmaWVsZDI3" + 
-          "GBsgASgJEg8KB2ZpZWxkMjgYHCABKAUSDwoHZmllbGQyORgdIAEoCRIPCgdm" + 
-          "aWVsZDE2GBAgASgJEg8KB2ZpZWxkMjIYFiADKAkSDwoHZmllbGQ3MxhJIAMo" + 
-          "BRISCgdmaWVsZDIwGBQgASgFOgEwEg8KB2ZpZWxkMjQYGCABKAkSQQoHZmll" + 
-          "bGQzMRgfIAEoCzIwLnVuaXR0ZXN0X2dvb2dsZV9zaXplLlNpemVNZXNzYWdl" + 
-          "Mkdyb3VwZWRNZXNzYWdlIt4BChpTaXplTWVzc2FnZTJHcm91cGVkTWVzc2Fn" + 
-          "ZRIOCgZmaWVsZDEYASABKAISDgoGZmllbGQyGAIgASgCEhEKBmZpZWxkMxgD" + 
-          "IAEoAjoBMBIOCgZmaWVsZDQYBCABKAgSDgoGZmllbGQ1GAUgASgIEhQKBmZp" + 
-          "ZWxkNhgGIAEoCDoEdHJ1ZRIVCgZmaWVsZDcYByABKAg6BWZhbHNlEg4KBmZp" + 
-          "ZWxkOBgIIAEoAhIOCgZmaWVsZDkYCSABKAgSDwoHZmllbGQxMBgKIAEoAhIP" + 
-          "CgdmaWVsZDExGAsgASgDQlFCCkdvb2dsZVNpemVIAsI+QAohR29vZ2xlLlBy" + 
-          "b3RvY29sQnVmZmVycy5UZXN0UHJvdG9zEhtVbml0VGVzdEdvb2dsZVNpemVQ" + 
-          "cm90b0ZpbGU=");
+          "ChxiZW5jaG1hcmtzL2dvb2dsZV9zaXplLnByb3RvEgpiZW5jaG1hcmtzGiRn" + 
+          "b29nbGUvcHJvdG9idWYvY3NoYXJwX29wdGlvbnMucHJvdG8i9gYKDFNpemVN" + 
+          "ZXNzYWdlMRIOCgZmaWVsZDEYASACKAkSDgoGZmllbGQ5GAkgASgJEg8KB2Zp" + 
+          "ZWxkMTgYEiABKAkSFgoHZmllbGQ4MBhQIAEoCDoFZmFsc2USFQoHZmllbGQ4" + 
+          "MRhRIAEoCDoEdHJ1ZRIOCgZmaWVsZDIYAiACKAUSDgoGZmllbGQzGAMgAigF" + 
+          "EhEKCGZpZWxkMjgwGJgCIAEoBRIRCgZmaWVsZDYYBiABKAU6ATASDwoHZmll" + 
+          "bGQyMhgWIAEoAxIOCgZmaWVsZDQYBCABKAkSDgoGZmllbGQ1GAUgAygGEhYK" + 
+          "B2ZpZWxkNTkYOyABKAg6BWZhbHNlEg4KBmZpZWxkNxgHIAEoCRIPCgdmaWVs" + 
+          "ZDE2GBAgASgFEhQKCGZpZWxkMTMwGIIBIAEoBToBMBIVCgdmaWVsZDEyGAwg" + 
+          "ASgIOgR0cnVlEhUKB2ZpZWxkMTcYESABKAg6BHRydWUSFQoHZmllbGQxMxgN" + 
+          "IAEoCDoEdHJ1ZRIVCgdmaWVsZDE0GA4gASgIOgR0cnVlEhMKCGZpZWxkMTA0" + 
+          "GGggASgFOgEwEhMKCGZpZWxkMTAwGGQgASgFOgEwEhMKCGZpZWxkMTAxGGUg" + 
+          "ASgFOgEwEhAKCGZpZWxkMTAyGGYgASgJEhAKCGZpZWxkMTAzGGcgASgJEhIK" + 
+          "B2ZpZWxkMjkYHSABKAU6ATASFgoHZmllbGQzMBgeIAEoCDoFZmFsc2USEwoH" + 
+          "ZmllbGQ2MBg8IAEoBToCLTESFQoIZmllbGQyNzEYjwIgASgFOgItMRIVCghm" + 
+          "aWVsZDI3MhiQAiABKAU6Ai0xEhEKCGZpZWxkMTUwGJYBIAEoBRISCgdmaWVs" + 
+          "ZDIzGBcgASgFOgEwEhYKB2ZpZWxkMjQYGCABKAg6BWZhbHNlEhIKB2ZpZWxk" + 
+          "MjUYGSABKAU6ATASMwoHZmllbGQxNRgPIAEoCzIiLmJlbmNobWFya3MuU2l6" + 
+          "ZU1lc3NhZ2UxU3ViTWVzc2FnZRIPCgdmaWVsZDc4GE4gASgIEhIKB2ZpZWxk" + 
+          "NjcYQyABKAU6ATASDwoHZmllbGQ2OBhEIAEoBRIUCghmaWVsZDEyOBiAASAB" + 
+          "KAU6ATASKAoIZmllbGQxMjkYgQEgASgJOhV4eHh4eHh4eHh4eHh4eHh4eHh4" + 
+          "eHgSFAoIZmllbGQxMzEYgwEgASgFOgEwIqEDChZTaXplTWVzc2FnZTFTdWJN" + 
+          "ZXNzYWdlEhEKBmZpZWxkMRgBIAEoBToBMBIRCgZmaWVsZDIYAiABKAU6ATAS" + 
+          "EQoGZmllbGQzGAMgASgFOgEwEg8KB2ZpZWxkMTUYDyABKAkSFQoHZmllbGQx" + 
+          "MhgMIAEoCDoEdHJ1ZRIPCgdmaWVsZDEzGA0gASgDEg8KB2ZpZWxkMTQYDiAB" + 
+          "KAMSDwoHZmllbGQxNhgQIAEoBRISCgdmaWVsZDE5GBMgASgFOgEyEhUKB2Zp" + 
+          "ZWxkMjAYFCABKAg6BHRydWUSFQoHZmllbGQyOBgcIAEoCDoEdHJ1ZRIPCgdm" + 
+          "aWVsZDIxGBUgASgGEg8KB2ZpZWxkMjIYFiABKAUSFgoHZmllbGQyMxgXIAEo" + 
+          "CDoFZmFsc2USGAoIZmllbGQyMDYYzgEgASgIOgVmYWxzZRIRCghmaWVsZDIw" + 
+          "MxjLASABKAcSEQoIZmllbGQyMDQYzAEgASgFEhEKCGZpZWxkMjA1GM0BIAEo" + 
+          "CRIRCghmaWVsZDIwNxjPASABKAQSEQoIZmllbGQzMDAYrAIgASgEIscHCgxT" + 
+          "aXplTWVzc2FnZTISDgoGZmllbGQxGAEgASgJEg4KBmZpZWxkMxgDIAEoAxIO" + 
+          "CgZmaWVsZDQYBCABKAMSDwoHZmllbGQzMBgeIAEoAxIWCgdmaWVsZDc1GEsg" + 
+          "ASgIOgVmYWxzZRIOCgZmaWVsZDYYBiABKAkSDgoGZmllbGQyGAIgASgMEhIK" + 
+          "B2ZpZWxkMjEYFSABKAU6ATASDwoHZmllbGQ3MRhHIAEoBRIPCgdmaWVsZDI1" + 
+          "GBkgASgCEhMKCGZpZWxkMTA5GG0gASgFOgEwEhQKCGZpZWxkMjEwGNIBIAEo" + 
+          "BToBMBIUCghmaWVsZDIxMRjTASABKAU6ATASFAoIZmllbGQyMTIY1AEgASgF" + 
+          "OgEwEhQKCGZpZWxkMjEzGNUBIAEoBToBMBIUCghmaWVsZDIxNhjYASABKAU6" + 
+          "ATASFAoIZmllbGQyMTcY2QEgASgFOgEwEhQKCGZpZWxkMjE4GNoBIAEoBToB" + 
+          "MBIUCghmaWVsZDIyMBjcASABKAU6ATASFAoIZmllbGQyMjEY3QEgASgFOgEw" + 
+          "EhQKCGZpZWxkMjIyGN4BIAEoAjoBMBIPCgdmaWVsZDYzGD8gASgFEi8KBmdy" + 
+          "b3VwMRgKIAMoCjIfLmJlbmNobWFya3MuU2l6ZU1lc3NhZ2UyLkdyb3VwMRIR" + 
+          "CghmaWVsZDEyOBiAASADKAkSEQoIZmllbGQxMzEYgwEgASgDEhAKCGZpZWxk" + 
+          "MTI3GH8gAygJEhEKCGZpZWxkMTI5GIEBIAEoBRIRCghmaWVsZDEzMBiCASAD" + 
+          "KAMSGAoIZmllbGQyMDUYzQEgASgIOgVmYWxzZRIYCghmaWVsZDIwNhjOASAB" + 
+          "KAg6BWZhbHNlGsICCgZHcm91cDESDwoHZmllbGQxMRgLIAIoAhIPCgdmaWVs" + 
+          "ZDI2GBogASgCEg8KB2ZpZWxkMTIYDCABKAkSDwoHZmllbGQxMxgNIAEoCRIP" + 
+          "CgdmaWVsZDE0GA4gAygJEg8KB2ZpZWxkMTUYDyACKAQSDgoGZmllbGQ1GAUg" + 
+          "ASgFEg8KB2ZpZWxkMjcYGyABKAkSDwoHZmllbGQyOBgcIAEoBRIPCgdmaWVs" + 
+          "ZDI5GB0gASgJEg8KB2ZpZWxkMTYYECABKAkSDwoHZmllbGQyMhgWIAMoCRIP" + 
+          "CgdmaWVsZDczGEkgAygFEhIKB2ZpZWxkMjAYFCABKAU6ATASDwoHZmllbGQy" + 
+          "NBgYIAEoCRI3CgdmaWVsZDMxGB8gASgLMiYuYmVuY2htYXJrcy5TaXplTWVz" + 
+          "c2FnZTJHcm91cGVkTWVzc2FnZSLeAQoaU2l6ZU1lc3NhZ2UyR3JvdXBlZE1l" + 
+          "c3NhZ2USDgoGZmllbGQxGAEgASgCEg4KBmZpZWxkMhgCIAEoAhIRCgZmaWVs" + 
+          "ZDMYAyABKAI6ATASDgoGZmllbGQ0GAQgASgIEg4KBmZpZWxkNRgFIAEoCBIU" + 
+          "CgZmaWVsZDYYBiABKAg6BHRydWUSFQoGZmllbGQ3GAcgASgIOgVmYWxzZRIO" + 
+          "CgZmaWVsZDgYCCABKAISDgoGZmllbGQ5GAkgASgIEg8KB2ZpZWxkMTAYCiAB" + 
+          "KAISDwoHZmllbGQxMRgLIAEoA0JJQgpHb29nbGVTaXplSALCPjgKIUdvb2ds" + 
+          "ZS5Qcm90b2NvbEJ1ZmZlcnMuUHJvdG9CZW5jaBITR29vZ2xlU2l6ZVByb3Rv" + 
+          "RmlsZQ==");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
-        internal__static_unittest_google_size_SizeMessage1__Descriptor = Descriptor.MessageTypes[0];
-        internal__static_unittest_google_size_SizeMessage1__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SizeMessage1, global::Google.ProtocolBuffers.TestProtos.SizeMessage1.Builder>(internal__static_unittest_google_size_SizeMessage1__Descriptor,
+        internal__static_benchmarks_SizeMessage1__Descriptor = Descriptor.MessageTypes[0];
+        internal__static_benchmarks_SizeMessage1__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SizeMessage1, global::Google.ProtocolBuffers.ProtoBench.SizeMessage1.Builder>(internal__static_benchmarks_SizeMessage1__Descriptor,
                 new string[] { "Field1", "Field9", "Field18", "Field80", "Field81", "Field2", "Field3", "Field280", "Field6", "Field22", "Field4", "Field5", "Field59", "Field7", "Field16", "Field130", "Field12", "Field17", "Field13", "Field14", "Field104", "Field100", "Field101", "Field102", "Field103", "Field29", "Field30", "Field60", "Field271", "Field272", "Field150", "Field23", "Field24", "Field25", "Field15", "Field78", "Field67", "Field68", "Field128", "Field129", "Field131", });
-        internal__static_unittest_google_size_SizeMessage1SubMessage__Descriptor = Descriptor.MessageTypes[1];
-        internal__static_unittest_google_size_SizeMessage1SubMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage, global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage.Builder>(internal__static_unittest_google_size_SizeMessage1SubMessage__Descriptor,
+        internal__static_benchmarks_SizeMessage1SubMessage__Descriptor = Descriptor.MessageTypes[1];
+        internal__static_benchmarks_SizeMessage1SubMessage__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SizeMessage1SubMessage, global::Google.ProtocolBuffers.ProtoBench.SizeMessage1SubMessage.Builder>(internal__static_benchmarks_SizeMessage1SubMessage__Descriptor,
                 new string[] { "Field1", "Field2", "Field3", "Field15", "Field12", "Field13", "Field14", "Field16", "Field19", "Field20", "Field28", "Field21", "Field22", "Field23", "Field206", "Field203", "Field204", "Field205", "Field207", "Field300", });
-        internal__static_unittest_google_size_SizeMessage2__Descriptor = Descriptor.MessageTypes[2];
-        internal__static_unittest_google_size_SizeMessage2__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SizeMessage2, global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Builder>(internal__static_unittest_google_size_SizeMessage2__Descriptor,
+        internal__static_benchmarks_SizeMessage2__Descriptor = Descriptor.MessageTypes[2];
+        internal__static_benchmarks_SizeMessage2__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SizeMessage2, global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Builder>(internal__static_benchmarks_SizeMessage2__Descriptor,
                 new string[] { "Field1", "Field3", "Field4", "Field30", "Field75", "Field6", "Field2", "Field21", "Field71", "Field25", "Field109", "Field210", "Field211", "Field212", "Field213", "Field216", "Field217", "Field218", "Field220", "Field221", "Field222", "Field63", "Group1", "Field128", "Field131", "Field127", "Field129", "Field130", "Field205", "Field206", });
-        internal__static_unittest_google_size_SizeMessage2_Group1__Descriptor = internal__static_unittest_google_size_SizeMessage2__Descriptor.NestedTypes[0];
-        internal__static_unittest_google_size_SizeMessage2_Group1__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1, global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1.Builder>(internal__static_unittest_google_size_SizeMessage2_Group1__Descriptor,
+        internal__static_benchmarks_SizeMessage2_Group1__Descriptor = internal__static_benchmarks_SizeMessage2__Descriptor.NestedTypes[0];
+        internal__static_benchmarks_SizeMessage2_Group1__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1, global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1.Builder>(internal__static_benchmarks_SizeMessage2_Group1__Descriptor,
                 new string[] { "Field11", "Field26", "Field12", "Field13", "Field14", "Field15", "Field5", "Field27", "Field28", "Field29", "Field16", "Field22", "Field73", "Field20", "Field24", "Field31", });
-        internal__static_unittest_google_size_SizeMessage2GroupedMessage__Descriptor = Descriptor.MessageTypes[3];
-        internal__static_unittest_google_size_SizeMessage2GroupedMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage, global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage.Builder>(internal__static_unittest_google_size_SizeMessage2GroupedMessage__Descriptor,
+        internal__static_benchmarks_SizeMessage2GroupedMessage__Descriptor = Descriptor.MessageTypes[3];
+        internal__static_benchmarks_SizeMessage2GroupedMessage__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.ProtoBench.SizeMessage2GroupedMessage, global::Google.ProtocolBuffers.ProtoBench.SizeMessage2GroupedMessage.Builder>(internal__static_benchmarks_SizeMessage2GroupedMessage__Descriptor,
                 new string[] { "Field1", "Field2", "Field3", "Field4", "Field5", "Field6", "Field7", "Field8", "Field9", "Field10", "Field11", });
         pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
         RegisterAllExtensions(registry);
@@ -149,11 +148,11 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSizeProtoFile.internal__static_unittest_google_size_SizeMessage1__Descriptor; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.GoogleSizeProtoFile.internal__static_benchmarks_SizeMessage1__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable<SizeMessage1, SizeMessage1.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSizeProtoFile.internal__static_unittest_google_size_SizeMessage1__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.GoogleSizeProtoFile.internal__static_benchmarks_SizeMessage1__FieldAccessorTable; }
     }
     
     public const int Field1FieldNumber = 1;
@@ -502,12 +501,12 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     public const int Field15FieldNumber = 15;
     private bool hasField15;
-    private global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage field15_;
+    private global::Google.ProtocolBuffers.ProtoBench.SizeMessage1SubMessage field15_;
     public bool HasField15 {
       get { return hasField15; }
     }
-    public global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage Field15 {
-      get { return field15_ ?? global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage.DefaultInstance; }
+    public global::Google.ProtocolBuffers.ProtoBench.SizeMessage1SubMessage Field15 {
+      get { return field15_ ?? global::Google.ProtocolBuffers.ProtoBench.SizeMessage1SubMessage.DefaultInstance; }
     }
     
     public const int Field78FieldNumber = 78;
@@ -662,11 +661,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return global::Google.ProtocolBuffers.TestProtos.SizeMessage1.Descriptor; }
+        get { return global::Google.ProtocolBuffers.ProtoBench.SizeMessage1.Descriptor; }
       }
       
       public override SizeMessage1 DefaultInstanceForType {
-        get { return global::Google.ProtocolBuffers.TestProtos.SizeMessage1.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.ProtoBench.SizeMessage1.DefaultInstance; }
       }
       
       public override SizeMessage1 BuildPartial() {
@@ -1383,30 +1382,30 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasField15 {
        get { return result.hasField15; }
       }
-      public global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage Field15 {
+      public global::Google.ProtocolBuffers.ProtoBench.SizeMessage1SubMessage Field15 {
         get { return result.Field15; }
         set { SetField15(value); }
       }
-      public Builder SetField15(global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage value) {
+      public Builder SetField15(global::Google.ProtocolBuffers.ProtoBench.SizeMessage1SubMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         result.hasField15 = true;
         result.field15_ = value;
         return this;
       }
-      public Builder SetField15(global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage.Builder builderForValue) {
+      public Builder SetField15(global::Google.ProtocolBuffers.ProtoBench.SizeMessage1SubMessage.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         PrepareBuilder();
         result.hasField15 = true;
         result.field15_ = builderForValue.Build();
         return this;
       }
-      public Builder MergeField15(global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage value) {
+      public Builder MergeField15(global::Google.ProtocolBuffers.ProtoBench.SizeMessage1SubMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         if (result.hasField15 &&
-            result.field15_ != global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage.DefaultInstance) {
-            result.field15_ = global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage.CreateBuilder(result.field15_).MergeFrom(value).BuildPartial();
+            result.field15_ != global::Google.ProtocolBuffers.ProtoBench.SizeMessage1SubMessage.DefaultInstance) {
+            result.field15_ = global::Google.ProtocolBuffers.ProtoBench.SizeMessage1SubMessage.CreateBuilder(result.field15_).MergeFrom(value).BuildPartial();
         } else {
           result.field15_ = value;
         }
@@ -1542,7 +1541,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static SizeMessage1() {
-      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSizeProtoFile.Descriptor, null);
+      object.ReferenceEquals(global::Google.ProtocolBuffers.ProtoBench.GoogleSizeProtoFile.Descriptor, null);
     }
   }
   
@@ -1563,11 +1562,11 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSizeProtoFile.internal__static_unittest_google_size_SizeMessage1SubMessage__Descriptor; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.GoogleSizeProtoFile.internal__static_benchmarks_SizeMessage1SubMessage__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable<SizeMessage1SubMessage, SizeMessage1SubMessage.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSizeProtoFile.internal__static_unittest_google_size_SizeMessage1SubMessage__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.GoogleSizeProtoFile.internal__static_benchmarks_SizeMessage1SubMessage__FieldAccessorTable; }
     }
     
     public const int Field1FieldNumber = 1;
@@ -1865,11 +1864,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage.Descriptor; }
+        get { return global::Google.ProtocolBuffers.ProtoBench.SizeMessage1SubMessage.Descriptor; }
       }
       
       public override SizeMessage1SubMessage DefaultInstanceForType {
-        get { return global::Google.ProtocolBuffers.TestProtos.SizeMessage1SubMessage.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.ProtoBench.SizeMessage1SubMessage.DefaultInstance; }
       }
       
       public override SizeMessage1SubMessage BuildPartial() {
@@ -2292,7 +2291,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static SizeMessage1SubMessage() {
-      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSizeProtoFile.Descriptor, null);
+      object.ReferenceEquals(global::Google.ProtocolBuffers.ProtoBench.GoogleSizeProtoFile.Descriptor, null);
     }
   }
   
@@ -2313,11 +2312,11 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSizeProtoFile.internal__static_unittest_google_size_SizeMessage2__Descriptor; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.GoogleSizeProtoFile.internal__static_benchmarks_SizeMessage2__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable<SizeMessage2, SizeMessage2.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSizeProtoFile.internal__static_unittest_google_size_SizeMessage2__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.GoogleSizeProtoFile.internal__static_benchmarks_SizeMessage2__FieldAccessorTable; }
     }
     
     #region Nested types
@@ -2340,11 +2339,11 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSizeProtoFile.internal__static_unittest_google_size_SizeMessage2_Group1__Descriptor; }
+          get { return global::Google.ProtocolBuffers.ProtoBench.GoogleSizeProtoFile.internal__static_benchmarks_SizeMessage2_Group1__Descriptor; }
         }
         
         protected override pb::FieldAccess.FieldAccessorTable<Group1, Group1.Builder> InternalFieldAccessors {
-          get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSizeProtoFile.internal__static_unittest_google_size_SizeMessage2_Group1__FieldAccessorTable; }
+          get { return global::Google.ProtocolBuffers.ProtoBench.GoogleSizeProtoFile.internal__static_benchmarks_SizeMessage2_Group1__FieldAccessorTable; }
         }
         
         public const int Field11FieldNumber = 11;
@@ -2506,12 +2505,12 @@ namespace Google.ProtocolBuffers.TestProtos {
         
         public const int Field31FieldNumber = 31;
         private bool hasField31;
-        private global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage field31_;
+        private global::Google.ProtocolBuffers.ProtoBench.SizeMessage2GroupedMessage field31_;
         public bool HasField31 {
           get { return hasField31; }
         }
-        public global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage Field31 {
-          get { return field31_ ?? global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage.DefaultInstance; }
+        public global::Google.ProtocolBuffers.ProtoBench.SizeMessage2GroupedMessage Field31 {
+          get { return field31_ ?? global::Google.ProtocolBuffers.ProtoBench.SizeMessage2GroupedMessage.DefaultInstance; }
         }
         
         public static Group1 ParseFrom(pb::ByteString data) {
@@ -2608,11 +2607,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
           
           public override pbd::MessageDescriptor DescriptorForType {
-            get { return global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1.Descriptor; }
+            get { return global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1.Descriptor; }
           }
           
           public override Group1 DefaultInstanceForType {
-            get { return global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1.DefaultInstance; }
+            get { return global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1.DefaultInstance; }
           }
           
           public override Group1 BuildPartial() {
@@ -2969,30 +2968,30 @@ namespace Google.ProtocolBuffers.TestProtos {
           public bool HasField31 {
            get { return result.hasField31; }
           }
-          public global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage Field31 {
+          public global::Google.ProtocolBuffers.ProtoBench.SizeMessage2GroupedMessage Field31 {
             get { return result.Field31; }
             set { SetField31(value); }
           }
-          public Builder SetField31(global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage value) {
+          public Builder SetField31(global::Google.ProtocolBuffers.ProtoBench.SizeMessage2GroupedMessage value) {
             pb::ThrowHelper.ThrowIfNull(value, "value");
             PrepareBuilder();
             result.hasField31 = true;
             result.field31_ = value;
             return this;
           }
-          public Builder SetField31(global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage.Builder builderForValue) {
+          public Builder SetField31(global::Google.ProtocolBuffers.ProtoBench.SizeMessage2GroupedMessage.Builder builderForValue) {
             pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
             PrepareBuilder();
             result.hasField31 = true;
             result.field31_ = builderForValue.Build();
             return this;
           }
-          public Builder MergeField31(global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage value) {
+          public Builder MergeField31(global::Google.ProtocolBuffers.ProtoBench.SizeMessage2GroupedMessage value) {
             pb::ThrowHelper.ThrowIfNull(value, "value");
             PrepareBuilder();
             if (result.hasField31 &&
-                result.field31_ != global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage.DefaultInstance) {
-                result.field31_ = global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage.CreateBuilder(result.field31_).MergeFrom(value).BuildPartial();
+                result.field31_ != global::Google.ProtocolBuffers.ProtoBench.SizeMessage2GroupedMessage.DefaultInstance) {
+                result.field31_ = global::Google.ProtocolBuffers.ProtoBench.SizeMessage2GroupedMessage.CreateBuilder(result.field31_).MergeFrom(value).BuildPartial();
             } else {
               result.field31_ = value;
             }
@@ -3007,7 +3006,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
         }
         static Group1() {
-          object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSizeProtoFile.Descriptor, null);
+          object.ReferenceEquals(global::Google.ProtocolBuffers.ProtoBench.GoogleSizeProtoFile.Descriptor, null);
         }
       }
       
@@ -3235,14 +3234,14 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public const int Group1FieldNumber = 10;
-    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1> group1_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1>();
-    public scg::IList<global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1> Group1List {
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1> group1_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1>();
+    public scg::IList<global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1> Group1List {
       get { return group1_; }
     }
     public int Group1Count {
       get { return group1_.Count; }
     }
-    public global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1 GetGroup1(int index) {
+    public global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1 GetGroup1(int index) {
       return group1_[index];
     }
     
@@ -3417,11 +3416,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Descriptor; }
+        get { return global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Descriptor; }
       }
       
       public override SizeMessage2 DefaultInstanceForType {
-        get { return global::Google.ProtocolBuffers.TestProtos.SizeMessage2.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.DefaultInstance; }
       }
       
       public override SizeMessage2 BuildPartial() {
@@ -3876,40 +3875,40 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
       
-      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1> Group1List {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1> Group1List {
         get { return PrepareBuilder().group1_; }
       }
       public int Group1Count {
         get { return result.Group1Count; }
       }
-      public global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1 GetGroup1(int index) {
+      public global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1 GetGroup1(int index) {
         return result.GetGroup1(index);
       }
-      public Builder SetGroup1(int index, global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1 value) {
+      public Builder SetGroup1(int index, global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1 value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         result.group1_[index] = value;
         return this;
       }
-      public Builder SetGroup1(int index, global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1.Builder builderForValue) {
+      public Builder SetGroup1(int index, global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         PrepareBuilder();
         result.group1_[index] = builderForValue.Build();
         return this;
       }
-      public Builder AddGroup1(global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1 value) {
+      public Builder AddGroup1(global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1 value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         result.group1_.Add(value);
         return this;
       }
-      public Builder AddGroup1(global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1.Builder builderForValue) {
+      public Builder AddGroup1(global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         PrepareBuilder();
         result.group1_.Add(builderForValue.Build());
         return this;
       }
-      public Builder AddRangeGroup1(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.SizeMessage2.Types.Group1> values) {
+      public Builder AddRangeGroup1(scg::IEnumerable<global::Google.ProtocolBuffers.ProtoBench.SizeMessage2.Types.Group1> values) {
         PrepareBuilder();
         result.group1_.Add(values);
         return this;
@@ -4095,7 +4094,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static SizeMessage2() {
-      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSizeProtoFile.Descriptor, null);
+      object.ReferenceEquals(global::Google.ProtocolBuffers.ProtoBench.GoogleSizeProtoFile.Descriptor, null);
     }
   }
   
@@ -4116,11 +4115,11 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSizeProtoFile.internal__static_unittest_google_size_SizeMessage2GroupedMessage__Descriptor; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.GoogleSizeProtoFile.internal__static_benchmarks_SizeMessage2GroupedMessage__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable<SizeMessage2GroupedMessage, SizeMessage2GroupedMessage.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSizeProtoFile.internal__static_unittest_google_size_SizeMessage2GroupedMessage__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.ProtoBench.GoogleSizeProtoFile.internal__static_benchmarks_SizeMessage2GroupedMessage__FieldAccessorTable; }
     }
     
     public const int Field1FieldNumber = 1;
@@ -4324,11 +4323,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage.Descriptor; }
+        get { return global::Google.ProtocolBuffers.ProtoBench.SizeMessage2GroupedMessage.Descriptor; }
       }
       
       public override SizeMessage2GroupedMessage DefaultInstanceForType {
-        get { return global::Google.ProtocolBuffers.TestProtos.SizeMessage2GroupedMessage.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.ProtoBench.SizeMessage2GroupedMessage.DefaultInstance; }
       }
       
       public override SizeMessage2GroupedMessage BuildPartial() {
@@ -4561,7 +4560,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static SizeMessage2GroupedMessage() {
-      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSizeProtoFile.Descriptor, null);
+      object.ReferenceEquals(global::Google.ProtocolBuffers.ProtoBench.GoogleSizeProtoFile.Descriptor, null);
     }
   }
   

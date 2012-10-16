@@ -1,0 +1,41 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <EnvironmentFlavor>COMPACT_FRAMEWORK</EnvironmentFlavor>
+    <EnvironmentTemplate>CF20</EnvironmentTemplate>
+    <ProjectTypeGuids>{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <PlatformFamilyName>Smartphone</PlatformFamilyName>
+    <PlatformID>f27da329-3269-4191-98e0-c87d3d7f1db9</PlatformID>
+    <!--<OSVersion>5.2</OSVersion>-->
+    <!--<DeployDirSuffix>CF20</DeployDirSuffix>-->
+    <!--<NativePlatformName>Windows Mobile 6 Standard SDK</NativePlatformName>-->
+    <!--<FormFactorID></FormFactorID>-->
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\CF20\Debug</OutputPath>
+    <IntermediateOutputPath>obj\CF20\Debug\</IntermediateOutputPath>
+    <DefineConstants>$(DefineConstants);NOSERIALIZABLE;NOFILEVERSION;NOEXTENSIONS</DefineConstants>
+    <NoConfig>true</NoConfig>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\CF20\Release</OutputPath>
+    <IntermediateOutputPath>obj\CF20\Release\</IntermediateOutputPath>
+    <DefineConstants>$(DefineConstants);NOSERIALIZABLE;NOFILEVERSION;NOEXTENSIONS</DefineConstants>
+    <NoConfig>true</NoConfig>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}">
+        <HostingProcess disable="1" />
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

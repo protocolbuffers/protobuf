@@ -16,16 +16,16 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     #endregion
     #region Static variables
-    internal static pbd::MessageDescriptor internal__static_benchmarks_SpeedMessage1__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage1, global::Google.ProtocolBuffers.TestProtos.SpeedMessage1.Builder> internal__static_benchmarks_SpeedMessage1__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_benchmarks_SpeedMessage1SubMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage1SubMessage, global::Google.ProtocolBuffers.TestProtos.SpeedMessage1SubMessage.Builder> internal__static_benchmarks_SpeedMessage1SubMessage__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_benchmarks_SpeedMessage2__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage2, global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Builder> internal__static_benchmarks_SpeedMessage2__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_benchmarks_SpeedMessage2_Group1__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Types.Group1, global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Types.Group1.Builder> internal__static_benchmarks_SpeedMessage2_Group1__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_benchmarks_SpeedMessage2GroupedMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage2GroupedMessage, global::Google.ProtocolBuffers.TestProtos.SpeedMessage2GroupedMessage.Builder> internal__static_benchmarks_SpeedMessage2GroupedMessage__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_unittest_google_speed_SpeedMessage1__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage1, global::Google.ProtocolBuffers.TestProtos.SpeedMessage1.Builder> internal__static_unittest_google_speed_SpeedMessage1__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_unittest_google_speed_SpeedMessage1SubMessage__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage1SubMessage, global::Google.ProtocolBuffers.TestProtos.SpeedMessage1SubMessage.Builder> internal__static_unittest_google_speed_SpeedMessage1SubMessage__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_unittest_google_speed_SpeedMessage2__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage2, global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Builder> internal__static_unittest_google_speed_SpeedMessage2__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_unittest_google_speed_SpeedMessage2_Group1__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Types.Group1, global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Types.Group1.Builder> internal__static_unittest_google_speed_SpeedMessage2_Group1__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_unittest_google_speed_SpeedMessage2GroupedMessage__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage2GroupedMessage, global::Google.ProtocolBuffers.TestProtos.SpeedMessage2GroupedMessage.Builder> internal__static_unittest_google_speed_SpeedMessage2GroupedMessage__FieldAccessorTable;
     #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
@@ -35,87 +35,88 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     static UnitTestGoogleSpeedProtoFile() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
-          "Ch5nb29nbGUvdGVzdC9nb29nbGVfc3BlZWQucHJvdG8SCmJlbmNobWFya3Ma" + 
-          "JGdvb2dsZS9wcm90b2J1Zi9jc2hhcnBfb3B0aW9ucy5wcm90byL4BgoNU3Bl" + 
-          "ZWRNZXNzYWdlMRIOCgZmaWVsZDEYASACKAkSDgoGZmllbGQ5GAkgASgJEg8K" + 
-          "B2ZpZWxkMTgYEiABKAkSFgoHZmllbGQ4MBhQIAEoCDoFZmFsc2USFQoHZmll" + 
-          "bGQ4MRhRIAEoCDoEdHJ1ZRIOCgZmaWVsZDIYAiACKAUSDgoGZmllbGQzGAMg" + 
-          "AigFEhEKCGZpZWxkMjgwGJgCIAEoBRIRCgZmaWVsZDYYBiABKAU6ATASDwoH" + 
-          "ZmllbGQyMhgWIAEoAxIOCgZmaWVsZDQYBCABKAkSDgoGZmllbGQ1GAUgAygG" + 
-          "EhYKB2ZpZWxkNTkYOyABKAg6BWZhbHNlEg4KBmZpZWxkNxgHIAEoCRIPCgdm" + 
-          "aWVsZDE2GBAgASgFEhQKCGZpZWxkMTMwGIIBIAEoBToBMBIVCgdmaWVsZDEy" + 
-          "GAwgASgIOgR0cnVlEhUKB2ZpZWxkMTcYESABKAg6BHRydWUSFQoHZmllbGQx" + 
-          "MxgNIAEoCDoEdHJ1ZRIVCgdmaWVsZDE0GA4gASgIOgR0cnVlEhMKCGZpZWxk" + 
-          "MTA0GGggASgFOgEwEhMKCGZpZWxkMTAwGGQgASgFOgEwEhMKCGZpZWxkMTAx" + 
-          "GGUgASgFOgEwEhAKCGZpZWxkMTAyGGYgASgJEhAKCGZpZWxkMTAzGGcgASgJ" + 
-          "EhIKB2ZpZWxkMjkYHSABKAU6ATASFgoHZmllbGQzMBgeIAEoCDoFZmFsc2US" + 
-          "EwoHZmllbGQ2MBg8IAEoBToCLTESFQoIZmllbGQyNzEYjwIgASgFOgItMRIV" + 
-          "CghmaWVsZDI3MhiQAiABKAU6Ai0xEhEKCGZpZWxkMTUwGJYBIAEoBRISCgdm" + 
-          "aWVsZDIzGBcgASgFOgEwEhYKB2ZpZWxkMjQYGCABKAg6BWZhbHNlEhIKB2Zp" + 
-          "ZWxkMjUYGSABKAU6ATASNAoHZmllbGQxNRgPIAEoCzIjLmJlbmNobWFya3Mu" + 
-          "U3BlZWRNZXNzYWdlMVN1Yk1lc3NhZ2USDwoHZmllbGQ3OBhOIAEoCBISCgdm" + 
-          "aWVsZDY3GEMgASgFOgEwEg8KB2ZpZWxkNjgYRCABKAUSFAoIZmllbGQxMjgY" + 
-          "gAEgASgFOgEwEigKCGZpZWxkMTI5GIEBIAEoCToVeHh4eHh4eHh4eHh4eHh4" + 
-          "eHh4eHh4EhQKCGZpZWxkMTMxGIMBIAEoBToBMCKiAwoXU3BlZWRNZXNzYWdl" + 
-          "MVN1Yk1lc3NhZ2USEQoGZmllbGQxGAEgASgFOgEwEhEKBmZpZWxkMhgCIAEo" + 
-          "BToBMBIRCgZmaWVsZDMYAyABKAU6ATASDwoHZmllbGQxNRgPIAEoCRIVCgdm" + 
-          "aWVsZDEyGAwgASgIOgR0cnVlEg8KB2ZpZWxkMTMYDSABKAMSDwoHZmllbGQx" + 
-          "NBgOIAEoAxIPCgdmaWVsZDE2GBAgASgFEhIKB2ZpZWxkMTkYEyABKAU6ATIS" + 
-          "FQoHZmllbGQyMBgUIAEoCDoEdHJ1ZRIVCgdmaWVsZDI4GBwgASgIOgR0cnVl" + 
-          "Eg8KB2ZpZWxkMjEYFSABKAYSDwoHZmllbGQyMhgWIAEoBRIWCgdmaWVsZDIz" + 
-          "GBcgASgIOgVmYWxzZRIYCghmaWVsZDIwNhjOASABKAg6BWZhbHNlEhEKCGZp" + 
-          "ZWxkMjAzGMsBIAEoBxIRCghmaWVsZDIwNBjMASABKAUSEQoIZmllbGQyMDUY" + 
-          "zQEgASgJEhEKCGZpZWxkMjA3GM8BIAEoBBIRCghmaWVsZDMwMBisAiABKAQi" + 
-          "ygcKDVNwZWVkTWVzc2FnZTISDgoGZmllbGQxGAEgASgJEg4KBmZpZWxkMxgD" + 
-          "IAEoAxIOCgZmaWVsZDQYBCABKAMSDwoHZmllbGQzMBgeIAEoAxIWCgdmaWVs" + 
-          "ZDc1GEsgASgIOgVmYWxzZRIOCgZmaWVsZDYYBiABKAkSDgoGZmllbGQyGAIg" + 
-          "ASgMEhIKB2ZpZWxkMjEYFSABKAU6ATASDwoHZmllbGQ3MRhHIAEoBRIPCgdm" + 
-          "aWVsZDI1GBkgASgCEhMKCGZpZWxkMTA5GG0gASgFOgEwEhQKCGZpZWxkMjEw" + 
-          "GNIBIAEoBToBMBIUCghmaWVsZDIxMRjTASABKAU6ATASFAoIZmllbGQyMTIY" + 
-          "1AEgASgFOgEwEhQKCGZpZWxkMjEzGNUBIAEoBToBMBIUCghmaWVsZDIxNhjY" + 
-          "ASABKAU6ATASFAoIZmllbGQyMTcY2QEgASgFOgEwEhQKCGZpZWxkMjE4GNoB" + 
-          "IAEoBToBMBIUCghmaWVsZDIyMBjcASABKAU6ATASFAoIZmllbGQyMjEY3QEg" + 
-          "ASgFOgEwEhQKCGZpZWxkMjIyGN4BIAEoAjoBMBIPCgdmaWVsZDYzGD8gASgF" + 
-          "EjAKBmdyb3VwMRgKIAMoCjIgLmJlbmNobWFya3MuU3BlZWRNZXNzYWdlMi5H" + 
-          "cm91cDESEQoIZmllbGQxMjgYgAEgAygJEhEKCGZpZWxkMTMxGIMBIAEoAxIQ" + 
-          "CghmaWVsZDEyNxh/IAMoCRIRCghmaWVsZDEyORiBASABKAUSEQoIZmllbGQx" + 
-          "MzAYggEgAygDEhgKCGZpZWxkMjA1GM0BIAEoCDoFZmFsc2USGAoIZmllbGQy" + 
-          "MDYYzgEgASgIOgVmYWxzZRrDAgoGR3JvdXAxEg8KB2ZpZWxkMTEYCyACKAIS" + 
-          "DwoHZmllbGQyNhgaIAEoAhIPCgdmaWVsZDEyGAwgASgJEg8KB2ZpZWxkMTMY" + 
-          "DSABKAkSDwoHZmllbGQxNBgOIAMoCRIPCgdmaWVsZDE1GA8gAigEEg4KBmZp" + 
-          "ZWxkNRgFIAEoBRIPCgdmaWVsZDI3GBsgASgJEg8KB2ZpZWxkMjgYHCABKAUS" + 
-          "DwoHZmllbGQyORgdIAEoCRIPCgdmaWVsZDE2GBAgASgJEg8KB2ZpZWxkMjIY" + 
-          "FiADKAkSDwoHZmllbGQ3MxhJIAMoBRISCgdmaWVsZDIwGBQgASgFOgEwEg8K" + 
-          "B2ZpZWxkMjQYGCABKAkSOAoHZmllbGQzMRgfIAEoCzInLmJlbmNobWFya3Mu" + 
-          "U3BlZWRNZXNzYWdlMkdyb3VwZWRNZXNzYWdlIt8BChtTcGVlZE1lc3NhZ2Uy" + 
-          "R3JvdXBlZE1lc3NhZ2USDgoGZmllbGQxGAEgASgCEg4KBmZpZWxkMhgCIAEo" + 
-          "AhIRCgZmaWVsZDMYAyABKAI6ATASDgoGZmllbGQ0GAQgASgIEg4KBmZpZWxk" + 
-          "NRgFIAEoCBIUCgZmaWVsZDYYBiABKAg6BHRydWUSFQoGZmllbGQ3GAcgASgI" + 
-          "OgVmYWxzZRIOCgZmaWVsZDgYCCABKAISDgoGZmllbGQ5GAkgASgIEg8KB2Zp" + 
-          "ZWxkMTAYCiABKAISDwoHZmllbGQxMRgLIAEoA0JTQgtHb29nbGVTcGVlZEgB" + 
-          "wj5BCiFHb29nbGUuUHJvdG9jb2xCdWZmZXJzLlRlc3RQcm90b3MSHFVuaXRU" + 
-          "ZXN0R29vZ2xlU3BlZWRQcm90b0ZpbGU=");
+          "Ch5nb29nbGUvdGVzdC9nb29nbGVfc3BlZWQucHJvdG8SFXVuaXR0ZXN0X2dv" + 
+          "b2dsZV9zcGVlZBokZ29vZ2xlL3Byb3RvYnVmL2NzaGFycF9vcHRpb25zLnBy" + 
+          "b3RvIoMHCg1TcGVlZE1lc3NhZ2UxEg4KBmZpZWxkMRgBIAIoCRIOCgZmaWVs" + 
+          "ZDkYCSABKAkSDwoHZmllbGQxOBgSIAEoCRIWCgdmaWVsZDgwGFAgASgIOgVm" + 
+          "YWxzZRIVCgdmaWVsZDgxGFEgASgIOgR0cnVlEg4KBmZpZWxkMhgCIAIoBRIO" + 
+          "CgZmaWVsZDMYAyACKAUSEQoIZmllbGQyODAYmAIgASgFEhEKBmZpZWxkNhgG" + 
+          "IAEoBToBMBIPCgdmaWVsZDIyGBYgASgDEg4KBmZpZWxkNBgEIAEoCRIOCgZm" + 
+          "aWVsZDUYBSADKAYSFgoHZmllbGQ1ORg7IAEoCDoFZmFsc2USDgoGZmllbGQ3" + 
+          "GAcgASgJEg8KB2ZpZWxkMTYYECABKAUSFAoIZmllbGQxMzAYggEgASgFOgEw" + 
+          "EhUKB2ZpZWxkMTIYDCABKAg6BHRydWUSFQoHZmllbGQxNxgRIAEoCDoEdHJ1" + 
+          "ZRIVCgdmaWVsZDEzGA0gASgIOgR0cnVlEhUKB2ZpZWxkMTQYDiABKAg6BHRy" + 
+          "dWUSEwoIZmllbGQxMDQYaCABKAU6ATASEwoIZmllbGQxMDAYZCABKAU6ATAS" + 
+          "EwoIZmllbGQxMDEYZSABKAU6ATASEAoIZmllbGQxMDIYZiABKAkSEAoIZmll" + 
+          "bGQxMDMYZyABKAkSEgoHZmllbGQyORgdIAEoBToBMBIWCgdmaWVsZDMwGB4g" + 
+          "ASgIOgVmYWxzZRITCgdmaWVsZDYwGDwgASgFOgItMRIVCghmaWVsZDI3MRiP" + 
+          "AiABKAU6Ai0xEhUKCGZpZWxkMjcyGJACIAEoBToCLTESEQoIZmllbGQxNTAY" + 
+          "lgEgASgFEhIKB2ZpZWxkMjMYFyABKAU6ATASFgoHZmllbGQyNBgYIAEoCDoF" + 
+          "ZmFsc2USEgoHZmllbGQyNRgZIAEoBToBMBI/CgdmaWVsZDE1GA8gASgLMi4u" + 
+          "dW5pdHRlc3RfZ29vZ2xlX3NwZWVkLlNwZWVkTWVzc2FnZTFTdWJNZXNzYWdl" + 
+          "Eg8KB2ZpZWxkNzgYTiABKAgSEgoHZmllbGQ2NxhDIAEoBToBMBIPCgdmaWVs" + 
+          "ZDY4GEQgASgFEhQKCGZpZWxkMTI4GIABIAEoBToBMBIoCghmaWVsZDEyORiB" + 
+          "ASABKAk6FXh4eHh4eHh4eHh4eHh4eHh4eHh4eBIUCghmaWVsZDEzMRiDASAB" + 
+          "KAU6ATAiogMKF1NwZWVkTWVzc2FnZTFTdWJNZXNzYWdlEhEKBmZpZWxkMRgB" + 
+          "IAEoBToBMBIRCgZmaWVsZDIYAiABKAU6ATASEQoGZmllbGQzGAMgASgFOgEw" + 
+          "Eg8KB2ZpZWxkMTUYDyABKAkSFQoHZmllbGQxMhgMIAEoCDoEdHJ1ZRIPCgdm" + 
+          "aWVsZDEzGA0gASgDEg8KB2ZpZWxkMTQYDiABKAMSDwoHZmllbGQxNhgQIAEo" + 
+          "BRISCgdmaWVsZDE5GBMgASgFOgEyEhUKB2ZpZWxkMjAYFCABKAg6BHRydWUS" + 
+          "FQoHZmllbGQyOBgcIAEoCDoEdHJ1ZRIPCgdmaWVsZDIxGBUgASgGEg8KB2Zp" + 
+          "ZWxkMjIYFiABKAUSFgoHZmllbGQyMxgXIAEoCDoFZmFsc2USGAoIZmllbGQy" + 
+          "MDYYzgEgASgIOgVmYWxzZRIRCghmaWVsZDIwMxjLASABKAcSEQoIZmllbGQy" + 
+          "MDQYzAEgASgFEhEKCGZpZWxkMjA1GM0BIAEoCRIRCghmaWVsZDIwNxjPASAB" + 
+          "KAQSEQoIZmllbGQzMDAYrAIgASgEIuAHCg1TcGVlZE1lc3NhZ2UyEg4KBmZp" + 
+          "ZWxkMRgBIAEoCRIOCgZmaWVsZDMYAyABKAMSDgoGZmllbGQ0GAQgASgDEg8K" + 
+          "B2ZpZWxkMzAYHiABKAMSFgoHZmllbGQ3NRhLIAEoCDoFZmFsc2USDgoGZmll" + 
+          "bGQ2GAYgASgJEg4KBmZpZWxkMhgCIAEoDBISCgdmaWVsZDIxGBUgASgFOgEw" + 
+          "Eg8KB2ZpZWxkNzEYRyABKAUSDwoHZmllbGQyNRgZIAEoAhITCghmaWVsZDEw" + 
+          "ORhtIAEoBToBMBIUCghmaWVsZDIxMBjSASABKAU6ATASFAoIZmllbGQyMTEY" + 
+          "0wEgASgFOgEwEhQKCGZpZWxkMjEyGNQBIAEoBToBMBIUCghmaWVsZDIxMxjV" + 
+          "ASABKAU6ATASFAoIZmllbGQyMTYY2AEgASgFOgEwEhQKCGZpZWxkMjE3GNkB" + 
+          "IAEoBToBMBIUCghmaWVsZDIxOBjaASABKAU6ATASFAoIZmllbGQyMjAY3AEg" + 
+          "ASgFOgEwEhQKCGZpZWxkMjIxGN0BIAEoBToBMBIUCghmaWVsZDIyMhjeASAB" + 
+          "KAI6ATASDwoHZmllbGQ2Mxg/IAEoBRI7CgZncm91cDEYCiADKAoyKy51bml0" + 
+          "dGVzdF9nb29nbGVfc3BlZWQuU3BlZWRNZXNzYWdlMi5Hcm91cDESEQoIZmll" + 
+          "bGQxMjgYgAEgAygJEhEKCGZpZWxkMTMxGIMBIAEoAxIQCghmaWVsZDEyNxh/" + 
+          "IAMoCRIRCghmaWVsZDEyORiBASABKAUSEQoIZmllbGQxMzAYggEgAygDEhgK" + 
+          "CGZpZWxkMjA1GM0BIAEoCDoFZmFsc2USGAoIZmllbGQyMDYYzgEgASgIOgVm" + 
+          "YWxzZRrOAgoGR3JvdXAxEg8KB2ZpZWxkMTEYCyACKAISDwoHZmllbGQyNhga" + 
+          "IAEoAhIPCgdmaWVsZDEyGAwgASgJEg8KB2ZpZWxkMTMYDSABKAkSDwoHZmll" + 
+          "bGQxNBgOIAMoCRIPCgdmaWVsZDE1GA8gAigEEg4KBmZpZWxkNRgFIAEoBRIP" + 
+          "CgdmaWVsZDI3GBsgASgJEg8KB2ZpZWxkMjgYHCABKAUSDwoHZmllbGQyORgd" + 
+          "IAEoCRIPCgdmaWVsZDE2GBAgASgJEg8KB2ZpZWxkMjIYFiADKAkSDwoHZmll" + 
+          "bGQ3MxhJIAMoBRISCgdmaWVsZDIwGBQgASgFOgEwEg8KB2ZpZWxkMjQYGCAB" + 
+          "KAkSQwoHZmllbGQzMRgfIAEoCzIyLnVuaXR0ZXN0X2dvb2dsZV9zcGVlZC5T" + 
+          "cGVlZE1lc3NhZ2UyR3JvdXBlZE1lc3NhZ2Ui3wEKG1NwZWVkTWVzc2FnZTJH" + 
+          "cm91cGVkTWVzc2FnZRIOCgZmaWVsZDEYASABKAISDgoGZmllbGQyGAIgASgC" + 
+          "EhEKBmZpZWxkMxgDIAEoAjoBMBIOCgZmaWVsZDQYBCABKAgSDgoGZmllbGQ1" + 
+          "GAUgASgIEhQKBmZpZWxkNhgGIAEoCDoEdHJ1ZRIVCgZmaWVsZDcYByABKAg6" + 
+          "BWZhbHNlEg4KBmZpZWxkOBgIIAEoAhIOCgZmaWVsZDkYCSABKAgSDwoHZmll" + 
+          "bGQxMBgKIAEoAhIPCgdmaWVsZDExGAsgASgDQlNCC0dvb2dsZVNwZWVkSAHC" + 
+          "PkEKIUdvb2dsZS5Qcm90b2NvbEJ1ZmZlcnMuVGVzdFByb3RvcxIcVW5pdFRl" + 
+          "c3RHb29nbGVTcGVlZFByb3RvRmlsZQ==");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
-        internal__static_benchmarks_SpeedMessage1__Descriptor = Descriptor.MessageTypes[0];
-        internal__static_benchmarks_SpeedMessage1__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage1, global::Google.ProtocolBuffers.TestProtos.SpeedMessage1.Builder>(internal__static_benchmarks_SpeedMessage1__Descriptor,
+        internal__static_unittest_google_speed_SpeedMessage1__Descriptor = Descriptor.MessageTypes[0];
+        internal__static_unittest_google_speed_SpeedMessage1__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage1, global::Google.ProtocolBuffers.TestProtos.SpeedMessage1.Builder>(internal__static_unittest_google_speed_SpeedMessage1__Descriptor,
                 new string[] { "Field1", "Field9", "Field18", "Field80", "Field81", "Field2", "Field3", "Field280", "Field6", "Field22", "Field4", "Field5", "Field59", "Field7", "Field16", "Field130", "Field12", "Field17", "Field13", "Field14", "Field104", "Field100", "Field101", "Field102", "Field103", "Field29", "Field30", "Field60", "Field271", "Field272", "Field150", "Field23", "Field24", "Field25", "Field15", "Field78", "Field67", "Field68", "Field128", "Field129", "Field131", });
-        internal__static_benchmarks_SpeedMessage1SubMessage__Descriptor = Descriptor.MessageTypes[1];
-        internal__static_benchmarks_SpeedMessage1SubMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage1SubMessage, global::Google.ProtocolBuffers.TestProtos.SpeedMessage1SubMessage.Builder>(internal__static_benchmarks_SpeedMessage1SubMessage__Descriptor,
+        internal__static_unittest_google_speed_SpeedMessage1SubMessage__Descriptor = Descriptor.MessageTypes[1];
+        internal__static_unittest_google_speed_SpeedMessage1SubMessage__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage1SubMessage, global::Google.ProtocolBuffers.TestProtos.SpeedMessage1SubMessage.Builder>(internal__static_unittest_google_speed_SpeedMessage1SubMessage__Descriptor,
                 new string[] { "Field1", "Field2", "Field3", "Field15", "Field12", "Field13", "Field14", "Field16", "Field19", "Field20", "Field28", "Field21", "Field22", "Field23", "Field206", "Field203", "Field204", "Field205", "Field207", "Field300", });
-        internal__static_benchmarks_SpeedMessage2__Descriptor = Descriptor.MessageTypes[2];
-        internal__static_benchmarks_SpeedMessage2__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage2, global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Builder>(internal__static_benchmarks_SpeedMessage2__Descriptor,
+        internal__static_unittest_google_speed_SpeedMessage2__Descriptor = Descriptor.MessageTypes[2];
+        internal__static_unittest_google_speed_SpeedMessage2__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage2, global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Builder>(internal__static_unittest_google_speed_SpeedMessage2__Descriptor,
                 new string[] { "Field1", "Field3", "Field4", "Field30", "Field75", "Field6", "Field2", "Field21", "Field71", "Field25", "Field109", "Field210", "Field211", "Field212", "Field213", "Field216", "Field217", "Field218", "Field220", "Field221", "Field222", "Field63", "Group1", "Field128", "Field131", "Field127", "Field129", "Field130", "Field205", "Field206", });
-        internal__static_benchmarks_SpeedMessage2_Group1__Descriptor = internal__static_benchmarks_SpeedMessage2__Descriptor.NestedTypes[0];
-        internal__static_benchmarks_SpeedMessage2_Group1__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Types.Group1, global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Types.Group1.Builder>(internal__static_benchmarks_SpeedMessage2_Group1__Descriptor,
+        internal__static_unittest_google_speed_SpeedMessage2_Group1__Descriptor = internal__static_unittest_google_speed_SpeedMessage2__Descriptor.NestedTypes[0];
+        internal__static_unittest_google_speed_SpeedMessage2_Group1__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Types.Group1, global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Types.Group1.Builder>(internal__static_unittest_google_speed_SpeedMessage2_Group1__Descriptor,
                 new string[] { "Field11", "Field26", "Field12", "Field13", "Field14", "Field15", "Field5", "Field27", "Field28", "Field29", "Field16", "Field22", "Field73", "Field20", "Field24", "Field31", });
-        internal__static_benchmarks_SpeedMessage2GroupedMessage__Descriptor = Descriptor.MessageTypes[3];
-        internal__static_benchmarks_SpeedMessage2GroupedMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage2GroupedMessage, global::Google.ProtocolBuffers.TestProtos.SpeedMessage2GroupedMessage.Builder>(internal__static_benchmarks_SpeedMessage2GroupedMessage__Descriptor,
+        internal__static_unittest_google_speed_SpeedMessage2GroupedMessage__Descriptor = Descriptor.MessageTypes[3];
+        internal__static_unittest_google_speed_SpeedMessage2GroupedMessage__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.SpeedMessage2GroupedMessage, global::Google.ProtocolBuffers.TestProtos.SpeedMessage2GroupedMessage.Builder>(internal__static_unittest_google_speed_SpeedMessage2GroupedMessage__Descriptor,
                 new string[] { "Field1", "Field2", "Field3", "Field4", "Field5", "Field6", "Field7", "Field8", "Field9", "Field10", "Field11", });
         pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
         RegisterAllExtensions(registry);
@@ -150,11 +151,11 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_benchmarks_SpeedMessage1__Descriptor; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_unittest_google_speed_SpeedMessage1__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable<SpeedMessage1, SpeedMessage1.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_benchmarks_SpeedMessage1__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_unittest_google_speed_SpeedMessage1__FieldAccessorTable; }
     }
     
     public const int Field1FieldNumber = 1;
@@ -2200,11 +2201,11 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_benchmarks_SpeedMessage1SubMessage__Descriptor; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_unittest_google_speed_SpeedMessage1SubMessage__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable<SpeedMessage1SubMessage, SpeedMessage1SubMessage.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_benchmarks_SpeedMessage1SubMessage__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_unittest_google_speed_SpeedMessage1SubMessage__FieldAccessorTable; }
     }
     
     public const int Field1FieldNumber = 1;
@@ -3301,11 +3302,11 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_benchmarks_SpeedMessage2__Descriptor; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_unittest_google_speed_SpeedMessage2__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable<SpeedMessage2, SpeedMessage2.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_benchmarks_SpeedMessage2__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_unittest_google_speed_SpeedMessage2__FieldAccessorTable; }
     }
     
     #region Nested types
@@ -3330,11 +3331,11 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_benchmarks_SpeedMessage2_Group1__Descriptor; }
+          get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_unittest_google_speed_SpeedMessage2_Group1__Descriptor; }
         }
         
         protected override pb::FieldAccess.FieldAccessorTable<Group1, Group1.Builder> InternalFieldAccessors {
-          get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_benchmarks_SpeedMessage2_Group1__FieldAccessorTable; }
+          get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_unittest_google_speed_SpeedMessage2_Group1__FieldAccessorTable; }
         }
         
         public const int Field11FieldNumber = 11;
@@ -5923,11 +5924,11 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_benchmarks_SpeedMessage2GroupedMessage__Descriptor; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_unittest_google_speed_SpeedMessage2GroupedMessage__Descriptor; }
     }
     
     protected override pb::FieldAccess.FieldAccessorTable<SpeedMessage2GroupedMessage, SpeedMessage2GroupedMessage.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_benchmarks_SpeedMessage2GroupedMessage__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.TestProtos.UnitTestGoogleSpeedProtoFile.internal__static_unittest_google_speed_SpeedMessage2GroupedMessage__FieldAccessorTable; }
     }
     
     public const int Field1FieldNumber = 1;

@@ -50,14 +50,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\ProtocolBuffers.Test\TestProtos\UnitTestImportProtoFile.cs">
-      <Link>UnitTestImportProtoFile.cs</Link>
-    </Compile>
-    <Compile Include="..\ProtocolBuffers.Test\TestProtos\UnitTestProtoFile.cs">
-      <Link>UnitTestProtoFile.cs</Link>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestProtos\GoogleSizeProtoFile.cs" />
+    <Compile Include="TestProtos\GoogleSpeedProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestImportProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestProtoFile.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProtocolBuffers.Serialization\ProtocolBuffers.Serialization.csproj">
@@ -72,7 +70,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="google_message1.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="google_message2.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
