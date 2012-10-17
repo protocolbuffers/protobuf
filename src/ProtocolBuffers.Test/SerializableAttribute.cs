@@ -1,4 +1,4 @@
-﻿#if SILVERLIGHT
+﻿#if NOSERIALIZABLE && !COMPACT_FRAMEWORK
 
 namespace System
 {

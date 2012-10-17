@@ -157,8 +157,8 @@ namespace Google.ProtocolBuffers.Serialization
                         }
                         else if (value is IConvertible)
                         {
-                            WriteEnum(field, ((IConvertible) value).ToInt32(CultureInfo.InvariantCulture),
-                                      ((IConvertible) value).ToString(CultureInfo.InvariantCulture));
+                            WriteEnum(field, ((IConvertible)value).ToInt32(FrameworkPortability.InvariantCulture),
+                                      ((IConvertible)value).ToString(FrameworkPortability.InvariantCulture));
                         }
                         else
                         {

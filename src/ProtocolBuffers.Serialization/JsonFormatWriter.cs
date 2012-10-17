@@ -100,11 +100,7 @@ namespace Google.ProtocolBuffers.Serialization
 
         private class JsonStreamWriter : JsonFormatWriter
         {
-#if SILVERLIGHT || COMPACT_FRAMEWORK_35
             static readonly Encoding Encoding = new UTF8Encoding(false);
-#else
-            private static readonly Encoding Encoding = Encoding.ASCII;
-#endif
             private readonly byte[] _buffer;
             private Stream _output;
             private int _bufferPos;
@@ -226,7 +222,7 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary> Sets the output formatting to use Environment.NewLine with 4-character indentions </summary>
         public JsonFormatWriter Formatted()
         {
-            NewLine = Environment.NewLine;
+            NewLine = FrameworkPortability.NewLine;
             Indent = "    ";
             Whitespace = " ";
             return this;

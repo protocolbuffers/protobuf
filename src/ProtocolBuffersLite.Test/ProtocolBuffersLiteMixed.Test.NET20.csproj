@@ -1,0 +1,114 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <EnvironmentFlavor>CLIENTPROFILE</EnvironmentFlavor>
+    <EnvironmentTemplate>NET20</EnvironmentTemplate>
+    <EnvironmentProjectType>TEST</EnvironmentProjectType>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{EEFFED24-3750-4567-9A23-1DB676A15610}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Google.ProtocolBuffers</RootNamespace>
+    <AssemblyName>Google.ProtocolBuffersMixedLite.Test</AssemblyName>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\keys\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
+    <OldToolsVersion>3.5</OldToolsVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\NET20\Debug</OutputPath>
+    <IntermediateOutputPath>obj\NET20\Debug\</IntermediateOutputPath>
+    <DefineConstants>DEBUG;TRACE;$(EnvironmentFlavor);$(EnvironmentTemplate);NOEXTENSIONS</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoStdLib>true</NoStdLib>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\NET20\Release</OutputPath>
+    <IntermediateOutputPath>obj\NET20\Release\</IntermediateOutputPath>
+    <DefineConstants>TRACE;$(EnvironmentFlavor);$(EnvironmentTemplate);NOEXTENSIONS</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoStdLib>true</NoStdLib>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(EnvironmentFlavor)' == 'CLIENTPROFILE' ">
+    <Reference Include="nunit.framework">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\NUnit\lib\nunit.framework.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(EnvironmentFlavor)' != 'CLIENTPROFILE' ">
+    <Reference Include="Microsoft.Silverlight.Testing, Version=2.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\Microsoft.Silverlight.Testing\April2010\Microsoft.Silverlight.Testing.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTesting.Silverlight, Version=2.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\Microsoft.Silverlight.Testing\April2010\Microsoft.VisualStudio.QualityTools.UnitTesting.Silverlight.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\lib\NUnit-config\Microsoft.VisualStudio.TestTools.cs">
+      <Link>Microsoft.VisualStudio.TestTools.cs</Link>
+    </Compile>
+    <Compile Include="..\ProtocolBuffers.Test\Properties\AssemblyInfo.cs">
+      <Link>Properties\AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\ProtocolBuffers.Test\SerializableAttribute.cs">
+      <Link>SerializableAttribute.cs</Link>
+    </Compile>
+    <Compile Include="AbstractBuilderLiteTest.cs" />
+    <Compile Include="AbstractMessageLiteTest.cs" />
+    <Compile Include="ExtendableBuilderLiteTest.cs" />
+    <Compile Include="ExtendableMessageLiteTest.cs" />
+    <Compile Include="InteropLiteTest.cs" />
+    <Compile Include="LiteTest.cs" />
+    <Compile Include="MissingFieldAndExtensionTest.cs" />
+    <Compile Include="TestLiteByApi.cs" />
+    <Compile Include="TestProtos\UnitTestExtrasFullProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestExtrasLiteProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestImportProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestLiteImportNonLiteProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestLiteProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestProtoFile.cs" />
+    <Compile Include="TestUtil.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffers.NET20.csproj">
+      <Project>{6908BDCE-D925-43F3-94AC-A531E6DF2591}</Project>
+      <Name>ProtocolBuffers</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup Condition=" '$(EnvironmentFlavor)' == 'CLIENTPROFILE' ">
+    <StartAction>Program</StartAction>
+    <StartProgram>$(ProjectDir)..\..\lib\NUnit\tools\nunit-console.exe</StartProgram>
+    <StartArguments>/nologo /noshadow /labels /wait $(AssemblyName).dll</StartArguments>
+    <StartWorkingDirectory>$(ProjectDir)$(OutputPath)</StartWorkingDirectory>
+  </PropertyGroup>
+</Project>

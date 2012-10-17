@@ -54,7 +54,9 @@ namespace Google.ProtocolBuffers
             b.AddRangeRepeatedForeignEnum(new OneTimeEnumerator<ForeignEnum>(ForeignEnum.FOREIGN_BAR));
         }
 
-        private static void AssertThrows<T>(System.Threading.ThreadStart method) where T : Exception
+        private delegate void TestMethod();
+
+        private static void AssertThrows<T>(TestMethod method) where T : Exception
         {
             try
             {

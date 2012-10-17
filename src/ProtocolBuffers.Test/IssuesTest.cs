@@ -34,26 +34,32 @@
 
 #endregion
 
+
+using System;
+using System.Collections.Generic;
+using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
-using NUnit.Framework;
+using Google.ProtocolBuffers.TestProtos;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UnitTest.Issues.TestProtos;
+
 
 namespace Google.ProtocolBuffers
 {
     /// <summary>
     /// Tests for issues which aren't easily compartmentalized into other unit tests.
     /// </summary>
-    [TestFixture]
+    [TestClass]
     public class IssuesTest
     {
         // Issue 45
-        [Test]
+        [TestMethod]
         public void FieldCalledItem()
         {
             ItemField message = new ItemField.Builder { Item = 3 }.Build();
             FieldDescriptor field = ItemField.Descriptor.FindFieldByName("item");
             Assert.IsNotNull(field);
-            Assert.AreEqual(3, message[field]);
+            Assert.AreEqual(3, (int)message[field]);
         }
     }
 }

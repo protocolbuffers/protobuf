@@ -9,8 +9,6 @@ using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.TestProtos {
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public static partial class UnitTestImportLiteProtoFile {
   
     #region Extension registration
@@ -28,8 +26,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     
   }
   #region Enums
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public enum ImportEnumLite {
     IMPORT_LITE_FOO = 7,
     IMPORT_LITE_BAR = 8,
@@ -40,8 +36,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class ImportMessageLite : pb::GeneratedMessageLite<ImportMessageLite, ImportMessageLite.Builder> {
     private ImportMessageLite() { }
     private static readonly ImportMessageLite defaultInstance = new ImportMessageLite().MakeReadOnly();
@@ -159,8 +153,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilderLite<ImportMessageLite, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }

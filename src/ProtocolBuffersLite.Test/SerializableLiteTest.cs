@@ -1,4 +1,5 @@
 ﻿using System;
+#if !NOSERIALIZABLE
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
@@ -51,3 +52,4 @@ namespace Google.ProtocolBuffers
         }
     }
 }
+#endif

@@ -1,0 +1,51 @@
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" 
+         xmlns="http://schemas.microsoft.com/developer/msbuild/2003"
+         xmlns:cs="urn:schemas-csharp-project:template">
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
+    <EnvironmentFlavor>PORTABLE_LIBRARY</EnvironmentFlavor>
+    <EnvironmentTemplate>PL40</EnvironmentTemplate>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Profile1</TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\PL40\Debug</OutputPath>
+    <IntermediateOutputPath>obj\PL40\Debug\</IntermediateOutputPath>
+    <DefineConstants>$(DefineConstants);NOSERIALIZABLE;NOSORTEDLIST</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\PL40\Release</OutputPath>
+    <IntermediateOutputPath>obj\PL40\Release\</IntermediateOutputPath>
+    <DefineConstants>$(DefineConstants);NOSERIALIZABLE;NOSORTEDLIST</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <Import cs:Precondition=" '$(EnvironmentProjectType)' != 'TEST' "
+          Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <!-- Portable Library will be tested as silverlight -->
+  <PropertyGroup cs:Precondition=" '$(EnvironmentProjectType)' == 'TEST' ">
+    <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <ValidateXaml>false</ValidateXaml>
+    <ThrowErrorsInValidation>false</ThrowErrorsInValidation>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <cs:Import Project="SLTest.targets" cs:Precondition=" '$(EnvironmentProjectType)' == 'TEST' " />
+  <Import cs:Precondition=" '$(EnvironmentProjectType)' == 'TEST' "
+          Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ProjectExtensions cs:Precondition=" '$(EnvironmentProjectType)' == 'TEST' ">
+    <VisualStudio>
+      <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
+        <SilverlightProjectProperties />
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

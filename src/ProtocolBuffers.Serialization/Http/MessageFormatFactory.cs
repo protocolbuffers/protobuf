@@ -63,7 +63,6 @@ namespace Google.ProtocolBuffers.Serialization.Http
                                                          Encoding = new UTF8Encoding(false),
                                                          Indent = true,
                                                          IndentChars = "    ",
-                                                         NewLineChars = Environment.NewLine,
                                                      };
                     // Don't know how else to change xml writer options?
                     codedOutput = writer = XmlFormatWriter.CreateInstance(XmlWriter.Create(output, settings));
@@ -79,7 +78,7 @@ namespace Google.ProtocolBuffers.Serialization.Http
         {
             contentType = (contentType ?? String.Empty).Split(';')[0].Trim();
 
-            Converter<Stream, ICodedInputStream> factory;
+            CodedInputBuilder factory;
             if(!options.MimeInputTypesReadOnly.TryGetValue(contentType, out factory) || factory == null)
             {
                 if(String.IsNullOrEmpty(options.DefaultContentType) ||
@@ -96,7 +95,7 @@ namespace Google.ProtocolBuffers.Serialization.Http
         {
             contentType = (contentType ?? String.Empty).Split(';')[0].Trim();
 
-            Converter<Stream, ICodedOutputStream> factory;
+            CodedOutputBuilder factory;
             if (!options.MimeOutputTypesReadOnly.TryGetValue(contentType, out factory) || factory == null)
             {
                 if (String.IsNullOrEmpty(options.DefaultContentType) ||

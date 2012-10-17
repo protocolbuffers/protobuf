@@ -9,8 +9,6 @@ using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.DescriptorProtos {
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public static partial class DescriptorProtoFile {
   
     #region Extension registration
@@ -248,8 +246,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class FileDescriptorSet : pb::GeneratedMessage<FileDescriptorSet, FileDescriptorSet.Builder> {
     private FileDescriptorSet() { }
     private static readonly FileDescriptorSet defaultInstance = new FileDescriptorSet().MakeReadOnly();
@@ -364,8 +360,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<FileDescriptorSet, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -552,8 +546,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class FileDescriptorProto : pb::GeneratedMessage<FileDescriptorProto, FileDescriptorProto.Builder> {
     private FileDescriptorProto() { }
     private static readonly FileDescriptorProto defaultInstance = new FileDescriptorProto().MakeReadOnly();
@@ -825,8 +817,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<FileDescriptorProto, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1365,8 +1355,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class DescriptorProto : pb::GeneratedMessage<DescriptorProto, DescriptorProto.Builder> {
     private DescriptorProto() { }
     private static readonly DescriptorProto defaultInstance = new DescriptorProto().MakeReadOnly();
@@ -1394,12 +1382,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public sealed partial class ExtensionRange : pb::GeneratedMessage<ExtensionRange, ExtensionRange.Builder> {
         private ExtensionRange() { }
         private static readonly ExtensionRange defaultInstance = new ExtensionRange().MakeReadOnly();
@@ -1524,8 +1508,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
         public sealed partial class Builder : pb::GeneratedBuilder<ExtensionRange, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
@@ -1926,8 +1908,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<DescriptorProto, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -2398,8 +2378,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class FieldDescriptorProto : pb::GeneratedMessage<FieldDescriptorProto, FieldDescriptorProto.Builder> {
     private FieldDescriptorProto() { }
     private static readonly FieldDescriptorProto defaultInstance = new FieldDescriptorProto().MakeReadOnly();
@@ -2427,11 +2405,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public static partial class Types {
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public enum Type {
         TYPE_DOUBLE = 1,
         TYPE_FLOAT = 2,
@@ -2453,8 +2427,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         TYPE_SINT64 = 18,
       }
       
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public enum Label {
         LABEL_OPTIONAL = 1,
         LABEL_REQUIRED = 2,
@@ -2662,8 +2634,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<FieldDescriptorProto, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -3060,8 +3030,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class EnumDescriptorProto : pb::GeneratedMessage<EnumDescriptorProto, EnumDescriptorProto.Builder> {
     private EnumDescriptorProto() { }
     private static readonly EnumDescriptorProto defaultInstance = new EnumDescriptorProto().MakeReadOnly();
@@ -3211,8 +3179,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<EnumDescriptorProto, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -3479,8 +3445,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class EnumValueDescriptorProto : pb::GeneratedMessage<EnumValueDescriptorProto, EnumValueDescriptorProto.Builder> {
     private EnumValueDescriptorProto() { }
     private static readonly EnumValueDescriptorProto defaultInstance = new EnumValueDescriptorProto().MakeReadOnly();
@@ -3624,8 +3588,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<EnumValueDescriptorProto, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -3868,8 +3830,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class ServiceDescriptorProto : pb::GeneratedMessage<ServiceDescriptorProto, ServiceDescriptorProto.Builder> {
     private ServiceDescriptorProto() { }
     private static readonly ServiceDescriptorProto defaultInstance = new ServiceDescriptorProto().MakeReadOnly();
@@ -4019,8 +3979,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<ServiceDescriptorProto, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -4287,8 +4245,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class MethodDescriptorProto : pb::GeneratedMessage<MethodDescriptorProto, MethodDescriptorProto.Builder> {
     private MethodDescriptorProto() { }
     private static readonly MethodDescriptorProto defaultInstance = new MethodDescriptorProto().MakeReadOnly();
@@ -4448,8 +4404,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<MethodDescriptorProto, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -4721,8 +4675,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class FileOptions : pb::ExtendableMessage<FileOptions, FileOptions.Builder> {
     private FileOptions() { }
     private static readonly FileOptions defaultInstance = new FileOptions().MakeReadOnly();
@@ -4750,11 +4702,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public static partial class Types {
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public enum OptimizeMode {
         SPEED = 1,
         CODE_SIZE = 2,
@@ -4985,8 +4933,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::ExtendableBuilder<FileOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -5400,8 +5346,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class MessageOptions : pb::ExtendableMessage<MessageOptions, MessageOptions.Builder> {
     private MessageOptions() { }
     private static readonly MessageOptions defaultInstance = new MessageOptions().MakeReadOnly();
@@ -5552,8 +5496,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::ExtendableBuilder<MessageOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -5795,8 +5737,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class FieldOptions : pb::ExtendableMessage<FieldOptions, FieldOptions.Builder> {
     private FieldOptions() { }
     private static readonly FieldOptions defaultInstance = new FieldOptions().MakeReadOnly();
@@ -5824,11 +5764,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public static partial class Types {
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public enum CType {
         STRING = 0,
         CORD = 1,
@@ -5995,8 +5931,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::ExtendableBuilder<FieldOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -6301,8 +6235,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class EnumOptions : pb::ExtendableMessage<EnumOptions, EnumOptions.Builder> {
     private EnumOptions() { }
     private static readonly EnumOptions defaultInstance = new EnumOptions().MakeReadOnly();
@@ -6421,8 +6353,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::ExtendableBuilder<EnumOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -6610,8 +6540,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class EnumValueOptions : pb::ExtendableMessage<EnumValueOptions, EnumValueOptions.Builder> {
     private EnumValueOptions() { }
     private static readonly EnumValueOptions defaultInstance = new EnumValueOptions().MakeReadOnly();
@@ -6730,8 +6658,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::ExtendableBuilder<EnumValueOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -6919,8 +6845,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class ServiceOptions : pb::ExtendableMessage<ServiceOptions, ServiceOptions.Builder> {
     private ServiceOptions() { }
     private static readonly ServiceOptions defaultInstance = new ServiceOptions().MakeReadOnly();
@@ -7039,8 +6963,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::ExtendableBuilder<ServiceOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -7228,8 +7150,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class MethodOptions : pb::ExtendableMessage<MethodOptions, MethodOptions.Builder> {
     private MethodOptions() { }
     private static readonly MethodOptions defaultInstance = new MethodOptions().MakeReadOnly();
@@ -7348,8 +7268,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::ExtendableBuilder<MethodOptions, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -7537,8 +7455,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class UninterpretedOption : pb::GeneratedMessage<UninterpretedOption, UninterpretedOption.Builder> {
     private UninterpretedOption() { }
     private static readonly UninterpretedOption defaultInstance = new UninterpretedOption().MakeReadOnly();
@@ -7566,12 +7482,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public sealed partial class NamePart : pb::GeneratedMessage<NamePart, NamePart.Builder> {
         private NamePart() { }
         private static readonly NamePart defaultInstance = new NamePart().MakeReadOnly();
@@ -7698,8 +7610,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
         public sealed partial class Builder : pb::GeneratedBuilder<NamePart, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
@@ -8078,8 +7988,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<UninterpretedOption, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -8433,8 +8341,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class SourceCodeInfo : pb::GeneratedMessage<SourceCodeInfo, SourceCodeInfo.Builder> {
     private SourceCodeInfo() { }
     private static readonly SourceCodeInfo defaultInstance = new SourceCodeInfo().MakeReadOnly();
@@ -8462,12 +8368,8 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public sealed partial class Location : pb::GeneratedMessage<Location, Location.Builder> {
         private Location() { }
         private static readonly Location defaultInstance = new Location().MakeReadOnly();
@@ -8616,8 +8518,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
         public sealed partial class Builder : pb::GeneratedBuilder<Location, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
@@ -8917,8 +8817,6 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<SourceCodeInfo, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }

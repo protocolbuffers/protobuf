@@ -1,5 +1,5 @@
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "proto", "proto", "{1F896D5C-5FC2-4671-9216-781CB8187EC7}"
 	ProjectSection(SolutionItems) = preProject
 		..\protos\tutorial\addressbook.proto = ..\protos\tutorial\addressbook.proto
@@ -58,26 +58,23 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffersLiteMixed.Te
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{66ED1950-AD27-42D7-88F8-94355AEC8225}"
 	ProjectSection(SolutionItems) = preProject
+		..\build\build.bat = ..\build\build.bat
 		..\build\build.csproj = ..\build\build.csproj
-		..\build\Build20.bat = ..\build\Build20.bat
-		..\build\build35.bat = ..\build\build35.bat
-		..\build\build40.bat = ..\build\build40.bat
 		..\build\BuildAll.bat = ..\build\BuildAll.bat
-		..\build\BuildSilverlight2.bat = ..\build\BuildSilverlight2.bat
+		..\build\GenerateProjects.bat = ..\build\GenerateProjects.bat
+		..\build\PublishTool.bat = ..\build\PublishTool.bat
 		..\build\Common.targets = ..\build\Common.targets
+		..\build\GenerateSource.bat = ..\build\GenerateSource.bat
 		..\build\Google.ProtocolBuffers.nuspec = ..\build\Google.ProtocolBuffers.nuspec
 		..\build\Google.ProtocolBuffersLite.nuspec = ..\build\Google.ProtocolBuffersLite.nuspec
-		..\build\PublishRelease.bat = ..\build\PublishRelease.bat
+		..\build\publish.csproj = ..\build\publish.csproj
 		..\build\RunBenchmarks.bat = ..\build\RunBenchmarks.bat
+		..\build\target.csproj = ..\build\target.csproj
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffers.Serialization", "ProtocolBuffers.Serialization\ProtocolBuffers.Serialization.csproj", "{231391AF-449C-4A39-986C-AD7F270F4750}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffersLite.Serialization", "ProtocolBuffers.Serialization\ProtocolBuffersLite.Serialization.csproj", "{E067A59D-9D0A-4A1F-92B1-38E4457241D1}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffers(Silverlight)", "ProtocolBuffers\ProtocolBuffers(Silverlight).csproj", "{7E4E681E-5D09-43FB-8D9E-35A454730A85}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffersLite(Silverlight)", "ProtocolBuffers\ProtocolBuffersLite(Silverlight).csproj", "{2275EE6B-195B-485C-B6F6-CCA01C1B5AE0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{0D7CDA8F-1BBF-4E0F-8D35-31AEA21A96E6}"
 EndProject
@@ -85,17 +82,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C7B69674
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{75D5D25A-01A6-4594-957F-5993FB83F450}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffers.Serialization(Silverlight)", "ProtocolBuffers.Serialization\ProtocolBuffers.Serialization(Silverlight).csproj", "{72B69A15-E28E-4738-A779-18D76C87D225}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffersLite.Serialization(Silverlight)", "ProtocolBuffers.Serialization\ProtocolBuffersLite.Serialization(Silverlight).csproj", "{B6CDC03B-EBBD-4F38-9F84-736EC0948090}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffers.Test(Silverlight)", "ProtocolBuffers.Test\ProtocolBuffers.Test(Silverlight).csproj", "{D6C6BFB0-831A-444A-B0D9-11E3E30DA2C2}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Silverlight", "Silverlight", "{AC305C07-0DBD-4247-B458-1B739F84F172}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffersLite.Test(Silverlight)", "ProtocolBuffersLite.Test\ProtocolBuffersLite.Test(Silverlight).csproj", "{C56950B0-9F97-4250-8945-4B3C2D441FEA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffersLiteMixed.Test(Silverlight)", "ProtocolBuffersLite.Test\ProtocolBuffersLiteMixed.Test(Silverlight).csproj", "{63B8D05E-4581-4B92-B8D5-77E702535C7F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{FA9F5250-FDDC-48B8-832E-96E0464A02E6}"
+	ProjectSection(SolutionItems) = preProject
+		..\protos\benchmarks\google_size.proto = ..\protos\benchmarks\google_size.proto
+		..\protos\benchmarks\google_speed.proto = ..\protos\benchmarks\google_speed.proto
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -183,54 +174,13 @@ Global
 		{E067A59D-9D0A-4A1F-92B1-38E4457241D1}.Release_Silverlight|Any CPU.ActiveCfg = Release|Any CPU
 		{E067A59D-9D0A-4A1F-92B1-38E4457241D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E067A59D-9D0A-4A1F-92B1-38E4457241D1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7E4E681E-5D09-43FB-8D9E-35A454730A85}.Debug_Silverlight|Any CPU.ActiveCfg = Debug_Silverlight|Any CPU
-		{7E4E681E-5D09-43FB-8D9E-35A454730A85}.Debug_Silverlight|Any CPU.Build.0 = Debug_Silverlight|Any CPU
-		{7E4E681E-5D09-43FB-8D9E-35A454730A85}.Debug|Any CPU.ActiveCfg = Debug_Silverlight|Any CPU
-		{7E4E681E-5D09-43FB-8D9E-35A454730A85}.Release_Silverlight|Any CPU.ActiveCfg = Release_Silverlight|Any CPU
-		{7E4E681E-5D09-43FB-8D9E-35A454730A85}.Release_Silverlight|Any CPU.Build.0 = Release_Silverlight|Any CPU
-		{7E4E681E-5D09-43FB-8D9E-35A454730A85}.Release|Any CPU.ActiveCfg = Release_Silverlight|Any CPU
-		{2275EE6B-195B-485C-B6F6-CCA01C1B5AE0}.Debug_Silverlight|Any CPU.ActiveCfg = Debug_Silverlight|Any CPU
-		{2275EE6B-195B-485C-B6F6-CCA01C1B5AE0}.Debug_Silverlight|Any CPU.Build.0 = Debug_Silverlight|Any CPU
-		{2275EE6B-195B-485C-B6F6-CCA01C1B5AE0}.Debug|Any CPU.ActiveCfg = Debug_Silverlight|Any CPU
-		{2275EE6B-195B-485C-B6F6-CCA01C1B5AE0}.Release_Silverlight|Any CPU.ActiveCfg = Release_Silverlight|Any CPU
-		{2275EE6B-195B-485C-B6F6-CCA01C1B5AE0}.Release_Silverlight|Any CPU.Build.0 = Release_Silverlight|Any CPU
-		{2275EE6B-195B-485C-B6F6-CCA01C1B5AE0}.Release|Any CPU.ActiveCfg = Release_Silverlight|Any CPU
-		{72B69A15-E28E-4738-A779-18D76C87D225}.Debug_Silverlight|Any CPU.ActiveCfg = Debug_Silverlight|Any CPU
-		{72B69A15-E28E-4738-A779-18D76C87D225}.Debug_Silverlight|Any CPU.Build.0 = Debug_Silverlight|Any CPU
-		{72B69A15-E28E-4738-A779-18D76C87D225}.Debug|Any CPU.ActiveCfg = Debug_Silverlight|Any CPU
-		{72B69A15-E28E-4738-A779-18D76C87D225}.Release_Silverlight|Any CPU.ActiveCfg = Release_Silverlight|Any CPU
-		{72B69A15-E28E-4738-A779-18D76C87D225}.Release_Silverlight|Any CPU.Build.0 = Release_Silverlight|Any CPU
-		{72B69A15-E28E-4738-A779-18D76C87D225}.Release|Any CPU.ActiveCfg = Release_Silverlight|Any CPU
-		{B6CDC03B-EBBD-4F38-9F84-736EC0948090}.Debug_Silverlight|Any CPU.ActiveCfg = Debug_Silverlight|Any CPU
-		{B6CDC03B-EBBD-4F38-9F84-736EC0948090}.Debug_Silverlight|Any CPU.Build.0 = Debug_Silverlight|Any CPU
-		{B6CDC03B-EBBD-4F38-9F84-736EC0948090}.Debug|Any CPU.ActiveCfg = Debug_Silverlight|Any CPU
-		{B6CDC03B-EBBD-4F38-9F84-736EC0948090}.Release_Silverlight|Any CPU.ActiveCfg = Release_Silverlight|Any CPU
-		{B6CDC03B-EBBD-4F38-9F84-736EC0948090}.Release_Silverlight|Any CPU.Build.0 = Release_Silverlight|Any CPU
-		{B6CDC03B-EBBD-4F38-9F84-736EC0948090}.Release|Any CPU.ActiveCfg = Release_Silverlight|Any CPU
-		{D6C6BFB0-831A-444A-B0D9-11E3E30DA2C2}.Debug_Silverlight|Any CPU.ActiveCfg = Debug_Silverlight|Any CPU
-		{D6C6BFB0-831A-444A-B0D9-11E3E30DA2C2}.Debug_Silverlight|Any CPU.Build.0 = Debug_Silverlight|Any CPU
-		{D6C6BFB0-831A-444A-B0D9-11E3E30DA2C2}.Debug|Any CPU.ActiveCfg = Debug_Silverlight|Any CPU
-		{D6C6BFB0-831A-444A-B0D9-11E3E30DA2C2}.Release_Silverlight|Any CPU.ActiveCfg = Release_Silverlight|Any CPU
-		{D6C6BFB0-831A-444A-B0D9-11E3E30DA2C2}.Release_Silverlight|Any CPU.Build.0 = Release_Silverlight|Any CPU
-		{D6C6BFB0-831A-444A-B0D9-11E3E30DA2C2}.Release|Any CPU.ActiveCfg = Release_Silverlight|Any CPU
-		{C56950B0-9F97-4250-8945-4B3C2D441FEA}.Debug_Silverlight|Any CPU.ActiveCfg = Debug_Silverlight|Any CPU
-		{C56950B0-9F97-4250-8945-4B3C2D441FEA}.Debug_Silverlight|Any CPU.Build.0 = Debug_Silverlight|Any CPU
-		{C56950B0-9F97-4250-8945-4B3C2D441FEA}.Debug|Any CPU.ActiveCfg = Debug_Silverlight|Any CPU
-		{C56950B0-9F97-4250-8945-4B3C2D441FEA}.Release_Silverlight|Any CPU.ActiveCfg = Release_Silverlight|Any CPU
-		{C56950B0-9F97-4250-8945-4B3C2D441FEA}.Release_Silverlight|Any CPU.Build.0 = Release_Silverlight|Any CPU
-		{C56950B0-9F97-4250-8945-4B3C2D441FEA}.Release|Any CPU.ActiveCfg = Release_Silverlight|Any CPU
-		{63B8D05E-4581-4B92-B8D5-77E702535C7F}.Debug_Silverlight|Any CPU.ActiveCfg = Debug_Silverlight|Any CPU
-		{63B8D05E-4581-4B92-B8D5-77E702535C7F}.Debug_Silverlight|Any CPU.Build.0 = Debug_Silverlight|Any CPU
-		{63B8D05E-4581-4B92-B8D5-77E702535C7F}.Debug|Any CPU.ActiveCfg = Debug_Silverlight|Any CPU
-		{63B8D05E-4581-4B92-B8D5-77E702535C7F}.Release_Silverlight|Any CPU.ActiveCfg = Release_Silverlight|Any CPU
-		{63B8D05E-4581-4B92-B8D5-77E702535C7F}.Release_Silverlight|Any CPU.Build.0 = Release_Silverlight|Any CPU
-		{63B8D05E-4581-4B92-B8D5-77E702535C7F}.Release|Any CPU.ActiveCfg = Release_Silverlight|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C8D3015A-EA39-4F03-AEEC-3FF1F2087A12} = {1F896D5C-5FC2-4671-9216-781CB8187EC7}
+		{FA9F5250-FDDC-48B8-832E-96E0464A02E6} = {1F896D5C-5FC2-4671-9216-781CB8187EC7}
 		{C268DA4C-4004-47DA-AF23-44C983281A68} = {C7B69674-7A51-4AC6-8674-0330BA742CE4}
 		{EE01ED24-3750-4567-9A23-1DB676A15610} = {C7B69674-7A51-4AC6-8674-0330BA742CE4}
 		{EEFFED24-3750-4567-9A23-1DB676A15610} = {C7B69674-7A51-4AC6-8674-0330BA742CE4}
@@ -239,12 +189,5 @@ Global
 		{C7A4A435-2813-41C8-AA87-BD914BA5223D} = {0D7CDA8F-1BBF-4E0F-8D35-31AEA21A96E6}
 		{D7282E99-2DC3-405B-946F-177DB2FD2AE2} = {0D7CDA8F-1BBF-4E0F-8D35-31AEA21A96E6}
 		{8F09AF72-3327-4FA7-BC09-070B80221AB9} = {0D7CDA8F-1BBF-4E0F-8D35-31AEA21A96E6}
-		{2275EE6B-195B-485C-B6F6-CCA01C1B5AE0} = {AC305C07-0DBD-4247-B458-1B739F84F172}
-		{72B69A15-E28E-4738-A779-18D76C87D225} = {AC305C07-0DBD-4247-B458-1B739F84F172}
-		{B6CDC03B-EBBD-4F38-9F84-736EC0948090} = {AC305C07-0DBD-4247-B458-1B739F84F172}
-		{D6C6BFB0-831A-444A-B0D9-11E3E30DA2C2} = {AC305C07-0DBD-4247-B458-1B739F84F172}
-		{7E4E681E-5D09-43FB-8D9E-35A454730A85} = {AC305C07-0DBD-4247-B458-1B739F84F172}
-		{C56950B0-9F97-4250-8945-4B3C2D441FEA} = {AC305C07-0DBD-4247-B458-1B739F84F172}
-		{63B8D05E-4581-4B92-B8D5-77E702535C7F} = {AC305C07-0DBD-4247-B458-1B739F84F172}
 	EndGlobalSection
 EndGlobal

@@ -129,6 +129,16 @@ namespace Google.ProtocolBuffers.ProtoGen
             get { return descriptor.File.CSharpOptions.PublicClasses ? "public" : "internal"; }
         }
 
+        protected void WriteGeneratedCodeAttributes(TextGenerator writer)
+        {
+            if (descriptor.File.CSharpOptions.GeneratedCodeAttributes)
+            {
+                writer.WriteLine("[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]");
+                writer.WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]",
+                                 GetType().Assembly.GetName().Name, GetType().Assembly.GetName().Version);
+            }
+        }
+
         protected void WriteChildren<TChild>(TextGenerator writer, string region, IEnumerable<TChild> children)
             where TChild : IDescriptor
         {

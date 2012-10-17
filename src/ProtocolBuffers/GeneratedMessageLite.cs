@@ -111,7 +111,7 @@ namespace Google.ProtocolBuffers
             }
             else
             {
-                writer.WriteLine("{0}: {1}", name, ((IConvertible) value).ToString(CultureInfo.InvariantCulture));
+                writer.WriteLine("{0}: {1}", name, ((IConvertible)value).ToString(FrameworkPortability.InvariantCulture));
             }
         }
 

@@ -84,10 +84,8 @@ namespace Google.ProtocolBuffers.FieldAccess
             {
                 throw new ArgumentException("Not all required properties/methods available");
             }
-            clearDelegate =
-                (Func<TBuilder, IBuilder>) Delegate.CreateDelegate(typeof(Func<TBuilder, IBuilder>), null, clearMethod);
-            countDelegate = (Func<TMessage, int>) Delegate.CreateDelegate
-                                                      (typeof(Func<TMessage, int>), null, countProperty.GetGetMethod());
+            clearDelegate = ReflectionUtil.CreateDelegateFunc<TBuilder, IBuilder>(clearMethod);
+            countDelegate = ReflectionUtil.CreateDelegateFunc<TMessage, int>(countProperty.GetGetMethod());
             getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
             addValueDelegate = ReflectionUtil.CreateDowncastDelegateIgnoringReturn<TBuilder>(addMethod);
             getRepeatedWrapperDelegate = ReflectionUtil.CreateUpcastDelegate<TBuilder>(builderProperty.GetGetMethod());

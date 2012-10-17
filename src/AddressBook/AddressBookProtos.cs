@@ -9,8 +9,6 @@ using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.Examples.AddressBook {
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public static partial class AddressBookProtos {
   
     #region Extension registration
@@ -72,8 +70,6 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
   }
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class Person : pb::GeneratedMessage<Person, Person.Builder> {
     private Person() { }
     private static readonly Person defaultInstance = new Person().MakeReadOnly();
@@ -101,11 +97,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public static partial class Types {
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public enum PhoneType {
         MOBILE = 0,
         HOME = 1,
@@ -113,8 +105,6 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public sealed partial class PhoneNumber : pb::GeneratedMessage<PhoneNumber, PhoneNumber.Builder> {
         private PhoneNumber() { }
         private static readonly PhoneNumber defaultInstance = new PhoneNumber().MakeReadOnly();
@@ -240,8 +230,6 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
         public sealed partial class Builder : pb::GeneratedBuilder<PhoneNumber, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
@@ -581,8 +569,6 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<Person, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -852,8 +838,6 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class AddressBook : pb::GeneratedMessage<AddressBook, AddressBook.Builder> {
     private AddressBook() { }
     private static readonly AddressBook defaultInstance = new AddressBook().MakeReadOnly();
@@ -968,8 +952,6 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<AddressBook, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }

@@ -1,4 +1,4 @@
-package benchmarks;
+package unittest_google_size;
 
 import "google/protobuf/csharp_options.proto";
 option (google.protobuf.csharp_file_options).namespace = "Google.ProtocolBuffers.TestProtos";

@@ -82,7 +82,7 @@ namespace Google.ProtocolBuffers.Serialization
                 {
                     if (obj is IConvertible)
                     {
-                        value = (T) Convert.ChangeType(obj, typeof(T), CultureInfo.InvariantCulture);
+                        value = (T)Convert.ChangeType(obj, typeof(T), FrameworkPortability.InvariantCulture);
                     }
                     else
                     {

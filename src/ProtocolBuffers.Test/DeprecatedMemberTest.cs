@@ -10,7 +10,7 @@ namespace Google.ProtocolBuffers
     [TestClass]
     public class DeprecatedMemberTest
     {
-        private static void AssertIsDeprecated(ICustomAttributeProvider member)
+        private static void AssertIsDeprecated(MemberInfo member)
         {
             Assert.IsNotNull(member);
             Assert.IsTrue(member.IsDefined(typeof(ObsoleteAttribute), false), "Member not obsolete: " + member);

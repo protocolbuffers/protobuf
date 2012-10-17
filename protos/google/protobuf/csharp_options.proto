@@ -65,6 +65,10 @@ message CSharpFileOptions {
   // INTERFACE generates service interfaces only, RPCINTEROP generates interfaces and 
   // implementations using the included Windows RPC interop libarary.
   optional CSharpServiceType service_generator_type = 225 [default = NONE];
+  
+  // Used to add the System.Runtime.CompilerServices.CompilerGeneratedAttribute and 
+  // System.CodeDom.Compiler.GeneratedCodeAttribute attributes to generated code.
+  optional bool generated_code_attributes = 226 [default = false];
 }
 
 enum CSharpServiceType {

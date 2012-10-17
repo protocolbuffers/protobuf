@@ -196,7 +196,6 @@ namespace Google.ProtocolBuffers
                 0x9abcdef012345678UL);
         }
 
-#if !SILVERLIGHT
         [TestMethod]
         public void WriteWholeMessage()
         {
@@ -230,7 +229,6 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertEqualBytes(TestUtil.GetGoldenPackedFieldsMessage().ToByteArray(),
                                       rawBytes);
         }
-#endif
 
         [TestMethod]
         public void EncodeZigZag32()

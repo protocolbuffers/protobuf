@@ -18,7 +18,7 @@ namespace Google.ProtocolBuffers
         /// around Serialization.JsonFormatWriter.WriteMessage.
         /// </summary>
         public static string ToJson(
-#if !NET20
+#if !NOEXTENSIONS
             this
 #endif
             IMessageLite message)
@@ -32,7 +32,7 @@ namespace Google.ProtocolBuffers
         /// around Serialization.XmlFormatWriter.WriteMessage.
         /// </summary>
         public static string ToXml(
-#if !NET20
+#if !NOEXTENSIONS
             this
 #endif
             IMessageLite message)
@@ -46,7 +46,7 @@ namespace Google.ProtocolBuffers
         /// This is a trivial wrapper around Serialization.XmlFormatWriter.WriteMessage.
         /// </summary>
         public static string ToXml(
-#if !NET20
+#if !NOEXTENSIONS
             this
 #endif
             IMessageLite message, string rootElementName)
@@ -64,7 +64,7 @@ namespace Google.ProtocolBuffers
         /// <param name="contentType">The mime type of the content to be written</param>
         /// <param name="output">The stream to write the message to</param>
         public static void WriteTo(
-#if !NET20
+#if !NOEXTENSIONS
             this
 #endif
             IMessageLite message, MessageFormatOptions options, string contentType, Stream output)
@@ -88,7 +88,7 @@ namespace Google.ProtocolBuffers
         /// Merges a JSON object into this builder and returns
         /// </summary>
         public static TBuilder MergeFromJson<TBuilder>(
-#if !NET20
+#if !NOEXTENSIONS
             this
 #endif
             TBuilder builder, string jsonText) where TBuilder : IBuilderLite
@@ -100,7 +100,7 @@ namespace Google.ProtocolBuffers
         /// Merges a JSON object into this builder and returns
         /// </summary>
         public static TBuilder MergeFromJson<TBuilder>(
-#if !NET20
+#if !NOEXTENSIONS
             this
 #endif
             TBuilder builder, TextReader reader) where TBuilder : IBuilderLite
@@ -111,7 +111,7 @@ namespace Google.ProtocolBuffers
         /// Merges a JSON object into this builder using the extensions provided and returns
         /// </summary>
         public static TBuilder MergeFromJson<TBuilder>(
-#if !NET20
+#if !NOEXTENSIONS
             this
 #endif
             TBuilder builder, TextReader reader, ExtensionRegistry extensionRegistry) where TBuilder : IBuilderLite
@@ -124,7 +124,7 @@ namespace Google.ProtocolBuffers
         /// Merges an XML object into this builder and returns
         /// </summary>
         public static TBuilder MergeFromXml<TBuilder>(
-#if !NET20
+#if !NOEXTENSIONS
             this
 #endif
             TBuilder builder, XmlReader reader) where TBuilder : IBuilderLite
@@ -136,7 +136,7 @@ namespace Google.ProtocolBuffers
         /// Merges an XML object into this builder and returns
         /// </summary>
         public static TBuilder MergeFromXml<TBuilder>(
-#if !NET20
+#if !NOEXTENSIONS
             this
 #endif
             TBuilder builder, string rootElementName, XmlReader reader) where TBuilder : IBuilderLite
@@ -148,7 +148,7 @@ namespace Google.ProtocolBuffers
         /// Merges an XML object into this builder using the extensions provided and returns
         /// </summary>
         public static TBuilder MergeFromXml<TBuilder>(
-#if !NET20
+#if !NOEXTENSIONS
             this
 #endif
             TBuilder builder, string rootElementName, XmlReader reader,
@@ -168,7 +168,7 @@ namespace Google.ProtocolBuffers
         /// <param name="input">The stream to read the message from</param>
         /// <returns>The same builder instance that was supplied in the builder parameter</returns>
         public static TBuilder MergeFrom<TBuilder>(
-#if !NET20
+#if !NOEXTENSIONS
             this
 #endif
             TBuilder builder, MessageFormatOptions options, string contentType, Stream input) where TBuilder : IBuilderLite
@@ -195,7 +195,7 @@ namespace Google.ProtocolBuffers
         /// <param name="responseType">The mime type for the output stream</param>
         /// <param name="output">The output stream</param>
         public static void HttpCallMethod(
-#if !NET20
+#if !NOEXTENSIONS
             this
 #endif
             IRpcServerStub stub, string methodName, MessageFormatOptions options,

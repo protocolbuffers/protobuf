@@ -9,8 +9,6 @@ using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.TestProtos {
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public static partial class UnitTestRpcInterop {
   
     #region Extension registration
@@ -41,12 +39,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           "dHMYASADKAsyGi5TZWFyY2hSZXNwb25zZS5SZXN1bHRJdGVtGicKClJlc3Vs" + 
           "dEl0ZW0SCwoDdXJsGAEgAigJEgwKBG5hbWUYAiABKAkiUgoTUmVmaW5lU2Vh" + 
           "cmNoUmVxdWVzdBIQCghDcml0ZXJpYRgBIAMoCRIpChBwcmV2aW91c19yZXN1" + 
-          "bHRzGAIgAigLMg8uU2VhcmNoUmVzcG9uc2UypQEKDVNlYXJjaFNlcnZpY2US" + 
-          "MAoGU2VhcmNoEg4uU2VhcmNoUmVxdWVzdBoPLlNlYXJjaFJlc3BvbnNlIgXC" + 
-          "PgIIBRI1CgxSZWZpbmVTZWFyY2gSFC5SZWZpbmVTZWFyY2hSZXF1ZXN0Gg8u" + 
-          "U2VhcmNoUmVzcG9uc2UaK8I+KAome0E2NUYwOTI1LUZEMTEtNGY5NC1CMTY2" + 
-          "LTg5QUM0RjAyNzIwNX1CP0gBwj46CiFHb29nbGUuUHJvdG9jb2xCdWZmZXJz" + 
-          "LlRlc3RQcm90b3MSElVuaXRUZXN0UnBjSW50ZXJvcIgOAw==");
+          "bHRzGAIgAigLMg8uU2VhcmNoUmVzcG9uc2UycQoNU2VhcmNoU2VydmljZRIp" + 
+          "CgZTZWFyY2gSDi5TZWFyY2hSZXF1ZXN0Gg8uU2VhcmNoUmVzcG9uc2USNQoM" + 
+          "UmVmaW5lU2VhcmNoEhQuUmVmaW5lU2VhcmNoUmVxdWVzdBoPLlNlYXJjaFJl" + 
+          "c3BvbnNlQj9IAcI+OgohR29vZ2xlLlByb3RvY29sQnVmZmVycy5UZXN0UHJv" + 
+          "dG9zEhJVbml0VGVzdFJwY0ludGVyb3CIDgM=");
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_SearchRequest__Descriptor = Descriptor.MessageTypes[0];
@@ -80,8 +77,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class SearchRequest : pb::GeneratedMessage<SearchRequest, SearchRequest.Builder> {
     private SearchRequest() { }
     private static readonly SearchRequest defaultInstance = new SearchRequest().MakeReadOnly();
@@ -198,8 +193,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<SearchRequest, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -374,8 +367,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class SearchResponse : pb::GeneratedMessage<SearchResponse, SearchResponse.Builder> {
     private SearchResponse() { }
     private static readonly SearchResponse defaultInstance = new SearchResponse().MakeReadOnly();
@@ -403,12 +394,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public sealed partial class ResultItem : pb::GeneratedMessage<ResultItem, ResultItem.Builder> {
         private ResultItem() { }
         private static readonly ResultItem defaultInstance = new ResultItem().MakeReadOnly();
@@ -534,8 +521,6 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
         public sealed partial class Builder : pb::GeneratedBuilder<ResultItem, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
@@ -818,8 +803,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<SearchResponse, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1006,8 +989,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class RefineSearchRequest : pb::GeneratedMessage<RefineSearchRequest, RefineSearchRequest.Builder> {
     private RefineSearchRequest() { }
     private static readonly RefineSearchRequest defaultInstance = new RefineSearchRequest().MakeReadOnly();
@@ -1142,8 +1123,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<RefineSearchRequest, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1372,19 +1351,13 @@ namespace Google.ProtocolBuffers.TestProtos {
   #endregion
   
   #region Services
-  [global::System.Runtime.InteropServices.GuidAttribute("a65f0925-fd11-4f94-b166-89ac4f027205")]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public partial interface ISearchService {
-    [global::System.Runtime.InteropServices.DispId(5)]
     global::Google.ProtocolBuffers.TestProtos.SearchResponse Search(global::Google.ProtocolBuffers.TestProtos.SearchRequest searchRequest);
     global::Google.ProtocolBuffers.TestProtos.SearchResponse RefineSearch(global::Google.ProtocolBuffers.TestProtos.RefineSearchRequest refineSearchRequest);
   }
   
   [global::System.CLSCompliant(false)]
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public partial class SearchService : ISearchService, pb::IRpcDispatch, global::System.IDisposable {
     private readonly bool dispose;
     private readonly pb::IRpcDispatch dispatch;
@@ -1413,8 +1386,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     [global::System.CLSCompliant(false)]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public partial class Dispatch : pb::IRpcDispatch, global::System.IDisposable {
       private readonly bool dispose;
       private readonly ISearchService implementation;
@@ -1441,8 +1412,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     [global::System.CLSCompliant(false)]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public partial class ServerStub : pb::IRpcServerStub, global::System.IDisposable {
       private readonly bool dispose;
       private readonly pb::IRpcDispatch implementation;

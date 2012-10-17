@@ -47,10 +47,8 @@ namespace Google.ProtocolBuffers
     [TestClass]
     public class TextFormatTest
     {
-        private static readonly string AllFieldsSetText = TestUtil.ReadTextFromFile("text_format_unittest_data.txt");
-
-        private static readonly string AllExtensionsSetText =
-            TestUtil.ReadTextFromFile("text_format_unittest_extensions_data.txt");
+        private static readonly string AllFieldsSetText = TestResources.text_format_unittest_data;
+        private static readonly string AllExtensionsSetText = TestResources.text_format_unittest_extensions_data;
 
         /// <summary>
         /// Note that this is slightly different to the Java - 123.0 becomes 123, and 1.23E17 becomes 1.23E+17.
@@ -96,8 +94,8 @@ namespace Google.ProtocolBuffers
             TestUtil.TestInMultipleCultures(() =>
                                                 {
                                                     string text = TextFormat.PrintToString(TestUtil.GetAllSet());
-                                                    Assert.AreEqual(AllFieldsSetText.Replace("\r\n", "\n"),
-                                                                    text.Replace("\r\n", "\n"));
+                                                    Assert.AreEqual(AllFieldsSetText.Replace("\r\n", "\n").Trim(),
+                                                                    text.Replace("\r\n", "\n").Trim());
                                                 });
         }
 
@@ -109,7 +107,7 @@ namespace Google.ProtocolBuffers
         {
             string text = TextFormat.PrintToString(TestUtil.GetAllExtensionsSet());
 
-            Assert.AreEqual(AllExtensionsSetText.Replace("\r\n", "\n"), text.Replace("\r\n", "\n"));
+            Assert.AreEqual(AllExtensionsSetText.Replace("\r\n", "\n").Trim(), text.Replace("\r\n", "\n").Trim());
         }
 
         /// <summary>
@@ -175,7 +173,10 @@ namespace Google.ProtocolBuffers
         /// </summary>
         private static ByteString Bytes(string str)
         {
-            return ByteString.CopyFrom(Encoding.GetEncoding(28591).GetBytes(str));
+            byte[] bytes = new byte[str.Length];
+            for (int i = 0; i < bytes.Length; i++)
+                bytes[i] = (byte)str[i];
+            return ByteString.CopyFrom(bytes);
         }
 
         [TestMethod]

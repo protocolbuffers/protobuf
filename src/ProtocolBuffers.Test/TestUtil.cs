@@ -41,48 +41,12 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using Google.ProtocolBuffers.TestProtos;
-#if SILVERLIGHT
-using TestClass = Microsoft.VisualStudio.TestTools.UnitTesting.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute;
-using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
-#else
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-#endif
-
 
 namespace Google.ProtocolBuffers
 {
     internal static class TestUtil
     {
-#if !SILVERLIGHT
-        private static string testDataDirectory;
-
-        internal static string TestDataDirectory
-        {
-            get
-            {
-                if (testDataDirectory != null)
-                {
-                    return testDataDirectory;
-                }
-
-                DirectoryInfo ancestor = new DirectoryInfo(".");
-                // Search each parent directory looking for "testdata".
-                while (ancestor != null)
-                {
-                    string candidate = Path.Combine(ancestor.FullName, "testdata");
-                    if (Directory.Exists(candidate))
-                    {
-                        testDataDirectory = candidate;
-                        return candidate;
-                    }
-                    ancestor = ancestor.Parent;
-                }
-                // TODO(jonskeet): Come up with a better exception to throw
-                throw new Exception("Unable to find directory containing test files");
-            }
-        }
-
         private static ByteString goldenMessage = null;
 
         internal static ByteString GoldenMessage
@@ -91,23 +55,12 @@ namespace Google.ProtocolBuffers
             {
                 if (goldenMessage == null)
                 {
-                    goldenMessage = ReadBytesFromFile("golden_message");
+                    goldenMessage = ByteString.CopyFrom(TestResources.golden_message);
                 }
                 return goldenMessage;
             }
         }
 
-        internal static string ReadTextFromFile(string filePath)
-        {
-            return ReadBytesFromFile(filePath).ToStringUtf8();
-        }
-
-        internal static ByteString ReadBytesFromFile(String filename)
-        {
-            byte[] data = File.ReadAllBytes(Path.Combine(TestDataDirectory, filename));
-            return ByteString.CopyFrom(data);
-        }
-        
         private static ByteString goldenPackedFieldsMessage = null;
 
         /// <summary>
@@ -121,12 +74,11 @@ namespace Google.ProtocolBuffers
         {
             if (goldenPackedFieldsMessage == null)
             {
-                goldenPackedFieldsMessage = ReadBytesFromFile("golden_packed_fields_message");
+                goldenPackedFieldsMessage = ByteString.CopyFrom(TestResources.golden_packed_fields_message);
             }
             return goldenPackedFieldsMessage;
         }
 
-#endif
         /// <summary>
         /// Creates an unmodifiable ExtensionRegistry containing all the extensions
         /// of TestAllExtensions.
@@ -1769,6 +1721,9 @@ namespace Google.ProtocolBuffers
 
         public static void TestInMultipleCultures(CultureAction test)
         {
+#if COMPACT_FRAMEWORK
+            test();
+#else
             CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
             foreach (string culture in TestCultures)
             {
@@ -1782,6 +1737,7 @@ namespace Google.ProtocolBuffers
                     Thread.CurrentThread.CurrentCulture = originalCulture;
                 }
             }
+#endif
         }
 
         /// <summary>
@@ -1820,6 +1776,13 @@ namespace Google.ProtocolBuffers
                 action();
                 Assert.Fail("Exception was not thrown");
             }
+            // Not a general case, however, Compact Framework v2 does use Invoke
+            catch (System.Reflection.TargetInvocationException te)
+            {
+                if (te.InnerException.GetType() != typeof(ArgumentNullException))
+                    throw;
+            }
+            // Normally expected exception
             catch (ArgumentNullException)
             {
                 // We expect this exception.

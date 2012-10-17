@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Google.ProtocolBuffers.Descriptors;
 
 //Disable CS3011: only CLS-compliant members can be abstract

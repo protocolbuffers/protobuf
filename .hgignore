@@ -9,6 +9,9 @@ _ReSharper.*
 *.user
 *.suo
 *.bat
+*.zip
+build/*.log
+BenchmarkResults.txt
 
 lib/NUnit/tools/nunit-console.exe.config
 

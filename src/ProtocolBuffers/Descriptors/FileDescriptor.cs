@@ -90,12 +90,14 @@ namespace Google.ProtocolBuffers.Descriptors
             csharpFileOptions = BuildOrFakeWithDefaultOptions(options);
         }
 
+        static readonly char[] PathSeperators = new char[] { '/', '\\' };
         private CSharpFileOptions BuildOrFakeWithDefaultOptions(CSharpFileOptions defaultOptions)
         {
             // Fix for being able to relocate these files to any directory structure
             if (proto.Package == "google.protobuf")
             {
-                string filename = Path.GetFileName(proto.Name);
+                int ixslash = proto.Name.LastIndexOfAny(PathSeperators);
+                string filename = ixslash < 0 ? proto.Name : proto.Name.Substring(ixslash + 1);
                 // TODO(jonskeet): Check if we could use FileDescriptorProto.Descriptor.Name - interesting bootstrap issues)
                 if (filename == "descriptor.proto")
                 {

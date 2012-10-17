@@ -231,22 +231,7 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public bool ReadDouble(ref double value)
         {
-#if SILVERLIGHT || COMPACT_FRAMEWORK_35
-            if (BitConverter.IsLittleEndian && 8 <= bufferSize - bufferPos)
-            {
-                value = BitConverter.ToDouble(buffer, bufferPos);
-                bufferPos += 8;
-            }
-            else
-            {
-                byte[] rawBytes = ReadRawBytes(8);
-                if (!BitConverter.IsLittleEndian) 
-                    ByteArray.Reverse(rawBytes);
-                value = BitConverter.ToDouble(rawBytes, 0);
-            }
-#else
-            value = BitConverter.Int64BitsToDouble((long) ReadRawLittleEndian64());
-#endif
+            value = FrameworkPortability.Int64ToDouble((long) ReadRawLittleEndian64());
             return true;
         }
 
@@ -464,7 +449,7 @@ namespace Google.ProtocolBuffers
         /// </summary>   
         [CLSCompliant(false)]
         public bool ReadEnum<T>(ref T value, out object unknown)
-            where T : struct, IComparable, IFormattable, IConvertible
+            where T : struct, IComparable, IFormattable
         {
             int number = (int) ReadRawVarint32();
             if (Enum.IsDefined(typeof(T), number))
@@ -897,7 +882,7 @@ namespace Google.ProtocolBuffers
         [CLSCompliant(false)]
         public void ReadEnumArray<T>(uint fieldTag, string fieldName, ICollection<T> list,
                                      out ICollection<object> unknown)
-            where T : struct, IComparable, IFormattable, IConvertible
+            where T : struct, IComparable, IFormattable
         {
             unknown = null;
             object unkval;

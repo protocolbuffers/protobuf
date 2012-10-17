@@ -33,14 +33,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #endregion
+/*
+ * This entire source file is not supported on some platform
+ */
+#if !NOSERIALIZABLE
 
 using System;
 using System.Runtime.Serialization;
 
-/*
- * This entire source file is not supported on the Silverlight platform
- */
-#if !SILVERLIGHT
 namespace Google.ProtocolBuffers
 {
     /* 

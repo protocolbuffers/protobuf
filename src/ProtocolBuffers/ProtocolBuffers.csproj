@@ -1,6 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <EnvironmentFlavor>CLIENTPROFILE</EnvironmentFlavor>
+    <EnvironmentTemplate>NET35</EnvironmentTemplate>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
@@ -10,7 +12,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Google.ProtocolBuffers</RootNamespace>
     <AssemblyName>Google.ProtocolBuffers</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\keys\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
@@ -20,24 +22,28 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\NET35\Debug</OutputPath>
+    <IntermediateOutputPath>obj\NET35\Debug\</IntermediateOutputPath>
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;$(EnvironmentFlavor);$(EnvironmentTemplate)</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>bin\NET35\Release</OutputPath>
+    <IntermediateOutputPath>obj\NET35\Release\</IntermediateOutputPath>
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;$(EnvironmentFlavor);$(EnvironmentTemplate)</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -102,6 +108,7 @@
     <Compile Include="FieldAccess\FieldAccessorTable.cs" />
     <Compile Include="FieldAccess\RepeatedMessageAccessor.cs" />
     <Compile Include="FieldSet.cs" />
+    <Compile Include="FrameworkPortability.cs" />
     <Compile Include="GeneratedBuilder.cs" />
     <Compile Include="GeneratedBuilderLite.cs" />
     <Compile Include="GeneratedExtensionLite.cs" />
@@ -127,7 +134,6 @@
     <Compile Include="NameHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RpcUtil.cs" />
-    <Compile Include="SilverlightCompatibility.cs" />
     <Compile Include="SortedList.cs" />
     <Compile Include="TextFormat.cs" />
     <Compile Include="TextGenerator.cs" />

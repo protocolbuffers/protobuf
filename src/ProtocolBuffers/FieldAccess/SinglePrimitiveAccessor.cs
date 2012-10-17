@@ -67,11 +67,8 @@ namespace Google.ProtocolBuffers.FieldAccess
                 throw new ArgumentException("Not all required properties/methods available");
             }
             clrType = messageProperty.PropertyType;
-            hasDelegate =
-                (Func<TMessage, bool>)
-                Delegate.CreateDelegate(typeof(Func<TMessage, bool>), null, hasProperty.GetGetMethod());
-            clearDelegate =
-                (Func<TBuilder, IBuilder>) Delegate.CreateDelegate(typeof(Func<TBuilder, IBuilder>), null, clearMethod);
+            hasDelegate = ReflectionUtil.CreateDelegateFunc<TMessage, bool>(hasProperty.GetGetMethod());
+            clearDelegate = ReflectionUtil.CreateDelegateFunc<TBuilder, IBuilder>(clearMethod);
             getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
             setValueDelegate = ReflectionUtil.CreateDowncastDelegate<TBuilder>(builderProperty.GetSetMethod());
         }

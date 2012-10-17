@@ -171,7 +171,7 @@ namespace Google.ProtocolBuffers
         /// </summary>   
         [CLSCompliant(false)]
         bool ReadEnum<T>(ref T value, out object unknown)
-            where T : struct, IComparable, IFormattable, IConvertible;
+            where T : struct, IComparable, IFormattable;
 
         /// <summary>
         /// Reads an sfixed32 field value from the stream.
@@ -214,7 +214,7 @@ namespace Google.ProtocolBuffers
         /// </summary>
         [CLSCompliant(false)]
         void ReadEnumArray<T>(uint fieldTag, string fieldName, ICollection<T> list, out ICollection<object> unknown)
-            where T : struct, IComparable, IFormattable, IConvertible;
+            where T : struct, IComparable, IFormattable;
 
         /// <summary>
         /// Reads a set of messages using the <paramref name="messageType"/> as a template.  T is not guaranteed to be 

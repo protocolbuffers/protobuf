@@ -9,8 +9,6 @@ using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.TestProtos {
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public static partial class UnitTestExtrasFullProtoFile {
   
     #region Extension registration
@@ -125,8 +123,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class TestInteropPerson : pb::ExtendableMessage<TestInteropPerson, TestInteropPerson.Builder> {
     private TestInteropPerson() { }
     private static readonly TestInteropPerson defaultInstance = new TestInteropPerson().MakeReadOnly();
@@ -152,11 +148,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public static partial class Types {
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public enum PhoneType {
         MOBILE = 0,
         HOME = 1,
@@ -164,8 +156,6 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public sealed partial class PhoneNumber : pb::GeneratedMessage<PhoneNumber, PhoneNumber.Builder> {
         private PhoneNumber() { }
         private static readonly PhoneNumber defaultInstance = new PhoneNumber().MakeReadOnly();
@@ -251,8 +241,6 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
         public sealed partial class Builder : pb::GeneratedBuilder<PhoneNumber, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
@@ -365,8 +353,6 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
       
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public sealed partial class Addresses : pb::GeneratedMessage<Addresses, Addresses.Builder> {
         private Addresses() { }
         private static readonly Addresses defaultInstance = new Addresses().MakeReadOnly();
@@ -483,8 +469,6 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
         public sealed partial class Builder : pb::GeneratedBuilder<Addresses, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
@@ -775,8 +759,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::ExtendableBuilder<TestInteropPerson, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1028,8 +1010,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class TestInteropEmployeeId : pb::GeneratedMessage<TestInteropEmployeeId, TestInteropEmployeeId.Builder> {
     private TestInteropEmployeeId() { }
     private static readonly TestInteropEmployeeId defaultInstance = new TestInteropEmployeeId().MakeReadOnly();
@@ -1105,8 +1085,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<TestInteropEmployeeId, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1199,8 +1177,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class TestMissingFieldsA : pb::GeneratedMessage<TestMissingFieldsA, TestMissingFieldsA.Builder> {
     private TestMissingFieldsA() { }
     private static readonly TestMissingFieldsA defaultInstance = new TestMissingFieldsA().MakeReadOnly();
@@ -1226,12 +1202,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public sealed partial class SubA : pb::GeneratedMessage<SubA, SubA.Builder> {
         private SubA() { }
         private static readonly SubA defaultInstance = new SubA().MakeReadOnly();
@@ -1320,8 +1292,6 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
         public sealed partial class Builder : pb::GeneratedBuilder<SubA, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
@@ -1529,8 +1499,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<TestMissingFieldsA, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
@@ -1704,8 +1672,6 @@ namespace Google.ProtocolBuffers.TestProtos {
   }
   
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-  [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
   public sealed partial class TestMissingFieldsB : pb::GeneratedMessage<TestMissingFieldsB, TestMissingFieldsB.Builder> {
     private TestMissingFieldsB() { }
     private static readonly TestMissingFieldsB defaultInstance = new TestMissingFieldsB().MakeReadOnly();
@@ -1731,12 +1697,8 @@ namespace Google.ProtocolBuffers.TestProtos {
     
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-      [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
       public sealed partial class SubB : pb::GeneratedMessage<SubB, SubB.Builder> {
         private SubB() { }
         private static readonly SubB defaultInstance = new SubB().MakeReadOnly();
@@ -1815,8 +1777,6 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
         public sealed partial class Builder : pb::GeneratedBuilder<SubB, Builder> {
           protected override Builder ThisBuilder {
             get { return this; }
@@ -2004,8 +1964,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("ProtoGen", "2.4.1.473")]
     public sealed partial class Builder : pb::GeneratedBuilder<TestMissingFieldsB, Builder> {
       protected override Builder ThisBuilder {
         get { return this; }
