@@ -64,6 +64,10 @@ Targets For Tools
 Targets For GenerateSource
 *********************************************************************************************** -->
 
+  <Target Name="_GenerateProjects">
+    <Exec Command="$(CsProjectProjector) csproj_templates src\ProtocolBuffersLibrary.sln" WorkingDirectory="$(ProjectDirectory)" />
+  </Target>
+  
   <Target Name="_CleanTempSource">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="CleanFolderDirectory=$(SourceTempDirectory);" Targets="_CleanFolder" />
     <MakeDir Directories="$(SourceTempDirectory)" />
@@ -89,8 +93,8 @@ Targets For Package
 
   <Target Name="_GeneratePackage">
     <Copy SourceFiles="@(StaticPackageItem)" DestinationFolder="$(BuildOutputPackage)\%(StaticPackageItem.TargetDirectory)\%(StaticPackageItem.RecursiveDir)" />
-    <Exec Command="&quot;$(ZipExePath)&quot; a -tzip ..\$(PackageName)-binaries.zip * -x!*.pdb -r" WorkingDirectory="$(BuildOutputPackage)" />
-    <Exec Command="&quot;$(ZipExePath)&quot; a -tzip ..\$(PackageName)-symbols.zip * -r" WorkingDirectory="$(BuildOutputPackage)" />
+    <Exec Command="&quot;$(ZipExePath)&quot; a -tzip $(BuildTempDirectory)\$(PackageName)-binaries.zip * -x!*.pdb -r" WorkingDirectory="$(BuildOutputPackage)" />
+    <Exec Command="&quot;$(ZipExePath)&quot; a -tzip $(BuildTempDirectory)\$(PackageName)-symbols.zip * -r" WorkingDirectory="$(BuildOutputPackage)" />
   </Target>
 
 <!-- **********************************************************************************************

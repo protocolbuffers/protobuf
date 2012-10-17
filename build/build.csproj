@@ -4,9 +4,10 @@
   <!-- build targets -->
   <Target Name="Clean" DependsOnTargets="_CleanAll" />
   <Target Name="BuildTools" DependsOnTargets="_BuildTools" />
+  <Target Name="GenerateProjects" DependsOnTargets="_GenerateProjects" />
   <Target Name="GenerateSource" DependsOnTargets="_GenerateSource;_CopyGeneratedSource" />
   <Target Name="RebuildSource" DependsOnTargets="Clean;BuildTools;GenerateSource" />
-  <Target Name="Build" DependsOnTargets="BuildTools;GenerateSource;_CompileAll" />
+  <Target Name="Build" DependsOnTargets="GenerateProjects;BuildTools;GenerateSource;_CompileAll" />
   <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
   <Target Name="GeneratePackage" DependsOnTargets="_PackageAll;_GeneratePackage" />
   <Target Name="FullBuild" DependsOnTargets="Rebuild;GeneratePackage" />
@@ -39,8 +40,10 @@
     <ProtocExePath>$(BuildOutputDirectory)\tools\protoc.exe</ProtocExePath>
     <ProtogenExePath>$(BuildOutputDirectory)\tools\protogen.exe</ProtogenExePath>
     <NUnitExePath>$(LibDirectory)\NUnit\tools\nunit-console.exe</NUnitExePath>
+    <CsProjectProjector>$(LibDirectory)\CsProjectProjector\CsProjectProjector.exe</CsProjectProjector>
     <ZipExePath>$(LibDirectory)\7-Zip 9.20\7za.exe</ZipExePath>
-  </PropertyGroup>
+  
+</PropertyGroup>
 
   <Import Project="Common.targets"/>
 

@@ -61,11 +61,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{66ED1950
 		..\build\build.bat = ..\build\build.bat
 		..\build\build.csproj = ..\build\build.csproj
 		..\build\BuildAll.bat = ..\build\BuildAll.bat
+		..\build\GenerateProjects.bat = ..\build\GenerateProjects.bat
+		..\build\PublishTool.bat = ..\build\PublishTool.bat
 		..\build\Common.targets = ..\build\Common.targets
 		..\build\GenerateSource.bat = ..\build\GenerateSource.bat
 		..\build\Google.ProtocolBuffers.nuspec = ..\build\Google.ProtocolBuffers.nuspec
 		..\build\Google.ProtocolBuffersLite.nuspec = ..\build\Google.ProtocolBuffersLite.nuspec
-		..\build\PublishRelease.bat = ..\build\PublishRelease.bat
+		..\build\publish.csproj = ..\build\publish.csproj
 		..\build\RunBenchmarks.bat = ..\build\RunBenchmarks.bat
 		..\build\target.csproj = ..\build\target.csproj
 	EndProjectSection
