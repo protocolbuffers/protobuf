@@ -3,7 +3,10 @@
 
   <!-- build targets -->
   <Target Name="Clean" DependsOnTargets="_Clean" />
-  <Target Name="Publish" DependsOnTargets="_Publish" />
+  <Target Name="Build" DependsOnTargets="_Clean;_Prerequisites;_StampVersion;_GenerateSource;_Build" />
+  <Target Name="Package" DependsOnTargets="_HgPack;_NugetPack" />
+  <Target Name="PushAll" DependsOnTargets="_HgLabel;_HgPush;_PkgPush;_NugetPush" />
+  <Target Name="Publish" DependsOnTargets="Clean;Build;Package;PushAll" />
 
   <PropertyGroup>
     <ProjectName>Protocol Buffers</ProjectName>
@@ -48,11 +51,7 @@
   
   <!-- Tasks -->
 
-  <Target Name="_Publish" DependsOnTargets="_PrepBuild;_PushAll" />
-  
   <Target Name="_Prerequisites" DependsOnTargets="_CheckEnvironment;_ReadVersion" />
-  <Target Name="_PrepBuild" DependsOnTargets="_Clean;_Prerequisites;_StampVersion;_GenerateSource;_Build;_NugetPack;_HgLabel" />
-  <Target Name="_PushAll" DependsOnTargets="_HgPush;_PkgPush;_NugetPush" />
   
   <Target Name="_Clean">
     <MSBuild Properties="Configuration=Debug;" Targets="Clean" Projects="$(MSBuildProjectDirectory)\target.csproj" />
@@ -121,10 +120,13 @@
     <MSBuild Condition=" '$(PublishDebug)' == 'true' " Properties="Configuration=Debug;AssemblyOriginatorKeyFile=$(SigningKey);PackageName=$(PackagePrefix)$(VersionLabel)-full" Targets="GeneratePackage" Projects="$(MSBuildProjectDirectory)\build.csproj" />
   </Target>
 
+  <Target Name="_HgPack" DependsOnTargets="_Prerequisites">
+    <Exec Command="$(HgTool) archive $(BuildTempDirectory)\$(PackagePrefix)$(VersionLabel)-source.zip" WorkingDirectory="$(ProjectDirectory)" />
+  </Target>
+  
   <Target Name="_HgLabel" DependsOnTargets="_Prerequisites">
     <Exec Command="$(HgTool) tag $(VersionLabel)" WorkingDirectory="$(ProjectDirectory)" />
     <Exec Command="$(HgTool) commit -m &quot;version $(VersionLabel)&quot;" WorkingDirectory="$(ProjectDirectory)" />
-    <Exec Command="$(HgTool) archive $(BuildTempDirectory)\$(PackagePrefix)$(VersionLabel)-source.zip" WorkingDirectory="$(ProjectDirectory)" />
   </Target>
   
   <Target Name="_HgPush" DependsOnTargets="_Prerequisites">
