@@ -209,14 +209,7 @@ include $(BUILD_STATIC_LIBRARY)
 
 # C++ full library
 # =======================================================
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := libprotobuf-cpp-2.3.0-full
-LOCAL_MODULE_TAGS := optional
-
-LOCAL_CPP_EXTENSION := .cc
-
-LOCAL_SRC_FILES := \
+protobuf_cc_full_src_files := \
     $(CC_LITE_SRC_FILES)                                             \
     src/google/protobuf/stubs/strutil.cc                             \
     src/google/protobuf/stubs/strutil.h                              \
@@ -242,6 +235,14 @@ LOCAL_SRC_FILES := \
     src/google/protobuf/compiler/importer.cc                         \
     src/google/protobuf/compiler/parser.cc
 
+# C++ full library - stlport version
+# =======================================================
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := libprotobuf-cpp-2.3.0-full
+LOCAL_MODULE_TAGS := optional
+LOCAL_CPP_EXTENSION := .cc
+LOCAL_SRC_FILES := $(protobuf_cc_full_src_files)
 LOCAL_C_INCLUDES := \
     $(LOCAL_PATH)/android \
     external/zlib \
@@ -271,6 +272,29 @@ endif
 LOCAL_NDK_STL_VARIANT := stlport_static
 
 include $(BUILD_STATIC_LIBRARY)
+
+# C++ full library - Gnustl+rtti version
+# =======================================================
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := libprotobuf-cpp-2.3.0-full-gnustl-rtti
+LOCAL_MODULE_TAGS := optional
+LOCAL_CPP_EXTENSION := .cc
+LOCAL_SRC_FILES := $(protobuf_cc_full_src_files)
+LOCAL_C_INCLUDES := \
+    $(LOCAL_PATH)/android \
+    external/zlib \
+    $(LOCAL_PATH)/src
+
+LOCAL_CFLAGS := -frtti
+LOCAL_SDK_VERSION := 14
+LOCAL_NDK_STL_VARIANT := gnustl_static
+
+include $(BUILD_STATIC_LIBRARY)
+
+# Clean temp vars
+protobuf_cc_full_src_files :=
+
 
 # Android Protocol buffer compiler, aprotoc (host executable)
 # used by the build systems as $(PROTOC) defined in
