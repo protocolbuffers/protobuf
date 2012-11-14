@@ -44,7 +44,7 @@
 // On LP64 platforms, AtomicWord and Atomic64 are both always long,
 // so this problem doesn't occur.
 
-#if !defined(GOOGLE_PROTOBUF_HOST_ARCH_64_BIT)
+#if !defined(GOOGLE_PROTOBUF_ARCH_64_BIT)
 
 namespace google {
 namespace protobuf {
@@ -117,6 +117,6 @@ inline AtomicWord Release_Load(volatile const AtomicWord* ptr) {
 }   // namespace protobuf
 }   // namespace google
 
-#endif  // !defined(GOOGLE_PROTOBUF_HOST_ARCH_64_BIT)
+#endif  // !defined(GOOGLE_PROTOBUF_ARCH_64_BIT)
 
 #endif  // GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_ATOMICWORD_COMPAT_H_
