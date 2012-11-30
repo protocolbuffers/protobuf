@@ -339,8 +339,29 @@ class LIBPROTOBUF_EXPORT TextFormat {
   };
 
  private:
+  // Hack: ParseInfoTree declares TextFormat as a friend which should extend
+  // the friendship to TextFormat::Parser::ParserImpl, but unfortunately some
+  // old compilers (e.g. GCC 3.4.6) don't implement this correctly. We provide
+  // helpers for ParserImpl to call methods of ParseInfoTree.
+  static inline void RecordLocation(ParseInfoTree* info_tree,
+                                    const FieldDescriptor* field,
+                                    ParseLocation location);
+  static inline ParseInfoTree* CreateNested(ParseInfoTree* info_tree,
+                                            const FieldDescriptor* field);
+
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TextFormat);
 };
+
+inline void TextFormat::RecordLocation(ParseInfoTree* info_tree,
+                                       const FieldDescriptor* field,
+                                       ParseLocation location) {
+  info_tree->RecordLocation(field, location);
+}
+
+inline TextFormat::ParseInfoTree* TextFormat::CreateNested(
+    ParseInfoTree* info_tree, const FieldDescriptor* field) {
+  return info_tree->CreateNested(field);
+}
 
 }  // namespace protobuf
 
