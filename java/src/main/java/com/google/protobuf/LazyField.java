@@ -157,12 +157,10 @@ class LazyField {
       this.entry = entry;
     }
 
-    @Override
     public K getKey() {
       return entry.getKey();
     }
 
-    @Override
     public Object getValue() {
       LazyField field = entry.getValue();
       if (field == null) {
@@ -175,7 +173,6 @@ class LazyField {
       return entry.getValue();
     }
 
-    @Override
     public Object setValue(Object value) {
       if (!(value instanceof MessageLite)) {
         throw new IllegalArgumentException(
@@ -193,13 +190,11 @@ class LazyField {
       this.iterator = iterator;
     }
 
-    @Override
     public boolean hasNext() {
       return iterator.hasNext();
     }
 
     @SuppressWarnings("unchecked")
-    @Override
     public Entry<K, Object> next() {
       Entry<K, ?> entry = iterator.next();
       if (entry.getValue() instanceof LazyField) {
@@ -208,7 +203,6 @@ class LazyField {
       return (Entry<K, Object>) entry;
     }
 
-    @Override
     public void remove() {
       iterator.remove();
     }
