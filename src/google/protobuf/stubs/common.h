@@ -341,12 +341,6 @@ inline To down_cast(From* f) {                   // so we only accept pointers
   return static_cast<To>(f);
 }
 
-// Simplified down_cast for reference type.
-template<typename To, typename From>
-inline To down_cast(From& f) {
-  return static_cast<To>(f);
-}
-
 }  // namespace internal
 
 // We made these internal so that they would show up as such in the docs,

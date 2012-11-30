@@ -120,7 +120,7 @@ TEST(RepeatedFieldReflectionTest, RegularFields) {
     EXPECT_EQ(rf_double.Get(i), Func(i, 2));
     EXPECT_EQ(rpf_string.Get(i), StrFunc(i, 5));
     EXPECT_EQ(rpf_foreign_message.Get(i).c(), Func(i, 6));
-    EXPECT_EQ(down_cast<const ForeignMessage&>(rpf_message.Get(i)).c(),
+    EXPECT_EQ(down_cast<const ForeignMessage*>(&rpf_message.Get(i))->c(),
               Func(i, 6));
 
     // Check gets through mutable objects.
@@ -128,7 +128,7 @@ TEST(RepeatedFieldReflectionTest, RegularFields) {
     EXPECT_EQ(mrf_double->Get(i), Func(i, 2));
     EXPECT_EQ(mrpf_string->Get(i), StrFunc(i, 5));
     EXPECT_EQ(mrpf_foreign_message->Get(i).c(), Func(i, 6));
-    EXPECT_EQ(down_cast<const ForeignMessage&>(mrpf_message->Get(i)).c(),
+    EXPECT_EQ(down_cast<const ForeignMessage*>(&mrpf_message->Get(i))->c(),
               Func(i, 6));
 
     // Check sets through mutable objects.

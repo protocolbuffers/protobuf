@@ -434,8 +434,8 @@ class TextFormat::Parser::ParserImpl {
     // If a parse info tree exists, add the location for the parsed
     // field.
     if (parse_info_tree_ != NULL) {
-      parse_info_tree_->RecordLocation(field,
-                                       ParseLocation(start_line, start_column));
+      RecordLocation(parse_info_tree_, field,
+                     ParseLocation(start_line, start_column));
     }
 
     return true;
@@ -483,7 +483,7 @@ class TextFormat::Parser::ParserImpl {
     // for the nested message.
     ParseInfoTree* parent = parse_info_tree_;
     if (parent != NULL) {
-      parse_info_tree_ = parent->CreateNested(field);
+      parse_info_tree_ = CreateNested(parent, field);
     }
 
     string delimeter;
