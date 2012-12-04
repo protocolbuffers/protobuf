@@ -152,7 +152,7 @@ TEST(ReflectionOpsTest, MergeUnknown) {
   EXPECT_EQ(2, message1.unknown_fields().field(1).varint());
 }
 
-#ifdef GTEST_HAS_DEATH_TEST
+#ifdef PROTOBUF_HAS_DEATH_TEST
 
 TEST(ReflectionOpsTest, MergeFromSelf) {
   // Note:  Copy is implemented in terms of Merge() so technically the Copy
@@ -165,7 +165,7 @@ TEST(ReflectionOpsTest, MergeFromSelf) {
     "&from");
 }
 
-#endif  // GTEST_HAS_DEATH_TEST
+#endif  // PROTOBUF_HAS_DEATH_TEST
 
 TEST(ReflectionOpsTest, Clear) {
   unittest::TestAllTypes message;
