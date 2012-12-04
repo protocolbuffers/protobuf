@@ -191,7 +191,7 @@ void LogMessage::Finish() {
   }
 
   if (level_ == LOGLEVEL_FATAL) {
-#ifdef PROTOBUF_USE_EXCEPTIONS
+#if PROTOBUF_USE_EXCEPTIONS
     throw FatalException(filename_, line_, message_);
 #else
     abort();
@@ -383,7 +383,7 @@ void ShutdownProtobufLibrary() {
   internal::shutdown_functions_mutex = NULL;
 }
 
-#ifdef PROTOBUF_USE_EXCEPTIONS
+#if PROTOBUF_USE_EXCEPTIONS
 FatalException::~FatalException() throw() {}
 
 const char* FatalException::what() const throw() {
