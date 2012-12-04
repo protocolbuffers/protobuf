@@ -37,51 +37,52 @@ CLEANFILES = $(protoc_outputs) unittest_proto_middleman \
 MAINTAINERCLEANFILES =   \
   Makefile.in
 
-nobase_include_HEADERS =                                       \
-  google/protobuf/stubs/atomicops.h                            \
-  google/protobuf/stubs/atomicops_internals_arm_gcc.h          \
-  google/protobuf/stubs/atomicops_internals_macosx.h           \
-  google/protobuf/stubs/atomicops_internals_mips_gcc.h         \
-  google/protobuf/stubs/atomicops_internals_x86_gcc.h          \
-  google/protobuf/stubs/atomicops_internals_x86_msvc.h         \
-  google/protobuf/stubs/common.h                               \
-  google/protobuf/stubs/platform_macros.h                      \
-  google/protobuf/stubs/once.h                                 \
-  google/protobuf/stubs/template_util.h                        \
-  google/protobuf/stubs/type_traits.h                          \
-  google/protobuf/descriptor.h                                 \
-  google/protobuf/descriptor.pb.h                              \
-  google/protobuf/descriptor_database.h                        \
-  google/protobuf/dynamic_message.h                            \
-  google/protobuf/extension_set.h                              \
-  google/protobuf/generated_enum_reflection.h                  \
-  google/protobuf/generated_message_util.h                     \
-  google/protobuf/generated_message_reflection.h               \
-  google/protobuf/message.h                                    \
-  google/protobuf/message_lite.h                               \
-  google/protobuf/reflection_ops.h                             \
-  google/protobuf/repeated_field.h                             \
-  google/protobuf/service.h                                    \
-  google/protobuf/text_format.h                                \
-  google/protobuf/unknown_field_set.h                          \
-  google/protobuf/wire_format.h                                \
-  google/protobuf/wire_format_lite.h                           \
-  google/protobuf/wire_format_lite_inl.h                       \
-  google/protobuf/io/coded_stream.h                            \
-  $(GZHEADERS)                                                 \
-  google/protobuf/io/printer.h                                 \
-  google/protobuf/io/tokenizer.h                               \
-  google/protobuf/io/zero_copy_stream.h                        \
-  google/protobuf/io/zero_copy_stream_impl.h                   \
-  google/protobuf/io/zero_copy_stream_impl_lite.h              \
-  google/protobuf/compiler/code_generator.h                    \
-  google/protobuf/compiler/command_line_interface.h            \
-  google/protobuf/compiler/importer.h                          \
-  google/protobuf/compiler/parser.h                            \
-  google/protobuf/compiler/plugin.h                            \
-  google/protobuf/compiler/plugin.pb.h                         \
-  google/protobuf/compiler/cpp/cpp_generator.h                 \
-  google/protobuf/compiler/java/java_generator.h               \
+nobase_include_HEADERS =                                        \
+  google/protobuf/stubs/atomicops.h                             \
+  google/protobuf/stubs/atomicops_internals_arm_gcc.h           \
+  google/protobuf/stubs/atomicops_internals_atomicword_compat.h \
+  google/protobuf/stubs/atomicops_internals_macosx.h            \
+  google/protobuf/stubs/atomicops_internals_mips_gcc.h          \
+  google/protobuf/stubs/atomicops_internals_x86_gcc.h           \
+  google/protobuf/stubs/atomicops_internals_x86_msvc.h          \
+  google/protobuf/stubs/common.h                                \
+  google/protobuf/stubs/platform_macros.h                       \
+  google/protobuf/stubs/once.h                                  \
+  google/protobuf/stubs/template_util.h                         \
+  google/protobuf/stubs/type_traits.h                           \
+  google/protobuf/descriptor.h                                  \
+  google/protobuf/descriptor.pb.h                               \
+  google/protobuf/descriptor_database.h                         \
+  google/protobuf/dynamic_message.h                             \
+  google/protobuf/extension_set.h                               \
+  google/protobuf/generated_enum_reflection.h                   \
+  google/protobuf/generated_message_util.h                      \
+  google/protobuf/generated_message_reflection.h                \
+  google/protobuf/message.h                                     \
+  google/protobuf/message_lite.h                                \
+  google/protobuf/reflection_ops.h                              \
+  google/protobuf/repeated_field.h                              \
+  google/protobuf/service.h                                     \
+  google/protobuf/text_format.h                                 \
+  google/protobuf/unknown_field_set.h                           \
+  google/protobuf/wire_format.h                                 \
+  google/protobuf/wire_format_lite.h                            \
+  google/protobuf/wire_format_lite_inl.h                        \
+  google/protobuf/io/coded_stream.h                             \
+  $(GZHEADERS)                                                  \
+  google/protobuf/io/printer.h                                  \
+  google/protobuf/io/tokenizer.h                                \
+  google/protobuf/io/zero_copy_stream.h                         \
+  google/protobuf/io/zero_copy_stream_impl.h                    \
+  google/protobuf/io/zero_copy_stream_impl_lite.h               \
+  google/protobuf/compiler/code_generator.h                     \
+  google/protobuf/compiler/command_line_interface.h             \
+  google/protobuf/compiler/importer.h                           \
+  google/protobuf/compiler/parser.h                             \
+  google/protobuf/compiler/plugin.h                             \
+  google/protobuf/compiler/plugin.pb.h                          \
+  google/protobuf/compiler/cpp/cpp_generator.h                  \
+  google/protobuf/compiler/java/java_generator.h                \
   google/protobuf/compiler/python/python_generator.h
 
 lib_LTLIBRARIES = libprotobuf-lite.la libprotobuf.la libprotoc.la
@@ -90,6 +91,7 @@ libprotobuf_lite_la_LIBADD = $(PTHREAD_LIBS)
 libprotobuf_lite_la_LDFLAGS = -version-info 8:0:0 -export-dynamic -no-undefined
 libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/atomicops_internals_x86_gcc.cc         \
+  google/protobuf/stubs/atomicops_internals_x86_msvc.cc        \
   google/protobuf/stubs/common.cc                              \
   google/protobuf/stubs/once.cc                                \
   google/protobuf/stubs/hash.h                                 \
