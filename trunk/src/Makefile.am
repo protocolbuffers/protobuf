@@ -47,6 +47,8 @@ nobase_include_HEADERS =                                       \
   google/protobuf/stubs/common.h                               \
   google/protobuf/stubs/platform_macros.h                      \
   google/protobuf/stubs/once.h                                 \
+  google/protobuf/stubs/template_util.h                        \
+  google/protobuf/stubs/type_traits.h                          \
   google/protobuf/descriptor.h                                 \
   google/protobuf/descriptor.pb.h                              \
   google/protobuf/descriptor_database.h                        \
@@ -95,8 +97,6 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/stl_util.h                             \
   google/protobuf/stubs/stringprintf.cc                        \
   google/protobuf/stubs/stringprintf.h                         \
-  google/protobuf/stubs/template_util.h                        \
-  google/protobuf/stubs/type_traits.h                          \
   google/protobuf/extension_set.cc                             \
   google/protobuf/generated_message_util.cc                    \
   google/protobuf/message_lite.cc                              \

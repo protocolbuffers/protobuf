@@ -115,7 +115,7 @@ For advanced usage information on configure and make, see INSTALL.txt.
 C++ Installation - Windows
 ==========================
 
-If you are using Micosoft Visual C++, see vsprojects/readme.txt.
+If you are using Microsoft Visual C++, see vsprojects/readme.txt.
 
 If you are using Cygwin or MinGW, follow the Unix installation
 instructions, above.

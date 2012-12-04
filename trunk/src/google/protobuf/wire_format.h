@@ -294,6 +294,9 @@ inline void WireFormat::VerifyUTF8String(const char* data, int size,
     WireFormat::Operation op) {
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
   WireFormat::VerifyUTF8StringFallback(data, size, op);
+#else
+  // Avoid the compiler warning about unsued variables.
+  (void)data; (void)size; (void)op;
 #endif
 }
 
