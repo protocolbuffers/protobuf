@@ -427,9 +427,6 @@ static bool CheckAndSetString(
   GOOGLE_DCHECK(descriptor->type() == google::protobuf::FieldDescriptor::TYPE_STRING ||
          descriptor->type() == google::protobuf::FieldDescriptor::TYPE_BYTES);
   if (descriptor->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
-#else
-  if (descriptor->file()->options().cc_api_version() == 2 &&
-      descriptor->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
     if (!PyString_Check(arg) && !PyUnicode_Check(arg)) {
       FormatTypeError(arg, "str, unicode");
       return false;
@@ -457,9 +454,6 @@ static bool CheckAndSetString(
 
   PyObject* encoded_string = NULL;
   if (descriptor->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
-#else
-  if (descriptor->file()->options().cc_api_version() == 2 &&
-      descriptor->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
     if (PyString_Check(arg)) {
       encoded_string = PyString_AsEncodedObject(arg, "utf-8", NULL);
     } else {

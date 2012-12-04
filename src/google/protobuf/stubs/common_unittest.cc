@@ -94,9 +94,9 @@ TEST(LoggingTest, DefaultLogging) {
 
   string text = GetCapturedTestStderr();
   EXPECT_EQ(
-    "libprotobuf INFO "__FILE__":" + SimpleItoa(line + 1) + "] A message.\n"
-    "libprotobuf WARNING "__FILE__":" + SimpleItoa(line + 2) + "] A warning.\n"
-    "libprotobuf ERROR "__FILE__":" + SimpleItoa(line + 3) + "] An error.\n",
+    "[libprotobuf INFO "__FILE__":" + SimpleItoa(line + 1) + "] A message.\n"
+    "[libprotobuf WARNING "__FILE__":" + SimpleItoa(line + 2) + "] A warning.\n"
+    "[libprotobuf ERROR "__FILE__":" + SimpleItoa(line + 3) + "] An error.\n",
     text);
 }
 
