@@ -205,7 +205,7 @@ TEST(MessageTest, InitializationErrorString) {
   EXPECT_EQ("a, b, c", message.InitializationErrorString());
 }
 
-#ifdef GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet.
+#ifdef PROTOBUF_HAS_DEATH_TEST
 
 TEST(MessageTest, SerializeFailsIfNotInitialized) {
   unittest::TestRequired message;
@@ -222,7 +222,7 @@ TEST(MessageTest, CheckInitialized) {
     "fields: a, b, c");
 }
 
-#endif  // GTEST_HAS_DEATH_TEST
+#endif  // PROTOBUF_HAS_DEATH_TEST
 
 TEST(MessageTest, BypassInitializationCheckOnSerialize) {
   unittest::TestRequired message;

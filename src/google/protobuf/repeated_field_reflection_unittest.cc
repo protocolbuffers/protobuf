@@ -144,6 +144,7 @@ TEST(RepeatedFieldReflectionTest, RegularFields) {
     EXPECT_EQ(message.repeated_foreign_message(i).c(), Func(i, 7));
   }
 
+#ifdef PROTOBUF_HAS_DEATH_TEST
   // Make sure types are checked correctly at runtime.
   const FieldDescriptor* fd_optional_int32 =
       desc->FindFieldByName("optional_int32");
@@ -153,6 +154,7 @@ TEST(RepeatedFieldReflectionTest, RegularFields) {
       message, fd_repeated_int32), "not the right type");
   EXPECT_DEATH(refl->GetRepeatedPtrField<TestAllTypes>(
       message, fd_repeated_foreign_message), "wrong submessage type");
+#endif  // PROTOBUF_HAS_DEATH_TEST
 }
 
 

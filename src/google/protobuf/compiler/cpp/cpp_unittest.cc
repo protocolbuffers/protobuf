@@ -556,7 +556,7 @@ TEST(GeneratedMessageTest, NonEmptyMergeFrom) {
   TestUtil::ExpectAllFieldsSet(message1);
 }
 
-#ifdef GTEST_HAS_DEATH_TEST
+#ifdef PROTOBUF_HAS_DEATH_TEST
 
 TEST(GeneratedMessageTest, MergeFromSelf) {
   unittest::TestAllTypes message;
@@ -565,7 +565,7 @@ TEST(GeneratedMessageTest, MergeFromSelf) {
                "&from");
 }
 
-#endif  // GTEST_HAS_DEATH_TEST
+#endif  // PROTOBUF_HAS_DEATH_TEST
 
 // Test the generated SerializeWithCachedSizesToArray(),
 TEST(GeneratedMessageTest, SerializationToArray) {
