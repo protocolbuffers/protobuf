@@ -48,12 +48,17 @@
 #include <stdint.h>
 #endif
 
+#ifndef PROTOBUF_USE_EXCEPTIONS
 #if defined(_MSC_VER) && defined(_CPPUNWIND)
-  #define PROTOBUF_USE_EXCEPTIONS
+  #define PROTOBUF_USE_EXCEPTIONS 1
 #elif defined(__EXCEPTIONS)
-  #define PROTOBUF_USE_EXCEPTIONS
+  #define PROTOBUF_USE_EXCEPTIONS 1
+#else
+  #define PROTOBUF_USE_EXCEPTIONS 0
 #endif
-#ifdef PROTOBUF_USE_EXCEPTIONS
+#endif
+
+#if PROTOBUF_USE_EXCEPTIONS
 #include <exception>
 #endif
 
@@ -1188,7 +1193,7 @@ LIBPROTOBUF_EXPORT void OnShutdown(void (*func)());
 
 }  // namespace internal
 
-#ifdef PROTOBUF_USE_EXCEPTIONS
+#if PROTOBUF_USE_EXCEPTIONS
 class FatalException : public std::exception {
  public:
   FatalException(const char* filename, int line, const std::string& message)
