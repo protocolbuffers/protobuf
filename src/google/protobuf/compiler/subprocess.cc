@@ -295,8 +295,8 @@ void Subprocess::Start(const string& program, SearchMode search_mode) {
   int stdin_pipe[2];
   int stdout_pipe[2];
 
-  pipe(stdin_pipe);
-  pipe(stdout_pipe);
+  GOOGLE_CHECK(pipe(stdin_pipe) != -1);
+  GOOGLE_CHECK(pipe(stdout_pipe) != -1);
 
   char* argv[2] = { strdup(program.c_str()), NULL };
 
@@ -324,9 +324,11 @@ void Subprocess::Start(const string& program, SearchMode search_mode) {
 
     // Write directly to STDERR_FILENO to avoid stdio code paths that may do
     // stuff that is unsafe here.
-    write(STDERR_FILENO, argv[0], strlen(argv[0]));
+    int ignored;
+    ignored = write(STDERR_FILENO, argv[0], strlen(argv[0]));
     const char* message = ": program not found or is not executable\n";
-    write(STDERR_FILENO, message, strlen(message));
+    ignored = write(STDERR_FILENO, message, strlen(message));
+    (void) ignored;
 
     // Must use _exit() rather than exit() to avoid flushing output buffers
     // that will also be flushed by the parent.

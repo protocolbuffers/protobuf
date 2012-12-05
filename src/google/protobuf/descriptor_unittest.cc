@@ -1739,7 +1739,7 @@ TEST_F(MiscTest, DefaultValues) {
             message->field(3)->default_value_uint64());
   EXPECT_EQ(4.5             , message->field(4)->default_value_float ());
   EXPECT_EQ(10e100          , message->field(5)->default_value_double());
-  EXPECT_EQ(true            , message->field(6)->default_value_bool  ());
+  EXPECT_TRUE(                message->field(6)->default_value_bool  ());
   EXPECT_EQ("hello"         , message->field(7)->default_value_string());
   EXPECT_EQ("\001\002\003"  , message->field(8)->default_value_string());
   EXPECT_EQ(enum_value_b    , message->field(9)->default_value_enum  ());
@@ -1762,7 +1762,7 @@ TEST_F(MiscTest, DefaultValues) {
   EXPECT_EQ(0    , message->field(14)->default_value_uint64());
   EXPECT_EQ(0.0f , message->field(15)->default_value_float ());
   EXPECT_EQ(0.0  , message->field(16)->default_value_double());
-  EXPECT_EQ(false, message->field(17)->default_value_bool  ());
+  EXPECT_FALSE(    message->field(17)->default_value_bool  ());
   EXPECT_EQ(""   , message->field(18)->default_value_string());
   EXPECT_EQ(""   , message->field(19)->default_value_string());
   EXPECT_EQ(enum_value_a, message->field(20)->default_value_enum());
@@ -2167,7 +2167,7 @@ TEST(CustomOptions, OptionTypes) {
 
   options =
       &protobuf_unittest::CustomOptionMinIntegerValues::descriptor()->options();
-  EXPECT_EQ(false    , options->GetExtension(protobuf_unittest::bool_opt));
+  EXPECT_FALSE(        options->GetExtension(protobuf_unittest::bool_opt));
   EXPECT_EQ(kint32min, options->GetExtension(protobuf_unittest::int32_opt));
   EXPECT_EQ(kint64min, options->GetExtension(protobuf_unittest::int64_opt));
   EXPECT_EQ(0        , options->GetExtension(protobuf_unittest::uint32_opt));
@@ -2181,7 +2181,7 @@ TEST(CustomOptions, OptionTypes) {
 
   options =
       &protobuf_unittest::CustomOptionMaxIntegerValues::descriptor()->options();
-  EXPECT_EQ(true      , options->GetExtension(protobuf_unittest::bool_opt));
+  EXPECT_TRUE(          options->GetExtension(protobuf_unittest::bool_opt));
   EXPECT_EQ(kint32max , options->GetExtension(protobuf_unittest::int32_opt));
   EXPECT_EQ(kint64max , options->GetExtension(protobuf_unittest::int64_opt));
   EXPECT_EQ(kuint32max, options->GetExtension(protobuf_unittest::uint32_opt));

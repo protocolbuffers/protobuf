@@ -858,6 +858,12 @@ TEST_F(TextFormatParserTest, ParseFieldValueFromString) {
   EXPECT_EQ(value, message->optional_##name()); \
   EXPECT_TRUE(message->has_optional_##name());
 
+#define EXPECT_BOOL_FIELD(name, value, valuestring) \
+  EXPECT_TRUE(TextFormat::ParseFieldValueFromString( \
+    valuestring, d->FindFieldByName("optional_" #name), message.get())); \
+  EXPECT_TRUE(message->optional_##name() == value); \
+  EXPECT_TRUE(message->has_optional_##name());
+
 #define EXPECT_FLOAT_FIELD(name, value, valuestring) \
   EXPECT_TRUE(TextFormat::ParseFieldValueFromString( \
     valuestring, d->FindFieldByName("optional_" #name), message.get())); \
@@ -915,12 +921,12 @@ TEST_F(TextFormatParserTest, ParseFieldValueFromString) {
   EXPECT_INVALID(fixed64, "1,2");
 
   // bool
-  EXPECT_FIELD(bool, true, "true");
-  EXPECT_FIELD(bool, false, "false");
-  EXPECT_FIELD(bool, true, "1");
-  EXPECT_FIELD(bool, true, "t");
-  EXPECT_FIELD(bool, false, "0");
-  EXPECT_FIELD(bool, false, "f");
+  EXPECT_BOOL_FIELD(bool, true, "true");
+  EXPECT_BOOL_FIELD(bool, false, "false");
+  EXPECT_BOOL_FIELD(bool, true, "1");
+  EXPECT_BOOL_FIELD(bool, true, "t");
+  EXPECT_BOOL_FIELD(bool, false, "0");
+  EXPECT_BOOL_FIELD(bool, false, "f");
   EXPECT_INVALID(bool, "2");
   EXPECT_INVALID(bool, "-0");
   EXPECT_INVALID(bool, "on");
@@ -962,6 +968,7 @@ TEST_F(TextFormatParserTest, ParseFieldValueFromString) {
   EXPECT_INVALID(nested_message, "any");
 
 #undef EXPECT_FIELD
+#undef EXPECT_BOOL_FIELD
 #undef EXPECT_FLOAT_FIELD
 #undef EXPECT_DOUBLE_FIELD
 #undef EXPECT_INVALID
