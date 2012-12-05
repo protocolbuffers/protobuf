@@ -26,7 +26,9 @@ from distutils.spawn import find_executable
 maintainer_email = "protobuf@googlegroups.com"
 
 # Find the Protocol Compiler.
-if os.path.exists("../src/protoc"):
+if 'PROTOC' in os.environ and os.path.exists(os.environ['PROTOC']):
+  protoc = os.environ['PROTOC']
+elif os.path.exists("../src/protoc"):
   protoc = "../src/protoc"
 elif os.path.exists("../src/protoc.exe"):
   protoc = "../src/protoc.exe"
