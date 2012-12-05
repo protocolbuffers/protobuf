@@ -857,14 +857,12 @@ GenerateDefaultInstanceInitializer(io::Printer* printer) {
 void MessageGenerator::
 GenerateShutdownCode(io::Printer* printer) {
   printer->Print(
-    "delete $classname$::default_instance_;\n"
-    "$classname$::default_instance_ = NULL;\n",
+    "delete $classname$::default_instance_;\n",
     "classname", classname_);
 
   if (HasDescriptorMethods(descriptor_->file())) {
     printer->Print(
-      "delete $classname$_reflection_;\n"
-      "$classname$_reflection_ = NULL;\n",
+      "delete $classname$_reflection_;\n",
       "classname", classname_);
   }
 

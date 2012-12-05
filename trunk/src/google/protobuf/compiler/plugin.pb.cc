@@ -115,17 +115,11 @@ void protobuf_RegisterTypes(const ::std::string&) {
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
   delete CodeGeneratorRequest::default_instance_;
-  CodeGeneratorRequest::default_instance_ = NULL;
   delete CodeGeneratorRequest_reflection_;
-  CodeGeneratorRequest_reflection_ = NULL;
   delete CodeGeneratorResponse::default_instance_;
-  CodeGeneratorResponse::default_instance_ = NULL;
   delete CodeGeneratorResponse_reflection_;
-  CodeGeneratorResponse_reflection_ = NULL;
   delete CodeGeneratorResponse_File::default_instance_;
-  CodeGeneratorResponse_File::default_instance_ = NULL;
   delete CodeGeneratorResponse_File_reflection_;
-  CodeGeneratorResponse_File_reflection_ = NULL;
 }
 
 void protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
@@ -145,7 +139,9 @@ void protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
     "atorResponse\022\r\n\005error\030\001 \001(\t\022B\n\004file\030\017 \003("
     "\01324.google.protobuf.compiler.CodeGenerat"
     "orResponse.File\032>\n\004File\022\014\n\004name\030\001 \001(\t\022\027\n"
-    "\017insertion_point\030\002 \001(\t\022\017\n\007content\030\017 \001(\t", 399);
+    "\017insertion_point\030\002 \001(\t\022\017\n\007content\030\017 \001(\tB"
+    ",\n\034com.google.protobuf.compilerB\014PluginP"
+    "rotos", 445);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/compiler/plugin.proto", &protobuf_RegisterTypes);
   CodeGeneratorRequest::default_instance_ = new CodeGeneratorRequest();
