@@ -381,9 +381,6 @@ TEST(GeneratedMessageTest, StringCharStarLength) {
   EXPECT_EQ("wx", message.repeated_string(0));
 }
 
-
-#if !defined(PROTOBUF_TEST_NO_DESCRIPTORS) || \
-    !defined(GOOGLE_PROTOBUF_NO_RTTI)
 TEST(GeneratedMessageTest, CopyFrom) {
   unittest::TestAllTypes message1, message2;
 
@@ -395,7 +392,6 @@ TEST(GeneratedMessageTest, CopyFrom) {
   message2.CopyFrom(message2);
   TestUtil::ExpectAllFieldsSet(message2);
 }
-#endif
 
 TEST(GeneratedMessageTest, SwapWithEmpty) {
   unittest::TestAllTypes message1, message2;
@@ -535,8 +531,6 @@ TEST(GeneratedMessageTest, DynamicMessageCopyFrom) {
 
 #endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
 
-#if !defined(PROTOBUF_TEST_NO_DESCRIPTORS) || \
-    !defined(GOOGLE_PROTOBUF_NO_RTTI)
 TEST(GeneratedMessageTest, NonEmptyMergeFrom) {
   // Test merging with a non-empty message. Code is a modified form
   // of that found in google/protobuf/reflection_ops_unittest.cc.
@@ -563,6 +557,8 @@ TEST(GeneratedMessageTest, NonEmptyMergeFrom) {
   TestUtil::ExpectAllFieldsSet(message1);
 }
 
+#if !defined(PROTOBUF_TEST_NO_DESCRIPTORS) || \
+    !defined(GOOGLE_PROTOBUF_NO_RTTI)
 #ifdef PROTOBUF_HAS_DEATH_TEST
 
 TEST(GeneratedMessageTest, MergeFromSelf) {
