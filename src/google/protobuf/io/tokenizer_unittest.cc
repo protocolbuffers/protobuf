@@ -741,7 +741,7 @@ TEST_F(TokenizerTest, ParseInteger) {
   EXPECT_EQ(0, ParseInteger("0x"));
 
   uint64 i;
-#ifdef GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#ifdef PROTOBUF_HASDEATH_TEST  // death tests do not work on Windows yet
   // Test invalid integers that will never be tokenized as integers.
   EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("zxy", kuint64max, &i),
     "passed text that could not have been tokenized as an integer");
@@ -753,7 +753,7 @@ TEST_F(TokenizerTest, ParseInteger) {
     "passed text that could not have been tokenized as an integer");
   EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("-1", kuint64max, &i),
     "passed text that could not have been tokenized as an integer");
-#endif  // GTEST_HAS_DEATH_TEST
+#endif  // PROTOBUF_HASDEATH_TEST
 
   // Test overflows.
   EXPECT_TRUE (Tokenizer::ParseInteger("0", 0, &i));
@@ -796,7 +796,7 @@ TEST_F(TokenizerTest, ParseFloat) {
   EXPECT_EQ(     0.0, Tokenizer::ParseFloat("1e-9999999999999999999999999999"));
   EXPECT_EQ(HUGE_VAL, Tokenizer::ParseFloat("1e+9999999999999999999999999999"));
 
-#ifdef GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#ifdef PROTOBUF_HASDEATH_TEST  // death tests do not work on Windows yet
   // Test invalid integers that will never be tokenized as integers.
   EXPECT_DEBUG_DEATH(Tokenizer::ParseFloat("zxy"),
     "passed text that could not have been tokenized as a float");
@@ -804,7 +804,7 @@ TEST_F(TokenizerTest, ParseFloat) {
     "passed text that could not have been tokenized as a float");
   EXPECT_DEBUG_DEATH(Tokenizer::ParseFloat("-1.0"),
     "passed text that could not have been tokenized as a float");
-#endif  // GTEST_HAS_DEATH_TEST
+#endif  // PROTOBUF_HASDEATH_TEST
 }
 
 TEST_F(TokenizerTest, ParseString) {
@@ -843,10 +843,10 @@ TEST_F(TokenizerTest, ParseString) {
   EXPECT_EQ("u0", output);
 
   // Test invalid strings that will never be tokenized as strings.
-#ifdef GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#ifdef PROTOBUF_HASDEATH_TEST  // death tests do not work on Windows yet
   EXPECT_DEBUG_DEATH(Tokenizer::ParseString("", &output),
     "passed text that could not have been tokenized as a string");
-#endif  // GTEST_HAS_DEATH_TEST
+#endif  // PROTOBUF_HASDEATH_TEST
 }
 
 TEST_F(TokenizerTest, ParseStringAppend) {

@@ -220,7 +220,7 @@ TEST(Printer, Indenting) {
 }
 
 // Death tests do not work on Windows as of yet.
-#ifdef GTEST_HAS_DEATH_TEST
+#ifdef PROTOBUF_HAS_DEATH_TEST
 TEST(Printer, Death) {
   char buffer[8192];
 
@@ -231,7 +231,7 @@ TEST(Printer, Death) {
   EXPECT_DEBUG_DEATH(printer.Print("$unclosed"), "Unclosed variable name");
   EXPECT_DEBUG_DEATH(printer.Outdent(), "without matching Indent");
 }
-#endif  // GTEST_HAS_DEATH_TEST
+#endif  // PROTOBUF__HAS_DEATH_TEST
 
 TEST(Printer, WriteFailurePartial) {
   char buffer[17];
