@@ -2987,7 +2987,11 @@ template<class DescriptorT> void DescriptorBuilder::AllocateOptionsImpl(
   //       tables_->AllocateMessage<typename DescriptorT::OptionsType>();
   typename DescriptorT::OptionsType* const dummy = NULL;
   typename DescriptorT::OptionsType* options = tables_->AllocateMessage(dummy);
-  options->CopyFrom(orig_options);
+  // Avoid using MergeFrom()/CopyFrom() in this class to make it -fno-rtti
+  // friendly. Without RTTI, MergeFrom() and CopyFrom() will fallback to the
+  // reflection based method, which requires the Descriptor. However, we are in
+  // the middle of building the descriptors, thus the deadlock.
+  options->ParseFromString(orig_options.SerializeAsString());
   descriptor->options_ = options;
 
   // Don't add to options_to_interpret_ unless there were uninterpreted

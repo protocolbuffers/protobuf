@@ -550,7 +550,7 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
   }
 }
 
-#ifdef GTEST_HAS_DEATH_TEST
+#ifdef PROTOBUF_HAS_DEATH_TEST
 
 TEST(ExtensionSetTest, InvalidEnumDeath) {
   unittest::TestAllExtensions message;
@@ -560,7 +560,7 @@ TEST(ExtensionSetTest, InvalidEnumDeath) {
     "IsValid");
 }
 
-#endif  // GTEST_HAS_DEATH_TEST
+#endif  // PROTOBUF_HAS_DEATH_TEST
 
 TEST(ExtensionSetTest, DynamicExtensions) {
   // Test adding a dynamic extension to a compiled-in message object.
@@ -695,7 +695,11 @@ TEST(ExtensionSetTest, DynamicExtensions) {
     const Message& sub_message =
         message.GetReflection()->GetMessage(message, message_extension);
     const unittest::ForeignMessage* typed_sub_message =
+#ifdef GOOGLE_PROTOBUF_NO_RTTI
+        static_cast<const unittest::ForeignMessage*>(&sub_message);
+#else
         dynamic_cast<const unittest::ForeignMessage*>(&sub_message);
+#endif
     ASSERT_TRUE(typed_sub_message != NULL);
     EXPECT_EQ(456, typed_sub_message->c());
   }
