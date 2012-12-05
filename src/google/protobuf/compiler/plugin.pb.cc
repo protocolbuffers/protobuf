@@ -115,11 +115,17 @@ void protobuf_RegisterTypes(const ::std::string&) {
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
   delete CodeGeneratorRequest::default_instance_;
+  CodeGeneratorRequest::default_instance_ = NULL;
   delete CodeGeneratorRequest_reflection_;
+  CodeGeneratorRequest_reflection_ = NULL;
   delete CodeGeneratorResponse::default_instance_;
+  CodeGeneratorResponse::default_instance_ = NULL;
   delete CodeGeneratorResponse_reflection_;
+  CodeGeneratorResponse_reflection_ = NULL;
   delete CodeGeneratorResponse_File::default_instance_;
+  CodeGeneratorResponse_File::default_instance_ = NULL;
   delete CodeGeneratorResponse_File_reflection_;
+  CodeGeneratorResponse_File_reflection_ = NULL;
 }
 
 void protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
