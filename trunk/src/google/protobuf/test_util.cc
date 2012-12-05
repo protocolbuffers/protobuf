@@ -309,7 +309,7 @@ void TestUtil::ExpectAllFieldsSet(const unittest::TestAllTypes& message) {
   EXPECT_EQ(110  , message.optional_sfixed64());
   EXPECT_EQ(111  , message.optional_float   ());
   EXPECT_EQ(112  , message.optional_double  ());
-  EXPECT_EQ(true , message.optional_bool    ());
+  EXPECT_TRUE(     message.optional_bool    ());
   EXPECT_EQ("115", message.optional_string  ());
   EXPECT_EQ("116", message.optional_bytes   ());
 
@@ -369,7 +369,7 @@ void TestUtil::ExpectAllFieldsSet(const unittest::TestAllTypes& message) {
   EXPECT_EQ(210  , message.repeated_sfixed64(0));
   EXPECT_EQ(211  , message.repeated_float   (0));
   EXPECT_EQ(212  , message.repeated_double  (0));
-  EXPECT_EQ(true , message.repeated_bool    (0));
+  EXPECT_TRUE(     message.repeated_bool    (0));
   EXPECT_EQ("215", message.repeated_string  (0));
   EXPECT_EQ("216", message.repeated_bytes   (0));
 
@@ -396,7 +396,7 @@ void TestUtil::ExpectAllFieldsSet(const unittest::TestAllTypes& message) {
   EXPECT_EQ(310  , message.repeated_sfixed64(1));
   EXPECT_EQ(311  , message.repeated_float   (1));
   EXPECT_EQ(312  , message.repeated_double  (1));
-  EXPECT_EQ(false, message.repeated_bool    (1));
+  EXPECT_FALSE(    message.repeated_bool    (1));
   EXPECT_EQ("315", message.repeated_string  (1));
   EXPECT_EQ("316", message.repeated_bytes   (1));
 
@@ -446,7 +446,7 @@ void TestUtil::ExpectAllFieldsSet(const unittest::TestAllTypes& message) {
   EXPECT_EQ(410  , message.default_sfixed64());
   EXPECT_EQ(411  , message.default_float   ());
   EXPECT_EQ(412  , message.default_double  ());
-  EXPECT_EQ(false, message.default_bool    ());
+  EXPECT_FALSE(    message.default_bool    ());
   EXPECT_EQ("415", message.default_string  ());
   EXPECT_EQ("416", message.default_bytes   ());
 
@@ -503,7 +503,7 @@ void TestUtil::ExpectClear(const unittest::TestAllTypes& message) {
   EXPECT_EQ(0    , message.optional_sfixed64());
   EXPECT_EQ(0    , message.optional_float   ());
   EXPECT_EQ(0    , message.optional_double  ());
-  EXPECT_EQ(false, message.optional_bool    ());
+  EXPECT_FALSE(    message.optional_bool    ());
   EXPECT_EQ(""   , message.optional_string  ());
   EXPECT_EQ(""   , message.optional_bytes   ());
 
@@ -592,7 +592,7 @@ void TestUtil::ExpectClear(const unittest::TestAllTypes& message) {
   EXPECT_EQ(-50    , message.default_sfixed64());
   EXPECT_EQ( 51.5  , message.default_float   ());
   EXPECT_EQ( 52e3  , message.default_double  ());
-  EXPECT_EQ(true   , message.default_bool    ());
+  EXPECT_TRUE(       message.default_bool    ());
   EXPECT_EQ("hello", message.default_string  ());
   EXPECT_EQ("world", message.default_bytes   ());
 
@@ -651,7 +651,7 @@ void TestUtil::ExpectRepeatedFieldsModified(
   EXPECT_EQ(210  , message.repeated_sfixed64(0));
   EXPECT_EQ(211  , message.repeated_float   (0));
   EXPECT_EQ(212  , message.repeated_double  (0));
-  EXPECT_EQ(true , message.repeated_bool    (0));
+  EXPECT_TRUE(     message.repeated_bool    (0));
   EXPECT_EQ("215", message.repeated_string  (0));
   EXPECT_EQ("216", message.repeated_bytes   (0));
 
@@ -679,7 +679,7 @@ void TestUtil::ExpectRepeatedFieldsModified(
   EXPECT_EQ(510  , message.repeated_sfixed64(1));
   EXPECT_EQ(511  , message.repeated_float   (1));
   EXPECT_EQ(512  , message.repeated_double  (1));
-  EXPECT_EQ(true , message.repeated_bool    (1));
+  EXPECT_TRUE(     message.repeated_bool    (1));
   EXPECT_EQ("515", message.repeated_string  (1));
   EXPECT_EQ("516", message.repeated_bytes   (1));
 
@@ -812,7 +812,7 @@ void TestUtil::ExpectPackedFieldsSet(const unittest::TestPackedTypes& message) {
   EXPECT_EQ(610  , message.packed_sfixed64(0));
   EXPECT_EQ(611  , message.packed_float   (0));
   EXPECT_EQ(612  , message.packed_double  (0));
-  EXPECT_EQ(true , message.packed_bool    (0));
+  EXPECT_TRUE(     message.packed_bool    (0));
   EXPECT_EQ(unittest::FOREIGN_BAR, message.packed_enum(0));
 
   EXPECT_EQ(701  , message.packed_int32   (1));
@@ -827,7 +827,7 @@ void TestUtil::ExpectPackedFieldsSet(const unittest::TestPackedTypes& message) {
   EXPECT_EQ(710  , message.packed_sfixed64(1));
   EXPECT_EQ(711  , message.packed_float   (1));
   EXPECT_EQ(712  , message.packed_double  (1));
-  EXPECT_EQ(false, message.packed_bool    (1));
+  EXPECT_FALSE(    message.packed_bool    (1));
   EXPECT_EQ(unittest::FOREIGN_BAZ, message.packed_enum(1));
 }
 
@@ -862,7 +862,7 @@ void TestUtil::ExpectUnpackedFieldsSet(
   EXPECT_EQ(610  , message.unpacked_sfixed64(0));
   EXPECT_EQ(611  , message.unpacked_float   (0));
   EXPECT_EQ(612  , message.unpacked_double  (0));
-  EXPECT_EQ(true , message.unpacked_bool    (0));
+  EXPECT_TRUE(     message.unpacked_bool    (0));
   EXPECT_EQ(unittest::FOREIGN_BAR, message.unpacked_enum(0));
 
   EXPECT_EQ(701  , message.unpacked_int32   (1));
@@ -877,7 +877,7 @@ void TestUtil::ExpectUnpackedFieldsSet(
   EXPECT_EQ(710  , message.unpacked_sfixed64(1));
   EXPECT_EQ(711  , message.unpacked_float   (1));
   EXPECT_EQ(712  , message.unpacked_double  (1));
-  EXPECT_EQ(false, message.unpacked_bool    (1));
+  EXPECT_FALSE(    message.unpacked_bool    (1));
   EXPECT_EQ(unittest::FOREIGN_BAZ, message.unpacked_enum(1));
 }
 
@@ -934,7 +934,7 @@ void TestUtil::ExpectPackedFieldsModified(
   EXPECT_EQ(610  , message.packed_sfixed64(0));
   EXPECT_EQ(611  , message.packed_float   (0));
   EXPECT_EQ(612  , message.packed_double  (0));
-  EXPECT_EQ(true , message.packed_bool    (0));
+  EXPECT_TRUE(     message.packed_bool    (0));
   EXPECT_EQ(unittest::FOREIGN_BAR, message.packed_enum(0));
   // Actually verify the second (modified) elements now.
   EXPECT_EQ(801  , message.packed_int32   (1));
@@ -949,7 +949,7 @@ void TestUtil::ExpectPackedFieldsModified(
   EXPECT_EQ(810  , message.packed_sfixed64(1));
   EXPECT_EQ(811  , message.packed_float   (1));
   EXPECT_EQ(812  , message.packed_double  (1));
-  EXPECT_EQ(true , message.packed_bool    (1));
+  EXPECT_TRUE(     message.packed_bool    (1));
   EXPECT_EQ(unittest::FOREIGN_FOO, message.packed_enum(1));
 }
 
@@ -1178,7 +1178,7 @@ void TestUtil::ExpectAllExtensionsSet(
   EXPECT_EQ(110  , message.GetExtension(unittest::optional_sfixed64_extension));
   EXPECT_EQ(111  , message.GetExtension(unittest::optional_float_extension   ));
   EXPECT_EQ(112  , message.GetExtension(unittest::optional_double_extension  ));
-  EXPECT_EQ(true , message.GetExtension(unittest::optional_bool_extension    ));
+  EXPECT_TRUE(     message.GetExtension(unittest::optional_bool_extension    ));
   EXPECT_EQ("115", message.GetExtension(unittest::optional_string_extension  ));
   EXPECT_EQ("116", message.GetExtension(unittest::optional_bytes_extension   ));
 
@@ -1238,7 +1238,7 @@ void TestUtil::ExpectAllExtensionsSet(
   EXPECT_EQ(210  , message.GetExtension(unittest::repeated_sfixed64_extension, 0));
   EXPECT_EQ(211  , message.GetExtension(unittest::repeated_float_extension   , 0));
   EXPECT_EQ(212  , message.GetExtension(unittest::repeated_double_extension  , 0));
-  EXPECT_EQ(true , message.GetExtension(unittest::repeated_bool_extension    , 0));
+  EXPECT_TRUE(     message.GetExtension(unittest::repeated_bool_extension    , 0));
   EXPECT_EQ("215", message.GetExtension(unittest::repeated_string_extension  , 0));
   EXPECT_EQ("216", message.GetExtension(unittest::repeated_bytes_extension   , 0));
 
@@ -1267,7 +1267,7 @@ void TestUtil::ExpectAllExtensionsSet(
   EXPECT_EQ(310  , message.GetExtension(unittest::repeated_sfixed64_extension, 1));
   EXPECT_EQ(311  , message.GetExtension(unittest::repeated_float_extension   , 1));
   EXPECT_EQ(312  , message.GetExtension(unittest::repeated_double_extension  , 1));
-  EXPECT_EQ(false, message.GetExtension(unittest::repeated_bool_extension    , 1));
+  EXPECT_FALSE(    message.GetExtension(unittest::repeated_bool_extension    , 1));
   EXPECT_EQ("315", message.GetExtension(unittest::repeated_string_extension  , 1));
   EXPECT_EQ("316", message.GetExtension(unittest::repeated_bytes_extension   , 1));
 
@@ -1321,7 +1321,7 @@ void TestUtil::ExpectAllExtensionsSet(
   EXPECT_EQ(410  , message.GetExtension(unittest::default_sfixed64_extension));
   EXPECT_EQ(411  , message.GetExtension(unittest::default_float_extension   ));
   EXPECT_EQ(412  , message.GetExtension(unittest::default_double_extension  ));
-  EXPECT_EQ(false, message.GetExtension(unittest::default_bool_extension    ));
+  EXPECT_FALSE(    message.GetExtension(unittest::default_bool_extension    ));
   EXPECT_EQ("415", message.GetExtension(unittest::default_string_extension  ));
   EXPECT_EQ("416", message.GetExtension(unittest::default_bytes_extension   ));
 
@@ -1386,7 +1386,7 @@ void TestUtil::ExpectExtensionsClear(
   EXPECT_EQ(0    , message.GetExtension(unittest::optional_sfixed64_extension));
   EXPECT_EQ(0    , message.GetExtension(unittest::optional_float_extension   ));
   EXPECT_EQ(0    , message.GetExtension(unittest::optional_double_extension  ));
-  EXPECT_EQ(false, message.GetExtension(unittest::optional_bool_extension    ));
+  EXPECT_FALSE(    message.GetExtension(unittest::optional_bool_extension    ));
   EXPECT_EQ(""   , message.GetExtension(unittest::optional_string_extension  ));
   EXPECT_EQ(""   , message.GetExtension(unittest::optional_bytes_extension   ));
 
@@ -1479,7 +1479,7 @@ void TestUtil::ExpectExtensionsClear(
   EXPECT_EQ(-50    , message.GetExtension(unittest::default_sfixed64_extension));
   EXPECT_EQ( 51.5  , message.GetExtension(unittest::default_float_extension   ));
   EXPECT_EQ( 52e3  , message.GetExtension(unittest::default_double_extension  ));
-  EXPECT_EQ(true   , message.GetExtension(unittest::default_bool_extension    ));
+  EXPECT_TRUE(       message.GetExtension(unittest::default_bool_extension    ));
   EXPECT_EQ("hello", message.GetExtension(unittest::default_string_extension  ));
   EXPECT_EQ("world", message.GetExtension(unittest::default_bytes_extension   ));
 
@@ -1538,7 +1538,7 @@ void TestUtil::ExpectRepeatedExtensionsModified(
   EXPECT_EQ(210  , message.GetExtension(unittest::repeated_sfixed64_extension, 0));
   EXPECT_EQ(211  , message.GetExtension(unittest::repeated_float_extension   , 0));
   EXPECT_EQ(212  , message.GetExtension(unittest::repeated_double_extension  , 0));
-  EXPECT_EQ(true , message.GetExtension(unittest::repeated_bool_extension    , 0));
+  EXPECT_TRUE(     message.GetExtension(unittest::repeated_bool_extension    , 0));
   EXPECT_EQ("215", message.GetExtension(unittest::repeated_string_extension  , 0));
   EXPECT_EQ("216", message.GetExtension(unittest::repeated_bytes_extension   , 0));
 
@@ -1568,7 +1568,7 @@ void TestUtil::ExpectRepeatedExtensionsModified(
   EXPECT_EQ(510  , message.GetExtension(unittest::repeated_sfixed64_extension, 1));
   EXPECT_EQ(511  , message.GetExtension(unittest::repeated_float_extension   , 1));
   EXPECT_EQ(512  , message.GetExtension(unittest::repeated_double_extension  , 1));
-  EXPECT_EQ(true , message.GetExtension(unittest::repeated_bool_extension    , 1));
+  EXPECT_TRUE(     message.GetExtension(unittest::repeated_bool_extension    , 1));
   EXPECT_EQ("515", message.GetExtension(unittest::repeated_string_extension  , 1));
   EXPECT_EQ("516", message.GetExtension(unittest::repeated_bytes_extension   , 1));
 
@@ -1671,7 +1671,7 @@ void TestUtil::ExpectPackedExtensionsSet(
   EXPECT_EQ(610  , message.GetExtension(unittest::packed_sfixed64_extension, 0));
   EXPECT_EQ(611  , message.GetExtension(unittest::packed_float_extension   , 0));
   EXPECT_EQ(612  , message.GetExtension(unittest::packed_double_extension  , 0));
-  EXPECT_EQ(true , message.GetExtension(unittest::packed_bool_extension    , 0));
+  EXPECT_TRUE(     message.GetExtension(unittest::packed_bool_extension    , 0));
   EXPECT_EQ(unittest::FOREIGN_BAR,
             message.GetExtension(unittest::packed_enum_extension, 0));
   EXPECT_EQ(701  , message.GetExtension(unittest::packed_int32_extension   , 1));
@@ -1686,7 +1686,7 @@ void TestUtil::ExpectPackedExtensionsSet(
   EXPECT_EQ(710  , message.GetExtension(unittest::packed_sfixed64_extension, 1));
   EXPECT_EQ(711  , message.GetExtension(unittest::packed_float_extension   , 1));
   EXPECT_EQ(712  , message.GetExtension(unittest::packed_double_extension  , 1));
-  EXPECT_EQ(false, message.GetExtension(unittest::packed_bool_extension    , 1));
+  EXPECT_FALSE(    message.GetExtension(unittest::packed_bool_extension    , 1));
   EXPECT_EQ(unittest::FOREIGN_BAZ,
             message.GetExtension(unittest::packed_enum_extension, 1));
 }
@@ -1741,7 +1741,7 @@ void TestUtil::ExpectPackedExtensionsModified(
   EXPECT_EQ(610  , message.GetExtension(unittest::packed_sfixed64_extension, 0));
   EXPECT_EQ(611  , message.GetExtension(unittest::packed_float_extension   , 0));
   EXPECT_EQ(612  , message.GetExtension(unittest::packed_double_extension  , 0));
-  EXPECT_EQ(true , message.GetExtension(unittest::packed_bool_extension    , 0));
+  EXPECT_TRUE(     message.GetExtension(unittest::packed_bool_extension    , 0));
   EXPECT_EQ(unittest::FOREIGN_BAR,
             message.GetExtension(unittest::packed_enum_extension, 0));
 
@@ -1758,7 +1758,7 @@ void TestUtil::ExpectPackedExtensionsModified(
   EXPECT_EQ(810  , message.GetExtension(unittest::packed_sfixed64_extension, 1));
   EXPECT_EQ(811  , message.GetExtension(unittest::packed_float_extension   , 1));
   EXPECT_EQ(812  , message.GetExtension(unittest::packed_double_extension  , 1));
-  EXPECT_EQ(true , message.GetExtension(unittest::packed_bool_extension    , 1));
+  EXPECT_TRUE(     message.GetExtension(unittest::packed_bool_extension    , 1));
   EXPECT_EQ(unittest::FOREIGN_FOO,
             message.GetExtension(unittest::packed_enum_extension, 1));
 }
@@ -1835,7 +1835,7 @@ void TestUtil::ExpectLastRepeatedsRemoved(
   EXPECT_EQ(210  , message.repeated_sfixed64(0));
   EXPECT_EQ(211  , message.repeated_float   (0));
   EXPECT_EQ(212  , message.repeated_double  (0));
-  EXPECT_EQ(true , message.repeated_bool    (0));
+  EXPECT_TRUE(     message.repeated_bool    (0));
   EXPECT_EQ("215", message.repeated_string  (0));
   EXPECT_EQ("216", message.repeated_bytes   (0));
 
@@ -1895,7 +1895,7 @@ void TestUtil::ExpectLastRepeatedExtensionsRemoved(
   EXPECT_EQ(210  , message.GetExtension(unittest::repeated_sfixed64_extension, 0));
   EXPECT_EQ(211  , message.GetExtension(unittest::repeated_float_extension   , 0));
   EXPECT_EQ(212  , message.GetExtension(unittest::repeated_double_extension  , 0));
-  EXPECT_EQ(true , message.GetExtension(unittest::repeated_bool_extension    , 0));
+  EXPECT_TRUE(     message.GetExtension(unittest::repeated_bool_extension    , 0));
   EXPECT_EQ("215", message.GetExtension(unittest::repeated_string_extension  , 0));
   EXPECT_EQ("216", message.GetExtension(unittest::repeated_bytes_extension   , 0));
 
@@ -1988,7 +1988,7 @@ void TestUtil::ExpectRepeatedsSwapped(
   EXPECT_EQ(210  , message.repeated_sfixed64(1));
   EXPECT_EQ(211  , message.repeated_float   (1));
   EXPECT_EQ(212  , message.repeated_double  (1));
-  EXPECT_EQ(true , message.repeated_bool    (1));
+  EXPECT_TRUE(     message.repeated_bool    (1));
   EXPECT_EQ("215", message.repeated_string  (1));
   EXPECT_EQ("216", message.repeated_bytes   (1));
 
@@ -2014,7 +2014,7 @@ void TestUtil::ExpectRepeatedsSwapped(
   EXPECT_EQ(310  , message.repeated_sfixed64(0));
   EXPECT_EQ(311  , message.repeated_float   (0));
   EXPECT_EQ(312  , message.repeated_double  (0));
-  EXPECT_EQ(false, message.repeated_bool    (0));
+  EXPECT_FALSE(    message.repeated_bool    (0));
   EXPECT_EQ("315", message.repeated_string  (0));
   EXPECT_EQ("316", message.repeated_bytes   (0));
 
@@ -2072,7 +2072,7 @@ void TestUtil::ExpectRepeatedExtensionsSwapped(
   EXPECT_EQ(210  , message.GetExtension(unittest::repeated_sfixed64_extension, 1));
   EXPECT_EQ(211  , message.GetExtension(unittest::repeated_float_extension   , 1));
   EXPECT_EQ(212  , message.GetExtension(unittest::repeated_double_extension  , 1));
-  EXPECT_EQ(true , message.GetExtension(unittest::repeated_bool_extension    , 1));
+  EXPECT_TRUE(     message.GetExtension(unittest::repeated_bool_extension    , 1));
   EXPECT_EQ("215", message.GetExtension(unittest::repeated_string_extension  , 1));
   EXPECT_EQ("216", message.GetExtension(unittest::repeated_bytes_extension   , 1));
 
@@ -2101,7 +2101,7 @@ void TestUtil::ExpectRepeatedExtensionsSwapped(
   EXPECT_EQ(310  , message.GetExtension(unittest::repeated_sfixed64_extension, 0));
   EXPECT_EQ(311  , message.GetExtension(unittest::repeated_float_extension   , 0));
   EXPECT_EQ(312  , message.GetExtension(unittest::repeated_double_extension  , 0));
-  EXPECT_EQ(false, message.GetExtension(unittest::repeated_bool_extension    , 0));
+  EXPECT_FALSE(    message.GetExtension(unittest::repeated_bool_extension    , 0));
   EXPECT_EQ("315", message.GetExtension(unittest::repeated_string_extension  , 0));
   EXPECT_EQ("316", message.GetExtension(unittest::repeated_bytes_extension   , 0));
 
@@ -2443,7 +2443,7 @@ void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection1(
   EXPECT_EQ(110  , reflection->GetInt64 (message, F("optional_sfixed64")));
   EXPECT_EQ(111  , reflection->GetFloat (message, F("optional_float"   )));
   EXPECT_EQ(112  , reflection->GetDouble(message, F("optional_double"  )));
-  EXPECT_EQ(true , reflection->GetBool  (message, F("optional_bool"    )));
+  EXPECT_TRUE(     reflection->GetBool  (message, F("optional_bool"    )));
   EXPECT_EQ("115", reflection->GetString(message, F("optional_string"  )));
   EXPECT_EQ("116", reflection->GetString(message, F("optional_bytes"   )));
 
@@ -2523,7 +2523,7 @@ void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection2(
   EXPECT_EQ(210  , reflection->GetRepeatedInt64 (message, F("repeated_sfixed64"), 0));
   EXPECT_EQ(211  , reflection->GetRepeatedFloat (message, F("repeated_float"   ), 0));
   EXPECT_EQ(212  , reflection->GetRepeatedDouble(message, F("repeated_double"  ), 0));
-  EXPECT_EQ(true , reflection->GetRepeatedBool  (message, F("repeated_bool"    ), 0));
+  EXPECT_TRUE(     reflection->GetRepeatedBool  (message, F("repeated_bool"    ), 0));
   EXPECT_EQ("215", reflection->GetRepeatedString(message, F("repeated_string"  ), 0));
   EXPECT_EQ("216", reflection->GetRepeatedString(message, F("repeated_bytes"   ), 0));
 
@@ -2565,7 +2565,7 @@ void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection2(
   EXPECT_EQ(310  , reflection->GetRepeatedInt64 (message, F("repeated_sfixed64"), 1));
   EXPECT_EQ(311  , reflection->GetRepeatedFloat (message, F("repeated_float"   ), 1));
   EXPECT_EQ(312  , reflection->GetRepeatedDouble(message, F("repeated_double"  ), 1));
-  EXPECT_EQ(false, reflection->GetRepeatedBool  (message, F("repeated_bool"    ), 1));
+  EXPECT_FALSE(    reflection->GetRepeatedBool  (message, F("repeated_bool"    ), 1));
   EXPECT_EQ("315", reflection->GetRepeatedString(message, F("repeated_string"  ), 1));
   EXPECT_EQ("316", reflection->GetRepeatedString(message, F("repeated_bytes"   ), 1));
 
@@ -2640,7 +2640,7 @@ void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection3(
   EXPECT_EQ(410  , reflection->GetInt64 (message, F("default_sfixed64")));
   EXPECT_EQ(411  , reflection->GetFloat (message, F("default_float"   )));
   EXPECT_EQ(412  , reflection->GetDouble(message, F("default_double"  )));
-  EXPECT_EQ(false, reflection->GetBool  (message, F("default_bool"    )));
+  EXPECT_FALSE(    reflection->GetBool  (message, F("default_bool"    )));
   EXPECT_EQ("415", reflection->GetString(message, F("default_string"  )));
   EXPECT_EQ("416", reflection->GetString(message, F("default_bytes"   )));
 
@@ -2690,7 +2690,7 @@ void TestUtil::ReflectionTester::ExpectPackedFieldsSetViaReflection(
   EXPECT_EQ(610  , reflection->GetRepeatedInt64 (message, F("packed_sfixed64"), 0));
   EXPECT_EQ(611  , reflection->GetRepeatedFloat (message, F("packed_float"   ), 0));
   EXPECT_EQ(612  , reflection->GetRepeatedDouble(message, F("packed_double"  ), 0));
-  EXPECT_EQ(true , reflection->GetRepeatedBool  (message, F("packed_bool"    ), 0));
+  EXPECT_TRUE(     reflection->GetRepeatedBool  (message, F("packed_bool"    ), 0));
   EXPECT_EQ(foreign_bar_,
             reflection->GetRepeatedEnum(message, F("packed_enum"), 0));
 
@@ -2706,7 +2706,7 @@ void TestUtil::ReflectionTester::ExpectPackedFieldsSetViaReflection(
   EXPECT_EQ(710  , reflection->GetRepeatedInt64 (message, F("packed_sfixed64"), 1));
   EXPECT_EQ(711  , reflection->GetRepeatedFloat (message, F("packed_float"   ), 1));
   EXPECT_EQ(712  , reflection->GetRepeatedDouble(message, F("packed_double"  ), 1));
-  EXPECT_EQ(false, reflection->GetRepeatedBool  (message, F("packed_bool"    ), 1));
+  EXPECT_FALSE(    reflection->GetRepeatedBool  (message, F("packed_bool"    ), 1));
   EXPECT_EQ(foreign_baz_,
             reflection->GetRepeatedEnum(message, F("packed_enum"), 1));
 }
@@ -2763,7 +2763,7 @@ void TestUtil::ReflectionTester::ExpectClearViaReflection(
   EXPECT_EQ(0    , reflection->GetInt64 (message, F("optional_sfixed64")));
   EXPECT_EQ(0    , reflection->GetFloat (message, F("optional_float"   )));
   EXPECT_EQ(0    , reflection->GetDouble(message, F("optional_double"  )));
-  EXPECT_EQ(false, reflection->GetBool  (message, F("optional_bool"    )));
+  EXPECT_FALSE(    reflection->GetBool  (message, F("optional_bool"    )));
   EXPECT_EQ(""   , reflection->GetString(message, F("optional_string"  )));
   EXPECT_EQ(""   , reflection->GetString(message, F("optional_bytes"   )));
 
@@ -2867,7 +2867,7 @@ void TestUtil::ReflectionTester::ExpectClearViaReflection(
   EXPECT_EQ(-50    , reflection->GetInt64 (message, F("default_sfixed64")));
   EXPECT_EQ( 51.5  , reflection->GetFloat (message, F("default_float"   )));
   EXPECT_EQ( 52e3  , reflection->GetDouble(message, F("default_double"  )));
-  EXPECT_EQ(true   , reflection->GetBool  (message, F("default_bool"    )));
+  EXPECT_TRUE(       reflection->GetBool  (message, F("default_bool"    )));
   EXPECT_EQ("hello", reflection->GetString(message, F("default_string"  )));
   EXPECT_EQ("world", reflection->GetString(message, F("default_bytes"   )));
 

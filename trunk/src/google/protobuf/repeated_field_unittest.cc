@@ -1007,11 +1007,13 @@ class RepeatedPtrFieldPtrsIteratorTest : public testing::Test {
 TEST_F(RepeatedPtrFieldPtrsIteratorTest, ConvertiblePtr) {
   RepeatedPtrField<string>::pointer_iterator iter =
       proto_array_.pointer_begin();
+  (void) iter;
 }
 
 TEST_F(RepeatedPtrFieldPtrsIteratorTest, ConvertibleConstPtr) {
   RepeatedPtrField<string>::const_pointer_iterator iter =
       const_proto_array_->pointer_begin();
+  (void) iter;
 }
 
 TEST_F(RepeatedPtrFieldPtrsIteratorTest, MutablePtrIteration) {
@@ -1136,8 +1138,6 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, PtrSTLAlgorithms_lower_bound) {
   proto_array_.Add()->assign("y");
 
   {
-    RepeatedPtrField<string>::pointer_iterator iter =
-        proto_array_.pointer_begin();
     string v = "f";
     RepeatedPtrField<string>::pointer_iterator it =
         lower_bound(proto_array_.pointer_begin(), proto_array_.pointer_end(),
@@ -1149,8 +1149,6 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, PtrSTLAlgorithms_lower_bound) {
     EXPECT_TRUE(it == proto_array_.pointer_begin() + 3);
   }
   {
-    RepeatedPtrField<string>::const_pointer_iterator iter =
-        const_proto_array_->pointer_begin();
     string v = "f";
     RepeatedPtrField<string>::const_pointer_iterator it =
         lower_bound(const_proto_array_->pointer_begin(),
