@@ -118,7 +118,7 @@ class LIBPROTOBUF_EXPORT GzipOutputStream : public ZeroCopyOutputStream {
     ZLIB = 2,
   };
 
-  struct Options {
+  struct LIBPROTOBUF_EXPORT Options {
     // Defaults to GZIP.
     Format format;
 
