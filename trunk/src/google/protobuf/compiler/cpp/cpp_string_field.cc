@@ -251,7 +251,8 @@ void StringFieldGenerator::
 GenerateShutdownCode(io::Printer* printer) const {
   if (!descriptor_->default_value_string().empty()) {
     printer->Print(variables_,
-      "delete $classname$::$default_variable$;\n");
+      "delete $classname$::$default_variable$;\n"
+      "$classname$::$default_variable$ = NULL;\n");
   }
 }
 
