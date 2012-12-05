@@ -90,12 +90,12 @@ AS_IF([test "$with_zlib" != no], [
 
   # First check the zlib header version.
   AC_COMPILE_IFELSE(
-    AC_LANG_PROGRAM([[
+    [AC_LANG_PROGRAM([[
         #include <zlib.h>
         #if !defined(ZLIB_VERNUM) || (ZLIB_VERNUM < 0x1204)
         # error zlib version too old
         #endif
-        ]], []), [
+        ]], [])], [
     AC_MSG_RESULT([ok (1.2.0.4 or later)])
 
     # Also need to add -lz to the linker flags and make sure this succeeds.
