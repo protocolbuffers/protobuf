@@ -167,6 +167,7 @@ if __name__ == '__main__':
           'google.protobuf.internal.cpp_message',
           'google.protobuf.internal.decoder',
           'google.protobuf.internal.encoder',
+          'google.protobuf.internal.enum_type_wrapper',
           'google.protobuf.internal.message_listener',
           'google.protobuf.internal.python_message',
           'google.protobuf.internal.type_checkers',
