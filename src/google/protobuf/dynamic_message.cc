@@ -208,14 +208,6 @@ class DynamicMessage : public Message {
 
   Metadata GetMetadata() const;
 
-  // We actually allocate more memory than sizeof(*this) when this
-  // class's memory is allocated via the global operator new. Thus, we need to
-  // manually call the global operator delete. Calling the destructor is taken
-  // care of for us.
-  static void operator delete(void* ptr) {
-    ::operator delete(ptr);
-  }
-
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DynamicMessage);
 
