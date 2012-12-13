@@ -54,7 +54,7 @@
 #define GOOGLE_PROTOBUF_ATOMICOPS_H_
 
 // Don't include this file for people not concerned about thread safety.
-#ifndef GOOGLE_PROTOBUF_NO_THREADSAFETY
+#ifndef GOOGLE_PROTOBUF_NO_THREAD_SAFETY
 
 #include <google/protobuf/stubs/platform_macros.h>
 
@@ -197,6 +197,6 @@ GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 
 #undef GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 
-#endif  // GOOGLE_PROTOBUF_NO_THREADSAFETY
+#endif  // GOOGLE_PROTOBUF_NO_THREAD_SAFETY
 
 #endif  // GOOGLE_PROTOBUF_ATOMICOPS_H_
