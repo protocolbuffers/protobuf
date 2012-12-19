@@ -51,6 +51,9 @@
 #define GOOGLE_PROTOBUF_ARCH_32_BIT 1
 #elif defined(__pnacl__)
 #define GOOGLE_PROTOBUF_ARCH_32_BIT 1
+#elif defined(__ppc__)
+#define GOOGLE_PROTOBUF_ARCH_PPC 1
+#define GOOGLE_PROTOBUF_ARCH_32_BIT 1
 #else
 #error Host architecture was not detected as supported by protobuf
 #endif

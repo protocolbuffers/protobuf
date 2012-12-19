@@ -183,11 +183,11 @@ void LogMessage::Finish() {
   if (level_ != LOGLEVEL_FATAL) {
     InitLogSilencerCountOnce();
     MutexLock lock(log_silencer_count_mutex_);
-    suppress = internal::log_silencer_count_ > 0;
+    suppress = log_silencer_count_ > 0;
   }
 
   if (!suppress) {
-    internal::log_handler_(level_, filename_, line_, message_);
+    log_handler_(level_, filename_, line_, message_);
   }
 
   if (level_ == LOGLEVEL_FATAL) {
