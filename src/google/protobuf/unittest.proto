@@ -434,6 +434,7 @@ message TestNestedMessageHasBits {
 
 // Test an enum that has multiple values with the same number.
 enum TestEnumWithDupValue {
+  option allow_alias = true;
   FOO1 = 1;
   BAR1 = 2;
   BAZ = 3;
