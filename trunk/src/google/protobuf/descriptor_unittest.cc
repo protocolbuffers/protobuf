@@ -4001,7 +4001,9 @@ TEST_F(ValidationErrorTest, DisallowEnumAlias) {
     "  options { allow_alias: false }"
     "}",
     "foo.proto: Bar: NUMBER: "
-    "\"ENUM_B\" uses the same enum value as \"ENUM_A\"\n");
+    "\"ENUM_B\" uses the same enum value as \"ENUM_A\". "
+    "If this is intended, set 'option allow_alias = true;' to the enum "
+    "definition.\n");
 }
 
 // ===================================================================

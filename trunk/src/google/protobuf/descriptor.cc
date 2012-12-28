@@ -4132,16 +4132,26 @@ void DescriptorBuilder::ValidateFieldOptions(FieldDescriptor* field,
 void DescriptorBuilder::ValidateEnumOptions(EnumDescriptor* enm,
                                             const EnumDescriptorProto& proto) {
   VALIDATE_OPTIONS_FROM_ARRAY(enm, value, EnumValue);
-  if (!enm->options().allow_alias()) {
+  if (!enm->options().has_allow_alias() || !enm->options().allow_alias()) {
     map<int, string> used_values;
     for (int i = 0; i < enm->value_count(); ++i) {
       const EnumValueDescriptor* enum_value = enm->value(i);
       if (used_values.find(enum_value->number()) != used_values.end()) {
-        AddError(enm->full_name(), proto,
-                 DescriptorPool::ErrorCollector::NUMBER,
-                 "\"" + enum_value->full_name() +
-                 "\" uses the same enum value as \"" +
-                 used_values[enum_value->number()] + "\"");
+        string error =
+            "\"" + enum_value->full_name() +
+            "\" uses the same enum value as \"" +
+            used_values[enum_value->number()] + "\". If this is intended, set "
+            "'option allow_alias = true;' to the enum definition.";
+        if (!enm->options().allow_alias()) {
+          // Generate error if duplicated enum values are explicitly disallowed.
+          AddError(enm->full_name(), proto,
+                   DescriptorPool::ErrorCollector::NUMBER,
+                   error);
+        } else {
+          // Generate warning if duplicated values are found but the option
+          // isn't set.
+          GOOGLE_LOG(ERROR) << error;
+        }
       } else {
         used_values[enum_value->number()] = enum_value->full_name();
       }
