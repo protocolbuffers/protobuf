@@ -40,9 +40,11 @@ MAINTAINERCLEANFILES =   \
 nobase_include_HEADERS =                                        \
   google/protobuf/stubs/atomicops.h                             \
   google/protobuf/stubs/atomicops_internals_arm_gcc.h           \
+  google/protobuf/stubs/atomicops_internals_arm_qnx.h           \
   google/protobuf/stubs/atomicops_internals_atomicword_compat.h \
   google/protobuf/stubs/atomicops_internals_macosx.h            \
   google/protobuf/stubs/atomicops_internals_mips_gcc.h          \
+  google/protobuf/stubs/atomicops_internals_pnal.h              \
   google/protobuf/stubs/atomicops_internals_x86_gcc.h           \
   google/protobuf/stubs/atomicops_internals_x86_msvc.h          \
   google/protobuf/stubs/common.h                                \
