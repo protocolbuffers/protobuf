@@ -43,6 +43,9 @@
 #elif defined(_M_IX86) || defined(__i386__)
 #define GOOGLE_PROTOBUF_ARCH_IA32 1
 #define GOOGLE_PROTOBUF_ARCH_32_BIT 1
+#elif defined(__QNX__)
+#define GOOGLE_PROTOBUF_ARCH_ARM_QNX 1
+#define GOOGLE_PROTOBUF_ARCH_32_BIT 1
 #elif defined(__ARMEL__)
 #define GOOGLE_PROTOBUF_ARCH_ARM 1
 #define GOOGLE_PROTOBUF_ARCH_32_BIT 1
