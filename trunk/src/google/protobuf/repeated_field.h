@@ -57,9 +57,9 @@
 namespace google {
 
 namespace upb {
-namespace proto2_bridge_opensource {
-class FieldAccessor;
-}  // namespace protobuf_bridge_opensource
+namespace google_opensource {
+class GMR_Handlers;
+}  // namespace google_opensource
 }  // namespace upb
 
 namespace protobuf {
@@ -235,9 +235,9 @@ class LIBPROTOBUF_EXPORT RepeatedPtrFieldBase {
   // use of AddFromCleared(), which is not part of the public interface.
   friend class ExtensionSet;
 
-  // To parse directly into a proto2 generated class, the upb FieldAccessor
+  // To parse directly into a proto2 generated class, the upb class GMR_Handlers
   // needs to be able to modify a RepeatedPtrFieldBase directly.
-  friend class LIBPROTOBUF_EXPORT upb::proto2_bridge_opensource::FieldAccessor;
+  friend class LIBPROTOBUF_EXPORT upb::google_opensource::GMR_Handlers;
 
   RepeatedPtrFieldBase();
 

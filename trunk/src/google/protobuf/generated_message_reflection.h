@@ -50,9 +50,9 @@
 
 namespace google {
 namespace upb {
-namespace proto2_bridge_opensource {
-class FieldAccessor;
-}  // namespace protobuf_bridge_google3
+namespace google_opensource {
+class GMR_Handlers;
+}  // namespace google_opensource
 }  // namespace upb
 
 namespace protobuf {
@@ -287,9 +287,9 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
  private:
   friend class GeneratedMessage;
 
-  // To parse directly into a proto2 generated class, FieldAccessor needs
-  // access to member offsets and hasbits.
-  friend class LIBPROTOBUF_EXPORT upb::proto2_bridge_opensource::FieldAccessor;
+  // To parse directly into a proto2 generated class, the class GMR_Handlers
+  // needs access to member offsets and hasbits.
+  friend class LIBPROTOBUF_EXPORT upb::google_opensource::GMR_Handlers;
 
   const Descriptor* descriptor_;
   const Message* default_instance_;
