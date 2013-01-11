@@ -59,7 +59,7 @@ void WriteMethodDocComment(io::Printer* printer,
                            const MethodDescriptor* method);
 
 // Exposed for testing only.
-string EscapeJavadoc(const string& input);
+LIBPROTOC_EXPORT string EscapeJavadoc(const string& input);
 
 }  // namespace java
 }  // namespace compiler

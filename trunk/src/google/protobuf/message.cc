@@ -188,7 +188,7 @@ bool Message::SerializePartialToOstream(ostream* output) const {
 Reflection::~Reflection() {}
 
 #define HANDLE_TYPE(TYPE, CPPTYPE, CTYPE)                             \
-template<>                                                            \
+template<> LIBPROTOBUF_EXPORT                                         \
 const RepeatedField<TYPE>& Reflection::GetRepeatedField<TYPE>(        \
     const Message& message, const FieldDescriptor* field) const {     \
   return *static_cast<RepeatedField<TYPE>* >(                         \
@@ -196,7 +196,7 @@ const RepeatedField<TYPE>& Reflection::GetRepeatedField<TYPE>(        \
                           field, CPPTYPE, CTYPE, NULL));              \
 }                                                                     \
                                                                       \
-template<>                                                            \
+template<> LIBPROTOBUF_EXPORT                                         \
 RepeatedField<TYPE>* Reflection::MutableRepeatedField<TYPE>(          \
     Message* message, const FieldDescriptor* field) const {           \
   return static_cast<RepeatedField<TYPE>* >(                          \
