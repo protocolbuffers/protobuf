@@ -47,27 +47,6 @@ using std::string;
 using std::vector;
 using std::pair;
 
-using google::protobuf::internal::add_reference;
-using google::protobuf::internal::has_trivial_assign;
-using google::protobuf::internal::has_trivial_constructor;
-using google::protobuf::internal::has_trivial_copy;
-using google::protobuf::internal::has_trivial_destructor;
-#if !defined(_MSC_VER) && !(defined(__GNUC__) && __GNUC__ <= 3)
-using google::protobuf::internal::is_convertible;
-using google::protobuf::internal::is_enum;
-#endif
-using google::protobuf::internal::is_floating_point;
-using google::protobuf::internal::is_integral;
-using google::protobuf::internal::is_pointer;
-using google::protobuf::internal::is_pod;
-using google::protobuf::internal::is_reference;
-using google::protobuf::internal::is_same;
-using google::protobuf::internal::remove_const;
-using google::protobuf::internal::remove_cv;
-using google::protobuf::internal::remove_pointer;
-using google::protobuf::internal::remove_reference;
-using google::protobuf::internal::remove_volatile;
-
 
 // This assertion produces errors like "error: invalid use of
 // incomplete type 'struct <unnamed>::AssertTypesEq<const int, int>'"
@@ -175,6 +154,7 @@ class J {
 
 namespace google {
 namespace protobuf {
+namespace internal {
 namespace {
 
 // A base class and a derived class that inherits from it, used for
@@ -643,5 +623,6 @@ TEST(TypeTraitsTest, TestConvertible) {
 }
 
 }  // anonymous namespace
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
