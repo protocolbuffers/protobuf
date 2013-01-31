@@ -750,6 +750,27 @@ class LIBPROTOBUF_EXPORT MessageFactory {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageFactory);
 };
 
+#define DECLARE_GET_REPEATED_FIELD(TYPE)                         \
+template<>                                                       \
+LIBPROTOBUF_EXPORT                                               \
+const RepeatedField<TYPE>& Reflection::GetRepeatedField<TYPE>(   \
+    const Message& message, const FieldDescriptor* field) const; \
+                                                                 \
+template<>                                                       \
+LIBPROTOBUF_EXPORT                                               \
+RepeatedField<TYPE>* Reflection::MutableRepeatedField<TYPE>(     \
+    Message* message, const FieldDescriptor* field) const;
+
+DECLARE_GET_REPEATED_FIELD(int32)
+DECLARE_GET_REPEATED_FIELD(int64)
+DECLARE_GET_REPEATED_FIELD(uint32)
+DECLARE_GET_REPEATED_FIELD(uint64)
+DECLARE_GET_REPEATED_FIELD(float)
+DECLARE_GET_REPEATED_FIELD(double)
+DECLARE_GET_REPEATED_FIELD(bool)
+
+#undef DECLARE_GET_REPEATED_FIELD
+
 // =============================================================================
 // Implementation details for {Get,Mutable}RawRepeatedPtrField.  We provide
 // specializations for <string>, <StringPieceField> and <Message> and handle
