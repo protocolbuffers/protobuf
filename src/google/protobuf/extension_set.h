@@ -551,7 +551,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   // only contain a small number of extensions whereas hash_map is optimized
   // for 100 elements or more.  Also, we want AppendToList() to order fields
   // by field number.
-  map<int, Extension> extensions_;
+  std::map<int, Extension> extensions_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionSet);
 };
