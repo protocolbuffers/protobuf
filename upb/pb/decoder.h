@@ -13,9 +13,8 @@
 #define UPB_DECODER_H_
 
 #include <setjmp.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include "upb/handlers.h"
+#include "upb/bytestream.h"
+#include "upb/sink.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,9 +33,12 @@ extern "C" {
 struct _upb_decoderplan;
 typedef struct _upb_decoderplan upb_decoderplan;
 
-// TODO: add parameter for a list of other decoder plans that we can share
-// generated code with.
-upb_decoderplan *upb_decoderplan_new(upb_handlers *h, bool allowjit);
+// TODO(haberman):
+// - add support for letting any message in the plan be at the top level.
+// - make this object a handlers instead (when bytesrc/bytesink are merged
+//   into handlers).
+// - add support for sharing code with previously-built plans/handlers.
+upb_decoderplan *upb_decoderplan_new(const upb_handlers *h, bool allowjit);
 void upb_decoderplan_unref(upb_decoderplan *p);
 
 // Returns true if the plan contains JIT-ted code.  This may not be the same as
@@ -49,15 +51,28 @@ bool upb_decoderplan_hasjitcode(upb_decoderplan *p);
 
 struct dasm_State;
 
+typedef struct {
+  const upb_fielddef *f;
+  uint64_t end_ofs;
+  uint32_t group_fieldnum;  // UINT32_MAX for non-groups.
+  bool is_sequence;   // frame represents seq or submsg? (f might be both).
+  bool is_packed;     // !upb_issubmsg(f) && end_ofs != UINT64_MAX
+                      // (strings aren't pushed).
+} upb_decoder_frame;
+
 typedef struct _upb_decoder {
   upb_decoderplan *plan;
-  int             msg_offset;      // Which message from the plan is top-level.
   upb_byteregion  *input;          // Input data (serialized), not owned.
-  upb_dispatcher  dispatcher;      // Dispatcher to which we push parsed data.
   upb_status      status;          // Where we store errors that occur.
-  upb_byteregion  str_byteregion;  // For passing string data to callbacks.
 
-  upb_inttable    *dispatch_table;
+  // Where we push parsed data.
+  // TODO(haberman): make this a pointer and make upb_decoder_resetinput() take
+  // one of these instead of a void*.
+  upb_sink        sink;
+
+  // Our internal stack.
+  upb_decoder_frame *top, *limit;
+  upb_decoder_frame stack[UPB_MAX_NESTING];
 
   // Current input buffer and its stream offset.
   const char *buf, *ptr, *end;
@@ -70,7 +85,11 @@ typedef struct _upb_decoder {
 
 #ifdef UPB_USE_JIT_X64
   // For JIT, which doesn't do bounds checks in the middle of parsing a field.
-  const char *jit_end, *effective_end;  // == MIN(jit_end, submsg_end)
+  const char *jit_end, *effective_end;  // == MIN(jit_end, delim_end)
+
+  // Used momentarily by the generated code to store a value while a user
+  // function is called.
+  uint32_t tmp_len;
 #endif
 
   // For exiting the decoder on error.
@@ -88,7 +107,7 @@ void upb_decoder_uninit(upb_decoder *d);
 // must live until the decoder is destroyed or reset to a different plan.
 //
 // Must be called before upb_decoder_resetinput() or upb_decoder_decode().
-void upb_decoder_resetplan(upb_decoder *d, upb_decoderplan *p, int msg_offset);
+void upb_decoder_resetplan(upb_decoder *d, upb_decoderplan *p);
 
 // Resets the input of an already-allocated decoder.  This puts it in a state
 // where it has not seen any data, and expects the next data to be from the
@@ -111,7 +130,8 @@ INLINE const upb_status *upb_decoder_status(upb_decoder *d) {
 // Implementation details
 
 struct _upb_decoderplan {
-  upb_handlers *handlers;  // owns reference.
+  // The top-level handlers that this plan calls into.  We own a ref.
+  const upb_handlers *handlers;
 
 #ifdef UPB_USE_JIT_X64
   // JIT-generated machine code (else NULL).
@@ -119,8 +139,23 @@ struct _upb_decoderplan {
   size_t jit_size;
   char *debug_info;
 
+  // For storing upb_jitmsginfo, which contains per-msg runtime data needed
+  // by the JIT.
+  // Maps upb_handlers* -> upb_jitmsginfo.
+  upb_inttable msginfo;
+
+  // The following members are used only while the JIT is being built.
+
   // This pointer is allocated by dasm_init() and freed by dasm_free().
   struct dasm_State *dynasm;
+
+  // For storing pclabel bases while we are building the JIT.
+  // Maps (upb_handlers* or upb_fielddef*) -> int32 pclabel_base
+  upb_inttable pclabels;
+
+  // This is not the same as len(pclabels) because the table only contains base
+  // offsets for each def, but each def can have many pclabels.
+  uint32_t pclabel_count;
 #endif
 };
 

@@ -10,19 +10,19 @@
 #define __STDC_LIMIT_MACROS  // So we get UINT32_MAX
 #include <assert.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/message.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "benchmarks/google_messages.pb.h"
-#include "upb/def.hpp"
-#include "upb/handlers.hpp"
-#include "upb/msg.hpp"
-#include "upb/pb/decoder.hpp"
+#include "bindings/cpp/upb/pb/decoder.hpp"
+#include "upb/def.h"
+#include "upb/google/bridge.h"
+#include "upb/handlers.h"
 #include "upb/pb/glue.h"
 #include "upb/pb/varint.h"
-#include "upb/proto2_bridge.hpp"
 #include "upb_test.h"
 
 void compare_metadata(const google::protobuf::Descriptor* d,
@@ -36,28 +36,25 @@ void compare_metadata(const google::protobuf::Descriptor* d,
     ASSERT(proto2_f);
     ASSERT(upb_f->number() == proto2_f->number());
     ASSERT(std::string(upb_f->name()) == proto2_f->name());
-    ASSERT(upb_f->type() == static_cast<upb::FieldType>(proto2_f->type()));
+    ASSERT(upb_f->type() == static_cast<upb::FieldDef::Type>(proto2_f->type()));
     ASSERT(upb_f->IsSequence() == proto2_f->is_repeated());
   }
 }
 
 void parse_and_compare(MESSAGE_CIDENT *msg1, MESSAGE_CIDENT *msg2,
-                       const upb::MessageDef *upb_md,
+                       const upb::Handlers *handlers,
                        const char *str, size_t len, bool allow_jit) {
   // Parse to both proto2 and upb.
   ASSERT(msg1->ParseFromArray(str, len));
 
-  upb::Handlers* handlers = upb::Handlers::New();
-  upb::RegisterWriteHandlers(handlers, upb_md);
   upb::DecoderPlan* plan = upb::DecoderPlan::New(handlers, allow_jit);
   upb::StringSource src(str, len);
   upb::Decoder decoder;
-  decoder.ResetPlan(plan, 0);
+  decoder.ResetPlan(plan);
   decoder.ResetInput(src.AllBytes(), msg2);
   msg2->Clear();
   ASSERT(decoder.Decode() == UPB_OK);
   plan->Unref();
-  handlers->Unref();
 
   // Would like to just compare the message objects themselves,  but
   // unfortunately MessageDifferencer is not part of the open-source release of
@@ -83,7 +80,9 @@ void test_zig_zag() {
 
 }
 
-int main(int argc, char *argv[])
+extern "C" {
+
+int run_tests(int argc, char *argv[])
 {
   if (argc < 2) {
     fprintf(stderr, "Usage: test_vs_proto2 <message file>\n");
@@ -102,22 +101,24 @@ int main(int argc, char *argv[])
   MESSAGE_CIDENT msg1;
   MESSAGE_CIDENT msg2;
 
-  const upb::MessageDef* m = upb::proto2_bridge::NewFinalMessageDef(msg1, &m);
+  const upb::Handlers* h = upb::google::NewWriteHandlers(msg1, &h);
 
-  compare_metadata(msg1.GetDescriptor(), m);
+  compare_metadata(msg1.GetDescriptor(), h->message_def());
 
   // Run twice to test proper object reuse.
-  parse_and_compare(&msg1, &msg2, m, str, len, true);
-  parse_and_compare(&msg1, &msg2, m, str, len, false);
-  parse_and_compare(&msg1, &msg2, m, str, len, true);
-  parse_and_compare(&msg1, &msg2, m, str, len, false);
+  parse_and_compare(&msg1, &msg2, h, str, len, false);
+  parse_and_compare(&msg1, &msg2, h, str, len, true);
+  parse_and_compare(&msg1, &msg2, h, str, len, false);
+  parse_and_compare(&msg1, &msg2, h, str, len, true);
   printf("All tests passed, %d assertions.\n", num_assertions);
 
-  m->Unref(&m);
+  h->Unref(&h);
   free((void*)str);
 
   test_zig_zag();
 
   google::protobuf::ShutdownProtobufLibrary();
   return 0;
+}
+
 }

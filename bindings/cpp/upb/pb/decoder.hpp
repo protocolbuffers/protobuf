@@ -22,14 +22,14 @@
 
 #include "upb/pb/decoder.h"
 
-#include "upb/bytestream.hpp"
-#include "upb/upb.hpp"
+#include "upb/bytestream.h"
+#include "upb/upb.h"
 
 namespace upb {
 
 class DecoderPlan : public upb_decoderplan {
  public:
-  static DecoderPlan* New(Handlers* h, bool allow_jit) {
+  static DecoderPlan* New(const Handlers* h, bool allow_jit) {
     return static_cast<DecoderPlan*>(upb_decoderplan_new(h, allow_jit));
   }
   void Unref() { upb_decoderplan_unref(this); }
@@ -54,9 +54,7 @@ class Decoder : public upb_decoder {
   // reset to a different plan.
   //
   // Must be called before ResetInput() or Decode().
-  void ResetPlan(DecoderPlan* plan, int32_t msg_offset) {
-    upb_decoder_resetplan(this, plan, msg_offset);
-  }
+  void ResetPlan(DecoderPlan* plan) { upb_decoder_resetplan(this, plan); }
 
   // Resets the input of the decoder.  This puts it in a state where it has not
   // seen any data, and expects the next data to be from the beginning of a new
@@ -71,7 +69,7 @@ class Decoder : public upb_decoder {
 
   // Decodes serialized data (calling Handlers as the data is parsed) until
   // error or EOF (see status() for details).
-  Success Decode() { return upb_decoder_decode(this); }
+  Status::Success Decode() { return upb_decoder_decode(this); }
 
   const upb::Status& status() {
     return static_cast<const upb::Status&>(*upb_decoder_status(this));

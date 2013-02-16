@@ -51,6 +51,7 @@ CXXFLAGS=-Ibindings/cpp
 INCLUDE=-Itests -I.
 CPPFLAGS=$(INCLUDE) -Wall -Wextra $(USER_CFLAGS)
 LDLIBS=-lpthread upb/libupb.a
+LUA=lua5.1  # 5.1 and 5.2 should both be supported
 
 # Build with "make Q=" to see all commands that are being executed.
 Q=@
@@ -84,23 +85,24 @@ CORE= \
   upb/bytestream.c \
   upb/def.c \
   upb/descriptor/reader.c \
+  upb/descriptor/descriptor.upb.c \
+  upb/google/bridge.cc \
+  upb/google/proto2.cc \
   upb/handlers.c \
-  upb/msg.c \
-  upb/refcount.c \
-  upb/stdc/error.c \
-  upb/stdc/io.c \
+  upb/refcounted.c \
+  upb/sink.c \
+  upb/symtab.c \
   upb/table.c \
   upb/upb.c \
-  bindings/cpp/upb/proto2_bridge.cc \
 
 # TODO: the proto2 bridge should be built as a separate library.
 
 # Library for the protocol buffer format (both text and binary).
 PB= \
   upb/pb/decoder.c \
-  upb/pb/varint.c \
   upb/pb/glue.c \
   upb/pb/textprinter.c \
+  upb/pb/varint.c \
 
 
 # Rules. #######################################################################
@@ -170,7 +172,7 @@ upb/def.lo: upb/def.c
 
 upb/pb/decoder_x64.h: upb/pb/decoder_x64.dasc
 	$(E) DYNASM $<
-	$(Q) lua dynasm/dynasm.lua upb/pb/decoder_x64.dasc > upb/pb/decoder_x64.h
+	$(Q) $(LUA) dynasm/dynasm.lua upb/pb/decoder_x64.dasc > upb/pb/decoder_x64.h
 
 ifneq ($(shell uname), Darwin)
 upb/pb/jit_debug_elf_file.o: upb/pb/jit_debug_elf_file.s
@@ -214,24 +216,36 @@ SIMPLE_TESTS= \
   tests/test_varint \
 
 SIMPLE_CXX_TESTS= \
-  tests/test_table \
   tests/test_cpp \
-  tests/test_decoder \
+
+  # The build process for this test is complicated and hasn't been
+  # ported to the open-source Makefile yet.
+  # tests/test_decoder \
 
 VARIADIC_TESTS= \
   tests/t.test_vs_proto2.googlemessage1 \
   tests/t.test_vs_proto2.googlemessage2 \
 
-TESTS=$(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS) $(VARIADIC_TESTS)
+TESTS=$(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS) $(VARIADIC_TESTS) tests/test_table
 
 
 tests: $(TESTS) $(INTERACTIVE_TESTS)
 $(TESTS): $(LIBUPB)
 tests/test_def: tests/test.proto.pb
 
+tests/testmain.o: tests/testmain.cc
+	$(E) CXX $<
+	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+
+$(SIMPLE_TESTS): tests/testmain.o
 $(SIMPLE_TESTS): % : %.c
 	$(E) CC $<
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $< $(LIBUPB)
+	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o $@ tests/testmain.o $< $(LIBUPB)
+
+$(SIMPLE_CXX_TESTS): tests/testmain.o
+$(SIMPLE_CXX_TESTS): % : %.cc
+	$(E) CXX $<
+	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ tests/testmain.o $< $(LIBUPB)
 
 VALGRIND=valgrind --leak-check=full --error-exitcode=1
 test: tests
@@ -258,7 +272,7 @@ tests/t.test_vs_proto2.googlemessage2: \
 	  -DMESSAGE_FILE=\"../benchmarks/google_message1.dat\" \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
 	  -DMESSAGE_HFILE=\"../benchmarks/google_messages.pb.h\" \
-	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread $(LIBUPB)
+	  benchmarks/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread $(LIBUPB)
 	$(E) CXX $< '(benchmarks::SpeedMessage2)'
 	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o tests/t.test_vs_proto2.googlemessage2 $< \
 	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
@@ -266,11 +280,11 @@ tests/t.test_vs_proto2.googlemessage2: \
 	  -DMESSAGE_FILE=\"../benchmarks/google_message2.dat\" \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage2" \
 	  -DMESSAGE_HFILE=\"../benchmarks/google_messages.pb.h\" \
-	  benchmarks/google_messages.pb.cc -lprotobuf -lpthread $(LIBUPB)
+	  benchmarks/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread $(LIBUPB)
 tests/test_table: tests/test_table.cc
 	@# Includes <hash_set> which is a deprecated header.
 	$(E) CXX $<
-	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-deprecated -o $@ $< $(LIBUPB)
+	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-deprecated -o $@ $< tests/testmain.o $(LIBUPB)
 
 tests/tests: upb/libupb.a
 

@@ -5,10 +5,14 @@
  * Author: Josh Haberman <jhaberman@gmail.com>
  */
 
+#include "upb/pb/glue.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "upb/bytestream.h"
 #include "upb/descriptor/reader.h"
 #include "upb/pb/decoder.h"
-#include "upb/pb/glue.h"
 
 upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
                                         void *owner, upb_status *status) {
@@ -16,16 +20,14 @@ upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
   upb_stringsrc_init(&strsrc);
   upb_stringsrc_reset(&strsrc, str, len);
 
-  upb_handlers *h = upb_handlers_new();
-  upb_descreader_reghandlers(h);
-
+  const upb_handlers *h = upb_descreader_newhandlers(&h);
   upb_decoderplan *p = upb_decoderplan_new(h, false);
   upb_decoder d;
   upb_decoder_init(&d);
-  upb_handlers_unref(h);
+  upb_handlers_unref(h, &h);
   upb_descreader r;
   upb_descreader_init(&r);
-  upb_decoder_resetplan(&d, p, 0);
+  upb_decoder_resetplan(&d, p);
   upb_decoder_resetinput(&d, upb_stringsrc_allbytes(&strsrc), &r);
 
   upb_success_t ret = upb_decoder_decode(&d);

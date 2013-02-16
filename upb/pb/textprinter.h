@@ -18,11 +18,12 @@ extern "C" {
 struct _upb_textprinter;
 typedef struct _upb_textprinter upb_textprinter;
 
-upb_textprinter *upb_textprinter_new(void);
+upb_textprinter *upb_textprinter_new();
 void upb_textprinter_free(upb_textprinter *p);
 void upb_textprinter_reset(upb_textprinter *p, upb_bytesink *sink,
                            bool single_line);
-upb_mhandlers *upb_textprinter_reghandlers(upb_handlers *h, const upb_msgdef *m);
+const upb_handlers *upb_textprinter_newhandlers(const void *owner,
+                                                const upb_msgdef *m);
 
 #ifdef __cplusplus
 }  /* extern "C" */

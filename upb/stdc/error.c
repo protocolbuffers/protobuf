@@ -9,7 +9,6 @@
 
 #include "upb/stdc/error.h"
 
-#include <errno.h>
 #include <string.h>
 
 void upb_status_fromerrno(upb_status *status, int code) {

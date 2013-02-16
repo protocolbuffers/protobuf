@@ -7,11 +7,13 @@
 
 #include "upb/bytestream.h"
 
-#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
-char *upb_byteregion_strdup(const struct _upb_byteregion *r) {
+
+/* upb_byteregion *************************************************************/
+
+char *upb_byteregion_strdup(const upb_byteregion *r) {
   char *ret = malloc(upb_byteregion_len(r) + 1);
   upb_byteregion_copyall(r, ret);
   ret[upb_byteregion_len(r)] = '\0';

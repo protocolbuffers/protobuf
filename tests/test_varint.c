@@ -86,16 +86,19 @@ static void test_varint_decoder(upb_decoderet (*decoder)(const char*)) {
     printf("ok.\n"); \
   } \
 
-TEST_VARINT_DECODER(branch32);
-TEST_VARINT_DECODER(branch64);
+TEST_VARINT_DECODER(check2_branch32);
+TEST_VARINT_DECODER(check2_branch64);
 TEST_VARINT_DECODER(check2_wright);
 TEST_VARINT_DECODER(check2_massimino);
 
-int main() {
-  test_branch32();
-  test_branch64();
+int run_tests(int argc, char *argv[]) {
+  UPB_UNUSED(argc);
+  UPB_UNUSED(argv);
+  test_check2_branch32();
+  test_check2_branch64();
   test_check2_wright();
   test_check2_massimino();
+  return 0;
 }
 
 #if 0

@@ -5,16 +5,12 @@
  * Author: Josh Haberman <jhaberman@gmail.com>
  */
 
+#include <inttypes.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include "upb/bytestream.h"
-#include "upb/msg.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/varint.h"
-
-#ifndef UINT32_MAX
-#define UINT32_MAX 0xffffffff
-#endif
 
 typedef struct {
   uint8_t native_wire_type;
@@ -62,11 +58,12 @@ static const upb_decoder_typeinfo upb_decoder_types[] = {
 #include "upb/pb/decoder_x64.h"
 #endif
 
-upb_decoderplan *upb_decoderplan_new(upb_handlers *h, bool allowjit) {
+upb_decoderplan *upb_decoderplan_new(const upb_handlers *h, bool allowjit) {
+  UPB_UNUSED(allowjit);
   upb_decoderplan *p = malloc(sizeof(*p));
+  assert(upb_handlers_isfrozen(h));
   p->handlers = h;
-  upb_handlers_ref(h);
-  h->should_jit = allowjit;
+  upb_handlers_ref(h, p);
 #ifdef UPB_USE_JIT_X64
   p->jit_code = NULL;
   if (allowjit) upb_decoderplan_makejit(p);
@@ -76,7 +73,7 @@ upb_decoderplan *upb_decoderplan_new(upb_handlers *h, bool allowjit) {
 
 void upb_decoderplan_unref(upb_decoderplan *p) {
   // TODO: make truly refcounted.
-  upb_handlers_unref(p->handlers);
+  upb_handlers_unref(p->handlers, p);
 #ifdef UPB_USE_JIT_X64
   if (p->jit_code) upb_decoderplan_freejit(p);
 #endif
@@ -100,8 +97,8 @@ bool upb_decoderplan_hasjitcode(upb_decoderplan *p) {
 // configuration.  But emperically on a Core i7, performance increases 30-50%
 // with these annotations.  Every instance where these appear, gcc 4.2.1 made
 // the wrong decision and degraded performance in benchmarks.
-#define FORCEINLINE static __attribute__((__always_inline__))
-#define NOINLINE static __attribute__((__noinline__))
+#define FORCEINLINE static inline __attribute__((always_inline))
+#define NOINLINE static __attribute__((noinline))
 
 UPB_NORETURN static void upb_decoder_exitjmp(upb_decoder *d) {
   // Resumable decoder would back out to completed_ptr (and possibly get a
@@ -141,14 +138,23 @@ uint64_t upb_decoder_bufendofs(upb_decoder *d) {
   return d->bufstart_ofs + (d->end - d->buf);
 }
 
+static bool upb_decoder_islegalend(upb_decoder *d) {
+  if (d->top == d->stack) return true;
+  if (d->top - 1 == d->stack &&
+      d->top->is_sequence && !d->top->is_packed) return true;
+  return false;
+}
+
+// Calculates derived values that we cache for speed.  These reflect a
+// combination of the current buffer and the stack, so must be called whenever
+// either is updated.
 static void upb_decoder_setmsgend(upb_decoder *d) {
-  upb_dispatcher_frame *f = d->dispatcher.top;
+  upb_decoder_frame *f = d->top;
   size_t delimlen = f->end_ofs - d->bufstart_ofs;
   size_t buflen = d->end - d->buf;
   d->delim_end = (f->end_ofs != UPB_NONDELIMITED && delimlen <= buflen) ?
       d->buf + delimlen : NULL;  // NULL if not in this buf.
   d->top_is_packed = f->is_packed;
-  d->dispatch_table = &d->dispatcher.msgent->fieldtab;
 }
 
 static void upb_decoder_skiptonewbuf(upb_decoder *d, uint64_t ofs) {
@@ -201,11 +207,11 @@ static void upb_pullbuf(upb_decoder *d) {
   if (!upb_trypullbuf(d)) upb_decoder_abortjmp(d, "Unexpected EOF");
 }
 
-void upb_decoder_checkpoint(upb_decoder *d) {
+static void upb_decoder_checkpoint(upb_decoder *d) {
   upb_byteregion_discard(d->input, upb_decoder_offset(d));
 }
 
-void upb_decoder_discardto(upb_decoder *d, uint64_t ofs) {
+static void upb_decoder_discardto(upb_decoder *d, uint64_t ofs) {
   if (ofs <= upb_decoder_bufendofs(d)) {
     upb_decoder_advance(d, ofs - upb_decoder_offset(d));
   } else {
@@ -214,7 +220,7 @@ void upb_decoder_discardto(upb_decoder *d, uint64_t ofs) {
   upb_decoder_checkpoint(d);
 }
 
-void upb_decoder_discard(upb_decoder *d, size_t bytes) {
+static void upb_decoder_discard(upb_decoder *d, size_t bytes) {
   upb_decoder_discardto(d, upb_decoder_offset(d) + bytes);
 }
 
@@ -259,7 +265,7 @@ done:
 // Returns true on success or false if we've hit a valid EOF.
 FORCEINLINE bool upb_trydecode_varint32(upb_decoder *d, uint32_t *val) {
   if (upb_decoder_bufleft(d) == 0 &&
-      upb_dispatcher_islegalend(&d->dispatcher) &&
+      upb_decoder_islegalend(d) &&
       !upb_trypullbuf(d)) {
     return false;
   }
@@ -319,21 +325,45 @@ FORCEINLINE uint64_t upb_decode_fixed64(upb_decoder *d) {
   return u64;  // TODO: proper byte swapping for big-endian machines.
 }
 
-INLINE upb_byteregion *upb_decode_string(upb_decoder *d) {
-  uint32_t strlen = upb_decode_varint32(d);
-  uint64_t offset = upb_decoder_offset(d);
-  if (offset + strlen > upb_byteregion_endofs(d->input))
-    upb_decoder_abortjmp(d, "Unexpected EOF");
-  upb_byteregion_reset(&d->str_byteregion, d->input, offset, strlen);
-  // Could make it an option on the callback whether we fetchall() first or not.
-  if (upb_byteregion_fetchall(&d->str_byteregion) != UPB_BYTE_OK)
-    upb_decoder_abortjmp(d, "Couldn't fetchall() on string.");
-  upb_decoder_discardto(d, offset + strlen);
-  return &d->str_byteregion;
+INLINE void upb_push_msg(upb_decoder *d, const upb_fielddef *f, uint64_t end) {
+  upb_decoder_frame *fr = d->top + 1;
+  if (!upb_sink_startsubmsg(&d->sink, f) || fr > d->limit) {
+    upb_decoder_abortjmp(d, "Nesting too deep.");
+  }
+  fr->f = f;
+  fr->is_sequence = false;
+  fr->is_packed = false;
+  fr->end_ofs = end;
+  fr->group_fieldnum = end == UPB_NONDELIMITED ?
+      (int32_t)upb_fielddef_number(f) : -1;
+  d->top = fr;
+  upb_decoder_setmsgend(d);
 }
 
-INLINE void upb_push_msg(upb_decoder *d, upb_fhandlers *f, uint64_t end) {
-  upb_dispatch_startsubmsg(&d->dispatcher, f)->end_ofs = end;
+INLINE void upb_push_seq(upb_decoder *d, const upb_fielddef *f, bool packed,
+                         uint64_t end_ofs) {
+  upb_decoder_frame *fr = d->top + 1;
+  if (!upb_sink_startseq(&d->sink, f) || fr > d->limit) {
+    upb_decoder_abortjmp(d, "Nesting too deep.");
+  }
+  fr->f = f;
+  fr->is_sequence = true;
+  fr->group_fieldnum = -1;
+  fr->is_packed = packed;
+  fr->end_ofs = end_ofs;
+  d->top = fr;
+  upb_decoder_setmsgend(d);
+}
+
+INLINE void upb_pop_submsg(upb_decoder *d) {
+  upb_sink_endsubmsg(&d->sink, d->top->f);
+  d->top--;
+  upb_decoder_setmsgend(d);
+}
+
+INLINE void upb_pop_seq(upb_decoder *d) {
+  upb_sink_endseq(&d->sink, d->top->f);
+  d->top--;
   upb_decoder_setmsgend(d);
 }
 
@@ -344,12 +374,13 @@ INLINE void upb_push_msg(upb_decoder *d, upb_fhandlers *f, uint64_t end) {
 // properly sign-extended.  We could detect this and error about the data loss,
 // but proto2 does not do this, so we pass.
 
-#define T(type, wt, valtype, convfunc) \
-  INLINE void upb_decode_ ## type(upb_decoder *d, upb_fhandlers *f) { \
-    upb_value val; \
-    upb_value_set ## valtype(&val, (convfunc)(upb_decode_ ## wt(d))); \
-    upb_dispatch_value(&d->dispatcher, f, val); \
+#define T(type, wt, name, convfunc) \
+  INLINE void upb_decode_ ## type(upb_decoder *d, const upb_fielddef *f) { \
+    upb_sink_put ## name(&d->sink, f, (convfunc)(upb_decode_ ## wt(d))); \
   } \
+
+static double  upb_asdouble(uint64_t n) { double d; memcpy(&d, &n, 8); return d; }
+static float   upb_asfloat(uint32_t n)  { float  f; memcpy(&f, &n, 4); return f; }
 
 T(INT32,    varint,  int32,  int32_t)
 T(INT64,    varint,  int64,  int64_t)
@@ -361,41 +392,42 @@ T(SFIXED32, fixed32, int32,  int32_t)
 T(SFIXED64, fixed64, int64,  int64_t)
 T(BOOL,     varint,  bool,   bool)
 T(ENUM,     varint,  int32,  int32_t)
+T(DOUBLE,   fixed64, double, upb_asdouble)
+T(FLOAT,    fixed32, float,  upb_asfloat)
 T(SINT32,   varint,  int32,  upb_zzdec_32)
 T(SINT64,   varint,  int64,  upb_zzdec_64)
-T(STRING,   string,  byteregion, upb_byteregion*)
-
 #undef T
 
-INLINE void upb_decode_DOUBLE(upb_decoder *d, upb_fhandlers *f) {
-  upb_value val;
-  double dbl;
-  uint64_t wireval = upb_decode_fixed64(d);
-  memcpy(&dbl, &wireval, 8);
-  upb_value_setdouble(&val, dbl);
-  upb_dispatch_value(&d->dispatcher, f, val);
-}
-
-INLINE void upb_decode_FLOAT(upb_decoder *d, upb_fhandlers *f) {
-  upb_value val;
-  float flt;
-  uint64_t wireval = upb_decode_fixed32(d);
-  memcpy(&flt, &wireval, 4);
-  upb_value_setfloat(&val, flt);
-  upb_dispatch_value(&d->dispatcher, f, val);
-}
-
-static void upb_decode_GROUP(upb_decoder *d, upb_fhandlers *f) {
+static void upb_decode_GROUP(upb_decoder *d, const upb_fielddef *f) {
   upb_push_msg(d, f, UPB_NONDELIMITED);
 }
-static void upb_endgroup(upb_decoder *d, upb_fhandlers *f) {
-  (void)f;
-  upb_dispatch_endsubmsg(&d->dispatcher);
-  upb_decoder_setmsgend(d);
-}
-static void upb_decode_MESSAGE(upb_decoder *d, upb_fhandlers *f) {
+
+static void upb_decode_MESSAGE(upb_decoder *d, const upb_fielddef *f) {
   uint32_t len = upb_decode_varint32(d);
   upb_push_msg(d, f, upb_decoder_offset(d) + len);
+}
+
+static void upb_decode_STRING(upb_decoder *d, const upb_fielddef *f) {
+  uint32_t strlen = upb_decode_varint32(d);
+  uint64_t offset = upb_decoder_offset(d);
+  uint64_t end = offset + strlen;
+  if (end > upb_byteregion_endofs(d->input))
+    upb_decoder_abortjmp(d, "Unexpected EOF");
+  upb_sink_startstr(&d->sink, f, strlen);
+  while (strlen > 0) {
+    if (upb_byteregion_available(d->input, offset) == 0)
+      upb_pullbuf(d);
+    size_t len;
+    const char *ptr = upb_byteregion_getptr(d->input, offset, &len);
+    len = UPB_MIN(len, strlen);
+    len = upb_sink_putstring(&d->sink, f, ptr, len);
+    if (len > strlen)
+      upb_decoder_abortjmp(d, "Skipped too many bytes.");
+    offset += len;
+    strlen -= len;
+    upb_decoder_discardto(d, offset);
+  }
+  upb_sink_endstr(&d->sink, f);
 }
 
 
@@ -410,33 +442,33 @@ static void upb_decoder_checkdelim(upb_decoder *d) {
   // handler).
   while (d->delim_end != NULL && d->ptr >= d->delim_end) {
     if (d->ptr > d->delim_end) upb_decoder_abortjmp(d, "Bad submessage end");
-    if (d->dispatcher.top->is_sequence) {
-      upb_dispatch_endseq(&d->dispatcher);
+    if (d->top->is_sequence) {
+      upb_pop_seq(d);
     } else {
-      upb_dispatch_endsubmsg(&d->dispatcher);
+      upb_pop_submsg(d);
     }
-    upb_decoder_setmsgend(d);
   }
 }
 
-INLINE upb_fhandlers *upb_decode_tag(upb_decoder *d) {
+INLINE const upb_fielddef *upb_decode_tag(upb_decoder *d) {
   while (1) {
     uint32_t tag;
     if (!upb_trydecode_varint32(d, &tag)) return NULL;
     uint8_t wire_type = tag & 0x7;
-    uint32_t fieldnum = tag >> 3;
-    const upb_value *val = upb_inttable_lookup32(d->dispatch_table, fieldnum);
-    upb_fhandlers *f = val ? upb_value_getptr(*val) : NULL;
-    bool is_packed = false;
+    uint32_t fieldnum = tag >> 3; const upb_fielddef *f = NULL;
+    const upb_handlers *h = upb_sink_tophandlers(&d->sink);
+    f = upb_msgdef_itof(upb_handlers_msgdef(h), fieldnum);
+    bool packed = false;
 
     if (f) {
       // Wire type check.
-      if (wire_type == upb_decoder_types[f->type].native_wire_type) {
+      upb_fieldtype_t type = upb_fielddef_type(f);
+      if (wire_type == upb_decoder_types[type].native_wire_type) {
         // Wire type is ok.
       } else if ((wire_type == UPB_WIRE_TYPE_DELIMITED &&
-                 upb_decoder_types[f->type].is_numeric)) {
+                 upb_decoder_types[type].is_numeric)) {
         // Wire type is ok (and packed).
-        is_packed = true;
+        packed = true;
       } else {
         f = NULL;
       }
@@ -445,29 +477,24 @@ INLINE upb_fhandlers *upb_decode_tag(upb_decoder *d) {
     // There are no explicit "startseq" or "endseq" markers in protobuf
     // streams, so we have to infer them by noticing when a repeated field
     // starts or ends.
-    upb_dispatcher_frame *fr = d->dispatcher.top;
+    upb_decoder_frame *fr = d->top;
     if (fr->is_sequence && fr->f != f) {
-      upb_dispatch_endseq(&d->dispatcher);
-      upb_decoder_setmsgend(d);
-      fr = d->dispatcher.top;
+      upb_pop_seq(d);
+      fr = d->top;
     }
-    if (f && f->repeated && !fr->is_sequence) {
-      upb_dispatcher_frame *fr2 = upb_dispatch_startseq(&d->dispatcher, f);
-      if (is_packed) {
-        // Packed primitive field.
+
+    if (f && upb_fielddef_isseq(f) && !fr->is_sequence) {
+      if (packed) {
         uint32_t len = upb_decode_varint32(d);
-        fr2->end_ofs = upb_decoder_offset(d) + len;
-        fr2->is_packed = true;
+        upb_push_seq(d, f, true, upb_decoder_offset(d) + len);
       } else {
-        // Non-packed field -- this tag pertains to only a single message.
-        fr2->end_ofs = fr->end_ofs;
+        upb_push_seq(d, f, false, fr->end_ofs);
       }
-      upb_decoder_setmsgend(d);
     }
 
     if (f) return f;
 
-    // Unknown field.
+    // Unknown field or ENDGROUP.
     if (fieldnum == 0 || fieldnum > UPB_MAX_FIELDNUMBER)
       upb_decoder_abortjmp(d, "Invalid field number");
     switch (wire_type) {
@@ -479,7 +506,12 @@ INLINE upb_fhandlers *upb_decode_tag(upb_decoder *d) {
       case UPB_WIRE_TYPE_START_GROUP:
         upb_decoder_abortjmp(d, "Can't handle unknown groups yet");
       case UPB_WIRE_TYPE_END_GROUP:
-        upb_decoder_abortjmp(d, "Unmatched ENDGROUP tag");
+        if (fieldnum != fr->group_fieldnum)
+          upb_decoder_abortjmp(d, "Unmatched ENDGROUP tag");
+        upb_sink_endsubmsg(&d->sink, fr->f);
+        d->top--;
+        upb_decoder_setmsgend(d);
+        break;
       default:
         upb_decoder_abortjmp(d, "Invalid wire type");
     }
@@ -495,30 +527,30 @@ upb_success_t upb_decoder_decode(upb_decoder *d) {
     assert(!upb_ok(&d->status));
     return UPB_ERROR;
   }
-  upb_dispatch_startmsg(&d->dispatcher);
+  upb_sink_startmsg(&d->sink);
   // Prime the buf so we can hit the JIT immediately.
   upb_trypullbuf(d);
-  upb_fhandlers *f = d->dispatcher.top->f;
+  const upb_fielddef *f = d->top->f;
   while(1) {
-    upb_decoder_checkdelim(d);
 #ifdef UPB_USE_JIT_X64
     upb_decoder_enterjit(d);
     upb_decoder_checkpoint(d);
+    upb_decoder_setmsgend(d);
 #endif
+    upb_decoder_checkdelim(d);
     if (!d->top_is_packed) f = upb_decode_tag(d);
     if (!f) {
       // Sucessful EOF.  We may need to dispatch a top-level implicit frame.
-      if (d->dispatcher.top->is_sequence) {
-        assert(d->dispatcher.top == d->dispatcher.stack + 1);
-        upb_dispatch_endseq(&d->dispatcher);
+      if (d->top->is_sequence) {
+        assert(d->sink.top == d->sink.stack + 1);
+        upb_pop_seq(d);
       }
-      assert(d->dispatcher.top == d->dispatcher.stack);
-      upb_dispatch_endmsg(&d->dispatcher, &d->status);
+      assert(d->top == d->stack);
+      upb_sink_endmsg(&d->sink, &d->status);
       return UPB_OK;
     }
 
-    switch (f->type) {
-      case UPB_TYPE_ENDGROUP:  upb_endgroup(d, f);        break;
+    switch (upb_fielddef_type(f)) {
       case UPB_TYPE(DOUBLE):   upb_decode_DOUBLE(d, f);   break;
       case UPB_TYPE(FLOAT):    upb_decode_FLOAT(d, f);    break;
       case UPB_TYPE(INT64):    upb_decode_INT64(d, f);    break;
@@ -545,28 +577,29 @@ upb_success_t upb_decoder_decode(upb_decoder *d) {
 
 void upb_decoder_init(upb_decoder *d) {
   upb_status_init(&d->status);
-  upb_dispatcher_init(&d->dispatcher, &d->status, &upb_decoder_exitjmp2, d);
   d->plan = NULL;
   d->input = NULL;
+  d->limit = &d->stack[UPB_MAX_NESTING];
 }
 
-void upb_decoder_resetplan(upb_decoder *d, upb_decoderplan *p, int msg_offset) {
-  assert(msg_offset >= 0);
-  assert(msg_offset < p->handlers->msgs_len);
+void upb_decoder_resetplan(upb_decoder *d, upb_decoderplan *p) {
   d->plan = p;
-  d->msg_offset = msg_offset;
   d->input = NULL;
+  upb_sink_init(&d->sink, p->handlers);
 }
 
 void upb_decoder_resetinput(upb_decoder *d, upb_byteregion *input,
-                            void *closure) {
+                            void *c) {
   assert(d->plan);
-  upb_dispatcher_frame *f =
-      upb_dispatcher_reset(&d->dispatcher, closure, d->plan->handlers->msgs[0]);
   upb_status_clear(&d->status);
-  f->end_ofs = UPB_NONDELIMITED;
+  upb_sink_reset(&d->sink, c);
   d->input = input;
-  d->str_byteregion.bytesrc = input->bytesrc;
+
+  d->top = d->stack;
+  d->top->is_sequence = false;
+  d->top->is_packed = false;
+  d->top->group_fieldnum = UINT32_MAX;
+  d->top->end_ofs = UPB_NONDELIMITED;
 
   // Protect against assert in skiptonewbuf().
   d->bufstart_ofs = 0;
@@ -576,6 +609,5 @@ void upb_decoder_resetinput(upb_decoder *d, upb_byteregion *input,
 }
 
 void upb_decoder_uninit(upb_decoder *d) {
-  upb_dispatcher_uninit(&d->dispatcher);
   upb_status_uninit(&d->status);
 }

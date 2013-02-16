@@ -67,7 +67,7 @@ void upb_descreader_uninit(upb_descreader *r);
 
 // Registers handlers that will build the defs.  Pass the descreader as the
 // closure.
-upb_mhandlers *upb_descreader_reghandlers(upb_handlers *h);
+const upb_handlers *upb_descreader_newhandlers(const void *owner);
 
 // Gets the array of defs that have been parsed and removes them from the
 // descreader.  Ownership of the defs is passed to the caller using the given

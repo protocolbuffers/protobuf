@@ -27,11 +27,16 @@ static upb_flow_t value(void *closure, upb_value fval, upb_value val) {
   return UPB_CONTINUE;
 }
 
+void onfreg(void *c, upb_fhandlers *fh, const upb_fielddef *f) {
+  upb_fhandlers_setvalue(fh, &value);
+  upb_fhandlers_setstartsubmsg(fh, &startsubmsg);
+}
+
 static bool initialize()
 {
   // Initialize upb state, decode descriptor.
   upb_status status = UPB_STATUS_INIT;
-  upb_symtab *s = upb_symtab_new(&s);
+  upb_symtab *s = upb_symtab_new();
   upb_load_descriptor_file_into_symtab(s, MESSAGE_DESCRIPTOR_FILE, &status);
   if(!upb_ok(&status)) {
     fprintf(stderr, "Error reading descriptor: %s\n",
@@ -44,7 +49,7 @@ static bool initialize()
     fprintf(stderr, "Error finding symbol '%s'.\n", MESSAGE_NAME);
     return false;
   }
-  upb_symtab_unref(s, &s);
+  upb_symtab_unref(s);
 
   // Read the message data itself.
   input_str = upb_readfile(MESSAGE_FILE, &input_len);
@@ -55,8 +60,7 @@ static bool initialize()
 
   upb_handlers *handlers = upb_handlers_new();
   // Cause all messages to be read, but do nothing when they are.
-  upb_handlerset hset = {NULL, NULL, value, startsubmsg, NULL, NULL, NULL};
-  upb_handlers_reghandlerset(handlers, def, &hset);
+  upb_handlers_regmsgdef(handlers, def, NULL, &upb_onfreg_hset, NULL);
   upb_decoder_init(&decoder);
   plan = upb_decoderplan_new(handlers, JIT);
   upb_decoder_resetplan(&decoder, plan, 0);

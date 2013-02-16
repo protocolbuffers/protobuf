@@ -34,6 +34,89 @@ the major things that are broken or not yet implemented yet:
 - serialization isn't written yet (only deserialization)
 
 
+C/C++ API
+=========
+
+upb's main interfaces are defined in .h files (like upb/def.h).  These header
+files are coded in such a way that they are not only compatible with C and C++
+but provide idiomatic interfaces to both (functions for C, classes for C++).
+
+Here is the general strategy/pattern for this.  I'll explain it piece by piece.
+
+// This defines a type called upb::Foo in C++ or upb_foo in C.  In both cases
+// there is a typedef for upb_foo, which is important since this is how the
+// C functions are defined (which are exposed to both C and C++).
+
+#ifdef __cplusplus
+namespace upb { class Foo; }
+typedef upb::Foo upb_foo;
+extern "C" {
+#else
+struct upb_foo;
+typedef struct upb_foo upb_foo;
+#endif
+
+// Here is the actual definition of the class/struct.  In C++ we get a class
+// called upb::Foo and in C we get a struct called "struct upb_foo", but both
+// have the same members and the C++ version is "standard-layout" according
+// to C++11.  This means that the two should be compatible.
+//
+// In addition to being completely accessible from C, it also provides C++
+// niceities like methods (instead of bare functions).  We also get
+// encapsulation in C++, even though this is impossible to provide in C.  We
+// provide all method documentation in the C++ class, since the class/method
+// syntax is nicer to read than the bare functions of C.
+
+#ifdef __cplusplus
+
+class upb::Foo {
+ public:
+  // Method documentation for DoBar().
+  void DoBar(int32_t x);
+
+  // Method documentation for IsSpicy().
+  bool IsSpicy();
+
+ private:
+
+#else
+struct upb_foo {
+#endif
+  int32_t private_member;
+};
+
+// Next follows the C API, which is how the functionality is actually
+// implemented.  We omit documentation here because everything was documented
+// in the C++ class, and it's easy to match the functions 1:1 to the C++
+// methods.
+void upb_foo_dobar(upb_foo *f, int32_t x);
+bool upb_foo_isspicy(upb_foo *f);
+
+// Finally we include inline definitions of the C++ methods, which are nothing
+// but this wrappers around the C functions.  Since these are inline, the C++
+// API imposes no overhead.
+
+#ifdef __cplusplus
+}  // extern "C"
+
+namespace upb {
+inline void Foo::DoBar(int32_t x) { upb_foo_dobar(this, x); }
+inline bool Foo::IsSpicy() { return upb_foo_isspicy(this); }
+}
+#endif
+
+This scheme works pretty nicely.  It adds a bit of noise to the header file, but
+gives nice, zero-overhead APIs to both C and C++ without having to duplicate
+the API documentation.
+
+The biggest bummer is that there isn't any good way to use C++ inheritance
+even for types which are trying to express inheritance in C.  C++ just doesn't
+give any guarantees about how it will arrange data members in base classes,
+so we can't use C++ inheritance while interoperating with C layouts.  The
+biggest effect of this is that we can't get C++'s nice implicit upcasts; all
+upcasts have to be explicit, which is a pain.
+
+
 CONTACT
 =======
 

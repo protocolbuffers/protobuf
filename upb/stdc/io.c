@@ -7,6 +7,9 @@
 
 #include "upb/stdc/io.h"
 
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
 #include "upb/stdc/error.h"
 
 // We can make this configurable if necessary.

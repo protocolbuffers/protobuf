@@ -7,6 +7,7 @@
  * input, with buffer breaks in arbitrary places.
  *
  * Tests to add:
+ * - string/bytes
  * - unknown field handler called appropriately
  * - unknown fields can be inserted in random places
  * - fuzzing of valid input
@@ -35,6 +36,9 @@
 #include "upb/pb/varint.h"
 #include "upb/upb.h"
 #include "upb_test.h"
+#include "third_party/upb/tests/test_decoder_schema.upb.h"
+
+uint32_t filter_hash = 0;
 
 // Copied from decoder.c, since this is not a public interface.
 typedef struct {
@@ -186,66 +190,78 @@ void indent(void *depth) {
   indentbuf(&output, *(int*)depth);
 }
 
-#define VALUE_HANDLER(member, fmt) \
-  upb_flow_t value_ ## member(void *closure, upb_value fval, upb_value val) { \
-    indent(closure);                                                          \
-    output.appendf("%" PRIu32 ":%" fmt "\n",                                  \
-                   upb_value_getuint32(fval), upb_value_get ## member(val));  \
-    return UPB_CONTINUE;                                                      \
+#define NUMERIC_VALUE_HANDLER(member, ctype, fmt) \
+  bool value_ ## member(void *closure, void *fval, ctype val) {       \
+    indent(closure);                                                  \
+    uint32_t *num = static_cast<uint32_t*>(fval);                     \
+    output.appendf("%" PRIu32 ":%" fmt "\n", *num, val);              \
+    return true;                                                      \
   }
 
-VALUE_HANDLER(uint32, PRIu32)
-VALUE_HANDLER(uint64, PRIu64)
-VALUE_HANDLER(int32, PRId32)
-VALUE_HANDLER(int64, PRId64)
-VALUE_HANDLER(float, "g")
-VALUE_HANDLER(double, "g")
+NUMERIC_VALUE_HANDLER(uint32, uint32_t, PRIu32)
+NUMERIC_VALUE_HANDLER(uint64, uint64_t, PRIu64)
+NUMERIC_VALUE_HANDLER(int32,  int32_t,  PRId32)
+NUMERIC_VALUE_HANDLER(int64,  int64_t,  PRId64)
+NUMERIC_VALUE_HANDLER(float,  float,    "g")
+NUMERIC_VALUE_HANDLER(double, double,   "g")
 
-upb_flow_t value_bool(void *closure, upb_value fval, upb_value val) {
+bool value_bool(void *closure, void *fval, bool val) {
   indent(closure);
-  output.appendf("%" PRIu32 ":%s\n",
-                 upb_value_getuint32(fval),
-                 upb_value_getbool(val) ? "true" : "false");
-  return UPB_CONTINUE;
+  uint32_t *num = static_cast<uint32_t*>(fval);
+  output.appendf("%" PRIu32 ":%s\n", *num, val ? "true" : "false");
+  return true;
 }
 
-upb_flow_t value_string(void *closure, upb_value fval, upb_value val) {
-  // Note: won't work with strings that contain NULL.
+void* startstr(void *closure, void *fval, size_t size_hint) {
   indent(closure);
-  char *str = upb_byteregion_strdup(upb_value_getbyteregion(val));
-  output.appendf("%" PRIu32 ":%s\n", upb_value_getuint32(fval), str);
-  free(str);
-  return UPB_CONTINUE;
+  uint32_t *num = static_cast<uint32_t*>(fval);
+  output.appendf("%" PRIu32 ":(%zu)\"", *num, size_hint);
+  return ((int*)closure) + 1;
 }
 
-upb_sflow_t startsubmsg(void *closure, upb_value fval) {
-  indent(closure);
-  output.appendf("%" PRIu32 ":{\n", upb_value_getuint32(fval));
-  return UPB_CONTINUE_WITH(((int*)closure) + 1);
+size_t value_string(void *closure, void *fval, const char *buf, size_t n) {
+  output.append(buf, n);
+  return n;
 }
 
-upb_flow_t endsubmsg(void *closure, upb_value fval) {
+bool endstr(void *closure, void *fval) {
+  UPB_UNUSED(fval);
+  output.append("\"\n");
+  return true;
+}
+
+void* startsubmsg(void *closure, void *fval) {
+  indent(closure);
+  uint32_t *num = static_cast<uint32_t*>(fval);
+  output.appendf("%" PRIu32 ":{\n", *num);
+  return ((int*)closure) + 1;
+}
+
+bool endsubmsg(void *closure, void *fval) {
+  UPB_UNUSED(fval);
   indent(closure);
   output.append("}\n");
-  return UPB_CONTINUE;
+  return true;
 }
 
-upb_sflow_t startseq(void *closure, upb_value fval) {
+void* startseq(void *closure, void *fval) {
   indent(closure);
-  output.appendf("%" PRIu32 ":[\n", upb_value_getuint32(fval));
-  return UPB_CONTINUE_WITH(((int*)closure) + 1);
+  uint32_t *num = static_cast<uint32_t*>(fval);
+  output.appendf("%" PRIu32 ":[\n", *num);
+  return ((int*)closure) + 1;
 }
 
-upb_flow_t endseq(void *closure, upb_value fval) {
+bool endseq(void *closure, void *fval) {
+  UPB_UNUSED(fval);
   indent(closure);
   output.append("]\n");
-  return UPB_CONTINUE;
+  return true;
 }
 
-upb_flow_t startmsg(void *closure) {
+bool startmsg(void *closure) {
   indent(closure);
   output.append("<\n");
-  return UPB_CONTINUE;
+  return true;
 }
 
 void endmsg(void *closure, upb_status *status) {
@@ -254,14 +270,23 @@ void endmsg(void *closure, upb_status *status) {
   output.append(">\n");
 }
 
-void doreg(upb_mhandlers *m, uint32_t num, upb_fieldtype_t type, bool repeated,
-           upb_value_handler *handler) {
-  upb_fhandlers *f = upb_mhandlers_newfhandlers(m, num, type, repeated);
+void free_uint32(void *val) {
+  uint32_t *u32 = static_cast<uint32_t*>(val);
+  delete u32;
+}
+
+template<class T>
+void doreg(upb_handlers *h, uint32_t num,
+           typename upb::Handlers::Value<T>::Handler *handler) {
+  const upb_fielddef *f = upb_msgdef_itof(upb_handlers_msgdef(h), num);
   ASSERT(f);
-  upb_fhandlers_setvalue(f, handler);
-  upb_fhandlers_setstartseq(f, &startseq);
-  upb_fhandlers_setendseq(f, &endseq);
-  upb_fhandlers_setfval(f, upb_value_uint32(num));
+  ASSERT(h->SetValueHandler<T>(f, handler, new uint32_t(num), free_uint32));
+  if (f->IsSequence()) {
+    ASSERT(h->SetStartSequenceHandler(
+        f, &startseq, new uint32_t(num), free_uint32));
+    ASSERT(h->SetEndSequenceHandler(
+        f, &endseq, new uint32_t(num), free_uint32));
+  }
 }
 
 // The repeated field number to correspond to the given non-repeated field
@@ -273,57 +298,81 @@ uint32_t rep_fn(uint32_t fn) {
 #define NOP_FIELD 40
 #define UNKNOWN_FIELD 666
 
-void reg(upb_mhandlers *m, upb_fieldtype_t type, upb_value_handler *handler) {
+template <class T>
+void reg(upb_handlers *h, upb_fieldtype_t type,
+         typename upb::Handlers::Value<T>::Handler *handler) {
   // We register both a repeated and a non-repeated field for every type.
   // For the non-repeated field we make the field number the same as the
   // type.  For the repeated field we make it a function of the type.
-  doreg(m, type, type, false, handler);
-  doreg(m, rep_fn(type), type, true, handler);
+  doreg<T>(h, type, handler);
+  doreg<T>(h, rep_fn(type), handler);
 }
 
-void reg_subm(upb_mhandlers *m, uint32_t num, upb_fieldtype_t type,
-              bool repeated) {
-  upb_fhandlers *f =
-      upb_mhandlers_newfhandlers_subm(m, num, type, repeated, m);
+void reg_subm(upb_handlers *h, uint32_t num) {
+  const upb_fielddef *f = upb_msgdef_itof(upb_handlers_msgdef(h), num);
   ASSERT(f);
-  upb_fhandlers_setstartseq(f, &startseq);
-  upb_fhandlers_setendseq(f, &endseq);
-  upb_fhandlers_setstartsubmsg(f, &startsubmsg);
-  upb_fhandlers_setendsubmsg(f, &endsubmsg);
-  upb_fhandlers_setfval(f, upb_value_uint32(num));
+  if (f->IsSequence()) {
+    ASSERT(h->SetStartSequenceHandler(
+        f, &startseq, new uint32_t(num), free_uint32));
+    ASSERT(h->SetEndSequenceHandler(
+        f, &endseq, new uint32_t(num), free_uint32));
+  }
+  ASSERT(h->SetStartSubMessageHandler(
+      f, &startsubmsg, new uint32_t(num), free_uint32));
+  ASSERT(h->SetEndSubMessageHandler(
+      f, &endsubmsg, new uint32_t(num), free_uint32));
+  ASSERT(upb_handlers_setsubhandlers(h, f, h));
 }
 
-void reghandlers(upb_mhandlers *m) {
-  upb_mhandlers_setstartmsg(m, &startmsg);
-  upb_mhandlers_setendmsg(m, &endmsg);
+void reg_str(upb_handlers *h, uint32_t num) {
+  const upb_fielddef *f = upb_msgdef_itof(upb_handlers_msgdef(h), num);
+  ASSERT(f);
+  if (f->IsSequence()) {
+    ASSERT(h->SetStartSequenceHandler(
+        f, &startseq, new uint32_t(num), free_uint32));
+    ASSERT(h->SetEndSequenceHandler(
+        f, &endseq, new uint32_t(num), free_uint32));
+  }
+  ASSERT(h->SetStartStringHandler(
+      f, &startstr, new uint32_t(num), free_uint32));
+  ASSERT(h->SetEndStringHandler(
+      f, &endstr, new uint32_t(num), free_uint32));
+  ASSERT(h->SetStringHandler(
+      f, &value_string, new uint32_t(num), free_uint32));
+}
+
+void reghandlers(upb_handlers *h) {
+  upb_handlers_setstartmsg(h, &startmsg);
+  upb_handlers_setendmsg(h, &endmsg);
 
   // Register handlers for each type.
-  reg(m, UPB_TYPE(DOUBLE),   &value_double);
-  reg(m, UPB_TYPE(FLOAT),    &value_float);
-  reg(m, UPB_TYPE(INT64),    &value_int64);
-  reg(m, UPB_TYPE(UINT64),   &value_uint64);
-  reg(m, UPB_TYPE(INT32) ,   &value_int32);
-  reg(m, UPB_TYPE(FIXED64),  &value_uint64);
-  reg(m, UPB_TYPE(FIXED32),  &value_uint32);
-  reg(m, UPB_TYPE(BOOL),     &value_bool);
-  reg(m, UPB_TYPE(STRING),   &value_string);
-  reg(m, UPB_TYPE(BYTES),    &value_string);
-  reg(m, UPB_TYPE(UINT32),   &value_uint32);
-  reg(m, UPB_TYPE(ENUM),     &value_int32);
-  reg(m, UPB_TYPE(SFIXED32), &value_int32);
-  reg(m, UPB_TYPE(SFIXED64), &value_int64);
-  reg(m, UPB_TYPE(SINT32),   &value_int32);
-  reg(m, UPB_TYPE(SINT64),   &value_int64);
+  reg<double>  (h, UPB_TYPE(DOUBLE),   &value_double);
+  reg<float>   (h, UPB_TYPE(FLOAT),    &value_float);
+  reg<int64_t> (h, UPB_TYPE(INT64),    &value_int64);
+  reg<uint64_t>(h, UPB_TYPE(UINT64),   &value_uint64);
+  reg<int32_t> (h, UPB_TYPE(INT32) ,   &value_int32);
+  reg<uint64_t>(h, UPB_TYPE(FIXED64),  &value_uint64);
+  reg<uint32_t>(h, UPB_TYPE(FIXED32),  &value_uint32);
+  reg<bool>    (h, UPB_TYPE(BOOL),     &value_bool);
+  reg<uint32_t>(h, UPB_TYPE(UINT32),   &value_uint32);
+  reg<int32_t> (h, UPB_TYPE(ENUM),     &value_int32);
+  reg<int32_t> (h, UPB_TYPE(SFIXED32), &value_int32);
+  reg<int64_t> (h, UPB_TYPE(SFIXED64), &value_int64);
+  reg<int32_t> (h, UPB_TYPE(SINT32),   &value_int32);
+  reg<int64_t> (h, UPB_TYPE(SINT64),   &value_int64);
+
+  reg_str(h, UPB_TYPE(STRING));
+  reg_str(h, UPB_TYPE(BYTES));
+  reg_str(h, rep_fn(UPB_TYPE(STRING)));
+  reg_str(h, rep_fn(UPB_TYPE(BYTES)));
 
   // Register submessage/group handlers that are self-recursive
   // to this type, eg: message M { optional M m = 1; }
-  reg_subm(m, UPB_TYPE(MESSAGE),         UPB_TYPE(MESSAGE), false);
-  reg_subm(m, UPB_TYPE(GROUP),           UPB_TYPE(GROUP),   false);
-  reg_subm(m, rep_fn(UPB_TYPE(MESSAGE)), UPB_TYPE(MESSAGE), true);
-  reg_subm(m, rep_fn(UPB_TYPE(GROUP)),   UPB_TYPE(GROUP),   true);
+  reg_subm(h, UPB_TYPE(MESSAGE));
+  reg_subm(h, rep_fn(UPB_TYPE(MESSAGE)));
 
-  // Register a no-op string field so we can pad the proto wherever we want.
-  upb_mhandlers_newfhandlers(m, NOP_FIELD, UPB_TYPE(STRING), false);
+  // For NOP_FIELD we register no handlers, so we can pad a proto freely without
+  // changing the output.
 }
 
 
@@ -413,22 +462,32 @@ upb_byteregion *upb_seamsrc_allbytes(upb_seamsrc *s) {
 /* Running of test cases ******************************************************/
 
 upb_decoderplan *plan;
+
+uint32_t Hash(const buffer& proto, const buffer* expected_output) {
+  uint32_t hash = MurmurHash2(proto.buf(), proto.len(), 0);
+  if (expected_output)
+    hash = MurmurHash2(expected_output->buf(), expected_output->len(), hash);
+  bool hasjit = upb_decoderplan_hasjitcode(plan);
+  hash = MurmurHash2(&hasjit, 1, hash);
+  return hash;
+}
+
 #define LINE(x) x "\n"
 void run_decoder(const buffer& proto, const buffer* expected_output) {
+  testhash = Hash(proto, expected_output);
+  if (filter_hash && testhash != filter_hash) return;
   upb_seamsrc src;
   upb_seamsrc_init(&src, proto.buf(), proto.len());
   upb_decoder d;
   upb_decoder_init(&d);
-  upb_decoder_resetplan(&d, plan, 0);
+  upb_decoder_resetplan(&d, plan);
   for (size_t i = 0; i < proto.len(); i++) {
     for (size_t j = i; j < UPB_MIN(proto.len(), i + 5); j++) {
       upb_seamsrc_resetseams(&src, i, j);
       upb_byteregion *input = upb_seamsrc_allbytes(&src);
       output.clear();
       upb_decoder_resetinput(&d, input, &closures[0]);
-      upb_success_t success = UPB_SUSPENDED;
-      while (success == UPB_SUSPENDED)
-        success = upb_decoder_decode(&d);
+      upb_success_t success = upb_decoder_decode(&d);
       ASSERT(upb_ok(upb_decoder_status(&d)) == (success == UPB_OK));
       if (expected_output) {
         ASSERT_STATUS(success == UPB_OK, upb_decoder_status(&d));
@@ -448,6 +507,7 @@ void run_decoder(const buffer& proto, const buffer* expected_output) {
   }
   upb_decoder_uninit(&d);
   upb_seamsrc_uninit(&src);
+  testhash = 0;
 }
 
 const static buffer thirty_byte_nop = buffer(cat(
@@ -777,35 +837,47 @@ void run_tests() {
   test_valid();
 }
 
-int main() {
+extern "C" {
+
+int run_tests(int argc, char *argv[]) {
+  if (argc > 1)
+    filter_hash = strtol(argv[1], NULL, 16);
   for (int i = 0; i < UPB_MAX_NESTING; i++) {
     closures[i] = i;
   }
-  // Construct decoder plan.
-  upb_handlers *h = upb_handlers_new();
-  reghandlers(upb_handlers_newmhandlers(h));
 
   // Create an empty handlers to make sure that the decoder can handle empty
   // messages.
-  upb_handlers_newmhandlers(h);
+  upb_handlers *h = upb_handlers_new(UPB_TEST_DECODER_EMPTYMESSAGE, &h);
+  bool ok = upb_handlers_freeze(&h, 1, NULL);
+  ASSERT(ok);
+  plan = upb_decoderplan_new(h, true);
+  upb_handlers_unref(h, &h);
+  upb_decoderplan_unref(plan);
+
+  // Construct decoder plan.
+  h = upb_handlers_new(UPB_TEST_DECODER_DECODERTEST, &h);
+  reghandlers(h);
+  ok = upb_handlers_freeze(&h, 1, NULL);
 
   // Test without JIT.
   plan = upb_decoderplan_new(h, false);
+  ASSERT(!upb_decoderplan_hasjitcode(plan));
   run_tests();
   upb_decoderplan_unref(plan);
 
+#ifdef UPB_USE_JIT_X64
   // Test JIT.
   plan = upb_decoderplan_new(h, true);
-#ifdef UPB_USE_JIT_X64
   ASSERT(upb_decoderplan_hasjitcode(plan));
-#else
-  ASSERT(!upb_decoderplan_hasjitcode(plan));
-#endif
   run_tests();
   upb_decoderplan_unref(plan);
+#endif
 
   plan = NULL;
   printf("All tests passed, %d assertions.\n", num_assertions);
-  upb_handlers_unref(h);
+  upb_handlers_unref(h, &h);
   return 0;
+}
+
 }

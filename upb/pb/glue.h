@@ -27,8 +27,7 @@
 #define UPB_GLUE_H
 
 #include <stdbool.h>
-#include "upb/upb.h"
-#include "upb/def.h"
+#include "upb/symtab.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,6 +54,29 @@ char *upb_readfile(const char *filename, size_t *len);
 
 #ifdef __cplusplus
 }  /* extern "C" */
+
+namespace upb {
+
+// All routines that load descriptors expect the descriptor to be a
+// FileDescriptorSet.
+inline bool LoadDescriptorFileIntoSymtab(SymbolTable* s, const char *fname,
+                                         Status* status) {
+  return upb_load_descriptor_file_into_symtab(s, fname, status);
+}
+
+inline bool LoadDescriptorIntoSymtab(SymbolTable* s, const char* str,
+                                     size_t len, Status* status) {
+  return upb_load_descriptor_into_symtab(s, str, len, status);
+}
+
+// Templated so it can accept both string and std::string.
+template <typename T>
+bool LoadDescriptorIntoSymtab(SymbolTable* s, const T& desc, Status* status) {
+  return upb_load_descriptor_into_symtab(s, desc.c_str(), desc.size(), status);
+}
+
+}  // namespace upb
+
 #endif
 
 #endif

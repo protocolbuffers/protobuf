@@ -1,0 +1,16 @@
+This directory contains code to interoperate with Google's official
+Protocol Buffers release.  Since it doesn't really have a name
+besides "protobuf," calling this directory "google" seems like the
+least confusing option.
+
+We support writing into protobuf's generated classes (and hopefully
+reading too, before long).  We support both the open source protobuf
+release and the Google-internal version of the same code.  The two
+live in different namespaces, and the internal version supports some
+features that are not supported in the open-source release.  Also, the
+internal version includes the legacy "proto1" classes which we must
+support; thankfully this is mostly relegated to its own separate file.
+
+Our functionality requires the full google::protobuf::Message
+interface; we rely on reflection so we know what fields to read/write
+and where to put them, so we can't support MessageLite.

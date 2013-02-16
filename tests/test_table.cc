@@ -34,7 +34,7 @@ void test_strtable(const vector<std::string>& keys, uint32_t num_to_insert) {
   /* Initialize structures. */
   upb_strtable table;
   std::map<std::string, int32_t> m;
-  upb_strtable_init(&table);
+  upb_strtable_init(&table, UPB_CTYPE_INT32);
   std::set<std::string> all;
   for(size_t i = 0; i < num_to_insert; i++) {
     const std::string& key = keys[i];
@@ -77,7 +77,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
   uint32_t largest_key = 0;
   std::map<uint32_t, uint32_t> m;
   __gnu_cxx::hash_map<uint32_t, uint32_t> hm;
-  upb_inttable_init(&table);
+  upb_inttable_init(&table, UPB_CTYPE_UINT32);
   for(size_t i = 0; i < num_entries; i++) {
     int32_t key = keys[i];
     largest_key = UPB_MAX((int32_t)largest_key, key);
@@ -103,7 +103,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
     upb_value val;
     bool ret = upb_inttable_remove(&table, keys[i], &val);
     ASSERT(ret == (m.erase(keys[i]) == 1));
-    if (ret) ASSERT(upb_value_getuint32(val) == keys[i] * 2);
+    if (ret) ASSERT(upb_value_getuint32(val) == (uint32_t)keys[i] * 2);
     hm.erase(keys[i]);
     m.erase(keys[i]);
   }
@@ -244,7 +244,9 @@ int32_t *get_contiguous_keys(int32_t num) {
   return buf;
 }
 
-int main(int argc, char *argv[]) {
+extern "C" {
+
+int run_tests(int argc, char *argv[]) {
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "--benchmark") == 0) benchmark = true;
   }
@@ -292,4 +294,7 @@ int main(int argc, char *argv[]) {
   }
   test_inttable(keys4, 64, "Table size: 64, keys: 1-32 and 10133-10164 ====\n");
   delete[] keys4;
+  return 0;
+}
+
 }

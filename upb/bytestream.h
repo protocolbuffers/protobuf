@@ -73,16 +73,18 @@
 #ifndef UPB_BYTESTREAM_H
 #define UPB_BYTESTREAM_H
 
-#include <errno.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "upb.h"
 
 #ifdef __cplusplus
+namespace upb {
+class ByteRegion;
+class StringSource;
+}  // namespace upb
+typedef upb::StringSource upb_stringsrc;
 extern "C" {
+#else
+struct upb_stringsrc;
+typedef struct upb_stringsrc upb_stringsrc;
 #endif
 
 typedef enum {
@@ -185,22 +187,91 @@ INLINE const char *upb_bytesrc_getptr(const upb_bytesrc *src, uint64_t ofs,
 
 #define UPB_NONDELIMITED (0xffffffffffffffffULL)
 
-typedef struct _upb_byteregion {
+#ifdef __cplusplus
+}  // extern "C"
+
+class upb::ByteRegion {
+ public:
+  static const uint64_t kNondelimited = UPB_NONDELIMITED;
+  typedef upb_bytesuccess_t ByteSuccess;
+
+  // Accessors for the regions bounds -- the meaning of these is described in
+  // the diagram above.
+  uint64_t start_ofs() const;
+  uint64_t discard_ofs() const;
+  uint64_t fetch_ofs() const;
+  uint64_t end_ofs() const;
+
+  // Returns how many bytes are fetched and available for reading starting from
+  // offset "offset".
+  uint64_t BytesAvailable(uint64_t offset) const;
+
+  // Returns the total number of bytes remaining after offset "offset", or
+  // kNondelimited if the byteregion is non-delimited.
+  uint64_t BytesRemaining(uint64_t offset) const;
+
+  uint64_t Length() const;
+
+  // Sets the value of this byteregion to be a subset of the given byteregion's
+  // data.  The caller is responsible for releasing this region before the src
+  // region is released (unless the region is first pinned, if pinning support
+  // is added.  see below).
+  void Reset(const upb_byteregion *src, uint64_t ofs, uint64_t len);
+  void Release();
+
+  // Attempts to fetch more data, extending the fetched range of this
+  // byteregion.  Returns true if the fetched region was extended by at least
+  // one byte, false on EOF or error (see *s for details).
+  ByteSuccess Fetch();
+
+  // Fetches all remaining data, returning false if the operation failed (see
+  // *s for details).  May only be used on delimited byteregions.
+  ByteSuccess FetchAll();
+
+  // Discards bytes from the byteregion up until ofs (which must be greater or
+  // equal to discard_ofs()).  It is valid to discard bytes that have not been
+  // fetched (such bytes will never be fetched) but it is an error to discard
+  // past the end of a delimited byteregion.
+  void Discard(uint64_t ofs);
+
+  // Copies "len" bytes of data into "dst", starting at ofs.  The specified
+  // region must be available.
+  void Copy(uint64_t ofs, size_t len, char *dst) const;
+
+  // Copies all bytes from the byteregion into dst.  Requires that the entire
+  // byteregion is fetched and that none has been discarded.
+  void CopyAll(char *dst) const;
+
+  // Returns a pointer to the internal buffer for the byteregion starting at
+  // offset "ofs." Stores the number of bytes available in this buffer in *len.
+  // The returned buffer is invalidated when the byteregion is reset or
+  // released, or when the bytes are discarded.  If the byteregion is not
+  // currently pinned, the pointer is only valid for the lifetime of the parent
+  // byteregion.
+  const char *GetPtr(uint64_t ofs, size_t *len) const;
+
+  // Copies the contents of the byteregion into a newly-allocated,
+  // NULL-terminated string.  Requires that the byteregion is fully fetched.
+  char *StrDup() const;
+
+  template <typename T> void AssignToString(T* str);
+
+#else
+struct upb_byteregion {
+#endif
   uint64_t start;
   uint64_t discard;
   uint64_t fetch;
   uint64_t end;         // UPB_NONDELIMITED if nondelimited.
   upb_bytesrc *bytesrc;
   bool toplevel;        // If true, discards hit the underlying bytesrc.
-} upb_byteregion;
+};
 
-// Initializes a byteregion.  Its initial value will be empty.  No methods may
-// be called on an empty byteregion except upb_byteregion_reset().
-void upb_byteregion_init(upb_byteregion *r);
-void upb_byteregion_uninit(upb_byteregion *r);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// Accessors for the regions bounds -- the meaning of these is described in the
-// diagram above.
+// Native C API.
 INLINE uint64_t upb_byteregion_startofs(const upb_byteregion *r) {
   return r->start;
 }
@@ -213,17 +284,11 @@ INLINE uint64_t upb_byteregion_fetchofs(const upb_byteregion *r) {
 INLINE uint64_t upb_byteregion_endofs(const upb_byteregion *r) {
   return r->end;
 }
-
-// Returns how many bytes are fetched and available for reading starting
-// from offset "o".
 INLINE uint64_t upb_byteregion_available(const upb_byteregion *r, uint64_t o) {
   assert(o >= upb_byteregion_discardofs(r));
   assert(o <= r->fetch);  // Could relax this.
   return r->fetch - o;
 }
-
-// Returns the total number of bytes remaining after offset "o", or
-// UPB_NONDELIMITED if the byteregion is non-delimited.
 INLINE uint64_t upb_byteregion_remaining(const upb_byteregion *r, uint64_t o) {
   return r->end == UPB_NONDELIMITED ? UPB_NONDELIMITED : r->end - o;
 }
@@ -231,22 +296,10 @@ INLINE uint64_t upb_byteregion_remaining(const upb_byteregion *r, uint64_t o) {
 INLINE uint64_t upb_byteregion_len(const upb_byteregion *r) {
   return upb_byteregion_remaining(r, r->start);
 }
-
-// Sets the value of this byteregion to be a subset of the given byteregion's
-// data.  The caller is responsible for releasing this region before the src
-// region is released (unless the region is first pinned, if pinning support is
-// added.  see below).
 void upb_byteregion_reset(upb_byteregion *r, const upb_byteregion *src,
                           uint64_t ofs, uint64_t len);
 void upb_byteregion_release(upb_byteregion *r);
-
-// Attempts to fetch more data, extending the fetched range of this byteregion.
-// Returns true if the fetched region was extended by at least one byte, false
-// on EOF or error (see *s for details).
 upb_bytesuccess_t upb_byteregion_fetch(upb_byteregion *r);
-
-// Fetches all remaining data for "r", returning the success of the operation
-// May only be used on delimited byteregions.
 INLINE upb_bytesuccess_t upb_byteregion_fetchall(upb_byteregion *r) {
   assert(upb_byteregion_len(r) != UPB_NONDELIMITED);
   upb_bytesuccess_t ret;
@@ -255,11 +308,6 @@ INLINE upb_bytesuccess_t upb_byteregion_fetchall(upb_byteregion *r) {
   } while (ret == UPB_BYTE_OK);
   return ret == UPB_BYTE_EOF ? UPB_BYTE_OK : ret;
 }
-
-// Discards bytes from the byteregion up until ofs (which must be greater or
-// equal to upb_byteregion_discardofs()).  It is valid to discard bytes that
-// have not been fetched (such bytes will never be fetched) but it is an error
-// to discard past the end of a delimited byteregion.
 INLINE void upb_byteregion_discard(upb_byteregion *r, uint64_t ofs) {
   assert(ofs >= upb_byteregion_discardofs(r));
   assert(ofs <= upb_byteregion_endofs(r));
@@ -267,28 +315,16 @@ INLINE void upb_byteregion_discard(upb_byteregion *r, uint64_t ofs) {
   if (ofs > r->fetch) r->fetch = ofs;
   if (r->toplevel) upb_bytesrc_discard(r->bytesrc, ofs);
 }
-
-// Copies "len" bytes of data into "dst", starting at ofs.  The specified
-// region must be available.
 INLINE void upb_byteregion_copy(const upb_byteregion *r, uint64_t ofs,
                                 size_t len, char *dst) {
   assert(ofs >= upb_byteregion_discardofs(r));
   assert(len <= upb_byteregion_available(r, ofs));
   upb_bytesrc_copy(r->bytesrc, ofs, len, dst);
 }
-
-// Copies all bytes from the byteregion into dst.  Requires that the entire
-// byteregion is fetched and that none has been discarded.
 INLINE void upb_byteregion_copyall(const upb_byteregion *r, char *dst) {
   assert(r->start == r->discard && r->end == r->fetch);
   upb_byteregion_copy(r, r->start, upb_byteregion_len(r), dst);
 }
-
-// Returns a pointer to the internal buffer for the byteregion starting at
-// offset "ofs." Stores the number of bytes available in this buffer in *len.
-// The returned buffer is invalidated when the byteregion is reset or released,
-// or when the bytes are discarded.  If the byteregion is not currently pinned,
-// the pointer is only valid for the lifetime of the parent byteregion.
 INLINE const char *upb_byteregion_getptr(const upb_byteregion *r,
                                          uint64_t ofs, size_t *len) {
   assert(ofs >= upb_byteregion_discardofs(r));
@@ -354,9 +390,7 @@ INLINE int upb_bytesink_write(upb_bytesink *s, const void *buf, int len) {
   return s->vtbl->write(s, buf, len);
 }
 
-INLINE int upb_bytesink_writestr(upb_bytesink *sink, const char *str) {
-  return upb_bytesink_write(sink, str, strlen(str));
-}
+#define upb_bytesink_writestr(s, buf) upb_bytesink_write(s, buf, strlen(buf))
 
 // Returns the number of bytes written or -1 on error.
 INLINE int upb_bytesink_printf(upb_bytesink *sink, const char *fmt, ...) {
@@ -413,27 +447,47 @@ INLINE void upb_bytesink_rewind(upb_bytesink *sink, uint64_t offset) {
 
 // bytesrc/bytesink for a simple contiguous string.
 
-typedef struct {
+#ifdef __cplusplus
+}  // extern "C"
+
+class upb::StringSource {
+ public:
+  StringSource();
+  template <typename T> explicit StringSource(const T& str);
+  StringSource(const char *data, size_t len);
+  ~StringSource();
+
+  // Resets the stringsrc to a state where it will vend the given string.  The
+  // string data must be valid until the stringsrc is reset again or destroyed.
+  void Reset(const char* data, size_t len);
+  template <typename T> void Reset(const T& str);
+
+  // Returns the top-level upb_byteregion* for this stringsrc.  Invalidated
+  // when the stringsrc is reset.
+  ByteRegion* AllBytes();
+
+  upb_bytesrc* ByteSource();
+
+#else
+struct upb_stringsrc {
+#endif
   upb_bytesrc bytesrc;
   const char *str;
   size_t len;
   upb_byteregion byteregion;
-} upb_stringsrc;
+};
 
-// Create/free a stringsrc.
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Native C API.
 void upb_stringsrc_init(upb_stringsrc *s);
 void upb_stringsrc_uninit(upb_stringsrc *s);
-
-// Resets the stringsrc to a state where it will vend the given string.  The
-// string data must be valid until the stringsrc is reset again or destroyed.
 void upb_stringsrc_reset(upb_stringsrc *s, const char *str, size_t len);
-
 INLINE upb_bytesrc *upb_stringsrc_bytesrc(upb_stringsrc *s) {
   return &s->bytesrc;
 }
-
-// Returns the top-level upb_byteregion* for this stringsrc.  Invalidated when
-// the stringsrc is reset.
 INLINE upb_byteregion *upb_stringsrc_allbytes(upb_stringsrc *s) {
   return &s->byteregion;
 }
@@ -465,7 +519,111 @@ const char *upb_stringsink_release(upb_stringsink *s, size_t *len);
 upb_bytesink *upb_stringsink_bytesink(upb_stringsink *s);
 
 #ifdef __cplusplus
-}  /* extern "C" */
+}  // extern "C"
+
+namespace upb {
+
+inline uint64_t ByteRegion::start_ofs() const {
+  return upb_byteregion_startofs(this);
+}
+inline uint64_t ByteRegion::discard_ofs() const {
+  return upb_byteregion_discardofs(this);
+}
+inline uint64_t ByteRegion::fetch_ofs() const {
+  return upb_byteregion_fetchofs(this);
+}
+inline uint64_t ByteRegion::end_ofs() const {
+  return upb_byteregion_endofs(this);
+}
+inline uint64_t ByteRegion::BytesAvailable(uint64_t offset) const {
+  return upb_byteregion_available(this, offset);
+}
+inline uint64_t ByteRegion::BytesRemaining(uint64_t offset) const {
+  return upb_byteregion_remaining(this, offset);
+}
+inline uint64_t ByteRegion::Length() const {
+  return upb_byteregion_len(this);
+}
+inline void ByteRegion::Reset(
+    const upb_byteregion *src, uint64_t ofs, uint64_t len) {
+  upb_byteregion_reset(this, src, ofs, len);
+}
+inline void ByteRegion::Release() {
+  upb_byteregion_release(this);
+}
+inline ByteRegion::ByteSuccess ByteRegion::Fetch() {
+  return upb_byteregion_fetch(this);
+}
+inline ByteRegion::ByteSuccess ByteRegion::FetchAll() {
+  return upb_byteregion_fetchall(this);
+}
+inline void ByteRegion::Discard(uint64_t ofs) {
+  upb_byteregion_discard(this, ofs);
+}
+inline void ByteRegion::Copy(uint64_t ofs, size_t len, char *dst) const {
+  upb_byteregion_copy(this, ofs, len, dst);
+}
+inline void ByteRegion::CopyAll(char *dst) const {
+  upb_byteregion_copyall(this, dst);
+}
+inline const char *ByteRegion::GetPtr(uint64_t ofs, size_t *len) const {
+  return upb_byteregion_getptr(this, ofs, len);
+}
+inline char *ByteRegion::StrDup() const {
+  return upb_byteregion_strdup(this);
+}
+template <typename T> void ByteRegion::AssignToString(T* str) {
+  uint64_t ofs = start_ofs();
+  size_t len;
+  const char *ptr = GetPtr(ofs, &len);
+  // Emperically calling reserve() here is counterproductive and slows down
+  // benchmarks.  If the parsing is happening in a tight loop that is reusing
+  // the string object, there is probably enough data reserved already and
+  // the reserve() call is extra overhead.
+  str->assign(ptr, len);
+  ofs += len;
+  while (ofs < end_ofs()) {
+    ptr = GetPtr(ofs, &len);
+    str->append(ptr, len);
+    ofs += len;
+  }
+}
+
+template <> inline ByteRegion* GetValue<ByteRegion*>(Value v) {
+  return static_cast<ByteRegion*>(upb_value_getbyteregion(v));
+}
+
+template <> inline Value MakeValue<ByteRegion*>(ByteRegion* v) {
+  return upb_value_byteregion(v);
+}
+
+inline StringSource::StringSource() { upb_stringsrc_init(this); }
+template <typename T> StringSource::StringSource(const T& str) {
+  upb_stringsrc_init(this);
+  Reset(str);
+}
+inline StringSource::StringSource(const char *data, size_t len) {
+  upb_stringsrc_init(this);
+  Reset(data, len);
+}
+inline StringSource::~StringSource() {
+  upb_stringsrc_uninit(this);
+}
+inline void StringSource::Reset(const char* data, size_t len) {
+  upb_stringsrc_reset(this, data, len);
+}
+template <typename T> void StringSource::Reset(const T& str) {
+  upb_stringsrc_reset(this, str.c_str(), str.size());
+}
+inline ByteRegion* StringSource::AllBytes() {
+  return upb_stringsrc_allbytes(this);
+}
+inline upb_bytesrc* StringSource::ByteSource() {
+  return upb_stringsrc_bytesrc(this);
+}
+
+}  // namespace upb
+
 #endif
 
 #endif

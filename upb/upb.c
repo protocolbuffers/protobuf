@@ -29,24 +29,31 @@ void upb_status_uninit(upb_status *status) {
   free(status->buf);
 }
 
-void upb_status_seterrf(upb_status *s, const char *msg, ...) {
-  s->code = UPB_ERROR;
+bool upb_ok(const upb_status *status) { return !status->error; }
+bool upb_eof(const upb_status *status) { return status->eof_; }
+
+void upb_status_seterrf(upb_status *status, const char *msg, ...) {
+  if (!status) return;
+  status->error = true;
+  status->space = NULL;
   va_list args;
   va_start(args, msg);
-  upb_vrprintf(&s->buf, &s->bufsize, 0, msg, args);
+  upb_vrprintf(&status->buf, &status->bufsize, 0, msg, args);
   va_end(args);
-  s->str = s->buf;
+  status->str = status->buf;
 }
 
 void upb_status_seterrliteral(upb_status *status, const char *msg) {
+  if (!status) return;
   status->error = true;
   status->str = msg;
   status->space = NULL;
 }
 
 void upb_status_copy(upb_status *to, const upb_status *from) {
+  if (!to) return;
   to->error = from->error;
-  to->eof = from->eof;
+  to->eof_ = from->eof_;
   to->code = from->code;
   to->space = from->space;
   if (from->str == from->buf) {
@@ -78,17 +85,24 @@ const char *upb_status_getstr(const upb_status *_status) {
 }
 
 void upb_status_clear(upb_status *status) {
+  if (!status) return;
   status->error = false;
-  status->eof = false;
+  status->eof_ = false;
   status->code = 0;
   status->space = NULL;
   status->str = NULL;
 }
 
 void upb_status_setcode(upb_status *status, upb_errorspace *space, int code) {
+  if (!status) return;
   status->code = code;
   status->space = space;
   status->str = NULL;
+}
+
+void upb_status_seteof(upb_status *status) {
+  if (!status) return;
+  status->eof_ = true;
 }
 
 int upb_vrprintf(char **buf, size_t *size, size_t ofs,
