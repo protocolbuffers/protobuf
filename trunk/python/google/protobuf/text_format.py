@@ -608,12 +608,17 @@ def _CEscape(text, as_utf8):
   return "".join([escape(c) for c in text])
 
 
-_CUNESCAPE_HEX = re.compile('\\\\x([0-9a-fA-F]{2}|[0-9a-fA-F])')
+_CUNESCAPE_HEX = re.compile(r'(\\+)x([0-9a-fA-F])(?![0-9a-fA-F])')
 
 
 def _CUnescape(text):
   def ReplaceHex(m):
-    return chr(int(m.group(0)[2:], 16))
+    # Only replace the match if the number of leading back slashes is odd. i.e.
+    # the slash itself is not escaped.
+    if len(m.group(1)) & 1:
+      return m.group(1) + 'x0' + m.group(2)
+    return m.group(0)
+
   # This is required because the 'string_escape' encoding doesn't
   # allow single-digit hex escapes (like '\xf').
   result = _CUNESCAPE_HEX.sub(ReplaceHex, text)
