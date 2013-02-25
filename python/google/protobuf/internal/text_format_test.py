@@ -429,6 +429,26 @@ class TextFormatTest(unittest.TestCase):
         ('1:17 : Couldn\'t parse integer: bork'),
         text_format.Merge, text, message)
 
+  def testMergeStringFieldUnescape(self):
+    message = unittest_pb2.TestAllTypes()
+    text = r'''repeated_string: "\xf\x62"
+               repeated_string: "\\xf\\x62"
+               repeated_string: "\\\xf\\\x62"
+               repeated_string: "\\\\xf\\\\x62"
+               repeated_string: "\\\\\xf\\\\\x62"
+               repeated_string: "\x5cx20"'''
+    text_format.Merge(text, message)
+
+    SLASH = '\\'
+    self.assertEqual('\x0fb', message.repeated_string[0])
+    self.assertEqual(SLASH + 'xf' + SLASH + 'x62', message.repeated_string[1])
+    self.assertEqual(SLASH + '\x0f' + SLASH + 'b', message.repeated_string[2])
+    self.assertEqual(SLASH + SLASH + 'xf' + SLASH + SLASH + 'x62',
+                     message.repeated_string[3])
+    self.assertEqual(SLASH + SLASH + '\x0f' + SLASH + SLASH + 'b',
+                     message.repeated_string[4])
+    self.assertEqual(SLASH + 'x20', message.repeated_string[5])
+
   def assertRaisesWithMessage(self, e_class, e, func, *args, **kwargs):
     """Same as assertRaises, but also compares the exception message."""
     if hasattr(e_class, '__name__'):
