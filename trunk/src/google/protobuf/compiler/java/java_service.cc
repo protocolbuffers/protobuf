@@ -88,6 +88,12 @@ void ServiceGenerator::Generate(io::Printer* printer) {
   GenerateStub(printer);
   GenerateBlockingStub(printer);
 
+  // Add an insertion point.
+  printer->Print(
+    "\n"
+    "// @@protoc_insertion_point(class_scope:$full_name$)\n",
+    "full_name", descriptor_->full_name());
+
   printer->Outdent();
   printer->Print("}\n\n");
 }

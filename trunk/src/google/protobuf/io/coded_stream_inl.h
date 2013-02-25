@@ -50,8 +50,12 @@ inline bool CodedInputStream::InternalReadStringInline(string* buffer,
 
   if (BufferSize() >= size) {
     STLStringResizeUninitialized(buffer, size);
-    memcpy(string_as_array(buffer), buffer_, size);
-    Advance(size);
+    // When buffer is empty, string_as_array(buffer) will return NULL but memcpy
+    // requires non-NULL pointers even when size is 0. Hench this check.
+    if (size > 0) {
+      memcpy(string_as_array(buffer), buffer_, size);
+      Advance(size);
+    }
     return true;
   }
 
