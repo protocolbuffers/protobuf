@@ -43,8 +43,9 @@ Installation
 
      $ protoc --version
 
-4) Run the tests:
+4) Build and run the tests:
 
+     $ python setup.py build
      $ python setup.py test
 
    If some tests fail, this library may not work correctly on your

@@ -54,8 +54,8 @@ TEST(StringPrintfTest, Empty) {
 }
 
 TEST(StringPrintfTest, Misc) {
-// MSVC does not support $ format specifier.
-#if !defined(_MSC_VER)
+// MSVC and mingw does not support $ format specifier.
+#if !defined(_MSC_VER) && !defined(__MINGW32__)
   EXPECT_EQ("123hello w", StringPrintf("%3$d%2$s %1$c", 'w', "hello", 123));
 #endif  // !_MSC_VER
 }
