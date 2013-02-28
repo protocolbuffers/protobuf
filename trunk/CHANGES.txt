@@ -1,4 +1,4 @@
-2012-09-19 version 2.5.0:
+2013-02-27 version 2.5.0:
 
   General
   * New notion "import public" that allows a proto file to forward the content
@@ -32,7 +32,7 @@
     comments for corresponding classes and data members.
   * Added Parser to parse directly into messages without a Builder. For
     example,
-      Foo foo = Foo.getParser().ParseFrom(input);
+      Foo foo = Foo.PARSER.ParseFrom(input);
     Using Parser is ~25% faster than using Builder to parse messages.
   * Added getters/setters to access the underlying ByteString of a string field
     directly.
