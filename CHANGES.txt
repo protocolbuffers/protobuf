@@ -17,6 +17,9 @@
     be assigned the same numeric value. Default value is "true". Setting it to
     false causes the compiler to reject enum definitions where multiple symbols
     have the same numeric value.
+    Note: We plan to flip the default value to "false" in a future release.
+    Projects using enum aliases should set the option to "true" in their .proto
+    files.
 
   C++
   * New generated method set_allocated_foo(Type* foo) for message and string
