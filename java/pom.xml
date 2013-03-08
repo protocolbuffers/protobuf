@@ -138,7 +138,9 @@
         <extensions>true</extensions>
         <configuration>
           <instructions>
-            <Export-Package>*</Export-Package>
+            <Bundle-DocURL>http://code.google.com/p/protobuf</Bundle-DocURL>
+            <Bundle-SymbolicName>com.google.protobuf</Bundle-SymbolicName>
+            <Export-Package>com.google.protobuf;version=2.5.0</Export-Package>
           </instructions>
         </configuration>
       </plugin>
