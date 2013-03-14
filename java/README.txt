@@ -260,6 +260,57 @@ This could be compiled using:
 With the result will be com/example/TestMessages.java
 
 
+Nano version
+============================
+
+Nano is even smaller than micro, especially in the number of generated
+functions. It is like micro except:
+
+- No setter/getter/hazzer functions.
+- Has state is not available. Outputs all fields not equal to their
+  default. (See important implications below.)
+- CodedInputStreamMicro is renamed to CodedInputByteBufferNano and can
+  only take byte[] (not InputStream).
+- Similar rename from CodedOutputStreamMicro to
+  CodedOutputByteBufferNano.
+- Repeated fields are in arrays, not ArrayList or Vector.
+- Unset messages/groups are null, not an immutable empty default
+  instance.
+- Required fields are always serialized.
+- toByteArray(...) and mergeFrom(...) are now static functions of
+  MessageNano.
+- "bytes" are of java type byte[].
+
+IMPORTANT: If you have fields with defaults
+
+How fields with defaults are serialized has changed. Because we don't
+keep "has" state, any field equal to its default is assumed to be not
+set and therefore is not serialized. Consider the situation where we
+change the default value of a field. Senders compiled against an older
+version of the proto continue to match against the old default, and
+don't send values to the receiver even though the receiver assumes the
+new default value. Therefore, think carefully about the implications
+of changing the default value.
+
+IMPORTANT: If you have "bytes" fields with non-empty defaults
+
+Because the byte buffer is now of mutable type byte[], the default
+static final cannot be exposed through a public field. Each time a
+message's constructor or clear() function is called, the default value
+(kept in a private byte[]) is cloned. This causes a small memory
+penalty. This is not a problem if the field has no default or is an
+empty default.
+
+
+To use nano protobufs:
+
+- Link with the generated jar file
+  <protobuf-root>java/target/protobuf-java-2.3.0-nano.jar.
+- Invoke with --javanano_out, e.g.:
+
+../src/protoc '--javanano_out=java_package=src/test/proto/simple-data.proto|my_package,java_outer_classname=src/test/proto/simple-data.proto|OuterName:.' src/test/proto/simple-data.proto
+
+
 Usage
 =====
 

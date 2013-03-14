@@ -106,6 +106,15 @@ COMPILER_SRC_FILES :=  \
     src/google/protobuf/compiler/javamicro/javamicro_message.cc \
     src/google/protobuf/compiler/javamicro/javamicro_message_field.cc \
     src/google/protobuf/compiler/javamicro/javamicro_primitive_field.cc \
+    src/google/protobuf/compiler/javanano/javanano_enum.cc \
+    src/google/protobuf/compiler/javanano/javanano_enum_field.cc \
+    src/google/protobuf/compiler/javanano/javanano_field.cc \
+    src/google/protobuf/compiler/javanano/javanano_file.cc \
+    src/google/protobuf/compiler/javanano/javanano_generator.cc \
+    src/google/protobuf/compiler/javanano/javanano_helpers.cc \
+    src/google/protobuf/compiler/javanano/javanano_message.cc \
+    src/google/protobuf/compiler/javanano/javanano_message_field.cc \
+    src/google/protobuf/compiler/javanano/javanano_primitive_field.cc \
     src/google/protobuf/compiler/python/python_generator.cc \
     src/google/protobuf/io/coded_stream.cc \
     src/google/protobuf/io/gzip_stream.cc \
@@ -120,6 +129,29 @@ COMPILER_SRC_FILES :=  \
     src/google/protobuf/stubs/structurally_valid.cc \
     src/google/protobuf/stubs/strutil.cc \
     src/google/protobuf/stubs/substitute.cc
+
+# Java nano library (for device-side users)
+# =======================================================
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := libprotobuf-java-2.3.0-nano
+LOCAL_MODULE_TAGS := optional
+LOCAL_SDK_VERSION := 8
+
+LOCAL_SRC_FILES := $(call all-java-files-under, java/src/main/java/com/google/protobuf/nano)
+
+include $(BUILD_STATIC_JAVA_LIBRARY)
+
+# Java nano library (for host-side users)
+# =======================================================
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := host-libprotobuf-java-2.3.0-nano
+LOCAL_MODULE_TAGS := optional
+
+LOCAL_SRC_FILES := $(call all-java-files-under, java/src/main/java/com/google/protobuf/nano)
+
+include $(BUILD_HOST_JAVA_LIBRARY)
 
 # Java micro library (for device-side users)
 # =======================================================
