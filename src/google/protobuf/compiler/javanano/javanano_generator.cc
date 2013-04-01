@@ -118,6 +118,8 @@ bool JavaNanoGenerator::Generate(const FileDescriptor* file,
       params.set_store_unknown_fields(options[i].second == "true");
     } else if (options[i].first == "java_multiple_files") {
       params.set_override_java_multiple_files(options[i].second == "true");
+    } else if (options[i].first == "java_nano_generate_has") {
+        params.set_generate_has(options[i].second == "true");
     } else {
       *error = "Ignore unknown javanano generator option: " + options[i].first;
     }

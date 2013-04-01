@@ -58,6 +58,8 @@ class PrimitiveFieldGenerator : public FieldGenerator {
   string GetBoxedType() const;
 
  private:
+  void GenerateSerializationConditional(io::Printer* printer) const;
+
   const FieldDescriptor* descriptor_;
   map<string, string> variables_;
 

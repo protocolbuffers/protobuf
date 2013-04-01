@@ -406,6 +406,15 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
         "name", RenameJavaKeywords(UnderscoresToCamelCase(field)),
         "default", DefaultValue(params_, field));
     }
+
+    if (params_.generate_has() &&
+        field->label() != FieldDescriptor::LABEL_REPEATED &&
+        field->type() != FieldDescriptor::TYPE_GROUP &&
+        field->type() != FieldDescriptor::TYPE_MESSAGE) {
+      printer->Print(
+        "has$capitalized_name$ = false;\n",
+        "capitalized_name", UnderscoresToCapitalizedCamelCase(field));
+    }
   }
 
   // Clear unknown fields.
