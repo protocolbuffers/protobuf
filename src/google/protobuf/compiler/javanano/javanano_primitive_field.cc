@@ -291,35 +291,30 @@ GenerateMembers(io::Printer* printer) const {
 }
 
 void PrimitiveFieldGenerator::
-GenerateMergingCode(io::Printer* printer) const {
-  printer->Print(variables_, "$name$ = other.$name$;\n");
-}
-
-void PrimitiveFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "$name$ = input.read$capitalized_type$();\n");
+    "this.$name$ = input.read$capitalized_type$();\n");
 }
 
 void PrimitiveFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   if (descriptor_->is_required()) {
     printer->Print(variables_,
-      "output.write$capitalized_type$($number$, $name$);\n");
+      "output.write$capitalized_type$($number$, this.$name$);\n");
   } else {
     if (IsArrayType(GetJavaType(descriptor_))) {
       printer->Print(variables_,
-        "if (!java.util.Arrays.equals($name$, $default$)) {\n");
+        "if (!java.util.Arrays.equals(this.$name$, $default$)) {\n");
     } else if (IsReferenceType(GetJavaType(descriptor_))) {
       printer->Print(variables_,
-        "if (!$name$.equals($default$)) {\n");
+        "if (!this.$name$.equals($default$)) {\n");
     } else {
       printer->Print(variables_,
-        "if ($name$ != $default$) {\n");
+        "if (this.$name$ != $default$) {\n");
     }
 
     printer->Print(variables_,
-      "  output.write$capitalized_type$($number$, $name$);\n"
+      "  output.write$capitalized_type$($number$, this.$name$);\n"
       "}\n");
   }
 }
@@ -329,22 +324,22 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
   if (descriptor_->is_required()) {
     printer->Print(variables_,
       "size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
-      "    .compute$capitalized_type$Size($number$, $name$);\n");
+      "    .compute$capitalized_type$Size($number$, this.$name$);\n");
   } else {
     if (IsArrayType(GetJavaType(descriptor_))) {
       printer->Print(variables_,
-        "if (!java.util.Arrays.equals($name$, $default$)) {\n");
+        "if (!java.util.Arrays.equals(this.$name$, $default$)) {\n");
     } else  if (IsReferenceType(GetJavaType(descriptor_))) {
       printer->Print(variables_,
-        "if (!$name$.equals($default$)) {\n");
+        "if (!this.$name$.equals($default$)) {\n");
     } else {
       printer->Print(variables_,
-        "if ($name$ != $default$) {\n");
+        "if (this.$name$ != $default$) {\n");
     }
 
     printer->Print(variables_,
       "  size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
-      "      .compute$capitalized_type$Size($number$, $name$);\n"
+      "      .compute$capitalized_type$Size($number$, this.$name$);\n"
       "}\n");
   }
 }
@@ -374,16 +369,6 @@ GenerateMembers(io::Printer* printer) const {
 }
 
 void RepeatedPrimitiveFieldGenerator::
-GenerateMergingCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if (other.$name$.length > 0) {\n"
-    "  $type$[] merged = java.util.Arrays.copyOf(result.$name$, result.$name$.length + other.$name$.length);\n"
-    "  java.lang.System.arraycopy(other.$name$, 0, merged, results.$name$.length, other.$name$.length);\n"
-    "  result.$name$ = merged;\n"
-    "}\n");
-}
-
-void RepeatedPrimitiveFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   // First, figure out the length of the array, then parse.
   if (descriptor_->options().packed()) {
@@ -398,22 +383,22 @@ GenerateParsingCode(io::Printer* printer) const {
       "  arrayLength++;\n"
       "}\n"
       "input.rewindToPosition(startPos);\n"
-      "$name$ = new $type$[arrayLength];\n"
+      "this.$name$ = new $type$[arrayLength];\n"
       "for (int i = 0; i < arrayLength; i++) {\n"
-      "  $name$[i] = input.read$capitalized_type$();\n"
+      "  this.$name$[i] = input.read$capitalized_type$();\n"
       "}\n"
       "input.popLimit(limit);\n");
   } else {
     printer->Print(variables_,
       "int arrayLength = com.google.protobuf.nano.WireFormatNano.getRepeatedFieldArrayLength(input, $tag$);\n"
-      "int i = $name$.length;\n"
-      "$name$ = java.util.Arrays.copyOf($name$, $name$.length + arrayLength);\n"
-      "for (; i < $name$.length - 1; i++) {\n"
-      "  $name$[i] = input.read$capitalized_type$();\n"
+      "int i = this.$name$.length;\n"
+      "this.$name$ = java.util.Arrays.copyOf(this.$name$, this.$name$.length + arrayLength);\n"
+      "for (; i < this.$name$.length - 1; i++) {\n"
+      "  this.$name$[i] = input.read$capitalized_type$();\n"
       "  input.readTag();\n"
       "}\n"
       "// Last one without readTag.\n"
-      "$name$[i] = input.read$capitalized_type$();\n");
+      "this.$name$[i] = input.read$capitalized_type$();\n");
   }
 }
 
@@ -421,17 +406,17 @@ void RepeatedPrimitiveFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   if (descriptor_->options().packed()) {
     printer->Print(variables_,
-      "if ($name$.length > 0) {\n"
+      "if (this.$name$.length > 0) {\n"
       "  output.writeRawVarint32($tag$);\n"
       "  output.writeRawVarint32($name$MemoizedSerializedSize);\n"
       "}\n");
     printer->Print(variables_,
-      "for ($type$ element : $name$) {\n"
+      "for ($type$ element : this.$name$) {\n"
       "  output.write$capitalized_type$NoTag(element);\n"
       "}\n");
   } else {
     printer->Print(variables_,
-      "for ($type$ element : $name$) {\n"
+      "for ($type$ element : this.$name$) {\n"
       "  output.write$capitalized_type$($number$, element);\n"
       "}\n");
   }
@@ -440,19 +425,19 @@ GenerateSerializationCode(io::Printer* printer) const {
 void RepeatedPrimitiveFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if ($name$.length > 0) {\n");
+    "if (this.$name$.length > 0) {\n");
   printer->Indent();
 
   if (FixedSize(descriptor_->type()) == -1) {
     printer->Print(variables_,
       "int dataSize = 0;\n"
-      "for ($type$ element : $name$) {\n"
+      "for ($type$ element : this.$name$) {\n"
       "  dataSize += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
       "    .compute$capitalized_type$SizeNoTag(element);\n"
       "}\n");
   } else {
     printer->Print(variables_,
-      "int dataSize = $fixed_size$ * $name$.length;\n");
+      "int dataSize = $fixed_size$ * this.$name$.length;\n");
   }
 
   printer->Print(
@@ -466,7 +451,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
       "$name$MemoizedSerializedSize = dataSize;\n");
   } else {
     printer->Print(variables_,
-        "size += $tag_size$ * $name$.length;\n");
+        "size += $tag_size$ * this.$name$.length;\n");
   }
 
   printer->Outdent();
