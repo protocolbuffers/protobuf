@@ -152,6 +152,11 @@ message TestAllTypesNano {
   optional string default_cord = 85 [ctype=CORD,default="123"];
 
   required int32 id = 86;
+
+  // Try to cause conflicts.
+  optional int32 tag = 93;
+  optional int32 get_serialized_size = 94;
+  optional int32 write_to = 95;
 }
 
 message ForeignMessageNano {
