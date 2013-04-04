@@ -88,41 +88,33 @@ GenerateMembers(io::Printer* printer) const {
 }
 
 void MessageFieldGenerator::
-GenerateMergingCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if (other.$name$ != null) {\n"
-    "  merge$capitalized_name$(other.$name$);\n"
-    "}\n");
-}
-
-void MessageFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "$name$ = new $type$();\n");
+    "this.$name$ = new $type$();\n");
 
   if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
-      "input.readGroup($name$, $number$);\n");
+      "input.readGroup(this.$name$, $number$);\n");
   } else {
     printer->Print(variables_,
-      "input.readMessage($name$);\n");
+      "input.readMessage(this.$name$);\n");
   }
 }
 
 void MessageFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if ($name$ != null) {\n"
-    "  output.write$group_or_message$($number$, $name$);\n"
+    "if (this.$name$ != null) {\n"
+    "  output.write$group_or_message$($number$, this.$name$);\n"
     "}\n");
 }
 
 void MessageFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if ($name$ != null) {\n"
+    "if (this.$name$ != null) {\n"
     "  size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
-    "    .compute$group_or_message$Size($number$, $name$);\n"
+    "    .compute$group_or_message$Size($number$, this.$name$);\n"
     "}\n");
 }
 
@@ -147,52 +139,42 @@ GenerateMembers(io::Printer* printer) const {
 }
 
 void RepeatedMessageFieldGenerator::
-GenerateMergingCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if (other.$name$.length > 0) {\n"
-    "  $type$[] merged = java.util.Arrays.copyOf(result.$name$, result.$name$.length + other.$name$.length);\n"
-    "  java.lang.System.arraycopy(other.$name$, 0, merged, results.$name$.length, other.$name$.length);\n"
-    "  result.$name$ = merged;\n"
-    "}\n");
-}
-
-void RepeatedMessageFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   // First, figure out the length of the array, then parse.
   printer->Print(variables_,
     "int arrayLength = com.google.protobuf.nano.WireFormatNano.getRepeatedFieldArrayLength(input, $tag$);\n"
-    "int i = $name$.length;\n"
-    "$name$ = java.util.Arrays.copyOf($name$, i + arrayLength);\n"
-    "for (; i < $name$.length - 1; i++) {\n"
-    "  $name$[i] = new $type$();\n");
+    "int i = this.$name$.length;\n"
+    "this.$name$ = java.util.Arrays.copyOf(this.$name$, i + arrayLength);\n"
+    "for (; i < this.$name$.length - 1; i++) {\n"
+    "  this.$name$[i] = new $type$();\n");
 
   if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
-      "  input.readGroup($name$[i], $number$);\n");
+      "  input.readGroup(this.$name$[i], $number$);\n");
   } else {
     printer->Print(variables_,
-      "  input.readMessage($name$[i]);\n");
+      "  input.readMessage(this.$name$[i]);\n");
   }
 
   printer->Print(variables_,
     "  input.readTag();\n"
     "}\n"
     "// Last one without readTag.\n"
-    "$name$[i] = new $type$();\n");
+    "this.$name$[i] = new $type$();\n");
 
   if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
-      "input.readGroup($name$[i], $number$);\n");
+      "input.readGroup(this.$name$[i], $number$);\n");
   } else {
     printer->Print(variables_,
-      "input.readMessage($name$[i]);\n");
+      "input.readMessage(this.$name$[i]);\n");
   }
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "for ($type$ element : $name$) {\n"
+    "for ($type$ element : this.$name$) {\n"
     "  output.write$group_or_message$($number$, element);\n"
     "}\n");
 }
@@ -200,7 +182,7 @@ GenerateSerializationCode(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "for ($type$ element : $name$) {\n"
+    "for ($type$ element : this.$name$) {\n"
     "  size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
     "    .compute$group_or_message$Size($number$, element);\n"
     "}\n");

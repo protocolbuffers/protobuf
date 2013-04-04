@@ -58,7 +58,6 @@ class FieldGenerator {
   virtual ~FieldGenerator();
 
   virtual void GenerateMembers(io::Printer* printer) const = 0;
-  virtual void GenerateMergingCode(io::Printer* printer) const = 0;
   virtual void GenerateParsingCode(io::Printer* printer) const = 0;
   virtual void GenerateSerializationCode(io::Printer* printer) const = 0;
   virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
