@@ -144,7 +144,9 @@ GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
     "int arrayLength = com.google.protobuf.nano.WireFormatNano.getRepeatedFieldArrayLength(input, $tag$);\n"
     "int i = this.$name$.length;\n"
-    "this.$name$ = java.util.Arrays.copyOf(this.$name$, i + arrayLength);\n"
+    "$type$[] newArray = new $type$[i + arrayLength];\n"
+    "System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
+    "this.$name$ = newArray;\n"
     "for (; i < this.$name$.length - 1; i++) {\n"
     "  this.$name$[i] = new $type$();\n");
 
