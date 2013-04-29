@@ -100,7 +100,7 @@ To create a jar file for the runtime and run tests invoke
 directory. The generated jar file is
 <protobuf-root>java/target/protobuf-java-2.2.0-micro.jar.
 
-If you wish to compile the MICRO_RUTIME your self, place
+If you wish to compile the MICRO_RUNTIME your self, place
 the 7 files below, in <root>/com/google/protobuf and
 create a jar file for use with your code and the generated
 code:
@@ -116,10 +116,10 @@ If you wish to change on the code generator it is located
 in /src/google/protobuf/compiler/javamicro.
 
 To generate code for the MICRO_RUNTIME invoke protoc with
---javamicro_out command line parameter. javamciro_out takes
-a series of optional sub-parameters separated by comma's
+--javamicro_out command line parameter. javamicro_out takes
+a series of optional sub-parameters separated by commas
 and a final parameter, with a colon separator, which defines
-the source directory. Sub-paraemeters begin with a name
+the source directory. Sub-parameters begin with a name
 followed by an equal and if that sub-parameter has multiple
 parameters they are seperated by "|". The command line options
 are:
@@ -130,7 +130,7 @@ java_package         -> <file-name>|<package-name>
 java_outer_classname -> <file-name>|<package-name>
 
 opt:
-  This change the code generation to optimize for speed,
+  This changes the code generation to optimize for speed,
   opt=speed, or space, opt=space. When opt=speed this
   changes the code generation for strings so that multiple
   conversions to Utf8 are eliminated. The default value
@@ -144,8 +144,8 @@ java_use_vector:
   java.util.ArrayList<> is used. When java.util.Vector
   is used the code must be compiled with Java 1.3 and
   when ArrayList is used Java 1.5 or above must be used.
-  The using javac the source parameter maybe used to
-  control the version of the srouce: "javac -source 1.3".
+  The using javac the source parameter may be used to
+  control the version of the source: "javac -source 1.3".
   You can also change the <source> xml element for the
   maven-compiler-plugin. Below is for 1.5 sources:
 
