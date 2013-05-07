@@ -305,5 +305,32 @@ namespace Google.ProtocolBuffers
             copy = msg.DefaultInstanceForType.ToBuilder().MergeFrom(msg).Build();
             TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
         }
+
+        // ROK 5/7/2013 Issue #54: should retire all bytes in buffer (bufferSize)
+        [TestMethod]
+        public void TestBufferRefillIssue()
+        {
+            var ms = new MemoryStream();
+            BucketOfBytes.CreateBuilder()
+                .SetValue(ByteString.CopyFrom(new byte[3000]))
+                .Build().WriteDelimitedTo(ms);
+            BucketOfBytesEx.CreateBuilder()
+                .SetValue(ByteString.CopyFrom(new byte[1000]))
+                .SetValue2(ByteString.CopyFrom(new byte[1100]))
+                .Build().WriteDelimitedTo(ms);
+            BucketOfBytes.CreateBuilder()
+                .SetValue(ByteString.CopyFrom(new byte[100]))
+                .Build().WriteDelimitedTo(ms);
+
+            ms.Position = 0;
+            var input = CodedInputStream.CreateInstance(ms);
+            var builder = BucketOfBytes.CreateBuilder();
+            input.ReadMessage(builder, ExtensionRegistry.Empty);
+            Assert.AreEqual(3000, builder.Value.Length);
+            input.ReadMessage(builder, ExtensionRegistry.Empty);
+            Assert.AreEqual(1000, builder.Value.Length);
+            input.ReadMessage(builder, ExtensionRegistry.Empty);
+            Assert.AreEqual(100, builder.Value.Length);
+        }
     }
 }

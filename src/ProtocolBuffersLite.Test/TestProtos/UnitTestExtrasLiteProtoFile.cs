@@ -3599,6 +3599,581 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
   }
   
+  [global::System.SerializableAttribute()]
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  public sealed partial class BucketOfBytes : pb::GeneratedMessageLite<BucketOfBytes, BucketOfBytes.Builder> {
+    private BucketOfBytes() { }
+    private static readonly BucketOfBytes defaultInstance = new BucketOfBytes().MakeReadOnly();
+    private static readonly string[] _bucketOfBytesFieldNames = new string[] { "value" };
+    private static readonly uint[] _bucketOfBytesFieldTags = new uint[] { 10 };
+    public static BucketOfBytes DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override BucketOfBytes DefaultInstanceForType {
+      get { return DefaultInstance; }
+    }
+    
+    protected override BucketOfBytes ThisMessage {
+      get { return this; }
+    }
+    
+    public const int ValueFieldNumber = 1;
+    private bool hasValue;
+    private pb::ByteString value_ = pb::ByteString.Empty;
+    public bool HasValue {
+      get { return hasValue; }
+    }
+    public pb::ByteString Value {
+      get { return value_; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::ICodedOutputStream output) {
+      int size = SerializedSize;
+      string[] field_names = _bucketOfBytesFieldNames;
+      if (hasValue) {
+        output.WriteBytes(1, field_names[0], Value);
+      }
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (hasValue) {
+          size += pb::CodedOutputStream.ComputeBytesSize(1, Value);
+        }
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      if (hasValue) hash ^= value_.GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      BucketOfBytes other = obj as BucketOfBytes;
+      if (other == null) return false;
+      if (hasValue != other.hasValue || (hasValue && !value_.Equals(other.value_))) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+      PrintField("value", hasValue, value_, writer);
+    }
+    #endregion
+    
+    public static BucketOfBytes ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static BucketOfBytes ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static BucketOfBytes ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static BucketOfBytes ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static BucketOfBytes ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static BucketOfBytes ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static BucketOfBytes ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static BucketOfBytes ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static BucketOfBytes ParseFrom(pb::ICodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static BucketOfBytes ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    private BucketOfBytes MakeReadOnly() {
+      return this;
+    }
+    
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(BucketOfBytes prototype) {
+      return new Builder(prototype);
+    }
+    
+    [global::System.SerializableAttribute()]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    public sealed partial class Builder : pb::GeneratedBuilderLite<BucketOfBytes, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {
+        result = DefaultInstance;
+        resultIsReadOnly = true;
+      }
+      internal Builder(BucketOfBytes cloneFrom) {
+        result = cloneFrom;
+        resultIsReadOnly = true;
+      }
+      
+      private bool resultIsReadOnly;
+      private BucketOfBytes result;
+      
+      private BucketOfBytes PrepareBuilder() {
+        if (resultIsReadOnly) {
+          BucketOfBytes original = result;
+          result = new BucketOfBytes();
+          resultIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
+      
+      protected override BucketOfBytes MessageBeingBuilt {
+        get { return PrepareBuilder(); }
+      }
+      
+      public override Builder Clear() {
+        result = DefaultInstance;
+        resultIsReadOnly = true;
+        return this;
+      }
+      
+      public override Builder Clone() {
+        if (resultIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
+      }
+      
+      public override BucketOfBytes DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.BucketOfBytes.DefaultInstance; }
+      }
+      
+      public override BucketOfBytes BuildPartial() {
+        if (resultIsReadOnly) {
+          return result;
+        }
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
+      }
+      
+      public override Builder MergeFrom(pb::IMessageLite other) {
+        if (other is BucketOfBytes) {
+          return MergeFrom((BucketOfBytes) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(BucketOfBytes other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.BucketOfBytes.DefaultInstance) return this;
+        PrepareBuilder();
+        if (other.HasValue) {
+          Value = other.Value;
+        }
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_bucketOfBytesFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _bucketOfBytesFieldTags[field_ordinal];
+            else {
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
+          switch (tag) {
+            case 0: {
+              throw pb::InvalidProtocolBufferException.InvalidTag();
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                return this;
+              }
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              break;
+            }
+            case 10: {
+              result.hasValue = input.ReadBytes(ref result.value_);
+              break;
+            }
+          }
+        }
+        
+        return this;
+      }
+      
+      
+      public bool HasValue {
+        get { return result.hasValue; }
+      }
+      public pb::ByteString Value {
+        get { return result.Value; }
+        set { SetValue(value); }
+      }
+      public Builder SetValue(pb::ByteString value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        result.hasValue = true;
+        result.value_ = value;
+        return this;
+      }
+      public Builder ClearValue() {
+        PrepareBuilder();
+        result.hasValue = false;
+        result.value_ = pb::ByteString.Empty;
+        return this;
+      }
+    }
+    static BucketOfBytes() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasLiteProtoFile.Descriptor, null);
+    }
+  }
+  
+  [global::System.SerializableAttribute()]
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  public sealed partial class BucketOfBytesEx : pb::GeneratedMessageLite<BucketOfBytesEx, BucketOfBytesEx.Builder> {
+    private BucketOfBytesEx() { }
+    private static readonly BucketOfBytesEx defaultInstance = new BucketOfBytesEx().MakeReadOnly();
+    private static readonly string[] _bucketOfBytesExFieldNames = new string[] { "value", "value2" };
+    private static readonly uint[] _bucketOfBytesExFieldTags = new uint[] { 10, 2042 };
+    public static BucketOfBytesEx DefaultInstance {
+      get { return defaultInstance; }
+    }
+    
+    public override BucketOfBytesEx DefaultInstanceForType {
+      get { return DefaultInstance; }
+    }
+    
+    protected override BucketOfBytesEx ThisMessage {
+      get { return this; }
+    }
+    
+    public const int ValueFieldNumber = 1;
+    private bool hasValue;
+    private pb::ByteString value_ = pb::ByteString.Empty;
+    public bool HasValue {
+      get { return hasValue; }
+    }
+    public pb::ByteString Value {
+      get { return value_; }
+    }
+    
+    public const int Value2FieldNumber = 255;
+    private bool hasValue2;
+    private pb::ByteString value2_ = pb::ByteString.Empty;
+    public bool HasValue2 {
+      get { return hasValue2; }
+    }
+    public pb::ByteString Value2 {
+      get { return value2_; }
+    }
+    
+    public override bool IsInitialized {
+      get {
+        return true;
+      }
+    }
+    
+    public override void WriteTo(pb::ICodedOutputStream output) {
+      int size = SerializedSize;
+      string[] field_names = _bucketOfBytesExFieldNames;
+      if (hasValue) {
+        output.WriteBytes(1, field_names[0], Value);
+      }
+      if (hasValue2) {
+        output.WriteBytes(255, field_names[1], Value2);
+      }
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public override int SerializedSize {
+      get {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+        
+        size = 0;
+        if (hasValue) {
+          size += pb::CodedOutputStream.ComputeBytesSize(1, Value);
+        }
+        if (hasValue2) {
+          size += pb::CodedOutputStream.ComputeBytesSize(255, Value2);
+        }
+        memoizedSerializedSize = size;
+        return size;
+      }
+    }
+    
+    #region Lite runtime methods
+    public override int GetHashCode() {
+      int hash = GetType().GetHashCode();
+      if (hasValue) hash ^= value_.GetHashCode();
+      if (hasValue2) hash ^= value2_.GetHashCode();
+      return hash;
+    }
+    
+    public override bool Equals(object obj) {
+      BucketOfBytesEx other = obj as BucketOfBytesEx;
+      if (other == null) return false;
+      if (hasValue != other.hasValue || (hasValue && !value_.Equals(other.value_))) return false;
+      if (hasValue2 != other.hasValue2 || (hasValue2 && !value2_.Equals(other.value2_))) return false;
+      return true;
+    }
+    
+    public override void PrintTo(global::System.IO.TextWriter writer) {
+      PrintField("value", hasValue, value_, writer);
+      PrintField("value2", hasValue2, value2_, writer);
+    }
+    #endregion
+    
+    public static BucketOfBytesEx ParseFrom(pb::ByteString data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static BucketOfBytesEx ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static BucketOfBytesEx ParseFrom(byte[] data) {
+      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
+    }
+    public static BucketOfBytesEx ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
+    }
+    public static BucketOfBytesEx ParseFrom(global::System.IO.Stream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static BucketOfBytesEx ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    public static BucketOfBytesEx ParseDelimitedFrom(global::System.IO.Stream input) {
+      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
+    }
+    public static BucketOfBytesEx ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
+      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
+    }
+    public static BucketOfBytesEx ParseFrom(pb::ICodedInputStream input) {
+      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
+    }
+    public static BucketOfBytesEx ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
+    }
+    private BucketOfBytesEx MakeReadOnly() {
+      return this;
+    }
+    
+    public static Builder CreateBuilder() { return new Builder(); }
+    public override Builder ToBuilder() { return CreateBuilder(this); }
+    public override Builder CreateBuilderForType() { return new Builder(); }
+    public static Builder CreateBuilder(BucketOfBytesEx prototype) {
+      return new Builder(prototype);
+    }
+    
+    [global::System.SerializableAttribute()]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    public sealed partial class Builder : pb::GeneratedBuilderLite<BucketOfBytesEx, Builder> {
+      protected override Builder ThisBuilder {
+        get { return this; }
+      }
+      public Builder() {
+        result = DefaultInstance;
+        resultIsReadOnly = true;
+      }
+      internal Builder(BucketOfBytesEx cloneFrom) {
+        result = cloneFrom;
+        resultIsReadOnly = true;
+      }
+      
+      private bool resultIsReadOnly;
+      private BucketOfBytesEx result;
+      
+      private BucketOfBytesEx PrepareBuilder() {
+        if (resultIsReadOnly) {
+          BucketOfBytesEx original = result;
+          result = new BucketOfBytesEx();
+          resultIsReadOnly = false;
+          MergeFrom(original);
+        }
+        return result;
+      }
+      
+      public override bool IsInitialized {
+        get { return result.IsInitialized; }
+      }
+      
+      protected override BucketOfBytesEx MessageBeingBuilt {
+        get { return PrepareBuilder(); }
+      }
+      
+      public override Builder Clear() {
+        result = DefaultInstance;
+        resultIsReadOnly = true;
+        return this;
+      }
+      
+      public override Builder Clone() {
+        if (resultIsReadOnly) {
+          return new Builder(result);
+        } else {
+          return new Builder().MergeFrom(result);
+        }
+      }
+      
+      public override BucketOfBytesEx DefaultInstanceForType {
+        get { return global::Google.ProtocolBuffers.TestProtos.BucketOfBytesEx.DefaultInstance; }
+      }
+      
+      public override BucketOfBytesEx BuildPartial() {
+        if (resultIsReadOnly) {
+          return result;
+        }
+        resultIsReadOnly = true;
+        return result.MakeReadOnly();
+      }
+      
+      public override Builder MergeFrom(pb::IMessageLite other) {
+        if (other is BucketOfBytesEx) {
+          return MergeFrom((BucketOfBytesEx) other);
+        } else {
+          base.MergeFrom(other);
+          return this;
+        }
+      }
+      
+      public override Builder MergeFrom(BucketOfBytesEx other) {
+        if (other == global::Google.ProtocolBuffers.TestProtos.BucketOfBytesEx.DefaultInstance) return this;
+        PrepareBuilder();
+        if (other.HasValue) {
+          Value = other.Value;
+        }
+        if (other.HasValue2) {
+          Value2 = other.Value2;
+        }
+        return this;
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input) {
+        return MergeFrom(input, pb::ExtensionRegistry.Empty);
+      }
+      
+      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
+        PrepareBuilder();
+        uint tag;
+        string field_name;
+        while (input.ReadTag(out tag, out field_name)) {
+          if(tag == 0 && field_name != null) {
+            int field_ordinal = global::System.Array.BinarySearch(_bucketOfBytesExFieldNames, field_name, global::System.StringComparer.Ordinal);
+            if(field_ordinal >= 0)
+              tag = _bucketOfBytesExFieldTags[field_ordinal];
+            else {
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              continue;
+            }
+          }
+          switch (tag) {
+            case 0: {
+              throw pb::InvalidProtocolBufferException.InvalidTag();
+            }
+            default: {
+              if (pb::WireFormat.IsEndGroupTag(tag)) {
+                return this;
+              }
+              ParseUnknownField(input, extensionRegistry, tag, field_name);
+              break;
+            }
+            case 10: {
+              result.hasValue = input.ReadBytes(ref result.value_);
+              break;
+            }
+            case 2042: {
+              result.hasValue2 = input.ReadBytes(ref result.value2_);
+              break;
+            }
+          }
+        }
+        
+        return this;
+      }
+      
+      
+      public bool HasValue {
+        get { return result.hasValue; }
+      }
+      public pb::ByteString Value {
+        get { return result.Value; }
+        set { SetValue(value); }
+      }
+      public Builder SetValue(pb::ByteString value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        result.hasValue = true;
+        result.value_ = value;
+        return this;
+      }
+      public Builder ClearValue() {
+        PrepareBuilder();
+        result.hasValue = false;
+        result.value_ = pb::ByteString.Empty;
+        return this;
+      }
+      
+      public bool HasValue2 {
+        get { return result.hasValue2; }
+      }
+      public pb::ByteString Value2 {
+        get { return result.Value2; }
+        set { SetValue2(value); }
+      }
+      public Builder SetValue2(pb::ByteString value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        result.hasValue2 = true;
+        result.value2_ = value;
+        return this;
+      }
+      public Builder ClearValue2() {
+        PrepareBuilder();
+        result.hasValue2 = false;
+        result.value2_ = pb::ByteString.Empty;
+        return this;
+      }
+    }
+    static BucketOfBytesEx() {
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnitTestExtrasLiteProtoFile.Descriptor, null);
+    }
+  }
+  
   #endregion
   
 }

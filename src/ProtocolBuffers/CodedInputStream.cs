@@ -1780,7 +1780,11 @@ namespace Google.ProtocolBuffers
             {
                 // Skipping more bytes than are in the buffer.  First skip what we have.
                 int pos = bufferSize - bufferPos;
-                totalBytesRetired += pos;
+
+                // ROK 5/7/2013 Issue #54: should retire all bytes in buffer (bufferSize)
+                // totalBytesRetired += pos;
+                totalBytesRetired += bufferSize;
+                
                 bufferPos = 0;
                 bufferSize = 0;
 
