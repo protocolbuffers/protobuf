@@ -34,6 +34,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -85,6 +86,19 @@ namespace Google.ProtocolBuffers.ProtoGen
                 descriptor.ConfigureWithDefaultOptions(options.FileOptions);
             }
 
+            bool duplicates = false;
+            Dictionary<string, bool> names = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+            foreach (FileDescriptor descriptor in descriptors)
+            {
+                string file = GetOutputFile(descriptor, false);
+                if (names.ContainsKey(file))
+                {
+                    duplicates = true;
+                    break;
+                }
+                names.Add(file, true);
+            }
+
             foreach (FileDescriptor descriptor in descriptors)
             {
                 // Optionally exclude descriptors in google.protobuf
@@ -92,7 +106,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                 {
                     continue;
                 }
-                Generate(descriptor);
+                Generate(descriptor, duplicates);
             }
         }
 
@@ -100,21 +114,29 @@ namespace Google.ProtocolBuffers.ProtoGen
         /// Generates code for a particular file. All dependencies must
         /// already have been resolved.
         /// </summary>
-        private void Generate(FileDescriptor descriptor)
+        private void Generate(FileDescriptor descriptor, bool duplicates)
         {
             UmbrellaClassGenerator ucg = new UmbrellaClassGenerator(descriptor);
-            using (TextWriter textWriter = File.CreateText(GetOutputFile(descriptor)))
+            using (TextWriter textWriter = File.CreateText(GetOutputFile(descriptor, duplicates)))
             {
                 TextGenerator writer = new TextGenerator(textWriter, options.LineBreak);
                 ucg.Generate(writer);
             }
         }
 
-        private string GetOutputFile(FileDescriptor descriptor)
+        private string GetOutputFile(FileDescriptor descriptor, bool duplicates)
         {
             CSharpFileOptions fileOptions = descriptor.CSharpOptions;
 
             string filename = descriptor.CSharpOptions.UmbrellaClassname + descriptor.CSharpOptions.FileExtension;
+            if (duplicates)
+            {
+                string namepart;
+                if (String.IsNullOrEmpty(descriptor.Name) || String.IsNullOrEmpty(namepart = Path.GetFileNameWithoutExtension(descriptor.Name)))
+                    throw new ApplicationException("Duplicate UmbrellaClassname options created a file name collision.");
+
+                filename = namepart + descriptor.CSharpOptions.FileExtension;
+            }
 
             string outputDirectory = descriptor.CSharpOptions.OutputDirectory;
             if (fileOptions.ExpandNamespaceDirectories)
