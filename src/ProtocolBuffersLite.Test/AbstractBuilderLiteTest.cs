@@ -326,10 +326,14 @@ namespace Google.ProtocolBuffers
             var input = CodedInputStream.CreateInstance(ms);
             var builder = BucketOfBytes.CreateBuilder();
             input.ReadMessage(builder, ExtensionRegistry.Empty);
+            Assert.AreEqual(3005L, input.Position);
             Assert.AreEqual(3000, builder.Value.Length);
             input.ReadMessage(builder, ExtensionRegistry.Empty);
+            Assert.AreEqual(5114, input.Position);
             Assert.AreEqual(1000, builder.Value.Length);
             input.ReadMessage(builder, ExtensionRegistry.Empty);
+            Assert.AreEqual(5217L, input.Position);
+            Assert.AreEqual(input.Position, ms.Length);
             Assert.AreEqual(100, builder.Value.Length);
         }
     }

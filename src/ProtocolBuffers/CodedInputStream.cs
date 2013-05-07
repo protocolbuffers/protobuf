@@ -108,6 +108,14 @@ namespace Google.ProtocolBuffers
         {
             return new CodedInputStream(input);
         }
+        /// <summary>
+        /// Creates a new CodedInputStream reading data from the given
+        /// stream and a pre-allocated memory buffer.
+        /// </summary>
+        public static CodedInputStream CreateInstance(Stream input, byte[] buffer)
+        {
+            return new CodedInputStream(input, buffer);
+        }
 
         /// <summary>
         /// Creates a new CodedInputStream reading data from the given
@@ -142,7 +150,27 @@ namespace Google.ProtocolBuffers
             this.input = input;
         }
 
+        private CodedInputStream(Stream input, byte[] buffer)
+        {
+            this.buffer = buffer;
+            this.bufferSize = 0;
+            this.input = input;
+        }
         #endregion
+
+        /// <summary>
+        /// Returns the current position in the input stream, or the position in the input buffer
+        /// </summary>
+        public long Position 
+        {
+            get
+            {
+                if (input != null)
+                    return input.Position - (bufferSize - bufferPos);
+                return bufferPos;
+            }
+        }
+
 
         void ICodedInputStream.ReadMessageStart() { }
         void ICodedInputStream.ReadMessageEnd() { }
@@ -1608,7 +1636,7 @@ namespace Google.ProtocolBuffers
                 bufferPos += size;
                 return bytes;
             }
-            else if (size < BufferSize)
+            else if (size < buffer.Length)
             {
                 // Reading more bytes than are in the buffer, but not an excessive number
                 // of bytes.  We can safely allocate the resulting array ahead of time.
@@ -1663,7 +1691,7 @@ namespace Google.ProtocolBuffers
 
                 while (sizeLeft > 0)
                 {
-                    byte[] chunk = new byte[Math.Min(sizeLeft, BufferSize)];
+                    byte[] chunk = new byte[Math.Min(sizeLeft, buffer.Length)];
                     int pos = 0;
                     while (pos < chunk.Length)
                     {
