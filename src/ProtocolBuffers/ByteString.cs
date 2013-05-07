@@ -53,6 +53,30 @@ namespace Google.ProtocolBuffers
         private readonly byte[] bytes;
 
         /// <summary>
+        /// Unsafe operations that can cause IO Failure and/or other catestrophic side-effects.
+        /// </summary>
+        public static class Unsafe
+        {
+            /// <summary>
+            /// Constructs a new ByteString from the given byte array. The array is
+            /// *not* copied, and must not be modified after this constructor is called.
+            /// </summary>
+            public static ByteString FromBytes(byte[] bytes)
+            {
+                return new ByteString(bytes);
+            }
+
+            /// <summary>
+            /// Provides direct, unrestricted access to the bytes contained in this instance.
+            /// You must not modify or resize the byte array returned by this method.
+            /// </summary>
+            public static byte[] GetBuffer(ByteString bytes)
+            {
+                return bytes.bytes;
+            }
+        }
+
+        /// <summary>
         /// Internal use only.  Ensure that the provided array is not mutated and belongs to this instance.
         /// </summary>
         internal static ByteString AttachBytes(byte[] bytes)
