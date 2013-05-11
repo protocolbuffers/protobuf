@@ -14,7 +14,7 @@
 #include <string.h>
 #include "lauxlib.h"
 #include "bindings/lua/upb.h"
-#include "upb/bytestream.h"
+#include "upb/handlers.h"
 #include "upb/pb/glue.h"
 
 // Lua metatable types.
@@ -75,7 +75,7 @@ static uint32_t lupb_checkint32(lua_State *L, int narg, const char *name) {
 // Converts a number or bool from Lua -> upb_value.
 static upb_value lupb_getvalue(lua_State *L, int narg, upb_fieldtype_t type) {
   upb_value val;
-  if (type == UPB_TYPE(BOOL)) {
+  if (type == UPB_TYPE_BOOL) {
     if (!lua_isboolean(L, narg))
       luaL_error(L, "Must explicitly pass true or false for boolean fields");
     upb_value_setbool(&val, lua_toboolean(L, narg));
@@ -83,41 +83,35 @@ static upb_value lupb_getvalue(lua_State *L, int narg, upb_fieldtype_t type) {
     // Numeric type.
     lua_Number num = luaL_checknumber(L, narg);
     switch (type) {
-      case UPB_TYPE(INT32):
-      case UPB_TYPE(SINT32):
-      case UPB_TYPE(SFIXED32):
-      case UPB_TYPE(ENUM):
+      case UPB_TYPE_INT32:
+      case UPB_TYPE_ENUM:
         if (num > INT32_MAX || num < INT32_MIN || num != rint(num))
           luaL_error(L, "Cannot convert %f to 32-bit integer", num);
         upb_value_setint32(&val, num);
         break;
-      case UPB_TYPE(INT64):
-      case UPB_TYPE(SINT64):
-      case UPB_TYPE(SFIXED64):
+      case UPB_TYPE_INT64:
         if (num > INT64_MAX || num < INT64_MIN || num != rint(num))
           luaL_error(L, "Cannot convert %f to 64-bit integer", num);
         upb_value_setint64(&val, num);
         break;
-      case UPB_TYPE(UINT32):
-      case UPB_TYPE(FIXED32):
+      case UPB_TYPE_UINT32:
         if (num > UINT32_MAX || num < 0 || num != rint(num))
           luaL_error(L, "Cannot convert %f to unsigned 32-bit integer", num);
         upb_value_setuint32(&val, num);
         break;
-      case UPB_TYPE(UINT64):
-      case UPB_TYPE(FIXED64):
+      case UPB_TYPE_UINT64:
         if (num > UINT64_MAX || num < 0 || num != rint(num))
           luaL_error(L, "Cannot convert %f to unsigned 64-bit integer", num);
         upb_value_setuint64(&val, num);
         break;
-      case UPB_TYPE(DOUBLE):
+      case UPB_TYPE_DOUBLE:
         if (num > DBL_MAX || num < -DBL_MAX) {
           // This could happen if lua_Number was long double.
           luaL_error(L, "Cannot convert %f to double", num);
         }
         upb_value_setdouble(&val, num);
         break;
-      case UPB_TYPE(FLOAT):
+      case UPB_TYPE_FLOAT:
         if (num > FLT_MAX || num < -FLT_MAX)
           luaL_error(L, "Cannot convert %f to float", num);
         upb_value_setfloat(&val, num);
@@ -131,34 +125,21 @@ static upb_value lupb_getvalue(lua_State *L, int narg, upb_fieldtype_t type) {
 // Converts a upb_value -> Lua value.
 static void lupb_pushvalue(lua_State *L, upb_value val, upb_fieldtype_t type) {
   switch (type) {
-    case UPB_TYPE(INT32):
-    case UPB_TYPE(SINT32):
-    case UPB_TYPE(SFIXED32):
-    case UPB_TYPE(ENUM):
+    case UPB_TYPE_INT32:
+    case UPB_TYPE_ENUM:
       lua_pushnumber(L, upb_value_getint32(val)); break;
-    case UPB_TYPE(INT64):
-    case UPB_TYPE(SINT64):
-    case UPB_TYPE(SFIXED64):
+    case UPB_TYPE_INT64:
       lua_pushnumber(L, upb_value_getint64(val)); break;
-    case UPB_TYPE(UINT32):
-    case UPB_TYPE(FIXED32):
+    case UPB_TYPE_UINT32:
       lua_pushnumber(L, upb_value_getuint32(val)); break;
-    case UPB_TYPE(UINT64):
-    case UPB_TYPE(FIXED64):
+    case UPB_TYPE_UINT64:
       lua_pushnumber(L, upb_value_getuint64(val)); break;
-    case UPB_TYPE(DOUBLE):
+    case UPB_TYPE_DOUBLE:
       lua_pushnumber(L, upb_value_getdouble(val)); break;
-    case UPB_TYPE(FLOAT):
+    case UPB_TYPE_FLOAT:
       lua_pushnumber(L, upb_value_getfloat(val)); break;
-    case UPB_TYPE(BOOL):
+    case UPB_TYPE_BOOL:
       lua_pushboolean(L, upb_value_getbool(val)); break;
-    case UPB_TYPE(STRING):
-    case UPB_TYPE(BYTES): {
-      const upb_byteregion *r = upb_value_getbyteregion(val);
-      size_t len;
-      const char *str = upb_byteregion_getptr(r, 0, &len);
-      lua_pushlstring(L, str, len);
-    }
     default: luaL_error(L, "internal error");
   }
 }
@@ -341,7 +322,7 @@ static void lupb_fielddef_dosetdefault(lua_State *L, upb_fielddef *f,
   int type = lua_type(L, narg);
   upb_fieldtype_t upbtype = upb_fielddef_type(f);
   if (type == LUA_TSTRING) {
-    if (!upb_fielddef_isstring(f) && upbtype != UPB_TYPE(ENUM))
+    if (!upb_fielddef_isstring(f) && upbtype != UPB_TYPE_ENUM)
       luaL_argerror(L, narg, "field does not expect a string default");
     size_t len;
     const char *str = lua_tolstring(L, narg, &len);
@@ -387,6 +368,21 @@ static void lupb_fielddef_dosettype(lua_State *L, upb_fielddef *f, int narg) {
     luaL_argerror(L, narg, "invalid field type");
 }
 
+static void lupb_fielddef_dosetintfmt(lua_State *L, upb_fielddef *f, int narg) {
+  int32_t intfmt = luaL_checknumber(L, narg);
+  if (!upb_fielddef_settype(f, intfmt))
+    luaL_argerror(L, narg, "invalid field intfmt");
+}
+
+static void lupb_fielddef_dosettagdelim(lua_State *L, upb_fielddef *f,
+                                        int narg) {
+  if (!lua_isboolean(L, narg))
+    luaL_argerror(L, narg, "tagdelim value must be boolean");
+  int32_t tagdelim = luaL_checknumber(L, narg);
+  if (!upb_fielddef_settagdelim(f, tagdelim))
+    luaL_argerror(L, narg, "invalid field tagdelim");
+}
+
 // Setter API calls.  These use the setter functions above.
 
 static int lupb_fielddef_setdefault(lua_State *L) {
@@ -422,6 +418,18 @@ static int lupb_fielddef_setsubdefname(lua_State *L) {
 static int lupb_fielddef_settype(lua_State *L) {
   upb_fielddef *f = lupb_fielddef_checkmutable(L, 1);
   lupb_fielddef_dosettype(L, f, 2);
+  return 0;
+}
+
+static int lupb_fielddef_setintfmt(lua_State *L) {
+  upb_fielddef *f = lupb_fielddef_checkmutable(L, 1);
+  lupb_fielddef_dosetintfmt(L, f, 2);
+  return 0;
+}
+
+static int lupb_fielddef_settagdelim(lua_State *L) {
+  upb_fielddef *f = lupb_fielddef_checkmutable(L, 1);
+  lupb_fielddef_dosettagdelim(L, f, 2);
   return 0;
 }
 
@@ -470,9 +478,20 @@ static int lupb_fielddef_default(lua_State *L) {
   const upb_fielddef *f = lupb_fielddef_check(L, 1);
   upb_fieldtype_t type = upb_fielddef_type(f);
   if (upb_fielddef_default_is_symbolic(f))
-    type = UPB_TYPE(STRING);
+    type = UPB_TYPE_STRING;
   lupb_pushvalue(L, upb_fielddef_default(f), type);
   return 1;
+}
+
+static int lupb_fielddef_getsel(lua_State *L) {
+  const upb_fielddef *f = lupb_fielddef_check(L, 1);
+  upb_selector_t sel;
+  if (upb_getselector(f, luaL_checknumber(L, 2), &sel)) {
+    lua_pushnumber(L, sel);
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 static int lupb_fielddef_label(lua_State *L) {
@@ -530,7 +549,22 @@ static int lupb_fielddef_subdefname(lua_State *L) {
 
 static int lupb_fielddef_type(lua_State *L) {
   const upb_fielddef *f = lupb_fielddef_check(L, 1);
-  lua_pushnumber(L, upb_fielddef_type(f));
+  if (upb_fielddef_typeisset(f))
+    lua_pushnumber(L, upb_fielddef_type(f));
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
+static int lupb_fielddef_intfmt(lua_State *L) {
+  const upb_fielddef *f = lupb_fielddef_check(L, 1);
+  lua_pushnumber(L, upb_fielddef_intfmt(f));
+  return 1;
+}
+
+static int lupb_fielddef_istagdelim(lua_State *L) {
+  const upb_fielddef *f = lupb_fielddef_check(L, 1);
+  lua_pushboolean(L, upb_fielddef_istagdelim(f));
   return 1;
 }
 
@@ -545,7 +579,10 @@ static const struct luaL_Reg lupb_fielddef_m[] = {
   LUPB_COMMON_DEF_METHODS
 
   {"default", lupb_fielddef_default},
+  {"getsel", lupb_fielddef_getsel},
   {"has_subdef", lupb_fielddef_hassubdef},
+  {"intfmt", lupb_fielddef_intfmt},
+  {"istagdelim", lupb_fielddef_istagdelim},
   {"label", lupb_fielddef_label},
   {"msgdef", lupb_fielddef_msgdef},
   {"name", lupb_def_fullname},  // name() is just an alias for fullname()
@@ -561,6 +598,8 @@ static const struct luaL_Reg lupb_fielddef_m[] = {
   {"set_subdef", lupb_fielddef_setsubdef},
   {"set_subdef_name", lupb_fielddef_setsubdefname},
   {"set_type", lupb_fielddef_settype},
+  {"set_intfmt", lupb_fielddef_setintfmt},
+  {"set_tagdelim", lupb_fielddef_settagdelim},
 
   // Internal-only.
   {"_selector_base", lupb_fielddef_selectorbase},
@@ -1040,34 +1079,65 @@ int luaopen_upb(lua_State *L) {
   lua_call(L, 1, 0);
 
   // Register constants.
-  lupb_setfieldi(L, "LABEL_OPTIONAL", UPB_LABEL(OPTIONAL));
-  lupb_setfieldi(L, "LABEL_REQUIRED", UPB_LABEL(REQUIRED));
-  lupb_setfieldi(L, "LABEL_REPEATED", UPB_LABEL(REPEATED));
+  lupb_setfieldi(L, "LABEL_OPTIONAL", UPB_LABEL_OPTIONAL);
+  lupb_setfieldi(L, "LABEL_REQUIRED", UPB_LABEL_REQUIRED);
+  lupb_setfieldi(L, "LABEL_REPEATED", UPB_LABEL_REPEATED);
 
-  lupb_setfieldi(L, "TYPE_DOUBLE",    UPB_TYPE(DOUBLE));
-  lupb_setfieldi(L, "TYPE_FLOAT",     UPB_TYPE(FLOAT));
-  lupb_setfieldi(L, "TYPE_INT64",     UPB_TYPE(INT64));
-  lupb_setfieldi(L, "TYPE_UINT64",    UPB_TYPE(UINT64));
-  lupb_setfieldi(L, "TYPE_INT32",     UPB_TYPE(INT32));
-  lupb_setfieldi(L, "TYPE_FIXED64",   UPB_TYPE(FIXED64));
-  lupb_setfieldi(L, "TYPE_FIXED32",   UPB_TYPE(FIXED32));
-  lupb_setfieldi(L, "TYPE_BOOL",      UPB_TYPE(BOOL));
-  lupb_setfieldi(L, "TYPE_STRING",    UPB_TYPE(STRING));
-  lupb_setfieldi(L, "TYPE_GROUP",     UPB_TYPE(GROUP));
-  lupb_setfieldi(L, "TYPE_MESSAGE",   UPB_TYPE(MESSAGE));
-  lupb_setfieldi(L, "TYPE_BYTES",     UPB_TYPE(BYTES));
-  lupb_setfieldi(L, "TYPE_UINT32",    UPB_TYPE(UINT32));
-  lupb_setfieldi(L, "TYPE_ENUM",      UPB_TYPE(ENUM));
-  lupb_setfieldi(L, "TYPE_SFIXED32",  UPB_TYPE(SFIXED32));
-  lupb_setfieldi(L, "TYPE_SFIXED64",  UPB_TYPE(SFIXED64));
-  lupb_setfieldi(L, "TYPE_SINT32",    UPB_TYPE(SINT32));
-  lupb_setfieldi(L, "TYPE_SINT64",    UPB_TYPE(SINT64));
+  lupb_setfieldi(L, "TYPE_DOUBLE",    UPB_TYPE_DOUBLE);
+  lupb_setfieldi(L, "TYPE_FLOAT",     UPB_TYPE_FLOAT);
+  lupb_setfieldi(L, "TYPE_INT64",     UPB_TYPE_INT64);
+  lupb_setfieldi(L, "TYPE_UINT64",    UPB_TYPE_UINT64);
+  lupb_setfieldi(L, "TYPE_INT32",     UPB_TYPE_INT32);
+  lupb_setfieldi(L, "TYPE_BOOL",      UPB_TYPE_BOOL);
+  lupb_setfieldi(L, "TYPE_STRING",    UPB_TYPE_STRING);
+  lupb_setfieldi(L, "TYPE_MESSAGE",   UPB_TYPE_MESSAGE);
+  lupb_setfieldi(L, "TYPE_BYTES",     UPB_TYPE_BYTES);
+  lupb_setfieldi(L, "TYPE_UINT32",    UPB_TYPE_UINT32);
+  lupb_setfieldi(L, "TYPE_ENUM",      UPB_TYPE_ENUM);
+
+  lupb_setfieldi(L, "INTFMT_VARIABLE",  UPB_INTFMT_VARIABLE);
+  lupb_setfieldi(L, "INTFMT_FIXED",     UPB_INTFMT_FIXED);
+  lupb_setfieldi(L, "INTFMT_ZIGZAG",    UPB_INTFMT_ZIGZAG);
+
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_DOUBLE",    UPB_DESCRIPTOR_TYPE_DOUBLE);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_FLOAT",     UPB_DESCRIPTOR_TYPE_FLOAT);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_INT64",     UPB_DESCRIPTOR_TYPE_INT64);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_UINT64",    UPB_DESCRIPTOR_TYPE_UINT64);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_INT32",     UPB_DESCRIPTOR_TYPE_INT32);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_FIXED64",   UPB_DESCRIPTOR_TYPE_FIXED64);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_FIXED32",   UPB_DESCRIPTOR_TYPE_FIXED32);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_BOOL",      UPB_DESCRIPTOR_TYPE_BOOL);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_STRING",    UPB_DESCRIPTOR_TYPE_STRING);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_GROUP",     UPB_DESCRIPTOR_TYPE_GROUP);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_MESSAGE",   UPB_DESCRIPTOR_TYPE_MESSAGE);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_BYTES",     UPB_DESCRIPTOR_TYPE_BYTES);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_UINT32",    UPB_DESCRIPTOR_TYPE_UINT32);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_ENUM",      UPB_DESCRIPTOR_TYPE_ENUM);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_SFIXED32",  UPB_DESCRIPTOR_TYPE_SFIXED32);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_SFIXED64",  UPB_DESCRIPTOR_TYPE_SFIXED64);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_SINT32",    UPB_DESCRIPTOR_TYPE_SINT32);
+  lupb_setfieldi(L, "DESCRIPTOR_TYPE_SINT64",    UPB_DESCRIPTOR_TYPE_SINT64);
 
   lupb_setfieldi(L, "DEF_MSG",      UPB_DEF_MSG);
   lupb_setfieldi(L, "DEF_FIELD",    UPB_DEF_FIELD);
   lupb_setfieldi(L, "DEF_ENUM",     UPB_DEF_ENUM);
   lupb_setfieldi(L, "DEF_SERVICE",  UPB_DEF_SERVICE);
   lupb_setfieldi(L, "DEF_ANY",      UPB_DEF_ANY);
+
+  lupb_setfieldi(L, "UPB_HANDLER_INT32",       UPB_HANDLER_INT32);
+  lupb_setfieldi(L, "UPB_HANDLER_INT64",       UPB_HANDLER_INT64);
+  lupb_setfieldi(L, "UPB_HANDLER_UINT32",      UPB_HANDLER_UINT32);
+  lupb_setfieldi(L, "UPB_HANDLER_UINT64",      UPB_HANDLER_UINT64);
+  lupb_setfieldi(L, "UPB_HANDLER_FLOAT",       UPB_HANDLER_FLOAT);
+  lupb_setfieldi(L, "UPB_HANDLER_DOUBLE",      UPB_HANDLER_DOUBLE);
+  lupb_setfieldi(L, "UPB_HANDLER_BOOL",        UPB_HANDLER_BOOL);
+  lupb_setfieldi(L, "UPB_HANDLER_STARTSTR",    UPB_HANDLER_STARTSTR);
+  lupb_setfieldi(L, "UPB_HANDLER_STRING",      UPB_HANDLER_STRING);
+  lupb_setfieldi(L, "UPB_HANDLER_ENDSTR",      UPB_HANDLER_ENDSTR);
+  lupb_setfieldi(L, "UPB_HANDLER_STARTSUBMSG", UPB_HANDLER_STARTSUBMSG);
+  lupb_setfieldi(L, "UPB_HANDLER_ENDSUBMSG",   UPB_HANDLER_ENDSUBMSG);
+  lupb_setfieldi(L, "UPB_HANDLER_STARTSEQ",    UPB_HANDLER_STARTSEQ);
+  lupb_setfieldi(L, "UPB_HANDLER_ENDSEQ",      UPB_HANDLER_ENDSEQ);
 
   return 1;  // Return package table.
 }

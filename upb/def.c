@@ -9,8 +9,24 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "upb/bytestream.h"
+#include "upb/descriptor/descriptor.upb.h"
 #include "upb/handlers.h"
+
+typedef struct {
+  size_t len;
+  char str[1];  // Null-terminated string data follows.
+} str_t;
+
+static str_t *newstr(const char *data, size_t len) {
+  str_t *ret = malloc(sizeof(*ret) + len);
+  if (!ret) return NULL;
+  ret->len = len;
+  memcpy(ret->str, data, len);
+  ret->str[len] = '\0';
+  return ret;
+}
+
+static void freestr(str_t *s) { free(s); }
 
 // isalpha() etc. from <ctype.h> are locale-dependent, which we don't want.
 static bool upb_isbetween(char c, char low, char high) {
@@ -111,6 +127,10 @@ static const char *msgdef_name(const upb_msgdef *m) {
 static bool upb_validate_field(upb_fielddef *f, upb_status *s) {
   if (upb_fielddef_name(f) == NULL || upb_fielddef_number(f) == 0) {
     upb_status_seterrliteral(s, "fielddef must have name and number set");
+    return false;
+  }
+  if (!f->type_is_set_) {
+    upb_status_seterrliteral(s, "fielddef type was not initialized");
     return false;
   }
   if (upb_fielddef_hassubdef(f)) {
@@ -281,7 +301,7 @@ bool upb_enumdef_addval(upb_enumdef *e, const char *name, int32_t num,
     upb_status_seterrliteral(status, "out of memory");
     return false;
   }
-  if (!upb_inttable_lookup(&e->iton, num) &&
+  if (!upb_inttable_lookup(&e->iton, num, NULL) &&
       !upb_inttable_insert(&e->iton, num, upb_value_cstr(upb_strdup(name)))) {
     upb_status_seterrliteral(status, "out of memory");
     upb_strtable_remove(&e->ntoi, name, NULL);
@@ -310,15 +330,18 @@ void upb_enum_next(upb_enum_iter *iter) { upb_strtable_next(iter); }
 bool upb_enum_done(upb_enum_iter *iter) { return upb_strtable_done(iter); }
 
 bool upb_enumdef_ntoi(const upb_enumdef *def, const char *name, int32_t *num) {
-  const upb_value *v = upb_strtable_lookup(&def->ntoi, name);
-  if (!v) return false;
-  if (num) *num = upb_value_getint32(*v);
+  upb_value v;
+  if (!upb_strtable_lookup(&def->ntoi, name, &v)) {
+    return false;
+  }
+  if (num) *num = upb_value_getint32(v);
   return true;
 }
 
 const char *upb_enumdef_iton(const upb_enumdef *def, int32_t num) {
-  const upb_value *v = upb_inttable_lookup32(&def->iton, num);
-  return v ? upb_value_getcstr(*v) : NULL;
+  upb_value v;
+  return upb_inttable_lookup32(&def->iton, num, &v) ?
+      upb_value_getcstr(v) : NULL;
 }
 
 const char *upb_enum_iter_name(upb_enum_iter *iter) {
@@ -332,37 +355,11 @@ int32_t upb_enum_iter_number(upb_enum_iter *iter) {
 
 /* upb_fielddef ***************************************************************/
 
-#define alignof(t) offsetof(struct { char c; t x; }, x)
-#define TYPE_INFO(ctype, inmemory_type) \
-    {alignof(ctype), sizeof(ctype), UPB_CTYPE_ ## inmemory_type}
-
-const upb_typeinfo upb_types[UPB_NUM_TYPES] = {
-  TYPE_INFO(void*,     PTR),        // (unused)
-  TYPE_INFO(double,    DOUBLE),     // DOUBLE
-  TYPE_INFO(float,     FLOAT),      // FLOAT
-  TYPE_INFO(int64_t,   INT64),      // INT64
-  TYPE_INFO(uint64_t,  UINT64),     // UINT64
-  TYPE_INFO(int32_t,   INT32),      // INT32
-  TYPE_INFO(uint64_t,  UINT64),     // FIXED64
-  TYPE_INFO(uint32_t,  UINT32),     // FIXED32
-  TYPE_INFO(bool,      BOOL),       // BOOL
-  TYPE_INFO(void*,     BYTEREGION), // STRING
-  TYPE_INFO(void*,     PTR),        // GROUP
-  TYPE_INFO(void*,     PTR),        // MESSAGE
-  TYPE_INFO(void*,     BYTEREGION), // BYTES
-  TYPE_INFO(uint32_t,  UINT32),     // UINT32
-  TYPE_INFO(int32_t,   INT32),      // ENUM
-  TYPE_INFO(int32_t,   INT32),      // SFIXED32
-  TYPE_INFO(int64_t,   INT64),      // SFIXED64
-  TYPE_INFO(int32_t,   INT32),      // SINT32
-  TYPE_INFO(int64_t,   INT64),      // SINT64
-};
-
 static void upb_fielddef_init_default(upb_fielddef *f);
 
 static void upb_fielddef_uninit_default(upb_fielddef *f) {
-  if (f->default_is_string)
-    upb_byteregion_free(upb_value_getbyteregion(f->defaultval));
+  if (f->type_is_set_ && f->default_is_string)
+    freestr(upb_value_getptr(f->defaultval));
 }
 
 static void visitfield(const upb_refcounted *r, upb_refcounted_visit *visit,
@@ -396,16 +393,21 @@ upb_fielddef *upb_fielddef_new(const void *owner) {
   f->msgdef = NULL;
   f->sub.def = NULL;
   f->subdef_is_symbolic = false;
-  f->subdef_is_owned = false;
-  f->label_ = UPB_LABEL(OPTIONAL);
-
-  // These are initialized to be invalid; the user must set them explicitly.
-  // Could relax this later if it's convenient and non-confusing to have a
-  // defaults for them.
-  f->type_ = UPB_TYPE_NONE;
+  f->label_ = UPB_LABEL_OPTIONAL;
+  f->type_ = UPB_TYPE_INT32;
   f->number_ = 0;
+  f->type_is_set_ = false;
+  f->tagdelim = false;
 
-  upb_fielddef_init_default(f);
+  // For the moment we default this to UPB_INTFMT_VARIABLE, since it will work
+  // with all integer types and is in some since more "default" since the most
+  // normal-looking proto2 types int32/int64/uint32/uint64 use variable.
+  //
+  // Other options to consider:
+  // - there is no default; users must set this manually (like type).
+  // - default signed integers to UPB_INTFMT_ZIGZAG, since it's more likely to
+  //   be an optimal default for signed integers.
+  f->intfmt = UPB_INTFMT_VARIABLE;
   return f;
 }
 
@@ -417,11 +419,8 @@ upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner) {
   upb_fielddef_setnumber(newf, upb_fielddef_number(f));
   upb_fielddef_setname(newf, upb_fielddef_name(f));
   if (f->default_is_string) {
-    upb_byteregion *r = upb_value_getbyteregion(upb_fielddef_default(f));
-    size_t len;
-    const char *ptr = upb_byteregion_getptr(r, 0, &len);
-    assert(len == upb_byteregion_len(r));
-    upb_fielddef_setdefaultstr(newf, ptr, len);
+    str_t *s = upb_value_getptr(upb_fielddef_default(f));
+    upb_fielddef_setdefaultstr(newf, s->str, s->len);
   } else {
     upb_fielddef_setdefault(newf, upb_fielddef_default(f));
   }
@@ -468,7 +467,12 @@ void upb_fielddef_checkref(const upb_fielddef *f, const void *owner) {
   upb_def_checkref(upb_upcast(f), owner);
 }
 
+bool upb_fielddef_typeisset(const upb_fielddef *f) {
+  return f->type_is_set_;
+}
+
 upb_fieldtype_t upb_fielddef_type(const upb_fielddef *f) {
+  assert(f->type_is_set_);
   return f->type_;
 }
 
@@ -476,7 +480,17 @@ upb_label_t upb_fielddef_label(const upb_fielddef *f) {
   return f->label_;
 }
 
-uint32_t upb_fielddef_number(const upb_fielddef *f) { return f->number_; }
+upb_intfmt_t upb_fielddef_intfmt(const upb_fielddef *f) {
+  return f->intfmt;
+}
+
+bool upb_fielddef_istagdelim(const upb_fielddef *f) {
+  return f->tagdelim;
+}
+
+uint32_t upb_fielddef_number(const upb_fielddef *f) {
+  return f->number_;
+}
 
 const char *upb_fielddef_name(const upb_fielddef *f) {
   return upb_def_fullname(upb_upcast(f));
@@ -495,34 +509,37 @@ bool upb_fielddef_setname(upb_fielddef *f, const char *name) {
 }
 
 upb_value upb_fielddef_default(const upb_fielddef *f) {
+  assert(f->type_is_set_);
   return f->defaultval;
+}
+
+const char *upb_fielddef_defaultstr(const upb_fielddef *f, size_t *len) {
+  assert(f->type_is_set_);
+  if (f->default_is_string) {
+    str_t *str = upb_value_getptr(f->defaultval);
+    if (len) *len = str->len;
+    return str->str;
+  }
+  return NULL;
 }
 
 static void upb_fielddef_init_default(upb_fielddef *f) {
   f->default_is_string = false;
   switch (upb_fielddef_type(f)) {
-    case UPB_TYPE(DOUBLE): upb_value_setdouble(&f->defaultval, 0); break;
-    case UPB_TYPE(FLOAT): upb_value_setfloat(&f->defaultval, 0); break;
-    case UPB_TYPE(UINT64):
-    case UPB_TYPE(FIXED64): upb_value_setuint64(&f->defaultval, 0); break;
-    case UPB_TYPE(INT64):
-    case UPB_TYPE(SFIXED64):
-    case UPB_TYPE(SINT64): upb_value_setint64(&f->defaultval, 0); break;
-    case UPB_TYPE(ENUM):
-    case UPB_TYPE(INT32):
-    case UPB_TYPE(SINT32):
-    case UPB_TYPE(SFIXED32): upb_value_setint32(&f->defaultval, 0); break;
-    case UPB_TYPE(UINT32):
-    case UPB_TYPE(FIXED32): upb_value_setuint32(&f->defaultval, 0); break;
-    case UPB_TYPE(BOOL): upb_value_setbool(&f->defaultval, false); break;
-    case UPB_TYPE(STRING):
-    case UPB_TYPE(BYTES):
-        upb_value_setbyteregion(&f->defaultval, upb_byteregion_new(""));
-        f->default_is_string = true;
-        break;
-    case UPB_TYPE(GROUP):
-    case UPB_TYPE(MESSAGE): upb_value_setptr(&f->defaultval, NULL); break;
-    case UPB_TYPE_NONE: break;
+    case UPB_TYPE_DOUBLE: upb_value_setdouble(&f->defaultval, 0); break;
+    case UPB_TYPE_FLOAT: upb_value_setfloat(&f->defaultval, 0); break;
+    case UPB_TYPE_UINT64: upb_value_setuint64(&f->defaultval, 0); break;
+    case UPB_TYPE_INT64: upb_value_setint64(&f->defaultval, 0); break;
+    case UPB_TYPE_ENUM:
+    case UPB_TYPE_INT32: upb_value_setint32(&f->defaultval, 0); break;
+    case UPB_TYPE_UINT32: upb_value_setuint32(&f->defaultval, 0); break;
+    case UPB_TYPE_BOOL: upb_value_setbool(&f->defaultval, false); break;
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:
+      upb_value_setptr(&f->defaultval, newstr("", 0));
+      f->default_is_string = true;
+      break;
+    case UPB_TYPE_MESSAGE: upb_value_setptr(&f->defaultval, NULL); break;
   }
 }
 
@@ -554,8 +571,111 @@ bool upb_fielddef_settype(upb_fielddef *f, upb_fieldtype_t type) {
   assert(!upb_fielddef_isfrozen(f));
   upb_fielddef_uninit_default(f);
   f->type_ = type;
+  f->type_is_set_ = true;
   upb_fielddef_init_default(f);
   return true;
+}
+
+bool upb_fielddef_setdescriptortype(upb_fielddef *f, int type) {
+  assert(!upb_fielddef_isfrozen(f));
+  switch (type) {
+    case UPB_DESCRIPTOR_TYPE_DOUBLE:
+      upb_fielddef_settype(f, UPB_TYPE_DOUBLE);
+      break;
+    case UPB_DESCRIPTOR_TYPE_FLOAT:
+      upb_fielddef_settype(f, UPB_TYPE_FLOAT);
+      break;
+    case UPB_DESCRIPTOR_TYPE_INT64:
+    case UPB_DESCRIPTOR_TYPE_SFIXED64:
+    case UPB_DESCRIPTOR_TYPE_SINT64:
+      upb_fielddef_settype(f, UPB_TYPE_INT64);
+      break;
+    case UPB_DESCRIPTOR_TYPE_UINT64:
+    case UPB_DESCRIPTOR_TYPE_FIXED64:
+      upb_fielddef_settype(f, UPB_TYPE_UINT64);
+      break;
+    case UPB_DESCRIPTOR_TYPE_INT32:
+    case UPB_DESCRIPTOR_TYPE_SFIXED32:
+    case UPB_DESCRIPTOR_TYPE_SINT32:
+      upb_fielddef_settype(f, UPB_TYPE_INT32);
+      break;
+    case UPB_DESCRIPTOR_TYPE_UINT32:
+    case UPB_DESCRIPTOR_TYPE_FIXED32:
+      upb_fielddef_settype(f, UPB_TYPE_UINT32);
+      break;
+    case UPB_DESCRIPTOR_TYPE_BOOL:
+      upb_fielddef_settype(f, UPB_TYPE_BOOL);
+      break;
+    case UPB_DESCRIPTOR_TYPE_STRING:
+      upb_fielddef_settype(f, UPB_TYPE_STRING);
+      break;
+    case UPB_DESCRIPTOR_TYPE_BYTES:
+      upb_fielddef_settype(f, UPB_TYPE_BYTES);
+      break;
+    case UPB_DESCRIPTOR_TYPE_GROUP:
+    case UPB_DESCRIPTOR_TYPE_MESSAGE:
+      upb_fielddef_settype(f, UPB_TYPE_MESSAGE);
+      break;
+    case UPB_DESCRIPTOR_TYPE_ENUM:
+      upb_fielddef_settype(f, UPB_TYPE_ENUM);
+      break;
+    default:
+      return false;
+  }
+
+  if (type == UPB_DESCRIPTOR_TYPE_FIXED64 ||
+      type == UPB_DESCRIPTOR_TYPE_FIXED32 ||
+      type == UPB_DESCRIPTOR_TYPE_SFIXED64 ||
+      type == UPB_DESCRIPTOR_TYPE_SFIXED32) {
+    upb_fielddef_setintfmt(f, UPB_INTFMT_FIXED);
+  } else if (type == UPB_DESCRIPTOR_TYPE_SINT64 ||
+             type == UPB_DESCRIPTOR_TYPE_SINT32) {
+    upb_fielddef_setintfmt(f, UPB_INTFMT_ZIGZAG);
+  } else {
+    upb_fielddef_setintfmt(f, UPB_INTFMT_VARIABLE);
+  }
+
+  upb_fielddef_settagdelim(f, type == UPB_DESCRIPTOR_TYPE_GROUP);
+
+  return true;
+}
+
+upb_descriptortype_t upb_fielddef_descriptortype(const upb_fielddef *f) {
+  switch (upb_fielddef_type(f)) {
+    case UPB_TYPE_FLOAT:  return UPB_DESCRIPTOR_TYPE_FLOAT;
+    case UPB_TYPE_DOUBLE: return UPB_DESCRIPTOR_TYPE_DOUBLE;
+    case UPB_TYPE_BOOL:   return UPB_DESCRIPTOR_TYPE_BOOL;
+    case UPB_TYPE_STRING: return UPB_DESCRIPTOR_TYPE_STRING;
+    case UPB_TYPE_BYTES:  return UPB_DESCRIPTOR_TYPE_BYTES;
+    case UPB_TYPE_ENUM:   return UPB_DESCRIPTOR_TYPE_ENUM;
+    case UPB_TYPE_INT32:
+      switch (upb_fielddef_intfmt(f)) {
+        case UPB_INTFMT_VARIABLE: return UPB_DESCRIPTOR_TYPE_INT32;
+        case UPB_INTFMT_FIXED:    return UPB_DESCRIPTOR_TYPE_SFIXED32;
+        case UPB_INTFMT_ZIGZAG:   return UPB_DESCRIPTOR_TYPE_SINT32;
+      }
+    case UPB_TYPE_INT64:
+      switch (upb_fielddef_intfmt(f)) {
+        case UPB_INTFMT_VARIABLE: return UPB_DESCRIPTOR_TYPE_INT64;
+        case UPB_INTFMT_FIXED:    return UPB_DESCRIPTOR_TYPE_SFIXED64;
+        case UPB_INTFMT_ZIGZAG:   return UPB_DESCRIPTOR_TYPE_SINT64;
+      }
+    case UPB_TYPE_UINT32:
+      switch (upb_fielddef_intfmt(f)) {
+        case UPB_INTFMT_VARIABLE: return UPB_DESCRIPTOR_TYPE_UINT32;
+        case UPB_INTFMT_FIXED:    return UPB_DESCRIPTOR_TYPE_FIXED32;
+        case UPB_INTFMT_ZIGZAG:   return -1;
+      }
+    case UPB_TYPE_UINT64:
+      switch (upb_fielddef_intfmt(f)) {
+        case UPB_INTFMT_VARIABLE: return UPB_DESCRIPTOR_TYPE_UINT64;
+        case UPB_INTFMT_FIXED:    return UPB_DESCRIPTOR_TYPE_FIXED64;
+        case UPB_INTFMT_ZIGZAG:   return -1;
+      }
+    case UPB_TYPE_MESSAGE:
+      return upb_fielddef_istagdelim(f) ?
+          UPB_DESCRIPTOR_TYPE_GROUP : UPB_DESCRIPTOR_TYPE_MESSAGE;
+  }
 }
 
 bool upb_fielddef_setlabel(upb_fielddef *f, upb_label_t label) {
@@ -564,79 +684,86 @@ bool upb_fielddef_setlabel(upb_fielddef *f, upb_label_t label) {
   return true;
 }
 
+bool upb_fielddef_setintfmt(upb_fielddef *f, upb_intfmt_t fmt) {
+  assert(!upb_fielddef_isfrozen(f));
+  f->intfmt = fmt;
+  return true;
+}
+
+bool upb_fielddef_settagdelim(upb_fielddef *f, bool tag_delim) {
+  assert(!upb_fielddef_isfrozen(f));
+  f->tagdelim = tag_delim;
+  return true;
+}
+
 void upb_fielddef_setdefault(upb_fielddef *f, upb_value value) {
+  assert(f->type_is_set_);
   assert(!upb_fielddef_isfrozen(f));
   assert(!upb_fielddef_isstring(f) && !upb_fielddef_issubmsg(f));
   if (f->default_is_string) {
-    upb_byteregion *bytes = upb_value_getbyteregion(f->defaultval);
-    assert(bytes);
-    upb_byteregion_free(bytes);
+    str_t *s = upb_value_getptr(f->defaultval);
+    assert(s);
+    freestr(s);
   }
   f->defaultval = value;
   f->default_is_string = false;
 }
 
 bool upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len) {
-  assert(upb_fielddef_isstring(f) || f->type_ == UPB_TYPE(ENUM));
-  if (f->type_ == UPB_TYPE(ENUM) && !upb_isident(str, len, false)) return false;
+  assert(upb_fielddef_isstring(f) || f->type_ == UPB_TYPE_ENUM);
+  if (f->type_ == UPB_TYPE_ENUM && !upb_isident(str, len, false))
+    return false;
 
   if (f->default_is_string) {
-    upb_byteregion *bytes = upb_value_getbyteregion(f->defaultval);
-    assert(bytes);
-    upb_byteregion_free(bytes);
+    str_t *s = upb_value_getptr(f->defaultval);
+    assert(s);
+    freestr(s);
   } else {
-    assert(f->type_ == UPB_TYPE(ENUM));
+    assert(f->type_ == UPB_TYPE_ENUM);
   }
 
-  upb_byteregion *r = upb_byteregion_newl(str, len);
-  upb_value_setbyteregion(&f->defaultval, r);
-  upb_bytesuccess_t ret = upb_byteregion_fetch(r);
-  UPB_ASSERT_VAR(ret, ret == (len == 0 ? UPB_BYTE_EOF : UPB_BYTE_OK));
-  assert(upb_byteregion_available(r, 0) == upb_byteregion_len(r));
+  str_t *s = newstr(str, len);
+  upb_value_setptr(&f->defaultval, s);
   f->default_is_string = true;
   return true;
 }
 
 void upb_fielddef_setdefaultcstr(upb_fielddef *f, const char *str) {
+  assert(f->type_is_set_);
   upb_fielddef_setdefaultstr(f, str, str ? strlen(str) : 0);
 }
 
 bool upb_fielddef_default_is_symbolic(const upb_fielddef *f) {
-  return f->default_is_string && f->type_ == UPB_TYPE_ENUM;
+  return f->type_is_set_ &&
+      f->default_is_string &&
+      f->type_ == UPB_TYPE_ENUM;
 }
 
 bool upb_fielddef_resolvedefault(upb_fielddef *f) {
   if (!upb_fielddef_default_is_symbolic(f)) return true;
 
-  upb_byteregion *bytes = upb_value_getbyteregion(f->defaultval);
+  str_t *s = upb_value_getptr(f->defaultval);
   const upb_enumdef *e = upb_downcast_enumdef(upb_fielddef_subdef(f));
-  assert(bytes);  // Points to either a real default or the empty string.
+  assert(s);  // Points to either a real default or the empty string.
   assert(e);
-  if (upb_byteregion_len(bytes) == 0) {
+  if (s->len == 0) {
     // The "default default" for an enum is the first defined value.
     upb_value_setint32(&f->defaultval, e->defaultval);
   } else {
-    size_t len;
     int32_t val = 0;
-    // ptr is guaranteed to be NULL-terminated because the byteregion was
-    // created with upb_byteregion_newl().
-    const char *ptr = upb_byteregion_getptr(
-        bytes, upb_byteregion_startofs(bytes), &len);
-    assert(len == upb_byteregion_len(bytes));  // Should all be in one chunk
-    if (!upb_enumdef_ntoi(e, ptr, &val)) {
+    if (!upb_enumdef_ntoi(e, s->str, &val))
       return false;
-    }
     upb_value_setint32(&f->defaultval, val);
   }
   f->default_is_string = false;
-  upb_byteregion_free(bytes);
+  freestr(s);
   return true;
 }
 
 static bool upb_subdef_typecheck(upb_fielddef *f, const upb_def *subdef) {
-  if (f->type_ == UPB_TYPE(MESSAGE) || f->type_ == UPB_TYPE(GROUP))
+  if (f->type_ == UPB_TYPE_MESSAGE)
     return upb_dyncast_msgdef(subdef) != NULL;
-  else if (f->type_ == UPB_TYPE(ENUM))
+  else if (f->type_ == UPB_TYPE_ENUM)
     return upb_dyncast_enumdef(subdef) != NULL;
   else {
     assert(false);
@@ -673,8 +800,7 @@ bool upb_fielddef_setsubdefname(upb_fielddef *f, const char *name) {
 }
 
 bool upb_fielddef_issubmsg(const upb_fielddef *f) {
-  return upb_fielddef_type(f) == UPB_TYPE_GROUP ||
-         upb_fielddef_type(f) == UPB_TYPE_MESSAGE;
+  return upb_fielddef_type(f) == UPB_TYPE_MESSAGE;
 }
 
 bool upb_fielddef_isstring(const upb_fielddef *f) {
@@ -691,7 +817,7 @@ bool upb_fielddef_isprimitive(const upb_fielddef *f) {
 }
 
 bool upb_fielddef_hassubdef(const upb_fielddef *f) {
-  return upb_fielddef_issubmsg(f) || upb_fielddef_type(f) == UPB_TYPE(ENUM);
+  return upb_fielddef_issubmsg(f) || upb_fielddef_type(f) == UPB_TYPE_ENUM;
 }
 
 
@@ -808,13 +934,15 @@ bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f,
 }
 
 const upb_fielddef *upb_msgdef_itof(const upb_msgdef *m, uint32_t i) {
-  const upb_value *val = upb_inttable_lookup32(&m->itof, i);
-  return val ? (const upb_fielddef*)upb_value_getptr(*val) : NULL;
+  upb_value val;
+  return upb_inttable_lookup32(&m->itof, i, &val) ?
+      upb_value_getptr(val) : NULL;
 }
 
 const upb_fielddef *upb_msgdef_ntof(const upb_msgdef *m, const char *name) {
-  const upb_value *val = upb_strtable_lookup(&m->ntof, name);
-  return val ? (upb_fielddef*)upb_value_getptr(*val) : NULL;
+  upb_value val;
+  return upb_strtable_lookup(&m->ntof, name, &val) ?
+      upb_value_getptr(val) : NULL;
 }
 
 upb_fielddef *upb_msgdef_itof_mutable(upb_msgdef *m, uint32_t i) {

@@ -49,9 +49,8 @@ bool TrySetWriteHandlers(const ::google::protobuf::FieldDescriptor* proto2_f,
 // Returns a prototype for the given field in "m", if it is weak.  The returned
 // message could be the linked-in message type or OpaqueMessage, if the weak
 // message is *not* linked in.  Otherwise returns NULL.
-const proto2::Message* GetFieldPrototype(
-    const proto2::Message& m,
-    const proto2::FieldDescriptor* f);
+const proto2::Message* GetFieldPrototype(const proto2::Message& m,
+                                         const proto2::FieldDescriptor* f);
 const ::google::protobuf::Message* GetFieldPrototype(
     const ::google::protobuf::Message& m,
     const ::google::protobuf::FieldDescriptor* f);

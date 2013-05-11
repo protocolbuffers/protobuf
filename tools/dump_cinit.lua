@@ -45,7 +45,28 @@ function const(obj, name)
       return "UPB_" .. k
     end
   end
-  assert(false, "Couldn't find constant")
+  assert(false, "Couldn't find UPB_" .. string.upper(name) ..
+                " constant for value: " .. val)
+end
+
+function constlist(pattern)
+  local ret = {}
+  for k, v in pairs(upb) do
+    if string.find(k, "^UPB_" .. pattern) then
+      ret[k] = v
+    end
+  end
+  return ret
+end
+
+function boolstr(val)
+  if val == true then
+    return "true"
+  elseif val == false then
+    return "false"
+  else
+    assert(false, "Bad bool value: " .. tostring(val))
+  end
 end
 
 --[[
@@ -128,11 +149,11 @@ function Dumper:new(linktab)
   return obj
 end
 
--- Dumps a upb_value, eg:
+-- Dumps a _upb_value, eg:
 --   UPB_VALUE_INIT_INT32(5)
-function Dumper:value(val, upbtype)
+function Dumper:_value(val, upbtype)
   if type(val) == "nil" then
-    return "UPB_VALUE_INIT_NONE"
+    return "UPB__VALUE_INIT_NONE"
   elseif type(val) == "number" then
     -- Use upbtype to disambiguate what kind of number it is.
     if upbtype == upbtable.CTYPE_INT32 then
@@ -164,7 +185,7 @@ end
 -- Dumps a table entry.
 function Dumper:tabent(ent)
   local key = self:tabkey(ent.key)
-  local val = self:value(ent.value, ent.valtype)
+  local val = self:_value(ent.value, ent.valtype)
   local next = self.linktab:addr(ent.next)
   return string.format('  {%s, %s, %s},\n', key, val, next)
 end
@@ -173,7 +194,7 @@ end
 -- except that nil values have a special value to indicate "empty".
 function Dumper:arrayval(val)
   if val.val then
-    return string.format("  %s,\n", self:value(val.val, val.valtype))
+    return string.format("  %s,\n", self:_value(val.val, val.valtype))
   else
     return "  UPB_ARRAY_EMPTYENT,\n"
   end
@@ -283,7 +304,7 @@ local function dump_defs_c(symtab, basename, append)
   append("const upb_enumdef %s;\n", linktab:cdecl(upb.DEF_ENUM))
   append("const upb_tabent %s;\n", linktab:cdecl("strentries"))
   append("const upb_tabent %s;\n", linktab:cdecl("intentries"))
-  append("const upb_value %s;\n", linktab:cdecl("arrays"))
+  append("const _upb_value %s;\n", linktab:cdecl("arrays"))
   append("\n")
 
   -- Emit defs.
@@ -307,13 +328,23 @@ local function dump_defs_c(symtab, basename, append)
     if f:has_subdef() then
       subdef = string.format("upb_upcast(%s)", linktab:addr(f:subdef()))
     end
-    -- UPB_FIELDDEF_INIT(label, type, name, num, msgdef, subdef,
-    --                   selector_base, default_value)
-    append('  UPB_FIELDDEF_INIT(%s, %s, "%s", %d, %s, %s, %d, %s),\n',
-           const(f, "label"), const(f, "type"), f:name(),
+    local intfmt
+    if f:type() == upb.TYPE_UINT32 or
+       f:type() == upb.TYPE_INT32 or
+       f:type() == upb.TYPE_UINT64 or
+       f:type() == upb.TYPE_INT64 then
+      intfmt = const(f, "intfmt")
+    else
+      intfmt = "0"
+    end
+    -- UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, name, num, msgdef,
+    --                   subdef, selector_base, default_value)
+    append('  UPB_FIELDDEF_INIT(%s, %s, %s, %s, "%s", %d, %s, %s, %d, ' ..
+           'UPB_VALUE_INIT_NONE),\n',  -- TODO: support default value
+           const(f, "label"), const(f, "type"), intfmt,
+           boolstr(f:istagdelim()), f:name(),
            f:number(), linktab:addr(f:msgdef()), subdef,
-           f:_selector_base(),
-           dumper:value(nil) -- TODO
+           f:_selector_base()
            )
   end
   append("};\n\n")
@@ -343,7 +374,7 @@ local function dump_defs_c(symtab, basename, append)
   end
   append("};\n\n");
 
-  append("const upb_value %s = {\n", linktab:cdecl("arrays"))
+  append("const _upb_value %s = {\n", linktab:cdecl("arrays"))
   for ent in linktab:objs("arrays") do
     append(dumper:arrayval(ent))
   end
@@ -397,6 +428,21 @@ local function dump_defs_h(symtab, basename, append, linktab)
   append("// each def has its own symbol or lives in an array of defs).\n")
   for def in linktab:objs(upb.DEF_MSG) do
     append("#define %s %s\n", to_preproc(def:full_name()), linktab:addr(def))
+  end
+  append("\n")
+
+  append("// Selector definitions.\n")
+  local selector_types = constlist("HANDLER_")
+  for f in linktab:objs(upb.DEF_FIELD) do
+    for sel_type_name, sel_type_value in pairs(selector_types) do
+      sel_type_name = sel_type_name:gsub("UPB_HANDLER_", "")
+      local sel = f:getsel(sel_type_value)
+      if sel then
+        local symname = f:msgdef():full_name() .. "." .. f:name() ..
+                        "." .. sel_type_name
+        append("#define %s %d\n", to_preproc(symname), sel)
+      end
+    end
   end
   append("\n")
 

@@ -31,11 +31,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include "upb/bytestream.h"
 #include "upb/handlers.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/varint.h"
-#include "upb/upb.h"
 #include "upb_test.h"
+#include "upb/upb.h"
 #include "third_party/upb/tests/test_decoder_schema.upb.h"
 
 uint32_t filter_hash = 0;
@@ -186,16 +187,13 @@ void indentbuf(buffer *buf, int depth) {
     buf->append("  ", 2);
 }
 
-void indent(void *depth) {
-  indentbuf(&output, *(int*)depth);
-}
-
 #define NUMERIC_VALUE_HANDLER(member, ctype, fmt) \
-  bool value_ ## member(void *closure, void *fval, ctype val) {       \
-    indent(closure);                                                  \
-    uint32_t *num = static_cast<uint32_t*>(fval);                     \
-    output.appendf("%" PRIu32 ":%" fmt "\n", *num, val);              \
-    return true;                                                      \
+  bool value_ ## member(const upb::SinkFrame *frame, ctype val) {  \
+    int *depth = (int*)frame->userdata();                                      \
+    indentbuf(&output, *depth);                                                \
+    uint32_t *num = static_cast<uint32_t*>(frame->handler_data());             \
+    output.appendf("%" PRIu32 ":%" fmt "\n", *num, val);                       \
+    return true;                                                               \
   }
 
 NUMERIC_VALUE_HANDLER(uint32, uint32_t, PRIu32)
@@ -205,68 +203,73 @@ NUMERIC_VALUE_HANDLER(int64,  int64_t,  PRId64)
 NUMERIC_VALUE_HANDLER(float,  float,    "g")
 NUMERIC_VALUE_HANDLER(double, double,   "g")
 
-bool value_bool(void *closure, void *fval, bool val) {
-  indent(closure);
-  uint32_t *num = static_cast<uint32_t*>(fval);
+bool value_bool(const upb::SinkFrame *frame, bool val) {
+  int *depth = (int*)frame->userdata();
+  indentbuf(&output, *depth);
+  uint32_t *num = static_cast<uint32_t*>(frame->handler_data());
   output.appendf("%" PRIu32 ":%s\n", *num, val ? "true" : "false");
   return true;
 }
 
-void* startstr(void *closure, void *fval, size_t size_hint) {
-  indent(closure);
-  uint32_t *num = static_cast<uint32_t*>(fval);
+void* startstr(const upb::SinkFrame* frame, size_t size_hint) {
+  int *depth = (int*)frame->userdata();
+  indentbuf(&output, *depth);
+  uint32_t *num = static_cast<uint32_t*>(frame->handler_data());
   output.appendf("%" PRIu32 ":(%zu)\"", *num, size_hint);
-  return ((int*)closure) + 1;
+  return depth + 1;
 }
 
-size_t value_string(void *closure, void *fval, const char *buf, size_t n) {
+size_t value_string(const upb::SinkFrame* frame, const char* buf, size_t n) {
   output.append(buf, n);
   return n;
 }
 
-bool endstr(void *closure, void *fval) {
-  UPB_UNUSED(fval);
+bool endstr(const upb::SinkFrame* frame) {
   output.append("\"\n");
   return true;
 }
 
-void* startsubmsg(void *closure, void *fval) {
-  indent(closure);
-  uint32_t *num = static_cast<uint32_t*>(fval);
+void* startsubmsg(const upb::SinkFrame* frame) {
+  int *depth = (int*)frame->userdata();
+  indentbuf(&output, *depth);
+  uint32_t *num = static_cast<uint32_t*>(frame->handler_data());
   output.appendf("%" PRIu32 ":{\n", *num);
-  return ((int*)closure) + 1;
+  return depth + 1;
 }
 
-bool endsubmsg(void *closure, void *fval) {
-  UPB_UNUSED(fval);
-  indent(closure);
+bool endsubmsg(const upb::SinkFrame* frame) {
+  int *depth = (int*)frame->userdata();
+  indentbuf(&output, *depth);
   output.append("}\n");
   return true;
 }
 
-void* startseq(void *closure, void *fval) {
-  indent(closure);
-  uint32_t *num = static_cast<uint32_t*>(fval);
+void* startseq(const upb::SinkFrame* frame) {
+  int *depth = (int*)frame->userdata();
+  indentbuf(&output, *depth);
+  uint32_t *num = static_cast<uint32_t*>(frame->handler_data());
   output.appendf("%" PRIu32 ":[\n", *num);
-  return ((int*)closure) + 1;
+  return depth + 1;
 }
 
-bool endseq(void *closure, void *fval) {
-  UPB_UNUSED(fval);
-  indent(closure);
+bool endseq(const upb::SinkFrame* frame) {
+  int *depth = (int*)frame->userdata();
+  indentbuf(&output, *depth);
   output.append("]\n");
   return true;
 }
 
-bool startmsg(void *closure) {
-  indent(closure);
+bool startmsg(const upb::SinkFrame* frame) {
+  int *depth = (int*)frame->userdata();
+  indentbuf(&output, *depth);
   output.append("<\n");
   return true;
 }
 
-void endmsg(void *closure, upb_status *status) {
+void endmsg(const upb::SinkFrame* frame, upb_status* status) {
   (void)status;
-  indent(closure);
+  int *depth = (int*)frame->userdata();
+  indentbuf(&output, *depth);
   output.append(">\n");
 }
 
@@ -299,7 +302,7 @@ uint32_t rep_fn(uint32_t fn) {
 #define UNKNOWN_FIELD 666
 
 template <class T>
-void reg(upb_handlers *h, upb_fieldtype_t type,
+void reg(upb_handlers *h, upb_descriptortype_t type,
          typename upb::Handlers::Value<T>::Handler *handler) {
   // We register both a repeated and a non-repeated field for every type.
   // For the non-repeated field we make the field number the same as the
@@ -346,167 +349,111 @@ void reghandlers(upb_handlers *h) {
   upb_handlers_setendmsg(h, &endmsg);
 
   // Register handlers for each type.
-  reg<double>  (h, UPB_TYPE(DOUBLE),   &value_double);
-  reg<float>   (h, UPB_TYPE(FLOAT),    &value_float);
-  reg<int64_t> (h, UPB_TYPE(INT64),    &value_int64);
-  reg<uint64_t>(h, UPB_TYPE(UINT64),   &value_uint64);
-  reg<int32_t> (h, UPB_TYPE(INT32) ,   &value_int32);
-  reg<uint64_t>(h, UPB_TYPE(FIXED64),  &value_uint64);
-  reg<uint32_t>(h, UPB_TYPE(FIXED32),  &value_uint32);
-  reg<bool>    (h, UPB_TYPE(BOOL),     &value_bool);
-  reg<uint32_t>(h, UPB_TYPE(UINT32),   &value_uint32);
-  reg<int32_t> (h, UPB_TYPE(ENUM),     &value_int32);
-  reg<int32_t> (h, UPB_TYPE(SFIXED32), &value_int32);
-  reg<int64_t> (h, UPB_TYPE(SFIXED64), &value_int64);
-  reg<int32_t> (h, UPB_TYPE(SINT32),   &value_int32);
-  reg<int64_t> (h, UPB_TYPE(SINT64),   &value_int64);
+  reg<double>  (h, UPB_DESCRIPTOR_TYPE_DOUBLE,   &value_double);
+  reg<float>   (h, UPB_DESCRIPTOR_TYPE_FLOAT,    &value_float);
+  reg<int64_t> (h, UPB_DESCRIPTOR_TYPE_INT64,    &value_int64);
+  reg<uint64_t>(h, UPB_DESCRIPTOR_TYPE_UINT64,   &value_uint64);
+  reg<int32_t> (h, UPB_DESCRIPTOR_TYPE_INT32 ,   &value_int32);
+  reg<uint64_t>(h, UPB_DESCRIPTOR_TYPE_FIXED64,  &value_uint64);
+  reg<uint32_t>(h, UPB_DESCRIPTOR_TYPE_FIXED32,  &value_uint32);
+  reg<bool>    (h, UPB_DESCRIPTOR_TYPE_BOOL,     &value_bool);
+  reg<uint32_t>(h, UPB_DESCRIPTOR_TYPE_UINT32,   &value_uint32);
+  reg<int32_t> (h, UPB_DESCRIPTOR_TYPE_ENUM,     &value_int32);
+  reg<int32_t> (h, UPB_DESCRIPTOR_TYPE_SFIXED32, &value_int32);
+  reg<int64_t> (h, UPB_DESCRIPTOR_TYPE_SFIXED64, &value_int64);
+  reg<int32_t> (h, UPB_DESCRIPTOR_TYPE_SINT32,   &value_int32);
+  reg<int64_t> (h, UPB_DESCRIPTOR_TYPE_SINT64,   &value_int64);
 
-  reg_str(h, UPB_TYPE(STRING));
-  reg_str(h, UPB_TYPE(BYTES));
-  reg_str(h, rep_fn(UPB_TYPE(STRING)));
-  reg_str(h, rep_fn(UPB_TYPE(BYTES)));
+  reg_str(h, UPB_DESCRIPTOR_TYPE_STRING);
+  reg_str(h, UPB_DESCRIPTOR_TYPE_BYTES);
+  reg_str(h, rep_fn(UPB_DESCRIPTOR_TYPE_STRING));
+  reg_str(h, rep_fn(UPB_DESCRIPTOR_TYPE_BYTES));
 
   // Register submessage/group handlers that are self-recursive
   // to this type, eg: message M { optional M m = 1; }
-  reg_subm(h, UPB_TYPE(MESSAGE));
-  reg_subm(h, rep_fn(UPB_TYPE(MESSAGE)));
+  reg_subm(h, UPB_DESCRIPTOR_TYPE_MESSAGE);
+  reg_subm(h, rep_fn(UPB_DESCRIPTOR_TYPE_MESSAGE));
 
   // For NOP_FIELD we register no handlers, so we can pad a proto freely without
   // changing the output.
 }
 
 
-/* Custom bytesrc that can insert buffer seams in arbitrary places ************/
-
-typedef struct {
-  upb_bytesrc bytesrc;
-  const char *str;
-  size_t len, seam1, seam2;
-  upb_byteregion byteregion;
-} upb_seamsrc;
-
-size_t upb_seamsrc_avail(const upb_seamsrc *src, size_t ofs) {
-  if (ofs < src->seam1) return src->seam1 - ofs;
-  if (ofs < src->seam2) return src->seam2 - ofs;
-  return src->len - ofs;
-}
-
-upb_bytesuccess_t upb_seamsrc_fetch(void *_src, uint64_t ofs, size_t *read) {
-  upb_seamsrc *src = (upb_seamsrc*)_src;
-  assert(ofs < src->len);
-  if (ofs == src->len) {
-    upb_status_seteof(&src->bytesrc.status);
-    return UPB_BYTE_EOF;
-  }
-  *read = upb_seamsrc_avail(src, ofs);
-  return UPB_BYTE_OK;
-}
-
-void upb_seamsrc_copy(const void *_src, uint64_t ofs,
-                      size_t len, char *dst) {
-  const upb_seamsrc *src = (const upb_seamsrc*)_src;
-  assert(ofs + len <= src->len);
-  memcpy(dst, src->str + ofs, len);
-}
-
-void upb_seamsrc_discard(void *src, uint64_t ofs) {
-  (void)src;
-  (void)ofs;
-}
-
-const char *upb_seamsrc_getptr(const void *_s, uint64_t ofs, size_t *len) {
-  const upb_seamsrc *src = (const upb_seamsrc*)_s;
-  *len = upb_seamsrc_avail(src, ofs);
-  return src->str + ofs;
-}
-
-void upb_seamsrc_init(upb_seamsrc *s, const char *str, size_t len) {
-  static upb_bytesrc_vtbl vtbl = {
-    &upb_seamsrc_fetch,
-    &upb_seamsrc_discard,
-    &upb_seamsrc_copy,
-    &upb_seamsrc_getptr,
-  };
-  upb_bytesrc_init(&s->bytesrc, &vtbl);
-  s->seam1 = 0;
-  s->seam2 = 0;
-  s->str = str;
-  s->len = len;
-  s->byteregion.bytesrc = &s->bytesrc;
-  s->byteregion.toplevel = true;
-  s->byteregion.start = 0;
-  s->byteregion.end = len;
-}
-
-void upb_seamsrc_resetseams(upb_seamsrc *s, size_t seam1, size_t seam2) {
-  assert(seam1 <= seam2);
-  s->seam1 = seam1;
-  s->seam2 = seam2;
-  s->byteregion.discard = 0;
-  s->byteregion.fetch = 0;
-}
-
-void upb_seamsrc_uninit(upb_seamsrc *s) { (void)s; }
-
-upb_bytesrc *upb_seamsrc_bytesrc(upb_seamsrc *s) {
-  return &s->bytesrc;
-}
-
-// Returns the top-level upb_byteregion* for this seamsrc.  Invalidated when
-// the seamsrc is reset.
-upb_byteregion *upb_seamsrc_allbytes(upb_seamsrc *s) {
-  return &s->byteregion;
-}
-
-
 /* Running of test cases ******************************************************/
 
-upb_decoderplan *plan;
+const upb::Handlers *handlers;
+const upb::Handlers *plan;
 
 uint32_t Hash(const buffer& proto, const buffer* expected_output) {
   uint32_t hash = MurmurHash2(proto.buf(), proto.len(), 0);
   if (expected_output)
     hash = MurmurHash2(expected_output->buf(), expected_output->len(), hash);
-  bool hasjit = upb_decoderplan_hasjitcode(plan);
+  bool hasjit = upb::pb::HasJitCode(plan);
   hash = MurmurHash2(&hasjit, 1, hash);
   return hash;
+}
+
+bool parse(
+    upb_sink *s, const char *buf, size_t start, size_t end, size_t *ofs) {
+  start = UPB_MAX(start, *ofs);
+  if (start <= end) {
+    size_t len = end - start;
+    size_t parsed =
+        s->PutStringBuffer(UPB_BYTESTREAM_BYTES_STRING, buf + start, len);
+    if (s->pipeline()->status().ok() != (parsed >= len)) {
+      ASSERT(false);
+    }
+    if (!s->pipeline()->status().ok())
+      return false;
+    *ofs += parsed;
+  }
+  return true;
 }
 
 #define LINE(x) x "\n"
 void run_decoder(const buffer& proto, const buffer* expected_output) {
   testhash = Hash(proto, expected_output);
   if (filter_hash && testhash != filter_hash) return;
-  upb_seamsrc src;
-  upb_seamsrc_init(&src, proto.buf(), proto.len());
-  upb_decoder d;
-  upb_decoder_init(&d);
-  upb_decoder_resetplan(&d, plan);
+  upb::Pipeline pipeline(NULL, 0, upb_realloc, NULL);
+  upb::Sink* sink = pipeline.NewSink(handlers);
+  upb::Sink* decoder_sink = pipeline.NewSink(plan);
+  upb::pb::Decoder* d = decoder_sink->base()->GetUserdata<upb::pb::Decoder>();
+  upb::pb::ResetDecoderSink(d, sink);
   for (size_t i = 0; i < proto.len(); i++) {
     for (size_t j = i; j < UPB_MIN(proto.len(), i + 5); j++) {
-      upb_seamsrc_resetseams(&src, i, j);
-      upb_byteregion *input = upb_seamsrc_allbytes(&src);
+      pipeline.Reset();
       output.clear();
-      upb_decoder_resetinput(&d, input, &closures[0]);
-      upb_success_t success = upb_decoder_decode(&d);
-      ASSERT(upb_ok(upb_decoder_status(&d)) == (success == UPB_OK));
+      sink->Reset(&closures[0]);
+      size_t ofs = 0;
+      bool ok =
+          decoder_sink->StartMessage() &&
+          decoder_sink->StartString(
+              UPB_BYTESTREAM_BYTES_STARTSTR, proto.len()) &&
+          parse(decoder_sink, proto.buf(), 0, i, &ofs) &&
+          parse(decoder_sink, proto.buf(), i, j, &ofs) &&
+          parse(decoder_sink, proto.buf(), j, proto.len(), &ofs) &&
+          ofs == proto.len() &&
+          decoder_sink->EndString(UPB_BYTESTREAM_BYTES_ENDSTR);
+      if (ok) decoder_sink->EndMessage();
       if (expected_output) {
-        ASSERT_STATUS(success == UPB_OK, upb_decoder_status(&d));
-        // The input should be fully consumed.
-        ASSERT(upb_byteregion_fetchofs(input) == upb_byteregion_endofs(input));
-        ASSERT(upb_byteregion_discardofs(input) ==
-               upb_byteregion_endofs(input));
         if (!output.eql(*expected_output)) {
           fprintf(stderr, "Text mismatch: '%s' vs '%s'\n",
                   output.buf(), expected_output->buf());
         }
+        if (!ok) {
+          fprintf(stderr, "Failed: %s\n", pipeline.status().GetString());
+        }
+        ASSERT(ok);
         ASSERT(output.eql(*expected_output));
       } else {
-        ASSERT(success == UPB_ERROR);
+        if (ok) {
+          fprintf(stderr, "Didn't expect ok result, but got output: '%s'\n",
+                  output.buf());
+        }
+        ASSERT(!ok);
       }
     }
   }
-  upb_decoder_uninit(&d);
-  upb_seamsrc_uninit(&src);
   testhash = 0;
 }
 
@@ -540,7 +487,7 @@ void assert_does_not_parse(const buffer& proto) {
 
 /* The actual tests ***********************************************************/
 
-void test_premature_eof_for_type(upb_fieldtype_t type) {
+void test_premature_eof_for_type(upb_descriptortype_t type) {
   // Incomplete values for each wire type.
   static const buffer incompletes[6] = {
     buffer("\x80"),     // UPB_WIRE_TYPE_VARINT
@@ -590,10 +537,10 @@ void test_premature_eof_for_type(upb_fieldtype_t type) {
     assert_does_not_parse_at_eof(
         cat( tag(UNKNOWN_FIELD, wire_type), varint(1) ));
 
-    if (type == UPB_TYPE(MESSAGE)) {
+    if (type == UPB_DESCRIPTOR_TYPE_MESSAGE) {
       // Submessage ends in the middle of a value.
       buffer incomplete_submsg =
-          cat ( tag(UPB_TYPE(INT32), UPB_WIRE_TYPE_VARINT),
+          cat ( tag(UPB_DESCRIPTOR_TYPE_INT32, UPB_WIRE_TYPE_VARINT),
                 incompletes[UPB_WIRE_TYPE_VARINT] );
       assert_does_not_parse(
           cat( tag(fieldnum, UPB_WIRE_TYPE_DELIMITED),
@@ -615,7 +562,7 @@ void test_premature_eof_for_type(upb_fieldtype_t type) {
 
 // "33" and "66" are just two random values that all numeric types can
 // represent.
-void test_valid_data_for_type(upb_fieldtype_t type,
+void test_valid_data_for_type(upb_descriptortype_t type,
                               const buffer& enc33, const buffer& enc66) {
   uint32_t fieldnum = type;
   uint32_t rep_fieldnum = rep_fn(type);
@@ -653,7 +600,7 @@ void test_valid_data_for_type(upb_fieldtype_t type,
       LINE(">"), rep_fieldnum, rep_fieldnum, rep_fieldnum);
 }
 
-void test_valid_data_for_signed_type(upb_fieldtype_t type,
+void test_valid_data_for_signed_type(upb_descriptortype_t type,
                                      const buffer& enc33, const buffer& enc66) {
   uint32_t fieldnum = type;
   uint32_t rep_fieldnum = rep_fn(type);
@@ -694,22 +641,22 @@ void test_valid_data_for_signed_type(upb_fieldtype_t type,
 // Test that invalid protobufs are properly detected (without crashing) and
 // have an error reported.  Field numbers match registered handlers above.
 void test_invalid() {
-  test_premature_eof_for_type(UPB_TYPE(DOUBLE));
-  test_premature_eof_for_type(UPB_TYPE(FLOAT));
-  test_premature_eof_for_type(UPB_TYPE(INT64));
-  test_premature_eof_for_type(UPB_TYPE(UINT64));
-  test_premature_eof_for_type(UPB_TYPE(INT32));
-  test_premature_eof_for_type(UPB_TYPE(FIXED64));
-  test_premature_eof_for_type(UPB_TYPE(FIXED32));
-  test_premature_eof_for_type(UPB_TYPE(BOOL));
-  test_premature_eof_for_type(UPB_TYPE(STRING));
-  test_premature_eof_for_type(UPB_TYPE(BYTES));
-  test_premature_eof_for_type(UPB_TYPE(UINT32));
-  test_premature_eof_for_type(UPB_TYPE(ENUM));
-  test_premature_eof_for_type(UPB_TYPE(SFIXED32));
-  test_premature_eof_for_type(UPB_TYPE(SFIXED64));
-  test_premature_eof_for_type(UPB_TYPE(SINT32));
-  test_premature_eof_for_type(UPB_TYPE(SINT64));
+  test_premature_eof_for_type(UPB_DESCRIPTOR_TYPE_DOUBLE);
+  test_premature_eof_for_type(UPB_DESCRIPTOR_TYPE_FLOAT);
+  test_premature_eof_for_type(UPB_DESCRIPTOR_TYPE_INT64);
+  test_premature_eof_for_type(UPB_DESCRIPTOR_TYPE_UINT64);
+  test_premature_eof_for_type(UPB_DESCRIPTOR_TYPE_INT32);
+  test_premature_eof_for_type(UPB_DESCRIPTOR_TYPE_FIXED64);
+  test_premature_eof_for_type(UPB_DESCRIPTOR_TYPE_FIXED32);
+  test_premature_eof_for_type(UPB_DESCRIPTOR_TYPE_BOOL);
+  test_premature_eof_for_type(UPB_DESCRIPTOR_TYPE_STRING);
+  test_premature_eof_for_type(UPB_DESCRIPTOR_TYPE_BYTES);
+  test_premature_eof_for_type(UPB_DESCRIPTOR_TYPE_UINT32);
+  test_premature_eof_for_type(UPB_DESCRIPTOR_TYPE_ENUM);
+  test_premature_eof_for_type(UPB_DESCRIPTOR_TYPE_SFIXED32);
+  test_premature_eof_for_type(UPB_DESCRIPTOR_TYPE_SFIXED64);
+  test_premature_eof_for_type(UPB_DESCRIPTOR_TYPE_SINT32);
+  test_premature_eof_for_type(UPB_DESCRIPTOR_TYPE_SINT64);
 
   // EOF inside a tag's varint.
   assert_does_not_parse_at_eof( buffer("\x80") );
@@ -734,31 +681,47 @@ void test_invalid() {
 
   // Test exceeding the resource limit of stack depth.
   buffer buf;
-  for (int i = 0; i < UPB_MAX_NESTING; i++) {
-    buf.assign(submsg(UPB_TYPE(MESSAGE), buf));
+  for (int i = 0; i <= UPB_MAX_NESTING; i++) {
+    buf.assign(submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, buf));
   }
   assert_does_not_parse(buf);
 }
 
 void test_valid() {
-  test_valid_data_for_signed_type(UPB_TYPE(DOUBLE), dbl(33), dbl(-66));
-  test_valid_data_for_signed_type(UPB_TYPE(FLOAT), flt(33), flt(-66));
-  test_valid_data_for_signed_type(UPB_TYPE(INT64), varint(33), varint(-66));
-  test_valid_data_for_signed_type(UPB_TYPE(INT32), varint(33), varint(-66));
-  test_valid_data_for_signed_type(UPB_TYPE(ENUM), varint(33), varint(-66));
-  test_valid_data_for_signed_type(UPB_TYPE(SFIXED32), uint32(33), uint32(-66));
-  test_valid_data_for_signed_type(UPB_TYPE(SFIXED64), uint64(33), uint64(-66));
-  test_valid_data_for_signed_type(UPB_TYPE(SINT32), zz32(33), zz32(-66));
-  test_valid_data_for_signed_type(UPB_TYPE(SINT64), zz64(33), zz64(-66));
+  test_valid_data_for_signed_type(UPB_DESCRIPTOR_TYPE_DOUBLE,
+                                  dbl(33),
+                                  dbl(-66));
+  test_valid_data_for_signed_type(UPB_DESCRIPTOR_TYPE_FLOAT, flt(33), flt(-66));
+  test_valid_data_for_signed_type(UPB_DESCRIPTOR_TYPE_INT64,
+                                  varint(33),
+                                  varint(-66));
+  test_valid_data_for_signed_type(UPB_DESCRIPTOR_TYPE_INT32,
+                                  varint(33),
+                                  varint(-66));
+  test_valid_data_for_signed_type(UPB_DESCRIPTOR_TYPE_ENUM,
+                                  varint(33),
+                                  varint(-66));
+  test_valid_data_for_signed_type(UPB_DESCRIPTOR_TYPE_SFIXED32,
+                                  uint32(33),
+                                  uint32(-66));
+  test_valid_data_for_signed_type(UPB_DESCRIPTOR_TYPE_SFIXED64,
+                                  uint64(33),
+                                  uint64(-66));
+  test_valid_data_for_signed_type(UPB_DESCRIPTOR_TYPE_SINT32,
+                                  zz32(33),
+                                  zz32(-66));
+  test_valid_data_for_signed_type(UPB_DESCRIPTOR_TYPE_SINT64,
+                                  zz64(33),
+                                  zz64(-66));
 
-  test_valid_data_for_type(UPB_TYPE(UINT64), varint(33), varint(66));
-  test_valid_data_for_type(UPB_TYPE(UINT32), varint(33), varint(66));
-  test_valid_data_for_type(UPB_TYPE(FIXED64), uint64(33), uint64(66));
-  test_valid_data_for_type(UPB_TYPE(FIXED32), uint32(33), uint32(66));
+  test_valid_data_for_type(UPB_DESCRIPTOR_TYPE_UINT64, varint(33), varint(66));
+  test_valid_data_for_type(UPB_DESCRIPTOR_TYPE_UINT32, varint(33), varint(66));
+  test_valid_data_for_type(UPB_DESCRIPTOR_TYPE_FIXED64, uint64(33), uint64(66));
+  test_valid_data_for_type(UPB_DESCRIPTOR_TYPE_FIXED32, uint32(33), uint32(66));
 
   // Test implicit startseq/endseq.
-  uint32_t repfl_fn = rep_fn(UPB_TYPE(FLOAT));
-  uint32_t repdb_fn = rep_fn(UPB_TYPE(DOUBLE));
+  uint32_t repfl_fn = rep_fn(UPB_DESCRIPTOR_TYPE_FLOAT);
+  uint32_t repdb_fn = rep_fn(UPB_DESCRIPTOR_TYPE_DOUBLE);
   assert_successful_parse(
       cat( tag(repfl_fn, UPB_WIRE_TYPE_32BIT), flt(33),
            tag(repdb_fn, UPB_WIRE_TYPE_64BIT), dbl(66) ),
@@ -772,7 +735,7 @@ void test_valid() {
       LINE(">"), repfl_fn, repfl_fn, repdb_fn, repdb_fn);
 
   // Submessage tests.
-  uint32_t msg_fn = UPB_TYPE(MESSAGE);
+  uint32_t msg_fn = UPB_DESCRIPTOR_TYPE_MESSAGE;
   assert_successful_parse(
       submsg(msg_fn, submsg(msg_fn, submsg(msg_fn, buffer()))),
       LINE("<")
@@ -790,7 +753,7 @@ void test_valid() {
       LINE("}")
       LINE(">"), msg_fn, msg_fn, msg_fn);
 
-  uint32_t repm_fn = rep_fn(UPB_TYPE(MESSAGE));
+  uint32_t repm_fn = rep_fn(UPB_DESCRIPTOR_TYPE_MESSAGE);
   assert_successful_parse(
       submsg(repm_fn, submsg(repm_fn, buffer())),
       LINE("<")
@@ -813,11 +776,11 @@ void test_valid() {
   buffer textbuf;
   int total = UPB_MAX_NESTING - 1;
   for (int i = 0; i < total; i++) {
-    buf.assign(submsg(UPB_TYPE(MESSAGE), buf));
+    buf.assign(submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, buf));
     indentbuf(&textbuf, i);
     textbuf.append("<\n");
     indentbuf(&textbuf, i);
-    textbuf.appendf("%u:{\n", UPB_TYPE(MESSAGE));
+    textbuf.appendf("%u:{\n", UPB_DESCRIPTOR_TYPE_MESSAGE);
   }
   indentbuf(&textbuf, total);
   textbuf.append("<\n");
@@ -848,35 +811,36 @@ int run_tests(int argc, char *argv[]) {
 
   // Create an empty handlers to make sure that the decoder can handle empty
   // messages.
-  upb_handlers *h = upb_handlers_new(UPB_TEST_DECODER_EMPTYMESSAGE, &h);
-  bool ok = upb_handlers_freeze(&h, 1, NULL);
+  upb::Handlers *h = upb_handlers_new(UPB_TEST_DECODER_EMPTYMESSAGE, NULL, &h);
+  bool ok = upb::Handlers::Freeze(&h, 1, NULL);
   ASSERT(ok);
-  plan = upb_decoderplan_new(h, true);
-  upb_handlers_unref(h, &h);
-  upb_decoderplan_unref(plan);
+  plan = upb::pb::GetDecoderHandlers(h, true, &plan);
+  h->Unref(&h);
+  plan->Unref(&plan);
 
   // Construct decoder plan.
-  h = upb_handlers_new(UPB_TEST_DECODER_DECODERTEST, &h);
+  h = upb::Handlers::New(UPB_TEST_DECODER_DECODERTEST, NULL, &handlers);
   reghandlers(h);
-  ok = upb_handlers_freeze(&h, 1, NULL);
+  ok = upb::Handlers::Freeze(&h, 1, NULL);
+  handlers = h;
 
   // Test without JIT.
-  plan = upb_decoderplan_new(h, false);
-  ASSERT(!upb_decoderplan_hasjitcode(plan));
+  plan = upb::pb::GetDecoderHandlers(handlers, false, &plan);
+  ASSERT(!upb::pb::HasJitCode(plan));
   run_tests();
-  upb_decoderplan_unref(plan);
+  plan->Unref(&plan);
 
 #ifdef UPB_USE_JIT_X64
   // Test JIT.
-  plan = upb_decoderplan_new(h, true);
-  ASSERT(upb_decoderplan_hasjitcode(plan));
+  plan = upb::pb::GetDecoderHandlers(handlers, true, &plan);
+  ASSERT(upb::pb::HasJitCode(plan));
   run_tests();
-  upb_decoderplan_unref(plan);
+  plan->Unref(&plan);
 #endif
 
   plan = NULL;
   printf("All tests passed, %d assertions.\n", num_assertions);
-  upb_handlers_unref(h, &h);
+  handlers->Unref(&handlers);
   return 0;
 }
 

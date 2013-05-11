@@ -10,9 +10,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
-#include "upb/bytestream.h"
 #include "upb/def.h"
+#include "upb/descriptor/reader.h"
 #include "upb/handlers.h"
+#include "upb/pb/decoder.h"
 #include "upb/pb/glue.h"
 #include "upb_test.h"
 #include "upb/upb.h"
@@ -31,16 +32,6 @@ static void TestSymbolTable(const char *descriptor_file) {
   md->Unref(&md);
 }
 
-static void TestByteStream() {
-  upb::StringSource stringsrc;
-  stringsrc.Reset("testing", 7);
-  upb::ByteRegion* byteregion = stringsrc.AllBytes();
-  ASSERT(byteregion->FetchAll() == UPB_BYTE_OK);
-  char* str = byteregion->StrDup();
-  ASSERT(strcmp(str, "testing") == 0);
-  free(str);
-}
-
 extern "C" {
 
 int run_tests(int argc, char *argv[]) {
@@ -49,7 +40,6 @@ int run_tests(int argc, char *argv[]) {
     return 1;
   }
   TestSymbolTable(argv[1]);
-  TestByteStream();
   return 0;
 }
 

@@ -10,36 +10,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "upb/sink.h"
+
 // Defined for the sole purpose of having a unique pointer value for
 // UPB_NO_CLOSURE.
 char _upb_noclosure;
 
-typedef struct {
-  upb_func *handler;
-
-  // Could put either or both of these in a separate table to save memory when
-  // they are sparse.
-  void *data;
-  upb_handlerfree *cleanup;
-
-  // TODO(haberman): this is wasteful; only the first "fieldhandler" of a
-  // submessage field needs this.  To reduce memory footprint we should either:
-  // - put the subhandlers in a separate "fieldhandler", stored as part of
-  //   a union with one of the above fields.
-  // - count selector offsets by individual pointers instead of by whole
-  //   fieldhandlers.
-  const upb_handlers *subhandlers;
-} fieldhandler;
-
-static const fieldhandler *getfh(
+static const upb_fieldhandler *getfh(
     const upb_handlers *h, upb_selector_t selector) {
   assert(selector < upb_handlers_msgdef(h)->selector_count);
-  fieldhandler* fhbase = (void*)&h->fh_base;
+  upb_fieldhandler* fhbase = (void*)&h->fh_base;
   return &fhbase[selector];
 }
 
-static fieldhandler *getfh_mutable(upb_handlers *h, upb_selector_t selector) {
-  return (fieldhandler*)getfh(h, selector);
+static upb_fieldhandler *getfh_mutable(upb_handlers *h,
+                                       upb_selector_t selector) {
+  return (upb_fieldhandler*)getfh(h, selector);
 }
 
 bool upb_handlers_isfrozen(const upb_handlers *h) {
@@ -52,28 +38,22 @@ uint32_t upb_handlers_selectorbaseoffset(const upb_fielddef *f) {
 
 uint32_t upb_handlers_selectorcount(const upb_fielddef *f) {
   uint32_t ret = 1;
-  if (upb_fielddef_isstring(f)) ret += 2;  // STARTSTR/ENDSTR
+  if (upb_fielddef_isstring(f)) ret += 2;  // [STARTSTR]/STRING/ENDSTR
   if (upb_fielddef_isseq(f)) ret += 2;  // STARTSEQ/ENDSEQ
-  if (upb_fielddef_issubmsg(f)) ret += 2;  // STARTSUBMSG/ENDSUBMSG
+  if (upb_fielddef_issubmsg(f)) ret += 1;  // [STARTSUBMSG]/ENDSUBMSG
   return ret;
 }
 
 upb_handlertype_t upb_handlers_getprimitivehandlertype(const upb_fielddef *f) {
   switch (upb_fielddef_type(f)) {
     case UPB_TYPE_INT32:
-    case UPB_TYPE_SINT32:
-    case UPB_TYPE_SFIXED32:
     case UPB_TYPE_ENUM:
       return UPB_HANDLER_INT32;
     case UPB_TYPE_INT64:
-    case UPB_TYPE_SINT64:
-    case UPB_TYPE_SFIXED64:
       return UPB_HANDLER_INT64;
     case UPB_TYPE_UINT32:
-    case UPB_TYPE_FIXED32:
       return UPB_HANDLER_UINT32;
     case UPB_TYPE_UINT64:
-    case UPB_TYPE_FIXED64:
       return UPB_HANDLER_UINT64;
     case UPB_TYPE_FLOAT:
       return UPB_HANDLER_FLOAT;
@@ -103,11 +83,11 @@ bool upb_getselector(
         return false;
       *s = f->selector_base;
       break;
-    case UPB_HANDLER_STARTSTR:
+    case UPB_HANDLER_STRING:
       if (!upb_fielddef_isstring(f)) return false;
       *s = f->selector_base;
       break;
-    case UPB_HANDLER_STRING:
+    case UPB_HANDLER_STARTSTR:
       if (!upb_fielddef_isstring(f)) return false;
       *s = f->selector_base + 1;
       break;
@@ -125,11 +105,11 @@ bool upb_getselector(
       break;
     case UPB_HANDLER_STARTSUBMSG:
       if (!upb_fielddef_issubmsg(f)) return false;
-      *s = f->selector_base + 1;
+      *s = f->selector_base;
       break;
     case UPB_HANDLER_ENDSUBMSG:
       if (!upb_fielddef_issubmsg(f)) return false;
-      *s = f->selector_base + 2;
+      *s = f->selector_base + 1;
       break;
   }
   assert(*s < upb_fielddef_msgdef(f)->selector_count);
@@ -157,7 +137,7 @@ static void do_cleanup(upb_handlers* h, const upb_fielddef *f,
                        upb_handlertype_t type) {
   upb_selector_t selector;
   if (!upb_getselector(f, type, &selector)) return;
-  fieldhandler *fh = getfh_mutable(h, selector);
+  upb_fieldhandler *fh = getfh_mutable(h, selector);
   if (fh->cleanup) fh->cleanup(fh->data);
   fh->cleanup = NULL;
   fh->data = NULL;
@@ -187,13 +167,15 @@ static void visithandlers(const upb_refcounted *r, upb_refcounted_visit *visit,
   }
 }
 
-upb_handlers *upb_handlers_new(const upb_msgdef *md, const void *owner) {
+upb_handlers *upb_handlers_new(const upb_msgdef *md, const upb_frametype *ft,
+                               const void *owner) {
   assert(upb_msgdef_isfrozen(md));
   static const struct upb_refcounted_vtbl vtbl = {visithandlers, freehandlers};
-  size_t fhandlers_size = sizeof(fieldhandler) * md->selector_count;
+  size_t fhandlers_size = sizeof(upb_fieldhandler) * md->selector_count;
   upb_handlers *h = calloc(sizeof(*h) - sizeof(void*) + fhandlers_size, 1);
   if (!h) return NULL;
   h->msg = md;
+  h->ft = ft;
   upb_msgdef_ref(h->msg, h);
   if (!upb_refcounted_init(upb_upcast(h), &vtbl, owner)) goto oom;
 
@@ -211,6 +193,10 @@ bool upb_handlers_freeze(upb_handlers *const*handlers, int n, upb_status *s) {
 }
 
 const upb_msgdef *upb_handlers_msgdef(const upb_handlers *h) { return h->msg; }
+
+const upb_frametype *upb_handlers_frametype(const upb_handlers *h) {
+  return h->ft;
+}
 
 void upb_handlers_setstartmsg(upb_handlers *h, upb_startmsg_handler *handler) {
   assert(!upb_handlers_isfrozen(h));
@@ -232,13 +218,18 @@ upb_endmsg_handler *upb_handlers_getendmsg(const upb_handlers *h) {
 
 // For now we stuff the subhandlers pointer into the fieldhandlers*
 // corresponding to the UPB_HANDLER_STARTSUBMSG handler.
+static const upb_handlers **subhandlersptr_sel(upb_handlers *h,
+                                               upb_selector_t startsubmsg) {
+  return &getfh_mutable(h, startsubmsg)->subhandlers;
+}
+
 static const upb_handlers **subhandlersptr(upb_handlers *h,
                                            const upb_fielddef *f) {
   assert(upb_fielddef_issubmsg(f));
   upb_selector_t selector;
   bool ok = upb_getselector(f, UPB_HANDLER_STARTSUBMSG, &selector);
   UPB_ASSERT_VAR(ok, ok);
-  return &getfh_mutable(h, selector)->subhandlers;
+  return subhandlersptr_sel(h, selector);
 }
 
 bool upb_handlers_setsubhandlers(upb_handlers *h, const upb_fielddef *f,
@@ -263,6 +254,12 @@ const upb_handlers *upb_handlers_getsubhandlers(const upb_handlers *h,
   return *stored;
 }
 
+const upb_handlers *upb_handlers_getsubhandlers_sel(const upb_handlers *h,
+                                                    upb_selector_t sel) {
+  const upb_handlers **stored = subhandlersptr_sel((upb_handlers*)h, sel);
+  return *stored;
+}
+
 #define SETTER(name, handlerctype, handlertype) \
   bool upb_handlers_set ## name(upb_handlers *h, const upb_fielddef *f, \
                                 handlerctype val, void *data, \
@@ -273,7 +270,7 @@ const upb_handlers *upb_handlers_getsubhandlers(const upb_handlers *h,
     bool ok = upb_getselector(f, handlertype, &selector); \
     if (!ok) return false; \
     do_cleanup(h, f, handlertype); \
-    fieldhandler *fh = getfh_mutable(h, selector); \
+    upb_fieldhandler *fh = getfh_mutable(h, selector); \
     fh->handler = (upb_func*)val; \
     fh->data = (upb_func*)data; \
     fh->cleanup = (upb_func*)cleanup; \
@@ -294,6 +291,47 @@ SETTER(startseq,    upb_startfield_handler*,  UPB_HANDLER_STARTSEQ);
 SETTER(startsubmsg, upb_startfield_handler*,  UPB_HANDLER_STARTSUBMSG);
 SETTER(endsubmsg,   upb_endfield_handler*,    UPB_HANDLER_ENDSUBMSG);
 SETTER(endseq,      upb_endfield_handler*,    UPB_HANDLER_ENDSEQ);
+
+// Our current implementation of these "alt" functions is, according to the
+// letter of the standard, undefined behavior, because we store the
+// upb_int32_handler2* to memory and then read it back (and call it) as a
+// upb_int32_handler*.  Even though both function pointer types take 32-bit
+// integer arguments, they are still technically different types (because one
+// takes an "int" argument and one takes a "long" argument), and calling a
+// function through a pointer to an incompatible type is undefined behavior.
+//
+// I think it is exceedingly unlikely that "int" and "long" would ever have
+// incompatible calling conventions when both are known to be 32 bit signed
+// two's complement integers.  But if absolute standards-compliance is ever
+// required, either due to a practical problem with the undefined behavior or a
+// tool that notices the incongruity, we have an available option for being
+// perfectly standard-compliant; we can store a bool for every function pointer
+// indicating whether it is an "alt" pointer or not.  Then at the call site
+// (inside upb_sink) we can do:
+//
+//   if (is_alt) {
+//     upb_int32_handler2 *func = fp;
+//     func(...);
+//   } else {
+//     upb_int32_handler *func = fp;
+//     func(...);
+//   }
+//
+// We could do this now, but it adds complexity and wastes the memory to store
+// these useless bools.  The bools are useless because the compiler will almost
+// certainly optimize away this branch and elide the two calls into a single
+// call with the 32-bit parameter calling convention.
+
+#ifdef UPB_TWO_32BIT_TYPES
+SETTER(int32alt,       upb_int32_handler2*,       UPB_HANDLER_INT32);
+SETTER(uint32alt,      upb_uint32_handler2*,      UPB_HANDLER_UINT32);
+#endif
+
+#ifdef UPB_TWO_64BIT_TYPES
+SETTER(int64alt,       upb_int64_handler2*,       UPB_HANDLER_INT64);
+SETTER(uint64alt,      upb_uint64_handler2*,      UPB_HANDLER_UINT64);
+#endif
+
 #undef SETTER
 
 upb_func *upb_handlers_gethandler(const upb_handlers *h, upb_selector_t s) {
@@ -310,9 +348,10 @@ typedef struct {
   void *closure;
 } dfs_state;
 
-static upb_handlers *newformsg(const upb_msgdef *m, const void *owner,
+static upb_handlers *newformsg(const upb_msgdef *m, const upb_frametype *ft,
+                               const void *owner,
                                dfs_state *s) {
-  upb_handlers *h = upb_handlers_new(m, owner);
+  upb_handlers *h = upb_handlers_new(m, ft, owner);
   if (!h) return NULL;
   if (!upb_inttable_insertptr(&s->tab, m, upb_value_ptr(h))) goto oom;
 
@@ -326,11 +365,11 @@ static upb_handlers *newformsg(const upb_msgdef *m, const void *owner,
     if (!upb_fielddef_issubmsg(f)) continue;
 
     const upb_msgdef *subdef = upb_downcast_msgdef(upb_fielddef_subdef(f));
-    const upb_value *subm_ent = upb_inttable_lookupptr(&s->tab, subdef);
-    if (subm_ent) {
-      upb_handlers_setsubhandlers(h, f, upb_value_getptr(*subm_ent));
+    upb_value subm_ent;
+    if (upb_inttable_lookupptr(&s->tab, subdef, &subm_ent)) {
+      upb_handlers_setsubhandlers(h, f, upb_value_getptr(subm_ent));
     } else {
-      upb_handlers *sub_mh = newformsg(subdef, &sub_mh, s);
+      upb_handlers *sub_mh = newformsg(subdef, ft, &sub_mh, s);
       if (!sub_mh) goto oom;
       upb_handlers_setsubhandlers(h, f, sub_mh);
       upb_handlers_unref(sub_mh, &sub_mh);
@@ -344,6 +383,7 @@ oom:
 }
 
 const upb_handlers *upb_handlers_newfrozen(const upb_msgdef *m,
+                                           const upb_frametype *ft,
                                            const void *owner,
                                            upb_handlers_callback *callback,
                                            void *closure) {
@@ -352,7 +392,7 @@ const upb_handlers *upb_handlers_newfrozen(const upb_msgdef *m,
   state.closure = closure;
   if (!upb_inttable_init(&state.tab, UPB_CTYPE_PTR)) return NULL;
 
-  upb_handlers *ret = newformsg(m, owner, &state);
+  upb_handlers *ret = newformsg(m, ft, owner, &state);
   if (!ret) return NULL;
   upb_refcounted *r = upb_upcast(ret);
   upb_status status = UPB_STATUS_INIT;
@@ -365,10 +405,9 @@ const upb_handlers *upb_handlers_newfrozen(const upb_msgdef *m,
 }
 
 #define STDMSG_WRITER(type, ctype)                                            \
-  bool upb_stdmsg_set ## type (void *_m, void *fval, ctype val) {             \
-    assert(_m != NULL);                                                       \
-    const upb_stdmsg_fval *f = fval;                                          \
-    uint8_t *m = _m;                                                          \
+  bool upb_stdmsg_set ## type (const upb_sinkframe *frame, ctype val) {       \
+    const upb_stdmsg_fval *f = upb_sinkframe_handlerdata(frame);              \
+    uint8_t *m = upb_sinkframe_userdata(frame);                               \
     if (f->hasbit > 0)                                                        \
       *(uint8_t*)&m[f->hasbit / 8] |= 1 << (f->hasbit % 8);                   \
     *(ctype*)&m[f->offset] = val;                                             \

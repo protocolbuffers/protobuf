@@ -13,6 +13,7 @@ function test_fielddef()
   assert_false(f:is_frozen())
   assert_nil(f:number())
   assert_nil(f:name())
+  assert_nil(f:type())
   assert_equal(upb.LABEL_OPTIONAL, f:label())
 
   f:set_name("foo_field")

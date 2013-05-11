@@ -16,33 +16,37 @@
 
 upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
                                         void *owner, upb_status *status) {
-  upb_stringsrc strsrc;
-  upb_stringsrc_init(&strsrc);
-  upb_stringsrc_reset(&strsrc, str, len);
+  // Create handlers.
+  const upb_handlers *reader_h = upb_descreader_gethandlers(&reader_h);
+  const upb_handlers *decoder_h =
+      upb_pbdecoder_gethandlers(reader_h, false, &decoder_h);
 
-  const upb_handlers *h = upb_descreader_newhandlers(&h);
-  upb_decoderplan *p = upb_decoderplan_new(h, false);
-  upb_decoder d;
-  upb_decoder_init(&d);
-  upb_handlers_unref(h, &h);
-  upb_descreader r;
-  upb_descreader_init(&r);
-  upb_decoder_resetplan(&d, p);
-  upb_decoder_resetinput(&d, upb_stringsrc_allbytes(&strsrc), &r);
+  // Create pipeline.
+  upb_pipeline pipeline;
+  upb_pipeline_init(&pipeline, NULL, 0, upb_realloc, NULL);
+  upb_pipeline_donateref(&pipeline, reader_h, &reader_h);
+  upb_pipeline_donateref(&pipeline, decoder_h, &decoder_h);
 
-  upb_success_t ret = upb_decoder_decode(&d);
-  if (status) upb_status_copy(status, upb_decoder_status(&d));
-  upb_stringsrc_uninit(&strsrc);
-  upb_decoder_uninit(&d);
-  upb_decoderplan_unref(p);
-  if (ret != UPB_OK) {
-    upb_descreader_uninit(&r);
+  // Create sinks.
+  upb_sink *reader_sink = upb_pipeline_newsink(&pipeline, reader_h);
+  upb_sink *decoder_sink = upb_pipeline_newsink(&pipeline, decoder_h);
+  upb_pbdecoder *d = upb_sinkframe_userdata(upb_sink_base(decoder_sink));
+  upb_pbdecoder_resetsink(d, reader_sink);
+
+  // Push input data.
+  bool ok = upb_bytestream_putstr(decoder_sink, str, len);
+
+  if (status) upb_status_copy(status, upb_pipeline_status(&pipeline));
+  if (!ok) {
+    upb_pipeline_uninit(&pipeline);
     return NULL;
   }
-  upb_def **defs = upb_descreader_getdefs(&r, owner, n);
+
+  upb_descreader *r = upb_sinkframe_userdata(upb_sink_base(reader_sink));
+  upb_def **defs = upb_descreader_getdefs(r, owner, n);
   upb_def **defscopy = malloc(sizeof(upb_def*) * (*n));
   memcpy(defscopy, defs, sizeof(upb_def*) * (*n));
-  upb_descreader_uninit(&r);
+  upb_pipeline_uninit(&pipeline);
 
   return defscopy;
 }

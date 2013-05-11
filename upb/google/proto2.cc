@@ -15,42 +15,36 @@
 
 #include "upb/google/proto2.h"
 
-#include "upb/google/proto1.h"
-#include "upb/bytestream.h"
 #include "upb/def.h"
+#include "upb/google/proto1.h"
 #include "upb/handlers.h"
+#include "upb/sink.h"
 
 namespace upb {
-namespace proto2_bridge_google3 { class FieldAccessor; }
-namespace proto2_bridge_opensource { class FieldAccessor; }
+namespace google_google3 { class GMR_Handlers; }
+namespace google_opensource { class GMR_Handlers; }
 }  // namespace upb
 
 // BEGIN DOUBLE COMPILATION TRICKERY. //////////////////////////////////////////
 
 #ifdef UPB_GOOGLE3
 
-// TODO(haberman): friend upb so that this isn't required.
-#define protected public
-#include "net/proto2/public/repeated_field.h"
-#undef protected
-
-#define private public
-#include "net/proto2/public/generated_message_reflection.h"
-#undef private
-
 #include "net/proto2/proto/descriptor.pb.h"
 #include "net/proto2/public/descriptor.h"
+#include "net/proto2/public/extension_set.h"
+#include "net/proto2/public/generated_message_reflection.h"
 #include "net/proto2/public/lazy_field.h"
 #include "net/proto2/public/message.h"
+#include "net/proto2/public/repeated_field.h"
 #include "net/proto2/public/string_piece_field_support.h"
-#include "upb/google/cord.h"
 
 namespace goog = ::proto2;
-namespace me = ::upb::proto2_bridge_google3;
+namespace me = ::upb::google_google3;
 
 #else
 
-// TODO(haberman): friend upb so that this isn't required.
+// TODO(haberman): remove these once new versions of protobuf that "friend"
+// upb are pervasive in the wild.
 #define protected public
 #include "google/protobuf/repeated_field.h"
 #undef protected
@@ -61,10 +55,16 @@ namespace me = ::upb::proto2_bridge_google3;
 
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/extension_set.h"
 #include "google/protobuf/message.h"
 
 namespace goog = ::google::protobuf;
-namespace me = ::upb::proto2_bridge_opensource;
+namespace me = ::upb::google_opensource;
+
+using goog::int32;
+using goog::int64;
+using goog::uint32;
+using goog::uint64;
 
 #endif  // ifdef UPB_GOOGLE3
 
@@ -74,8 +74,12 @@ namespace me = ::upb::proto2_bridge_opensource;
 // an enum value for STRING.
 #define UPB_CTYPE_STRING 0
 
-template<class T> static T* GetPointer(void *message, size_t offset) {
+template <class T> static T* GetPointer(void* message, size_t offset) {
   return reinterpret_cast<T*>(static_cast<char*>(message) + offset);
+}
+template <class T>
+static const T* GetConstPointer(const void* message, size_t offset) {
+  return reinterpret_cast<const T*>(static_cast<const char*>(message) + offset);
 }
 
 // This class contains handlers that can write into a proto2 class whose
@@ -86,57 +90,60 @@ template<class T> static T* GetPointer(void *message, size_t offset) {
 // internal interfaces that are not guaranteed to be stable.  This class will
 // need to be updated if any non-backward-compatible changes are made to
 // GeneratedMessageReflection.
-//
-// TODO(haberman): change class name?  In retrospect, "FieldAccessor" isn't the
-// best (something more specific like GeneratedMessageReflectionHandlers or
-// GMR_Handlers would be better) but we're depending on a "friend" declaration
-// in proto2 that already specifies "FieldAccessor."  No versions of proto2 have
-// been released that include the "friend FieldAccessor" declaration, so there's
-// still time to change this.  On the other hand, perhaps it's simpler to just
-// rely on "#define private public" since it may be a long time before new
-// versions of proto2 open source are pervasive enough that we can remove this
-// anyway.
-class me::FieldAccessor {
+class me::GMR_Handlers {
  public:
   // Returns true if we were able to set an accessor and any other properties
   // of the FieldDef that are necessary to read/write this field to a
   // proto2::Message.
   static bool TrySet(const goog::FieldDescriptor* proto2_f,
-                     const goog::Message& m,
-                     const upb::FieldDef* upb_f, upb::Handlers* h) {
+                     const goog::Message& m, const upb::FieldDef* upb_f,
+                     upb::Handlers* h) {
     const goog::Reflection* base_r = m.GetReflection();
     // See file comment re: dynamic_cast.
     const goog::internal::GeneratedMessageReflection* r =
         dynamic_cast<const goog::internal::GeneratedMessageReflection*>(base_r);
     if (!r) return false;
-    // Extensions not supported yet.
-    if (proto2_f->is_extension()) return false;
+
+#define PRIMITIVE_TYPE(cpptype, cident)                                        \
+case goog::FieldDescriptor::cpptype:                                           \
+  SetPrimitiveHandlers<cident>(proto2_f, r, upb_f, h);                         \
+  return true;
 
     switch (proto2_f->cpp_type()) {
-#define PRIMITIVE_TYPE(cpptype, cident) \
-      case goog::FieldDescriptor::cpptype: \
-        SetPrimitiveHandlers<cident>(proto2_f, r, upb_f, h); return true;
-      PRIMITIVE_TYPE(CPPTYPE_INT32,  int32_t);
-      PRIMITIVE_TYPE(CPPTYPE_INT64,  int64_t);
-      PRIMITIVE_TYPE(CPPTYPE_UINT32, uint32_t);
-      PRIMITIVE_TYPE(CPPTYPE_UINT64, uint64_t);
+      PRIMITIVE_TYPE(CPPTYPE_INT32, int32);
+      PRIMITIVE_TYPE(CPPTYPE_INT64, int64);
+      PRIMITIVE_TYPE(CPPTYPE_UINT32, uint32);
+      PRIMITIVE_TYPE(CPPTYPE_UINT64, uint64);
       PRIMITIVE_TYPE(CPPTYPE_DOUBLE, double);
-      PRIMITIVE_TYPE(CPPTYPE_FLOAT,  float);
-      PRIMITIVE_TYPE(CPPTYPE_BOOL,   bool);
-#undef PRIMITIVE_TYPE
+      PRIMITIVE_TYPE(CPPTYPE_FLOAT, float);
+      PRIMITIVE_TYPE(CPPTYPE_BOOL, bool);
       case goog::FieldDescriptor::CPPTYPE_ENUM:
-        SetEnumHandlers(proto2_f, r, upb_f, h);
+        if (proto2_f->is_extension()) {
+          SetEnumExtensionHandlers(proto2_f, r, upb_f, h);
+        } else {
+          SetEnumHandlers(proto2_f, r, upb_f, h);
+        }
         return true;
       case goog::FieldDescriptor::CPPTYPE_STRING: {
+        if (proto2_f->is_extension()) {
+#ifdef UPB_GOOGLE3
+          SetStringExtensionHandlers<string>(proto2_f, r, upb_f, h);
+#else
+          SetStringExtensionHandlers<std::string>(proto2_f, r, upb_f, h);
+#endif
+          return true;
+        }
+
         // Old versions of the open-source protobuf release erroneously default
         // to Cord even though that has never been supported in the open-source
         // release.
         int32_t ctype = proto2_f->options().has_ctype() ?
-            proto2_f->options().ctype() : UPB_CTYPE_STRING;
+                        proto2_f->options().ctype()
+                        : UPB_CTYPE_STRING;
         switch (ctype) {
 #ifdef UPB_GOOGLE3
           case goog::FieldOptions::STRING:
-            SetStringHandlers<string>(proto2_f, m, r, upb_f, h);
+            SetStringHandlers<string>(proto2_f, r, upb_f, h);
             return true;
           case goog::FieldOptions::CORD:
             SetCordHandlers(proto2_f, r, upb_f, h);
@@ -146,7 +153,7 @@ class me::FieldAccessor {
             return true;
 #else
           case UPB_CTYPE_STRING:
-            SetStringHandlers<std::string>(proto2_f, m, r, upb_f, h);
+            SetStringHandlers<std::string>(proto2_f, r, upb_f, h);
             return true;
 #endif
           default:
@@ -156,23 +163,25 @@ class me::FieldAccessor {
       case goog::FieldDescriptor::CPPTYPE_MESSAGE:
 #ifdef UPB_GOOGLE3
         if (proto2_f->options().lazy()) {
+          assert(false);
           return false;  // Not yet implemented.
-        } else {
-          SetSubMessageHandlers(proto2_f, m, r, upb_f, h);
+        }
+#endif
+        if (proto2_f->is_extension()) {
+          SetSubMessageExtensionHandlers(proto2_f, m, r, upb_f, h);
           return true;
         }
-#else
         SetSubMessageHandlers(proto2_f, m, r, upb_f, h);
         return true;
-#endif
       default:
         return false;
     }
   }
 
+#undef PRIMITIVE_TYPE
+
   static const goog::Message* GetFieldPrototype(
-      const goog::Message& m,
-      const goog::FieldDescriptor* f) {
+      const goog::Message& m, const goog::FieldDescriptor* f) {
     // We assume that all submessages (and extensions) will be constructed
     // using the same MessageFactory as this message.  This doesn't cover the
     // case of CodedInputStream::SetExtensionRegistry().
@@ -209,11 +218,9 @@ class me::FieldAccessor {
 
   class FieldOffset {
    public:
-    FieldOffset(
-        const goog::FieldDescriptor* f,
-        const goog::internal::GeneratedMessageReflection* r)
-        : offset_(GetOffset(f, r)),
-          is_repeated_(f->is_repeated()) {
+    FieldOffset(const goog::FieldDescriptor* f,
+                const goog::internal::GeneratedMessageReflection* r)
+        : offset_(GetOffset(f, r)), is_repeated_(f->is_repeated()) {
       if (!is_repeated_) {
         int64_t hasbit = GetHasbit(f, r);
         hasbyte_ = hasbit / 8;
@@ -221,7 +228,7 @@ class me::FieldAccessor {
       }
     }
 
-    template<class T> T* GetFieldPointer(void *message) const {
+    template <class T> T* GetFieldPointer(void* message) const {
       return GetPointer<T>(message, offset_);
     }
 
@@ -240,6 +247,29 @@ class me::FieldAccessor {
     int8_t mask_;
   };
 
+  class ExtensionFieldData {
+   public:
+    ExtensionFieldData(
+        const goog::FieldDescriptor* proto2_f,
+        const goog::internal::GeneratedMessageReflection* r)
+        : offset_(r->extensions_offset_),
+          number_(proto2_f->number()),
+          type_(proto2_f->type()) {
+    }
+
+    int number() const { return number_; }
+    goog::internal::FieldType type() const { return type_; }
+
+    goog::internal::ExtensionSet* GetExtensionSet(goog::Message* m) const {
+      return GetPointer<goog::internal::ExtensionSet>(m, offset_);
+    }
+
+   private:
+    const size_t offset_;
+    int number_;
+    goog::internal::FieldType type_;
+  };
+
   // StartSequence /////////////////////////////////////////////////////////////
 
   static void SetStartSequenceHandler(
@@ -247,14 +277,14 @@ class me::FieldAccessor {
       const goog::internal::GeneratedMessageReflection* r,
       const upb::FieldDef* f, upb::Handlers* h) {
     assert(f->IsSequence());
-    h->SetStartSequenceHandler(
-        f, &PushOffset, new FieldOffset(proto2_f, r),
-        &upb::DeletePointer<FieldOffset>);
+    h->SetStartSequenceHandler(f, &PushOffset, new FieldOffset(proto2_f, r),
+                               &upb::DeletePointer<FieldOffset>);
   }
 
-  static void* PushOffset(void *m, void *fval) {
-    const FieldOffset* offset = static_cast<FieldOffset*>(fval);
-    return offset->GetFieldPointer<void>(m);
+  static void* PushOffset(const upb::SinkFrame* frame) {
+    const FieldOffset* offset =
+        static_cast<FieldOffset*>(frame->handler_data());
+    return offset->GetFieldPointer<void>(frame->userdata());
   }
 
   // Primitive Value (numeric, bool) ///////////////////////////////////////////
@@ -262,22 +292,54 @@ class me::FieldAccessor {
   template <typename T> static void SetPrimitiveHandlers(
       const goog::FieldDescriptor* proto2_f,
       const goog::internal::GeneratedMessageReflection* r,
-      const upb::FieldDef* f,
-      upb::Handlers* h) {
-    if (f->IsSequence()) {
-      SetStartSequenceHandler(proto2_f, r, f, h);
-      h->SetValueHandler<T>(f, &AppendPrimitive<T>, NULL, NULL);
+      const upb::FieldDef* f, upb::Handlers* h) {
+    if (proto2_f->is_extension()) {
+      ExtensionFieldData* data = new ExtensionFieldData(proto2_f, r);
+      upb::Handlers::Free* free = &upb::DeletePointer<ExtensionFieldData>;
+      if (f->IsSequence()) {
+        h->SetValueHandler<T>(f, &AppendPrimitiveExtension<T>, data, free);
+      } else {
+        h->SetValueHandler<T>(f, &SetPrimitiveExtension<T>, data, free);
+      }
     } else {
-      upb::SetStoreValueHandler<T>(
-          f, GetOffset(proto2_f, r), GetHasbit(proto2_f, r), h);
+      if (f->IsSequence()) {
+        SetStartSequenceHandler(proto2_f, r, f, h);
+        h->SetValueHandler<T>(f, &AppendPrimitive<T>, NULL, NULL);
+      } else {
+        upb::SetStoreValueHandler<T>(f, GetOffset(proto2_f, r),
+                                     GetHasbit(proto2_f, r), h);
+      }
     }
   }
 
   template <typename T>
-  static bool AppendPrimitive(void *_r, void *fval, T val) {
-    UPB_UNUSED(fval);
-    goog::RepeatedField<T>* r = static_cast<goog::RepeatedField<T>*>(_r);
+  static bool AppendPrimitive(const upb::SinkFrame* frame, T val) {
+    goog::RepeatedField<T>* r =
+        static_cast<goog::RepeatedField<T>*>(frame->userdata());
     r->Add(val);
+    return true;
+  }
+
+  template <typename T>
+  static bool AppendPrimitiveExtension(const upb::SinkFrame* frame, T val) {
+    goog::Message* m = frame->GetUserdata<goog::Message>();
+    ExtensionFieldData* data =
+        static_cast<ExtensionFieldData*>(frame->handler_data());
+    goog::internal::ExtensionSet* set = data->GetExtensionSet(m);
+    // TODO(haberman): give an accurate value for "packed"
+    goog::internal::RepeatedPrimitiveTypeTraits<T>::Add(
+        data->number(), data->type(), true, val, set);
+    return true;
+  }
+
+  template <typename T>
+  static bool SetPrimitiveExtension(const upb::SinkFrame* frame, T val) {
+    goog::Message* m = frame->GetUserdata<goog::Message>();
+    ExtensionFieldData* data =
+        static_cast<ExtensionFieldData*>(frame->handler_data());
+    goog::internal::ExtensionSet* set = data->GetExtensionSet(m);
+    goog::internal::PrimitiveTypeTraits<T>::Set(data->number(), data->type(),
+                                                val, set);
     return true;
   }
 
@@ -285,15 +347,13 @@ class me::FieldAccessor {
 
   class EnumHandlerData : public FieldOffset {
    public:
-    EnumHandlerData(
-        const goog::FieldDescriptor* proto2_f,
-        const goog::internal::GeneratedMessageReflection* r,
-        const upb::FieldDef* f)
+    EnumHandlerData(const goog::FieldDescriptor* proto2_f,
+                    const goog::internal::GeneratedMessageReflection* r,
+                    const upb::FieldDef* f)
         : FieldOffset(proto2_f, r),
           field_number_(f->number()),
           unknown_fields_offset_(r->unknown_fields_offset_),
-          enum_(upb_downcast_enumdef(f->subdef())) {
-    }
+          enum_(upb_downcast_enumdef(f->subdef())) {}
 
     bool IsValidValue(int32_t val) const {
       return enum_->FindValueByNumber(val) != NULL;
@@ -314,21 +374,22 @@ class me::FieldAccessor {
   static void SetEnumHandlers(
       const goog::FieldDescriptor* proto2_f,
       const goog::internal::GeneratedMessageReflection* r,
-      const upb::FieldDef* f,
-      upb::Handlers* h) {
+      const upb::FieldDef* f, upb::Handlers* h) {
+    assert(!proto2_f->is_extension());
     EnumHandlerData* data = new EnumHandlerData(proto2_f, r, f);
     if (f->IsSequence()) {
-      h->SetInt32Handler(
-          f, &AppendEnum, data, &upb::DeletePointer<EnumHandlerData>);
+      h->SetInt32Handler(f, &AppendEnum, data,
+                         &upb::DeletePointer<EnumHandlerData>);
     } else {
-      h->SetInt32Handler(
-          f, &SetEnum, data, &upb::DeletePointer<EnumHandlerData>);
+      h->SetInt32Handler(f, &SetEnum, data,
+                         &upb::DeletePointer<EnumHandlerData>);
     }
   }
 
-  static bool SetEnum(void *_m, void *fval, int32_t val) {
-    goog::Message* m = static_cast<goog::Message*>(_m);
-    const EnumHandlerData* data = static_cast<const EnumHandlerData*>(fval);
+  static bool SetEnum(const upb::SinkFrame* frame, int32_t val) {
+    goog::Message* m = static_cast<goog::Message*>(frame->userdata());
+    const EnumHandlerData* data =
+        static_cast<const EnumHandlerData*>(frame->handler_data());
     if (data->IsValidValue(val)) {
       int32_t* message_val = data->GetFieldPointer<int32_t>(m);
       *message_val = val;
@@ -339,15 +400,16 @@ class me::FieldAccessor {
     return true;
   }
 
-  static bool AppendEnum(void *_m, void *fval, int32_t val) {
+  static bool AppendEnum(const upb::SinkFrame* frame, int32_t val) {
     // Closure is the enclosing message.  We can't use the RepeatedField<> as
     // the closure because we need to go back to the message for unrecognized
     // enum values, which go into the unknown field set.
-    goog::Message* m = static_cast<goog::Message*>(_m);
-    const EnumHandlerData* data = static_cast<const EnumHandlerData*>(fval);
+    goog::Message* m = static_cast<goog::Message*>(frame->userdata());
+    const EnumHandlerData* data =
+        static_cast<const EnumHandlerData*>(frame->handler_data());
     if (data->IsValidValue(val)) {
       goog::RepeatedField<int32_t>* r =
-          data->GetFieldPointer<goog::RepeatedField<int32_t> >(m);
+          data->GetFieldPointer<goog::RepeatedField<int32_t>>(m);
       r->Add(val);
     } else {
       data->mutable_unknown_fields(m)->AddVarint(data->field_number(), val);
@@ -355,26 +417,56 @@ class me::FieldAccessor {
     return true;
   }
 
+  // EnumExtension /////////////////////////////////////////////////////////////
+
+  static void SetEnumExtensionHandlers(
+      const goog::FieldDescriptor* proto2_f,
+      const goog::internal::GeneratedMessageReflection* r,
+      const upb::FieldDef* f, upb::Handlers* h) {
+    assert(proto2_f->is_extension());
+    ExtensionFieldData* data = new ExtensionFieldData(proto2_f, r);
+    if (f->IsSequence()) {
+      h->SetInt32Handler(f, &AppendEnumExtension, data,
+                         upb::DeletePointer<ExtensionFieldData>);
+    } else {
+      h->SetInt32Handler(f, &SetEnumExtension, data,
+                         upb::DeletePointer<ExtensionFieldData>);
+    }
+  }
+
+  static bool SetEnumExtension(const upb::SinkFrame* frame, int32_t val) {
+    goog::Message* m = frame->GetUserdata<goog::Message>();
+    const ExtensionFieldData* data =
+        static_cast<const ExtensionFieldData*>(frame->handler_data());
+    goog::internal::ExtensionSet* set = data->GetExtensionSet(m);
+    set->SetEnum(data->number(), data->type(), val, NULL);
+    return true;
+  }
+
+  static bool AppendEnumExtension(const upb::SinkFrame* frame, int32_t val) {
+    goog::Message* m = frame->GetUserdata<goog::Message>();
+    const ExtensionFieldData* data =
+        static_cast<const ExtensionFieldData*>(frame->handler_data());
+    goog::internal::ExtensionSet* set = data->GetExtensionSet(m);
+    // TODO(haberman): give an accurate value for "packed"
+    set->AddEnum(data->number(), data->type(), true, val, NULL);
+    return true;
+  }
+
   // String ////////////////////////////////////////////////////////////////////
 
   // For scalar (non-repeated) string fields.
-  template<class T>
-  class StringHandlerData : public FieldOffset {
+  template <class T> class StringHandlerData : public FieldOffset {
    public:
     StringHandlerData(const goog::FieldDescriptor* proto2_f,
-                      const goog::internal::GeneratedMessageReflection* r,
-                      const goog::Message& prototype)
-        : FieldOffset(proto2_f, r) {
-      // "prototype" isn't guaranteed to be empty, so we create a copy to get
-      // the default string instance.
-      goog::Message* empty = prototype.New();
-      prototype_ = &r->GetStringReference(*empty, proto2_f, NULL);
-      delete empty;
-    }
+                      const goog::internal::GeneratedMessageReflection* r)
+        : FieldOffset(proto2_f, r),
+          prototype_(*GetConstPointer<T*>(r->default_instance_,
+                                          GetOffset(proto2_f, r))) {}
 
     const T* prototype() const { return prototype_; }
 
-    T** GetStringPointer(void *message) const {
+    T** GetStringPointer(void* message) const {
       return GetFieldPointer<T*>(message);
     }
 
@@ -384,27 +476,28 @@ class me::FieldAccessor {
 
   template <typename T> static void SetStringHandlers(
       const goog::FieldDescriptor* proto2_f,
-      const goog::Message& m,
       const goog::internal::GeneratedMessageReflection* r,
       const upb::FieldDef* f,
       upb::Handlers* h) {
+    assert(!proto2_f->is_extension());
     h->SetStringHandler(f, &OnStringBuf<T>, NULL, NULL);
     if (f->IsSequence()) {
       SetStartSequenceHandler(proto2_f, r, f, h);
       h->SetStartStringHandler(f, &StartRepeatedString<T>, NULL, NULL);
     } else {
-      StringHandlerData<T>* data = new StringHandlerData<T>(proto2_f, r, m);
-      h->SetStartStringHandler(
-          f, &StartString<T>, data, &upb::DeletePointer<StringHandlerData<T> >);
+      StringHandlerData<T>* data = new StringHandlerData<T>(proto2_f, r);
+      h->SetStartStringHandler(f, &StartString<T>, data,
+                               &upb::DeletePointer<StringHandlerData<T>>);
     }
   }
 
   // This needs to be templated because google3 string is not std::string.
-  template <typename T> static void* StartString(
-      void *m, void *fval, size_t size_hint) {
+  template <typename T>
+  static void* StartString(const upb::SinkFrame* frame, size_t size_hint) {
     UPB_UNUSED(size_hint);
+    goog::Message* m = static_cast<goog::Message*>(frame->userdata());
     const StringHandlerData<T>* data =
-        static_cast<const StringHandlerData<T>*>(fval);
+        static_cast<const StringHandlerData<T>*>(frame->handler_data());
     T** str = data->GetStringPointer(m);
     data->SetHasbit(m);
     // If it points to the default instance, we must create a new instance.
@@ -414,37 +507,75 @@ class me::FieldAccessor {
     return *str;
   }
 
-  template <typename T> static size_t OnStringBuf(
-      void *_str, void *fval, const char *buf, size_t n) {
-    UPB_UNUSED(fval);
-    T* str = static_cast<T*>(_str);
+  template <typename T>
+  static size_t OnStringBuf(const upb::SinkFrame* frame,
+                            const char* buf, size_t n) {
+    T* str = static_cast<T*>(frame->userdata());
     str->append(buf, n);
     return n;
   }
 
-
   template <typename T>
-  static void* StartRepeatedString(void *_r, void *fval, size_t size_hint) {
+  static void* StartRepeatedString(const upb::SinkFrame* frame,
+                                   size_t size_hint) {
     UPB_UNUSED(size_hint);
-    UPB_UNUSED(fval);
-    goog::RepeatedPtrField<T>* r = static_cast<goog::RepeatedPtrField<T>*>(_r);
+    goog::RepeatedPtrField<T>* r =
+        static_cast<goog::RepeatedPtrField<T>*>(frame->userdata());
     T* str = r->Add();
     str->clear();
     // reserve() here appears to hurt performance rather than help.
     return str;
   }
 
+  // StringExtension ///////////////////////////////////////////////////////////
+
+  template <typename T>
+  static void SetStringExtensionHandlers(
+      const goog::FieldDescriptor* proto2_f,
+      const goog::internal::GeneratedMessageReflection* r,
+      const upb::FieldDef* f, upb::Handlers* h) {
+    assert(proto2_f->is_extension());
+    h->SetStringHandler(f, &OnStringBuf<T>, NULL, NULL);
+    ExtensionFieldData* data = new ExtensionFieldData(proto2_f, r);
+    if (f->IsSequence()) {
+      h->SetStartStringHandler(f, &StartRepeatedStringExtension, data,
+                               upb::DeletePointer<ExtensionFieldData>);
+    } else {
+      h->SetStartStringHandler(f, &StartStringExtension, data,
+                               upb::DeletePointer<ExtensionFieldData>);
+    }
+  }
+
+  // google3 string is not std::string, but we avoid needing to template
+  // because we do not actually have to declare the string type.
+  static void* StartStringExtension(const upb::SinkFrame* frame,
+                                    size_t size_hint) {
+    UPB_UNUSED(size_hint);
+    goog::Message* m = frame->GetUserdata<goog::Message>();
+    const ExtensionFieldData* data =
+        static_cast<const ExtensionFieldData*>(frame->handler_data());
+    goog::internal::ExtensionSet* set = data->GetExtensionSet(m);
+    return set->MutableString(data->number(), data->type(), NULL);
+  }
+
+  static void* StartRepeatedStringExtension(const upb::SinkFrame* frame,
+                                            size_t size_hint) {
+    UPB_UNUSED(size_hint);
+    goog::Message* m = frame->GetUserdata<goog::Message>();
+    const ExtensionFieldData* data =
+        static_cast<const ExtensionFieldData*>(frame->handler_data());
+    goog::internal::ExtensionSet* set = data->GetExtensionSet(m);
+    return set->AddString(data->number(), data->type(), NULL);
+  }
+
   // SubMessage ////////////////////////////////////////////////////////////////
 
   class SubMessageHandlerData : public FieldOffset {
    public:
-    SubMessageHandlerData(
-        const goog::FieldDescriptor* f,
-        const goog::internal::GeneratedMessageReflection* r,
-        const goog::Message* prototype)
-        : FieldOffset(f, r),
-          prototype_(prototype) {
-    }
+    SubMessageHandlerData(const goog::FieldDescriptor* f,
+                          const goog::internal::GeneratedMessageReflection* r,
+                          const goog::Message* prototype)
+        : FieldOffset(f, r), prototype_(prototype) {}
 
     const goog::Message* prototype() const { return prototype_; }
 
@@ -453,13 +584,12 @@ class me::FieldAccessor {
   };
 
   static void SetSubMessageHandlers(
-      const goog::FieldDescriptor* proto2_f,
-      const goog::Message& m,
+      const goog::FieldDescriptor* proto2_f, const goog::Message& m,
       const goog::internal::GeneratedMessageReflection* r,
-      const upb::FieldDef* f,
-      upb::Handlers* h) {
+      const upb::FieldDef* f, upb::Handlers* h) {
+    const goog::Message* field_prototype = GetFieldPrototype(m, proto2_f);
     SubMessageHandlerData* data =
-        new SubMessageHandlerData(proto2_f, r, GetFieldPrototype(m, proto2_f));
+        new SubMessageHandlerData(proto2_f, r, field_prototype);
     upb::Handlers::Free* free = &upb::DeletePointer<SubMessageHandlerData>;
     if (f->IsSequence()) {
       SetStartSequenceHandler(proto2_f, r, f, h);
@@ -469,11 +599,13 @@ class me::FieldAccessor {
     }
   }
 
-  static void* StartSubMessage(void *m, void *fval) {
+  static void* StartSubMessage(const upb::SinkFrame* frame) {
+    void* m = frame->userdata();
     const SubMessageHandlerData* data =
-        static_cast<const SubMessageHandlerData*>(fval);
+        static_cast<const SubMessageHandlerData*>(frame->handler_data());
     data->SetHasbit(m);
-    goog::Message **subm = data->GetFieldPointer<goog::Message*>(m);
+    goog::Message** subm =
+        data->GetFieldPointer<goog::Message*>(frame->userdata());
     if (*subm == NULL || *subm == data->prototype()) {
       *subm = data->prototype()->New();
     }
@@ -486,19 +618,19 @@ class me::FieldAccessor {
     // AddAllocated() calls this, but only if other objects are sitting
     // around waiting for reuse, which we will not do.
     static void Delete(Type* t) {
-      (void)t;
+      UPB_UNUSED(t);
       assert(false);
     }
   };
 
   // Closure is a RepeatedPtrField<SubMessageType>*, but we access it through
   // its base class RepeatedPtrFieldBase*.
-  static void* StartRepeatedSubMessage(void* _r, void *fval) {
+  static void* StartRepeatedSubMessage(const upb::SinkFrame* frame) {
     const SubMessageHandlerData* data =
-        static_cast<const SubMessageHandlerData*>(fval);
-    goog::internal::RepeatedPtrFieldBase *r =
-        static_cast<goog::internal::RepeatedPtrFieldBase*>(_r);
-    void *submsg = r->AddFromCleared<RepeatedMessageTypeHandler>();
+        static_cast<const SubMessageHandlerData*>(frame->handler_data());
+    goog::internal::RepeatedPtrFieldBase* r =
+        static_cast<goog::internal::RepeatedPtrFieldBase*>(frame->userdata());
+    void* submsg = r->AddFromCleared<RepeatedMessageTypeHandler>();
     if (!submsg) {
       submsg = data->prototype()->New();
       r->AddAllocated<RepeatedMessageTypeHandler>(submsg);
@@ -506,7 +638,63 @@ class me::FieldAccessor {
     return submsg;
   }
 
-  // TODO(haberman): handle Extensions, Unknown Fields.
+  // SubMessageExtension ///////////////////////////////////////////////////////
+
+  class SubMessageExtensionHandlerData : public ExtensionFieldData {
+   public:
+    SubMessageExtensionHandlerData(
+        const goog::FieldDescriptor* proto2_f,
+        const goog::internal::GeneratedMessageReflection* r,
+        const goog::Message* prototype)
+        : ExtensionFieldData(proto2_f, r),
+          prototype_(prototype) {
+    }
+
+    const goog::Message* prototype() const { return prototype_; }
+
+   private:
+    const goog::Message* const prototype_;
+  };
+
+  static void SetSubMessageExtensionHandlers(
+      const goog::FieldDescriptor* proto2_f,
+      const goog::Message& m,
+      const goog::internal::GeneratedMessageReflection* r,
+      const upb::FieldDef* f,
+      upb::Handlers* h) {
+    const goog::Message* field_prototype = GetFieldPrototype(m, proto2_f);
+    SubMessageExtensionHandlerData* data =
+        new SubMessageExtensionHandlerData(proto2_f, r, field_prototype);
+    upb::Handlers::Free* free = &upb::DeletePointer<SubMessageHandlerData>;
+    if (f->IsSequence()) {
+      h->SetStartSubMessageHandler(f, &StartRepeatedSubMessageExtension, data,
+                                   free);
+    } else {
+      h->SetStartSubMessageHandler(f, &StartSubMessageExtension, data, free);
+    }
+  }
+
+  static void* StartRepeatedSubMessageExtension(const upb::SinkFrame* frame) {
+    goog::Message* m = frame->GetUserdata<goog::Message>();
+    const SubMessageExtensionHandlerData* data =
+        static_cast<const SubMessageExtensionHandlerData*>(
+            frame->handler_data());
+    goog::internal::ExtensionSet* set = data->GetExtensionSet(m);
+    return set->AddMessage(data->number(), data->type(), *data->prototype(),
+                           NULL);
+  }
+
+  static void* StartSubMessageExtension(const upb::SinkFrame* frame) {
+    goog::Message* m = frame->GetUserdata<goog::Message>();
+    const SubMessageExtensionHandlerData* data =
+        static_cast<const SubMessageExtensionHandlerData*>(
+            frame->handler_data());
+    goog::internal::ExtensionSet* set = data->GetExtensionSet(m);
+    return set->MutableMessage(data->number(), data->type(), *data->prototype(),
+                               NULL);
+  }
+
+  // TODO(haberman): handle Unknown Fields.
 
 #ifdef UPB_GOOGLE3
   // Handlers for types/features only included in internal proto2 release:
@@ -519,38 +707,40 @@ class me::FieldAccessor {
       const proto2::FieldDescriptor* proto2_f,
       const proto2::internal::GeneratedMessageReflection* r,
       const upb::FieldDef* f, upb::Handlers* h) {
+    assert(!proto2_f->is_extension());
     h->SetStringHandler(f, &OnCordBuf, NULL, NULL);
     if (f->IsSequence()) {
       SetStartSequenceHandler(proto2_f, r, f, h);
       h->SetStartStringHandler(f, &StartRepeatedCord, NULL, NULL);
     } else {
-      h->SetStartStringHandler(
-          f, &StartCord, new FieldOffset(proto2_f, r),
-          &upb::DeletePointer<FieldOffset*>);
+      h->SetStartStringHandler(f, &StartCord, new FieldOffset(proto2_f, r),
+                               &upb::DeletePointer<FieldOffset*>);
     }
   }
 
-  static void* StartCord(void *m, void *fval, size_t size_hint) {
+  static void* StartCord(const upb::SinkFrame* frame, size_t size_hint) {
     UPB_UNUSED(size_hint);
-    const FieldOffset* offset = static_cast<const FieldOffset*>(fval);
+    void* m = frame->userdata();
+    const FieldOffset* offset =
+        static_cast<const FieldOffset*>(frame->handler_data());
     offset->SetHasbit(m);
     Cord* field = offset->GetFieldPointer<Cord>(m);
     field->Clear();
     return field;
   }
 
-  static size_t OnCordBuf(void *_c, void *fval, const char *buf, size_t n) {
-    UPB_UNUSED(fval);
-    Cord* c = static_cast<Cord*>(_c);
+  static size_t OnCordBuf(const upb::SinkFrame* frame,
+                          const char* buf, size_t n) {
+    Cord* c = static_cast<Cord*>(frame->userdata());
     c->Append(StringPiece(buf, n));
     return n;
   }
 
-  static void* StartRepeatedCord(void *_r, void *fval, size_t size_hint) {
+  static void* StartRepeatedCord(const upb::SinkFrame* frame,
+                                 size_t size_hint) {
     UPB_UNUSED(size_hint);
-    UPB_UNUSED(fval);
     proto2::RepeatedField<Cord>* r =
-        static_cast<proto2::RepeatedField<Cord>*>(_r);
+        static_cast<proto2::RepeatedField<Cord>*>(frame->userdata());
     return r->Add();
   }
 
@@ -560,27 +750,27 @@ class me::FieldAccessor {
       const proto2::FieldDescriptor* proto2_f,
       const proto2::internal::GeneratedMessageReflection* r,
       const upb::FieldDef* f, upb::Handlers* h) {
+    assert(!proto2_f->is_extension());
     h->SetStringHandler(f, &OnStringPieceBuf, NULL, NULL);
     if (f->IsSequence()) {
       SetStartSequenceHandler(proto2_f, r, f, h);
       h->SetStartStringHandler(f, &StartRepeatedStringPiece, NULL, NULL);
     } else {
-      h->SetStartStringHandler(
-          f, &StartStringPiece, new FieldOffset(proto2_f, r),
-          &upb::DeletePointer<FieldOffset*>);
+      h->SetStartStringHandler(f, &StartStringPiece,
+                               new FieldOffset(proto2_f, r),
+                               &upb::DeletePointer<FieldOffset*>);
     }
   }
 
-  static size_t OnStringPieceBuf(void *_f, void *fval,
-                                 const char *buf, size_t len) {
-    UPB_UNUSED(fval);
+  static size_t OnStringPieceBuf(const upb::SinkFrame* frame,
+                                 const char* buf, size_t len) {
     // TODO(haberman): alias if possible and enabled on the input stream.
     // TODO(haberman): add a method to StringPieceField that lets us avoid
     // this copy/malloc/free.
     proto2::internal::StringPieceField* field =
-        static_cast<proto2::internal::StringPieceField*>(_f);
+        static_cast<proto2::internal::StringPieceField*>(frame->userdata());
     size_t new_len = field->size() + len;
-    char *data = new char[new_len];
+    char* data = new char[new_len];
     memcpy(data, field->data(), field->size());
     memcpy(data + field->size(), buf, len);
     field->CopyFrom(StringPiece(data, new_len));
@@ -588,9 +778,12 @@ class me::FieldAccessor {
     return len;
   }
 
-  static void* StartStringPiece(void *m, void *fval, size_t size_hint) {
+  static void* StartStringPiece(const upb::SinkFrame* frame,
+                                size_t size_hint) {
     UPB_UNUSED(size_hint);
-    const FieldOffset* offset = static_cast<const FieldOffset*>(fval);
+    void* m = frame->userdata();
+    const FieldOffset* offset =
+        static_cast<const FieldOffset*>(frame->handler_data());
     offset->SetHasbit(m);
     proto2::internal::StringPieceField* field =
         offset->GetFieldPointer<proto2::internal::StringPieceField>(m);
@@ -598,13 +791,13 @@ class me::FieldAccessor {
     return field;
   }
 
-  static void* StartRepeatedStringPiece(void* _r, void *fval,
+  static void* StartRepeatedStringPiece(const upb::SinkFrame* frame,
                                         size_t size_hint) {
     UPB_UNUSED(size_hint);
-    UPB_UNUSED(fval);
-    typedef proto2::RepeatedPtrField<proto2::internal::StringPieceField>
-        RepeatedStringPiece;
-    RepeatedStringPiece* r = static_cast<RepeatedStringPiece*>(_r);
+    typedef proto2::RepeatedPtrField<
+        proto2::internal::StringPieceField> RepeatedStringPiece;
+    RepeatedStringPiece* r =
+        static_cast<RepeatedStringPiece*>(frame->userdata());
     proto2::internal::StringPieceField* field = r->Add();
     field->Clear();
     return field;
@@ -619,13 +812,12 @@ namespace google {
 bool TrySetWriteHandlers(const goog::FieldDescriptor* proto2_f,
                          const goog::Message& prototype,
                          const upb::FieldDef* upb_f, upb::Handlers* h) {
-  return me::FieldAccessor::TrySet(proto2_f, prototype, upb_f, h);
+  return me::GMR_Handlers::TrySet(proto2_f, prototype, upb_f, h);
 }
 
-const goog::Message* GetFieldPrototype(
-    const goog::Message& m,
-    const goog::FieldDescriptor* f) {
-  return me::FieldAccessor::GetFieldPrototype(m, f);
+const goog::Message* GetFieldPrototype(const goog::Message& m,
+                                       const goog::FieldDescriptor* f) {
+  return me::GMR_Handlers::GetFieldPrototype(m, f);
 }
 
 }  // namespace google

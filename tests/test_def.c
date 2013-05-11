@@ -88,15 +88,15 @@ static void test_fielddef_accessors() {
   ASSERT(!upb_fielddef_isfrozen(f1));
   upb_fielddef_setname(f1, "f1");
   upb_fielddef_setnumber(f1, 1937);
-  upb_fielddef_settype(f1, UPB_TYPE(FIXED64));
-  upb_fielddef_setlabel(f1, UPB_LABEL(REPEATED));
+  upb_fielddef_settype(f1, UPB_TYPE_INT64);
+  upb_fielddef_setlabel(f1, UPB_LABEL_REPEATED);
   ASSERT(upb_fielddef_number(f1) == 1937);
 
   ASSERT(!upb_fielddef_isfrozen(f2));
   upb_fielddef_setname(f2, "f2");
   upb_fielddef_setnumber(f2, 1572);
-  upb_fielddef_settype(f2, UPB_TYPE(BYTES));
-  upb_fielddef_setlabel(f2, UPB_LABEL(REPEATED));
+  upb_fielddef_settype(f2, UPB_TYPE_BYTES);
+  upb_fielddef_setlabel(f2, UPB_LABEL_REPEATED);
   ASSERT(upb_fielddef_number(f2) == 1572);
 
   upb_fielddef_unref(f1, &f1);
@@ -104,7 +104,7 @@ static void test_fielddef_accessors() {
 
   // Test that we don't leak an unresolved subdef name.
   f1 = upb_fielddef_new(&f1);
-  upb_fielddef_settype(f1, UPB_TYPE(MESSAGE));
+  upb_fielddef_settype(f1, UPB_TYPE_MESSAGE);
   upb_fielddef_setsubdefname(f1, "YO");
   upb_fielddef_unref(f1, &f1);
 }
@@ -127,7 +127,7 @@ static upb_msgdef *upb_msgdef_newnamed(const char *name, void *owner) {
   return m;
 }
 
-INLINE upb_enumdef *upb_enumdef_newnamed(const char *name, void *owner) {
+static upb_enumdef *upb_enumdef_newnamed(const char *name, void *owner) {
   upb_enumdef *e = upb_enumdef_new(owner);
   upb_def_setfullname(upb_upcast(e), name);
   return e;
@@ -138,7 +138,7 @@ static void test_replacement() {
 
   upb_msgdef *m = upb_msgdef_newnamed("MyMessage", &s);
   upb_msgdef_addfield(m, newfield(
-      "field1", 1, UPB_TYPE(ENUM), UPB_LABEL(OPTIONAL), ".MyEnum", &s), &s);
+      "field1", 1, UPB_TYPE_ENUM, UPB_LABEL_OPTIONAL, ".MyEnum", &s), &s);
   upb_msgdef *m2 = upb_msgdef_newnamed("MyMessage2", &s);
   upb_enumdef *e = upb_enumdef_newnamed("MyEnum", &s);
 

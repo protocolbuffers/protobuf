@@ -136,8 +136,8 @@ static const void *unobfuscate_v(upb_value x) {
 static upb_inttable reftracks = UPB_EMPTY_INTTABLE_INIT(UPB_CTYPE_PTR);
 
 static upb_inttable *trygettab(const void *p) {
-  const upb_value *v = upb_inttable_lookupptr(&reftracks, p);
-  return v ? upb_value_getptr(*v) : NULL;
+  upb_value v;
+  return upb_inttable_lookupptr(&reftracks, p, &v) ? upb_value_getptr(v) : NULL;
 }
 
 // Gets or creates the tracking table for the given owner.
@@ -155,9 +155,9 @@ static upb_inttable *gettab(const void *p) {
 static void track(const upb_refcounted *r, const void *owner, bool ref2) {
   upb_lock();
   upb_inttable *refs = gettab(owner);
-  const upb_value *v = upb_inttable_lookup(refs, obfuscate(r));
-  if (v) {
-    trackedref *ref = (trackedref*)unobfuscate_v(*v);
+  upb_value v;
+  if (upb_inttable_lookup(refs, obfuscate(r), &v)) {
+    trackedref *ref = (trackedref*)unobfuscate_v(v);
     // Since we allow multiple ref2's for the same to/from pair without
     // allocating separate memory for each one, we lose the fine-grained
     // tracking behavior we get with regular refs.  Since ref2s only happen
@@ -177,10 +177,11 @@ static void track(const upb_refcounted *r, const void *owner, bool ref2) {
 static void untrack(const upb_refcounted *r, const void *owner, bool ref2) {
   upb_lock();
   upb_inttable *refs = gettab(owner);
-  const upb_value *v = upb_inttable_lookup(refs, obfuscate(r));
+  upb_value v;
+  bool found = upb_inttable_lookup(refs, obfuscate(r), &v);
   // This assert will fail if an owner attempts to release a ref it didn't have.
-  assert(v);
-  trackedref *ref = (trackedref*)unobfuscate_v(*v);
+  UPB_ASSERT_VAR(found, found);
+  trackedref *ref = (trackedref*)unobfuscate_v(v);
   assert(ref->is_ref2 == ref2);
   if (--ref->count == 0) {
     free(ref);
@@ -197,9 +198,10 @@ static void untrack(const upb_refcounted *r, const void *owner, bool ref2) {
 static void checkref(const upb_refcounted *r, const void *owner, bool ref2) {
   upb_lock();
   upb_inttable *refs = gettab(owner);
-  const upb_value *v = upb_inttable_lookup(refs, obfuscate(r));
-  assert(v);
-  trackedref *ref = (trackedref*)unobfuscate_v(*v);
+  upb_value v;
+  bool found = upb_inttable_lookup(refs, obfuscate(r), &v);
+  UPB_ASSERT_VAR(found, found);
+  trackedref *ref = (trackedref*)unobfuscate_v(v);
   assert(ref->obj == r);
   assert(ref->is_ref2 == ref2);
   upb_unlock();
@@ -339,14 +341,16 @@ UPB_NORETURN static void oom(tarjan *t) {
 }
 
 uint64_t trygetattr(const tarjan *t, const upb_refcounted *r) {
-  const upb_value *v = upb_inttable_lookupptr(&t->objattr, r);
-  return v ? upb_value_getuint64(*v) : 0;
+  upb_value v;
+  return upb_inttable_lookupptr(&t->objattr, r, &v) ?
+      upb_value_getuint64(v) : 0;
 }
 
 uint64_t getattr(const tarjan *t, const upb_refcounted *r) {
-  const upb_value *v = upb_inttable_lookupptr(&t->objattr, r);
-  assert(v);
-  return upb_value_getuint64(*v);
+  upb_value v;
+  bool found = upb_inttable_lookupptr(&t->objattr, r, &v);
+  UPB_ASSERT_VAR(found, found);
+  return upb_value_getuint64(v);
 }
 
 void setattr(tarjan *t, const upb_refcounted *r, uint64_t attr) {
@@ -420,9 +424,10 @@ static void set_lowlink(tarjan *t, const upb_refcounted *r, uint32_t lowlink) {
 uint32_t *group(tarjan *t, upb_refcounted *r) {
   assert(color(t, r) == WHITE);
   uint64_t groupnum = getattr(t, r) >> 8;
-  const upb_value *v = upb_inttable_lookup(&t->groups, groupnum);
-  assert(v);
-  return upb_value_getptr(*v);
+  upb_value v;
+  bool found = upb_inttable_lookup(&t->groups, groupnum, &v);
+  UPB_ASSERT_VAR(found, found);
+  return upb_value_getptr(v);
 }
 
 // If the group leader for this object's group has not previously been set,
@@ -430,10 +435,11 @@ uint32_t *group(tarjan *t, upb_refcounted *r) {
 static upb_refcounted *groupleader(tarjan *t, upb_refcounted *r) {
   assert(color(t, r) == WHITE);
   uint64_t leader_slot = (getattr(t, r) >> 8) + 1;
-  const upb_value *v = upb_inttable_lookup(&t->groups, leader_slot);
-  assert(v);
-  if (upb_value_getptr(*v)) {
-    return upb_value_getptr(*v);
+  upb_value v;
+  bool found = upb_inttable_lookup(&t->groups, leader_slot, &v);
+  UPB_ASSERT_VAR(found, found);
+  if (upb_value_getptr(v)) {
+    return upb_value_getptr(v);
   } else {
     upb_inttable_remove(&t->groups, leader_slot, NULL);
     upb_inttable_insert(&t->groups, leader_slot, upb_value_ptr(r));

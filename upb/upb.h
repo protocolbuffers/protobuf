@@ -14,6 +14,7 @@
 #define UPB_H_
 
 #include <assert.h>
+#include <limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -24,8 +25,10 @@ extern "C" {
 #endif
 
 // inline if possible, emit standalone code if required.
-#ifndef INLINE
-#define INLINE static inline
+#ifdef __cplusplus
+#define UPB_INLINE inline
+#else
+#define UPB_INLINE static inline
 #endif
 
 #if __STDC_VERSION__ >= 199901L
@@ -50,19 +53,106 @@ extern "C" {
   void operator=(const class_name&);
 #endif
 
+#if defined(__clang__) && defined(LANG_CXX11) && defined(__has_warning)
+#if __has_feature(cxx_attributes) && __has_warning("-Wimplicit-fallthrough")
+#define UPB_FALLTHROUGH_INTENDED [[clang::fallthrough]]
+#endif
+#endif
+
+#ifndef UPB_FALLTHROUGH_INTENDED
+#define UPB_FALLTHROUGH_INTENDED do { } while (0)
+#endif
+
 #ifdef __GNUC__
 #define UPB_NORETURN __attribute__((__noreturn__))
 #else
 #define UPB_NORETURN
 #endif
 
-#ifndef UINT16_MAX
-#define UINT16_MAX 0xffff
+// Type detection and typedefs for integer types.
+//
+// We unfortunately cannot just use stdint.h types in all cases, because some
+// platforms have more than one 32-bit type (or 64-bit type).  For example, on
+// x86-64, both "long" and "long long" are 64-bit types, but they are
+// unfortunately incompatible with each other despite being the same size.
+// Since the types are incompatible, functions pointers between them are
+// incompatible also, which leads to trouble since handlers are declared in
+// terms of function pointers.  Since we don't know which of these types
+// stdint.h will use (and we have no way of inspecting the typedefs, either at
+// preprocessing or compilation time), we are forced to declare our own
+// typedefs that we *do* know the real underlying type of.
+//
+// If any platform existed where there three integer types were the same size,
+// this would have to become more complicated.  For example, short, int, and
+// long could all be 32-bits.  Even more diabolically, short, int, long, and
+// long long could all be 64 bits and still be standard-compliant.  However,
+// few platforms are this strange, and it's unlikely that upb will be used on
+// the strangest ones.
+//
+// For more information, see:
+// http://blog.reverberate.org/2013/03/cc-gripe-1-integer-types.html
+
+// Can't count on stdint.h limits like INT32_MAX, because in C++ these are
+// only defined when __STDC_LIMIT_MACROS are defined before the *first* include
+// of stdint.h.  We can't guarantee that someone else didn't include these first
+// without defining __STDC_LIMIT_MACROS.
+#define UPB_INT32_MAX 0x7fffffffLL
+#define UPB_INT32_MIN (-UPB_INT32_MAX - 1)
+#define UPB_INT64_MAX 0x7fffffffffffffffLL
+#define UPB_INT64_MIN (-UPB_INT64_MAX - 1)
+
+#if INT_MAX == UPB_INT32_MAX && INT_MIN == UPB_INT32_MIN
+#define UPB_INT_IS_32BITS 1
 #endif
 
-#ifndef UINT32_MAX
-#define UINT32_MAX 0xffffffff
+#if LONG_MAX == UPB_INT32_MAX && LONG_MIN == UPB_INT32_MIN
+#define UPB_LONG_IS_32BITS 1
 #endif
+
+#if LONG_MAX == UPB_INT64_MAX && LONG_MIN == UPB_INT64_MIN
+#define UPB_LONG_IS_64BITS 1
+#endif
+
+#if LLONG_MAX == UPB_INT64_MAX && LLONG_MIN == UPB_INT64_MIN
+#define UPB_LLONG_IS_64BITS 1
+#endif
+
+#if UPB_INT_IS_32BITS
+typedef int upb_int32_t;
+typedef unsigned int upb_uint32_t;
+#define UPB_INT32_CTYPE i
+
+#if UPB_LONG_IS_32BITS
+#define UPB_TWO_32BIT_TYPES 1
+typedef long upb_int32alt_t;
+typedef unsigned long upb_uint32alt_t;
+#define UPB_INT32_CTYPE2 l
+#endif  // UPB_LONG_IS_32BITS
+
+#elif UPB_LONG_IS_32BITS  // && !UPB_INT_IS_32BITS
+typedef long upb_int32_t;
+typedef unsigned long upb_uint32_t;
+#define UPB_INT32_CTYPE l
+#endif  // UPB_INT_IS_32BITS
+
+
+#if UPB_LONG_IS_64BITS
+typedef long upb_int64_t;
+typedef unsigned long upb_uint64_t;
+#define UPB_INT64_CTYPE l
+
+#if UPB_LLONG_IS_64BITS
+#define UPB_TWO_64BIT_TYPES 1
+typedef long long upb_int64alt_t;
+typedef unsigned long long upb_uint64alt_t;
+#define UPB_INT64_CTYPE2 ll
+#endif  // UPB_LLONG_IS_64BITS
+
+#elif UPB_LLONG_IS_64BITS  // && !UPB_LONG_IS_64BITS
+typedef long long upb_int64_t;
+typedef unsigned long long upb_uint64_t;
+#define UPB_INT64_CTYPE ll
+#endif  // UPB_LONG_IS_64BITS
 
 #define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))
 #define UPB_MIN(x, y) ((x) < (y) ? (x) : (y))
@@ -147,8 +237,8 @@ class upb::Status {
   Status();
   ~Status();
 
-  bool ok();
-  bool eof();
+  bool ok() const;
+  bool eof() const;
 
   const char *GetString() const;
   void SetEof();
@@ -225,31 +315,23 @@ typedef enum {
   UPB_CTYPE_FIELDDEF = 11,
 } upb_ctype_t;
 
-#ifdef __cplusplus
-namespace upb { class ByteRegion; }
-typedef upb::ByteRegion upb_byteregion;
-#else
-struct upb_byteregion;
-typedef struct upb_byteregion upb_byteregion;
-#endif
+typedef union {
+  uint64_t uint64;
+  int32_t int32;
+  int64_t int64;
+  uint32_t uint32;
+  double _double;
+  float _float;
+  bool _bool;
+  char *cstr;
+  void *ptr;
+  const void *constptr;
+} _upb_value;
 
 // A single .proto value.  The owner must have an out-of-band way of knowing
 // the type, so that it knows which union member to use.
 typedef struct {
-  union {
-    uint64_t uint64;
-    int32_t int32;
-    int64_t int64;
-    uint32_t uint32;
-    double _double;
-    float _float;
-    bool _bool;
-    char *cstr;
-    void *ptr;
-    const void *constptr;
-    upb_byteregion *byteregion;
-  } val;
-
+  _upb_value val;
 #ifndef NDEBUG
   // In debug mode we carry the value type around also so we can check accesses
   // to be sure the right member is being read.
@@ -258,30 +340,44 @@ typedef struct {
 } upb_value;
 
 #ifdef UPB_C99
-#define UPB_VAL_INIT(v, member) {.member = v}
+#define UPB_VALUE_INIT(v, member) {.member = v}
 #endif
 // TODO(haberman): C++
+//
+//
+#define UPB__VALUE_INIT_NONE      UPB_VALUE_INIT(NULL, ptr)
 
 #ifdef NDEBUG
 #define SET_TYPE(dest, val)
-#define UPB_VALUE_INIT(v, member, type) {UPB_VAL_INIT(v, member)}
+#define UPB_VALUE_INIT_NONE      {UPB__VALUE_INIT_NONE}
 #else
 #define SET_TYPE(dest, val) dest = val
-#define UPB_VALUE_INIT(v, member, type) {UPB_VAL_INIT(v, member), type}
+// Non-existent type, all reads will fail.
+#define UPB_VALUE_INIT_NONE      {UPB__VALUE_INIT_NONE, -1}
 #endif
 
-#define UPB_VALUE_INIT_INT32(v)  UPB_VALUE_INIT(v, int32,   UPB_CTYPE_INT32)
-#define UPB_VALUE_INIT_INT64(v)  UPB_VALUE_INIT(v, int64,   UPB_CTYPE_INT64)
-#define UPB_VALUE_INIT_UINT32(v) UPB_VALUE_INIT(v, uint32,  UPB_CTYPE_UINT32)
-#define UPB_VALUE_INIT_UINT64(v) UPB_VALUE_INIT(v, uint64,  UPB_CTYPE_UINT64)
-#define UPB_VALUE_INIT_DOUBLE(v) UPB_VALUE_INIT(v, _double, UPB_CTYPE_DOUBLE)
-#define UPB_VALUE_INIT_FLOAT(v)  UPB_VALUE_INIT(v, _float,  UPB_CTYPE_FLOAT)
-#define UPB_VALUE_INIT_BOOL(v)   UPB_VALUE_INIT(v, _bool,   UPB_CTYPE_BOOL)
-#define UPB_VALUE_INIT_CSTR(v)   UPB_VALUE_INIT(v, cstr,    UPB_CTYPE_CSTR)
-#define UPB_VALUE_INIT_PTR(v)    UPB_VALUE_INIT(v, ptr,     UPB_CTYPE_PTR)
-#define UPB_VALUE_INIT_CONSTPTR(v) UPB_VALUE_INIT(v, constptr, UPB_CTYPE_PTR)
-// Non-existent type, all reads will fail.
-#define UPB_VALUE_INIT_NONE      UPB_VALUE_INIT(NULL, ptr, -1)
+#define UPB_VALUE_INIT_INT32(v)  UPB_VALUE_INIT(v, int32)
+#define UPB_VALUE_INIT_INT64(v)  UPB_VALUE_INIT(v, int64)
+#define UPB_VALUE_INIT_UINT32(v) UPB_VALUE_INIT(v, uint32)
+#define UPB_VALUE_INIT_UINT64(v) UPB_VALUE_INIT(v, uint64)
+#define UPB_VALUE_INIT_DOUBLE(v) UPB_VALUE_INIT(v, _double)
+#define UPB_VALUE_INIT_FLOAT(v)  UPB_VALUE_INIT(v, _float)
+#define UPB_VALUE_INIT_BOOL(v)   UPB_VALUE_INIT(v, _bool)
+#define UPB_VALUE_INIT_CSTR(v)   UPB_VALUE_INIT(v, cstr)
+#define UPB_VALUE_INIT_PTR(v)    UPB_VALUE_INIT(v, ptr)
+#define UPB_VALUE_INIT_CONSTPTR(v) UPB_VALUE_INIT(v, constptr)
+
+UPB_INLINE void _upb_value_setval(upb_value *v, _upb_value val,
+                                  upb_ctype_t type) {
+  v->val = val;
+  SET_TYPE(v->type, type);
+}
+
+UPB_INLINE upb_value _upb_value_val(_upb_value val, upb_ctype_t type) {
+  upb_value ret;
+  _upb_value_setval(&ret, val, type);
+  return ret;
+}
 
 // For each value type, define the following set of functions:
 //
@@ -293,12 +389,12 @@ typedef struct {
 // upb_value upb_value_int32(int32_t val);
 
 #define WRITERS(name, membername, ctype, proto_type) \
-  INLINE void upb_value_set ## name(upb_value *val, ctype cval) { \
+  UPB_INLINE void upb_value_set ## name(upb_value *val, ctype cval) { \
     val->val.uint64 = 0; \
     SET_TYPE(val->type, proto_type); \
     val->val.membername = cval; \
   } \
-  INLINE upb_value upb_value_ ## name(ctype val) { \
+  UPB_INLINE upb_value upb_value_ ## name(ctype val) { \
     upb_value ret; \
     upb_value_set ## name(&ret, val); \
     return ret; \
@@ -307,17 +403,17 @@ typedef struct {
 #define ALL(name, membername, ctype, proto_type) \
   /* Can't reuse WRITERS() here unfortunately because "bool" is a macro \
    * that expands to _Bool, so it ends up defining eg. upb_value_set_Bool */ \
-  INLINE void upb_value_set ## name(upb_value *val, ctype cval) { \
+  UPB_INLINE void upb_value_set ## name(upb_value *val, ctype cval) { \
     val->val.uint64 = 0; \
     SET_TYPE(val->type, proto_type); \
     val->val.membername = cval; \
   } \
-  INLINE upb_value upb_value_ ## name(ctype val) { \
+  UPB_INLINE upb_value upb_value_ ## name(ctype val) { \
     upb_value ret; \
     upb_value_set ## name(&ret, val); \
     return ret; \
   } \
-  INLINE ctype upb_value_get ## name(upb_value val) { \
+  UPB_INLINE ctype upb_value_get ## name(upb_value val) { \
     assert(val.type == proto_type); \
     return val.val.membername; \
   }
@@ -329,7 +425,6 @@ ALL(uint64, uint64,  uint64_t, UPB_CTYPE_UINT64);
 ALL(bool,   _bool,   bool,     UPB_CTYPE_BOOL);
 ALL(cstr,   cstr,    char*,    UPB_CTYPE_CSTR);
 ALL(ptr,    ptr,     void*,    UPB_CTYPE_PTR);
-ALL(byteregion, byteregion, upb_byteregion*, UPB_CTYPE_BYTEREGION);
 
 #ifdef __KERNEL__
 // Linux kernel modules are compiled without SSE and therefore are incapable
@@ -387,8 +482,8 @@ template <typename T> inline Value MakePtrValue(T* v) {
 // C++ Wrappers
 inline Status::Status() { upb_status_init(this); }
 inline Status::~Status() { upb_status_uninit(this); }
-inline bool Status::ok() { return upb_ok(this); }
-inline bool Status::eof() { return upb_eof(this); }
+inline bool Status::ok() const { return upb_ok(this); }
+inline bool Status::eof() const { return upb_eof(this); }
 inline const char *Status::GetString() const { return upb_status_getstr(this); }
 inline void Status::SetEof() { upb_status_seteof(this); }
 inline void Status::SetErrorLiteral(const char* msg) {

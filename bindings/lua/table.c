@@ -31,16 +31,16 @@ static void lupbtable_setnum(lua_State *L, int tab, const char *key,
   lua_setfield(L, tab - 1, key);
 }
 
-static void lupbtable_pushval(lua_State *L, upb_value val, upb_ctype_t type) {
+static void lupbtable_pushval(lua_State *L, _upb_value val, upb_ctype_t type) {
   switch (type) {
     case UPB_CTYPE_INT32:
-      lua_pushnumber(L, upb_value_getint32(val));
+      lua_pushnumber(L, val.int32);
       break;
     case UPB_CTYPE_PTR:
-      lupb_def_pushwrapper(L, upb_value_getptr(val), NULL);
+      lupb_def_pushwrapper(L, val.ptr, NULL);
       break;
     case UPB_CTYPE_CSTR:
-      lua_pushstring(L, upb_value_getcstr(val));
+      lua_pushstring(L, val.cstr);
       break;
     default:
       luaL_error(L, "Unexpected type: %d", type);

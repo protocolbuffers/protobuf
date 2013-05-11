@@ -46,13 +46,14 @@ void test_strtable(const vector<std::string>& keys, uint32_t num_to_insert) {
   /* Test correctness. */
   for(uint32_t i = 0; i < keys.size(); i++) {
     const std::string& key = keys[i];
-    const upb_value *v = upb_strtable_lookup(&table, key.c_str());
+    upb_value v;
+    bool found = upb_strtable_lookup(&table, key.c_str(), &v);
     if(m.find(key) != m.end()) { /* Assume map implementation is correct. */
-      ASSERT(v);
-      ASSERT(upb_value_getint32(*v) == key[0]);
+      ASSERT(found);
+      ASSERT(upb_value_getint32(v) == key[0]);
       ASSERT(m[key] == key[0]);
     } else {
-      ASSERT(v == NULL);
+      ASSERT(!found);
     }
   }
 
@@ -88,14 +89,15 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
 
   /* Test correctness. */
   for(uint32_t i = 0; i <= largest_key; i++) {
-    const upb_value *v = upb_inttable_lookup(&table, i);
+    upb_value v;
+    bool found = upb_inttable_lookup(&table, i, &v);
     if(m.find(i) != m.end()) { /* Assume map implementation is correct. */
-      ASSERT(v);
-      ASSERT(upb_value_getuint32(*v) == i*2);
+      ASSERT(found);
+      ASSERT(upb_value_getuint32(v) == i*2);
       ASSERT(m[i] == i*2);
       ASSERT(hm[i] == i*2);
     } else {
-      ASSERT(v == NULL);
+      ASSERT(!found);
     }
   }
 
@@ -112,28 +114,30 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
 
   /* Test correctness. */
   for(uint32_t i = 0; i <= largest_key; i++) {
-    const upb_value *v = upb_inttable_lookup(&table, i);
+    upb_value v;
+    bool found = upb_inttable_lookup(&table, i, &v);
     if(m.find(i) != m.end()) { /* Assume map implementation is correct. */
-      ASSERT(v);
-      ASSERT(upb_value_getuint32(*v) == i*2);
+      ASSERT(found);
+      ASSERT(upb_value_getuint32(v) == i*2);
       ASSERT(m[i] == i*2);
       ASSERT(hm[i] == i*2);
     } else {
-      ASSERT(v == NULL);
+      ASSERT(!found);
     }
   }
 
   // Compact and test correctness again.
   upb_inttable_compact(&table);
   for(uint32_t i = 0; i <= largest_key; i++) {
-    const upb_value *v = upb_inttable_lookup(&table, i);
+    upb_value v;
+    bool found = upb_inttable_lookup(&table, i, &v);
     if(m.find(i) != m.end()) { /* Assume map implementation is correct. */
-      ASSERT(v);
-      ASSERT(upb_value_getuint32(*v) == i*2);
+      ASSERT(found);
+      ASSERT(upb_value_getuint32(v) == i*2);
       ASSERT(m[i] == i*2);
       ASSERT(hm[i] == i*2);
     } else {
-      ASSERT(v == NULL);
+      ASSERT(!found);
     }
   }
 
@@ -172,8 +176,9 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
   for(i = 0; true; i++) {
     MAYBE_BREAK;
     int32_t key = keys[i & mask];
-    const upb_value *v = upb_inttable_lookup32(&table, key);
-    x += (uintptr_t)v;
+    upb_value v;
+    bool ok = upb_inttable_lookup32(&table, key, &v);
+    x += (uintptr_t)ok;
   }
   double total = get_usertime() - before;
   printf("%s/s\n", eng(i/total, 3, false));
@@ -184,8 +189,9 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
   for(i = 0; true; i++) {
     MAYBE_BREAK;
     int32_t key = keys[rand_order[i & mask]];
-    const upb_value *v = upb_inttable_lookup32(&table, key);
-    x += (uintptr_t)v;
+    upb_value v;
+    bool ok = upb_inttable_lookup32(&table, key, &v);
+    x += (uintptr_t)ok;
   }
   total = get_usertime() - before;
   printf("%s/s\n", eng(i/total, 3, false));
@@ -232,6 +238,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
     x += hm[key];
   }
   total = get_usertime() - before;
+  if (x == INT_MAX) abort();
   printf("%s/s\n\n", eng(i/total, 3, false));
   upb_inttable_uninit(&table);
   delete rand_order;

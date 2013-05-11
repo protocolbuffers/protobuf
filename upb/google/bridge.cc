@@ -47,11 +47,15 @@ class me::Defs {
       const upb::FieldDef* upb_f = i.field();
       const goog::FieldDescriptor* proto2_f =
           d->FindFieldByNumber(upb_f->number());
+      if (!proto2_f) {
+        proto2_f = d->file()->pool()->FindExtensionByNumber(d, upb_f->number());
+      }
+      assert(proto2_f);
       if (!upb::google::TrySetWriteHandlers(proto2_f, m, upb_f, h)
 #ifdef UPB_GOOGLE3
           && !upb::google::TrySetProto1WriteHandlers(proto2_f, m, upb_f, h)
 #endif
-         ) {
+          ) {
         // Unsupported reflection class.
         //
         // Should we fall back to using the public Reflection interface in this
@@ -62,7 +66,7 @@ class me::Defs {
     }
   }
 
-  static void StaticOnMessage(void *closure, upb::Handlers* handlers) {
+  static void StaticOnMessage(void* closure, upb::Handlers* handlers) {
     me::Defs* defs = static_cast<me::Defs*>(closure);
     defs->OnMessage(handlers);
   }
@@ -121,51 +125,53 @@ FieldDef* AddFieldDef(const goog::Message& m, const goog::FieldDescriptor* f,
   upb_f->set_number(f->number());
   upb_f->set_name(f->name());
   upb_f->set_label(static_cast<upb::FieldDef::Label>(f->label()));
-  upb_f->set_type(weak_prototype ?
-      UPB_TYPE_MESSAGE : static_cast<upb::FieldDef::Type>(f->type()));
+  upb_f->set_descriptor_type(
+      weak_prototype ? UPB_DESCRIPTOR_TYPE_MESSAGE :
+          static_cast<upb::FieldDef::DescriptorType>(f->type()));
 
   if (weak_prototype) {
     upb_f->set_subdef_name(weak_prototype->GetDescriptor()->full_name());
-  } else if (upb_f->IsSubMessage()) {
-    upb_f->set_subdef_name(f->message_type()->full_name());
-  } else if (upb_f->type() == UPB_TYPE(ENUM)) {
-    // We set the enum default numerically.
-    upb_f->set_default_value(
-        MakeValue(static_cast<int32_t>(f->default_value_enum()->number())));
-    upb_f->set_subdef_name(f->enum_type()->full_name());
   } else {
-    // Set field default for primitive types.  Need to switch on the upb type
-    // rather than the proto2 type, because upb_f->type() may have been changed
-    // from BYTES to MESSAGE for a weak field.
-    switch (upb_types[upb_f->type()].inmemory_type) {
-      case UPB_CTYPE_INT32:
+    switch (upb_f->type()) {
+      case UPB_TYPE_INT32:
         upb_f->set_default_value(MakeValue(f->default_value_int32()));
         break;
-      case UPB_CTYPE_INT64:
+      case UPB_TYPE_INT64:
         upb_f->set_default_value(
             MakeValue(static_cast<int64_t>(f->default_value_int64())));
         break;
-      case UPB_CTYPE_UINT32:
+      case UPB_TYPE_UINT32:
         upb_f->set_default_value(MakeValue(f->default_value_uint32()));
         break;
-      case UPB_CTYPE_UINT64:
+      case UPB_TYPE_UINT64:
         upb_f->set_default_value(
             MakeValue(static_cast<uint64_t>(f->default_value_uint64())));
         break;
-      case UPB_CTYPE_DOUBLE:
+      case UPB_TYPE_DOUBLE:
         upb_f->set_default_value(MakeValue(f->default_value_double()));
         break;
-      case UPB_CTYPE_FLOAT:
+      case UPB_TYPE_FLOAT:
         upb_f->set_default_value(MakeValue(f->default_value_float()));
         break;
-      case UPB_CTYPE_BOOL:
+      case UPB_TYPE_BOOL:
         upb_f->set_default_value(MakeValue(f->default_value_bool()));
         break;
-      case UPB_CTYPE_BYTEREGION:
+      case UPB_TYPE_STRING:
+      case UPB_TYPE_BYTES:
         upb_f->set_default_string(f->default_value_string());
+        break;
+      case UPB_TYPE_MESSAGE:
+        upb_f->set_subdef_name(f->message_type()->full_name());
+        break;
+      case UPB_TYPE_ENUM:
+        // We set the enum default numerically.
+        upb_f->set_default_value(
+            MakeValue(static_cast<int32_t>(f->default_value_enum()->number())));
+        upb_f->set_subdef_name(f->enum_type()->full_name());
         break;
     }
   }
+
   bool ok = md->AddField(upb_f, &upb_f);
   UPB_ASSERT_VAR(ok, ok);
 
@@ -174,8 +180,7 @@ FieldDef* AddFieldDef(const goog::Message& m, const goog::FieldDescriptor* f,
   } else if (f->cpp_type() == goog::FieldDescriptor::CPPTYPE_MESSAGE) {
     *subm = upb::google::GetFieldPrototype(m, f);
 #ifdef UPB_GOOGLE3
-    if (!*subm)
-      *subm = upb::google::GetProto1FieldPrototype(m, f);
+    if (!*subm) *subm = upb::google::GetProto1FieldPrototype(m, f);
 #endif
     assert(*subm);
   }
@@ -183,7 +188,7 @@ FieldDef* AddFieldDef(const goog::Message& m, const goog::FieldDescriptor* f,
   return upb_f;
 }
 
-upb::EnumDef* NewEnumDef(const goog::EnumDescriptor* desc, void *owner) {
+upb::EnumDef* NewEnumDef(const goog::EnumDescriptor* desc, const void* owner) {
   upb::EnumDef* e = upb::EnumDef::New(owner);
   e->set_full_name(desc->full_name());
   for (int i = 0; i < desc->value_count(); i++) {
@@ -194,25 +199,28 @@ upb::EnumDef* NewEnumDef(const goog::EnumDescriptor* desc, void *owner) {
   return e;
 }
 
-static upb::MessageDef* NewMessageDef(const goog::Message& m, void *owner,
+static upb::MessageDef* NewMessageDef(const goog::Message& m, const void* owner,
                                       me::Defs* defs) {
   upb::MessageDef* md = upb::MessageDef::New(owner);
+  const goog::Descriptor* d = m.GetDescriptor();
   md->set_full_name(m.GetDescriptor()->full_name());
 
   // Must do this before processing submessages to prevent infinite recursion.
   defs->AddMessage(&m, md);
 
-  const goog::Descriptor* d = m.GetDescriptor();
+  vector<const goog::FieldDescriptor*> fields;
+  d->file()->pool()->FindAllExtensions(d, &fields);
   for (int i = 0; i < d->field_count(); i++) {
-    const goog::FieldDescriptor* proto2_f = d->field(i);
+    fields.push_back(d->field(i));
+  }
 
+  for (int i = 0; i < fields.size(); i++) {
+    const goog::FieldDescriptor* proto2_f = fields[i];
+    assert(proto2_f);
 #ifdef UPB_GOOGLE3
     // Skip lazy fields for now since we can't properly handle them.
     if (proto2_f->options().lazy()) continue;
 #endif
-    // Extensions not supported yet.
-    if (proto2_f->is_extension()) continue;
-
     const goog::Message* subm_prototype;
     upb::FieldDef* f = AddFieldDef(m, proto2_f, md, &subm_prototype);
 
@@ -220,7 +228,7 @@ static upb::MessageDef* NewMessageDef(const goog::Message& m, void *owner,
 
     upb::Def* subdef = defs->FindSymbol(f->subdef_name());
     if (!subdef) {
-      if (f->type() == UPB_TYPE(ENUM)) {
+      if (f->type() == UPB_TYPE_ENUM) {
         subdef = NewEnumDef(proto2_f->enum_type(), owner)->Upcast();
         defs->AddSymbol(subdef->full_name(), subdef);
       } else {
@@ -231,11 +239,11 @@ static upb::MessageDef* NewMessageDef(const goog::Message& m, void *owner,
     }
     f->set_subdef(subdef);
   }
-
   return md;
 }
 
-const upb::Handlers* NewWriteHandlers(const goog::Message& m, void *owner) {
+const upb::Handlers* NewWriteHandlers(const goog::Message& m,
+                                      const void* owner) {
   me::Defs defs;
   const upb::MessageDef* md = NewMessageDef(m, owner, &defs);
 
@@ -245,8 +253,8 @@ const upb::Handlers* NewWriteHandlers(const goog::Message& m, void *owner) {
   bool success = Def::Freeze(defs_vec, &status);
   UPB_ASSERT_VAR(success, success);
 
-  const upb::Handlers* ret =
-      upb::Handlers::NewFrozen(md, owner, me::Defs::StaticOnMessage, &defs);
+  const upb::Handlers* ret = upb::Handlers::NewFrozen(
+      md, NULL, owner, me::Defs::StaticOnMessage, &defs);
 
   // Unref all defs, since they're now ref'd by the handlers.
   for (int i = 0; i < static_cast<int>(defs_vec.size()); i++) {

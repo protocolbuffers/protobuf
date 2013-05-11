@@ -153,50 +153,59 @@ bool upb_def_freeze(upb_def *const*defs, int n, upb_status *status);
 
 /* upb::FieldDef **************************************************************/
 
-// We choose these to match descriptor.proto.  Clients may use UPB_TYPE() and
-// UPB_LABEL() instead of referencing these directly.
+// The types a field can have.  Note that this list is not identical to the
+// types defined in descriptor.proto, which gives INT32 and SINT32 separate
+// types (we distinguish the two with the "integer encoding" enum below).
 typedef enum {
-  UPB_TYPE_NONE     = -1,  // Internal-only, may be removed.
-  UPB_TYPE_DOUBLE   = 1,
-  UPB_TYPE_FLOAT    = 2,
-  UPB_TYPE_INT64    = 3,
-  UPB_TYPE_UINT64   = 4,
-  UPB_TYPE_INT32    = 5,
-  UPB_TYPE_FIXED64  = 6,
-  UPB_TYPE_FIXED32  = 7,
-  UPB_TYPE_BOOL     = 8,
-  UPB_TYPE_STRING   = 9,
-  UPB_TYPE_GROUP    = 10,
-  UPB_TYPE_MESSAGE  = 11,
-  UPB_TYPE_BYTES    = 12,
-  UPB_TYPE_UINT32   = 13,
-  UPB_TYPE_ENUM     = 14,
-  UPB_TYPE_SFIXED32 = 15,
-  UPB_TYPE_SFIXED64 = 16,
-  UPB_TYPE_SINT32   = 17,
-  UPB_TYPE_SINT64   = 18,
+  UPB_TYPE_FLOAT    = 1,
+  UPB_TYPE_DOUBLE   = 2,
+  UPB_TYPE_BOOL     = 3,
+  UPB_TYPE_STRING   = 4,
+  UPB_TYPE_BYTES    = 5,
+  UPB_TYPE_MESSAGE  = 6,
+  UPB_TYPE_ENUM     = 7,   // Enum values are int32.
+  UPB_TYPE_INT32    = 8,
+  UPB_TYPE_UINT32   = 9,
+  UPB_TYPE_INT64    = 10,
+  UPB_TYPE_UINT64   = 11,
 } upb_fieldtype_t;
 
-#define UPB_NUM_TYPES 19
-
+// The repeated-ness of each field; this matches descriptor.proto.
 typedef enum {
   UPB_LABEL_OPTIONAL = 1,
   UPB_LABEL_REQUIRED = 2,
   UPB_LABEL_REPEATED = 3,
 } upb_label_t;
 
-// These macros are provided for legacy reasons.
-#define UPB_TYPE(type) UPB_TYPE_ ## type
-#define UPB_LABEL(type) UPB_LABEL_ ## type
+// How integers should be encoded in serializations that offer multiple
+// integer encoding methods.
+typedef enum {
+  UPB_INTFMT_VARIABLE = 1,
+  UPB_INTFMT_FIXED = 2,
+  UPB_INTFMT_ZIGZAG = 3,  // Only for signed types (INT32/INT64).
+} upb_intfmt_t;
 
-// Info for a given field type.
-typedef struct {
-  uint8_t align;
-  uint8_t size;
-  uint8_t inmemory_type;    // For example, INT32, SINT32, and SFIXED32 -> INT32
-} upb_typeinfo;
-
-extern const upb_typeinfo upb_types[UPB_NUM_TYPES];
+// Descriptor types, as defined in descriptor.proto.
+typedef enum {
+  UPB_DESCRIPTOR_TYPE_DOUBLE   = 1,
+  UPB_DESCRIPTOR_TYPE_FLOAT    = 2,
+  UPB_DESCRIPTOR_TYPE_INT64    = 3,
+  UPB_DESCRIPTOR_TYPE_UINT64   = 4,
+  UPB_DESCRIPTOR_TYPE_INT32    = 5,
+  UPB_DESCRIPTOR_TYPE_FIXED64  = 6,
+  UPB_DESCRIPTOR_TYPE_FIXED32  = 7,
+  UPB_DESCRIPTOR_TYPE_BOOL     = 8,
+  UPB_DESCRIPTOR_TYPE_STRING   = 9,
+  UPB_DESCRIPTOR_TYPE_GROUP    = 10,
+  UPB_DESCRIPTOR_TYPE_MESSAGE  = 11,
+  UPB_DESCRIPTOR_TYPE_BYTES    = 12,
+  UPB_DESCRIPTOR_TYPE_UINT32   = 13,
+  UPB_DESCRIPTOR_TYPE_ENUM     = 14,
+  UPB_DESCRIPTOR_TYPE_SFIXED32 = 15,
+  UPB_DESCRIPTOR_TYPE_SFIXED64 = 16,
+  UPB_DESCRIPTOR_TYPE_SINT32   = 17,
+  UPB_DESCRIPTOR_TYPE_SINT64   = 18,
+} upb_descriptortype_t;
 
 #ifdef __cplusplus
 
@@ -207,6 +216,8 @@ class upb::FieldDef {
  public:
   typedef upb_fieldtype_t Type;
   typedef upb_label_t Label;
+  typedef upb_intfmt_t IntegerFormat;
+  typedef upb_descriptortype_t DescriptorType;
 
   // Returns NULL if memory allocation failed.
   static FieldDef* New(const void *owner);
@@ -235,17 +246,27 @@ class upb::FieldDef {
   bool set_full_name(const char *fullname);
   bool set_full_name(const std::string& fullname);
 
-  Type type() const;        // Return UPB_TYPE_NONE if uninitialized.
-  Label label() const;      // Defaults to UPB_LABEL_OPTIONAL.
-  uint32_t number() const;  // Returns 0 if uninitialized.
+  bool type_is_set() const;  // Whether set_type() has been called.
+  Type type() const;         // Requires that type_is_set() == true.
+  Label label() const;       // Defaults to UPB_LABEL_OPTIONAL.
+  uint32_t number() const;   // Returns 0 if uninitialized.
   const MessageDef* message_def() const;
 
-  // "number" and "name" must be set before the fielddef is added to a msgdef.
-  // For the moment we do not allow these to be set once the fielddef is added
-  // to a msgdef -- this could be relaxed in the future.
+  // Gets/sets the field's type according to the enum in descriptor.proto.
+  // This is not the same as UPB_TYPE_*, because it distinguishes between
+  // (for example) INT32 and SINT32, whereas our "type" enum does not.
+  // This return of descriptor_type() is a function of type(),
+  // integer_format(), and is_tag_delimited().  Likewise set_descriptor_type()
+  // sets all three appropriately.
+  DescriptorType descriptor_type() const;
+  bool set_descriptor_type(DescriptorType type);
+
+  // "number" and "name" must be set before the FieldDef is added to a
+  // MessageDef, and may not be set after that.  "type" must be set explicitly
+  // before the fielddef is finalized.
   bool set_number(uint32_t number);
-  bool set_type(upb_fieldtype_t type);
-  bool set_label(upb_label_t label);
+  bool set_type(Type type);
+  bool set_label(Label label);
 
   // These are the same as full_name()/set_full_name(), but since fielddefs
   // most often use simple, non-qualified names, we provide this accessor
@@ -255,15 +276,26 @@ class upb::FieldDef {
   bool set_name(const std::string& name);
   const char *name() const;
 
+  // Convenient field type tests.
   bool IsSubMessage() const;
   bool IsString() const;
   bool IsSequence() const;
   bool IsPrimitive() const;
 
-  // Returns the default value for this fielddef, which may either be something
-  // the client set explicitly or the "default default" (0 for numbers, empty
-  // for strings).  The field's type indicates the type of the returned value,
-  // except for enum fields that are still mutable.
+  // How integers are encoded.  Only meaningful for integer types.
+  // Defaults to UPB_INTFMT_VARIABLE, and is reset when "type" changes.
+  IntegerFormat integer_format() const;
+  bool set_integer_format(IntegerFormat format);
+
+  // Whether a submessage field is tag-delimited or not (if false, then
+  // length-delimited).  Only meaningful when type() == UPB_TYPE_MESSAGE.
+  bool is_tag_delimited() const;
+  bool set_tag_delimited(bool tag_delimited);
+
+  // Returns the non-string default value for this fielddef, which may either
+  // be something the client set explicitly or the "default default" (0 for
+  // numbers, empty for strings).  The field's type indicates the type of the
+  // returned value, except for enum fields that are still mutable.
   //
   // For enums the default can be set either numerically or symbolically -- the
   // upb_fielddef_default_is_symbolic() function below will indicate which it
@@ -272,6 +304,12 @@ class upb::FieldDef {
   // is frozen, symbolic enum defaults are resolved, so frozen enum fielddefs
   // always have a default of type int32.
   Value default_value() const;
+
+  // Returns the NULL-terminated string default value for this field, or NULL
+  // if the default for this field is not a string.  The user may optionally
+  // pass "len" to retrieve the length of the default also (this would be
+  // required to get default values with embedded NULLs).
+  const char *GetDefaultString(size_t* len) const;
 
   // Sets default value for the field.  For numeric types, use
   // upb_fielddef_setdefault(), and "value" must match the type of the field.
@@ -337,6 +375,7 @@ class upb::FieldDef {
 struct upb_fielddef {
 #endif
   upb_def base;
+  upb_value defaultval;  // Only for non-repeated scalars and strings.
   const upb_msgdef *msgdef;
   union {
     const upb_def *def;  // If !subdef_is_symbolic.
@@ -344,23 +383,20 @@ struct upb_fielddef {
   } sub;  // The msgdef or enumdef for this field, if upb_hassubdef(f).
   bool subdef_is_symbolic;
   bool default_is_string;
-  bool subdef_is_owned;
+  bool type_is_set_;     // False until type is explicitly set.
+  upb_intfmt_t intfmt;
+  bool tagdelim;
   upb_fieldtype_t type_;
   upb_label_t label_;
   uint32_t number_;
-  upb_value defaultval;  // Only for non-repeated scalars and strings.
   uint32_t selector_base;  // Used to index into a upb::Handlers table.
 };
 
-// This will only work for static initialization because of the subdef_is_owned
-// initialization.  Theoretically the other _INIT() macros could possible work
-// for non-static initialization, but this has not been tested.
-#define UPB_FIELDDEF_INIT(label, type, name, num, msgdef, subdef, \
-                          selector_base, defaultval) \
-  {UPB_DEF_INIT(name, UPB_DEF_FIELD), msgdef, {subdef}, false, \
-   type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES, \
-   false, /* subdef_is_owned: not used since fielddef is not freed. */ \
-   type, label, num, defaultval, selector_base}
+#define UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, name, num, \
+                          msgdef, subdef, selector_base, defaultval) \
+  {UPB_DEF_INIT(name, UPB_DEF_FIELD), defaultval, msgdef, {subdef}, \
+   false, type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES, true, \
+   intfmt, tagdelim, type, label, num, selector_base}
 
 // Native C API.
 #ifdef __cplusplus
@@ -381,31 +417,40 @@ void upb_fielddef_checkref(const upb_fielddef *f, const void *owner);
 const char *upb_fielddef_fullname(const upb_fielddef *f);
 bool upb_fielddef_setfullname(upb_fielddef *f, const char *fullname);
 
+bool upb_fielddef_typeisset(const upb_fielddef *f);
 upb_fieldtype_t upb_fielddef_type(const upb_fielddef *f);
+upb_descriptortype_t upb_fielddef_descriptortype(const upb_fielddef *f);
 upb_label_t upb_fielddef_label(const upb_fielddef *f);
 uint32_t upb_fielddef_number(const upb_fielddef *f);
 const char *upb_fielddef_name(const upb_fielddef *f);
 const upb_msgdef *upb_fielddef_msgdef(const upb_fielddef *f);
 upb_msgdef *upb_fielddef_msgdef_mutable(upb_fielddef *f);
-bool upb_fielddef_settype(upb_fielddef *f, upb_fieldtype_t type);
-bool upb_fielddef_setlabel(upb_fielddef *f, upb_label_t label);
-bool upb_fielddef_setnumber(upb_fielddef *f, uint32_t number);
-bool upb_fielddef_setname(upb_fielddef *f, const char *name);
+upb_intfmt_t upb_fielddef_intfmt(const upb_fielddef *f);
+bool upb_fielddef_istagdelim(const upb_fielddef *f);
 bool upb_fielddef_issubmsg(const upb_fielddef *f);
 bool upb_fielddef_isstring(const upb_fielddef *f);
 bool upb_fielddef_isseq(const upb_fielddef *f);
 bool upb_fielddef_isprimitive(const upb_fielddef *f);
 upb_value upb_fielddef_default(const upb_fielddef *f);
+const char *upb_fielddef_defaultstr(const upb_fielddef *f, size_t *len);
+bool upb_fielddef_default_is_symbolic(const upb_fielddef *f);
+bool upb_fielddef_hassubdef(const upb_fielddef *f);
+const upb_def *upb_fielddef_subdef(const upb_fielddef *f);
+const char *upb_fielddef_subdefname(const upb_fielddef *f);
+
+bool upb_fielddef_settype(upb_fielddef *f, upb_fieldtype_t type);
+bool upb_fielddef_setdescriptortype(upb_fielddef *f, int type);
+bool upb_fielddef_setlabel(upb_fielddef *f, upb_label_t label);
+bool upb_fielddef_setnumber(upb_fielddef *f, uint32_t number);
+bool upb_fielddef_setname(upb_fielddef *f, const char *name);
+bool upb_fielddef_setintfmt(upb_fielddef *f, upb_intfmt_t fmt);
+bool upb_fielddef_settagdelim(upb_fielddef *f, bool tag_delim);
 void upb_fielddef_setdefault(upb_fielddef *f, upb_value value);
 bool upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len);
 void upb_fielddef_setdefaultcstr(upb_fielddef *f, const char *str);
-bool upb_fielddef_default_is_symbolic(const upb_fielddef *f);
 bool upb_fielddef_resolvedefault(upb_fielddef *f);
-bool upb_fielddef_hassubdef(const upb_fielddef *f);
 bool upb_fielddef_setsubdef(upb_fielddef *f, const upb_def *subdef);
 bool upb_fielddef_setsubdefname(upb_fielddef *f, const char *name);
-const upb_def *upb_fielddef_subdef(const upb_fielddef *f);
-const char *upb_fielddef_subdefname(const upb_fielddef *f);
 #ifdef __cplusplus
 }  // extern "C"
 #endif
@@ -453,9 +498,9 @@ class upb::MessageDef {
 
   // These return NULL if the field is not found.
   FieldDef* FindFieldByNumber(uint32_t number);
-  FieldDef* FieldFieldByName(const char *name);
+  FieldDef* FindFieldByName(const char *name);
   const FieldDef* FindFieldByNumber(uint32_t number) const;
-  const FieldDef* FieldFieldByName(const char *name) const;
+  const FieldDef* FindFieldByName(const char *name) const;
 
   // Returns a new msgdef that is a copy of the given msgdef (and a copy of all
   // the fields) but with any references to submessages broken and replaced
@@ -685,18 +730,18 @@ int32_t upb_enum_iter_number(upb_enum_iter *iter);
 // Downcasts, for when some wants to assert that a def is of a particular type.
 // These are only checked if we are building debug.
 #define UPB_DEF_CASTS(lower, upper) \
-  INLINE const upb_ ## lower *upb_dyncast_ ## lower(const upb_def *def) { \
+  UPB_INLINE const upb_ ## lower *upb_dyncast_ ## lower(const upb_def *def) { \
     if (upb_def_type(def) != UPB_DEF_ ## upper) return NULL; \
     return (upb_ ## lower*)def; \
   } \
-  INLINE const upb_ ## lower *upb_downcast_ ## lower(const upb_def *def) { \
+  UPB_INLINE const upb_ ## lower *upb_downcast_ ## lower(const upb_def *def) { \
     assert(upb_def_type(def) == UPB_DEF_ ## upper); \
     return (const upb_ ## lower*)def; \
   } \
-  INLINE upb_ ## lower *upb_dyncast_ ## lower ## _mutable(upb_def *def) { \
+  UPB_INLINE upb_ ## lower *upb_dyncast_ ## lower ## _mutable(upb_def *def) { \
     return (upb_ ## lower*)upb_dyncast_ ## lower(def); \
   } \
-  INLINE upb_ ## lower *upb_downcast_ ## lower ## _mutable(upb_def *def) { \
+  UPB_INLINE upb_ ## lower *upb_downcast_ ## lower ## _mutable(upb_def *def) { \
     return (upb_ ## lower*)upb_downcast_ ## lower(def); \
   }
 UPB_DEF_CASTS(msgdef, MSG);
@@ -706,7 +751,7 @@ UPB_DEF_CASTS(enumdef, ENUM);
 
 #ifdef __cplusplus
 
-INLINE const char *upb_safecstr(const std::string& str) {
+UPB_INLINE const char *upb_safecstr(const std::string& str) {
   assert(str.size() == std::strlen(str.c_str()));
   return str.c_str();
 }
@@ -793,8 +838,14 @@ inline bool FieldDef::set_full_name(const char *fullname) {
 inline bool FieldDef::set_full_name(const std::string& fullname) {
   return upb_fielddef_setfullname(this, upb_safecstr(fullname));
 }
+inline bool FieldDef::type_is_set() const {
+  return upb_fielddef_typeisset(this);
+}
 inline FieldDef::Type FieldDef::type() const {
   return upb_fielddef_type(this);
+}
+inline FieldDef::DescriptorType FieldDef::descriptor_type() const {
+  return upb_fielddef_descriptortype(this);
 }
 inline FieldDef::Label FieldDef::label() const {
   return upb_fielddef_label(this);
@@ -820,6 +871,9 @@ inline bool FieldDef::set_name(const std::string& name) {
 inline bool FieldDef::set_type(upb_fieldtype_t type) {
   return upb_fielddef_settype(this, type);
 }
+inline bool FieldDef::set_descriptor_type(FieldDef::DescriptorType type) {
+  return upb_fielddef_setdescriptortype(this, type);
+}
 inline bool FieldDef::set_label(upb_label_t label) {
   return upb_fielddef_setlabel(this, label);
 }
@@ -834,6 +888,9 @@ inline bool FieldDef::IsSequence() const {
 }
 inline Value FieldDef::default_value() const {
   return upb_fielddef_default(this);
+}
+inline const char *FieldDef::GetDefaultString(size_t* len) const {
+  return upb_fielddef_defaultstr(this, len);
 }
 inline void FieldDef::set_default_value(Value value) {
   upb_fielddef_setdefault(this, value);
@@ -914,13 +971,13 @@ inline bool MessageDef::AddField(upb_fielddef *f, const void *ref_donor) {
 inline FieldDef* MessageDef::FindFieldByNumber(uint32_t number) {
   return upb_msgdef_itof_mutable(this, number);
 }
-inline FieldDef* MessageDef::FieldFieldByName(const char *name) {
+inline FieldDef* MessageDef::FindFieldByName(const char *name) {
   return upb_msgdef_ntof_mutable(this, name);
 }
 inline const FieldDef* MessageDef::FindFieldByNumber(uint32_t number) const {
   return upb_msgdef_itof(this, number);
 }
-inline const FieldDef* MessageDef::FieldFieldByName(const char *name) const {
+inline const FieldDef* MessageDef::FindFieldByName(const char *name) const {
   return upb_msgdef_ntof(this, name);
 }
 inline MessageDef* MessageDef::Dup(const void *owner) const {

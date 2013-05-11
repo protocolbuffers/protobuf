@@ -10,8 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "upb/bytestream.h"
-
 bool upb_symtab_isfrozen(const upb_symtab *s) {
   return upb_refcounted_isfrozen(upb_upcast(s));
 }
@@ -77,16 +75,18 @@ const upb_def **upb_symtab_getdefs(const upb_symtab *s, upb_deftype_t type,
 
 const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym,
                                  const void *owner) {
-  const upb_value *v = upb_strtable_lookup(&s->symtab, sym);
-  upb_def *ret = v ? upb_value_getptr(*v) : NULL;
+  upb_value v;
+  upb_def *ret = upb_strtable_lookup(&s->symtab, sym, &v) ?
+      upb_value_getptr(v) : NULL;
   if (ret) upb_def_ref(ret, owner);
   return ret;
 }
 
 const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym,
                                        const void *owner) {
-  const upb_value *v = upb_strtable_lookup(&s->symtab, sym);
-  upb_def *def = v ? upb_value_getptr(*v) : NULL;
+  upb_value v;
+  upb_def *def = upb_strtable_lookup(&s->symtab, sym, &v) ?
+      upb_value_getptr(v) : NULL;
   upb_msgdef *ret = NULL;
   if(def && def->type == UPB_DEF_MSG) {
     ret = upb_downcast_msgdef_mutable(def);
@@ -103,8 +103,8 @@ static upb_def *upb_resolvename(const upb_strtable *t,
   if(sym[0] == UPB_SYMBOL_SEPARATOR) {
     // Symbols starting with '.' are absolute, so we do a single lookup.
     // Slice to omit the leading '.'
-    const upb_value *v = upb_strtable_lookup(t, sym + 1);
-    return v ? upb_value_getptr(*v) : NULL;
+    upb_value v;
+    return upb_strtable_lookup(t, sym + 1, &v) ? upb_value_getptr(v) : NULL;
   } else {
     // Remove components from base until we find an entry or run out.
     // TODO: This branch is totally broken, but currently not used.
@@ -134,8 +134,9 @@ static bool upb_resolve_dfs(const upb_def *def, upb_strtable *addtab,
                             upb_status *s) {
   // Memoize results of this function for efficiency (since we're traversing a
   // DAG this is not needed to limit the depth of the search).
-  const upb_value *v = upb_inttable_lookup(seen, (uintptr_t)def);
-  if (v) return upb_value_getbool(*v);
+  upb_value v;
+  if (upb_inttable_lookup(seen, (uintptr_t)def, &v))
+    return upb_value_getbool(v);
 
   // Visit submessages for all messages in the SCC.
   bool need_dup = false;
@@ -143,10 +144,10 @@ static bool upb_resolve_dfs(const upb_def *def, upb_strtable *addtab,
   do {
     assert(upb_def_isfrozen(def));
     if (def->type == UPB_DEF_FIELD) continue;
-    const upb_value *v = upb_strtable_lookup(addtab, upb_def_fullname(def));
-    if (v) {
+    upb_value v;
+    if (upb_strtable_lookup(addtab, upb_def_fullname(def), &v)) {
       // Because we memoize we should not visit a node after we have dup'd it.
-      assert(((upb_def*)upb_value_getptr(*v))->came_from_user);
+      assert(((upb_def*)upb_value_getptr(v))->came_from_user);
       need_dup = true;
     }
     const upb_msgdef *m = upb_dyncast_msgdef(def);
@@ -169,7 +170,7 @@ static bool upb_resolve_dfs(const upb_def *def, upb_strtable *addtab,
     do {
       if (def->type == UPB_DEF_FIELD) continue;
       const char *name = upb_def_fullname(def);
-      if (upb_strtable_lookup(addtab, name) == NULL) {
+      if (!upb_strtable_lookup(addtab, name, NULL)) {
         upb_def *newdef = upb_def_dup(def, new_owner);
         if (!newdef) goto oom;
         newdef->came_from_user = false;
@@ -210,7 +211,7 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
           status, "Anonymous defs cannot be added to a symtab");
       goto err;
     }
-    if (upb_strtable_lookup(&addtab, fullname) != NULL) {
+    if (upb_strtable_lookup(&addtab, fullname, NULL)) {
       upb_status_seterrf(status, "Conflicting defs named '%s'", fullname);
       goto err;
     }
@@ -263,10 +264,8 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
       }
 
       if (!upb_fielddef_resolvedefault(f)) {
-        upb_byteregion *r = upb_value_getbyteregion(upb_fielddef_default(f));
-        size_t len;
-        const char *ptr = upb_byteregion_getptr(r, 0, &len);
-        upb_status_seterrf(status, "couldn't resolve enum default '%s'", ptr);
+        upb_status_seterrf(status, "couldn't resolve enum default '%s'",
+                           upb_fielddef_defaultstr(f, NULL));
         goto err;
       }
     }

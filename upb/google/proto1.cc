@@ -18,23 +18,14 @@
 
 #include "upb/google/proto1.h"
 
-// TODO(haberman): friend upb so that this isn't required.
-#define protected public
 #include "net/proto2/public/repeated_field.h"
-#undef private
-
-// TODO(haberman): friend upb so that this isn't required.
-#define private public
-#include "net/proto/proto2_reflection.h"
-#undef private
-
 #include "net/proto/internal_layout.h"
-#include "upb/bytestream.h"
+#include "net/proto/proto2_reflection.h"
 #include "upb/def.h"
-#include "upb/google/cord.h"
 #include "upb/handlers.h"
+#include "upb/sink.h"
 
-template<class T> static T* GetPointer(void *message, size_t offset) {
+template <class T> static T* GetPointer(void* message, size_t offset) {
   return reinterpret_cast<T*>(static_cast<char*>(message) + offset);
 }
 
@@ -47,31 +38,32 @@ class P2R_Handlers {
   // of the FieldDef that are necessary to read/write this field to a
   // proto2::Message.
   static bool TrySet(const proto2::FieldDescriptor* proto2_f,
-                     const proto2::Message& m,
-                     const upb::FieldDef* upb_f, upb::Handlers* h) {
+                     const proto2::Message& m, const upb::FieldDef* upb_f,
+                     upb::Handlers* h) {
     const proto2::Reflection* base_r = m.GetReflection();
     // See file comment re: dynamic_cast.
     const _pi::Proto2Reflection* r =
         dynamic_cast<const _pi::Proto2Reflection*>(base_r);
     if (!r) return false;
-    // Extensions not supported yet.
-    if (proto2_f->is_extension()) return false;
+    // Extensions don't exist in proto1.
+    assert(!proto2_f->is_extension());
+
+#define PRIMITIVE(name, type_name)                                             \
+  case _pi::CREP_REQUIRED_##name:                                              \
+  case _pi::CREP_OPTIONAL_##name:                                              \
+  case _pi::CREP_REPEATED_##name:                                              \
+    SetPrimitiveHandlers<type_name>(proto2_f, r, upb_f, h);                    \
+    return true;
 
     switch (r->GetFieldLayout(proto2_f)->crep) {
-#define PRIMITIVE(name, type_name) \
-      case _pi::CREP_REQUIRED_ ## name: \
-      case _pi::CREP_OPTIONAL_ ## name: \
-      case _pi::CREP_REPEATED_ ## name: \
-        SetPrimitiveHandlers<type_name>(proto2_f, r, upb_f, h); return true;
-      PRIMITIVE(DOUBLE,   double);
-      PRIMITIVE(FLOAT,    float);
-      PRIMITIVE(INT64,    int64_t);
-      PRIMITIVE(UINT64,   uint64_t);
-      PRIMITIVE(INT32,    int32_t);
-      PRIMITIVE(FIXED64,  uint64_t);
-      PRIMITIVE(FIXED32,  uint32_t);
-      PRIMITIVE(BOOL,     bool);
-#undef PRIMITIVE
+      PRIMITIVE(DOUBLE, double);
+      PRIMITIVE(FLOAT, float);
+      PRIMITIVE(INT64, int64_t);
+      PRIMITIVE(UINT64, uint64_t);
+      PRIMITIVE(INT32, int32_t);
+      PRIMITIVE(FIXED64, uint64_t);
+      PRIMITIVE(FIXED32, uint32_t);
+      PRIMITIVE(BOOL, bool);
       case _pi::CREP_REQUIRED_STRING:
       case _pi::CREP_OPTIONAL_STRING:
       case _pi::CREP_REPEATED_STRING:
@@ -102,16 +94,19 @@ class P2R_Handlers {
       case _pi::CREP_OPTIONAL_FOREIGN_WEAK_PROTO2:
         SetWeakMessageHandlers(proto2_f, m, r, upb_f, h);
         return true;
-      default: assert(false); return false;
+      default:
+        assert(false);
+        return false;
     }
   }
+
+#undef PRIMITIVE
 
   // If the field "f" in the message "m" is a weak field, returns the prototype
   // of the submessage (which may be a specific type or may be OpaqueMessage).
   // Otherwise returns NULL.
   static const proto2::Message* GetWeakPrototype(
-      const proto2::Message& m,
-      const proto2::FieldDescriptor* f) {
+      const proto2::Message& m, const proto2::FieldDescriptor* f) {
     // See file comment re: dynamic_cast.
     const _pi::Proto2Reflection* r =
         dynamic_cast<const _pi::Proto2Reflection*>(m.GetReflection());
@@ -132,8 +127,7 @@ class P2R_Handlers {
   // the submessage (which may be OpaqueMessage for a weak field that is not
   // linked in).  Otherwise returns NULL.
   static const proto2::Message* GetFieldPrototype(
-      const proto2::Message& m,
-      const proto2::FieldDescriptor* f) {
+      const proto2::Message& m, const proto2::FieldDescriptor* f) {
     // See file comment re: dynamic_cast.
     const proto2::Message* ret = GetWeakPrototype(m, f);
     if (ret) {
@@ -143,7 +137,7 @@ class P2R_Handlers {
       // factory.
       assert(f->cpp_type() == proto2::FieldDescriptor::CPPTYPE_MESSAGE);
       ret = proto2::MessageFactory::generated_factory()->GetPrototype(
-          f->message_type());
+                f->message_type());
       assert(ret);
       return ret;
     } else {
@@ -154,11 +148,9 @@ class P2R_Handlers {
  private:
   class FieldOffset {
    public:
-    FieldOffset(
-        const proto2::FieldDescriptor* f,
-        const _pi::Proto2Reflection* r)
-        : offset_(GetOffset(f, r)),
-          is_repeated_(f->is_repeated()) {
+    FieldOffset(const proto2::FieldDescriptor* f,
+                const _pi::Proto2Reflection* r)
+        : offset_(GetOffset(f, r)), is_repeated_(f->is_repeated()) {
       if (!is_repeated_) {
         int64_t hasbit = GetHasbit(f, r);
         hasbyte_ = hasbit / 8;
@@ -166,7 +158,7 @@ class P2R_Handlers {
       }
     }
 
-    template<class T> T* GetFieldPointer(void* message) const {
+    template <class T> T* GetFieldPointer(void* message) const {
       return GetPointer<T>(message, offset_);
     }
 
@@ -193,7 +185,6 @@ class P2R_Handlers {
     return selector;
   }
 
-
   static int16_t GetHasbit(const proto2::FieldDescriptor* f,
                            const _pi::Proto2Reflection* r) {
     assert(!f->is_repeated());
@@ -211,60 +202,60 @@ class P2R_Handlers {
       const proto2::FieldDescriptor* proto2_f, const _pi::Proto2Reflection* r,
       const upb::FieldDef* f, upb::Handlers* h) {
     assert(f->IsSequence());
-    h->SetStartSequenceHandler(
-        f, &PushOffset, new FieldOffset(proto2_f, r),
-        &upb::DeletePointer<FieldOffset>);
+    h->SetStartSequenceHandler(f, &PushOffset, new FieldOffset(proto2_f, r),
+                               &upb::DeletePointer<FieldOffset>);
   }
 
-  static void* PushOffset(void *m, void *fval) {
-    const FieldOffset* offset = static_cast<FieldOffset*>(fval);
-    return offset->GetFieldPointer<void>(m);
+  static void* PushOffset(const upb::SinkFrame* frame) {
+    const FieldOffset* offset =
+        static_cast<FieldOffset*>(frame->handler_data());
+    return offset->GetFieldPointer<void>(frame->userdata());
   }
 
   // Primitive Value (numeric, enum, bool) /////////////////////////////////////
 
-  template <typename T> static void SetPrimitiveHandlers(
-      const proto2::FieldDescriptor* proto2_f,
-      const _pi::Proto2Reflection* r,
-      const upb::FieldDef* f, upb::Handlers* h) {
+  template <typename T>
+  static void SetPrimitiveHandlers(const proto2::FieldDescriptor* proto2_f,
+                                   const _pi::Proto2Reflection* r,
+                                   const upb::FieldDef* f, upb::Handlers* h) {
     if (f->IsSequence()) {
       SetStartSequenceHandler(proto2_f, r, f, h);
       h->SetValueHandler<T>(f, &Append<T>, NULL, NULL);
     } else {
-      upb::SetStoreValueHandler<T>(
-          f, GetOffset(proto2_f, r), GetHasbit(proto2_f, r), h);
+      upb::SetStoreValueHandler<T>(f, GetOffset(proto2_f, r),
+                                   GetHasbit(proto2_f, r), h);
     }
   }
 
   template <typename T>
-  static bool Append(void *_r, void *fval, T val) {
-    UPB_UNUSED(fval);
+  static bool Append(const upb::SinkFrame* frame, T val) {
     // Proto1's ProtoArray class derives from proto2::RepeatedField.
-    proto2::RepeatedField<T>* r = static_cast<proto2::RepeatedField<T>*>(_r);
+    proto2::RepeatedField<T>* r =
+        static_cast<proto2::RepeatedField<T>*>(frame->userdata());
     r->Add(val);
     return true;
   }
 
   // String ////////////////////////////////////////////////////////////////////
 
-  static void SetStringHandlers(
-      const proto2::FieldDescriptor* proto2_f,
-      const _pi::Proto2Reflection* r,
-      const upb::FieldDef* f, upb::Handlers* h) {
+  static void SetStringHandlers(const proto2::FieldDescriptor* proto2_f,
+                                const _pi::Proto2Reflection* r,
+                                const upb::FieldDef* f, upb::Handlers* h) {
     h->SetStringHandler(f, &OnStringBuf, NULL, NULL);
     if (f->IsSequence()) {
       SetStartSequenceHandler(proto2_f, r, f, h);
       h->SetStartStringHandler(f, &StartRepeatedString, NULL, NULL);
     } else {
-      h->SetStartStringHandler(
-          f, &StartString, new FieldOffset(proto2_f, r),
-          &upb::DeletePointer<FieldOffset>);
+      h->SetStartStringHandler(f, &StartString, new FieldOffset(proto2_f, r),
+                               &upb::DeletePointer<FieldOffset>);
     }
   }
 
-  static void* StartString(void *m, void *fval, size_t size_hint) {
+  static void* StartString(const upb::SinkFrame* frame, size_t size_hint) {
     UPB_UNUSED(size_hint);
-    const FieldOffset* info = static_cast<const FieldOffset*>(fval);
+    void* m = frame->userdata();
+    const FieldOffset* info =
+        static_cast<const FieldOffset*>(frame->handler_data());
     info->SetHasbit(m);
     string* str = info->GetFieldPointer<string>(m);
     str->clear();
@@ -272,16 +263,18 @@ class P2R_Handlers {
     return str;
   }
 
-  static size_t OnStringBuf(void *_s, void *fval, const char *buf, size_t n) {
-    string* s = static_cast<string*>(_s);
+  static size_t OnStringBuf(const upb::SinkFrame* frame,
+                            const char* buf,
+                            size_t n) {
+    string* s = static_cast<string*>(frame->userdata());
     s->append(buf, n);
     return n;
   }
 
-  static void* StartRepeatedString(void *_r, void *fval, size_t size_hint) {
-    UPB_UNUSED(fval);
+  static void* StartRepeatedString(const upb::SinkFrame* frame,
+                                   size_t size_hint) {
     proto2::RepeatedPtrField<string>* r =
-        static_cast<proto2::RepeatedPtrField<string>*>(_r);
+        static_cast<proto2::RepeatedPtrField<string>*>(frame->userdata());
     string* str = r->Add();
     // reserve() here appears to hurt performance rather than help.
     return str;
@@ -290,22 +283,24 @@ class P2R_Handlers {
   // Out-of-line string ////////////////////////////////////////////////////////
 
   static void SetOutOfLineStringHandlers(
-      const proto2::FieldDescriptor* proto2_f,
-      const _pi::Proto2Reflection* r,
+      const proto2::FieldDescriptor* proto2_f, const _pi::Proto2Reflection* r,
       const upb::FieldDef* f, upb::Handlers* h) {
     // This type is only used for non-repeated string fields.
     assert(!f->IsSequence());
-    h->SetStartStringHandler(
-        f, &StartOutOfLineString, new FieldOffset(proto2_f, r),
-        &upb::DeletePointer<FieldOffset>);
+    h->SetStartStringHandler(f, &StartOutOfLineString,
+                             new FieldOffset(proto2_f, r),
+                             &upb::DeletePointer<FieldOffset>);
     h->SetStringHandler(f, &OnStringBuf, NULL, NULL);
   }
 
-  static void* StartOutOfLineString(void *m, void *fval, size_t size_hint) {
-    const FieldOffset* info = static_cast<const FieldOffset*>(fval);
+  static void* StartOutOfLineString(const upb::SinkFrame* frame,
+                                    size_t size_hint) {
+    const FieldOffset* info =
+        static_cast<const FieldOffset*>(frame->handler_data());
+    void* m = frame->userdata();
     info->SetHasbit(m);
-    string **str = info->GetFieldPointer<string*>(m);
-    if (*str == &::ProtocolMessage::___empty_internal_proto_string_)
+    string** str = info->GetFieldPointer<string*>(m);
+    if (*str == &::proto2::internal::GetEmptyString())
       *str = new string();
     (*str)->clear();
     // reserve() here appears to hurt performance rather than help.
@@ -314,43 +309,43 @@ class P2R_Handlers {
 
   // Cord //////////////////////////////////////////////////////////////////////
 
-  static void SetCordHandlers(
-      const proto2::FieldDescriptor* proto2_f,
-      const _pi::Proto2Reflection* r,
-      const upb::FieldDef* f, upb::Handlers* h) {
+  static void SetCordHandlers(const proto2::FieldDescriptor* proto2_f,
+                              const _pi::Proto2Reflection* r,
+                              const upb::FieldDef* f, upb::Handlers* h) {
     h->SetStringHandler(f, &OnCordBuf, NULL, NULL);
     if (f->IsSequence()) {
       SetStartSequenceHandler(proto2_f, r, f, h);
       h->SetStartStringHandler(f, &StartRepeatedCord, NULL, NULL);
     } else {
-      h->SetStartStringHandler(
-          f, &StartCord, new FieldOffset(proto2_f, r),
-          &upb::DeletePointer<FieldOffset*>);
+      h->SetStartStringHandler(f, &StartCord, new FieldOffset(proto2_f, r),
+                               &upb::DeletePointer<FieldOffset*>);
     }
   }
 
-  static void* StartCord(void *m, void *fval, size_t size_hint) {
+  static void* StartCord(const upb::SinkFrame* frame, size_t size_hint) {
     UPB_UNUSED(size_hint);
-    UPB_UNUSED(fval);
-    const FieldOffset* offset = static_cast<const FieldOffset*>(fval);
+    void* m = frame->userdata();
+    const FieldOffset* offset =
+        static_cast<const FieldOffset*>(frame->handler_data());
     offset->SetHasbit(m);
     Cord* field = offset->GetFieldPointer<Cord>(m);
     field->Clear();
     return field;
   }
 
-  static size_t OnCordBuf(void *_c, void *fval, const char *buf, size_t n) {
-    UPB_UNUSED(fval);
-    Cord* c = static_cast<Cord*>(_c);
+  static size_t OnCordBuf(const upb::SinkFrame* frame,
+                          const char* buf,
+                          size_t n) {
+    Cord* c = static_cast<Cord*>(frame->userdata());
     c->Append(StringPiece(buf, n));
     return true;
   }
 
-  static void* StartRepeatedCord(void *_r, void *fval, size_t size_hint) {
+  static void* StartRepeatedCord(const upb::SinkFrame* frame,
+                                 size_t size_hint) {
     UPB_UNUSED(size_hint);
-    UPB_UNUSED(fval);
     proto2::RepeatedField<Cord>* r =
-        static_cast<proto2::RepeatedField<Cord>*>(_r);
+        static_cast<proto2::RepeatedField<Cord>*>(frame->userdata());
     return r->Add();
   }
 
@@ -358,14 +353,12 @@ class P2R_Handlers {
 
   class SubMessageHandlerData : public FieldOffset {
    public:
-    SubMessageHandlerData(
-        const proto2::Message& prototype,
-        const proto2::FieldDescriptor* f,
-        const _pi::Proto2Reflection* r)
+    SubMessageHandlerData(const proto2::Message& prototype,
+                          const proto2::FieldDescriptor* f,
+                          const _pi::Proto2Reflection* r)
         : FieldOffset(f, r) {
       prototype_ = GetWeakPrototype(prototype, f);
-      if (!prototype_)
-        prototype_ = GetFieldPrototype(prototype, f);
+      if (!prototype_) prototype_ = GetFieldPrototype(prototype, f);
     }
 
     const proto2::Message* prototype() const { return prototype_; }
@@ -375,43 +368,40 @@ class P2R_Handlers {
   };
 
   static void SetStartSubMessageHandler(
-      const proto2::FieldDescriptor* proto2_f,
-      const proto2::Message& m,
-      const _pi::Proto2Reflection* r,
-      upb::Handlers::StartFieldHandler* handler,
+      const proto2::FieldDescriptor* proto2_f, const proto2::Message& m,
+      const _pi::Proto2Reflection* r, upb::Handlers::StartFieldHandler* handler,
       const upb::FieldDef* f, upb::Handlers* h) {
-    h->SetStartSubMessageHandler(
-        f, handler,
-        new SubMessageHandlerData(m, proto2_f, r),
-        &upb::DeletePointer<SubMessageHandlerData>);
+    h->SetStartSubMessageHandler(f, handler,
+                                 new SubMessageHandlerData(m, proto2_f, r),
+                                 &upb::DeletePointer<SubMessageHandlerData>);
   }
 
   static void SetRequiredMessageHandlers(
-      const proto2::FieldDescriptor* proto2_f,
-      const proto2::Message& m,
-      const _pi::Proto2Reflection* r,
-      const upb::FieldDef* f, upb::Handlers* h) {
+      const proto2::FieldDescriptor* proto2_f, const proto2::Message& m,
+      const _pi::Proto2Reflection* r, const upb::FieldDef* f,
+      upb::Handlers* h) {
     if (f->IsSequence()) {
       SetStartSequenceHandler(proto2_f, r, f, h);
       SetStartSubMessageHandler(proto2_f, m, r, &StartRepeatedSubMessage, f, h);
     } else {
-      h->SetStartSubMessageHandler(
-          f, &StartRequiredSubMessage, new FieldOffset(proto2_f, r),
-          &upb::DeletePointer<FieldOffset>);
+      h->SetStartSubMessageHandler(f, &StartRequiredSubMessage,
+                                   new FieldOffset(proto2_f, r),
+                                   &upb::DeletePointer<FieldOffset>);
     }
   }
 
-  static void* StartRequiredSubMessage(void *m, void *fval) {
-    const FieldOffset* offset = static_cast<FieldOffset*>(fval);
+  static void* StartRequiredSubMessage(const upb::SinkFrame* frame) {
+    const FieldOffset* offset =
+        static_cast<FieldOffset*>(frame->handler_data());
+    void* m = frame->userdata();
     offset->SetHasbit(m);
     return offset->GetFieldPointer<void>(m);
   }
 
-  static void SetMessageHandlers(
-      const proto2::FieldDescriptor* proto2_f,
-      const proto2::Message& m,
-      const _pi::Proto2Reflection* r,
-      const upb::FieldDef* f, upb::Handlers* h) {
+  static void SetMessageHandlers(const proto2::FieldDescriptor* proto2_f,
+                                 const proto2::Message& m,
+                                 const _pi::Proto2Reflection* r,
+                                 const upb::FieldDef* f, upb::Handlers* h) {
     if (f->IsSequence()) {
       SetStartSequenceHandler(proto2_f, r, f, h);
       SetStartSubMessageHandler(proto2_f, m, r, &StartRepeatedSubMessage, f, h);
@@ -420,11 +410,10 @@ class P2R_Handlers {
     }
   }
 
-  static void SetWeakMessageHandlers(
-      const proto2::FieldDescriptor* proto2_f,
-      const proto2::Message& m,
-      const _pi::Proto2Reflection* r,
-      const upb::FieldDef* f, upb::Handlers* h) {
+  static void SetWeakMessageHandlers(const proto2::FieldDescriptor* proto2_f,
+                                     const proto2::Message& m,
+                                     const _pi::Proto2Reflection* r,
+                                     const upb::FieldDef* f, upb::Handlers* h) {
     if (f->IsSequence()) {
       SetStartSequenceHandler(proto2_f, r, f, h);
       SetStartSubMessageHandler(proto2_f, m, r, &StartRepeatedSubMessage, f, h);
@@ -433,20 +422,22 @@ class P2R_Handlers {
     }
   }
 
-  static void* StartSubMessage(void *m, void *fval) {
+  static void* StartSubMessage(const upb::SinkFrame* frame) {
+    void* m = frame->userdata();
     const SubMessageHandlerData* info =
-        static_cast<const SubMessageHandlerData*>(fval);
+        static_cast<const SubMessageHandlerData*>(frame->handler_data());
     info->SetHasbit(m);
-    proto2::Message **subm = info->GetFieldPointer<proto2::Message*>(m);
+    proto2::Message** subm = info->GetFieldPointer<proto2::Message*>(m);
     if (*subm == info->prototype()) *subm = (*subm)->New();
     return *subm;
   }
 
-  static void* StartWeakSubMessage(void *m, void *fval) {
+  static void* StartWeakSubMessage(const upb::SinkFrame* frame) {
+    void* m = frame->userdata();
     const SubMessageHandlerData* info =
-        static_cast<const SubMessageHandlerData*>(fval);
+        static_cast<const SubMessageHandlerData*>(frame->handler_data());
     info->SetHasbit(m);
-    proto2::Message **subm = info->GetFieldPointer<proto2::Message*>(m);
+    proto2::Message** subm = info->GetFieldPointer<proto2::Message*>(m);
     if (*subm == NULL) {
       *subm = info->prototype()->New();
     }
@@ -459,19 +450,19 @@ class P2R_Handlers {
     // AddAllocated() calls this, but only if other objects are sitting
     // around waiting for reuse, which we will not do.
     static void Delete(Type* t) {
-      (void)t;
+      UPB_UNUSED(t);
       assert(false);
     }
   };
 
   // Closure is a RepeatedPtrField<SubMessageType>*, but we access it through
   // its base class RepeatedPtrFieldBase*.
-  static void* StartRepeatedSubMessage(void* _r, void *fval) {
+  static void* StartRepeatedSubMessage(const upb::SinkFrame* frame) {
     const SubMessageHandlerData* info =
-        static_cast<const SubMessageHandlerData*>(fval);
-    proto2::internal::RepeatedPtrFieldBase *r =
-        static_cast<proto2::internal::RepeatedPtrFieldBase*>(_r);
-    void *submsg = r->AddFromCleared<RepeatedMessageTypeHandler>();
+        static_cast<const SubMessageHandlerData*>(frame->handler_data());
+    proto2::internal::RepeatedPtrFieldBase* r =
+        static_cast<proto2::internal::RepeatedPtrFieldBase*>(frame->userdata());
+    void* submsg = r->AddFromCleared<RepeatedMessageTypeHandler>();
     if (!submsg) {
       submsg = info->prototype()->New();
       r->AddAllocated<RepeatedMessageTypeHandler>(submsg);
@@ -487,14 +478,12 @@ bool TrySetProto1WriteHandlers(const proto2::FieldDescriptor* proto2_f,
 }
 
 const proto2::Message* GetProto1WeakPrototype(
-    const proto2::Message& m,
-    const proto2::FieldDescriptor* f) {
+    const proto2::Message& m, const proto2::FieldDescriptor* f) {
   return P2R_Handlers::GetWeakPrototype(m, f);
 }
 
 const proto2::Message* GetProto1FieldPrototype(
-    const proto2::Message& m,
-    const proto2::FieldDescriptor* f) {
+    const proto2::Message& m, const proto2::FieldDescriptor* f) {
   return P2R_Handlers::GetFieldPrototype(m, f);
 }
 

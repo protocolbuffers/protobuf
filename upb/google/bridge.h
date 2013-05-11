@@ -66,9 +66,10 @@ namespace google {
 //
 // TODO(haberman): Add handler caching functionality so that we don't use
 // O(n^2) memory in the worst case when incrementally building handlers.
-const upb::Handlers* NewWriteHandlers(const proto2::Message& m, void *owner);
+const upb::Handlers* NewWriteHandlers(const proto2::Message& m,
+                                      const void* owner);
 const upb::Handlers* NewWriteHandlers(const ::google::protobuf::Message& m,
-                                      void *owner);
+                                      const void* owner);
 
 }  // namespace google
 }  // namespace upb

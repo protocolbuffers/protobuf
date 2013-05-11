@@ -36,10 +36,14 @@ typedef enum {
 
 /* Zig-zag encoding/decoding **************************************************/
 
-INLINE int32_t upb_zzdec_32(uint32_t n) { return (n >> 1) ^ -(int32_t)(n & 1); }
-INLINE int64_t upb_zzdec_64(uint64_t n) { return (n >> 1) ^ -(int64_t)(n & 1); }
-INLINE uint32_t upb_zzenc_32(int32_t n) { return (n << 1) ^ (n >> 31); }
-INLINE uint64_t upb_zzenc_64(int64_t n) { return (n << 1) ^ (n >> 63); }
+UPB_INLINE int32_t upb_zzdec_32(uint32_t n) {
+  return (n >> 1) ^ -(int32_t)(n & 1);
+}
+UPB_INLINE int64_t upb_zzdec_64(uint64_t n) {
+  return (n >> 1) ^ -(int64_t)(n & 1);
+}
+UPB_INLINE uint32_t upb_zzenc_32(int32_t n) { return (n << 1) ^ (n >> 31); }
+UPB_INLINE uint64_t upb_zzenc_64(int64_t n) { return (n << 1) ^ (n >> 63); }
 
 /* Decoding *******************************************************************/
 
@@ -65,7 +69,7 @@ upb_decoderet upb_vdecode_max8_massimino(upb_decoderet r);
 // up to 10 bytes, so it must not be used unless there are at least ten bytes
 // left in the buffer!
 #define UPB_VARINT_DECODER_CHECK2(name, decode_max8_function)                  \
-INLINE upb_decoderet upb_vdecode_check2_ ## name(const char *_p) {             \
+UPB_INLINE upb_decoderet upb_vdecode_check2_ ## name(const char *_p) {         \
   uint8_t *p = (uint8_t*)_p;                                                   \
   if ((*p & 0x80) == 0) { upb_decoderet r = {_p + 1, *p & 0x7fU}; return r; }  \
   upb_decoderet r = {_p + 2, (*p & 0x7fU) | ((*(p + 1) & 0x7fU) << 7)};        \
@@ -81,21 +85,21 @@ UPB_VARINT_DECODER_CHECK2(massimino, upb_vdecode_max8_massimino);
 
 // Our canonical functions for decoding varints, based on the currently
 // favored best-performing implementations.
-INLINE upb_decoderet upb_vdecode_fast(const char *p) {
+UPB_INLINE upb_decoderet upb_vdecode_fast(const char *p) {
   if (sizeof(long) == 8)
     return upb_vdecode_check2_massimino(p);
   else
     return upb_vdecode_check2_branch32(p);
 }
 
-INLINE upb_decoderet upb_vdecode_max8_fast(upb_decoderet r) {
+UPB_INLINE upb_decoderet upb_vdecode_max8_fast(upb_decoderet r) {
   return upb_vdecode_max8_massimino(r);
 }
 
 
 /* Encoding *******************************************************************/
 
-INLINE int upb_value_size(uint64_t val) {
+UPB_INLINE int upb_value_size(uint64_t val) {
 #ifdef __GNUC__
   int high_bit = 63 - __builtin_clzll(val);  // 0-based, undef if val == 0.
 #else
@@ -110,7 +114,7 @@ INLINE int upb_value_size(uint64_t val) {
 // bytes long), returning how many bytes were used.
 //
 // TODO: benchmark and optimize if necessary.
-INLINE size_t upb_vencode64(uint64_t val, char *buf) {
+UPB_INLINE size_t upb_vencode64(uint64_t val, char *buf) {
   if (val == 0) { buf[0] = 0; return 1; }
   size_t i = 0;
   while (val) {
@@ -123,7 +127,7 @@ INLINE size_t upb_vencode64(uint64_t val, char *buf) {
 }
 
 // Encodes a 32-bit varint, *not* sign-extended.
-INLINE uint64_t upb_vencode32(uint32_t val) {
+UPB_INLINE uint64_t upb_vencode32(uint32_t val) {
   char buf[UPB_PB_VARINT_MAX_LEN];
   size_t bytes = upb_vencode64(val, buf);
   uint64_t ret = 0;
