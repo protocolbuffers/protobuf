@@ -49,7 +49,7 @@ CXX=g++
 CFLAGS=-std=gnu99
 CXXFLAGS=-Ibindings/cpp
 INCLUDE=-Itests -I.
-CPPFLAGS=$(INCLUDE) -Wall -Wextra $(USER_CFLAGS)
+CPPFLAGS=$(INCLUDE) -Wall -Wextra -Wno-sign-compare $(USER_CFLAGS)
 LDLIBS=-lpthread upb/libupb.a
 LUA=lua5.1  # 5.1 and 5.2 should both be supported
 
@@ -82,7 +82,7 @@ deps: Makefile $(ALLSRC)
 
 # The core library.
 CORE= \
-  upb/bytestream.c \
+  upb/bytestream.upb.c \
   upb/def.c \
   upb/descriptor/reader.c \
   upb/descriptor/descriptor.upb.c \
@@ -101,8 +101,9 @@ CORE= \
 PB= \
   upb/pb/decoder.c \
   upb/pb/glue.c \
-  upb/pb/textprinter.c \
   upb/pb/varint.c \
+
+  #upb/pb/textprinter.c \
 
 
 # Rules. #######################################################################
@@ -247,7 +248,8 @@ $(SIMPLE_CXX_TESTS): % : %.cc
 	$(E) CXX $<
 	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ tests/testmain.o $< $(LIBUPB)
 
-VALGRIND=valgrind --leak-check=full --error-exitcode=1
+#VALGRIND=valgrind --leak-check=full --error-exitcode=1 --track-origins=yes
+VALGRIND=
 test: tests
 	@echo Running all tests under valgrind.
 	@set -e  # Abort on error.

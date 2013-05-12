@@ -290,7 +290,6 @@ static void suspendjmp(upb_pbdecoder *d) {
 }
 
 static void advancetobuf(upb_pbdecoder *d, const char *buf, size_t len) {
-  assert(len >= 0);
   assert(d->ptr == d->end);
   d->bufstart_ofs += (d->ptr - d->buf);
   switchtobuf(d, buf, buf + len);

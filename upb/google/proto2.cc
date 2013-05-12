@@ -409,7 +409,7 @@ case goog::FieldDescriptor::cpptype:                                           \
         static_cast<const EnumHandlerData*>(frame->handler_data());
     if (data->IsValidValue(val)) {
       goog::RepeatedField<int32_t>* r =
-          data->GetFieldPointer<goog::RepeatedField<int32_t>>(m);
+          data->GetFieldPointer<goog::RepeatedField<int32_t> >(m);
       r->Add(val);
     } else {
       data->mutable_unknown_fields(m)->AddVarint(data->field_number(), val);
@@ -487,7 +487,7 @@ case goog::FieldDescriptor::cpptype:                                           \
     } else {
       StringHandlerData<T>* data = new StringHandlerData<T>(proto2_f, r);
       h->SetStartStringHandler(f, &StartString<T>, data,
-                               &upb::DeletePointer<StringHandlerData<T>>);
+                               &upb::DeletePointer<StringHandlerData<T> >);
     }
   }
 

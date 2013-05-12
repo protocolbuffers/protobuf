@@ -22,12 +22,8 @@ static const double MAX_LOAD = 0.85;
 static const double MIN_DENSITY = 0.1;
 
 int upb_log2(uint64_t v) {
-#ifdef __GNUC__
-  int ret = 31 - __builtin_clz(v);
-#else
   int ret = 0;
   while (v >>= 1) ret++;
-#endif
   return UPB_MIN(UPB_MAXARRSIZE, ret);
 }
 

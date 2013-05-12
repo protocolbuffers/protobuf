@@ -915,37 +915,37 @@ inline bool Handlers::SetUInt64Handler(
 }
 #endif
 
-#define SET_VALUE_HANDLER(type, ctype) \
+#define SET_VALUE_HANDLER(type, ctype, handlertype) \
     template<> \
     inline bool Handlers::SetValueHandler<ctype>( \
         const FieldDef* f, \
-        typename Handlers::Value<ctype>::Handler* handler, \
+        handlertype* handler, \
         void* data, Handlers::Free* cleanup) { \
       return upb_handlers_set ## type(this, f, handler, data, cleanup); \
     } \
     template<> \
     inline bool Handlers::SetValueHandler<ctype>( \
         const char* f, \
-        typename Handlers::Value<ctype>::Handler* handler, \
+        handlertype* handler, \
         void* data, Handlers::Free* cleanup) { \
       return upb_handlers_set ## type ## _n(this, f, handler, data, cleanup); \
     }
-SET_VALUE_HANDLER(double, double);
-SET_VALUE_HANDLER(float, float);
-SET_VALUE_HANDLER(uint64, upb_uint64_t);
-SET_VALUE_HANDLER(uint32, upb_uint32_t);
-SET_VALUE_HANDLER(int64, upb_int64_t);
-SET_VALUE_HANDLER(int32, upb_int32_t);
-SET_VALUE_HANDLER(bool, bool);
+SET_VALUE_HANDLER(double, double,       DoubleHandler);
+SET_VALUE_HANDLER(float,  float,        FloatHandler);
+SET_VALUE_HANDLER(uint64, upb_uint64_t, UInt64Handler);
+SET_VALUE_HANDLER(uint32, upb_uint32_t, UInt32Handler);
+SET_VALUE_HANDLER(int64,  upb_int64_t,  Int64Handler);
+SET_VALUE_HANDLER(int32,  upb_int32_t,  Int32Handler);
+SET_VALUE_HANDLER(bool,   bool,         BoolHandler);
 
 #ifdef UPB_TWO_32BIT_TYPES
-SET_VALUE_HANDLER(int32alt, upb_int32alt_t);
-SET_VALUE_HANDLER(uint32alt, upb_uint32alt_t);
+SET_VALUE_HANDLER(int32alt, upb_int32alt_t,   Int32Handler2);
+SET_VALUE_HANDLER(uint32alt, upb_uint32alt_t, UInt32Handler2);
 #endif
 
 #ifdef UPB_TWO_64BIT_TYPES
-SET_VALUE_HANDLER(int64alt, upb_int64alt_t);
-SET_VALUE_HANDLER(uint64alt, upb_uint64alt_t);
+SET_VALUE_HANDLER(int64alt, upb_int64alt_t,   Int64Handler2);
+SET_VALUE_HANDLER(uint64alt, upb_uint64alt_t, UInt64Handler2);
 #endif
 
 #undef SET_VALUE_HANDLER
