@@ -125,7 +125,20 @@ namespace Google.ProtocolBuffers
         }
 
         #endregion
-        
+
+        /// <summary>
+        /// Returns the current position in the stream, or the position in the output buffer
+        /// </summary>
+        public long Position
+        {
+            get
+            {
+                if (output != null)
+                    return output.Position + position;
+                return position;
+            }
+        }
+
         void ICodedOutputStream.WriteMessageStart() { }
         void ICodedOutputStream.WriteMessageEnd() { Flush(); }
 

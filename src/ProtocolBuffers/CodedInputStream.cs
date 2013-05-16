@@ -166,7 +166,7 @@ namespace Google.ProtocolBuffers
             get
             {
                 if (input != null)
-                    return input.Position - (bufferSize - bufferPos);
+                    return input.Position - ((bufferSize + bufferSizeAfterLimit) - bufferPos);
                 return bufferPos;
             }
         }
