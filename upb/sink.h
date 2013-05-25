@@ -30,22 +30,13 @@ template <int size> class SeededPipeline;
 }
 typedef upb::Pipeline upb_pipeline;
 typedef upb::Sink upb_sink;
-UPB_INLINE upb_sink* upb_sinkframe_sink(const upb_sinkframe* frame);
-UPB_INLINE void* upb_sinkframe_userdata(const upb_sinkframe* frame);
-UPB_INLINE void* upb_sinkframe_handlerdata(const upb_sinkframe* frame);
 #else
 struct upb_pipeline;
 struct upb_sink;
 typedef struct upb_pipeline upb_pipeline;
 typedef struct upb_sink upb_sink;
 #endif
-
-struct upb_frametype {
-  size_t size;
-  void (*init)(void* obj);
-  void (*uninit)(void* obj);
-  void (*reset)(void* obj);
-};
+struct upb_sinkframe;
 
 #ifdef __cplusplus
 
@@ -122,6 +113,13 @@ struct upb_pipeline {
   upb_status status_;
 };
 
+struct upb_frametype {
+  size_t size;
+  void (*init)(void* obj, upb_pipeline *p);
+  void (*uninit)(void* obj);
+  void (*reset)(void* obj);
+};
+
 #ifdef __cplusplus
 
 // For convenience, a template for a pipeline with an array of initial memory.
@@ -135,84 +133,6 @@ class upb::SeededPipeline : public upb::Pipeline {
  private:
   char mem_[initial_size];
 };
-
-class upb::SinkFrame {
- public:
-  // Returns the sink that this frame belongs to.
-  Sink* sink() const;
-
-  // Returns the pipeline that this sink and frame belong to.
-  Pipeline* pipeline() const;
-
-  // The depth of this frame (counts all kind of frames (sequence, submessage,
-  // and string frames).
-  int depth() const;
-
-  // The Handlers object for this frame.
-  const Handlers* handlers() const;
-
-  // Returns the user data that is bound to this sink frame (as returned
-  // by the Start{SubMessage,String,Sequence} handler, or passed to
-  // Sink::Reset()).
-  void* userdata() const;
-
-  // A templated version of userdata() that type-checks the templated return
-  // type.
-  //
-  // TODO(haberman): this isn't truly robust until sequence and string frames
-  // have distinct FrameTypes in the Handlers.
-  template<class T>
-  T* GetUserdata() const {
-#ifdef NDEBUG
-    return static_cast<T*>(userdata());
-#else
-    const FrameType* type = handlers()->frame_type();
-    if (!type || type == GetFrameType<T>()) {
-      return static_cast<T*>(userdata());
-    } else {
-      assert(false);
-      return NULL;
-    }
-#endif
-  }
-
-  // Returns the data that was bound to the currently-executing callback in the
-  // Handlers object.  If not currently in a handler, the results are undefined.
-  void* handler_data() const;
-
- private:
-  UPB_DISALLOW_POD_OPS(SinkFrame);
-  friend class upb::Sink;
-  friend upb_sink* ::upb_sinkframe_sink(const upb_sinkframe* frame);
-  friend void* ::upb_sinkframe_userdata(const upb_sinkframe* frame);
-  friend void* ::upb_sinkframe_handlerdata(const upb_sinkframe* frame);
-
-#else
-struct upb_sinkframe {
-#endif
-  upb_sink *sink_;
-  const upb_handlers *h;
-  void *closure;
-
-  union {
-    // For the top frame (sink->top), the handler_data for the
-    // currently-executing callback, otherwise undefined.
-    // TODO(haberman): have a special pointer value to indicate "not in a
-    // callback"; this will be a way to enforce non-reentrancy of a sink.
-    void *handler_data;
-
-    // For other frames, the END* callback that will run when the subframe is
-    // popped (for example, for a "sequence" frame the frame above it will be a
-    // UPB_HANDLER_ENDSEQ handler).  But this is only necessary for assertion
-    // checking inside upb_sink and can be omitted if the sink has only one
-    // caller.
-    // TODO(haberman): have a mechanism for ensuring that a sink only has one
-    // caller.
-    upb_selector_t selector;
-  } u;
-};
-
-#ifdef __cplusplus
 
 // A upb::Sink is an object that binds a upb::Handlers object to some runtime
 // state.  It is the object that can actually call a set of handlers.
@@ -234,12 +154,11 @@ class upb::Sink {
   // used as the top-level closure.
   void Reset(void *closure);
 
-  // Returns the top-most and base (lowest) frame of the stack, respectively.
-  const SinkFrame* top() const;
-  const SinkFrame* base() const;
-
   // Returns the pipeline that this sink comes from.
   Pipeline* pipeline() const;
+
+  // Returns the top-level object that is bound to this sink.
+  template <class T> T* GetObject() const;
 
   // Functions for pushing data into the sink.
   //
@@ -285,22 +204,8 @@ class upb::Sink {
 struct upb_sink {
 #endif
   upb_pipeline *pipeline_;
-  upb_sinkframe *top_, *limit;
-  upb_sinkframe stack[UPB_MAX_NESTING];
+  struct upb_sinkframe *top, *limit, *stack;
 };
-
-// C API.
-UPB_INLINE upb_sink *upb_sinkframe_sink(const upb_sinkframe* frame) {
-  return frame->sink_;
-}
-
-UPB_INLINE void *upb_sinkframe_userdata(const upb_sinkframe* frame) {
-  return frame->closure;
-}
-
-UPB_INLINE void *upb_sinkframe_handlerdata(const upb_sinkframe* frame) {
-  return frame->u.handler_data;
-}
 
 #ifdef __cplusplus
 extern "C" {
@@ -321,14 +226,9 @@ void upb_pipeline_donateref(
 upb_sink *upb_pipeline_newsink(upb_pipeline *p, const upb_handlers *h);
 const upb_status *upb_pipeline_status(const upb_pipeline *p);
 
-int upb_sinkframe_depth(const upb_sinkframe* frame);
-const upb_handlers* upb_sinkframe_handlers(const upb_sinkframe* frame);
-upb_pipeline* upb_sinkframe_pipeline(const upb_sinkframe* frame);
-
 void upb_sink_reset(upb_sink *s, void *closure);
 upb_pipeline *upb_sink_pipeline(const upb_sink *s);
-const upb_sinkframe *upb_sink_top(const upb_sink *s);
-const upb_sinkframe *upb_sink_base(const upb_sink *s);
+void *upb_sink_getobj(const upb_sink *s);
 bool upb_sink_startmsg(upb_sink *s);
 void upb_sink_endmsg(upb_sink *s);
 bool upb_sink_putint32(upb_sink *s, upb_selector_t sel, int32_t val);
@@ -386,36 +286,15 @@ inline void Pipeline::DonateRef(const upb::Handlers* h, const void *owner) {
   return upb_pipeline_donateref(this, h, owner);
 }
 
-inline Sink* SinkFrame::sink() const {
-  return upb_sinkframe_sink(this);
-}
-inline Pipeline* SinkFrame::pipeline() const {
-  return upb_sinkframe_pipeline(this);
-}
-inline void* SinkFrame::userdata() const {
-  return upb_sinkframe_userdata(this);
-}
-inline void* SinkFrame::handler_data() const {
-  return upb_sinkframe_handlerdata(this);
-}
-inline int SinkFrame::depth() const {
-  return upb_sinkframe_depth(this);
-}
-inline const Handlers* SinkFrame::handlers() const {
-  return upb_sinkframe_handlers(this);
-}
-
 inline void Sink::Reset(void *closure) {
   upb_sink_reset(this, closure);
 }
 inline Pipeline* Sink::pipeline() const {
   return upb_sink_pipeline(this);
 }
-inline const SinkFrame* Sink::top() const {
-  return upb_sink_top(this);
-}
-inline const SinkFrame* Sink::base() const {
-  return upb_sink_base(this);
+template <class T>
+inline T* Sink::GetObject() const {
+  return static_cast<T*>(upb_sink_getobj(this));
 }
 inline bool Sink::StartMessage() {
   return upb_sink_startmsg(this);
@@ -469,5 +348,24 @@ inline bool Sink::EndSequence(Handlers::Selector sel) {
 
 }  // namespace upb
 #endif
+
+// TODO(haberman): move this to sink.c.  We keep it here now only because the
+// JIT needs to modify it directly, which it only needs to do because it makes
+// the interpreter handle fallback cases.  When the JIT is self-sufficient, it
+// will no longer need to touch the sink's stack at all.
+struct upb_sinkframe {
+  const upb_handlers *h;
+  void *closure;
+
+  // For any frames besides the top, this is the END* callback that will run
+  // when the subframe is popped (for example, for a "sequence" frame the frame
+  // above it will be a UPB_HANDLER_ENDSEQ handler).  But this is only
+  // necessary for assertion checking inside upb_sink and can be omitted if the
+  // sink has only one caller.
+  //
+  // TODO(haberman): have a mechanism for ensuring that a sink only has one
+  // caller.
+  upb_selector_t selector;
+};
 
 #endif

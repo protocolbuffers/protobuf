@@ -57,10 +57,6 @@ const upb_handlers *upb_descreader_gethandlers(const void *owner);
 
 namespace upb {
 
-template<> inline const FrameType* GetFrameType<upb::descriptor::Reader>() {
-  return upb_descreader_getframetype();
-}
-
 namespace descriptor {
 inline upb::Def** GetDefs(Reader* r, void* owner, int* n) {
   return upb_descreader_getdefs(r, owner, n);

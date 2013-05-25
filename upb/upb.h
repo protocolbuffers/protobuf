@@ -35,11 +35,12 @@ extern "C" {
 #define UPB_C99
 #endif
 
-#if (defined(__cplusplus) && __cplusplus >= 201103L) || defined(__GXX_EXPERIMENTAL_CXX0X__)
+#if ((defined(__cplusplus) && __cplusplus >= 201103L) || \
+      defined(__GXX_EXPERIMENTAL_CXX0X__)) && !defined(UPB_NO_CXX11)
 #define UPB_CXX11
 #endif
 
-#if defined(__GXX_EXPERIMENTAL_CXX0X__) && !defined(UPB_NO_CXX11)
+#ifdef UPB_CXX11
 #define UPB_DISALLOW_POD_OPS(class_name) \
   class_name() = delete; \
   ~class_name() = delete; \
@@ -70,27 +71,15 @@ extern "C" {
 #endif
 
 // Type detection and typedefs for integer types.
+// For platforms where there are multiple 32-bit or 64-bit types, we need to be
+// able to enumerate them so we can properly create overloads for all variants.
 //
-// We unfortunately cannot just use stdint.h types in all cases, because some
-// platforms have more than one 32-bit type (or 64-bit type).  For example, on
-// x86-64, both "long" and "long long" are 64-bit types, but they are
-// unfortunately incompatible with each other despite being the same size.
-// Since the types are incompatible, functions pointers between them are
-// incompatible also, which leads to trouble since handlers are declared in
-// terms of function pointers.  Since we don't know which of these types
-// stdint.h will use (and we have no way of inspecting the typedefs, either at
-// preprocessing or compilation time), we are forced to declare our own
-// typedefs that we *do* know the real underlying type of.
-//
-// If any platform existed where there three integer types were the same size,
-// this would have to become more complicated.  For example, short, int, and
-// long could all be 32-bits.  Even more diabolically, short, int, long, and
-// long long could all be 64 bits and still be standard-compliant.  However,
-// few platforms are this strange, and it's unlikely that upb will be used on
-// the strangest ones.
-//
-// For more information, see:
-// http://blog.reverberate.org/2013/03/cc-gripe-1-integer-types.html
+// If any platform existed where there were three integer types with the same
+// size, this would have to become more complicated.  For example, short, int,
+// and long could all be 32-bits.  Even more diabolically, short, int, long,
+// and long long could all be 64 bits and still be standard-compliant.
+// However, few platforms are this strange, and it's unlikely that upb will be
+// used on the strangest ones.
 
 // Can't count on stdint.h limits like INT32_MAX, because in C++ these are
 // only defined when __STDC_LIMIT_MACROS are defined before the *first* include
@@ -348,7 +337,7 @@ typedef struct {
 #define UPB__VALUE_INIT_NONE      UPB_VALUE_INIT(NULL, ptr)
 
 #ifdef NDEBUG
-#define SET_TYPE(dest, val)
+#define SET_TYPE(dest, val)      UPB_UNUSED(val)
 #define UPB_VALUE_INIT_NONE      {UPB__VALUE_INIT_NONE}
 #else
 #define SET_TYPE(dest, val) dest = val

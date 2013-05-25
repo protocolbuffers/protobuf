@@ -486,7 +486,7 @@ static int lupb_fielddef_default(lua_State *L) {
 static int lupb_fielddef_getsel(lua_State *L) {
   const upb_fielddef *f = lupb_fielddef_check(L, 1);
   upb_selector_t sel;
-  if (upb_getselector(f, luaL_checknumber(L, 2), &sel)) {
+  if (upb_handlers_getselector(f, luaL_checknumber(L, 2), &sel)) {
     lua_pushnumber(L, sel);
     return 1;
   } else {

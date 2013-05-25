@@ -30,7 +30,7 @@ upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
   // Create sinks.
   upb_sink *reader_sink = upb_pipeline_newsink(&pipeline, reader_h);
   upb_sink *decoder_sink = upb_pipeline_newsink(&pipeline, decoder_h);
-  upb_pbdecoder *d = upb_sinkframe_userdata(upb_sink_base(decoder_sink));
+  upb_pbdecoder *d = upb_sink_getobj(decoder_sink);
   upb_pbdecoder_resetsink(d, reader_sink);
 
   // Push input data.
@@ -42,7 +42,7 @@ upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
     return NULL;
   }
 
-  upb_descreader *r = upb_sinkframe_userdata(upb_sink_base(reader_sink));
+  upb_descreader *r = upb_sink_getobj(reader_sink);
   upb_def **defs = upb_descreader_getdefs(r, owner, n);
   upb_def **defscopy = malloc(sizeof(upb_def*) * (*n));
   memcpy(defscopy, defs, sizeof(upb_def*) * (*n));

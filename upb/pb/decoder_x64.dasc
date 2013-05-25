@@ -12,9 +12,11 @@
 |// function) we must respect alignment rules.  All x86-64 systems require
 |// 16-byte stack alignment.
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <sys/mman.h>
 #include "dynasm/dasm_x86.h"
+#include "upb/shim/shim.h"
 
 #ifndef MAP_ANONYMOUS
 # define MAP_ANONYMOUS MAP_ANON
@@ -61,7 +63,7 @@ static uint32_t upb_getpclabel(decoderplan *plan, const void *obj, int n) {
   return upb_value_getuint32(v) + n;
 }
 
-static upb_jitmsginfo *upb_getmsginfo(decoderplan *plan,
+static upb_jitmsginfo *upb_getmsginfo(const decoderplan *plan,
                                       const upb_handlers *h) {
   upb_value v;
   bool found = upb_inttable_lookupptr(&plan->msginfo, h, &v);
@@ -161,6 +163,7 @@ static void upb_assert_notnull(void *addr) { assert(addr != NULL); (void)addr; }
 |.define ARG2_64,   rsi
 |.define ARG3_32,   edx
 |.define ARG3_64,   rdx
+|.define ARG4_32,   ecx
 |.define ARG4_64,   rcx
 |.define XMMARG1,   xmm0
 
@@ -193,13 +196,11 @@ static void upb_assert_notnull(void *addr) { assert(addr != NULL); (void)addr; }
 ||{
 ||  uintptr_t data = (uintptr_t)gethandlerdata(h, f, type);
 || if (data > 0xffffffff) {
-|    mov64  rax, data
-|    mov    SINKFRAME->u.handler_data, rax
-|| } else if (data > 0x7fffffff) {
-|    mov    eax, data
-|    mov    SINKFRAME->u.handler_data, rax
+|    mov64  ARG2_64, data
+|| } else if (data) {
+|    mov    ARG2_32, data
 || } else {
-|    mov    qword SINKFRAME->u.handler_data, data
+|    xor    ARG2_32, ARG2_32
 || }
 || }
 |.endmacro
@@ -269,6 +270,8 @@ static void upb_assert_notnull(void *addr) { assert(addr != NULL); (void)addr; }
 |// table on the raw (length-masked) varint to save 3-4 cycles of latency.
 |// Currently only support tables where all entries are in the array part.
 |.macro dyndispatch_, h
+|| asmlabel(plan, "_UPB_MCODE_DISPATCH_%s.%d",
+||          upb_msgdef_fullname(upb_handlers_msgdef(h)), rand());
 |=>upb_getpclabel(plan, h, DYNDISPATCH):
 |  decode_loaded_varint, 0
 |  mov  ecx, esi
@@ -310,22 +313,21 @@ static void upb_assert_notnull(void *addr) { assert(addr != NULL); (void)addr; }
 |
 |.macro pushsinkframe, handlers, field, endtype
 |  mov   rax, DECODER->sink
-|  mov   dword SINKFRAME->u.selector, getselector(field, endtype)
+|  mov   dword SINKFRAME->selector, getselector(field, endtype)
 |  lea   rcx, [SINKFRAME + sizeof(upb_sinkframe)]  // rcx for short addressing
 |  cmp   rcx, SINK:rax->limit
 |  jae   ->exit_jit  // Frame stack overflow.
 |  mov64 r9, (uintptr_t)handlers
 |  mov   SINKFRAME:rcx->h, r9
 |  mov   SINKFRAME:rcx->closure, CLOSURE
-|  mov   SINK:rax->top_, rcx
-|  mov   SINKFRAME:rcx->sink_, rax
+|  mov   SINK:rax->top, rcx
 |  mov   SINKFRAME, rcx
 |.endmacro
 |
 |.macro popsinkframe
 |  sub   SINKFRAME, sizeof(upb_sinkframe)
 |  mov   rax, DECODER->sink
-|  mov   SINK:rax->top_, SINKFRAME
+|  mov   SINK:rax->top, SINKFRAME
 |  mov   CLOSURE, SINKFRAME->closure
 |.endmacro
 |
@@ -415,12 +417,28 @@ static uintptr_t gethandlerdata(const upb_handlers *h, const upb_fielddef *f,
   return (uintptr_t)upb_handlers_gethandlerdata(h, getselector(f, type));
 }
 
+static void asmlabel(decoderplan *plan, const char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  char *str = NULL;
+  size_t size = 0;
+  upb_vrprintf(&str, &size, 0, fmt, ap);
+  va_end(ap);
+  uint32_t label = plan->pclabel_count++;
+  dasm_growpc(plan, plan->pclabel_count);
+  |=>label:
+  upb_inttable_insert(&plan->asmlabels, label, upb_value_ptr(str));
+}
+
 // Decodes the next val into ARG2, advances PTR.
 static void upb_decoderplan_jit_decodefield(decoderplan *plan,
                                             size_t tag_size,
                                             const upb_handlers *h,
                                             const upb_fielddef *f) {
   // Decode the value into arg 3 for the callback.
+  asmlabel(plan, "UPB_MCODE_DECODE_FIELD_%s.%s",
+           upb_msgdef_fullname(upb_handlers_msgdef(h)),
+           upb_fielddef_name(f));
   switch (upb_fielddef_descriptortype(f)) {
     case UPB_DESCRIPTOR_TYPE_DOUBLE:
       |  movsd  XMMARG1, qword [PTR + tag_size]
@@ -496,39 +514,36 @@ static void upb_decoderplan_jit_decodefield(decoderplan *plan,
 
       upb_func *handler = gethandler(h, f, UPB_HANDLER_STARTSTR);
       if (handler) {
+        // void* startstr(void *c, const void *hd, size_t hint)
         |  mov  DECODER->tmp_len, ARG2_32
-        |  mov  ARG1_64, SINKFRAME
+        |  mov  ARG1_64, CLOSURE
+        |  mov  ARG3_64, ARG2_64
         |  load_handler_data h, f, UPB_HANDLER_STARTSTR
         |  callp handler
         |  check_ptr_ret
-        |  mov  CLOSURE, rax
-        |  mov  ARG3_32, DECODER->tmp_len
+        |  mov  ARG1_64, rax  // sub-closure
+        |  mov  ARG4_32, DECODER->tmp_len
       } else {
-        |  mov  ARG3_64, ARG2_64
+        |  mov  ARG1_64, CLOSURE
+        |  mov  ARG4_64, ARG2_64
       }
 
       handler = gethandler(h, f, UPB_HANDLER_STRING);
       if (handler) {
-        // TODO: push a real frame so we can resume into the string.
-        // (but maybe do this only if the string breaks).
-        |  pushsinkframe h, f, UPB_HANDLER_ENDSTR
-
-        // size_t str(const upb_sinkframe *frame, const char *buf, size_t len)
-        |  mov   ARG1_64, SINKFRAME
+        // size_t str(void *c, const void *hd, const char *buf, size_t len)
         |  load_handler_data h, f, UPB_HANDLER_STRING
-        |  mov   ARG2_64, PTR
+        |  mov   ARG3_64, PTR
         |  callp handler
         // TODO: properly handle returns other than "n" (the whole string).
         |  add   PTR, rax
-        |  popsinkframe
       } else {
-        |  add   PTR, ARG3_64
+        |  add   PTR, ARG4_64
       }
 
       handler = gethandler(h, f, UPB_HANDLER_ENDSTR);
       if (handler) {
         // bool endstr(const upb_sinkframe *frame);
-        |  mov    ARG1_64, SINKFRAME
+        |  mov    ARG1_64, CLOSURE
         |  load_handler_data h, f, UPB_HANDLER_ENDSTR
         |  callp  handler
         |  check_bool_ret
@@ -553,13 +568,16 @@ static void upb_decoderplan_jit_callcb(decoderplan *plan,
                                        const upb_fielddef *f) {
   // Call callbacks.  Specializing the append accessors didn't yield a speed
   // increase in benchmarks.
+  asmlabel(plan, "UPB_MCODE_CALLCB_%s.%s",
+           upb_msgdef_fullname(upb_handlers_msgdef(h)),
+           upb_fielddef_name(f));
   if (upb_fielddef_issubmsg(f)) {
     // Call startsubmsg handler (if any).
     upb_func *startsubmsg = gethandler(h, f, UPB_HANDLER_STARTSUBMSG);
     if (startsubmsg) {
       // upb_sflow_t startsubmsg(const upb_sinkframe *frame)
       |  mov DECODER->tmp_len, ARG2_32
-      |  mov ARG1_64, SINKFRAME
+      |  mov ARG1_64, CLOSURE
       |  load_handler_data h, f, UPB_HANDLER_STARTSUBMSG
       |  callp startsubmsg
       |  check_ptr_ret
@@ -594,37 +612,46 @@ static void upb_decoderplan_jit_callcb(decoderplan *plan,
     upb_func *endsubmsg = gethandler(h, f, UPB_HANDLER_ENDSUBMSG);
     if (endsubmsg) {
       // upb_flow_t endsubmsg(void *closure, upb_value fval);
-      |  mov   ARG1_64, SINKFRAME
+      |  mov   ARG1_64, CLOSURE
       |  load_handler_data h, f, UPB_HANDLER_ENDSUBMSG
       |  callp endsubmsg
       |  check_bool_ret
     }
   } else if (!upb_fielddef_isstring(f)) {
     upb_handlertype_t handlertype = upb_handlers_getprimitivehandlertype(f);
+    upb_selector_t sel = getselector(f, handlertype);
     upb_func *handler = gethandler(h, f, handlertype);
-    const upb_stdmsg_fval *fv = (void*)gethandlerdata(h, f, handlertype);
-    // Test for callbacks we can specialize.
-    // Can't switch() on function pointers.
-    if (handler == (void*)&upb_stdmsg_setint64 ||
-        handler == (void*)&upb_stdmsg_setuint64) {
-      |  mov   [CLOSURE + fv->offset], ARG2_64
-      |  sethas CLOSURE, fv->hasbit
-    } else if (handler == (void*)&upb_stdmsg_setdouble) {
-      |  movsd  qword [CLOSURE + fv->offset], XMMARG1
-      |  sethas CLOSURE, fv->hasbit
-    } else if (handler == (void*)&upb_stdmsg_setint32 ||
-               handler == (void*)&upb_stdmsg_setuint32) {
-      |  mov   [CLOSURE + fv->offset], ARG2_32
-      |  sethas CLOSURE, fv->hasbit
-    } else if (handler == (void*)&upb_stdmsg_setfloat) {
-      |  movss  dword [CLOSURE + fv->offset], XMMARG1
-      |  sethas CLOSURE, fv->hasbit
-    } else if (handler == (void*)&upb_stdmsg_setbool) {
-      |  mov   [CLOSURE + fv->offset], ARG2_8
-      |  sethas CLOSURE, fv->hasbit
+    const upb_shim_data *data = upb_shim_getdata(h, sel);
+    if (data) {
+      switch (upb_fielddef_type(f)) {
+        case UPB_TYPE_INT64:
+        case UPB_TYPE_UINT64:
+          |  mov   [CLOSURE + data->offset], ARG2_64
+          break;
+        case UPB_TYPE_INT32:
+        case UPB_TYPE_UINT32:
+        case UPB_TYPE_ENUM:
+          |  mov   [CLOSURE + data->offset], ARG2_32
+          break;
+        case UPB_TYPE_DOUBLE:
+          |  movsd  qword [CLOSURE + data->offset], XMMARG1
+          break;
+        case UPB_TYPE_FLOAT:
+          |  movss  dword [CLOSURE + data->offset], XMMARG1
+          break;
+        case UPB_TYPE_BOOL:
+          |  mov   [CLOSURE + data->offset], ARG2_8
+          break;
+        case UPB_TYPE_STRING:
+        case UPB_TYPE_BYTES:
+        case UPB_TYPE_MESSAGE:
+          assert(false); break;
+      }
+      |  sethas CLOSURE, data->hasbit
     } else if (handler) {
       // bool value(const upb_sinkframe* frame, ctype val)
-      |  mov    ARG1_64, SINKFRAME
+      |  mov    ARG1_64, CLOSURE
+      |  mov    ARG3_64, ARG2_64
       |  load_handler_data h, f, handlertype
       |  callp  handler
       |  check_bool_ret
@@ -647,7 +674,7 @@ static void upb_decoderplan_jit_endseq(decoderplan *plan,
   |  popframe
   upb_func *endseq = gethandler(h, f, UPB_HANDLER_ENDSEQ);
   if (endseq) {
-    |  mov   ARG1_64, SINKFRAME
+    |  mov   ARG1_64, CLOSURE
     |  load_handler_data h, f, UPB_HANDLER_ENDSEQ
     |  callp endseq
   }
@@ -658,6 +685,9 @@ static void upb_decoderplan_jit_field(decoderplan *plan,
                                       const upb_handlers *h,
                                       const upb_fielddef *f,
                                       const upb_fielddef *next_f) {
+  asmlabel(plan, "UPB_MCODE_FIELD_%s.%s",
+           upb_msgdef_fullname(upb_handlers_msgdef(h)),
+           upb_fielddef_name(f));
   uint64_t tag = upb_get_encoded_tag(f);
   uint64_t next_tag = next_f ? upb_get_encoded_tag(next_f) : 0;
   int tag_size = upb_value_size(tag);
@@ -672,7 +702,7 @@ static void upb_decoderplan_jit_field(decoderplan *plan,
   if (upb_fielddef_isseq(f)) {
     upb_func *startseq = gethandler(h, f, UPB_HANDLER_STARTSEQ);
     if (startseq) {
-      |  mov   ARG1_64, SINKFRAME
+      |  mov   ARG1_64, CLOSURE
       |  load_handler_data h, f, UPB_HANDLER_STARTSEQ
       |  callp startseq
       |  check_ptr_ret
@@ -726,6 +756,8 @@ static int upb_compare_uint32(const void *a, const void *b) {
 
 static void upb_decoderplan_jit_msg(decoderplan *plan,
                                     const upb_handlers *h) {
+  asmlabel(plan, "UPB_MCODE_DECODEMSG_%s",
+           upb_msgdef_fullname(upb_handlers_msgdef(h)));
   |=>upb_getpclabel(plan, h, AFTER_STARTMSG):
   |  push  rbp
   |  mov   rbp, rsp
@@ -739,7 +771,7 @@ static void upb_decoderplan_jit_msg(decoderplan *plan,
   upb_startmsg_handler *startmsg = upb_handlers_getstartmsg(h);
   if (startmsg) {
     // upb_flow_t startmsg(void *closure);
-    |  mov   ARG1_64, SINKFRAME
+    |  mov   ARG1_64, CLOSURE
     |  callp startmsg
     |  check_bool_ret
   }
@@ -792,7 +824,7 @@ static void upb_decoderplan_jit_msg(decoderplan *plan,
   upb_endmsg_handler *endmsg = upb_handlers_getendmsg(h);
   if (endmsg) {
     // void endmsg(void *closure, upb_status *status) {
-    |  mov   ARG1_64, SINKFRAME
+    |  mov   ARG1_64, CLOSURE
     |  mov   ARG2_64, DECODER->sink
     |  mov   ARG2_64, SINK:ARG2_64->pipeline_
     |  add   ARG2_64, offsetof(upb_pipeline, status_)
@@ -815,6 +847,7 @@ static void upb_decoderplan_jit(decoderplan *plan) {
   // calculate the structure offsets ourself instead of symbolically
   // (ie. [r15 + 0xcd] instead of DECODER->ptr).  So we tolerate a bit of
   // unnecessary duplication/redundancy.
+  asmlabel(plan, "upb_jit_trampoline");
   |  push  rbp
   |  mov   rbp, rsp
   |  push  r15
@@ -828,13 +861,14 @@ static void upb_decoderplan_jit(decoderplan *plan) {
   |  mov   DECODER->saved_rbp, rbp
   |  mov   FRAME, DECODER:ARG1_64->top
   |  mov   rax, DECODER:ARG1_64->sink
-  |  mov   SINKFRAME, SINK:rax->top_
+  |  mov   SINKFRAME, SINK:rax->top
   |  mov   CLOSURE, SINKFRAME->closure
   |  mov   PTR, DECODER->ptr
 
   // TODO: push return addresses for re-entry (will be necessary for multiple
   // buffer support).
   |  call  ARG2_64
+  asmlabel(plan, "exitjit");
   |->exit_jit:
   |  mov   rbp, DECODER->saved_rbp
   |  lea   rsp, [rbp - 48]
@@ -903,6 +937,8 @@ static void upb_decoderplan_makejit(decoderplan *plan) {
   upb_inttable_init(&plan->pclabels, UPB_CTYPE_UINT32);
   upb_decoderplan_jit_assignpclabels(plan, plan->dest_handlers);
 
+  upb_inttable_init(&plan->asmlabels, UPB_CTYPE_PTR);
+
   void **globals = malloc(UPB_JIT_GLOBAL__MAX * sizeof(*globals));
   dasm_init(plan, 1);
   dasm_setupglobal(plan, globals, UPB_JIT_GLOBAL__MAX);
@@ -947,18 +983,57 @@ static void upb_decoderplan_makejit(decoderplan *plan) {
 
   upb_inttable_uninit(&plan->pclabels);
 
-  dasm_free(plan);
-  free(globals);
-
   mprotect(plan->jit_code, plan->jit_size, PROT_EXEC | PROT_READ);
 
 #ifndef NDEBUG
-  // View with: objdump -M intel -D -b binary -mi386 -Mx86-64 /tmp/machine-code
-  // Or: ndisasm -b 64 /tmp/machine-code
-  FILE *f = fopen("/tmp/machine-code", "wb");
-  fwrite(plan->jit_code, plan->jit_size, 1, f);
-  fclose(f);
+  // Dump to a .o file in /tmp, for easy inspection.
+
+  // Convert all asm labels from pclabel offsets to machine code offsets.
+  upb_inttable mclabels;
+  upb_inttable_init(&mclabels, UPB_CTYPE_PTR);
+  upb_inttable_begin(&i, &plan->asmlabels);
+  for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
+    upb_inttable_insert(
+        &mclabels,
+        dasm_getpclabel(plan, upb_inttable_iter_key(&i)),
+        upb_inttable_iter_value(&i));
+  }
+
+  FILE *f = fopen("/tmp/upb-jit-code.s", "w");
+  if (f) {
+    fputs("  .text", f);
+    size_t linelen = 0;
+    for (size_t i = 0; i < plan->jit_size; i++) {
+      upb_value v;
+      if (upb_inttable_lookup(&mclabels, i, &v)) {
+        const char *label = upb_value_getptr(v);
+        fprintf(f, "\n\n_%s:\n", label);
+        fprintf(f, "  .globl _%s", label);
+        linelen = 1000;
+      }
+      if (linelen >= 77) {
+        linelen = fprintf(f, "\n  .byte %u", plan->jit_code[i]);
+      } else {
+        linelen += fprintf(f, ",%u", plan->jit_code[i]);
+      }
+    }
+    fputs("\n", f);
+    fclose(f);
+  } else {
+    fprintf(stderr, "Couldn't open /tmp/upb-jit-code.s for writing/\n");
+  }
+
+  upb_inttable_uninit(&mclabels);
 #endif
+
+  upb_inttable_begin(&i, &plan->asmlabels);
+  for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
+    free(upb_value_getptr(upb_inttable_iter_value(&i)));
+  }
+  upb_inttable_uninit(&plan->asmlabels);
+
+  dasm_free(plan);
+  free(globals);
 }
 
 static void upb_decoderplan_freejit(decoderplan *plan) {
@@ -975,10 +1050,10 @@ static void upb_decoderplan_freejit(decoderplan *plan) {
   // TODO: unregister
 }
 
-static void upb_decoder_enterjit(upb_pbdecoder *d, decoderplan *plan) {
+static void upb_decoder_enterjit(upb_pbdecoder *d, const decoderplan *plan) {
   if (plan->jit_code &&
       d->top == d->stack &&
-      d->sink->top_ == d->sink->stack &&
+      d->sink->top == d->sink->stack &&
       d->ptr && d->ptr < d->jit_end) {
 #ifndef NDEBUG
     register uint64_t rbx asm ("rbx") = 11;

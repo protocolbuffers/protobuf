@@ -15,7 +15,7 @@ static void upb_sink_resetobj(void *obj);
 static const upb_frametype upb_sink_frametype;
 
 static bool chkstack(upb_sink *s) {
-  if (s->top_ + 1 >= s->limit) {
+  if (s->top + 1 >= s->limit) {
     upb_status_seterrliteral(&s->pipeline_->status_, "Nesting too deep.");
     return false;
   } else {
@@ -134,7 +134,7 @@ void *upb_pipeline_allocobj(upb_pipeline *p, const upb_frametype *ft) {
   obj->prev = p->obj_head;
   obj->ft = ft;
   p->obj_head = obj;
-  if (ft->init) ft->init(&obj->data);
+  if (ft->init) ft->init(&obj->data, p);
   return &obj->data;
 }
 
@@ -180,21 +180,6 @@ void upb_pipeline_donateref(
 }
 
 
-/* upb_sinkframe **************************************************************/
-
-int upb_sinkframe_depth(const upb_sinkframe* frame) {
-  return frame - frame->sink_->stack;
-}
-
-const upb_handlers* upb_sinkframe_handlers(const upb_sinkframe* frame) {
-  return frame->h;
-}
-
-upb_pipeline *upb_sinkframe_pipeline(const upb_sinkframe* frame) {
-  return frame->sink_->pipeline_;
-}
-
-
 /* upb_sink *******************************************************************/
 
 static const upb_frametype upb_sink_frametype = {
@@ -205,82 +190,79 @@ static const upb_frametype upb_sink_frametype = {
 };
 
 void upb_sink_reset(upb_sink *s, void *closure) {
-  s->top_ = s->stack;
-  s->top_->closure = closure;
+  s->top = s->stack;
+  s->top->closure = closure;
 }
 
 static void upb_sink_resetobj(void *obj) {
   upb_sink *s = obj;
-  s->top_ = s->stack;
+  s->top = s->stack;
 }
 
 static void upb_sink_init(upb_sink *s, const upb_handlers *h, upb_pipeline *p) {
   s->pipeline_ = p;
-  s->limit = &s->stack[UPB_MAX_NESTING];
-  s->stack[0].h = h;
-  s->top_ = s->stack;
+  s->stack = upb_pipeline_alloc(p, sizeof(*s->stack) * UPB_MAX_NESTING);
+  s->top = s->stack;
+  s->limit = s->stack + UPB_MAX_NESTING;
+  s->top->h = h;
   if (h->ft) {
-    s->stack[0].closure = upb_pipeline_allocobj(p, h->ft);
+    s->top->closure = upb_pipeline_allocobj(p, h->ft);
   }
-}
-
-const upb_sinkframe *upb_sink_top(const upb_sink *s) {
-  return s->top_;
-}
-
-const upb_sinkframe *upb_sink_base(const upb_sink *s) {
-  return s->stack;
 }
 
 upb_pipeline *upb_sink_pipeline(const upb_sink *s) {
   return s->pipeline_;
 }
 
+void *upb_sink_getobj(const upb_sink *s) {
+  return s->stack[0].closure;
+}
+
 bool upb_sink_startmsg(upb_sink *s) {
-  const upb_handlers *h = s->top_->h;
+  const upb_handlers *h = s->top->h;
   upb_startmsg_handler *startmsg = upb_handlers_getstartmsg(h);
-  return startmsg ? startmsg(s->top_) : true;
+  return startmsg ? startmsg(s->top->closure) : true;
 }
 
 void upb_sink_endmsg(upb_sink *s) {
-  assert(s->top_ == s->stack);
-  upb_endmsg_handler *endmsg = upb_handlers_getendmsg(s->top_->h);
+  assert(s->top == s->stack);
+  upb_endmsg_handler *endmsg = upb_handlers_getendmsg(s->top->h);
   if (endmsg) {
-    endmsg(s->top_, &s->pipeline_->status_);
+    endmsg(s->top->closure, &s->pipeline_->status_);
   }
 }
 
-#define PUTVAL(type, ctype, htype) \
+#define PUTVAL(type, ctype) \
   bool upb_sink_put ## type(upb_sink *s, upb_selector_t sel, ctype val) { \
-    const upb_handlers *h = s->top_->h; \
+    const upb_handlers *h = s->top->h; \
     upb_ ## type ## _handler *handler = (upb_ ## type ## _handler*) \
         upb_handlers_gethandler(h, sel); \
     if (handler) { \
-      s->top_->u.handler_data = upb_handlers_gethandlerdata(h, sel); \
-      bool ok = handler(s->top_, val); \
+      const void *hd = upb_handlers_gethandlerdata(h, sel); \
+      bool ok = handler(s->top->closure, hd, val); \
       if (!ok) return false; \
     } \
     return true; \
   }
 
-PUTVAL(int32,  int32_t,         INT32);
-PUTVAL(int64,  int64_t,         INT64);
-PUTVAL(uint32, uint32_t,        UINT32);
-PUTVAL(uint64, uint64_t,        UINT64);
-PUTVAL(float,  float,           FLOAT);
-PUTVAL(double, double,          DOUBLE);
-PUTVAL(bool,   bool,            BOOL);
+PUTVAL(int32,  int32_t);
+PUTVAL(int64,  int64_t);
+PUTVAL(uint32, uint32_t);
+PUTVAL(uint64, uint64_t);
+PUTVAL(float,  float);
+PUTVAL(double, double);
+PUTVAL(bool,   bool);
 #undef PUTVAL
 
 size_t upb_sink_putstring(upb_sink *s, upb_selector_t sel,
                           const char *buf, size_t n) {
-  const upb_handlers *h = s->top_->h;
+  const upb_handlers *h = s->top->h;
   upb_string_handler *handler =
       (upb_string_handler*)upb_handlers_gethandler(h, sel);
 
   if (handler) {
-    s->top_->u.handler_data = upb_handlers_gethandlerdata(h, sel);;
-    n = handler(s->top_, buf, n);
+    const void *hd = upb_handlers_gethandlerdata(h, sel);;
+    n = handler(s->top->closure, hd, buf, n);
   }
 
   return n;
@@ -289,39 +271,39 @@ size_t upb_sink_putstring(upb_sink *s, upb_selector_t sel,
 bool upb_sink_startseq(upb_sink *s, upb_selector_t sel) {
   if (!chkstack(s)) return false;
 
-  void *subc = s->top_->closure;
-  const upb_handlers *h = s->top_->h;
+  void *subc = s->top->closure;
+  const upb_handlers *h = s->top->h;
   upb_startfield_handler *startseq =
       (upb_startfield_handler*)upb_handlers_gethandler(h, sel);
 
   if (startseq) {
-    s->top_->u.handler_data = upb_handlers_gethandlerdata(h, sel);
-    subc = startseq(s->top_);
+    const void *hd = upb_handlers_gethandlerdata(h, sel);
+    subc = startseq(s->top->closure, hd);
     if (subc == UPB_BREAK) {
       return false;
     }
   }
 
-  s->top_->u.selector = upb_getendselector(sel);
-  ++s->top_;
-  s->top_->h = h;
-  s->top_->closure = subc;
-  s->top_->sink_ = s;
+  s->top->selector = upb_handlers_getendselector(sel);
+  ++s->top;
+  s->top->h = h;
+  s->top->closure = subc;
   return true;
 }
 
 bool upb_sink_endseq(upb_sink *s, upb_selector_t sel) {
-  --s->top_;
-  assert(sel == s->top_->u.selector);
+  --s->top;
+  assert(sel == s->top->selector);
 
-  const upb_handlers *h = s->top_->h;
+  const upb_handlers *h = s->top->h;
   upb_endfield_handler *endseq =
       (upb_endfield_handler*)upb_handlers_gethandler(h, sel);
 
   if (endseq) {
-    bool ok = endseq(s->top_);
+    const void *hd = upb_handlers_gethandlerdata(h, sel);
+    bool ok = endseq(s->top->closure, hd);
     if (!ok) {
-      ++s->top_;
+      ++s->top;
       return false;
     }
   }
@@ -332,38 +314,38 @@ bool upb_sink_endseq(upb_sink *s, upb_selector_t sel) {
 bool upb_sink_startstr(upb_sink *s, upb_selector_t sel, size_t size_hint) {
   if (!chkstack(s)) return false;
 
-  void *subc = s->top_->closure;
-  const upb_handlers *h = s->top_->h;
+  void *subc = s->top->closure;
+  const upb_handlers *h = s->top->h;
   upb_startstr_handler *startstr =
       (upb_startstr_handler*)upb_handlers_gethandler(h, sel);
 
   if (startstr) {
-    s->top_->u.handler_data = upb_handlers_gethandlerdata(h, sel);
-    subc = startstr(s->top_, size_hint);
+    const void *hd = upb_handlers_gethandlerdata(h, sel);
+    subc = startstr(s->top->closure, hd, size_hint);
     if (subc == UPB_BREAK) {
       return false;
     }
   }
 
-  s->top_->u.selector = upb_getendselector(sel);
-  ++s->top_;
-  s->top_->h = h;
-  s->top_->closure = subc;
-  s->top_->sink_ = s;
+  s->top->selector = upb_handlers_getendselector(sel);
+  ++s->top;
+  s->top->h = h;
+  s->top->closure = subc;
   return true;
 }
 
 bool upb_sink_endstr(upb_sink *s, upb_selector_t sel) {
-  --s->top_;
-  assert(sel == s->top_->u.selector);
-  const upb_handlers *h = s->top_->h;
+  --s->top;
+  assert(sel == s->top->selector);
+  const upb_handlers *h = s->top->h;
   upb_endfield_handler *endstr =
       (upb_endfield_handler*)upb_handlers_gethandler(h, sel);
 
   if (endstr) {
-    bool ok = endstr(s->top_);
+    const void *hd = upb_handlers_gethandlerdata(h, sel);
+    bool ok = endstr(s->top->closure, hd);
     if (!ok) {
-      ++s->top_;
+      ++s->top;
       return false;
     }
   }
@@ -374,44 +356,47 @@ bool upb_sink_endstr(upb_sink *s, upb_selector_t sel) {
 bool upb_sink_startsubmsg(upb_sink *s, upb_selector_t sel) {
   if (!chkstack(s)) return false;
 
-  void *subc = s->top_->closure;
-  const upb_handlers *h = s->top_->h;
+  void *subc = s->top->closure;
+  const upb_handlers *h = s->top->h;
   upb_startfield_handler *startsubmsg =
       (upb_startfield_handler*)upb_handlers_gethandler(h, sel);
 
   if (startsubmsg) {
-    s->top_->u.handler_data = upb_handlers_gethandlerdata(h, sel);
-    subc = startsubmsg(s->top_);
+    const void *hd = upb_handlers_gethandlerdata(h, sel);
+    subc = startsubmsg(s->top->closure, hd);
     if (subc == UPB_BREAK) {
       return false;
     }
   }
 
-  s->top_->u.selector= upb_getendselector(sel);
-  ++s->top_;
-  s->top_->h = upb_handlers_getsubhandlers_sel(h, sel);
+  s->top->selector= upb_handlers_getendselector(sel);
+  ++s->top;
+  s->top->h = upb_handlers_getsubhandlers_sel(h, sel);
   // TODO: should add support for submessages without any handlers
-  assert(s->top_->h);
-  s->top_->closure = subc;
-  s->top_->sink_ = s;
+  assert(s->top->h);
+  s->top->closure = subc;
   upb_sink_startmsg(s);
   return true;
 }
 
 bool upb_sink_endsubmsg(upb_sink *s, upb_selector_t sel) {
-  upb_endmsg_handler *endmsg = upb_handlers_getendmsg(s->top_->h);
-  if (endmsg) endmsg(s->top_, &s->pipeline_->status_);
-  --s->top_;
+  upb_endmsg_handler *endmsg = upb_handlers_getendmsg(s->top->h);
+  if (endmsg) {
+    // TODO(haberman): check return value.
+    endmsg(s->top->closure, &s->pipeline_->status_);
+  }
+  --s->top;
 
-  assert(sel == s->top_->u.selector);
-  const upb_handlers *h = s->top_->h;
+  assert(sel == s->top->selector);
+  const upb_handlers *h = s->top->h;
   upb_endfield_handler *endsubmsg =
       (upb_endfield_handler*)upb_handlers_gethandler(h, sel);
 
   if (endsubmsg) {
-    bool ok = endsubmsg(s->top_);
+    const void *hd = upb_handlers_gethandlerdata(h, sel);
+    bool ok = endsubmsg(s->top->closure, hd);
     if (!ok) {
-      ++s->top_;
+      ++s->top;
       return false;
     }
   }
@@ -420,5 +405,5 @@ bool upb_sink_endsubmsg(upb_sink *s, upb_selector_t sel) {
 }
 
 const upb_handlers *upb_sink_tophandlers(upb_sink *s) {
-  return s->top_->h;
+  return s->top->h;
 }

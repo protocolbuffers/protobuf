@@ -60,8 +60,7 @@ void parse_and_compare(google::protobuf::Message *msg1,
   upb::Sink* decoder_sink = pipeline.NewSink(decoder_handlers);
 
   protomsg_sink->Reset(msg2);
-  upb::pb::Decoder* decoder =
-      decoder_sink->base()->GetUserdata<upb::pb::Decoder>();
+  upb::pb::Decoder* decoder = decoder_sink->GetObject<upb::pb::Decoder>();
   upb::pb::ResetDecoderSink(decoder, protomsg_sink);
 
   msg2->Clear();

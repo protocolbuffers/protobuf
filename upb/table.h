@@ -164,6 +164,7 @@ void upb_inttable_compact(upb_inttable *t);
 // A special-case inlinable version of the lookup routine for 32-bit integers.
 UPB_INLINE bool upb_inttable_lookup32(const upb_inttable *t, uint32_t key,
                                       upb_value *v) {
+  *v = upb_value_int32(0);  // Silence compiler warnings.
   if (key < t->array_size) {
     _upb_value arrval = t->array[key];
     if (upb_arrhas(arrval)) {

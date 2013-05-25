@@ -70,10 +70,6 @@ const upb_handlers *upb_pbdecoder_getdesthandlers(const upb_handlers *h);
 
 namespace upb {
 
-template<> inline const FrameType* GetFrameType<upb::pb::Decoder>() {
-  return upb_pbdecoder_getframetype();
-}
-
 namespace pb {
 inline bool ResetDecoderSink(Decoder* r, Sink* sink) {
   return upb_pbdecoder_resetsink(r, sink);

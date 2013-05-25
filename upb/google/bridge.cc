@@ -208,7 +208,7 @@ static upb::MessageDef* NewMessageDef(const goog::Message& m, const void* owner,
   // Must do this before processing submessages to prevent infinite recursion.
   defs->AddMessage(&m, md);
 
-  vector<const goog::FieldDescriptor*> fields;
+  std::vector<const goog::FieldDescriptor*> fields;
   d->file()->pool()->FindAllExtensions(d, &fields);
   for (int i = 0; i < d->field_count(); i++) {
     fields.push_back(d->field(i));

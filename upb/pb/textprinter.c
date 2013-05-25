@@ -38,8 +38,7 @@ static int endfield(upb_textprinter *p) {
   return 0;
 }
 
-static int putescaped(upb_textprinter *p, const char *buf, size_t len,
-                      bool preserve_utf8) {
+static int putescaped(const char* buf, size_t len, bool preserve_utf8) {
   // Based on CEscapeInternal() from Google's protobuf release.
   char dstbuf[4096], *dst = dstbuf, *dstend = dstbuf + sizeof(dstbuf);
   const char *end = buf + len;
@@ -84,9 +83,9 @@ static int putescaped(upb_textprinter *p, const char *buf, size_t len,
 }
 
 #define TYPE(name, ctype, fmt) \
-  static bool put ## name(const upb_sinkframe *frame, ctype val) {             \
-    upb_textprinter *p = upb_sinkframe_userdata(frame);                        \
-    const upb_fielddef *f = upb_sinkframe_handlerdata(frame);                  \
+  static bool put ## name(void *closure, const void *handler_data, ctype val) {\
+    upb_textprinter *p = closure;                                              \
+    const upb_fielddef *f = handler_data;                                      \
     CHECK(indent(p));                                                          \
     puts(upb_fielddef_name(f));                                                \
     puts(": ");                                                                \
@@ -97,9 +96,9 @@ static int putescaped(upb_textprinter *p, const char *buf, size_t len,
     return false;                                                              \
 }
 
-static bool putbool(const upb_sinkframe *frame, bool val) {
-  upb_textprinter *p = upb_sinkframe_userdata(frame);
-  const upb_fielddef *f = upb_sinkframe_handlerdata(frame);
+static bool putbool(void *closure, const void *handler_data, bool val) {
+  upb_textprinter *p = closure;
+  const upb_fielddef *f = handler_data;
   CHECK(indent(p));
   puts(upb_fielddef_name(f));
   puts(": ");
@@ -121,44 +120,49 @@ TYPE(float,  float,    "%." STRINGIFY_MACROVAL(FLT_DIG) "g")
 TYPE(double, double,   "%." STRINGIFY_MACROVAL(DBL_DIG) "g")
 
 // Output a symbolic value from the enum if found, else just print as int32.
-static bool putenum(const upb_sinkframe *frame, int32_t val) {
-  const upb_fielddef *f = upb_sinkframe_handlerdata(frame);
+static bool putenum(void *closure, const void *handler_data, int32_t val) {
+  const upb_fielddef *f = handler_data;
   const upb_enumdef *enum_def = upb_downcast_enumdef(upb_fielddef_subdef(f));
   const char *label = upb_enumdef_iton(enum_def, val);
   if (label) {
     puts(label);
   } else {
-    CHECK(putint32(frame, val));
+    CHECK(putint32(closure, handler_data, val));
   }
   return true;
 err:
   return false;
 }
 
-static void *startstr(const upb_sinkframe *frame, size_t size_hint) {
+static void *startstr(void *closure, const void *handler_data,
+                      size_t size_hint) {
+  UPB_UNUSED(handler_data);
   UPB_UNUSED(size_hint);
-  upb_textprinter *p = upb_sinkframe_userdata(frame);
+  upb_textprinter *p = closure;
   putchar('"');
   return p;
 }
 
-static bool endstr(const upb_sinkframe *frame) {
+static bool endstr(void *closure, const void *handler_data) {
+  UPB_UNUSED(closure);
+  UPB_UNUSED(handler_data);
   putchar('"');
   return true;
 }
 
-static size_t putstr(const upb_sinkframe *frame, const char *buf, size_t len) {
-  upb_textprinter *p = upb_sinkframe_userdata(frame);
-  const upb_fielddef *f = upb_sinkframe_handlerdata(frame);
-  CHECK(putescaped(p, buf, len, upb_fielddef_type(f) == UPB_TYPE_STRING));
+static size_t putstr(void *closure, const void *hd, const char *buf,
+                     size_t len) {
+  UPB_UNUSED(closure);
+  const upb_fielddef *f = hd;
+  CHECK(putescaped(buf, len, upb_fielddef_type(f) == UPB_TYPE_STRING));
   return len;
 err:
   return 0;
 }
 
-static void *startsubmsg(const upb_sinkframe *frame) {
-  upb_textprinter *p = upb_sinkframe_userdata(frame);
-  const upb_fielddef *f = upb_sinkframe_handlerdata(frame);
+static void *startsubmsg(void *closure, const void *handler_data) {
+  upb_textprinter *p = closure;
+  const upb_fielddef *f = handler_data;
   CHECK(indent(p));
   printf("%s {", upb_fielddef_name(f));
   if (!p->single_line)
@@ -169,8 +173,9 @@ err:
   return UPB_BREAK;
 }
 
-static bool endsubmsg(const upb_sinkframe *frame) {
-  upb_textprinter *p = upb_sinkframe_userdata(frame);
+static bool endsubmsg(void *closure, const void *handler_data) {
+  UPB_UNUSED(handler_data);
+  upb_textprinter *p = closure;
   p->indent_depth--;
   CHECK(indent(p));
   putchar('}');

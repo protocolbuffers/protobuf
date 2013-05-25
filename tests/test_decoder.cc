@@ -188,10 +188,8 @@ void indentbuf(buffer *buf, int depth) {
 }
 
 #define NUMERIC_VALUE_HANDLER(member, ctype, fmt) \
-  bool value_ ## member(const upb::SinkFrame *frame, ctype val) {  \
-    int *depth = (int*)frame->userdata();                                      \
+  bool value_ ## member(int* depth, const uint32_t* num, ctype val) {          \
     indentbuf(&output, *depth);                                                \
-    uint32_t *num = static_cast<uint32_t*>(frame->handler_data());             \
     output.appendf("%" PRIu32 ":%" fmt "\n", *num, val);                       \
     return true;                                                               \
   }
@@ -203,74 +201,68 @@ NUMERIC_VALUE_HANDLER(int64,  int64_t,  PRId64)
 NUMERIC_VALUE_HANDLER(float,  float,    "g")
 NUMERIC_VALUE_HANDLER(double, double,   "g")
 
-bool value_bool(const upb::SinkFrame *frame, bool val) {
-  int *depth = (int*)frame->userdata();
+bool value_bool(int* depth, const uint32_t* num, bool val) {
   indentbuf(&output, *depth);
-  uint32_t *num = static_cast<uint32_t*>(frame->handler_data());
   output.appendf("%" PRIu32 ":%s\n", *num, val ? "true" : "false");
   return true;
 }
 
-void* startstr(const upb::SinkFrame* frame, size_t size_hint) {
-  int *depth = (int*)frame->userdata();
+int* startstr(int* depth, const uint32_t* num, size_t size_hint) {
   indentbuf(&output, *depth);
-  uint32_t *num = static_cast<uint32_t*>(frame->handler_data());
   output.appendf("%" PRIu32 ":(%zu)\"", *num, size_hint);
   return depth + 1;
 }
 
-size_t value_string(const upb::SinkFrame* frame, const char* buf, size_t n) {
+size_t value_string(int* depth, const uint32_t* num, const char* buf,
+                    size_t n) {
+  UPB_UNUSED(num);
   output.append(buf, n);
   return n;
 }
 
-bool endstr(const upb::SinkFrame* frame) {
+bool endstr(int* depth, const uint32_t* num) {
+  UPB_UNUSED(depth);
+  UPB_UNUSED(num);
   output.append("\"\n");
   return true;
 }
 
-void* startsubmsg(const upb::SinkFrame* frame) {
-  int *depth = (int*)frame->userdata();
+int* startsubmsg(int* depth, const uint32_t* num) {
   indentbuf(&output, *depth);
-  uint32_t *num = static_cast<uint32_t*>(frame->handler_data());
   output.appendf("%" PRIu32 ":{\n", *num);
   return depth + 1;
 }
 
-bool endsubmsg(const upb::SinkFrame* frame) {
-  int *depth = (int*)frame->userdata();
+bool endsubmsg(int* depth, const uint32_t* num) {
+  UPB_UNUSED(num);
   indentbuf(&output, *depth);
   output.append("}\n");
   return true;
 }
 
-void* startseq(const upb::SinkFrame* frame) {
-  int *depth = (int*)frame->userdata();
+int* startseq(int* depth, const uint32_t* num) {
   indentbuf(&output, *depth);
-  uint32_t *num = static_cast<uint32_t*>(frame->handler_data());
   output.appendf("%" PRIu32 ":[\n", *num);
   return depth + 1;
 }
 
-bool endseq(const upb::SinkFrame* frame) {
-  int *depth = (int*)frame->userdata();
+bool endseq(int* depth, const uint32_t* num) {
+  UPB_UNUSED(num);
   indentbuf(&output, *depth);
   output.append("]\n");
   return true;
 }
 
-bool startmsg(const upb::SinkFrame* frame) {
-  int *depth = (int*)frame->userdata();
+bool startmsg(int* depth) {
   indentbuf(&output, *depth);
   output.append("<\n");
   return true;
 }
 
-void endmsg(const upb::SinkFrame* frame, upb_status* status) {
-  (void)status;
-  int *depth = (int*)frame->userdata();
+bool endmsg(int* depth, upb_status* status) {
   indentbuf(&output, *depth);
   output.append(">\n");
+  return true;
 }
 
 void free_uint32(void *val) {
@@ -278,17 +270,14 @@ void free_uint32(void *val) {
   delete u32;
 }
 
-template<class T>
-void doreg(upb_handlers *h, uint32_t num,
-           typename upb::Handlers::Value<T>::Handler *handler) {
+template<class T, bool F(int*, const uint32_t*, T)>
+void doreg(upb_handlers *h, uint32_t num) {
   const upb_fielddef *f = upb_msgdef_itof(upb_handlers_msgdef(h), num);
   ASSERT(f);
-  ASSERT(h->SetValueHandler<T>(f, handler, new uint32_t(num), free_uint32));
+  ASSERT(h->SetValueHandler<T>(f, UpbBindT(F, new uint32_t(num))));
   if (f->IsSequence()) {
-    ASSERT(h->SetStartSequenceHandler(
-        f, &startseq, new uint32_t(num), free_uint32));
-    ASSERT(h->SetEndSequenceHandler(
-        f, &endseq, new uint32_t(num), free_uint32));
+    ASSERT(h->SetStartSequenceHandler(f, UpbBind(startseq, new uint32_t(num))));
+    ASSERT(h->SetEndSequenceHandler(f, UpbBind(endseq, new uint32_t(num))));
   }
 }
 
@@ -301,68 +290,58 @@ uint32_t rep_fn(uint32_t fn) {
 #define NOP_FIELD 40
 #define UNKNOWN_FIELD 666
 
-template <class T>
-void reg(upb_handlers *h, upb_descriptortype_t type,
-         typename upb::Handlers::Value<T>::Handler *handler) {
+template <class T, bool F(int*, const uint32_t*, T)>
+void reg(upb_handlers *h, upb_descriptortype_t type) {
   // We register both a repeated and a non-repeated field for every type.
   // For the non-repeated field we make the field number the same as the
   // type.  For the repeated field we make it a function of the type.
-  doreg<T>(h, type, handler);
-  doreg<T>(h, rep_fn(type), handler);
+  doreg<T, F>(h, type);
+  doreg<T, F>(h, rep_fn(type));
+}
+
+void regseq(upb::Handlers* h, const upb::FieldDef* f, uint32_t num) {
+  ASSERT(h->SetStartSequenceHandler(f, UpbBind(startseq, new uint32_t(num))));
+  ASSERT(h->SetEndSequenceHandler(f, UpbBind(endseq, new uint32_t(num))));
 }
 
 void reg_subm(upb_handlers *h, uint32_t num) {
   const upb_fielddef *f = upb_msgdef_itof(upb_handlers_msgdef(h), num);
   ASSERT(f);
-  if (f->IsSequence()) {
-    ASSERT(h->SetStartSequenceHandler(
-        f, &startseq, new uint32_t(num), free_uint32));
-    ASSERT(h->SetEndSequenceHandler(
-        f, &endseq, new uint32_t(num), free_uint32));
-  }
-  ASSERT(h->SetStartSubMessageHandler(
-      f, &startsubmsg, new uint32_t(num), free_uint32));
-  ASSERT(h->SetEndSubMessageHandler(
-      f, &endsubmsg, new uint32_t(num), free_uint32));
+  if (f->IsSequence()) regseq(h, f, num);
+  ASSERT(
+      h->SetStartSubMessageHandler(f, UpbBind(startsubmsg, new uint32_t(num))));
+  ASSERT(h->SetEndSubMessageHandler(f, UpbBind(endsubmsg, new uint32_t(num))));
   ASSERT(upb_handlers_setsubhandlers(h, f, h));
 }
 
 void reg_str(upb_handlers *h, uint32_t num) {
   const upb_fielddef *f = upb_msgdef_itof(upb_handlers_msgdef(h), num);
   ASSERT(f);
-  if (f->IsSequence()) {
-    ASSERT(h->SetStartSequenceHandler(
-        f, &startseq, new uint32_t(num), free_uint32));
-    ASSERT(h->SetEndSequenceHandler(
-        f, &endseq, new uint32_t(num), free_uint32));
-  }
-  ASSERT(h->SetStartStringHandler(
-      f, &startstr, new uint32_t(num), free_uint32));
-  ASSERT(h->SetEndStringHandler(
-      f, &endstr, new uint32_t(num), free_uint32));
-  ASSERT(h->SetStringHandler(
-      f, &value_string, new uint32_t(num), free_uint32));
+  if (f->IsSequence()) regseq(h, f, num);
+  ASSERT(h->SetStartStringHandler(f, UpbBind(startstr, new uint32_t(num))));
+  ASSERT(h->SetEndStringHandler(f, UpbBind(endstr, new uint32_t(num))));
+  ASSERT(h->SetStringHandler(f, UpbBind(value_string, new uint32_t(num))));
 }
 
 void reghandlers(upb_handlers *h) {
-  upb_handlers_setstartmsg(h, &startmsg);
-  upb_handlers_setendmsg(h, &endmsg);
+  h->SetStartMessageHandler<int, startmsg>();
+  h->SetEndMessageHandler<int, endmsg>();
 
   // Register handlers for each type.
-  reg<double>  (h, UPB_DESCRIPTOR_TYPE_DOUBLE,   &value_double);
-  reg<float>   (h, UPB_DESCRIPTOR_TYPE_FLOAT,    &value_float);
-  reg<int64_t> (h, UPB_DESCRIPTOR_TYPE_INT64,    &value_int64);
-  reg<uint64_t>(h, UPB_DESCRIPTOR_TYPE_UINT64,   &value_uint64);
-  reg<int32_t> (h, UPB_DESCRIPTOR_TYPE_INT32 ,   &value_int32);
-  reg<uint64_t>(h, UPB_DESCRIPTOR_TYPE_FIXED64,  &value_uint64);
-  reg<uint32_t>(h, UPB_DESCRIPTOR_TYPE_FIXED32,  &value_uint32);
-  reg<bool>    (h, UPB_DESCRIPTOR_TYPE_BOOL,     &value_bool);
-  reg<uint32_t>(h, UPB_DESCRIPTOR_TYPE_UINT32,   &value_uint32);
-  reg<int32_t> (h, UPB_DESCRIPTOR_TYPE_ENUM,     &value_int32);
-  reg<int32_t> (h, UPB_DESCRIPTOR_TYPE_SFIXED32, &value_int32);
-  reg<int64_t> (h, UPB_DESCRIPTOR_TYPE_SFIXED64, &value_int64);
-  reg<int32_t> (h, UPB_DESCRIPTOR_TYPE_SINT32,   &value_int32);
-  reg<int64_t> (h, UPB_DESCRIPTOR_TYPE_SINT64,   &value_int64);
+  reg<double,   value_double>(h, UPB_DESCRIPTOR_TYPE_DOUBLE);
+  reg<float,    value_float> (h, UPB_DESCRIPTOR_TYPE_FLOAT);
+  reg<int64_t,  value_int64> (h, UPB_DESCRIPTOR_TYPE_INT64);
+  reg<uint64_t, value_uint64>(h, UPB_DESCRIPTOR_TYPE_UINT64);
+  reg<int32_t,  value_int32> (h, UPB_DESCRIPTOR_TYPE_INT32);
+  reg<uint64_t, value_uint64>(h, UPB_DESCRIPTOR_TYPE_FIXED64);
+  reg<uint32_t, value_uint32>(h, UPB_DESCRIPTOR_TYPE_FIXED32);
+  reg<bool,     value_bool>  (h, UPB_DESCRIPTOR_TYPE_BOOL);
+  reg<uint32_t, value_uint32>(h, UPB_DESCRIPTOR_TYPE_UINT32);
+  reg<int32_t,  value_int32> (h, UPB_DESCRIPTOR_TYPE_ENUM);
+  reg<int32_t,  value_int32> (h, UPB_DESCRIPTOR_TYPE_SFIXED32);
+  reg<int64_t,  value_int64> (h, UPB_DESCRIPTOR_TYPE_SFIXED64);
+  reg<int32_t,  value_int32> (h, UPB_DESCRIPTOR_TYPE_SINT32);
+  reg<int64_t,  value_int64> (h, UPB_DESCRIPTOR_TYPE_SINT64);
 
   reg_str(h, UPB_DESCRIPTOR_TYPE_STRING);
   reg_str(h, UPB_DESCRIPTOR_TYPE_BYTES);
@@ -417,7 +396,7 @@ void run_decoder(const buffer& proto, const buffer* expected_output) {
   upb::Pipeline pipeline(NULL, 0, upb_realloc, NULL);
   upb::Sink* sink = pipeline.NewSink(handlers);
   upb::Sink* decoder_sink = pipeline.NewSink(plan);
-  upb::pb::Decoder* d = decoder_sink->base()->GetUserdata<upb::pb::Decoder>();
+  upb::pb::Decoder* d = decoder_sink->GetObject<upb::pb::Decoder>();
   upb::pb::ResetDecoderSink(d, sink);
   for (size_t i = 0; i < proto.len(); i++) {
     for (size_t j = i; j < UPB_MIN(proto.len(), i + 5); j++) {

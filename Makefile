@@ -49,7 +49,7 @@ CXX=g++
 CFLAGS=-std=gnu99
 CXXFLAGS=-Ibindings/cpp
 INCLUDE=-Itests -I.
-CPPFLAGS=$(INCLUDE) -Wall -Wextra $(USER_CFLAGS)
+CPPFLAGS=$(INCLUDE) -Wall -Wextra -Wno-sign-compare $(USER_CFLAGS)
 LDLIBS=-lpthread upb/libupb.a
 LUA=lua5.1  # 5.1 and 5.2 should both be supported
 
@@ -82,7 +82,7 @@ deps: Makefile $(ALLSRC)
 
 # The core library.
 CORE= \
-  upb/bytestream.c \
+  upb/bytestream.upb.c \
   upb/def.c \
   upb/descriptor/reader.c \
   upb/descriptor/descriptor.upb.c \
@@ -90,6 +90,7 @@ CORE= \
   upb/google/proto2.cc \
   upb/handlers.c \
   upb/refcounted.c \
+  upb/shim/shim.c \
   upb/sink.c \
   upb/symtab.c \
   upb/table.c \

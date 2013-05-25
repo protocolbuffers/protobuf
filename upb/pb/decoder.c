@@ -95,6 +95,10 @@ typedef struct {
   // Maps (upb_handlers* or upb_fielddef*) -> int32 pclabel_base
   upb_inttable pclabels;
 
+  // For marking labels that should go into the generated code.
+  // Maps pclabel -> owned char* label.
+  upb_inttable asmlabels;
+
   // This is not the same as len(pclabels) because the table only contains base
   // offsets for each def, but each def can have many pclabels.
   uint32_t pclabel_count;
@@ -131,7 +135,7 @@ static const upb_decoder_typeinfo upb_decoder_types[] = {
 static upb_selector_t getselector(const upb_fielddef *f,
                                   upb_handlertype_t type) {
   upb_selector_t selector;
-  bool ok = upb_getselector(f, type, &selector);
+  bool ok = upb_handlers_getselector(f, type, &selector);
   UPB_ASSERT_VAR(ok, ok);
   return selector;
 }
@@ -165,11 +169,11 @@ void freeplan(void *_p) {
   free(p);
 }
 
-static decoderplan *getdecoderplan(const upb_handlers *h) {
+static const decoderplan *getdecoderplan(const upb_handlers *h) {
   if (upb_handlers_frametype(h) != upb_pbdecoder_getframetype())
     return NULL;
   upb_selector_t sel;
-  if (!upb_getselector(UPB_BYTESTREAM_BYTES, UPB_HANDLER_STRING, &sel))
+  if (!upb_handlers_getselector(UPB_BYTESTREAM_BYTES, UPB_HANDLER_STRING, &sel))
     return NULL;
   return upb_handlers_gethandlerdata(h, sel);
 }
@@ -180,7 +184,7 @@ bool upb_pbdecoder_isdecoder(const upb_handlers *h) {
 
 bool upb_pbdecoder_hasjitcode(const upb_handlers *h) {
 #ifdef UPB_USE_JIT_X64
-  decoderplan *p = getdecoderplan(h);
+  const decoderplan *p = getdecoderplan(h);
   if (!p) return false;
   return p->jit_code != NULL;
 #else
@@ -190,7 +194,7 @@ bool upb_pbdecoder_hasjitcode(const upb_handlers *h) {
 }
 
 const upb_handlers *upb_pbdecoder_getdesthandlers(const upb_handlers *h) {
-  decoderplan *p = getdecoderplan(h);
+  const decoderplan *p = getdecoderplan(h);
   if (!p) return NULL;
   return p->dest_handlers;
 }
@@ -290,7 +294,6 @@ static void suspendjmp(upb_pbdecoder *d) {
 }
 
 static void advancetobuf(upb_pbdecoder *d, const char *buf, size_t len) {
-  assert(len >= 0);
   assert(d->ptr == d->end);
   d->bufstart_ofs += (d->ptr - d->buf);
   switchtobuf(d, buf, buf + len);
@@ -583,7 +586,7 @@ static const upb_fielddef *decode_tag(upb_pbdecoder *d) {
     uint32_t tag = decode_v32(d);
     uint8_t wire_type = tag & 0x7;
     uint32_t fieldnum = tag >> 3; const upb_fielddef *f = NULL;
-    const upb_handlers *h = upb_sinkframe_handlers(upb_sink_top(d->sink));
+    const upb_handlers *h = d->sink->top->h;  // TODO(haberman): rm
     f = upb_msgdef_itof(upb_handlers_msgdef(h), fieldnum);
     bool packed = false;
 
@@ -646,17 +649,19 @@ static const upb_fielddef *decode_tag(upb_pbdecoder *d) {
   }
 }
 
-void *start(const upb_sinkframe *fr, size_t size_hint) {
+void *start(void *closure, const void *handler_data, size_t size_hint) {
+  UPB_UNUSED(handler_data);
   UPB_UNUSED(size_hint);
-  upb_pbdecoder *d = upb_sinkframe_userdata(fr);
+  upb_pbdecoder *d = closure;
   assert(d);
   assert(d->sink);
   upb_sink_startmsg(d->sink);
   return d;
 }
 
-bool end(const upb_sinkframe *fr) {
-  upb_pbdecoder *d = upb_sinkframe_userdata(fr);
+bool end(void *closure, const void *handler_data) {
+  UPB_UNUSED(handler_data);
+  upb_pbdecoder *d = closure;
 
   if (d->residual_end > d->residual) {
     // We have preserved bytes.
@@ -668,7 +673,6 @@ bool end(const upb_sinkframe *fr) {
   if (d->top == d->stack + 1 &&
       d->top->is_sequence &&
       !d->top->is_packed) {
-    assert(upb_sinkframe_depth(upb_sink_top(d->sink)) == 1);
     pop_seq(d);
   }
   if (d->top != d->stack) {
@@ -680,47 +684,47 @@ bool end(const upb_sinkframe *fr) {
   return true;
 }
 
-size_t decode(const upb_sinkframe *fr, const char *buf, size_t size) {
-  upb_pbdecoder *d = upb_sinkframe_userdata(fr);
-  decoderplan *plan = upb_sinkframe_handlerdata(fr);
+size_t decode(void *closure, const void *hd, const char *buf, size_t size) {
+  upb_pbdecoder *d = closure;
+  const decoderplan *plan = hd;
   UPB_UNUSED(plan);
-  assert(upb_sinkframe_handlers(upb_sink_top(d->sink)) == plan->dest_handlers);
+  assert(d->sink->top->h == plan->dest_handlers);
 
   if (size == 0) return 0;
   // Assume we'll consume the whole buffer unless this is overwritten.
   d->ret = size;
+  d->buf_param = buf;
+  d->size_param = size;
 
   if (_setjmp(d->exitjmp)) {
     // Hit end-of-buffer or error.
     return d->ret;
   }
 
-  d->buf_param = buf;
-  d->size_param = size;
   if (d->residual_end > d->residual) {
     // We have residual bytes from the last buffer.
-    d->userbuf_remaining = size;
+    d->userbuf_remaining = d->size_param;
   } else {
     d->userbuf_remaining = 0;
-    advancetobuf(d, buf, size);
+    advancetobuf(d, buf, d->size_param);
 
     if (d->top != d->stack &&
         upb_fielddef_isstring(d->top->f) &&
         !d->top->is_sequence) {
       // Last buffer ended in the middle of a string; deliver more of it.
       size_t len = d->top->end_ofs - offset(d);
-      if (size >= len) {
+      if (d->size_param >= len) {
         upb_sink_putstring(d->sink, getselector(d->top->f, UPB_HANDLER_STRING),
                            d->ptr, len);
         advance(d, len);
         pop_string(d);
       } else {
         upb_sink_putstring(d->sink, getselector(d->top->f, UPB_HANDLER_STRING),
-                           d->ptr, size);
-        advance(d, size);
+                           d->ptr, d->size_param);
+        advance(d, d->size_param);
         d->residual_end = d->residual;
         advancetobuf(d, d->residual, 0);
-        return size;
+        return d->size_param;
       }
     }
   }
@@ -762,7 +766,8 @@ size_t decode(const upb_sinkframe *fr, const char *buf, size_t size) {
   }
 }
 
-void init(void *_d) {
+void init(void *_d, upb_pipeline *p) {
+  UPB_UNUSED(p);
   upb_pbdecoder *d = _d;
   d->limit = &d->stack[UPB_MAX_NESTING];
   d->sink = NULL;

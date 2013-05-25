@@ -52,13 +52,15 @@ static char *upb_join(const char *base, const char *name) {
 // upb_deflist is an internal-only dynamic array for storing a growing list of
 // upb_defs.
 typedef struct {
+  upb_pipeline *pipeline;
   upb_def **defs;
   size_t len;
   size_t size;
   bool owned;
 } upb_deflist;
 
-void upb_deflist_init(upb_deflist *l) {
+void upb_deflist_init(upb_deflist *l, upb_pipeline *pipeline) {
+  l->pipeline = pipeline;
   l->size = 0;
   l->defs = NULL;
   l->len = 0;
@@ -68,15 +70,16 @@ void upb_deflist_init(upb_deflist *l) {
 void upb_deflist_uninit(upb_deflist *l) {
   if (l->owned)
     for(size_t i = 0; i < l->len; i++)
-      upb_def_unref(l->defs[i], &l->defs);
+      upb_def_unref(l->defs[i], l);
 }
 
-bool upb_deflist_push(upb_deflist *l, upb_def *d, upb_pipeline *p) {
+bool upb_deflist_push(upb_deflist *l, upb_def *d) {
   if(++l->len >= l->size) {
     size_t new_size = UPB_MAX(l->size, 4);
     new_size *= 2;
     l->defs = upb_pipeline_realloc(
-        p, l->defs, l->size * sizeof(void*), new_size * sizeof(void*));
+        l->pipeline, l->defs,
+        l->size * sizeof(void*), new_size * sizeof(void*));
     if (!l->defs) return false;
     l->size = new_size;
   }
@@ -87,7 +90,7 @@ bool upb_deflist_push(upb_deflist *l, upb_def *d, upb_pipeline *p) {
 void upb_deflist_donaterefs(upb_deflist *l, void *owner) {
   assert(l->owned);
   for (size_t i = 0; i < l->len; i++)
-    upb_def_donateref(l->defs[i], &l->defs, owner);
+    upb_def_donateref(l->defs[i], l, owner);
   l->owned = false;
 }
 
@@ -134,8 +137,8 @@ struct upb_descreader {
   upb_fielddef *f;
 };
 
-void upb_descreader_init(void *r);
-void upb_descreader_uninit(void *r);
+void upb_descreader_init(void *self, upb_pipeline *p);
+void upb_descreader_uninit(void *self);
 
 const upb_frametype upb_descreader_frametype = {
   sizeof(upb_descreader),
@@ -155,16 +158,16 @@ const upb_handlers *upb_descreader_gethandlers(const void *owner);
 
 /* upb_descreader  ************************************************************/
 
-void upb_descreader_init(void *_r) {
-  upb_descreader *r = _r;
-  upb_deflist_init(&r->defs);
+void upb_descreader_init(void *self, upb_pipeline *pipeline) {
+  upb_descreader *r = self;
+  upb_deflist_init(&r->defs, pipeline);
   r->stack_len = 0;
   r->name = NULL;
   r->default_string = NULL;
 }
 
-void upb_descreader_uninit(void *_r) {
-  upb_descreader *r = _r;
+void upb_descreader_uninit(void *self) {
+  upb_descreader *r = self;
   free(r->name);
   upb_deflist_uninit(&r->defs);
   free(r->default_string);
@@ -213,37 +216,39 @@ void upb_descreader_setscopename(upb_descreader *r, char *str) {
 }
 
 // Handlers for google.protobuf.FileDescriptorProto.
-static bool file_startmsg(const upb_sinkframe *frame) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static bool file_startmsg(void *r) {
   upb_descreader_startcontainer(r);
   return true;
 }
 
-static void file_endmsg(const upb_sinkframe *frame, upb_status *status) {
+static bool file_endmsg(void *closure, upb_status *status) {
   UPB_UNUSED(status);
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+  upb_descreader *r = closure;
   upb_descreader_endcontainer(r);
+  return true;
 }
 
-static size_t file_onpackage(const upb_sinkframe *frame,
-                             const char *buf, size_t n) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static size_t file_onpackage(void *closure, const void *hd, const char *buf,
+                             size_t n) {
+  UPB_UNUSED(hd);
+  upb_descreader *r = closure;
   // XXX: see comment at the top of the file.
   upb_descreader_setscopename(r, upb_strndup(buf, n));
   return n;
 }
 
 // Handlers for google.protobuf.EnumValueDescriptorProto.
-static bool enumval_startmsg(const upb_sinkframe *frame) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static bool enumval_startmsg(void *closure) {
+  upb_descreader *r = closure;
   r->saw_number = false;
   r->saw_name = false;
   return true;
 }
 
-static size_t enumval_onname(const upb_sinkframe *frame,
-                             const char *buf, size_t n) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static size_t enumval_onname(void *closure, const void *hd, const char *buf,
+                             size_t n) {
+  UPB_UNUSED(hd);
+  upb_descreader *r = closure;
   // XXX: see comment at the top of the file.
   free(r->name);
   r->name = upb_strndup(buf, n);
@@ -251,18 +256,19 @@ static size_t enumval_onname(const upb_sinkframe *frame,
   return n;
 }
 
-static bool enumval_onnumber(const upb_sinkframe *frame, int32_t val) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static bool enumval_onnumber(void *closure, const void *hd, int32_t val) {
+  UPB_UNUSED(hd);
+  upb_descreader *r = closure;
   r->number = val;
   r->saw_number = true;
   return true;
 }
 
-static void enumval_endmsg(const upb_sinkframe *frame, upb_status *status) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static bool enumval_endmsg(void *closure, upb_status *status) {
+  upb_descreader *r = closure;
   if(!r->saw_number || !r->saw_name) {
     upb_status_seterrliteral(status, "Enum value missing name or number.");
-    return;
+    return false;
   }
   upb_enumdef *e = upb_downcast_enumdef_mutable(upb_descreader_last(r));
   if (upb_enumdef_numvals(e) == 0) {
@@ -273,33 +279,35 @@ static void enumval_endmsg(const upb_sinkframe *frame, upb_status *status) {
   upb_enumdef_addval(e, r->name, r->number, status);
   free(r->name);
   r->name = NULL;
+  return true;
 }
 
 
 // Handlers for google.protobuf.EnumDescriptorProto.
-static bool enum_startmsg(const upb_sinkframe *frame) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
-  upb_pipeline *p = upb_sinkframe_pipeline(frame);
-  upb_deflist_push(&r->defs, upb_upcast(upb_enumdef_new(&r->defs)), p);
+static bool enum_startmsg(void *closure) {
+  upb_descreader *r = closure;
+  upb_deflist_push(&r->defs, upb_upcast(upb_enumdef_new(&r->defs)));
   return true;
 }
 
-static void enum_endmsg(const upb_sinkframe *frame, upb_status *status) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static bool enum_endmsg(void *closure, upb_status *status) {
+  upb_descreader *r = closure;
   upb_enumdef *e = upb_downcast_enumdef_mutable(upb_descreader_last(r));
   if (upb_def_fullname(upb_descreader_last(r)) == NULL) {
     upb_status_seterrliteral(status, "Enum had no name.");
-    return;
+    return false;
   }
   if (upb_enumdef_numvals(e) == 0) {
     upb_status_seterrliteral(status, "Enum had no values.");
-    return;
+    return false;
   }
+  return true;
 }
 
-static size_t enum_onname(const upb_sinkframe *frame,
-                          const char *buf, size_t n) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static size_t enum_onname(void *closure, const void *hd, const char *buf,
+                          size_t n) {
+  UPB_UNUSED(hd);
+  upb_descreader *r = closure;
   // XXX: see comment at the top of the file.
   char *fullname = upb_strndup(buf, n);
   upb_def_setfullname(upb_descreader_last(r), fullname);
@@ -308,8 +316,8 @@ static size_t enum_onname(const upb_sinkframe *frame,
 }
 
 // Handlers for google.protobuf.FieldDescriptorProto
-static bool field_startmsg(const upb_sinkframe *frame) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static bool field_startmsg(void *closure) {
+  upb_descreader *r = closure;
   r->f = upb_fielddef_new(&r->defs);
   free(r->default_string);
   r->default_string = NULL;
@@ -380,8 +388,8 @@ static bool parse_default(char *str, upb_value *d, int type) {
   return success;
 }
 
-static void field_endmsg(const upb_sinkframe *frame, upb_status *status) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static bool field_endmsg(void *closure, upb_status *status) {
+  upb_descreader *r = closure;
   upb_fielddef *f = r->f;
   // TODO: verify that all required fields were present.
   assert(upb_fielddef_number(f) != 0 && upb_fielddef_name(f) != NULL);
@@ -390,7 +398,7 @@ static void field_endmsg(const upb_sinkframe *frame, upb_status *status) {
   if (r->default_string) {
     if (upb_fielddef_issubmsg(f)) {
       upb_status_seterrliteral(status, "Submessages cannot have defaults.");
-      return;
+      return false;
     }
     if (upb_fielddef_isstring(f) || upb_fielddef_type(f) == UPB_TYPE_ENUM) {
       upb_fielddef_setdefaultcstr(f, r->default_string);
@@ -401,34 +409,39 @@ static void field_endmsg(const upb_sinkframe *frame, upb_status *status) {
         // We don't worry too much about giving a great error message since the
         // compiler should have ensured this was correct.
         upb_status_seterrliteral(status, "Error converting default value.");
-        return;
+        return false;
       }
       upb_fielddef_setdefault(f, val);
     }
   }
+  return true;
 }
 
-static bool field_ontype(const upb_sinkframe *frame, int32_t val) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static bool field_ontype(void *closure, const void *hd, int32_t val) {
+  UPB_UNUSED(hd);
+  upb_descreader *r = closure;
   upb_fielddef_setdescriptortype(r->f, val);
   return true;
 }
 
-static bool field_onlabel(const upb_sinkframe *frame, int32_t val) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static bool field_onlabel(void *closure, const void *hd, int32_t val) {
+  UPB_UNUSED(hd);
+  upb_descreader *r = closure;
   upb_fielddef_setlabel(r->f, val);
   return true;
 }
 
-static bool field_onnumber(const upb_sinkframe *frame, int32_t val) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static bool field_onnumber(void *closure, const void *hd, int32_t val) {
+  UPB_UNUSED(hd);
+  upb_descreader *r = closure;
   upb_fielddef_setnumber(r->f, val);
   return true;
 }
 
-static size_t field_onname(const upb_sinkframe *frame,
-                           const char *buf, size_t n) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static size_t field_onname(void *closure, const void *hd, const char *buf,
+                           size_t n) {
+  UPB_UNUSED(hd);
+  upb_descreader *r = closure;
   // XXX: see comment at the top of the file.
   char *name = upb_strndup(buf, n);
   upb_fielddef_setname(r->f, name);
@@ -436,9 +449,10 @@ static size_t field_onname(const upb_sinkframe *frame,
   return n;
 }
 
-static size_t field_ontypename(const upb_sinkframe *frame,
-                               const char *buf, size_t n) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static size_t field_ontypename(void *closure, const void *hd, const char *buf,
+                               size_t n) {
+  UPB_UNUSED(hd);
+  upb_descreader *r = closure;
   // XXX: see comment at the top of the file.
   char *name = upb_strndup(buf, n);
   upb_fielddef_setsubdefname(r->f, name);
@@ -446,9 +460,10 @@ static size_t field_ontypename(const upb_sinkframe *frame,
   return n;
 }
 
-static size_t field_ondefaultval(const upb_sinkframe *frame,
+static size_t field_ondefaultval(void *closure, const void *hd,
                                  const char *buf, size_t n) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+  UPB_UNUSED(hd);
+  upb_descreader *r = closure;
   // Have to convert from string to the correct type, but we might not know the
   // type yet, so we save it as a string until the end of the field.
   // XXX: see comment at the top of the file.
@@ -458,27 +473,28 @@ static size_t field_ondefaultval(const upb_sinkframe *frame,
 }
 
 // Handlers for google.protobuf.DescriptorProto (representing a message).
-static bool msg_startmsg(const upb_sinkframe *frame) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
-  upb_pipeline *p = upb_sinkframe_pipeline(frame);
-  upb_deflist_push(&r->defs, upb_upcast(upb_msgdef_new(&r->defs)), p);
+static bool msg_startmsg(void *closure) {
+  upb_descreader *r = closure;
+  upb_deflist_push(&r->defs, upb_upcast(upb_msgdef_new(&r->defs)));
   upb_descreader_startcontainer(r);
   return true;
 }
 
-static void msg_endmsg(const upb_sinkframe *frame, upb_status *status) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static bool msg_endmsg(void *closure, upb_status *status) {
+  upb_descreader *r = closure;
   upb_msgdef *m = upb_descreader_top(r);
   if(!upb_def_fullname(upb_upcast(m))) {
     upb_status_seterrliteral(status, "Encountered message with no name.");
-    return;
+    return false;
   }
   upb_descreader_endcontainer(r);
+  return true;
 }
 
-static size_t msg_onname(const upb_sinkframe *frame,
-                         const char *buf, size_t n) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static size_t msg_onname(void *closure, const void *hd, const char *buf,
+                         size_t n) {
+  UPB_UNUSED(hd);
+  upb_descreader *r = closure;
   upb_msgdef *m = upb_descreader_top(r);
   // XXX: see comment at the top of the file.
   char *name = upb_strndup(buf, n);
@@ -487,16 +503,18 @@ static size_t msg_onname(const upb_sinkframe *frame,
   return n;
 }
 
-static bool msg_onendfield(const upb_sinkframe *frame) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static bool msg_onendfield(void *closure, const void *hd) {
+  UPB_UNUSED(hd);
+  upb_descreader *r = closure;
   upb_msgdef *m = upb_descreader_top(r);
   upb_msgdef_addfield(m, r->f, &r->defs);
   r->f = NULL;
   return true;
 }
 
-static bool discardfield(const upb_sinkframe *frame) {
-  upb_descreader *r = upb_sinkframe_userdata(frame);
+static bool discardfield(void *closure, const void *hd) {
+  UPB_UNUSED(hd);
+  upb_descreader *r = closure;
   // Discard extension field so we don't leak it.
   upb_fielddef_unref(r->f, &r->defs);
   r->f = NULL;

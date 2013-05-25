@@ -676,6 +676,7 @@ upb_descriptortype_t upb_fielddef_descriptortype(const upb_fielddef *f) {
       return upb_fielddef_istagdelim(f) ?
           UPB_DESCRIPTOR_TYPE_GROUP : UPB_DESCRIPTOR_TYPE_MESSAGE;
   }
+  return 0;
 }
 
 bool upb_fielddef_setlabel(upb_fielddef *f, upb_label_t label) {
