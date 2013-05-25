@@ -10,33 +10,31 @@
 static char *input_str;
 static size_t input_len;
 static const upb_msgdef *def;
-static upb_decoder decoder;
-static upb_stringsrc stringsrc;
-static upb_decoderplan *plan;
+upb_pipeline pipeline;
+static upb_sink *sink;
 
-static upb_sflow_t startsubmsg(void *_m, upb_value fval) {
-  (void)_m;
-  (void)fval;
-  return UPB_CONTINUE_WITH(NULL);
+static void *startsubmsg(const upb_sinkframe *frame) {
+  UPB_UNUSED(frame);
+  return input_str;
 }
 
-static upb_flow_t value(void *closure, upb_value fval, upb_value val) {
-  (void)closure;
-  (void)fval;
-  (void)val;
-  return UPB_CONTINUE;
-}
-
-void onfreg(void *c, upb_fhandlers *fh, const upb_fielddef *f) {
-  upb_fhandlers_setvalue(fh, &value);
-  upb_fhandlers_setstartsubmsg(fh, &startsubmsg);
+void onmreg(void *c, upb_handlers *h) {
+  upb_msg_iter i;
+  upb_msg_begin(&i, upb_handlers_msgdef(h));
+  for(; !upb_msg_done(&i); upb_msg_next(&i)) {
+    const upb_fielddef *f = upb_msg_iter_field(&i);
+    if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE) {
+      upb_handlers_setstartsubmsg(h, f, startsubmsg, NULL, NULL);
+    }
+  }
+  UPB_UNUSED(c);
 }
 
 static bool initialize()
 {
   // Initialize upb state, decode descriptor.
   upb_status status = UPB_STATUS_INIT;
-  upb_symtab *s = upb_symtab_new();
+  upb_symtab *s = upb_symtab_new(&s);
   upb_load_descriptor_file_into_symtab(s, MESSAGE_DESCRIPTOR_FILE, &status);
   if(!upb_ok(&status)) {
     fprintf(stderr, "Error reading descriptor: %s\n",
@@ -44,12 +42,12 @@ static bool initialize()
     return false;
   }
 
-  def = upb_dyncast_msgdef_const(upb_symtab_lookup(s, MESSAGE_NAME, &def));
+  def = upb_dyncast_msgdef(upb_symtab_lookup(s, MESSAGE_NAME, &def));
   if(!def) {
     fprintf(stderr, "Error finding symbol '%s'.\n", MESSAGE_NAME);
     return false;
   }
-  upb_symtab_unref(s);
+  upb_symtab_unref(s, &s);
 
   // Read the message data itself.
   input_str = upb_readfile(MESSAGE_FILE, &input_len);
@@ -58,36 +56,37 @@ static bool initialize()
     return false;
   }
 
-  upb_handlers *handlers = upb_handlers_new();
   // Cause all messages to be read, but do nothing when they are.
-  upb_handlers_regmsgdef(handlers, def, NULL, &upb_onfreg_hset, NULL);
-  upb_decoder_init(&decoder);
-  plan = upb_decoderplan_new(handlers, JIT);
-  upb_decoder_resetplan(&decoder, plan, 0);
-  upb_handlers_unref(handlers);
-  upb_stringsrc_init(&stringsrc);
+  const upb_handlers* handlers =
+      upb_handlers_newfrozen(def, NULL, &handlers, &onmreg, NULL);
+  const upb_handlers* decoder_handlers =
+      upb_pbdecoder_gethandlers(handlers, JIT, &decoder_handlers);
+  upb_msgdef_unref(def, &def);
+
+  upb_pipeline_init(&pipeline, NULL, 0, upb_realloc, NULL);
+  upb_sink *s2 = upb_pipeline_newsink(&pipeline, handlers);
+  sink = upb_pipeline_newsink(&pipeline, decoder_handlers);
+  upb_pipeline_donateref(&pipeline, decoder_handlers, &decoder_handlers);
+  upb_pipeline_donateref(&pipeline, handlers, &handlers);
+  upb_pbdecoder *decoder = upb_sinkframe_userdata(upb_sink_top(sink));
+  upb_pbdecoder_resetsink(decoder, s2);
   return true;
 }
 
 static void cleanup()
 {
   free(input_str);
-  upb_def_unref(UPB_UPCAST(def), &def);
-  upb_decoder_uninit(&decoder);
-  upb_decoderplan_unref(plan);
-  upb_stringsrc_uninit(&stringsrc);
+  upb_pipeline_uninit(&pipeline);
 }
 
 static size_t run(int i)
 {
   (void)i;
-  upb_status status = UPB_STATUS_INIT;
-  upb_stringsrc_reset(&stringsrc, input_str, input_len);
-  upb_decoder_resetinput(&decoder, upb_stringsrc_allbytes(&stringsrc), NULL);
-  if (upb_decoder_decode(&decoder) != UPB_OK) goto err;
+  upb_pipeline_reset(&pipeline);
+  if (!upb_bytestream_putstr(sink, input_str, input_len)) {
+    fprintf(stderr, "Decode error: %s", upb_status_getstr(upb_pipeline_status(&pipeline)));
+    return 0;
+  }
   return input_len;
 
-err:
-  fprintf(stderr, "Decode error: %s", upb_status_getstr(&status));
-  return 0;
 }

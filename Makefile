@@ -51,7 +51,7 @@ CXXFLAGS=-Ibindings/cpp
 INCLUDE=-Itests -I.
 CPPFLAGS=$(INCLUDE) -Wall -Wextra -Wno-sign-compare $(USER_CFLAGS)
 LDLIBS=-lpthread upb/libupb.a
-LUA=lua5.1  # 5.1 and 5.2 should both be supported
+LUA=lua  # 5.1 and 5.2 should both be supported
 
 # Build with "make Q=" to see all commands that are being executed.
 Q=@
@@ -102,8 +102,9 @@ CORE= \
 PB= \
   upb/pb/decoder.c \
   upb/pb/glue.c \
-  upb/pb/textprinter.c \
   upb/pb/varint.c \
+
+  #upb/pb/textprinter.c \
 
 
 # Rules. #######################################################################
@@ -173,7 +174,7 @@ upb/def.lo: upb/def.c
 
 upb/pb/decoder_x64.h: upb/pb/decoder_x64.dasc
 	$(E) DYNASM $<
-	$(Q) $(LUA) dynasm/dynasm.lua upb/pb/decoder_x64.dasc > upb/pb/decoder_x64.h
+	$(Q) $(LUA) dynasm/dynasm.lua upb/pb/decoder_x64.dasc > upb/pb/decoder_x64.h || (rm upb/pb/decoder_x64.h ; false)
 
 ifneq ($(shell uname), Darwin)
 upb/pb/jit_debug_elf_file.o: upb/pb/jit_debug_elf_file.s
@@ -248,7 +249,8 @@ $(SIMPLE_CXX_TESTS): % : %.cc
 	$(E) CXX $<
 	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ tests/testmain.o $< $(LIBUPB)
 
-VALGRIND=valgrind --leak-check=full --error-exitcode=1
+#VALGRIND=valgrind --leak-check=full --error-exitcode=1 --track-origins=yes
+VALGRIND=
 test: tests
 	@echo Running all tests under valgrind.
 	@set -e  # Abort on error.

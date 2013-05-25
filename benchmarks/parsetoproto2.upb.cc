@@ -4,22 +4,19 @@
 #include "main.c"
 
 #include <stdint.h>
-#include "upb/bytestream.hpp"
-#include "upb/def.hpp"
-#include "upb/msg.hpp"
-#include "upb/pb/decoder.hpp"
+#include "upb/bytestream.h"
+#include "upb/def.h"
+#include "upb/pb/decoder.h"
 #include "upb/pb/glue.h"
-#include "upb/proto2_bridge.hpp"
+#include "upb/google/bridge.h"
 #include MESSAGE_HFILE
 
 const char *str;
 size_t len;
 MESSAGE_CIDENT msg[NUM_MESSAGES];
-MESSAGE_CIDENT msg2;
-upb::StringSource strsrc;
-upb::Decoder d;
-const upb::MessageDef *def;
-upb::DecoderPlan* plan;
+upb::SeededPipeline<8192> pipeline(upb_realloc, NULL);
+upb::Sink *decoder_sink;
+upb::Sink *proto2_sink;
 
 static bool initialize()
 {
@@ -30,32 +27,31 @@ static bool initialize()
     return false;
   }
 
-  def = upb::proto2_bridge::NewFinalMessageDef(msg2, &def);
+  const upb::Handlers* h = upb::google::NewWriteHandlers(MESSAGE_CIDENT(), &h);
+  const upb::Handlers* h2 = upb::pb::GetDecoderHandlers(h, JIT, &h2);
 
-  msg2.ParseFromArray(str, len);
+  proto2_sink = pipeline.NewSink(h);
+  decoder_sink = pipeline.NewSink(h2);
+  pipeline.DonateRef(h, &h);
+  pipeline.DonateRef(h2, &h2);
 
-  upb::Handlers* h = upb::Handlers::New();
-  upb::RegisterWriteHandlers(h, def);
-  plan = upb::DecoderPlan::New(h, JIT);
-  d.ResetPlan(plan, 0);
-  h->Unref();
+  upb::pb::Decoder* d = decoder_sink->top()->GetUserdata<upb::pb::Decoder>();
+  upb::pb::ResetDecoderSink(d, proto2_sink);
 
   return true;
 }
 
 static void cleanup() {
-  def->Unref(&def);
-  plan->Unref();
 }
 
 static size_t run(int i) {
+  pipeline.Reset();
+  proto2_sink->Reset(&msg[i % NUM_MESSAGES]);
   msg[i % NUM_MESSAGES].Clear();
-  strsrc.Reset(str, len);
-  d.ResetInput(strsrc.AllBytes(), &msg[i % NUM_MESSAGES]);
-  if (d.Decode() != UPB_OK) goto err;
-  return len;
 
-err:
-  fprintf(stderr, "Decode error: %s", d.status().GetString());
-  return 0;
+  if (!upb::PutStringToBytestream(decoder_sink, str, len)) {
+    fprintf(stderr, "Decode error: %s", pipeline.status().GetString());
+    return 0;
+  }
+  return len;
 }
