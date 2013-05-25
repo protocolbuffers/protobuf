@@ -35,7 +35,7 @@ static bool initialize()
   pipeline.DonateRef(h, &h);
   pipeline.DonateRef(h2, &h2);
 
-  upb::pb::Decoder* d = decoder_sink->top()->GetUserdata<upb::pb::Decoder>();
+  upb::pb::Decoder* d = decoder_sink->GetObject<upb::pb::Decoder>();
   upb::pb::ResetDecoderSink(d, proto2_sink);
 
   return true;

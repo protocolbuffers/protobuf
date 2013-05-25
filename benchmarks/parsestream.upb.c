@@ -13,8 +13,9 @@ static const upb_msgdef *def;
 upb_pipeline pipeline;
 static upb_sink *sink;
 
-static void *startsubmsg(const upb_sinkframe *frame) {
-  UPB_UNUSED(frame);
+static void *startsubmsg(void *closure, const void *hd) {
+  UPB_UNUSED(closure);
+  UPB_UNUSED(hd);
   return input_str;
 }
 
@@ -68,7 +69,7 @@ static bool initialize()
   sink = upb_pipeline_newsink(&pipeline, decoder_handlers);
   upb_pipeline_donateref(&pipeline, decoder_handlers, &decoder_handlers);
   upb_pipeline_donateref(&pipeline, handlers, &handlers);
-  upb_pbdecoder *decoder = upb_sinkframe_userdata(upb_sink_top(sink));
+  upb_pbdecoder *decoder = upb_sink_getobj(sink);
   upb_pbdecoder_resetsink(decoder, s2);
   return true;
 }
