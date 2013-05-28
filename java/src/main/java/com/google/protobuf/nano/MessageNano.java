@@ -125,4 +125,12 @@ public abstract class MessageNano {
                     + "never happen).");
         }
     }
+
+    /**
+     * Intended for debugging purposes only. It does not use ASCII protobuf formatting.
+     */
+    @Override
+    public String toString() {
+        return MessageNanoPrinter.print(this);
+    }
 }
