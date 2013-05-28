@@ -255,17 +255,12 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
           upb_status_seterrf(
               status, "couldn't resolve name '%s' in message '%s'", name, base);
           goto err;
-        } else if (!upb_fielddef_setsubdef(f, subdef)) {
-          upb_status_seterrf(
-              status, "def '%s' had the wrong type for field '%s'",
-              upb_def_fullname(subdef), upb_fielddef_name(f));
+        } else if (!upb_fielddef_setsubdef(f, subdef, status)) {
           goto err;
         }
       }
 
-      if (!upb_fielddef_resolvedefault(f)) {
-        upb_status_seterrf(status, "couldn't resolve enum default '%s'",
-                           upb_fielddef_defaultstr(f, NULL));
+      if (!upb_fielddef_resolveenumdefault(f, status)) {
         goto err;
       }
     }

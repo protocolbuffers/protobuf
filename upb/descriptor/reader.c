@@ -103,7 +103,7 @@ static void upb_deflist_qualify(upb_deflist *l, char *str, int32_t start) {
   for(uint32_t i = start; i < l->len; i++) {
     upb_def *def = l->defs[i];
     char *name = upb_join(str, upb_def_fullname(def));
-    upb_def_setfullname(def, name);
+    upb_def_setfullname(def, name, NULL);
     free(name);
   }
 }
@@ -216,12 +216,14 @@ void upb_descreader_setscopename(upb_descreader *r, char *str) {
 }
 
 // Handlers for google.protobuf.FileDescriptorProto.
-static bool file_startmsg(void *r) {
+static bool file_startmsg(void *r, const void *hd) {
+  UPB_UNUSED(hd);
   upb_descreader_startcontainer(r);
   return true;
 }
 
-static bool file_endmsg(void *closure, upb_status *status) {
+static bool file_endmsg(void *closure, const void *hd, upb_status *status) {
+  UPB_UNUSED(hd);
   UPB_UNUSED(status);
   upb_descreader *r = closure;
   upb_descreader_endcontainer(r);
@@ -238,7 +240,8 @@ static size_t file_onpackage(void *closure, const void *hd, const char *buf,
 }
 
 // Handlers for google.protobuf.EnumValueDescriptorProto.
-static bool enumval_startmsg(void *closure) {
+static bool enumval_startmsg(void *closure, const void *hd) {
+  UPB_UNUSED(hd);
   upb_descreader *r = closure;
   r->saw_number = false;
   r->saw_name = false;
@@ -264,7 +267,8 @@ static bool enumval_onnumber(void *closure, const void *hd, int32_t val) {
   return true;
 }
 
-static bool enumval_endmsg(void *closure, upb_status *status) {
+static bool enumval_endmsg(void *closure, const void *hd, upb_status *status) {
+  UPB_UNUSED(hd);
   upb_descreader *r = closure;
   if(!r->saw_number || !r->saw_name) {
     upb_status_seterrliteral(status, "Enum value missing name or number.");
@@ -284,13 +288,14 @@ static bool enumval_endmsg(void *closure, upb_status *status) {
 
 
 // Handlers for google.protobuf.EnumDescriptorProto.
-static bool enum_startmsg(void *closure) {
+static bool enum_startmsg(void *closure, const void *hd) {
+  UPB_UNUSED(hd);
   upb_descreader *r = closure;
   upb_deflist_push(&r->defs, upb_upcast(upb_enumdef_new(&r->defs)));
   return true;
 }
 
-static bool enum_endmsg(void *closure, upb_status *status) {
+static bool enum_endmsg(void *closure, const void *hd, upb_status *status) {
   upb_descreader *r = closure;
   upb_enumdef *e = upb_downcast_enumdef_mutable(upb_descreader_last(r));
   if (upb_def_fullname(upb_descreader_last(r)) == NULL) {
@@ -310,13 +315,14 @@ static size_t enum_onname(void *closure, const void *hd, const char *buf,
   upb_descreader *r = closure;
   // XXX: see comment at the top of the file.
   char *fullname = upb_strndup(buf, n);
-  upb_def_setfullname(upb_descreader_last(r), fullname);
+  upb_def_setfullname(upb_descreader_last(r), fullname, NULL);
   free(fullname);
   return n;
 }
 
 // Handlers for google.protobuf.FieldDescriptorProto
-static bool field_startmsg(void *closure) {
+static bool field_startmsg(void *closure, const void *hd) {
+  UPB_UNUSED(hd);
   upb_descreader *r = closure;
   r->f = upb_fielddef_new(&r->defs);
   free(r->default_string);
@@ -388,7 +394,8 @@ static bool parse_default(char *str, upb_value *d, int type) {
   return success;
 }
 
-static bool field_endmsg(void *closure, upb_status *status) {
+static bool field_endmsg(void *closure, const void *hd, upb_status *status) {
+  UPB_UNUSED(hd);
   upb_descreader *r = closure;
   upb_fielddef *f = r->f;
   // TODO: verify that all required fields were present.
@@ -401,7 +408,7 @@ static bool field_endmsg(void *closure, upb_status *status) {
       return false;
     }
     if (upb_fielddef_isstring(f) || upb_fielddef_type(f) == UPB_TYPE_ENUM) {
-      upb_fielddef_setdefaultcstr(f, r->default_string);
+      upb_fielddef_setdefaultcstr(f, r->default_string, NULL);
     } else {
       upb_value val;
       upb_value_setptr(&val, NULL);  // Silence inaccurate compiler warnings.
@@ -434,7 +441,7 @@ static bool field_onlabel(void *closure, const void *hd, int32_t val) {
 static bool field_onnumber(void *closure, const void *hd, int32_t val) {
   UPB_UNUSED(hd);
   upb_descreader *r = closure;
-  upb_fielddef_setnumber(r->f, val);
+  upb_fielddef_setnumber(r->f, val, NULL);
   return true;
 }
 
@@ -444,7 +451,7 @@ static size_t field_onname(void *closure, const void *hd, const char *buf,
   upb_descreader *r = closure;
   // XXX: see comment at the top of the file.
   char *name = upb_strndup(buf, n);
-  upb_fielddef_setname(r->f, name);
+  upb_fielddef_setname(r->f, name, NULL);
   free(name);
   return n;
 }
@@ -455,7 +462,7 @@ static size_t field_ontypename(void *closure, const void *hd, const char *buf,
   upb_descreader *r = closure;
   // XXX: see comment at the top of the file.
   char *name = upb_strndup(buf, n);
-  upb_fielddef_setsubdefname(r->f, name);
+  upb_fielddef_setsubdefname(r->f, name, NULL);
   free(name);
   return n;
 }
@@ -473,14 +480,16 @@ static size_t field_ondefaultval(void *closure, const void *hd,
 }
 
 // Handlers for google.protobuf.DescriptorProto (representing a message).
-static bool msg_startmsg(void *closure) {
+static bool msg_startmsg(void *closure, const void *hd) {
+  UPB_UNUSED(hd);
   upb_descreader *r = closure;
   upb_deflist_push(&r->defs, upb_upcast(upb_msgdef_new(&r->defs)));
   upb_descreader_startcontainer(r);
   return true;
 }
 
-static bool msg_endmsg(void *closure, upb_status *status) {
+static bool msg_endmsg(void *closure, const void *hd, upb_status *status) {
+  UPB_UNUSED(hd);
   upb_descreader *r = closure;
   upb_msgdef *m = upb_descreader_top(r);
   if(!upb_def_fullname(upb_upcast(m))) {
@@ -498,7 +507,7 @@ static size_t msg_onname(void *closure, const void *hd, const char *buf,
   upb_msgdef *m = upb_descreader_top(r);
   // XXX: see comment at the top of the file.
   char *name = upb_strndup(buf, n);
-  upb_def_setfullname(upb_upcast(m), name);
+  upb_def_setfullname(upb_upcast(m), name, NULL);
   upb_descreader_setscopename(r, name);  // Passes ownership of name.
   return n;
 }
@@ -507,7 +516,7 @@ static bool msg_onendfield(void *closure, const void *hd) {
   UPB_UNUSED(hd);
   upb_descreader *r = closure;
   upb_msgdef *m = upb_descreader_top(r);
-  upb_msgdef_addfield(m, r->f, &r->defs);
+  upb_msgdef_addfield(m, r->f, &r->defs, NULL);
   r->f = NULL;
   return true;
 }
@@ -521,42 +530,48 @@ static bool discardfield(void *closure, const void *hd) {
   return true;
 }
 
+static const upb_fielddef *f(const upb_handlers *h, const char *name) {
+  const upb_fielddef *ret = upb_msgdef_ntof(upb_handlers_msgdef(h), name);
+  assert(ret);
+  return ret;
+}
+
 static void reghandlers(void *closure, upb_handlers *h) {
   UPB_UNUSED(closure);
   const upb_msgdef *m = upb_handlers_msgdef(h);
 
   if (m == GOOGLE_PROTOBUF_DESCRIPTORPROTO) {
-    upb_handlers_setstartmsg(h, &msg_startmsg);
-    upb_handlers_setendmsg(h, &msg_endmsg);
-    upb_handlers_setstring_n(h, "name",  &msg_onname, NULL, NULL);
-    upb_handlers_setendsubmsg_n(h,   "field", &msg_onendfield, NULL, NULL);
+    upb_handlers_setstartmsg(h, &msg_startmsg, NULL, NULL);
+    upb_handlers_setendmsg(h, &msg_endmsg, NULL, NULL);
+    upb_handlers_setstring(h,    f(h, "name"),  &msg_onname, NULL, NULL);
+    upb_handlers_setendsubmsg(h, f(h, "field"), &msg_onendfield, NULL, NULL);
     // TODO: support extensions
-    upb_handlers_setendsubmsg_n(h, "extension", &discardfield, NULL, NULL);
+    upb_handlers_setendsubmsg(h, f(h, "extension"), &discardfield, NULL, NULL);
   } else if (m == GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO) {
-    upb_handlers_setstartmsg(h, &file_startmsg);
-    upb_handlers_setendmsg(h, &file_endmsg);
-    upb_handlers_setstring_n(h, "package", &file_onpackage, NULL, NULL);
+    upb_handlers_setstartmsg(h, &file_startmsg, NULL, NULL);
+    upb_handlers_setendmsg(h, &file_endmsg, NULL, NULL);
+    upb_handlers_setstring(h, f(h, "package"), &file_onpackage, NULL, NULL);
     // TODO: support extensions
-    upb_handlers_setendsubmsg_n(h, "extension", &discardfield, NULL, NULL);
+    upb_handlers_setendsubmsg(h, f(h, "extension"), &discardfield, NULL, NULL);
   } else if (m == GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO) {
-    upb_handlers_setstartmsg(h, &enumval_startmsg);
-    upb_handlers_setendmsg(h, &enumval_endmsg);
-    upb_handlers_setstring_n(h, "name",   &enumval_onname, NULL, NULL);
-    upb_handlers_setint32_n(h,  "number", &enumval_onnumber, NULL, NULL);
+    upb_handlers_setstartmsg(h, &enumval_startmsg, NULL, NULL);
+    upb_handlers_setendmsg(h, &enumval_endmsg, NULL, NULL);
+    upb_handlers_setstring(h, f(h, "name"),   &enumval_onname, NULL, NULL);
+    upb_handlers_setint32(h,  f(h, "number"), &enumval_onnumber, NULL, NULL);
   } else if (m == GOOGLE_PROTOBUF_ENUMDESCRIPTORPROTO) {
-    upb_handlers_setstartmsg(h, &enum_startmsg);
-    upb_handlers_setendmsg(h, &enum_endmsg);
-    upb_handlers_setstring_n(h, "name", &enum_onname, NULL, NULL);
+    upb_handlers_setstartmsg(h, &enum_startmsg, NULL, NULL);
+    upb_handlers_setendmsg(h, &enum_endmsg, NULL, NULL);
+    upb_handlers_setstring(h, f(h, "name"), &enum_onname, NULL, NULL);
   } else if (m == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO) {
-    upb_handlers_setstartmsg(h, &field_startmsg);
-    upb_handlers_setendmsg(h, &field_endmsg);
-    upb_handlers_setint32_n (h, "type",      &field_ontype, NULL, NULL);
-    upb_handlers_setint32_n (h, "label",     &field_onlabel, NULL, NULL);
-    upb_handlers_setint32_n (h, "number",    &field_onnumber, NULL, NULL);
-    upb_handlers_setstring_n(h, "name",      &field_onname, NULL, NULL);
-    upb_handlers_setstring_n(h, "type_name", &field_ontypename, NULL, NULL);
-    upb_handlers_setstring_n(
-        h, "default_value", &field_ondefaultval, NULL, NULL);
+    upb_handlers_setstartmsg(h, &field_startmsg, NULL, NULL);
+    upb_handlers_setendmsg(h, &field_endmsg, NULL, NULL);
+    upb_handlers_setint32 (h, f(h, "type"),      &field_ontype, NULL, NULL);
+    upb_handlers_setint32 (h, f(h, "label"),     &field_onlabel, NULL, NULL);
+    upb_handlers_setint32 (h, f(h, "number"),    &field_onnumber, NULL, NULL);
+    upb_handlers_setstring(h, f(h, "name"),      &field_onname, NULL, NULL);
+    upb_handlers_setstring(h, f(h, "type_name"), &field_ontypename, NULL, NULL);
+    upb_handlers_setstring(h, f(h, "default_value"), &field_ondefaultval, NULL,
+                           NULL);
   }
 }
 

@@ -55,7 +55,7 @@ int luaL_typerror(lua_State *L, int narg, const char *tname) {
 #error Only Lua 5.1 and 5.2 are supported
 #endif
 
-const char *lupb_checkname(lua_State *L, int narg) {
+static const char *chkname(lua_State *L, int narg) {
   size_t len;
   const char *name = luaL_checklstring(L, narg, &len);
   if (strlen(name) != len)
@@ -65,7 +65,7 @@ const char *lupb_checkname(lua_State *L, int narg) {
 
 static bool streql(const char *a, const char *b) { return strcmp(a, b) == 0; }
 
-static uint32_t lupb_checkint32(lua_State *L, int narg, const char *name) {
+static uint32_t chkint32(lua_State *L, int narg, const char *name) {
   lua_Number n = lua_tonumber(L, narg);
   if (n > INT32_MAX || n < INT32_MIN || rint(n) != n)
     luaL_error(L, "Invalid %s", name);
@@ -153,6 +153,12 @@ void lupb_checkstatus(lua_State *L, upb_status *s) {
     upb_status_uninit(s);
   }
 }
+
+#define CHK(pred) do { \
+    upb_status status = UPB_STATUS_INIT; \
+    pred; \
+    lupb_checkstatus(L, &status); \
+  } while (0)
 
 
 /* refcounted *****************************************************************/
@@ -285,9 +291,7 @@ static int lupb_def_fullname(lua_State *L) {
 }
 
 static int lupb_def_setfullname(lua_State *L) {
-  upb_def *def = lupb_def_checkmutable(L, 1);
-  const char *name = lupb_checkname(L, 2);
-  upb_def_setfullname(def, name);
+  CHK(upb_def_setfullname(lupb_def_checkmutable(L, 1), chkname(L, 2), &status));
   return 0;
 }
 
@@ -326,52 +330,54 @@ static void lupb_fielddef_dosetdefault(lua_State *L, upb_fielddef *f,
       luaL_argerror(L, narg, "field does not expect a string default");
     size_t len;
     const char *str = lua_tolstring(L, narg, &len);
-    if (!upb_fielddef_setdefaultstr(f, str, len))
-      luaL_argerror(L, narg, "invalid default string for enum");
+    CHK(upb_fielddef_setdefaultstr(f, str, len, &status));
   } else {
     upb_fielddef_setdefault(f, lupb_getvalue(L, narg, upbtype));
   }
 }
 
 static void lupb_fielddef_dosetlabel(lua_State *L, upb_fielddef *f, int narg) {
-  upb_label_t label = luaL_checknumber(L, narg);
-  if (!upb_fielddef_setlabel(f, label))
+  int label = luaL_checkint(L, narg);
+  if (!upb_fielddef_checklabel(label))
     luaL_argerror(L, narg, "invalid field label");
+  upb_fielddef_setlabel(f, label);
+}
+
+static void lupb_fielddef_dosetname(lua_State *L, upb_fielddef *f, int narg) {
+  CHK(upb_fielddef_setname(f, chkname(L, narg), &status));
 }
 
 static void lupb_fielddef_dosetnumber(lua_State *L, upb_fielddef *f, int narg) {
-  int32_t n = luaL_checknumber(L, narg);
-  if (!upb_fielddef_setnumber(f, n))
-    luaL_argerror(L, narg, "invalid field number");
+  CHK(upb_fielddef_setnumber(f, luaL_checkint(L, narg), &status));
 }
 
 static void lupb_fielddef_dosetsubdef(lua_State *L, upb_fielddef *f, int narg) {
   const upb_def *def = NULL;
   if (!lua_isnil(L, narg))
     def = lupb_def_check(L, narg);
-  if (!upb_fielddef_setsubdef(f, def))
-    luaL_argerror(L, narg, "invalid subdef for this field");
+  CHK(upb_fielddef_setsubdef(f, def, &status));
 }
 
 static void lupb_fielddef_dosetsubdefname(lua_State *L, upb_fielddef *f,
                                           int narg) {
   const char *name = NULL;
   if (!lua_isnil(L, narg))
-    name = lupb_checkname(L, narg);
-  if (!upb_fielddef_setsubdefname(f, name))
-    luaL_argerror(L, narg, "field type does not expect a subdef");
+    name = chkname(L, narg);
+  CHK(upb_fielddef_setsubdefname(f, name, &status));
 }
 
 static void lupb_fielddef_dosettype(lua_State *L, upb_fielddef *f, int narg) {
-  int32_t type = luaL_checknumber(L, narg);
-  if (!upb_fielddef_settype(f, type))
+  int type = luaL_checkint(L, narg);
+  if (!upb_fielddef_checktype(type))
     luaL_argerror(L, narg, "invalid field type");
+  upb_fielddef_settype(f, type);
 }
 
 static void lupb_fielddef_dosetintfmt(lua_State *L, upb_fielddef *f, int narg) {
   int32_t intfmt = luaL_checknumber(L, narg);
-  if (!upb_fielddef_settype(f, intfmt))
-    luaL_argerror(L, narg, "invalid field intfmt");
+  if (!upb_fielddef_checkintfmt(intfmt))
+    luaL_argerror(L, narg, "invalid intfmt");
+  upb_fielddef_setintfmt(f, intfmt);
 }
 
 static void lupb_fielddef_dosettagdelim(lua_State *L, upb_fielddef *f,
@@ -394,6 +400,12 @@ static int lupb_fielddef_setdefault(lua_State *L) {
 static int lupb_fielddef_setlabel(lua_State *L) {
   upb_fielddef *f = lupb_fielddef_checkmutable(L, 1);
   lupb_fielddef_dosetlabel(L, f, 2);
+  return 0;
+}
+
+static int lupb_fielddef_setname(lua_State *L) {
+  upb_fielddef *f = lupb_fielddef_checkmutable(L, 1);
+  lupb_fielddef_dosetname(L, f, 2);
   return 0;
 }
 
@@ -451,7 +463,7 @@ static int lupb_fielddef_new(lua_State *L) {
     luaL_checktype(L, -2, LUA_TSTRING);
     const char *key = lua_tostring(L, -2);
     int v = -1;
-    if (streql(key, "name")) upb_fielddef_setname(f, lupb_checkname(L, v));
+    if (streql(key, "name")) lupb_fielddef_dosetname(L, f, v);
     else if (streql(key, "number")) lupb_fielddef_dosetnumber(L, f, v);
     else if (streql(key, "type")) lupb_fielddef_dosettype(L, f, v);
     else if (streql(key, "label")) lupb_fielddef_dosetlabel(L, f, v);
@@ -497,6 +509,12 @@ static int lupb_fielddef_getsel(lua_State *L) {
 static int lupb_fielddef_label(lua_State *L) {
   const upb_fielddef *f = lupb_fielddef_check(L, 1);
   lua_pushnumber(L, upb_fielddef_label(f));
+  return 1;
+}
+
+static int lupb_fielddef_name(lua_State *L) {
+  const upb_fielddef *f = lupb_fielddef_check(L, 1);
+  lua_pushstring(L, upb_fielddef_name(f));
   return 1;
 }
 
@@ -585,7 +603,7 @@ static const struct luaL_Reg lupb_fielddef_m[] = {
   {"istagdelim", lupb_fielddef_istagdelim},
   {"label", lupb_fielddef_label},
   {"msgdef", lupb_fielddef_msgdef},
-  {"name", lupb_def_fullname},  // name() is just an alias for fullname()
+  {"name", lupb_fielddef_name},
   {"number", lupb_fielddef_number},
   {"subdef", lupb_fielddef_subdef},
   {"subdef_name", lupb_fielddef_subdefname},
@@ -593,7 +611,7 @@ static const struct luaL_Reg lupb_fielddef_m[] = {
 
   {"set_default", lupb_fielddef_setdefault},
   {"set_label", lupb_fielddef_setlabel},
-  {"set_name", lupb_def_setfullname},  // name() is just an alias for fullname()
+  {"set_name", lupb_fielddef_setname},
   {"set_number", lupb_fielddef_setnumber},
   {"set_subdef", lupb_fielddef_setsubdef},
   {"set_subdef_name", lupb_fielddef_setsubdefname},
@@ -651,18 +669,13 @@ static int lupb_msgdef_new(lua_State *L) {
     const char *key = lua_tostring(L, -2);
 
     if (streql(key, "full_name")) {  // full_name="MyMessage"
-      const char *fqname = lua_tostring(L, -1);
-      if (!fqname || !upb_def_setfullname(upb_upcast(md), fqname))
-        luaL_error(L, "Invalid full_name");
+      CHK(upb_def_setfullname(upb_upcast(md), chkname(L, -1), &status));
     } else if (streql(key, "fields")) {  // fields={...}
       // Iterate over the list of fields.
       luaL_checktype(L, -1, LUA_TTABLE);
       for (lua_pushnil(L); lua_next(L, -2); lua_pop(L, 1)) {
         upb_fielddef *f = lupb_fielddef_checkmutable(L, -1);
-        if (!upb_msgdef_addfield(md, f, NULL)) {
-          // TODO: more specific error.
-          luaL_error(L, "Could not add field.");
-        }
+        CHK(upb_msgdef_addfield(md, f, NULL, &status));
       }
     } else {
       // TODO: extrange=
@@ -684,9 +697,10 @@ static int lupb_msgdef_add(lua_State *L) {
     lua_pop(L, 1);
   }
 
-  bool success = upb_msgdef_addfields(m, fields, n, NULL);
+  upb_status status = UPB_STATUS_INIT;
+  upb_msgdef_addfields(m, fields, n, NULL, &status);
   free(fields);
-  if (!success) luaL_error(L, "fields could not be added");
+  lupb_checkstatus(L, &status);
   return 0;
 }
 
@@ -802,16 +816,11 @@ static int lupb_enumdef_new(lua_State *L) {
         luaL_checktype(L, -1, LUA_TSTRING);
         const char *name = lua_tostring(L, -1);
         lua_rawgeti(L, -2, 2);
-        int32_t num = lupb_checkint32(L, -1, "value");
-        upb_status status = UPB_STATUS_INIT;
-        upb_enumdef_addval(e, name, num, &status);
-        lupb_checkstatus(L, &status);
+        CHK(upb_enumdef_addval(e, name, chkint32(L, -1, "value"), &status));
         lua_pop(L, 2);  // The key/val we got from lua_rawgeti()
       }
     } else if (streql(key, "full_name")) {
-      const char *fullname = lua_tostring(L, -1);
-      if (!fullname || !upb_def_setfullname(upb_upcast(e), fullname))
-        luaL_error(L, "Invalid full_name");
+      CHK(upb_def_setfullname(upb_upcast(e), chkname(L, -1), &status));
     } else {
       luaL_error(L, "Unknown initializer key '%s'", key);
     }
@@ -821,11 +830,7 @@ static int lupb_enumdef_new(lua_State *L) {
 
 static int lupb_enumdef_add(lua_State *L) {
   upb_enumdef *e = lupb_enumdef_checkmutable(L, 1);
-  const char *name = lupb_checkname(L, 2);
-  int32_t num = lupb_checkint32(L, 3, "value");
-  upb_status status = UPB_STATUS_INIT;
-  upb_enumdef_addval(e, name, num, &status);
-  lupb_checkstatus(L, &status);
+  CHK(upb_enumdef_addval(e, chkname(L, 2), chkint32(L, 3, "value"), &status));
   return 0;
 }
 
@@ -840,7 +845,7 @@ static int lupb_enumdef_value(lua_State *L) {
   int type = lua_type(L, 2);
   if (type == LUA_TNUMBER) {
     // Pushes "nil" for a NULL pointer.
-    lua_pushstring(L, upb_enumdef_iton(e, lupb_checkint32(L, 2, "value")));
+    lua_pushstring(L, upb_enumdef_iton(e, chkint32(L, 2, "value")));
   } else if (type == LUA_TSTRING) {
     int32_t num;
     if (upb_enumdef_ntoi(e, lua_tostring(L, 2), &num)) {
@@ -980,9 +985,7 @@ static int lupb_symtab_load_descriptor(lua_State *L) {
   size_t len;
   upb_symtab *s = lupb_symtab_check(L, 1);
   const char *str = luaL_checklstring(L, 2, &len);
-  upb_status status = UPB_STATUS_INIT;
-  upb_load_descriptor_into_symtab(s, str, len, &status);
-  lupb_checkstatus(L, &status);
+  CHK(upb_load_descriptor_into_symtab(s, str, len, &status));
   return 0;
 }
 

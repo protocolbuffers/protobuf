@@ -26,9 +26,9 @@ extern const upb_enumdef upb_bytestream_enums[0];
 #define UPB_BYTESTREAM &upb_bytestream_msgs[0]
 
 // Selector definitions.
-#define UPB_BYTESTREAM_BYTES_ENDSTR 2
-#define UPB_BYTESTREAM_BYTES_STRING 0
-#define UPB_BYTESTREAM_BYTES_STARTSTR 1
+#define UPB_BYTESTREAM_BYTES_ENDSTR 4
+#define UPB_BYTESTREAM_BYTES_STRING 2
+#define UPB_BYTESTREAM_BYTES_STARTSTR 3
 
 #ifdef __cplusplus
 };  // extern "C"

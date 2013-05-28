@@ -30,6 +30,50 @@ template <class T> Deleter<T> MatchDeleter(T* data) {
 // user's types.  These also handle conversion between multiple types with
 // the same witdh; ie "long long" and "long" are both 64 bits on LP64.
 
+// EndMessageHandler
+template <class C> struct EndMessageHandlerWrapper2 {
+  template <bool F(C *, Status *)>
+  static bool Wrapper(void *closure, const void *hd, Status* s) {
+    UPB_UNUSED(hd);
+    return F(static_cast<C *>(closure), s);
+  }
+};
+
+template <class C, class D> struct EndMessageHandlerWrapper3 {
+  template <bool F(C *, const D *, Status*)>
+  inline static bool Wrapper(void *closure, const void *hd, Status* s) {
+    return F(static_cast<C *>(closure), static_cast<const D *>(hd), s);
+  }
+};
+
+template <class C>
+inline EndMessageHandlerWrapper2<C> MatchWrapper(bool (*f)(C *, Status *)) {
+  UPB_UNUSED(f);
+  return EndMessageHandlerWrapper2<C>();
+}
+
+template <class C, class D>
+inline EndMessageHandlerWrapper3<C, D> MatchWrapper(bool (*f)(C *, const D *,
+                                                              Status *)) {
+  UPB_UNUSED(f);
+  return EndMessageHandlerWrapper3<C, D>();
+}
+
+inline Handlers::EndMessageHandler MakeHandler(bool (*wrapper)(void *,
+                                                               const void *,
+                                                               Status *)) {
+  return Handlers::EndMessageHandler::Make(wrapper, NULL, NULL);
+}
+
+template <class C, class D>
+inline Handlers::EndMessageHandler BindHandler(
+    bool (*wrapper)(void *, const void *, Status *),
+    bool (*h)(C *, const D *, Status *), D *data) {
+  UPB_UNUSED(h);  // Only for making sure function matches "D".
+  return Handlers::EndMessageHandler::Make(wrapper, data,
+                                           MatchDeleter(data).Delete);
+}
+
 // ValueHandler
 template <class C, class T1, class T2 = typename CanonicalType<T1>::Type>
 struct ValueHandlerWrapper2 {
@@ -63,18 +107,18 @@ inline ValueHandlerWrapper3<C, D, T> MatchWrapper(bool (*f)(C *, const D *,
 }
 
 template <class T>
-inline typename ValueHandler<T>::H MakeHandler(bool (*wrapper)(void *,
-                                                               const void *,
-                                                               T)) {
-  return ValueHandler<T>::H::Make(wrapper, NULL, NULL);
+inline typename Handlers::ValueHandler<T>::H MakeHandler(
+    bool (*wrapper)(void *, const void *, T)) {
+  return Handlers::ValueHandler<T>::H::Make(wrapper, NULL, NULL);
 }
 
 template <class C, class D, class T1, class T2>
-inline typename ValueHandler<T1>::H BindHandler(
+inline typename Handlers::ValueHandler<T1>::H BindHandler(
     bool (*wrapper)(void *, const void *, T1), bool (*h)(C *, const D *, T2),
     D *data) {
   UPB_UNUSED(h);  // Only for making sure function matches "D".
-  return ValueHandler<T1>::H::Make(wrapper, data, MatchDeleter(data).Delete);
+  return Handlers::ValueHandler<T1>::H::Make(wrapper, data,
+                                             MatchDeleter(data).Delete);
 }
 
 // StartFieldHandler
@@ -105,15 +149,17 @@ inline StartFieldHandlerWrapper3<R, C, D> MatchWrapper(R *(*f)(C *,
   return StartFieldHandlerWrapper3<R, C, D>();
 }
 
-inline StartFieldHandler MakeHandler(void *(*wrapper)(void *, const void *)) {
-  return StartFieldHandler::Make(wrapper, NULL, NULL);
+inline Handlers::StartFieldHandler MakeHandler(void *(*wrapper)(void *,
+                                                                const void *)) {
+  return Handlers::StartFieldHandler::Make(wrapper, NULL, NULL);
 }
 
 template <class R, class C, class D>
-inline StartFieldHandler BindHandler(void *(*wrapper)(void *, const void *),
-                                     R *(*h)(C *, const D *), D *data) {
+inline Handlers::StartFieldHandler BindHandler(
+    void *(*wrapper)(void *, const void *), R *(*h)(C *, const D *), D *data) {
   UPB_UNUSED(h);  // Only for making sure function matches "D".
-  return StartFieldHandler::Make(wrapper, data, MatchDeleter(data).Delete);
+  return Handlers::StartFieldHandler::Make(wrapper, data,
+                                           MatchDeleter(data).Delete);
 }
 
 // EndFieldHandler
@@ -144,15 +190,17 @@ inline EndFieldHandlerWrapper3<C, D> MatchWrapper(bool (*f)(C *, const D *)) {
   return EndFieldHandlerWrapper3<C, D>();
 }
 
-inline EndFieldHandler MakeHandler(bool (*wrapper)(void *, const void *)) {
-  return EndFieldHandler::Make(wrapper, NULL, NULL);
+inline Handlers::EndFieldHandler MakeHandler(bool (*wrapper)(void *,
+                                                             const void *)) {
+  return Handlers::EndFieldHandler::Make(wrapper, NULL, NULL);
 }
 
 template <class C, class D>
-inline EndFieldHandler BindHandler(bool (*wrapper)(void *, const void *),
-                                   bool (*h)(C *, const D *), D *data) {
+inline Handlers::EndFieldHandler BindHandler(
+    bool (*wrapper)(void *, const void *), bool (*h)(C *, const D *), D *data) {
   UPB_UNUSED(h);  // Only for making sure function matches "D".
-  return EndFieldHandler::Make(wrapper, data, MatchDeleter(data).Delete);
+  return Handlers::EndFieldHandler::Make(wrapper, data,
+                                         MatchDeleter(data).Delete);
 }
 
 // StartStringHandler
@@ -184,18 +232,19 @@ inline StartStringHandlerWrapper3<R, C, D> MatchWrapper(R *(*f)(C *, const D *,
   return StartStringHandlerWrapper3<R, C, D>();
 }
 
-inline StartStringHandler MakeHandler(void *(*wrapper)(void *, const void *,
-                                                       size_t)) {
-  return StartStringHandler::Make(wrapper, NULL, NULL);
+inline Handlers::StartStringHandler MakeHandler(void *(*wrapper)(void *,
+                                                                 const void *,
+                                                                 size_t)) {
+  return Handlers::StartStringHandler::Make(wrapper, NULL, NULL);
 }
 
 template <class R, class C, class D>
-inline StartStringHandler BindHandler(void *(*wrapper)(void *, const void *,
-                                                       size_t),
-                                      R *(*h)(C *, const D *, size_t),
-                                      D *data) {
+inline Handlers::StartStringHandler BindHandler(
+    void *(*wrapper)(void *, const void *, size_t),
+    R *(*h)(C *, const D *, size_t), D *data) {
   UPB_UNUSED(h);  // Only for making sure function matches "D".
-  return StartStringHandler::Make(wrapper, data, MatchDeleter(data).Delete);
+  return Handlers::StartStringHandler::Make(wrapper, data,
+                                            MatchDeleter(data).Delete);
 }
 
 // StringHandler
@@ -231,17 +280,18 @@ inline StringHandlerWrapper3<C, D> MatchWrapper(size_t (*f)(C *, const D *,
   return StringHandlerWrapper3<C, D>();
 }
 
-inline StringHandler MakeHandler(size_t (*wrapper)(void *, const void *,
-                                                   const char *, size_t)) {
-  return StringHandler::Make(wrapper, NULL, NULL);
+inline Handlers::StringHandler MakeHandler(
+    size_t (*wrapper)(void *, const void *, const char *, size_t)) {
+  return Handlers::StringHandler::Make(wrapper, NULL, NULL);
 }
 
 template <class C, class D>
-inline StringHandler BindHandler(
+inline Handlers::StringHandler BindHandler(
     size_t (*wrapper)(void *, const void *, const char *, size_t),
     size_t (*h)(C *, const D *, const char *, size_t), D *data) {
   UPB_UNUSED(h);  // Only for making sure function matches "D".
-  return StringHandler::Make(wrapper, data, MatchDeleter(data).Delete);
+  return Handlers::StringHandler::Make(wrapper, data,
+                                       MatchDeleter(data).Delete);
 }
 
 // utype/ltype are upper/lower-case, ctype is canonical C type, vtype is
@@ -259,14 +309,6 @@ inline StringHandler BindHandler(
     return upb_handlers_set##ltype(this, f, handler.handler_, handler.data_,   \
                                    handler.cleanup_);                          \
   }                                                                            \
-  template <>                                                                  \
-  inline bool Handlers::SetValueHandler<vtype>(                                \
-      const char *f, const typename ValueHandler<                              \
-                         typename CanonicalType<vtype>::Type>::H &handler) {   \
-    handler.registered_ = true;                                                \
-    return upb_handlers_set##ltype##_n(this, f, handler.handler_,              \
-                                       handler.data_, handler.cleanup_);       \
-  }
 
 TYPE_METHODS(Double, double, double,   double);
 TYPE_METHODS(Float,  float,  float,    float);
@@ -294,10 +336,6 @@ TYPE_METHODS(UInt64, uint64, uint64_t, upb_uint64alt_t);
                                               const utype##Handler &h) { \
       return SetValueHandler<ctype>(f, h); \
     } \
-    inline bool Handlers::Set##utype##Handler(const char *f,     \
-                                              const utype##Handler &h) { \
-      return SetValueHandler<ctype>(f, h); \
-    }
 
 TYPE_METHODS(Double, double);
 TYPE_METHODS(Float,  float);
@@ -339,6 +377,12 @@ inline void Handlers::DonateRef(const void *from, const void *to) const {
 inline void Handlers::CheckRef(const void *owner) const {
   upb_handlers_checkref(this, owner);
 }
+inline const Status* Handlers::status() {
+  return upb_handlers_status(this);
+}
+inline void Handlers::ClearError() {
+  return upb_handlers_clearerr(this);
+}
 inline bool Handlers::Freeze(Handlers *const *handlers, int n, Status *s) {
   return upb_handlers_freeze(handlers, n, s);
 }
@@ -348,12 +392,17 @@ inline const FrameType *Handlers::frame_type() const {
 inline const MessageDef *Handlers::message_def() const {
   return upb_handlers_msgdef(this);
 }
-template <class T, bool F(T *)> void Handlers::SetStartMessageHandler() {
-  upb_handlers_setstartmsg(this, &Wrapper1<T, F>);
+inline bool Handlers::SetStartMessageHandler(
+    const Handlers::StartMessageHandler &handler) {
+  handler.registered_ = true;
+  return upb_handlers_setstartmsg(this, handler.handler_, handler.data_,
+                                  handler.cleanup_);
 }
-template <class T, bool F(T *, upb::Status *)>
-void Handlers::SetEndMessageHandler() {
-  upb_handlers_setendmsg(this, &EndMessageWrapper<T, F>);
+inline bool Handlers::SetEndMessageHandler(
+    const Handlers::EndMessageHandler &handler) {
+  handler.registered_ = true;
+  return upb_handlers_setendmsg(this, handler.handler_, handler.data_,
+                                handler.cleanup_);
 }
 inline bool Handlers::SetStartStringHandler(const FieldDef *f,
                                             const StartStringHandler &handler) {
@@ -399,48 +448,6 @@ inline bool Handlers::SetEndSequenceHandler(const FieldDef *f,
 }
 inline bool Handlers::SetSubHandlers(const FieldDef *f, const Handlers *sub) {
   return upb_handlers_setsubhandlers(this, f, sub);
-}
-inline bool Handlers::SetStartStringHandler(const char *name,
-                                            const StartStringHandler &handler) {
-  handler.registered_ = true;
-  return upb_handlers_setstartstr_n(this, name, handler.handler_, handler.data_,
-                                    handler.cleanup_);
-}
-inline bool Handlers::SetEndStringHandler(const char *name,
-                                          const EndFieldHandler &handler) {
-  handler.registered_ = true;
-  return upb_handlers_setendstr_n(this, name, handler.handler_, handler.data_,
-                                  handler.cleanup_);
-}
-inline bool Handlers::SetStringHandler(const char *name,
-                                       const StringHandler &handler) {
-  handler.registered_ = true;
-  return upb_handlers_setstring_n(this, name, handler.handler_, handler.data_,
-                                  handler.cleanup_);
-}
-inline bool Handlers::SetStartSequenceHandler(
-    const char *name, const StartFieldHandler &handler) {
-  handler.registered_ = true;
-  return upb_handlers_setstartseq_n(this, name, handler.handler_, handler.data_,
-                                    handler.cleanup_);
-}
-inline bool Handlers::SetStartSubMessageHandler(
-    const char *name, const StartFieldHandler &handler) {
-  handler.registered_ = true;
-  return upb_handlers_setstartsubmsg_n(this, name, handler.handler_,
-                                       handler.data_, handler.cleanup_);
-}
-inline bool Handlers::SetEndSubMessageHandler(const char *name,
-                                              const EndFieldHandler &handler) {
-  handler.registered_ = true;
-  return upb_handlers_setendsubmsg_n(this, name, handler.handler_,
-                                     handler.data_, handler.cleanup_);
-}
-inline bool Handlers::SetEndSequenceHandler(const char *name,
-                                            const EndFieldHandler &handler) {
-  handler.registered_ = true;
-  return upb_handlers_setendseq_n(this, name, handler.handler_, handler.data_,
-                                  handler.cleanup_);
 }
 inline const Handlers *Handlers::GetSubHandlers(const FieldDef *f) const {
   return upb_handlers_getsubhandlers(this, f);

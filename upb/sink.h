@@ -170,7 +170,7 @@ class upb::Sink {
 
   // Should be called at the start and end of processing.
   bool StartMessage();
-  void EndMessage();
+  bool EndMessage();
 
   // Putting of individual values.  These work for both repeated and
   // non-repeated fields, but for repeated fields you must wrap them in
@@ -230,7 +230,7 @@ void upb_sink_reset(upb_sink *s, void *closure);
 upb_pipeline *upb_sink_pipeline(const upb_sink *s);
 void *upb_sink_getobj(const upb_sink *s);
 bool upb_sink_startmsg(upb_sink *s);
-void upb_sink_endmsg(upb_sink *s);
+bool upb_sink_endmsg(upb_sink *s);
 bool upb_sink_putint32(upb_sink *s, upb_selector_t sel, int32_t val);
 bool upb_sink_putint64(upb_sink *s, upb_selector_t sel, int64_t val);
 bool upb_sink_putuint32(upb_sink *s, upb_selector_t sel, uint32_t val);
@@ -299,8 +299,8 @@ inline T* Sink::GetObject() const {
 inline bool Sink::StartMessage() {
   return upb_sink_startmsg(this);
 }
-inline void Sink::EndMessage() {
-  upb_sink_endmsg(this);
+inline bool Sink::EndMessage() {
+  return upb_sink_endmsg(this);
 }
 inline bool Sink::PutInt32(Handlers::Selector sel, int32_t val) {
   return upb_sink_putint32(this, sel, val);

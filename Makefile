@@ -252,7 +252,6 @@ $(SIMPLE_CXX_TESTS): % : %.cc
 #VALGRIND=valgrind --leak-check=full --error-exitcode=1 --track-origins=yes
 VALGRIND=
 test: tests
-	@echo Running all tests under valgrind.
 	@set -e  # Abort on error.
 	@for test in $(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS); do \
 	  if [ -x ./$$test ] ; then \

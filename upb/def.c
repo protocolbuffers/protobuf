@@ -41,18 +41,30 @@ static bool upb_isalphanum(char c) {
   return upb_isletter(c) || upb_isbetween(c, '0', '9');
 }
 
-static bool upb_isident(const char *str, size_t len, bool full) {
+static bool upb_isident(const char *str, size_t len, bool full, upb_status *s) {
   bool start = true;
   for (size_t i = 0; i < len; i++) {
     char c = str[i];
     if (c == '.') {
-      if (start || !full) return false;
+      if (start || !full) {
+        upb_status_seterrf(s, "invalid name: unexpected '.' (%s)", str);
+        return false;
+      }
       start = true;
     } else if (start) {
-      if (!upb_isletter(c)) return false;
+      if (!upb_isletter(c)) {
+        upb_status_seterrf(
+            s, "invalid name: path components must start with a letter (%s)",
+            str);
+        return false;
+      }
       start = false;
     } else {
-      if (!upb_isalphanum(c)) return false;
+      if (!upb_isalphanum(c)) {
+        upb_status_seterrf(s, "invalid name: non-alphanumeric character (%s)",
+                           str);
+        return false;
+      }
     }
   }
   return !start;
@@ -65,9 +77,9 @@ upb_deftype_t upb_def_type(const upb_def *d) { return d->type; }
 
 const char *upb_def_fullname(const upb_def *d) { return d->fullname; }
 
-bool upb_def_setfullname(upb_def *def, const char *fullname) {
+bool upb_def_setfullname(upb_def *def, const char *fullname, upb_status *s) {
   assert(!upb_def_isfrozen(def));
-  if (!upb_isident(fullname, strlen(fullname), true)) return false;
+  if (!upb_isident(fullname, strlen(fullname), true, s)) return false;
   free((void*)def->fullname);
   def->fullname = upb_strdup(fullname);
   return true;
@@ -185,7 +197,7 @@ bool upb_def_freeze(upb_def *const* defs, int n, upb_status *s) {
     if (m) {
       upb_inttable_compact(&m->itof);
       upb_msg_iter j;
-      uint32_t selector = 0;
+      uint32_t selector = UPB_STATIC_SELECTOR_COUNT;
       for(upb_msg_begin(&j, m); !upb_msg_done(&j); upb_msg_next(&j)) {
         upb_fielddef *f = upb_msg_iter_field(&j);
         assert(f->msgdef == m);
@@ -283,14 +295,14 @@ const char *upb_enumdef_fullname(const upb_enumdef *e) {
   return upb_def_fullname(upb_upcast(e));
 }
 
-bool upb_enumdef_setfullname(upb_enumdef *e, const char *fullname) {
-  return upb_def_setfullname(upb_upcast(e), fullname);
+bool upb_enumdef_setfullname(upb_enumdef *e, const char *fullname,
+                             upb_status *s) {
+  return upb_def_setfullname(upb_upcast(e), fullname, s);
 }
 
 bool upb_enumdef_addval(upb_enumdef *e, const char *name, int32_t num,
                         upb_status *status) {
-  if (!upb_isident(name, strlen(name), false)) {
-    upb_status_seterrf(status, "name '%s' is not a valid identifier", name);
+  if (!upb_isident(name, strlen(name), false, status)) {
     return false;
   }
   if (upb_enumdef_ntoi(e, name, NULL)) {
@@ -416,11 +428,11 @@ upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner) {
   if (!newf) return NULL;
   upb_fielddef_settype(newf, upb_fielddef_type(f));
   upb_fielddef_setlabel(newf, upb_fielddef_label(f));
-  upb_fielddef_setnumber(newf, upb_fielddef_number(f));
-  upb_fielddef_setname(newf, upb_fielddef_name(f));
+  upb_fielddef_setnumber(newf, upb_fielddef_number(f), NULL);
+  upb_fielddef_setname(newf, upb_fielddef_name(f), NULL);
   if (f->default_is_string) {
     str_t *s = upb_value_getptr(upb_fielddef_default(f));
-    upb_fielddef_setdefaultstr(newf, s->str, s->len);
+    upb_fielddef_setdefaultstr(newf, s->str, s->len, NULL);
   } else {
     upb_fielddef_setdefault(newf, upb_fielddef_default(f));
   }
@@ -439,7 +451,7 @@ upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner) {
     }
     strcpy(newname, ".");
     strcat(newname, f->sub.def->fullname);
-    upb_fielddef_setsubdefname(newf, newname);
+    upb_fielddef_setsubdefname(newf, newname, NULL);
     free(newname);
   }
 
@@ -504,8 +516,8 @@ upb_msgdef *upb_fielddef_msgdef_mutable(upb_fielddef *f) {
   return (upb_msgdef*)f->msgdef;
 }
 
-bool upb_fielddef_setname(upb_fielddef *f, const char *name) {
-  return upb_def_setfullname(upb_upcast(f), name);
+bool upb_fielddef_setname(upb_fielddef *f, const char *name, upb_status *s) {
+  return upb_def_setfullname(upb_upcast(f), name, s);
 }
 
 upb_value upb_fielddef_default(const upb_fielddef *f) {
@@ -561,22 +573,30 @@ const char *upb_fielddef_subdefname(const upb_fielddef *f) {
   return f->subdef_is_symbolic ? f->sub.name : NULL;
 }
 
-bool upb_fielddef_setnumber(upb_fielddef *f, uint32_t number) {
-  assert(f->msgdef == NULL);
+bool upb_fielddef_setnumber(upb_fielddef *f, uint32_t number, upb_status *s) {
+  if (f->msgdef) {
+    upb_status_seterrliteral(
+        s, "cannot change field number after adding to a message");
+    return false;
+  }
+  if (number == 0 || number > UPB_MAX_FIELDNUMBER) {
+    upb_status_seterrf(s, "invalid field number (%u)", number);
+    return false;
+  }
   f->number_ = number;
   return true;
 }
 
-bool upb_fielddef_settype(upb_fielddef *f, upb_fieldtype_t type) {
+void upb_fielddef_settype(upb_fielddef *f, upb_fieldtype_t type) {
   assert(!upb_fielddef_isfrozen(f));
+  assert(upb_fielddef_checktype(type));
   upb_fielddef_uninit_default(f);
   f->type_ = type;
   f->type_is_set_ = true;
   upb_fielddef_init_default(f);
-  return true;
 }
 
-bool upb_fielddef_setdescriptortype(upb_fielddef *f, int type) {
+void upb_fielddef_setdescriptortype(upb_fielddef *f, int type) {
   assert(!upb_fielddef_isfrozen(f));
   switch (type) {
     case UPB_DESCRIPTOR_TYPE_DOUBLE:
@@ -619,8 +639,7 @@ bool upb_fielddef_setdescriptortype(upb_fielddef *f, int type) {
     case UPB_DESCRIPTOR_TYPE_ENUM:
       upb_fielddef_settype(f, UPB_TYPE_ENUM);
       break;
-    default:
-      return false;
+    default: assert(false);
   }
 
   if (type == UPB_DESCRIPTOR_TYPE_FIXED64 ||
@@ -636,8 +655,6 @@ bool upb_fielddef_setdescriptortype(upb_fielddef *f, int type) {
   }
 
   upb_fielddef_settagdelim(f, type == UPB_DESCRIPTOR_TYPE_GROUP);
-
-  return true;
 }
 
 upb_descriptortype_t upb_fielddef_descriptortype(const upb_fielddef *f) {
@@ -679,14 +696,15 @@ upb_descriptortype_t upb_fielddef_descriptortype(const upb_fielddef *f) {
   return 0;
 }
 
-bool upb_fielddef_setlabel(upb_fielddef *f, upb_label_t label) {
+void upb_fielddef_setlabel(upb_fielddef *f, upb_label_t label) {
   assert(!upb_fielddef_isfrozen(f));
+  assert(upb_fielddef_checklabel(label));
   f->label_ = label;
-  return true;
 }
 
 bool upb_fielddef_setintfmt(upb_fielddef *f, upb_intfmt_t fmt) {
   assert(!upb_fielddef_isfrozen(f));
+  assert(upb_fielddef_checkintfmt(fmt));
   f->intfmt = fmt;
   return true;
 }
@@ -710,9 +728,10 @@ void upb_fielddef_setdefault(upb_fielddef *f, upb_value value) {
   f->default_is_string = false;
 }
 
-bool upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len) {
+bool upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len,
+                                upb_status *s) {
   assert(upb_fielddef_isstring(f) || f->type_ == UPB_TYPE_ENUM);
-  if (f->type_ == UPB_TYPE_ENUM && !upb_isident(str, len, false))
+  if (f->type_ == UPB_TYPE_ENUM && !upb_isident(str, len, false, s))
     return false;
 
   if (f->default_is_string) {
@@ -723,15 +742,16 @@ bool upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len) {
     assert(f->type_ == UPB_TYPE_ENUM);
   }
 
-  str_t *s = newstr(str, len);
-  upb_value_setptr(&f->defaultval, s);
+  str_t *str2 = newstr(str, len);
+  upb_value_setptr(&f->defaultval, str2);
   f->default_is_string = true;
   return true;
 }
 
-void upb_fielddef_setdefaultcstr(upb_fielddef *f, const char *str) {
+void upb_fielddef_setdefaultcstr(upb_fielddef *f, const char *str,
+                                 upb_status *s) {
   assert(f->type_is_set_);
-  upb_fielddef_setdefaultstr(f, str, str ? strlen(str) : 0);
+  upb_fielddef_setdefaultstr(f, str, str ? strlen(str) : 0, s);
 }
 
 bool upb_fielddef_default_is_symbolic(const upb_fielddef *f) {
@@ -740,34 +760,43 @@ bool upb_fielddef_default_is_symbolic(const upb_fielddef *f) {
       f->type_ == UPB_TYPE_ENUM;
 }
 
-bool upb_fielddef_resolvedefault(upb_fielddef *f) {
+bool upb_fielddef_resolveenumdefault(upb_fielddef *f, upb_status *s) {
   if (!upb_fielddef_default_is_symbolic(f)) return true;
 
-  str_t *s = upb_value_getptr(f->defaultval);
+  str_t *str = upb_value_getptr(f->defaultval);
   const upb_enumdef *e = upb_downcast_enumdef(upb_fielddef_subdef(f));
-  assert(s);  // Points to either a real default or the empty string.
+  assert(str);  // Points to either a real default or the empty string.
   assert(e);
-  if (s->len == 0) {
+  if (str->len == 0) {
     // The "default default" for an enum is the first defined value.
     upb_value_setint32(&f->defaultval, e->defaultval);
   } else {
     int32_t val = 0;
-    if (!upb_enumdef_ntoi(e, s->str, &val))
+    if (!upb_enumdef_ntoi(e, str->str, &val)) {
+      upb_status_seterrf(s, "enum default not found in enum (%s)", str->str);
       return false;
+    }
     upb_value_setint32(&f->defaultval, val);
   }
   f->default_is_string = false;
-  freestr(s);
+  freestr(str);
   return true;
 }
 
-static bool upb_subdef_typecheck(upb_fielddef *f, const upb_def *subdef) {
-  if (f->type_ == UPB_TYPE_MESSAGE)
-    return upb_dyncast_msgdef(subdef) != NULL;
-  else if (f->type_ == UPB_TYPE_ENUM)
-    return upb_dyncast_enumdef(subdef) != NULL;
-  else {
-    assert(false);
+static bool upb_subdef_typecheck(upb_fielddef *f, const upb_def *subdef,
+                                 upb_status *s) {
+  if (f->type_ == UPB_TYPE_MESSAGE) {
+    if (upb_dyncast_msgdef(subdef)) return true;
+    upb_status_seterrliteral(s,
+                             "invalid subdef type for this submessage field");
+    return false;
+  } else if (f->type_ == UPB_TYPE_ENUM) {
+    if (upb_dyncast_enumdef(subdef)) return true;
+    upb_status_seterrliteral(s, "invalid subdef type for this enum field");
+    return false;
+  } else {
+    upb_status_seterrliteral(s,
+                             "only message and enum fields can have a subdef");
     return false;
   }
 }
@@ -780,10 +809,11 @@ static void release_subdef(upb_fielddef *f) {
   }
 }
 
-bool upb_fielddef_setsubdef(upb_fielddef *f, const upb_def *subdef) {
+bool upb_fielddef_setsubdef(upb_fielddef *f, const upb_def *subdef,
+                            upb_status *s) {
   assert(!upb_fielddef_isfrozen(f));
   assert(upb_fielddef_hassubdef(f));
-  if (subdef && !upb_subdef_typecheck(f, subdef)) return false;
+  if (subdef && !upb_subdef_typecheck(f, subdef, s)) return false;
   release_subdef(f);
   f->sub.def = subdef;
   f->subdef_is_symbolic = false;
@@ -791,9 +821,13 @@ bool upb_fielddef_setsubdef(upb_fielddef *f, const upb_def *subdef) {
   return true;
 }
 
-bool upb_fielddef_setsubdefname(upb_fielddef *f, const char *name) {
+bool upb_fielddef_setsubdefname(upb_fielddef *f, const char *name,
+                                upb_status *s) {
   assert(!upb_fielddef_isfrozen(f));
-  assert(upb_fielddef_hassubdef(f));
+  if (!upb_fielddef_hassubdef(f)) {
+    upb_status_seterrliteral(s, "field type does not accept a subdef");
+    return false;
+  }
   release_subdef(f);
   f->sub.name = upb_strdup(name);
   f->subdef_is_symbolic = true;
@@ -821,6 +855,17 @@ bool upb_fielddef_hassubdef(const upb_fielddef *f) {
   return upb_fielddef_issubmsg(f) || upb_fielddef_type(f) == UPB_TYPE_ENUM;
 }
 
+static bool between(int32_t x, int32_t low, int32_t high) {
+  return x >= low && x <= high;
+}
+
+bool upb_fielddef_checklabel(int32_t label) { return between(label, 1, 3); }
+bool upb_fielddef_checktype(int32_t type) { return between(type, 1, 11); }
+bool upb_fielddef_checkintfmt(int32_t fmt) { return between(fmt, 1, 3); }
+
+bool upb_fielddef_checkdescriptortype(int32_t type) {
+  return between(type, 1, 18);
+}
 
 /* upb_msgdef *****************************************************************/
 
@@ -861,11 +906,13 @@ err2:
 upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner) {
   upb_msgdef *newm = upb_msgdef_new(owner);
   if (!newm) return NULL;
-  upb_def_setfullname(upb_upcast(newm), upb_def_fullname(upb_upcast(m)));
+  bool ok = upb_def_setfullname(upb_upcast(newm),
+                                upb_def_fullname(upb_upcast(m)), NULL);
+  UPB_ASSERT_VAR(ok, ok);
   upb_msg_iter i;
   for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
     upb_fielddef *f = upb_fielddef_dup(upb_msg_iter_field(&i), &f);
-    if (!f || !upb_msgdef_addfield(newm, f, &f)) {
+    if (!f || !upb_msgdef_addfield(newm, f, &f, NULL)) {
       upb_msgdef_unref(newm, owner);
       return NULL;
     }
@@ -898,22 +945,29 @@ const char *upb_msgdef_fullname(const upb_msgdef *m) {
   return upb_def_fullname(upb_upcast(m));
 }
 
-bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname) {
-  return upb_def_setfullname(upb_upcast(m), fullname);
+bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname,
+                            upb_status *s) {
+  return upb_def_setfullname(upb_upcast(m), fullname, s);
 }
 
 bool upb_msgdef_addfields(upb_msgdef *m, upb_fielddef *const *fields, int n,
-                          const void *ref_donor) {
+                          const void *ref_donor, upb_status *s) {
   // Check constraints for all fields before performing any action.
   for (int i = 0; i < n; i++) {
     upb_fielddef *f = fields[i];
     // TODO(haberman): handle the case where two fields of the input duplicate
     // name or number.
-    if (f->msgdef != NULL ||
-        upb_fielddef_name(f) == NULL || upb_fielddef_number(f) == 0 ||
-        upb_msgdef_itof(m, upb_fielddef_number(f)) ||
-        upb_msgdef_ntof(m, upb_fielddef_name(f)))
+    if (f->msgdef != NULL) {
+      upb_status_seterrliteral(s, "fielddef already belongs to a message");
       return false;
+    } else if (upb_fielddef_name(f) == NULL || upb_fielddef_number(f) == 0) {
+      upb_status_seterrliteral(s, "field name or number were not set");
+      return false;
+    } else if(upb_msgdef_itof(m, upb_fielddef_number(f)) ||
+              upb_msgdef_ntof(m, upb_fielddef_name(f))) {
+      upb_status_seterrliteral(s, "duplicate field name or number");
+      return false;
+    }
   }
 
   // Constraint checks ok, perform the action.
@@ -929,9 +983,9 @@ bool upb_msgdef_addfields(upb_msgdef *m, upb_fielddef *const *fields, int n,
   return true;
 }
 
-bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f,
-                         const void *ref_donor) {
-  return upb_msgdef_addfields(m, &f, 1, ref_donor);
+bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f, const void *ref_donor,
+                         upb_status *s) {
+  return upb_msgdef_addfields(m, &f, 1, ref_donor, s);
 }
 
 const upb_fielddef *upb_msgdef_itof(const upb_msgdef *m, uint32_t i) {

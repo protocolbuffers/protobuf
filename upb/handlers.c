@@ -30,6 +30,10 @@ static void freehandlers(upb_refcounted *r) {
   for (size_t i = 0; i < h->cleanup_len; i++) {
     h->cleanup[i].cleanup(h->cleanup[i].ptr);
   }
+  if (h->status_) {
+    upb_status_uninit(h->status_);
+    free(h->status_);
+  }
   free(h->cleanup);
   free(h);
 }
@@ -93,13 +97,23 @@ oom:
 // non-repeated submessage fields).  Can change later if necessary.
 #define SUBH(h, field_base) h->table[field_base + 2].data
 
-static int32_t chkset(upb_handlers *h, const upb_fielddef *f,
+static int32_t getsel(upb_handlers *h, const upb_fielddef *f,
                       upb_handlertype_t type) {
   upb_selector_t sel;
   assert(!upb_handlers_isfrozen(h));
-  if (upb_handlers_msgdef(h) != upb_fielddef_msgdef(f)) return -1;
-  if (!upb_handlers_getselector(f, type, &sel)) return -1;
-  if (h->table[sel].func) return -1;
+  if (upb_handlers_msgdef(h) != upb_fielddef_msgdef(f)) {
+    upb_status_seterrf(
+        h->status_, "type mismatch: field %s does not belong to message %s",
+        upb_fielddef_name(f), upb_msgdef_fullname(upb_handlers_msgdef(h)));
+    return -1;
+  }
+  if (!upb_handlers_getselector(f, type, &sel)) {
+    upb_status_seterrf(
+        h->status_,
+        "type mismatch: cannot register handler type %d for field %s",
+        type, upb_fielddef_name(f));
+    return -1;
+  }
   return sel;
 }
 
@@ -110,6 +124,7 @@ static bool addcleanup(upb_handlers *h, void *ptr, void (*cleanup)(void*)) {
     if (!resized) {
       h->cleanup_size = h->cleanup_len;
       cleanup(ptr);
+      upb_status_seterrliteral(h->status_, "out of memory");
       return false;
     }
     h->cleanup = resized;
@@ -117,6 +132,20 @@ static bool addcleanup(upb_handlers *h, void *ptr, void (*cleanup)(void*)) {
   h->cleanup[h->cleanup_len].ptr = ptr;
   h->cleanup[h->cleanup_len].cleanup = cleanup;
   h->cleanup_len++;
+  return true;
+}
+
+static bool doset(upb_handlers *h, upb_selector_t sel, upb_func *func,
+                  void *data, upb_handlerfree *cleanup) {
+  assert(!upb_handlers_isfrozen(h));
+  if (h->table[sel].func) {
+    upb_status_seterrliteral(h->status_,
+                             "cannot change handler once it has been set.");
+    return false;
+  }
+  if (cleanup && !addcleanup(h, data, cleanup)) return false;
+  h->table[sel].func = (upb_func*)func;
+  h->table[sel].data = data;
   return true;
 }
 
@@ -149,9 +178,13 @@ upb_handlers *upb_handlers_new(const upb_msgdef *md, const upb_frametype *ft,
                                const void *owner) {
   assert(upb_msgdef_isfrozen(md));
 
-  int extra = sizeof(upb_handlers_tabent) * (md->selector_count - 1);
+  int extra = sizeof(upb_handlers_tabent) * (md->selector_count - 1 + 100);
   upb_handlers *h = calloc(sizeof(*h) + extra, 1);
   if (!h) return NULL;
+
+  h->status_ = malloc(sizeof(*h->status_));
+  if (!h->status_) goto oom;
+  upb_status_init(h->status_);
 
   h->msg = md;
   h->ft = ft;
@@ -191,15 +224,22 @@ const upb_handlers *upb_handlers_newfrozen(const upb_msgdef *m,
   return ret;
 }
 
+const upb_status *upb_handlers_status(upb_handlers *h) {
+  assert(!upb_handlers_isfrozen(h));
+  return h->status_;
+}
+
+void upb_handlers_clearerr(upb_handlers *h) {
+  assert(!upb_handlers_isfrozen(h));
+  upb_status_clear(h->status_);
+}
+
 #define SETTER(name, handlerctype, handlertype) \
   bool upb_handlers_set ## name(upb_handlers *h, const upb_fielddef *f, \
                                 handlerctype func, void *data, \
                                 upb_handlerfree *cleanup) { \
-    int32_t sel = chkset(h, f, handlertype); \
-    if (sel < 0 || (cleanup && !addcleanup(h, data, cleanup))) return false; \
-    h->table[sel].func = (upb_func*)func; \
-    h->table[sel].data = data; \
-    return true; \
+    int32_t sel = getsel(h, f, handlertype); \
+    return sel >= 0 && doset(h, sel, (upb_func*)func, data, cleanup); \
   }
 
 SETTER(int32,       upb_int32_handler*,       UPB_HANDLER_INT32);
@@ -218,6 +258,17 @@ SETTER(endsubmsg,   upb_endfield_handler*,    UPB_HANDLER_ENDSUBMSG);
 SETTER(endseq,      upb_endfield_handler*,    UPB_HANDLER_ENDSEQ);
 
 #undef SETTER
+
+bool upb_handlers_setstartmsg(upb_handlers *h, upb_startmsg_handler *handler,
+                              void *d, upb_handlerfree *cleanup) {
+  return doset(h, UPB_STARTMSG_SELECTOR, (upb_func*)handler, d, cleanup);
+}
+
+bool upb_handlers_setendmsg(upb_handlers *h, upb_endmsg_handler *handler,
+                            void *d, upb_handlerfree *cleanup) {
+  assert(!upb_handlers_isfrozen(h));
+  return doset(h, UPB_ENDMSG_SELECTOR, (upb_func*)handler, d, cleanup);
+}
 
 bool upb_handlers_setsubhandlers(upb_handlers *h, const upb_fielddef *f,
                                  const upb_handlers *sub) {
@@ -251,24 +302,6 @@ const upb_frametype *upb_handlers_frametype(const upb_handlers *h) {
   return h->ft;
 }
 
-void upb_handlers_setstartmsg(upb_handlers *h, upb_startmsg_handler *handler) {
-  assert(!upb_handlers_isfrozen(h));
-  h->startmsg = handler;
-}
-
-upb_startmsg_handler *upb_handlers_getstartmsg(const upb_handlers *h) {
-  return h->startmsg;
-}
-
-void upb_handlers_setendmsg(upb_handlers *h, upb_endmsg_handler *handler) {
-  assert(!upb_handlers_isfrozen(h));
-  h->endmsg = handler;
-}
-
-upb_endmsg_handler *upb_handlers_getendmsg(const upb_handlers *h) {
-  return h->endmsg;
-}
-
 upb_func *upb_handlers_gethandler(const upb_handlers *h, upb_selector_t s) {
   return (upb_func *)h->table[s].func;
 }
@@ -282,7 +315,25 @@ const void *upb_handlers_gethandlerdata(const upb_handlers *h,
 
 bool upb_handlers_freeze(upb_handlers *const*handlers, int n, upb_status *s) {
   // TODO: verify we have a transitive closure.
-  return upb_refcounted_freeze((upb_refcounted*const*)handlers, n, s);
+  for (int i = 0; i < n; i++) {
+    if (!upb_ok(handlers[i]->status_)) {
+      upb_status_seterrf(s, "handlers for message %s had error status: %s",
+                         upb_msgdef_fullname(upb_handlers_msgdef(handlers[i])),
+                         upb_status_getstr(handlers[i]->status_));
+      return false;
+    }
+  }
+
+  if (!upb_refcounted_freeze((upb_refcounted*const*)handlers, n, s)) {
+    return false;
+  }
+
+  for (int i = 0; i < n; i++) {
+    upb_status_uninit(handlers[i]->status_);
+    free(handlers[i]->status_);
+    handlers[i]->status_ = NULL;
+  }
+  return true;
 }
 
 upb_handlertype_t upb_handlers_getprimitivehandlertype(const upb_fielddef *f) {

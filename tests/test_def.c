@@ -86,15 +86,15 @@ static void test_fielddef_accessors() {
   upb_fielddef *f2 = upb_fielddef_new(&f2);
 
   ASSERT(!upb_fielddef_isfrozen(f1));
-  upb_fielddef_setname(f1, "f1");
-  upb_fielddef_setnumber(f1, 1937);
+  ASSERT(upb_fielddef_setname(f1, "f1", NULL));
+  ASSERT(upb_fielddef_setnumber(f1, 1937, NULL));
   upb_fielddef_settype(f1, UPB_TYPE_INT64);
   upb_fielddef_setlabel(f1, UPB_LABEL_REPEATED);
   ASSERT(upb_fielddef_number(f1) == 1937);
 
   ASSERT(!upb_fielddef_isfrozen(f2));
-  upb_fielddef_setname(f2, "f2");
-  upb_fielddef_setnumber(f2, 1572);
+  ASSERT(upb_fielddef_setname(f2, "f2", NULL));
+  ASSERT(upb_fielddef_setnumber(f2, 1572, NULL));
   upb_fielddef_settype(f2, UPB_TYPE_BYTES);
   upb_fielddef_setlabel(f2, UPB_LABEL_REPEATED);
   ASSERT(upb_fielddef_number(f2) == 1572);
@@ -105,7 +105,7 @@ static void test_fielddef_accessors() {
   // Test that we don't leak an unresolved subdef name.
   f1 = upb_fielddef_new(&f1);
   upb_fielddef_settype(f1, UPB_TYPE_MESSAGE);
-  upb_fielddef_setsubdefname(f1, "YO");
+  ASSERT(upb_fielddef_setsubdefname(f1, "YO", NULL));
   upb_fielddef_unref(f1, &f1);
 }
 
@@ -113,23 +113,23 @@ static upb_fielddef *newfield(
     const char *name, int32_t num, uint8_t type, uint8_t label,
     const char *type_name, void *owner) {
   upb_fielddef *f = upb_fielddef_new(owner);
-  upb_fielddef_setname(f, name);
-  upb_fielddef_setnumber(f, num);
+  ASSERT(upb_fielddef_setname(f, name, NULL));
+  ASSERT(upb_fielddef_setnumber(f, num, NULL));
   upb_fielddef_settype(f, type);
   upb_fielddef_setlabel(f, label);
-  upb_fielddef_setsubdefname(f, type_name);
+  ASSERT(upb_fielddef_setsubdefname(f, type_name, NULL));
   return f;
 }
 
 static upb_msgdef *upb_msgdef_newnamed(const char *name, void *owner) {
   upb_msgdef *m = upb_msgdef_new(owner);
-  upb_def_setfullname(upb_upcast(m), name);
+  upb_def_setfullname(upb_upcast(m), name, NULL);
   return m;
 }
 
 static upb_enumdef *upb_enumdef_newnamed(const char *name, void *owner) {
   upb_enumdef *e = upb_enumdef_new(owner);
-  upb_def_setfullname(upb_upcast(e), name);
+  upb_def_setfullname(upb_upcast(e), name, NULL);
   return e;
 }
 
@@ -137,8 +137,9 @@ static void test_replacement() {
   upb_symtab *s = upb_symtab_new(&s);
 
   upb_msgdef *m = upb_msgdef_newnamed("MyMessage", &s);
-  upb_msgdef_addfield(m, newfield(
-      "field1", 1, UPB_TYPE_ENUM, UPB_LABEL_OPTIONAL, ".MyEnum", &s), &s);
+  upb_msgdef_addfield(m, newfield("field1", 1, UPB_TYPE_ENUM,
+                                  UPB_LABEL_OPTIONAL, ".MyEnum", &s),
+                      &s, NULL);
   upb_msgdef *m2 = upb_msgdef_newnamed("MyMessage2", &s);
   upb_enumdef *e = upb_enumdef_newnamed("MyEnum", &s);
 
@@ -149,7 +150,7 @@ static void test_replacement() {
   // Try adding a new definition of MyEnum, MyMessage should get replaced with
   // a new version.
   upb_enumdef *e2 = upb_enumdef_new(&s);
-  upb_def_setfullname(upb_upcast(e2), "MyEnum");
+  upb_def_setfullname(upb_upcast(e2), "MyEnum", NULL);
   upb_def *newdefs2[] = {upb_upcast(e2)};
   ASSERT_STATUS(upb_symtab_add(s, newdefs2, 1, &s, &status), &status);
 
@@ -181,11 +182,11 @@ static void test_freeze_free() {
 
   upb_fielddef *f = upb_fielddef_new(&f);
   upb_fielddef_settype(f, UPB_TYPE_MESSAGE);
-  ASSERT(upb_fielddef_setnumber(f, 1));
-  ASSERT(upb_fielddef_setname(f, "foo"));
-  ASSERT(upb_fielddef_setsubdef(f, upb_upcast(m4)));
+  ASSERT(upb_fielddef_setnumber(f, 1, NULL));
+  ASSERT(upb_fielddef_setname(f, "foo", NULL));
+  ASSERT(upb_fielddef_setsubdef(f, upb_upcast(m4), NULL));
 
-  ASSERT(upb_msgdef_addfield(m1, f, &f));
+  ASSERT(upb_msgdef_addfield(m1, f, &f, NULL));
 
   // After this unref, M1 is the only thing keeping M4 alive.
   upb_msgdef_unref(m4, &m4);
@@ -193,15 +194,15 @@ static void test_freeze_free() {
   // Force M1/M2/M3 into a single mutable refcounting group.
   f = upb_fielddef_new(&f);
   upb_fielddef_settype(f, UPB_TYPE_MESSAGE);
-  ASSERT(upb_fielddef_setnumber(f, 1));
-  ASSERT(upb_fielddef_setname(f, "foo"));
+  ASSERT(upb_fielddef_setnumber(f, 1, NULL));
+  ASSERT(upb_fielddef_setname(f, "foo", NULL));
 
-  ASSERT(upb_fielddef_setsubdef(f, upb_upcast(m1)));
-  ASSERT(upb_fielddef_setsubdef(f, upb_upcast(m2)));
-  ASSERT(upb_fielddef_setsubdef(f, upb_upcast(m3)));
+  ASSERT(upb_fielddef_setsubdef(f, upb_upcast(m1), NULL));
+  ASSERT(upb_fielddef_setsubdef(f, upb_upcast(m2), NULL));
+  ASSERT(upb_fielddef_setsubdef(f, upb_upcast(m3), NULL));
 
   // Make M3 cyclic with itself.
-  ASSERT(upb_msgdef_addfield(m3, f, &f));
+  ASSERT(upb_msgdef_addfield(m3, f, &f, NULL));
 
   // These will be kept alive since they are in the same refcounting group as
   // M3, which still has a ref.  Note: this behavior is not guaranteed by the
@@ -229,18 +230,18 @@ static void test_partial_freeze() {
 
   upb_fielddef *f1 = upb_fielddef_new(&f1);
   upb_fielddef_settype(f1, UPB_TYPE_MESSAGE);
-  ASSERT(upb_fielddef_setnumber(f1, 1));
-  ASSERT(upb_fielddef_setname(f1, "f1"));
-  ASSERT(upb_fielddef_setsubdef(f1, upb_upcast(m1)));
+  ASSERT(upb_fielddef_setnumber(f1, 1, NULL));
+  ASSERT(upb_fielddef_setname(f1, "f1", NULL));
+  ASSERT(upb_fielddef_setsubdef(f1, upb_upcast(m1), NULL));
 
   upb_fielddef *f2 = upb_fielddef_new(&f2);
   upb_fielddef_settype(f2, UPB_TYPE_MESSAGE);
-  ASSERT(upb_fielddef_setnumber(f2, 2));
-  ASSERT(upb_fielddef_setname(f2, "f2"));
-  ASSERT(upb_fielddef_setsubdef(f2, upb_upcast(m2)));
+  ASSERT(upb_fielddef_setnumber(f2, 2, NULL));
+  ASSERT(upb_fielddef_setname(f2, "f2", NULL));
+  ASSERT(upb_fielddef_setsubdef(f2, upb_upcast(m2), NULL));
 
-  ASSERT(upb_msgdef_addfield(m3, f1, &f1));
-  ASSERT(upb_msgdef_addfield(m3, f2, &f2));
+  ASSERT(upb_msgdef_addfield(m3, f1, &f1, NULL));
+  ASSERT(upb_msgdef_addfield(m3, f2, &f2, NULL));
 
   // Freeze M1 and M2, which should cause the group to be split
   // and m3 (left mutable) to take references on m1 and m2.

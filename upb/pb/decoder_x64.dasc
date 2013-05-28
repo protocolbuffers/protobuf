@@ -192,9 +192,9 @@ static void upb_assert_notnull(void *addr) { assert(addr != NULL); (void)addr; }
 || }
 |.endmacro
 |
-|.macro load_handler_data, h, f, type
+|.macro loadarg2, val
 ||{
-||  uintptr_t data = (uintptr_t)gethandlerdata(h, f, type);
+||  uintptr_t data = (uintptr_t)val;
 || if (data > 0xffffffff) {
 |    mov64  ARG2_64, data
 || } else if (data) {
@@ -203,6 +203,10 @@ static void upb_assert_notnull(void *addr) { assert(addr != NULL); (void)addr; }
 |    xor    ARG2_32, ARG2_32
 || }
 || }
+|.endmacro
+|
+|.macro load_handler_data, h, f, type
+|  loadarg2 gethandlerdata(h, f, type)
 |.endmacro
 |
 |// Checkpoints our progress by writing PTR to DECODER, and
@@ -768,10 +772,11 @@ static void upb_decoderplan_jit_msg(decoderplan *plan,
   |  mov   rbp, rsp
 
   // Call startmsg handler (if any):
-  upb_startmsg_handler *startmsg = upb_handlers_getstartmsg(h);
+  upb_func *startmsg = upb_handlers_gethandler(h, UPB_STARTMSG_SELECTOR);
   if (startmsg) {
-    // upb_flow_t startmsg(void *closure);
+    // upb_flow_t startmsg(void *closure, const void *hd);
     |  mov   ARG1_64, CLOSURE
+    |  loadarg2 upb_handlers_gethandlerdata(h, UPB_STARTMSG_SELECTOR)
     |  callp startmsg
     |  check_bool_ret
   }
@@ -821,13 +826,14 @@ static void upb_decoderplan_jit_msg(decoderplan *plan,
 
   |=>upb_getpclabel(plan, h, ENDOFMSG):
   // We are at end-of-submsg: call endmsg handler (if any):
-  upb_endmsg_handler *endmsg = upb_handlers_getendmsg(h);
+  upb_func *endmsg = upb_handlers_gethandler(h, UPB_ENDMSG_SELECTOR);
   if (endmsg) {
-    // void endmsg(void *closure, upb_status *status) {
+    // void endmsg(void *closure, const void *hd, upb_status *status) {
     |  mov   ARG1_64, CLOSURE
-    |  mov   ARG2_64, DECODER->sink
-    |  mov   ARG2_64, SINK:ARG2_64->pipeline_
-    |  add   ARG2_64, offsetof(upb_pipeline, status_)
+    |  loadarg2 upb_handlers_gethandlerdata(h, UPB_ENDMSG_SELECTOR)
+    |  mov   ARG3_64, DECODER->sink
+    |  mov   ARG3_64, SINK:ARG3_64->pipeline_
+    |  add   ARG3_64, offsetof(upb_pipeline, status_)
     |  callp endmsg
   }
 

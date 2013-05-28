@@ -220,16 +220,27 @@ void *upb_sink_getobj(const upb_sink *s) {
 
 bool upb_sink_startmsg(upb_sink *s) {
   const upb_handlers *h = s->top->h;
-  upb_startmsg_handler *startmsg = upb_handlers_getstartmsg(h);
-  return startmsg ? startmsg(s->top->closure) : true;
+  upb_startmsg_handler *startmsg =
+      (upb_startmsg_handler *)upb_handlers_gethandler(h, UPB_STARTMSG_SELECTOR);
+  if (startmsg) {
+    const void *hd = upb_handlers_gethandlerdata(h, UPB_STARTMSG_SELECTOR);
+    bool ok = startmsg(s->top->closure, hd);
+    if (!ok) return false;
+  }
+  return true;
 }
 
-void upb_sink_endmsg(upb_sink *s) {
+bool upb_sink_endmsg(upb_sink *s) {
   assert(s->top == s->stack);
-  upb_endmsg_handler *endmsg = upb_handlers_getendmsg(s->top->h);
+  const upb_handlers *h = s->top->h;
+  upb_endmsg_handler *endmsg =
+      (upb_endmsg_handler *)upb_handlers_gethandler(h, UPB_ENDMSG_SELECTOR);
   if (endmsg) {
-    endmsg(s->top->closure, &s->pipeline_->status_);
+    const void *hd = upb_handlers_gethandlerdata(h, UPB_ENDMSG_SELECTOR);
+    bool ok = endmsg(s->top->closure, hd, &s->pipeline_->status_);
+    if (!ok) return false;
   }
+  return true;
 }
 
 #define PUTVAL(type, ctype) \
@@ -380,10 +391,13 @@ bool upb_sink_startsubmsg(upb_sink *s, upb_selector_t sel) {
 }
 
 bool upb_sink_endsubmsg(upb_sink *s, upb_selector_t sel) {
-  upb_endmsg_handler *endmsg = upb_handlers_getendmsg(s->top->h);
+  upb_endmsg_handler *endmsg = (upb_endmsg_handler *)upb_handlers_gethandler(
+      s->top->h, UPB_ENDMSG_SELECTOR);
   if (endmsg) {
     // TODO(haberman): check return value.
-    endmsg(s->top->closure, &s->pipeline_->status_);
+    const void *hd =
+        upb_handlers_gethandlerdata(s->top->h, UPB_ENDMSG_SELECTOR);
+    endmsg(s->top->closure, hd, &s->pipeline_->status_);
   }
   --s->top;
 

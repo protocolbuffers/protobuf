@@ -324,8 +324,8 @@ void reg_str(upb_handlers *h, uint32_t num) {
 }
 
 void reghandlers(upb_handlers *h) {
-  h->SetStartMessageHandler<int, startmsg>();
-  h->SetEndMessageHandler<int, endmsg>();
+  h->SetStartMessageHandler(UpbMakeHandler(startmsg));
+  h->SetEndMessageHandler(UpbMakeHandler(endmsg));
 
   // Register handlers for each type.
   reg<double,   value_double>(h, UPB_DESCRIPTOR_TYPE_DOUBLE);

@@ -163,6 +163,13 @@ char *upb_strdup(const char *s);
 // debug mode.
 #define UPB_ASSERT_VAR(var, predicate) UPB_UNUSED(var); assert(predicate)
 
+#define UPB_ASSERT_STATUS(status) do { \
+  if (!upb_ok(status)) { \
+    fprintf(stderr, "upb status failure: %s\n", upb_status_getstr(status)); \
+    assert(upb_ok(status)); \
+  } \
+  } while (0)
+
 // The maximum that any submessages can be nested.  Matches proto2's limit.
 // At the moment this specifies the size of several statically-sized arrays
 // and therefore setting it high will cause more memory to be used.  Will

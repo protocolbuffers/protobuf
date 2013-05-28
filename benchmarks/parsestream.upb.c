@@ -20,6 +20,7 @@ static void *startsubmsg(void *closure, const void *hd) {
 }
 
 void onmreg(void *c, upb_handlers *h) {
+  UPB_UNUSED(c);
   upb_msg_iter i;
   upb_msg_begin(&i, upb_handlers_msgdef(h));
   for(; !upb_msg_done(&i); upb_msg_next(&i)) {
@@ -28,7 +29,6 @@ void onmreg(void *c, upb_handlers *h) {
       upb_handlers_setstartsubmsg(h, f, startsubmsg, NULL, NULL);
     }
   }
-  UPB_UNUSED(c);
 }
 
 static bool initialize()
@@ -85,7 +85,8 @@ static size_t run(int i)
   (void)i;
   upb_pipeline_reset(&pipeline);
   if (!upb_bytestream_putstr(sink, input_str, input_len)) {
-    fprintf(stderr, "Decode error: %s", upb_status_getstr(upb_pipeline_status(&pipeline)));
+    fprintf(stderr, "Decode error: %s",
+            upb_status_getstr(upb_pipeline_status(&pipeline)));
     return 0;
   }
   return input_len;
