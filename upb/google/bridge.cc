@@ -11,6 +11,7 @@
 
 #include "upb/google/bridge.h"
 
+#include <stdio.h>
 #include <map>
 #include <string>
 #include "upb/def.h"
