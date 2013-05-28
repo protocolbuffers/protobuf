@@ -216,6 +216,8 @@ tests/test.proto.pb: tests/test.proto
 SIMPLE_TESTS= \
   tests/test_def \
   tests/test_varint \
+  tests/test_pipeline \
+  tests/test_handlers
 
 SIMPLE_CXX_TESTS= \
   tests/test_cpp \

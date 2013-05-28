@@ -131,8 +131,8 @@ FieldDef* AddFieldDef(const goog::Message& m, const goog::FieldDescriptor* f,
                      : upb::FieldDef::ConvertDescriptorType(f->type()));
 
   if (weak_prototype) {
-    const string& name = weak_prototype->GetDescriptor()->full_name();
-    upb_f->set_subdef_name(name, &status);
+    upb_f->set_subdef_name(
+        weak_prototype->GetDescriptor()->full_name(), &status);
   } else {
     switch (upb_f->type()) {
       case UPB_TYPE_INT32:

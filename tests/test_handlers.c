@@ -11,7 +11,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-static bool startmsg(void *c, const void *hd) { return true; }
+static bool startmsg(void *c, const void *hd) {
+  UPB_UNUSED(c);
+  UPB_UNUSED(hd);
+  return true;
+}
 
 static void test_error() {
   upb_handlers *h = upb_handlers_new(GOOGLE_PROTOBUF_DESCRIPTORPROTO, NULL, &h);
@@ -33,6 +37,8 @@ static void test_error() {
 }
 
 int run_tests(int argc, char *argv[]) {
+  UPB_UNUSED(argc);
+  UPB_UNUSED(argv);
   test_error();
   return 0;
 }

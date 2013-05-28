@@ -303,8 +303,8 @@ inline Handlers::StringHandler BindHandler(
   template <>                                                                  \
   inline bool Handlers::SetValueHandler<vtype>(                                \
       const FieldDef *f,                                                       \
-      const typename ValueHandler<typename CanonicalType<vtype>::Type>::H &    \
-          handler) {                                                           \
+      const Handlers::utype ## Handler& handler) {                             \
+    assert(!handler.registered_);                                              \
     handler.registered_ = true;                                                \
     return upb_handlers_set##ltype(this, f, handler.handler_, handler.data_,   \
                                    handler.cleanup_);                          \
@@ -394,54 +394,63 @@ inline const MessageDef *Handlers::message_def() const {
 }
 inline bool Handlers::SetStartMessageHandler(
     const Handlers::StartMessageHandler &handler) {
+  assert(!handler.registered_);
   handler.registered_ = true;
   return upb_handlers_setstartmsg(this, handler.handler_, handler.data_,
                                   handler.cleanup_);
 }
 inline bool Handlers::SetEndMessageHandler(
     const Handlers::EndMessageHandler &handler) {
+  assert(!handler.registered_);
   handler.registered_ = true;
   return upb_handlers_setendmsg(this, handler.handler_, handler.data_,
                                 handler.cleanup_);
 }
 inline bool Handlers::SetStartStringHandler(const FieldDef *f,
                                             const StartStringHandler &handler) {
+  assert(!handler.registered_);
   handler.registered_ = true;
   return upb_handlers_setstartstr(this, f, handler.handler_, handler.data_,
                                   handler.cleanup_);
 }
 inline bool Handlers::SetEndStringHandler(const FieldDef *f,
                                           const EndFieldHandler &handler) {
+  assert(!handler.registered_);
   handler.registered_ = true;
   return upb_handlers_setendstr(this, f, handler.handler_, handler.data_,
                                 handler.cleanup_);
 }
 inline bool Handlers::SetStringHandler(const FieldDef *f,
                                        const StringHandler& handler) {
+  assert(!handler.registered_);
   handler.registered_ = true;
   return upb_handlers_setstring(this, f, handler.handler_, handler.data_,
                                 handler.cleanup_);
 }
 inline bool Handlers::SetStartSequenceHandler(
     const FieldDef *f, const StartFieldHandler &handler) {
+  assert(!handler.registered_);
   handler.registered_ = true;
   return upb_handlers_setstartseq(this, f, handler.handler_, handler.data_,
                                   handler.cleanup_);
 }
 inline bool Handlers::SetStartSubMessageHandler(
     const FieldDef *f, const StartFieldHandler &handler) {
+  assert(!handler.registered_);
   handler.registered_ = true;
   return upb_handlers_setstartsubmsg(this, f, handler.handler_, handler.data_,
                                      handler.cleanup_);
 }
 inline bool Handlers::SetEndSubMessageHandler(const FieldDef *f,
                                               const EndFieldHandler &handler) {
+  assert(!handler.registered_);
   handler.registered_ = true;
   return upb_handlers_setendsubmsg(this, f, handler.handler_, handler.data_,
                                    handler.cleanup_);
 }
 inline bool Handlers::SetEndSequenceHandler(const FieldDef *f,
                                             const EndFieldHandler &handler) {
+  assert(!handler.registered_);
   handler.registered_ = true;
   return upb_handlers_setendseq(this, f, handler.handler_, handler.data_,
                                 handler.cleanup_);

@@ -116,13 +116,13 @@ class upb::Handlers {
     typedef Handler<bool(*)(void *, const void *, T)> H;
   };
 
-  typedef ValueHandler<upb_int32_t>::H     Int32Handler;
-  typedef ValueHandler<upb_int64_t>::H     Int64Handler;
-  typedef ValueHandler<upb_uint32_t>::H    UInt32Handler;
-  typedef ValueHandler<upb_uint64_t>::H    UInt64Handler;
-  typedef ValueHandler<float>::H           FloatHandler;
-  typedef ValueHandler<double>::H          DoubleHandler;
-  typedef ValueHandler<bool>::H            BoolHandler;
+  typedef ValueHandler<int32_t>::H     Int32Handler;
+  typedef ValueHandler<int64_t>::H     Int64Handler;
+  typedef ValueHandler<uint32_t>::H    UInt32Handler;
+  typedef ValueHandler<uint64_t>::H    UInt64Handler;
+  typedef ValueHandler<float>::H       FloatHandler;
+  typedef ValueHandler<double>::H      DoubleHandler;
+  typedef ValueHandler<bool>::H        BoolHandler;
 
   // Any function pointer can be converted to this and converted back to its
   // correct type.
@@ -470,8 +470,14 @@ template <class T> class Handler {
 
   Handler(FuncPtr h, void *d, void (*c)(void *))
       : handler_(h), data_(d), cleanup_(c), registered_(false) {}
-  Handler(const Handler&);
   void operator=(const Handler&);
+#ifdef UPB_CXX11
+  // C++98 doesn't support binding a const ref to a temporary, at least
+  // according to Clang.  It is still intended that users NOT create instances
+  // of this object via this copy constructor, and any attempts to register
+  // such an object more than once will assert-fail.
+  Handler(const Handler&);
+#endif
 
   FuncPtr handler_;
   void *data_;

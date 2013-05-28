@@ -296,6 +296,7 @@ static bool enum_startmsg(void *closure, const void *hd) {
 }
 
 static bool enum_endmsg(void *closure, const void *hd, upb_status *status) {
+  UPB_UNUSED(hd);
   upb_descreader *r = closure;
   upb_enumdef *e = upb_downcast_enumdef_mutable(upb_descreader_last(r));
   if (upb_def_fullname(upb_descreader_last(r)) == NULL) {

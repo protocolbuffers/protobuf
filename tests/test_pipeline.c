@@ -108,6 +108,8 @@ static void test_realloc() {
 }
 
 int run_tests(int argc, char *argv[]) {
+  UPB_UNUSED(argc);
+  UPB_UNUSED(argv);
   test_empty();
   test_only_initial();
   test_with_alloc_func();
