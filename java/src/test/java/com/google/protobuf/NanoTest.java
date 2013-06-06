@@ -2101,4 +2101,58 @@ public class NanoTest extends TestCase {
     input.popLimit(limit);
     assertEquals(5, input.readRawByte());
   }
+
+  // Test a smattering of various proto types for printing
+  public void testMessageNanoPrinter() {
+    TestAllTypesNano msg = new TestAllTypesNano();
+    msg.optionalInt32 = 14;
+    msg.optionalFloat = 42.3f;
+    msg.optionalString = "String \"with' both quotes";
+    msg.optionalBytes = new byte[5];
+    msg.optionalGroup = new TestAllTypesNano.OptionalGroup();
+    msg.optionalGroup.a = 15;
+    msg.repeatedInt64 = new long[2];
+    msg.repeatedInt64[0] = 1L;
+    msg.repeatedInt64[1] = -1L;
+    msg.repeatedBytes = new byte[2][];
+    msg.repeatedBytes[1] = new byte[5];
+    msg.repeatedGroup = new TestAllTypesNano.RepeatedGroup[2];
+    msg.repeatedGroup[0] = new TestAllTypesNano.RepeatedGroup();
+    msg.repeatedGroup[0].a = -27;
+    msg.repeatedGroup[1] = new TestAllTypesNano.RepeatedGroup();
+    msg.repeatedGroup[1].a = -72;
+    msg.optionalNestedMessage = new TestAllTypesNano.NestedMessage();
+    msg.optionalNestedMessage.bb = 7;
+    msg.repeatedNestedMessage = new TestAllTypesNano.NestedMessage[2];
+    msg.repeatedNestedMessage[0] = new TestAllTypesNano.NestedMessage();
+    msg.repeatedNestedMessage[0].bb = 77;
+    msg.repeatedNestedMessage[1] = new TestAllTypesNano.NestedMessage();
+    msg.repeatedNestedMessage[1].bb = 88;
+    msg.optionalNestedEnum = TestAllTypesNano.BAZ;
+    msg.repeatedNestedEnum = new int[2];
+    msg.repeatedNestedEnum[0] = TestAllTypesNano.BAR;
+    msg.repeatedNestedEnum[1] = TestAllTypesNano.FOO;
+
+    String protoPrint = msg.toString();
+    assertTrue(protoPrint.contains("TestAllTypesNano <"));
+    assertTrue(protoPrint.contains("  optional_int32: 14"));
+    assertTrue(protoPrint.contains("  optional_float: 42.3"));
+    assertTrue(protoPrint.contains("  optional_double: 0.0"));
+    assertTrue(protoPrint.contains("  optional_string: \"String \\u0022with\\u0027 both quotes\""));
+    assertTrue(protoPrint.contains("  optional_bytes: [B@"));
+    assertTrue(protoPrint.contains("  optionalGroup <\n    a: 15\n  >"));
+
+    assertTrue(protoPrint.contains("  repeated_int64: 1"));
+    assertTrue(protoPrint.contains("  repeated_int64: -1"));
+    assertTrue(protoPrint.contains("  repeated_bytes: null\n  repeated_bytes: [B@"));
+    assertTrue(protoPrint.contains("  repeatedGroup <\n    a: -27\n  >\n"
+            + "  repeatedGroup <\n    a: -72\n  >"));
+    assertTrue(protoPrint.contains("  optionalNestedMessage <\n    bb: 7\n  >"));
+    assertTrue(protoPrint.contains("  repeatedNestedMessage <\n    bb: 77\n  >\n"
+            + "  repeatedNestedMessage <\n    bb: 88\n  >"));
+    assertTrue(protoPrint.contains("  optional_nested_enum: 3"));
+    assertTrue(protoPrint.contains("  repeated_nested_enum: 2\n  repeated_nested_enum: 1"));
+    assertTrue(protoPrint.contains("  default_int32: 41"));
+    assertTrue(protoPrint.contains("  default_string: \"hello\""));
+  }
 }
