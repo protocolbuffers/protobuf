@@ -47,3 +47,7 @@ enum SecondTopLevelEnum {
   SECOND_TOP_LEVEL_SECOND = 2;
 }
 
+message SomeMessage {
+  optional FirstTopLevelEnum first = 1;
+  optional SecondTopLevelEnum second = 2;
+}
