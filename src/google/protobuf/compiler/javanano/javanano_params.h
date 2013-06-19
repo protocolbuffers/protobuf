@@ -49,6 +49,7 @@ class Params {
   string empty_;
   string base_name_;
   bool java_multiple_files_;
+  bool store_unknown_fields_;
   NameMap java_packages_;
   NameMap java_outer_classnames_;
 
@@ -56,6 +57,7 @@ class Params {
   Params(const string & base_name) :
     empty_(""),
     base_name_(base_name),
+    store_unknown_fields_(false),
     java_multiple_files_(false) {
   }
 
@@ -105,6 +107,13 @@ class Params {
   }
   const NameMap& java_outer_classnames() {
     return java_outer_classnames_;
+  }
+
+  void set_store_unknown_fields(bool value) {
+    store_unknown_fields_ = value;
+  }
+  bool store_unknown_fields() const {
+    return store_unknown_fields_;
   }
 
   void set_java_multiple_files(bool value) {

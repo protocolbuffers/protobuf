@@ -34,6 +34,7 @@
 
 #include <google/protobuf/compiler/javanano/javanano_file.h>
 #include <google/protobuf/compiler/javanano/javanano_enum.h>
+#include <google/protobuf/compiler/javanano/javanano_extension.h>
 #include <google/protobuf/compiler/javanano/javanano_helpers.h>
 #include <google/protobuf/compiler/javanano/javanano_message.h>
 #include <google/protobuf/compiler/code_generator.h>
@@ -94,10 +95,11 @@ bool FileGenerator::Validate(string* error) {
   // Check for extensions
   FileDescriptorProto file_proto;
   file_->CopyTo(&file_proto);
-  if (UsesExtensions(file_proto)) {
+  if (UsesExtensions(file_proto) && !params_.store_unknown_fields()) {
     error->assign(file_->name());
     error->append(
-      ": Java NANO_RUNTIME does not support extensions\"");
+        ": Java NANO_RUNTIME only supports extensions when the "
+        "'store_unknown_fields' generator option is 'true'.");
     return false;
   }
 
@@ -178,6 +180,11 @@ void FileGenerator::Generate(io::Printer* printer) {
   }
 
   // -----------------------------------------------------------------
+
+  // Extensions.
+  for (int i = 0; i < file_->extension_count(); i++) {
+    ExtensionGenerator(file_->extension(i), params_).Generate(printer);
+  }
 
   if (!params_.java_multiple_files()) {
     for (int i = 0; i < file_->enum_type_count(); i++) {
