@@ -30,6 +30,9 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.nano.CodedInputByteBufferNano;
+import com.google.protobuf.nano.Extensions;
+import com.google.protobuf.nano.Extensions.AnotherMessage;
 import com.google.protobuf.nano.InternalNano;
 import com.google.protobuf.nano.MessageNano;
 import com.google.protobuf.nano.NanoOuterClass;
@@ -37,9 +40,11 @@ import com.google.protobuf.nano.NanoOuterClass.TestAllTypesNano;
 import com.google.protobuf.nano.RecursiveMessageNano;
 import com.google.protobuf.nano.SimpleMessageNano;
 import com.google.protobuf.nano.UnittestImportNano;
-import com.google.protobuf.nano.CodedInputByteBufferNano;
 
 import junit.framework.TestCase;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test nano runtime.
@@ -2154,5 +2159,94 @@ public class NanoTest extends TestCase {
     assertTrue(protoPrint.contains("  repeated_nested_enum: 2\n  repeated_nested_enum: 1"));
     assertTrue(protoPrint.contains("  default_int32: 41"));
     assertTrue(protoPrint.contains("  default_string: \"hello\""));
+  }
+
+  public void testExtensions() throws Exception {
+    Extensions.ExtendableMessage message = new Extensions.ExtendableMessage();
+    message.field = 5;
+    message.setExtension(Extensions.someString, "Hello World!");
+    message.setExtension(Extensions.someBool, true);
+    message.setExtension(Extensions.someInt, 42);
+    message.setExtension(Extensions.someLong, 124234234234L);
+    message.setExtension(Extensions.someFloat, 42.0f);
+    message.setExtension(Extensions.someDouble, 422222.0);
+    message.setExtension(Extensions.someEnum, Extensions.FIRST_VALUE);
+    AnotherMessage another = new AnotherMessage();
+    another.string = "Foo";
+    another.value = true;
+    message.setExtension(Extensions.someMessage, another);
+
+    message.setExtension(Extensions.someRepeatedString, list("a", "bee", "seeya"));
+    message.setExtension(Extensions.someRepeatedBool, list(true, false, true));
+    message.setExtension(Extensions.someRepeatedInt, list(4, 8, 15, 16, 23, 42));
+    message.setExtension(Extensions.someRepeatedLong, list(4L, 8L, 15L, 16L, 23L, 42L));
+    message.setExtension(Extensions.someRepeatedFloat, list(1.0f, 3.0f));
+    message.setExtension(Extensions.someRepeatedDouble, list(55.133, 3.14159));
+    message.setExtension(Extensions.someRepeatedEnum, list(Extensions.FIRST_VALUE,
+        Extensions.SECOND_VALUE));
+    AnotherMessage second = new AnotherMessage();
+    second.string = "Whee";
+    second.value = false;
+    message.setExtension(Extensions.someRepeatedMessage, list(another, second));
+
+    byte[] data = MessageNano.toByteArray(message);
+
+    Extensions.ExtendableMessage deserialized = Extensions.ExtendableMessage.parseFrom(data);
+    assertEquals(5, deserialized.field);
+    assertEquals("Hello World!", deserialized.getExtension(Extensions.someString));
+    assertEquals(Boolean.TRUE, deserialized.getExtension(Extensions.someBool));
+    assertEquals(Integer.valueOf(42), deserialized.getExtension(Extensions.someInt));
+    assertEquals(Long.valueOf(124234234234L), deserialized.getExtension(Extensions.someLong));
+    assertEquals(Float.valueOf(42.0f), deserialized.getExtension(Extensions.someFloat));
+    assertEquals(Double.valueOf(422222.0), deserialized.getExtension(Extensions.someDouble));
+    assertEquals(Integer.valueOf(Extensions.FIRST_VALUE),
+        deserialized.getExtension(Extensions.someEnum));
+    assertEquals(another.string, deserialized.getExtension(Extensions.someMessage).string);
+    assertEquals(another.value, deserialized.getExtension(Extensions.someMessage).value);
+    assertEquals(list("a", "bee", "seeya"), deserialized.getExtension(Extensions.someRepeatedString));
+    assertEquals(list(true, false, true), deserialized.getExtension(Extensions.someRepeatedBool));
+    assertEquals(list(4, 8, 15, 16, 23, 42), deserialized.getExtension(Extensions.someRepeatedInt));
+    assertEquals(list(4L, 8L, 15L, 16L, 23L, 42L), deserialized.getExtension(Extensions.someRepeatedLong));
+    assertEquals(list(1.0f, 3.0f), deserialized.getExtension(Extensions.someRepeatedFloat));
+    assertEquals(list(55.133, 3.14159), deserialized.getExtension(Extensions.someRepeatedDouble));
+    assertEquals(list(Extensions.FIRST_VALUE,
+        Extensions.SECOND_VALUE), deserialized.getExtension(Extensions.someRepeatedEnum));
+    assertEquals("Foo", deserialized.getExtension(Extensions.someRepeatedMessage).get(0).string);
+    assertEquals(true, deserialized.getExtension(Extensions.someRepeatedMessage).get(0).value);
+    assertEquals("Whee", deserialized.getExtension(Extensions.someRepeatedMessage).get(1).string);
+    assertEquals(false, deserialized.getExtension(Extensions.someRepeatedMessage).get(1).value);
+  }
+
+  public void testUnknownFields() throws Exception {
+    // Check that we roundtrip (serialize and deserialize) unrecognized fields.
+    AnotherMessage message = new AnotherMessage();
+    message.string = "Hello World";
+    message.value = false;
+
+    byte[] bytes = MessageNano.toByteArray(message);
+    int extraFieldSize = CodedOutputStream.computeStringSize(1001, "This is an unknown field");
+    byte[] newBytes = new byte[bytes.length + extraFieldSize];
+    System.arraycopy(bytes, 0, newBytes, 0, bytes.length);
+    CodedOutputStream.newInstance(newBytes, bytes.length, extraFieldSize).writeString(1001,
+        "This is an unknown field");
+
+    // Deserialize with an unknown field.
+    AnotherMessage deserialized = AnotherMessage.parseFrom(newBytes);
+    byte[] serialized = MessageNano.toByteArray(deserialized);
+
+    assertEquals(newBytes.length, serialized.length);
+
+    // Clear, and make sure it clears everything.
+    deserialized.clear();
+    assertEquals(0, MessageNano.toByteArray(deserialized).length);
+  }
+
+  private <T> List<T> list(T first, T... remaining) {
+    List<T> list = new ArrayList<T>();
+    list.add(first);
+    for (T item : remaining) {
+      list.add(item);
+    }
+    return list;
   }
 }

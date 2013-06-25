@@ -93,7 +93,7 @@ public abstract class MessageNano {
             output.checkNoSpaceLeft();
         } catch (IOException e) {
             throw new RuntimeException("Serializing to a byte array threw an IOException "
-                    + "(should never happen).");
+                    + "(should never happen).", e);
         }
     }
 
