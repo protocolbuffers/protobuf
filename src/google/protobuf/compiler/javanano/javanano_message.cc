@@ -36,6 +36,7 @@
 #include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/compiler/javanano/javanano_message.h>
 #include <google/protobuf/compiler/javanano/javanano_enum.h>
+#include <google/protobuf/compiler/javanano/javanano_extension.h>
 #include <google/protobuf/compiler/javanano/javanano_helpers.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/io/printer.h>
@@ -117,10 +118,6 @@ void MessageGenerator::GenerateStaticVariableInitializers(
     MessageGenerator(descriptor_->nested_type(i), params_)
       .GenerateStaticVariableInitializers(printer);
   }
-
-  if (descriptor_->extension_count() != 0) {
-    GOOGLE_LOG(FATAL) << "Extensions not supported in NANO_RUNTIME\n";
-  }
 }
 
 void MessageGenerator::Generate(io::Printer* printer) {
@@ -135,9 +132,10 @@ void MessageGenerator::Generate(io::Printer* printer) {
   GOOGLE_LOG(INFO) << "has_java_outer_classname()=" << params_.has_java_outer_classname(file_->name());
 #endif
 
-  if ((descriptor_->extension_count() != 0)
-      || (descriptor_->extension_range_count() != 0)) {
-    GOOGLE_LOG(FATAL) << "Extensions not supported in NANO_RUNTIME\n";
+  if (!params_.store_unknown_fields() &&
+      (descriptor_->extension_count() != 0 || descriptor_->extension_range_count() != 0)) {
+    GOOGLE_LOG(FATAL) << "Extensions are only supported in NANO_RUNTIME if the "
+        "'store_unknown_fields' generator option is 'true'\n";
   }
 
   // Note: Fields (which will be emitted in the loop, below) may have the same names as fields in
@@ -156,7 +154,17 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "\n",
     "classname", descriptor_->name());
 
+  if (params_.store_unknown_fields()) {
+    printer->Print(
+        "private java.util.List<com.google.protobuf.nano.UnknownFieldData>\n"
+        "    unknownFieldData;\n");
+  }
+
   // Nested types and extensions
+  for (int i = 0; i < descriptor_->extension_count(); i++) {
+    ExtensionGenerator(descriptor_->extension(i), params_).Generate(printer);
+  }
+
   for (int i = 0; i < descriptor_->enum_type_count(); i++) {
     EnumGenerator(descriptor_->enum_type(i), params_).Generate(printer);
   }
@@ -173,6 +181,24 @@ void MessageGenerator::Generate(io::Printer* printer) {
   }
 
   GenerateClear(printer);
+
+  // If we have an extension range, generate accessors for extensions.
+  if (params_.store_unknown_fields()
+      && descriptor_->extension_range_count() > 0) {
+    printer->Print(
+      "public <T> T getExtension(com.google.protobuf.nano.Extension<T> extension) {\n"
+      "  return com.google.protobuf.nano.WireFormatNano.getExtension(\n"
+      "      extension, unknownFieldData);\n"
+      "}\n\n"
+      "public <T> void setExtension(com.google.protobuf.nano.Extension<T> extension, T value) {\n"
+      "  if (unknownFieldData == null) {\n"
+      "    unknownFieldData = \n"
+      "        new java.util.ArrayList<com.google.protobuf.nano.UnknownFieldData>();\n"
+      "  }\n"
+      "  com.google.protobuf.nano.WireFormatNano.setExtension(\n"
+      "      extension, value, unknownFieldData);\n"
+      "}\n\n");
+  }
   GenerateMessageSerializationMethods(printer);
   GenerateMergeFromMethods(printer);
   GenerateParseFromMethods(printer);
@@ -188,12 +214,8 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
   scoped_array<const FieldDescriptor*> sorted_fields(
     SortFieldsByNumber(descriptor_));
 
-  if (descriptor_->extension_range_count() != 0) {
-    GOOGLE_LOG(FATAL) << "Extensions not supported in NANO_RUNTIME\n";
-  }
-
   // writeTo only throws an exception if it contains one or more fields to write
-  if (descriptor_->field_count() > 0) {
+  if (descriptor_->field_count() > 0 || params_.store_unknown_fields()) {
     printer->Print(
       "@Override\n"
       "public void writeTo(com.google.protobuf.nano.CodedOutputByteBufferNano output)\n"
@@ -207,7 +229,14 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
 
   // Output the fields in sorted order
   for (int i = 0; i < descriptor_->field_count(); i++) {
-      GenerateSerializeOneField(printer, sorted_fields[i]);
+    GenerateSerializeOneField(printer, sorted_fields[i]);
+  }
+
+  // Write unknown fields.
+  if (params_.store_unknown_fields()) {
+    printer->Print(
+      "com.google.protobuf.nano.WireFormatNano.writeUnknownFields(\n"
+      "    unknownFieldData, output);\n");
   }
 
   printer->Outdent();
@@ -231,6 +260,11 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
     field_generators_.get(sorted_fields[i]).GenerateSerializedSizeCode(printer);
+  }
+
+  if (params_.store_unknown_fields()) {
+    printer->Print(
+      "size += com.google.protobuf.nano.WireFormatNano.computeWireSize(unknownFieldData);\n");
   }
 
   printer->Outdent();
@@ -266,12 +300,28 @@ void MessageGenerator::GenerateMergeFromMethods(io::Printer* printer) {
   printer->Print(
     "case 0:\n"          // zero signals EOF / limit reached
     "  return this;\n"
-    "default: {\n"
-    "  if (!com.google.protobuf.nano.WireFormatNano.parseUnknownField(input, tag)) {\n"
-    "    return this;\n"   // it's an endgroup tag
-    "  }\n"
-    "  break;\n"
-    "}\n");
+    "default: {\n");
+
+  printer->Indent();
+  if (params_.store_unknown_fields()) {
+    printer->Print(
+        "if (unknownFieldData == null) {\n"
+        "  unknownFieldData = \n"
+        "      new java.util.ArrayList<com.google.protobuf.nano.UnknownFieldData>();\n"
+        "}\n"
+        "if (!com.google.protobuf.nano.WireFormatNano.storeUnknownField(unknownFieldData, \n"
+        "    input, tag)) {\n"
+        "  return this;\n"
+        "}\n");
+  } else {
+    printer->Print(
+        "if (!com.google.protobuf.nano.WireFormatNano.parseUnknownField(input, tag)) {\n"
+        "  return this;\n"   // it's an endgroup tag
+        "}\n");
+  }
+  printer->Print("break;\n");
+  printer->Outdent();
+  printer->Print("}\n");
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = sorted_fields[i];
@@ -354,6 +404,11 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
         "name", UnderscoresToCamelCase(field),
         "default", DefaultValue(params_, field));
     }
+  }
+
+  // Clear unknown fields.
+  if (params_.store_unknown_fields()) {
+    printer->Print("unknownFieldData = null;\n");
   }
 
   printer->Outdent();

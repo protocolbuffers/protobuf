@@ -541,6 +541,23 @@ public final class CodedInputByteBufferNano {
   }
 
   /**
+   * Retrieves a subset of data in the buffer. The returned array is not backed by the original
+   * buffer array.
+   *
+   * @param offset the position (relative to the buffer start position) to start at.
+   * @param length the number of bytes to retrieve.
+   */
+  public byte[] getData(int offset, int length) {
+    if (length == 0) {
+      return WireFormatNano.EMPTY_BYTES;
+    }
+    byte[] copy = new byte[length];
+    int start = bufferStart + offset;
+    System.arraycopy(buffer, start, copy, 0, length);
+    return copy;
+  }
+
+  /**
    * Rewind to previous position. Cannot go forward.
    */
   public void rewindToPosition(int position) {

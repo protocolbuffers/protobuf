@@ -108,6 +108,7 @@ COMPILER_SRC_FILES :=  \
     src/google/protobuf/compiler/javamicro/javamicro_primitive_field.cc \
     src/google/protobuf/compiler/javanano/javanano_enum.cc \
     src/google/protobuf/compiler/javanano/javanano_enum_field.cc \
+    src/google/protobuf/compiler/javanano/javanano_extension.cc \
     src/google/protobuf/compiler/javanano/javanano_field.cc \
     src/google/protobuf/compiler/javanano/javanano_file.cc \
     src/google/protobuf/compiler/javanano/javanano_generator.cc \
