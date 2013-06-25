@@ -1,0 +1,44 @@
+syntax = "proto2";
+
+option java_outer_classname = "Extensions";
+option java_package = "com.google.protobuf.nano";
+
+message ExtendableMessage {
+  optional int32 field = 1;
+  extensions 10 to max;
+}
+
+enum AnEnum {
+  FIRST_VALUE = 1;
+  SECOND_VALUE = 2;
+}
+
+message AnotherMessage {
+  optional string string = 1;
+  optional bool value = 2;
+}
+
+extend ExtendableMessage {
+  optional string some_string = 10;
+  optional int32 some_int = 11;
+  optional int64 some_long = 12;
+  optional float some_float = 13;
+  optional double some_double = 14;
+  optional bool some_bool = 15;
+  optional AnEnum some_enum = 16;
+  optional AnotherMessage some_message = 17;
+  repeated string some_repeated_string = 18;
+  repeated int32 some_repeated_int = 19;
+  repeated int64 some_repeated_long = 20;
+  repeated float some_repeated_float = 21;
+  repeated double some_repeated_double = 22;
+  repeated bool some_repeated_bool = 23;
+  repeated AnEnum some_repeated_enum = 24;
+  repeated AnotherMessage some_repeated_message = 25;
+}
+
+message ContainerMessage {
+  extend ExtendableMessage {
+    optional bool another_thing = 100;
+  }
+}

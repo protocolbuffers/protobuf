@@ -115,6 +115,8 @@ bool JavaNanoGenerator::Generate(const FileDescriptor* file,
           return false;
         }
         params.set_java_outer_classname(parts[0], parts[1]);
+    } else if (options[i].first == "store_unknown_fields") {
+      params.set_store_unknown_fields(options[i].second == "true");
     } else if (options[i].first == "java_multiple_files") {
         params.set_java_multiple_files(options[i].second == "true");
     } else {
