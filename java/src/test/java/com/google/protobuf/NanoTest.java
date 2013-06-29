@@ -2241,6 +2241,15 @@ public class NanoTest extends TestCase {
     assertEquals(0, MessageNano.toByteArray(deserialized).length);
   }
 
+  public void testMergeFrom() throws Exception {
+    SimpleMessageNano message = new SimpleMessageNano();
+    message.d = 123;
+    byte[] bytes = MessageNano.toByteArray(message);
+
+    SimpleMessageNano newMessage = MessageNano.mergeFrom(new SimpleMessageNano(), bytes);
+    assertEquals(message.d, newMessage.d);
+  }
+
   private <T> List<T> list(T first, T... remaining) {
     List<T> list = new ArrayList<T>();
     list.add(first);
