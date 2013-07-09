@@ -101,7 +101,7 @@ public abstract class MessageNano {
      * Parse {@code data} as a message of this type and merge it with the
      * message being built.
      */
-    public static final MessageNano mergeFrom(MessageNano msg, final byte[] data)
+    public static final <T extends MessageNano> T mergeFrom(T msg, final byte[] data)
         throws InvalidProtocolBufferNanoException {
         return mergeFrom(msg, data, 0, data.length);
     }
@@ -110,8 +110,8 @@ public abstract class MessageNano {
      * Parse {@code data} as a message of this type and merge it with the
      * message being built.
      */
-    public static final MessageNano mergeFrom(MessageNano msg, final byte[] data, final int off,
-        final int len) throws InvalidProtocolBufferNanoException {
+    public static final <T extends MessageNano> T mergeFrom(T msg, final byte[] data,
+            final int off, final int len) throws InvalidProtocolBufferNanoException {
         try {
             final CodedInputByteBufferNano input =
                 CodedInputByteBufferNano.newInstance(data, off, len);
