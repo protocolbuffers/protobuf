@@ -362,7 +362,7 @@ GenerateParseFromMethods(io::Printer* printer) {
   printer->Print(
     "public $static$ $classname$ parseFrom(byte[] data)\n"
     "    throws com.google.protobuf.nano.InvalidProtocolBufferNanoException {\n"
-    "  return ($classname$) com.google.protobuf.nano.MessageNano.mergeFrom(new $classname$(), data);\n"
+    "  return com.google.protobuf.nano.MessageNano.mergeFrom(new $classname$(), data);\n"
     "}\n"
     "\n"
     "public $static$ $classname$ parseFrom(\n"
