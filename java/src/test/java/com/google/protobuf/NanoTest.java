@@ -2250,6 +2250,12 @@ public class NanoTest extends TestCase {
     assertEquals(message.d, newMessage.d);
   }
 
+  public void testJavaKeyword() throws Exception {
+    TestAllTypesNano msg = new TestAllTypesNano();
+    msg.synchronized_ = 123;
+    assertEquals(123, msg.synchronized_);
+  }
+
   private <T> List<T> list(T first, T... remaining) {
     List<T> list = new ArrayList<T>();
     list.add(first);

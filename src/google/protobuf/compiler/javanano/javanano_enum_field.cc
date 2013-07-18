@@ -54,9 +54,9 @@ namespace {
 void SetEnumVariables(const Params& params,
     const FieldDescriptor* descriptor, map<string, string>* variables) {
   (*variables)["name"] =
-    UnderscoresToCamelCase(descriptor);
+    RenameJavaKeywords(UnderscoresToCamelCase(descriptor));
   (*variables)["capitalized_name"] =
-    UnderscoresToCapitalizedCamelCase(descriptor);
+    RenameJavaKeywords(UnderscoresToCapitalizedCamelCase(descriptor));
   (*variables)["number"] = SimpleItoa(descriptor->number());
   (*variables)["type"] = "int";
   (*variables)["default"] = DefaultValue(params, descriptor);
