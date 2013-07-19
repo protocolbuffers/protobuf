@@ -310,6 +310,24 @@ To use nano protobufs:
 
 ../src/protoc '--javanano_out=java_package=src/test/proto/simple-data.proto|my_package,java_outer_classname=src/test/proto/simple-data.proto|OuterName:.' src/test/proto/simple-data.proto
 
+Contributing to nano:
+
+Please add/edit tests in NanoTest.java.
+
+Please run the following steps to test:
+
+- cd external/protobuf
+- ./configure
+- Run "make -j12 check" and verify all tests pass.
+- cd java
+- Run "mvn test" and verify all tests pass.
+- cd ../../..
+- . build/envsetup.sh
+- lunch 1
+- "make -j12 aprotoc libprotobuf-java-2.3.0-nano" and check for build errors.
+- repo sync -c -j256
+- "make -j12" and check for build errors
+
 
 Usage
 =====
