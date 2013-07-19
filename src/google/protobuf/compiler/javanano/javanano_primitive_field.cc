@@ -208,9 +208,9 @@ bool AllAscii(const string& text) {
 void SetPrimitiveVariables(const FieldDescriptor* descriptor, const Params params,
                            map<string, string>* variables) {
   (*variables)["name"] =
-    UnderscoresToCamelCase(descriptor);
+    RenameJavaKeywords(UnderscoresToCamelCase(descriptor));
   (*variables)["capitalized_name"] =
-    UnderscoresToCapitalizedCamelCase(descriptor);
+    RenameJavaKeywords(UnderscoresToCapitalizedCamelCase(descriptor));
   (*variables)["number"] = SimpleItoa(descriptor->number());
   (*variables)["type"] = PrimitiveTypeName(GetJavaType(descriptor));
   (*variables)["default"] = DefaultValue(params, descriptor);

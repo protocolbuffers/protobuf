@@ -82,7 +82,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
   }
   for (int i = 0; i < canonical_values_.size(); i++) {
     map<string, string> vars;
-    vars["name"] = canonical_values_[i]->name();
+    vars["name"] = RenameJavaKeywords(canonical_values_[i]->name());
     vars["canonical_value"] = SimpleItoa(canonical_values_[i]->number());
     printer->Print(vars,
       "public static final int $name$ = $canonical_value$;\n");
@@ -92,7 +92,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
 
   for (int i = 0; i < aliases_.size(); i++) {
     map<string, string> vars;
-    vars["name"] = aliases_[i].value->name();
+    vars["name"] = RenameJavaKeywords(aliases_[i].value->name());
     vars["canonical_name"] = aliases_[i].canonical_value->name();
     printer->Print(vars,
       "public static final int $name$ = $canonical_name$;\n");

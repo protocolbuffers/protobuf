@@ -37,6 +37,7 @@
 #include <google/protobuf/compiler/javanano/javanano_helpers.h>
 #include <google/protobuf/compiler/javanano/javanano_params.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 
@@ -49,6 +50,48 @@ const char kThickSeparator[] =
   "// ===================================================================\n";
 const char kThinSeparator[] =
   "// -------------------------------------------------------------------\n";
+
+class RenameKeywords {
+ private:
+  hash_set<string> java_keywords_set_;
+
+ public:
+  RenameKeywords() {
+    static const char* kJavaKeywordsList[] = {
+      // Reserved Java Keywords
+      "abstract", "assert", "boolean", "break", "byte", "case", "catch",
+      "char", "class", "const", "continue", "default", "do", "double", "else",
+      "enum", "extends", "final", "finally", "float", "for", "goto", "if",
+      "implements", "import", "instanceof", "int", "interface", "long",
+      "native", "new", "package", "private", "protected", "public", "return",
+      "short", "static", "strictfp", "super", "switch", "synchronized",
+      "this", "throw", "throws", "transient", "try", "void", "volatile", "while",
+
+      // Reserved Keywords for Literals
+      "false", "null", "true"
+    };
+
+    for (int i = 0; i < GOOGLE_ARRAYSIZE(kJavaKeywordsList); i++) {
+      java_keywords_set_.insert(kJavaKeywordsList[i]);
+    }
+  }
+
+  // Used to rename the a field name if it's a java keyword.  Specifically
+  // this is used to rename the ["name"] or ["capitalized_name"] field params.
+  // (http://docs.oracle.com/javase/tutorial/java/nutsandbolts/_keywords.html)
+  string RenameJavaKeywordsImpl(const string& input) {
+    string result = input;
+
+    if (java_keywords_set_.find(result) != java_keywords_set_.end()) {
+      result += "_";
+    }
+
+    return result;
+  }
+
+};
+
+static RenameKeywords sRenameKeywords;
 
 namespace {
 
@@ -108,6 +151,10 @@ string UnderscoresToCapitalizedCamelCase(const FieldDescriptor* field) {
 
 string UnderscoresToCamelCase(const MethodDescriptor* method) {
   return UnderscoresToCamelCaseImpl(method->name(), false);
+}
+
+string RenameJavaKeywords(const string& input) {
+  return sRenameKeywords.RenameJavaKeywordsImpl(input);
 }
 
 string StripProto(const string& filename) {
