@@ -56,9 +56,9 @@ namespace {
 void SetMessageVariables(const Params& params,
     const FieldDescriptor* descriptor, map<string, string>* variables) {
   (*variables)["name"] =
-    UnderscoresToCamelCase(descriptor);
+    RenameJavaKeywords(UnderscoresToCamelCase(descriptor));
   (*variables)["capitalized_name"] =
-    UnderscoresToCapitalizedCamelCase(descriptor);
+    RenameJavaKeywords(UnderscoresToCapitalizedCamelCase(descriptor));
   (*variables)["number"] = SimpleItoa(descriptor->number());
   (*variables)["type"] = ClassName(params, descriptor->message_type());
   (*variables)["group_or_message"] =

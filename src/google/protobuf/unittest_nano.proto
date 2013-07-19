@@ -157,6 +157,9 @@ message TestAllTypesNano {
   optional int32 tag = 93;
   optional int32 get_serialized_size = 94;
   optional int32 write_to = 95;
+
+  // Try to fail with java reserved keywords
+  optional int32 synchronized = 96;
 }
 
 message ForeignMessageNano {
