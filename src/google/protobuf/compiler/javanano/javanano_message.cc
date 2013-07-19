@@ -396,12 +396,12 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
       // type.
       printer->Print(
         "$name$ = $default$.clone();\n",
-        "name", UnderscoresToCamelCase(field),
+        "name", RenameJavaKeywords(UnderscoresToCamelCase(field)),
         "default", DefaultValue(params_, field));
     } else {
       printer->Print(
         "$name$ = $default$;\n",
-        "name", UnderscoresToCamelCase(field),
+        "name", RenameJavaKeywords(UnderscoresToCamelCase(field)),
         "default", DefaultValue(params_, field));
     }
   }

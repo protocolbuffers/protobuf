@@ -55,6 +55,10 @@ extern const char kThinSeparator[];
 string UnderscoresToCamelCase(const FieldDescriptor* field);
 string UnderscoresToCapitalizedCamelCase(const FieldDescriptor* field);
 
+// Appends an "_" to the end of a field where the name is a reserved java
+// keyword.  For example int32 public = 1 will generate int public_.
+string RenameJavaKeywords(const string& input);
+
 // Similar, but for method names.  (Typically, this merely has the effect
 // of lower-casing the first letter of the name.)
 string UnderscoresToCamelCase(const MethodDescriptor* method);

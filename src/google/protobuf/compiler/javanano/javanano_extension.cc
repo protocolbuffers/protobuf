@@ -45,7 +45,8 @@ using internal::WireFormat;
 
 void SetVariables(const FieldDescriptor* descriptor, const Params params,
                   map<string, string>* variables) {
-  (*variables)["name"] = UnderscoresToCamelCase(descriptor);
+  (*variables)["name"] = 
+    RenameJavaKeywords(UnderscoresToCamelCase(descriptor));
   (*variables)["number"] = SimpleItoa(descriptor->number());
   (*variables)["extends"] = ClassName(params, descriptor->containing_type());
 
