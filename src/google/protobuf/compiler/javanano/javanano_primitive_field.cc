@@ -33,6 +33,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <map>
+#include <math.h>
 #include <string>
 
 #include <google/protobuf/compiler/javanano/javanano_primitive_field.h>
@@ -174,6 +175,38 @@ int FixedSize(FieldDescriptor::Type type) {
   return -1;
 }
 
+// Returns true if the field has a default value equal to NaN.
+bool IsDefaultNaN(const FieldDescriptor* field) {
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_INT32   : return false;
+    case FieldDescriptor::TYPE_UINT32  : return false;
+    case FieldDescriptor::TYPE_SINT32  : return false;
+    case FieldDescriptor::TYPE_FIXED32 : return false;
+    case FieldDescriptor::TYPE_SFIXED32: return false;
+    case FieldDescriptor::TYPE_INT64   : return false;
+    case FieldDescriptor::TYPE_UINT64  : return false;
+    case FieldDescriptor::TYPE_SINT64  : return false;
+    case FieldDescriptor::TYPE_FIXED64 : return false;
+    case FieldDescriptor::TYPE_SFIXED64: return false;
+    case FieldDescriptor::TYPE_FLOAT   :
+      return isnan(field->default_value_float());
+    case FieldDescriptor::TYPE_DOUBLE  :
+      return isnan(field->default_value_double());
+    case FieldDescriptor::TYPE_BOOL    : return false;
+    case FieldDescriptor::TYPE_STRING  : return false;
+    case FieldDescriptor::TYPE_BYTES   : return false;
+    case FieldDescriptor::TYPE_ENUM    : return false;
+    case FieldDescriptor::TYPE_GROUP   : return false;
+    case FieldDescriptor::TYPE_MESSAGE : return false;
+
+    // No default because we want the compiler to complain if any new
+    // types are added.
+  }
+
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return false;
+}
+
 // Return true if the type is a that has variable length
 // for instance String's.
 bool IsVariableLenType(JavaType type) {
@@ -308,6 +341,9 @@ GenerateSerializationCode(io::Printer* printer) const {
     } else if (IsReferenceType(GetJavaType(descriptor_))) {
       printer->Print(variables_,
         "if (!this.$name$.equals($default$)) {\n");
+    } else if (IsDefaultNaN(descriptor_)) {
+      printer->Print(variables_,
+        "if (!$capitalized_type$.isNaN(this.$name$)) {\n");
     } else {
       printer->Print(variables_,
         "if (this.$name$ != $default$) {\n");
@@ -332,6 +368,9 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     } else  if (IsReferenceType(GetJavaType(descriptor_))) {
       printer->Print(variables_,
         "if (!this.$name$.equals($default$)) {\n");
+    } else if (IsDefaultNaN(descriptor_)) {
+      printer->Print(variables_,
+        "if (!$capitalized_type$.isNaN(this.$name$)) {\n");
     } else {
       printer->Print(variables_,
         "if (this.$name$ != $default$) {\n");

@@ -32,6 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <limits>
 #include <vector>
 
 #include <google/protobuf/compiler/javanano/javanano_helpers.h>
@@ -422,10 +423,30 @@ string DefaultValue(const Params& params, const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_UINT64:
       return SimpleItoa(static_cast<int64>(field->default_value_uint64())) +
              "L";
-    case FieldDescriptor::CPPTYPE_DOUBLE:
-      return SimpleDtoa(field->default_value_double()) + "D";
-    case FieldDescriptor::CPPTYPE_FLOAT:
-      return SimpleFtoa(field->default_value_float()) + "F";
+    case FieldDescriptor::CPPTYPE_DOUBLE: {
+      double value = field->default_value_double();
+      if (value == numeric_limits<double>::infinity()) {
+        return "Double.POSITIVE_INFINITY";
+      } else if (value == -numeric_limits<double>::infinity()) {
+        return "Double.NEGATIVE_INFINITY";
+      } else if (value != value) {
+        return "Double.NaN";
+      } else {
+        return SimpleDtoa(value) + "D";
+      }
+    }
+    case FieldDescriptor::CPPTYPE_FLOAT: {
+      float value = field->default_value_float();
+      if (value == numeric_limits<float>::infinity()) {
+        return "Float.POSITIVE_INFINITY";
+      } else if (value == -numeric_limits<float>::infinity()) {
+        return "Float.NEGATIVE_INFINITY";
+      } else if (value != value) {
+        return "Float.NaN";
+      } else {
+        return SimpleFtoa(value) + "F";
+      }
+    }
     case FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool() ? "true" : "false";
     case FieldDescriptor::CPPTYPE_STRING:
