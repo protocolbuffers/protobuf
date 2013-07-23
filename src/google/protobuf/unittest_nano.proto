@@ -142,6 +142,13 @@ message TestAllTypesNano {
   optional string default_string_nonascii = 76 [default = "dünya"];
   optional  bytes default_bytes_nonascii  = 77 [default = "dünyab"];
 
+  optional  float default_float_inf      = 97  [default =  inf];
+  optional  float default_float_neg_inf  = 98  [default = -inf];
+  optional  float default_float_nan      = 99  [default =  nan];
+  optional double default_double_inf     = 100 [default =  inf];
+  optional double default_double_neg_inf = 101 [default = -inf];
+  optional double default_double_nan     = 102 [default =  nan];
+
   optional NestedEnum default_nested_enum = 81 [default = BAR];
   optional ForeignEnumNano default_foreign_enum = 82
       [default = FOREIGN_NANO_BAR];

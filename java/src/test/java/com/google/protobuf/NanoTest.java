@@ -2062,6 +2062,12 @@ public class NanoTest extends TestCase {
       assertEquals(TestAllTypesNano.BAR, msg.defaultNestedEnum);
       assertEquals(NanoOuterClass.FOREIGN_NANO_BAR, msg.defaultForeignEnum);
       assertEquals(UnittestImportNano.IMPORT_NANO_BAR, msg.defaultImportEnum);
+      assertEquals(Float.POSITIVE_INFINITY, msg.defaultFloatInf);
+      assertEquals(Float.NEGATIVE_INFINITY, msg.defaultFloatNegInf);
+      assertEquals(Float.NaN, msg.defaultFloatNan);
+      assertEquals(Double.POSITIVE_INFINITY, msg.defaultDoubleInf);
+      assertEquals(Double.NEGATIVE_INFINITY, msg.defaultDoubleNegInf);
+      assertEquals(Double.NaN, msg.defaultDoubleNan);
 
       // Default values are not output, except for required fields.
       byte [] result = MessageNano.toByteArray(msg);
@@ -2071,6 +2077,26 @@ public class NanoTest extends TestCase {
       assertEquals(result.length, msgSerializedSize);
       msg.clear();
     }
+  }
+
+  /**
+   * Tests that fields with a default value of NaN are not serialized when
+   * set to NaN. This is a special case as NaN != NaN, so normal equality
+   * checks don't work.
+   */
+  public void testNanoNotANumberDefaults() throws Exception {
+    TestAllTypesNano msg = new TestAllTypesNano();
+    msg.defaultDoubleNan = 0;
+    msg.defaultFloatNan = 0;
+    byte[] result = MessageNano.toByteArray(msg);
+    int msgSerializedSize = msg.getSerializedSize();
+    assertTrue(msgSerializedSize > 3);
+
+    msg.defaultDoubleNan = Double.NaN;
+    msg.defaultFloatNan = Float.NaN;
+    result = MessageNano.toByteArray(msg);
+    msgSerializedSize = msg.getSerializedSize();
+    assertEquals(3, msgSerializedSize);
   }
 
   /**
