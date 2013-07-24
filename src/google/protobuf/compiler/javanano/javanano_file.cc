@@ -186,7 +186,7 @@ void FileGenerator::Generate(io::Printer* printer) {
     ExtensionGenerator(file_->extension(i), params_).Generate(printer);
   }
 
-  if (!params_.java_multiple_files()) {
+  if (!params_.java_multiple_files(file_->name())) {
     for (int i = 0; i < file_->enum_type_count(); i++) {
       EnumGenerator(file_->enum_type(i), params_).Generate(printer);
     }
@@ -238,7 +238,7 @@ static void GenerateSibling(const string& package_dir,
 void FileGenerator::GenerateSiblings(const string& package_dir,
                                      OutputDirectory* output_directory,
                                      vector<string>* file_list) {
-  if (params_.java_multiple_files()) {
+  if (params_.java_multiple_files(file_->name())) {
     for (int i = 0; i < file_->enum_type_count(); i++) {
       GenerateSibling<EnumGenerator>(package_dir, java_package_,
                                      file_->enum_type(i),

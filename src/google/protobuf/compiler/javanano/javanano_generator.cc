@@ -57,6 +57,10 @@ void UpdateParamsRecursively(Params& params,
     params.set_java_package(
       file->name(), file->options().java_package());
   }
+  if (file->options().has_java_multiple_files()) {
+    params.set_java_multiple_files(
+      file->name(), file->options().java_multiple_files());
+  }
 
   // Loop through all dependent files recursively
   // adding dep
@@ -83,11 +87,6 @@ bool JavaNanoGenerator::Generate(const FileDescriptor* file,
   // per line.
   string output_list_file;
   Params params(file->name());
-
-  // Get options from the proto file
-  if (file->options().has_java_multiple_files()) {
-    params.set_java_multiple_files(file->options().java_multiple_files());
-  }
 
   // Update per file params
   UpdateParamsRecursively(params, file);
@@ -118,7 +117,7 @@ bool JavaNanoGenerator::Generate(const FileDescriptor* file,
     } else if (options[i].first == "store_unknown_fields") {
       params.set_store_unknown_fields(options[i].second == "true");
     } else if (options[i].first == "java_multiple_files") {
-        params.set_java_multiple_files(options[i].second == "true");
+      params.set_override_java_multiple_files(options[i].second == "true");
     } else {
       *error = "Ignore unknown javanano generator option: " + options[i].first;
     }
