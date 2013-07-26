@@ -121,9 +121,11 @@ void MessageGenerator::GenerateStaticVariableInitializers(
 }
 
 void MessageGenerator::Generate(io::Printer* printer) {
+  const string& file_name = descriptor_->file()->name();
   bool is_own_file =
-    params_.java_multiple_files() || ((descriptor_->containing_type() == NULL)
-        && !params_.has_java_outer_classname(descriptor_->file()->name()));
+    params_.java_multiple_files(file_name)
+      || ((descriptor_->containing_type() == NULL)
+        && !params_.has_java_outer_classname(file_name));
 
 #if 0
   GOOGLE_LOG(INFO) << "is_own_file=" << is_own_file;
