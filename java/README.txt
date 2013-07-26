@@ -324,7 +324,8 @@ Please run the following steps to test:
 - cd ../../..
 - . build/envsetup.sh
 - lunch 1
-- "make -j12 aprotoc libprotobuf-java-2.3.0-nano" and check for build errors.
+- "make -j12 aprotoc libprotobuf-java-2.3.0-nano aprotoc-test-nano-params" and
+  check for build errors.
 - repo sync -c -j256
 - "make -j12" and check for build errors
 

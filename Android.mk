@@ -350,3 +350,26 @@ LOCAL_STATIC_LIBRARIES += libz
 LOCAL_LDLIBS := -lpthread
 
 include $(BUILD_HOST_EXECUTABLE)
+
+# To test java proto params build rules.
+# =======================================================
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := aprotoc-test-nano-params
+LOCAL_MODULE_TAGS := tests
+LOCAL_SDK_VERSION := current
+
+LOCAL_PROTOC_OPTIMIZE_TYPE := nano
+
+LOCAL_SRC_FILES := \
+        src/google/protobuf/unittest_import_nano.proto \
+        src/google/protobuf/unittest_simple_nano.proto \
+        src/google/protobuf/unittest_stringutf8_nano.proto \
+        src/google/protobuf/unittest_recursive_nano.proto \
+        src/google/protobuf/unittest_enum_multiplejava_nano.proto
+
+LOCAL_PROTOC_FLAGS := --proto_path=$(LOCAL_PATH)/src
+
+LOCAL_PROTO_JAVA_OUTPUT_PARAMS := java_package=$(LOCAL_PATH)/src/google/protobuf/unittest_import_nano.proto|com.google.protobuf.nano,java_outer_classname=$(LOCAL_PATH)/src/google/protobuf/unittest_import_nano.proto|UnittestImportNano
+
+include $(BUILD_STATIC_JAVA_LIBRARY)
