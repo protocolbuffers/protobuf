@@ -34,6 +34,7 @@
 #define PROTOBUF_COMPILER_JAVANANO_JAVANANO_PARAMS_H_
 
 #include <map>
+#include <set>
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
@@ -41,24 +42,28 @@ namespace protobuf {
 namespace compiler {
 namespace javanano {
 
+enum eMultipleFiles { JAVANANO_MUL_UNSET, JAVANANO_MUL_FALSE, JAVANANO_MUL_TRUE };
+
 // Parameters for used by the generators
 class Params {
  public:
   typedef map<string, string> NameMap;
+  typedef set<string> NameSet;
  private:
   string empty_;
   string base_name_;
-  bool java_multiple_files_;
+  eMultipleFiles override_java_multiple_files_;
   bool store_unknown_fields_;
   NameMap java_packages_;
   NameMap java_outer_classnames_;
+  NameSet java_multiple_files_;
 
  public:
   Params(const string & base_name) :
     empty_(""),
     base_name_(base_name),
-    store_unknown_fields_(false),
-    java_multiple_files_(false) {
+    override_java_multiple_files_(JAVANANO_MUL_UNSET),
+    store_unknown_fields_(false) {
   }
 
   const string& base_name() const {
@@ -109,18 +114,41 @@ class Params {
     return java_outer_classnames_;
   }
 
+  void set_override_java_multiple_files(bool java_multiple_files) {
+    if (java_multiple_files) {
+      override_java_multiple_files_ = JAVANANO_MUL_TRUE;
+    } else {
+      override_java_multiple_files_ = JAVANANO_MUL_FALSE;
+    }
+  }
+  void clear_override_java_multiple_files() {
+    override_java_multiple_files_ = JAVANANO_MUL_UNSET;
+  }
+
+  void set_java_multiple_files(const string& file_name, bool value) {
+    if (value) {
+      java_multiple_files_.insert(file_name);
+    } else {
+      java_multiple_files_.erase(file_name);
+    }
+  }
+  bool java_multiple_files(const string& file_name) const {
+    switch (override_java_multiple_files_) {
+      case JAVANANO_MUL_FALSE:
+        return false;
+      case JAVANANO_MUL_TRUE:
+        return true;
+      default:
+        return java_multiple_files_.find(file_name)
+                != java_multiple_files_.end();
+    }
+  }
+
   void set_store_unknown_fields(bool value) {
     store_unknown_fields_ = value;
   }
   bool store_unknown_fields() const {
     return store_unknown_fields_;
-  }
-
-  void set_java_multiple_files(bool value) {
-    java_multiple_files_ = value;
-  }
-  bool java_multiple_files() const {
-    return java_multiple_files_;
   }
 
 };

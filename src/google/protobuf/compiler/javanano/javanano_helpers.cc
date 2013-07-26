@@ -210,7 +210,7 @@ string FileJavaPackage(const Params& params, const FileDescriptor* file) {
 string ToJavaName(const Params& params, const string& full_name,
     const FileDescriptor* file) {
   string result;
-  if (params.java_multiple_files()) {
+  if (params.java_multiple_files(file->name())) {
     result = FileJavaPackage(params, file);
   } else {
     result = ClassName(params, file);
@@ -283,7 +283,7 @@ string ClassName(const Params& params, const EnumDescriptor* descriptor) {
   // If the java_multiple_files option is present, we will generate enums into separate
   // classes, each named after the original enum type. This takes precedence over
   // any outer_classname.
-  if (params.java_multiple_files() && last_dot_in_name != string::npos) {
+  if (params.java_multiple_files(file_name) && last_dot_in_name != string::npos) {
     string enum_simple_name = full_name.substr(last_dot_in_name + 1);
     if (!result.empty()) {
       result += ".";

@@ -35,6 +35,8 @@ import com.google.protobuf.nano.Extensions;
 import com.google.protobuf.nano.Extensions.AnotherMessage;
 import com.google.protobuf.nano.InternalNano;
 import com.google.protobuf.nano.MessageNano;
+import com.google.protobuf.nano.MultipleImportingNonMultipleNano1;
+import com.google.protobuf.nano.MultipleImportingNonMultipleNano2;
 import com.google.protobuf.nano.NanoOuterClass;
 import com.google.protobuf.nano.NanoOuterClass.TestAllTypesNano;
 import com.google.protobuf.nano.RecursiveMessageNano;
@@ -2037,6 +2039,20 @@ public class NanoTest extends TestCase {
     assertEquals(nestedMsg0.bb, newMsg.repeatedNestedMessage[0].bb);
     assertEquals(nestedMsg1.bb, newMsg.repeatedNestedMessage[1].bb);
     assertEquals(nestedMsg2.bb, newMsg.repeatedNestedMessage[2].bb);
+  }
+
+  /**
+   * Tests that code generation with mixed values of the java_multiple_files
+   * options between the main source file and the imported source files would
+   * generate correct references. Any error would cause this method to fail
+   * compilation.
+   */
+  public void testNanoMultipleImportingNonMultiple() throws Exception {
+    UnittestImportNano.ImportMessageNano importMsg = new UnittestImportNano.ImportMessageNano();
+    MultipleImportingNonMultipleNano1 nano1 = new MultipleImportingNonMultipleNano1();
+    nano1.field = importMsg;
+    MultipleImportingNonMultipleNano2 nano2 = new MultipleImportingNonMultipleNano2();
+    nano2.nano1 = nano1;
   }
 
   public void testNanoDefaults() throws Exception {
