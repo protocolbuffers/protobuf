@@ -33,16 +33,22 @@ package com.google.protobuf;
 import com.google.protobuf.nano.CodedInputByteBufferNano;
 import com.google.protobuf.nano.Extensions;
 import com.google.protobuf.nano.Extensions.AnotherMessage;
+import com.google.protobuf.nano.FileScopeEnumRefNano;
 import com.google.protobuf.nano.InternalNano;
 import com.google.protobuf.nano.MessageNano;
+import com.google.protobuf.nano.MessageScopeEnumRefNano;
 import com.google.protobuf.nano.MultipleImportingNonMultipleNano1;
 import com.google.protobuf.nano.MultipleImportingNonMultipleNano2;
+import com.google.protobuf.nano.MultipleNameClashNano;
 import com.google.protobuf.nano.NanoHasOuterClass.TestAllTypesNanoHas;
 import com.google.protobuf.nano.NanoOuterClass;
 import com.google.protobuf.nano.NanoOuterClass.TestAllTypesNano;
-import com.google.protobuf.nano.RecursiveMessageNano;
-import com.google.protobuf.nano.SimpleMessageNano;
 import com.google.protobuf.nano.UnittestImportNano;
+import com.google.protobuf.nano.UnittestMultipleNano;
+import com.google.protobuf.nano.UnittestRecursiveNano.RecursiveMessageNano;
+import com.google.protobuf.nano.UnittestSimpleNano.SimpleMessageNano;
+import com.google.protobuf.nano.UnittestSingleNano.SingleMessageNano;
+import com.google.protobuf.nano.UnittestStringutf8Nano.StringUtf8;
 
 import junit.framework.TestCase;
 
@@ -2040,6 +2046,41 @@ public class NanoTest extends TestCase {
     assertEquals(nestedMsg0.bb, newMsg.repeatedNestedMessage[0].bb);
     assertEquals(nestedMsg1.bb, newMsg.repeatedNestedMessage[1].bb);
     assertEquals(nestedMsg2.bb, newMsg.repeatedNestedMessage[2].bb);
+  }
+
+  /**
+   * Tests that code generation correctly wraps a single message into its outer
+   * class. The class {@code SingleMessageNano} is imported from the outer
+   * class {@code UnittestSingleNano}, whose name is implicit. Any error would
+   * cause this method to fail compilation.
+   */
+  public void testNanoSingle() throws Exception {
+    SingleMessageNano msg = new SingleMessageNano();
+  }
+
+  /**
+   * Tests that code generation correctly skips generating the outer class if
+   * unnecessary, letting a file-scope entity have the same name. The class
+   * {@code MultipleNameClashNano} shares the same name with the file's outer
+   * class defined explicitly, but the file contains no other entities and has
+   * java_multiple_files set. Any error would cause this method to fail
+   * compilation.
+   */
+  public void testNanoMultipleNameClash() throws Exception {
+    MultipleNameClashNano msg = new MultipleNameClashNano();
+    msg.field = 0;
+  }
+
+  /**
+   * Tests that code generation correctly handles enums in different scopes in
+   * a source file with the option java_multiple_files set to true. Any error
+   * would cause this method to fail compilation.
+   */
+  public void testNanoMultipleEnumScoping() throws Exception {
+    FileScopeEnumRefNano msg1 = new FileScopeEnumRefNano();
+    msg1.enumField = UnittestMultipleNano.ONE;
+    MessageScopeEnumRefNano msg2 = new MessageScopeEnumRefNano();
+    msg2.enumField = MessageScopeEnumRefNano.TWO;
   }
 
   /**

@@ -32,6 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <iostream>
+
 #include <google/protobuf/compiler/javanano/javanano_file.h>
 #include <google/protobuf/compiler/javanano/javanano_enum.h>
 #include <google/protobuf/compiler/javanano/javanano_extension.h>
@@ -103,39 +105,6 @@ bool FileGenerator::Validate(string* error) {
     return false;
   }
 
-  // If there is no outer class name then there must be only
-  // message and no enums defined in the file scope.
-  if (!params_.has_java_outer_classname(file_->name())) {
-    if (file_->message_type_count() != 1) {
-      error->assign(file_->name());
-      error->append(
-        ": Java NANO_RUNTIME may only have 1 message if there is no 'option java_outer_classname'\"");
-      return false;
-    }
-
-    if (file_->enum_type_count() != 0) {
-      error->assign(file_->name());
-      error->append(
-        ": Java NANO_RUNTIME must have an 'option java_outer_classname' if file scope enums are present\"");
-      return false;
-    }
-  }
-
-  // Check that no class name matches the file's class name.  This is a common
-  // problem that leads to Java compile errors that can be hard to understand.
-  // It's especially bad when using the java_multiple_files, since we would
-  // end up overwriting the outer class with one of the inner ones.
-  int found_fileName = 0;
-  for (int i = 0; i < file_->enum_type_count(); i++) {
-    if (file_->enum_type(i)->name() == classname_) {
-      found_fileName += 1;
-    }
-  }
-  for (int i = 0; i < file_->message_type_count(); i++) {
-    if (file_->message_type(i)->name() == classname_) {
-      found_fileName += 1;
-    }
-  }
   if (file_->service_count() != 0) {
     error->assign(file_->name());
     error->append(
@@ -143,16 +112,41 @@ bool FileGenerator::Validate(string* error) {
     return false;
   }
 
-  if (found_fileName > 1) {
+  if (!IsOuterClassNeeded(params_, file_)) {
+    return true;
+  }
+
+  // Check whether legacy javanano generator would omit the outer class.
+  if (!params_.has_java_outer_classname(file_->name())
+      && file_->message_type_count() == 1
+      && file_->enum_type_count() == 0 && file_->extension_count() == 0) {
+    cout << "INFO: " << file_->name() << ":" << endl;
+    cout << "Javanano generator has changed to align with java generator. "
+        "An outer class will be created for this file and the single message "
+        "in the file will become a nested class. Use java_multiple_files to "
+        "skip generating the outer class, or set an explicit "
+        "java_outer_classname to suppress this message." << endl;
+  }
+
+  // Check that no class name matches the file's class name.  This is a common
+  // problem that leads to Java compile errors that can be hard to understand.
+  // It's especially bad when using the java_multiple_files, since we would
+  // end up overwriting the outer class with one of the inner ones.
+  bool found_conflict = false;
+  for (int i = 0; !found_conflict && i < file_->message_type_count(); i++) {
+    if (file_->message_type(i)->name() == classname_) {
+      found_conflict = true;
+    }
+  }
+  if (found_conflict) {
     error->assign(file_->name());
     error->append(
-      ": Cannot generate Java output because there is more than one class name, \"");
+      ": Cannot generate Java output because the file's outer class name, \"");
     error->append(classname_);
     error->append(
       "\", matches the name of one of the types declared inside it.  "
       "Please either rename the type or use the java_outer_classname "
-      "option to specify a different outer class name for the .proto file."
-      " -- FIX THIS MESSAGE");
+      "option to specify a different outer class name for the .proto file.");
     return false;
   }
   return true;
@@ -171,13 +165,11 @@ void FileGenerator::Generate(io::Printer* printer) {
       "package", java_package_);
   }
 
-  if (params_.has_java_outer_classname(file_->name())) {
-    printer->Print(
-      "public final class $classname$ {\n"
-      "  private $classname$() {}\n",
-      "classname", classname_);
-    printer->Indent();
-  }
+  printer->Print(
+    "public final class $classname$ {\n"
+    "  private $classname$() {}\n",
+    "classname", classname_);
+  printer->Indent();
 
   // -----------------------------------------------------------------
 
@@ -186,10 +178,13 @@ void FileGenerator::Generate(io::Printer* printer) {
     ExtensionGenerator(file_->extension(i), params_).Generate(printer);
   }
 
+  // Enums.
+  for (int i = 0; i < file_->enum_type_count(); i++) {
+    EnumGenerator(file_->enum_type(i), params_).Generate(printer);
+  }
+
+  // Messages.
   if (!params_.java_multiple_files(file_->name())) {
-    for (int i = 0; i < file_->enum_type_count(); i++) {
-      EnumGenerator(file_->enum_type(i), params_).Generate(printer);
-    }
     for (int i = 0; i < file_->message_type_count(); i++) {
       MessageGenerator(file_->message_type(i), params_).Generate(printer);
     }
@@ -201,11 +196,9 @@ void FileGenerator::Generate(io::Printer* printer) {
     MessageGenerator(file_->message_type(i), params_).GenerateStaticVariables(printer);
   }
 
-  if (params_.has_java_outer_classname(file_->name())) {
-    printer->Outdent();
-    printer->Print(
-      "}\n");
-  }
+  printer->Outdent();
+  printer->Print(
+    "}\n");
 }
 
 template<typename GeneratorClass, typename DescriptorClass>
@@ -239,11 +232,6 @@ void FileGenerator::GenerateSiblings(const string& package_dir,
                                      OutputDirectory* output_directory,
                                      vector<string>* file_list) {
   if (params_.java_multiple_files(file_->name())) {
-    for (int i = 0; i < file_->enum_type_count(); i++) {
-      GenerateSibling<EnumGenerator>(package_dir, java_package_,
-                                     file_->enum_type(i),
-                                     output_directory, file_list, params_);
-    }
     for (int i = 0; i < file_->message_type_count(); i++) {
       GenerateSibling<MessageGenerator>(package_dir, java_package_,
                                         file_->message_type(i),
