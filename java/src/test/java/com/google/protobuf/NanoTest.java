@@ -37,6 +37,7 @@ import com.google.protobuf.nano.InternalNano;
 import com.google.protobuf.nano.MessageNano;
 import com.google.protobuf.nano.MultipleImportingNonMultipleNano1;
 import com.google.protobuf.nano.MultipleImportingNonMultipleNano2;
+import com.google.protobuf.nano.NanoHasOuterClass.TestAllTypesNanoHas;
 import com.google.protobuf.nano.NanoOuterClass;
 import com.google.protobuf.nano.NanoOuterClass.TestAllTypesNano;
 import com.google.protobuf.nano.RecursiveMessageNano;
@@ -2093,6 +2094,93 @@ public class NanoTest extends TestCase {
       assertEquals(result.length, msgSerializedSize);
       msg.clear();
     }
+  }
+
+  public void testNanoWithHasParseFrom() throws Exception {
+    TestAllTypesNanoHas msg = null;
+    // Test false on creation, after clear and upon empty parse.
+    for (int i = 0; i < 3; i++) {
+      if (i == 0) {
+        msg = new TestAllTypesNanoHas();
+      } else if (i == 1) {
+        msg.clear();
+      } else if (i == 2) {
+        msg = TestAllTypesNanoHas.parseFrom(new byte[0]);
+      }
+      assertFalse(msg.hasOptionalInt32);
+      assertFalse(msg.hasOptionalString);
+      assertFalse(msg.hasOptionalBytes);
+      assertFalse(msg.hasOptionalNestedEnum);
+      assertFalse(msg.hasDefaultInt32);
+      assertFalse(msg.hasDefaultString);
+      assertFalse(msg.hasDefaultBytes);
+      assertFalse(msg.hasDefaultFloatNan);
+      assertFalse(msg.hasDefaultNestedEnum);
+      assertFalse(msg.hasId);
+      msg.optionalInt32 = 123;
+      msg.optionalNestedMessage = new TestAllTypesNanoHas.NestedMessage();
+      msg.optionalNestedMessage.bb = 2;
+      msg.optionalNestedEnum = TestAllTypesNano.BAZ;
+    }
+
+    byte [] result = MessageNano.toByteArray(msg);
+    int msgSerializedSize = msg.getSerializedSize();
+    //System.out.printf("mss=%d result.length=%d\n", msgSerializedSize, result.length);
+    assertTrue(msgSerializedSize == 13);
+    assertEquals(result.length, msgSerializedSize);
+
+    // Has fields true upon parse.
+    TestAllTypesNanoHas newMsg = TestAllTypesNanoHas.parseFrom(result);
+    assertEquals(123, newMsg.optionalInt32);
+    assertTrue(newMsg.hasOptionalInt32);
+    assertEquals(2, newMsg.optionalNestedMessage.bb);
+    assertTrue(newMsg.optionalNestedMessage.hasBb);
+    assertEquals(TestAllTypesNanoHas.BAZ, newMsg.optionalNestedEnum);
+    assertTrue(newMsg.hasOptionalNestedEnum);
+  }
+
+  public void testNanoWithHasSerialize() throws Exception {
+    TestAllTypesNanoHas msg = new TestAllTypesNanoHas();
+    msg.hasOptionalInt32 = true;
+    msg.hasOptionalString = true;
+    msg.hasOptionalBytes = true;
+    msg.optionalNestedMessage = new TestAllTypesNanoHas.NestedMessage();
+    msg.optionalNestedMessage.hasBb = true;
+    msg.hasOptionalNestedEnum = true;
+    msg.hasDefaultInt32 = true;
+    msg.hasDefaultString = true;
+    msg.hasDefaultBytes = true;
+    msg.hasDefaultFloatNan = true;
+    msg.hasDefaultNestedEnum = true;
+
+    byte [] result = MessageNano.toByteArray(msg);
+    int msgSerializedSize = msg.getSerializedSize();
+    assertEquals(result.length, msgSerializedSize);
+
+    // Now deserialize and find that all fields are set and equal to their defaults.
+    TestAllTypesNanoHas newMsg = TestAllTypesNanoHas.parseFrom(result);
+    assertTrue(newMsg.hasOptionalInt32);
+    assertTrue(newMsg.hasOptionalString);
+    assertTrue(newMsg.hasOptionalBytes);
+    assertTrue(newMsg.optionalNestedMessage.hasBb);
+    assertTrue(newMsg.hasOptionalNestedEnum);
+    assertTrue(newMsg.hasDefaultInt32);
+    assertTrue(newMsg.hasDefaultString);
+    assertTrue(newMsg.hasDefaultBytes);
+    assertTrue(newMsg.hasDefaultFloatNan);
+    assertTrue(newMsg.hasDefaultNestedEnum);
+    assertTrue(newMsg.hasId);
+    assertEquals(0, newMsg.optionalInt32);
+    assertEquals(0, newMsg.optionalString.length());
+    assertEquals(0, newMsg.optionalBytes.length);
+    assertEquals(0, newMsg.optionalNestedMessage.bb);
+    assertEquals(TestAllTypesNanoHas.FOO, newMsg.optionalNestedEnum);
+    assertEquals(41, newMsg.defaultInt32);
+    assertEquals("hello", newMsg.defaultString);
+    assertEquals("world", new String(newMsg.defaultBytes, "UTF-8"));
+    assertEquals(TestAllTypesNanoHas.BAR, newMsg.defaultNestedEnum);
+    assertEquals(Float.NaN, newMsg.defaultFloatNan);
+    assertEquals(0, newMsg.id);
   }
 
   /**

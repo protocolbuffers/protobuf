@@ -301,6 +301,22 @@ message's constructor or clear() function is called, the default value
 penalty. This is not a problem if the field has no default or is an
 empty default.
 
+Nano Generator options
+
+java_nano_generate_has:
+  If true, generates a public boolean variable has<fieldname>
+  accompanying the optional or required field (not present for
+  repeated fields, groups or messages). It is set to false initially
+  and upon clear(). If parseFrom(...) reads the field from the wire,
+  it is set to true. This is a way for clients to inspect the "has"
+  value upon parse. If it is set to true, writeTo(...) will ALWAYS
+  output that field (even if field value is equal to its
+  default).
+
+  IMPORTANT: This option costs an extra 4 bytes per primitive field in
+  the message. Think carefully about whether you really need this. In
+  many cases reading the default works and determining whether the
+  field was received over the wire is irrelevant.
 
 To use nano protobufs:
 
