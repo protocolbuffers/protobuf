@@ -57,13 +57,15 @@ class Params {
   NameMap java_packages_;
   NameMap java_outer_classnames_;
   NameSet java_multiple_files_;
+  bool generate_has_;
 
  public:
   Params(const string & base_name) :
     empty_(""),
     base_name_(base_name),
     override_java_multiple_files_(JAVANANO_MUL_UNSET),
-    store_unknown_fields_(false) {
+    store_unknown_fields_(false),
+    generate_has_(false) {
   }
 
   const string& base_name() const {
@@ -149,6 +151,13 @@ class Params {
   }
   bool store_unknown_fields() const {
     return store_unknown_fields_;
+  }
+
+  void set_generate_has(bool value) {
+    generate_has_ = value;
+  }
+  bool generate_has() const {
+    return generate_has_;
   }
 
 };
