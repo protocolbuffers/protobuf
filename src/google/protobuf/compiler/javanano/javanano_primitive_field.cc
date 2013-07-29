@@ -401,10 +401,6 @@ void RepeatedPrimitiveFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "public $type$[] $name$ = $default$;\n");
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "private int $name$MemoizedSerializedSize;\n");
-  }
 }
 
 void RepeatedPrimitiveFieldGenerator::
@@ -454,12 +450,33 @@ GenerateParsingCode(io::Printer* printer) const {
 }
 
 void RepeatedPrimitiveFieldGenerator::
+GenerateRepeatedDataSizeCode(io::Printer* printer) const {
+  // Creates a variable dataSize and puts the serialized size in
+  // there.
+  if (FixedSize(descriptor_->type()) == -1) {
+    printer->Print(variables_,
+      "int dataSize = 0;\n"
+      "for ($type$ element : this.$name$) {\n"
+      "  dataSize += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
+      "    .compute$capitalized_type$SizeNoTag(element);\n"
+      "}\n");
+  } else {
+    printer->Print(variables_,
+      "int dataSize = $fixed_size$ * this.$name$.length;\n");
+  }
+}
+
+void RepeatedPrimitiveFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   if (descriptor_->options().packed()) {
     printer->Print(variables_,
-      "if (this.$name$.length > 0) {\n"
+      "if (this.$name$.length > 0) {\n");
+    printer->Indent();
+    GenerateRepeatedDataSizeCode(printer);
+    printer->Outdent();
+    printer->Print(variables_,
       "  output.writeRawVarint32($tag$);\n"
-      "  output.writeRawVarint32($name$MemoizedSerializedSize);\n"
+      "  output.writeRawVarint32(dataSize);\n"
       "}\n");
     printer->Print(variables_,
       "for ($type$ element : this.$name$) {\n"
@@ -479,27 +496,15 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     "if (this.$name$.length > 0) {\n");
   printer->Indent();
 
-  if (FixedSize(descriptor_->type()) == -1) {
-    printer->Print(variables_,
-      "int dataSize = 0;\n"
-      "for ($type$ element : this.$name$) {\n"
-      "  dataSize += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
-      "    .compute$capitalized_type$SizeNoTag(element);\n"
-      "}\n");
-  } else {
-    printer->Print(variables_,
-      "int dataSize = $fixed_size$ * this.$name$.length;\n");
-  }
+  GenerateRepeatedDataSizeCode(printer);
 
   printer->Print(
     "size += dataSize;\n");
   if (descriptor_->options().packed()) {
-    // cache the data size for packed fields.
     printer->Print(variables_,
       "size += $tag_size$;\n"
       "size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
-      "  .computeRawVarint32Size(dataSize);\n"
-      "$name$MemoizedSerializedSize = dataSize;\n");
+      "  .computeRawVarint32Size(dataSize);\n");
   } else {
     printer->Print(variables_,
         "size += $tag_size$ * this.$name$.length;\n");
@@ -507,16 +512,8 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
 
   printer->Outdent();
 
-  // set cached size to 0 for empty packed fields.
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "} else {\n"
-      "  $name$MemoizedSerializedSize = 0;\n"
-      "}\n");
-  } else {
-    printer->Print(
-      "}\n");
-  }
+  printer->Print(
+    "}\n");
 }
 
 string RepeatedPrimitiveFieldGenerator::GetBoxedType() const {
