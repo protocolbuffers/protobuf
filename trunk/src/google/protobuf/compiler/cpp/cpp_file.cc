@@ -620,7 +620,7 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
     // Without.
     "GOOGLE_PROTOBUF_DECLARE_ONCE($adddescriptorsname$_once_);\n"
     "void $adddescriptorsname$() {\n"
-    "  ::google::protobuf::::google::protobuf::GoogleOnceInit(&$adddescriptorsname$_once_,\n"
+    "  ::google::protobuf::GoogleOnceInit(&$adddescriptorsname$_once_,\n"
     "                 &$adddescriptorsname$_impl);\n"
     "}\n",
     // Vars.
