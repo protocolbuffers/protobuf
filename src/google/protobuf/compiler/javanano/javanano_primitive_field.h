@@ -80,6 +80,8 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
   string GetBoxedType() const;
 
  private:
+  void GenerateRepeatedDataSizeCode(io::Printer* printer) const;
+
   const FieldDescriptor* descriptor_;
   map<string, string> variables_;
 

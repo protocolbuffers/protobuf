@@ -47,6 +47,7 @@ import com.google.protobuf.nano.UnittestImportNano;
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -1954,6 +1955,24 @@ public class NanoTest extends TestCase {
     assertEquals(2, newMsg.repeatedPackedNestedEnum.length);
     assertEquals(TestAllTypesNano.FOO, msg.repeatedPackedNestedEnum[0]);
     assertEquals(TestAllTypesNano.BAR, msg.repeatedPackedNestedEnum[1]);
+  }
+
+  public void testNanoRepeatedPackedSerializedSize() throws Exception {
+    TestAllTypesNano msg = new TestAllTypesNano();
+    msg.repeatedPackedInt32 = new int[] { 123, 789, 456 };
+    int msgSerializedSize = msg.getSerializedSize();
+    byte [] result = MessageNano.toByteArray(msg);
+    //System.out.printf("mss=%d result.length=%d\n", msgSerializedSize, result.length);
+    assertTrue(msgSerializedSize == 11);
+    assertEquals(result.length, msgSerializedSize);
+    TestAllTypesNano msg2 = new TestAllTypesNano();
+    msg2.repeatedPackedInt32 = new int[] { 123, 789, 456 };
+    byte [] result2 = new byte[msgSerializedSize];
+    MessageNano.toByteArray(msg2, result2, 0, msgSerializedSize);
+
+    // Check equal size and content.
+    assertEquals(msgSerializedSize, msg2.getSerializedSize());
+    assertTrue(Arrays.equals(result, result2));
   }
 
   public void testNanoRepeatedInt32ReMerge() throws Exception {
