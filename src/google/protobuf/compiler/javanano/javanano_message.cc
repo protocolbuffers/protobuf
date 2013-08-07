@@ -114,7 +114,7 @@ void MessageGenerator::GenerateStaticVariableInitializers(
     io::Printer* printer) {
   // Generate static member initializers for all nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    // TODO(kenton):  Reuse MessageGenerator objects?
+   // TODO(kenton):  Reuse MessageGenerator objects?
     MessageGenerator(descriptor_->nested_type(i), params_)
       .GenerateStaticVariableInitializers(printer);
   }
@@ -124,15 +124,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   const string& file_name = descriptor_->file()->name();
   bool is_own_file =
     params_.java_multiple_files(file_name)
-      || ((descriptor_->containing_type() == NULL)
-        && !params_.has_java_outer_classname(file_name));
-
-#if 0
-  GOOGLE_LOG(INFO) << "is_own_file=" << is_own_file;
-  GOOGLE_LOG(INFO) << "containing_type()=" << ((descriptor_->containing_type() == NULL) ? "NULL" : "not null");
-  GOOGLE_LOG(INFO) << "java_multiple_files()=" << params_.java_multiple_files();
-  GOOGLE_LOG(INFO) << "has_java_outer_classname()=" << params_.has_java_outer_classname(file_->name());
-#endif
+      && descriptor_->containing_type() == NULL;
 
   if (!params_.store_unknown_fields() &&
       (descriptor_->extension_count() != 0 || descriptor_->extension_range_count() != 0)) {
@@ -355,25 +347,21 @@ void MessageGenerator::GenerateMergeFromMethods(io::Printer* printer) {
 
 void MessageGenerator::
 GenerateParseFromMethods(io::Printer* printer) {
-  bool is_own_file =
-    descriptor_->containing_type() == NULL;
-
   // Note:  These are separate from GenerateMessageSerializationMethods()
   //   because they need to be generated even for messages that are optimized
   //   for code size.
   printer->Print(
-    "public $static$ $classname$ parseFrom(byte[] data)\n"
+    "public static $classname$ parseFrom(byte[] data)\n"
     "    throws com.google.protobuf.nano.InvalidProtocolBufferNanoException {\n"
     "  return com.google.protobuf.nano.MessageNano.mergeFrom(new $classname$(), data);\n"
     "}\n"
     "\n"
-    "public $static$ $classname$ parseFrom(\n"
+    "public static $classname$ parseFrom(\n"
     "        com.google.protobuf.nano.CodedInputByteBufferNano input)\n"
     "    throws java.io.IOException {\n"
     "  return new $classname$().mergeFrom(input);\n"
     "}\n"
     "\n",
-    "static", (is_own_file ? "static" : ""),
     "classname", descriptor_->name());
 }
 

@@ -138,16 +138,18 @@ bool JavaNanoGenerator::Generate(const FileDescriptor* file,
 
   vector<string> all_files;
 
-  string java_filename = package_dir;
-  java_filename += file_generator.classname();
-  java_filename += ".java";
-  all_files.push_back(java_filename);
+  if (IsOuterClassNeeded(params, file)) {
+    string java_filename = package_dir;
+    java_filename += file_generator.classname();
+    java_filename += ".java";
+    all_files.push_back(java_filename);
 
-  // Generate main java file.
-  scoped_ptr<io::ZeroCopyOutputStream> output(
-    output_directory->Open(java_filename));
-  io::Printer printer(output.get(), '$');
-  file_generator.Generate(&printer);
+    // Generate main java file.
+    scoped_ptr<io::ZeroCopyOutputStream> output(
+      output_directory->Open(java_filename));
+    io::Printer printer(output.get(), '$');
+    file_generator.Generate(&printer);
+  }
 
   // Generate sibling files.
   file_generator.GenerateSiblings(package_dir, output_directory, &all_files);

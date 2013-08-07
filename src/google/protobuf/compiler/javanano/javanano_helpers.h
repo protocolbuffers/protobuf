@@ -73,25 +73,35 @@ string FileClassName(const Params& params, const FileDescriptor* file);
 // Returns the file's Java package name.
 string FileJavaPackage(const Params& params, const FileDescriptor* file);
 
-// Converts the given fully-qualified name in the proto namespace to its
-// fully-qualified name in the Java namespace, given that it is in the given
-// file.
-string ToJavaName(const Params& params, const string& full_name,
-    const FileDescriptor* file);
+// Returns whether the Java outer class is needed, i.e. whether the option
+// java_multiple_files is false, or the proto file contains any file-scope
+// enums/extensions.
+bool IsOuterClassNeeded(const Params& params, const FileDescriptor* file);
+
+// Converts the given simple name of a proto entity to its fully-qualified name
+// in the Java namespace, given that it is in the given file enclosed in the
+// given parent message (or NULL for file-scope entities). Whether the file's
+// outer class name should be included in the return value depends on factors
+// inferrable from the given arguments, including is_class which indicates
+// whether the entity translates to a Java class.
+string ToJavaName(const Params& params, const string& name, bool is_class,
+    const Descriptor* parent, const FileDescriptor* file);
 
 // These return the fully-qualified class name corresponding to the given
 // descriptor.
 inline string ClassName(const Params& params, const Descriptor* descriptor) {
-  return ToJavaName(params, descriptor->full_name(), descriptor->file());
+  return ToJavaName(params, descriptor->name(), true,
+                    descriptor->containing_type(), descriptor->file());
 }
 string ClassName(const Params& params, const EnumDescriptor* descriptor);
 inline string ClassName(const Params& params,
     const ServiceDescriptor* descriptor) {
-  return ToJavaName(params, descriptor->full_name(), descriptor->file());
+  return ToJavaName(params, descriptor->name(), true, NULL, descriptor->file());
 }
 inline string ExtensionIdentifierName(const Params& params,
     const FieldDescriptor* descriptor) {
-  return ToJavaName(params, descriptor->full_name(), descriptor->file());
+  return ToJavaName(params, descriptor->name(), false,
+                    descriptor->extension_scope(), descriptor->file());
 }
 string ClassName(const Params& params, const FileDescriptor* descriptor);
 

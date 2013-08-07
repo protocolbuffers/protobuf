@@ -167,31 +167,20 @@ string StripProto(const string& filename) {
 }
 
 string FileClassName(const Params& params, const FileDescriptor* file) {
-  string name;
-
   if (params.has_java_outer_classname(file->name())) {
-      name = params.java_outer_classname(file->name());
+    return params.java_outer_classname(file->name());
   } else {
-    if ((file->message_type_count() == 1)
-        || (file->enum_type_count() == 0)) {
-      // If no outer calls and only one message then
-      // use the message name as the file name
-      name = file->message_type(0)->name();
+    // Use the filename itself with underscores removed
+    // and a CamelCase style name.
+    string basename;
+    string::size_type last_slash = file->name().find_last_of('/');
+    if (last_slash == string::npos) {
+      basename = file->name();
     } else {
-      // Use the filename it self with underscores removed
-      // and a CamelCase style name.
-      string basename;
-      string::size_type last_slash = file->name().find_last_of('/');
-      if (last_slash == string::npos) {
-        basename = file->name();
-      } else {
-        basename = file->name().substr(last_slash + 1);
-      }
-      name = UnderscoresToCamelCaseImpl(StripProto(basename), true);
+      basename = file->name().substr(last_slash + 1);
     }
+    return UnderscoresToCamelCaseImpl(StripProto(basename), true);
   }
-
-  return name;
 }
 
 string FileJavaPackage(const Params& params, const FileDescriptor* file) {
@@ -207,38 +196,27 @@ string FileJavaPackage(const Params& params, const FileDescriptor* file) {
   }
 }
 
-string ToJavaName(const Params& params, const string& full_name,
-    const FileDescriptor* file) {
+bool IsOuterClassNeeded(const Params& params, const FileDescriptor* file) {
+  // Enums and extensions need the outer class as the scope.
+  if (file->enum_type_count() != 0 || file->extension_count() != 0) {
+    return true;
+  }
+  // Messages need the outer class only if java_multiple_files is false.
+  return !params.java_multiple_files(file->name());
+}
+
+string ToJavaName(const Params& params, const string& name, bool is_class,
+    const Descriptor* parent, const FileDescriptor* file) {
   string result;
-  if (params.java_multiple_files(file->name())) {
-    result = FileJavaPackage(params, file);
+  if (parent != NULL) {
+    result.append(ClassName(params, parent));
+  } else if (is_class && params.java_multiple_files(file->name())) {
+    result.append(FileJavaPackage(params, file));
   } else {
-    result = ClassName(params, file);
+    result.append(ClassName(params, file));
   }
-  if (file->package().empty()) {
-    result += '.';
-    result += full_name;
-  } else {
-    // Strip the proto package from full_name since we've replaced it with
-    // the Java package. If there isn't an outer classname then strip it too.
-    int sizeToSkipPackageName = file->package().size();
-    int sizeToSkipOutClassName;
-    if (params.has_java_outer_classname(file->name())) {
-      sizeToSkipOutClassName = 0;
-    } else {
-      sizeToSkipOutClassName =
-                full_name.find_first_of('.', sizeToSkipPackageName + 1);
-    }
-    int sizeToSkip = sizeToSkipOutClassName > 0 ?
-            sizeToSkipOutClassName : sizeToSkipPackageName;
-    string class_name = full_name.substr(sizeToSkip + 1);
-    if (class_name == FileClassName(params, file)) {
-      // Done class_name is already present.
-    } else {
-      result += '.';
-      result += class_name;
-    }
-  }
+  if (!result.empty()) result.append(1, '.');
+  result.append(RenameJavaKeywords(name));
   return result;
 }
 
@@ -250,61 +228,14 @@ string ClassName(const Params& params, const FileDescriptor* descriptor) {
 }
 
 string ClassName(const Params& params, const EnumDescriptor* descriptor) {
-  string result;
-  const FileDescriptor* file = descriptor->file();
-  const string file_name = file->name();
-  const string full_name = descriptor->full_name();
-
-  // Remove enum class name as we use int's for enums
-  int last_dot_in_name = full_name.find_last_of('.');
-  string base_name = full_name.substr(0, last_dot_in_name);
-
-  if (!file->package().empty()) {
-    if (file->package() == base_name.substr(0, file->package().size())) {
-      // Remove package name leaving just the parent class of the enum
-      int offset = file->package().size();
-      if (base_name.size() > offset) {
-        // Remove period between package and class name if there is a classname
-        offset += 1;
-      }
-      base_name = base_name.substr(offset);
-    } else {
-      GOOGLE_LOG(FATAL) << "Expected package name to start an enum";
-    }
+  // An enum's class name is the enclosing message's class name or the outer
+  // class name.
+  const Descriptor* parent = descriptor->containing_type();
+  if (parent != NULL) {
+    return ClassName(params, parent);
+  } else {
+    return ClassName(params, descriptor->file());
   }
-
-  // Construct the path name from the package and outer class
-
-  // Add the java package name if it exists
-  if (params.has_java_package(file_name)) {
-    result += params.java_package(file_name);
-  }
-
-  // If the java_multiple_files option is present, we will generate enums into separate
-  // classes, each named after the original enum type. This takes precedence over
-  // any outer_classname.
-  if (params.java_multiple_files(file_name) && last_dot_in_name != string::npos) {
-    string enum_simple_name = full_name.substr(last_dot_in_name + 1);
-    if (!result.empty()) {
-      result += ".";
-    }
-    result += enum_simple_name;
-  } else if (params.has_java_outer_classname(file_name)) {
-    // Add the outer classname if it exists
-    if (!result.empty()) {
-      result += ".";
-    }
-    result += params.java_outer_classname(file_name);
-  }
-
-  // Create the full class name from the base and path
-  if (!base_name.empty()) {
-    if (!result.empty()) {
-      result += ".";
-    }
-    result += base_name;
-  }
-  return result;
 }
 
 string FieldConstantName(const FieldDescriptor *field) {
