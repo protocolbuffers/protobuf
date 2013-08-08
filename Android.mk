@@ -365,8 +365,8 @@ LOCAL_SRC_FILES := \
         src/google/protobuf/unittest_import_nano.proto \
         src/google/protobuf/unittest_simple_nano.proto \
         src/google/protobuf/unittest_stringutf8_nano.proto \
-        src/google/protobuf/unittest_recursive_nano.proto \
-        src/google/protobuf/unittest_enum_multiplejava_nano.proto
+        src/google/protobuf/unittest_recursive_nano.proto
+
 
 LOCAL_PROTOC_FLAGS := --proto_path=$(LOCAL_PATH)/src
 
