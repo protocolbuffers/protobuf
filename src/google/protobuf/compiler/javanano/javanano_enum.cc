@@ -69,18 +69,6 @@ EnumGenerator::~EnumGenerator() {}
 
 void EnumGenerator::Generate(io::Printer* printer) {
   printer->Print("// enum $classname$\n", "classname", descriptor_->name());
-  const string& file_name = descriptor_->file()->name();
-  bool is_own_file = params_.java_multiple_files(file_name) ||
-      ((descriptor_->containing_type() == NULL) &&
-       !params_.has_java_outer_classname(file_name));
-
-  if (is_own_file) {
-    printer->Print("public final class $classname$ {\n", "classname",
-        descriptor_->name());
-    printer->Indent();
-    printer->Print("private $classname$() {}\n", "classname",
-        descriptor_->name());
-  }
   for (int i = 0; i < canonical_values_.size(); i++) {
     map<string, string> vars;
     vars["name"] = RenameJavaKeywords(canonical_values_[i]->name());
@@ -99,10 +87,6 @@ void EnumGenerator::Generate(io::Printer* printer) {
       "public static final int $name$ = $canonical_name$;\n");
   }
 
-  if (is_own_file) {
-    printer->Outdent();
-    printer->Print("}");
-  }
   printer->Print("\n");
 }
 
