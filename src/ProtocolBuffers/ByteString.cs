@@ -129,7 +129,9 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public static ByteString FromBase64(string bytes)
         {
-            return new ByteString(Convert.FromBase64String(bytes));
+            // By handling the empty string explicitly, we not only optimize but we fix a
+            // problem on CF 2.0. See issue 61 for details.
+            return bytes == "" ? Empty : new ByteString(Convert.FromBase64String(bytes));
         }
 
         /// <summary>

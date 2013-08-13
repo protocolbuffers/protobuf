@@ -34,6 +34,7 @@
 
 #endregion
 
+using System;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -126,6 +127,22 @@ namespace Google.ProtocolBuffers
         {
             ByteString bs = ByteString.CopyFrom("\u20ac", Encoding.Unicode);
             Assert.AreEqual("\u20ac", bs.ToString(Encoding.Unicode));
+        }
+
+        [TestMethod]
+        public void FromBase64_WithText()
+        {
+            byte[] data = new byte[] {0, 1, 2, 3, 4, 5, 6};
+            string base64 = Convert.ToBase64String(data);
+            ByteString bs = ByteString.FromBase64(base64);
+            TestUtil.AssertBytesEqual(data, bs.ToByteArray());
+        }
+
+        [TestMethod]
+        public void FromBase64_Empty()
+        {
+            // Optimization which also fixes issue 61.
+            Assert.AreSame(ByteString.Empty, ByteString.FromBase64(""));
         }
     }
 }
