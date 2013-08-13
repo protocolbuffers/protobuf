@@ -1,9 +1,11 @@
 using System;
 using System.IO;
 using System.Text;
+using Google.ProtocolBuffers.DescriptorProtos;
 using Google.ProtocolBuffers.Serialization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Google.ProtocolBuffers.TestProtos;
+using EnumOptions = Google.ProtocolBuffers.TestProtos.EnumOptions;
 
 namespace Google.ProtocolBuffers
 {
@@ -152,6 +154,7 @@ namespace Google.ProtocolBuffers
                 @"{}"
                 );
         }
+        
         [TestMethod]
         public void TestRepeatedField()
         {
@@ -163,6 +166,7 @@ namespace Google.ProtocolBuffers
                 @"{""options"":[""ONE"",""TWO""]}"
                 );
         }
+        
         [TestMethod]
         public void TestNestedEmptyMessage()
         {
@@ -173,6 +177,7 @@ namespace Google.ProtocolBuffers
                 @"{""child"":{}}"
                 );
         }
+        
         [TestMethod]
         public void TestNestedMessage()
         {
@@ -183,6 +188,7 @@ namespace Google.ProtocolBuffers
                 @"{""child"":{""options"":[""TWO""]}}"
                 );
         }
+        
         [TestMethod]
         public void TestBooleanTypes()
         {
@@ -193,6 +199,7 @@ namespace Google.ProtocolBuffers
                 @"{""valid"":true}"
                 );
         }
+        
         [TestMethod]
         public void TestFullMessage()
         {
@@ -222,6 +229,7 @@ namespace Google.ProtocolBuffers
                 0x1010101010L.ToString()
                 );
         }
+        
         [TestMethod]
         public void TestMessageWithXmlText()
         {
@@ -232,6 +240,7 @@ namespace Google.ProtocolBuffers
                 @"{""text"":""<text><\/text>""}"
                 );
         }
+        
         [TestMethod]
         public void TestWithEscapeChars()
         {
@@ -242,6 +251,7 @@ namespace Google.ProtocolBuffers
                 "{\"text\":\" \\t <- \\\"leading space and trailing\\\" -> \\\\ \\uef54 \\u0000 \\u00ff \\uffff \\b \\f \\r \\n \\t \"}"
                 );
         }
+        
         [TestMethod]
         public void TestWithExtensionText()
         {
@@ -253,6 +263,7 @@ namespace Google.ProtocolBuffers
                 @"{""valid"":false,""extension_text"":"" extension text value ! ""}"
                 );
         }
+        
         [TestMethod]
         public void TestWithExtensionNumber()
         {
@@ -264,6 +275,7 @@ namespace Google.ProtocolBuffers
                 @"{""number"":42}"
                 );
         }
+        
         [TestMethod]
         public void TestWithExtensionArray()
         {
@@ -276,6 +288,7 @@ namespace Google.ProtocolBuffers
                 @"{""extension_number"":[100,101,102]}"
                 );
         }
+        
         [TestMethod]
         public void TestWithExtensionEnum()
         {
@@ -286,6 +299,7 @@ namespace Google.ProtocolBuffers
                 @"{""extension_enum"":""ONE""}"
                 );
         }
+        
         [TestMethod]
         public void TestMessageWithExtensions()
         {
@@ -308,6 +322,7 @@ namespace Google.ProtocolBuffers
                 @"""extension_message"":{""number"":42}"
                 );
         }
+        
         [TestMethod]
         public void TestMessageMissingExtensions()
         {
@@ -340,6 +355,7 @@ namespace Google.ProtocolBuffers
             Assert.AreNotEqual(original, copy);
             Assert.AreEqual(message, copy);
         }
+        
         [TestMethod]
         public void TestMergeFields()
         {
@@ -350,6 +366,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual("text", builder.Text);
             Assert.AreEqual(411, builder.Number);
         }
+        
         [TestMethod]
         public void TestMessageArray()
         {
@@ -374,6 +391,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(3, ordinal);
             Assert.AreEqual(3, builder.TextlinesCount);
         }
+        
         [TestMethod]
         public void TestNestedMessageArray()
         {
@@ -403,6 +421,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(3, ordinal);
             Assert.AreEqual(3, builder.TextlinesCount);
         }
+        
         [TestMethod]
         public void TestReadWriteJsonWithoutRoot()
         {
@@ -425,6 +444,7 @@ namespace Google.ProtocolBuffers
 
             Assert.AreEqual(message, copy);
         }
+        
         [TestMethod,ExpectedException(typeof(RecursionLimitExceededException))]
         public void TestRecursiveLimit()
         {
@@ -433,29 +453,46 @@ namespace Google.ProtocolBuffers
                 sb.Append("{\"child\":");
             TestXmlRescursive msg = Extensions.MergeFromJson(new TestXmlRescursive.Builder(), sb.ToString()).Build();
         }
+
         [TestMethod, ExpectedException(typeof(FormatException))]
         public void FailWithEmptyText()
         {
             JsonFormatReader.CreateInstance("")
                 .Merge(TestXmlMessage.CreateBuilder());
         }
+        
         [TestMethod, ExpectedException(typeof(FormatException))]
         public void FailWithUnexpectedValue()
         {
             JsonFormatReader.CreateInstance("{{}}")
                 .Merge(TestXmlMessage.CreateBuilder());
         }
+        
         [TestMethod, ExpectedException(typeof(FormatException))]
         public void FailWithUnQuotedName()
         {
             JsonFormatReader.CreateInstance("{name:{}}")
                 .Merge(TestXmlMessage.CreateBuilder());
         }
+        
         [TestMethod, ExpectedException(typeof(FormatException))]
         public void FailWithUnexpectedType()
         {
             JsonFormatReader.CreateInstance("{\"valid\":{}}")
                 .Merge(TestXmlMessage.CreateBuilder());
+        }
+
+        // See issue 64 for background.
+        [TestMethod]
+        public void ToJsonRequiringBufferExpansion()
+        {
+            string s = new string('.', 4086);
+            var opts = FileDescriptorProto.CreateBuilder()
+               .SetName(s)
+               .SetPackage("package")
+               .BuildPartial();
+
+            Assert.NotNull(opts.ToJson());
         }
     }
 }

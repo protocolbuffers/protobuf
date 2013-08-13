@@ -82,6 +82,10 @@ namespace Google.ProtocolBuffers.Serialization
             {
                 if (_bufferPos >= _buffer.Length)
                 {
+                    if (_output == null)
+                    {
+                        _output = new StringWriter(new StringBuilder(_buffer.Length * 2));
+                    }
                     Flush();
                 }
                 _buffer[_bufferPos++] = ch;
