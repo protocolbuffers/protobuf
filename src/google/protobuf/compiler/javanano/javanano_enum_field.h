@@ -51,7 +51,8 @@ class EnumFieldGenerator : public FieldGenerator {
 
   // implements FieldGenerator ---------------------------------------
   void GenerateMembers(io::Printer* printer) const;
-  void GenerateParsingCode(io::Printer* printer) const;
+  void GenerateClearCode(io::Printer* printer) const;
+  void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
 
@@ -64,6 +65,28 @@ class EnumFieldGenerator : public FieldGenerator {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumFieldGenerator);
 };
 
+class AccessorEnumFieldGenerator : public FieldGenerator {
+ public:
+  explicit AccessorEnumFieldGenerator(const FieldDescriptor* descriptor,
+      const Params& params, int has_bit_index);
+  ~AccessorEnumFieldGenerator();
+
+  // implements FieldGenerator ---------------------------------------
+  void GenerateMembers(io::Printer* printer) const;
+  void GenerateClearCode(io::Printer* printer) const;
+  void GenerateMergingCode(io::Printer* printer) const;
+  void GenerateSerializationCode(io::Printer* printer) const;
+  void GenerateSerializedSizeCode(io::Printer* printer) const;
+
+  string GetBoxedType() const;
+
+ private:
+  const FieldDescriptor* descriptor_;
+  map<string, string> variables_;
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(AccessorEnumFieldGenerator);
+};
+
 class RepeatedEnumFieldGenerator : public FieldGenerator {
  public:
   explicit RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor, const Params& params);
@@ -71,7 +94,8 @@ class RepeatedEnumFieldGenerator : public FieldGenerator {
 
   // implements FieldGenerator ---------------------------------------
   void GenerateMembers(io::Printer* printer) const;
-  void GenerateParsingCode(io::Printer* printer) const;
+  void GenerateClearCode(io::Printer* printer) const;
+  void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
 
