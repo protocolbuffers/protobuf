@@ -4,9 +4,10 @@
   <!-- build targets -->
   <Target Name="Clean" DependsOnTargets="_Clean" />
   <Target Name="Build" DependsOnTargets="_Clean;_Prerequisites;_StampVersion;_GenerateSource;_Build" />
+  <Target Name="Label" DependsOnTargets="_HgLabel" />
   <Target Name="Package" DependsOnTargets="_HgPack;_NugetPack" />
-  <Target Name="PushAll" DependsOnTargets="_HgLabel;_HgPush;_PkgPush;_NugetPush" />
-  <Target Name="Publish" DependsOnTargets="Clean;Build;Package;PushAll" />
+  <Target Name="PushAll" DependsOnTargets="_HgPush;_PkgPush;_NugetPush" />
+  <Target Name="Publish" DependsOnTargets="Clean;Build;Label;Package;PushAll" />
 
   <PropertyGroup>
     <ProjectName>Protocol Buffers</ProjectName>
