@@ -134,7 +134,9 @@ namespace Google.ProtocolBuffers
             get
             {
                 if (output != null)
+                {
                     return output.Position + position;
+                }
                 return position;
             }
         }

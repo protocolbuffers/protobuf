@@ -367,5 +367,106 @@ namespace Google.ProtocolBuffers
             for (int i = 0; i > -6; i--)
                 Assert.AreEqual(i, values[Math.Abs(i)]);
         }
+
+        [TestMethod]
+        public void TestCodedInputOutputPosition()
+        {
+            byte[] content = new byte[110];
+            for (int i = 0; i < content.Length; i++)
+                content[i] = (byte)i;
+
+            byte[] child = new byte[120];
+            {
+                MemoryStream ms = new MemoryStream(child);
+                CodedOutputStream cout = CodedOutputStream.CreateInstance(ms, 20);
+                // Field 11: numeric value: 500
+                cout.WriteTag(11, WireFormat.WireType.Varint);
+                Assert.AreEqual(1, cout.Position);
+                cout.WriteInt32NoTag(500);
+                Assert.AreEqual(3, cout.Position);
+                //Field 12: length delimited 120 bytes
+                cout.WriteTag(12, WireFormat.WireType.LengthDelimited);
+                Assert.AreEqual(4, cout.Position);
+                cout.WriteBytesNoTag(ByteString.CopyFrom(content));
+                Assert.AreEqual(115, cout.Position);
+                // Field 13: fixed numeric value: 501
+                cout.WriteTag(13, WireFormat.WireType.Fixed32);
+                Assert.AreEqual(116, cout.Position);
+                cout.WriteSFixed32NoTag(501);
+                Assert.AreEqual(120, cout.Position);
+                cout.Flush();
+            }
+
+            byte[] bytes = new byte[130];
+            {
+                CodedOutputStream cout = CodedOutputStream.CreateInstance(bytes);
+                // Field 1: numeric value: 500
+                cout.WriteTag(1, WireFormat.WireType.Varint);
+                Assert.AreEqual(1, cout.Position);
+                cout.WriteInt32NoTag(500);
+                Assert.AreEqual(3, cout.Position);
+                //Field 2: length delimited 120 bytes
+                cout.WriteTag(2, WireFormat.WireType.LengthDelimited);
+                Assert.AreEqual(4, cout.Position);
+                cout.WriteBytesNoTag(ByteString.CopyFrom(child));
+                Assert.AreEqual(125, cout.Position);
+                // Field 3: fixed numeric value: 500
+                cout.WriteTag(3, WireFormat.WireType.Fixed32);
+                Assert.AreEqual(126, cout.Position);
+                cout.WriteSFixed32NoTag(501);
+                Assert.AreEqual(130, cout.Position);
+                cout.Flush();
+            }
+            //Now test Input stream:
+            {
+                CodedInputStream cin = CodedInputStream.CreateInstance(new MemoryStream(bytes), new byte[50]);
+                uint tag;
+                int intValue = 0;
+                string ignore;
+                Assert.AreEqual(0, cin.Position);
+                // Field 1:
+                Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 1);
+                Assert.AreEqual(1, cin.Position);
+                Assert.IsTrue(cin.ReadInt32(ref intValue) && intValue == 500);
+                Assert.AreEqual(3, cin.Position);
+                //Field 2:
+                Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 2);
+                Assert.AreEqual(4, cin.Position);
+                uint childlen = cin.ReadRawVarint32();
+                Assert.AreEqual(120u, childlen);
+                Assert.AreEqual(5, cin.Position);
+                int oldlimit = cin.PushLimit((int)childlen);
+                Assert.AreEqual(5, cin.Position);
+                // Now we are reading child message
+                {
+                    // Field 11: numeric value: 500
+                    Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 11);
+                    Assert.AreEqual(6, cin.Position);
+                    Assert.IsTrue(cin.ReadInt32(ref intValue) && intValue == 500);
+                    Assert.AreEqual(8, cin.Position);
+                    //Field 12: length delimited 120 bytes
+                    Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 12);
+                    Assert.AreEqual(9, cin.Position);
+                    ByteString bstr = null;
+                    Assert.IsTrue(cin.ReadBytes(ref bstr) && bstr.Length == 110 && bstr.ToByteArray()[109] == 109);
+                    Assert.AreEqual(120, cin.Position);
+                    // Field 13: fixed numeric value: 501
+                    Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 13);
+                    // ROK - Previously broken here, this returned 126 failing to account for bufferSizeAfterLimit
+                    Assert.AreEqual(121, cin.Position);
+                    Assert.IsTrue(cin.ReadSFixed32(ref intValue) && intValue == 501);
+                    Assert.AreEqual(125, cin.Position);
+                    Assert.IsTrue(cin.IsAtEnd);
+                }
+                cin.PopLimit(oldlimit);
+                Assert.AreEqual(125, cin.Position);
+                // Field 3: fixed numeric value: 501
+                Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 3);
+                Assert.AreEqual(126, cin.Position);
+                Assert.IsTrue(cin.ReadSFixed32(ref intValue) && intValue == 501);
+                Assert.AreEqual(130, cin.Position);
+                Assert.IsTrue(cin.IsAtEnd);
+            }
+        }
     }
 }
