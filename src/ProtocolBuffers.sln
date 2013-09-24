@@ -1,5 +1,5 @@
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "proto", "proto", "{1F896D5C-5FC2-4671-9216-781CB8187EC7}"
 	ProjectSection(SolutionItems) = preProject
 		..\protos\tutorial\addressbook.proto = ..\protos\tutorial\addressbook.proto
@@ -61,13 +61,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{66ED1950
 		..\build\build.bat = ..\build\build.bat
 		..\build\build.csproj = ..\build\build.csproj
 		..\build\BuildAll.bat = ..\build\BuildAll.bat
-		..\build\GenerateProjects.bat = ..\build\GenerateProjects.bat
-		..\build\PublishTool.bat = ..\build\PublishTool.bat
 		..\build\Common.targets = ..\build\Common.targets
+		..\build\GenerateProjects.bat = ..\build\GenerateProjects.bat
 		..\build\GenerateSource.bat = ..\build\GenerateSource.bat
 		..\build\Google.ProtocolBuffers.nuspec = ..\build\Google.ProtocolBuffers.nuspec
 		..\build\Google.ProtocolBuffersLite.nuspec = ..\build\Google.ProtocolBuffersLite.nuspec
 		..\build\publish.csproj = ..\build\publish.csproj
+		..\build\PublishTool.bat = ..\build\PublishTool.bat
 		..\build\RunBenchmarks.bat = ..\build\RunBenchmarks.bat
 		..\build\target.csproj = ..\build\target.csproj
 	EndProjectSection
