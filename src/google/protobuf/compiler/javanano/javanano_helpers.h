@@ -138,6 +138,31 @@ string EmptyArrayName(const Params& params, const FieldDescriptor* field);
 
 string DefaultValue(const Params& params, const FieldDescriptor* field);
 
+
+// Methods for shared bitfields.
+
+// Gets the name of the shared bitfield for the given index.
+string GetBitFieldName(int index);
+
+// Gets the name of the shared bitfield for the given bit index.
+// Effectively, GetBitFieldName(bit_index / 32)
+string GetBitFieldNameForBit(int bit_index);
+
+// Generates the java code for the expression that returns the boolean value
+// of the bit of the shared bitfields for the given bit index.
+// Example: "((bitField1_ & 0x04) == 0x04)"
+string GenerateGetBit(int bit_index);
+
+// Generates the java code for the expression that sets the bit of the shared
+// bitfields for the given bit index.
+// Example: "bitField1_ = (bitField1_ | 0x04)"
+string GenerateSetBit(int bit_index);
+
+// Generates the java code for the expression that clears the bit of the shared
+// bitfields for the given bit index.
+// Example: "bitField1_ = (bitField1_ & ~0x04)"
+string GenerateClearBit(int bit_index);
+
 }  // namespace javanano
 }  // namespace compiler
 }  // namespace protobuf
