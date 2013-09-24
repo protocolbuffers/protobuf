@@ -119,10 +119,21 @@ bool JavaNanoGenerator::Generate(const FileDescriptor* file,
     } else if (options[i].first == "java_multiple_files") {
       params.set_override_java_multiple_files(options[i].second == "true");
     } else if (options[i].first == "java_nano_generate_has") {
-        params.set_generate_has(options[i].second == "true");
+      params.set_generate_has(options[i].second == "true");
+    } else if (options[i].first == "enum_style") {
+      params.set_java_enum_style(options[i].second == "java");
+    } else if (options[i].first == "optional_field_style") {
+      params.set_optional_field_accessors(options[i].second == "accessors");
     } else {
       *error = "Ignore unknown javanano generator option: " + options[i].first;
     }
+  }
+
+  // Check illegal parameter combinations
+  if (params.generate_has() && params.optional_field_accessors()) {
+    error->assign("java_nano_generate_has=true cannot be used in conjunction"
+        " with optional_field_style=accessors");
+    return false;
   }
 
   // -----------------------------------------------------------------

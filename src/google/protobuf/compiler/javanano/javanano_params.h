@@ -58,6 +58,8 @@ class Params {
   NameMap java_outer_classnames_;
   NameSet java_multiple_files_;
   bool generate_has_;
+  bool java_enum_style_;
+  bool optional_field_accessors_;
 
  public:
   Params(const string & base_name) :
@@ -65,7 +67,9 @@ class Params {
     base_name_(base_name),
     override_java_multiple_files_(JAVANANO_MUL_UNSET),
     store_unknown_fields_(false),
-    generate_has_(false) {
+    generate_has_(false),
+    java_enum_style_(false),
+    optional_field_accessors_(false) {
   }
 
   const string& base_name() const {
@@ -160,6 +164,19 @@ class Params {
     return generate_has_;
   }
 
+  void set_java_enum_style(bool value) {
+    java_enum_style_ = value;
+  }
+  bool java_enum_style() const {
+    return java_enum_style_;
+  }
+
+  void set_optional_field_accessors(bool value) {
+    optional_field_accessors_ = value;
+  }
+  bool optional_field_accessors() const {
+    return optional_field_accessors_;
+  }
 };
 
 }  // namespace javanano
