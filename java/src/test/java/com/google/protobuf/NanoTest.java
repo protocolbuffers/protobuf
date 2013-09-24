@@ -31,8 +31,11 @@
 package com.google.protobuf;
 
 import com.google.protobuf.nano.CodedInputByteBufferNano;
+import com.google.protobuf.nano.EnumClassNanoMultiple;
+import com.google.protobuf.nano.EnumClassNanos;
 import com.google.protobuf.nano.Extensions;
 import com.google.protobuf.nano.Extensions.AnotherMessage;
+import com.google.protobuf.nano.FileScopeEnumMultiple;
 import com.google.protobuf.nano.FileScopeEnumRefNano;
 import com.google.protobuf.nano.InternalNano;
 import com.google.protobuf.nano.MessageNano;
@@ -2389,6 +2392,16 @@ public class NanoTest extends TestCase {
     assertEquals(TestNanoAccessors.BAR, newMsg.getDefaultNestedEnum());
     assertEquals(Float.NaN, newMsg.getDefaultFloatNan());
     assertEquals(0, newMsg.id);
+  }
+
+  public void testNanoJavaEnumStyle() throws Exception {
+    EnumClassNanos.EnumClassNano msg = new EnumClassNanos.EnumClassNano();
+    assertEquals(EnumClassNanos.FileScopeEnum.ONE, msg.one);
+    assertEquals(EnumClassNanos.EnumClassNano.MessageScopeEnum.TWO, msg.two);
+
+    EnumClassNanoMultiple msg2 = new EnumClassNanoMultiple();
+    assertEquals(FileScopeEnumMultiple.THREE, msg2.three);
+    assertEquals(EnumClassNanoMultiple.MessageScopeEnumMultiple.FOUR, msg2.four);
   }
 
   /**

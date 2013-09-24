@@ -197,12 +197,23 @@ string FileJavaPackage(const Params& params, const FileDescriptor* file) {
 }
 
 bool IsOuterClassNeeded(const Params& params, const FileDescriptor* file) {
-  // Enums and extensions need the outer class as the scope.
-  if (file->enum_type_count() != 0 || file->extension_count() != 0) {
+  // If java_multiple_files is false, the outer class is always needed.
+  if (!params.java_multiple_files(file->name())) {
     return true;
   }
-  // Messages need the outer class only if java_multiple_files is false.
-  return !params.java_multiple_files(file->name());
+
+  // File-scope extensions need the outer class as the scope.
+  if (file->extension_count() != 0) {
+    return true;
+  }
+
+  // If container interfaces are not generated, file-scope enums need the
+  // outer class as the scope.
+  if (file->enum_type_count() != 0 && !params.java_enum_style()) {
+    return true;
+  }
+
+  return false;
 }
 
 string ToJavaName(const Params& params, const string& name, bool is_class,
@@ -228,9 +239,14 @@ string ClassName(const Params& params, const FileDescriptor* descriptor) {
 }
 
 string ClassName(const Params& params, const EnumDescriptor* descriptor) {
-  // An enum's class name is the enclosing message's class name or the outer
-  // class name.
   const Descriptor* parent = descriptor->containing_type();
+  // When using Java enum style, an enum's class name contains the enum name.
+  // Use the standard ToJavaName translation.
+  if (params.java_enum_style()) {
+    return ToJavaName(params, descriptor->name(), true, parent,
+                      descriptor->file());
+  }
+  // Otherwise the enum members are accessed from the enclosing class.
   if (parent != NULL) {
     return ClassName(params, parent);
   } else {
