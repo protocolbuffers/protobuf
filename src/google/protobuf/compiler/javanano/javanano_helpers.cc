@@ -484,6 +484,13 @@ string GenerateClearBit(int bit_index) {
   return result;
 }
 
+void SetBitOperationVariables(const string name,
+    int bitIndex, map<string, string>* variables) {
+  (*variables)["get_" + name] = GenerateGetBit(bitIndex);
+  (*variables)["set_" + name] = GenerateSetBit(bitIndex);
+  (*variables)["clear_" + name] = GenerateClearBit(bitIndex);
+}
+
 }  // namespace javanano
 }  // namespace compiler
 }  // namespace protobuf

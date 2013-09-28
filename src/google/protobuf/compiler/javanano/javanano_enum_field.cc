@@ -90,7 +90,18 @@ GenerateMembers(io::Printer* printer) const {
 }
 
 void EnumFieldGenerator::
-GenerateParsingCode(io::Printer* printer) const {
+GenerateClearCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "$name$ = $default$;\n");
+
+  if (params_.generate_has()) {
+    printer->Print(variables_,
+      "has$capitalized_name$ = false;\n");
+  }
+}
+
+void EnumFieldGenerator::
+GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
     "  this.$name$ = input.readInt32();\n");
 
@@ -146,6 +157,71 @@ string EnumFieldGenerator::GetBoxedType() const {
 
 // ===================================================================
 
+AccessorEnumFieldGenerator::
+AccessorEnumFieldGenerator(const FieldDescriptor* descriptor,
+    const Params& params, int has_bit_index)
+  : FieldGenerator(params), descriptor_(descriptor) {
+  SetEnumVariables(params, descriptor, &variables_);
+  SetBitOperationVariables("has", has_bit_index, &variables_);
+}
+
+AccessorEnumFieldGenerator::~AccessorEnumFieldGenerator() {}
+
+void AccessorEnumFieldGenerator::
+GenerateMembers(io::Printer* printer) const {
+  printer->Print(variables_,
+    "private int $name$_ = $default$;\n"
+    "public int get$capitalized_name$() {\n"
+    "  return $name$_;\n"
+    "}\n"
+    "public void set$capitalized_name$(int value) {\n"
+    "  $name$_ = value;\n"
+    "  $set_has$;\n"
+    "}\n"
+    "public boolean has$capitalized_name$() {\n"
+    "  return $get_has$;\n"
+    "}\n"
+    "public void clear$capitalized_name$() {\n"
+    "  $name$_ = $default$;\n"
+    "  $clear_has$;\n"
+    "}\n");
+}
+
+void AccessorEnumFieldGenerator::
+GenerateClearCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "$name$_ = $default$;\n");
+}
+
+void AccessorEnumFieldGenerator::
+GenerateMergingCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "set$capitalized_name$(input.readInt32());\n");
+}
+
+void AccessorEnumFieldGenerator::
+GenerateSerializationCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (has$capitalized_name$()) {\n"
+    "  output.writeInt32($number$, $name$_);\n"
+    "}\n");
+}
+
+void AccessorEnumFieldGenerator::
+GenerateSerializedSizeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (has$capitalized_name$()) {\n"
+    "  size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
+    "    .computeInt32Size($number$, $name$_);\n"
+    "}\n");
+}
+
+string AccessorEnumFieldGenerator::GetBoxedType() const {
+  return ClassName(params_, descriptor_->enum_type());
+}
+
+// ===================================================================
+
 RepeatedEnumFieldGenerator::
 RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor, const Params& params)
   : FieldGenerator(params), descriptor_(descriptor) {
@@ -165,7 +241,13 @@ GenerateMembers(io::Printer* printer) const {
 }
 
 void RepeatedEnumFieldGenerator::
-GenerateParsingCode(io::Printer* printer) const {
+GenerateClearCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "$name$ = com.google.protobuf.nano.WireFormatNano.EMPTY_INT_ARRAY;\n");
+}
+
+void RepeatedEnumFieldGenerator::
+GenerateMergingCode(io::Printer* printer) const {
   // First, figure out the length of the array, then parse.
   if (descriptor_->options().packed()) {
     printer->Print(variables_,

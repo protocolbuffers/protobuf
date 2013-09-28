@@ -58,7 +58,8 @@ class FieldGenerator {
   virtual ~FieldGenerator();
 
   virtual void GenerateMembers(io::Printer* printer) const = 0;
-  virtual void GenerateParsingCode(io::Printer* printer) const = 0;
+  virtual void GenerateClearCode(io::Printer* printer) const = 0;
+  virtual void GenerateMergingCode(io::Printer* printer) const = 0;
   virtual void GenerateSerializationCode(io::Printer* printer) const = 0;
   virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
 
@@ -78,13 +79,16 @@ class FieldGeneratorMap {
 
   const FieldGenerator& get(const FieldDescriptor* field) const;
   const FieldGenerator& get_extension(int index) const;
+  int total_bits() const { return total_bits_; }
 
  private:
   const Descriptor* descriptor_;
   scoped_array<scoped_ptr<FieldGenerator> > field_generators_;
   scoped_array<scoped_ptr<FieldGenerator> > extension_generators_;
+  int total_bits_;
 
-  static FieldGenerator* MakeGenerator(const FieldDescriptor* field, const Params &params);
+  static FieldGenerator* MakeGenerator(const FieldDescriptor* field,
+      const Params &params, int* next_has_bit_index);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGeneratorMap);
 };

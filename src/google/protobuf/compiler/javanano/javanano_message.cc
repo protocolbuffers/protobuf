@@ -137,9 +137,9 @@ void MessageGenerator::Generate(io::Printer* printer) {
   // warnings here in the class declaration.
   printer->Print(
     "@SuppressWarnings(\"hiding\")\n"
-    "public $modifiers$ final class $classname$ extends\n"
+    "public $modifiers$final class $classname$ extends\n"
     "    com.google.protobuf.nano.MessageNano {\n",
-    "modifiers", is_own_file ? "" : "static",
+    "modifiers", is_own_file ? "" : "static ",
     "classname", descriptor_->name());
   printer->Indent();
   printer->Print(
@@ -165,6 +165,13 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     MessageGenerator(descriptor_->nested_type(i), params_).Generate(printer);
+  }
+
+  // Integers for bit fields
+  int totalInts = (field_generators_.total_bits() + 31) / 32;
+  for (int i = 0; i < totalInts; i++) {
+    printer->Print("private int $bit_field_name$;\n",
+      "bit_field_name", GetBitFieldName(i));
   }
 
   // Fields
@@ -327,7 +334,7 @@ void MessageGenerator::GenerateMergeFromMethods(io::Printer* printer) {
       "tag", SimpleItoa(tag));
     printer->Indent();
 
-    field_generators_.get(field).GenerateParsingCode(printer);
+    field_generators_.get(field).GenerateMergingCode(printer);
 
     printer->Outdent();
     printer->Print(
@@ -376,33 +383,17 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
     "classname", descriptor_->name());
   printer->Indent();
 
+  // Clear bit fields.
+  int totalInts = (field_generators_.total_bits() + 31) / 32;
+  for (int i = 0; i < totalInts; i++) {
+    printer->Print("$bit_field_name$ = 0;\n",
+      "bit_field_name", GetBitFieldName(i));
+  }
+
   // Call clear for all of the fields.
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-
-    if (field->type() == FieldDescriptor::TYPE_BYTES &&
-        !field->default_value_string().empty()) {
-      // Need to clone the default value because it is of a mutable
-      // type.
-      printer->Print(
-        "$name$ = $default$.clone();\n",
-        "name", RenameJavaKeywords(UnderscoresToCamelCase(field)),
-        "default", DefaultValue(params_, field));
-    } else {
-      printer->Print(
-        "$name$ = $default$;\n",
-        "name", RenameJavaKeywords(UnderscoresToCamelCase(field)),
-        "default", DefaultValue(params_, field));
-    }
-
-    if (params_.generate_has() &&
-        field->label() != FieldDescriptor::LABEL_REPEATED &&
-        field->type() != FieldDescriptor::TYPE_GROUP &&
-        field->type() != FieldDescriptor::TYPE_MESSAGE) {
-      printer->Print(
-        "has$capitalized_name$ = false;\n",
-        "capitalized_name", UnderscoresToCapitalizedCamelCase(field));
-    }
+    field_generators_.get(field).GenerateClearCode(printer);
   }
 
   // Clear unknown fields.
