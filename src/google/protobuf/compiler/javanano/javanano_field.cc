@@ -53,16 +53,21 @@ FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor, const Params 
     extension_generators_(
       new scoped_ptr<FieldGenerator>[descriptor->extension_count()]) {
 
+  int next_has_bit_index = 0;
   // Construct all the FieldGenerators.
   for (int i = 0; i < descriptor->field_count(); i++) {
-    field_generators_[i].reset(MakeGenerator(descriptor->field(i), params));
+    field_generators_[i].reset(
+        MakeGenerator(descriptor->field(i), params, &next_has_bit_index));
   }
   for (int i = 0; i < descriptor->extension_count(); i++) {
-    extension_generators_[i].reset(MakeGenerator(descriptor->extension(i), params));
+    extension_generators_[i].reset(
+        MakeGenerator(descriptor->extension(i), params, &next_has_bit_index));
   }
+  total_bits_ = next_has_bit_index;
 }
 
-FieldGenerator* FieldGeneratorMap::MakeGenerator(const FieldDescriptor* field, const Params &params) {
+FieldGenerator* FieldGeneratorMap::MakeGenerator(const FieldDescriptor* field,
+    const Params &params, int* next_has_bit_index) {
   if (field->is_repeated()) {
     switch (GetJavaType(field)) {
       case JAVATYPE_MESSAGE:
@@ -71,6 +76,21 @@ FieldGenerator* FieldGeneratorMap::MakeGenerator(const FieldDescriptor* field, c
         return new RepeatedEnumFieldGenerator(field, params);
       default:
         return new RepeatedPrimitiveFieldGenerator(field, params);
+    }
+  } else if (params.optional_field_accessors() && field->is_optional()) {
+    // We need a has-bit for each primitive/enum field because their default
+    // values could be same as explicitly set values. But we don't need it
+    // for a message field because they have no defaults and Nano uses 'null'
+    // for unset messages, which cannot be set explicitly.
+    switch (GetJavaType(field)) {
+      case JAVATYPE_MESSAGE:
+        return new AccessorMessageFieldGenerator(field, params);
+      case JAVATYPE_ENUM:
+        return new AccessorEnumFieldGenerator(
+            field, params, (*next_has_bit_index)++);
+      default:
+        return new AccessorPrimitiveFieldGenerator(
+            field, params, (*next_has_bit_index)++);
     }
   } else {
     switch (GetJavaType(field)) {

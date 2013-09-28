@@ -163,6 +163,11 @@ string GenerateSetBit(int bit_index);
 // Example: "bitField1_ = (bitField1_ & ~0x04)"
 string GenerateClearBit(int bit_index);
 
+// Sets the 'get_*', 'set_*' and 'clear_*' variables, where * is the given bit
+// field name, to the appropriate Java expressions for the given bit index.
+void SetBitOperationVariables(const string name,
+    int bitIndex, map<string, string>* variables);
+
 }  // namespace javanano
 }  // namespace compiler
 }  // namespace protobuf
