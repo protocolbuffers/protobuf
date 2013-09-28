@@ -138,6 +138,13 @@ bool FileGenerator::Validate(string* error) {
       found_conflict = true;
     }
   }
+  if (params_.java_enum_style()) {
+    for (int i = 0; !found_conflict && i < file_->enum_type_count(); i++) {
+      if (file_->enum_type(i)->name() == classname_) {
+        found_conflict = true;
+      }
+    }
+  }
   if (found_conflict) {
     error->assign(file_->name());
     error->append(
@@ -236,6 +243,14 @@ void FileGenerator::GenerateSiblings(const string& package_dir,
       GenerateSibling<MessageGenerator>(package_dir, java_package_,
                                         file_->message_type(i),
                                         output_directory, file_list, params_);
+    }
+
+    if (params_.java_enum_style()) {
+      for (int i = 0; i < file_->enum_type_count(); i++) {
+        GenerateSibling<EnumGenerator>(package_dir, java_package_,
+                                       file_->enum_type(i),
+                                       output_directory, file_list, params_);
+      }
     }
   }
 }

@@ -68,25 +68,40 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor, const Params& par
 EnumGenerator::~EnumGenerator() {}
 
 void EnumGenerator::Generate(io::Printer* printer) {
-  printer->Print("// enum $classname$\n", "classname", descriptor_->name());
+  printer->Print(
+      "// enum $classname$\n",
+      "classname", descriptor_->name());
+
+  // Start of container interface
+  bool use_shell_class = params_.java_enum_style();
+  if (use_shell_class) {
+    printer->Print(
+      "public interface $classname$ {\n",
+      "classname", RenameJavaKeywords(descriptor_->name()));
+    printer->Indent();
+  }
+
+  // Canonical values
   for (int i = 0; i < canonical_values_.size(); i++) {
-    map<string, string> vars;
-    vars["name"] = RenameJavaKeywords(canonical_values_[i]->name());
-    vars["canonical_value"] = SimpleItoa(canonical_values_[i]->number());
-    printer->Print(vars,
-      "public static final int $name$ = $canonical_value$;\n");
+    printer->Print(
+      "public static final int $name$ = $canonical_value$;\n",
+      "name", RenameJavaKeywords(canonical_values_[i]->name()),
+      "canonical_value", SimpleItoa(canonical_values_[i]->number()));
   }
 
-  // -----------------------------------------------------------------
-
+  // Aliases
   for (int i = 0; i < aliases_.size(); i++) {
-    map<string, string> vars;
-    vars["name"] = RenameJavaKeywords(aliases_[i].value->name());
-    vars["canonical_name"] = aliases_[i].canonical_value->name();
-    printer->Print(vars,
-      "public static final int $name$ = $canonical_name$;\n");
+    printer->Print(
+      "public static final int $name$ = $canonical_name$;\n",
+      "name", RenameJavaKeywords(aliases_[i].value->name()),
+      "canonical_name", RenameJavaKeywords(aliases_[i].canonical_value->name()));
   }
 
+  // End of container interface
+  if (use_shell_class) {
+    printer->Outdent();
+    printer->Print("}\n");
+  }
   printer->Print("\n");
 }
 

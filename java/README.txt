@@ -93,8 +93,9 @@ Micro version
 The runtime and generated code for MICRO_RUNTIME is smaller
 because it does not include support for the descriptor and
 reflection, and enums are generated as integer constants in
-the parent message or the file's outer class. Also, not
-currently supported are packed repeated elements or
+the parent message or the file's outer class, with no
+protection against invalid values set to enum fields. Also,
+not currently supported are packed repeated elements or
 extensions.
 
 To create a jar file for the runtime and run tests invoke
@@ -409,12 +410,20 @@ Nano version
 ============================
 
 Nano is even smaller than micro, especially in the number of generated
-functions. It is like micro except:
+functions. It is like micro:
+
+- No support for descriptors and reflection;
+- Enum constants are integers with no protection against invalid
+  values set to enum fields.
+
+Except:
 
 - Setter/getter/hazzer/clearer functions are opt-in.
 - If not opted in, has state is not available. Serialization outputs
-  all fields not  equal to their default. (See important implications
+  all fields not equal to their default. (See important implications
   below.)
+- Enum constants can be generated into container interfaces bearing
+  the enum's name (so the referencing code is in Java style).
 - CodedInputStreamMicro is renamed to CodedInputByteBufferNano and can
   only take byte[] (not InputStream).
 - Similar rename from CodedOutputStreamMicro to
