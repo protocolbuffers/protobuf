@@ -487,33 +487,66 @@ java_nano_generate_has={true,false} (default: false)
   many cases reading the default works and determining whether the
   field was received over the wire is irrelevant.
 
-optional_field_style={default,accessors} (default: default)
-  Defines the style of the generated code for _optional_ fields only.
+optional_field_style={default,accessors,reftypes} (default: default)
+  Defines the style of the generated code for fields.
+
+  * default *
+
   In the default style, optional fields translate into public mutable
   Java fields, and the serialization process is as discussed in the
-  "IMPORTANT" section above. When set to 'accessors', each optional
-  field is encapsulated behind 4 accessors, namely get<fieldname>(),
-  set<fieldname>(), has<fieldname>() and clear<fieldname>() methods,
-  with the standard semantics. The hazzer's return value determines
-  whether a field is serialized, so this style is useful when you need
-  to serialize a field with the default value, or check if a field has
-  been explicitly set to its default value from the wire.
+  "IMPORTANT" section above. 
 
-  Required fields are still translated to one public mutable Java
-  field each, and repeated fields are still translated to arrays. No
-  accessors are generated for them.
+  * accessors *
 
-  optional_field_style=accessors cannot be used together with
-  java_nano_generate_has=true. If you need the 'has' flag for any
-  required field (you have no reason to), you can only use
-  java_nano_generate_has=true.
+  When set to 'accessors', each optional field is encapsulated behind
+  4 accessors, namely get<fieldname>(), set<fieldname>(), has<fieldname>()
+  and clear<fieldname>() methods, with the standard semantics. The hazzer's
+  return value determines whether a field is serialized, so this style is
+  useful when you need to serialize a field with the default value, or check
+  if a field has been explicitly set to its default value from the wire.
 
-  IMPORTANT: When using the 'accessor' style, ProGuard should always
+  In the 'accessors' style, required fields are still translated to one
+  public mutable Java field each, and repeated fields are still translated
+  to arrays. No accessors are generated for them.
+
+  IMPORTANT: When using the 'accessors' style, ProGuard should always
   be enabled with optimization (don't use -dontoptimize) and allowing
   access modification (use -allowaccessmodification). This removes the
   unused accessors and maybe inline the rest at the call sites,
   reducing the final code size.
   TODO(maxtroy): find ProGuard config that would work the best.
+
+  * reftypes *
+
+  When set to 'reftypes', each proto field is generated as a public Java
+  field. For primitive types, these fields use the Java reference types
+  such as java.lang.Integer instead of primitive types such as int.
+
+  In the 'reftypes' style, fields are initialized to null (or empty
+  arrays for repeated fields), and their default values are not available.
+  They are serialized over the wire based on equality to null.
+
+  The 'reftypes' mode has some additional cost due to autoboxing and usage
+  of reference types. In practice, many boxed types are cached, and so don't
+  result in object creation. However, references do take slightly more memory
+  than primitives.
+
+  The 'reftypes' mode is useful when you want to be able to serialize fields
+  with default values, or check if a field has been explicitly set to the
+  default over the wire without paying the extra method cost of the
+  'accessors' mode.
+
+  Note that if you attempt to write null to a required field in the reftypes
+  mode, serialization of the proto will cause a NullPointerException. This is
+  an intentional indicator that you must set required fields.
+
+
+  NOTE
+  optional_field_style=accessors or reftypes cannot be used together with
+  java_nano_generate_has=true. If you need the 'has' flag for any
+  required field (you have no reason to), you can only use
+  java_nano_generate_has=true.
+
 
 To use nano protobufs:
 

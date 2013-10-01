@@ -245,7 +245,12 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor, const Params param
   (*variables)["capitalized_name"] =
     RenameJavaKeywords(UnderscoresToCapitalizedCamelCase(descriptor));
   (*variables)["number"] = SimpleItoa(descriptor->number());
-  (*variables)["type"] = PrimitiveTypeName(GetJavaType(descriptor));
+  if (params.use_reference_types_for_primitives()
+      && !descriptor->is_repeated()) {
+    (*variables)["type"] = BoxedPrimitiveTypeName(GetJavaType(descriptor));
+  } else {
+    (*variables)["type"] = PrimitiveTypeName(GetJavaType(descriptor));
+  }
   (*variables)["default"] = DefaultValue(params, descriptor);
   (*variables)["default_constant"] = FieldDefaultConstantName(descriptor);
   // For C++-string types (string and bytes), we might need to have
@@ -254,7 +259,8 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor, const Params param
   // once into a "private static final" field and re-use that from
   // then on.
   if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-      !descriptor->default_value_string().empty()) {
+      !descriptor->default_value_string().empty() &&
+      !params.use_reference_types_for_primitives()) {
     string default_value;
     if (descriptor->type() == FieldDescriptor::TYPE_BYTES) {
       default_value = strings::Substitute(
@@ -315,6 +321,7 @@ GenerateMembers(io::Printer* printer) const {
     printer->Print(variables_,
       "private static final $type$ $default_constant$ = $default_constant_value$;\n");
   }
+
   printer->Print(variables_,
     "public $type$ $name$ = $default_copy_if_needed$;\n");
 
@@ -348,6 +355,13 @@ GenerateMergingCode(io::Printer* printer) const {
 
 void PrimitiveFieldGenerator::
 GenerateSerializationConditional(io::Printer* printer) const {
+  if (params_.use_reference_types_for_primitives()) {
+    // For reference type mode, serialize based on equality
+    // to null.
+    printer->Print(variables_,
+      "if (this.$name$ != null) {\n");
+    return;
+  }
   if (params_.generate_has()) {
     printer->Print(variables_,
       "if (has$capitalized_name$ || ");
