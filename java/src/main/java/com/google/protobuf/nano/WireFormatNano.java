@@ -119,6 +119,9 @@ public final class WireFormatNano {
    * <p>Generated messages will call this for unknown fields if the store_unknown_fields
    * option is on.
    *
+   * <p>Note that the tag might be a end-group tag (rather than the start of an unknown field) in
+   * which case we do not want to add an unknown field entry.
+   *
    * @param data a Collection in which to store the data.
    * @param input the input buffer.
    * @param tag the tag of the field.
@@ -130,11 +133,13 @@ public final class WireFormatNano {
       final CodedInputByteBufferNano input,
       final int tag) throws IOException {
     int startPos = input.getPosition();
-    boolean skip = input.skipField(tag);
+    if (!input.skipField(tag)) {
+      return false;  // This wasn't an unknown field, it's an end-group tag.
+    }
     int endPos = input.getPosition();
     byte[] bytes = input.getData(startPos, endPos - startPos);
     data.add(new UnknownFieldData(tag, bytes));
-    return skip;
+    return true;
   }
 
   /**

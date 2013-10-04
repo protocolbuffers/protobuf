@@ -35,6 +35,7 @@ import com.google.protobuf.nano.EnumClassNanoMultiple;
 import com.google.protobuf.nano.EnumClassNanos;
 import com.google.protobuf.nano.Extensions;
 import com.google.protobuf.nano.Extensions.AnotherMessage;
+import com.google.protobuf.nano.Extensions.MessageWithGroup;
 import com.google.protobuf.nano.FileScopeEnumMultiple;
 import com.google.protobuf.nano.FileScopeEnumRefNano;
 import com.google.protobuf.nano.InternalNano;
@@ -503,6 +504,22 @@ public class NanoTest extends TestCase {
     TestAllTypesNano newMsg = TestAllTypesNano.parseFrom(result);
     assertTrue(newMsg.optionalGroup != null);
     assertEquals(1, newMsg.optionalGroup.a);
+  }
+
+  public void testNanoOptionalGroupWithUnknownFieldsEnabled() throws Exception {
+    MessageWithGroup msg = new MessageWithGroup();
+    MessageWithGroup.Group grp = new MessageWithGroup.Group();
+    grp.a = 1;
+    msg.group = grp;
+    byte [] serialized = MessageNano.toByteArray(msg);
+
+    MessageWithGroup parsed = MessageWithGroup.parseFrom(serialized);
+    assertTrue(msg.group != null);
+    assertEquals(1, msg.group.a);
+
+    byte [] serialized2 = MessageNano.toByteArray(parsed);
+    assertEquals(serialized2.length, serialized.length);
+    MessageWithGroup parsed2 = MessageWithGroup.parseFrom(serialized2);
   }
 
   public void testNanoOptionalNestedMessage() throws Exception {
