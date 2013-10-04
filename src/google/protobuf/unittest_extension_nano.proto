@@ -42,3 +42,9 @@ message ContainerMessage {
     optional bool another_thing = 100;
   }
 }
+
+message MessageWithGroup {
+  optional group Group = 1 {
+    optional int32 a = 2;
+  }
+}
