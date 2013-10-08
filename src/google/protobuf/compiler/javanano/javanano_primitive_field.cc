@@ -281,14 +281,6 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor, const Params param
   (*variables)["tag"] = SimpleItoa(WireFormat::MakeTag(descriptor));
   (*variables)["tag_size"] = SimpleItoa(
       WireFormat::TagSize(descriptor->number(), descriptor->type()));
-  if (IsReferenceType(GetJavaType(descriptor))) {
-    (*variables)["null_check"] =
-        "  if (value == null) {\n"
-        "    throw new java.lang.NullPointerException();\n"
-        "  }\n";
-  } else {
-    (*variables)["null_check"] = "";
-  }
   int fixed_size = FixedSize(descriptor->type());
   if (fixed_size != -1) {
     (*variables)["fixed_size"] = SimpleItoa(fixed_size);
@@ -425,8 +417,12 @@ GenerateMembers(io::Printer* printer) const {
     "public $type$ get$capitalized_name$() {\n"
     "  return $name$_;\n"
     "}\n"
-    "public void set$capitalized_name$($type$ value) {\n"
-    "$null_check$"
+    "public void set$capitalized_name$($type$ value) {\n");
+  if (IsReferenceType(GetJavaType(descriptor_))) {
+    printer->Print(variables_,
+      "  if (value == null) throw new java.lang.NullPointerException();\n");
+  }
+  printer->Print(variables_,
     "  $name$_ = value;\n"
     "  $set_has$;\n"
     "}\n"
