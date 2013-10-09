@@ -58,8 +58,16 @@ void SetEnumVariables(const Params& params,
   (*variables)["capitalized_name"] =
     RenameJavaKeywords(UnderscoresToCapitalizedCamelCase(descriptor));
   (*variables)["number"] = SimpleItoa(descriptor->number());
-  (*variables)["type"] = "int";
-  (*variables)["default"] = DefaultValue(params, descriptor);
+  if (params.use_reference_types_for_primitives()
+      && !descriptor->is_repeated()) {
+    (*variables)["type"] = "java.lang.Integer";
+    (*variables)["default"] = "null";
+  } else {
+    (*variables)["type"] = "int";
+    (*variables)["default"] = DefaultValue(params, descriptor);
+  }
+  (*variables)["repeated_default"] =
+      "com.google.protobuf.nano.WireFormatNano.EMPTY_INT_ARRAY";
   (*variables)["tag"] = SimpleItoa(internal::WireFormat::MakeTag(descriptor));
   (*variables)["tag_size"] = SimpleItoa(
       internal::WireFormat::TagSize(descriptor->number(), descriptor->type()));
@@ -81,7 +89,7 @@ EnumFieldGenerator::~EnumFieldGenerator() {}
 void EnumFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "public int $name$ = $default$;\n");
+    "public $type$ $name$ = $default$;\n");
 
   if (params_.generate_has()) {
     printer->Print(variables_,
@@ -233,7 +241,7 @@ RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {}
 void RepeatedEnumFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "public int[] $name$ = com.google.protobuf.nano.WireFormatNano.EMPTY_INT_ARRAY;\n");
+    "public $type$[] $name$ = $repeated_default$;\n");
   if (descriptor_->options().packed()) {
     printer->Print(variables_,
       "private int $name$MemoizedSerializedSize;\n");
@@ -243,7 +251,7 @@ GenerateMembers(io::Printer* printer) const {
 void RepeatedEnumFieldGenerator::
 GenerateClearCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "$name$ = com.google.protobuf.nano.WireFormatNano.EMPTY_INT_ARRAY;\n");
+    "$name$ = $repeated_default$;\n");
 }
 
 void RepeatedEnumFieldGenerator::

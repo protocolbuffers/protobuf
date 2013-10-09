@@ -357,6 +357,10 @@ string DefaultValue(const Params& params, const FieldDescriptor* field) {
     return EmptyArrayName(params, field);
   }
 
+  if (params.use_reference_types_for_primitives()) {
+    return "null";
+  }
+
   // Switch on cpp_type since we need to know which default_value_* method
   // of FieldDescriptor to call.
   switch (field->cpp_type()) {

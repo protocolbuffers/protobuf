@@ -48,6 +48,7 @@ import com.google.protobuf.nano.NanoAccessorsOuterClass.TestNanoAccessors;
 import com.google.protobuf.nano.NanoHasOuterClass.TestAllTypesNanoHas;
 import com.google.protobuf.nano.NanoOuterClass;
 import com.google.protobuf.nano.NanoOuterClass.TestAllTypesNano;
+import com.google.protobuf.nano.NanoReferenceTypes;
 import com.google.protobuf.nano.UnittestImportNano;
 import com.google.protobuf.nano.UnittestMultipleNano;
 import com.google.protobuf.nano.UnittestRecursiveNano.RecursiveMessageNano;
@@ -2622,6 +2623,67 @@ public class NanoTest extends TestCase {
     TestAllTypesNano msg = new TestAllTypesNano();
     msg.synchronized_ = 123;
     assertEquals(123, msg.synchronized_);
+  }
+
+  public void testReferenceTypesForPrimitives() throws Exception {
+    NanoReferenceTypes.TestAllTypesNano message = new NanoReferenceTypes.TestAllTypesNano();
+
+    // Base check - when nothing is set, we serialize nothing.
+    assertHasWireData(message, false);
+
+    message.defaultBool = true;
+    assertHasWireData(message, true);
+
+    message.defaultBool = false;
+    assertHasWireData(message, true);
+
+    message.defaultBool = null;
+    assertHasWireData(message, false);
+
+    message.defaultInt32 = 5;
+    assertHasWireData(message, true);
+
+    message.defaultInt32 = null;
+    assertHasWireData(message, false);
+
+    message.defaultInt64 = 123456L;
+    assertHasWireData(message, true);
+
+    message.defaultInt64 = null;
+    assertHasWireData(message, false);
+
+    message.defaultFloat = 1f;
+    assertHasWireData(message, true);
+
+    message.defaultFloat = null;
+    assertHasWireData(message, false);
+
+    message.defaultDouble = 2.1;
+    assertHasWireData(message, true);
+
+    message.defaultDouble = null;
+    assertHasWireData(message, false);
+
+    message.defaultString = "hello";
+    assertHasWireData(message, true);
+
+    message.defaultString = null;
+    assertHasWireData(message, false);
+
+    message.defaultBytes = new byte[] { 1, 2, 3 };
+    assertHasWireData(message, true);
+
+    message.defaultBytes = null;
+    assertHasWireData(message, false);
+  }
+
+  private void assertHasWireData(MessageNano message, boolean expected) {
+    int wireLength = MessageNano.toByteArray(message).length;
+    if (expected) {
+      assertFalse(wireLength == 0);
+    } else {
+      assertEquals(0, wireLength);
+    }
   }
 
   private <T> List<T> list(T first, T... remaining) {
