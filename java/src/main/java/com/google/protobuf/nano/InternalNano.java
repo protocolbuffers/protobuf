@@ -46,6 +46,18 @@ public final class InternalNano {
   private InternalNano() {}
 
   /**
+   * An object to provide synchronization when lazily initializing static fields
+   * of {@link MessageNano} subclasses.
+   * <p>
+   * To enable earlier versions of ProGuard to inline short methods from a
+   * generated MessageNano subclass to the call sites, that class must not have
+   * a class initializer, which will be created if there is any static variable
+   * initializers. To lazily initialize the static variables in a thread-safe
+   * manner, the initialization code will synchronize on this object.
+   */
+  public static final Object LAZY_INIT_LOCK = new Object();
+
+  /**
    * Helper called by generated code to construct default values for string
    * fields.
    * <p>

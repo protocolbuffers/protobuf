@@ -46,11 +46,12 @@ namespace javanano {
 
 class EnumFieldGenerator : public FieldGenerator {
  public:
-  explicit EnumFieldGenerator(const FieldDescriptor* descriptor, const Params& params);
+  explicit EnumFieldGenerator(
+      const FieldDescriptor* descriptor, const Params& params);
   ~EnumFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
-  void GenerateMembers(io::Printer* printer) const;
+  void GenerateMembers(io::Printer* printer, bool lazy_init) const;
   void GenerateClearCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
@@ -72,7 +73,7 @@ class AccessorEnumFieldGenerator : public FieldGenerator {
   ~AccessorEnumFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
-  void GenerateMembers(io::Printer* printer) const;
+  void GenerateMembers(io::Printer* printer, bool lazy_init) const;
   void GenerateClearCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
@@ -89,11 +90,12 @@ class AccessorEnumFieldGenerator : public FieldGenerator {
 
 class RepeatedEnumFieldGenerator : public FieldGenerator {
  public:
-  explicit RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor, const Params& params);
+  explicit RepeatedEnumFieldGenerator(
+      const FieldDescriptor* descriptor, const Params& params);
   ~RepeatedEnumFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
-  void GenerateMembers(io::Printer* printer) const;
+  void GenerateMembers(io::Printer* printer, bool lazy_init) const;
   void GenerateClearCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateMergingCodeFromPacked(io::Printer* printer) const;

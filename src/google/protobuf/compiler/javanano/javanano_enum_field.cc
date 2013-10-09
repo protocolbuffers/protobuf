@@ -87,7 +87,7 @@ EnumFieldGenerator(const FieldDescriptor* descriptor, const Params& params)
 EnumFieldGenerator::~EnumFieldGenerator() {}
 
 void EnumFieldGenerator::
-GenerateMembers(io::Printer* printer) const {
+GenerateMembers(io::Printer* printer, bool /* unused lazy_init */) const {
   printer->Print(variables_,
     "public $type$ $name$;\n");
 
@@ -214,7 +214,7 @@ AccessorEnumFieldGenerator(const FieldDescriptor* descriptor,
 AccessorEnumFieldGenerator::~AccessorEnumFieldGenerator() {}
 
 void AccessorEnumFieldGenerator::
-GenerateMembers(io::Printer* printer) const {
+GenerateMembers(io::Printer* printer, bool /* unused lazy_init */) const {
   printer->Print(variables_,
     "private int $name$_;\n"
     "public int get$capitalized_name$() {\n"
@@ -291,7 +291,7 @@ RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor, const Params& para
 RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {}
 
 void RepeatedEnumFieldGenerator::
-GenerateMembers(io::Printer* printer) const {
+GenerateMembers(io::Printer* printer, bool /* unused lazy_init */) const {
   printer->Print(variables_,
     "public $type$[] $name$;\n");
 }
