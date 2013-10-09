@@ -293,7 +293,7 @@ GenerateMergingCode(io::Printer* printer) const {
 void RepeatedEnumFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (this.$name$.length > 0) {\n");
+    "if (this.$name$ != null && this.$name$.length > 0) {\n");
   printer->Indent();
 
   if (descriptor_->options().packed()) {
@@ -317,7 +317,7 @@ GenerateSerializationCode(io::Printer* printer) const {
 void RepeatedEnumFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (this.$name$.length > 0) {\n");
+    "if (this.$name$ != null && this.$name$.length > 0) {\n");
   printer->Indent();
 
   printer->Print(variables_,
