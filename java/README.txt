@@ -464,6 +464,7 @@ java_outer_classname   -> <file-name>|<package-name>
 java_multiple_files    -> true or false
 java_nano_generate_has -> true or false [DEPRECATED]
 optional_field_style   -> default or accessors
+enum_style             -> c or java
 
 java_package:
 java_outer_classname:
@@ -540,15 +541,61 @@ optional_field_style={default,accessors,reftypes} (default: default)
   mode, serialization of the proto will cause a NullPointerException. This is
   an intentional indicator that you must set required fields.
 
-
   NOTE
   optional_field_style=accessors or reftypes cannot be used together with
   java_nano_generate_has=true. If you need the 'has' flag for any
   required field (you have no reason to), you can only use
   java_nano_generate_has=true.
 
+enum_style={c,java} (default: c)
+  Defines where to put the int constants generated from enum members.
 
-To use nano protobufs:
+  * c *
+
+  Use C-style, so the enum constants are available at the scope where
+  the enum is defined. A file-scope enum's members are referenced like
+  'FileOuterClass.ENUM_VALUE'; a message-scope enum's members are
+  referenced as 'Message.ENUM_VALUE'. The enum name is unavailable.
+  This complies with the Micro code generator's behavior.
+
+  * java *
+
+  Use Java-style, so the enum constants are available under the enum
+  name and referenced like 'EnumName.ENUM_VALUE' (they are still int
+  constants). The enum name becomes the name of a public interface, at
+  the scope where the enum is defined. If the enum is file-scope and
+  the java_multiple_files option is on, the interface will be defined
+  in its own file. To reduce code size, this interface should not be
+  implemented and ProGuard shrinking should be used, so after the Java
+  compiler inlines all referenced enum constants into the call sites,
+  the interface remains unused and can be removed by ProGuard.
+
+
+To use nano protobufs within the Android repo:
+
+- Set 'LOCAL_PROTOC_OPTIMIZE_TYPE := nano' in your local .mk file.
+  When building a Java library or an app (package) target, the build
+  system will add the Java nano runtime library to the
+  LOCAL_STATIC_JAVA_LIBRARIES variable, so you don't need to.
+- Set 'LOCAL_PROTO_JAVA_OUTPUT_PARAMS := ...' in your local .mk file
+  for any command-line options you need. Use commas to join multiple
+  options. Write all options on the same line; avoid backslash-newline
+  or '+=', because they will introduce spaces in the middle of your
+  options and the generator is not prepared to handle them.
+- The options will be applied to *all* proto files in LOCAL_SRC_FILES
+  when you build a Java library or package. In case different options
+  are needed for different proto files, build separate Java libraries
+  and reference them in your main target. Note: you should make sure
+  that, for each separate target, all proto files imported from any
+  proto file in LOCAL_SRC_FILES are included in LOCAL_SRC_FILES. This
+  is because the generator has to assume that the imported files are
+  built using the same options, and will generate code that reference
+  the fields and enums from the imported files using the same code
+  style.
+- Hint: 'include $(CLEAR_VARS)' resets all LOCAL_ variables, including
+  the two above.
+
+To use nano protobufs outside of Android repo:
 
 - Link with the generated jar file
   <protobuf-root>java/target/protobuf-java-2.3.0-nano.jar.
@@ -558,6 +605,7 @@ To use nano protobufs:
 java_package=src/proto/simple-data.proto|my_package,\
 java_outer_classname=src/proto/simple-data.proto|OuterName:\
 .' src/proto/simple-data.proto
+
 
 Contributing to nano:
 
