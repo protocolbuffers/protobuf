@@ -144,7 +144,9 @@ void MessageGenerator::Generate(io::Printer* printer) {
   printer->Indent();
   printer->Print(
     "public static final $classname$ EMPTY_ARRAY[] = {};\n"
-    "public $classname$() {}\n"
+    "public $classname$() {\n"
+    "  clear();\n"
+    "}\n"
     "\n",
     "classname", descriptor_->name());
 
@@ -244,7 +246,7 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
   printer->Print(
     "}\n"
     "\n"
-    "private int cachedSize = -1;\n"
+    "private int cachedSize;\n"
     "@Override\n"
     "public int getCachedSize() {\n"
     "  if (cachedSize < 0) {\n"
