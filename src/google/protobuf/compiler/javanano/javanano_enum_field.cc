@@ -89,11 +89,11 @@ EnumFieldGenerator::~EnumFieldGenerator() {}
 void EnumFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "public $type$ $name$ = $default$;\n");
+    "public $type$ $name$;\n");
 
   if (params_.generate_has()) {
     printer->Print(variables_,
-      "public boolean has$capitalized_name$ = false;\n");
+      "public boolean has$capitalized_name$;\n");
   }
 }
 
@@ -178,7 +178,7 @@ AccessorEnumFieldGenerator::~AccessorEnumFieldGenerator() {}
 void AccessorEnumFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private int $name$_ = $default$;\n"
+    "private int $name$_;\n"
     "public int get$capitalized_name$() {\n"
     "  return $name$_;\n"
     "}\n"
@@ -241,7 +241,7 @@ RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {}
 void RepeatedEnumFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "public $type$[] $name$ = $repeated_default$;\n");
+    "public $type$[] $name$;\n");
   if (descriptor_->options().packed()) {
     printer->Print(variables_,
       "private int $name$MemoizedSerializedSize;\n");
