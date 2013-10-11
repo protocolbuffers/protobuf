@@ -315,7 +315,7 @@ GenerateMembers(io::Printer* printer) const {
   }
 
   printer->Print(variables_,
-    "public $type$ $name$ = $default_copy_if_needed$;\n");
+    "public $type$ $name$;\n");
 
   if (params_.generate_has()) {
     printer->Print(variables_,
@@ -427,7 +427,7 @@ GenerateMembers(io::Printer* printer) const {
       "private static final $type$ $default_constant$ = $default_constant_value$;\n");
   }
   printer->Print(variables_,
-    "private $type$ $name$_ = $default_copy_if_needed$;\n"
+    "private $type$ $name$_;\n"
     "public $type$ get$capitalized_name$() {\n"
     "  return $name$_;\n"
     "}\n"
@@ -495,7 +495,7 @@ RepeatedPrimitiveFieldGenerator::~RepeatedPrimitiveFieldGenerator() {}
 void RepeatedPrimitiveFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "public $type$[] $name$ = $default$;\n");
+    "public $type$[] $name$;\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::
@@ -526,7 +526,8 @@ GenerateMergingCode(io::Printer* printer) const {
       "input.popLimit(limit);\n");
   } else {
     printer->Print(variables_,
-      "int arrayLength = com.google.protobuf.nano.WireFormatNano.getRepeatedFieldArrayLength(input, $tag$);\n"
+      "int arrayLength = com.google.protobuf.nano.WireFormatNano\n"
+      "    .getRepeatedFieldArrayLength(input, $tag$);\n"
       "int i = this.$name$.length;\n");
 
     if (GetJavaType(descriptor_) == JAVATYPE_BYTES) {
