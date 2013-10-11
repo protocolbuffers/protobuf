@@ -84,7 +84,7 @@ MessageFieldGenerator::~MessageFieldGenerator() {}
 void MessageFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "public $type$ $name$ = null;\n");
+    "public $type$ $name$;\n");
 }
 
 void MessageFieldGenerator::
@@ -144,7 +144,7 @@ AccessorMessageFieldGenerator::~AccessorMessageFieldGenerator() {}
 void AccessorMessageFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private $type$ $name$_ = null;\n"
+    "private $type$ $name$_;\n"
     "public $type$ get$capitalized_name$() {\n"
     "  return $name$_;\n"
     "}\n"
@@ -218,7 +218,7 @@ RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {}
 void RepeatedMessageFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "public $type$[] $name$ = $type$.EMPTY_ARRAY;\n");
+    "public $type$[] $name$;\n");
 }
 
 void RepeatedMessageFieldGenerator::
@@ -231,7 +231,8 @@ void RepeatedMessageFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   // First, figure out the length of the array, then parse.
   printer->Print(variables_,
-    "int arrayLength = com.google.protobuf.nano.WireFormatNano.getRepeatedFieldArrayLength(input, $tag$);\n"
+    "int arrayLength = com.google.protobuf.nano.WireFormatNano"
+    "    .getRepeatedFieldArrayLength(input, $tag$);\n"
     "int i = this.$name$.length;\n"
     "$type$[] newArray = new $type$[i + arrayLength];\n"
     "System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
