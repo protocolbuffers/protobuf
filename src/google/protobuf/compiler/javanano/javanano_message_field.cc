@@ -88,9 +88,17 @@ GenerateMembers(io::Printer* printer) const {
 }
 
 void MessageFieldGenerator::
-GenerateParsingCode(io::Printer* printer) const {
+GenerateClearCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "this.$name$ = new $type$();\n");
+    "$name$ = null;\n");
+}
+
+void MessageFieldGenerator::
+GenerateMergingCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (this.$name$ == null) {\n"
+    "  this.$name$ = new $type$();\n"
+    "}");
 
   if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
@@ -124,6 +132,81 @@ string MessageFieldGenerator::GetBoxedType() const {
 
 // ===================================================================
 
+AccessorMessageFieldGenerator::
+AccessorMessageFieldGenerator(
+    const FieldDescriptor* descriptor, const Params& params)
+  : FieldGenerator(params), descriptor_(descriptor) {
+  SetMessageVariables(params, descriptor, &variables_);
+}
+
+AccessorMessageFieldGenerator::~AccessorMessageFieldGenerator() {}
+
+void AccessorMessageFieldGenerator::
+GenerateMembers(io::Printer* printer) const {
+  printer->Print(variables_,
+    "private $type$ $name$_ = null;\n"
+    "public $type$ get$capitalized_name$() {\n"
+    "  return $name$_;\n"
+    "}\n"
+    "public void set$capitalized_name$($type$ value) {\n"
+    "  if (value == null) {\n"
+    "    throw new java.lang.NullPointerException();\n"
+    "  }\n"
+    "  $name$_ = value;\n"
+    "}\n"
+    "public boolean has$capitalized_name$() {\n"
+    "  return $name$_ != null;\n"
+    "}\n"
+    "public void clear$capitalized_name$() {\n"
+    "  $name$_ = null;\n"
+    "}\n");
+}
+
+void AccessorMessageFieldGenerator::
+GenerateClearCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "$name$_ = null;\n");
+}
+
+void AccessorMessageFieldGenerator::
+GenerateMergingCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (!has$capitalized_name$()) {\n"
+    "  set$capitalized_name$(new $type$());\n"
+    "}");
+
+  if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
+    printer->Print(variables_,
+      "input.readGroup($name$_, $number$);\n");
+  } else {
+    printer->Print(variables_,
+      "input.readMessage($name$_);\n");
+  }
+}
+
+void AccessorMessageFieldGenerator::
+GenerateSerializationCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (has$capitalized_name$()) {\n"
+    "  output.write$group_or_message$($number$, $name$_);\n"
+    "}\n");
+}
+
+void AccessorMessageFieldGenerator::
+GenerateSerializedSizeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (has$capitalized_name$()) {\n"
+    "  size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
+    "    .compute$group_or_message$Size($number$, $name$_);\n"
+    "}\n");
+}
+
+string AccessorMessageFieldGenerator::GetBoxedType() const {
+  return ClassName(params_, descriptor_->message_type());
+}
+
+// ===================================================================
+
 RepeatedMessageFieldGenerator::
 RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor, const Params& params)
   : FieldGenerator(params), descriptor_(descriptor) {
@@ -139,7 +222,13 @@ GenerateMembers(io::Printer* printer) const {
 }
 
 void RepeatedMessageFieldGenerator::
-GenerateParsingCode(io::Printer* printer) const {
+GenerateClearCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "$name$ = $type$.EMPTY_ARRAY;\n");
+}
+
+void RepeatedMessageFieldGenerator::
+GenerateMergingCode(io::Printer* printer) const {
   // First, figure out the length of the array, then parse.
   printer->Print(variables_,
     "int arrayLength = com.google.protobuf.nano.WireFormatNano.getRepeatedFieldArrayLength(input, $tag$);\n"

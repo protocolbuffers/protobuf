@@ -245,7 +245,12 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor, const Params param
   (*variables)["capitalized_name"] =
     RenameJavaKeywords(UnderscoresToCapitalizedCamelCase(descriptor));
   (*variables)["number"] = SimpleItoa(descriptor->number());
-  (*variables)["type"] = PrimitiveTypeName(GetJavaType(descriptor));
+  if (params.use_reference_types_for_primitives()
+      && !descriptor->is_repeated()) {
+    (*variables)["type"] = BoxedPrimitiveTypeName(GetJavaType(descriptor));
+  } else {
+    (*variables)["type"] = PrimitiveTypeName(GetJavaType(descriptor));
+  }
   (*variables)["default"] = DefaultValue(params, descriptor);
   (*variables)["default_constant"] = FieldDefaultConstantName(descriptor);
   // For C++-string types (string and bytes), we might need to have
@@ -254,12 +259,14 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor, const Params param
   // once into a "private static final" field and re-use that from
   // then on.
   if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-      !descriptor->default_value_string().empty()) {
+      !descriptor->default_value_string().empty() &&
+      !params.use_reference_types_for_primitives()) {
     string default_value;
     if (descriptor->type() == FieldDescriptor::TYPE_BYTES) {
       default_value = strings::Substitute(
           "com.google.protobuf.nano.InternalNano.bytesDefaultValue(\"$0\")",
           CEscape(descriptor->default_value_string()));
+      (*variables)["default_copy_if_needed"] = (*variables)["default"] + ".clone()";
     } else {
       if (AllAscii(descriptor->default_value_string())) {
         // All chars are ASCII.  In this case CEscape() works fine.
@@ -269,22 +276,17 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor, const Params param
             "com.google.protobuf.nano.InternalNano.stringDefaultValue(\"$0\")",
             CEscape(descriptor->default_value_string()));
       }
+      (*variables)["default_copy_if_needed"] = (*variables)["default"];
     }
     (*variables)["default_constant_value"] = default_value;
+  } else {
+    (*variables)["default_copy_if_needed"] = (*variables)["default"];
   }
   (*variables)["boxed_type"] = BoxedPrimitiveTypeName(GetJavaType(descriptor));
   (*variables)["capitalized_type"] = GetCapitalizedType(descriptor);
   (*variables)["tag"] = SimpleItoa(WireFormat::MakeTag(descriptor));
   (*variables)["tag_size"] = SimpleItoa(
       WireFormat::TagSize(descriptor->number(), descriptor->type()));
-  if (IsReferenceType(GetJavaType(descriptor))) {
-    (*variables)["null_check"] =
-        "  if (value == null) {\n"
-        "    throw new NullPointerException();\n"
-        "  }\n";
-  } else {
-    (*variables)["null_check"] = "";
-  }
   int fixed_size = FixedSize(descriptor->type());
   if (fixed_size != -1) {
     (*variables)["fixed_size"] = SimpleItoa(fixed_size);
@@ -310,17 +312,10 @@ GenerateMembers(io::Printer* printer) const {
     // Those primitive types that need a saved default.
     printer->Print(variables_,
       "private static final $type$ $default_constant$ = $default_constant_value$;\n");
-    if (descriptor_->type() == FieldDescriptor::TYPE_BYTES) {
-      printer->Print(variables_,
-        "public $type$ $name$ = $default$.clone();\n");
-    } else {
-      printer->Print(variables_,
-        "public $type$ $name$ = $default$;\n");
-    }
-  } else {
-    printer->Print(variables_,
-      "public $type$ $name$ = $default$;\n");
   }
+
+  printer->Print(variables_,
+    "public $type$ $name$ = $default_copy_if_needed$;\n");
 
   if (params_.generate_has()) {
     printer->Print(variables_,
@@ -329,7 +324,18 @@ GenerateMembers(io::Printer* printer) const {
 }
 
 void PrimitiveFieldGenerator::
-GenerateParsingCode(io::Printer* printer) const {
+GenerateClearCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "$name$ = $default_copy_if_needed$;\n");
+
+  if (params_.generate_has()) {
+    printer->Print(variables_,
+      "has$capitalized_name$ = false;\n");
+  }
+}
+
+void PrimitiveFieldGenerator::
+GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
     "this.$name$ = input.read$capitalized_type$();\n");
 
@@ -341,6 +347,13 @@ GenerateParsingCode(io::Printer* printer) const {
 
 void PrimitiveFieldGenerator::
 GenerateSerializationConditional(io::Printer* printer) const {
+  if (params_.use_reference_types_for_primitives()) {
+    // For reference type mode, serialize based on equality
+    // to null.
+    printer->Print(variables_,
+      "if (this.$name$ != null) {\n");
+    return;
+  }
   if (params_.generate_has()) {
     printer->Print(variables_,
       "if (has$capitalized_name$ || ");
@@ -397,6 +410,80 @@ string PrimitiveFieldGenerator::GetBoxedType() const {
 
 // ===================================================================
 
+AccessorPrimitiveFieldGenerator::
+AccessorPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
+     const Params& params, int has_bit_index)
+  : FieldGenerator(params), descriptor_(descriptor) {
+  SetPrimitiveVariables(descriptor, params, &variables_);
+  SetBitOperationVariables("has", has_bit_index, &variables_);
+}
+
+AccessorPrimitiveFieldGenerator::~AccessorPrimitiveFieldGenerator() {}
+
+void AccessorPrimitiveFieldGenerator::
+GenerateMembers(io::Printer* printer) const {
+  if (variables_.find("default_constant_value") != variables_.end()) {
+    printer->Print(variables_,
+      "private static final $type$ $default_constant$ = $default_constant_value$;\n");
+  }
+  printer->Print(variables_,
+    "private $type$ $name$_ = $default_copy_if_needed$;\n"
+    "public $type$ get$capitalized_name$() {\n"
+    "  return $name$_;\n"
+    "}\n"
+    "public void set$capitalized_name$($type$ value) {\n");
+  if (IsReferenceType(GetJavaType(descriptor_))) {
+    printer->Print(variables_,
+      "  if (value == null) throw new java.lang.NullPointerException();\n");
+  }
+  printer->Print(variables_,
+    "  $name$_ = value;\n"
+    "  $set_has$;\n"
+    "}\n"
+    "public boolean has$capitalized_name$() {\n"
+    "  return $get_has$;\n"
+    "}\n"
+    "public void clear$capitalized_name$() {\n"
+    "  $name$_ = $default_copy_if_needed$;\n"
+    "  $clear_has$;\n"
+    "}\n");
+}
+
+void AccessorPrimitiveFieldGenerator::
+GenerateClearCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "$name$_ = $default_copy_if_needed$;\n");
+}
+
+void AccessorPrimitiveFieldGenerator::
+GenerateMergingCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "set$capitalized_name$(input.read$capitalized_type$());\n");
+}
+
+void AccessorPrimitiveFieldGenerator::
+GenerateSerializationCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (has$capitalized_name$()) {\n"
+    "  output.write$capitalized_type$($number$, $name$_);\n"
+    "}\n");
+}
+
+void AccessorPrimitiveFieldGenerator::
+GenerateSerializedSizeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (has$capitalized_name$()) {\n"
+    "  size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
+    "      .compute$capitalized_type$Size($number$, $name$_);\n"
+    "}\n");
+}
+
+string AccessorPrimitiveFieldGenerator::GetBoxedType() const {
+  return BoxedPrimitiveTypeName(GetJavaType(descriptor_));
+}
+
+// ===================================================================
+
 RepeatedPrimitiveFieldGenerator::
 RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor, const Params& params)
   : FieldGenerator(params), descriptor_(descriptor) {
@@ -412,7 +499,13 @@ GenerateMembers(io::Printer* printer) const {
 }
 
 void RepeatedPrimitiveFieldGenerator::
-GenerateParsingCode(io::Printer* printer) const {
+GenerateClearCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "$name$ = $default$;\n");
+}
+
+void RepeatedPrimitiveFieldGenerator::
+GenerateMergingCode(io::Printer* printer) const {
   // First, figure out the length of the array, then parse.
   if (descriptor_->options().packed()) {
     printer->Print(variables_,

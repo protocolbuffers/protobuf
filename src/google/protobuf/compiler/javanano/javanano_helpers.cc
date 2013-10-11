@@ -197,12 +197,23 @@ string FileJavaPackage(const Params& params, const FileDescriptor* file) {
 }
 
 bool IsOuterClassNeeded(const Params& params, const FileDescriptor* file) {
-  // Enums and extensions need the outer class as the scope.
-  if (file->enum_type_count() != 0 || file->extension_count() != 0) {
+  // If java_multiple_files is false, the outer class is always needed.
+  if (!params.java_multiple_files(file->name())) {
     return true;
   }
-  // Messages need the outer class only if java_multiple_files is false.
-  return !params.java_multiple_files(file->name());
+
+  // File-scope extensions need the outer class as the scope.
+  if (file->extension_count() != 0) {
+    return true;
+  }
+
+  // If container interfaces are not generated, file-scope enums need the
+  // outer class as the scope.
+  if (file->enum_type_count() != 0 && !params.java_enum_style()) {
+    return true;
+  }
+
+  return false;
 }
 
 string ToJavaName(const Params& params, const string& name, bool is_class,
@@ -228,9 +239,14 @@ string ClassName(const Params& params, const FileDescriptor* descriptor) {
 }
 
 string ClassName(const Params& params, const EnumDescriptor* descriptor) {
-  // An enum's class name is the enclosing message's class name or the outer
-  // class name.
   const Descriptor* parent = descriptor->containing_type();
+  // When using Java enum style, an enum's class name contains the enum name.
+  // Use the standard ToJavaName translation.
+  if (params.java_enum_style()) {
+    return ToJavaName(params, descriptor->name(), true, parent,
+                      descriptor->file());
+  }
+  // Otherwise the enum members are accessed from the enclosing class.
   if (parent != NULL) {
     return ClassName(params, parent);
   } else {
@@ -341,6 +357,10 @@ string DefaultValue(const Params& params, const FieldDescriptor* field) {
     return EmptyArrayName(params, field);
   }
 
+  if (params.use_reference_types_for_primitives()) {
+    return "null";
+  }
+
   // Switch on cpp_type since we need to know which default_value_* method
   // of FieldDescriptor to call.
   switch (field->cpp_type()) {
@@ -405,6 +425,90 @@ string DefaultValue(const Params& params, const FieldDescriptor* field) {
 
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return "";
+}
+
+
+static const char* kBitMasks[] = {
+  "0x00000001",
+  "0x00000002",
+  "0x00000004",
+  "0x00000008",
+  "0x00000010",
+  "0x00000020",
+  "0x00000040",
+  "0x00000080",
+
+  "0x00000100",
+  "0x00000200",
+  "0x00000400",
+  "0x00000800",
+  "0x00001000",
+  "0x00002000",
+  "0x00004000",
+  "0x00008000",
+
+  "0x00010000",
+  "0x00020000",
+  "0x00040000",
+  "0x00080000",
+  "0x00100000",
+  "0x00200000",
+  "0x00400000",
+  "0x00800000",
+
+  "0x01000000",
+  "0x02000000",
+  "0x04000000",
+  "0x08000000",
+  "0x10000000",
+  "0x20000000",
+  "0x40000000",
+  "0x80000000",
+};
+
+string GetBitFieldName(int index) {
+  string var_name = "bitField";
+  var_name += SimpleItoa(index);
+  var_name += "_";
+  return var_name;
+}
+
+string GetBitFieldNameForBit(int bit_index) {
+  return GetBitFieldName(bit_index / 32);
+}
+
+string GenerateGetBit(int bit_index) {
+  string var_name = GetBitFieldNameForBit(bit_index);
+  int bit_in_var_index = bit_index % 32;
+
+  string mask = kBitMasks[bit_in_var_index];
+  string result = "((" + var_name + " & " + mask + ") == " + mask + ")";
+  return result;
+}
+
+string GenerateSetBit(int bit_index) {
+  string var_name = GetBitFieldNameForBit(bit_index);
+  int bit_in_var_index = bit_index % 32;
+
+  string mask = kBitMasks[bit_in_var_index];
+  string result = var_name + " |= " + mask;
+  return result;
+}
+
+string GenerateClearBit(int bit_index) {
+  string var_name = GetBitFieldNameForBit(bit_index);
+  int bit_in_var_index = bit_index % 32;
+
+  string mask = kBitMasks[bit_in_var_index];
+  string result = var_name + " = (" + var_name + " & ~" + mask + ")";
+  return result;
+}
+
+void SetBitOperationVariables(const string name,
+    int bitIndex, map<string, string>* variables) {
+  (*variables)["get_" + name] = GenerateGetBit(bitIndex);
+  (*variables)["set_" + name] = GenerateSetBit(bitIndex);
+  (*variables)["clear_" + name] = GenerateClearBit(bitIndex);
 }
 
 }  // namespace javanano

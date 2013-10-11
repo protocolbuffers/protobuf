@@ -93,8 +93,9 @@ Micro version
 The runtime and generated code for MICRO_RUNTIME is smaller
 because it does not include support for the descriptor and
 reflection, and enums are generated as integer constants in
-the parent message or the file's outer class. Also, not
-currently supported are packed repeated elements or
+the parent message or the file's outer class, with no
+protection against invalid values set to enum fields. Also,
+not currently supported are packed repeated elements or
 extensions.
 
 To create a jar file for the runtime and run tests invoke
@@ -409,11 +410,20 @@ Nano version
 ============================
 
 Nano is even smaller than micro, especially in the number of generated
-functions. It is like micro except:
+functions. It is like micro:
 
-- No setter/getter/hazzer functions.
-- Has state is not available. Outputs all fields not equal to their
-  default. (See important implications below.)
+- No support for descriptors and reflection;
+- Enum constants are integers with no protection against invalid
+  values set to enum fields.
+
+Except:
+
+- Setter/getter/hazzer/clearer functions are opt-in.
+- If not opted in, has state is not available. Serialization outputs
+  all fields not equal to their default. (See important implications
+  below.)
+- Enum constants can be generated into container interfaces bearing
+  the enum's name (so the referencing code is in Java style).
 - CodedInputStreamMicro is renamed to CodedInputByteBufferNano and can
   only take byte[] (not InputStream).
 - Similar rename from CodedOutputStreamMicro to
@@ -426,7 +436,7 @@ functions. It is like micro except:
   MessageNano.
 - "bytes" are of java type byte[].
 
-IMPORTANT: If you have fields with defaults
+IMPORTANT: If you have fields with defaults and opt out of accessors
 
 How fields with defaults are serialized has changed. Because we don't
 keep "has" state, any field equal to its default is assumed to be not
@@ -435,7 +445,8 @@ change the default value of a field. Senders compiled against an older
 version of the proto continue to match against the old default, and
 don't send values to the receiver even though the receiver assumes the
 new default value. Therefore, think carefully about the implications
-of changing the default value.
+of changing the default value. Alternatively, turn on accessors and
+enjoy the benefit of the explicit has() checks.
 
 IMPORTANT: If you have "bytes" fields with non-empty defaults
 
@@ -451,7 +462,9 @@ Nano Generator options
 java_package           -> <file-name>|<package-name>
 java_outer_classname   -> <file-name>|<package-name>
 java_multiple_files    -> true or false
-java_nano_generate_has -> true or false
+java_nano_generate_has -> true or false [DEPRECATED]
+optional_field_style   -> default or accessors
+enum_style             -> c or java
 
 java_package:
 java_outer_classname:
@@ -459,6 +472,8 @@ java_multiple_files:
   Same as Micro version.
 
 java_nano_generate_has={true,false} (default: false)
+  DEPRECATED. Use optional_field_style=accessors.
+
   If true, generates a public boolean variable has<fieldname>
   accompanying each optional or required field (not present for
   repeated fields, groups or messages). It is set to false initially
@@ -473,7 +488,114 @@ java_nano_generate_has={true,false} (default: false)
   many cases reading the default works and determining whether the
   field was received over the wire is irrelevant.
 
-To use nano protobufs:
+optional_field_style={default,accessors,reftypes} (default: default)
+  Defines the style of the generated code for fields.
+
+  * default *
+
+  In the default style, optional fields translate into public mutable
+  Java fields, and the serialization process is as discussed in the
+  "IMPORTANT" section above. 
+
+  * accessors *
+
+  When set to 'accessors', each optional field is encapsulated behind
+  4 accessors, namely get<fieldname>(), set<fieldname>(), has<fieldname>()
+  and clear<fieldname>() methods, with the standard semantics. The hazzer's
+  return value determines whether a field is serialized, so this style is
+  useful when you need to serialize a field with the default value, or check
+  if a field has been explicitly set to its default value from the wire.
+
+  In the 'accessors' style, required fields are still translated to one
+  public mutable Java field each, and repeated fields are still translated
+  to arrays. No accessors are generated for them.
+
+  IMPORTANT: When using the 'accessors' style, ProGuard should always
+  be enabled with optimization (don't use -dontoptimize) and allowing
+  access modification (use -allowaccessmodification). This removes the
+  unused accessors and maybe inline the rest at the call sites,
+  reducing the final code size.
+  TODO(maxtroy): find ProGuard config that would work the best.
+
+  * reftypes *
+
+  When set to 'reftypes', each proto field is generated as a public Java
+  field. For primitive types, these fields use the Java reference types
+  such as java.lang.Integer instead of primitive types such as int.
+
+  In the 'reftypes' style, fields are initialized to null (or empty
+  arrays for repeated fields), and their default values are not available.
+  They are serialized over the wire based on equality to null.
+
+  The 'reftypes' mode has some additional cost due to autoboxing and usage
+  of reference types. In practice, many boxed types are cached, and so don't
+  result in object creation. However, references do take slightly more memory
+  than primitives.
+
+  The 'reftypes' mode is useful when you want to be able to serialize fields
+  with default values, or check if a field has been explicitly set to the
+  default over the wire without paying the extra method cost of the
+  'accessors' mode.
+
+  Note that if you attempt to write null to a required field in the reftypes
+  mode, serialization of the proto will cause a NullPointerException. This is
+  an intentional indicator that you must set required fields.
+
+  NOTE
+  optional_field_style=accessors or reftypes cannot be used together with
+  java_nano_generate_has=true. If you need the 'has' flag for any
+  required field (you have no reason to), you can only use
+  java_nano_generate_has=true.
+
+enum_style={c,java} (default: c)
+  Defines where to put the int constants generated from enum members.
+
+  * c *
+
+  Use C-style, so the enum constants are available at the scope where
+  the enum is defined. A file-scope enum's members are referenced like
+  'FileOuterClass.ENUM_VALUE'; a message-scope enum's members are
+  referenced as 'Message.ENUM_VALUE'. The enum name is unavailable.
+  This complies with the Micro code generator's behavior.
+
+  * java *
+
+  Use Java-style, so the enum constants are available under the enum
+  name and referenced like 'EnumName.ENUM_VALUE' (they are still int
+  constants). The enum name becomes the name of a public interface, at
+  the scope where the enum is defined. If the enum is file-scope and
+  the java_multiple_files option is on, the interface will be defined
+  in its own file. To reduce code size, this interface should not be
+  implemented and ProGuard shrinking should be used, so after the Java
+  compiler inlines all referenced enum constants into the call sites,
+  the interface remains unused and can be removed by ProGuard.
+
+
+To use nano protobufs within the Android repo:
+
+- Set 'LOCAL_PROTOC_OPTIMIZE_TYPE := nano' in your local .mk file.
+  When building a Java library or an app (package) target, the build
+  system will add the Java nano runtime library to the
+  LOCAL_STATIC_JAVA_LIBRARIES variable, so you don't need to.
+- Set 'LOCAL_PROTO_JAVA_OUTPUT_PARAMS := ...' in your local .mk file
+  for any command-line options you need. Use commas to join multiple
+  options. Write all options on the same line; avoid backslash-newline
+  or '+=', because they will introduce spaces in the middle of your
+  options and the generator is not prepared to handle them.
+- The options will be applied to *all* proto files in LOCAL_SRC_FILES
+  when you build a Java library or package. In case different options
+  are needed for different proto files, build separate Java libraries
+  and reference them in your main target. Note: you should make sure
+  that, for each separate target, all proto files imported from any
+  proto file in LOCAL_SRC_FILES are included in LOCAL_SRC_FILES. This
+  is because the generator has to assume that the imported files are
+  built using the same options, and will generate code that reference
+  the fields and enums from the imported files using the same code
+  style.
+- Hint: 'include $(CLEAR_VARS)' resets all LOCAL_ variables, including
+  the two above.
+
+To use nano protobufs outside of Android repo:
 
 - Link with the generated jar file
   <protobuf-root>java/target/protobuf-java-2.3.0-nano.jar.
@@ -483,6 +605,7 @@ To use nano protobufs:
 java_package=src/proto/simple-data.proto|my_package,\
 java_outer_classname=src/proto/simple-data.proto|OuterName:\
 .' src/proto/simple-data.proto
+
 
 Contributing to nano:
 

@@ -31,8 +31,12 @@
 package com.google.protobuf;
 
 import com.google.protobuf.nano.CodedInputByteBufferNano;
+import com.google.protobuf.nano.EnumClassNanoMultiple;
+import com.google.protobuf.nano.EnumClassNanos;
 import com.google.protobuf.nano.Extensions;
 import com.google.protobuf.nano.Extensions.AnotherMessage;
+import com.google.protobuf.nano.Extensions.MessageWithGroup;
+import com.google.protobuf.nano.FileScopeEnumMultiple;
 import com.google.protobuf.nano.FileScopeEnumRefNano;
 import com.google.protobuf.nano.InternalNano;
 import com.google.protobuf.nano.MessageNano;
@@ -40,15 +44,16 @@ import com.google.protobuf.nano.MessageScopeEnumRefNano;
 import com.google.protobuf.nano.MultipleImportingNonMultipleNano1;
 import com.google.protobuf.nano.MultipleImportingNonMultipleNano2;
 import com.google.protobuf.nano.MultipleNameClashNano;
+import com.google.protobuf.nano.NanoAccessorsOuterClass.TestNanoAccessors;
 import com.google.protobuf.nano.NanoHasOuterClass.TestAllTypesNanoHas;
 import com.google.protobuf.nano.NanoOuterClass;
 import com.google.protobuf.nano.NanoOuterClass.TestAllTypesNano;
+import com.google.protobuf.nano.NanoReferenceTypes;
 import com.google.protobuf.nano.UnittestImportNano;
 import com.google.protobuf.nano.UnittestMultipleNano;
 import com.google.protobuf.nano.UnittestRecursiveNano.RecursiveMessageNano;
 import com.google.protobuf.nano.UnittestSimpleNano.SimpleMessageNano;
 import com.google.protobuf.nano.UnittestSingleNano.SingleMessageNano;
-import com.google.protobuf.nano.UnittestStringutf8Nano.StringUtf8;
 
 import junit.framework.TestCase;
 
@@ -62,6 +67,7 @@ import java.util.List;
  * @author ulas@google.com Ulas Kirazci
  */
 public class NanoTest extends TestCase {
+  @Override
   public void setUp() throws Exception {
   }
 
@@ -499,6 +505,22 @@ public class NanoTest extends TestCase {
     TestAllTypesNano newMsg = TestAllTypesNano.parseFrom(result);
     assertTrue(newMsg.optionalGroup != null);
     assertEquals(1, newMsg.optionalGroup.a);
+  }
+
+  public void testNanoOptionalGroupWithUnknownFieldsEnabled() throws Exception {
+    MessageWithGroup msg = new MessageWithGroup();
+    MessageWithGroup.Group grp = new MessageWithGroup.Group();
+    grp.a = 1;
+    msg.group = grp;
+    byte [] serialized = MessageNano.toByteArray(msg);
+
+    MessageWithGroup parsed = MessageWithGroup.parseFrom(serialized);
+    assertTrue(msg.group != null);
+    assertEquals(1, msg.group.a);
+
+    byte [] serialized2 = MessageNano.toByteArray(parsed);
+    assertEquals(serialized2.length, serialized.length);
+    MessageWithGroup parsed2 = MessageWithGroup.parseFrom(serialized2);
   }
 
   public void testNanoOptionalNestedMessage() throws Exception {
@@ -2243,6 +2265,163 @@ public class NanoTest extends TestCase {
     assertEquals(0, newMsg.id);
   }
 
+  public void testNanoWithAccessorsBasic() throws Exception {
+    TestNanoAccessors msg = new TestNanoAccessors();
+
+    // Makes sure required and repeated fields are still public fields
+    msg.id = 3;
+    msg.repeatedBytes = new byte[2][3];
+
+    // Test accessors
+    assertEquals(0, msg.getOptionalInt32());
+    assertFalse(msg.hasOptionalInt32());
+    msg.setOptionalInt32(135);
+    assertEquals(135, msg.getOptionalInt32());
+    assertTrue(msg.hasOptionalInt32());
+    msg.clearOptionalInt32();
+    assertFalse(msg.hasOptionalInt32());
+    msg.setOptionalInt32(0); // default value
+    assertTrue(msg.hasOptionalInt32());
+
+    // Test NPE
+    try {
+      msg.setOptionalBytes(null);
+      fail();
+    } catch (NullPointerException expected) {}
+    try {
+      msg.setOptionalString(null);
+      fail();
+    } catch (NullPointerException expected) {}
+    try {
+      msg.setOptionalNestedMessage(null);
+      fail();
+    } catch (NullPointerException expected) {}
+
+    // Test has bit on bytes field with defaults and clear() re-clones the default array
+    assertFalse(msg.hasDefaultBytes());
+    byte[] defaultBytes = msg.getDefaultBytes();
+    msg.setDefaultBytes(defaultBytes);
+    assertTrue(msg.hasDefaultBytes());
+    msg.clearDefaultBytes();
+    assertFalse(msg.hasDefaultBytes());
+    defaultBytes[0]++; // modify original array
+    assertFalse(Arrays.equals(defaultBytes, msg.getDefaultBytes()));
+
+    // Test has bits that require additional bit fields
+    assertFalse(msg.hasBitFieldCheck());
+    msg.setBitFieldCheck(0);
+    assertTrue(msg.hasBitFieldCheck());
+    assertFalse(msg.hasBeforeBitFieldCheck()); // checks bit field does not leak
+    assertFalse(msg.hasAfterBitFieldCheck());
+
+    // Test clear() clears has bits
+    msg.setOptionalString("hi");
+    msg.setDefaultString("there");
+    msg.clear();
+    assertFalse(msg.hasOptionalString());
+    assertFalse(msg.hasDefaultString());
+    assertFalse(msg.hasBitFieldCheck());
+  }
+
+  public void testNanoWithAccessorsParseFrom() throws Exception {
+    TestNanoAccessors msg = null;
+    // Test false on creation, after clear and upon empty parse.
+    for (int i = 0; i < 3; i++) {
+      if (i == 0) {
+        msg = new TestNanoAccessors();
+      } else if (i == 1) {
+        msg.clear();
+      } else if (i == 2) {
+        msg = TestNanoAccessors.parseFrom(new byte[0]);
+      }
+      assertFalse(msg.hasOptionalInt32());
+      assertFalse(msg.hasOptionalString());
+      assertFalse(msg.hasOptionalBytes());
+      assertFalse(msg.hasOptionalNestedEnum());
+      assertFalse(msg.hasDefaultInt32());
+      assertFalse(msg.hasDefaultString());
+      assertFalse(msg.hasDefaultBytes());
+      assertFalse(msg.hasDefaultFloatNan());
+      assertFalse(msg.hasDefaultNestedEnum());
+      msg.setOptionalNestedMessage(new TestNanoAccessors.NestedMessage());
+      msg.getOptionalNestedMessage().setBb(2);
+      msg.setOptionalNestedEnum(TestNanoAccessors.BAZ);
+      msg.setDefaultInt32(msg.getDefaultInt32());
+    }
+
+    byte [] result = MessageNano.toByteArray(msg);
+    int msgSerializedSize = msg.getSerializedSize();
+    //System.out.printf("mss=%d result.length=%d\n", msgSerializedSize, result.length);
+    assertTrue(msgSerializedSize == 14);
+    assertEquals(result.length, msgSerializedSize);
+
+    // Has fields true upon parse.
+    TestNanoAccessors newMsg = TestNanoAccessors.parseFrom(result);
+    assertEquals(2, newMsg.getOptionalNestedMessage().getBb());
+    assertTrue(newMsg.getOptionalNestedMessage().hasBb());
+    assertEquals(TestNanoAccessors.BAZ, newMsg.getOptionalNestedEnum());
+    assertTrue(newMsg.hasOptionalNestedEnum());
+
+    // Has field true on fields with explicit default values from wire.
+    assertTrue(newMsg.hasDefaultInt32());
+    assertEquals(41, newMsg.getDefaultInt32());
+  }
+
+  public void testNanoWithAccessorsSerialize() throws Exception {
+    TestNanoAccessors msg = new TestNanoAccessors();
+    msg.setOptionalInt32(msg.getOptionalInt32());
+    msg.setOptionalString(msg.getOptionalString());
+    msg.setOptionalBytes(msg.getOptionalBytes());
+    TestNanoAccessors.NestedMessage nestedMessage = new TestNanoAccessors.NestedMessage();
+    nestedMessage.setBb(nestedMessage.getBb());
+    msg.setOptionalNestedMessage(nestedMessage);
+    msg.setOptionalNestedEnum(msg.getOptionalNestedEnum());
+    msg.setDefaultInt32(msg.getDefaultInt32());
+    msg.setDefaultString(msg.getDefaultString());
+    msg.setDefaultBytes(msg.getDefaultBytes());
+    msg.setDefaultFloatNan(msg.getDefaultFloatNan());
+    msg.setDefaultNestedEnum(msg.getDefaultNestedEnum());
+
+    byte [] result = MessageNano.toByteArray(msg);
+    int msgSerializedSize = msg.getSerializedSize();
+    assertEquals(result.length, msgSerializedSize);
+
+    // Now deserialize and find that all fields are set and equal to their defaults.
+    TestNanoAccessors newMsg = TestNanoAccessors.parseFrom(result);
+    assertTrue(newMsg.hasOptionalInt32());
+    assertTrue(newMsg.hasOptionalString());
+    assertTrue(newMsg.hasOptionalBytes());
+    assertTrue(newMsg.hasOptionalNestedMessage());
+    assertTrue(newMsg.getOptionalNestedMessage().hasBb());
+    assertTrue(newMsg.hasOptionalNestedEnum());
+    assertTrue(newMsg.hasDefaultInt32());
+    assertTrue(newMsg.hasDefaultString());
+    assertTrue(newMsg.hasDefaultBytes());
+    assertTrue(newMsg.hasDefaultFloatNan());
+    assertTrue(newMsg.hasDefaultNestedEnum());
+    assertEquals(0, newMsg.getOptionalInt32());
+    assertEquals(0, newMsg.getOptionalString().length());
+    assertEquals(0, newMsg.getOptionalBytes().length);
+    assertEquals(0, newMsg.getOptionalNestedMessage().getBb());
+    assertEquals(TestNanoAccessors.FOO, newMsg.getOptionalNestedEnum());
+    assertEquals(41, newMsg.getDefaultInt32());
+    assertEquals("hello", newMsg.getDefaultString());
+    assertEquals("world", new String(newMsg.getDefaultBytes(), "UTF-8"));
+    assertEquals(TestNanoAccessors.BAR, newMsg.getDefaultNestedEnum());
+    assertEquals(Float.NaN, newMsg.getDefaultFloatNan());
+    assertEquals(0, newMsg.id);
+  }
+
+  public void testNanoJavaEnumStyle() throws Exception {
+    EnumClassNanos.EnumClassNano msg = new EnumClassNanos.EnumClassNano();
+    assertEquals(EnumClassNanos.FileScopeEnum.ONE, msg.one);
+    assertEquals(EnumClassNanos.EnumClassNano.MessageScopeEnum.TWO, msg.two);
+
+    EnumClassNanoMultiple msg2 = new EnumClassNanoMultiple();
+    assertEquals(FileScopeEnumMultiple.THREE, msg2.three);
+    assertEquals(EnumClassNanoMultiple.MessageScopeEnumMultiple.FOUR, msg2.four);
+  }
+
   /**
    * Tests that fields with a default value of NaN are not serialized when
    * set to NaN. This is a special case as NaN != NaN, so normal equality
@@ -2444,6 +2623,67 @@ public class NanoTest extends TestCase {
     TestAllTypesNano msg = new TestAllTypesNano();
     msg.synchronized_ = 123;
     assertEquals(123, msg.synchronized_);
+  }
+
+  public void testReferenceTypesForPrimitives() throws Exception {
+    NanoReferenceTypes.TestAllTypesNano message = new NanoReferenceTypes.TestAllTypesNano();
+
+    // Base check - when nothing is set, we serialize nothing.
+    assertHasWireData(message, false);
+
+    message.defaultBool = true;
+    assertHasWireData(message, true);
+
+    message.defaultBool = false;
+    assertHasWireData(message, true);
+
+    message.defaultBool = null;
+    assertHasWireData(message, false);
+
+    message.defaultInt32 = 5;
+    assertHasWireData(message, true);
+
+    message.defaultInt32 = null;
+    assertHasWireData(message, false);
+
+    message.defaultInt64 = 123456L;
+    assertHasWireData(message, true);
+
+    message.defaultInt64 = null;
+    assertHasWireData(message, false);
+
+    message.defaultFloat = 1f;
+    assertHasWireData(message, true);
+
+    message.defaultFloat = null;
+    assertHasWireData(message, false);
+
+    message.defaultDouble = 2.1;
+    assertHasWireData(message, true);
+
+    message.defaultDouble = null;
+    assertHasWireData(message, false);
+
+    message.defaultString = "hello";
+    assertHasWireData(message, true);
+
+    message.defaultString = null;
+    assertHasWireData(message, false);
+
+    message.defaultBytes = new byte[] { 1, 2, 3 };
+    assertHasWireData(message, true);
+
+    message.defaultBytes = null;
+    assertHasWireData(message, false);
+  }
+
+  private void assertHasWireData(MessageNano message, boolean expected) {
+    int wireLength = MessageNano.toByteArray(message).length;
+    if (expected) {
+      assertFalse(wireLength == 0);
+    } else {
+      assertEquals(0, wireLength);
+    }
   }
 
   private <T> List<T> list(T first, T... remaining) {
