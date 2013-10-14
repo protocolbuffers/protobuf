@@ -69,6 +69,7 @@ EnumGenerator::~EnumGenerator() {}
 
 void EnumGenerator::Generate(io::Printer* printer) {
   printer->Print(
+      "\n"
       "// enum $classname$\n",
       "classname", descriptor_->name());
 
@@ -102,7 +103,6 @@ void EnumGenerator::Generate(io::Printer* printer) {
     printer->Outdent();
     printer->Print("}\n");
   }
-  printer->Print("\n");
 }
 
 }  // namespace javanano
