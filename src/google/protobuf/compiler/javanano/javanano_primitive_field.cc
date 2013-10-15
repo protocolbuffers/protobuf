@@ -570,17 +570,15 @@ GenerateRepeatedDataSizeCode(io::Printer* printer) const {
 
 void RepeatedPrimitiveFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (this.$name$ != null && this.$name$.length > 0) {\n");
+  printer->Indent();
+
   if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "if (this.$name$.length > 0) {\n");
-    printer->Indent();
     GenerateRepeatedDataSizeCode(printer);
-    printer->Outdent();
     printer->Print(variables_,
-      "  output.writeRawVarint32($tag$);\n"
-      "  output.writeRawVarint32(dataSize);\n"
-      "}\n");
-    printer->Print(variables_,
+      "output.writeRawVarint32($tag$);\n"
+      "output.writeRawVarint32(dataSize);\n"
       "for ($type$ element : this.$name$) {\n"
       "  output.write$capitalized_type$NoTag(element);\n"
       "}\n");
@@ -590,12 +588,15 @@ GenerateSerializationCode(io::Printer* printer) const {
       "  output.write$capitalized_type$($number$, element);\n"
       "}\n");
   }
+
+  printer->Outdent();
+  printer->Print("}\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (this.$name$.length > 0) {\n");
+    "if (this.$name$ != null && this.$name$.length > 0) {\n");
   printer->Indent();
 
   GenerateRepeatedDataSizeCode(printer);
