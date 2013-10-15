@@ -235,34 +235,36 @@ GenerateMergingCode(io::Printer* printer) const {
     "    .getRepeatedFieldArrayLength(input, $tag$);\n"
     "int i = this.$name$ == null ? 0 : this.$name$.length;\n"
     "$type$[] newArray = new $type$[i + arrayLength];\n"
-    "if (this.$name$ != null) {\n"
-    "  System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
+    "if (i != 0) {\n"
+    "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
     "}\n"
-    "this.$name$ = newArray;\n"
-    "for (; i < this.$name$.length - 1; i++) {\n"
-    "  this.$name$[i] = new $type$();\n");
+    "for (; i < newArray.length - 1; i++) {\n"
+    "  newArray[i] = new $type$();\n");
 
   if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
-      "  input.readGroup(this.$name$[i], $number$);\n");
+      "  input.readGroup(newArray[i], $number$);\n");
   } else {
     printer->Print(variables_,
-      "  input.readMessage(this.$name$[i]);\n");
+      "  input.readMessage(newArray[i]);\n");
   }
 
   printer->Print(variables_,
     "  input.readTag();\n"
     "}\n"
     "// Last one without readTag.\n"
-    "this.$name$[i] = new $type$();\n");
+    "newArray[i] = new $type$();\n");
 
   if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
-      "input.readGroup(this.$name$[i], $number$);\n");
+      "input.readGroup(newArray[i], $number$);\n");
   } else {
     printer->Print(variables_,
-      "input.readMessage(this.$name$[i]);\n");
+      "input.readMessage(newArray[i]);\n");
   }
+
+  printer->Print(variables_,
+    "this.$name$ = newArray;\n");
 }
 
 void RepeatedMessageFieldGenerator::
