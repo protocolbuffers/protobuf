@@ -105,7 +105,7 @@ public final class MessageNanoPrinter {
                     if (arrayType == byte.class) {
                         print(fieldName, fieldType, value, indentBuf, buf);
                     } else {
-                        int len = Array.getLength(value);
+                        int len = value == null ? 0 : Array.getLength(value);
                         for (int i = 0; i < len; i++) {
                             Object elem = Array.get(value, i);
                             print(fieldName, arrayType, elem, indentBuf, buf);
