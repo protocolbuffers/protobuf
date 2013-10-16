@@ -2322,6 +2322,12 @@ public class NanoTest extends TestCase {
     assertFalse(msg.hasOptionalString());
     assertFalse(msg.hasDefaultString());
     assertFalse(msg.hasBitFieldCheck());
+
+    // Test set() and clear() returns itself (compiles = success)
+    msg.clear()
+        .setOptionalInt32(3)
+        .clearDefaultBytes()
+        .setOptionalString("4");
   }
 
   public void testNanoWithAccessorsParseFrom() throws Exception {
