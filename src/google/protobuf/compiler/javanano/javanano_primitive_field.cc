@@ -431,21 +431,25 @@ GenerateMembers(io::Printer* printer) const {
     "public $type$ get$capitalized_name$() {\n"
     "  return $name$_;\n"
     "}\n"
-    "public void set$capitalized_name$($type$ value) {\n");
+    "public $message_name$ set$capitalized_name$($type$ value) {\n");
   if (IsReferenceType(GetJavaType(descriptor_))) {
     printer->Print(variables_,
-      "  if (value == null) throw new java.lang.NullPointerException();\n");
+      "  if (value == null) {\n"
+      "    throw new java.lang.NullPointerException();\n"
+      "  }\n");
   }
   printer->Print(variables_,
     "  $name$_ = value;\n"
     "  $set_has$;\n"
+    "  return this;\n"
     "}\n"
     "public boolean has$capitalized_name$() {\n"
     "  return $get_has$;\n"
     "}\n"
-    "public void clear$capitalized_name$() {\n"
+    "public $message_name$ clear$capitalized_name$() {\n"
     "  $name$_ = $default_copy_if_needed$;\n"
     "  $clear_has$;\n"
+    "  return this;\n"
     "}\n");
 }
 
@@ -458,13 +462,14 @@ GenerateClearCode(io::Printer* printer) const {
 void AccessorPrimitiveFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "set$capitalized_name$(input.read$capitalized_type$());\n");
+    "$name$_ = input.read$capitalized_type$();\n"
+    "$set_has$;\n");
 }
 
 void AccessorPrimitiveFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (has$capitalized_name$()) {\n"
+    "if ($get_has$) {\n"
     "  output.write$capitalized_type$($number$, $name$_);\n"
     "}\n");
 }
@@ -472,7 +477,7 @@ GenerateSerializationCode(io::Printer* printer) const {
 void AccessorPrimitiveFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (has$capitalized_name$()) {\n"
+    "if ($get_has$) {\n"
     "  size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
     "      .compute$capitalized_type$Size($number$, $name$_);\n"
     "}\n");
