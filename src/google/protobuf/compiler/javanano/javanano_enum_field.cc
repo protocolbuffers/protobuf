@@ -182,16 +182,18 @@ GenerateMembers(io::Printer* printer) const {
     "public int get$capitalized_name$() {\n"
     "  return $name$_;\n"
     "}\n"
-    "public void set$capitalized_name$(int value) {\n"
+    "public $message_name$ set$capitalized_name$(int value) {\n"
     "  $name$_ = value;\n"
     "  $set_has$;\n"
+    "  return this;\n"
     "}\n"
     "public boolean has$capitalized_name$() {\n"
     "  return $get_has$;\n"
     "}\n"
-    "public void clear$capitalized_name$() {\n"
+    "public $message_name$ clear$capitalized_name$() {\n"
     "  $name$_ = $default$;\n"
     "  $clear_has$;\n"
+    "  return this;\n"
     "}\n");
 }
 
@@ -204,13 +206,14 @@ GenerateClearCode(io::Printer* printer) const {
 void AccessorEnumFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "set$capitalized_name$(input.readInt32());\n");
+    "$name$_ = input.readInt32();\n"
+    "$set_has$;\n");
 }
 
 void AccessorEnumFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (has$capitalized_name$()) {\n"
+    "if ($get_has$) {\n"
     "  output.writeInt32($number$, $name$_);\n"
     "}\n");
 }
@@ -218,7 +221,7 @@ GenerateSerializationCode(io::Printer* printer) const {
 void AccessorEnumFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (has$capitalized_name$()) {\n"
+    "if ($get_has$) {\n"
     "  size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
     "    .computeInt32Size($number$, $name$_);\n"
     "}\n");
