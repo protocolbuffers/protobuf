@@ -519,35 +519,40 @@ GenerateMergingCode(io::Printer* printer) const {
       "  arrayLength++;\n"
       "}\n"
       "input.rewindToPosition(startPos);\n"
-      "this.$name$ = new $type$[arrayLength];\n"
-      "for (int i = 0; i < arrayLength; i++) {\n"
-      "  this.$name$[i] = input.read$capitalized_type$();\n"
+      "int i = this.$name$ == null ? 0 : this.$name$.length;\n"
+      "$type$[] newArray = new $type$[i + arrayLength];\n"
+      "if (i != 0) {\n"
+      "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
       "}\n"
+      "for (; i < newArray.length; i++) {\n"
+      "  newArray[i] = input.read$capitalized_type$();\n"
+      "}\n"
+      "this.$name$ = newArray;\n"
       "input.popLimit(limit);\n");
   } else {
     printer->Print(variables_,
       "int arrayLength = com.google.protobuf.nano.WireFormatNano\n"
       "    .getRepeatedFieldArrayLength(input, $tag$);\n"
-      "int i = this.$name$.length;\n");
+      "int i = this.$name$ == null ? 0 : this.$name$.length;\n");
 
     if (GetJavaType(descriptor_) == JAVATYPE_BYTES) {
       printer->Print(variables_,
-        "byte[][] newArray = new byte[i + arrayLength][];\n"
-        "System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
-        "this.$name$ = newArray;\n");
+        "byte[][] newArray = new byte[i + arrayLength][];\n");
     } else {
       printer->Print(variables_,
-        "$type$[] newArray = new $type$[i + arrayLength];\n"
-        "System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
-        "this.$name$ = newArray;\n");
+        "$type$[] newArray = new $type$[i + arrayLength];\n");
     }
     printer->Print(variables_,
-      "for (; i < this.$name$.length - 1; i++) {\n"
-      "  this.$name$[i] = input.read$capitalized_type$();\n"
+      "if (i != 0) {\n"
+      "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
+      "}\n"
+      "for (; i < newArray.length - 1; i++) {\n"
+      "  newArray[i] = input.read$capitalized_type$();\n"
       "  input.readTag();\n"
       "}\n"
       "// Last one without readTag.\n"
-      "this.$name$[i] = input.read$capitalized_type$();\n");
+      "newArray[i] = input.read$capitalized_type$();\n"
+      "this.$name$ = newArray;\n");
   }
 }
 

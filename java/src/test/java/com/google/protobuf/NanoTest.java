@@ -49,6 +49,7 @@ import com.google.protobuf.nano.NanoHasOuterClass.TestAllTypesNanoHas;
 import com.google.protobuf.nano.NanoOuterClass;
 import com.google.protobuf.nano.NanoOuterClass.TestAllTypesNano;
 import com.google.protobuf.nano.NanoReferenceTypes;
+import com.google.protobuf.nano.TestRepeatedMergeNano;
 import com.google.protobuf.nano.UnittestImportNano;
 import com.google.protobuf.nano.UnittestMultipleNano;
 import com.google.protobuf.nano.UnittestRecursiveNano.RecursiveMessageNano;
@@ -2685,33 +2686,125 @@ public class NanoTest extends TestCase {
     MessageNano.toByteArray(message);  // should not NPE
     message.toString(); // should not NPE
 
-    message = new TestAllTypesNano();
     message.repeatedNestedEnum = null;
     MessageNano.toByteArray(message);  // should not NPE
     message.toString(); // should not NPE
 
-    message = new TestAllTypesNano();
     message.repeatedBytes = null;
     MessageNano.toByteArray(message); // should not NPE
     message.toString(); // should not NPE
 
-    message = new TestAllTypesNano();
     message.repeatedNestedMessage = null;
+    MessageNano.toByteArray(message); // should not NPE
+    message.toString(); // should not NPE
+
+    message.repeatedPackedInt32 = null;
+    MessageNano.toByteArray(message); // should not NPE
+    message.toString(); // should not NPE
+
+    message.repeatedPackedNestedEnum = null;
     MessageNano.toByteArray(message); // should not NPE
     message.toString(); // should not NPE
 
     // Create a second message to merge into message.
     TestAllTypesNano secondMessage = new TestAllTypesNano();
+    secondMessage.repeatedInt32 = new int[] {1, 2, 3};
+    secondMessage.repeatedNestedEnum = new int[] {
+      TestAllTypesNano.FOO, TestAllTypesNano.BAR
+    };
+    secondMessage.repeatedBytes = new byte[][] {{1, 2}, {3, 4}};
     TestAllTypesNano.NestedMessage nested =
         new TestAllTypesNano.NestedMessage();
     nested.bb = 55;
     secondMessage.repeatedNestedMessage =
-        new TestAllTypesNano.NestedMessage[] { nested };
+        new TestAllTypesNano.NestedMessage[] {nested};
+    secondMessage.repeatedPackedInt32 = new int[] {1, 2, 3};
+    secondMessage.repeatedPackedNestedEnum = new int[] {
+        TestAllTypesNano.FOO, TestAllTypesNano.BAR
+      };
 
     // Should not NPE
     message.mergeFrom(CodedInputByteBufferNano.newInstance(
         MessageNano.toByteArray(secondMessage)));
+    assertEquals(3, message.repeatedInt32.length);
+    assertEquals(3, message.repeatedInt32[2]);
+    assertEquals(2, message.repeatedNestedEnum.length);
+    assertEquals(TestAllTypesNano.FOO, message.repeatedNestedEnum[0]);
+    assertEquals(2, message.repeatedBytes.length);
+    assertEquals(4, message.repeatedBytes[1][1]);
+    assertEquals(1, message.repeatedNestedMessage.length);
     assertEquals(55, message.repeatedNestedMessage[0].bb);
+    assertEquals(3, message.repeatedPackedInt32.length);
+    assertEquals(2, message.repeatedPackedInt32[1]);
+    assertEquals(2, message.repeatedPackedNestedEnum.length);
+    assertEquals(TestAllTypesNano.BAR, message.repeatedPackedNestedEnum[1]);
+  }
+
+  public void testRepeatedMerge() throws Exception {
+    // Check that merging repeated fields cause the arrays to expand with
+    // new data.
+    TestAllTypesNano first = new TestAllTypesNano();
+    first.repeatedInt32 = new int[] {1, 2, 3};
+    TestAllTypesNano second = new TestAllTypesNano();
+    second.repeatedInt32 = new int[] {4, 5};
+    MessageNano.mergeFrom(first, MessageNano.toByteArray(second));
+    assertEquals(5, first.repeatedInt32.length);
+    assertEquals(1, first.repeatedInt32[0]);
+    assertEquals(4, first.repeatedInt32[3]);
+
+    first = new TestAllTypesNano();
+    first.repeatedNestedEnum = new int[] {TestAllTypesNano.BAR};
+    second = new TestAllTypesNano();
+    second.repeatedNestedEnum = new int[] {TestAllTypesNano.FOO};
+    MessageNano.mergeFrom(first, MessageNano.toByteArray(second));
+    assertEquals(2, first.repeatedNestedEnum.length);
+    assertEquals(TestAllTypesNano.BAR, first.repeatedNestedEnum[0]);
+    assertEquals(TestAllTypesNano.FOO, first.repeatedNestedEnum[1]);
+
+    first = new TestAllTypesNano();
+    first.repeatedNestedMessage = new TestAllTypesNano.NestedMessage[] {
+      new TestAllTypesNano.NestedMessage()
+    };
+    first.repeatedNestedMessage[0].bb = 3;
+    second = new TestAllTypesNano();
+    second.repeatedNestedMessage = new TestAllTypesNano.NestedMessage[] {
+      new TestAllTypesNano.NestedMessage()
+    };
+    second.repeatedNestedMessage[0].bb = 5;
+    MessageNano.mergeFrom(first, MessageNano.toByteArray(second));
+    assertEquals(2, first.repeatedNestedMessage.length);
+    assertEquals(3, first.repeatedNestedMessage[0].bb);
+    assertEquals(5, first.repeatedNestedMessage[1].bb);
+
+    first = new TestAllTypesNano();
+    first.repeatedPackedSfixed64 = new long[] {-1, -2, -3};
+    second = new TestAllTypesNano();
+    second.repeatedPackedSfixed64 = new long[] {-4, -5};
+    MessageNano.mergeFrom(first, MessageNano.toByteArray(second));
+    assertEquals(5, first.repeatedPackedSfixed64.length);
+    assertEquals(-1, first.repeatedPackedSfixed64[0]);
+    assertEquals(-4, first.repeatedPackedSfixed64[3]);
+
+    first = new TestAllTypesNano();
+    first.repeatedPackedNestedEnum = new int[] {TestAllTypesNano.BAR};
+    second = new TestAllTypesNano();
+    second.repeatedPackedNestedEnum = new int[] {TestAllTypesNano.FOO};
+    MessageNano.mergeFrom(first, MessageNano.toByteArray(second));
+    assertEquals(2, first.repeatedPackedNestedEnum.length);
+    assertEquals(TestAllTypesNano.BAR, first.repeatedPackedNestedEnum[0]);
+    assertEquals(TestAllTypesNano.FOO, first.repeatedPackedNestedEnum[1]);
+
+    // Now test repeated merging in a nested scope
+    TestRepeatedMergeNano firstContainer = new TestRepeatedMergeNano();
+    firstContainer.contained = new TestAllTypesNano();
+    firstContainer.contained.repeatedInt32 = new int[] {10, 20};
+    TestRepeatedMergeNano secondContainer = new TestRepeatedMergeNano();
+    secondContainer.contained = new TestAllTypesNano();
+    secondContainer.contained.repeatedInt32 = new int[] {30};
+    MessageNano.mergeFrom(firstContainer, MessageNano.toByteArray(secondContainer));
+    assertEquals(3, firstContainer.contained.repeatedInt32.length);
+    assertEquals(20, firstContainer.contained.repeatedInt32[1]);
+    assertEquals(30, firstContainer.contained.repeatedInt32[2]);
   }
 
   private void assertHasWireData(MessageNano message, boolean expected) {

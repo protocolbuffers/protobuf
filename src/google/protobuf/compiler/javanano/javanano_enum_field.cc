@@ -269,24 +269,32 @@ GenerateMergingCode(io::Printer* printer) const {
       "  arrayLength++;\n"
       "}\n"
       "input.rewindToPosition(startPos);\n"
-      "this.$name$ = new $type$[arrayLength];\n"
-      "for (int i = 0; i < arrayLength; i++) {\n"
-      "  this.$name$[i] = input.readInt32();\n"
+      "int i = this.$name$ == null ? 0 : this.$name$.length;\n"
+      "int[] newArray = new int[i + arrayLength];\n"
+      "if (i != 0) {\n"
+      "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
       "}\n"
+      "for (; i < newArray.length; i++) {\n"
+      "  newArray[i] = input.readInt32();\n"
+      "}\n"
+      "this.$name$ = newArray;\n"
       "input.popLimit(limit);\n");
   } else {
     printer->Print(variables_,
-      "int arrayLength = com.google.protobuf.nano.WireFormatNano.getRepeatedFieldArrayLength(input, $tag$);\n"
-      "int i = this.$name$.length;\n"
+      "int arrayLength = com.google.protobuf.nano.WireFormatNano.\n"
+      "    getRepeatedFieldArrayLength(input, $tag$);\n"
+      "int i = this.$name$ == null ? 0 : this.$name$.length;\n"
       "int[] newArray = new int[i + arrayLength];\n"
-      "System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
-      "this.$name$ = newArray;\n"
-      "for (; i < this.$name$.length - 1; i++) {\n"
-      "  this.$name$[i] = input.readInt32();\n"
+      "if (i != 0) {\n"
+      "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
+      "}\n"
+      "for (; i < newArray.length - 1; i++) {\n"
+      "  newArray[i] = input.readInt32();\n"
       "  input.readTag();\n"
       "}\n"
       "// Last one without readTag.\n"
-      "this.$name$[i] = input.readInt32();\n");
+      "newArray[i] = input.readInt32();\n"
+      "this.$name$ = newArray;\n");
   }
 }
 
