@@ -404,8 +404,102 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
   }
 }
 
-string PrimitiveFieldGenerator::GetBoxedType() const {
-  return BoxedPrimitiveTypeName(GetJavaType(descriptor_));
+void PrimitiveFieldGenerator::
+GenerateEqualsCode(io::Printer* printer) const {
+  // We define equality as serialized form equality. If generate_has(),
+  // then if the field value equals the default value in both messages,
+  // but one's 'has' field is set and the other's is not, the serialized
+  // forms are different and we should return false.
+  JavaType java_type = GetJavaType(descriptor_);
+  if (java_type == JAVATYPE_BYTES) {
+    printer->Print(variables_,
+      "if (!java.util.Arrays.equals(this.$name$, other.$name$)");
+    if (params_.generate_has()) {
+      printer->Print(variables_,
+        "\n"
+        "    || (java.util.Arrays.equals(this.$name$, $default$)\n"
+        "        && this.has$capitalized_name$ != other.has$capitalized_name$)");
+    }
+    printer->Print(") {\n"
+      "  return false;\n"
+      "}\n");
+  } else if (java_type == JAVATYPE_STRING
+      || params_.use_reference_types_for_primitives()) {
+    printer->Print(variables_,
+      "if (this.$name$ == null) {\n"
+      "  if (other.$name$ != null) {\n"
+      "    return false;\n"
+      "  }\n"
+      "} else if (!this.$name$.equals(other.$name$)");
+    if (params_.generate_has()) {
+      printer->Print(variables_,
+        "\n"
+        "    || (this.$name$.equals($default$)\n"
+        "        && this.has$capitalized_name$ != other.has$capitalized_name$)");
+    }
+    printer->Print(") {\n"
+      "  return false;\n"
+      "}\n");
+  } else {
+    printer->Print(variables_,
+      "if (this.$name$ != other.$name$");
+    if (params_.generate_has()) {
+      printer->Print(variables_,
+        "\n"
+        "    || (this.$name$ == $default$\n"
+        "        && this.has$capitalized_name$ != other.has$capitalized_name$)");
+    }
+    printer->Print(") {\n"
+      "  return false;\n"
+      "}\n");
+  }
+}
+
+void PrimitiveFieldGenerator::
+GenerateHashCodeCode(io::Printer* printer) const {
+  JavaType java_type = GetJavaType(descriptor_);
+  if (java_type == JAVATYPE_BYTES) {
+    printer->Print(variables_,
+      "result = 31 * result + java.util.Arrays.hashCode(this.$name$);\n");
+  } else if (java_type == JAVATYPE_STRING
+      || params_.use_reference_types_for_primitives()) {
+    printer->Print(variables_,
+      "result = 31 * result\n"
+      "    + (this.$name$ == null ? 0 : this.$name$.hashCode());\n");
+  } else {
+    switch (java_type) {
+      // For all Java primitive types below, the hash codes match the
+      // results of BoxedType.valueOf(primitiveValue).hashCode().
+      case JAVATYPE_INT:
+        printer->Print(variables_,
+          "result = 31 * result + this.$name$;\n");
+        break;
+      case JAVATYPE_LONG:
+        printer->Print(variables_,
+          "result = 31 * result\n"
+          "    + (int) (this.$name$ ^ (this.$name$ >>> 32));\n");
+        break;
+      case JAVATYPE_FLOAT:
+        printer->Print(variables_,
+          "result = 31 * result\n"
+          "    + java.lang.Float.floatToIntBits(this.$name$);\n");
+        break;
+      case JAVATYPE_DOUBLE:
+        printer->Print(variables_,
+          "{\n"
+          "  long v = java.lang.Double.doubleToLongBits(this.$name$);\n"
+          "  result = 31 * result + (int) (v ^ (v >>> 32));\n"
+          "}\n");
+        break;
+      case JAVATYPE_BOOLEAN:
+        printer->Print(variables_,
+          "result = 31 * result + (this.$name$ ? 1231 : 1237);\n");
+        break;
+      default:
+        GOOGLE_LOG(ERROR) << "unknown java type for primitive field";
+        break;
+    }
+  }
 }
 
 // ===================================================================
@@ -483,8 +577,87 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     "}\n");
 }
 
-string AccessorPrimitiveFieldGenerator::GetBoxedType() const {
-  return BoxedPrimitiveTypeName(GetJavaType(descriptor_));
+void AccessorPrimitiveFieldGenerator::
+GenerateEqualsCode(io::Printer* printer) const {
+  switch (GetJavaType(descriptor_)) {
+    // For all Java primitive types below, the hash codes match the
+    // results of BoxedType.valueOf(primitiveValue).hashCode().
+    case JAVATYPE_INT:
+    case JAVATYPE_LONG:
+    case JAVATYPE_FLOAT:
+    case JAVATYPE_DOUBLE:
+    case JAVATYPE_BOOLEAN:
+      printer->Print(variables_,
+        "if ($different_has$\n"
+        "    || $name$_ != other.$name$_) {\n"
+        "  return false;\n"
+        "}\n");
+      break;
+    case JAVATYPE_STRING:
+      // Accessor style would guarantee $name$_ non-null
+      printer->Print(variables_,
+        "if ($different_has$\n"
+        "    || !$name$_.equals(other.$name$_)) {\n"
+        "  return false;\n"
+        "}\n");
+      break;
+    case JAVATYPE_BYTES:
+      // Accessor style would guarantee $name$_ non-null
+      printer->Print(variables_,
+        "if ($different_has$\n"
+        "    || !java.util.Arrays.equals($name$_, other.$name$_)) {\n"
+        "  return false;\n"
+        "}\n");
+      break;
+    default:
+      GOOGLE_LOG(ERROR) << "unknown java type for primitive field";
+      break;
+  }
+}
+
+void AccessorPrimitiveFieldGenerator::
+GenerateHashCodeCode(io::Printer* printer) const {
+  switch (GetJavaType(descriptor_)) {
+    // For all Java primitive types below, the hash codes match the
+    // results of BoxedType.valueOf(primitiveValue).hashCode().
+    case JAVATYPE_INT:
+      printer->Print(variables_,
+        "result = 31 * result + $name$_;\n");
+      break;
+    case JAVATYPE_LONG:
+      printer->Print(variables_,
+        "result = 31 * result + (int) ($name$_ ^ ($name$_ >>> 32));\n");
+      break;
+    case JAVATYPE_FLOAT:
+      printer->Print(variables_,
+        "result = 31 * result +\n"
+        "    java.lang.Float.floatToIntBits($name$_);\n");
+      break;
+    case JAVATYPE_DOUBLE:
+      printer->Print(variables_,
+        "{\n"
+        "  long v = java.lang.Double.doubleToLongBits($name$_);\n"
+        "  result = 31 * result + (int) (v ^ (v >>> 32));\n"
+        "}\n");
+      break;
+    case JAVATYPE_BOOLEAN:
+      printer->Print(variables_,
+        "result = 31 * result + ($name$_ ? 1231 : 1237);\n");
+      break;
+    case JAVATYPE_STRING:
+      // Accessor style would guarantee $name$_ non-null
+      printer->Print(variables_,
+        "result = 31 * result + $name$_.hashCode();\n");
+      break;
+    case JAVATYPE_BYTES:
+      // Accessor style would guarantee $name$_ non-null
+      printer->Print(variables_,
+        "result = 31 * result + java.util.Arrays.hashCode($name$_);\n");
+      break;
+    default:
+      GOOGLE_LOG(ERROR) << "unknown java type for primitive field";
+      break;
+  }
 }
 
 // ===================================================================
@@ -629,8 +802,20 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     "}\n");
 }
 
-string RepeatedPrimitiveFieldGenerator::GetBoxedType() const {
-  return BoxedPrimitiveTypeName(GetJavaType(descriptor_));
+void RepeatedPrimitiveFieldGenerator::
+GenerateEqualsCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (!com.google.protobuf.nano.InternalNano.equals(\n"
+    "    this.$name$, other.$name$)) {\n"
+    "  return false;\n"
+    "}\n");
+}
+
+void RepeatedPrimitiveFieldGenerator::
+GenerateHashCodeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "result = 31 * result\n"
+    "    + com.google.protobuf.nano.InternalNano.hashCode(this.$name$);\n");
 }
 
 }  // namespace javanano

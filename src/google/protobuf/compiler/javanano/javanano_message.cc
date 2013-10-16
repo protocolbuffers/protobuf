@@ -198,6 +198,11 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   GenerateClear(printer);
 
+  if (params_.generate_equals()) {
+    GenerateEquals(printer);
+    GenerateHashCode(printer);
+  }
+
   // If we have an extension range, generate accessors for extensions.
   if (params_.store_unknown_fields()
       && descriptor_->extension_range_count() > 0) {
@@ -326,11 +331,11 @@ void MessageGenerator::GenerateMergeFromMethods(io::Printer* printer) {
   if (params_.store_unknown_fields()) {
     printer->Print(
         "if (unknownFieldData == null) {\n"
-        "  unknownFieldData = \n"
+        "  unknownFieldData =\n"
         "      new java.util.ArrayList<com.google.protobuf.nano.UnknownFieldData>();\n"
         "}\n"
-        "if (!com.google.protobuf.nano.WireFormatNano.storeUnknownField(unknownFieldData, \n"
-        "    input, tag)) {\n"
+        "if (!com.google.protobuf.nano.WireFormatNano.storeUnknownField(\n"
+        "    unknownFieldData, input, tag)) {\n"
         "  return this;\n"
         "}\n");
   } else {
@@ -425,6 +430,79 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
     "  cachedSize = -1;\n"
     "  return this;\n"
     "}\n");
+}
+
+void MessageGenerator::GenerateEquals(io::Printer* printer) {
+  // Don't override if there are no fields. We could generate an
+  // equals method that compares types, but often empty messages
+  // are used as namespaces.
+  if (descriptor_->field_count() == 0 && !params_.store_unknown_fields()) {
+    return;
+  }
+
+  printer->Print(
+    "\n"
+    "@Override\n"
+    "public boolean equals(Object o) {\n");
+  printer->Indent();
+  printer->Print(
+    "if (o == this) {\n"
+    "  return true;\n"
+    "}\n"
+    "if (!(o instanceof $classname$)) {\n"
+    "  return false;\n"
+    "}\n"
+    "$classname$ other = ($classname$) o;\n",
+    "classname", descriptor_->name());
+
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+    field_generators_.get(field).GenerateEqualsCode(printer);
+  }
+
+  if (params_.store_unknown_fields()) {
+    printer->Print(
+      "if (unknownFieldData == null || unknownFieldData.isEmpty()) {\n"
+      "  return other.unknownFieldData == null || other.unknownFieldData.isEmpty();"
+      "} else {\n"
+      "  return unknownFieldData.equals(other.unknownFieldData);\n"
+      "}\n");
+  } else {
+    printer->Print(
+      "return true;\n");
+  }
+
+  printer->Outdent();
+  printer->Print("}\n");
+}
+
+void MessageGenerator::GenerateHashCode(io::Printer* printer) {
+  if (descriptor_->field_count() == 0 && !params_.store_unknown_fields()) {
+    return;
+  }
+
+  printer->Print(
+    "\n"
+    "@Override\n"
+    "public int hashCode() {\n");
+  printer->Indent();
+
+  printer->Print("int result = 17;\n");
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+    field_generators_.get(field).GenerateHashCodeCode(printer);
+  }
+
+  if (params_.store_unknown_fields()) {
+    printer->Print(
+      "result = 31 * result + (unknownFieldData == null || unknownFieldData.isEmpty()\n"
+      "    ? 0 : unknownFieldData.hashCode());\n");
+  }
+
+  printer->Print("return result;\n");
+
+  printer->Outdent();
+  printer->Print("}\n");
 }
 
 // ===================================================================
