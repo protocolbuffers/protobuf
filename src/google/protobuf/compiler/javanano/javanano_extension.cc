@@ -77,13 +77,15 @@ ExtensionGenerator::~ExtensionGenerator() {}
 void ExtensionGenerator::Generate(io::Printer* printer) const {
   if (descriptor_->is_repeated()) {
     printer->Print(variables_,
-      "// Extends $extends$\n"
+      "\n"
+      "// extends $extends$\n"
       "public static final com.google.protobuf.nano.Extension<java.util.List<$type$>> $name$ = \n"
       "    com.google.protobuf.nano.Extension.createRepeated($number$,\n"
       "        new com.google.protobuf.nano.Extension.TypeLiteral<java.util.List<$type$>>(){});\n");
   } else {
     printer->Print(variables_,
-      "// Extends $extends$\n"
+      "\n"
+      "// extends $extends$\n"
       "public static final com.google.protobuf.nano.Extension<$type$> $name$ =\n"
       "    com.google.protobuf.nano.Extension.create($number$,\n"
       "        new com.google.protobuf.nano.Extension.TypeLiteral<$type$>(){});\n");

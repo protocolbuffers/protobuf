@@ -121,37 +121,47 @@ void MessageGenerator::GenerateStaticVariableInitializers(
 }
 
 void MessageGenerator::Generate(io::Printer* printer) {
-  const string& file_name = descriptor_->file()->name();
-  bool is_own_file =
-    params_.java_multiple_files(file_name)
-      && descriptor_->containing_type() == NULL;
-
   if (!params_.store_unknown_fields() &&
       (descriptor_->extension_count() != 0 || descriptor_->extension_range_count() != 0)) {
     GOOGLE_LOG(FATAL) << "Extensions are only supported in NANO_RUNTIME if the "
         "'store_unknown_fields' generator option is 'true'\n";
   }
 
-  // Note: Fields (which will be emitted in the loop, below) may have the same names as fields in
-  // the inner or outer class.  This causes Java warnings, but is not fatal, so we suppress those
-  // warnings here in the class declaration.
-  printer->Print(
-    "@SuppressWarnings(\"hiding\")\n"
-    "public $modifiers$final class $classname$ extends\n"
-    "    com.google.protobuf.nano.MessageNano {\n",
-    "modifiers", is_own_file ? "" : "static ",
-    "classname", descriptor_->name());
+  const string& file_name = descriptor_->file()->name();
+  bool is_own_file =
+    params_.java_multiple_files(file_name)
+      && descriptor_->containing_type() == NULL;
+
+  if (is_own_file) {
+    // Note: constants (from enums and fields requiring stored defaults, emitted in the loop below)
+    // may have the same names as constants in the nested classes. This causes Java warnings, but
+    // is not fatal, so we suppress those warnings here in the top-most class declaration.
+    printer->Print(
+      "\n"
+      "@SuppressWarnings(\"hiding\")\n"
+      "public final class $classname$ extends\n"
+      "    com.google.protobuf.nano.MessageNano {\n",
+      "classname", descriptor_->name());
+  } else {
+    printer->Print(
+      "\n"
+      "public static final class $classname$ extends\n"
+      "    com.google.protobuf.nano.MessageNano {\n",
+      "classname", descriptor_->name());
+  }
   printer->Indent();
   printer->Print(
-    "public static final $classname$ EMPTY_ARRAY[] = {};\n"
+    "\n"
+    "public static final $classname$[] EMPTY_ARRAY = {};\n"
+    "\n"
     "public $classname$() {\n"
     "  clear();\n"
-    "}\n"
-    "\n",
+    "}\n",
     "classname", descriptor_->name());
 
   if (params_.store_unknown_fields()) {
     printer->Print(
+        "\n"
         "private java.util.List<com.google.protobuf.nano.UnknownFieldData>\n"
         "    unknownFieldData;\n");
   }
@@ -171,16 +181,19 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   // Integers for bit fields
   int totalInts = (field_generators_.total_bits() + 31) / 32;
-  for (int i = 0; i < totalInts; i++) {
-    printer->Print("private int $bit_field_name$;\n",
-      "bit_field_name", GetBitFieldName(i));
+  if (totalInts > 0) {
+    printer->Print("\n");
+    for (int i = 0; i < totalInts; i++) {
+      printer->Print("private int $bit_field_name$;\n",
+        "bit_field_name", GetBitFieldName(i));
+    }
   }
 
   // Fields
   for (int i = 0; i < descriptor_->field_count(); i++) {
+    printer->Print("\n");
     PrintFieldComment(printer, descriptor_->field(i));
     field_generators_.get(descriptor_->field(i)).GenerateMembers(printer);
-    printer->Print("\n");
   }
 
   GenerateClear(printer);
@@ -189,25 +202,27 @@ void MessageGenerator::Generate(io::Printer* printer) {
   if (params_.store_unknown_fields()
       && descriptor_->extension_range_count() > 0) {
     printer->Print(
+      "\n"
       "public <T> T getExtension(com.google.protobuf.nano.Extension<T> extension) {\n"
       "  return com.google.protobuf.nano.WireFormatNano.getExtension(\n"
       "      extension, unknownFieldData);\n"
-      "}\n\n"
+      "}\n"
+      "\n"
       "public <T> void setExtension(com.google.protobuf.nano.Extension<T> extension, T value) {\n"
       "  if (unknownFieldData == null) {\n"
-      "    unknownFieldData = \n"
+      "    unknownFieldData =\n"
       "        new java.util.ArrayList<com.google.protobuf.nano.UnknownFieldData>();\n"
       "  }\n"
       "  com.google.protobuf.nano.WireFormatNano.setExtension(\n"
       "      extension, value, unknownFieldData);\n"
-      "}\n\n");
+      "}\n");
   }
   GenerateMessageSerializationMethods(printer);
   GenerateMergeFromMethods(printer);
   GenerateParseFromMethods(printer);
 
   printer->Outdent();
-  printer->Print("}\n\n");
+  printer->Print("}\n");
 }
 
 // ===================================================================
@@ -220,11 +235,13 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
   // writeTo only throws an exception if it contains one or more fields to write
   if (descriptor_->field_count() > 0 || params_.store_unknown_fields()) {
     printer->Print(
+      "\n"
       "@Override\n"
       "public void writeTo(com.google.protobuf.nano.CodedOutputByteBufferNano output)\n"
-      "                    throws java.io.IOException {\n");
+      "    throws java.io.IOException {\n");
   } else {
     printer->Print(
+      "\n"
       "@Override\n"
       "public void writeTo(com.google.protobuf.nano.CodedOutputByteBufferNano output) {\n");
   }
@@ -274,8 +291,7 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
   printer->Print(
     "  cachedSize = size;\n"
     "  return size;\n"
-    "}\n"
-    "\n");
+    "}\n");
 }
 
 void MessageGenerator::GenerateMergeFromMethods(io::Printer* printer) {
@@ -283,9 +299,10 @@ void MessageGenerator::GenerateMergeFromMethods(io::Printer* printer) {
     SortFieldsByNumber(descriptor_));
 
   printer->Print(
+    "\n"
     "@Override\n"
     "public $classname$ mergeFrom(\n"
-    "    com.google.protobuf.nano.CodedInputByteBufferNano input)\n"
+    "        com.google.protobuf.nano.CodedInputByteBufferNano input)\n"
     "    throws java.io.IOException {\n",
     "classname", descriptor_->name());
 
@@ -350,8 +367,7 @@ void MessageGenerator::GenerateMergeFromMethods(io::Printer* printer) {
   printer->Print(
     "    }\n"     // switch (tag)
     "  }\n"       // while (true)
-    "}\n"
-    "\n");
+    "}\n");
 }
 
 void MessageGenerator::
@@ -360,6 +376,7 @@ GenerateParseFromMethods(io::Printer* printer) {
   //   because they need to be generated even for messages that are optimized
   //   for code size.
   printer->Print(
+    "\n"
     "public static $classname$ parseFrom(byte[] data)\n"
     "    throws com.google.protobuf.nano.InvalidProtocolBufferNanoException {\n"
     "  return com.google.protobuf.nano.MessageNano.mergeFrom(new $classname$(), data);\n"
@@ -369,8 +386,7 @@ GenerateParseFromMethods(io::Printer* printer) {
     "        com.google.protobuf.nano.CodedInputByteBufferNano input)\n"
     "    throws java.io.IOException {\n"
     "  return new $classname$().mergeFrom(input);\n"
-    "}\n"
-    "\n",
+    "}\n",
     "classname", descriptor_->name());
 }
 
@@ -381,7 +397,8 @@ void MessageGenerator::GenerateSerializeOneField(
 
 void MessageGenerator::GenerateClear(io::Printer* printer) {
   printer->Print(
-    "public final $classname$ clear() {\n",
+    "\n"
+    "public $classname$ clear() {\n",
     "classname", descriptor_->name());
   printer->Indent();
 
@@ -407,8 +424,7 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
   printer->Print(
     "  cachedSize = -1;\n"
     "  return this;\n"
-    "}\n"
-    "\n");
+    "}\n");
 }
 
 // ===================================================================
