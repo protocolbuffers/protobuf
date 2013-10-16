@@ -98,7 +98,7 @@ GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if (this.$name$ == null) {\n"
     "  this.$name$ = new $type$();\n"
-    "}");
+    "}\n");
 
   if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
@@ -173,7 +173,7 @@ GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if (!has$capitalized_name$()) {\n"
     "  set$capitalized_name$(new $type$());\n"
-    "}");
+    "}\n");
 
   if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
@@ -231,10 +231,11 @@ void RepeatedMessageFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   // First, figure out the length of the array, then parse.
   printer->Print(variables_,
-    "int arrayLength = com.google.protobuf.nano.WireFormatNano"
+    "int arrayLength = com.google.protobuf.nano.WireFormatNano\n"
     "    .getRepeatedFieldArrayLength(input, $tag$);\n"
     "int i = this.$name$ == null ? 0 : this.$name$.length;\n"
-    "$type$[] newArray = new $type$[i + arrayLength];\n"
+    "$type$[] newArray =\n"
+    "    new $type$[i + arrayLength];\n"
     "if (i != 0) {\n"
     "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
     "}\n"
