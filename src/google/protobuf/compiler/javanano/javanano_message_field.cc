@@ -148,17 +148,19 @@ GenerateMembers(io::Printer* printer) const {
     "public $type$ get$capitalized_name$() {\n"
     "  return $name$_;\n"
     "}\n"
-    "public void set$capitalized_name$($type$ value) {\n"
+    "public $message_name$ set$capitalized_name$($type$ value) {\n"
     "  if (value == null) {\n"
     "    throw new java.lang.NullPointerException();\n"
     "  }\n"
     "  $name$_ = value;\n"
+    "  return this;\n"
     "}\n"
     "public boolean has$capitalized_name$() {\n"
     "  return $name$_ != null;\n"
     "}\n"
-    "public void clear$capitalized_name$() {\n"
+    "public $message_name$ clear$capitalized_name$() {\n"
     "  $name$_ = null;\n"
+    "  return this;"
     "}\n");
 }
 
@@ -171,8 +173,8 @@ GenerateClearCode(io::Printer* printer) const {
 void AccessorMessageFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (!has$capitalized_name$()) {\n"
-    "  set$capitalized_name$(new $type$());\n"
+    "if ($name$_ == null) {\n"
+    "  $name$_ = new $type$();\n"
     "}\n");
 
   if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
@@ -187,7 +189,7 @@ GenerateMergingCode(io::Printer* printer) const {
 void AccessorMessageFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (has$capitalized_name$()) {\n"
+    "if ($name$_ != null) {\n"
     "  output.write$group_or_message$($number$, $name$_);\n"
     "}\n");
 }
@@ -195,7 +197,7 @@ GenerateSerializationCode(io::Printer* printer) const {
 void AccessorMessageFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (has$capitalized_name$()) {\n"
+    "if ($name$_ != null) {\n"
     "  size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
     "    .compute$group_or_message$Size($number$, $name$_);\n"
     "}\n");
