@@ -253,8 +253,8 @@ $(SIMPLE_CXX_TESTS): % : %.cc
 	$(E) CXX $<
 	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ tests/testmain.o $< $(LIBUPB)
 
-VALGRIND=valgrind --leak-check=full --error-exitcode=1 --track-origins=yes
-#VALGRIND=
+#VALGRIND=valgrind --leak-check=full --error-exitcode=1 --track-origins=yes
+VALGRIND=
 test: tests
 	@set -e  # Abort on error.
 	@for test in $(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS); do \

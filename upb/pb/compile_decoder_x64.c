@@ -263,7 +263,7 @@ void upb_pbdecoder_jit(upb_pbdecoderplan *plan) {
   }
 
   char *jit_code = mmap(NULL, jc->plan->jit_size, PROT_READ | PROT_WRITE,
-                        MAP_32BIT | MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
+                        MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
   dasm_encode(jc, jit_code);
   mprotect(jit_code, jc->plan->jit_size, PROT_EXEC | PROT_READ);
   upb_reg_jit_gdb(jc);
