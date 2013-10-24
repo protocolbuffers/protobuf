@@ -333,6 +333,10 @@ FORCEINLINE int32_t decode_v32(upb_pbdecoder *d, uint32_t *u32) {
   if (ret >= 0) return ret;
   if (u64 > UINT32_MAX) {
     seterr(d, "Unterminated 32-bit varint");
+    // TODO(haberman) guarantee that this function return is >= 0 somehow,
+    // so we know this path will always be treated as error by our caller.
+    // Right now the size_t -> int32_t can overflow and produce negative values.
+    *u32 = 0;
     return upb_pbdecoder_suspend(d);
   }
   *u32 = u64;

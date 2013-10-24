@@ -623,7 +623,7 @@ static void compile_method(compiler *c, upb_pbdecodermethod *method) {
         break;
       default: {
         opcode parse_type = (opcode)type;
-        assert(parse_type >= 0 && parse_type <= OP_MAX);
+        assert((int)parse_type >= 0 && parse_type <= OP_MAX);
         upb_selector_t sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
         int wire_type = native_wire_types[upb_fielddef_descriptortype(f)];
         if (upb_fielddef_isseq(f)) {
@@ -762,6 +762,7 @@ static void sethandlers(upb_pbdecoderplan *p, upb_handlers *h, bool allowjit) {
 
 static bool bind_dynamic(bool allowjit) {
   // Bytecode handlers never bind statically.
+  UPB_UNUSED(allowjit);
   return true;
 }
 
@@ -797,6 +798,7 @@ upb_string_handler *upb_pbdecoderplan_jitcode(const upb_pbdecoderplan *p) {
 #ifdef UPB_USE_JIT_X64
   return p->jit_code;
 #else
+  UPB_UNUSED(p);
   assert(false);
   return NULL;
 #endif

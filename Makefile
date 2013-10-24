@@ -101,6 +101,7 @@ CORE= \
 # Library for the protocol buffer format (both text and binary).
 PB= \
   upb/pb/decoder.c \
+  upb/pb/compile_decoder.c \
   upb/pb/glue.c \
   upb/pb/varint.c \
 
@@ -137,7 +138,8 @@ PICOBJ=$(patsubst %.c,%.lo,$(SRC)) $(patsubst %.cc,%.lo,$(SRC))
 
 
 ifdef USE_JIT
-upb/pb/decoder.o upb/pb/decoder.lo: upb/pb/decoder_x64.h
+PB += upb/pb/compile_decoder_x64.c
+upb/pb/compile_decoder_x64.o upb/pb/comiple_decoder_x64.lo: upb/pb/compile_decoder_x64.h
 endif
 $(LIBUPB): $(OBJ)
 	$(E) AR $(LIBUPB)
@@ -172,9 +174,9 @@ upb/def.lo: upb/def.c
 	$(E) 'CC -fPIC' $<
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) $(DEF_OPT) -c -o $@ $< -fPIC
 
-upb/pb/decoder_x64.h: upb/pb/decoder_x64.dasc
+upb/pb/compile_decoder_x64.h: upb/pb/compile_decoder_x64.dasc
 	$(E) DYNASM $<
-	$(Q) $(LUA) dynasm/dynasm.lua upb/pb/decoder_x64.dasc > upb/pb/decoder_x64.h || (rm upb/pb/decoder_x64.h ; false)
+	$(Q) $(LUA) dynasm/dynasm.lua upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
 
 ifneq ($(shell uname), Darwin)
 upb/pb/jit_debug_elf_file.o: upb/pb/jit_debug_elf_file.s
@@ -184,7 +186,7 @@ upb/pb/jit_debug_elf_file.o: upb/pb/jit_debug_elf_file.s
 upb/pb/jit_debug_elf_file.h: upb/pb/jit_debug_elf_file.o
 	$(E) XXD $<
 	$(Q) xxd -i < upb/pb/jit_debug_elf_file.o > upb/pb/jit_debug_elf_file.h
-upb/pb/decoder_x64.h: upb/pb/jit_debug_elf_file.h
+upb/pb/compile_decoder_x64.h: upb/pb/jit_debug_elf_file.h
 endif
 
 # Function to expand a wildcard pattern recursively.
@@ -251,8 +253,8 @@ $(SIMPLE_CXX_TESTS): % : %.cc
 	$(E) CXX $<
 	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ tests/testmain.o $< $(LIBUPB)
 
-#VALGRIND=valgrind --leak-check=full --error-exitcode=1 --track-origins=yes
-VALGRIND=
+VALGRIND=valgrind --leak-check=full --error-exitcode=1 --track-origins=yes
+#VALGRIND=
 test: tests
 	@set -e  # Abort on error.
 	@for test in $(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS); do \

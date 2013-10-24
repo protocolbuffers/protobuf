@@ -280,7 +280,9 @@ void upb_pbdecoder_jit(upb_pbdecoderplan *plan) {
 void upb_pbdecoder_freejit(upb_pbdecoderplan *plan) {
   if (!plan->jit_code) return;
   if (plan->dl) {
+#ifdef UPB_JIT_LOAD_SO
     dlclose(plan->dl);
+#endif
   } else {
     munmap(plan->jit_code, plan->jit_size);
   }
