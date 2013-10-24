@@ -20,6 +20,10 @@
  *   pointers overflow (this might be difficult).
  * - a few "kitchen sink" examples (one proto that uses all types, lots
  *   of submsg/sequences, etc.
+ * - test different handlers at every level and whether handlers fire at
+ *   the correct field path.
+ * - test skips that extend past the end of current buffer (where decoder
+ *   returns value greater than the size param).
  */
 
 #ifndef __STDC_FORMAT_MACROS
@@ -34,12 +38,28 @@
 #include "upb/bytestream.h"
 #include "upb/handlers.h"
 #include "upb/pb/decoder.h"
-#include "upb/pb/varint.h"
+#include "upb/pb/varint.int.h"
 #include "upb_test.h"
 #include "upb/upb.h"
 #include "third_party/upb/tests/test_decoder_schema.upb.h"
 
+#undef PRINT_FAILURE
+#define PRINT_FAILURE(expr) \
+  fprintf(stderr, "Assertion failed: %s:%d\n", __FILE__, __LINE__); \
+  fprintf(stderr, "expr: %s\n", #expr); \
+  if (testhash) { \
+    fprintf(stderr, "assertion failed running test %x.  " \
+                    "Run with the arg %x to run only this test.\n", \
+                    testhash, testhash); \
+    fprintf(stderr, "Failed at %02.2f%% through tests.\n", \
+                    (float)completed * 100 / total); \
+  }
+
 uint32_t filter_hash = 0;
+double completed;
+double total;
+double *count;
+bool count_only;
 
 // Copied from decoder.c, since this is not a public interface.
 typedef struct {
@@ -134,13 +154,15 @@ const buffer empty;
 buffer cat(const buffer& a, const buffer& b,
            const buffer& c = empty,
            const buffer& d = empty,
-           const buffer& e = empty) {
+           const buffer& e = empty,
+           const buffer& f = empty) {
   buffer ret;
   ret.append(a);
   ret.append(b);
   ret.append(c);
   ret.append(d);
   ret.append(e);
+  ret.append(f);
   return ret;
 }
 
@@ -179,7 +201,7 @@ buffer submsg(uint32_t fn, const buffer& buf) {
 // using the closure depth to test that the stack of closures is properly
 // handled.
 
-int closures[UPB_MAX_NESTING];
+int closures[UPB_DECODER_MAX_NESTING];
 buffer output;
 
 void indentbuf(buffer *buf, int depth) {
@@ -363,12 +385,13 @@ void reghandlers(upb_handlers *h) {
 const upb::Handlers *handlers;
 const upb::Handlers *plan;
 
-uint32_t Hash(const buffer& proto, const buffer* expected_output) {
+uint32_t Hash(const buffer& proto, const buffer* expected_output, size_t seam1,
+              size_t seam2) {
   uint32_t hash = MurmurHash2(proto.buf(), proto.len(), 0);
   if (expected_output)
     hash = MurmurHash2(expected_output->buf(), expected_output->len(), hash);
-  bool hasjit = upb::pb::HasJitCode(plan);
-  hash = MurmurHash2(&hasjit, 1, hash);
+  hash = MurmurHash2(&seam1, sizeof(seam1), hash);
+  hash = MurmurHash2(&seam2, sizeof(seam2), hash);
   return hash;
 }
 
@@ -380,6 +403,8 @@ bool parse(
     size_t parsed =
         s->PutStringBuffer(UPB_BYTESTREAM_BYTES_STRING, buf + start, len);
     if (s->pipeline()->status().ok() != (parsed >= len)) {
+      fprintf(stderr, "Status: %s, parsed=%zu, len=%zu\n",
+              s->pipeline()->status().GetString(), parsed, len);
       ASSERT(false);
     }
     if (!s->pipeline()->status().ok())
@@ -391,8 +416,6 @@ bool parse(
 
 #define LINE(x) x "\n"
 void run_decoder(const buffer& proto, const buffer* expected_output) {
-  testhash = Hash(proto, expected_output);
-  if (filter_hash && testhash != filter_hash) return;
   upb::Pipeline pipeline(NULL, 0, upb_realloc, NULL);
   upb::Sink* sink = pipeline.NewSink(handlers);
   upb::Sink* decoder_sink = pipeline.NewSink(plan);
@@ -400,37 +423,42 @@ void run_decoder(const buffer& proto, const buffer* expected_output) {
   upb::pb::ResetDecoderSink(d, sink);
   for (size_t i = 0; i < proto.len(); i++) {
     for (size_t j = i; j < UPB_MIN(proto.len(), i + 5); j++) {
-      pipeline.Reset();
-      output.clear();
-      sink->Reset(&closures[0]);
-      size_t ofs = 0;
-      bool ok =
-          decoder_sink->StartMessage() &&
-          decoder_sink->StartString(
-              UPB_BYTESTREAM_BYTES_STARTSTR, proto.len()) &&
-          parse(decoder_sink, proto.buf(), 0, i, &ofs) &&
-          parse(decoder_sink, proto.buf(), i, j, &ofs) &&
-          parse(decoder_sink, proto.buf(), j, proto.len(), &ofs) &&
-          ofs == proto.len() &&
-          decoder_sink->EndString(UPB_BYTESTREAM_BYTES_ENDSTR);
-      if (ok) decoder_sink->EndMessage();
-      if (expected_output) {
-        if (!output.eql(*expected_output)) {
-          fprintf(stderr, "Text mismatch: '%s' vs '%s'\n",
-                  output.buf(), expected_output->buf());
+      testhash = Hash(proto, expected_output, i, j);
+      if (filter_hash && testhash != filter_hash) continue;
+      if (!count_only) {
+        pipeline.Reset();
+        output.clear();
+        sink->Reset(&closures[0]);
+        size_t ofs = 0;
+        bool ok =
+            decoder_sink->StartMessage() &&
+            decoder_sink->StartString(
+                UPB_BYTESTREAM_BYTES_STARTSTR, proto.len()) &&
+            parse(decoder_sink, proto.buf(), 0, i, &ofs) &&
+            parse(decoder_sink, proto.buf(), i, j, &ofs) &&
+            parse(decoder_sink, proto.buf(), j, proto.len(), &ofs) &&
+            ofs == proto.len() &&
+            decoder_sink->EndString(UPB_BYTESTREAM_BYTES_ENDSTR);
+        if (ok) decoder_sink->EndMessage();
+        if (expected_output) {
+          if (!output.eql(*expected_output)) {
+            fprintf(stderr, "Text mismatch: '%s' vs '%s'\n",
+                    output.buf(), expected_output->buf());
+          }
+          if (!ok) {
+            fprintf(stderr, "Failed: %s\n", pipeline.status().GetString());
+          }
+          ASSERT(ok);
+          ASSERT(output.eql(*expected_output));
+        } else {
+          if (ok) {
+            fprintf(stderr, "Didn't expect ok result, but got output: '%s'\n",
+                    output.buf());
+          }
+          ASSERT(!ok);
         }
-        if (!ok) {
-          fprintf(stderr, "Failed: %s\n", pipeline.status().GetString());
-        }
-        ASSERT(ok);
-        ASSERT(output.eql(*expected_output));
-      } else {
-        if (ok) {
-          fprintf(stderr, "Didn't expect ok result, but got output: '%s'\n",
-                  output.buf());
-        }
-        ASSERT(!ok);
       }
+      (*count)++;
     }
   }
   testhash = 0;
@@ -446,7 +474,7 @@ void assert_successful_parse(const buffer& proto,
   va_start(args, expected_fmt);
   expected_text.vappendf(expected_fmt, args);
   va_end(args);
-  // The JIT is only used for data >=20 bytes from end-of-buffer, so
+  // To test both middle-of-buffer and end-of-buffer code paths,
   // repeat once with no-op padding data at the end of buffer.
   run_decoder(proto, &expected_text);
   run_decoder(cat( proto, thirty_byte_nop ), &expected_text);
@@ -457,8 +485,7 @@ void assert_does_not_parse_at_eof(const buffer& proto) {
 }
 
 void assert_does_not_parse(const buffer& proto) {
-  // The JIT is only used for data >=20 bytes from end-of-buffer, so
-  // repeat once with no-op padding data at the end of buffer.
+  // Test that the error is caught both at end-of-buffer and middle-of-buffer.
   assert_does_not_parse_at_eof(proto);
   assert_does_not_parse_at_eof(cat( proto, thirty_byte_nop ));
 }
@@ -641,10 +668,12 @@ void test_invalid() {
   assert_does_not_parse_at_eof( buffer("\x80") );
 
   // EOF inside a known group.
-  assert_does_not_parse_at_eof( tag(4, UPB_WIRE_TYPE_START_GROUP) );
+  // TODO(haberman): add group to decoder test schema.
+  //assert_does_not_parse_at_eof( tag(4, UPB_WIRE_TYPE_START_GROUP) );
 
   // EOF inside an unknown group.
-  assert_does_not_parse_at_eof( tag(UNKNOWN_FIELD, UPB_WIRE_TYPE_START_GROUP) );
+  // TODO(haberman): unknown groups not supported yet.
+  //assert_does_not_parse_at_eof( tag(UNKNOWN_FIELD, UPB_WIRE_TYPE_START_GROUP) );
 
   // End group that we are not currently in.
   assert_does_not_parse( tag(4, UPB_WIRE_TYPE_END_GROUP) );
@@ -658,15 +687,24 @@ void test_invalid() {
       cat( tag(UPB_MAX_FIELDNUMBER + 1, UPB_WIRE_TYPE_DELIMITED),
            varint(0) ));
 
+  // Known group inside a submessage has ENDGROUP tag AFTER submessage end.
+  assert_does_not_parse(
+      cat ( submsg(UPB_DESCRIPTOR_TYPE_MESSAGE,
+                   tag(UPB_DESCRIPTOR_TYPE_GROUP, UPB_WIRE_TYPE_START_GROUP)),
+            tag(UPB_DESCRIPTOR_TYPE_GROUP, UPB_WIRE_TYPE_END_GROUP)));
+
   // Test exceeding the resource limit of stack depth.
   buffer buf;
-  for (int i = 0; i <= UPB_MAX_NESTING; i++) {
+  for (int i = 0; i <= UPB_DECODER_MAX_NESTING; i++) {
     buf.assign(submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, buf));
   }
   assert_does_not_parse(buf);
 }
 
 void test_valid() {
+  // Empty protobuf.
+  assert_successful_parse(buffer(""), "<\n>\n");
+
   test_valid_data_for_signed_type(UPB_DESCRIPTOR_TYPE_DOUBLE,
                                   dbl(33),
                                   dbl(-66));
@@ -697,6 +735,49 @@ void test_valid() {
   test_valid_data_for_type(UPB_DESCRIPTOR_TYPE_UINT32, varint(33), varint(66));
   test_valid_data_for_type(UPB_DESCRIPTOR_TYPE_FIXED64, uint64(33), uint64(66));
   test_valid_data_for_type(UPB_DESCRIPTOR_TYPE_FIXED32, uint32(33), uint32(66));
+
+  // Unknown fields.
+  int int32_type = UPB_DESCRIPTOR_TYPE_INT32;
+  int msg_type = UPB_DESCRIPTOR_TYPE_MESSAGE;
+  assert_successful_parse(
+      cat( tag(12345, UPB_WIRE_TYPE_VARINT), varint(2345678) ),
+      "<\n>\n");
+  assert_successful_parse(
+      cat( tag(12345, UPB_WIRE_TYPE_32BIT), uint32(2345678) ),
+      "<\n>\n");
+  assert_successful_parse(
+      cat( tag(12345, UPB_WIRE_TYPE_64BIT), uint64(2345678) ),
+      "<\n>\n");
+  assert_successful_parse(
+      submsg(12345, buffer("                ")),
+      "<\n>\n");
+
+  assert_successful_parse(
+      cat(
+        submsg(UPB_DESCRIPTOR_TYPE_MESSAGE,
+          submsg(UPB_DESCRIPTOR_TYPE_MESSAGE,
+            cat( tag(int32_type, UPB_WIRE_TYPE_VARINT), varint(2345678),
+                 tag(12345, UPB_WIRE_TYPE_VARINT), varint(2345678) ))),
+        tag(int32_type, UPB_WIRE_TYPE_VARINT), varint(22222)),
+      LINE("<")
+      LINE("%u:{")
+      LINE("  <")
+      LINE("  %u:{")
+      LINE("    <")
+      LINE("    %u:2345678")
+      LINE("    >")
+      LINE("  }")
+      LINE("  >")
+      LINE("}")
+      LINE("%u:22222")
+      LINE(">"), msg_type, msg_type, int32_type, int32_type);
+
+  assert_successful_parse(
+      cat( tag(UPB_DESCRIPTOR_TYPE_INT32, UPB_WIRE_TYPE_VARINT), varint(1),
+           tag(12345, UPB_WIRE_TYPE_VARINT), varint(2345678) ),
+      LINE("<")
+      LINE("%u:1")
+      LINE(">"), UPB_DESCRIPTOR_TYPE_INT32);
 
   // Test implicit startseq/endseq.
   uint32_t repfl_fn = rep_fn(UPB_DESCRIPTOR_TYPE_FLOAT);
@@ -753,7 +834,7 @@ void test_valid() {
   // Staying within the stack limit should work properly.
   buffer buf;
   buffer textbuf;
-  int total = UPB_MAX_NESTING - 1;
+  int total = UPB_DECODER_MAX_NESTING - 1;
   for (int i = 0; i < total; i++) {
     buf.assign(submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, buf));
     indentbuf(&textbuf, i);
@@ -779,42 +860,62 @@ void run_tests() {
   test_valid();
 }
 
+void test_emptyhandlers(bool allowjit) {
+  // Create an empty handlers to make sure that the decoder can handle empty
+  // messages.
+  upb::Handlers* h = upb_handlers_new(UPB_TEST_DECODER_EMPTYMESSAGE, NULL, &h);
+  bool ok = upb::Handlers::Freeze(&h, 1, NULL);
+  ASSERT(ok);
+  const upb::Handlers* plan = upb::pb::GetDecoderHandlers(h, allowjit, &plan);
+  h->Unref(&h);
+  plan->Unref(&plan);
+}
+
 extern "C" {
 
 int run_tests(int argc, char *argv[]) {
   if (argc > 1)
     filter_hash = strtol(argv[1], NULL, 16);
-  for (int i = 0; i < UPB_MAX_NESTING; i++) {
+  for (int i = 0; i < UPB_DECODER_MAX_NESTING; i++) {
     closures[i] = i;
   }
 
-  // Create an empty handlers to make sure that the decoder can handle empty
-  // messages.
-  upb::Handlers *h = upb_handlers_new(UPB_TEST_DECODER_EMPTYMESSAGE, NULL, &h);
+  // Construct decoder plan.
+  upb::Handlers* h =
+      upb::Handlers::New(UPB_TEST_DECODER_DECODERTEST, NULL, &handlers);
+  reghandlers(h);
   bool ok = upb::Handlers::Freeze(&h, 1, NULL);
   ASSERT(ok);
-  plan = upb::pb::GetDecoderHandlers(h, true, &plan);
-  h->Unref(&h);
-  plan->Unref(&plan);
-
-  // Construct decoder plan.
-  h = upb::Handlers::New(UPB_TEST_DECODER_DECODERTEST, NULL, &handlers);
-  reghandlers(h);
-  ok = upb::Handlers::Freeze(&h, 1, NULL);
   handlers = h;
+
+  // Count tests.
+  plan = upb::pb::GetDecoderHandlers(handlers, false, &plan);
+  count_only = true;
+  count = &total;
+  total = 0;
+  run_tests();
+  count_only = false;
+  count = &completed;
+  plan->Unref(&plan);
 
   // Test without JIT.
   plan = upb::pb::GetDecoderHandlers(handlers, false, &plan);
   ASSERT(!upb::pb::HasJitCode(plan));
+  completed = 0;
   run_tests();
   plan->Unref(&plan);
+
+  test_emptyhandlers(false);
 
 #ifdef UPB_USE_JIT_X64
   // Test JIT.
   plan = upb::pb::GetDecoderHandlers(handlers, true, &plan);
   ASSERT(upb::pb::HasJitCode(plan));
+  completed = 0;
   run_tests();
   plan->Unref(&plan);
+
+  test_emptyhandlers(true);
 #endif
 
   plan = NULL;

@@ -8,6 +8,13 @@ enum Foo {
   FOO_VALUE2 = 2;
 }
 
+message Simple {
+  message M2 {
+    optional int32 f1 = 1234567;
+  }
+  optional M2 m2 = 1;
+}
+
 message SpeedMessage1 {
   required string field1 = 1;
   optional string field9 = 9;

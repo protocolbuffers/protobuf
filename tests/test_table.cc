@@ -6,6 +6,7 @@
  * Tests for upb_table.
  */
 
+#include <limits.h>
 #include <string.h>
 #include <sys/resource.h>
 #include <ext/hash_map>
@@ -16,7 +17,7 @@
 #include <vector>
 #include "tests/test_util.h"
 #include "tests/upb_test.h"
-#include "upb/table.h"
+#include "upb/table.int.h"
 
 bool benchmark = false;
 #define CPU_TIME_PER_TEST 0.5
@@ -126,6 +127,19 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
     }
   }
 
+  // Test replace.
+  for(uint32_t i = 0; i <= largest_key; i++) {
+    upb_value v = upb_value_uint32(i*3);
+    bool replaced = upb_inttable_replace(&table, i, v);
+    if(m.find(i) != m.end()) { /* Assume map implementation is correct. */
+      ASSERT(replaced);
+      m[i] = i * 3;
+      hm[i] = i * 3;
+    } else {
+      ASSERT(!replaced);
+    }
+  }
+
   // Compact and test correctness again.
   upb_inttable_compact(&table);
   for(uint32_t i = 0; i <= largest_key; i++) {
@@ -133,9 +147,9 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
     bool found = upb_inttable_lookup(&table, i, &v);
     if(m.find(i) != m.end()) { /* Assume map implementation is correct. */
       ASSERT(found);
-      ASSERT(upb_value_getuint32(v) == i*2);
-      ASSERT(m[i] == i*2);
-      ASSERT(hm[i] == i*2);
+      ASSERT(upb_value_getuint32(v) == i*3);
+      ASSERT(m[i] == i*3);
+      ASSERT(hm[i] == i*3);
     } else {
       ASSERT(!found);
     }

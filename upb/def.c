@@ -88,39 +88,39 @@ bool upb_def_setfullname(upb_def *def, const char *fullname, upb_status *s) {
 upb_def *upb_def_dup(const upb_def *def, const void *o) {
   switch (def->type) {
     case UPB_DEF_MSG:
-      return upb_upcast(upb_msgdef_dup(upb_downcast_msgdef(def), o));
+      return UPB_UPCAST(upb_msgdef_dup(upb_downcast_msgdef(def), o));
     case UPB_DEF_FIELD:
-      return upb_upcast(upb_fielddef_dup(upb_downcast_fielddef(def), o));
+      return UPB_UPCAST(upb_fielddef_dup(upb_downcast_fielddef(def), o));
     case UPB_DEF_ENUM:
-      return upb_upcast(upb_enumdef_dup(upb_downcast_enumdef(def), o));
+      return UPB_UPCAST(upb_enumdef_dup(upb_downcast_enumdef(def), o));
     default: assert(false); return NULL;
   }
 }
 
 bool upb_def_isfrozen(const upb_def *def) {
-  return upb_refcounted_isfrozen(upb_upcast(def));
+  return upb_refcounted_isfrozen(UPB_UPCAST(def));
 }
 
 void upb_def_ref(const upb_def *def, const void *owner) {
-  upb_refcounted_ref(upb_upcast(def), owner);
+  upb_refcounted_ref(UPB_UPCAST(def), owner);
 }
 
 void upb_def_unref(const upb_def *def, const void *owner) {
-  upb_refcounted_unref(upb_upcast(def), owner);
+  upb_refcounted_unref(UPB_UPCAST(def), owner);
 }
 
 void upb_def_donateref(const upb_def *def, const void *from, const void *to) {
-  upb_refcounted_donateref(upb_upcast(def), from, to);
+  upb_refcounted_donateref(UPB_UPCAST(def), from, to);
 }
 
 void upb_def_checkref(const upb_def *def, const void *owner) {
-  upb_refcounted_checkref(upb_upcast(def), owner);
+  upb_refcounted_checkref(UPB_UPCAST(def), owner);
 }
 
 static bool upb_def_init(upb_def *def, upb_deftype_t type,
                          const struct upb_refcounted_vtbl *vtbl,
                          const void *owner) {
-  if (!upb_refcounted_init(upb_upcast(def), vtbl, owner)) return false;
+  if (!upb_refcounted_init(UPB_UPCAST(def), vtbl, owner)) return false;
   def->type = type;
   def->fullname = NULL;
   def->came_from_user = false;
@@ -132,7 +132,7 @@ static void upb_def_uninit(upb_def *def) {
 }
 
 static const char *msgdef_name(const upb_msgdef *m) {
-  const char *name = upb_def_fullname(upb_upcast(m));
+  const char *name = upb_def_fullname(UPB_UPCAST(m));
   return name ? name : "(anonymous)";
 }
 
@@ -191,6 +191,7 @@ bool upb_def_freeze(upb_def *const* defs, int n, upb_status *s) {
     }
   }
 
+  // Second pass of validation.  Also assign selectors, compact tables.
   for (int i = 0; i < n; i++) {
     upb_msgdef *m = upb_dyncast_msgdef_mutable(defs[i]);
     upb_enumdef *e = upb_dyncast_enumdef_mutable(defs[i]);
@@ -211,8 +212,11 @@ bool upb_def_freeze(upb_def *const* defs, int n, upb_status *s) {
     }
   }
 
+  // Def graph contains FieldDefs between each MessageDef, so double the limit.
+  int maxdepth = UPB_MAX_MESSAGE_DEPTH * 2;
+
   // Validation all passed; freeze the defs.
-  return upb_refcounted_freeze((upb_refcounted*const*)defs, n, s);
+  return upb_refcounted_freeze((upb_refcounted * const *)defs, n, s, maxdepth);
 
 err:
   for (int i = 0; i < n; i++) {
@@ -235,7 +239,7 @@ static void upb_enumdef_free(upb_refcounted *r) {
   }
   upb_strtable_uninit(&e->ntoi);
   upb_inttable_uninit(&e->iton);
-  upb_def_uninit(upb_upcast(e));
+  upb_def_uninit(UPB_UPCAST(e));
   free(e);
 }
 
@@ -243,7 +247,7 @@ upb_enumdef *upb_enumdef_new(const void *owner) {
   static const struct upb_refcounted_vtbl vtbl = {NULL, &upb_enumdef_free};
   upb_enumdef *e = malloc(sizeof(*e));
   if (!e) return NULL;
-  if (!upb_def_init(upb_upcast(e), UPB_DEF_ENUM, &vtbl, owner)) goto err2;
+  if (!upb_def_init(UPB_UPCAST(e), UPB_DEF_ENUM, &vtbl, owner)) goto err2;
   if (!upb_strtable_init(&e->ntoi, UPB_CTYPE_INT32)) goto err2;
   if (!upb_inttable_init(&e->iton, UPB_CTYPE_CSTR)) goto err1;
   return e;
@@ -271,33 +275,33 @@ upb_enumdef *upb_enumdef_dup(const upb_enumdef *e, const void *owner) {
 }
 
 bool upb_enumdef_isfrozen(const upb_enumdef *e) {
-  return upb_def_isfrozen(upb_upcast(e));
+  return upb_def_isfrozen(UPB_UPCAST(e));
 }
 
 void upb_enumdef_ref(const upb_enumdef *e, const void *owner) {
-  upb_def_ref(upb_upcast(e), owner);
+  upb_def_ref(UPB_UPCAST(e), owner);
 }
 
 void upb_enumdef_unref(const upb_enumdef *e, const void *owner) {
-  upb_def_unref(upb_upcast(e), owner);
+  upb_def_unref(UPB_UPCAST(e), owner);
 }
 
 void upb_enumdef_donateref(
     const upb_enumdef *e, const void *from, const void *to) {
-  upb_def_donateref(upb_upcast(e), from, to);
+  upb_def_donateref(UPB_UPCAST(e), from, to);
 }
 
 void upb_enumdef_checkref(const upb_enumdef *e, const void *owner) {
-  upb_def_checkref(upb_upcast(e), owner);
+  upb_def_checkref(UPB_UPCAST(e), owner);
 }
 
 const char *upb_enumdef_fullname(const upb_enumdef *e) {
-  return upb_def_fullname(upb_upcast(e));
+  return upb_def_fullname(UPB_UPCAST(e));
 }
 
 bool upb_enumdef_setfullname(upb_enumdef *e, const char *fullname,
                              upb_status *s) {
-  return upb_def_setfullname(upb_upcast(e), fullname, s);
+  return upb_def_setfullname(UPB_UPCAST(e), fullname, s);
 }
 
 bool upb_enumdef_addval(upb_enumdef *e, const char *name, int32_t num,
@@ -371,17 +375,17 @@ static void upb_fielddef_init_default(upb_fielddef *f);
 
 static void upb_fielddef_uninit_default(upb_fielddef *f) {
   if (f->type_is_set_ && f->default_is_string)
-    freestr(upb_value_getptr(f->defaultval));
+    freestr(f->defaultval.bytes);
 }
 
 static void visitfield(const upb_refcounted *r, upb_refcounted_visit *visit,
                        void *closure) {
   const upb_fielddef *f = (const upb_fielddef*)r;
   if (f->msgdef) {
-    visit(r, upb_upcast2(f->msgdef), closure);
+    visit(r, UPB_UPCAST2(f->msgdef), closure);
   }
   if (!f->subdef_is_symbolic && f->sub.def) {
-    visit(r, upb_upcast(f->sub.def), closure);
+    visit(r, UPB_UPCAST(f->sub.def), closure);
   }
 }
 
@@ -390,7 +394,7 @@ static void freefield(upb_refcounted *r) {
   upb_fielddef_uninit_default(f);
   if (f->subdef_is_symbolic)
     free(f->sub.name);
-  upb_def_uninit(upb_upcast(f));
+  upb_def_uninit(UPB_UPCAST(f));
   free(f);
 }
 
@@ -398,7 +402,7 @@ upb_fielddef *upb_fielddef_new(const void *owner) {
   static const struct upb_refcounted_vtbl vtbl = {visitfield, freefield};
   upb_fielddef *f = malloc(sizeof(*f));
   if (!f) return NULL;
-  if (!upb_def_init(upb_upcast(f), UPB_DEF_FIELD, &vtbl, owner)) {
+  if (!upb_def_init(UPB_UPCAST(f), UPB_DEF_FIELD, &vtbl, owner)) {
     free(f);
     return NULL;
   }
@@ -431,10 +435,10 @@ upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner) {
   upb_fielddef_setnumber(newf, upb_fielddef_number(f), NULL);
   upb_fielddef_setname(newf, upb_fielddef_name(f), NULL);
   if (f->default_is_string) {
-    str_t *s = upb_value_getptr(upb_fielddef_default(f));
+    str_t *s = f->defaultval.bytes;
     upb_fielddef_setdefaultstr(newf, s->str, s->len, NULL);
   } else {
-    upb_fielddef_setdefault(newf, upb_fielddef_default(f));
+    newf->defaultval = f->defaultval;
   }
 
   const char *srcname;
@@ -459,24 +463,24 @@ upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner) {
 }
 
 bool upb_fielddef_isfrozen(const upb_fielddef *f) {
-  return upb_def_isfrozen(upb_upcast(f));
+  return upb_def_isfrozen(UPB_UPCAST(f));
 }
 
 void upb_fielddef_ref(const upb_fielddef *f, const void *owner) {
-  upb_def_ref(upb_upcast(f), owner);
+  upb_def_ref(UPB_UPCAST(f), owner);
 }
 
 void upb_fielddef_unref(const upb_fielddef *f, const void *owner) {
-  upb_def_unref(upb_upcast(f), owner);
+  upb_def_unref(UPB_UPCAST(f), owner);
 }
 
 void upb_fielddef_donateref(
     const upb_fielddef *f, const void *from, const void *to) {
-  upb_def_donateref(upb_upcast(f), from, to);
+  upb_def_donateref(UPB_UPCAST(f), from, to);
 }
 
 void upb_fielddef_checkref(const upb_fielddef *f, const void *owner) {
-  upb_def_checkref(upb_upcast(f), owner);
+  upb_def_checkref(UPB_UPCAST(f), owner);
 }
 
 bool upb_fielddef_typeisset(const upb_fielddef *f) {
@@ -505,30 +509,69 @@ uint32_t upb_fielddef_number(const upb_fielddef *f) {
 }
 
 const char *upb_fielddef_name(const upb_fielddef *f) {
-  return upb_def_fullname(upb_upcast(f));
+  return upb_def_fullname(UPB_UPCAST(f));
 }
 
-const upb_msgdef *upb_fielddef_msgdef(const upb_fielddef *f) {
+const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f) {
   return f->msgdef;
 }
 
-upb_msgdef *upb_fielddef_msgdef_mutable(upb_fielddef *f) {
+upb_msgdef *upb_fielddef_containingtype_mutable(upb_fielddef *f) {
   return (upb_msgdef*)f->msgdef;
 }
 
 bool upb_fielddef_setname(upb_fielddef *f, const char *name, upb_status *s) {
-  return upb_def_setfullname(upb_upcast(f), name, s);
+  return upb_def_setfullname(UPB_UPCAST(f), name, s);
 }
 
-upb_value upb_fielddef_default(const upb_fielddef *f) {
-  assert(f->type_is_set_);
-  return f->defaultval;
+static void chkdefaulttype(const upb_fielddef *f, upb_fieldtype_t type) {
+  UPB_UNUSED(f);
+  UPB_UNUSED(type);
+  assert(f->type_is_set_ && upb_fielddef_type(f) == type);
+}
+
+int64_t upb_fielddef_defaultint64(const upb_fielddef *f) {
+  chkdefaulttype(f, UPB_TYPE_INT64);
+  return f->defaultval.sint;
+}
+
+int32_t upb_fielddef_defaultint32(const upb_fielddef *f) {
+  chkdefaulttype(f, UPB_TYPE_INT32);
+  return f->defaultval.sint;
+}
+
+uint64_t upb_fielddef_defaultuint64(const upb_fielddef *f) {
+  chkdefaulttype(f, UPB_TYPE_UINT64);
+  return f->defaultval.uint;
+}
+
+uint32_t upb_fielddef_defaultuint32(const upb_fielddef *f) {
+  chkdefaulttype(f, UPB_TYPE_UINT32);
+  return f->defaultval.uint;
+}
+
+bool upb_fielddef_defaultbool(const upb_fielddef *f) {
+  chkdefaulttype(f, UPB_TYPE_BOOL);
+  return f->defaultval.uint;
+}
+
+float upb_fielddef_defaultfloat(const upb_fielddef *f) {
+  chkdefaulttype(f, UPB_TYPE_FLOAT);
+  return f->defaultval.flt;
+}
+
+double upb_fielddef_defaultdouble(const upb_fielddef *f) {
+  chkdefaulttype(f, UPB_TYPE_DOUBLE);
+  return f->defaultval.dbl;
 }
 
 const char *upb_fielddef_defaultstr(const upb_fielddef *f, size_t *len) {
   assert(f->type_is_set_);
+  assert(upb_fielddef_type(f) == UPB_TYPE_STRING ||
+         upb_fielddef_type(f) == UPB_TYPE_BYTES ||
+         upb_fielddef_type(f) == UPB_TYPE_ENUM);
   if (f->default_is_string) {
-    str_t *str = upb_value_getptr(f->defaultval);
+    str_t *str = f->defaultval.bytes;
     if (len) *len = str->len;
     return str->str;
   }
@@ -538,20 +581,20 @@ const char *upb_fielddef_defaultstr(const upb_fielddef *f, size_t *len) {
 static void upb_fielddef_init_default(upb_fielddef *f) {
   f->default_is_string = false;
   switch (upb_fielddef_type(f)) {
-    case UPB_TYPE_DOUBLE: upb_value_setdouble(&f->defaultval, 0); break;
-    case UPB_TYPE_FLOAT: upb_value_setfloat(&f->defaultval, 0); break;
-    case UPB_TYPE_UINT64: upb_value_setuint64(&f->defaultval, 0); break;
-    case UPB_TYPE_INT64: upb_value_setint64(&f->defaultval, 0); break;
-    case UPB_TYPE_ENUM:
-    case UPB_TYPE_INT32: upb_value_setint32(&f->defaultval, 0); break;
-    case UPB_TYPE_UINT32: upb_value_setuint32(&f->defaultval, 0); break;
-    case UPB_TYPE_BOOL: upb_value_setbool(&f->defaultval, false); break;
+    case UPB_TYPE_DOUBLE: f->defaultval.dbl = 0; break;
+    case UPB_TYPE_FLOAT: f->defaultval.flt = 0; break;
+    case UPB_TYPE_INT32:
+    case UPB_TYPE_INT64:
+    case UPB_TYPE_ENUM: f->defaultval.sint = 0; break;
+    case UPB_TYPE_UINT64:
+    case UPB_TYPE_UINT32:
+    case UPB_TYPE_BOOL: f->defaultval.uint = 0; break;
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
-      upb_value_setptr(&f->defaultval, newstr("", 0));
+      f->defaultval.bytes = newstr("", 0);
       f->default_is_string = true;
       break;
-    case UPB_TYPE_MESSAGE: upb_value_setptr(&f->defaultval, NULL); break;
+    case UPB_TYPE_MESSAGE: break;
   }
 }
 
@@ -562,6 +605,16 @@ const upb_def *upb_fielddef_subdef(const upb_fielddef *f) {
   } else {
     return f->subdef_is_symbolic ? NULL : f->sub.def;
   }
+}
+
+const upb_msgdef *upb_fielddef_msgsubdef(const upb_fielddef *f) {
+  const upb_def *def = upb_fielddef_subdef(f);
+  return def ? upb_dyncast_msgdef(def) : NULL;
+}
+
+const upb_enumdef *upb_fielddef_enumsubdef(const upb_fielddef *f) {
+  const upb_def *def = upb_fielddef_subdef(f);
+  return def ? upb_dyncast_enumdef(def) : NULL;
 }
 
 upb_def *upb_fielddef_subdef_mutable(upb_fielddef *f) {
@@ -715,17 +768,57 @@ bool upb_fielddef_settagdelim(upb_fielddef *f, bool tag_delim) {
   return true;
 }
 
-void upb_fielddef_setdefault(upb_fielddef *f, upb_value value) {
-  assert(f->type_is_set_);
-  assert(!upb_fielddef_isfrozen(f));
-  assert(!upb_fielddef_isstring(f) && !upb_fielddef_issubmsg(f));
+static bool checksetdefault(upb_fielddef *f, upb_fieldtype_t type) {
+  if (!f->type_is_set_ || upb_fielddef_isfrozen(f) ||
+      upb_fielddef_type(f) != type) {
+    assert(false);
+    return false;
+  }
   if (f->default_is_string) {
-    str_t *s = upb_value_getptr(f->defaultval);
+    str_t *s = f->defaultval.bytes;
     assert(s);
     freestr(s);
   }
-  f->defaultval = value;
   f->default_is_string = false;
+  return true;
+}
+
+void upb_fielddef_setdefaultint64(upb_fielddef *f, int64_t value) {
+  if (checksetdefault(f, UPB_TYPE_INT64))
+    f->defaultval.sint = value;
+}
+
+void upb_fielddef_setdefaultint32(upb_fielddef *f, int32_t value) {
+  if ((upb_fielddef_type(f) == UPB_TYPE_ENUM &&
+       checksetdefault(f, UPB_TYPE_ENUM)) ||
+      checksetdefault(f, UPB_TYPE_INT32)) {
+    f->defaultval.sint = value;
+  }
+}
+
+void upb_fielddef_setdefaultuint64(upb_fielddef *f, uint64_t value) {
+  if (checksetdefault(f, UPB_TYPE_UINT64))
+    f->defaultval.uint = value;
+}
+
+void upb_fielddef_setdefaultuint32(upb_fielddef *f, uint32_t value) {
+  if (checksetdefault(f, UPB_TYPE_UINT32))
+    f->defaultval.uint = value;
+}
+
+void upb_fielddef_setdefaultbool(upb_fielddef *f, bool value) {
+  if (checksetdefault(f, UPB_TYPE_BOOL))
+    f->defaultval.uint = value;
+}
+
+void upb_fielddef_setdefaultfloat(upb_fielddef *f, float value) {
+  if (checksetdefault(f, UPB_TYPE_FLOAT))
+    f->defaultval.flt = value;
+}
+
+void upb_fielddef_setdefaultdouble(upb_fielddef *f, double value) {
+  if (checksetdefault(f, UPB_TYPE_DOUBLE))
+    f->defaultval.dbl = value;
 }
 
 bool upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len,
@@ -735,7 +828,7 @@ bool upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len,
     return false;
 
   if (f->default_is_string) {
-    str_t *s = upb_value_getptr(f->defaultval);
+    str_t *s = f->defaultval.bytes;
     assert(s);
     freestr(s);
   } else {
@@ -743,7 +836,7 @@ bool upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len,
   }
 
   str_t *str2 = newstr(str, len);
-  upb_value_setptr(&f->defaultval, str2);
+  f->defaultval.bytes = str2;
   f->default_is_string = true;
   return true;
 }
@@ -763,20 +856,20 @@ bool upb_fielddef_default_is_symbolic(const upb_fielddef *f) {
 bool upb_fielddef_resolveenumdefault(upb_fielddef *f, upb_status *s) {
   if (!upb_fielddef_default_is_symbolic(f)) return true;
 
-  str_t *str = upb_value_getptr(f->defaultval);
+  str_t *str = f->defaultval.bytes;
   const upb_enumdef *e = upb_downcast_enumdef(upb_fielddef_subdef(f));
   assert(str);  // Points to either a real default or the empty string.
   assert(e);
   if (str->len == 0) {
     // The "default default" for an enum is the first defined value.
-    upb_value_setint32(&f->defaultval, e->defaultval);
+    f->defaultval.sint = e->defaultval;
   } else {
     int32_t val = 0;
     if (!upb_enumdef_ntoi(e, str->str, &val)) {
       upb_status_seterrf(s, "enum default not found in enum (%s)", str->str);
       return false;
     }
-    upb_value_setint32(&f->defaultval, val);
+    f->defaultval.sint = val;
   }
   f->default_is_string = false;
   freestr(str);
@@ -819,6 +912,16 @@ bool upb_fielddef_setsubdef(upb_fielddef *f, const upb_def *subdef,
   f->subdef_is_symbolic = false;
   if (f->sub.def) upb_ref2(f->sub.def, f);
   return true;
+}
+
+bool upb_fielddef_setmsgsubdef(upb_fielddef *f, const upb_msgdef *subdef,
+                               upb_status *s) {
+  return upb_fielddef_setsubdef(f, UPB_UPCAST(subdef), s);
+}
+
+bool upb_fielddef_setenumsubdef(upb_fielddef *f, const upb_enumdef *subdef,
+                                upb_status *s) {
+  return upb_fielddef_setsubdef(f, UPB_UPCAST(subdef), s);
 }
 
 bool upb_fielddef_setsubdefname(upb_fielddef *f, const char *name,
@@ -875,7 +978,7 @@ static void visitmsg(const upb_refcounted *r, upb_refcounted_visit *visit,
   upb_msg_iter i;
   for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
-    visit(r, upb_upcast2(f), closure);
+    visit(r, UPB_UPCAST2(f), closure);
   }
 }
 
@@ -883,7 +986,7 @@ static void freemsg(upb_refcounted *r) {
   upb_msgdef *m = (upb_msgdef*)r;
   upb_strtable_uninit(&m->ntof);
   upb_inttable_uninit(&m->itof);
-  upb_def_uninit(upb_upcast(m));
+  upb_def_uninit(UPB_UPCAST(m));
   free(m);
 }
 
@@ -891,7 +994,7 @@ upb_msgdef *upb_msgdef_new(const void *owner) {
   static const struct upb_refcounted_vtbl vtbl = {visitmsg, freemsg};
   upb_msgdef *m = malloc(sizeof(*m));
   if (!m) return NULL;
-  if (!upb_def_init(upb_upcast(m), UPB_DEF_MSG, &vtbl, owner)) goto err2;
+  if (!upb_def_init(UPB_UPCAST(m), UPB_DEF_MSG, &vtbl, owner)) goto err2;
   if (!upb_inttable_init(&m->itof, UPB_CTYPE_PTR)) goto err2;
   if (!upb_strtable_init(&m->ntof, UPB_CTYPE_PTR)) goto err1;
   return m;
@@ -906,8 +1009,8 @@ err2:
 upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner) {
   upb_msgdef *newm = upb_msgdef_new(owner);
   if (!newm) return NULL;
-  bool ok = upb_def_setfullname(upb_upcast(newm),
-                                upb_def_fullname(upb_upcast(m)), NULL);
+  bool ok = upb_def_setfullname(UPB_UPCAST(newm),
+                                upb_def_fullname(UPB_UPCAST(m)), NULL);
   UPB_ASSERT_VAR(ok, ok);
   upb_msg_iter i;
   for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
@@ -921,33 +1024,33 @@ upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner) {
 }
 
 bool upb_msgdef_isfrozen(const upb_msgdef *m) {
-  return upb_def_isfrozen(upb_upcast(m));
+  return upb_def_isfrozen(UPB_UPCAST(m));
 }
 
 void upb_msgdef_ref(const upb_msgdef *m, const void *owner) {
-  upb_def_ref(upb_upcast(m), owner);
+  upb_def_ref(UPB_UPCAST(m), owner);
 }
 
 void upb_msgdef_unref(const upb_msgdef *m, const void *owner) {
-  upb_def_unref(upb_upcast(m), owner);
+  upb_def_unref(UPB_UPCAST(m), owner);
 }
 
 void upb_msgdef_donateref(
     const upb_msgdef *m, const void *from, const void *to) {
-  upb_def_donateref(upb_upcast(m), from, to);
+  upb_def_donateref(UPB_UPCAST(m), from, to);
 }
 
 void upb_msgdef_checkref(const upb_msgdef *m, const void *owner) {
-  upb_def_checkref(upb_upcast(m), owner);
+  upb_def_checkref(UPB_UPCAST(m), owner);
 }
 
 const char *upb_msgdef_fullname(const upb_msgdef *m) {
-  return upb_def_fullname(upb_upcast(m));
+  return upb_def_fullname(UPB_UPCAST(m));
 }
 
 bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname,
                             upb_status *s) {
-  return upb_def_setfullname(upb_upcast(m), fullname, s);
+  return upb_def_setfullname(UPB_UPCAST(m), fullname, s);
 }
 
 bool upb_msgdef_addfields(upb_msgdef *m, upb_fielddef *const *fields, int n,
@@ -1018,8 +1121,8 @@ void upb_msg_begin(upb_msg_iter *iter, const upb_msgdef *m) {
 
 void upb_msg_next(upb_msg_iter *iter) { upb_inttable_next(iter); }
 
-bool upb_msg_done(upb_msg_iter *iter) { return upb_inttable_done(iter); }
+bool upb_msg_done(const upb_msg_iter *iter) { return upb_inttable_done(iter); }
 
-upb_fielddef *upb_msg_iter_field(upb_msg_iter *iter) {
+upb_fielddef *upb_msg_iter_field(const upb_msg_iter *iter) {
   return (upb_fielddef*)upb_value_getptr(upb_inttable_iter_value(iter));
 }

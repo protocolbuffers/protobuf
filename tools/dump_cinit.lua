@@ -38,9 +38,16 @@ function export.file_appender(file)
 end
 
 -- const(f, label) -> UPB_LABEL_REPEATED, where f:label() == upb.LABEL_REPEATED
-function const(obj, name)
-  local val = obj[name](obj)
-  for k, v in pairs(upb) do
+function const(obj, name, base)
+  local val = obj[name]
+  base = base or upb
+
+  -- Support both f:label() and f.label.
+  if type(val) == "function" then
+    val = val(obj)
+  end
+
+  for k, v in pairs(base) do
     if v == val and string.find(k, "^" .. string.upper(name)) then
       return "UPB_" .. k
     end
@@ -52,7 +59,7 @@ end
 function constlist(pattern)
   local ret = {}
   for k, v in pairs(upb) do
-    if string.find(k, "^UPB_" .. pattern) then
+    if string.find(k, "^" .. pattern) then
       ret[k] = v
     end
   end
@@ -205,8 +212,9 @@ end
 function Dumper:strtable(t)
   -- UPB_STRTABLE_INIT(count, mask, type, size_lg2, entries)
   return string.format(
-      "UPB_STRTABLE_INIT(%d, %d, %d, %d, %s)",
-      t.count, t.mask, t.type, t.size_lg2, self.linktab:addr(t.entries[1].ptr))
+      "UPB_STRTABLE_INIT(%d, %d, %s, %d, %s)",
+      t.count, t.mask, const(t, "ctype", upbtable) , t.size_lg2,
+      self.linktab:addr(t.entries[1].ptr))
 end
 
 function Dumper:inttable(t)
@@ -217,8 +225,8 @@ function Dumper:inttable(t)
     entries = lt:addr(t.entries[1].ptr)
   end
   return string.format(
-      "UPB_INTTABLE_INIT(%d, %d, %d, %d, %s, %s, %d, %d)",
-      t.count, t.mask, t.type, t.size_lg2, entries,
+      "UPB_INTTABLE_INIT(%d, %d, %s, %d, %s, %s, %d, %d)",
+      t.count, t.mask, const(t, "ctype", upbtable), t.size_lg2, entries,
       lt:addr(t.array[1].ptr), t.array_size, t.array_count)
 end
 
@@ -279,9 +287,12 @@ local function dump_defs_c(symtab, basename, append)
     strentries = "strentries",
     arrays = "arrays",
   })
+  local reftable_count = 0
+
   for _, def in ipairs(defs) do
     assert(def:is_frozen(), "can only dump frozen defs.")
     linktab:add(def:def_type(), def)
+    reftable_count = reftable_count + 2
     local tables = gettables(def)
     if tables then
       for _, e in ipairs(tables.str.entries) do
@@ -306,19 +317,28 @@ local function dump_defs_c(symtab, basename, append)
   append("const upb_tabent %s;\n", linktab:cdecl("intentries"))
   append("const _upb_value %s;\n", linktab:cdecl("arrays"))
   append("\n")
+  append("#ifdef UPB_DEBUG_REFS\n")
+  append("static upb_inttable reftables[%d];\n", reftable_count)
+  append("#endif\n")
+  append("\n")
 
   -- Emit defs.
   local dumper = Dumper:new(linktab)
+
+  local reftable = 0
 
   append("const upb_msgdef %s = {\n", linktab:cdecl(upb.DEF_MSG))
   for m in linktab:objs(upb.DEF_MSG) do
     local tables = gettables(m)
     -- UPB_MSGDEF_INIT(name, itof, ntof)
-    append('  UPB_MSGDEF_INIT("%s", %s, %s, %s),\n',
+    append('  UPB_MSGDEF_INIT("%s", %s, %s, %s, ' ..
+           '&reftables[%d], &reftables[%d]),\n',
            m:full_name(),
            dumper:inttable(tables.int),
            dumper:strtable(tables.str),
-           m:_selector_count())
+           m:_selector_count(),
+           reftable, reftable + 1)
+    reftable = reftable + 2
   end
   append("};\n\n")
 
@@ -326,7 +346,7 @@ local function dump_defs_c(symtab, basename, append)
   for f in linktab:objs(upb.DEF_FIELD) do
     local subdef = "NULL"
     if f:has_subdef() then
-      subdef = string.format("upb_upcast(%s)", linktab:addr(f:subdef()))
+      subdef = string.format("UPB_UPCAST(%s)", linktab:addr(f:subdef()))
     end
     local intfmt
     if f:type() == upb.TYPE_UINT32 or
@@ -340,12 +360,15 @@ local function dump_defs_c(symtab, basename, append)
     -- UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, name, num, msgdef,
     --                   subdef, selector_base, default_value)
     append('  UPB_FIELDDEF_INIT(%s, %s, %s, %s, "%s", %d, %s, %s, %d, ' ..
-           'UPB_VALUE_INIT_NONE),\n',  -- TODO: support default value
+           '{0},' .. -- TODO: support default value
+           '&reftables[%d], &reftables[%d]),\n',
            const(f, "label"), const(f, "type"), intfmt,
            boolstr(f:istagdelim()), f:name(),
-           f:number(), linktab:addr(f:msgdef()), subdef,
-           f:_selector_base()
+           f:number(), linktab:addr(f:containing_type()), subdef,
+           f:_selector_base(),
+           reftable, reftable + 1
            )
+    reftable = reftable + 2
   end
   append("};\n\n")
 
@@ -353,12 +376,15 @@ local function dump_defs_c(symtab, basename, append)
   for e in linktab:objs(upb.DEF_ENUM) do
     local tables = gettables(e)
     -- UPB_ENUMDEF_INIT(name, ntoi, iton, defaultval)
-    append('  UPB_ENUMDEF_INIT("%s", %s, %s, %d),\n',
+    append('  UPB_ENUMDEF_INIT("%s", %s, %s, %d, ' ..
+           '&reftables[%d], &reftables[%d]),\n',
            e:full_name(),
            dumper:strtable(tables.str),
            dumper:inttable(tables.int),
            --e:default())
-           0)
+           0,
+           reftable, reftable + 1)
+    reftable = reftable + 2
   end
   append("};\n\n")
 
@@ -379,6 +405,14 @@ local function dump_defs_c(symtab, basename, append)
     append(dumper:arrayval(ent))
   end
   append("};\n\n");
+
+  append("#ifdef UPB_DEBUG_REFS\n")
+  append("static upb_inttable reftables[%d] = {\n", reftable_count)
+  for i = 1,reftable_count do
+    append("  UPB_EMPTY_INTTABLE_INIT(UPB_CTYPE_PTR),\n")
+  end
+  append("};\n")
+  append("#endif\n\n")
 
   return linktab
 end
@@ -431,18 +465,26 @@ local function dump_defs_h(symtab, basename, append, linktab)
   end
   append("\n")
 
-  append("// Selector definitions.\n")
   local selector_types = constlist("HANDLER_")
+  local selectors = {}
+
   for f in linktab:objs(upb.DEF_FIELD) do
     for sel_type_name, sel_type_value in pairs(selector_types) do
-      sel_type_name = sel_type_name:gsub("UPB_HANDLER_", "")
+      sel_type_name = sel_type_name:gsub("HANDLER_", "")
       local sel = f:getsel(sel_type_value)
       if sel then
-        local symname = f:msgdef():full_name() .. "." .. f:name() ..
+        local symname = f:containing_type():full_name() .. "." .. f:name() ..
                         "." .. sel_type_name
-        append("#define %s %d\n", to_preproc(symname), sel)
+        selectors[#selectors + 1] = {to_preproc(symname), sel}
       end
     end
+  end
+
+  table.sort(selectors, function(a, b) return a[1] < b[1] end)
+
+  append("// Selector definitions.\n")
+  for _, selector in ipairs(selectors) do
+    append("#define %s %d\n", selector[1], selector[2])
   end
   append("\n")
 

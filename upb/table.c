@@ -7,23 +7,31 @@
  * Implementation is heavily inspired by Lua's ltable.c.
  */
 
-#include "upb/table.h"
+#include "upb/table.int.h"
 
 #include <stdlib.h>
 #include <string.h>
 
 #define UPB_MAXARRSIZE 16  // 64k.
 
+// From Chromium.
+#define ARRAY_SIZE(x) \
+    ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
+
 static const double MAX_LOAD = 0.85;
 
-// The minimum percentage of an array part that we will allow.  This is a
-// speed/memory-usage tradeoff (though it's not straightforward because of
+// The minimum utilization of the array part of a mixed hash/array table.  This
+// is a speed/memory-usage tradeoff (though it's not straightforward because of
 // cache effects).  The lower this is, the more memory we'll use.
 static const double MIN_DENSITY = 0.1;
 
-int upb_log2(uint64_t v) {
+bool is_pow2(uint64_t v) { return v == 0 || (v & (v - 1)) == 0; }
+
+int log2ceil(uint64_t v) {
   int ret = 0;
+  bool pow2 = is_pow2(v);
   while (v >>= 1) ret++;
+  ret = pow2 ? ret : ret + 1;  // Ceiling.
   return UPB_MIN(UPB_MAXARRSIZE, ret);
 }
 
@@ -49,9 +57,9 @@ static bool isfull(upb_table *t) {
   return (double)(t->count + 1) / upb_table_size(t) > MAX_LOAD;
 }
 
-static bool init(upb_table *t, upb_ctype_t type, uint8_t size_lg2) {
+static bool init(upb_table *t, upb_ctype_t ctype, uint8_t size_lg2) {
   t->count = 0;
-  t->type = type;
+  t->ctype = ctype;
   t->size_lg2 = size_lg2;
   t->mask = upb_table_size(t) ? upb_table_size(t) - 1 : 0;
   size_t bytes = upb_table_size(t) * sizeof(upb_tabent);
@@ -88,7 +96,7 @@ static bool lookup(const upb_table *t, upb_tabkey key, upb_value *v,
   const upb_tabent *e = findentry(t, key, hash, eql);
   if (e) {
     if (v) {
-      _upb_value_setval(v, e->val, t->type);
+      _upb_value_setval(v, e->val, t->ctype);
     }
     return true;
   } else {
@@ -100,7 +108,7 @@ static bool lookup(const upb_table *t, upb_tabkey key, upb_value *v,
 static void insert(upb_table *t, upb_tabkey key, upb_value val,
                    hashfunc_t *hash, eqlfunc_t *eql) {
   assert(findentry(t, key, hash, eql) == NULL);
-  assert(val.type == t->type);
+  assert(val.ctype == t->ctype);
   t->count++;
   upb_tabent *mainpos_e = (upb_tabent*)hash(t, key);
   upb_tabent *our_e = mainpos_e;
@@ -145,7 +153,7 @@ static bool rm(upb_table *t, upb_tabkey key, upb_value *val,
     // Element to remove is at the head of its chain.
     t->count--;
     if (val) {
-      _upb_value_setval(val, chain->val, t->type);
+      _upb_value_setval(val, chain->val, t->ctype);
     }
     if (chain->next) {
       upb_tabent *move = (upb_tabent*)chain->next;
@@ -164,7 +172,7 @@ static bool rm(upb_table *t, upb_tabkey key, upb_value *val,
     if (chain->next) {
       // Found element to remove.
       if (val) {
-        _upb_value_setval(val, chain->next->val, t->type);
+        _upb_value_setval(val, chain->next->val, t->ctype);
       }
       upb_tabent *rm = (upb_tabent*)chain->next;
       if (removed) *removed = rm->key;
@@ -204,8 +212,8 @@ static bool streql(upb_tabkey k1, upb_tabkey k2) {
   return strcmp(k1.str, k2.str) == 0;
 }
 
-bool upb_strtable_init(upb_strtable *t, upb_ctype_t type) {
-  return init(&t->t, type, 2);
+bool upb_strtable_init(upb_strtable *t, upb_ctype_t ctype) {
+  return init(&t->t, ctype, 2);
 }
 
 void upb_strtable_uninit(upb_strtable *t) {
@@ -218,7 +226,7 @@ bool upb_strtable_insert(upb_strtable *t, const char *k, upb_value v) {
   if (isfull(&t->t)) {
     // Need to resize.  New table of double the size, add old elements to it.
     upb_strtable new_table;
-    if (!init(&new_table.t, t->t.type, t->t.size_lg2 + 1))
+    if (!init(&new_table.t, t->t.ctype, t->t.size_lg2 + 1))
       return false;
     upb_strtable_iter i;
     upb_strtable_begin(&i, t);
@@ -267,6 +275,21 @@ static bool inteql(upb_tabkey k1, upb_tabkey k2) {
   return k1.num == k2.num;
 }
 
+static _upb_value *inttable_val(upb_inttable *t, uintptr_t key) {
+  if (key < t->array_size) {
+    return upb_arrhas(t->array[key]) ? (_upb_value*)&t->array[key] : NULL;
+  } else {
+    upb_tabent *e =
+        (upb_tabent*)findentry(&t->t, upb_intkey(key), &upb_inthash, &inteql);
+    return e ? &e->val : NULL;
+  }
+}
+
+static const _upb_value *inttable_val_const(const upb_inttable *t,
+                                            uintptr_t key) {
+  return inttable_val((upb_inttable*)t, key);
+}
+
 size_t upb_inttable_count(const upb_inttable *t) {
   return t->t.count + t->array_count;
 }
@@ -285,9 +308,9 @@ static void check(upb_inttable *t) {
 #endif
 }
 
-bool upb_inttable_sizedinit(upb_inttable *t, upb_ctype_t type,
+bool upb_inttable_sizedinit(upb_inttable *t, upb_ctype_t ctype,
                             size_t asize, int hsize_lg2) {
-  if (!init(&t->t, type, hsize_lg2)) return false;
+  if (!init(&t->t, ctype, hsize_lg2)) return false;
   // Always make the array part at least 1 long, so that we know key 0
   // won't be in the hash part, which simplifies things.
   t->array_size = UPB_MAX(1, asize);
@@ -303,8 +326,8 @@ bool upb_inttable_sizedinit(upb_inttable *t, upb_ctype_t type,
   return true;
 }
 
-bool upb_inttable_init(upb_inttable *t, upb_ctype_t type) {
-  return upb_inttable_sizedinit(t, type, 0, 4);
+bool upb_inttable_init(upb_inttable *t, upb_ctype_t ctype) {
+  return upb_inttable_sizedinit(t, ctype, 0, 4);
 }
 
 void upb_inttable_uninit(upb_inttable *t) {
@@ -322,12 +345,12 @@ bool upb_inttable_insert(upb_inttable *t, uintptr_t key, upb_value val) {
     if (isfull(&t->t)) {
       // Need to resize the hash part, but we re-use the array part.
       upb_table new_table;
-      if (!init(&new_table, t->t.type, t->t.size_lg2 + 1))
+      if (!init(&new_table, t->t.ctype, t->t.size_lg2 + 1))
         return false;
       const upb_tabent *e;
       for (e = begin(&t->t); e; e = next(&t->t, e)) {
         upb_value v;
-        _upb_value_setval(&v, e->val, t->t.type);
+        _upb_value_setval(&v, e->val, t->t.ctype);
         insert(&new_table, e->key, v, &upb_inthash, &inteql);
       }
 
@@ -343,15 +366,17 @@ bool upb_inttable_insert(upb_inttable *t, uintptr_t key, upb_value val) {
 }
 
 bool upb_inttable_lookup(const upb_inttable *t, uintptr_t key, upb_value *v) {
-  if (key < t->array_size) {
-    bool ret = upb_arrhas(t->array[key]);
-    if (ret && v) {
-      _upb_value_setval(v, t->array[key], t->t.type);
-    }
-    return ret;
-  } else {
-    return lookup(&t->t, upb_intkey(key), v, &upb_inthash, &inteql);
-  }
+  const _upb_value *table_v = inttable_val_const(t, key);
+  if (!table_v) return false;
+  if (v) _upb_value_setval(v, *table_v, t->t.ctype);
+  return true;
+}
+
+bool upb_inttable_replace(upb_inttable *t, uintptr_t key, upb_value val) {
+  _upb_value *table_v = inttable_val(t, key);
+  if (!table_v) return false;
+  *table_v = val.val;
+  return true;
 }
 
 bool upb_inttable_remove(upb_inttable *t, uintptr_t key, upb_value *val) {
@@ -360,7 +385,7 @@ bool upb_inttable_remove(upb_inttable *t, uintptr_t key, upb_value *val) {
     if (upb_arrhas(t->array[key])) {
       t->array_count--;
       if (val) {
-        _upb_value_setval(val, t->array[key], t->t.type);
+        _upb_value_setval(val, t->array[key], t->t.ctype);
       }
       ((upb_value*)t->array)[key] = upb_value_uint64(-1);
       success = true;
@@ -400,31 +425,58 @@ bool upb_inttable_removeptr(upb_inttable *t, const void *key, upb_value *val) {
 }
 
 void upb_inttable_compact(upb_inttable *t) {
-  // Find the largest power of two that satisfies the MIN_DENSITY definition.
+  // Create a power-of-two histogram of the table keys.
   int counts[UPB_MAXARRSIZE + 1] = {0};
+  uintptr_t max_key = 0;
   upb_inttable_iter i;
-  for (upb_inttable_begin(&i, t); !upb_inttable_done(&i); upb_inttable_next(&i))
-    counts[upb_log2(upb_inttable_iter_key(&i))]++;
-  // Int part must always be at least 1 entry large to catch lookups of key 0.
-  // Key 0 must always be in the array part because "0" in the hash part
-  // denotes an empty entry.
-  int count = UPB_MAX(upb_inttable_count(t), 1);
-  int size;
-  for (size = UPB_MAXARRSIZE; size > 1; size--) {
-    count -= counts[size];
-    if (count >= (1 << size) * MIN_DENSITY) break;
+  upb_inttable_begin(&i, t);
+  for (; !upb_inttable_done(&i); upb_inttable_next(&i)) {
+    uintptr_t key = upb_inttable_iter_key(&i);
+    if (key > max_key) {
+      max_key = key;
+    }
+    counts[log2ceil(key)]++;
   }
 
-  // Insert all elements into new, perfectly-sized table.
-  upb_inttable new_table;
-  int hashsize = (upb_inttable_count(t) - count + 1) / MAX_LOAD;
+  int arr_size;
+  int arr_count = upb_inttable_count(t);
 
-  upb_inttable_sizedinit(&new_table, t->t.type, size, upb_log2(hashsize));
-  for (upb_inttable_begin(&i, t); !upb_inttable_done(&i); upb_inttable_next(&i))
-    upb_inttable_insert(
-        &new_table, upb_inttable_iter_key(&i), upb_inttable_iter_value(&i));
+  if (upb_inttable_count(t) >= max_key * MIN_DENSITY) {
+    // We can put 100% of the entries in the array part.
+    arr_size = max_key + 1;
+  } else {
+    // Find the largest power of two that satisfies the MIN_DENSITY definition.
+    for (int size_lg2 = ARRAY_SIZE(counts) - 1; size_lg2 > 1; size_lg2--) {
+      arr_size = 1 << size_lg2;
+      arr_count -= counts[size_lg2];
+      if (arr_count >= arr_size * MIN_DENSITY) {
+        break;
+      }
+    }
+  }
+
+  // Array part must always be at least 1 entry large to catch lookups of key
+  // 0.  Key 0 must always be in the array part because "0" in the hash part
+  // denotes an empty entry.
+  arr_size = UPB_MAX(arr_size, 1);
+
+  // Insert all elements into new, perfectly-sized table.
+  int hash_count = upb_inttable_count(t) - arr_count;
+  int hash_size = hash_count ? (hash_count / MAX_LOAD) + 1 : 0;
+  int hashsize_lg2 = log2ceil(hash_size);
+  assert(hash_count >= 0);
+
+  upb_inttable new_t;
+  upb_inttable_sizedinit(&new_t, t->t.ctype, arr_size, hashsize_lg2);
+  upb_inttable_begin(&i, t);
+  for (; !upb_inttable_done(&i); upb_inttable_next(&i)) {
+    uintptr_t k = upb_inttable_iter_key(&i);
+    upb_inttable_insert(&new_t, k, upb_inttable_iter_value(&i));
+  }
+  assert(new_t.array_size == arr_size);
+  assert(new_t.t.size_lg2 == hashsize_lg2);
   upb_inttable_uninit(t);
-  *t = new_table;
+  *t = new_t;
 }
 
 void upb_inttable_begin(upb_inttable_iter *i, const upb_inttable *t) {

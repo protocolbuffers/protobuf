@@ -46,7 +46,7 @@ static void visithandlers(const upb_refcounted *r, upb_refcounted_visit *visit,
     upb_fielddef *f = upb_msg_iter_field(&i);
     if (!upb_fielddef_issubmsg(f)) continue;
     const upb_handlers *sub = upb_handlers_getsubhandlers(h, f);
-    if (sub) visit(r, upb_upcast(sub), closure);
+    if (sub) visit(r, UPB_UPCAST(sub), closure);
   }
 }
 
@@ -101,7 +101,7 @@ static int32_t getsel(upb_handlers *h, const upb_fielddef *f,
                       upb_handlertype_t type) {
   upb_selector_t sel;
   assert(!upb_handlers_isfrozen(h));
-  if (upb_handlers_msgdef(h) != upb_fielddef_msgdef(f)) {
+  if (upb_handlers_msgdef(h) != upb_fielddef_containingtype(f)) {
     upb_status_seterrf(
         h->status_, "type mismatch: field %s does not belong to message %s",
         upb_fielddef_name(f), upb_msgdef_fullname(upb_handlers_msgdef(h)));
@@ -153,24 +153,24 @@ static bool doset(upb_handlers *h, upb_selector_t sel, upb_func *func,
 /* Public interface ***********************************************************/
 
 bool upb_handlers_isfrozen(const upb_handlers *h) {
-  return upb_refcounted_isfrozen(upb_upcast(h));
+  return upb_refcounted_isfrozen(UPB_UPCAST(h));
 }
 
 void upb_handlers_ref(const upb_handlers *h, const void *owner) {
-  upb_refcounted_ref(upb_upcast(h), owner);
+  upb_refcounted_ref(UPB_UPCAST(h), owner);
 }
 
 void upb_handlers_unref(const upb_handlers *h, const void *owner) {
-  upb_refcounted_unref(upb_upcast(h), owner);
+  upb_refcounted_unref(UPB_UPCAST(h), owner);
 }
 
 void upb_handlers_donateref(
     const upb_handlers *h, const void *from, const void *to) {
-  upb_refcounted_donateref(upb_upcast(h), from, to);
+  upb_refcounted_donateref(UPB_UPCAST(h), from, to);
 }
 
 void upb_handlers_checkref(const upb_handlers *h, const void *owner) {
-  upb_refcounted_checkref(upb_upcast(h), owner);
+  upb_refcounted_checkref(UPB_UPCAST(h), owner);
 }
 
 
@@ -192,13 +192,13 @@ upb_handlers *upb_handlers_new(const upb_msgdef *md, const upb_frametype *ft,
   h->cleanup_size = 0;
   h->cleanup_len = 0;
   upb_msgdef_ref(h->msg, h);
-  if (!upb_refcounted_init(upb_upcast(h), &vtbl, owner)) goto oom;
+  if (!upb_refcounted_init(UPB_UPCAST(h), &vtbl, owner)) goto oom;
 
   // calloc() above initialized all handlers to NULL.
   return h;
 
 oom:
-  freehandlers(upb_upcast(h));
+  freehandlers(UPB_UPCAST(h));
   return NULL;
 }
 
@@ -217,8 +217,8 @@ const upb_handlers *upb_handlers_newfrozen(const upb_msgdef *m,
   upb_inttable_uninit(&state.tab);
   if (!ret) return NULL;
 
-  upb_refcounted *r = upb_upcast(ret);
-  bool ok = upb_refcounted_freeze(&r, 1, NULL);
+  upb_refcounted *r = UPB_UPCAST(ret);
+  bool ok = upb_refcounted_freeze(&r, 1, NULL, UPB_MAX_HANDLER_DEPTH);
   UPB_ASSERT_VAR(ok, ok);
 
   return ret;
@@ -276,7 +276,7 @@ bool upb_handlers_setsubhandlers(upb_handlers *h, const upb_fielddef *f,
   assert(!upb_handlers_isfrozen(h));
   assert(upb_fielddef_issubmsg(f));
   if (SUBH(h, f->selector_base)) return false;  // Can't reset.
-  if (upb_upcast(upb_handlers_msgdef(sub)) != upb_fielddef_subdef(f)) {
+  if (UPB_UPCAST(upb_handlers_msgdef(sub)) != upb_fielddef_subdef(f)) {
     return false;
   }
   SUBH(h, f->selector_base) = sub;
@@ -324,7 +324,8 @@ bool upb_handlers_freeze(upb_handlers *const*handlers, int n, upb_status *s) {
     }
   }
 
-  if (!upb_refcounted_freeze((upb_refcounted*const*)handlers, n, s)) {
+  if (!upb_refcounted_freeze((upb_refcounted*const*)handlers, n, s,
+                             UPB_MAX_HANDLER_DEPTH)) {
     return false;
   }
 
@@ -395,7 +396,7 @@ bool upb_handlers_getselector(const upb_fielddef *f, upb_handlertype_t type,
       break;
     // Subhandler slot is selector_base + 2.
   }
-  assert(*s < upb_fielddef_msgdef(f)->selector_count);
+  assert(*s < upb_fielddef_containingtype(f)->selector_count);
   return true;
 }
 

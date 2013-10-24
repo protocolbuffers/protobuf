@@ -4,6 +4,7 @@
  * Copyright (c) 2009 Google Inc.  See LICENSE for details.
  * Author: Josh Haberman <jhaberman@gmail.com>
  *
+ * This header is INTERNAL-ONLY!  Its interfaces are not public or stable!
  * This file defines very fast int->upb_value (inttable) and string->upb_value
  * (strtable) hash tables.
  *
@@ -15,23 +16,131 @@
  * store pointers or integers of at least 32 bits (upb isn't really useful on
  * systems where sizeof(void*) < 4).
  *
- * This header is internal to upb; its interface should not be considered
- * public or stable.
- *
- * The table must be homogenous (all values of the same type).  We currently
- * enforce this on insert but store the full upb_value (with type) anyway.
- * This is required with the current interface because lookups vend a pointer
- * to the table's internal storage.
+ * The table must be homogenous (all values of the same type).  In debug
+ * mode, we check this on insert and lookup.
  */
 
 #ifndef UPB_TABLE_H_
 #define UPB_TABLE_H_
 
+#include <assert.h>
+#include <stdint.h>
 #include "upb.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+/* upb_value ******************************************************************/
+
+// A tagged union (stored untagged inside the table) so that we can check that
+// clients calling table accessors are correctly typed without having to have
+// an explosion of accessors.
+typedef enum {
+  UPB_CTYPE_INT32  = 1,
+  UPB_CTYPE_INT64  = 2,
+  UPB_CTYPE_UINT32 = 3,
+  UPB_CTYPE_UINT64 = 4,
+  UPB_CTYPE_BOOL   = 5,
+  UPB_CTYPE_CSTR   = 6,
+  UPB_CTYPE_PTR    = 7,
+} upb_ctype_t;
+
+typedef union {
+  int32_t  int32;
+  int64_t  int64;
+  uint64_t uint64;
+  uint32_t uint32;
+  bool     _bool;
+  char     *cstr;
+  void     *ptr;
+  const void *constptr;
+} _upb_value;
+
+typedef struct {
+  _upb_value val;
+#ifndef NDEBUG
+  // In debug mode we carry the value type around also so we can check accesses
+  // to be sure the right member is being read.
+  upb_ctype_t ctype;
+#endif
+} upb_value;
+
+#ifdef UPB_C99
+#define UPB_VALUE_INIT(v, member) {.member = v}
+#endif
+#define UPB__VALUE_INIT_NONE      UPB_VALUE_INIT(NULL, ptr)
+
+#ifdef NDEBUG
+#define SET_TYPE(dest, val)      UPB_UNUSED(val)
+#define UPB_VALUE_INIT_NONE      {UPB__VALUE_INIT_NONE}
+#else
+#define SET_TYPE(dest, val) dest = val
+// Non-existent type, all reads will fail.
+#define UPB_VALUE_INIT_NONE      {UPB__VALUE_INIT_NONE, -1}
+#endif
+
+#define UPB_VALUE_INIT_INT32(v)  UPB_VALUE_INIT(v, int32)
+#define UPB_VALUE_INIT_INT64(v)  UPB_VALUE_INIT(v, int64)
+#define UPB_VALUE_INIT_UINT32(v) UPB_VALUE_INIT(v, uint32)
+#define UPB_VALUE_INIT_UINT64(v) UPB_VALUE_INIT(v, uint64)
+#define UPB_VALUE_INIT_BOOL(v)   UPB_VALUE_INIT(v, _bool)
+#define UPB_VALUE_INIT_CSTR(v)   UPB_VALUE_INIT(v, cstr)
+#define UPB_VALUE_INIT_PTR(v)    UPB_VALUE_INIT(v, ptr)
+#define UPB_VALUE_INIT_CONSTPTR(v) UPB_VALUE_INIT(v, constptr)
+
+// Like strdup(), which isn't always available since it's not ANSI C.
+char *upb_strdup(const char *s);
+
+UPB_INLINE void _upb_value_setval(upb_value *v, _upb_value val,
+                                  upb_ctype_t ctype) {
+  v->val = val;
+  SET_TYPE(v->ctype, ctype);
+}
+
+UPB_INLINE upb_value _upb_value_val(_upb_value val, upb_ctype_t ctype) {
+  upb_value ret;
+  _upb_value_setval(&ret, val, ctype);
+  return ret;
+}
+
+// For each value ctype, define the following set of functions:
+//
+// // Get/set an int32 from a upb_value.
+// int32_t upb_value_getint32(upb_value val);
+// void upb_value_setint32(upb_value *val, int32_t cval);
+//
+// // Construct a new upb_value from an int32.
+// upb_value upb_value_int32(int32_t val);
+#define FUNCS(name, membername, type_t, proto_type) \
+  UPB_INLINE void upb_value_set ## name(upb_value *val, type_t cval) { \
+    val->val.uint64 = 0; \
+    SET_TYPE(val->ctype, proto_type); \
+    val->val.membername = cval; \
+  } \
+  UPB_INLINE upb_value upb_value_ ## name(type_t val) { \
+    upb_value ret; \
+    upb_value_set ## name(&ret, val); \
+    return ret; \
+  } \
+  UPB_INLINE type_t upb_value_get ## name(upb_value val) { \
+    assert(val.ctype == proto_type); \
+    return val.val.membername; \
+  }
+
+FUNCS(int32,  int32,   int32_t,  UPB_CTYPE_INT32);
+FUNCS(int64,  int64,   int64_t,  UPB_CTYPE_INT64);
+FUNCS(uint32, uint32,  uint32_t, UPB_CTYPE_UINT32);
+FUNCS(uint64, uint64,  uint64_t, UPB_CTYPE_UINT64);
+FUNCS(bool,   _bool,   bool,     UPB_CTYPE_BOOL);
+FUNCS(cstr,   cstr,    char*,    UPB_CTYPE_CSTR);
+FUNCS(ptr,    ptr,     void*,    UPB_CTYPE_PTR);
+
+#undef FUNCS
+
+
+/* upb_table ******************************************************************/
 
 typedef union {
   uintptr_t num;
@@ -58,7 +167,7 @@ typedef struct _upb_tabent {
 typedef struct {
   size_t count;          // Number of entries in the hash part.
   size_t mask;           // Mask to turn hash value -> bucket.
-  upb_ctype_t type;      // Type of all values.
+  upb_ctype_t ctype;     // Type of all values.
   uint8_t size_lg2;      // Size of the hash table part is 2^size_lg2 entries.
   const upb_tabent *entries;   // Hash table.
 } upb_table;
@@ -67,8 +176,8 @@ typedef struct {
   upb_table t;
 } upb_strtable;
 
-#define UPB_STRTABLE_INIT(count, mask, type, size_lg2, entries) \
-  {{count, mask, type, size_lg2, entries}}
+#define UPB_STRTABLE_INIT(count, mask, ctype, size_lg2, entries) \
+  {{count, mask, ctype, size_lg2, entries}}
 
 typedef struct {
   upb_table t;             // For entries that don't fit in the array part.
@@ -77,11 +186,11 @@ typedef struct {
   size_t array_count;      // Array part number of elements.
 } upb_inttable;
 
-#define UPB_INTTABLE_INIT(count, mask, type, size_lg2, ent, a, asize, acount) \
-  {{count, mask, type, size_lg2, ent}, a, asize, acount}
+#define UPB_INTTABLE_INIT(count, mask, ctype, size_lg2, ent, a, asize, acount) \
+  {{count, mask, ctype, size_lg2, ent}, a, asize, acount}
 
-#define UPB_EMPTY_INTTABLE_INIT(type) \
-  UPB_INTTABLE_INIT(0, 0, type, 0, NULL, NULL, 0, 0)
+#define UPB_EMPTY_INTTABLE_INIT(ctype) \
+  UPB_INTTABLE_INIT(0, 0, ctype, 0, NULL, NULL, 0, 0)
 
 #define UPB_ARRAY_EMPTYENT UPB_VALUE_INIT_INT64(-1)
 
@@ -113,8 +222,8 @@ uint32_t MurmurHash2(const void *key, size_t len, uint32_t seed);
 
 // Initialize and uninitialize a table, respectively.  If memory allocation
 // failed, false is returned that the table is uninitialized.
-bool upb_inttable_init(upb_inttable *table, upb_ctype_t type);
-bool upb_strtable_init(upb_strtable *table, upb_ctype_t type);
+bool upb_inttable_init(upb_inttable *table, upb_ctype_t ctype);
+bool upb_strtable_init(upb_strtable *table, upb_ctype_t ctype);
 void upb_inttable_uninit(upb_inttable *table);
 void upb_strtable_uninit(upb_strtable *table);
 
@@ -145,6 +254,11 @@ bool upb_strtable_lookup(const upb_strtable *t, const char *key, upb_value *v);
 bool upb_inttable_remove(upb_inttable *t, uintptr_t key, upb_value *val);
 bool upb_strtable_remove(upb_strtable *t, const char *key, upb_value *val);
 
+// Updates an existing entry in an inttable.  If the entry does not exist,
+// returns false and does nothing.  Unlike insert/remove, this does not
+// invalidate iterators.
+bool upb_inttable_replace(upb_inttable *t, uintptr_t key, upb_value val);
+
 // Handy routines for treating an inttable like a stack.  May not be mixed with
 // other insert/remove calls.
 bool upb_inttable_push(upb_inttable *t, upb_value val);
@@ -168,7 +282,7 @@ UPB_INLINE bool upb_inttable_lookup32(const upb_inttable *t, uint32_t key,
   if (key < t->array_size) {
     _upb_value arrval = t->array[key];
     if (upb_arrhas(arrval)) {
-      _upb_value_setval(v, arrval, t->t.type);
+      _upb_value_setval(v, arrval, t->t.ctype);
       return true;
     } else {
       return false;
@@ -178,7 +292,7 @@ UPB_INLINE bool upb_inttable_lookup32(const upb_inttable *t, uint32_t key,
     if (t->t.entries == NULL) return NULL;
     for (e = upb_inthash(&t->t, upb_intkey(key)); true; e = e->next) {
       if ((uint32_t)e->key.num == key) {
-        _upb_value_setval(v, e->val, t->t.type);
+        _upb_value_setval(v, e->val, t->t.ctype);
         return true;
       }
       if (e->next == NULL) return false;
@@ -209,7 +323,18 @@ UPB_INLINE const char *upb_strtable_iter_key(upb_strtable_iter *i) {
   return i->e->key.str;
 }
 UPB_INLINE upb_value upb_strtable_iter_value(upb_strtable_iter *i) {
-  return _upb_value_val(i->e->val, i->t->t.type);
+  return _upb_value_val(i->e->val, i->t->t.ctype);
+}
+UPB_INLINE void upb_strtable_iter_copy(upb_strtable_iter *to,
+                                       const upb_strtable_iter *from) {
+  *to = *from;
+}
+UPB_INLINE void upb_strtable_iter_setdone(upb_strtable_iter *i) {
+  i->e = NULL;
+}
+UPB_INLINE bool upb_strtable_iter_isequal(const upb_strtable_iter *i1,
+                                          const upb_strtable_iter *i2) {
+  return i1->e == i2->e;
 }
 
 
@@ -235,15 +360,26 @@ typedef struct {
 
 void upb_inttable_begin(upb_inttable_iter *i, const upb_inttable *t);
 void upb_inttable_next(upb_inttable_iter *i);
-UPB_INLINE bool upb_inttable_done(upb_inttable_iter *i) {
+UPB_INLINE bool upb_inttable_done(const upb_inttable_iter *i) {
   return i->ptr.ent == NULL;
 }
-UPB_INLINE uintptr_t upb_inttable_iter_key(upb_inttable_iter *i) {
+UPB_INLINE uintptr_t upb_inttable_iter_key(const upb_inttable_iter *i) {
   return i->array_part ? i->arrkey : i->ptr.ent->key.num;
 }
-UPB_INLINE upb_value upb_inttable_iter_value(upb_inttable_iter *i) {
+UPB_INLINE upb_value upb_inttable_iter_value(const upb_inttable_iter *i) {
   return _upb_value_val(
-      i->array_part ? *i->ptr.val : i->ptr.ent->val, i->t->t.type);
+      i->array_part ? *i->ptr.val : i->ptr.ent->val, i->t->t.ctype);
+}
+UPB_INLINE void upb_inttable_iter_copy(upb_inttable_iter *to,
+                                       const upb_inttable_iter *from) {
+  *to = *from;
+}
+UPB_INLINE void upb_inttable_iter_setdone(upb_inttable_iter *i) {
+  i->ptr.ent = NULL;
+}
+UPB_INLINE bool upb_inttable_iter_isequal(const upb_inttable_iter *i1,
+                                          const upb_inttable_iter *i2) {
+  return i1->ptr.ent == i2->ptr.ent;
 }
 
 #ifdef __cplusplus

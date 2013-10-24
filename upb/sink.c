@@ -201,9 +201,9 @@ static void upb_sink_resetobj(void *obj) {
 
 static void upb_sink_init(upb_sink *s, const upb_handlers *h, upb_pipeline *p) {
   s->pipeline_ = p;
-  s->stack = upb_pipeline_alloc(p, sizeof(*s->stack) * UPB_MAX_NESTING);
+  s->stack = upb_pipeline_alloc(p, sizeof(*s->stack) * UPB_SINK_MAX_NESTING);
   s->top = s->stack;
-  s->limit = s->stack + UPB_MAX_NESTING;
+  s->limit = s->stack + UPB_SINK_MAX_NESTING;
   s->top->h = h;
   if (h->ft) {
     s->top->closure = upb_pipeline_allocobj(p, h->ft);
@@ -231,7 +231,6 @@ bool upb_sink_startmsg(upb_sink *s) {
 }
 
 bool upb_sink_endmsg(upb_sink *s) {
-  assert(s->top == s->stack);
   const upb_handlers *h = s->top->h;
   upb_endmsg_handler *endmsg =
       (upb_endmsg_handler *)upb_handlers_gethandler(h, UPB_ENDMSG_SELECTOR);
@@ -386,19 +385,10 @@ bool upb_sink_startsubmsg(upb_sink *s, upb_selector_t sel) {
   // TODO: should add support for submessages without any handlers
   assert(s->top->h);
   s->top->closure = subc;
-  upb_sink_startmsg(s);
   return true;
 }
 
 bool upb_sink_endsubmsg(upb_sink *s, upb_selector_t sel) {
-  upb_endmsg_handler *endmsg = (upb_endmsg_handler *)upb_handlers_gethandler(
-      s->top->h, UPB_ENDMSG_SELECTOR);
-  if (endmsg) {
-    // TODO(haberman): check return value.
-    const void *hd =
-        upb_handlers_gethandlerdata(s->top->h, UPB_ENDMSG_SELECTOR);
-    endmsg(s->top->closure, hd, &s->pipeline_->status_);
-  }
   --s->top;
 
   assert(sel == s->top->selector);

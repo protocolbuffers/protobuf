@@ -75,7 +75,7 @@ static void test_fielddef_unref() {
   upb_symtab_unref(s, &s);
   upb_msgdef_unref(md, &md);
   // Check that md is still alive.
-  ASSERT(strcmp(upb_def_fullname(upb_upcast(md)), "A") == 0);
+  ASSERT(strcmp(upb_msgdef_fullname(md), "A") == 0);
 
   // Check that unref of fielddef frees the whole remaining graph.
   upb_fielddef_unref(f, &f);
@@ -123,13 +123,13 @@ static upb_fielddef *newfield(
 
 static upb_msgdef *upb_msgdef_newnamed(const char *name, void *owner) {
   upb_msgdef *m = upb_msgdef_new(owner);
-  upb_def_setfullname(upb_upcast(m), name, NULL);
+  upb_msgdef_setfullname(m, name, NULL);
   return m;
 }
 
 static upb_enumdef *upb_enumdef_newnamed(const char *name, void *owner) {
   upb_enumdef *e = upb_enumdef_new(owner);
-  upb_def_setfullname(upb_upcast(e), name, NULL);
+  upb_enumdef_setfullname(e, name, NULL);
   return e;
 }
 
@@ -143,15 +143,15 @@ static void test_replacement() {
   upb_msgdef *m2 = upb_msgdef_newnamed("MyMessage2", &s);
   upb_enumdef *e = upb_enumdef_newnamed("MyEnum", &s);
 
-  upb_def *newdefs[] = {upb_upcast(m), upb_upcast(m2), upb_upcast(e)};
+  upb_def *newdefs[] = {UPB_UPCAST(m), UPB_UPCAST(m2), UPB_UPCAST(e)};
   upb_status status = UPB_STATUS_INIT;
   ASSERT_STATUS(upb_symtab_add(s, newdefs, 3, &s, &status), &status);
 
   // Try adding a new definition of MyEnum, MyMessage should get replaced with
   // a new version.
   upb_enumdef *e2 = upb_enumdef_new(&s);
-  upb_def_setfullname(upb_upcast(e2), "MyEnum", NULL);
-  upb_def *newdefs2[] = {upb_upcast(e2)};
+  upb_enumdef_setfullname(e2, "MyEnum", NULL);
+  upb_def *newdefs2[] = {UPB_UPCAST(e2)};
   ASSERT_STATUS(upb_symtab_add(s, newdefs2, 1, &s, &status), &status);
 
   const upb_msgdef *m3 = upb_symtab_lookupmsg(s, "MyMessage", &m3);
@@ -184,7 +184,7 @@ static void test_freeze_free() {
   upb_fielddef_settype(f, UPB_TYPE_MESSAGE);
   ASSERT(upb_fielddef_setnumber(f, 1, NULL));
   ASSERT(upb_fielddef_setname(f, "foo", NULL));
-  ASSERT(upb_fielddef_setsubdef(f, upb_upcast(m4), NULL));
+  ASSERT(upb_fielddef_setmsgsubdef(f, m4, NULL));
 
   ASSERT(upb_msgdef_addfield(m1, f, &f, NULL));
 
@@ -197,9 +197,9 @@ static void test_freeze_free() {
   ASSERT(upb_fielddef_setnumber(f, 1, NULL));
   ASSERT(upb_fielddef_setname(f, "foo", NULL));
 
-  ASSERT(upb_fielddef_setsubdef(f, upb_upcast(m1), NULL));
-  ASSERT(upb_fielddef_setsubdef(f, upb_upcast(m2), NULL));
-  ASSERT(upb_fielddef_setsubdef(f, upb_upcast(m3), NULL));
+  ASSERT(upb_fielddef_setmsgsubdef(f, m1, NULL));
+  ASSERT(upb_fielddef_setmsgsubdef(f, m2, NULL));
+  ASSERT(upb_fielddef_setmsgsubdef(f, m3, NULL));
 
   // Make M3 cyclic with itself.
   ASSERT(upb_msgdef_addfield(m3, f, &f, NULL));
@@ -211,8 +211,8 @@ static void test_freeze_free() {
   upb_msgdef_unref(m2, &m2);
 
   // Test that they are still alive (NOT allowed by the API).
-  ASSERT(strcmp("M1", upb_def_fullname(upb_upcast(m1))) == 0);
-  ASSERT(strcmp("M2", upb_def_fullname(upb_upcast(m2))) == 0);
+  ASSERT(strcmp("M1", upb_msgdef_fullname(m1)) == 0);
+  ASSERT(strcmp("M2", upb_msgdef_fullname(m2)) == 0);
 
   // Freeze M3.  If the test leaked no memory, then freeing m1 and m2 was
   // successful.
@@ -232,20 +232,20 @@ static void test_partial_freeze() {
   upb_fielddef_settype(f1, UPB_TYPE_MESSAGE);
   ASSERT(upb_fielddef_setnumber(f1, 1, NULL));
   ASSERT(upb_fielddef_setname(f1, "f1", NULL));
-  ASSERT(upb_fielddef_setsubdef(f1, upb_upcast(m1), NULL));
+  ASSERT(upb_fielddef_setmsgsubdef(f1, m1, NULL));
 
   upb_fielddef *f2 = upb_fielddef_new(&f2);
   upb_fielddef_settype(f2, UPB_TYPE_MESSAGE);
   ASSERT(upb_fielddef_setnumber(f2, 2, NULL));
   ASSERT(upb_fielddef_setname(f2, "f2", NULL));
-  ASSERT(upb_fielddef_setsubdef(f2, upb_upcast(m2), NULL));
+  ASSERT(upb_fielddef_setmsgsubdef(f2, m2, NULL));
 
   ASSERT(upb_msgdef_addfield(m3, f1, &f1, NULL));
   ASSERT(upb_msgdef_addfield(m3, f2, &f2, NULL));
 
   // Freeze M1 and M2, which should cause the group to be split
   // and m3 (left mutable) to take references on m1 and m2.
-  upb_def *defs[] = {upb_upcast(m1), upb_upcast(m2)};
+  upb_def *defs[] = {UPB_UPCAST(m1), UPB_UPCAST(m2)};
   ASSERT(upb_def_freeze(defs, 2, NULL));
 
   ASSERT(upb_msgdef_isfrozen(m1));

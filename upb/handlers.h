@@ -45,6 +45,15 @@ typedef struct upb_handlers upb_handlers;
 typedef struct upb_sinkframe upb_sinkframe;
 #endif
 
+// The maximum depth that the handler graph can have.  This is a resource limit
+// for the C stack since we sometimes need to recursively traverse the graph.
+// Cycles are ok; the traversal will stop when it detects a cycle, but we must
+// hit the cycle before the maximum depth is reached.
+//
+// If having a single static limit is too inflexible, we can add another variant
+// of Handlers::Freeze that allows specifying this as a parameter.
+#define UPB_MAX_HANDLER_DEPTH 64
+
 typedef struct {
   void (*func)();
   const void *data;

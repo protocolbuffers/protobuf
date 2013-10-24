@@ -48,11 +48,11 @@ if arg[1] == "generate" then
   f:write([[int luaopen_staticdefs(lua_State *L) {
     lua_newtable(L);
     for (int i = 0; i < ELEMENTS(test_msgs); i++) {
-      lupb_def_pushnewrapper(L, upb_upcast(&test_msgs[i]), NULL);
+      lupb_def_pushnewrapper(L, UPB_UPCAST(&test_msgs[i]), NULL);
       lua_rawseti(L, -2, i + 1);
     }
     for (int i = 0; i < ELEMENTS(test_enums); i++) {
-      lupb_def_pushnewrapper(L, upb_upcast(&test_enums[i]), NULL);
+      lupb_def_pushnewrapper(L, UPB_UPCAST(&test_enums[i]), NULL);
       lua_rawseti(L, -2, ELEMENTS(test_msgs) + i + 1);
     }
     return 1;
@@ -71,7 +71,7 @@ elseif arg[1] == "test" then
   assert(enum:full_name() == "MyEnum")
   assert(enum:value("FOO") == 1)
   assert(f2:name() == "field2")
-  assert(f2:msgdef() == msg)
+  assert(f2:containing_type() == msg)
   assert(f2:subdef() == enum)
 else
   error("Unknown operation " .. arg[1])

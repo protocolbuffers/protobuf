@@ -1,0 +1,1087 @@
+|//
+|// upb - a minimalist implementation of protocol buffers.
+|//
+|// Copyright (c) 2011-2013 Google Inc.  See LICENSE for details.
+|// Author: Josh Haberman <jhaberman@gmail.com>
+|//
+|// JIT compiler for upb_pbdecoder on x86-64.  Generates machine code from the
+|// bytecode generated in compile_decoder.c, but unlike the interpreter we bind
+|// to a specific set of handlers for greater efficiency.
+|
+|.arch x64
+|.actionlist upb_jit_actionlist
+|.globals UPB_JIT_GLOBAL_
+|.globalnames upb_jit_globalnames
+|
+|// Calling conventions.  Note -- this will need to be changed for
+|// Windows, which uses a different calling convention!
+|.define ARG1_64,   rdi
+|.define ARG2_8,    r6b  // DynASM's equivalent to "sil" -- low byte of esi.
+|.define ARG2_32,   esi
+|.define ARG2_64,   rsi
+|.define ARG3_8,    dl
+|.define ARG3_32,   edx
+|.define ARG3_64,   rdx
+|.define ARG4_64,   rcx
+|.define XMMARG1,   xmm0
+|
+|// Register allocation / type map.
+|// ALL of the code in this file uses these register allocations.
+|// When we "call" within this file, we do not use regular calling
+|// conventions, but of course when calling to user callbacks we must.
+|.define PTR,       rbx                       // DECODER->ptr      (unsynced)
+|.define DATAEND,   r12                       // DECODER->data_end (unsynced)
+|.define CLOSURE,   r13                       // FRAME->closure    (unsynced)
+|.type   FRAME,     upb_pbdecoder_frame, r14  // DECODER->top      (unsynced)
+|.type   DECODER,   upb_pbdecoder, r15        // DECODER           (immutable)
+|.define DELIMEND,  rbp
+|
+| // Spills unsynced registers back to memory.
+|.macro commit_regs
+|  mov  DECODER->top, FRAME
+|  mov  DECODER->ptr, PTR
+|  mov  DECODER->data_end, DATAEND
+|  sub  DELIMEND, DECODER->buf
+|  add  DELIMEND, DECODER->bufstart_ofs
+|  mov  FRAME->end_ofs, DELIMEND
+|  mov  FRAME->u.closure, CLOSURE
+|.endmacro
+|
+| // Loads unsynced registers from memory back into registers.
+|.macro load_regs
+|  mov  FRAME, DECODER->top
+|  mov  PTR, DECODER->ptr
+|  mov  DATAEND, DECODER->data_end
+|  mov  CLOSURE, FRAME->u.closure
+|  mov  DELIMEND, FRAME->end_ofs
+|  sub  DELIMEND, DECODER->bufstart_ofs
+|  add  DELIMEND, DECODER->buf
+|.endmacro
+|
+| // OPT: use "call rel32" where possible.
+|.macro callp, addr
+|| {
+|| //int64_t ofs = (int64_t)addr - (int64_t)upb_status_init;
+|| //if (ofs > (1 << 30) || ofs < -(1 << 30)) {
+|    mov64  rax, (uintptr_t)addr
+|    call   rax
+|| //} else {
+|  //  call   &addr
+|| //}
+|| }
+|.endmacro
+|
+|.macro ld64, val
+|| {
+|| uintptr_t v = (uintptr_t)val;
+|| if (v > 0xffffffff) {
+|    mov64  ARG2_64, v
+|| } else if (v) {
+|    mov    ARG2_32, v
+|| } else {
+|    xor    ARG2_32, ARG2_32
+|| }
+|| }
+|.endmacro
+|
+|.macro load_handler_data, h, arg
+|  ld64   upb_handlers_gethandlerdata(h, arg)
+|.endmacro
+|
+|.macro chkeob, bytes, target
+|| if (bytes == 1) {
+|  cmp    PTR, DATAEND
+|  je     target
+|| } else {
+|  mov    rcx, DATAEND
+|  sub    rcx, PTR
+|  cmp    rcx, bytes
+|  jb     target
+|| }
+|.endmacro
+|
+|.macro chkneob, bytes, target
+|| if (bytes == 1) {
+|  cmp    PTR, DATAEND
+|  jne    target
+|| } else {
+|  mov    rcx, DATAEND
+|  sub    rcx, PTR
+|  cmp    rcx, bytes
+|  jae    target
+|| }
+|.endmacro
+
+|.macro sethas, reg, hasbit
+|| if (hasbit >= 0) {
+|    or   byte [reg + ((uint32_t)hasbit / 8)], (1 << ((uint32_t)hasbit % 8))
+|| }
+|.endmacro
+|
+| // Decodes 32-bit varint into rdx, inlining 1 byte.
+|.macro dv32
+|  chkeob  1, >7
+|  movzx   edx, byte [PTR]
+|  test    dl, dl
+|  jns     >8
+|7:
+|  call    ->decodev32_fallback
+|8:
+|  add     PTR, 1
+|.endmacro
+
+static void asmlabel(jitcompiler *jc, const char *fmt, ...) {
+  int ofs = jc->dynasm->section->ofs;
+  assert(ofs != jc->lastlabelofs);
+  jc->lastlabelofs = ofs;
+  va_list args;
+  va_start(args, fmt);
+
+  // Run once to get the length of the string.
+  va_list args_copy;
+  va_copy(args_copy, args);
+  int len = vsnprintf(NULL, 0, fmt, args_copy);
+  va_end(args_copy);
+
+  char *str = malloc(len + 1);  // + 1 for NULL terminator.
+  if (!str) exit(1);
+  int written = vsnprintf(str, len, fmt, args);
+  va_end(args);
+  UPB_ASSERT_VAR(written, written == len);
+
+  uint32_t label = jc->pclabel_count++;
+  dasm_growpc(jc, jc->pclabel_count);
+  |=>label:
+  upb_inttable_insert(&jc->asmlabels, label, upb_value_ptr(str));
+}
+
+// Emit static assembly routines; code that does not vary based on the message
+// schema.  Since it's not input-dependent, we only need one single copy of it.
+// For the moment we generate a single copy per generated handlers.  Eventually
+// we should generate this code at compile time and link it into the binary so
+// we have one copy total.  To do that we'll want to be sure that it is within
+// 2GB of our JIT code, so that branches between the two are near (rel32).
+//
+// We'd put this assembly in a .s file directly, but DynASM's ability to
+// calculate structure offsets automatically is too useful to pass up (it's way
+// more convenient to write DECODER->sink than [rbx + 0x96], especially since
+// the latter would have to be changed whenever the structure is updated).
+static void emit_static_asm(jitcompiler *jc) {
+  | // Trampolines for entering/exiting the JIT.  These are a bit tricky to
+  | // support full resuming; when we suspend we copy the JIT's portion of
+  | // the call stack into the upb_pbdecoder and restore it when we resume.
+  asmlabel(jc, "enterjit");
+  |->enterjit:
+  |1:
+  |  push  rbp
+  if (jc->usefp) {
+    |  mov   rbp, rsp
+  }
+  |  push  r15
+  |  push  r14
+  |  push  r13
+  |  push  r12
+  |  push  rbx
+  |
+  | // Align stack.
+  | // Since the JIT can call other functions (the JIT'ted code is not a leaf
+  | // function) we must respect alignment rules.  All x86-64 systems require
+  | // 16-byte stack alignment.
+  |  sub   rsp, 8
+  |
+  |  mov   DECODER, rdi
+  |  callp upb_pbdecoder_resume  // Same args as us; reuse regs.
+  |  mov   DECODER->saved_rsp, rsp
+  |  load_regs
+  |
+  |  // Test whether we have a saved stack to resume.
+  |  mov   ARG3_64, DECODER->call_len
+  |  test  ARG3_64, ARG3_64
+  |  jnz   >1
+  |
+  |  call  =>pclabel(jc, jc->plan->topmethod)
+  |
+  |  mov   rax, DECODER->size_param
+  |  mov   qword DECODER->call_len, 0
+  |  add   rsp, 8  // Counter previous alignment.
+  |  pop   rbx
+  |  pop   r12
+  |  pop   r13
+  |  pop   r14
+  |  pop   r15
+  |  pop   rbp
+  |  ret
+  |
+  |1:
+  |  // Resume decoder.
+  |  lea   ARG2_64, DECODER->callstack
+  |  sub   rsp, ARG3_64
+  |  mov   ARG1_64, rsp
+  |  callp memcpy  // Restore stack.
+  |  ret  // Return to resumed function (not ->enterjit caller).
+  |
+  | // Other code can call this to suspend the JIT.
+  | // To the calling code, it will appear that the function returns when
+  | // the JIT resumes, and more buffer space will be available.
+  | // Args: eax=the value that decode() should return.
+  asmlabel(jc, "exitjit");
+  |->exitjit:
+  |  // Save the stack into DECODER->callstack.
+  |  lea   ARG1_64, DECODER->callstack
+  |  mov   ARG2_64, rsp
+  |  mov   ARG3_64, DECODER->saved_rsp
+  |  sub   ARG3_64, rsp
+  |  mov   DECODER->call_len, ARG3_64  // Preserve len for next resume.
+  |  mov   ebx, eax  // Preserve return value across memcpy.
+  |  callp memcpy    // Copy stack into decoder.
+  |  mov   eax, ebx  // This will be our return value.
+  |
+  |  // Must NOT do this before the memcpy(), otherwise memcpy() will
+  |  // clobber the stack we are trying to save!
+  |  mov   rsp, DECODER->saved_rsp
+  |  add   rsp, 8  // Counter previous alignment.
+  |  pop   rbx
+  |  pop   r12
+  |  pop   r13
+  |  pop   r14
+  |  pop   r15
+  |  pop   rbp
+  |  ret
+  |
+  | // Like suspend() in the C decoder, except that the function appears
+  | // (from the caller's perspective) not to return until the decoder is
+  | // resumed.
+  asmlabel(jc, "suspend");
+  |->suspend:
+  |  cmp   DECODER->ptr, PTR
+  |  je    >1
+  |  mov   DECODER->checkpoint, PTR
+  |1:
+  |  commit_regs
+  |  mov   rdi, DECODER
+  |  callp upb_pbdecoder_suspend
+  |  jmp   ->exitjit
+  |
+  asmlabel(jc, "pushlendelim");
+  |->pushlendelim:
+  |1:
+  |  mov   FRAME->u.closure, CLOSURE
+  |  mov   DECODER->checkpoint, PTR
+  |  dv32
+  |  mov   rcx, DELIMEND
+  |  sub   rcx, PTR
+  |  sub   rcx, rdx
+  |  jb    ->err  // Len is greater than enclosing message.
+  |  mov   FRAME->end_ofs, rcx
+  |  add   FRAME, sizeof(upb_pbdecoder_frame)
+  |  mov   DELIMEND, PTR
+  |  add   DELIMEND, rdx
+  |  cmp   FRAME, DECODER->limit
+  |  je    >3   // Stack overflow
+  |  test  rcx, rcx
+  |  jz    >2
+  |  mov   DATAEND, DECODER->end
+  |  cmp   PTR, DELIMEND
+  |  ja    >2
+  |  cmp   DELIMEND, DATAEND
+  |  ja    >2
+  |  mov   DATAEND, DELIMEND  // If DELIMEND >= PTR && DELIMEND < DATAEND
+  |2:
+  |  ret
+  |3:
+  |  // Error -- call seterr.
+  |  mov   PTR, DECODER->checkpoint  // Rollback to before the delim len.
+  |  // Prepare seterr args.
+  |  mov   ARG1_64, DECODER
+  |  ld64  kPbDecoderStackOverflow
+  |  callp upb_pbdecoder_seterr
+  |  call  ->suspend
+  |  jmp   <1
+  |
+  | // For getting a value that spans a buffer seam.  Falls back to C.
+  | // Args: rdi=C decoding function (prototype: int f(upb_pbdecoder*, void*))
+  asmlabel(jc, "getvalue_slow");
+  |->getvalue_slow:
+  |  sub   rsp, 16         // Stack is [8-byte value, 8-byte func pointer]
+  |  mov   [rsp + 8], rdi  // Need to preserve fptr across suspends.
+  |1:
+  |  mov   qword [rsp], 0   // For parsing routines that only parse 32 bits.
+  |  mov   ARG1_64, DECODER
+  |  mov   ARG2_64, rsp
+  |  mov   DECODER->checkpoint, PTR
+  |  commit_regs
+  |  call  aword [rsp + 8]
+  |  load_regs
+  |  test  eax, eax
+  |  jns   >2
+  |  // Success; return parsed data (in rdx AND xmm0).
+  |  mov   rdx, [rsp]
+  |  movsd xmm0, qword [rsp]
+  |  add   rsp, 16
+  |  ret
+  |2:
+  |  call  ->exitjit   // Return eax from decode function.
+  |  jmp   <1
+  |
+  asmlabel(jc, "parse_unknown");
+  | // Args: edx=fieldnum, cl=wire type
+  |->parse_unknown:
+  |  // OPT: handle directly instead of kicking to C.
+  |  // Check for ENDGROUP.
+  |  mov     ARG1_64, DECODER
+  |  mov     ARG2_32, edx
+  |  movzx   ARG3_32, cl
+  |  commit_regs
+  |  callp   upb_pbdecoder_skipunknown
+  |  load_regs
+  |  cmp     eax, DECODE_ENDGROUP
+  |  jne     >1
+  |  ret     // Return eax=DECODE_ENDGROUP, not zero
+  |1:
+  |  cmp     eax, DECODE_OK
+  |  je      >1
+  |  call    ->exitjit  // Return eax from decode function.
+  |1:
+  |  xor     eax, eax
+  |  ret
+  |
+  | // Fallback functions for parsing single values.  These are used when the
+  | // buffer doesn't contain enough remaining data for the fast path.  Each
+  | // primitive type (v32, v64, f32, f64) has two functions: decode & skip.
+  | // Decode functions return their value in rsi/esi.
+  | //
+  | // These functions leave PTR = value_end - fast_path_bytes, so that we can
+  | // re-join the fast path which will add fast_path_bytes after the callback
+  | // completes.  We also set DECODER->ptr to this value which is a signal to
+  | // ->suspend that DECODER->checkpoint is up to date.
+  asmlabel(jc, "skip_decode_f32_fallback");
+  |->skipf32_fallback:
+  |->decodef32_fallback:
+  |  mov64    rdi, (uintptr_t)upb_pbdecoder_decode_f32
+  |  call     ->getvalue_slow
+  |  sub      PTR, 4
+  |  mov      DECODER->ptr, PTR
+  |  ret
+  |
+  asmlabel(jc, "skip_decode_f64_fallback");
+  |->skipf64_fallback:
+  |->decodef64_fallback:
+  |  mov64    rdi, (uintptr_t)upb_pbdecoder_decode_f64
+  |  call     ->getvalue_slow
+  |  sub      PTR, 8
+  |  mov      DECODER->ptr, PTR
+  |  ret
+  |
+  | // Called for varint >= 1 byte.
+  asmlabel(jc, "skip_decode_v32_fallback");
+  |->skipv32_fallback:
+  |->skipv64_fallback:
+  |  chkeob   16, >1
+  |  // With at least 16 bytes left, we can do a branch-less SSE version.
+  |  movdqu   xmm0, [PTR]
+  |  pmovmskb eax, xmm0   // bits 0-15 are continuation bits, 16-31 are 0.
+  |  not      eax
+  |  bsf      eax, eax
+  |  cmp      al, 10
+  |  jae      ->decode_varint_slow  // Error (>10 byte varint).
+  |  add      PTR, rax    // bsf result is 0-based, so PTR=end-1, as desired.
+  |  ret
+  |
+  |1:
+  |  // With fewer than 16 bytes, we have to read byte by byte.
+  |  lea      rcx, [PTR + 10]
+  |  mov      rax, PTR    // Preserve PTR in case of fallback to slow path.
+  |  cmp      rcx, DATAEND
+  |  cmova    rcx, DATAEND    // rax = MIN(DATAEND, PTR + 10)
+  |2:
+  |  add      rax, 1
+  |  cmp      rax, rcx
+  |  je       ->decode_varint_slow
+  |  test     byte [rax], 0x80
+  |  jnz      <2
+  |3:
+  |  mov      PTR, rax  // PTR = varint_end - 1, as desired
+  |  ret
+  |
+  | // Returns tag in edx
+  asmlabel(jc, "decode_unknown_tag_fallback");
+  |->decode_unknown_tag_fallback:
+  |  sub   rsp, 16
+  |1:
+  |  cmp      PTR, DELIMEND
+  |  jne      >2
+  |  add      rsp, 16
+  |  xor      eax, eax
+  |  ret
+  |2:
+  |  // OPT: Have a medium-fast path before falling back to _slow.
+  |  mov   ARG1_64, DECODER
+  |  mov   ARG2_64, rsp
+  |  commit_regs
+  |  callp upb_pbdecoder_decode_varint_slow
+  |  load_regs
+  |  cmp   eax, 0
+  |  jge   >3
+  |  mov   edx, [rsp]   // Success; return parsed data.
+  |  add   rsp, 16
+  |  ret
+  |3:
+  |  call  ->exitjit   // Return eax from decode function.
+  |  jmp   <1
+  |
+  | // Called for varint >= 1 byte.
+  asmlabel(jc, "decode_v32_v64_fallback");
+  |->decodev32_fallback:
+  |->decodev64_fallback:
+  |  chkeob   10, ->decode_varint_slow
+  |  // OPT: do something faster than just calling the C version.
+  |  mov      rdi, PTR
+  |  callp    upb_vdecode_fast
+  |  test     rax, rax
+  |  je       ->decode_varint_slow  // Unterminated varint.
+  |  mov      PTR, rax
+  |  sub      PTR, 1
+  |  mov      DECODER->ptr, PTR
+  |  ret
+  |
+  asmlabel(jc, "decode_varint_slow");
+  |->decode_varint_slow:
+  |  // Slow path: end of buffer or error (varint length >= 10).
+  |  mov64    rdi, (uintptr_t)upb_pbdecoder_decode_varint_slow
+  |  call     ->getvalue_slow
+  |  sub      PTR, 1
+  |  mov      DECODER->ptr, PTR
+  |  ret
+  |
+  | // Args: rsi=expected tag, return=rax (DECODE_{OK,MISMATCH})
+  asmlabel(jc, "checktag_fallback");
+  |->checktag_fallback:
+  |  sub      rsp, 8
+  |  mov      [rsp], rsi  // Preserve expected tag.
+  |1:
+  |  mov      ARG1_64, DECODER
+  |  commit_regs
+  |  mov      DECODER->checkpoint, PTR
+  |  callp    upb_pbdecoder_checktag_slow
+  |  load_regs
+  |  cmp      eax, 0
+  |  jge      >2
+  |  add      rsp, 8
+  |  ret
+  |2:
+  |  call     ->exitjit
+  |  mov      rsi, [rsp]
+  |  cmp      PTR, DELIMEND
+  |  jne      <1
+  |  mov      eax, DECODE_EOF
+  |  add      rsp, 8
+  |  ret
+  |
+  | // Args: rsi=upb_inttable, rdx=key, return=rax (-1 if not found).
+  | // Preserves: rcx, rdx
+  | // OPT: Could write this in assembly if it's a hotspot.
+  asmlabel(jc, "hashlookup");
+  |->hashlookup:
+  |  push   rcx
+  |  push   rdx
+  |  sub    rsp, 16
+  |  mov    rdi, rsi
+  |  mov    rsi, rdx
+  |  mov    rdx, rsp
+  |  callp  upb_inttable_lookup
+  |  add    rsp, 16
+  |  pop    rdx
+  |  pop    rcx
+  |  test   al, al
+  |  jz     >2  // Unknown field.
+  |  mov    rax, [rsp-32]  // Value from table.
+  |  ret
+  |2:
+  |  xor    rax, rax
+  |  not    rax
+  |  ret
+}
+
+static void jitprimitive(jitcompiler *jc, opcode op,
+                         const upb_handlers *h, upb_selector_t sel) {
+  typedef enum { V32, V64, F32, F64, X } valtype_t;
+  static valtype_t types[] = {
+    X, F64, F32, V64, V64, V32, F64, F32, V64, X, X, X, X, V32, V32, F32, F64,
+    V32, V64 };
+  static char fastpath_bytes[] = { 1, 1, 4, 8 };
+  const valtype_t type = types[op];
+  const int fastbytes = fastpath_bytes[type];
+  upb_func *handler = upb_handlers_gethandler(h, sel);
+
+  if (handler) {
+    |1:
+    |  chkneob  fastbytes, >3
+    |2:
+    switch (type) {
+    case V32:
+      |  call   ->decodev32_fallback
+      break;
+    case V64:
+      |  call   ->decodev64_fallback
+      break;
+    case F32:
+      |  call   ->decodef32_fallback
+      break;
+    case F64:
+      |  call   ->decodef64_fallback
+      break;
+    case X: break;
+    }
+    |  jmp    >4
+
+    // Fast path decode; for when check_bytes bytes are available.
+    |3:
+    switch (op) {
+    case OP_PARSE_SFIXED32:
+    case OP_PARSE_FIXED32:
+      |  mov    edx, dword [PTR]
+      break;
+    case OP_PARSE_SFIXED64:
+    case OP_PARSE_FIXED64:
+      |  mov    rdx, qword [PTR]
+      break;
+    case OP_PARSE_FLOAT:
+      |  movss  xmm0, dword [PTR]
+      break;
+    case OP_PARSE_DOUBLE:
+      |  movsd  xmm0, qword [PTR]
+      break;
+    default:
+      // Inline one byte of varint decoding.
+      |  movzx  edx, byte [PTR]
+      |  test   dl, dl
+      |  js     <2   // Fallback to slow path for >1 byte varint.
+      break;
+    }
+
+    // Second-stage decode; used for both fast and slow paths
+    // (only needed for a few types).
+    |4:
+    switch (op) {
+    case OP_PARSE_SINT32:
+      // 32-bit zig-zag decode.
+      |  mov    eax, edx
+      |  shr    edx, 1
+      |  and    eax, 1
+      |  neg    eax
+      |  xor    edx, eax
+      break;
+    case OP_PARSE_SINT64:
+      // 64-bit zig-zag decode.
+      |  mov    rax, rdx
+      |  shr    rdx, 1
+      |  and    rax, 1
+      |  neg    rax
+      |  xor    rdx, rax
+      break;
+    case OP_PARSE_BOOL:
+      |  test   rdx, rdx
+      |  setne  dl
+      break;
+    default: break;
+    }
+
+    // Call callback (or specialize if we can).
+    upb_fieldtype_t type;
+    const upb_shim_data *data = upb_shim_getdata(h, sel, &type);
+    if (data) {
+      switch (type) {
+        case UPB_TYPE_INT64:
+        case UPB_TYPE_UINT64:
+          |  mov   [CLOSURE + data->offset], rdx
+          break;
+        case UPB_TYPE_INT32:
+        case UPB_TYPE_UINT32:
+        case UPB_TYPE_ENUM:
+          |  mov   [CLOSURE + data->offset], edx
+          break;
+        case UPB_TYPE_DOUBLE:
+          |  movsd  qword [CLOSURE + data->offset], XMMARG1
+          break;
+        case UPB_TYPE_FLOAT:
+          |  movss  dword [CLOSURE + data->offset], XMMARG1
+          break;
+        case UPB_TYPE_BOOL:
+          |  mov   [CLOSURE + data->offset], dl
+          break;
+        case UPB_TYPE_STRING:
+        case UPB_TYPE_BYTES:
+        case UPB_TYPE_MESSAGE:
+          assert(false); break;
+      }
+      |  sethas CLOSURE, data->hasbit
+    } else if (handler) {
+      |  mov    ARG1_64, CLOSURE
+      |  load_handler_data h, sel
+      |  callp  handler
+      if (jc->chkret) {
+        |  test   al, al
+        |  jz     >5
+        |  call   ->suspend
+        |  jmp    <1
+        |5:
+      }
+    }
+
+    // We do this last so that the checkpoint is not advanced past the user's
+    // data until the callback has returned success.
+    |  add    PTR, fastbytes
+  } else {
+    // No handler registered for this value, just skip it.
+    |  chkneob  fastbytes, >3
+    |2:
+    switch (type) {
+    case V32:
+      |  call   ->skipv32_fallback
+      break;
+    case V64:
+      |  call   ->skipv64_fallback
+      break;
+    case F32:
+      |  call   ->skipf32_fallback
+      break;
+    case F64:
+      |  call   ->skipf64_fallback
+      break;
+    case X: break;
+    }
+
+    // Fast-path skip.
+    |3:
+    if (type == V32 || type == V64) {
+      |  test   byte [PTR], 0x80
+      |  jnz    <2
+    }
+    |  add    PTR, fastbytes
+  }
+}
+
+static void jitdispatch(jitcompiler *jc,
+                        const upb_pbdecodermethod *method) {
+  // Lots of room for tweaking/optimization here.
+
+  const upb_inttable *dispatch = &method->dispatch;
+  bool has_hash_entries = (dispatch->t.count > 0);
+
+  // Whether any of the fields for this message can have two wire types which
+  // are both valid (packed & non-packed).
+  //
+  // OPT: populate this more precisely; not all messages with hash entries have
+  // this characteristic.
+  bool has_multi_wiretype = has_hash_entries;
+
+  |=>define_pclabel(jc, &method->dispatch):
+  |1:
+  // Decode the field tag.
+  // OPT: inline two bytes of varint decoding for big messages.
+  |  mov     aword DECODER->checkpoint, PTR
+  |  chkeob  1, >6
+  |  movzx   edx, byte [PTR]
+  |  test    dl, dl
+  |  jns     >7
+  |6:
+  |  call    ->decode_unknown_tag_fallback
+  |  test    eax, eax  // Hit DELIMEND?
+  |  jnz     >8
+  |  ret
+  |7:
+  |  add     PTR, 1
+  |8:
+  |  mov     ecx, edx
+  |  shr     edx, 3
+  |  and     cl, 7
+
+  // See comment attached to upb_pbdecodermethod.dispatch for layout of the
+  // dispatch table.
+  |2:
+  |  cmp     edx, dispatch->array_size
+  if (has_hash_entries) {
+    |  jae     >7
+  } else {
+    |  jae     >5
+  }
+  |  // OPT: Compact the lookup arr into 32-bit entries.
+  if ((uintptr_t)dispatch->array > 0x7fffffff) {
+    |  mov64 rax, (uintptr_t)dispatch->array
+    |  mov   rax, qword [rax + rdx * 8]
+  } else {
+    |  mov   rax, qword [rdx * 8 + dispatch->array]
+  }
+  |3:
+  |  // We take advantage of the fact that non-present entries are stored
+  |  // as -1, which will result in wire types that will never match.
+  |  cmp  al, cl
+  if (has_multi_wiretype) {
+    |  jne  >6
+  } else {
+    |  jne  >5
+  }
+  |  shr  rax, 16
+  |  lea  rdx, [>4]
+  |=>define_pclabel(jc, dispatch->array):
+  |4:
+  |  add  rax, rdx
+  |  ret
+  |
+  |5:
+  |  // Field isn't in our table.
+  |  call ->parse_unknown
+  |  test eax, eax  // ENDGROUP?
+  |  jz   <1
+  |  lea  rax, [>9]  // ENDGROUP; Load address of OP_ENDMSG.
+  |  ret
+
+  if (has_multi_wiretype) {
+    |6:
+    |  // Primary wire type didn't match, check secondary wire type.
+    |  cmp  ah, cl
+    |  jne  <5
+    |  // Secondary wire type is a match, look up fn + UPB_MAX_FIELDNUMBER.
+    |  add   rdx, UPB_MAX_FIELDNUMBER
+    |  // This key will never be in the array part, so do a hash lookup.
+    assert(has_hash_entries);
+    |  ld64  dispatch
+    |  jmp   ->hashlookup  // Tail call.
+  }
+
+  if (has_hash_entries) {
+    |7:
+    |  // Hash table lookup.
+    |  ld64   dispatch
+    |  call   ->hashlookup
+    |  jmp    <3
+  }
+}
+
+static void jittag(jitcompiler *jc, uint64_t tag, int n, int ofs,
+                   const upb_pbdecodermethod *method) {
+  // Internally we parse unknown fields; if this runs us into DELIMEND we jump
+  // to the corresponding DELIMEND target (either msg end or repeated field
+  // end), which we find from the OP_CHECKDELIM which must have necessarily
+  // preceded us.
+  uint32_t last_instruction = *(jc->pc - 2);
+  int last_arg = (int32_t)last_instruction >> 8;
+  assert((last_instruction & 0xff) == OP_CHECKDELIM);
+  uint32_t *delimend = (jc->pc - 1) + last_arg;
+  const size_t ptr_words = sizeof(void*) / sizeof(uint32_t);
+
+  if (getop(*(jc->pc - 1)) == OP_TAGN) {
+    jc->pc += ptr_words;
+  }
+
+  |  chkneob n, >1
+
+  |  // OPT: this is way too much fallback code to put here.
+  |  // Reduce and/or move to a separate section to make better icache usage.
+  |  ld64  tag
+  |  call  ->checktag_fallback
+  |  cmp   eax, DECODE_MISMATCH
+  |  je    >3
+  |  cmp   eax, DECODE_EOF
+  |  je     =>pclabel(jc, delimend)
+  |  jmp   >5
+
+  |1:
+  switch (n) {
+  case 1:
+    |  cmp  byte [PTR], tag
+    break;
+  case 2:
+    |  cmp  word [PTR], tag
+    break;
+  case 3:
+    |   // OPT: Slightly more efficient code, but depends on an extra byte.
+    |   // mov  eax, dword [PTR]
+    |   // shl  eax, 8
+    |   // cmp  eax, tag << 8
+    |   cmp  word [PTR], (tag & 0xffff)
+    |   jne  >2
+    |   cmp  byte [PTR + 2], (tag >> 16)
+    |2:
+    break;
+  case 4:
+    |   cmp  dword [PTR], tag
+    break;
+  case 5:
+    |   cmp  dword [PTR], (tag & 0xffffffff)
+    |   jne  >3
+    |   cmp  byte  [PTR + 4], (tag >> 32)
+  }
+  |  je    >4
+  |3:
+  if (ofs == 0) {
+    |  call   =>pclabel(jc, &method->dispatch)
+    |  test   rax, rax
+    |  jz     =>pclabel(jc, delimend)
+    |  jmp    rax
+  } else {
+    |  jmp    =>pclabel(jc, jc->pc + ofs)
+  }
+  |4:
+  |  add    PTR, n
+  |5:
+}
+
+// Emit message-specific assembly.  Overall code layout is:
+// +---------------------------------------------------------------------------+
+// | Message A                                                                 |
+// | 1. function prologue (startmsg), jmps to OP_CHECKDELIM_RET before first   |
+// |    OP_TAG* in 4.                                                          |
+// | 2. function epilogue (endmsg), returns from function.                     |
+// | 3. dispatch function (returns fptr to 4)                                  |
+// |  - loops internally to skip unknown fields                                |
+// |  - after each unknown field does OP_CHECKDELIM_RET (returns 2)            |
+// |  - also returns 2 for END_GROUP.
+// | 4. code for each op:                                                      |
+// |  - OP_TAG* on mismatch calls 3 to get addr, then jumps to 4 (or 2 on EOM).|
+// |  - OP_CHECKDELIM_RET jumps to 2                                           |
+// +---------------------------------------------------------------------------+
+// | Message B                                                                 |
+// | 1. ...                                                                    |
+// | ...                                                                       |
+// +---------------------------------------------------------------------------+
+static void jitbytecode(jitcompiler *jc) {
+  upb_pbdecodermethod *method = NULL;
+  const upb_handlers *h = NULL;
+  for (jc->pc = jc->plan->code; jc->pc < jc->plan->code_end; ) {
+    int32_t instr = *jc->pc;
+    opcode op = instr & 0xff;
+    uint32_t arg = instr >> 8;
+    int32_t longofs = arg;
+
+    if (op != OP_STARTMSG && op != OP_SETDISPATCH) {
+      asmlabel(jc, "0x%lx.%s", jc->pc - jc->plan->code,
+                               upb_pbdecoder_getopname(op));
+    }
+    // TODO: optimize this to only define pclabels that are actually used.
+    |=>define_pclabel(jc, jc->pc):
+    jc->pc++;
+
+    switch (op) {
+    case OP_STARTMSG: {
+      // This opcode serves as a function prolouge also.
+      const char *msgname = upb_msgdef_fullname(method->msg);
+      asmlabel(jc, "parse.%s", msgname);
+      |=>define_pclabel(jc, method):
+      if (jc->usefp) {
+        |  push  rbp
+        |  mov   rbp, rsp
+      } else {
+        |  sub   rsp, 8
+      }
+      upb_func *startmsg = upb_handlers_gethandler(h, UPB_STARTMSG_SELECTOR);
+      if (startmsg) {
+        // bool startmsg(void *closure, const void *hd)
+        |1:
+        |  mov   ARG1_64, CLOSURE
+        |  load_handler_data h, UPB_STARTMSG_SELECTOR
+        |  callp startmsg
+        if (jc->chkret) {
+          |  test  al, al
+          |  jnz   <2
+          |  call  ->suspend
+          |2:
+        }
+      }
+      break;
+    }
+    case OP_ENDMSG: {
+      // This opcode serves as a function epiloue also.
+      upb_func *endmsg = upb_handlers_gethandler(h, UPB_ENDMSG_SELECTOR);
+      |9:
+      if (endmsg) {
+        // bool endmsg(void *closure, const void *hd, upb_status *status)
+        |  mov   ARG1_64, CLOSURE
+        |  load_handler_data h, UPB_ENDMSG_SELECTOR
+        |  mov   ARG3_64, DECODER->status
+        |  callp endmsg
+      }
+      if (jc->usefp) {
+        |  pop  rbp
+      } else {
+        |  add  rsp, 8
+      }
+      |  ret
+      break;
+    }
+    case OP_SETDISPATCH: {
+      upb_inttable *dispatch;
+      memcpy(&dispatch, jc->pc, sizeof(void*));
+      jc->pc += sizeof(void*) / sizeof(uint32_t);
+      // The OP_SETDISPATCH bytecode contains a pointer that is
+      // &method->dispatch; we want to go backwards and recover method.
+      method =
+          (void*)((char*)dispatch - offsetof(upb_pbdecodermethod, dispatch));
+      h = method->dest_handlers;
+      assert(h);  // We only support statically-bound handlers for now.
+      const char *msgname = upb_msgdef_fullname(method->msg);
+      asmlabel(jc, "dispatch.%s", msgname);
+      jitdispatch(jc, method);
+      break;
+    }
+    case OP_PARSE_DOUBLE:
+    case OP_PARSE_FLOAT:
+    case OP_PARSE_INT64:
+    case OP_PARSE_UINT64:
+    case OP_PARSE_INT32:
+    case OP_PARSE_FIXED64:
+    case OP_PARSE_FIXED32:
+    case OP_PARSE_BOOL:
+    case OP_PARSE_UINT32:
+    case OP_PARSE_SFIXED32:
+    case OP_PARSE_SFIXED64:
+    case OP_PARSE_SINT32:
+    case OP_PARSE_SINT64:
+      jitprimitive(jc, op, h, arg);
+      break;
+    case OP_STARTSEQ:
+    case OP_STARTSUBMSG:
+    case OP_STARTSTR: {
+      upb_func *start = upb_handlers_gethandler(h, arg);
+      if (start) {
+        // void *startseq(void *closure, const void *hd)
+        // void *startsubmsg(void *closure, const void *hd)
+        // void *startstr(void *closure, const void *hd, size_t size_hint)
+        |1:
+        |  mov   ARG1_64, CLOSURE
+        |  load_handler_data h, arg
+        if (op == OP_STARTSTR) {
+          |  mov    ARG3_64, DELIMEND
+          |  sub    ARG3_64, PTR
+        }
+        |  callp start
+        if (jc->chkret) {
+          |  test  rax, rax
+          |  jnz   >2
+          |  call  ->suspend
+          |  jmp   <1
+          |2:
+        }
+        |  mov   CLOSURE, rax
+      } else {
+        // TODO: nop is only required because of asmlabel().
+        |  nop
+      }
+      break;
+    }
+    case OP_ENDSEQ:
+    case OP_ENDSUBMSG:
+    case OP_ENDSTR: {
+      upb_func *end = upb_handlers_gethandler(h, arg);
+      if (end) {
+        // bool endseq(void *closure, const void *hd)
+        // bool endsubmsg(void *closure, const void *hd)
+        // bool endstr(void *closure, const void *hd)
+        |1:
+        |  mov   ARG1_64, CLOSURE
+        |  load_handler_data h, arg
+        |  callp end
+        if (jc->chkret) {
+          |  test  al, al
+          |  jnz   >2
+          |  call  ->suspend
+          |  jmp   <1
+          |2:
+        }
+      } else {
+        // TODO: nop is only required because of asmlabel().
+        |  nop
+      }
+      break;
+    }
+    case OP_STRING: {
+      upb_func *str = upb_handlers_gethandler(h, arg);
+      |  cmp   PTR, DELIMEND
+      |  je    >4
+      |1:
+      |  cmp   PTR, DATAEND
+      |  jne   >2
+      |  call  ->suspend
+      |  jmp   <1
+      |2:
+      if (str) {
+        // size_t str(void *closure, const void *hd, const char *str, size_t n)
+        |  mov   ARG1_64, CLOSURE
+        |  load_handler_data h, arg
+        |  mov   ARG3_64, PTR
+        |  mov   ARG4_64, DATAEND
+        |  sub   ARG4_64, PTR
+        |  callp str
+        |  add   PTR, rax
+        if (jc->chkret) {
+          |  cmp   PTR, DATAEND
+          |  je    >3
+          |  call  ->strret_fallback
+          |3:
+        }
+      } else {
+        |  mov   PTR, DATAEND
+      }
+      |  cmp   PTR, DELIMEND
+      |  jne   <1
+      |4:
+      break;
+    }
+    case OP_PUSHTAGDELIM:
+      |  mov   FRAME->u.closure, CLOSURE
+      |  add   FRAME, sizeof(upb_pbdecoder_frame)
+      |  cmp   FRAME, DECODER->limit
+      |  je    ->err
+      break;
+    case OP_PUSHLENDELIM:
+      |  call  ->pushlendelim
+      break;
+    case OP_POP:
+      |  sub   FRAME, sizeof(upb_pbdecoder_frame)
+      |  mov   CLOSURE, FRAME->u.closure
+      break;
+    case OP_SETDELIM:
+      // OPT: experiment with testing vs old offset to optimize away.
+      |  mov   DATAEND, DECODER->end
+      |  add   DELIMEND, FRAME->end_ofs
+      |  jc    >1
+      |  cmp   DELIMEND, DATAEND
+      |  ja    >1   // OPT: try cmov.
+      |  mov   DATAEND, DELIMEND
+      |1:
+      break;
+    case OP_SETGROUPNUM:
+      |  mov   dword FRAME->groupnum, arg
+      break;
+    case OP_SETBIGGROUPNUM:
+      |  mov   dword FRAME->groupnum, *jc->pc++
+      break;
+    case OP_CHECKDELIM:
+      |  cmp  DELIMEND, PTR
+      |  je   =>pclabel(jc, jc->pc + longofs)
+      break;
+    case OP_CALL:
+      |  call =>pclabel(jc, jc->pc + longofs + 3)
+      break;
+    case OP_BRANCH:
+      |  jmp  =>pclabel(jc, jc->pc + longofs);
+      break;
+    case OP_TAG1:
+      jittag(jc, (arg >> 8) & 0xff, 1, (int8_t)arg, method);
+      break;
+    case OP_TAG2:
+      jittag(jc, (arg >> 8) & 0xffff, 2, (int8_t)arg, method);
+      break;
+    case OP_TAGN: {
+      uint64_t tag;
+      memcpy(&tag, jc->pc, 8);
+      jittag(jc, tag, arg >> 8, (int8_t)arg, method);
+      break;
+    }
+    case OP_HALT:
+      assert(false);
+    }
+  }
+  asmlabel(jc, "eof");
+  |  nop
+}

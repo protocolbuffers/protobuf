@@ -11,24 +11,24 @@
 #include <string.h>
 
 bool upb_symtab_isfrozen(const upb_symtab *s) {
-  return upb_refcounted_isfrozen(upb_upcast(s));
+  return upb_refcounted_isfrozen(UPB_UPCAST(s));
 }
 
 void upb_symtab_ref(const upb_symtab *s, const void *owner) {
-  upb_refcounted_ref(upb_upcast(s), owner);
+  upb_refcounted_ref(UPB_UPCAST(s), owner);
 }
 
 void upb_symtab_unref(const upb_symtab *s, const void *owner) {
-  upb_refcounted_unref(upb_upcast(s), owner);
+  upb_refcounted_unref(UPB_UPCAST(s), owner);
 }
 
 void upb_symtab_donateref(
     const upb_symtab *s, const void *from, const void *to) {
-  upb_refcounted_donateref(upb_upcast(s), from, to);
+  upb_refcounted_donateref(UPB_UPCAST(s), from, to);
 }
 
 void upb_symtab_checkref(const upb_symtab *s, const void *owner) {
-  upb_refcounted_checkref(upb_upcast(s), owner);
+  upb_refcounted_checkref(UPB_UPCAST(s), owner);
 }
 
 static void upb_symtab_free(upb_refcounted *r) {
@@ -47,7 +47,7 @@ static const struct upb_refcounted_vtbl vtbl = {NULL, &upb_symtab_free};
 
 upb_symtab *upb_symtab_new(const void *owner) {
   upb_symtab *s = malloc(sizeof(*s));
-  upb_refcounted_init(upb_upcast(s), &vtbl, owner);
+  upb_refcounted_init(UPB_UPCAST(s), &vtbl, owner);
   upb_strtable_init(&s->symtab, UPB_CTYPE_PTR);
   return s;
 }
@@ -100,7 +100,7 @@ const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym,
 static upb_def *upb_resolvename(const upb_strtable *t,
                                 const char *base, const char *sym) {
   if(strlen(sym) == 0) return NULL;
-  if(sym[0] == UPB_SYMBOL_SEPARATOR) {
+  if(sym[0] == '.') {
     // Symbols starting with '.' are absolute, so we do a single lookup.
     // Slice to omit the leading '.'
     upb_value v;
@@ -243,7 +243,7 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
     upb_msgdef *m = upb_dyncast_msgdef_mutable(def);
     if (!m) continue;
     // Type names are resolved relative to the message in which they appear.
-    const char *base = upb_def_fullname(upb_upcast(m));
+    const char *base = upb_msgdef_fullname(m);
 
     upb_msg_iter j;
     for(upb_msg_begin(&j, m); !upb_msg_done(&j); upb_msg_next(&j)) {

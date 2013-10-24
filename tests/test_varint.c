@@ -5,7 +5,7 @@
  */
 
 #include <stdio.h>
-#include "upb/pb/varint.h"
+#include "upb/pb/varint.int.h"
 #include "upb_test.h"
 
 // Test that we can round-trip from int->varint->int.
@@ -66,7 +66,7 @@ static void test_varint_decoder(upb_decoderet (*decoder)(const char*)) {
   ASSERT(r.p == NULL);
 
 
-  for (uint64_t num = 5; num * 1.5 > num; num *= 1.5) {
+  for (uint64_t num = 5; num * 1.5 < UINT64_MAX; num *= 1.5) {
     test_varint_for_num(decoder, num);
   }
   test_varint_for_num(decoder, 0);

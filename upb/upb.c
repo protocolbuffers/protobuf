@@ -8,16 +8,41 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "upb/upb.h"
 
-#ifdef NDEBUG
-upb_value UPB_NO_VALUE = {{0}};
-#else
-upb_value UPB_NO_VALUE = {{0}, -1};
-#endif
+// Like vasprintf (which allocates a string large enough for the result), but
+// uses *buf (which can be NULL) as a starting point and reallocates it only if
+// the new value will not fit.  "size" is updated to reflect the allocated size
+// of the buffer.  Starts writing at the given offset into the string; bytes
+// preceding this offset are unaffected.  Returns the new length of the string,
+// or -1 on memory allocation failure.
+static int upb_vrprintf(char **buf, size_t *size, size_t ofs,
+                        const char *fmt, va_list args) {
+  // Try once without reallocating.  We have to va_copy because we might have
+  // to call vsnprintf again.
+  uint32_t len = *size - ofs;
+  va_list args_copy;
+  va_copy(args_copy, args);
+  uint32_t true_len = vsnprintf(*buf + ofs, len, fmt, args_copy);
+  va_end(args_copy);
+
+  // Resize to be the correct size.
+  if (true_len >= len) {
+    // Need to print again, because some characters were truncated.  vsnprintf
+    // will not write the entire string unless you give it space to store the
+    // NULL terminator also.
+    *size = (ofs + true_len + 1);
+    char *newbuf = realloc(*buf, *size);
+    if (!newbuf) return -1;
+    vsnprintf(newbuf + ofs, true_len + 1, fmt, args);
+    *buf = newbuf;
+  }
+  return true_len;
+}
 
 void upb_status_init(upb_status *status) {
   status->buf = NULL;
@@ -103,28 +128,4 @@ void upb_status_setcode(upb_status *status, upb_errorspace *space, int code) {
 void upb_status_seteof(upb_status *status) {
   if (!status) return;
   status->eof_ = true;
-}
-
-int upb_vrprintf(char **buf, size_t *size, size_t ofs,
-                 const char *fmt, va_list args) {
-  // Try once without reallocating.  We have to va_copy because we might have
-  // to call vsnprintf again.
-  uint32_t len = *size - ofs;
-  va_list args_copy;
-  va_copy(args_copy, args);
-  uint32_t true_len = vsnprintf(*buf + ofs, len, fmt, args_copy);
-  va_end(args_copy);
-
-  // Resize to be the correct size.
-  if (true_len >= len) {
-    // Need to print again, because some characters were truncated.  vsnprintf
-    // will not write the entire string unless you give it space to store the
-    // NULL terminator also.
-    *size = (ofs + true_len + 1);
-    char *newbuf = realloc(*buf, *size);
-    if (!newbuf) return -1;
-    vsnprintf(newbuf + ofs, true_len + 1, fmt, args);
-    *buf = newbuf;
-  }
-  return true_len;
 }

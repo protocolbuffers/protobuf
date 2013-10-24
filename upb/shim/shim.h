@@ -37,9 +37,10 @@ struct Shim {
   // true if the handler was set successfully.
   static bool Set(Handlers *h, const FieldDef *f, size_t ofs, int32_t hasbit);
 
-  // If this handler is a shim, returns the corresponding upb::Shim::Data.
-  // Otherwise returns NULL.
-  static const Data* GetData(const Handlers* h, Handlers::Selector s);
+  // If this handler is a shim, returns the corresponding upb::Shim::Data and
+  // stores the type in "type".  Otherwise returns NULL.
+  static const Data* GetData(const Handlers* h, Handlers::Selector s,
+                             FieldDef::Type* type);
 };
 
 }  // namespace upb
@@ -50,7 +51,8 @@ extern "C" {
 // C API.
 bool upb_shim_set(upb_handlers *h, const upb_fielddef *f, size_t offset,
                   int32_t hasbit);
-const upb_shim_data *upb_shim_getdata(const upb_handlers *h, upb_selector_t s);
+const upb_shim_data *upb_shim_getdata(const upb_handlers *h, upb_selector_t s,
+                                      upb_fieldtype_t *type);
 
 #ifdef __cplusplus
 }  // extern "C"
@@ -62,9 +64,9 @@ inline bool Shim::Set(Handlers* h, const FieldDef* f, size_t ofs,
                       int32_t hasbit) {
   return upb_shim_set(h, f, ofs, hasbit);
 }
-inline const Shim::Data* Shim::GetData(const Handlers* h,
-                                       Handlers::Selector s) {
-  return upb_shim_getdata(h, s);
+inline const Shim::Data* Shim::GetData(const Handlers* h, Handlers::Selector s,
+                                       FieldDef::Type* type) {
+  return upb_shim_getdata(h, s, type);
 }
 
 }  // namespace

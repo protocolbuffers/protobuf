@@ -14,6 +14,13 @@
 
 #include "upb/sink.h"
 
+// The maximum that any submessages can be nested.  Matches proto2's limit.
+// At the moment this specifies the size of several statically-sized arrays
+// and therefore setting it high will cause more memory to be used.  Will
+// be replaced by a runtime-configurable limit and dynamically-resizing arrays.
+// TODO: make this a runtime-settable property of Decoder.
+#define UPB_DECODER_MAX_NESTING 64
+
 #ifdef __cplusplus
 namespace upb {
 namespace pb {

@@ -22,6 +22,8 @@
 #ifndef UPB_DEF_H_
 #define UPB_DEF_H_
 
+#include "upb/refcounted.h"
+
 #ifdef __cplusplus
 #include <cstring>
 #include <string>
@@ -50,7 +52,18 @@ typedef struct upb_fielddef upb_fielddef;
 typedef struct upb_msgdef upb_msgdef;
 #endif
 
-#include "upb/refcounted.h"
+// Maximum field number allowed for FieldDefs.  This is an inherent limit of the
+// protobuf wire format.
+#define UPB_MAX_FIELDNUMBER ((1 << 29) - 1)
+
+// The maximum message depth that the type graph can have.  This is a resource
+// limit for the C stack since we sometimes need to recursively traverse the
+// graph.  Cycles are ok; the traversal will stop when it detects a cycle, but
+// we must hit the cycle before the maximum depth is reached.
+//
+// If having a single static limit is too inflexible, we can add another variant
+// of Def::Freeze that allows specifying this as a parameter.
+#define UPB_MAX_MESSAGE_DEPTH 64
 
 
 /* upb::Def: base class for defs  *********************************************/
@@ -61,9 +74,8 @@ typedef enum {
   UPB_DEF_MSG,
   UPB_DEF_FIELD,
   UPB_DEF_ENUM,
-  UPB_DEF_SERVICE,          // Not yet implemented.
-
-  UPB_DEF_ANY = -1,         // Wildcard for upb_symtab_get*()
+  UPB_DEF_SERVICE,   // Not yet implemented.
+  UPB_DEF_ANY = -1,  // Wildcard for upb_symtab_get*()
 } upb_deftype_t;
 
 #ifdef __cplusplus
@@ -83,8 +95,8 @@ class upb::Def {
   bool IsFrozen() const;
   void Ref(const void* owner) const;
   void Unref(const void* owner) const;
-  void DonateRef(const void *from, const void *to) const;
-  void CheckRef(const void *owner) const;
+  void DonateRef(const void* from, const void* to) const;
+  void CheckRef(const void* owner) const;
 
   Type def_type() const;
 
@@ -95,8 +107,8 @@ class upb::Def {
   // not required to have a name; if a def has no name when it is frozen, it
   // will remain an anonymous def.  On failure, returns false and details in "s"
   // if non-NULL.
-  bool set_full_name(const char *fullname, upb::Status* s);
-  bool set_full_name(const std::string& fullname, upb::Status* s);
+  bool set_full_name(const char* fullname, upb::Status* s);
+  bool set_full_name(const std::string &fullname, upb::Status* s);
 
   // Freezes the given defs; this validates all constraints and marks the defs
   // as frozen (read-only).  "defs" may not contain any fielddefs, but fields
@@ -109,8 +121,8 @@ class upb::Def {
   //
   // After this operation succeeds, the finalized defs must only be accessed
   // through a const pointer!
-  static bool Freeze(Def *const*defs, int n, Status *status);
-  static bool Freeze(const std::vector<Def*>& defs, Status *status);
+  static bool Freeze(Def* const* defs, int n, Status* status);
+  static bool Freeze(const std::vector<Def*>& defs, Status* status);
 
  private:
   UPB_DISALLOW_POD_OPS(Def);
@@ -120,7 +132,7 @@ struct upb_def {
 #endif
   upb_refcounted base;
   const char *fullname;
-  upb_deftype_t type:8;
+  upb_deftype_t type : 8;
   // Used as a flag during the def's mutable stage.  Must be false unless
   // it is currently being used by a function on the stack.  This allows
   // us to easily determine which defs were passed into the function's
@@ -128,7 +140,8 @@ struct upb_def {
   bool came_from_user;
 };
 
-#define UPB_DEF_INIT(name, type) {UPB_REFCOUNT_INIT, name, type, false}
+#define UPB_DEF_INIT(name, type, refs, ref2s) \
+    { UPB_REFCOUNT_INIT(refs, ref2s), name, type, false }
 
 // Native C API.
 #ifdef __cplusplus
@@ -145,8 +158,8 @@ void upb_def_checkref(const upb_def *def, const void *owner);
 
 upb_deftype_t upb_def_type(const upb_def *d);
 const char *upb_def_fullname(const upb_def *d);
-bool upb_def_setfullname(upb_def *def, const char *fullname, upb_status  *s);
-bool upb_def_freeze(upb_def *const*defs, int n, upb_status *s);
+bool upb_def_setfullname(upb_def *def, const char *fullname, upb_status *s);
+bool upb_def_freeze(upb_def *const *defs, int n, upb_status *s);
 #ifdef __cplusplus
 }  // extern "C"
 #endif
@@ -164,7 +177,7 @@ typedef enum {
   UPB_TYPE_STRING   = 4,
   UPB_TYPE_BYTES    = 5,
   UPB_TYPE_MESSAGE  = 6,
-  UPB_TYPE_ENUM     = 7,   // Enum values are int32.
+  UPB_TYPE_ENUM     = 7,  // Enum values are int32.
   UPB_TYPE_INT32    = 8,
   UPB_TYPE_UINT32   = 9,
   UPB_TYPE_INT64    = 10,
@@ -234,14 +247,14 @@ class upb::FieldDef {
   static IntegerFormat ConvertIntegerFormat(int32_t val);
 
   // Returns NULL if memory allocation failed.
-  static FieldDef* New(const void *owner);
+  static FieldDef* New(const void* owner);
 
   // Duplicates the given field, returning NULL if memory allocation failed.
   // When a fielddef is duplicated, the subdef (if any) is made symbolic if it
   // wasn't already.  If the subdef is set but has no name (which is possible
   // since msgdefs are not required to have a name) the new fielddef's subdef
   // will be unset.
-  FieldDef* Dup(const void *owner) const;
+  FieldDef* Dup(const void* owner) const;
 
   // Though not declared as such in C++, upb::Def is the base of FieldDef and
   // we can upcast to it.
@@ -252,20 +265,22 @@ class upb::FieldDef {
   bool IsFrozen() const;
   void Ref(const void* owner) const;
   void Unref(const void* owner) const;
-  void DonateRef(const void *from, const void *to) const;
-  void CheckRef(const void *owner) const;
+  void DonateRef(const void* from, const void* to) const;
+  void CheckRef(const void* owner) const;
 
   // Functionality from upb::Def.
-  const char *full_name() const;
-  bool set_full_name(const char *fullname, upb::Status* s);
+  const char* full_name() const;
+  bool set_full_name(const char* fullname, upb::Status* s);
   bool set_full_name(const std::string& fullname, upb::Status* s);
 
   bool type_is_set() const;  // Whether set_[descriptor_]type() has been called.
   Type type() const;         // Requires that type_is_set() == true.
   Label label() const;       // Defaults to UPB_LABEL_OPTIONAL.
-  const char *name() const;  // NULL if uninitialized.
+  const char* name() const;  // NULL if uninitialized.
   uint32_t number() const;   // Returns 0 if uninitialized.
-  const MessageDef* message_def() const;
+
+  // The MessageDef to which this field belongs, or NULL if none.
+  const MessageDef* containing_type() const;
 
   // The field's type according to the enum in descriptor.proto.  This is not
   // the same as UPB_TYPE_*, because it distinguishes between (for example)
@@ -291,7 +306,7 @@ class upb::FieldDef {
   // also.  Generally only extensions will want to think of this name as
   // fully-qualified.
   bool set_number(uint32_t number, upb::Status* s);
-  bool set_name(const char *name, upb::Status* s);
+  bool set_name(const char* name, upb::Status* s);
   bool set_name(const std::string& name, upb::Status* s);
 
   // Convenient field type tests.
@@ -315,37 +330,41 @@ class upb::FieldDef {
   // numbers, empty for strings).  The field's type indicates the type of the
   // returned value, except for enum fields that are still mutable.
   //
-  // For enums the default can be set either numerically or symbolically -- the
-  // upb_fielddef_default_is_symbolic() function below will indicate which it
-  // is.  For string defaults, the value will be a upb_byteregion which is
-  // invalidated by any other non-const call on this object.  Once the fielddef
-  // is frozen, symbolic enum defaults are resolved, so frozen enum fielddefs
-  // always have a default of type int32.
-  Value default_value() const;
+  // Requires that the given function matches the field's current type.
+  int64_t default_int64() const;
+  int32_t default_int32() const;
+  uint64_t default_uint64() const;
+  uint32_t default_uint32() const;
+  bool default_bool() const;
+  float default_float() const;
+  double default_double() const;
 
-  // Returns the NULL-terminated string default value for this field, or NULL
-  // if the default for this field is not a string.  The user may optionally
-  // pass "len" to retrieve the length of the default also (this would be
-  // required to get default values with embedded NULLs).
-  const char *GetDefaultString(size_t* len) const;
+  // Returns the default for UPB_TYPE_STRING, UPB_TYPE_BYTES, and UPB_TYPE_ENUM
+  // fields that haven't yet been resolved, The resulting string is always
+  // NULL-terminated.  If non-NULL, the length will be stored in *len.
+  const char *default_string(size_t* len) const;
 
-  // Sets default value for the field.  For numeric types, use
-  // upb_fielddef_setdefault(), and "value" must match the type of the field.
-  // For string/bytes types, use upb_fielddef_setdefaultstr().  Enum types may
-  // use either, since the default may be set either numerically or
-  // symbolically.
+  // Sets default value for the field.  The call must exactly match the type
+  // of the field.  Enum fields may use either setint32 or setstring to set
+  // the default numerically or symbolically, respectively, but symbolic
+  // defaults must be resolved before finalizing (see ResolveEnumDefault()).
   //
-  // NOTE: May only be called for fields whose type has already been set.
-  // Also, will be reset to default if the field's type is set again.
-  void set_default_value(Value value);
-  bool set_default_string(const void *str, size_t len, Status* s);
-  bool set_default_string(const std::string& str, Status* s);
-  void set_default_cstr(const char *str, Status* s);
+  // Changing the type of a field will reset its default.
+  void set_default_int64(int64_t val);
+  void set_default_int32(int32_t val);
+  void set_default_uint64(uint64_t val);
+  void set_default_uint32(uint32_t val);
+  void set_default_bool(bool val);
+  void set_default_float(float val);
+  void set_default_double(double val);
+  bool set_default_string(const void *str, size_t len, Status *s);
+  bool set_default_string(const std::string &str, Status *s);
+  void set_default_cstr(const char *str, Status *s);
 
   // The results of this function are only meaningful for mutable enum fields,
   // which can have a default specified either as an integer or as a string.
-  // If this returns true, the default returned from upb_fielddef_default() is
-  // a string, otherwise it is an integer.
+  // If this returns true, the default should be retrieved as default_int32(),
+  // otherwise it should be retrieved with default_string().
   bool IsDefaultSymbolic() const;
 
   // If this is an enum field with a symbolic default, resolves the default and
@@ -370,6 +389,8 @@ class upb::FieldDef {
   // have a symbolic reference (they must be resolved before the msgdef can be
   // frozen).
   const Def* subdef() const;
+  const EnumDef* enum_subdef() const;
+  const MessageDef* message_subdef() const;
   const char* subdef_name() const;
 
   // Before a fielddef is frozen, its subdef may be set either directly (with a
@@ -383,8 +404,10 @@ class upb::FieldDef {
   // the given subdef is not of the correct type.  The subdef is reset if the
   // field's type is changed.  The subdef can be set to NULL to clear it.
   bool set_subdef(const Def* subdef, Status* s);
+  bool set_enum_subdef(const EnumDef* subdef, Status* s);
+  bool set_message_subdef(const MessageDef* subdef, Status* s);
   bool set_subdef_name(const char* name, Status* s);
-  bool set_subdef_name(const std::string& name, Status* s);
+  bool set_subdef_name(const std::string &name, Status* s);
 
  private:
   UPB_DISALLOW_POD_OPS(FieldDef);
@@ -393,11 +416,17 @@ class upb::FieldDef {
 struct upb_fielddef {
 #endif
   upb_def base;
-  upb_value defaultval;  // Only for non-repeated scalars and strings.
+  union {
+    int64_t sint;
+    uint64_t uint;
+    double dbl;
+    float flt;
+    void *bytes;
+  } defaultval;
   const upb_msgdef *msgdef;
   union {
     const upb_def *def;  // If !subdef_is_symbolic.
-    char *name;    // If subdef_is_symbolic.
+    char *name;          // If subdef_is_symbolic.
   } sub;  // The msgdef or enumdef for this field, if upb_hassubdef(f).
   bool subdef_is_symbolic;
   bool default_is_string;
@@ -410,11 +439,13 @@ struct upb_fielddef {
   uint32_t selector_base;  // Used to index into a upb::Handlers table.
 };
 
-#define UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, name, num, \
-                          msgdef, subdef, selector_base, defaultval) \
-  {UPB_DEF_INIT(name, UPB_DEF_FIELD), defaultval, msgdef, {subdef}, \
-   false, type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES, true, \
-   intfmt, tagdelim, type, label, num, selector_base}
+#define UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, name, num, msgdef, \
+                          subdef, selector_base, defaultval, refs, ref2s)   \
+  {                                                                         \
+    UPB_DEF_INIT(name, UPB_DEF_FIELD, refs, ref2s), defaultval, msgdef,     \
+        {subdef}, false, type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES, \
+        true, intfmt, tagdelim, type, label, num, selector_base             \
+  }
 
 // Native C API.
 #ifdef __cplusplus
@@ -427,8 +458,8 @@ upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner);
 bool upb_fielddef_isfrozen(const upb_fielddef *f);
 void upb_fielddef_ref(const upb_fielddef *f, const void *owner);
 void upb_fielddef_unref(const upb_fielddef *f, const void *owner);
-void upb_fielddef_donateref(
-    const upb_fielddef *f, const void *from, const void *to);
+void upb_fielddef_donateref(const upb_fielddef *f, const void *from,
+                            const void *to);
 void upb_fielddef_checkref(const upb_fielddef *f, const void *owner);
 
 // From upb_def.
@@ -442,19 +473,27 @@ upb_descriptortype_t upb_fielddef_descriptortype(const upb_fielddef *f);
 upb_label_t upb_fielddef_label(const upb_fielddef *f);
 uint32_t upb_fielddef_number(const upb_fielddef *f);
 const char *upb_fielddef_name(const upb_fielddef *f);
-const upb_msgdef *upb_fielddef_msgdef(const upb_fielddef *f);
-upb_msgdef *upb_fielddef_msgdef_mutable(upb_fielddef *f);
+const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f);
+upb_msgdef *upb_fielddef_containingtype_mutable(upb_fielddef *f);
 upb_intfmt_t upb_fielddef_intfmt(const upb_fielddef *f);
 bool upb_fielddef_istagdelim(const upb_fielddef *f);
 bool upb_fielddef_issubmsg(const upb_fielddef *f);
 bool upb_fielddef_isstring(const upb_fielddef *f);
 bool upb_fielddef_isseq(const upb_fielddef *f);
 bool upb_fielddef_isprimitive(const upb_fielddef *f);
-upb_value upb_fielddef_default(const upb_fielddef *f);
+int64_t upb_fielddef_defaultint64(const upb_fielddef *f);
+int32_t upb_fielddef_defaultint32(const upb_fielddef *f);
+uint64_t upb_fielddef_defaultuint64(const upb_fielddef *f);
+uint32_t upb_fielddef_defaultuint32(const upb_fielddef *f);
+bool upb_fielddef_defaultbool(const upb_fielddef *f);
+float upb_fielddef_defaultfloat(const upb_fielddef *f);
+double upb_fielddef_defaultdouble(const upb_fielddef *f);
 const char *upb_fielddef_defaultstr(const upb_fielddef *f, size_t *len);
 bool upb_fielddef_default_is_symbolic(const upb_fielddef *f);
 bool upb_fielddef_hassubdef(const upb_fielddef *f);
 const upb_def *upb_fielddef_subdef(const upb_fielddef *f);
+const upb_msgdef *upb_fielddef_msgsubdef(const upb_fielddef *f);
+const upb_enumdef *upb_fielddef_enumsubdef(const upb_fielddef *f);
 const char *upb_fielddef_subdefname(const upb_fielddef *f);
 
 void upb_fielddef_settype(upb_fielddef *f, upb_fieldtype_t type);
@@ -464,7 +503,13 @@ bool upb_fielddef_setnumber(upb_fielddef *f, uint32_t number, upb_status *s);
 bool upb_fielddef_setname(upb_fielddef *f, const char *name, upb_status *s);
 bool upb_fielddef_setintfmt(upb_fielddef *f, upb_intfmt_t fmt);
 bool upb_fielddef_settagdelim(upb_fielddef *f, bool tag_delim);
-void upb_fielddef_setdefault(upb_fielddef *f, upb_value value);
+void upb_fielddef_setdefaultint64(upb_fielddef *f, int64_t val);
+void upb_fielddef_setdefaultint32(upb_fielddef *f, int32_t val);
+void upb_fielddef_setdefaultuint64(upb_fielddef *f, uint64_t val);
+void upb_fielddef_setdefaultuint32(upb_fielddef *f, uint32_t val);
+void upb_fielddef_setdefaultbool(upb_fielddef *f, bool val);
+void upb_fielddef_setdefaultfloat(upb_fielddef *f, float val);
+void upb_fielddef_setdefaultdouble(upb_fielddef *f, double val);
 bool upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len,
                                 upb_status *s);
 void upb_fielddef_setdefaultcstr(upb_fielddef *f, const char *str,
@@ -472,6 +517,10 @@ void upb_fielddef_setdefaultcstr(upb_fielddef *f, const char *str,
 bool upb_fielddef_resolveenumdefault(upb_fielddef *f, upb_status *s);
 bool upb_fielddef_setsubdef(upb_fielddef *f, const upb_def *subdef,
                             upb_status *s);
+bool upb_fielddef_setmsgsubdef(upb_fielddef *f, const upb_msgdef *subdef,
+                               upb_status *s);
+bool upb_fielddef_setenumsubdef(upb_fielddef *f, const upb_enumdef *subdef,
+                                upb_status *s);
 bool upb_fielddef_setsubdefname(upb_fielddef *f, const char *name,
                                 upb_status *s);
 
@@ -495,7 +544,7 @@ typedef upb_inttable_iter upb_msg_iter;
 class upb::MessageDef {
  public:
   // Returns NULL if memory allocation failed.
-  static MessageDef* New(const void *owner);
+  static MessageDef* New(const void* owner);
 
   // Though not declared as such in C++, upb::Def is the base of MessageDef and
   // we can upcast to it.
@@ -506,12 +555,12 @@ class upb::MessageDef {
   bool IsFrozen() const;
   void Ref(const void* owner) const;
   void Unref(const void* owner) const;
-  void DonateRef(const void *from, const void *to) const;
-  void CheckRef(const void *owner) const;
+  void DonateRef(const void* from, const void* to) const;
+  void CheckRef(const void* owner) const;
 
   // Functionality from upb::Def.
-  const char *full_name() const;
-  bool set_full_name(const char *fullname, Status* s);
+  const char* full_name() const;
+  bool set_full_name(const char* fullname, Status* s);
   bool set_full_name(const std::string& fullname, Status* s);
 
   // The number of fields that belong to the MessageDef.
@@ -523,13 +572,13 @@ class upb::MessageDef {
   // number, and this fielddef may not be part of another message.  In error
   // cases false is returned and the msgdef is unchanged.  On success, the
   // caller donates a ref from ref_donor (if non-NULL).
-  bool AddField(upb_fielddef *f, const void *ref_donor, Status* s);
+  bool AddField(FieldDef* f, const void* ref_donor, Status* s);
 
   // These return NULL if the field is not found.
   FieldDef* FindFieldByNumber(uint32_t number);
   FieldDef* FindFieldByName(const char *name);
   const FieldDef* FindFieldByNumber(uint32_t number) const;
-  const FieldDef* FindFieldByName(const char *name) const;
+  const FieldDef* FindFieldByName(const char* name) const;
 
   // Returns a new msgdef that is a copy of the given msgdef (and a copy of all
   // the fields) but with any references to submessages broken and replaced
@@ -539,33 +588,44 @@ class upb::MessageDef {
   // TODO(haberman): which is more useful, keeping fields resolved or
   // unresolving them?  If there's no obvious answer, Should this functionality
   // just be moved into symtab.c?
-  MessageDef* Dup(const void *owner) const;
+  MessageDef* Dup(const void* owner) const;
 
   // Iteration over fields.  The order is undefined.
-  class Iterator {
+  class iterator : public std::iterator<std::forward_iterator_tag, FieldDef*> {
    public:
-    explicit Iterator(MessageDef* md);
+    iterator();
+    iterator(const iterator& other);
+    explicit iterator(MessageDef* md);
 
-    FieldDef* field();
-    bool Done();
-    void Next();
+    void operator++();
+    FieldDef* operator*() const;
+    bool operator!=(const iterator& other) const;
+    bool operator==(const iterator& other) const;
 
    private:
     upb_msg_iter iter_;
   };
 
-  // For iterating over the fields of a const MessageDef.
-  class ConstIterator {
+  class const_iterator
+      : public std::iterator<std::forward_iterator_tag, const FieldDef*> {
    public:
-    explicit ConstIterator(const MessageDef* md);
+    const_iterator();
+    const_iterator(const const_iterator& other);
+    explicit const_iterator(const MessageDef* md);
 
-    const FieldDef* field();
-    bool Done();
-    void Next();
+    void operator++();
+    const FieldDef* operator*() const;
+    bool operator!=(const const_iterator& other) const;
+    bool operator==(const const_iterator& other) const;
 
    private:
     upb_msg_iter iter_;
   };
+
+  iterator begin();
+  iterator end();
+  const_iterator begin() const;
+  const_iterator end() const;
 
  private:
   UPB_DISALLOW_POD_OPS(MessageDef);
@@ -583,8 +643,8 @@ struct upb_msgdef {
   // TODO(haberman): proper extension ranges (there can be multiple).
 };
 
-#define UPB_MSGDEF_INIT(name, itof, ntof, selector_count) \
-  {UPB_DEF_INIT(name, UPB_DEF_MSG), selector_count, itof, ntof}
+#define UPB_MSGDEF_INIT(name, itof, ntof, selector_count, refs, ref2s) \
+  { UPB_DEF_INIT(name, UPB_DEF_MSG, refs, ref2s), selector_count, itof, ntof }
 
 #ifdef __cplusplus
 extern "C" {
@@ -596,8 +656,8 @@ upb_msgdef *upb_msgdef_new(const void *owner);
 bool upb_msgdef_isfrozen(const upb_msgdef *m);
 void upb_msgdef_ref(const upb_msgdef *m, const void *owner);
 void upb_msgdef_unref(const upb_msgdef *m, const void *owner);
-void upb_msgdef_donateref(
-    const upb_msgdef *m, const void *from, const void *to);
+void upb_msgdef_donateref(const upb_msgdef *m, const void *from,
+                          const void *to);
 void upb_msgdef_checkref(const upb_msgdef *m, const void *owner);
 
 // From upb_def.
@@ -620,10 +680,15 @@ int upb_msgdef_numfields(const upb_msgdef *m);
 //   upb_fielddef *f = upb_msg_iter_field(&i);
 //   // ...
 // }
+//
+// For C we don't have separate iterators for const and non-const.
+// It is the caller's responsibility to cast the upb_fielddef* to
+// const if the upb_msgdef* is const.
 void upb_msg_begin(upb_msg_iter *iter, const upb_msgdef *m);
 void upb_msg_next(upb_msg_iter *iter);
-bool upb_msg_done(upb_msg_iter *iter);
-upb_fielddef *upb_msg_iter_field(upb_msg_iter *iter);
+bool upb_msg_done(const upb_msg_iter *iter);
+upb_fielddef *upb_msg_iter_field(const upb_msg_iter *iter);
+void upb_msg_iter_copy(upb_msg_iter *to, const upb_msg_iter *from);
 #ifdef __cplusplus
 }  // extern "C
 #endif
@@ -638,7 +703,7 @@ typedef upb_strtable_iter upb_enum_iter;
 class upb::EnumDef {
  public:
   // Returns NULL if memory allocation failed.
-  static EnumDef* New(const void *owner);
+  static EnumDef* New(const void* owner);
 
   // Though not declared as such in C++, upb::Def is the base of EnumDef and we
   // can upcast to it.
@@ -649,12 +714,12 @@ class upb::EnumDef {
   bool IsFrozen() const;
   void Ref(const void* owner) const;
   void Unref(const void* owner) const;
-  void DonateRef(const void *from, const void *to) const;
-  void CheckRef(const void *owner) const;
+  void DonateRef(const void* from, const void* to) const;
+  void CheckRef(const void* owner) const;
 
   // Functionality from upb::Def.
-  const char *full_name() const;
-  bool set_full_name(const char *fullname, Status* s);
+  const char* full_name() const;
+  bool set_full_name(const char* fullname, Status* s);
   bool set_full_name(const std::string& fullname, Status* s);
 
   // The value that is used as the default when no field default is specified.
@@ -681,7 +746,7 @@ class upb::EnumDef {
 
   // Returns a new EnumDef with all the same values.  The new EnumDef will be
   // owned by the given owner.
-  EnumDef* Dup(const void *owner) const;
+  EnumDef* Dup(const void* owner) const;
 
   // Iteration over name/value pairs.  The order is undefined.
   // Adding an enum val invalidates any iterators.
@@ -690,7 +755,7 @@ class upb::EnumDef {
     explicit Iterator(const EnumDef*);
 
     int32_t number();
-    const char* name();
+    const char *name();
     bool Done();
     void Next();
 
@@ -710,8 +775,8 @@ struct upb_enumdef {
   int32_t defaultval;
 };
 
-#define UPB_ENUMDEF_INIT(name, ntoi, iton, defaultval) \
-  {UPB_DEF_INIT(name, UPB_DEF_ENUM), ntoi, iton, defaultval}
+#define UPB_ENUMDEF_INIT(name, ntoi, iton, defaultval, refs, ref2s) \
+  { UPB_DEF_INIT(name, UPB_DEF_ENUM, refs, ref2s), ntoi, iton, defaultval }
 
 // Native C API.
 #ifdef __cplusplus
@@ -724,8 +789,8 @@ upb_enumdef *upb_enumdef_dup(const upb_enumdef *e, const void *owner);
 void upb_enumdef_unref(const upb_enumdef *e, const void *owner);
 bool upb_enumdef_isfrozen(const upb_enumdef *e);
 void upb_enumdef_ref(const upb_enumdef *e, const void *owner);
-void upb_enumdef_donateref(
-    const upb_enumdef *m, const void *from, const void *to);
+void upb_enumdef_donateref(const upb_enumdef *m, const void *from,
+                           const void *to);
 void upb_enumdef_checkref(const upb_enumdef *e, const void *owner);
 
 // From upb_def.
@@ -757,32 +822,68 @@ int32_t upb_enum_iter_number(upb_enum_iter *iter);
 
 /* upb_def casts **************************************************************/
 
+#ifdef __cplusplus
+
+#define UPB_CPP_CASTS(cname, cpptype)                                          \
+  namespace upb {                                                              \
+  template <>                                                                  \
+  inline cpptype *down_cast<cpptype*, Def>(Def *def) {                         \
+    return upb_downcast_##cname##_mutable(def);                                \
+  }                                                                            \
+  template <>                                                                  \
+  inline cpptype *dyn_cast<cpptype*, Def>(Def *def) {                          \
+    return upb_dyncast_##cname##_mutable(def);                                 \
+  }                                                                            \
+  template <>                                                                  \
+  inline const cpptype *down_cast<const cpptype*, const Def>(const Def *def) { \
+    return upb_downcast_##cname(def);                                          \
+  }                                                                            \
+  template <>                                                                  \
+  inline const cpptype *dyn_cast<const cpptype*, const Def>(const Def *def) {  \
+    return upb_dyncast_##cname(def);                                           \
+  }                                                                            \
+  template <>                                                                  \
+  inline const cpptype *down_cast<const cpptype*, Def>(Def *def) {             \
+    return upb_downcast_##cname(def);                                          \
+  }                                                                            \
+  template <>                                                                  \
+  inline const cpptype *dyn_cast<const cpptype*, Def>(Def *def) {              \
+    return upb_dyncast_##cname(def);                                           \
+  }                                                                            \
+  }  // namespace upb
+
+#else
+#define UPB_CPP_CASTS(cname, cpptype)
+#endif
+
 // Dynamic casts, for determining if a def is of a particular type at runtime.
 // Downcasts, for when some wants to assert that a def is of a particular type.
 // These are only checked if we are building debug.
-#define UPB_DEF_CASTS(lower, upper) \
-  UPB_INLINE const upb_ ## lower *upb_dyncast_ ## lower(const upb_def *def) { \
-    if (upb_def_type(def) != UPB_DEF_ ## upper) return NULL; \
-    return (upb_ ## lower*)def; \
-  } \
-  UPB_INLINE const upb_ ## lower *upb_downcast_ ## lower(const upb_def *def) { \
-    assert(upb_def_type(def) == UPB_DEF_ ## upper); \
-    return (const upb_ ## lower*)def; \
-  } \
-  UPB_INLINE upb_ ## lower *upb_dyncast_ ## lower ## _mutable(upb_def *def) { \
-    return (upb_ ## lower*)upb_dyncast_ ## lower(def); \
-  } \
-  UPB_INLINE upb_ ## lower *upb_downcast_ ## lower ## _mutable(upb_def *def) { \
-    return (upb_ ## lower*)upb_downcast_ ## lower(def); \
-  }
-UPB_DEF_CASTS(msgdef, MSG);
-UPB_DEF_CASTS(fielddef, FIELD);
-UPB_DEF_CASTS(enumdef, ENUM);
+#define UPB_DEF_CASTS(lower, upper, cpptype)                               \
+  UPB_INLINE const upb_##lower *upb_dyncast_##lower(const upb_def *def) {  \
+    if (upb_def_type(def) != UPB_DEF_##upper) return NULL;                 \
+    return (upb_##lower *)def;                                             \
+  }                                                                        \
+  UPB_INLINE const upb_##lower *upb_downcast_##lower(const upb_def *def) { \
+    assert(upb_def_type(def) == UPB_DEF_##upper);                          \
+    return (const upb_##lower *)def;                                       \
+  }                                                                        \
+  UPB_INLINE upb_##lower *upb_dyncast_##lower##_mutable(upb_def *def) {    \
+    return (upb_##lower *)upb_dyncast_##lower(def);                        \
+  }                                                                        \
+  UPB_INLINE upb_##lower *upb_downcast_##lower##_mutable(upb_def *def) {   \
+    return (upb_##lower *)upb_downcast_##lower(def);                       \
+  }                                                                        \
+  UPB_CPP_CASTS(lower, cpptype)
+
+UPB_DEF_CASTS(msgdef, MSG, MessageDef);
+UPB_DEF_CASTS(fielddef, FIELD, FieldDef);
+UPB_DEF_CASTS(enumdef, ENUM, EnumDef);
 #undef UPB_DEF_CASTS
 
 #ifdef __cplusplus
 
-UPB_INLINE const char *upb_safecstr(const std::string& str) {
+UPB_INLINE const char* upb_safecstr(const std::string& str) {
   assert(str.size() == std::strlen(str.c_str()));
   return str.c_str();
 }
@@ -790,49 +891,34 @@ UPB_INLINE const char *upb_safecstr(const std::string& str) {
 // Inline C++ wrappers.
 namespace upb {
 
-inline Def* Def::Dup(const void *owner) const {
+inline Def* Def::Dup(const void* owner) const {
   return upb_def_dup(this, owner);
 }
-inline RefCounted* Def::Upcast() {
-  return upb_upcast(this);
-}
-inline const RefCounted* Def::Upcast() const {
-  return upb_upcast(this);
-}
-inline bool Def::IsFrozen() const {
-  return upb_def_isfrozen(this);
-}
-inline void Def::Ref(const void* owner) const {
-  upb_def_ref(this, owner);
-}
-inline void Def::Unref(const void* owner) const {
-  upb_def_unref(this, owner);
-}
-inline void Def::DonateRef(const void *from, const void *to) const {
+inline RefCounted* Def::Upcast() { return UPB_UPCAST(this); }
+inline const RefCounted* Def::Upcast() const { return UPB_UPCAST(this); }
+inline bool Def::IsFrozen() const { return upb_def_isfrozen(this); }
+inline void Def::Ref(const void* owner) const { upb_def_ref(this, owner); }
+inline void Def::Unref(const void* owner) const { upb_def_unref(this, owner); }
+inline void Def::DonateRef(const void* from, const void* to) const {
   upb_def_donateref(this, from, to);
 }
-inline void Def::CheckRef(const void *owner) const {
+inline void Def::CheckRef(const void* owner) const {
   upb_def_checkref(this, owner);
 }
-inline Def::Type Def::def_type() const {
-  return upb_def_type(this);
-}
-inline const char *Def::full_name() const {
-  return upb_def_fullname(this);
-}
-inline bool Def::set_full_name(const char *fullname, Status* s) {
+inline Def::Type Def::def_type() const { return upb_def_type(this); }
+inline const char* Def::full_name() const { return upb_def_fullname(this); }
+inline bool Def::set_full_name(const char* fullname, Status* s) {
   return upb_def_setfullname(this, fullname, s);
 }
 inline bool Def::set_full_name(const std::string& fullname, Status* s) {
   return upb_def_setfullname(this, upb_safecstr(fullname), s);
 }
-inline bool Def::Freeze(Def *const*defs, int n, Status *status) {
+inline bool Def::Freeze(Def* const* defs, int n, Status* status) {
   return upb_def_freeze(defs, n, status);
 }
-inline bool Def::Freeze(const std::vector<Def*>& defs, Status *status) {
-  return upb_def_freeze((Def*const*)&defs[0], defs.size(), status);
+inline bool Def::Freeze(const std::vector<Def*>& defs, Status* status) {
+  return upb_def_freeze((Def* const*)&defs[0], defs.size(), status);
 }
-
 
 inline bool FieldDef::CheckType(int32_t val) {
   return upb_fielddef_checktype(val);
@@ -863,62 +949,50 @@ inline FieldDef::IntegerFormat FieldDef::ConvertIntegerFormat(int32_t val) {
   return static_cast<FieldDef::IntegerFormat>(val);
 }
 
-inline FieldDef* FieldDef::New(const void *owner) {
+inline FieldDef* FieldDef::New(const void* owner) {
   return upb_fielddef_new(owner);
 }
-inline FieldDef* FieldDef::Dup(const void *owner) const {
+inline FieldDef* FieldDef::Dup(const void* owner) const {
   return upb_fielddef_dup(this, owner);
 }
-inline Def* FieldDef::Upcast() {
-  return upb_upcast(this);
-}
-inline const Def* FieldDef::Upcast() const {
-  return upb_upcast(this);
-}
-inline bool FieldDef::IsFrozen() const {
-  return upb_fielddef_isfrozen(this);
-}
+inline Def* FieldDef::Upcast() { return UPB_UPCAST(this); }
+inline const Def* FieldDef::Upcast() const { return UPB_UPCAST(this); }
+inline bool FieldDef::IsFrozen() const { return upb_fielddef_isfrozen(this); }
 inline void FieldDef::Ref(const void* owner) const {
   upb_fielddef_ref(this, owner);
 }
 inline void FieldDef::Unref(const void* owner) const {
   upb_fielddef_unref(this, owner);
 }
-inline void FieldDef::DonateRef(const void *from, const void *to) const {
+inline void FieldDef::DonateRef(const void* from, const void* to) const {
   upb_fielddef_donateref(this, from, to);
 }
-inline void FieldDef::CheckRef(const void *owner) const {
+inline void FieldDef::CheckRef(const void* owner) const {
   upb_fielddef_checkref(this, owner);
 }
-inline const char *FieldDef::full_name() const {
+inline const char* FieldDef::full_name() const {
   return upb_fielddef_fullname(this);
 }
-inline bool FieldDef::set_full_name(const char *fullname, Status* s) {
+inline bool FieldDef::set_full_name(const char* fullname, Status* s) {
   return upb_fielddef_setfullname(this, fullname, s);
 }
-inline bool FieldDef::set_full_name(const std::string &fullname, Status *s) {
+inline bool FieldDef::set_full_name(const std::string& fullname, Status* s) {
   return upb_fielddef_setfullname(this, upb_safecstr(fullname), s);
 }
 inline bool FieldDef::type_is_set() const {
   return upb_fielddef_typeisset(this);
 }
-inline FieldDef::Type FieldDef::type() const {
-  return upb_fielddef_type(this);
-}
+inline FieldDef::Type FieldDef::type() const { return upb_fielddef_type(this); }
 inline FieldDef::DescriptorType FieldDef::descriptor_type() const {
   return upb_fielddef_descriptortype(this);
 }
 inline FieldDef::Label FieldDef::label() const {
   return upb_fielddef_label(this);
 }
-inline uint32_t FieldDef::number() const {
-  return upb_fielddef_number(this);
-}
-inline const char *FieldDef::name() const {
-  return upb_fielddef_name(this);
-}
-inline const MessageDef* FieldDef::message_def() const {
-  return upb_fielddef_msgdef(this);
+inline uint32_t FieldDef::number() const { return upb_fielddef_number(this); }
+inline const char* FieldDef::name() const { return upb_fielddef_name(this); }
+inline const MessageDef* FieldDef::containing_type() const {
+  return upb_fielddef_containingtype(this);
 }
 inline bool FieldDef::set_number(uint32_t number, Status* s) {
   return upb_fielddef_setnumber(this, number, s);
@@ -941,20 +1015,52 @@ inline void FieldDef::set_label(upb_label_t label) {
 inline bool FieldDef::IsSubMessage() const {
   return upb_fielddef_issubmsg(this);
 }
-inline bool FieldDef::IsString() const {
-  return upb_fielddef_isstring(this);
+inline bool FieldDef::IsString() const { return upb_fielddef_isstring(this); }
+inline bool FieldDef::IsSequence() const { return upb_fielddef_isseq(this); }
+inline int64_t FieldDef::default_int64() const {
+  return upb_fielddef_defaultint64(this);
 }
-inline bool FieldDef::IsSequence() const {
-  return upb_fielddef_isseq(this);
+inline int32_t FieldDef::default_int32() const {
+  return upb_fielddef_defaultint32(this);
 }
-inline Value FieldDef::default_value() const {
-  return upb_fielddef_default(this);
+inline uint64_t FieldDef::default_uint64() const {
+  return upb_fielddef_defaultuint64(this);
 }
-inline const char *FieldDef::GetDefaultString(size_t* len) const {
+inline uint32_t FieldDef::default_uint32() const {
+  return upb_fielddef_defaultuint32(this);
+}
+inline bool FieldDef::default_bool() const {
+  return upb_fielddef_defaultbool(this);
+}
+inline float FieldDef::default_float() const {
+  return upb_fielddef_defaultfloat(this);
+}
+inline double FieldDef::default_double() const {
+  return upb_fielddef_defaultdouble(this);
+}
+inline const char* FieldDef::default_string(size_t* len) const {
   return upb_fielddef_defaultstr(this, len);
 }
-inline void FieldDef::set_default_value(Value value) {
-  upb_fielddef_setdefault(this, value);
+inline void FieldDef::set_default_int64(int64_t value) {
+  upb_fielddef_setdefaultint64(this, value);
+}
+inline void FieldDef::set_default_int32(int32_t value) {
+  upb_fielddef_setdefaultint32(this, value);
+}
+inline void FieldDef::set_default_uint64(uint64_t value) {
+  upb_fielddef_setdefaultuint64(this, value);
+}
+inline void FieldDef::set_default_uint32(uint32_t value) {
+  upb_fielddef_setdefaultuint32(this, value);
+}
+inline void FieldDef::set_default_bool(bool value) {
+  upb_fielddef_setdefaultbool(this, value);
+}
+inline void FieldDef::set_default_float(float value) {
+  upb_fielddef_setdefaultfloat(this, value);
+}
+inline void FieldDef::set_default_double(double value) {
+  upb_fielddef_setdefaultdouble(this, value);
 }
 inline bool FieldDef::set_default_string(const void *str, size_t len,
                                          Status *s) {
@@ -963,7 +1069,7 @@ inline bool FieldDef::set_default_string(const void *str, size_t len,
 inline bool FieldDef::set_default_string(const std::string& str, Status* s) {
   return upb_fielddef_setdefaultstr(this, str.c_str(), str.size(), s);
 }
-inline void FieldDef::set_default_cstr(const char *str, Status* s) {
+inline void FieldDef::set_default_cstr(const char* str, Status* s) {
   return upb_fielddef_setdefaultcstr(this, str, s);
 }
 inline bool FieldDef::IsDefaultSymbolic() const {
@@ -972,17 +1078,25 @@ inline bool FieldDef::IsDefaultSymbolic() const {
 inline bool FieldDef::ResolveEnumDefault(Status* s) {
   return upb_fielddef_resolveenumdefault(this, s);
 }
-inline bool FieldDef::HasSubDef() const {
-  return upb_fielddef_hassubdef(this);
+inline bool FieldDef::HasSubDef() const { return upb_fielddef_hassubdef(this); }
+inline const Def* FieldDef::subdef() const { return upb_fielddef_subdef(this); }
+inline const MessageDef *FieldDef::message_subdef() const {
+  return upb_fielddef_msgsubdef(this);
 }
-inline const Def* FieldDef::subdef() const {
-  return upb_fielddef_subdef(this);
+inline const EnumDef *FieldDef::enum_subdef() const {
+  return upb_fielddef_enumsubdef(this);
 }
 inline const char* FieldDef::subdef_name() const {
   return upb_fielddef_subdefname(this);
 }
 inline bool FieldDef::set_subdef(const Def* subdef, Status* s) {
   return upb_fielddef_setsubdef(this, subdef, s);
+}
+inline bool FieldDef::set_enum_subdef(const EnumDef* subdef, Status* s) {
+  return upb_fielddef_setenumsubdef(this, subdef, s);
+}
+inline bool FieldDef::set_message_subdef(const MessageDef* subdef, Status* s) {
+  return upb_fielddef_setmsgsubdef(this, subdef, s);
 }
 inline bool FieldDef::set_subdef_name(const char* name, Status* s) {
   return upb_fielddef_setsubdefname(this, name, s);
@@ -991,34 +1105,28 @@ inline bool FieldDef::set_subdef_name(const std::string& name, Status* s) {
   return upb_fielddef_setsubdefname(this, upb_safecstr(name), s);
 }
 
-inline MessageDef* MessageDef::New(const void *owner) {
+inline MessageDef* MessageDef::New(const void* owner) {
   return upb_msgdef_new(owner);
 }
-inline Def* MessageDef::Upcast() {
-  return upb_upcast(this);
-}
-inline const Def* MessageDef::Upcast() const {
-  return upb_upcast(this);
-}
-inline bool MessageDef::IsFrozen() const {
-  return upb_msgdef_isfrozen(this);
-}
+inline Def* MessageDef::Upcast() { return UPB_UPCAST(this); }
+inline const Def* MessageDef::Upcast() const { return UPB_UPCAST(this); }
+inline bool MessageDef::IsFrozen() const { return upb_msgdef_isfrozen(this); }
 inline void MessageDef::Ref(const void* owner) const {
   return upb_msgdef_ref(this, owner);
 }
 inline void MessageDef::Unref(const void* owner) const {
   return upb_msgdef_unref(this, owner);
 }
-inline void MessageDef::DonateRef(const void *from, const void *to) const {
+inline void MessageDef::DonateRef(const void* from, const void* to) const {
   return upb_msgdef_donateref(this, from, to);
 }
-inline void MessageDef::CheckRef(const void *owner) const {
+inline void MessageDef::CheckRef(const void* owner) const {
   return upb_msgdef_checkref(this, owner);
 }
 inline const char *MessageDef::full_name() const {
   return upb_msgdef_fullname(this);
 }
-inline bool MessageDef::set_full_name(const char *fullname, Status *s) {
+inline bool MessageDef::set_full_name(const char* fullname, Status* s) {
   return upb_msgdef_setfullname(this, fullname, s);
 }
 inline bool MessageDef::set_full_name(const std::string& fullname, Status* s) {
@@ -1027,80 +1135,94 @@ inline bool MessageDef::set_full_name(const std::string& fullname, Status* s) {
 inline int MessageDef::field_count() const {
   return upb_msgdef_numfields(this);
 }
-inline bool MessageDef::AddField(upb_fielddef *f, const void *ref_donor,
-                                 Status *s) {
+inline bool MessageDef::AddField(upb_fielddef* f, const void* ref_donor,
+                                 Status* s) {
   return upb_msgdef_addfield(this, f, ref_donor, s);
 }
 inline FieldDef* MessageDef::FindFieldByNumber(uint32_t number) {
   return upb_msgdef_itof_mutable(this, number);
 }
-inline FieldDef* MessageDef::FindFieldByName(const char *name) {
+inline FieldDef* MessageDef::FindFieldByName(const char* name) {
   return upb_msgdef_ntof_mutable(this, name);
 }
 inline const FieldDef* MessageDef::FindFieldByNumber(uint32_t number) const {
   return upb_msgdef_itof(this, number);
 }
-inline const FieldDef* MessageDef::FindFieldByName(const char *name) const {
+inline const FieldDef* MessageDef::FindFieldByName(const char* name) const {
   return upb_msgdef_ntof(this, name);
 }
 inline MessageDef* MessageDef::Dup(const void *owner) const {
   return upb_msgdef_dup(this, owner);
 }
-
-inline MessageDef::Iterator::Iterator(MessageDef* md) {
-  upb_msg_begin(&iter_, md);
+inline MessageDef::iterator MessageDef::begin() { return iterator(this); }
+inline MessageDef::iterator MessageDef::end() { return iterator(); }
+inline MessageDef::const_iterator MessageDef::begin() const {
+  return const_iterator(this);
 }
-inline FieldDef* MessageDef::Iterator::field() {
-  return upb_msg_iter_field(&iter_);
-}
-inline bool MessageDef::Iterator::Done() {
-  return upb_msg_done(&iter_);
-}
-inline void MessageDef::Iterator::Next() {
-  return upb_msg_next(&iter_);
+inline MessageDef::const_iterator MessageDef::end() const {
+  return const_iterator();
 }
 
-inline MessageDef::ConstIterator::ConstIterator(const MessageDef* md) {
+inline MessageDef::iterator::iterator() {
+  upb_inttable_iter_setdone(&iter_);
+}
+inline MessageDef::iterator::iterator(MessageDef* md) {
   upb_msg_begin(&iter_, md);
 }
-inline const FieldDef* MessageDef::ConstIterator::field() {
+inline FieldDef* MessageDef::iterator::operator*() const {
   return upb_msg_iter_field(&iter_);
 }
-inline bool MessageDef::ConstIterator::Done() {
-  return upb_msg_done(&iter_);
+inline void MessageDef::iterator::operator++() { return upb_msg_next(&iter_); }
+inline bool MessageDef::iterator::operator==(const iterator &other) const {
+  return upb_inttable_iter_isequal(&iter_, &other.iter_);
 }
-inline void MessageDef::ConstIterator::Next() {
+inline bool MessageDef::iterator::operator!=(const iterator &other) const {
+  return !(*this == other);
+}
+
+inline MessageDef::const_iterator::const_iterator() {
+  upb_inttable_iter_setdone(&iter_);
+}
+inline MessageDef::const_iterator::const_iterator(const MessageDef* md) {
+  upb_msg_begin(&iter_, md);
+}
+inline const FieldDef* MessageDef::const_iterator::operator*() const {
+  return upb_msg_iter_field(&iter_);
+}
+inline void MessageDef::const_iterator::operator++() {
   return upb_msg_next(&iter_);
+}
+inline bool MessageDef::const_iterator::operator==(
+    const const_iterator &other) const {
+  return upb_inttable_iter_isequal(&iter_, &other.iter_);
+}
+inline bool MessageDef::const_iterator::operator!=(
+    const const_iterator &other) const {
+  return !(*this == other);
 }
 
 inline EnumDef* EnumDef::New(const void *owner) {
   return upb_enumdef_new(owner);
 }
-inline Def* EnumDef::Upcast() {
-  return upb_upcast(this);
-}
-inline const Def* EnumDef::Upcast() const {
-  return upb_upcast(this);
-}
-inline bool EnumDef::IsFrozen() const {
-  return upb_enumdef_isfrozen(this);
-}
+inline Def* EnumDef::Upcast() { return UPB_UPCAST(this); }
+inline const Def* EnumDef::Upcast() const { return UPB_UPCAST(this); }
+inline bool EnumDef::IsFrozen() const { return upb_enumdef_isfrozen(this); }
 inline void EnumDef::Ref(const void* owner) const {
   return upb_enumdef_ref(this, owner);
 }
 inline void EnumDef::Unref(const void* owner) const {
   return upb_enumdef_unref(this, owner);
 }
-inline void EnumDef::DonateRef(const void *from, const void *to) const {
+inline void EnumDef::DonateRef(const void* from, const void* to) const {
   return upb_enumdef_donateref(this, from, to);
 }
-inline void EnumDef::CheckRef(const void *owner) const {
+inline void EnumDef::CheckRef(const void* owner) const {
   return upb_enumdef_checkref(this, owner);
 }
-inline const char *EnumDef::full_name() const {
+inline const char* EnumDef::full_name() const {
   return upb_enumdef_fullname(this);
 }
-inline bool EnumDef::set_full_name(const char *fullname, Status* s) {
+inline bool EnumDef::set_full_name(const char* fullname, Status* s) {
   return upb_enumdef_setfullname(this, fullname, s);
 }
 inline bool EnumDef::set_full_name(const std::string& fullname, Status* s) {
@@ -1112,23 +1234,21 @@ inline int32_t EnumDef::default_value() const {
 inline void EnumDef::set_default_value(int32_t val) {
   upb_enumdef_setdefault(this, val);
 }
-inline int EnumDef::value_count() const {
-  return upb_enumdef_numvals(this);
-}
+inline int EnumDef::value_count() const { return upb_enumdef_numvals(this); }
 inline bool EnumDef::AddValue(const char* name, int32_t num, Status* status) {
   return upb_enumdef_addval(this, name, num, status);
 }
-inline bool EnumDef::AddValue(
-    const std::string& name, int32_t num, Status* status) {
+inline bool EnumDef::AddValue(const std::string& name, int32_t num,
+                              Status* status) {
   return upb_enumdef_addval(this, upb_safecstr(name), num, status);
 }
-inline bool EnumDef::FindValueByName(const char* name, int32_t* num) const {
+inline bool EnumDef::FindValueByName(const char* name, int32_t *num) const {
   return upb_enumdef_ntoi(this, name, num);
 }
 inline const char* EnumDef::FindValueByNumber(int32_t num) const {
   return upb_enumdef_iton(this, num);
 }
-inline EnumDef* EnumDef::Dup(const void *owner) const {
+inline EnumDef* EnumDef::Dup(const void* owner) const {
   return upb_enumdef_dup(this, owner);
 }
 
@@ -1141,13 +1261,9 @@ inline int32_t EnumDef::Iterator::number() {
 inline const char* EnumDef::Iterator::name() {
   return upb_enum_iter_name(&iter_);
 }
-inline bool EnumDef::Iterator::Done() {
-  return upb_enum_done(&iter_);
-}
-inline void EnumDef::Iterator::Next() {
-  return upb_enum_next(&iter_);
-}
+inline bool EnumDef::Iterator::Done() { return upb_enum_done(&iter_); }
+inline void EnumDef::Iterator::Next() { return upb_enum_next(&iter_); }
 }  // namespace upb
 #endif
 
-#endif  /* UPB_DEF_H_ */
+#endif /* UPB_DEF_H_ */

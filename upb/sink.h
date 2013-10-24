@@ -38,6 +38,10 @@ typedef struct upb_sink upb_sink;
 #endif
 struct upb_sinkframe;
 
+// The maximum nesting depth that upb::Sink will allow.  Matches proto2's limit.
+// TODO: make this a runtime-settable property of Sink.
+#define UPB_SINK_MAX_NESTING 64
+
 #ifdef __cplusplus
 
 // A upb::Pipeline is a set of sinks that can send data to each other.  The
@@ -168,7 +172,14 @@ class upb::Sink {
   // These may not be called from within one of the same sink's handlers (in
   // other words, handlers are not re-entrant).
 
-  // Should be called at the start and end of processing.
+  // Should be called at the start and end of every message; both the top-level
+  // message and submessages.  This means that submessages should use the
+  // following sequence:
+  //   sink->StartSubMessage(startsubmsg_selector);
+  //   sink->StartMessage();
+  //   // ...
+  //   sink->EndMessage();
+  //   sink->EndSubMessage(endsubmsg_selector);
   bool StartMessage();
   bool EndMessage();
 

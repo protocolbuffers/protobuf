@@ -12,6 +12,7 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/text_format.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <inttypes.h>
 #include <stdint.h>
@@ -24,14 +25,15 @@
 #include "upb/handlers.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/glue.h"
-#include "upb/pb/varint.h"
+#include "upb/pb/varint.int.h"
 #include "upb_test.h"
 
 void compare_metadata(const google::protobuf::Descriptor* d,
                       const upb::MessageDef *upb_md) {
   ASSERT(d->field_count() == upb_md->field_count());
-  for (upb::MessageDef::ConstIterator i(upb_md); !i.Done(); i.Next()) {
-    const upb::FieldDef* upb_f = i.field();
+  for (upb::MessageDef::const_iterator i = upb_md->begin(); i != upb_md->end();
+       ++i) {
+    const upb::FieldDef* upb_f = *i;
     const google::protobuf::FieldDescriptor *proto2_f =
         d->FindFieldByNumber(upb_f->number());
     ASSERT(upb_f);
@@ -65,6 +67,9 @@ void parse_and_compare(google::protobuf::Message *msg1,
 
   msg2->Clear();
   bool ok = upb::PutStringToBytestream(decoder_sink, str, len);
+  if (!ok) {
+    fprintf(stderr, "error parsing: %s\n", pipeline.status().GetString());
+  }
   ASSERT(ok);
   ASSERT(pipeline.status().ok());
 
@@ -76,12 +81,21 @@ void parse_and_compare(google::protobuf::Message *msg1,
   std::string str2;
   msg1->SerializeToString(&str1);
   msg2->SerializeToString(&str2);
+
+  std::string text_str1;
+  std::string text_str2;
+  google::protobuf::TextFormat::PrintToString(*msg1, &text_str1);
+  google::protobuf::TextFormat::PrintToString(*msg2, &text_str2);
+  if (str1 != str2) {
+    fprintf(stderr, "str1: %s, str2: %s\n",
+            text_str1.c_str(), text_str2.c_str());
+  }
   ASSERT(str1 == str2);
   ASSERT(std::string(str, len) == str2);
 }
 
 void test_zig_zag() {
-  for (uint64_t num = 5; num * 1.5 > num; num *= 1.5) {
+  for (uint64_t num = 5; num * 1.5 < UINT64_MAX; num *= 1.5) {
     ASSERT(upb_zzenc_64(num) ==
            google::protobuf::internal::WireFormatLite::ZigZagEncode64(num));
     if (num < UINT32_MAX) {

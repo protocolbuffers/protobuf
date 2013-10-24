@@ -100,7 +100,7 @@ static upb_def *upb_deflist_last(upb_deflist *l) {
 
 // Qualify the defname for all defs starting with offset "start" with "str".
 static void upb_deflist_qualify(upb_deflist *l, char *str, int32_t start) {
-  for(uint32_t i = start; i < l->len; i++) {
+  for (uint32_t i = start; i < l->len; i++) {
     upb_def *def = l->defs[i];
     char *name = upb_join(str, upb_def_fullname(def));
     upb_def_setfullname(def, name, NULL);
@@ -124,7 +124,7 @@ typedef struct {
 
 struct upb_descreader {
   upb_deflist defs;
-  upb_descreader_frame stack[UPB_MAX_TYPE_DEPTH];
+  upb_descreader_frame stack[UPB_MAX_MESSAGE_NESTING];
   int stack_len;
 
   uint32_t number;
@@ -184,7 +184,7 @@ upb_def **upb_descreader_getdefs(upb_descreader *r, void *owner, int *n) {
 }
 
 static upb_msgdef *upb_descreader_top(upb_descreader *r) {
-  if (r->stack_len <= 1) return NULL;
+  assert(r->stack_len > 1);
   int index = r->stack[r->stack_len-1].start - 1;
   assert(index >= 0);
   return upb_downcast_msgdef_mutable(r->defs.defs[index]);
@@ -291,7 +291,7 @@ static bool enumval_endmsg(void *closure, const void *hd, upb_status *status) {
 static bool enum_startmsg(void *closure, const void *hd) {
   UPB_UNUSED(hd);
   upb_descreader *r = closure;
-  upb_deflist_push(&r->defs, upb_upcast(upb_enumdef_new(&r->defs)));
+  upb_deflist_push(&r->defs, UPB_UPCAST(upb_enumdef_new(&r->defs)));
   return true;
 }
 
@@ -333,64 +333,68 @@ static bool field_startmsg(void *closure, const void *hd) {
 
 // Converts the default value in string "str" into "d".  Passes a ref on str.
 // Returns true on success.
-static bool parse_default(char *str, upb_value *d, int type) {
+static bool parse_default(char *str, upb_fielddef *f) {
   bool success = true;
-  if (str) {
-    switch(type) {
-      case UPB_TYPE_INT32: upb_value_setint32(d, 0); break;
-      case UPB_TYPE_INT64: upb_value_setint64(d, 0); break;
-      case UPB_TYPE_UINT32: upb_value_setuint32(d, 0);
-      case UPB_TYPE_UINT64: upb_value_setuint64(d, 0); break;
-      case UPB_TYPE_FLOAT: upb_value_setfloat(d, 0); break;
-      case UPB_TYPE_DOUBLE: upb_value_setdouble(d, 0); break;
-      case UPB_TYPE_BOOL: upb_value_setbool(d, false); break;
-      default: abort();
+  char *end;
+  switch (upb_fielddef_type(f)) {
+    case UPB_TYPE_INT32: {
+      long val = strtol(str, &end, 0);
+      if (val > INT32_MAX || val < INT32_MIN || errno == ERANGE || *end)
+        success = false;
+      else
+        upb_fielddef_setdefaultint32(f, val);
+      break;
     }
-  } else {
-    char *end;
-    switch (type) {
-      case UPB_TYPE_INT32: {
-        long val = strtol(str, &end, 0);
-        if (val > INT32_MAX || val < INT32_MIN || errno == ERANGE || *end)
-          success = false;
-        else
-          upb_value_setint32(d, val);
-        break;
-      }
-      case UPB_TYPE_INT64:
-        upb_value_setint64(d, strtoll(str, &end, 0));
-        if (errno == ERANGE || *end) success = false;
-        break;
-      case UPB_TYPE_UINT32: {
-        unsigned long val = strtoul(str, &end, 0);
-        if (val > UINT32_MAX || errno == ERANGE || *end)
-          success = false;
-        else
-          upb_value_setuint32(d, val);
-        break;
-      }
-      case UPB_TYPE_UINT64:
-        upb_value_setuint64(d, strtoull(str, &end, 0));
-        if (errno == ERANGE || *end) success = false;
-        break;
-      case UPB_TYPE_DOUBLE:
-        upb_value_setdouble(d, strtod(str, &end));
-        if (errno == ERANGE || *end) success = false;
-        break;
-      case UPB_TYPE_FLOAT:
-        upb_value_setfloat(d, strtof(str, &end));
-        if (errno == ERANGE || *end) success = false;
-        break;
-      case UPB_TYPE_BOOL: {
-        if (strcmp(str, "false") == 0)
-          upb_value_setbool(d, false);
-        else if (strcmp(str, "true") == 0)
-          upb_value_setbool(d, true);
-        else
-          success = false;
-      }
-      default: abort();
+    case UPB_TYPE_INT64: {
+      long long val = strtoll(str, &end, 0);
+      if (val > INT64_MAX || val < INT64_MIN || errno == ERANGE || *end)
+        success = false;
+      else
+        upb_fielddef_setdefaultint64(f, val);
+      break;
     }
+    case UPB_TYPE_UINT32: {
+      long val = strtoul(str, &end, 0);
+      if (val > UINT32_MAX || errno == ERANGE || *end)
+        success = false;
+      else
+        upb_fielddef_setdefaultuint32(f, val);
+      break;
+    }
+    case UPB_TYPE_UINT64: {
+      unsigned long long val = strtoull(str, &end, 0);
+      if (val > UINT64_MAX || errno == ERANGE || *end)
+        success = false;
+      else
+        upb_fielddef_setdefaultuint64(f, val);
+      break;
+    }
+    case UPB_TYPE_DOUBLE: {
+      double val = strtod(str, &end);
+      if (errno == ERANGE || *end)
+        success = false;
+      else
+        upb_fielddef_setdefaultdouble(f, val);
+      break;
+    }
+    case UPB_TYPE_FLOAT: {
+      float val = strtof(str, &end);
+      if (errno == ERANGE || *end)
+        success = false;
+      else
+        upb_fielddef_setdefaultfloat(f, val);
+      break;
+    }
+    case UPB_TYPE_BOOL: {
+      if (strcmp(str, "false") == 0)
+        upb_fielddef_setdefaultbool(f, false);
+      else if (strcmp(str, "true") == 0)
+        upb_fielddef_setdefaultbool(f, true);
+      else
+        success = false;
+      break;
+    }
+    default: abort();
   }
   return success;
 }
@@ -411,15 +415,12 @@ static bool field_endmsg(void *closure, const void *hd, upb_status *status) {
     if (upb_fielddef_isstring(f) || upb_fielddef_type(f) == UPB_TYPE_ENUM) {
       upb_fielddef_setdefaultcstr(f, r->default_string, NULL);
     } else {
-      upb_value val;
-      upb_value_setptr(&val, NULL);  // Silence inaccurate compiler warnings.
-      if (!parse_default(r->default_string, &val, upb_fielddef_type(f))) {
+      if (r->default_string && !parse_default(r->default_string, f)) {
         // We don't worry too much about giving a great error message since the
         // compiler should have ensured this was correct.
         upb_status_seterrliteral(status, "Error converting default value.");
         return false;
       }
-      upb_fielddef_setdefault(f, val);
     }
   }
   return true;
@@ -484,7 +485,7 @@ static size_t field_ondefaultval(void *closure, const void *hd,
 static bool msg_startmsg(void *closure, const void *hd) {
   UPB_UNUSED(hd);
   upb_descreader *r = closure;
-  upb_deflist_push(&r->defs, upb_upcast(upb_msgdef_new(&r->defs)));
+  upb_deflist_push(&r->defs, UPB_UPCAST(upb_msgdef_new(&r->defs)));
   upb_descreader_startcontainer(r);
   return true;
 }
@@ -493,7 +494,7 @@ static bool msg_endmsg(void *closure, const void *hd, upb_status *status) {
   UPB_UNUSED(hd);
   upb_descreader *r = closure;
   upb_msgdef *m = upb_descreader_top(r);
-  if(!upb_def_fullname(upb_upcast(m))) {
+  if(!upb_def_fullname(UPB_UPCAST(m))) {
     upb_status_seterrliteral(status, "Encountered message with no name.");
     return false;
   }
@@ -508,7 +509,7 @@ static size_t msg_onname(void *closure, const void *hd, const char *buf,
   upb_msgdef *m = upb_descreader_top(r);
   // XXX: see comment at the top of the file.
   char *name = upb_strndup(buf, n);
-  upb_def_setfullname(upb_upcast(m), name, NULL);
+  upb_def_setfullname(UPB_UPCAST(m), name, NULL);
   upb_descreader_setscopename(r, name);  // Passes ownership of name.
   return n;
 }

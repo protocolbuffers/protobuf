@@ -5,7 +5,7 @@
  * Author: Josh Haberman <jhaberman@gmail.com>
  */
 
-#include "upb/pb/varint.h"
+#include "upb/pb/varint.int.h"
 
 // A basic branch-based decoder, uses 32-bit values to get good performance
 // on 32-bit architectures (but performs well on 64-bits also).

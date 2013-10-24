@@ -19,7 +19,7 @@ upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
   // Create handlers.
   const upb_handlers *reader_h = upb_descreader_gethandlers(&reader_h);
   const upb_handlers *decoder_h =
-      upb_pbdecoder_gethandlers(reader_h, false, &decoder_h);
+      upb_pbdecoder_gethandlers(reader_h, true, &decoder_h);
 
   // Create pipeline.
   upb_pipeline pipeline;
@@ -68,8 +68,8 @@ char *upb_readfile(const char *filename, size_t *len) {
   long size = ftell(f);
   if(size < 0) goto error;
   if(fseek(f, 0, SEEK_SET) != 0) goto error;
-  char *buf = malloc(size);
-  if(fread(buf, size, 1, f) != 1) goto error;
+  char *buf = malloc(size + 1);
+  if(size && fread(buf, size, 1, f) != 1) goto error;
   fclose(f);
   if (len) *len = size;
   return buf;

@@ -11,6 +11,86 @@
 #ifndef UPB_HANDLERS_INL_H_
 #define UPB_HANDLERS_INL_H_
 
+#include <limits.h>
+
+// Type detection and typedefs for integer types.
+// For platforms where there are multiple 32-bit or 64-bit types, we need to be
+// able to enumerate them so we can properly create overloads for all variants.
+//
+// If any platform existed where there were three integer types with the same
+// size, this would have to become more complicated.  For example, short, int,
+// and long could all be 32-bits.  Even more diabolically, short, int, long,
+// and long long could all be 64 bits and still be standard-compliant.
+// However, few platforms are this strange, and it's unlikely that upb will be
+// used on the strangest ones.
+
+// Can't count on stdint.h limits like INT32_MAX, because in C++ these are
+// only defined when __STDC_LIMIT_MACROS are defined before the *first* include
+// of stdint.h.  We can't guarantee that someone else didn't include these first
+// without defining __STDC_LIMIT_MACROS.
+#define UPB_INT32_MAX 0x7fffffffLL
+#define UPB_INT32_MIN (-UPB_INT32_MAX - 1)
+#define UPB_INT64_MAX 0x7fffffffffffffffLL
+#define UPB_INT64_MIN (-UPB_INT64_MAX - 1)
+
+#if INT_MAX == UPB_INT32_MAX && INT_MIN == UPB_INT32_MIN
+#define UPB_INT_IS_32BITS 1
+#endif
+
+#if LONG_MAX == UPB_INT32_MAX && LONG_MIN == UPB_INT32_MIN
+#define UPB_LONG_IS_32BITS 1
+#endif
+
+#if LONG_MAX == UPB_INT64_MAX && LONG_MIN == UPB_INT64_MIN
+#define UPB_LONG_IS_64BITS 1
+#endif
+
+#if LLONG_MAX == UPB_INT64_MAX && LLONG_MIN == UPB_INT64_MIN
+#define UPB_LLONG_IS_64BITS 1
+#endif
+
+// We use macros instead of typedefs so we can undefine them later and avoid
+// leaking them outside this header file.
+#if UPB_INT_IS_32BITS
+#define UPB_INT32_T int
+#define UPB_UINT32_T unsigned int
+
+#if UPB_LONG_IS_32BITS
+#define UPB_TWO_32BIT_TYPES 1
+#define UPB_INT32ALT_T long
+#define UPB_UINT32ALT_T unsigned long
+#endif  // UPB_LONG_IS_32BITS
+
+#elif UPB_LONG_IS_32BITS  // && !UPB_INT_IS_32BITS
+#define UPB_INT32_T long
+#define UPB_UINT32_T unsigned long
+#endif  // UPB_INT_IS_32BITS
+
+
+#if UPB_LONG_IS_64BITS
+#define UPB_INT64_T long
+#define UPB_UINT64_T unsigned long
+
+#if UPB_LLONG_IS_64BITS
+#define UPB_TWO_64BIT_TYPES 1
+#define UPB_INT64ALT_T long long
+#define UPB_UINT64ALT_T unsigned long long
+#endif  // UPB_LLONG_IS_64BITS
+
+#elif UPB_LLONG_IS_64BITS  // && !UPB_LONG_IS_64BITS
+#define UPB_INT64_T long long
+#define UPB_UINT64_T unsigned long long
+#endif  // UPB_LONG_IS_64BITS
+
+#undef UPB_INT32_MAX
+#undef UPB_INT32_MIN
+#undef UPB_INT64_MAX
+#undef UPB_INT64_MIN
+#undef UPB_INT_IS_32BITS
+#undef UPB_LONG_IS_32BITS
+#undef UPB_LONG_IS_64BITS
+#undef UPB_LLONG_IS_64BITS
+
 #ifdef __cplusplus
 
 namespace upb {
@@ -312,20 +392,20 @@ inline Handlers::StringHandler BindHandler(
 
 TYPE_METHODS(Double, double, double,   double);
 TYPE_METHODS(Float,  float,  float,    float);
-TYPE_METHODS(UInt64, uint64, uint64_t, upb_uint64_t);
-TYPE_METHODS(UInt32, uint32, uint32_t, upb_uint32_t);
-TYPE_METHODS(Int64,  int64,  int64_t,  upb_int64_t);
-TYPE_METHODS(Int32,  int32,  int32_t,  upb_int32_t);
+TYPE_METHODS(UInt64, uint64, uint64_t, UPB_UINT64_T);
+TYPE_METHODS(UInt32, uint32, uint32_t, UPB_UINT32_T);
+TYPE_METHODS(Int64,  int64,  int64_t,  UPB_INT64_T);
+TYPE_METHODS(Int32,  int32,  int32_t,  UPB_INT32_T);
 TYPE_METHODS(Bool,   bool,   bool,     bool);
 
 #ifdef UPB_TWO_32BIT_TYPES
-TYPE_METHODS(Int32,  int32,  int32_t,  upb_int32alt_t);
-TYPE_METHODS(Uint32, uint32, uint32_t, upb_uint32alt_t);
+TYPE_METHODS(Int32,  int32,  int32_t,  UPB_INT32ALT_T);
+TYPE_METHODS(UInt32, uint32, uint32_t, UPB_UINT32ALT_T);
 #endif
 
 #ifdef UPB_TWO_64BIT_TYPES
-TYPE_METHODS(Int64,  int64,  int64_t,  upb_int64alt_t);
-TYPE_METHODS(UInt64, uint64, uint64_t, upb_uint64alt_t);
+TYPE_METHODS(Int64,  int64,  int64_t,  UPB_INT64ALT_T);
+TYPE_METHODS(UInt64, uint64, uint64_t, UPB_UINT64ALT_T);
 #endif
 #undef TYPE_METHODS
 
@@ -482,5 +562,16 @@ inline const void *Handlers::GetHandlerData(Handlers::Selector selector) {
 }  // namespace upb
 
 #endif  // __cplusplus
+
+#undef UPB_TWO_32BIT_TYPES
+#undef UPB_TWO_64BIT_TYPES
+#undef UPB_INT32_T
+#undef UPB_UINT32_T
+#undef UPB_INT32ALT_T
+#undef UPB_UINT32ALT_T
+#undef UPB_INT64_T
+#undef UPB_UINT64_T
+#undef UPB_INT64ALT_T
+#undef UPB_UINT64ALT_T
 
 #endif  // UPB_HANDLERS_INL_H_

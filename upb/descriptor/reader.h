@@ -13,6 +13,18 @@
 
 #include "upb/handlers.h"
 
+// The maximum number of nested declarations that are allowed, ie.
+// message Foo {
+//   message Bar {
+//     message Baz {
+//     }
+//   }
+// }
+//
+// This is a resource limit that affects how big our runtime stack can grow.
+// TODO: make this a runtime-settable property of the Reader instance.
+#define UPB_MAX_MESSAGE_NESTING 64
+
 #ifdef __cplusplus
 namespace upb {
 namespace descriptor {

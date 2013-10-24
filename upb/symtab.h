@@ -154,9 +154,9 @@ inline SymbolTable* SymbolTable::New(const void* owner) {
   return upb_symtab_new(owner);
 }
 
-inline RefCounted* SymbolTable::Upcast() { return upb_upcast(this); }
+inline RefCounted* SymbolTable::Upcast() { return UPB_UPCAST(this); }
 inline const RefCounted* SymbolTable::Upcast() const {
-  return upb_upcast(this);
+  return UPB_UPCAST(this);
 }
 inline bool SymbolTable::IsFrozen() const {
   return upb_symtab_isfrozen(this);

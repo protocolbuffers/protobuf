@@ -19,6 +19,14 @@
 #include "upb/google/proto2.h"
 #include "upb/handlers.h"
 
+#define ASSERT_STATUS(status) do { \
+  if (!upb_ok(status)) { \
+    fprintf(stderr, "upb status failure: %s\n", upb_status_getstr(status)); \
+    assert(upb_ok(status)); \
+  } \
+  } while (0)
+
+
 namespace upb {
 namespace proto2_bridge_google3 { class Defs; }
 namespace proto2_bridge_opensource { class Defs; }
@@ -44,8 +52,8 @@ class me::Defs {
     const upb::MessageDef* md = h->message_def();
     const goog::Message& m = *message_map_[md];
     const goog::Descriptor* d = m.GetDescriptor();
-    for (upb::MessageDef::ConstIterator i(md); !i.Done(); i.Next()) {
-      const upb::FieldDef* upb_f = i.field();
+    for (upb::MessageDef::const_iterator i = md->begin(); i != md->end(); ++i) {
+      const upb::FieldDef* upb_f = *i;
       const goog::FieldDescriptor* proto2_f =
           d->FindFieldByNumber(upb_f->number());
       if (!proto2_f) {
@@ -137,27 +145,25 @@ FieldDef* AddFieldDef(const goog::Message& m, const goog::FieldDescriptor* f,
   } else {
     switch (upb_f->type()) {
       case UPB_TYPE_INT32:
-        upb_f->set_default_value(MakeValue(f->default_value_int32()));
+        upb_f->set_default_int32(f->default_value_int32());
         break;
       case UPB_TYPE_INT64:
-        upb_f->set_default_value(
-            MakeValue(static_cast<int64_t>(f->default_value_int64())));
+        upb_f->set_default_int64(f->default_value_int64());
         break;
       case UPB_TYPE_UINT32:
-        upb_f->set_default_value(MakeValue(f->default_value_uint32()));
+        upb_f->set_default_uint32(f->default_value_uint32());
         break;
       case UPB_TYPE_UINT64:
-        upb_f->set_default_value(
-            MakeValue(static_cast<uint64_t>(f->default_value_uint64())));
+        upb_f->set_default_uint64(f->default_value_uint64());
         break;
       case UPB_TYPE_DOUBLE:
-        upb_f->set_default_value(MakeValue(f->default_value_double()));
+        upb_f->set_default_double(f->default_value_double());
         break;
       case UPB_TYPE_FLOAT:
-        upb_f->set_default_value(MakeValue(f->default_value_float()));
+        upb_f->set_default_float(f->default_value_float());
         break;
       case UPB_TYPE_BOOL:
-        upb_f->set_default_value(MakeValue(f->default_value_bool()));
+        upb_f->set_default_bool(f->default_value_bool());
         break;
       case UPB_TYPE_STRING:
       case UPB_TYPE_BYTES:
@@ -168,15 +174,14 @@ FieldDef* AddFieldDef(const goog::Message& m, const goog::FieldDescriptor* f,
         break;
       case UPB_TYPE_ENUM:
         // We set the enum default numerically.
-        upb_f->set_default_value(
-            MakeValue(static_cast<int32_t>(f->default_value_enum()->number())));
+        upb_f->set_default_int32(f->default_value_enum()->number());
         upb_f->set_subdef_name(f->enum_type()->full_name(), &status);
         break;
     }
   }
 
   md->AddField(upb_f, &upb_f, &status);
-  UPB_ASSERT_STATUS(&status);
+  ASSERT_STATUS(&status);
 
   if (weak_prototype) {
     *subm = weak_prototype;
@@ -200,7 +205,7 @@ upb::EnumDef* NewEnumDef(const goog::EnumDescriptor* desc, const void* owner) {
     bool success = e->AddValue(val->name(), val->number(), &status);
     UPB_ASSERT_VAR(success, success);
   }
-  UPB_ASSERT_STATUS(&status);
+  ASSERT_STATUS(&status);
   return e;
 }
 
@@ -245,7 +250,7 @@ static upb::MessageDef* NewMessageDef(const goog::Message& m, const void* owner,
     }
     f->set_subdef(subdef, &status);
   }
-  UPB_ASSERT_STATUS(&status);
+  ASSERT_STATUS(&status);
   return md;
 }
 

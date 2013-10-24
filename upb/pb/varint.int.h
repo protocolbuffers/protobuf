@@ -11,6 +11,7 @@
 #ifndef UPB_VARINT_DECODER_H_
 #define UPB_VARINT_DECODER_H_
 
+#include <assert.h>
 #include <stdint.h>
 #include <string.h>
 #include "upb/upb.h"
@@ -28,6 +29,8 @@ typedef enum {
   UPB_WIRE_TYPE_END_GROUP   = 4,
   UPB_WIRE_TYPE_32BIT       = 5,
 } upb_wiretype_t;
+
+#define UPB_MAX_WIRE_TYPE 5
 
 // The maximum number of bytes that it takes to encode a 64-bit varint.
 // Note that with a better encoding this could be 9 (TODO: write up a
@@ -87,7 +90,7 @@ UPB_VARINT_DECODER_CHECK2(massimino, upb_vdecode_max8_massimino);
 // favored best-performing implementations.
 UPB_INLINE upb_decoderet upb_vdecode_fast(const char *p) {
   if (sizeof(long) == 8)
-    return upb_vdecode_check2_massimino(p);
+    return upb_vdecode_check2_branch64(p);
   else
     return upb_vdecode_check2_branch32(p);
 }

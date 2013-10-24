@@ -24,6 +24,7 @@
 #include <stdlib.h>
 
 uint32_t static_refcount = 1;
+static void freeobj(upb_refcounted *o);
 
 /* arch-specific atomic primitives  *******************************************/
 
@@ -74,90 +75,26 @@ void upb_unlock();
 // code-paths that can normally never fail, like upb_refcounted_ref().  Since
 // we have no way to propagage out-of-memory errors back to the user, and since
 // these errors can only occur in UPB_DEBUG_REFS mode, we immediately fail.
-#define CHECK_OOM(predicate) assert(predicate)
+#define CHECK_OOM(predicate) if (!(predicate)) { assert(predicate); exit(1); }
 
 typedef struct {
-  const upb_refcounted *obj;  // Object we are taking a ref on.
   int count;  // How many refs there are (duplicates only allowed for ref2).
   bool is_ref2;
 } trackedref;
 
-trackedref *trackedref_new(const upb_refcounted *obj, bool is_ref2) {
+trackedref *trackedref_new(bool is_ref2) {
   trackedref *ret = malloc(sizeof(*ret));
   CHECK_OOM(ret);
-  ret->obj = obj;
   ret->count = 1;
   ret->is_ref2 = is_ref2;
   return ret;
 }
 
-// A reversible function for obfuscating a uintptr_t.
-// This depends on sizeof(uintptr_t) <= sizeof(uint64_t), so would fail
-// on 128-bit machines.
-static uintptr_t obfuscate(const void *x) { return ~(uintptr_t)x; }
-
-static upb_value obfuscate_v(const void *x) {
-  return upb_value_uint64(obfuscate(x));
-}
-
-static const void *unobfuscate_v(upb_value x) {
-  return (void*)~upb_value_getuint64(x);
-}
-
-//
-// Stores tracked references according to the following scheme:
-//   (upb_inttable)reftracks = {
-//     (void*)owner -> (upb_inttable*) = {
-//       obfuscate((upb_refcounted*)obj) -> obfuscate((trackedref*)is_ref2)
-//     }
-//   }
-//
-// obfuscate() is a function that hides the link from the heap checker, so
-// that it is not followed for the purposes of deciding what has "indirectly
-// leaked."  Even though we have a pointer to the trackedref*, we want it to
-// appear leaked if it is not freed.
-//
-// This scheme gives us the following desirable properties:
-//
-//   1. We can easily determine whether an (owner->obj) ref already exists
-//      and error out if a duplicate ref is taken.
-//
-//   2. Because the trackedref is allocated with malloc() at the point that
-//      the ref is taken, that memory will be leaked if the ref is not released.
-//      Because the malloc'd memory points to the refcounted object, the object
-//      itself will only be considered "indirectly leaked" by smart memory
-//      checkers like Valgrind.  This will correctly blame the ref leaker
-//      instead of the innocent code that allocated the object to begin with.
-//
-//   3. We can easily enumerate all of the ref2 refs for a given owner, which
-//      allows us to double-check that the object's visit() function is
-//      correctly implemented.
-//
-static upb_inttable reftracks = UPB_EMPTY_INTTABLE_INIT(UPB_CTYPE_PTR);
-
-static upb_inttable *trygettab(const void *p) {
-  upb_value v;
-  return upb_inttable_lookupptr(&reftracks, p, &v) ? upb_value_getptr(v) : NULL;
-}
-
-// Gets or creates the tracking table for the given owner.
-static upb_inttable *gettab(const void *p) {
-  upb_inttable *tab = trygettab(p);
-  if (tab == NULL) {
-    tab = malloc(sizeof(*tab));
-    CHECK_OOM(tab);
-    upb_inttable_init(tab, UPB_CTYPE_UINT64);
-    upb_inttable_insertptr(&reftracks, p, upb_value_ptr(tab));
-  }
-  return tab;
-}
-
 static void track(const upb_refcounted *r, const void *owner, bool ref2) {
   upb_lock();
-  upb_inttable *refs = gettab(owner);
   upb_value v;
-  if (upb_inttable_lookup(refs, obfuscate(r), &v)) {
-    trackedref *ref = (trackedref*)unobfuscate_v(v);
+  if (upb_inttable_lookupptr(r->refs, owner, &v)) {
+    trackedref *ref = upb_value_getptr(v);
     // Since we allow multiple ref2's for the same to/from pair without
     // allocating separate memory for each one, we lose the fine-grained
     // tracking behavior we get with regular refs.  Since ref2s only happen
@@ -167,29 +104,38 @@ static void track(const upb_refcounted *r, const void *owner, bool ref2) {
     assert(ref->is_ref2);
     ref->count++;
   } else {
-    trackedref *ref = trackedref_new(r, ref2);
-    bool ok = upb_inttable_insert(refs, obfuscate(r), obfuscate_v(ref));
+    trackedref *ref = trackedref_new(ref2);
+    bool ok = upb_inttable_insertptr(r->refs, owner, upb_value_ptr(ref));
     CHECK_OOM(ok);
+    if (ref2) {
+      // We know this cast is safe when it is a ref2, because it's coming from
+      // another refcounted object.
+      const upb_refcounted *from = owner;
+      assert(!upb_inttable_lookupptr(from->ref2s, r, NULL));
+      ok = upb_inttable_insertptr(from->ref2s, r, upb_value_ptr(NULL));
+      CHECK_OOM(ok);
+    }
   }
   upb_unlock();
 }
 
 static void untrack(const upb_refcounted *r, const void *owner, bool ref2) {
   upb_lock();
-  upb_inttable *refs = gettab(owner);
   upb_value v;
-  bool found = upb_inttable_lookup(refs, obfuscate(r), &v);
+  bool found = upb_inttable_lookupptr(r->refs, owner, &v);
   // This assert will fail if an owner attempts to release a ref it didn't have.
   UPB_ASSERT_VAR(found, found);
-  trackedref *ref = (trackedref*)unobfuscate_v(v);
+  trackedref *ref = upb_value_getptr(v);
   assert(ref->is_ref2 == ref2);
   if (--ref->count == 0) {
     free(ref);
-    upb_inttable_remove(refs, obfuscate(r), NULL);
-    if (upb_inttable_count(refs) == 0) {
-      upb_inttable_uninit(refs);
-      free(refs);
-      upb_inttable_removeptr(&reftracks, owner, NULL);
+    upb_inttable_removeptr(r->refs, owner, NULL);
+    if (ref2) {
+      // We know this cast is safe when it is a ref2, because it's coming from
+      // another refcounted object.
+      const upb_refcounted *from = owner;
+      bool removed = upb_inttable_removeptr(from->ref2s, r, NULL);
+      assert(removed);
     }
   }
   upb_unlock();
@@ -197,12 +143,10 @@ static void untrack(const upb_refcounted *r, const void *owner, bool ref2) {
 
 static void checkref(const upb_refcounted *r, const void *owner, bool ref2) {
   upb_lock();
-  upb_inttable *refs = gettab(owner);
   upb_value v;
-  bool found = upb_inttable_lookup(refs, obfuscate(r), &v);
+  bool found = upb_inttable_lookupptr(r->refs, owner, &v);
   UPB_ASSERT_VAR(found, found);
-  trackedref *ref = (trackedref*)unobfuscate_v(v);
-  assert(ref->obj == r);
+  trackedref *ref = upb_value_getptr(v);
   assert(ref->is_ref2 == ref2);
   upb_unlock();
 }
@@ -211,18 +155,20 @@ static void checkref(const upb_refcounted *r, const void *owner, bool ref2) {
 // originate from the given owner.
 static void getref2s(const upb_refcounted *owner, upb_inttable *tab) {
   upb_lock();
-  upb_inttable *refs = trygettab(owner);
-  if (refs) {
-    upb_inttable_iter i;
-    upb_inttable_begin(&i, refs);
-    for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
-      trackedref *ref = (trackedref*)unobfuscate_v(upb_inttable_iter_value(&i));
-      if (ref->is_ref2) {
-        upb_value count = upb_value_int32(ref->count);
-        bool ok = upb_inttable_insertptr(tab, ref->obj, count);
-        CHECK_OOM(ok);
-      }
-    }
+  upb_inttable_iter i;
+  upb_inttable_begin(&i, owner->ref2s);
+  for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
+    upb_refcounted *to = (upb_refcounted*)upb_inttable_iter_key(&i);
+
+    // To get the count we need to look in the target's table.
+    upb_value v;
+    bool found = upb_inttable_lookupptr(to->refs, owner, &v);
+    assert(found);
+    trackedref *ref = upb_value_getptr(v);
+    upb_value count = upb_value_int32(ref->count);
+
+    bool ok = upb_inttable_insertptr(tab, to, count);
+    CHECK_OOM(ok);
   }
   upb_unlock();
 }
@@ -269,6 +215,30 @@ static void visit(const upb_refcounted *r, upb_refcounted_visit *v,
   if (r->vtbl->visit) r->vtbl->visit(r, v, closure);
 }
 
+static bool trackinit(upb_refcounted *r) {
+  r->refs = malloc(sizeof(*r->refs));
+  r->ref2s = malloc(sizeof(*r->ref2s));
+  if (!r->refs || !r->ref2s) goto err1;
+
+  if (!upb_inttable_init(r->refs, UPB_CTYPE_PTR)) goto err1;
+  if (!upb_inttable_init(r->ref2s, UPB_CTYPE_PTR)) goto err2;
+  return true;
+
+err2:
+  upb_inttable_uninit(r->refs);
+err1:
+  free(r->refs);
+  free(r->ref2s);
+  return false;
+}
+
+static void trackfree(const upb_refcounted *r) {
+  upb_inttable_uninit(r->refs);
+  upb_inttable_uninit(r->ref2s);
+  free(r->refs);
+  free(r->ref2s);
+}
+
 #else
 
 static void track(const upb_refcounted *r, const void *owner, bool ref2) {
@@ -287,6 +257,15 @@ static void checkref(const upb_refcounted *r, const void *owner, bool ref2) {
   UPB_UNUSED(r);
   UPB_UNUSED(owner);
   UPB_UNUSED(ref2);
+}
+
+static bool trackinit(upb_refcounted *r) {
+  UPB_UNUSED(r);
+  return true;
+}
+
+static void trackfree(const upb_refcounted *r) {
+  UPB_UNUSED(r);
 }
 
 static void visit(const upb_refcounted *r, upb_refcounted_visit *v,
@@ -505,7 +484,8 @@ static void crossref(const upb_refcounted *r, const upb_refcounted *subobj,
   }
 }
 
-static bool freeze(upb_refcounted *const*roots, int n, upb_status *s) {
+static bool freeze(upb_refcounted *const*roots, int n, upb_status *s,
+                   int maxdepth) {
   volatile bool ret = false;
 
   // We run in two passes so that we can allocate all memory before performing
@@ -514,7 +494,7 @@ static bool freeze(upb_refcounted *const*roots, int n, upb_status *s) {
   tarjan t;
   t.index = 0;
   t.depth = 0;
-  t.maxdepth = UPB_MAX_TYPE_DEPTH * 2;  // May want to make this a parameter.
+  t.maxdepth = maxdepth;
   t.status = s;
   if (!upb_inttable_init(&t.objattr, UPB_CTYPE_UINT64)) goto err1;
   if (!upb_inttable_init(&t.stack, UPB_CTYPE_PTR)) goto err2;
@@ -628,7 +608,7 @@ static bool freeze(upb_refcounted *const*roots, int n, upb_status *s) {
         o = obj;
         do { o->group = NULL; } while ((o = o->next) != obj);
       }
-      obj->vtbl->free(obj);
+      freeobj(obj);
     }
   }
 
@@ -680,11 +660,11 @@ static void release_ref2(const upb_refcounted *obj,
                          const upb_refcounted *subobj,
                          void *closure) {
   UPB_UNUSED(closure);
+  untrack(subobj, obj, true);
   if (!merged(obj, subobj)) {
     assert(subobj->is_frozen);
     unref(subobj);
   }
-  untrack(subobj, obj, true);
 }
 
 static void unref(const upb_refcounted *r) {
@@ -700,10 +680,15 @@ static void unref(const upb_refcounted *r) {
     do {
       const upb_refcounted *next = o->next;
       assert(o->is_frozen || o->individual_count == 0);
-      o->vtbl->free((upb_refcounted*)o);
+      freeobj((upb_refcounted*)o);
       o = next;
     } while(o != r);
   }
+}
+
+static void freeobj(upb_refcounted *o) {
+  trackfree(o);
+  o->vtbl->free((upb_refcounted*)o);
 }
 
 
@@ -719,6 +704,10 @@ bool upb_refcounted_init(upb_refcounted *r,
   r->group = malloc(sizeof(*r->group));
   if (!r->group) return false;
   *r->group = 0;
+  if (!trackinit(r)) {
+    free(r->group);
+    return false;
+  }
   upb_refcounted_ref(r, owner);
   return true;
 }
@@ -728,37 +717,37 @@ bool upb_refcounted_isfrozen(const upb_refcounted *r) {
 }
 
 void upb_refcounted_ref(const upb_refcounted *r, const void *owner) {
+  track(r, owner, false);
   if (!r->is_frozen)
     ((upb_refcounted*)r)->individual_count++;
   atomic_inc(r->group);
-  track(r, owner, false);
 }
 
 void upb_refcounted_unref(const upb_refcounted *r, const void *owner) {
+  untrack(r, owner, false);
   if (!r->is_frozen)
     ((upb_refcounted*)r)->individual_count--;
   unref(r);
-  untrack(r, owner, false);
 }
 
 void upb_refcounted_ref2(const upb_refcounted *r, upb_refcounted *from) {
   assert(!from->is_frozen);  // Non-const pointer implies this.
+  track(r, from, true);
   if (r->is_frozen) {
     atomic_inc(r->group);
   } else {
     merge((upb_refcounted*)r, from);
   }
-  track(r, from, true);
 }
 
 void upb_refcounted_unref2(const upb_refcounted *r, upb_refcounted *from) {
   assert(!from->is_frozen);  // Non-const pointer implies this.
+  untrack(r, from, true);
   if (r->is_frozen) {
     unref(r);
   } else {
     assert(merged(r, from));
   }
-  untrack(r, from, true);
 }
 
 void upb_refcounted_donateref(
@@ -774,9 +763,10 @@ void upb_refcounted_checkref(const upb_refcounted *r, const void *owner) {
   checkref(r, owner, false);
 }
 
-bool upb_refcounted_freeze(upb_refcounted *const*roots, int n, upb_status *s) {
+bool upb_refcounted_freeze(upb_refcounted *const*roots, int n, upb_status *s,
+                           int maxdepth) {
   for (int i = 0; i < n; i++) {
     assert(!roots[i]->is_frozen);
   }
-  return freeze(roots, n, s);
+  return freeze(roots, n, s, maxdepth);
 }

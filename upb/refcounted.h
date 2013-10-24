@@ -19,7 +19,7 @@
 #ifndef UPB_REFCOUNTED_H_
 #define UPB_REFCOUNTED_H_
 
-#include "upb/table.h"
+#include "upb/table.int.h"
 
 // Reference tracking is designed to be used with a tool like Valgrind; when
 // enabled, it will cause reference leaks to show up as actual memory leaks
@@ -86,6 +86,11 @@ struct upb_refcounted {
   uint32_t individual_count;
 
   bool is_frozen;
+
+#ifdef UPB_DEBUG_REFS
+  upb_inttable *refs;  // Maps owner -> trackedref for incoming refs.
+  upb_inttable *ref2s; // Set of targets for outgoing ref2s.
+#endif
 };
 
 // Native C API.
@@ -137,8 +142,9 @@ void upb_refcounted_unref2(const upb_refcounted *r, upb_refcounted *from);
 // Freezes all mutable object reachable by ref2() refs from the given roots.
 // This will split refcounting groups into precise SCC groups, so that
 // refcounting of frozen objects can be more aggressive.  If memory allocation
-// fails or if more than 2**31 mutable objects are reachable from "roots",
-// false is returned and the objects are unchanged.
+// fails, or if more than 2**31 mutable objects are reachable from "roots", or
+// if the maximum depth of the graph exceeds "maxdepth", false is returned and
+// the objects are unchanged.
 //
 // After this operation succeeds, the objects are frozen/const, and may not be
 // used through non-const pointers.  In particular, they may not be passed as
@@ -147,12 +153,18 @@ void upb_refcounted_unref2(const upb_refcounted *r, upb_refcounted *from);
 // at the precise moment that they become unreachable.
 //
 // Caller must own refs on each object in the "roots" list.
-bool upb_refcounted_freeze(upb_refcounted *const*roots, int n, upb_status *s);
+bool upb_refcounted_freeze(upb_refcounted *const*roots, int n, upb_status *s,
+                           int maxdepth);
 
 // Shared by all compiled-in refcounted objects.
 extern uint32_t static_refcount;
 
-#define UPB_REFCOUNT_INIT {&static_refcount, NULL, NULL, 0, true}
+#ifdef UPB_DEBUG_REFS
+#define UPB_REFCOUNT_INIT(refs, ref2s) \
+    {&static_refcount, NULL, NULL, 0, true, refs, ref2s}
+#else
+#define UPB_REFCOUNT_INIT(refs, ref2s) {&static_refcount, NULL, NULL, 0, true}
+#endif
 
 #ifdef __cplusplus
 }  /* extern "C" */

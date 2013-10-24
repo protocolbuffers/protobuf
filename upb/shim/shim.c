@@ -53,17 +53,27 @@ bool upb_shim_set(upb_handlers *h, const upb_fielddef *f, size_t offset,
 #undef TYPE
 }
 
-const upb_shim_data *upb_shim_getdata(const upb_handlers *h, upb_selector_t s) {
+const upb_shim_data *upb_shim_getdata(const upb_handlers *h, upb_selector_t s,
+                                      upb_fieldtype_t *type) {
   upb_func *f = upb_handlers_gethandler(h, s);
-  if ((upb_int64_handler*)f == upb_shim_setint64 ||
-      (upb_int32_handler*)f == upb_shim_setint32 ||
-      (upb_uint64_handler*)f == upb_shim_setuint64 ||
-      (upb_uint32_handler*)f == upb_shim_setuint32 ||
-      (upb_double_handler*)f == upb_shim_setdouble ||
-      (upb_float_handler*)f == upb_shim_setfloat ||
-      (upb_bool_handler*)f == upb_shim_setbool) {
-    return (const upb_shim_data*)upb_handlers_gethandlerdata(h, s);
+
+  if ((upb_int64_handler*)f == upb_shim_setint64) {
+    *type = UPB_TYPE_INT64;
+  } else if ((upb_int32_handler*)f == upb_shim_setint32) {
+    *type = UPB_TYPE_INT32;
+  } else if ((upb_uint64_handler*)f == upb_shim_setuint64) {
+    *type = UPB_TYPE_UINT64;
+  } else if ((upb_uint32_handler*)f == upb_shim_setuint32) {
+    *type = UPB_TYPE_UINT32;
+  } else if ((upb_double_handler*)f == upb_shim_setdouble) {
+    *type = UPB_TYPE_DOUBLE;
+  } else if ((upb_float_handler*)f == upb_shim_setfloat) {
+    *type = UPB_TYPE_FLOAT;
+  } else if ((upb_bool_handler*)f == upb_shim_setbool) {
+    *type = UPB_TYPE_BOOL;
   } else {
     return NULL;
   }
+
+  return (const upb_shim_data*)upb_handlers_gethandlerdata(h, s);
 }
