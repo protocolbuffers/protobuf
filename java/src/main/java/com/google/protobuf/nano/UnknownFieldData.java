@@ -30,6 +30,8 @@
 
 package com.google.protobuf.nano;
 
+import java.util.Arrays;
+
 /**
  * Stores unknown fields. These might be extensions or fields that the generated API doesn't
  * know about yet.
@@ -37,11 +39,33 @@ package com.google.protobuf.nano;
  * @author bduff@google.com (Brian Duff)
  */
 public final class UnknownFieldData {
+
   final int tag;
   final byte[] bytes;
 
   UnknownFieldData(int tag, byte[] bytes) {
     this.tag = tag;
     this.bytes = bytes;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    }
+    if (!(o instanceof UnknownFieldData)) {
+      return false;
+    }
+
+    UnknownFieldData other = (UnknownFieldData) o;
+    return tag == other.tag && Arrays.equals(bytes, other.bytes);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = 17;
+    result = 31 * result + tag;
+    result = 31 * result + Arrays.hashCode(bytes);
+    return result;
   }
 }

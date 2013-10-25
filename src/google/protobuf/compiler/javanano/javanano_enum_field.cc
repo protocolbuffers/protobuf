@@ -159,8 +159,46 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
   }
 }
 
-string EnumFieldGenerator::GetBoxedType() const {
-  return ClassName(params_, descriptor_->enum_type());
+void EnumFieldGenerator::GenerateEqualsCode(io::Printer* printer) const {
+  if (params_.use_reference_types_for_primitives()) {
+    printer->Print(variables_,
+      "if (this.$name$ == null) {\n"
+      "  if (other.$name$ != null) {\n"
+      "    return false;\n"
+      "  }\n"
+      "} else if (!this.$name$.equals(other.$name$)) {\n"
+      "  return false;"
+      "}\n");
+  } else {
+    // We define equality as serialized form equality. If generate_has(),
+    // then if the field value equals the default value in both messages,
+    // but one's 'has' field is set and the other's is not, the serialized
+    // forms are different and we should return false.
+    printer->Print(variables_,
+      "if (this.$name$ != other.$name$");
+    if (params_.generate_has()) {
+      printer->Print(variables_,
+        "\n"
+        "    || (this.$name$ == $default$\n"
+        "        && this.has$capitalized_name$ != other.has$capitalized_name$)");
+    }
+    printer->Print(") {\n"
+      "  return false;\n"
+      "}\n");
+  }
+}
+
+void EnumFieldGenerator::GenerateHashCodeCode(io::Printer* printer) const {
+  printer->Print(
+    "result = 31 * result + ");
+  if (params_.use_reference_types_for_primitives()) {
+    printer->Print(variables_,
+      "(this.$name$ == null ? 0 : this.$name$)");
+  } else {
+    printer->Print(variables_,
+      "this.$name$");
+  }
+  printer->Print(";\n");
 }
 
 // ===================================================================
@@ -227,8 +265,19 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     "}\n");
 }
 
-string AccessorEnumFieldGenerator::GetBoxedType() const {
-  return ClassName(params_, descriptor_->enum_type());
+void AccessorEnumFieldGenerator::
+GenerateEqualsCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($different_has$\n"
+    "    || $name$_ != other.$name$_) {\n"
+    "  return false;\n"
+    "}\n");
+}
+
+void AccessorEnumFieldGenerator::
+GenerateHashCodeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "result = 31 * result + $name$_;\n");
 }
 
 // ===================================================================
@@ -366,8 +415,20 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
   }
 }
 
-string RepeatedEnumFieldGenerator::GetBoxedType() const {
-  return ClassName(params_, descriptor_->enum_type());
+void RepeatedEnumFieldGenerator::
+GenerateEqualsCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (!com.google.protobuf.nano.InternalNano.equals(\n"
+    "    this.$name$, other.$name$)) {\n"
+    "  return false;\n"
+    "}\n");
+}
+
+void RepeatedEnumFieldGenerator::
+GenerateHashCodeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "result = 31 * result\n"
+    "    + com.google.protobuf.nano.InternalNano.hashCode(this.$name$);\n");
 }
 
 }  // namespace javanano

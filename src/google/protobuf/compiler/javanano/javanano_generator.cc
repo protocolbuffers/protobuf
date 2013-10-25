@@ -125,6 +125,8 @@ bool JavaNanoGenerator::Generate(const FileDescriptor* file,
     } else if (options[i].first == "optional_field_style") {
       params.set_optional_field_accessors(options[i].second == "accessors");
       params.set_use_reference_types_for_primitives(options[i].second == "reftypes");
+    } else if (options[i].first == "generate_equals") {
+      params.set_generate_equals(options[i].second == "true");
     } else {
       *error = "Ignore unknown javanano generator option: " + options[i].first;
     }

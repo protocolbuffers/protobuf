@@ -31,6 +31,7 @@
 package com.google.protobuf.nano;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 /**
  * The classes contained within are used internally by the Protocol Buffer
@@ -40,7 +41,10 @@ import java.io.UnsupportedEncodingException;
  *
  * @author kenton@google.com (Kenton Varda)
  */
-public class InternalNano {
+public final class InternalNano {
+
+  private InternalNano() {}
+
   /**
    * Helper called by generated code to construct default values for string
    * fields.
@@ -69,7 +73,7 @@ public class InternalNano {
    * converts from the generated string to the string we actually want.  The
    * generated code calls this automatically.
    */
-  public static final String stringDefaultValue(String bytes) {
+  public static String stringDefaultValue(String bytes) {
     try {
       return new String(bytes.getBytes("ISO-8859-1"), "UTF-8");
     } catch (UnsupportedEncodingException e) {
@@ -88,7 +92,7 @@ public class InternalNano {
    * In this case we only need the second of the two hacks -- allowing us to
    * embed raw bytes as a string literal with ISO-8859-1 encoding.
    */
-  public static final byte[] bytesDefaultValue(String bytes) {
+  public static byte[] bytesDefaultValue(String bytes) {
     try {
       return bytes.getBytes("ISO-8859-1");
     } catch (UnsupportedEncodingException e) {
@@ -103,11 +107,215 @@ public class InternalNano {
    * Helper function to convert a string into UTF-8 while turning the
    * UnsupportedEncodingException to a RuntimeException.
    */
-  public static final byte[] copyFromUtf8(final String text) {
+  public static byte[] copyFromUtf8(final String text) {
     try {
       return text.getBytes("UTF-8");
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException("UTF-8 not supported?");
     }
   }
+
+  /**
+   * Checks repeated int field equality; null-value and 0-length fields are
+   * considered equal.
+   */
+  public static boolean equals(int[] field1, int[] field2) {
+    if (field1 == null || field1.length == 0) {
+      return field2 == null || field2.length == 0;
+    } else {
+      return Arrays.equals(field1, field2);
+    }
+  }
+
+  /**
+   * Checks repeated long field equality; null-value and 0-length fields are
+   * considered equal.
+   */
+  public static boolean equals(long[] field1, long[] field2) {
+    if (field1 == null || field1.length == 0) {
+      return field2 == null || field2.length == 0;
+    } else {
+      return Arrays.equals(field1, field2);
+    }
+  }
+
+  /**
+   * Checks repeated float field equality; null-value and 0-length fields are
+   * considered equal.
+   */
+  public static boolean equals(float[] field1, float[] field2) {
+    if (field1 == null || field1.length == 0) {
+      return field2 == null || field2.length == 0;
+    } else {
+      return Arrays.equals(field1, field2);
+    }
+  }
+
+  /**
+   * Checks repeated double field equality; null-value and 0-length fields are
+   * considered equal.
+   */
+  public static boolean equals(double[] field1, double[] field2) {
+    if (field1 == null || field1.length == 0) {
+      return field2 == null || field2.length == 0;
+    } else {
+      return Arrays.equals(field1, field2);
+    }
+  }
+
+  /**
+   * Checks repeated boolean field equality; null-value and 0-length fields are
+   * considered equal.
+   */
+  public static boolean equals(boolean[] field1, boolean[] field2) {
+    if (field1 == null || field1.length == 0) {
+      return field2 == null || field2.length == 0;
+    } else {
+      return Arrays.equals(field1, field2);
+    }
+  }
+
+  /**
+   * Checks repeated bytes field equality. Only non-null elements are tested.
+   * Returns true if the two fields have the same sequence of non-null
+   * elements. Null-value fields and fields of any length with only null
+   * elements are considered equal.
+   */
+  public static boolean equals(byte[][] field1, byte[][] field2) {
+    int index1 = 0;
+    int length1 = field1 == null ? 0 : field1.length;
+    int index2 = 0;
+    int length2 = field2 == null ? 0 : field2.length;
+    while (true) {
+      while (index1 < length1 && field1[index1] == null) {
+        index1++;
+      }
+      while (index2 < length2 && field2[index2] == null) {
+        index2++;
+      }
+      boolean atEndOf1 = index1 >= length1;
+      boolean atEndOf2 = index2 >= length2;
+      if (atEndOf1 && atEndOf2) {
+        // no more non-null elements to test in both arrays
+        return true;
+      } else if (atEndOf1 != atEndOf2) {
+        // one of the arrays have extra non-null elements
+        return false;
+      } else if (!Arrays.equals(field1[index1], field2[index2])) {
+        // element mismatch
+        return false;
+      }
+      index1++;
+      index2++;
+    }
+  }
+
+  /**
+   * Checks repeated string/message field equality. Only non-null elements are
+   * tested. Returns true if the two fields have the same sequence of non-null
+   * elements. Null-value fields and fields of any length with only null
+   * elements are considered equal.
+   */
+  public static boolean equals(Object[] field1, Object[] field2) {
+    int index1 = 0;
+    int length1 = field1 == null ? 0 : field1.length;
+    int index2 = 0;
+    int length2 = field2 == null ? 0 : field2.length;
+    while (true) {
+      while (index1 < length1 && field1[index1] == null) {
+        index1++;
+      }
+      while (index2 < length2 && field2[index2] == null) {
+        index2++;
+      }
+      boolean atEndOf1 = index1 >= length1;
+      boolean atEndOf2 = index2 >= length2;
+      if (atEndOf1 && atEndOf2) {
+        // no more non-null elements to test in both arrays
+        return true;
+      } else if (atEndOf1 != atEndOf2) {
+        // one of the arrays have extra non-null elements
+        return false;
+      } else if (!field1[index1].equals(field2[index2])) {
+        // element mismatch
+        return false;
+      }
+      index1++;
+      index2++;
+    }
+  }
+
+  /**
+   * Computes the hash code of a repeated int field. Null-value and 0-length
+   * fields have the same hash code.
+   */
+  public static int hashCode(int[] field) {
+    return field == null || field.length == 0 ? 0 : Arrays.hashCode(field);
+  }
+
+  /**
+   * Computes the hash code of a repeated long field. Null-value and 0-length
+   * fields have the same hash code.
+   */
+  public static int hashCode(long[] field) {
+    return field == null || field.length == 0 ? 0 : Arrays.hashCode(field);
+  }
+
+  /**
+   * Computes the hash code of a repeated float field. Null-value and 0-length
+   * fields have the same hash code.
+   */
+  public static int hashCode(float[] field) {
+    return field == null || field.length == 0 ? 0 : Arrays.hashCode(field);
+  }
+
+  /**
+   * Computes the hash code of a repeated double field. Null-value and 0-length
+   * fields have the same hash code.
+   */
+  public static int hashCode(double[] field) {
+    return field == null || field.length == 0 ? 0 : Arrays.hashCode(field);
+  }
+
+  /**
+   * Computes the hash code of a repeated boolean field. Null-value and 0-length
+   * fields have the same hash code.
+   */
+  public static int hashCode(boolean[] field) {
+    return field == null || field.length == 0 ? 0 : Arrays.hashCode(field);
+  }
+
+  /**
+   * Computes the hash code of a repeated bytes field. Only the sequence of all
+   * non-null elements are used in the computation. Null-value fields and fields
+   * of any length with only null elements have the same hash code.
+   */
+  public static int hashCode(byte[][] field) {
+    int result = 0;
+    for (int i = 0, size = field == null ? 0 : field.length; i < size; i++) {
+      byte[] element = field[i];
+      if (element != null) {
+        result = 31 * result + Arrays.hashCode(element);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Computes the hash code of a repeated string/message field. Only the
+   * sequence of all non-null elements are used in the computation. Null-value
+   * fields and fields of any length with only null elements have the same hash
+   * code.
+   */
+  public static int hashCode(Object[] field) {
+    int result = 0;
+    for (int i = 0, size = field == null ? 0 : field.length; i < size; i++) {
+      Object element = field[i];
+      if (element != null) {
+        result = 31 * result + element.hashCode();
+      }
+    }
+    return result;
+  }
+
 }
