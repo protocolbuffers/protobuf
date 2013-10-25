@@ -82,13 +82,14 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
   const EnumValueDescriptor* max_value = descriptor_->value(0);
 
   for (int i = 0; i < descriptor_->value_count(); i++) {
-    vars["name"] = descriptor_->value(i)->name();
+    vars["name"] = EnumValueName(descriptor_->value(i));
     // In C++, an value of -2147483648 gets interpreted as the negative of
     // 2147483648, and since 2147483648 can't fit in an integer, this produces a
     // compiler warning.  This works around that issue.
     vars["number"] = Int32ToString(descriptor_->value(i)->number());
     vars["prefix"] = (descriptor_->containing_type() == NULL) ?
       "" : classname_ + "_";
+
 
     if (i > 0) printer->Print(",\n");
     printer->Print(vars, "$prefix$$name$ = $number$");
@@ -113,8 +114,8 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
   printer->Outdent();
   printer->Print("\n};\n");
 
-  vars["min_name"] = min_value->name();
-  vars["max_name"] = max_value->name();
+  vars["min_name"] = EnumValueName(min_value);
+  vars["max_name"] = EnumValueName(max_value);
 
   if (options_.dllexport_decl.empty()) {
     vars["dllexport"] = "";
@@ -174,7 +175,7 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) {
   printer->Print(vars, "typedef $classname$ $nested_name$;\n");
 
   for (int j = 0; j < descriptor_->value_count(); j++) {
-    vars["tag"] = descriptor_->value(j)->name();
+    vars["tag"] = EnumValueName(descriptor_->value(j));
     printer->Print(vars,
       "static const $nested_name$ $tag$ = $classname$_$tag$;\n");
   }
@@ -278,7 +279,7 @@ void EnumGenerator::GenerateMethods(io::Printer* printer) {
     vars["parent"] = ClassName(descriptor_->containing_type(), false);
     vars["nested_name"] = descriptor_->name();
     for (int i = 0; i < descriptor_->value_count(); i++) {
-      vars["value"] = descriptor_->value(i)->name();
+      vars["value"] = EnumValueName(descriptor_->value(i));
       printer->Print(vars,
         "const $classname$ $parent$::$value$;\n");
     }

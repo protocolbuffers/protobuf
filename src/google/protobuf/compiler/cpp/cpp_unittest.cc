@@ -794,6 +794,21 @@ TEST(GeneratedMessageTest, TestConflictingSymbolNames) {
             message.GetExtension(ExtensionMessage::repeated_int32_ext, 0));
 }
 
+TEST(GeneratedMessageTest, TestConflictingEnumNames) {
+  protobuf_unittest::TestConflictingEnumNames message;
+  message.set_conflicting_enum(protobuf_unittest::TestConflictingEnumNames_NestedConflictingEnum_and_);
+  EXPECT_EQ(1, message.conflicting_enum());
+  message.set_conflicting_enum(protobuf_unittest::TestConflictingEnumNames_NestedConflictingEnum_XOR);
+  EXPECT_EQ(5, message.conflicting_enum());
+
+
+  protobuf_unittest::ConflictingEnum conflicting_enum;
+  conflicting_enum = protobuf_unittest::NOT_EQ;
+  EXPECT_EQ(1, conflicting_enum);
+  conflicting_enum = protobuf_unittest::return_;
+  EXPECT_EQ(3, conflicting_enum);
+}
+
 #ifndef PROTOBUF_TEST_NO_DESCRIPTORS
 
 TEST(GeneratedMessageTest, TestOptimizedForSize) {
