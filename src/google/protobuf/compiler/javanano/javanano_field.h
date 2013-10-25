@@ -62,8 +62,8 @@ class FieldGenerator {
   virtual void GenerateMergingCode(io::Printer* printer) const = 0;
   virtual void GenerateSerializationCode(io::Printer* printer) const = 0;
   virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
-
-  virtual string GetBoxedType() const = 0;
+  virtual void GenerateEqualsCode(io::Printer* printer) const = 0;
+  virtual void GenerateHashCodeCode(io::Printer* printer) const = 0;
 
  protected:
   const Params& params_;

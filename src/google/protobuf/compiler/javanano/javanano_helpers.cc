@@ -482,7 +482,7 @@ string GenerateGetBit(int bit_index) {
   int bit_in_var_index = bit_index % 32;
 
   string mask = kBitMasks[bit_in_var_index];
-  string result = "((" + var_name + " & " + mask + ") == " + mask + ")";
+  string result = "((" + var_name + " & " + mask + ") != 0)";
   return result;
 }
 
@@ -504,11 +504,22 @@ string GenerateClearBit(int bit_index) {
   return result;
 }
 
+string GenerateDifferentBit(int bit_index) {
+  string var_name = GetBitFieldNameForBit(bit_index);
+  int bit_in_var_index = bit_index % 32;
+
+  string mask = kBitMasks[bit_in_var_index];
+  string result = "((" + var_name + " & " + mask
+      + ") != (other." + var_name + " & " + mask + "))";
+  return result;
+}
+
 void SetBitOperationVariables(const string name,
     int bitIndex, map<string, string>* variables) {
   (*variables)["get_" + name] = GenerateGetBit(bitIndex);
   (*variables)["set_" + name] = GenerateSetBit(bitIndex);
   (*variables)["clear_" + name] = GenerateClearBit(bitIndex);
+  (*variables)["different_" + name] = GenerateDifferentBit(bitIndex);
 }
 
 }  // namespace javanano
