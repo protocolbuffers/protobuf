@@ -126,8 +126,25 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     "}\n");
 }
 
-string MessageFieldGenerator::GetBoxedType() const {
-  return ClassName(params_, descriptor_->message_type());
+void MessageFieldGenerator::
+GenerateEqualsCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (this.$name$ == null) { \n"
+    "  if (other.$name$ != null) {\n"
+    "    return false;\n"
+    "  }\n"
+    "} else {\n"
+    "  if (!this.$name$.equals(other.$name$)) {\n"
+    "    return false;\n"
+    "  }\n"
+    "}\n");
+}
+
+void MessageFieldGenerator::
+GenerateHashCodeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "result = 31 * result +\n"
+    "    (this.$name$ == null ? 0 : this.$name$.hashCode());\n");
 }
 
 // ===================================================================
@@ -203,8 +220,22 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     "}\n");
 }
 
-string AccessorMessageFieldGenerator::GetBoxedType() const {
-  return ClassName(params_, descriptor_->message_type());
+void AccessorMessageFieldGenerator::
+GenerateEqualsCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($name$_ == null) {\n"
+    "  if (other.$name$_ != null) {\n"
+    "    return false;\n"
+    "  }\n"
+    "} else if (!$name$_.equals(other.$name$_)) {\n"
+    "  return false;\n"
+    "}\n");
+}
+
+void AccessorMessageFieldGenerator::
+GenerateHashCodeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "result = 31 * result + ($name$_ == null ? 0 : $name$_.hashCode());\n");
 }
 
 // ===================================================================
@@ -291,8 +322,20 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     "}\n");
 }
 
-string RepeatedMessageFieldGenerator::GetBoxedType() const {
-  return ClassName(params_, descriptor_->message_type());
+void RepeatedMessageFieldGenerator::
+GenerateEqualsCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (!com.google.protobuf.nano.InternalNano.equals(\n"
+    "    this.$name$, other.$name$)) {\n"
+    "  return false;\n"
+    "}\n");
+}
+
+void RepeatedMessageFieldGenerator::
+GenerateHashCodeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "result = 31 * result\n"
+    "    + com.google.protobuf.nano.InternalNano.hashCode(this.$name$);\n");
 }
 
 }  // namespace javanano

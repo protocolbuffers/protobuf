@@ -60,6 +60,7 @@ import junit.framework.TestCase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -2682,6 +2683,224 @@ public class NanoTest extends TestCase {
 
     message.defaultBytes = null;
     assertHasWireData(message, false);
+  }
+
+  public void testHashCodeEquals() throws Exception {
+    // Complete equality:
+    TestAllTypesNano a = createMessageForHashCodeEqualsTest();
+    TestAllTypesNano aEquivalent = createMessageForHashCodeEqualsTest();
+
+    // Null and empty array for repeated fields equality:
+    TestAllTypesNano b = createMessageForHashCodeEqualsTest();
+    b.repeatedBool = null;
+    b.repeatedFloat = new float[0];
+    TestAllTypesNano bEquivalent = createMessageForHashCodeEqualsTest();
+    bEquivalent.repeatedBool = new boolean[0];
+    bEquivalent.repeatedFloat = null;
+
+    // Ref-element-type repeated fields use non-null subsequence equality:
+    TestAllTypesNano c = createMessageForHashCodeEqualsTest();
+    c.repeatedString = null;
+    c.repeatedStringPiece = new String[] {null, "one", null, "two"};
+    c.repeatedBytes = new byte[][] {{3, 4}, null};
+    TestAllTypesNano cEquivalent = createMessageForHashCodeEqualsTest();
+    cEquivalent.repeatedString = new String[3];
+    cEquivalent.repeatedStringPiece = new String[] {"one", "two", null};
+    cEquivalent.repeatedBytes = new byte[][] {{3, 4}};
+
+    // Complete equality for messages with has fields:
+    TestAllTypesNanoHas d = createMessageWithHasForHashCodeEqualsTest();
+    TestAllTypesNanoHas dEquivalent = createMessageWithHasForHashCodeEqualsTest();
+
+    // If has-fields exist, fields with the same default values but
+    // different has-field values are different.
+    TestAllTypesNanoHas e = createMessageWithHasForHashCodeEqualsTest();
+    e.optionalInt32++; // make different from d
+    e.hasDefaultString = false;
+    TestAllTypesNanoHas eDifferent = createMessageWithHasForHashCodeEqualsTest();
+    eDifferent.optionalInt32 = e.optionalInt32;
+    eDifferent.hasDefaultString = true;
+
+    // Complete equality for messages with accessors:
+    TestNanoAccessors f = createMessageWithAccessorsForHashCodeEqualsTest();
+    TestNanoAccessors fEquivalent = createMessageWithAccessorsForHashCodeEqualsTest();
+    System.out.println("equals: " + f.equals(fEquivalent));
+    System.out.println("hashCode: " + f.hashCode() + " vs " + fEquivalent.hashCode());
+
+    // If using accessors, explicitly setting a field to its default value
+    // should make the message different.
+    TestNanoAccessors g = createMessageWithAccessorsForHashCodeEqualsTest();
+    g.setOptionalInt32(g.getOptionalInt32() + 1); // make different from f
+    g.clearDefaultString();
+    TestNanoAccessors gDifferent = createMessageWithAccessorsForHashCodeEqualsTest();
+    gDifferent.setOptionalInt32(g.getOptionalInt32());
+    gDifferent.setDefaultString(g.getDefaultString());
+
+    // Complete equality for reference typed messages:
+    NanoReferenceTypes.TestAllTypesNano h = createRefTypedMessageForHashCodeEqualsTest();
+    NanoReferenceTypes.TestAllTypesNano hEquivalent = createRefTypedMessageForHashCodeEqualsTest();
+
+    // Inequality of null and default value for reference typed messages:
+    NanoReferenceTypes.TestAllTypesNano i = createRefTypedMessageForHashCodeEqualsTest();
+    i.optionalInt32 = 1; // make different from h
+    i.optionalFloat = null;
+    NanoReferenceTypes.TestAllTypesNano iDifferent = createRefTypedMessageForHashCodeEqualsTest();
+    iDifferent.optionalInt32 = i.optionalInt32;
+    iDifferent.optionalFloat = 0.0f;
+
+    HashMap<MessageNano, String> hashMap = new HashMap<MessageNano, String>();
+    hashMap.put(a, "a");
+    hashMap.put(b, "b");
+    hashMap.put(c, "c");
+    hashMap.put(d, "d");
+    hashMap.put(e, "e");
+    hashMap.put(f, "f");
+    hashMap.put(g, "g");
+    hashMap.put(h, "h");
+    hashMap.put(i, "i");
+
+    assertEquals(9, hashMap.size()); // a-i should be different from each other.
+
+    assertEquals("a", hashMap.get(a));
+    assertEquals("a", hashMap.get(aEquivalent));
+
+    assertEquals("b", hashMap.get(b));
+    assertEquals("b", hashMap.get(bEquivalent));
+
+    assertEquals("c", hashMap.get(c));
+    assertEquals("c", hashMap.get(cEquivalent));
+
+    assertEquals("d", hashMap.get(d));
+    assertEquals("d", hashMap.get(dEquivalent));
+
+    assertEquals("e", hashMap.get(e));
+    assertNull(hashMap.get(eDifferent));
+
+    assertEquals("f", hashMap.get(f));
+    assertEquals("f", hashMap.get(fEquivalent));
+
+    assertEquals("g", hashMap.get(g));
+    assertNull(hashMap.get(gDifferent));
+
+    assertEquals("h", hashMap.get(h));
+    assertEquals("h", hashMap.get(hEquivalent));
+
+    assertEquals("i", hashMap.get(i));
+    assertNull(hashMap.get(iDifferent));
+  }
+
+  private TestAllTypesNano createMessageForHashCodeEqualsTest() {
+    TestAllTypesNano message = new TestAllTypesNano();
+    message.optionalInt32 = 5;
+    message.optionalInt64 = 777;
+    message.optionalFloat = 1.0f;
+    message.optionalDouble = 2.0;
+    message.optionalBool = true;
+    message.optionalString = "Hello";
+    message.optionalBytes = new byte[] { 1, 2, 3 };
+    message.optionalNestedMessage = new TestAllTypesNano.NestedMessage();
+    message.optionalNestedMessage.bb = 27;
+    message.optionalNestedEnum = TestAllTypesNano.BAR;
+    message.repeatedInt32 = new int[] { 5, 6, 7, 8 };
+    message.repeatedInt64 = new long[] { 27L, 28L, 29L };
+    message.repeatedFloat = new float[] { 5.0f, 6.0f };
+    message.repeatedDouble = new double[] { 99.1, 22.5 };
+    message.repeatedBool = new boolean[] { true, false, true };
+    message.repeatedString = new String[] { "One", "Two" };
+    message.repeatedBytes = new byte[][] { { 2, 7 }, { 2, 7 } };
+    message.repeatedNestedMessage = new TestAllTypesNano.NestedMessage[] {
+      message.optionalNestedMessage,
+      message.optionalNestedMessage
+    };
+    message.repeatedNestedEnum = new int[] {
+      TestAllTypesNano.BAR,
+      TestAllTypesNano.BAZ
+    };
+    // We set the _nan fields to something other than nan, because equality
+    // is defined for nan such that Float.NaN != Float.NaN, which makes any
+    // instance of TestAllTypesNano unequal to any other instance unless
+    // these fields are set. This is also the behavior of the regular java
+    // generator when the value of a field is NaN.
+    message.defaultFloatNan = 1.0f;
+    message.defaultDoubleNan = 1.0;
+    return message;
+  }
+
+  private TestAllTypesNanoHas createMessageWithHasForHashCodeEqualsTest() {
+    TestAllTypesNanoHas message = new TestAllTypesNanoHas();
+    message.optionalInt32 = 5;
+    message.optionalString = "Hello";
+    message.optionalBytes = new byte[] { 1, 2, 3 };
+    message.optionalNestedMessage = new TestAllTypesNanoHas.NestedMessage();
+    message.optionalNestedMessage.bb = 27;
+    message.optionalNestedEnum = TestAllTypesNano.BAR;
+    message.repeatedInt32 = new int[] { 5, 6, 7, 8 };
+    message.repeatedString = new String[] { "One", "Two" };
+    message.repeatedBytes = new byte[][] { { 2, 7 }, { 2, 7 } };
+    message.repeatedNestedMessage = new TestAllTypesNanoHas.NestedMessage[] {
+      message.optionalNestedMessage,
+      message.optionalNestedMessage
+    };
+    message.repeatedNestedEnum = new int[] {
+      TestAllTypesNano.BAR,
+      TestAllTypesNano.BAZ
+    };
+    message.defaultFloatNan = 1.0f;
+    return message;
+  }
+
+  private TestNanoAccessors createMessageWithAccessorsForHashCodeEqualsTest() {
+    TestNanoAccessors message = new TestNanoAccessors()
+        .setOptionalInt32(5)
+        .setOptionalString("Hello")
+        .setOptionalBytes(new byte[] {1, 2, 3})
+        .setOptionalNestedMessage(new TestNanoAccessors.NestedMessage().setBb(27))
+        .setOptionalNestedEnum(TestNanoAccessors.BAR)
+        .setDefaultFloatNan(1.0f);
+    message.repeatedInt32 = new int[] { 5, 6, 7, 8 };
+    message.repeatedString = new String[] { "One", "Two" };
+    message.repeatedBytes = new byte[][] { { 2, 7 }, { 2, 7 } };
+    message.repeatedNestedMessage = new TestNanoAccessors.NestedMessage[] {
+      message.getOptionalNestedMessage(),
+      message.getOptionalNestedMessage()
+    };
+    message.repeatedNestedEnum = new int[] {
+      TestAllTypesNano.BAR,
+      TestAllTypesNano.BAZ
+    };
+    return message;
+  }
+
+  private NanoReferenceTypes.TestAllTypesNano createRefTypedMessageForHashCodeEqualsTest() {
+    NanoReferenceTypes.TestAllTypesNano message = new NanoReferenceTypes.TestAllTypesNano();
+    message.optionalInt32 = 5;
+    message.optionalInt64 = 777L;
+    message.optionalFloat = 1.0f;
+    message.optionalDouble = 2.0;
+    message.optionalBool = true;
+    message.optionalString = "Hello";
+    message.optionalBytes = new byte[] { 1, 2, 3 };
+    message.optionalNestedMessage =
+        new NanoReferenceTypes.TestAllTypesNano.NestedMessage();
+    message.optionalNestedMessage.foo = 27;
+    message.optionalNestedEnum = NanoReferenceTypes.TestAllTypesNano.BAR;
+    message.repeatedInt32 = new int[] { 5, 6, 7, 8 };
+    message.repeatedInt64 = new long[] { 27L, 28L, 29L };
+    message.repeatedFloat = new float[] { 5.0f, 6.0f };
+    message.repeatedDouble = new double[] { 99.1, 22.5 };
+    message.repeatedBool = new boolean[] { true, false, true };
+    message.repeatedString = new String[] { "One", "Two" };
+    message.repeatedBytes = new byte[][] { { 2, 7 }, { 2, 7 } };
+    message.repeatedNestedMessage =
+        new NanoReferenceTypes.TestAllTypesNano.NestedMessage[] {
+          message.optionalNestedMessage,
+          message.optionalNestedMessage
+        };
+    message.repeatedNestedEnum = new int[] {
+      NanoReferenceTypes.TestAllTypesNano.BAR,
+      NanoReferenceTypes.TestAllTypesNano.BAZ
+    };
+    return message;
   }
 
   public void testNullRepeatedFields() throws Exception {

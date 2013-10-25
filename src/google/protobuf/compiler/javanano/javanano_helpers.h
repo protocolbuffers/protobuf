@@ -141,30 +141,37 @@ string DefaultValue(const Params& params, const FieldDescriptor* field);
 
 // Methods for shared bitfields.
 
-// Gets the name of the shared bitfield for the given index.
+// Gets the name of the shared bitfield for the given field index.
 string GetBitFieldName(int index);
 
 // Gets the name of the shared bitfield for the given bit index.
 // Effectively, GetBitFieldName(bit_index / 32)
 string GetBitFieldNameForBit(int bit_index);
 
-// Generates the java code for the expression that returns the boolean value
-// of the bit of the shared bitfields for the given bit index.
-// Example: "((bitField1_ & 0x04) == 0x04)"
+// Generates the java code for the expression that returns whether the bit at
+// the given bit index is set.
+// Example: "((bitField1_ & 0x04000000) != 0)"
 string GenerateGetBit(int bit_index);
 
-// Generates the java code for the expression that sets the bit of the shared
-// bitfields for the given bit index.
-// Example: "bitField1_ = (bitField1_ | 0x04)"
+// Generates the java code for the expression that sets the bit at the given
+// bit index.
+// Example: "bitField1_ |= 0x04000000"
 string GenerateSetBit(int bit_index);
 
-// Generates the java code for the expression that clears the bit of the shared
-// bitfields for the given bit index.
-// Example: "bitField1_ = (bitField1_ & ~0x04)"
+// Generates the java code for the expression that clears the bit at the given
+// bit index.
+// Example: "bitField1_ = (bitField1_ & ~0x04000000)"
 string GenerateClearBit(int bit_index);
 
-// Sets the 'get_*', 'set_*' and 'clear_*' variables, where * is the given bit
-// field name, to the appropriate Java expressions for the given bit index.
+// Generates the java code for the expression that returns whether the bit at
+// the given bit index contains different values in the current object and
+// another object accessible via the variable 'other'.
+// Example: "((bitField1_ & 0x04000000) != (other.bitField1_ & 0x04000000))"
+string GenerateDifferentBit(int bit_index);
+
+// Sets the 'get_*', 'set_*', 'clear_*' and 'different_*' variables, where * is
+// the given name of the bit, to the appropriate Java expressions for the given
+// bit index.
 void SetBitOperationVariables(const string name,
     int bitIndex, map<string, string>* variables);
 

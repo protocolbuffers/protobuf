@@ -55,8 +55,8 @@ class PrimitiveFieldGenerator : public FieldGenerator {
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
-
-  string GetBoxedType() const;
+  void GenerateEqualsCode(io::Printer* printer) const;
+  void GenerateHashCodeCode(io::Printer* printer) const;
 
  private:
   void GenerateSerializationConditional(io::Printer* printer) const;
@@ -79,8 +79,8 @@ class AccessorPrimitiveFieldGenerator : public FieldGenerator {
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
-
-  string GetBoxedType() const;
+  void GenerateEqualsCode(io::Printer* printer) const;
+  void GenerateHashCodeCode(io::Printer* printer) const;
 
  private:
   const FieldDescriptor* descriptor_;
@@ -100,8 +100,8 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
-
-  string GetBoxedType() const;
+  void GenerateEqualsCode(io::Printer* printer) const;
+  void GenerateHashCodeCode(io::Printer* printer) const;
 
  private:
   void GenerateRepeatedDataSizeCode(io::Printer* printer) const;

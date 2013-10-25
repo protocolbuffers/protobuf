@@ -36,9 +36,10 @@
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_H__
 
 #include <string>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/compiler/javanano/javanano_params.h>
+#include <google/protobuf/compiler/javanano/javanano_helpers.h>
 #include <google/protobuf/compiler/javanano/javanano_field.h>
+#include <google/protobuf/compiler/javanano/javanano_params.h>
+#include <google/protobuf/stubs/common.h>
 
 namespace google {
 namespace protobuf {
@@ -76,6 +77,8 @@ class MessageGenerator {
                                  const FieldDescriptor* field);
 
   void GenerateClear(io::Printer* printer);
+  void GenerateEquals(io::Printer* printer);
+  void GenerateHashCode(io::Printer* printer);
 
   const Params& params_;
   const Descriptor* descriptor_;
