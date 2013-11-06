@@ -2724,8 +2724,6 @@ public class NanoTest extends TestCase {
     // Complete equality for messages with accessors:
     TestNanoAccessors f = createMessageWithAccessorsForHashCodeEqualsTest();
     TestNanoAccessors fEquivalent = createMessageWithAccessorsForHashCodeEqualsTest();
-    System.out.println("equals: " + f.equals(fEquivalent));
-    System.out.println("hashCode: " + f.hashCode() + " vs " + fEquivalent.hashCode());
 
     // If using accessors, explicitly setting a field to its default value
     // should make the message different.
@@ -2963,6 +2961,37 @@ public class NanoTest extends TestCase {
     assertEquals(2, message.repeatedPackedInt32[1]);
     assertEquals(2, message.repeatedPackedNestedEnum.length);
     assertEquals(TestAllTypesNano.BAR, message.repeatedPackedNestedEnum[1]);
+  }
+
+  public void testNullRepeatedFieldElements() throws Exception {
+    // Check that serialization with null array elements doesn't NPE.
+    String string1 = "1";
+    String string2 = "2";
+    byte[] bytes1 = {3, 4};
+    byte[] bytes2 = {5, 6};
+    TestAllTypesNano.NestedMessage msg1 = new TestAllTypesNano.NestedMessage();
+    msg1.bb = 7;
+    TestAllTypesNano.NestedMessage msg2 = new TestAllTypesNano.NestedMessage();
+    msg2.bb = 8;
+
+    TestAllTypesNano message = new TestAllTypesNano();
+    message.repeatedString = new String[] {null, string1, string2};
+    message.repeatedBytes = new byte[][] {bytes1, null, bytes2};
+    message.repeatedNestedMessage = new TestAllTypesNano.NestedMessage[] {msg1, msg2, null};
+    message.repeatedGroup = new TestAllTypesNano.RepeatedGroup[] {null, null, null};
+
+    byte[] serialized = MessageNano.toByteArray(message); // should not NPE
+    TestAllTypesNano deserialized = MessageNano.mergeFrom(new TestAllTypesNano(), serialized);
+    assertEquals(2, deserialized.repeatedString.length);
+    assertEquals(string1, deserialized.repeatedString[0]);
+    assertEquals(string2, deserialized.repeatedString[1]);
+    assertEquals(2, deserialized.repeatedBytes.length);
+    assertTrue(Arrays.equals(bytes1, deserialized.repeatedBytes[0]));
+    assertTrue(Arrays.equals(bytes2, deserialized.repeatedBytes[1]));
+    assertEquals(2, deserialized.repeatedNestedMessage.length);
+    assertEquals(msg1.bb, deserialized.repeatedNestedMessage[0].bb);
+    assertEquals(msg2.bb, deserialized.repeatedNestedMessage[1].bb);
+    assertEquals(0, deserialized.repeatedGroup.length);
   }
 
   public void testRepeatedMerge() throws Exception {
