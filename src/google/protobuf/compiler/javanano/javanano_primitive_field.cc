@@ -685,7 +685,7 @@ GenerateClearCode(io::Printer* printer) const {
 void RepeatedPrimitiveFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   // First, figure out the length of the array, then parse.
-  if (descriptor_->options().packed()) {
+  if (descriptor_->is_packable() && descriptor_->options().packed()) {
     printer->Print(variables_,
       "int length = input.readRawVarint32();\n"
       "int limit = input.pushLimit(length);\n"
@@ -736,14 +736,28 @@ GenerateMergingCode(io::Printer* printer) const {
 
 void RepeatedPrimitiveFieldGenerator::
 GenerateRepeatedDataSizeCode(io::Printer* printer) const {
-  // Creates a variable dataSize and puts the serialized size in
-  // there.
-  if (FixedSize(descriptor_->type()) == -1) {
+  // Creates a variable dataSize and puts the serialized size in there.
+  // If the element type is a Java reference type, also generates
+  // dataCount which stores the number of non-null elements in the field.
+  if (IsReferenceType(GetJavaType(descriptor_))) {
+    printer->Print(variables_,
+      "int dataCount = 0;\n"
+      "int dataSize = 0;\n"
+      "for (int i = 0; i < this.$name$.length; i++) {\n"
+      "  $type$ element = this.$name$[i];\n"
+      "  if (element != null) {\n"
+      "    dataCount++;\n"
+      "    dataSize += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
+      "        .compute$capitalized_type$SizeNoTag(element);\n"
+      "  }\n"
+      "}\n");
+  } else if (FixedSize(descriptor_->type()) == -1) {
     printer->Print(variables_,
       "int dataSize = 0;\n"
-      "for ($type$ element : this.$name$) {\n"
+      "for (int i = 0; i < this.$name$.length; i++) {\n"
+      "  $type$ element = this.$name$[i];\n"
       "  dataSize += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
-      "    .compute$capitalized_type$SizeNoTag(element);\n"
+      "      .compute$capitalized_type$SizeNoTag(element);\n"
       "}\n");
   } else {
     printer->Print(variables_,
@@ -757,18 +771,26 @@ GenerateSerializationCode(io::Printer* printer) const {
     "if (this.$name$ != null && this.$name$.length > 0) {\n");
   printer->Indent();
 
-  if (descriptor_->options().packed()) {
+  if (descriptor_->is_packable() && descriptor_->options().packed()) {
     GenerateRepeatedDataSizeCode(printer);
     printer->Print(variables_,
       "output.writeRawVarint32($tag$);\n"
       "output.writeRawVarint32(dataSize);\n"
-      "for ($type$ element : this.$name$) {\n"
-      "  output.write$capitalized_type$NoTag(element);\n"
+      "for (int i = 0; i < this.$name$.length; i++) {\n"
+      "  output.write$capitalized_type$NoTag(this.$name$[i]);\n"
+      "}\n");
+  } else if (IsReferenceType(GetJavaType(descriptor_))) {
+    printer->Print(variables_,
+      "for (int i = 0; i < this.$name$.length; i++) {\n"
+      "  $type$ element = this.$name$[i];\n"
+      "  if (element != null) {\n"
+      "    output.write$capitalized_type$($number$, element);\n"
+      "  }\n"
       "}\n");
   } else {
     printer->Print(variables_,
-      "for ($type$ element : this.$name$) {\n"
-      "  output.write$capitalized_type$($number$, element);\n"
+      "for (int i = 0; i < this.$name$.length; i++) {\n"
+      "  output.write$capitalized_type$($number$, this.$name$[i]);\n"
       "}\n");
   }
 
@@ -786,14 +808,17 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
 
   printer->Print(
     "size += dataSize;\n");
-  if (descriptor_->options().packed()) {
+  if (descriptor_->is_packable() && descriptor_->options().packed()) {
     printer->Print(variables_,
       "size += $tag_size$;\n"
       "size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
       "  .computeRawVarint32Size(dataSize);\n");
+  } else if (IsReferenceType(GetJavaType(descriptor_))) {
+    printer->Print(variables_,
+      "size += $tag_size$ * dataCount;\n");
   } else {
     printer->Print(variables_,
-        "size += $tag_size$ * this.$name$.length;\n");
+      "size += $tag_size$ * this.$name$.length;\n");
   }
 
   printer->Outdent();
