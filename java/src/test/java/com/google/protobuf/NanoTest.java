@@ -2490,14 +2490,14 @@ public class NanoTest extends TestCase {
     msg.optionalInt32 = 14;
     msg.optionalFloat = 42.3f;
     msg.optionalString = "String \"with' both quotes";
-    msg.optionalBytes = new byte[5];
+    msg.optionalBytes = new byte[] {'"', '\0', 1, 8};
     msg.optionalGroup = new TestAllTypesNano.OptionalGroup();
     msg.optionalGroup.a = 15;
     msg.repeatedInt64 = new long[2];
     msg.repeatedInt64[0] = 1L;
     msg.repeatedInt64[1] = -1L;
     msg.repeatedBytes = new byte[2][];
-    msg.repeatedBytes[1] = new byte[5];
+    msg.repeatedBytes[1] = new byte[] {'h', 'e', 'l', 'l', 'o'};
     msg.repeatedGroup = new TestAllTypesNano.RepeatedGroup[2];
     msg.repeatedGroup[0] = new TestAllTypesNano.RepeatedGroup();
     msg.repeatedGroup[0].a = -27;
@@ -2514,28 +2514,31 @@ public class NanoTest extends TestCase {
     msg.repeatedNestedEnum = new int[2];
     msg.repeatedNestedEnum[0] = TestAllTypesNano.BAR;
     msg.repeatedNestedEnum[1] = TestAllTypesNano.FOO;
+    msg.repeatedStringPiece = new String[] {null, "world"};
 
     String protoPrint = msg.toString();
-    assertTrue(protoPrint.contains("TestAllTypesNano <"));
-    assertTrue(protoPrint.contains("  optional_int32: 14"));
-    assertTrue(protoPrint.contains("  optional_float: 42.3"));
-    assertTrue(protoPrint.contains("  optional_double: 0.0"));
-    assertTrue(protoPrint.contains("  optional_string: \"String \\u0022with\\u0027 both quotes\""));
-    assertTrue(protoPrint.contains("  optional_bytes: [B@"));
-    assertTrue(protoPrint.contains("  optionalGroup <\n    a: 15\n  >"));
+    assertTrue(protoPrint.contains("optional_int32: 14"));
+    assertTrue(protoPrint.contains("optional_float: 42.3"));
+    assertTrue(protoPrint.contains("optional_double: 0.0"));
+    assertTrue(protoPrint.contains("optional_string: \"String \\u0022with\\u0027 both quotes\""));
+    assertTrue(protoPrint.contains("optional_bytes: \"\\\"\\000\\001\\010\""));
+    assertTrue(protoPrint.contains("optional_group <\n  a: 15\n>"));
 
-    assertTrue(protoPrint.contains("  repeated_int64: 1"));
-    assertTrue(protoPrint.contains("  repeated_int64: -1"));
-    assertTrue(protoPrint.contains("  repeated_bytes: null\n  repeated_bytes: [B@"));
-    assertTrue(protoPrint.contains("  repeatedGroup <\n    a: -27\n  >\n"
-            + "  repeatedGroup <\n    a: -72\n  >"));
-    assertTrue(protoPrint.contains("  optionalNestedMessage <\n    bb: 7\n  >"));
-    assertTrue(protoPrint.contains("  repeatedNestedMessage <\n    bb: 77\n  >\n"
-            + "  repeatedNestedMessage <\n    bb: 88\n  >"));
-    assertTrue(protoPrint.contains("  optional_nested_enum: 3"));
-    assertTrue(protoPrint.contains("  repeated_nested_enum: 2\n  repeated_nested_enum: 1"));
-    assertTrue(protoPrint.contains("  default_int32: 41"));
-    assertTrue(protoPrint.contains("  default_string: \"hello\""));
+    assertTrue(protoPrint.contains("repeated_int64: 1"));
+    assertTrue(protoPrint.contains("repeated_int64: -1"));
+    assertFalse(protoPrint.contains("repeated_bytes: \"\"")); // null should be dropped
+    assertTrue(protoPrint.contains("repeated_bytes: \"hello\""));
+    assertTrue(protoPrint.contains("repeated_group <\n  a: -27\n>\n"
+            + "repeated_group <\n  a: -72\n>"));
+    assertTrue(protoPrint.contains("optional_nested_message <\n  bb: 7\n>"));
+    assertTrue(protoPrint.contains("repeated_nested_message <\n  bb: 77\n>\n"
+            + "repeated_nested_message <\n  bb: 88\n>"));
+    assertTrue(protoPrint.contains("optional_nested_enum: 3"));
+    assertTrue(protoPrint.contains("repeated_nested_enum: 2\nrepeated_nested_enum: 1"));
+    assertTrue(protoPrint.contains("default_int32: 41"));
+    assertTrue(protoPrint.contains("default_string: \"hello\""));
+    assertFalse(protoPrint.contains("repeated_string_piece: \"\""));  // null should be dropped
+    assertTrue(protoPrint.contains("repeated_string_piece: \"world\""));
   }
 
   public void testExtensions() throws Exception {
