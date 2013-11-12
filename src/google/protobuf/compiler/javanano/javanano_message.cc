@@ -139,15 +139,20 @@ void MessageGenerator::Generate(io::Printer* printer) {
     printer->Print(
       "\n"
       "@SuppressWarnings(\"hiding\")\n"
-      "public final class $classname$ extends\n"
-      "    com.google.protobuf.nano.MessageNano {\n",
+      "public final class $classname$ extends\n",
       "classname", descriptor_->name());
   } else {
     printer->Print(
       "\n"
-      "public static final class $classname$ extends\n"
-      "    com.google.protobuf.nano.MessageNano {\n",
+      "public static final class $classname$ extends\n",
       "classname", descriptor_->name());
+  }
+  if (params_.store_unknown_fields()) {
+    printer->Print(
+      "    com.google.protobuf.nano.ExtendableMessageNano {\n");
+  } else {
+    printer->Print(
+      "    com.google.protobuf.nano.MessageNano {\n");
   }
   printer->Indent();
   printer->Print(
@@ -158,13 +163,6 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "  clear();\n"
     "}\n",
     "classname", descriptor_->name());
-
-  if (params_.store_unknown_fields()) {
-    printer->Print(
-        "\n"
-        "private java.util.List<com.google.protobuf.nano.UnknownFieldData>\n"
-        "    unknownFieldData;\n");
-  }
 
   // Nested types and extensions
   for (int i = 0; i < descriptor_->extension_count(); i++) {
@@ -203,25 +201,6 @@ void MessageGenerator::Generate(io::Printer* printer) {
     GenerateHashCode(printer);
   }
 
-  // If we have an extension range, generate accessors for extensions.
-  if (params_.store_unknown_fields()
-      && descriptor_->extension_range_count() > 0) {
-    printer->Print(
-      "\n"
-      "public <T> T getExtension(com.google.protobuf.nano.Extension<T> extension) {\n"
-      "  return com.google.protobuf.nano.WireFormatNano.getExtension(\n"
-      "      extension, unknownFieldData);\n"
-      "}\n"
-      "\n"
-      "public <T> void setExtension(com.google.protobuf.nano.Extension<T> extension, T value) {\n"
-      "  if (unknownFieldData == null) {\n"
-      "    unknownFieldData =\n"
-      "        new java.util.ArrayList<com.google.protobuf.nano.UnknownFieldData>();\n"
-      "  }\n"
-      "  com.google.protobuf.nano.WireFormatNano.setExtension(\n"
-      "      extension, value, unknownFieldData);\n"
-      "}\n");
-  }
   GenerateMessageSerializationMethods(printer);
   GenerateMergeFromMethods(printer);
   GenerateParseFromMethods(printer);
@@ -265,38 +244,28 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
   }
 
   printer->Outdent();
-  printer->Print(
-    "}\n"
-    "\n"
-    "private int cachedSize;\n"
-    "@Override\n"
-    "public int getCachedSize() {\n"
-    "  if (cachedSize < 0) {\n"
-    "    // getSerializedSize sets cachedSize\n"
-    "    getSerializedSize();\n"
-    "  }\n"
-    "  return cachedSize;\n"
-    "}\n"
-    "\n"
-    "@Override\n"
-    "public int getSerializedSize() {\n"
-    "  int size = 0;\n");
-  printer->Indent();
+  printer->Print("}\n");
 
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    field_generators_.get(sorted_fields[i]).GenerateSerializedSizeCode(printer);
-  }
-
-  if (params_.store_unknown_fields()) {
+  // Rely on the parent implementation of getSerializedSize if there are no fields to
+  // serialize in this MessageNano.
+  if (descriptor_->field_count() != 0) {
     printer->Print(
-      "size += com.google.protobuf.nano.WireFormatNano.computeWireSize(unknownFieldData);\n");
-  }
+      "\n"
+      "@Override\n"
+      "public int getSerializedSize() {\n"
+      "  int size = super.getSerializedSize();\n");
+    printer->Indent();
 
-  printer->Outdent();
-  printer->Print(
-    "  cachedSize = size;\n"
-    "  return size;\n"
-    "}\n");
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+      field_generators_.get(sorted_fields[i]).GenerateSerializedSizeCode(printer);
+    }
+
+    printer->Outdent();
+    printer->Print(
+      "  cachedSize = size;\n"
+      "  return size;\n"
+      "}\n");
+  }
 }
 
 void MessageGenerator::GenerateMergeFromMethods(io::Printer* printer) {
