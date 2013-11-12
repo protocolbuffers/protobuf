@@ -177,9 +177,7 @@ void FileGenerator::Generate(io::Printer* printer) {
   printer->Print(
     "\n"
     "@SuppressWarnings(\"hiding\")\n"
-    "public final class $classname$ {\n"
-    "  \n"
-    "  private $classname$() {}\n",
+    "public interface $classname$ {\n",
     "classname", classname_);
   printer->Indent();
 
