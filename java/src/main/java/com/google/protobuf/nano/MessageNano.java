@@ -139,7 +139,10 @@ public abstract class MessageNano {
     }
 
     /**
-     * Intended for debugging purposes only. It does not use ASCII protobuf formatting.
+     * Returns a string that is (mostly) compatible with ProtoBuffer's TextFormat. Note that groups
+     * (which are deprecated) are not serialized with the correct field name.
+     *
+     * <p>This is implemented using reflection, so it is not especially fast.
      */
     @Override
     public String toString() {
