@@ -16,6 +16,8 @@
 
 LOCAL_PATH := $(call my-dir)
 
+IGNORED_WARNINGS := -Wno-sign-compare -Wno-unused-parameter -Wno-sign-promo
+
 CC_LITE_SRC_FILES := \
     src/google/protobuf/stubs/common.cc                              \
     src/google/protobuf/stubs/once.cc                                \
@@ -227,7 +229,7 @@ LOCAL_C_INCLUDES := \
 #
 #LOCAL_COPY_HEADERS_TO := $(LOCAL_MODULE)
 
-LOCAL_CFLAGS := -DGOOGLE_PROTOBUF_NO_RTTI
+LOCAL_CFLAGS := -DGOOGLE_PROTOBUF_NO_RTTI $(IGNORED_WARNINGS)
 
 # These are the minimum versions and don't need to be update.
 ifeq ($(TARGET_ARCH),arm)
@@ -293,7 +295,7 @@ LOCAL_C_INCLUDES := \
 #
 #LOCAL_COPY_HEADERS_TO := $(LOCAL_MODULE)
 
-LOCAL_CFLAGS := -DGOOGLE_PROTOBUF_NO_RTTI
+LOCAL_CFLAGS := -DGOOGLE_PROTOBUF_NO_RTTI $(IGNORED_WARNINGS)
 
 # These are the minimum versions and don't need to be update.
 ifeq ($(TARGET_ARCH),arm)
@@ -319,7 +321,7 @@ LOCAL_C_INCLUDES := \
     external/zlib \
     $(LOCAL_PATH)/src
 
-LOCAL_CFLAGS := -frtti
+LOCAL_CFLAGS := -frtti $(IGNORED_WARNINGS)
 LOCAL_SDK_VERSION := 14
 LOCAL_NDK_STL_VARIANT := gnustl_static
 
@@ -348,6 +350,8 @@ LOCAL_C_INCLUDES := \
 
 LOCAL_STATIC_LIBRARIES += libz
 LOCAL_LDLIBS := -lpthread
+
+LOCAL_CFLAGS := $(IGNORED_WARNINGS)
 
 include $(BUILD_HOST_EXECUTABLE)
 
