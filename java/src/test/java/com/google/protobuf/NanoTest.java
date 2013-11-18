@@ -49,6 +49,7 @@ import com.google.protobuf.nano.NanoHasOuterClass.TestAllTypesNanoHas;
 import com.google.protobuf.nano.NanoOuterClass;
 import com.google.protobuf.nano.NanoOuterClass.TestAllTypesNano;
 import com.google.protobuf.nano.NanoReferenceTypes;
+import com.google.protobuf.nano.NanoRepeatedPackables;
 import com.google.protobuf.nano.TestRepeatedMergeNano;
 import com.google.protobuf.nano.UnittestImportNano;
 import com.google.protobuf.nano.UnittestMultipleNano;
@@ -3062,6 +3063,77 @@ public class NanoTest extends TestCase {
     assertEquals(3, firstContainer.contained.repeatedInt32.length);
     assertEquals(20, firstContainer.contained.repeatedInt32[1]);
     assertEquals(30, firstContainer.contained.repeatedInt32[2]);
+  }
+
+  public void testRepeatedPackables() throws Exception {
+    // Check that repeated fields with packable types can accept both packed and unpacked
+    // serialized forms.
+    NanoRepeatedPackables.NonPacked nonPacked = new NanoRepeatedPackables.NonPacked();
+    nonPacked.int32S = new int[] {1, 2, 3};
+    nonPacked.int64S = new long[] {4, 5, 6};
+    nonPacked.uint32S = new int[] {7, 8, 9};
+    nonPacked.uint64S = new long[] {10, 11, 12};
+    nonPacked.sint32S = new int[] {13, 14, 15};
+    nonPacked.sint64S = new long[] {16, 17, 18};
+    nonPacked.fixed32S = new int[] {19, 20, 21};
+    nonPacked.fixed64S = new long[] {22, 23, 24};
+    nonPacked.sfixed32S = new int[] {25, 26, 27};
+    nonPacked.sfixed64S = new long[] {28, 29, 30};
+    nonPacked.floats = new float[] {31, 32, 33};
+    nonPacked.doubles = new double[] {34, 35, 36};
+    nonPacked.bools = new boolean[] {false, true};
+    nonPacked.enums = new int[] {
+      NanoRepeatedPackables.Enum.OPTION_ONE,
+      NanoRepeatedPackables.Enum.OPTION_TWO,
+    };
+    nonPacked.noise = 13579;
+
+    byte[] nonPackedSerialized = MessageNano.toByteArray(nonPacked);
+
+    NanoRepeatedPackables.Packed packed =
+        MessageNano.mergeFrom(new NanoRepeatedPackables.Packed(), nonPackedSerialized);
+    assertRepeatedPackablesEqual(nonPacked, packed);
+
+    byte[] packedSerialized = MessageNano.toByteArray(packed);
+    // Just a cautious check that the two serialized forms are different,
+    // to make sure the remaining of this test is useful:
+    assertFalse(Arrays.equals(nonPackedSerialized, packedSerialized));
+
+    nonPacked = MessageNano.mergeFrom(new NanoRepeatedPackables.NonPacked(), packedSerialized);
+    assertRepeatedPackablesEqual(nonPacked, packed);
+
+    // Test mixed serialized form.
+    byte[] mixedSerialized = new byte[nonPackedSerialized.length + packedSerialized.length];
+    System.arraycopy(nonPackedSerialized, 0, mixedSerialized, 0, nonPackedSerialized.length);
+    System.arraycopy(packedSerialized, 0,
+        mixedSerialized, nonPackedSerialized.length, packedSerialized.length);
+
+    nonPacked = MessageNano.mergeFrom(new NanoRepeatedPackables.NonPacked(), mixedSerialized);
+    packed = MessageNano.mergeFrom(new NanoRepeatedPackables.Packed(), mixedSerialized);
+    assertRepeatedPackablesEqual(nonPacked, packed);
+    assertTrue(Arrays.equals(new int[] {1, 2, 3, 1, 2, 3}, nonPacked.int32S));
+    assertTrue(Arrays.equals(new int[] {13, 14, 15, 13, 14, 15}, nonPacked.sint32S));
+    assertTrue(Arrays.equals(new int[] {25, 26, 27, 25, 26, 27}, nonPacked.sfixed32S));
+    assertTrue(Arrays.equals(new boolean[] {false, true, false, true}, nonPacked.bools));
+  }
+
+  private void assertRepeatedPackablesEqual(
+      NanoRepeatedPackables.NonPacked nonPacked, NanoRepeatedPackables.Packed packed) {
+    // Not using MessageNano.equals() -- that belongs to a separate test.
+    assertTrue(Arrays.equals(nonPacked.int32S, packed.int32S));
+    assertTrue(Arrays.equals(nonPacked.int64S, packed.int64S));
+    assertTrue(Arrays.equals(nonPacked.uint32S, packed.uint32S));
+    assertTrue(Arrays.equals(nonPacked.uint64S, packed.uint64S));
+    assertTrue(Arrays.equals(nonPacked.sint32S, packed.sint32S));
+    assertTrue(Arrays.equals(nonPacked.sint64S, packed.sint64S));
+    assertTrue(Arrays.equals(nonPacked.fixed32S, packed.fixed32S));
+    assertTrue(Arrays.equals(nonPacked.fixed64S, packed.fixed64S));
+    assertTrue(Arrays.equals(nonPacked.sfixed32S, packed.sfixed32S));
+    assertTrue(Arrays.equals(nonPacked.sfixed64S, packed.sfixed64S));
+    assertTrue(Arrays.equals(nonPacked.floats, packed.floats));
+    assertTrue(Arrays.equals(nonPacked.doubles, packed.doubles));
+    assertTrue(Arrays.equals(nonPacked.bools, packed.bools));
+    assertTrue(Arrays.equals(nonPacked.enums, packed.enums));
   }
 
   private void assertHasWireData(MessageNano message, boolean expected) {

@@ -685,10 +685,46 @@ GenerateClearCode(io::Printer* printer) const {
 void RepeatedPrimitiveFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   // First, figure out the length of the array, then parse.
-  if (descriptor_->is_packable() && descriptor_->options().packed()) {
+  printer->Print(variables_,
+    "int arrayLength = com.google.protobuf.nano.WireFormatNano\n"
+    "    .getRepeatedFieldArrayLength(input, $tag$);\n"
+    "int i = this.$name$ == null ? 0 : this.$name$.length;\n");
+
+  if (GetJavaType(descriptor_) == JAVATYPE_BYTES) {
     printer->Print(variables_,
-      "int length = input.readRawVarint32();\n"
-      "int limit = input.pushLimit(length);\n"
+      "byte[][] newArray = new byte[i + arrayLength][];\n");
+  } else {
+    printer->Print(variables_,
+      "$type$[] newArray = new $type$[i + arrayLength];\n");
+  }
+  printer->Print(variables_,
+    "if (i != 0) {\n"
+    "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
+    "}\n"
+    "for (; i < newArray.length - 1; i++) {\n"
+    "  newArray[i] = input.read$capitalized_type$();\n"
+    "  input.readTag();\n"
+    "}\n"
+    "// Last one without readTag.\n"
+    "newArray[i] = input.read$capitalized_type$();\n"
+    "this.$name$ = newArray;\n");
+}
+
+void RepeatedPrimitiveFieldGenerator::
+GenerateMergingCodeFromPacked(io::Printer* printer) const {
+  printer->Print(
+    "int length = input.readRawVarint32();\n"
+    "int limit = input.pushLimit(length);\n");
+
+  // If we know the elements will all be of the same size, the arrayLength
+  // can be calculated much more easily. However, FixedSize() returns 1 for
+  // repeated bool fields, which are guaranteed to have the fixed size of
+  // 1 byte per value only if we control the output. On the wire they can
+  // legally appear as variable-size integers, so we need to use the slow
+  // way for repeated bool fields.
+  if (descriptor_->type() == FieldDescriptor::TYPE_BOOL
+      || FixedSize(descriptor_->type()) == -1) {
+    printer->Print(variables_,
       "// First pass to compute array length.\n"
       "int arrayLength = 0;\n"
       "int startPos = input.getPosition();\n"
@@ -696,42 +732,23 @@ GenerateMergingCode(io::Printer* printer) const {
       "  input.read$capitalized_type$();\n"
       "  arrayLength++;\n"
       "}\n"
-      "input.rewindToPosition(startPos);\n"
-      "int i = this.$name$ == null ? 0 : this.$name$.length;\n"
-      "$type$[] newArray = new $type$[i + arrayLength];\n"
-      "if (i != 0) {\n"
-      "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
-      "}\n"
-      "for (; i < newArray.length; i++) {\n"
-      "  newArray[i] = input.read$capitalized_type$();\n"
-      "}\n"
-      "this.$name$ = newArray;\n"
-      "input.popLimit(limit);\n");
+      "input.rewindToPosition(startPos);\n");
   } else {
     printer->Print(variables_,
-      "int arrayLength = com.google.protobuf.nano.WireFormatNano\n"
-      "    .getRepeatedFieldArrayLength(input, $tag$);\n"
-      "int i = this.$name$ == null ? 0 : this.$name$.length;\n");
-
-    if (GetJavaType(descriptor_) == JAVATYPE_BYTES) {
-      printer->Print(variables_,
-        "byte[][] newArray = new byte[i + arrayLength][];\n");
-    } else {
-      printer->Print(variables_,
-        "$type$[] newArray = new $type$[i + arrayLength];\n");
-    }
-    printer->Print(variables_,
-      "if (i != 0) {\n"
-      "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
-      "}\n"
-      "for (; i < newArray.length - 1; i++) {\n"
-      "  newArray[i] = input.read$capitalized_type$();\n"
-      "  input.readTag();\n"
-      "}\n"
-      "// Last one without readTag.\n"
-      "newArray[i] = input.read$capitalized_type$();\n"
-      "this.$name$ = newArray;\n");
+      "int arrayLength = length / $fixed_size$;\n");
   }
+
+  printer->Print(variables_,
+    "int i = this.$name$ == null ? 0 : this.$name$.length;\n"
+    "$type$[] newArray = new $type$[i + arrayLength];\n"
+    "if (i != 0) {\n"
+    "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
+    "}\n"
+    "for (; i < newArray.length; i++) {\n"
+    "  newArray[i] = input.read$capitalized_type$();\n"
+    "}\n"
+    "this.$name$ = newArray;\n"
+    "input.popLimit(limit);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::
@@ -812,7 +829,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     printer->Print(variables_,
       "size += $tag_size$;\n"
       "size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
-      "  .computeRawVarint32Size(dataSize);\n");
+      "    .computeRawVarint32Size(dataSize);\n");
   } else if (IsReferenceType(GetJavaType(descriptor_))) {
     printer->Print(variables_,
       "size += $tag_size$ * dataCount;\n");

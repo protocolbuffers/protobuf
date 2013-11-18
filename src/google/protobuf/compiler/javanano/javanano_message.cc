@@ -320,7 +320,7 @@ void MessageGenerator::GenerateMergeFromMethods(io::Printer* printer) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = sorted_fields[i];
     uint32 tag = WireFormatLite::MakeTag(field->number(),
-      WireFormat::WireTypeForField(field));
+      WireFormat::WireTypeForFieldType(field->type()));
 
     printer->Print(
       "case $tag$: {\n",
@@ -333,6 +333,24 @@ void MessageGenerator::GenerateMergeFromMethods(io::Printer* printer) {
     printer->Print(
       "  break;\n"
       "}\n");
+
+    if (field->is_packable()) {
+      // To make packed = true wire compatible, we generate parsing code from a
+      // packed version of this field regardless of field->options().packed().
+      uint32 packed_tag = WireFormatLite::MakeTag(field->number(),
+        WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+      printer->Print(
+        "case $tag$: {\n",
+        "tag", SimpleItoa(packed_tag));
+      printer->Indent();
+
+      field_generators_.get(field).GenerateMergingCodeFromPacked(printer);
+
+      printer->Outdent();
+      printer->Print(
+        "  break;\n"
+        "}\n");
+    }
   }
 
   printer->Outdent();
