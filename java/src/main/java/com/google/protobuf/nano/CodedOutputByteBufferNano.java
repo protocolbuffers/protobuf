@@ -168,14 +168,6 @@ public final class CodedOutputByteBufferNano {
     writeBytesNoTag(value);
   }
 
-  /** Write a {@code byte} field, including tag, to the stream. */
-  public void writeByteArray(final int fieldNumber, final byte[] value)
-                         throws IOException {
-    writeTag(fieldNumber, WireFormatNano.WIRETYPE_LENGTH_DELIMITED);
-    writeByteArrayNoTag(value);
-  }
-
-
   /** Write a {@code uint32} field, including tag, to the stream. */
   public void writeUInt32(final int fieldNumber, final int value)
                           throws IOException {
@@ -321,12 +313,6 @@ public final class CodedOutputByteBufferNano {
     writeRawBytes(value);
   }
 
-  /** Write a {@code byte[]} field to the stream. */
-  public void writeByteArrayNoTag(final byte [] value) throws IOException {
-    writeRawVarint32(value.length);
-    writeRawBytes(value);
-  }
-
   /** Write a {@code uint32} field to the stream. */
   public void writeUInt32NoTag(final int value) throws IOException {
     writeRawVarint32(value);
@@ -464,15 +450,6 @@ public final class CodedOutputByteBufferNano {
   public static int computeBytesSize(final int fieldNumber,
                                      final byte[] value) {
     return computeTagSize(fieldNumber) + computeBytesSizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code byte[]} field, including tag.
-   */
-  public static int computeByteArraySize(final int fieldNumber,
-                                     final byte[] value) {
-    return computeTagSize(fieldNumber) + computeByteArraySizeNoTag(value);
   }
 
   /**
@@ -657,14 +634,6 @@ public final class CodedOutputByteBufferNano {
    * {@code bytes} field.
    */
   public static int computeBytesSizeNoTag(final byte[] value) {
-    return computeRawVarint32Size(value.length) + value.length;
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code byte[]} field.
-   */
-  public static int computeByteArraySizeNoTag(final byte[] value) {
     return computeRawVarint32Size(value.length) + value.length;
   }
 

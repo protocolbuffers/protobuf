@@ -39,6 +39,7 @@
 #include <google/protobuf/compiler/javanano/javanano_params.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/io/printer.h>
 
 namespace google {
 namespace protobuf {
@@ -111,6 +112,9 @@ string FieldConstantName(const FieldDescriptor *field);
 
 string FieldDefaultConstantName(const FieldDescriptor *field);
 
+// Print the field's proto-syntax definition as a comment.
+void PrintFieldComment(io::Printer* printer, const FieldDescriptor* field);
+
 enum JavaType {
   JAVATYPE_INT,
   JAVATYPE_LONG,
@@ -129,10 +133,12 @@ inline JavaType GetJavaType(const FieldDescriptor* field) {
   return GetJavaType(field->type());
 }
 
+string PrimitiveTypeName(JavaType type);
+
 // Get the fully-qualified class name for a boxed primitive type, e.g.
 // "java.lang.Integer" for JAVATYPE_INT.  Returns NULL for enum and message
 // types.
-const char* BoxedPrimitiveTypeName(JavaType type);
+string BoxedPrimitiveTypeName(JavaType type);
 
 string EmptyArrayName(const Params& params, const FieldDescriptor* field);
 
