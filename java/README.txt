@@ -429,6 +429,7 @@ Except:
 - Similar rename from CodedOutputStreamMicro to
   CodedOutputByteBufferNano.
 - Repeated fields are in arrays, not ArrayList or Vector.
+- Full support of serializing/deserializing repeated packed fields.
 - Unset messages/groups are null, not an immutable empty default
   instance.
 - Required fields are always serialized.
