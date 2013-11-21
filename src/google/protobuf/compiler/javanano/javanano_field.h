@@ -60,6 +60,12 @@ class FieldGenerator {
   virtual void GenerateMembers(io::Printer* printer) const = 0;
   virtual void GenerateClearCode(io::Printer* printer) const = 0;
   virtual void GenerateMergingCode(io::Printer* printer) const = 0;
+
+  // Generates code to merge from packed serialized form. The default
+  // implementation will fail; subclasses which can handle packed serialized
+  // forms will override this and print appropriate code to the printer.
+  virtual void GenerateMergingCodeFromPacked(io::Printer* printer) const;
+
   virtual void GenerateSerializationCode(io::Printer* printer) const = 0;
   virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
   virtual void GenerateEqualsCode(io::Printer* printer) const = 0;

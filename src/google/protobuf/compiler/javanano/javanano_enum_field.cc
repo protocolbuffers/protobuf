@@ -294,10 +294,6 @@ void RepeatedEnumFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "public $type$[] $name$;\n");
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "private int $name$MemoizedSerializedSize;\n");
-  }
 }
 
 void RepeatedEnumFieldGenerator::
@@ -309,45 +305,58 @@ GenerateClearCode(io::Printer* printer) const {
 void RepeatedEnumFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   // First, figure out the length of the array, then parse.
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "int length = input.readRawVarint32();\n"
-      "int limit = input.pushLimit(length);\n"
-      "// First pass to compute array length.\n"
-      "int arrayLength = 0;\n"
-      "int startPos = input.getPosition();\n"
-      "while (input.getBytesUntilLimit() > 0) {\n"
-      "  input.readInt32();\n"
-      "  arrayLength++;\n"
-      "}\n"
-      "input.rewindToPosition(startPos);\n"
-      "int i = this.$name$ == null ? 0 : this.$name$.length;\n"
-      "int[] newArray = new int[i + arrayLength];\n"
-      "if (i != 0) {\n"
-      "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
-      "}\n"
-      "for (; i < newArray.length; i++) {\n"
-      "  newArray[i] = input.readInt32();\n"
-      "}\n"
-      "this.$name$ = newArray;\n"
-      "input.popLimit(limit);\n");
-  } else {
-    printer->Print(variables_,
-      "int arrayLength = com.google.protobuf.nano.WireFormatNano\n"
-      "    .getRepeatedFieldArrayLength(input, $tag$);\n"
-      "int i = this.$name$ == null ? 0 : this.$name$.length;\n"
-      "int[] newArray = new int[i + arrayLength];\n"
-      "if (i != 0) {\n"
-      "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
-      "}\n"
-      "for (; i < newArray.length - 1; i++) {\n"
-      "  newArray[i] = input.readInt32();\n"
-      "  input.readTag();\n"
-      "}\n"
-      "// Last one without readTag.\n"
-      "newArray[i] = input.readInt32();\n"
-      "this.$name$ = newArray;\n");
-  }
+  printer->Print(variables_,
+    "int arrayLength = com.google.protobuf.nano.WireFormatNano\n"
+    "    .getRepeatedFieldArrayLength(input, $tag$);\n"
+    "int i = this.$name$ == null ? 0 : this.$name$.length;\n"
+    "int[] newArray = new int[i + arrayLength];\n"
+    "if (i != 0) {\n"
+    "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
+    "}\n"
+    "for (; i < newArray.length - 1; i++) {\n"
+    "  newArray[i] = input.readInt32();\n"
+    "  input.readTag();\n"
+    "}\n"
+    "// Last one without readTag.\n"
+    "newArray[i] = input.readInt32();\n"
+    "this.$name$ = newArray;\n");
+}
+
+void RepeatedEnumFieldGenerator::
+GenerateMergingCodeFromPacked(io::Printer* printer) const {
+  printer->Print(variables_,
+    "int length = input.readRawVarint32();\n"
+    "int limit = input.pushLimit(length);\n"
+    "// First pass to compute array length.\n"
+    "int arrayLength = 0;\n"
+    "int startPos = input.getPosition();\n"
+    "while (input.getBytesUntilLimit() > 0) {\n"
+    "  input.readInt32();\n"
+    "  arrayLength++;\n"
+    "}\n"
+    "input.rewindToPosition(startPos);\n"
+    "int i = this.$name$ == null ? 0 : this.$name$.length;\n"
+    "int[] newArray = new int[i + arrayLength];\n"
+    "if (i != 0) {\n"
+    "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
+    "}\n"
+    "for (; i < newArray.length; i++) {\n"
+    "  newArray[i] = input.readInt32();\n"
+    "}\n"
+    "this.$name$ = newArray;\n"
+    "input.popLimit(limit);\n");
+}
+
+void RepeatedEnumFieldGenerator::
+GenerateRepeatedDataSizeCode(io::Printer* printer) const {
+  // Creates a variable dataSize and puts the serialized size in there.
+  printer->Print(variables_,
+    "int dataSize = 0;\n"
+    "for (int i = 0; i < this.$name$.length; i++) {\n"
+    "  int element = this.$name$[i];\n"
+    "  dataSize += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
+    "      .computeInt32SizeNoTag(element);\n"
+    "}\n");
 }
 
 void RepeatedEnumFieldGenerator::
@@ -357,18 +366,20 @@ GenerateSerializationCode(io::Printer* printer) const {
   printer->Indent();
 
   if (descriptor_->options().packed()) {
+    GenerateRepeatedDataSizeCode(printer);
     printer->Print(variables_,
       "output.writeRawVarint32($tag$);\n"
-      "output.writeRawVarint32($name$MemoizedSerializedSize);\n"
-      "for (int element : this.$name$) {\n"
-      "  output.writeRawVarint32(element);\n"
+      "output.writeRawVarint32(dataSize);\n"
+      "for (int i = 0; i < this.$name$.length; i++) {\n"
+      "  output.writeRawVarint32(this.$name$[i]);\n"
       "}\n");
   } else {
     printer->Print(variables_,
-      "for (int element : this.$name$) {\n"
-      "  output.writeInt32($number$, element);\n"
+      "for (int i = 0; i < this.$name$.length; i++) {\n"
+      "  output.writeInt32($number$, this.$name$[i]);\n"
       "}\n");
   }
+
   printer->Outdent();
   printer->Print(variables_,
     "}\n");
@@ -380,39 +391,24 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     "if (this.$name$ != null && this.$name$.length > 0) {\n");
   printer->Indent();
 
-  printer->Print(variables_,
-    "int dataSize = 0;\n"
-    "for (int element : this.$name$) {\n"
-    "  dataSize += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
-    "    .computeInt32SizeNoTag(element);\n"
-    "}\n");
+  GenerateRepeatedDataSizeCode(printer);
 
   printer->Print(
     "size += dataSize;\n");
   if (descriptor_->options().packed()) {
-    // cache the data size for packed fields.
     printer->Print(variables_,
       "size += $tag_size$;\n"
       "size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
-      "  .computeRawVarint32Size(dataSize);\n"
-      "$name$MemoizedSerializedSize = dataSize;\n");
+      "    .computeRawVarint32Size(dataSize);\n");
   } else {
     printer->Print(variables_,
-        "size += $tag_size$ * this.$name$.length;\n");
+      "size += $tag_size$ * this.$name$.length;\n");
   }
 
   printer->Outdent();
 
-  // set cached size to 0 for empty packed fields.
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "} else {\n"
-      "  $name$MemoizedSerializedSize = 0;\n"
-      "}\n");
-  } else {
-    printer->Print(
-      "}\n");
-  }
+  printer->Print(
+    "}\n");
 }
 
 void RepeatedEnumFieldGenerator::

@@ -98,6 +98,7 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
   void GenerateMembers(io::Printer* printer) const;
   void GenerateClearCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
+  void GenerateMergingCodeFromPacked(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
   void GenerateEqualsCode(io::Printer* printer) const;
