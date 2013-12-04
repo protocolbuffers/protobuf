@@ -2271,9 +2271,10 @@ public class NanoTest extends TestCase {
   public void testNanoWithAccessorsBasic() throws Exception {
     TestNanoAccessors msg = new TestNanoAccessors();
 
-    // Makes sure required and repeated fields are still public fields
+    // Makes sure required, repeated, and message fields are still public
     msg.id = 3;
     msg.repeatedBytes = new byte[2][3];
+    msg.optionalNestedMessage = null;
 
     // Test accessors
     assertEquals(0, msg.getOptionalInt32());
@@ -2293,10 +2294,6 @@ public class NanoTest extends TestCase {
     } catch (NullPointerException expected) {}
     try {
       msg.setOptionalString(null);
-      fail();
-    } catch (NullPointerException expected) {}
-    try {
-      msg.setOptionalNestedMessage(null);
       fail();
     } catch (NullPointerException expected) {}
 
@@ -2352,8 +2349,8 @@ public class NanoTest extends TestCase {
       assertFalse(msg.hasDefaultBytes());
       assertFalse(msg.hasDefaultFloatNan());
       assertFalse(msg.hasDefaultNestedEnum());
-      msg.setOptionalNestedMessage(new TestNanoAccessors.NestedMessage());
-      msg.getOptionalNestedMessage().setBb(2);
+      msg.optionalNestedMessage = new TestNanoAccessors.NestedMessage();
+      msg.optionalNestedMessage.setBb(2);
       msg.setOptionalNestedEnum(TestNanoAccessors.BAZ);
       msg.setDefaultInt32(msg.getDefaultInt32());
     }
@@ -2366,14 +2363,46 @@ public class NanoTest extends TestCase {
 
     // Has fields true upon parse.
     TestNanoAccessors newMsg = TestNanoAccessors.parseFrom(result);
-    assertEquals(2, newMsg.getOptionalNestedMessage().getBb());
-    assertTrue(newMsg.getOptionalNestedMessage().hasBb());
+    assertEquals(2, newMsg.optionalNestedMessage.getBb());
+    assertTrue(newMsg.optionalNestedMessage.hasBb());
     assertEquals(TestNanoAccessors.BAZ, newMsg.getOptionalNestedEnum());
     assertTrue(newMsg.hasOptionalNestedEnum());
 
     // Has field true on fields with explicit default values from wire.
     assertTrue(newMsg.hasDefaultInt32());
     assertEquals(41, newMsg.getDefaultInt32());
+  }
+
+  public void testNanoWithAccessorsPublicFieldTypes() throws Exception {
+    TestNanoAccessors msg = new TestNanoAccessors();
+    assertNull(msg.optionalNestedMessage);
+    assertEquals(0, msg.id);
+    assertEquals(0, msg.repeatedNestedEnum.length);
+
+    TestNanoAccessors newMsg = TestNanoAccessors.parseFrom(MessageNano.toByteArray(msg));
+    assertNull(newMsg.optionalNestedMessage);
+    assertEquals(0, newMsg.id);
+    assertEquals(0, newMsg.repeatedNestedEnum.length);
+
+    TestNanoAccessors.NestedMessage nestedMessage = new TestNanoAccessors.NestedMessage();
+    nestedMessage.setBb(5);
+    newMsg.optionalNestedMessage = nestedMessage;
+    newMsg.id = -1;
+    newMsg.repeatedNestedEnum = new int[] { TestAllTypesNano.FOO };
+
+    TestNanoAccessors newMsg2 = TestNanoAccessors.parseFrom(MessageNano.toByteArray(newMsg));
+    assertEquals(nestedMessage.getBb(), newMsg2.optionalNestedMessage.getBb());
+    assertEquals(-1, newMsg2.id);
+    assertEquals(TestAllTypesNano.FOO, newMsg2.repeatedNestedEnum[0]);
+
+    newMsg2.optionalNestedMessage = null;
+    newMsg2.id = 0;
+    newMsg2.repeatedNestedEnum = null;
+
+    TestNanoAccessors newMsg3 = TestNanoAccessors.parseFrom(MessageNano.toByteArray(newMsg2));
+    assertNull(newMsg3.optionalNestedMessage);
+    assertEquals(0, newMsg3.id);
+    assertEquals(0, newMsg3.repeatedNestedEnum.length);
   }
 
   public void testNanoWithAccessorsSerialize() throws Exception {
@@ -2383,7 +2412,7 @@ public class NanoTest extends TestCase {
     msg.setOptionalBytes(msg.getOptionalBytes());
     TestNanoAccessors.NestedMessage nestedMessage = new TestNanoAccessors.NestedMessage();
     nestedMessage.setBb(nestedMessage.getBb());
-    msg.setOptionalNestedMessage(nestedMessage);
+    msg.optionalNestedMessage = nestedMessage;
     msg.setOptionalNestedEnum(msg.getOptionalNestedEnum());
     msg.setDefaultInt32(msg.getDefaultInt32());
     msg.setDefaultString(msg.getDefaultString());
@@ -2400,8 +2429,7 @@ public class NanoTest extends TestCase {
     assertTrue(newMsg.hasOptionalInt32());
     assertTrue(newMsg.hasOptionalString());
     assertTrue(newMsg.hasOptionalBytes());
-    assertTrue(newMsg.hasOptionalNestedMessage());
-    assertTrue(newMsg.getOptionalNestedMessage().hasBb());
+    assertTrue(newMsg.optionalNestedMessage.hasBb());
     assertTrue(newMsg.hasOptionalNestedEnum());
     assertTrue(newMsg.hasDefaultInt32());
     assertTrue(newMsg.hasDefaultString());
@@ -2411,7 +2439,7 @@ public class NanoTest extends TestCase {
     assertEquals(0, newMsg.getOptionalInt32());
     assertEquals(0, newMsg.getOptionalString().length());
     assertEquals(0, newMsg.getOptionalBytes().length);
-    assertEquals(0, newMsg.getOptionalNestedMessage().getBb());
+    assertEquals(0, newMsg.optionalNestedMessage.getBb());
     assertEquals(TestNanoAccessors.FOO, newMsg.getOptionalNestedEnum());
     assertEquals(41, newMsg.getDefaultInt32());
     assertEquals("hello", newMsg.getDefaultString());
@@ -2856,15 +2884,15 @@ public class NanoTest extends TestCase {
         .setOptionalInt32(5)
         .setOptionalString("Hello")
         .setOptionalBytes(new byte[] {1, 2, 3})
-        .setOptionalNestedMessage(new TestNanoAccessors.NestedMessage().setBb(27))
         .setOptionalNestedEnum(TestNanoAccessors.BAR)
         .setDefaultFloatNan(1.0f);
+    message.optionalNestedMessage = new TestNanoAccessors.NestedMessage().setBb(27);
     message.repeatedInt32 = new int[] { 5, 6, 7, 8 };
     message.repeatedString = new String[] { "One", "Two" };
     message.repeatedBytes = new byte[][] { { 2, 7 }, { 2, 7 } };
     message.repeatedNestedMessage = new TestNanoAccessors.NestedMessage[] {
-      message.getOptionalNestedMessage(),
-      message.getOptionalNestedMessage()
+      message.optionalNestedMessage,
+      message.optionalNestedMessage
     };
     message.repeatedNestedEnum = new int[] {
       TestAllTypesNano.BAR,
