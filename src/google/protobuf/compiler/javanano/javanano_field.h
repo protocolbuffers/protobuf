@@ -53,11 +53,23 @@ namespace javanano {
 
 class FieldGenerator {
  public:
-  //FieldGenerator() {}
   FieldGenerator(const Params& params) : params_(params) {}
   virtual ~FieldGenerator();
 
-  virtual void GenerateMembers(io::Printer* printer) const = 0;
+  virtual bool SavedDefaultNeeded() const;
+  virtual void GenerateInitSavedDefaultCode(io::Printer* printer) const;
+
+  // Generates code for Java fields and methods supporting this field.
+  // If this field needs a saved default (SavedDefaultNeeded() is true),
+  // then @lazy_init controls how the static field for that default value
+  // and its initialization code should be generated. If @lazy_init is
+  // true, the static field is not declared final and the initialization
+  // code is generated only when GenerateInitSavedDefaultCode is called;
+  // otherwise, the static field is declared final and initialized inline.
+  // GenerateInitSavedDefaultCode will not be called in the latter case.
+  virtual void GenerateMembers(
+      io::Printer* printer, bool lazy_init) const = 0;
+
   virtual void GenerateClearCode(io::Printer* printer) const = 0;
   virtual void GenerateMergingCode(io::Printer* printer) const = 0;
 
@@ -84,14 +96,14 @@ class FieldGeneratorMap {
   ~FieldGeneratorMap();
 
   const FieldGenerator& get(const FieldDescriptor* field) const;
-  const FieldGenerator& get_extension(int index) const;
   int total_bits() const { return total_bits_; }
+  bool saved_defaults_needed() const { return saved_defaults_needed_; }
 
  private:
   const Descriptor* descriptor_;
   scoped_array<scoped_ptr<FieldGenerator> > field_generators_;
-  scoped_array<scoped_ptr<FieldGenerator> > extension_generators_;
   int total_bits_;
+  bool saved_defaults_needed_;
 
   static FieldGenerator* MakeGenerator(const FieldDescriptor* field,
       const Params &params, int* next_has_bit_index);

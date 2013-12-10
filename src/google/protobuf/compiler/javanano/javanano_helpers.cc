@@ -261,9 +261,7 @@ string FieldConstantName(const FieldDescriptor *field) {
 }
 
 string FieldDefaultConstantName(const FieldDescriptor *field) {
-  string name = field->name() + "_DEFAULT";
-  UpperString(&name);
-  return name;
+  return "_" + RenameJavaKeywords(UnderscoresToCamelCase(field)) + "Default";
 }
 
 JavaType GetJavaType(FieldDescriptor::Type field_type) {

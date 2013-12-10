@@ -251,35 +251,41 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor, const Params param
   } else {
     (*variables)["type"] = PrimitiveTypeName(GetJavaType(descriptor));
   }
-  (*variables)["default"] = DefaultValue(params, descriptor);
-  (*variables)["default_constant"] = FieldDefaultConstantName(descriptor);
-  // For C++-string types (string and bytes), we might need to have
-  // the generated code do the unicode decoding (see comments in
-  // InternalNano.java for gory details.). We would like to do this
-  // once into a "private static final" field and re-use that from
+  // Deals with defaults. For C++-string types (string and bytes),
+  // we might need to have the generated code do the unicode decoding
+  // (see comments in InternalNano.java for gory details.). We would
+  // like to do this once into a static field and re-use that from
   // then on.
   if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
       !descriptor->default_value_string().empty() &&
       !params.use_reference_types_for_primitives()) {
-    string default_value;
     if (descriptor->type() == FieldDescriptor::TYPE_BYTES) {
-      default_value = strings::Substitute(
+      (*variables)["default"] = DefaultValue(params, descriptor);
+      (*variables)["default_constant"] = FieldDefaultConstantName(descriptor);
+      (*variables)["default_constant_value"] = strings::Substitute(
           "com.google.protobuf.nano.InternalNano.bytesDefaultValue(\"$0\")",
           CEscape(descriptor->default_value_string()));
-      (*variables)["default_copy_if_needed"] = (*variables)["default"] + ".clone()";
+      (*variables)["default_copy_if_needed"] =
+          (*variables)["default"] + ".clone()";
+    } else if (AllAscii(descriptor->default_value_string())) {
+      // All chars are ASCII.  In this case directly referencing a
+      // CEscape()'d string literal works fine.
+      (*variables)["default"] =
+          "\"" + CEscape(descriptor->default_value_string()) + "\"";
+      (*variables)["default_copy_if_needed"] = (*variables)["default"];
     } else {
-      if (AllAscii(descriptor->default_value_string())) {
-        // All chars are ASCII.  In this case CEscape() works fine.
-        default_value = "\"" + CEscape(descriptor->default_value_string()) + "\"";
-      } else {
-        default_value = strings::Substitute(
-            "com.google.protobuf.nano.InternalNano.stringDefaultValue(\"$0\")",
-            CEscape(descriptor->default_value_string()));
-      }
+      // Strings where some chars are non-ASCII. We need to save the
+      // default value.
+      (*variables)["default"] = DefaultValue(params, descriptor);
+      (*variables)["default_constant"] = FieldDefaultConstantName(descriptor);
+      (*variables)["default_constant_value"] = strings::Substitute(
+          "com.google.protobuf.nano.InternalNano.stringDefaultValue(\"$0\")",
+          CEscape(descriptor->default_value_string()));
       (*variables)["default_copy_if_needed"] = (*variables)["default"];
     }
-    (*variables)["default_constant_value"] = default_value;
   } else {
+    // Non-string, non-bytes field. Defaults are literals.
+    (*variables)["default"] = DefaultValue(params, descriptor);
     (*variables)["default_copy_if_needed"] = (*variables)["default"];
   }
   (*variables)["boxed_type"] = BoxedPrimitiveTypeName(GetJavaType(descriptor));
@@ -306,12 +312,29 @@ PrimitiveFieldGenerator(const FieldDescriptor* descriptor, const Params& params)
 
 PrimitiveFieldGenerator::~PrimitiveFieldGenerator() {}
 
-void PrimitiveFieldGenerator::
-GenerateMembers(io::Printer* printer) const {
-  if (variables_.find("default_constant_value") != variables_.end()) {
-    // Those primitive types that need a saved default.
+bool PrimitiveFieldGenerator::SavedDefaultNeeded() const {
+  return variables_.find("default_constant") != variables_.end();
+}
+
+void PrimitiveFieldGenerator::GenerateInitSavedDefaultCode(io::Printer* printer) const {
+  if (variables_.find("default_constant") != variables_.end()) {
     printer->Print(variables_,
-      "private static final $type$ $default_constant$ = $default_constant_value$;\n");
+      "$default_constant$ = $default_constant_value$;\n");
+  }
+}
+
+void PrimitiveFieldGenerator::
+GenerateMembers(io::Printer* printer, bool lazy_init) const {
+  if (variables_.find("default_constant") != variables_.end()) {
+    // Those primitive types that need a saved default.
+    if (lazy_init) {
+      printer->Print(variables_,
+        "private static $type$ $default_constant$;\n");
+    } else {
+      printer->Print(variables_,
+        "private static final $type$ $default_constant$ =\n"
+        "    $default_constant_value$;\n");
+    }
   }
 
   printer->Print(variables_,
@@ -514,11 +537,30 @@ AccessorPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
 
 AccessorPrimitiveFieldGenerator::~AccessorPrimitiveFieldGenerator() {}
 
+bool AccessorPrimitiveFieldGenerator::SavedDefaultNeeded() const {
+  return variables_.find("default_constant") != variables_.end();
+}
+
 void AccessorPrimitiveFieldGenerator::
-GenerateMembers(io::Printer* printer) const {
-  if (variables_.find("default_constant_value") != variables_.end()) {
+GenerateInitSavedDefaultCode(io::Printer* printer) const {
+  if (variables_.find("default_constant") != variables_.end()) {
     printer->Print(variables_,
-      "private static final $type$ $default_constant$ = $default_constant_value$;\n");
+      "$default_constant$ = $default_constant_value$;\n");
+  }
+}
+
+void AccessorPrimitiveFieldGenerator::
+GenerateMembers(io::Printer* printer, bool lazy_init) const {
+  if (variables_.find("default_constant") != variables_.end()) {
+    // Those primitive types that need a saved default.
+    if (lazy_init) {
+      printer->Print(variables_,
+        "private static $type$ $default_constant$;\n");
+    } else {
+      printer->Print(variables_,
+        "private static final $type$ $default_constant$ =\n"
+        "    $default_constant_value$;\n");
+    }
   }
   printer->Print(variables_,
     "private $type$ $name$_;\n"
@@ -671,7 +713,7 @@ RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor, const Params&
 RepeatedPrimitiveFieldGenerator::~RepeatedPrimitiveFieldGenerator() {}
 
 void RepeatedPrimitiveFieldGenerator::
-GenerateMembers(io::Printer* printer) const {
+GenerateMembers(io::Printer* printer, bool /*unused init_defaults*/) const {
   printer->Print(variables_,
     "public $type$[] $name$;\n");
 }

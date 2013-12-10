@@ -46,6 +46,19 @@ namespace javanano {
 
 FieldGenerator::~FieldGenerator() {}
 
+bool FieldGenerator::SavedDefaultNeeded() const {
+  // No saved default for this field by default.
+  // Subclasses whose instances may need saved defaults will override this
+  // and return the appropriate value.
+  return false;
+}
+
+void FieldGenerator::GenerateInitSavedDefaultCode(io::Printer* printer) const {
+  // No saved default for this field by default.
+  // Subclasses whose instances may need saved defaults will override this
+  // and generate the appropriate init code to the printer.
+}
+
 void FieldGenerator::GenerateMergingCodeFromPacked(io::Printer* printer) const {
   // Reaching here indicates a bug. Cases are:
   //   - This FieldGenerator should support packing, but this method should be
@@ -56,24 +69,26 @@ void FieldGenerator::GenerateMergingCodeFromPacked(io::Printer* printer) const {
              << "called on field generator that does not support packing.";
 }
 
-FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor, const Params &params)
+// =============================================
+
+FieldGeneratorMap::FieldGeneratorMap(
+    const Descriptor* descriptor, const Params &params)
   : descriptor_(descriptor),
     field_generators_(
-      new scoped_ptr<FieldGenerator>[descriptor->field_count()]),
-    extension_generators_(
-      new scoped_ptr<FieldGenerator>[descriptor->extension_count()]) {
+      new scoped_ptr<FieldGenerator>[descriptor->field_count()]) {
 
   int next_has_bit_index = 0;
+  bool saved_defaults_needed = false;
   // Construct all the FieldGenerators.
   for (int i = 0; i < descriptor->field_count(); i++) {
-    field_generators_[i].reset(
-        MakeGenerator(descriptor->field(i), params, &next_has_bit_index));
-  }
-  for (int i = 0; i < descriptor->extension_count(); i++) {
-    extension_generators_[i].reset(
-        MakeGenerator(descriptor->extension(i), params, &next_has_bit_index));
+    FieldGenerator* field_generator = MakeGenerator(
+        descriptor->field(i), params, &next_has_bit_index);
+    saved_defaults_needed = saved_defaults_needed
+        || field_generator->SavedDefaultNeeded();
+    field_generators_[i].reset(field_generator);
   }
   total_bits_ = next_has_bit_index;
+  saved_defaults_needed_ = saved_defaults_needed;
 }
 
 FieldGenerator* FieldGeneratorMap::MakeGenerator(const FieldDescriptor* field,
@@ -120,10 +135,6 @@ const FieldGenerator& FieldGeneratorMap::get(
     const FieldDescriptor* field) const {
   GOOGLE_CHECK_EQ(field->containing_type(), descriptor_);
   return *field_generators_[field->index()];
-}
-
-const FieldGenerator& FieldGeneratorMap::get_extension(int index) const {
-  return *extension_generators_[index];
 }
 
 }  // namespace javanano
