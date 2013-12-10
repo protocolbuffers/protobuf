@@ -507,9 +507,9 @@ optional_field_style={default,accessors,reftypes} (default: default)
   useful when you need to serialize a field with the default value, or check
   if a field has been explicitly set to its default value from the wire.
 
-  In the 'accessors' style, required fields are still translated to one
-  public mutable Java field each, and repeated fields are still translated
-  to arrays. No accessors are generated for them.
+  In the 'accessors' style, required and nested message fields are still
+  translated to one public mutable Java field each, repeated fields are still
+  translated to arrays. No accessors are generated for them.
 
   IMPORTANT: When using the 'accessors' style, ProGuard should always
   be enabled with optimization (don't use -dontoptimize) and allowing
