@@ -62,7 +62,7 @@ public final class MessageNanoPrinter {
 
         StringBuffer buf = new StringBuffer();
         try {
-            print(null, message.getClass(), message, new StringBuffer(), buf);
+            print(null, message, new StringBuffer(), buf);
         } catch (IllegalAccessException e) {
             return "Error printing proto: " + e.getMessage();
         }
@@ -70,33 +70,32 @@ public final class MessageNanoPrinter {
     }
 
     /**
-     * Function that will print the given message/class into the StringBuffer.
+     * Function that will print the given message/field into the StringBuffer.
      * Meant to be called recursively.
      *
      * @param identifier the identifier to use, or {@code null} if this is the root message to
      *        print.
-     * @param clazz the class of {@code message}.
-     * @param message the value to print. May in fact be a primitive value or byte array and not a
+     * @param object the value to print. May in fact be a primitive value or byte array and not a
      *        message.
      * @param indentBuf the indentation each line should begin with.
      * @param buf the output buffer.
      */
-    private static void print(String identifier, Class<?> clazz, Object message,
+    private static void print(String identifier, Object object,
             StringBuffer indentBuf, StringBuffer buf) throws IllegalAccessException {
-        if (message == null) {
+        if (object == null) {
             // This can happen if...
             //   - we're about to print a message, String, or byte[], but it not present;
             //   - we're about to print a primitive, but "reftype" optional style is enabled, and
             //     the field is unset.
             // In both cases the appropriate behavior is to output nothing.
-        } else if (MessageNano.class.isAssignableFrom(clazz)) {  // Nano proto message
+        } else if (object instanceof MessageNano) {  // Nano proto message
             int origIndentBufLength = indentBuf.length();
             if (identifier != null) {
                 buf.append(indentBuf).append(deCamelCaseify(identifier)).append(" <\n");
                 indentBuf.append(INDENT);
             }
 
-            for (Field field : clazz.getFields()) {
+            for (Field field : object.getClass().getFields()) {
                 // Proto fields are public, non-static variables that do not begin or end with '_'
                 int modifiers = field.getModifiers();
                 String fieldName = field.getName();
@@ -106,24 +105,24 @@ public final class MessageNanoPrinter {
                     continue;
                 }
 
-                Class <?> fieldType = field.getType();
-                Object value = field.get(message);
+                Class<?> fieldType = field.getType();
+                Object value = field.get(object);
 
                 if (fieldType.isArray()) {
                     Class<?> arrayType = fieldType.getComponentType();
 
                     // bytes is special since it's not repeated, but is represented by an array
                     if (arrayType == byte.class) {
-                        print(fieldName, fieldType, value, indentBuf, buf);
+                        print(fieldName, value, indentBuf, buf);
                     } else {
                         int len = value == null ? 0 : Array.getLength(value);
                         for (int i = 0; i < len; i++) {
                             Object elem = Array.get(value, i);
-                            print(fieldName, arrayType, elem, indentBuf, buf);
+                            print(fieldName, elem, indentBuf, buf);
                         }
                     }
                 } else {
-                    print(fieldName, fieldType, value, indentBuf, buf);
+                    print(fieldName, value, indentBuf, buf);
                 }
             }
             if (identifier != null) {
@@ -134,13 +133,13 @@ public final class MessageNanoPrinter {
             // Non-null primitive value
             identifier = deCamelCaseify(identifier);
             buf.append(indentBuf).append(identifier).append(": ");
-            if (message instanceof String) {
-                String stringMessage = sanitizeString((String) message);
+            if (object instanceof String) {
+                String stringMessage = sanitizeString((String) object);
                 buf.append("\"").append(stringMessage).append("\"");
-            } else if (message instanceof byte[]) {
-                appendQuotedBytes((byte[]) message, buf);
+            } else if (object instanceof byte[]) {
+                appendQuotedBytes((byte[]) object, buf);
             } else {
-                buf.append(message);
+                buf.append(object);
             }
             buf.append("\n");
         }

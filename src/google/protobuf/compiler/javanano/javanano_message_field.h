@@ -46,11 +46,12 @@ namespace javanano {
 
 class MessageFieldGenerator : public FieldGenerator {
  public:
-  explicit MessageFieldGenerator(const FieldDescriptor* descriptor, const Params& params);
+  explicit MessageFieldGenerator(
+      const FieldDescriptor* descriptor, const Params& params);
   ~MessageFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
-  void GenerateMembers(io::Printer* printer) const;
+  void GenerateMembers(io::Printer* printer, bool lazy_init) const;
   void GenerateClearCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
@@ -72,7 +73,7 @@ class RepeatedMessageFieldGenerator : public FieldGenerator {
   ~RepeatedMessageFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
-  void GenerateMembers(io::Printer* printer) const;
+  void GenerateMembers(io::Printer* printer, bool lazy_init) const;
   void GenerateClearCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;

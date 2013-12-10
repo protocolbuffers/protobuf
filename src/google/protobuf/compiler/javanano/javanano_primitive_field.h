@@ -46,11 +46,14 @@ namespace javanano {
 
 class PrimitiveFieldGenerator : public FieldGenerator {
  public:
-  explicit PrimitiveFieldGenerator(const FieldDescriptor* descriptor, const Params &params);
+  explicit PrimitiveFieldGenerator(
+      const FieldDescriptor* descriptor, const Params &params);
   ~PrimitiveFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
-  void GenerateMembers(io::Printer* printer) const;
+  bool SavedDefaultNeeded() const;
+  void GenerateInitSavedDefaultCode(io::Printer* printer) const;
+  void GenerateMembers(io::Printer* printer, bool lazy_init) const;
   void GenerateClearCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
@@ -69,12 +72,14 @@ class PrimitiveFieldGenerator : public FieldGenerator {
 
 class AccessorPrimitiveFieldGenerator : public FieldGenerator {
  public:
-  explicit AccessorPrimitiveFieldGenerator( const FieldDescriptor* descriptor,
+  explicit AccessorPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
       const Params &params, int has_bit_index);
   ~AccessorPrimitiveFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
-  void GenerateMembers(io::Printer* printer) const;
+  bool SavedDefaultNeeded() const;
+  void GenerateInitSavedDefaultCode(io::Printer* printer) const;
+  void GenerateMembers(io::Printer* printer, bool lazy_init) const;
   void GenerateClearCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
@@ -95,7 +100,7 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
   ~RepeatedPrimitiveFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
-  void GenerateMembers(io::Printer* printer) const;
+  void GenerateMembers(io::Printer* printer, bool lazy_init) const;
   void GenerateClearCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateMergingCodeFromPacked(io::Printer* printer) const;
