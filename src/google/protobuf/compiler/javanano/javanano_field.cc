@@ -78,8 +78,9 @@ FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor, const Params 
 
 FieldGenerator* FieldGeneratorMap::MakeGenerator(const FieldDescriptor* field,
     const Params &params, int* next_has_bit_index) {
+  JavaType java_type = GetJavaType(field);
   if (field->is_repeated()) {
-    switch (GetJavaType(field)) {
+    switch (java_type) {
       case JAVATYPE_MESSAGE:
         return new RepeatedMessageFieldGenerator(field, params);
       case JAVATYPE_ENUM:
@@ -87,14 +88,13 @@ FieldGenerator* FieldGeneratorMap::MakeGenerator(const FieldDescriptor* field,
       default:
         return new RepeatedPrimitiveFieldGenerator(field, params);
     }
-  } else if (params.optional_field_accessors() && field->is_optional()) {
+  } else if (params.optional_field_accessors() && field->is_optional()
+      && java_type != JAVATYPE_MESSAGE) {
     // We need a has-bit for each primitive/enum field because their default
     // values could be same as explicitly set values. But we don't need it
     // for a message field because they have no defaults and Nano uses 'null'
     // for unset messages, which cannot be set explicitly.
-    switch (GetJavaType(field)) {
-      case JAVATYPE_MESSAGE:
-        return new AccessorMessageFieldGenerator(field, params);
+    switch (java_type) {
       case JAVATYPE_ENUM:
         return new AccessorEnumFieldGenerator(
             field, params, (*next_has_bit_index)++);
@@ -103,7 +103,7 @@ FieldGenerator* FieldGeneratorMap::MakeGenerator(const FieldDescriptor* field,
             field, params, (*next_has_bit_index)++);
     }
   } else {
-    switch (GetJavaType(field)) {
+    switch (java_type) {
       case JAVATYPE_MESSAGE:
         return new MessageFieldGenerator(field, params);
       case JAVATYPE_ENUM:
