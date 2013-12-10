@@ -155,14 +155,6 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "    com.google.protobuf.nano.MessageNano {\n");
   }
   printer->Indent();
-  printer->Print(
-    "\n"
-    "public static final $classname$[] EMPTY_ARRAY = {};\n"
-    "\n"
-    "public $classname$() {\n"
-    "  clear();\n"
-    "}\n",
-    "classname", descriptor_->name());
 
   // Nested types and extensions
   for (int i = 0; i < descriptor_->extension_count(); i++) {
@@ -177,6 +169,42 @@ void MessageGenerator::Generate(io::Printer* printer) {
     MessageGenerator(descriptor_->nested_type(i), params_).Generate(printer);
   }
 
+  // Lazy initialization of otherwise static final fields can help prevent the
+  // class initializer from being generated. We want to prevent it because it
+  // stops ProGuard from inlining any methods in this class into call sites and
+  // therefore reducing the method count. However, extensions are best kept as
+  // public static final fields with initializers, so with their existence we
+  // won't bother with lazy initialization.
+  bool lazy_init = descriptor_->extension_count() == 0;
+
+  // Empty array
+  if (lazy_init) {
+    printer->Print(
+      "\n"
+      "private static volatile $classname$[] _emptyArray;\n"
+      "public static $classname$[] emptyArray() {\n"
+      "  // Lazily initializes the empty array\n"
+      "  if (_emptyArray == null) {\n"
+      "    synchronized (\n"
+      "        com.google.protobuf.nano.InternalNano.LAZY_INIT_LOCK) {\n"
+      "      if (_emptyArray == null) {\n"
+      "        _emptyArray = new $classname$[0];\n"
+      "      }\n"
+      "    }\n"
+      "  }\n"
+      "  return _emptyArray;\n"
+      "}\n",
+      "classname", descriptor_->name());
+  } else {
+    printer->Print(
+      "\n"
+      "private static final $classname$[] EMPTY_ARRAY = {};\n"
+      "public static $classname$[] emptyArray() {\n"
+      "  return EMPTY_ARRAY;\n"
+      "}\n",
+      "classname", descriptor_->name());
+  }
+
   // Integers for bit fields
   int totalInts = (field_generators_.total_bits() + 31) / 32;
   if (totalInts > 0) {
@@ -187,12 +215,56 @@ void MessageGenerator::Generate(io::Printer* printer) {
     }
   }
 
-  // Fields
+  // Fields and maybe their default values
   for (int i = 0; i < descriptor_->field_count(); i++) {
     printer->Print("\n");
     PrintFieldComment(printer, descriptor_->field(i));
-    field_generators_.get(descriptor_->field(i)).GenerateMembers(printer);
+    field_generators_.get(descriptor_->field(i)).GenerateMembers(
+        printer, lazy_init);
   }
+
+  // Constructor, with lazy init code if needed
+  if (lazy_init && field_generators_.saved_defaults_needed()) {
+    printer->Print(
+      "\n"
+      "private static volatile boolean _classInitialized;\n"
+      "\n"
+      "public $classname$() {\n"
+      "  // Lazily initializes the field defaults\n"
+      "  if (!_classInitialized) {\n"
+      "    synchronized (\n"
+      "        com.google.protobuf.nano.InternalNano.LAZY_INIT_LOCK) {\n"
+      "      if (!_classInitialized) {\n",
+      "classname", descriptor_->name());
+    printer->Indent();
+    printer->Indent();
+    printer->Indent();
+    printer->Indent();
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+      field_generators_.get(descriptor_->field(i))
+          .GenerateInitSavedDefaultCode(printer);
+    }
+    printer->Outdent();
+    printer->Outdent();
+    printer->Outdent();
+    printer->Outdent();
+    printer->Print(
+      "        _classInitialized = true;\n"
+      "      }\n"
+      "    }\n"
+      "  }\n"
+      "  clear();\n"
+      "}\n");
+  } else {
+    printer->Print(
+      "\n"
+      "public $classname$() {\n"
+      "  clear();\n"
+      "}\n",
+      "classname", descriptor_->name());
+  }
+
+  // Other methods in this class
 
   GenerateClear(printer);
 
