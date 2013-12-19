@@ -142,7 +142,8 @@ public abstract class MessageNano {
      * Returns a string that is (mostly) compatible with ProtoBuffer's TextFormat. Note that groups
      * (which are deprecated) are not serialized with the correct field name.
      *
-     * <p>This is implemented using reflection, so it is not especially fast.
+     * <p>This is implemented using reflection, so it is not especially fast nor is it guaranteed
+     * to find all fields if you have method removal turned on for proguard.
      */
     @Override
     public String toString() {
