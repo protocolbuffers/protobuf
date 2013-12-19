@@ -32,6 +32,8 @@ package com.google.protobuf.nano;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 /**
@@ -65,6 +67,8 @@ public final class MessageNanoPrinter {
             print(null, message, new StringBuffer(), buf);
         } catch (IllegalAccessException e) {
             return "Error printing proto: " + e.getMessage();
+        } catch (InvocationTargetException e) {
+            return "Error printing proto: " + e.getMessage();
         }
         return buf.toString();
     }
@@ -81,7 +85,8 @@ public final class MessageNanoPrinter {
      * @param buf the output buffer.
      */
     private static void print(String identifier, Object object,
-            StringBuffer indentBuf, StringBuffer buf) throws IllegalAccessException {
+            StringBuffer indentBuf, StringBuffer buf) throws IllegalAccessException,
+            InvocationTargetException {
         if (object == null) {
             // This can happen if...
             //   - we're about to print a message, String, or byte[], but it not present;
@@ -94,35 +99,71 @@ public final class MessageNanoPrinter {
                 buf.append(indentBuf).append(deCamelCaseify(identifier)).append(" <\n");
                 indentBuf.append(INDENT);
             }
+            Class<?> clazz = object.getClass();
 
-            for (Field field : object.getClass().getFields()) {
-                // Proto fields are public, non-static variables that do not begin or end with '_'
+            // Proto fields follow one of two formats:
+            //
+            // 1) Public, non-static variables that do not begin or end with '_'
+            // Find and print these using declared public fields
+            for (Field field : clazz.getFields()) {
                 int modifiers = field.getModifiers();
                 String fieldName = field.getName();
-                if ((modifiers & Modifier.PUBLIC) != Modifier.PUBLIC
-                        || (modifiers & Modifier.STATIC) == Modifier.STATIC
-                        || fieldName.startsWith("_") || fieldName.endsWith("_")) {
-                    continue;
-                }
 
-                Class<?> fieldType = field.getType();
-                Object value = field.get(object);
+                if ((modifiers & Modifier.PUBLIC) == Modifier.PUBLIC
+                        && (modifiers & Modifier.STATIC) != Modifier.STATIC
+                        && !fieldName.startsWith("_")
+                        && !fieldName.endsWith("_")) {
+                    Class<?> fieldType = field.getType();
+                    Object value = field.get(object);
 
-                if (fieldType.isArray()) {
-                    Class<?> arrayType = fieldType.getComponentType();
+                    if (fieldType.isArray()) {
+                        Class<?> arrayType = fieldType.getComponentType();
 
-                    // bytes is special since it's not repeated, but is represented by an array
-                    if (arrayType == byte.class) {
-                        print(fieldName, value, indentBuf, buf);
-                    } else {
-                        int len = value == null ? 0 : Array.getLength(value);
-                        for (int i = 0; i < len; i++) {
-                            Object elem = Array.get(value, i);
-                            print(fieldName, elem, indentBuf, buf);
+                        // bytes is special since it's not repeated, but is represented by an array
+                        if (arrayType == byte.class) {
+                            print(fieldName, value, indentBuf, buf);
+                        } else {
+                            int len = value == null ? 0 : Array.getLength(value);
+                            for (int i = 0; i < len; i++) {
+                                Object elem = Array.get(value, i);
+                                print(fieldName, elem, indentBuf, buf);
+                            }
                         }
+                    } else {
+                        print(fieldName, value, indentBuf, buf);
                     }
-                } else {
-                    print(fieldName, value, indentBuf, buf);
+                }
+            }
+
+            // 2) Fields that are accessed via getter methods (when accessors
+            //    mode is turned on)
+            // Find and print these using getter methods.
+            for (Method method : clazz.getMethods()) {
+                String name = method.getName();
+                // Check for the setter accessor method since getters and hazzers both have
+                // non-proto-field name collisions (hashCode() and getSerializedSize())
+                if (name.startsWith("set")) {
+                    String subfieldName = name.substring(3);
+
+                    Method hazzer = null;
+                    try {
+                        hazzer = clazz.getMethod("has" + subfieldName);
+                    } catch (NoSuchMethodException e) {
+                        continue;
+                    }
+                    // If hazzer does't exist or returns false, no need to continue
+                    if (!(Boolean) hazzer.invoke(object)) {
+                        continue;
+                    }
+
+                    Method getter = null;
+                    try {
+                        getter = clazz.getMethod("get" + subfieldName);
+                    } catch (NoSuchMethodException e) {
+                        continue;
+                    }
+
+                    print(subfieldName, getter.invoke(object), indentBuf, buf);
                 }
             }
             if (identifier != null) {
