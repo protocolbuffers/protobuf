@@ -2553,8 +2553,7 @@ public class NanoTest extends TestCase {
     assertTrue(protoPrint.contains("optional_bytes: \"\\\"\\000\\001\\010\""));
     assertTrue(protoPrint.contains("optional_group <\n  a: 15\n>"));
 
-    assertTrue(protoPrint.contains("repeated_int64: 1"));
-    assertTrue(protoPrint.contains("repeated_int64: -1"));
+    assertTrue(protoPrint.contains("repeated_int64: 1\nrepeated_int64: -1"));
     assertFalse(protoPrint.contains("repeated_bytes: \"\"")); // null should be dropped
     assertTrue(protoPrint.contains("repeated_bytes: \"hello\""));
     assertTrue(protoPrint.contains("repeated_group <\n  a: -27\n>\n"
@@ -2568,6 +2567,42 @@ public class NanoTest extends TestCase {
     assertTrue(protoPrint.contains("default_string: \"hello\""));
     assertFalse(protoPrint.contains("repeated_string_piece: \"\""));  // null should be dropped
     assertTrue(protoPrint.contains("repeated_string_piece: \"world\""));
+  }
+
+  public void testMessageNanoPrinterAccessors() throws Exception {
+    TestNanoAccessors msg = new TestNanoAccessors();
+    msg.setOptionalInt32(13);
+    msg.setOptionalString("foo");
+    msg.setOptionalBytes(new byte[] {'"', '\0', 1, 8});
+    msg.optionalNestedMessage = new TestNanoAccessors.NestedMessage();
+    msg.optionalNestedMessage.setBb(7);
+    msg.setOptionalNestedEnum(TestNanoAccessors.BAZ);
+    msg.repeatedInt32 = new int[] { 1, -1 };
+    msg.repeatedString = new String[] { "Hello", "world" };
+    msg.repeatedBytes = new byte[2][];
+    msg.repeatedBytes[1] = new byte[] {'h', 'e', 'l', 'l', 'o'};
+    msg.repeatedNestedMessage = new TestNanoAccessors.NestedMessage[2];
+    msg.repeatedNestedMessage[0] = new TestNanoAccessors.NestedMessage();
+    msg.repeatedNestedMessage[0].setBb(5);
+    msg.repeatedNestedMessage[1] = new TestNanoAccessors.NestedMessage();
+    msg.repeatedNestedMessage[1].setBb(6);
+    msg.repeatedNestedEnum = new int[] { TestNanoAccessors.FOO, TestNanoAccessors.BAR };
+    msg.id = 33;
+
+    String protoPrint = msg.toString();
+    assertTrue(protoPrint.contains("optional_int32: 13"));
+    assertTrue(protoPrint.contains("optional_string: \"foo\""));
+    assertTrue(protoPrint.contains("optional_bytes: \"\\\"\\000\\001\\010\""));
+    assertTrue(protoPrint.contains("optional_nested_message <\n  bb: 7\n>"));
+    assertTrue(protoPrint.contains("optional_nested_enum: 3"));
+    assertTrue(protoPrint.contains("repeated_int32: 1\nrepeated_int32: -1"));
+    assertTrue(protoPrint.contains("repeated_string: \"Hello\"\nrepeated_string: \"world\""));
+    assertFalse(protoPrint.contains("repeated_bytes: \"\"")); // null should be dropped
+    assertTrue(protoPrint.contains("repeated_bytes: \"hello\""));
+    assertTrue(protoPrint.contains("repeated_nested_message <\n  bb: 5\n>\n"
+            + "repeated_nested_message <\n  bb: 6\n>"));
+    assertTrue(protoPrint.contains("repeated_nested_enum: 1\nrepeated_nested_enum: 2"));
+    assertTrue(protoPrint.contains("id: 33"));
   }
 
   public void testExtensions() throws Exception {
