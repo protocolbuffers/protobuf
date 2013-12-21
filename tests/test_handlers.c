@@ -18,13 +18,13 @@ static bool startmsg(void *c, const void *hd) {
 }
 
 static void test_error() {
-  upb_handlers *h = upb_handlers_new(GOOGLE_PROTOBUF_DESCRIPTORPROTO, NULL, &h);
+  upb_handlers *h = upb_handlers_new(GOOGLE_PROTOBUF_DESCRIPTORPROTO, &h);
 
   // Attempt to set the same handler twice causes error.
   ASSERT(upb_ok(upb_handlers_status(h)));
-  upb_handlers_setstartmsg(h, &startmsg, NULL, NULL);
+  upb_handlers_setstartmsg(h, &startmsg, NULL);
   ASSERT(upb_ok(upb_handlers_status(h)));
-  upb_handlers_setstartmsg(h, &startmsg, NULL, NULL);
+  upb_handlers_setstartmsg(h, &startmsg, NULL);
   ASSERT(!upb_ok(upb_handlers_status(h)));
   ASSERT(!upb_handlers_freeze(&h, 1, NULL));
 

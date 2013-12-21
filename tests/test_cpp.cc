@@ -9,8 +9,11 @@
 
 #include <stdio.h>
 #include <string.h>
+
 #include <iostream>
 #include <set>
+#include <type_traits>
+
 #include "upb/def.h"
 #include "upb/descriptor/reader.h"
 #include "upb/handlers.h"
@@ -25,39 +28,133 @@ void AssertInsert(T* const container, const typename T::value_type& val) {
   ASSERT(inserted);
 }
 
-static void TestCasts1() {
-  const upb::MessageDef* md = upb::MessageDef::New(&md);
-  const upb::Def* def = md->Upcast();
+static void TestCastsUpDown() {
+  upb::reffed_ptr<const upb::MessageDef> reffed_md(upb::MessageDef::New());
+  const upb::MessageDef* md = reffed_md.get();
+
+  // Upcast to reffed_ptr implicitly.
+  upb::reffed_ptr<const upb::Def> reffed_def = reffed_md;
+  ASSERT(reffed_def.get() == upb::upcast(reffed_md.get()));
+
+  // Upcast to raw pointer must be explicit.
+  const upb::Def* def = upb::upcast(md);
+  ASSERT(def == reffed_def.get());
+  const upb::Def* def2 = upb::upcast(reffed_md.get());
+  ASSERT(def2 == reffed_def.get());
+
+  // Downcast/dyncast of raw pointer uses upb::down_cast/upb::dyn_cast.
   const upb::MessageDef* md2 = upb::down_cast<const upb::MessageDef*>(def);
   const upb::MessageDef* md3 = upb::dyn_cast<const upb::MessageDef*>(def);
-
   ASSERT(md == md2);
   ASSERT(md == md3);
 
-  const upb::EnumDef* ed = upb::dyn_cast<const upb::EnumDef*>(def);
-  ASSERT(!ed);
+  // Downcast/dyncast of reffed_ptr uses down_cast/dyn_cast members.
+  upb::reffed_ptr<const upb::MessageDef> md4(
+      reffed_def.down_cast<const upb::MessageDef>());
+  upb::reffed_ptr<const upb::MessageDef> md5(
+      reffed_def.dyn_cast<const upb::MessageDef>());
+  ASSERT(md == md4.get());
+  ASSERT(md == md5.get());
 
-  md->Unref(&md);
+  // Failed dyncast returns NULL.
+  ASSERT(upb::dyn_cast<const upb::EnumDef*>(def) == NULL);
+  ASSERT(reffed_def.dyn_cast<const upb::EnumDef>().get() == NULL);
 }
 
-static void TestCasts2() {
-  // Test non-const -> const cast.
-  upb::MessageDef* md = upb::MessageDef::New(&md);
-  upb::Def* def = md->Upcast();
-  const upb::MessageDef* const_md = upb::down_cast<const upb::MessageDef*>(def);
-  ASSERT(const_md == md);
-  md->Unref(&md);
+static void TestCastsConst0() {
+  // Should clean up properly even if it is not assigned to anything.
+  upb::MessageDef::New();
+}
+
+static void TestCastsConst1() {
+  // Test reffed mutable -> reffed mutable construction/assignment.
+  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
+  upb::MessageDef *md2 = md.get();
+  md = upb::MessageDef::New();
+  ASSERT(md.get());
+  ASSERT(md.get() != md2);
+}
+
+static void TestCastsConst2() {
+  // Test reffed mutable -> reffed mutable upcast construction/assignment.
+  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
+  upb::reffed_ptr<upb::Def> def = md;
+  ASSERT(upb::upcast(md.get()) == def.get());
+  def = md;
+  ASSERT(upb::upcast(md.get()) == def.get());
+}
+
+static void TestCastsConst3() {
+  // Test reffed mutable -> reffed mutable downcast.
+  upb::reffed_ptr<upb::Def> def(upb::MessageDef::New());
+  upb::reffed_ptr<upb::MessageDef> md = def.down_cast<upb::MessageDef>();
+  ASSERT(upb::upcast(md.get()) == def.get());
+}
+
+static void TestCastsConst4() {
+  // Test reffed mutable -> reffed mutable dyncast.
+  upb::reffed_ptr<upb::Def> def(upb::MessageDef::New());
+  upb::reffed_ptr<upb::MessageDef> md = def.dyn_cast<upb::MessageDef>();
+  ASSERT(upb::upcast(md.get()) == def.get());
+}
+
+static void TestCastsConst5() {
+  // Test reffed mutable -> reffed const construction/assignment.
+  upb::reffed_ptr<const upb::MessageDef> md(upb::MessageDef::New());
+  const upb::MessageDef *md2 = md.get();
+  md = upb::MessageDef::New();
+  ASSERT(md.get());
+  ASSERT(md.get() != md2);
+}
+
+static void TestCastsConst6() {
+  // Test reffed mutable -> reffed const upcast construction/assignment.
+  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
+  upb::reffed_ptr<const upb::Def> def = md;
+  ASSERT(upb::upcast(md.get()) == def.get());
+  def = md;
+  ASSERT(upb::upcast(md.get()) == def.get());
+}
+
+static void TestCastsConst7() {
+  // Test reffed mutable -> reffed const downcast.
+  upb::reffed_ptr<upb::Def> def(upb::MessageDef::New());
+  upb::reffed_ptr<const upb::MessageDef> md =
+      def.down_cast<const upb::MessageDef>();
+  ASSERT(upb::upcast(md.get()) == def.get());
+}
+
+static void TestCastsConst8() {
+  // Test reffed mutable -> reffed const dyncast.
+  upb::reffed_ptr<upb::Def> def(upb::MessageDef::New());
+  upb::reffed_ptr<const upb::MessageDef> md =
+      def.dyn_cast<const upb::MessageDef>();
+  ASSERT(upb::upcast(md.get()) == def.get());
+}
+
+static void TestCastsConst9() {
+  // Test plain mutable -> plain mutable upcast
+  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
+  upb::Def* def = upb::upcast(md.get());
+  ASSERT(upb::down_cast<upb::MessageDef*>(def) == md.get());
+}
+
+static void TestCastsConst10() {
+  // Test plain const -> plain const upcast
+  upb::reffed_ptr<const upb::MessageDef> md(upb::MessageDef::New());
+  const upb::Def* def = upb::upcast(md.get());
+  ASSERT(upb::down_cast<const upb::MessageDef*>(def) == md.get());
 }
 
 static void TestSymbolTable(const char *descriptor_file) {
-  upb::SymbolTable *s = upb::SymbolTable::New(&s);
+  upb::reffed_ptr<upb::SymbolTable> s(upb::SymbolTable::New());
   upb::Status status;
-  if (!upb::LoadDescriptorFileIntoSymtab(s, descriptor_file, &status)) {
-    std::cerr << "Couldn't load descriptor: " << status.GetString();
+  if (!upb::LoadDescriptorFileIntoSymtab(s.get(), descriptor_file, &status)) {
+    std::cerr << "Couldn't load descriptor: " << status.error_message();
     exit(1);
   }
-  const upb::MessageDef* md = s->LookupMessage("C", &md);
-  ASSERT(md);
+  upb::reffed_ptr<const upb::MessageDef> md(s->LookupMessage("C"));
+  ASSERT(md.get());
 
   // We want a def that satisfies this to test iteration.
   ASSERT(md->field_count() > 1);
@@ -65,15 +162,554 @@ static void TestSymbolTable(const char *descriptor_file) {
 #ifdef UPB_CXX11
   // Test range-based for.
   std::set<const upb::FieldDef*> fielddefs;
-  for (const upb::FieldDef* f : *md) {
+  for (const upb::FieldDef* f : *md.get()) {
     AssertInsert(&fielddefs, f);
-    ASSERT(f->containing_type() == md);
+    ASSERT(f->containing_type() == md.get());
   }
   ASSERT(fielddefs.size() == md->field_count());
 #endif
 
-  s->Unref(&s);
-  md->Unref(&md);
+  ASSERT(md.get());
+}
+
+static void TestCasts1() {
+  upb::reffed_ptr<const upb::MessageDef> md(upb::MessageDef::New());
+  const upb::Def* def = upb::upcast(md.get());
+  const upb::MessageDef* md2 = upb::down_cast<const upb::MessageDef*>(def);
+  const upb::MessageDef* md3 = upb::dyn_cast<const upb::MessageDef*>(def);
+
+  ASSERT(md.get() == md2);
+  ASSERT(md.get() == md3);
+
+  const upb::EnumDef* ed = upb::dyn_cast<const upb::EnumDef*>(def);
+  ASSERT(!ed);
+}
+
+static void TestCasts2() {
+  // Test mutable -> const cast.
+  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
+  upb::Def* def = upb::upcast(md.get());
+  const upb::MessageDef* const_md = upb::down_cast<const upb::MessageDef*>(def);
+  ASSERT(const_md == md.get());
+}
+
+//
+// Tests for registering and calling handlers in all their variants.
+// This test code is very repetitive because we have to declare each
+// handler function variant separately, and they all have different
+// signatures so it does not lend itself well to templates.
+//
+// We test three handler types:
+//   StartMessage (no data params)
+//   Int32        (1 data param (int32_t))
+//   String Buf   (2 data params (const char*, size_t))
+//
+// For each handler type we test all 8 handler variants:
+//   (handler data?) x  (function/method) x (returns {void, success})
+//
+// The one notable thing we don't test at the moment is
+// StartSequence/StartString handlers: these are different from StartMessage()
+// in that they return void* for the sub-closure.  But this is exercised in
+// other tests.
+//
+
+static const int kExpectedHandlerData = 1232323;
+
+class StringBufTesterBase {
+ public:
+  static const upb::FieldDef::Type kFieldType = UPB_TYPE_STRING;
+
+  StringBufTesterBase() : seen_(false), handler_data_val_(0) {}
+
+  void CallAndVerify(upb::Sink* sink, const upb::FieldDef* f) {
+    upb::Handlers::Selector start;
+    ASSERT(upb::Handlers::GetSelector(f, UPB_HANDLER_STARTSTR, &start));
+    upb::Handlers::Selector str;
+    ASSERT(upb::Handlers::GetSelector(f, UPB_HANDLER_STRING, &str));
+
+    ASSERT(!seen_);
+    upb::Sink sub;
+    sink->StartMessage();
+    sink->StartString(start, 0, &sub);
+    sub.PutStringBuffer(str, NULL, 5);
+    ASSERT(seen_);
+    ASSERT(len_ == 5);
+    ASSERT(handler_data_val_ == kExpectedHandlerData);
+  }
+
+ protected:
+  bool seen_;
+  int handler_data_val_;
+  size_t len_;
+};
+
+// Test all 8 combinations of:
+//   (handler data?) x  (function/method) x (returns {void, size_t})
+
+class StringBufTesterVoidFunctionNoHandlerData : public StringBufTesterBase {
+ public:
+  typedef StringBufTesterVoidFunctionNoHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStringHandler(f, UpbMakeHandler(&Handler)));
+    handler_data_val_ = kExpectedHandlerData;
+  }
+
+ private:
+  static void Handler(ME* t, const char *buf, size_t len) {
+    t->seen_ = true;
+    t->len_ = len;
+  }
+};
+
+class StringBufTesterSizeTFunctionNoHandlerData : public StringBufTesterBase {
+ public:
+  typedef StringBufTesterSizeTFunctionNoHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStringHandler(f, UpbMakeHandler(&Handler)));
+    handler_data_val_ = kExpectedHandlerData;
+  }
+
+ private:
+  static size_t Handler(ME* t, const char *buf, size_t len) {
+    t->seen_ = true;
+    t->len_ = len;
+    return len;
+  }
+};
+
+class StringBufTesterVoidMethodNoHandlerData : public StringBufTesterBase {
+ public:
+  typedef StringBufTesterVoidMethodNoHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStringHandler(f, UpbMakeHandler(&ME::Handler)));
+    handler_data_val_ = kExpectedHandlerData;
+  }
+
+ private:
+  void Handler(const char *buf, size_t len) {
+    seen_ = true;
+    len_ = len;
+  }
+};
+
+class StringBufTesterSizeTMethodNoHandlerData : public StringBufTesterBase {
+ public:
+  typedef StringBufTesterSizeTMethodNoHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStringHandler(f, UpbMakeHandler(&ME::Handler)));
+    handler_data_val_ = kExpectedHandlerData;
+  }
+
+ private:
+  size_t Handler(const char *buf, size_t len) {
+    seen_ = true;
+    len_ = len;
+    return len;
+  }
+};
+
+class StringBufTesterVoidFunctionWithHandlerData : public StringBufTesterBase {
+ public:
+  typedef StringBufTesterVoidFunctionWithHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStringHandler(
+        f, UpbBind(&Handler, new int(kExpectedHandlerData))));
+  }
+
+ private:
+  static void Handler(ME* t, const int* hd, const char *buf, size_t len) {
+    t->handler_data_val_ = *hd;
+    t->seen_ = true;
+    t->len_ = len;
+  }
+};
+
+class StringBufTesterSizeTFunctionWithHandlerData : public StringBufTesterBase {
+ public:
+  typedef StringBufTesterSizeTFunctionWithHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStringHandler(
+        f, UpbBind(&Handler, new int(kExpectedHandlerData))));
+  }
+
+ private:
+  static size_t Handler(ME* t, const int* hd, const char *buf, size_t len) {
+    t->handler_data_val_ = *hd;
+    t->seen_ = true;
+    t->len_ = len;
+    return len;
+  }
+};
+
+class StringBufTesterVoidMethodWithHandlerData : public StringBufTesterBase {
+ public:
+  typedef StringBufTesterVoidMethodWithHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStringHandler(
+        f, UpbBind(&ME::Handler, new int(kExpectedHandlerData))));
+  }
+
+ private:
+  void Handler(const int* hd, const char *buf, size_t len) {
+    handler_data_val_ = *hd;
+    seen_ = true;
+    len_ = len;
+  }
+};
+
+class StringBufTesterSizeTMethodWithHandlerData : public StringBufTesterBase {
+ public:
+  typedef StringBufTesterSizeTMethodWithHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStringHandler(
+        f, UpbBind(&ME::Handler, new int(kExpectedHandlerData))));
+  }
+
+ private:
+  size_t Handler(const int* hd, const char *buf, size_t len) {
+    handler_data_val_ = *hd;
+    seen_ = true;
+    len_ = len;
+    return len;
+  }
+};
+
+class StartMsgTesterBase {
+ public:
+  // We don't need the FieldDef it will create, but the test harness still
+  // requires that we provide one.
+  static const upb::FieldDef::Type kFieldType = UPB_TYPE_STRING;
+
+  StartMsgTesterBase() : seen_(false), handler_data_val_(0) {}
+
+  void CallAndVerify(upb::Sink* sink, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(!seen_);
+    sink->StartMessage();
+    ASSERT(seen_);
+    ASSERT(handler_data_val_ == kExpectedHandlerData);
+  }
+
+ protected:
+  bool seen_;
+  int handler_data_val_;
+};
+
+// Test all 8 combinations of:
+//   (handler data?) x  (function/method) x (returns {void, bool})
+
+class StartMsgTesterVoidFunctionNoHandlerData : public StartMsgTesterBase {
+ public:
+  typedef StartMsgTesterVoidFunctionNoHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStartMessageHandler(UpbMakeHandler(&Handler)));
+    handler_data_val_ = kExpectedHandlerData;
+  }
+
+ private:
+  //static void Handler(ME* t) {
+  static void Handler(ME* t) {
+    t->seen_ = true;
+  }
+};
+
+class StartMsgTesterBoolFunctionNoHandlerData : public StartMsgTesterBase {
+ public:
+  typedef StartMsgTesterBoolFunctionNoHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStartMessageHandler(UpbMakeHandler(&Handler)));
+    handler_data_val_ = kExpectedHandlerData;
+  }
+
+ private:
+  static bool Handler(ME* t) {
+    t->seen_ = true;
+    return true;
+  }
+};
+
+class StartMsgTesterVoidMethodNoHandlerData : public StartMsgTesterBase {
+ public:
+  typedef StartMsgTesterVoidMethodNoHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStartMessageHandler(UpbMakeHandler(&ME::Handler)));
+    handler_data_val_ = kExpectedHandlerData;
+  }
+
+ private:
+  void Handler() {
+    seen_ = true;
+  }
+};
+
+class StartMsgTesterBoolMethodNoHandlerData : public StartMsgTesterBase {
+ public:
+  typedef StartMsgTesterBoolMethodNoHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStartMessageHandler(UpbMakeHandler(&ME::Handler)));
+    handler_data_val_ = kExpectedHandlerData;
+  }
+
+ private:
+  bool Handler() {
+    seen_ = true;
+    return true;
+  }
+};
+
+class StartMsgTesterVoidFunctionWithHandlerData : public StartMsgTesterBase {
+ public:
+  typedef StartMsgTesterVoidFunctionWithHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStartMessageHandler(
+        UpbBind(&Handler, new int(kExpectedHandlerData))));
+  }
+
+ private:
+  static void Handler(ME* t, const int* hd) {
+    t->handler_data_val_ = *hd;
+    t->seen_ = true;
+  }
+};
+
+class StartMsgTesterBoolFunctionWithHandlerData : public StartMsgTesterBase {
+ public:
+  typedef StartMsgTesterBoolFunctionWithHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStartMessageHandler(
+        UpbBind(&Handler, new int(kExpectedHandlerData))));
+  }
+
+ private:
+  static bool Handler(ME* t, const int* hd) {
+    t->handler_data_val_ = *hd;
+    t->seen_ = true;
+    return true;
+  }
+};
+
+class StartMsgTesterVoidMethodWithHandlerData : public StartMsgTesterBase {
+ public:
+  typedef StartMsgTesterVoidMethodWithHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStartMessageHandler(
+        UpbBind(&ME::Handler, new int(kExpectedHandlerData))));
+  }
+
+ private:
+  void Handler(const int* hd) {
+    handler_data_val_ = *hd;
+    seen_ = true;
+  }
+};
+
+class StartMsgTesterBoolMethodWithHandlerData : public StartMsgTesterBase {
+ public:
+  typedef StartMsgTesterBoolMethodWithHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStartMessageHandler(
+        UpbBind(&ME::Handler, new int(kExpectedHandlerData))));
+  }
+
+ private:
+  bool Handler(const int* hd) {
+    handler_data_val_ = *hd;
+    seen_ = true;
+    return true;
+  }
+};
+
+class Int32ValueTesterBase {
+ public:
+  static const upb::FieldDef::Type kFieldType = UPB_TYPE_INT32;
+
+  Int32ValueTesterBase() : seen_(false), val_(0), handler_data_val_(0) {}
+
+  void CallAndVerify(upb::Sink* sink, const upb::FieldDef* f) {
+    upb::Handlers::Selector s;
+    ASSERT(upb::Handlers::GetSelector(f, UPB_HANDLER_INT32, &s));
+
+    ASSERT(!seen_);
+    sink->PutInt32(s, 5);
+    ASSERT(seen_);
+    ASSERT(handler_data_val_ == kExpectedHandlerData);
+    ASSERT(val_ == 5);
+  }
+
+ protected:
+  bool seen_;
+  int32_t val_;
+  int handler_data_val_;
+};
+
+// Test all 8 combinations of:
+//   (handler data?) x  (function/method) x (returns {void, bool})
+
+class ValueTesterInt32VoidFunctionNoHandlerData
+    : public Int32ValueTesterBase {
+ public:
+  typedef ValueTesterInt32VoidFunctionNoHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    ASSERT(h->SetInt32Handler(f, UpbMakeHandler(&Handler)));
+    handler_data_val_ = kExpectedHandlerData;
+  }
+
+ private:
+  static void Handler(ME* t, int32_t val) {
+    t->val_ = val;
+    t->seen_ = true;
+  }
+};
+
+class ValueTesterInt32BoolFunctionNoHandlerData
+    : public Int32ValueTesterBase {
+ public:
+  typedef ValueTesterInt32BoolFunctionNoHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    ASSERT(h->SetInt32Handler(f, UpbMakeHandler(&Handler)));
+    handler_data_val_ = kExpectedHandlerData;
+  }
+
+ private:
+  static bool Handler(ME* t, int32_t val) {
+    t->val_ = val;
+    t->seen_ = true;
+    return true;
+  }
+};
+
+class ValueTesterInt32VoidMethodNoHandlerData : public Int32ValueTesterBase {
+ public:
+  typedef ValueTesterInt32VoidMethodNoHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    ASSERT(h->SetInt32Handler(f, UpbMakeHandler(&ME::Handler)));
+    handler_data_val_ = kExpectedHandlerData;
+  }
+
+ private:
+  void Handler(int32_t val) {
+    val_ = val;
+    seen_ = true;
+  }
+};
+
+class ValueTesterInt32BoolMethodNoHandlerData : public Int32ValueTesterBase {
+ public:
+  typedef ValueTesterInt32BoolMethodNoHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    ASSERT(h->SetInt32Handler(f, UpbMakeHandler(&ME::Handler)));
+    handler_data_val_ = kExpectedHandlerData;
+  }
+
+ private:
+  bool Handler(int32_t val) {
+    val_ = val;
+    seen_ = true;
+    return true;
+  }
+};
+
+class ValueTesterInt32VoidFunctionWithHandlerData
+    : public Int32ValueTesterBase {
+ public:
+  typedef ValueTesterInt32VoidFunctionWithHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    ASSERT(h->SetInt32Handler(
+        f, UpbBind(&Handler, new int(kExpectedHandlerData))));
+  }
+
+ private:
+  static void Handler(ME* t, const int* hd, int32_t val) {
+    t->val_ = val;
+    t->handler_data_val_ = *hd;
+    t->seen_ = true;
+  }
+};
+
+class ValueTesterInt32BoolFunctionWithHandlerData
+    : public Int32ValueTesterBase {
+ public:
+  typedef ValueTesterInt32BoolFunctionWithHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    ASSERT(h->SetInt32Handler(
+        f, UpbBind(&Handler, new int(kExpectedHandlerData))));
+  }
+
+ private:
+  static bool Handler(ME* t, const int* hd, int32_t val) {
+    t->val_ = val;
+    t->handler_data_val_ = *hd;
+    t->seen_ = true;
+    return true;
+  }
+};
+
+class ValueTesterInt32VoidMethodWithHandlerData : public Int32ValueTesterBase {
+ public:
+  typedef ValueTesterInt32VoidMethodWithHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    ASSERT(h->SetInt32Handler(
+        f, UpbBind(&ME::Handler, new int(kExpectedHandlerData))));
+  }
+
+ private:
+  void Handler(const int* hd, int32_t val) {
+    val_ = val;
+    handler_data_val_ = *hd;
+    seen_ = true;
+  }
+};
+
+class ValueTesterInt32BoolMethodWithHandlerData : public Int32ValueTesterBase {
+ public:
+  typedef ValueTesterInt32BoolMethodWithHandlerData ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    ASSERT(h->SetInt32Handler(
+        f, UpbBind(&ME::Handler, new int(kExpectedHandlerData))));
+  }
+
+ private:
+  bool Handler(const int* hd, int32_t val) {
+    val_ = val;
+    handler_data_val_ = *hd;
+    seen_ = true;
+    return true;
+  }
+};
+
+template <class T>
+void TestHandler() {
+  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
+  upb::reffed_ptr<upb::FieldDef> f(upb::FieldDef::New());
+  f->set_type(T::kFieldType);
+  ASSERT(f->set_name("test", NULL));
+  ASSERT(f->set_number(1, NULL));
+  ASSERT(md->AddField(f, NULL));
+  ASSERT(md->Freeze(NULL));
+
+  upb::reffed_ptr<upb::Handlers> h(upb::Handlers::New(md.get()));
+  T tester;
+  tester.Register(h.get(), f.get());
+  ASSERT(h->Freeze(NULL));
+
+  upb::Sink sink(h.get(), &tester);
+  tester.CallAndVerify(&sink, f.get());
 }
 
 extern "C" {
@@ -84,8 +720,63 @@ int run_tests(int argc, char *argv[]) {
     return 1;
   }
   TestSymbolTable(argv[1]);
+  TestCastsUpDown();
   TestCasts1();
   TestCasts2();
+  TestCastsConst0();
+  TestCastsConst1();
+  TestCastsConst2();
+  TestCastsConst3();
+  TestCastsConst4();
+  TestCastsConst5();
+  TestCastsConst6();
+  TestCastsConst7();
+  TestCastsConst8();
+  TestCastsConst9();
+  TestCastsConst10();
+
+  TestHandler<ValueTesterInt32VoidFunctionNoHandlerData>();
+  TestHandler<ValueTesterInt32BoolFunctionNoHandlerData>();
+  TestHandler<ValueTesterInt32VoidMethodNoHandlerData>();
+  TestHandler<ValueTesterInt32BoolMethodNoHandlerData>();
+  TestHandler<ValueTesterInt32VoidFunctionWithHandlerData>();
+  TestHandler<ValueTesterInt32BoolFunctionWithHandlerData>();
+  TestHandler<ValueTesterInt32VoidMethodWithHandlerData>();
+  TestHandler<ValueTesterInt32BoolMethodWithHandlerData>();
+
+  TestHandler<StartMsgTesterVoidFunctionNoHandlerData>();
+  TestHandler<StartMsgTesterBoolFunctionNoHandlerData>();
+  TestHandler<StartMsgTesterVoidMethodNoHandlerData>();
+  TestHandler<StartMsgTesterBoolMethodNoHandlerData>();
+  TestHandler<StartMsgTesterVoidFunctionWithHandlerData>();
+  TestHandler<StartMsgTesterBoolFunctionWithHandlerData>();
+  TestHandler<StartMsgTesterVoidMethodWithHandlerData>();
+  TestHandler<StartMsgTesterBoolMethodWithHandlerData>();
+
+  TestHandler<StringBufTesterVoidFunctionNoHandlerData>();
+  TestHandler<StringBufTesterSizeTFunctionNoHandlerData>();
+  TestHandler<StringBufTesterVoidMethodNoHandlerData>();
+  TestHandler<StringBufTesterSizeTMethodNoHandlerData>();
+  TestHandler<StringBufTesterVoidFunctionWithHandlerData>();
+  TestHandler<StringBufTesterSizeTFunctionWithHandlerData>();
+  TestHandler<StringBufTesterVoidMethodWithHandlerData>();
+  TestHandler<StringBufTesterSizeTMethodWithHandlerData>();
+
+#ifdef UPB_CXX11
+#define ASSERT_STD_LAYOUT(type) \
+  static_assert(std::is_standard_layout<type>::value, \
+                #type " must be standard layout");
+  ASSERT_STD_LAYOUT(upb::RefCounted);
+  ASSERT_STD_LAYOUT(upb::Def);
+  ASSERT_STD_LAYOUT(upb::MessageDef);
+  ASSERT_STD_LAYOUT(upb::FieldDef);
+  ASSERT_STD_LAYOUT(upb::EnumDef);
+  ASSERT_STD_LAYOUT(upb::Handlers);
+  ASSERT_STD_LAYOUT(upb::SymbolTable);
+  ASSERT_STD_LAYOUT(upb::pb::Decoder);
+  ASSERT_STD_LAYOUT(upb::descriptor::Reader);
+#endif
+
   return 0;
 }
 

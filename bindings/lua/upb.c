@@ -122,11 +122,8 @@ static void lupb_setdefault(lua_State *L, int narg, upb_fielddef *f) {
 
 void lupb_checkstatus(lua_State *L, upb_status *s) {
   if (!upb_ok(s)) {
-    lua_pushstring(L, upb_status_getstr(s));
-    upb_status_uninit(s);
+    lua_pushstring(L, upb_status_errmsg(s));
     lua_error(L);
-  } else {
-    upb_status_uninit(s);
   }
 }
 
@@ -576,6 +573,12 @@ static int lupb_fielddef_type(lua_State *L) {
   return 1;
 }
 
+static int lupb_fielddef_index(lua_State *L) {
+  const upb_fielddef *f = lupb_fielddef_check(L, 1);
+  lua_pushnumber(L, upb_fielddef_index(f));
+  return 1;
+}
+
 static int lupb_fielddef_intfmt(lua_State *L) {
   const upb_fielddef *f = lupb_fielddef_check(L, 1);
   lua_pushnumber(L, upb_fielddef_intfmt(f));
@@ -602,6 +605,7 @@ static const struct luaL_Reg lupb_fielddef_m[] = {
   {"default", lupb_fielddef_default},
   {"getsel", lupb_fielddef_getsel},
   {"has_subdef", lupb_fielddef_hassubdef},
+  {"index", lupb_fielddef_index},
   {"intfmt", lupb_fielddef_intfmt},
   {"istagdelim", lupb_fielddef_istagdelim},
   {"label", lupb_fielddef_label},
@@ -718,6 +722,12 @@ static int lupb_msgdef_selectorcount(lua_State *L) {
   return 1;
 }
 
+static int lupb_msgdef_submsgfieldcount(lua_State *L) {
+  const upb_msgdef *m = lupb_msgdef_check(L, 1);
+  lua_pushinteger(L, m->submsg_field_count);
+  return 1;
+}
+
 static int lupb_msgdef_field(lua_State *L) {
   const upb_msgdef *m = lupb_msgdef_check(L, 1);
   int type = lua_type(L, 2);
@@ -766,6 +776,7 @@ static const struct luaL_Reg lupb_msgdef_m[] = {
 
   // Internal-only.
   {"_selector_count", lupb_msgdef_selectorcount},
+  {"_submsg_field_count", lupb_msgdef_submsgfieldcount},
 
   {NULL, NULL}
 };

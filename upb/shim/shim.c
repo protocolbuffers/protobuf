@@ -36,8 +36,14 @@ bool upb_shim_set(upb_handlers *h, const upb_fielddef *f, size_t offset,
   d->offset = offset;
   d->hasbit = hasbit;
 
+  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr_sethandlerdata(&attr, d, free);
+
 #define TYPE(u, l) \
-  case UPB_TYPE_##u: return upb_handlers_set##l(h, f, upb_shim_set##l, d, free)
+  case UPB_TYPE_##u: \
+    ok = upb_handlers_set##l(h, f, upb_shim_set##l, &attr); break;
+
+  bool ok = false;
 
   switch (upb_fielddef_type(f)) {
     TYPE(INT64,  int64);
@@ -48,28 +54,31 @@ bool upb_shim_set(upb_handlers *h, const upb_fielddef *f, size_t offset,
     TYPE(DOUBLE, double);
     TYPE(FLOAT,  float);
     TYPE(BOOL,   bool);
-    default: assert(false); return false;
+    default: assert(false); break;
   }
 #undef TYPE
+
+  upb_handlerattr_uninit(&attr);
+  return ok;
 }
 
 const upb_shim_data *upb_shim_getdata(const upb_handlers *h, upb_selector_t s,
                                       upb_fieldtype_t *type) {
   upb_func *f = upb_handlers_gethandler(h, s);
 
-  if ((upb_int64_handler*)f == upb_shim_setint64) {
+  if ((upb_int64_handlerfunc*)f == upb_shim_setint64) {
     *type = UPB_TYPE_INT64;
-  } else if ((upb_int32_handler*)f == upb_shim_setint32) {
+  } else if ((upb_int32_handlerfunc*)f == upb_shim_setint32) {
     *type = UPB_TYPE_INT32;
-  } else if ((upb_uint64_handler*)f == upb_shim_setuint64) {
+  } else if ((upb_uint64_handlerfunc*)f == upb_shim_setuint64) {
     *type = UPB_TYPE_UINT64;
-  } else if ((upb_uint32_handler*)f == upb_shim_setuint32) {
+  } else if ((upb_uint32_handlerfunc*)f == upb_shim_setuint32) {
     *type = UPB_TYPE_UINT32;
-  } else if ((upb_double_handler*)f == upb_shim_setdouble) {
+  } else if ((upb_double_handlerfunc*)f == upb_shim_setdouble) {
     *type = UPB_TYPE_DOUBLE;
-  } else if ((upb_float_handler*)f == upb_shim_setfloat) {
+  } else if ((upb_float_handlerfunc*)f == upb_shim_setfloat) {
     *type = UPB_TYPE_FLOAT;
-  } else if ((upb_bool_handler*)f == upb_shim_setbool) {
+  } else if ((upb_bool_handlerfunc*)f == upb_shim_setbool) {
     *type = UPB_TYPE_BOOL;
   } else {
     return NULL;

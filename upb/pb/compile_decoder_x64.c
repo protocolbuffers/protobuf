@@ -34,13 +34,13 @@
 #define DECODE_EOF -3
 
 typedef struct {
-  upb_pbdecoderplan *plan;
+  mgroup *group;
   uint32_t *pc;
 
   // This pointer is allocated by dasm_init() and freed by dasm_free().
   struct dasm_State *dynasm;
 
-  // Maps bytecode pc location -> pclabel.
+  // Maps arbitrary void* -> pclabel.
   upb_inttable pclabels;
   upb_inttable pcdefined;
 
@@ -57,7 +57,6 @@ typedef struct {
   // Used by DynASM to store globals.
   void **globals;
 
-  bool usefp;
   bool chkret;
 } jitcompiler;
 
@@ -65,16 +64,16 @@ typedef struct {
 static int pclabel(jitcompiler *jc, const void *here);
 static int define_pclabel(jitcompiler *jc, const void *here);
 static void asmlabel(jitcompiler *jc, const char *fmt, ...);
+static int pcofs(jitcompiler* jc);
 
 #include "dynasm/dasm_proto.h"
 #include "dynasm/dasm_x86.h"
 #include "upb/pb/compile_decoder_x64.h"
 
-static jitcompiler *newjitcompiler(upb_pbdecoderplan *plan) {
+static jitcompiler *newjitcompiler(mgroup *group) {
   jitcompiler *jc = malloc(sizeof(jitcompiler));
-  jc->usefp = false;
   jc->chkret = false;
-  jc->plan = plan;
+  jc->group = group;
   jc->pclabel_count = 0;
   jc->lastlabelofs = -1;
   upb_inttable_init(&jc->pclabels, UPB_CTYPE_UINT32);
@@ -123,13 +122,22 @@ static int define_pclabel(jitcompiler *jc, const void *here) {
   return pclabel(jc, here);
 }
 
+// Returns a bytecode pc offset relative to the beginning of the group's code.
+static int pcofs(jitcompiler *jc) {
+  return jc->pc - jc->group->bytecode;
+}
+
 static void upb_reg_jit_gdb(jitcompiler *jc);
+
+static int getpclabel(jitcompiler *jc, const void *target) {
+  return dasm_getpclabel(jc, pclabel(jc, target));
+}
 
 // Given a pcofs relative to method, returns the machine code offset for it
 // (relative to the beginning of the machine code).
 int nativeofs(jitcompiler *jc, const upb_pbdecodermethod *method, int pcofs) {
-  void *target = jc->plan->code + method->base.ofs + pcofs;
-  return dasm_getpclabel(jc, pclabel(jc, target));
+  void *target = jc->group->bytecode + method->code_base.ofs + pcofs;
+  return getpclabel(jc, target);
 }
 
 // Given a pcofs relative to this method's base, returns a machine code offset
@@ -137,7 +145,7 @@ int nativeofs(jitcompiler *jc, const upb_pbdecodermethod *method, int pcofs) {
 // machine code base for dispatch table lookups).
 uint32_t dispatchofs(jitcompiler *jc, const upb_pbdecodermethod *method,
                      int pcofs) {
-  int ofs1 = dasm_getpclabel(jc, pclabel(jc, method->dispatch.array));
+  int ofs1 = getpclabel(jc, method->dispatch.array);
   int ofs2 = nativeofs(jc, method, pcofs);
   assert(ofs1 > 0);
   assert(ofs2 > 0);
@@ -149,9 +157,11 @@ uint32_t dispatchofs(jitcompiler *jc, const upb_pbdecodermethod *method,
 // Rewrites the dispatch tables into machine code offsets.
 static void patchdispatch(jitcompiler *jc) {
   upb_inttable_iter i;
-  upb_inttable_begin(&i, &jc->plan->methods);
+  upb_inttable_begin(&i, &jc->group->methods);
   for (; !upb_inttable_done(&i); upb_inttable_next(&i)) {
     upb_pbdecodermethod *method = upb_value_getptr(upb_inttable_iter_value(&i));
+    method->is_native_ = true;
+
     upb_inttable *dispatch = &method->dispatch;
     upb_inttable_iter i2;
     upb_inttable_begin(&i2, dispatch);
@@ -169,11 +179,20 @@ static void patchdispatch(jitcompiler *jc) {
       } else {
         // Secondary slot.  Since we have 64 bits for the value, we use an
         // absolute offset.
-        newval = (uint64_t)(jc->plan->jit_code + nativeofs(jc, method, val));
+        newval = (uint64_t)(jc->group->jit_code + nativeofs(jc, method, val));
       }
       bool ok = upb_inttable_replace(dispatch, key, upb_value_uint64(newval));
       UPB_ASSERT_VAR(ok, ok);
     }
+
+    // Set this only *after* we have patched the offsets (nativeofs() above
+    // reads this).
+    method->code_base.ptr = jc->group->jit_code + getpclabel(jc, method);
+
+    upb_byteshandler *h = &method->input_handler_;
+    upb_byteshandler_setstartstr(h, upb_pbdecoder_startjit, NULL);
+    upb_byteshandler_setstring(h, jc->group->jit_code, method->code_base.ptr);
+    upb_byteshandler_setendstr(h, upb_pbdecoder_end, method);
   }
 }
 
@@ -202,9 +221,10 @@ static void load_so(jitcompiler *jc) {
 
   FILE *f = fopen("/tmp/upb-jit-code.s", "w");
   if (f) {
+    uint8_t *jit_code = (uint8_t*)jc->group->jit_code;
     fputs("  .text\n\n", f);
     size_t linelen = 0;
-    for (size_t i = 0; i < jc->plan->jit_size; i++) {
+    for (size_t i = 0; i < jc->group->jit_size; i++) {
       upb_value v;
       if (upb_inttable_lookup(&mclabels, i, &v)) {
         const char *label = upb_value_getptr(v);
@@ -223,23 +243,25 @@ static void load_so(jitcompiler *jc) {
     fputs("\n", f);
     fclose(f);
   } else {
-    fprintf(stderr, "Couldn't open /tmp/upb-jit-code.s for writing/\n");
+    fprintf(stderr, "Couldn't open /tmp/upb-jit-code.s for writing\n");
+    abort();
   }
 
   // TODO: racy
   if (system("gcc -shared -o /tmp/upb-jit-code.so /tmp/upb-jit-code.s") != 0) {
+    fprintf(stderr, "Error compiling upb-jit-code.s\n");
     abort();
   }
 
-  jc->dl = dlopen("/tmp/upb-jit-code.so", RTLD_LAZY);
-  if (!jc->dl) {
+  jc->group->dl = dlopen("/tmp/upb-jit-code.so", RTLD_LAZY);
+  if (!jc->group->dl) {
     fprintf(stderr, "Couldn't dlopen(): %s\n", dlerror());
     abort();
   }
 
-  munmap(jit_code, jc->plan->jit_size);
-  jit_code = dlsym(jc->dl, "X.enterjit");
-  if (!jit_code) {
+  munmap(jc->group->jit_code, jc->group->jit_size);
+  jc->group->jit_code = dlsym(jc->group->dl, "X.enterjit");
+  if (!jc->group->jit_code) {
     fprintf(stderr, "Couldn't find enterjit sym\n");
     abort();
   }
@@ -248,45 +270,51 @@ static void load_so(jitcompiler *jc) {
 }
 #endif
 
-void upb_pbdecoder_jit(upb_pbdecoderplan *plan) {
-  plan->debug_info = NULL;
-  plan->dl = NULL;
+void upb_pbdecoder_jit(mgroup *group) {
+  group->debug_info = NULL;
+  group->dl = NULL;
 
-  jitcompiler *jc = newjitcompiler(plan);
+  assert(group->bytecode);
+  jitcompiler *jc = newjitcompiler(group);
   emit_static_asm(jc);
   jitbytecode(jc);
 
-  int dasm_status = dasm_link(jc, &jc->plan->jit_size);
+  int dasm_status = dasm_link(jc, &jc->group->jit_size);
   if (dasm_status != DASM_S_OK) {
     fprintf(stderr, "DynASM error; returned status: 0x%08x\n", dasm_status);
     abort();
   }
 
-  char *jit_code = mmap(NULL, jc->plan->jit_size, PROT_READ | PROT_WRITE,
+  char *jit_code = mmap(NULL, jc->group->jit_size, PROT_READ | PROT_WRITE,
                         MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
   dasm_encode(jc, jit_code);
-  mprotect(jit_code, jc->plan->jit_size, PROT_EXEC | PROT_READ);
+  mprotect(jit_code, jc->group->jit_size, PROT_EXEC | PROT_READ);
   upb_reg_jit_gdb(jc);
+  jc->group->jit_code = (upb_string_handlerfunc *)jit_code;
 
 #ifdef UPB_JIT_LOAD_SO
   load_so(jc);
 #endif
 
-  jc->plan->jit_code = (upb_string_handler *)jit_code;
   patchdispatch(jc);
+
   freejitcompiler(jc);
+
+  // Now the bytecode is no longer needed.
+  free(group->bytecode);
+  group->bytecode = NULL;
 }
 
-void upb_pbdecoder_freejit(upb_pbdecoderplan *plan) {
-  if (!plan->jit_code) return;
-  if (plan->dl) {
+void upb_pbdecoder_freejit(mgroup *group) {
+  if (!group->jit_code) return;
+  if (group->dl) {
 #ifdef UPB_JIT_LOAD_SO
-    dlclose(plan->dl);
+    dlclose(group->dl);
 #endif
   } else {
-    munmap(plan->jit_code, plan->jit_size);
+    munmap(group->jit_code, group->jit_size);
   }
-  free(plan->debug_info);
+  free(group->debug_info);
   // TODO: unregister GDB JIT interface.
 }
 
@@ -338,15 +366,15 @@ void __attribute__((noinline)) __jit_debug_register_code() {
 static void upb_reg_jit_gdb(jitcompiler *jc) {
   // Create debug info.
   size_t elf_len = sizeof(upb_jit_debug_elf_file);
-  jc->plan->debug_info = malloc(elf_len);
-  memcpy(jc->plan->debug_info, upb_jit_debug_elf_file, elf_len);
-  uint64_t *p = (void *)jc->plan->debug_info;
-  for (; (void *)(p + 1) <= (void *)jc->plan->debug_info + elf_len; ++p) {
+  jc->group->debug_info = malloc(elf_len);
+  memcpy(jc->group->debug_info, upb_jit_debug_elf_file, elf_len);
+  uint64_t *p = (void *)jc->group->debug_info;
+  for (; (void *)(p + 1) <= (void *)jc->group->debug_info + elf_len; ++p) {
     if (*p == 0x12345678) {
-      *p = (uintptr_t)jc->plan->jit_code;
+      *p = (uintptr_t)jc->group->jit_code;
     }
     if (*p == 0x321) {
-      *p = jc->plan->jit_size;
+      *p = jc->group->jit_size;
     }
   }
 
@@ -355,7 +383,7 @@ static void upb_reg_jit_gdb(jitcompiler *jc) {
   e->next_entry = __jit_debug_descriptor.first_entry;
   e->prev_entry = NULL;
   if (e->next_entry) e->next_entry->prev_entry = e;
-  e->symfile_addr = jc->plan->debug_info;
+  e->symfile_addr = jc->group->debug_info;
   e->symfile_size = elf_len;
   __jit_debug_descriptor.first_entry = e;
   __jit_debug_descriptor.relevant_entry = e;

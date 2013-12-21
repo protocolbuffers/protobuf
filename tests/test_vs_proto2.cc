@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "benchmarks/google_messages.pb.h"
-#include "upb/bytestream.h"
 #include "upb/def.h"
 #include "upb/google/bridge.h"
 #include "upb/handlers.h"
@@ -53,25 +52,24 @@ void parse_and_compare(google::protobuf::Message *msg1,
   // Parse to both proto2 and upb.
   ASSERT(msg1->ParseFromArray(str, len));
 
-  const upb::Handlers* decoder_handlers = upb::pb::GetDecoderHandlers(
-      protomsg_handlers, allow_jit, &decoder_handlers);
+  upb::pb::CodeCache cache;
+  ASSERT(cache.set_allow_jit(allow_jit));
+  upb::reffed_ptr<const upb::pb::DecoderMethod> decoder_method(
+      cache.GetDecoderMethodForDestHandlers(protomsg_handlers));
 
-  upb::Pipeline pipeline(NULL, 0, upb_realloc, NULL);
-  pipeline.DonateRef(decoder_handlers, &decoder_handlers);
-  upb::Sink* protomsg_sink = pipeline.NewSink(protomsg_handlers);
-  upb::Sink* decoder_sink = pipeline.NewSink(decoder_handlers);
+  upb::Status status;
+  upb::pb::Decoder decoder(decoder_method.get(), &status);
+  upb::Sink protomsg_sink(protomsg_handlers, msg2);
 
-  protomsg_sink->Reset(msg2);
-  upb::pb::Decoder* decoder = decoder_sink->GetObject<upb::pb::Decoder>();
-  upb::pb::ResetDecoderSink(decoder, protomsg_sink);
+  decoder.ResetOutput(&protomsg_sink);
 
   msg2->Clear();
-  bool ok = upb::PutStringToBytestream(decoder_sink, str, len);
+  bool ok = upb::BufferSource::PutBuffer(str, len, decoder.input());
   if (!ok) {
-    fprintf(stderr, "error parsing: %s\n", pipeline.status().GetString());
+    fprintf(stderr, "error parsing: %s\n", status.error_message());
   }
   ASSERT(ok);
-  ASSERT(pipeline.status().ok());
+  ASSERT(status.ok());
 
   // Would like to just compare the message objects themselves,  but
   // unfortunately MessageDifferencer is not part of the open-source release of
@@ -127,16 +125,15 @@ int run_tests(int argc, char *argv[])
   MESSAGE_CIDENT msg1;
   MESSAGE_CIDENT msg2;
 
-  const upb::Handlers* h = upb::google::NewWriteHandlers(msg1, &h);
+  upb::reffed_ptr<const upb::Handlers> h(upb::google::NewWriteHandlers(msg1));
 
   compare_metadata(msg1.GetDescriptor(), h->message_def());
 
   // Run twice to test proper object reuse.
-  parse_and_compare(&msg1, &msg2, h, str, len, false);
-  parse_and_compare(&msg1, &msg2, h, str, len, true);
-  parse_and_compare(&msg1, &msg2, h, str, len, false);
-  parse_and_compare(&msg1, &msg2, h, str, len, true);
-  h->Unref(&h);
+  parse_and_compare(&msg1, &msg2, h.get(), str, len, false);
+  parse_and_compare(&msg1, &msg2, h.get(), str, len, true);
+  parse_and_compare(&msg1, &msg2, h.get(), str, len, false);
+  parse_and_compare(&msg1, &msg2, h.get(), str, len, true);
 
   // Test with DynamicMessage.
   google::protobuf::DynamicMessageFactory* factory =
@@ -145,13 +142,12 @@ int run_tests(int argc, char *argv[])
       factory->GetPrototype(msg1.descriptor());
   google::protobuf::Message* dyn_msg1 = prototype->New();
   google::protobuf::Message* dyn_msg2 = prototype->New();
-  h = upb::google::NewWriteHandlers(*dyn_msg1, &h);
-  parse_and_compare(dyn_msg1, dyn_msg2, h, str, len, false);
-  parse_and_compare(dyn_msg1, dyn_msg2, h, str, len, true);
+  h = upb::google::NewWriteHandlers(*dyn_msg1);
+  parse_and_compare(dyn_msg1, dyn_msg2, h.get(), str, len, false);
+  parse_and_compare(dyn_msg1, dyn_msg2, h.get(), str, len, true);
   delete dyn_msg1;
   delete dyn_msg2;
   delete factory;
-  h->Unref(&h);
 
   free((void*)str);
 

@@ -67,7 +67,7 @@ class upb::RefCounted {
   void CheckRef(const void *owner) const;
 
  private:
-  UPB_DISALLOW_POD_OPS(RefCounted);
+  UPB_DISALLOW_POD_OPS(RefCounted, upb::RefCounted);
 #else
 struct upb_refcounted {
 #endif

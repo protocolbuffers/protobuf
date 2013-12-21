@@ -315,7 +315,7 @@ typedef enum {
 
 UPB_NORETURN static void err(tarjan *t) { longjmp(t->err, 1); }
 UPB_NORETURN static void oom(tarjan *t) {
-  upb_status_seterrliteral(t->status, "out of memory");
+  upb_status_seterrmsg(t->status, "out of memory");
   err(t);
 }
 
@@ -353,7 +353,7 @@ static void push(tarjan *t, const upb_refcounted *r) {
   // get 31 bits, which is plenty (limit of 2B objects frozen at a time).
   setattr(t, r, GREEN | (t->index << 2) | (t->index << 33));
   if (++t->index == 0x80000000) {
-    upb_status_seterrliteral(t->status, "too many objects to freeze");
+    upb_status_seterrmsg(t->status, "too many objects to freeze");
     err(t);
   }
   upb_inttable_push(&t->stack, upb_value_ptr((void*)r));

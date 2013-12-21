@@ -38,13 +38,14 @@ extern "C" {
 // clients calling table accessors are correctly typed without having to have
 // an explosion of accessors.
 typedef enum {
-  UPB_CTYPE_INT32  = 1,
-  UPB_CTYPE_INT64  = 2,
-  UPB_CTYPE_UINT32 = 3,
-  UPB_CTYPE_UINT64 = 4,
-  UPB_CTYPE_BOOL   = 5,
-  UPB_CTYPE_CSTR   = 6,
-  UPB_CTYPE_PTR    = 7,
+  UPB_CTYPE_INT32    = 1,
+  UPB_CTYPE_INT64    = 2,
+  UPB_CTYPE_UINT32   = 3,
+  UPB_CTYPE_UINT64   = 4,
+  UPB_CTYPE_BOOL     = 5,
+  UPB_CTYPE_CSTR     = 6,
+  UPB_CTYPE_PTR      = 7,
+  UPB_CTYPE_CONSTPTR = 8,
 } upb_ctype_t;
 
 typedef union {
@@ -129,13 +130,14 @@ UPB_INLINE upb_value _upb_value_val(_upb_value val, upb_ctype_t ctype) {
     return val.val.membername; \
   }
 
-FUNCS(int32,  int32,   int32_t,  UPB_CTYPE_INT32);
-FUNCS(int64,  int64,   int64_t,  UPB_CTYPE_INT64);
-FUNCS(uint32, uint32,  uint32_t, UPB_CTYPE_UINT32);
-FUNCS(uint64, uint64,  uint64_t, UPB_CTYPE_UINT64);
-FUNCS(bool,   _bool,   bool,     UPB_CTYPE_BOOL);
-FUNCS(cstr,   cstr,    char*,    UPB_CTYPE_CSTR);
-FUNCS(ptr,    ptr,     void*,    UPB_CTYPE_PTR);
+FUNCS(int32,    int32,        int32_t,      UPB_CTYPE_INT32);
+FUNCS(int64,    int64,        int64_t,      UPB_CTYPE_INT64);
+FUNCS(uint32,   uint32,       uint32_t,     UPB_CTYPE_UINT32);
+FUNCS(uint64,   uint64,       uint64_t,     UPB_CTYPE_UINT64);
+FUNCS(bool,     _bool,        bool,         UPB_CTYPE_BOOL);
+FUNCS(cstr,     cstr,         char*,        UPB_CTYPE_CSTR);
+FUNCS(ptr,      ptr,          void*,        UPB_CTYPE_PTR);
+FUNCS(constptr, constptr,     const void*,  UPB_CTYPE_CONSTPTR);
 
 #undef FUNCS
 

@@ -10,45 +10,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "upb/bytestream.h"
 #include "upb/descriptor/reader.h"
 #include "upb/pb/decoder.h"
 
 upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
                                         void *owner, upb_status *status) {
   // Create handlers.
-  const upb_handlers *reader_h = upb_descreader_gethandlers(&reader_h);
-  const upb_handlers *decoder_h =
-      upb_pbdecoder_gethandlers(reader_h, true, &decoder_h);
+  const upb_handlers *reader_h = upb_descreader_newhandlers(&reader_h);
+  const upb_pbdecodermethod *decoder_m =
+      upb_pbdecodermethod_newfordesthandlers(reader_h, &decoder_m);
 
-  // Create pipeline.
-  upb_pipeline pipeline;
-  upb_pipeline_init(&pipeline, NULL, 0, upb_realloc, NULL);
-  upb_pipeline_donateref(&pipeline, reader_h, &reader_h);
-  upb_pipeline_donateref(&pipeline, decoder_h, &decoder_h);
+  upb_pbdecoder decoder;
+  upb_descreader reader;
 
-  // Create sinks.
-  upb_sink *reader_sink = upb_pipeline_newsink(&pipeline, reader_h);
-  upb_sink *decoder_sink = upb_pipeline_newsink(&pipeline, decoder_h);
-  upb_pbdecoder *d = upb_sink_getobj(decoder_sink);
-  upb_pbdecoder_resetsink(d, reader_sink);
+  upb_pbdecoder_init(&decoder, decoder_m, status);
+  upb_descreader_init(&reader, reader_h, status);
+  upb_pbdecoder_resetoutput(&decoder, upb_descreader_input(&reader));
 
   // Push input data.
-  bool ok = upb_bytestream_putstr(decoder_sink, str, len);
+  bool ok = upb_bufsrc_putbuf(str, len, upb_pbdecoder_input(&decoder));
 
-  if (status) upb_status_copy(status, upb_pipeline_status(&pipeline));
-  if (!ok) {
-    upb_pipeline_uninit(&pipeline);
-    return NULL;
-  }
+  upb_def **ret = NULL;
 
-  upb_descreader *r = upb_sink_getobj(reader_sink);
-  upb_def **defs = upb_descreader_getdefs(r, owner, n);
-  upb_def **defscopy = malloc(sizeof(upb_def*) * (*n));
-  memcpy(defscopy, defs, sizeof(upb_def*) * (*n));
-  upb_pipeline_uninit(&pipeline);
+  if (!ok) goto cleanup;
+  upb_def **defs = upb_descreader_getdefs(&reader, owner, n);
+  ret = malloc(sizeof(upb_def*) * (*n));
+  memcpy(ret, defs, sizeof(upb_def*) * (*n));
 
-  return defscopy;
+cleanup:
+  upb_pbdecoder_uninit(&decoder);
+  upb_descreader_uninit(&reader);
+  upb_handlers_unref(reader_h, &reader_h);
+  upb_pbdecodermethod_unref(decoder_m, &decoder_m);
+  return ret;
 }
 
 bool upb_load_descriptor_into_symtab(upb_symtab *s, const char *str, size_t len,

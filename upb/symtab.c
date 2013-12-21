@@ -184,7 +184,7 @@ static bool upb_resolve_dfs(const upb_def *def, upb_strtable *addtab,
   return need_dup;
 
 oom:
-  upb_status_seterrliteral(s, "out of memory");
+  upb_status_seterrmsg(s, "out of memory");
   return false;
 }
 
@@ -193,7 +193,7 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
   upb_def **add_defs = NULL;
   upb_strtable addtab;
   if (!upb_strtable_init(&addtab, UPB_CTYPE_PTR)) {
-    upb_status_seterrliteral(status, "out of memory");
+    upb_status_seterrmsg(status, "out of memory");
     return false;
   }
 
@@ -201,13 +201,13 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
   for (int i = 0; i < n; i++) {
     upb_def *def = defs[i];
     if (upb_def_isfrozen(def)) {
-      upb_status_seterrliteral(status, "added defs must be mutable");
+      upb_status_seterrmsg(status, "added defs must be mutable");
       goto err;
     }
     assert(!upb_def_isfrozen(def));
     const char *fullname = upb_def_fullname(def);
     if (!fullname) {
-      upb_status_seterrliteral(
+      upb_status_seterrmsg(
           status, "Anonymous defs cannot be added to a symtab");
       goto err;
     }
@@ -297,7 +297,7 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
   return true;
 
 oom_err:
-  upb_status_seterrliteral(status, "out of memory");
+  upb_status_seterrmsg(status, "out of memory");
 err: {
     // For defs the user passed in, we need to donate the refs back.  For defs
     // we dup'd, we need to just unref them.

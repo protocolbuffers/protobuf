@@ -13,6 +13,8 @@
 #ifndef UPB_H_
 #define UPB_H_
 
+#include <assert.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -33,17 +35,33 @@
 #endif
 
 #ifdef UPB_CXX11
-#define UPB_DISALLOW_POD_OPS(class_name) \
-  class_name() = delete; \
-  ~class_name() = delete; \
+#define UPB_DISALLOW_COPY_AND_ASSIGN(class_name) \
   class_name(const class_name&) = delete; \
   void operator=(const class_name&) = delete;
+#define UPB_DISALLOW_POD_OPS(class_name, full_class_name) \
+  class_name() = delete; \
+  ~class_name() = delete; \
+  /* Friend Pointer<T> so it can access base class. */ \
+  friend class Pointer<full_class_name>; \
+  friend class Pointer<const full_class_name>; \
+  UPB_DISALLOW_COPY_AND_ASSIGN(class_name)
 #else
-#define UPB_DISALLOW_POD_OPS(class_name) \
-  class_name(); \
-  ~class_name(); \
+#define UPB_DISALLOW_COPY_AND_ASSIGN(class_name) \
   class_name(const class_name&); \
   void operator=(const class_name&);
+#define UPB_DISALLOW_POD_OPS(class_name, full_class_name) \
+  class_name(); \
+  ~class_name(); \
+  /* Friend Pointer<T> so it can access base class. */ \
+  friend class Pointer<full_class_name>; \
+  friend class Pointer<const full_class_name>; \
+  UPB_DISALLOW_COPY_AND_ASSIGN(class_name)
+#endif
+
+#ifdef __cplusplus
+#define UPB_PRIVATE_FOR_CPP private:
+#else
+#define UPB_PRIVATE_FOR_CPP
 #endif
 
 #ifdef __GNUC__
@@ -79,22 +97,132 @@
 // Example:
 //   upb::Def* def = <...>;
 //   upb::MessageDef* = upb::dyn_cast<upb::MessageDef*>(def);
-//
-// For upcasts, see the Upcast() method in the types themselves.
 
 namespace upb {
 
 // Casts to a direct subclass.  The caller must know that cast is correct; an
-// incorrect cast will throw an assertion failure.
+// incorrect cast will throw an assertion failure in debug mode.
 template<class To, class From> To down_cast(From* f);
 
 // Casts to a direct subclass.  If the class does not actually match the given
 // subtype, returns NULL.
 template<class To, class From> To dyn_cast(From* f);
 
+// Pointer<T> is a simple wrapper around a T*.  It is only constructed for
+// upcast() below, and its sole purpose is to be implicitly convertable to T* or
+// pointers to base classes, just as a pointer would be in regular C++ if the
+// inheritance were directly expressed as C++ inheritance.
+template <class T> class Pointer;
+
+// Casts to any base class, or the type itself (ie. can be a no-op).
+template <class T> inline Pointer<T> upcast(T *f) { return Pointer<T>(f); }
 }
 
 #endif
+
+
+/* upb::reffed_ptr ************************************************************/
+
+#ifdef __cplusplus
+
+#include <algorithm>  // For std::swap().
+
+namespace upb {
+
+// Provides RAII semantics for upb refcounted objects.  Each reffed_ptr owns a
+// ref on whatever object it points to (if any).
+template <class T> class reffed_ptr {
+ public:
+  reffed_ptr() : ptr_(NULL) {}
+
+  // If ref_donor is NULL, takes a new ref, otherwise adopts from ref_donor.
+  template <class U>
+  reffed_ptr(U* val, const void* ref_donor = NULL)
+      : ptr_(upb::upcast(val)) {
+    if (ref_donor) {
+      assert(ptr_);
+      ptr_->DonateRef(ref_donor, this);
+    } else if (ptr_) {
+      ptr_->Ref(this);
+    }
+  }
+
+  template <class U>
+  reffed_ptr(const reffed_ptr<U>& other)
+      : ptr_(upb::upcast(other.get())) {
+    if (ptr_) ptr_->Ref(this);
+  }
+
+  ~reffed_ptr() { if (ptr_) ptr_->Unref(this); }
+
+  template <class U>
+  reffed_ptr& operator=(const reffed_ptr<U>& other) {
+    reset(other.get());
+    return *this;
+  }
+
+  reffed_ptr& operator=(const reffed_ptr& other) {
+    reset(other.get());
+    return *this;
+  }
+
+  // TODO(haberman): add C++11 move construction/assignment for greater
+  // efficiency.
+
+  void swap(reffed_ptr& other) {
+    if (ptr_ == other.ptr_) {
+      return;
+    }
+
+    if (ptr_) ptr_->DonateRef(this, &other);
+    if (other.ptr_) other.ptr_->DonateRef(&other, this);
+    std::swap(ptr_, other.ptr_);
+  }
+
+  T& operator*() const {
+    assert(ptr_);
+    return *ptr_;
+  }
+
+  T* operator->() const {
+    assert(ptr_);
+    return ptr_;
+  }
+
+  T* get() const { return ptr_; }
+
+  // If ref_donor is NULL, takes a new ref, otherwise adopts from ref_donor.
+  template <class U>
+  void reset(U* ptr = NULL, const void* ref_donor = NULL) {
+    reffed_ptr(ptr, ref_donor).swap(*this);
+  }
+
+  template <class U>
+  reffed_ptr<U> down_cast() {
+    return reffed_ptr<U>(upb::down_cast<U*>(get()));
+  }
+
+  template <class U>
+  reffed_ptr<U> dyn_cast() {
+    return reffed_ptr<U>(upb::dyn_cast<U*>(get()));
+  }
+
+  // Plain release() is unsafe; if we were the only owner, it would leak the
+  // object.  Instead we provide this:
+  T* ReleaseTo(const void* new_owner) {
+    T* ret = NULL;
+    ptr_->DonateRef(this, new_owner);
+    std::swap(ret, ptr_);
+    return ret;
+  }
+
+ private:
+  T* ptr_;
+};
+
+}  // namespace upb
+
+#endif  // __cplusplus
 
 
 /* upb::Status ****************************************************************/
@@ -107,75 +235,91 @@ struct upb_status;
 typedef struct upb_status upb_status;
 #endif
 
-typedef enum {
-  UPB_OK,          // The operation completed successfully.
-  UPB_SUSPENDED,   // The operation was suspended and may be resumed later.
-  UPB_ERROR,       // An error occurred.
-} upb_success_t;
+// The maximum length of an error message before it will get truncated.
+#define UPB_STATUS_MAX_MESSAGE 128
+
+// An error callback function is used to report errors from some component.
+// The function can return "true" to indicate that the component should try
+// to recover and proceed, but this is not always possible.
+typedef bool upb_errcb_t(void *closure, const upb_status* status);
 
 typedef struct {
   const char *name;
-  // Writes a NULL-terminated string to "buf" containing an error message for
-  // the given error code, returning false if the message was too large to fit.
-  bool (*code_to_string)(int code, char *buf, size_t len);
+  // Should the error message in the status object according to this code.
+  void (*set_message)(upb_status* status, int code);
 } upb_errorspace;
 
 #ifdef __cplusplus
 
+typedef upb_errorspace ErrorSpace;
+
+// Object representing a success or failure status.
+// It owns no resources and allocates no memory, so it should work
+// even in OOM situations.
 class upb::Status {
  public:
-  typedef upb_success_t Success;
-
   Status();
-  ~Status();
 
+  // Returns true if there is no error.
   bool ok() const;
-  bool eof() const;
 
-  const char *GetString() const;
-  void SetEof();
-  void SetErrorLiteral(const char* msg);
+  // Optional error space and code, useful if the caller wants to
+  // programmatically check the specific kind of error.
+  ErrorSpace* error_space();
+  int code() const;
+
+  const char *error_message() const;
+
+  // The error message will be truncated if it is longer than
+  // UPB_STATUS_MAX_MESSAGE-4.
+  void SetErrorMessage(const char* msg);
+  void SetFormattedErrorMessage(const char* fmt, ...);
+
+  // If there is no error message already, this will use the ErrorSpace to
+  // populate the error message for this code.  The caller can still call
+  // SetErrorMessage() to give a more specific message.
+  void SetErrorCode(ErrorSpace* space, int code);
+
+  // Resets the status to a successful state with no message.
   void Clear();
 
+  void CopyFrom(const Status& other);
+
  private:
+  UPB_DISALLOW_COPY_AND_ASSIGN(Status);
 #else
 struct upb_status {
 #endif
-  bool error;
-  bool eof_;
+  bool ok_;
 
   // Specific status code defined by some error space (optional).
-  int code;
-  upb_errorspace *space;
+  int code_;
+  upb_errorspace *error_space_;
 
-  // Error message (optional).
-  const char *str;  // NULL when no message is present.  NULL-terminated.
-  char *buf;        // Owned by the status.
-  size_t bufsize;
+  // Error message; NULL-terminated.
+  char msg[UPB_STATUS_MAX_MESSAGE];
 };
 
-#define UPB_STATUS_INIT {UPB_OK, false, 0, NULL, NULL, NULL, 0}
+#define UPB_STATUS_INIT {true, 0, NULL, {0}}
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void upb_status_init(upb_status *status);
-void upb_status_uninit(upb_status *status);
-
+// The returned string is invalidated by any other call into the status.
+const char *upb_status_errmsg(const upb_status *status);
 bool upb_ok(const upb_status *status);
-bool upb_eof(const upb_status *status);
+upb_errorspace *upb_status_errspace(const upb_status *status);
+int upb_status_errcode(const upb_status *status);
 
 // Any of the functions that write to a status object allow status to be NULL,
 // to support use cases where the function's caller does not care about the
 // status message.
 void upb_status_clear(upb_status *status);
-void upb_status_seterrliteral(upb_status *status, const char *msg);
-void upb_status_seterrf(upb_status *status, const char *msg, ...);
-void upb_status_setcode(upb_status *status, upb_errorspace *space, int code);
-void upb_status_seteof(upb_status *status);
-// The returned string is invalidated by any other call into the status.
-const char *upb_status_getstr(const upb_status *status);
+void upb_status_seterrmsg(upb_status *status, const char *msg);
+void upb_status_seterrf(upb_status *status, const char *fmt, ...);
+void upb_status_vseterrf(upb_status *status, const char *fmt, va_list args);
+void upb_status_seterrcode(upb_status *status, upb_errorspace *space, int code);
 void upb_status_copy(upb_status *to, const upb_status *from);
 
 #ifdef __cplusplus
@@ -184,16 +328,27 @@ void upb_status_copy(upb_status *to, const upb_status *from);
 namespace upb {
 
 // C++ Wrappers
-inline Status::Status() { upb_status_init(this); }
-inline Status::~Status() { upb_status_uninit(this); }
+inline Status::Status() { Clear(); }
 inline bool Status::ok() const { return upb_ok(this); }
-inline bool Status::eof() const { return upb_eof(this); }
-inline const char *Status::GetString() const { return upb_status_getstr(this); }
-inline void Status::SetEof() { upb_status_seteof(this); }
-inline void Status::SetErrorLiteral(const char* msg) {
-  upb_status_seterrliteral(this, msg);
+inline const char* Status::error_message() const {
+  return upb_status_errmsg(this);
+}
+inline void Status::SetErrorMessage(const char* msg) {
+  upb_status_seterrmsg(this, msg);
+}
+inline void Status::SetFormattedErrorMessage(const char* fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  upb_status_vseterrf(this, fmt, args);
+  va_end(args);
+}
+inline void Status::SetErrorCode(ErrorSpace* space, int code) {
+  upb_status_seterrcode(this, space, code);
 }
 inline void Status::Clear() { upb_status_clear(this); }
+inline void Status::CopyFrom(const Status& other) {
+  upb_status_copy(this, &other);
+}
 
 }  // namespace upb
 

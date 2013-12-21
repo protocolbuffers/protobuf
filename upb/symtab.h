@@ -34,12 +34,7 @@ class upb::SymbolTable {
  public:
   // Returns a new symbol table with a single ref owned by "owner."
   // Returns NULL if memory allocation failed.
-  static SymbolTable* New(const void* owner);
-
-  // Though not declared as such in C++, upb::RefCounted is the base of
-  // SymbolTable and we can upcast to it.
-  RefCounted* Upcast();
-  const RefCounted* Upcast() const;
+  static reffed_ptr<SymbolTable> New();
 
   // Functionality from upb::RefCounted.
   bool IsFrozen() const;
@@ -56,16 +51,13 @@ class upb::SymbolTable {
   //    types within this message are searched, then within the parent, on up
   //    to the root namespace).
   //
-  // If a def is found, the caller owns one ref on the returned def, owned by
-  // owner.  Otherwise returns NULL.
-  const Def* Resolve(const char* base, const char* sym,
-                     const void* owner) const;
+  // If not found, returns NULL.
+  reffed_ptr<const Def> Resolve(const char* base, const char* sym) const;
 
-  // Finds an entry in the symbol table with this exact name.  If a def is
-  // found, the caller owns one ref on the returned def, owned by owner.
-  // Otherwise returns NULL.
-  const Def* Lookup(const char *sym, const void *owner) const;
-  const MessageDef* LookupMessage(const char *sym, const void *owner) const;
+  // Finds an entry in the symbol table with this exact name.  If not found,
+  // returns NULL.
+  reffed_ptr<const Def> Lookup(const char *sym) const;
+  reffed_ptr<const MessageDef> LookupMessage(const char *sym) const;
 
   // Gets an array of pointers to all currently active defs in this symtab.
   // The caller owns the returned array (which is of length *n) as well as a
@@ -112,7 +104,7 @@ class upb::SymbolTable {
   }
 
  private:
-  UPB_DISALLOW_POD_OPS(SymbolTable);
+  UPB_DISALLOW_POD_OPS(SymbolTable, upb::SymbolTable);
 
 #else
 struct upb_symtab {
@@ -150,14 +142,32 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
 
 // C++ inline wrappers.
 namespace upb {
-inline SymbolTable* SymbolTable::New(const void* owner) {
-  return upb_symtab_new(owner);
+
+template<>
+class Pointer<SymbolTable> {
+ public:
+  explicit Pointer(SymbolTable* ptr) : ptr_(ptr) {}
+  operator SymbolTable*() { return ptr_; }
+  operator RefCounted*() { return UPB_UPCAST(ptr_); }
+ private:
+  SymbolTable* ptr_;
+};
+
+template<>
+class Pointer<const SymbolTable> {
+ public:
+  explicit Pointer(const SymbolTable* ptr) : ptr_(ptr) {}
+  operator const SymbolTable*() { return ptr_; }
+  operator const RefCounted*() { return UPB_UPCAST(ptr_); }
+ private:
+  const SymbolTable* ptr_;
+};
+
+inline reffed_ptr<SymbolTable> SymbolTable::New() {
+  upb_symtab *s = upb_symtab_new(&s);
+  return reffed_ptr<SymbolTable>(s, &s);
 }
 
-inline RefCounted* SymbolTable::Upcast() { return UPB_UPCAST(this); }
-inline const RefCounted* SymbolTable::Upcast() const {
-  return UPB_UPCAST(this);
-}
 inline bool SymbolTable::IsFrozen() const {
   return upb_symtab_isfrozen(this);
 }
@@ -174,17 +184,19 @@ inline void SymbolTable::CheckRef(const void *owner) const {
   upb_symtab_checkref(this, owner);
 }
 
-inline const Def* SymbolTable::Resolve(
-    const char* base, const char* sym, const void* owner) const {
-  return upb_symtab_resolve(this, base, sym, owner);
+inline reffed_ptr<const Def> SymbolTable::Resolve(
+    const char* base, const char* sym) const {
+  const upb_def *def = upb_symtab_resolve(this, base, sym, &def);
+  return reffed_ptr<const Def>(def, &def);
 }
-inline const Def* SymbolTable::Lookup(
-    const char *sym, const void *owner) const {
-  return upb_symtab_lookup(this, sym, owner);
+inline reffed_ptr<const Def> SymbolTable::Lookup(const char *sym) const {
+  const upb_def *def = upb_symtab_lookup(this, sym, &def);
+  return reffed_ptr<const Def>(def, &def);
 }
-inline const MessageDef* SymbolTable::LookupMessage(
-    const char *sym, const void *owner) const {
-  return upb_symtab_lookupmsg(this, sym, owner);
+inline reffed_ptr<const MessageDef> SymbolTable::LookupMessage(
+    const char *sym) const {
+  const upb_msgdef *m = upb_symtab_lookupmsg(this, sym, &m);
+  return reffed_ptr<const MessageDef>(m, &m);
 }
 inline const Def** SymbolTable::GetDefs(
     upb_deftype_t type, const void *owner, int *n) const {

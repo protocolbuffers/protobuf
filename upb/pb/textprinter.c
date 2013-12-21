@@ -203,40 +203,42 @@ static void onmreg(void *c, upb_handlers *h) {
   upb_msg_iter i;
   for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
+    upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+    upb_handlerattr_sethandlerdata(&attr, f, NULL);
     switch (upb_fielddef_type(f)) {
       case UPB_TYPE_INT32:
-        upb_handlers_setint32(h, f, putint32, f, NULL);
+        upb_handlers_setint32(h, f, putint32, &attr);
         break;
       case UPB_TYPE_INT64:
-        upb_handlers_setint64(h, f, putint64, f, NULL);
+        upb_handlers_setint64(h, f, putint64, &attr);
         break;
       case UPB_TYPE_UINT32:
-        upb_handlers_setuint32(h, f, putuint32, f, NULL);
+        upb_handlers_setuint32(h, f, putuint32, &attr);
         break;
       case UPB_TYPE_UINT64:
-        upb_handlers_setuint64(h, f, putuint64, f, NULL);
+        upb_handlers_setuint64(h, f, putuint64, &attr);
         break;
       case UPB_TYPE_FLOAT:
-        upb_handlers_setfloat(h, f, putfloat, f, NULL);
+        upb_handlers_setfloat(h, f, putfloat, &attr);
         break;
       case UPB_TYPE_DOUBLE:
-        upb_handlers_setdouble(h, f, putdouble, f, NULL);
+        upb_handlers_setdouble(h, f, putdouble, &attr);
         break;
       case UPB_TYPE_BOOL:
-        upb_handlers_setbool(h, f, putbool, f, NULL);
+        upb_handlers_setbool(h, f, putbool, &attr);
         break;
       case UPB_TYPE_STRING:
       case UPB_TYPE_BYTES:
-        upb_handlers_setstartstr(h, f, startstr, f, NULL);
-        upb_handlers_setstring(h, f, putstr, f, NULL);
-        upb_handlers_setendstr(h, f, endstr, f, NULL);
+        upb_handlers_setstartstr(h, f, startstr, &attr);
+        upb_handlers_setstring(h, f, putstr, &attr);
+        upb_handlers_setendstr(h, f, endstr, &attr);
         break;
       case UPB_TYPE_MESSAGE:
-        upb_handlers_setstartsubmsg(h, f, &startsubmsg, f, NULL);
-        upb_handlers_setendsubmsg(h, f, &endsubmsg, f, NULL);
+        upb_handlers_setstartsubmsg(h, f, startsubmsg, &attr);
+        upb_handlers_setendsubmsg(h, f, endsubmsg, &attr);
         break;
       case UPB_TYPE_ENUM:
-        upb_handlers_setint32(h, f, putenum, f, NULL);
+        upb_handlers_setint32(h, f, putenum, &attr);
       default:
         assert(false);
         break;
@@ -246,5 +248,5 @@ static void onmreg(void *c, upb_handlers *h) {
 
 const upb_handlers *upb_textprinter_newhandlers(const void *owner,
                                                 const upb_msgdef *m) {
-  return upb_handlers_newfrozen(m, NULL, owner, &onmreg, NULL);
+  return upb_handlers_newfrozen(m, owner, &onmreg, NULL);
 }

@@ -330,13 +330,15 @@ local function dump_defs_c(symtab, basename, append)
   append("const upb_msgdef %s = {\n", linktab:cdecl(upb.DEF_MSG))
   for m in linktab:objs(upb.DEF_MSG) do
     local tables = gettables(m)
-    -- UPB_MSGDEF_INIT(name, itof, ntof)
-    append('  UPB_MSGDEF_INIT("%s", %s, %s, %s, ' ..
+    -- UPB_MSGDEF_INIT(name, selector_count, submsg_field_count, itof, ntof,
+    --                 refs, ref2s)
+    append('  UPB_MSGDEF_INIT("%s", %d, %d, %s, %s,' ..
            '&reftables[%d], &reftables[%d]),\n',
            m:full_name(),
+           m:_selector_count(),
+           m:_submsg_field_count(),
            dumper:inttable(tables.int),
            dumper:strtable(tables.str),
-           m:_selector_count(),
            reftable, reftable + 1)
     reftable = reftable + 2
   end
@@ -358,14 +360,14 @@ local function dump_defs_c(symtab, basename, append)
       intfmt = "0"
     end
     -- UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, name, num, msgdef,
-    --                   subdef, selector_base, default_value)
-    append('  UPB_FIELDDEF_INIT(%s, %s, %s, %s, "%s", %d, %s, %s, %d, ' ..
+    --                   subdef, selector_base, index, default_value)
+    append('  UPB_FIELDDEF_INIT(%s, %s, %s, %s, "%s", %d, %s, %s, %d, %d, ' ..
            '{0},' .. -- TODO: support default value
            '&reftables[%d], &reftables[%d]),\n',
            const(f, "label"), const(f, "type"), intfmt,
            boolstr(f:istagdelim()), f:name(),
            f:number(), linktab:addr(f:containing_type()), subdef,
-           f:_selector_base(),
+           f:_selector_base(), f:index(),
            reftable, reftable + 1
            )
     reftable = reftable + 2

@@ -25,22 +25,21 @@
 #include "upb/def.h"
 
 #ifdef __cplusplus
-struct upb_frametype;
 
 namespace upb {
-typedef upb_frametype FrameType;
+class HandlerAttributes;
 class Handlers;
 template <class T> class Handler;
 template <class T> struct CanonicalType;
 }  // namespace upb
 
-typedef upb::FrameType upb_frametype;
+typedef upb::HandlerAttributes upb_handlerattr;
 typedef upb::Handlers upb_handlers;
 #else
-struct upb_frametype;
+struct upb_handlerattr;
 struct upb_handlers;
 struct upb_sinkframe;
-typedef struct upb_frametype upb_frametype;
+typedef struct upb_handlerattr upb_handlerattr;
 typedef struct upb_handlers upb_handlers;
 typedef struct upb_sinkframe upb_sinkframe;
 #endif
@@ -53,11 +52,6 @@ typedef struct upb_sinkframe upb_sinkframe;
 // If having a single static limit is too inflexible, we can add another variant
 // of Handlers::Freeze that allows specifying this as a parameter.
 #define UPB_MAX_HANDLER_DEPTH 64
-
-typedef struct {
-  void (*func)();
-  const void *data;
-} upb_handlers_tabent;
 
 // All the different types of handlers that can be registered.
 // Only needed for the advanced functions in upb::Handlers.
@@ -89,11 +83,66 @@ extern char _upb_noclosure;
 // A selector refers to a specific field handler in the Handlers object
 // (for example: the STARTSUBMSG handler for field "field15").
 typedef int32_t upb_selector_t;
+typedef void upb_func();
 
-// Message-level callbacks have static selectors.
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE upb_func *upb_handlers_gethandler(const upb_handlers *h,
+                                             upb_selector_t s);
+UPB_INLINE const void *upb_handlerattr_handlerdata(const upb_handlerattr *attr);
+UPB_INLINE const void *upb_handlers_gethandlerdata(const upb_handlers *h,
+                                                   upb_selector_t s);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+// Static selectors for upb::Handlers.
 #define UPB_STARTMSG_SELECTOR 0
 #define UPB_ENDMSG_SELECTOR 1
 #define UPB_STATIC_SELECTOR_COUNT 2
+
+// Static selectors for upb::BytesHandler.
+#define UPB_STARTSTR_SELECTOR 0
+#define UPB_STRING_SELECTOR 1
+#define UPB_ENDSTR_SELECTOR 2
+
+typedef void upb_handlerfree(void *d);
+
+#ifdef __cplusplus
+
+class upb::HandlerAttributes {
+ public:
+  HandlerAttributes();
+  ~HandlerAttributes();
+
+  // Sets the handler data that will be passed as the second parameter of the
+  // handler.
+  //
+  // Warning: if you use these attributes for multiple handlers, the
+  // cleanup handler will be called once for each handler it was successfully
+  // set on.
+  bool SetHandlerData(void *handler_data, upb_handlerfree *cleanup);
+  void *handler_data() const;
+
+ private:
+  friend UPB_INLINE const void * ::upb_handlerattr_handlerdata(
+      const upb_handlerattr *attr);
+
+#else
+struct upb_handlerattr {
+#endif
+  void *handler_data_;
+  upb_handlerfree *cleanup;
+};
+
+typedef struct {
+  upb_func *func;
+  upb_handlerattr attr;
+} upb_handlers_tabent;
 
 #ifdef __cplusplus
 
@@ -139,24 +188,18 @@ class upb::Handlers {
 
   typedef void HandlersCallback(void *closure, upb_handlers *h);
 
-  // Returns a new handlers object for the given frozen msgdef that will use
-  // the given FrameType as its top-level state (can be NULL, for now).  A
-  // single ref on the returned object will belong to the given owner.
+  // Returns a new handlers object for the given frozen msgdef.
   // Returns NULL if memory allocation failed.
-  static Handlers* New(const MessageDef* m,
-                       const FrameType* ft,
-                       const void *owner);
+  static reffed_ptr<Handlers> New(const MessageDef *m);
 
   // Convenience function for registering a graph of handlers that mirrors the
   // graph of msgdefs for some message.  For "m" and all its children a new set
   // of handlers will be created and the given callback will be invoked,
   // allowing the client to register handlers for this message.  Note that any
-  // subhandlers set by the callback will be overwritten.  A single ref on the
-  // returned object will belong to the given owner.
-  static const Handlers* NewFrozen(const MessageDef *m,
-                                   const FrameType* ft,
-                                   const void *owner,
-                                   HandlersCallback *callback, void *closure);
+  // subhandlers set by the callback will be overwritten.
+  static reffed_ptr<const Handlers> NewFrozen(const MessageDef *m,
+                                              HandlersCallback *callback,
+                                              void *closure);
 
   // Functionality from upb::RefCounted.
   bool IsFrozen() const;
@@ -173,14 +216,15 @@ class upb::Handlers {
   const Status* status();
   void ClearError();
 
-  // Top-level frame type.
-  const FrameType* frame_type() const;
+  // Call to freeze these Handlers.  Requires that any SubHandlers are already
+  // frozen.  For cycles, you must use the static version below and freeze the
+  // whole graph at once.
+  bool Freeze(Status* s);
 
   // Freezes the given set of handlers.  You may not freeze a handler without
-  // also freezing any handlers they point to.  In the future we may want to
-  // require that all fields of the submessage have had subhandlers set for
-  // them.
+  // also freezing any handlers they point to.
   static bool Freeze(Handlers*const* handlers, int n, Status* s);
+  static bool Freeze(const vector<Handlers*>& handlers, Status* s);
 
   // Returns the msgdef associated with this handlers object.
   const MessageDef* message_def() const;
@@ -367,22 +411,23 @@ class upb::Handlers {
   // static bool IsSequence(Selector selector);
 
  private:
-  UPB_DISALLOW_POD_OPS(Handlers);
+  UPB_DISALLOW_POD_OPS(Handlers, upb::Handlers);
+
+  friend UPB_INLINE GenericFunction *::upb_handlers_gethandler(
+      const upb_handlers *h, upb_selector_t s);
+  friend UPB_INLINE const void *::upb_handlers_gethandlerdata(
+      const upb_handlers *h, upb_selector_t s);
 
 #else
 struct upb_handlers {
 #endif
   upb_refcounted base;
   const upb_msgdef *msg;
-  const upb_frametype *ft;
-  upb_status *status_;  // Used only when mutable.
-  struct {
-    void *ptr;
-    void (*cleanup)(void*);
-  } *cleanup;
-  size_t cleanup_len, cleanup_size;
+  const upb_handlers **sub;
+  upb_status status_;  // Used only when mutable.
   upb_handlers_tabent table[1];  // Dynamically-sized field handler array.
 };
+
 
 #ifdef __cplusplus
 
@@ -393,55 +438,63 @@ namespace upb {
 // of the underlying C API into nice C++ function.
 //
 // Sample usage:
-//   bool OnValue(MyClosure* c, const MyHandlerData* d, int32_t val) {
+//   void OnValue1(MyClosure* c, const MyHandlerData* d, int32_t val) {
 //     // do stuff ...
-//     return true;
 //   }
 //
 //   // Handler that doesn't need any data bound to it.
-//   bool OnValue(MyClosure* c, int32_t val) {
+//   void OnValue2(MyClosure* c, int32_t val) {
 //     // do stuff ...
-//     return true;
 //   }
 //
+//   // Handler that returns bool so it can return failure if necessary.
+//   bool OnValue3(MyClosure* c, int32_t val) {
+//     // do stuff ...
+//     return ok;
+//   }
+//
+//   // Member function handler.
+//   class MyClosure {
+//    public:
+//     void OnValue(int32_t val) {
+//       // do stuff ...
+//     }
+//   };
+//
 //   // Takes ownership of the MyHandlerData.
-//   handlers->SetInt32Handler(f1, UpbBind(OnValue, new MyHandlerData(...)));
-//   handlers->SetInt32Handler(f2, UpbMakeHandler(OnValue));
+//   handlers->SetInt32Handler(f1, UpbBind(OnValue1, new MyHandlerData(...)));
+//   handlers->SetInt32Handler(f2, UpbMakeHandler(OnValue2));
+//   handlers->SetInt32Handler(f1, UpbMakeHandler(OnValue3));
+//   handlers->SetInt32Handler(f2, UpbMakeHandler(&MyClosure::OnValue));
 
 #ifdef UPB_CXX11
 
 // In C++11, the "template" disambiguator can appear even outside templates,
 // so all calls can safely use this pair of macros.
 
-#define UpbMakeHandler(f) \
-    upb::MakeHandler(upb::MatchWrapper(f).template Wrapper<f>)
+#define UpbMakeHandler(f) upb::MatchFunc(f).template GetFunc<f>()
 
 // We have to be careful to only evaluate "d" once.
-#define UpbBind(f, d) \
-    upb::BindHandler(upb::MatchWrapper(f).template Wrapper<f>, f, (d))
+#define UpbBind(f, d) upb::MatchFunc(f).template GetFunc<f>((d))
 
 #else
 
 // Prior to C++11, the "template" disambiguator may only appear inside a
 // template, so the regular macro must not use "template"
 
-#define UpbMakeHandler(f) \
-    upb::MakeHandler(upb::MatchWrapper(f).Wrapper<f>)
+#define UpbMakeHandler(f) upb::MatchFunc(f).GetFunc<f>()
 
-#define UpbBind(f, d) \
-    upb::BindHandler(upb::MatchWrapper(f).Wrapper<f>, f, (d))
+#define UpbBind(f, d) upb::MatchFunc(f).GetFunc<f>((d))
 
 #endif  // UPB_CXX11
 
 // This macro must be used in C++98 for calls from inside a template.  But we
 // define this variant in all cases; code that wants to be compatible with both
 // C++98 and C++11 should always use this macro when calling from a template.
-#define UpbMakeHandlerT(f) \
-    upb::MakeHandler(upb::MatchWrapper(f).template Wrapper<f>)
+#define UpbMakeHandlerT(f) upb::MatchFunc(f).template GetFunc<f>()
 
-#define UpbBindT(f, d) \
-    upb::BindHandler(upb::MatchWrapper(f).template Wrapper<f>, f, (d))
-
+// We have to be careful to only evaluate "d" once.
+#define UpbBindT(f, d) upb::MatchFunc(f).template GetFunc<f>((d))
 
 // Handler: a struct that contains the (handler, data, deleter) tuple that is
 // used to register all handlers.  Users can Make() these directly but it's
@@ -451,96 +504,16 @@ template <class T> class Handler {
   // The underlying, handler function signature that upb uses internally.
   typedef T FuncPtr;
 
-  // Creates a Handler object with the given function, data, and cleanup func.
-  //
-  // This is like a constructor but we don't want to expose the actual
-  // constructor publicly because letting users construct them leads to hairy
-  // ownership issues:
-  //
-  //   Int32Handler handler(MyFunc, new MyData, MyCleanup);
-  //
-  //   // What should happen to ownership of MyData?
-  //   handlers->SetInt32Handler(f, handler);
-  //   handlers2->SetInt32Handler(f, handler);
-  //
-  // To avoid this ownership question we prevent the Handler objects from
-  // being constructed, copied, or assigned.  They are only available as the
-  // return value of this Make() function, and they must be registered exactly
-  // once before the temporary object is destroyed.  This allows the Handler
-  // object to be the *unique* owner of the passed-in data.
-  static Handler<T> Make(FuncPtr h, void* hd, void (*fr)(void*)) {
-    return Handler<T>(h, hd, fr);
-  }
-
-  ~Handler() { assert(registered_); }
+  // Intentionally implicit.
+  template <class F> Handler(F func);
+  ~Handler();
 
  private:
+  UPB_DISALLOW_COPY_AND_ASSIGN(Handler);
   friend class Handlers;
-
-  Handler(FuncPtr h, void *d, void (*c)(void *))
-      : handler_(h), data_(d), cleanup_(c), registered_(false) {}
-  void operator=(const Handler&);
-#ifdef UPB_CXX11
-  // C++98 doesn't support binding a const ref to a temporary, at least
-  // according to Clang.  It is still intended that users NOT create instances
-  // of this object via this copy constructor, and any attempts to register
-  // such an object more than once will assert-fail.
-  Handler(const Handler&);
-#endif
-
   FuncPtr handler_;
-  void *data_;
-  void (*cleanup_)(void*);
+  mutable HandlerAttributes attr_;
   mutable bool registered_;
-
-  // Noisy friend declarations; these are all of the "Bind" functions,
-  // two for each type of handler.  They need to be friends so that
-  // they can call the copy constructor to return a temporary.
-
-  friend Handlers::EndMessageHandler MakeHandler(
-      bool (*wrapper)(void *, const void *, Status *));
-
-  template <class T1>
-  friend typename Handlers::ValueHandler<T1>::H MakeHandler(
-      bool (*wrapper)(void *, const void *, T1));
-
-  template <class C, class D, class T1, class T2>
-  friend typename Handlers::ValueHandler<T1>::H BindHandler(
-      bool (*wrapper)(void *, const void *, T1), bool (*h)(C *, const D *, T2),
-      D *data);
-
-  friend Handlers::StartFieldHandler MakeHandler(
-      void *(*wrapper)(void *, const void *));
-
-  template <class R, class C, class D>
-  friend Handlers::StartFieldHandler BindHandler(
-      void *(*wrapper)(void *, const void *), R *(*h)(C *, const D *), D *data);
-
-  friend Handlers::EndFieldHandler MakeHandler(bool (*wrapper)(void *,
-                                                               const void *));
-
-  template <class C, class D>
-  friend Handlers::EndFieldHandler BindHandler(bool (*wrapper)(void *,
-                                                               const void *),
-                                               bool (*h)(C *, const D *),
-                                               D *data);
-
-  friend Handlers::StringHandler MakeHandler(
-      size_t (*wrapper)(void *, const void *, const char *, size_t));
-
-  template <class C, class D>
-  friend Handlers::StringHandler BindHandler(
-      size_t (*wrapper)(void *, const void *, const char *, size_t),
-      size_t (*h)(C *, const D *, const char *, size_t), D *data);
-
-  friend Handlers::StartStringHandler MakeHandler(void *(*wrapper)(void *,
-                                                                   const void *,
-                                                                   size_t));
-
-  template <class R, class C, class D>
-  friend Handlers::StartStringHandler BindHandler(
-      void *(*wrapper)(void *, const void *, size_t),
-      R *(*h)(C *, const D *, size_t), D *data);
 };
 
 }  // namespace upb
@@ -549,30 +522,42 @@ extern "C" {
 #endif  // __cplusplus
 
 // Native C API.
+
+// Handler function typedefs.
+typedef bool upb_startmsg_handlerfunc(void *c, const void*);
+typedef bool upb_endmsg_handlerfunc(void *c, const void *, upb_status *status);
+typedef void* upb_startfield_handlerfunc(void *c, const void *hd);
+typedef bool upb_endfield_handlerfunc(void *c, const void *hd);
+typedef bool upb_int32_handlerfunc(void *c, const void *hd, int32_t val);
+typedef bool upb_int64_handlerfunc(void *c, const void *hd, int64_t val);
+typedef bool upb_uint32_handlerfunc(void *c, const void *hd, uint32_t val);
+typedef bool upb_uint64_handlerfunc(void *c, const void *hd, uint64_t val);
+typedef bool upb_float_handlerfunc(void *c, const void *hd, float val);
+typedef bool upb_double_handlerfunc(void *c, const void *hd, double val);
+typedef bool upb_bool_handlerfunc(void *c, const void *hd, bool val);
+typedef void *upb_startstr_handlerfunc(void *c, const void *hd,
+                                       size_t size_hint);
+typedef size_t upb_string_handlerfunc(void *c, const void *hd, const char *buf,
+                                      size_t n);
+// upb_handlerattr
+#define UPB_HANDLERATTR_INITIALIZER {NULL, NULL}
+
+void upb_handlerattr_init(upb_handlerattr *attr);
+void upb_handlerattr_uninit(upb_handlerattr *attr);
+
+bool upb_handlerattr_sethandlerdata(upb_handlerattr *attr, void *hd,
+                                    upb_handlerfree *cleanup);
+UPB_INLINE const void *upb_handlerattr_handlerdata(
+    const upb_handlerattr *attr) {
+  return attr->handler_data_;
+}
+
 typedef void upb_handlers_callback(void *closure, upb_handlers *h);
-typedef void upb_handlerfree(void *d);
-typedef void upb_func();
 
-typedef bool upb_startmsg_handler(void *c, const void*);
-typedef bool upb_endmsg_handler(void *c, const void *, upb_status *status);
-typedef void* upb_startfield_handler(void *c, const void *hd);
-typedef bool upb_endfield_handler(void *c, const void *hd);
-typedef bool upb_int32_handler(void *c, const void *hd, int32_t val);
-typedef bool upb_int64_handler(void *c, const void *hd, int64_t val);
-typedef bool upb_uint32_handler(void *c, const void *hd, uint32_t val);
-typedef bool upb_uint64_handler(void *c, const void *hd, uint64_t val);
-typedef bool upb_float_handler(void *c, const void *hd, float val);
-typedef bool upb_double_handler(void *c, const void *hd, double val);
-typedef bool upb_bool_handler(void *c, const void *hd, bool val);
-typedef void* upb_startstr_handler(void *c, const void *hd, size_t size_hint);
-typedef size_t upb_string_handler(void *c, const void *hd, const char *buf,
-                                  size_t n);
-
+// upb_handlers
 upb_handlers *upb_handlers_new(const upb_msgdef *m,
-                               const upb_frametype *ft,
                                const void *owner);
 const upb_handlers *upb_handlers_newfrozen(const upb_msgdef *m,
-                                           const upb_frametype *ft,
                                            const void *owner,
                                            upb_handlers_callback *callback,
                                            void *closure);
@@ -588,62 +573,95 @@ void upb_handlers_checkref(const upb_handlers *h, const void *owner);
 const upb_status *upb_handlers_status(upb_handlers *h);
 void upb_handlers_clearerr(upb_handlers *h);
 const upb_msgdef *upb_handlers_msgdef(const upb_handlers *h);
-const upb_frametype *upb_handlers_frametype(const upb_handlers *h);
-bool upb_handlers_setstartmsg(upb_handlers *h, upb_startmsg_handler *handler,
-                              void *d, upb_handlerfree *fr);
-bool upb_handlers_setendmsg(upb_handlers *h, upb_endmsg_handler *handler,
-                            void *d, upb_handlerfree *fr);
+
+bool upb_handlers_setstartmsg(upb_handlers *h, upb_startmsg_handlerfunc *func,
+                              upb_handlerattr *attr);
+bool upb_handlers_setendmsg(upb_handlers *h, upb_endmsg_handlerfunc *func,
+                            upb_handlerattr *attr);
 bool upb_handlers_setint32(upb_handlers *h, const upb_fielddef *f,
-                           upb_int32_handler *handler, void *d,
-                           upb_handlerfree *fr);
+                           upb_int32_handlerfunc *func, upb_handlerattr *attr);
 bool upb_handlers_setint64(upb_handlers *h, const upb_fielddef *f,
-                           upb_int64_handler *handler, void *d,
-                           upb_handlerfree *fr);
+                           upb_int64_handlerfunc *func, upb_handlerattr *attr);
 bool upb_handlers_setuint32(upb_handlers *h, const upb_fielddef *f,
-                            upb_uint32_handler *handler, void *d,
-                            upb_handlerfree *fr);
+                            upb_uint32_handlerfunc *func,
+                            upb_handlerattr *attr);
 bool upb_handlers_setuint64(upb_handlers *h, const upb_fielddef *f,
-                            upb_uint64_handler *handler, void *d,
-                            upb_handlerfree *fr);
+                            upb_uint64_handlerfunc *func,
+                            upb_handlerattr *attr);
 bool upb_handlers_setfloat(upb_handlers *h, const upb_fielddef *f,
-                           upb_float_handler *handler, void *d,
-                           upb_handlerfree *fr);
+                           upb_float_handlerfunc *func, upb_handlerattr *attr);
 bool upb_handlers_setdouble(upb_handlers *h, const upb_fielddef *f,
-                            upb_double_handler *handler, void *d,
-                            upb_handlerfree *fr);
+                            upb_double_handlerfunc *func,
+                            upb_handlerattr *attr);
 bool upb_handlers_setbool(upb_handlers *h, const upb_fielddef *f,
-                          upb_bool_handler *handler, void *d,
-                          upb_handlerfree *fr);
+                          upb_bool_handlerfunc *func,
+                          upb_handlerattr *attr);
 bool upb_handlers_setstartstr(upb_handlers *h, const upb_fielddef *f,
-                              upb_startstr_handler *handler, void *d,
-                              upb_handlerfree *fr);
+                              upb_startstr_handlerfunc *func,
+                              upb_handlerattr *attr);
 bool upb_handlers_setstring(upb_handlers *h, const upb_fielddef *f,
-                            upb_string_handler *handler, void *d,
-                            upb_handlerfree *fr);
+                            upb_string_handlerfunc *func,
+                            upb_handlerattr *attr);
 bool upb_handlers_setendstr(upb_handlers *h, const upb_fielddef *f,
-                            upb_endfield_handler *handler, void *d,
-                            upb_handlerfree *fr);
+                            upb_endfield_handlerfunc *func,
+                            upb_handlerattr *attr);
 bool upb_handlers_setstartseq(upb_handlers *h, const upb_fielddef *f,
-                              upb_startfield_handler *handler, void *d,
-                              upb_handlerfree *fr);
+                              upb_startfield_handlerfunc *func,
+                              upb_handlerattr *attr);
 bool upb_handlers_setstartsubmsg(upb_handlers *h, const upb_fielddef *f,
-                                 upb_startfield_handler *handler, void *d,
-                                 upb_handlerfree *fr);
+                                 upb_startfield_handlerfunc *func,
+                                 upb_handlerattr *attr);
 bool upb_handlers_setendsubmsg(upb_handlers *h, const upb_fielddef *f,
-                               upb_endfield_handler *handler, void *d,
-                               upb_handlerfree *fr);
+                               upb_endfield_handlerfunc *func,
+                               upb_handlerattr *attr);
 bool upb_handlers_setendseq(upb_handlers *h, const upb_fielddef *f,
-                            upb_endfield_handler *handler, void *d,
-                            upb_handlerfree *fr);
+                            upb_endfield_handlerfunc *func,
+                            upb_handlerattr *attr);
+
 bool upb_handlers_setsubhandlers(upb_handlers *h, const upb_fielddef *f,
                                  const upb_handlers *sub);
 const upb_handlers *upb_handlers_getsubhandlers(const upb_handlers *h,
                                                 const upb_fielddef *f);
 const upb_handlers *upb_handlers_getsubhandlers_sel(const upb_handlers *h,
                                                     upb_selector_t sel);
-upb_func *upb_handlers_gethandler(const upb_handlers *h, upb_selector_t s);
-const void *upb_handlers_gethandlerdata(const upb_handlers *h,
-                                        upb_selector_t s);
+
+UPB_INLINE upb_func *upb_handlers_gethandler(const upb_handlers *h,
+                                             upb_selector_t s) {
+  return (upb_func *)h->table[s].func;
+}
+
+UPB_INLINE const void *upb_handlers_gethandlerdata(const upb_handlers *h,
+                                                   upb_selector_t s) {
+  return upb_handlerattr_handlerdata(&h->table[s].attr);
+}
+
+// Handler types for single fields.
+// Right now we only have one for TYPE_BYTES but ones for other types
+// should follow.
+//
+// These follow the same handlers protocol for fields of a message.
+typedef struct { upb_handlers_tabent table[3]; } upb_byteshandler;
+
+void upb_byteshandler_init(upb_byteshandler *h);
+void upb_byteshandler_uninit(upb_byteshandler *h);
+
+// Caller must ensure that "d" outlives the handlers.
+// TODO(haberman): support handlerfree function for the data.
+// TODO(haberman): should this have a "freeze" operation?  It's not necessary
+// for memory management, but could be useful to force immutability and provide
+// a convenient moment to verify that all registration succeeded.
+bool upb_byteshandler_setstartstr(upb_byteshandler *h,
+                                  upb_startstr_handlerfunc *func, void *d);
+bool upb_byteshandler_setstring(upb_byteshandler *h,
+                                upb_string_handlerfunc *func, void *d);
+bool upb_byteshandler_setendstr(upb_byteshandler *h,
+                                upb_endfield_handlerfunc *func, void *d);
+
+#ifdef __cplusplus
+namespace upb {
+typedef upb_byteshandler  BytesHandler;
+}
+#endif
 
 // "Static" methods
 bool upb_handlers_freeze(upb_handlers *const *handlers, int n, upb_status *s);

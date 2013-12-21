@@ -38,10 +38,12 @@ message F {
 
 // A proto with a bunch of simple primitives.
 message SimplePrimitives {
-  optional fixed64 a = 1;
-  optional fixed32 b = 2;
-  optional double c = 3;
-  optional float d = 5;
-  //optional sint64 e = 6;
-  //optional sint32 f = 7;
+  optional fixed64 u64 = 1;
+  optional fixed32 u32 = 2;
+  optional double dbl = 3;
+  optional float flt = 5;
+  optional sint64 i64 = 6;
+  optional sint32 i32 = 7;
+  optional bool b = 8;
+  optional string str = 9;
 }

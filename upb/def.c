@@ -138,11 +138,11 @@ static const char *msgdef_name(const upb_msgdef *m) {
 
 static bool upb_validate_field(upb_fielddef *f, upb_status *s) {
   if (upb_fielddef_name(f) == NULL || upb_fielddef_number(f) == 0) {
-    upb_status_seterrliteral(s, "fielddef must have name and number set");
+    upb_status_seterrmsg(s, "fielddef must have name and number set");
     return false;
   }
   if (!f->type_is_set_) {
-    upb_status_seterrliteral(s, "fielddef type was not initialized");
+    upb_status_seterrmsg(s, "fielddef type was not initialized");
     return false;
   }
   if (upb_fielddef_hassubdef(f)) {
@@ -173,6 +173,61 @@ static bool upb_validate_field(upb_fielddef *f, upb_status *s) {
   return true;
 }
 
+// All submessage fields are lower than all other fields.
+// Secondly, fields are increasing in order.
+uint32_t field_rank(const upb_fielddef *f) {
+  uint32_t ret = upb_fielddef_number(f);
+  const uint32_t high_bit = 1 << 30;
+  assert(ret < high_bit);
+  if (!upb_fielddef_issubmsg(f))
+    ret |= high_bit;
+  return ret;
+}
+
+int cmp_fields(const void *p1, const void *p2) {
+  const upb_fielddef *f1 = *(upb_fielddef*const*)p1;
+  const upb_fielddef *f2 = *(upb_fielddef*const*)p2;
+  return field_rank(f1) - field_rank(f2);
+}
+
+static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
+  // Sort fields.  upb internally relies on UPB_TYPE_MESSAGE fields having the
+  // lowest indexes, but we do not publicly guarantee this.
+  int n = upb_msgdef_numfields(m);
+  upb_fielddef **fields = malloc(n * sizeof(*fields));
+  if (!fields) return false;
+
+  upb_msg_iter j;
+  int i;
+  m->submsg_field_count = 0;
+  for(i = 0, upb_msg_begin(&j, m); !upb_msg_done(&j); upb_msg_next(&j), i++) {
+    upb_fielddef *f = upb_msg_iter_field(&j);
+    assert(f->msgdef == m);
+    if (!upb_validate_field(f, s)) {
+      free(fields);
+      return false;
+    }
+    if (upb_fielddef_issubmsg(f)) {
+      m->submsg_field_count++;
+    }
+    fields[i] = f;
+  }
+
+  qsort(fields, n, sizeof(*fields), cmp_fields);
+
+  uint32_t selector = UPB_STATIC_SELECTOR_COUNT + m->submsg_field_count;
+  for (i = 0; i < n; i++) {
+    upb_fielddef *f = fields[i];
+    f->index_ = i;
+    f->selector_base = selector + upb_handlers_selectorbaseoffset(f);
+    selector += upb_handlers_selectorcount(f);
+  }
+  m->selector_count = selector;
+
+  free(fields);
+  return false;
+}
+
 bool upb_def_freeze(upb_def *const* defs, int n, upb_status *s) {
   // First perform validation, in two passes so we can check that we have a
   // transitive closure without needing to search.
@@ -180,10 +235,10 @@ bool upb_def_freeze(upb_def *const* defs, int n, upb_status *s) {
     upb_def *def = defs[i];
     if (upb_def_isfrozen(def)) {
       // Could relax this requirement if it's annoying.
-      upb_status_seterrliteral(s, "def is already frozen");
+      upb_status_seterrmsg(s, "def is already frozen");
       goto err;
     } else if (def->type == UPB_DEF_FIELD) {
-      upb_status_seterrliteral(s, "standalone fielddefs can not be frozen");
+      upb_status_seterrmsg(s, "standalone fielddefs can not be frozen");
       goto err;
     } else {
       // Set now to detect transitive closure in the second pass.
@@ -191,22 +246,14 @@ bool upb_def_freeze(upb_def *const* defs, int n, upb_status *s) {
     }
   }
 
-  // Second pass of validation.  Also assign selectors, compact tables.
+  // Second pass of validation.  Also assign selector bases and indexes, and
+  // compact tables.
   for (int i = 0; i < n; i++) {
     upb_msgdef *m = upb_dyncast_msgdef_mutable(defs[i]);
     upb_enumdef *e = upb_dyncast_enumdef_mutable(defs[i]);
     if (m) {
       upb_inttable_compact(&m->itof);
-      upb_msg_iter j;
-      uint32_t selector = UPB_STATIC_SELECTOR_COUNT;
-      for(upb_msg_begin(&j, m); !upb_msg_done(&j); upb_msg_next(&j)) {
-        upb_fielddef *f = upb_msg_iter_field(&j);
-        assert(f->msgdef == m);
-        if (!upb_validate_field(f, s)) goto err;
-        f->selector_base = selector + upb_handlers_selectorbaseoffset(f);
-        selector += upb_handlers_selectorcount(f);
-      }
-      m->selector_count = selector;
+      assign_msg_indices(m, s);
     } else if (e) {
       upb_inttable_compact(&e->iton);
     }
@@ -314,12 +361,12 @@ bool upb_enumdef_addval(upb_enumdef *e, const char *name, int32_t num,
     return false;
   }
   if (!upb_strtable_insert(&e->ntoi, name, upb_value_int32(num))) {
-    upb_status_seterrliteral(status, "out of memory");
+    upb_status_seterrmsg(status, "out of memory");
     return false;
   }
   if (!upb_inttable_lookup(&e->iton, num, NULL) &&
       !upb_inttable_insert(&e->iton, num, upb_value_cstr(upb_strdup(name)))) {
-    upb_status_seterrliteral(status, "out of memory");
+    upb_status_seterrmsg(status, "out of memory");
     upb_strtable_remove(&e->ntoi, name, NULL);
     return false;
   }
@@ -492,6 +539,10 @@ upb_fieldtype_t upb_fielddef_type(const upb_fielddef *f) {
   return f->type_;
 }
 
+uint32_t upb_fielddef_index(const upb_fielddef *f) {
+  return f->index_;
+}
+
 upb_label_t upb_fielddef_label(const upb_fielddef *f) {
   return f->label_;
 }
@@ -628,7 +679,7 @@ const char *upb_fielddef_subdefname(const upb_fielddef *f) {
 
 bool upb_fielddef_setnumber(upb_fielddef *f, uint32_t number, upb_status *s) {
   if (f->msgdef) {
-    upb_status_seterrliteral(
+    upb_status_seterrmsg(
         s, "cannot change field number after adding to a message");
     return false;
   }
@@ -880,16 +931,14 @@ static bool upb_subdef_typecheck(upb_fielddef *f, const upb_def *subdef,
                                  upb_status *s) {
   if (f->type_ == UPB_TYPE_MESSAGE) {
     if (upb_dyncast_msgdef(subdef)) return true;
-    upb_status_seterrliteral(s,
-                             "invalid subdef type for this submessage field");
+    upb_status_seterrmsg(s, "invalid subdef type for this submessage field");
     return false;
   } else if (f->type_ == UPB_TYPE_ENUM) {
     if (upb_dyncast_enumdef(subdef)) return true;
-    upb_status_seterrliteral(s, "invalid subdef type for this enum field");
+    upb_status_seterrmsg(s, "invalid subdef type for this enum field");
     return false;
   } else {
-    upb_status_seterrliteral(s,
-                             "only message and enum fields can have a subdef");
+    upb_status_seterrmsg(s, "only message and enum fields can have a subdef");
     return false;
   }
 }
@@ -928,7 +977,7 @@ bool upb_fielddef_setsubdefname(upb_fielddef *f, const char *name,
                                 upb_status *s) {
   assert(!upb_fielddef_isfrozen(f));
   if (!upb_fielddef_hassubdef(f)) {
-    upb_status_seterrliteral(s, "field type does not accept a subdef");
+    upb_status_seterrmsg(s, "field type does not accept a subdef");
     return false;
   }
   release_subdef(f);
@@ -1061,14 +1110,14 @@ bool upb_msgdef_addfields(upb_msgdef *m, upb_fielddef *const *fields, int n,
     // TODO(haberman): handle the case where two fields of the input duplicate
     // name or number.
     if (f->msgdef != NULL) {
-      upb_status_seterrliteral(s, "fielddef already belongs to a message");
+      upb_status_seterrmsg(s, "fielddef already belongs to a message");
       return false;
     } else if (upb_fielddef_name(f) == NULL || upb_fielddef_number(f) == 0) {
-      upb_status_seterrliteral(s, "field name or number were not set");
+      upb_status_seterrmsg(s, "field name or number were not set");
       return false;
     } else if(upb_msgdef_itof(m, upb_fielddef_number(f)) ||
               upb_msgdef_ntof(m, upb_fielddef_name(f))) {
-      upb_status_seterrliteral(s, "duplicate field name or number");
+      upb_status_seterrmsg(s, "duplicate field name or number");
       return false;
     }
   }

@@ -139,7 +139,7 @@ PICOBJ=$(patsubst %.c,%.lo,$(SRC)) $(patsubst %.cc,%.lo,$(SRC))
 
 ifdef USE_JIT
 PB += upb/pb/compile_decoder_x64.c
-upb/pb/compile_decoder_x64.o upb/pb/comiple_decoder_x64.lo: upb/pb/compile_decoder_x64.h
+upb/pb/compile_decoder_x64.o upb/pb/compile_decoder_x64.lo: upb/pb/compile_decoder_x64.h
 endif
 $(LIBUPB): $(OBJ)
 	$(E) AR $(LIBUPB)

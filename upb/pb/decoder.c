@@ -10,7 +10,6 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include "upb/bytestream.h"
 #include "upb/pb/decoder.int.h"
 #include "upb/pb/varint.int.h"
 
@@ -70,7 +69,7 @@ static bool in_residual_buf(upb_pbdecoder *d, const char *p);
 static void seterr(upb_pbdecoder *d, const char *msg) {
   // TODO(haberman): encapsulate this access to pipeline->status, but not sure
   // exactly what that interface should look like.
-  upb_status_seterrliteral(&d->sink->pipeline_->status_, msg);
+  upb_status_seterrmsg(d->status, msg);
 }
 
 void upb_pbdecoder_seterr(upb_pbdecoder *d, const char *msg) {
@@ -377,7 +376,7 @@ static bool push(upb_pbdecoder *d, uint64_t end) {
 
   fr++;
   fr->end_ofs = end;
-  fr->u.dispatch = NULL;
+  fr->dispatch = NULL;
   fr->groupnum = -1;
   d->top = fr;
   return true;
@@ -441,7 +440,7 @@ int32_t upb_pbdecoder_skipunknown(upb_pbdecoder *d, uint32_t fieldnum,
 }
 
 static int32_t dispatch(upb_pbdecoder *d) {
-  upb_inttable *dispatch = d->top->u.dispatch;
+  upb_inttable *dispatch = d->top->dispatch;
 
   // Decode tag.
   uint32_t tag;
@@ -478,16 +477,23 @@ static int32_t dispatch(upb_pbdecoder *d) {
   }
 }
 
+// Callers know that the stack is more than one deep because the opcodes that
+// call this only occur after PUSH operations.
+upb_pbdecoder_frame *outer_frame(upb_pbdecoder *d) {
+  assert(d->top != d->stack);
+  return d->top - 1;
+}
+
 
 /* The main decoding loop *****************************************************/
 
 size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
                             size_t size) {
   upb_pbdecoder *d = closure;
-  const upb_pbdecoderplan *p = hd;
+  const mgroup *group = hd;
   assert(buf);
   upb_pbdecoder_resume(d, NULL, buf, size);
-  UPB_UNUSED(p);
+  UPB_UNUSED(group);
 
 #define VMCASE(op, code) \
   case op: { code; if (consumes_input(op)) checkpoint(d); break; }
@@ -495,7 +501,7 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
   VMCASE(OP_PARSE_ ## type, { \
     ctype val; \
     CHECK_RETURN(decode_ ## wt(d, &val)); \
-    upb_sink_put ## name(d->sink, arg, (convfunc)(val)); \
+    upb_sink_put ## name(&d->top->sink, arg, (convfunc)(val)); \
   })
 
   while(1) {
@@ -513,7 +519,7 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
             (int)(d->data_end - ptr(d)),
             (int)(d->end - ptr(d)),
             (int)((d->top->end_ofs - d->bufstart_ofs) - (ptr(d) - d->buf)),
-            (int)(d->pc - 1 - upb_pbdecoderplan_codebase(p)),
+            (int)(d->pc - 1 - group->bytecode),
             upb_pbdecoder_getopname(op),
             arg);
 #endif
@@ -537,39 +543,42 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
 
       VMCASE(OP_SETDISPATCH,
         d->top->base = d->pc - 1;
-        memcpy(&d->top->u.dispatch, d->pc, sizeof(void*));
+        memcpy(&d->top->dispatch, d->pc, sizeof(void*));
         d->pc += sizeof(void*) / sizeof(uint32_t);
       )
       VMCASE(OP_STARTMSG,
-        CHECK_SUSPEND(upb_sink_startmsg(d->sink));
+        CHECK_SUSPEND(upb_sink_startmsg(&d->top->sink));
       )
       VMCASE(OP_ENDMSG,
-        CHECK_SUSPEND(upb_sink_endmsg(d->sink));
+        CHECK_SUSPEND(upb_sink_endmsg(&d->top->sink, d->status));
         assert(d->call_len > 0);
         d->pc = d->callstack[--d->call_len];
       )
       VMCASE(OP_STARTSEQ,
-        CHECK_SUSPEND(upb_sink_startseq(d->sink, arg));
+        upb_pbdecoder_frame *outer = outer_frame(d);
+        CHECK_SUSPEND(upb_sink_startseq(&outer->sink, arg, &d->top->sink));
       )
       VMCASE(OP_ENDSEQ,
-        CHECK_SUSPEND(upb_sink_endseq(d->sink, arg));
+        CHECK_SUSPEND(upb_sink_endseq(&d->top->sink, arg));
       )
       VMCASE(OP_STARTSUBMSG,
-        CHECK_SUSPEND(upb_sink_startsubmsg(d->sink, arg));
+        upb_pbdecoder_frame *outer = outer_frame(d);
+        CHECK_SUSPEND(upb_sink_startsubmsg(&outer->sink, arg, &d->top->sink));
       )
       VMCASE(OP_ENDSUBMSG,
-        CHECK_SUSPEND(upb_sink_endsubmsg(d->sink, arg));
+        CHECK_SUSPEND(upb_sink_endsubmsg(&d->top->sink, arg));
       )
       VMCASE(OP_STARTSTR,
         uint32_t len = d->top->end_ofs - offset(d);
-        CHECK_SUSPEND(upb_sink_startstr(d->sink, arg, len));
+        upb_pbdecoder_frame *outer = outer_frame(d);
+        CHECK_SUSPEND(upb_sink_startstr(&outer->sink, arg, len, &d->top->sink));
         if (len == 0) {
           d->pc++;  // Skip OP_STRING.
         }
       )
       VMCASE(OP_STRING,
         uint32_t len = curbufleft(d);
-        CHECK_SUSPEND(upb_sink_putstring(d->sink, arg, ptr(d), len));
+        CHECK_SUSPEND(upb_sink_putstring(&d->top->sink, arg, ptr(d), len));
         advance(d, len);
         if (d->delim_end == NULL) {  // String extends beyond this buf?
           d->pc--;
@@ -579,7 +588,7 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
         }
       )
       VMCASE(OP_ENDSTR,
-        CHECK_SUSPEND(upb_sink_endstr(d->sink, arg));
+        CHECK_SUSPEND(upb_sink_endstr(&d->top->sink, arg));
       )
       VMCASE(OP_PUSHTAGDELIM,
         CHECK_SUSPEND(push(d, d->top->end_ofs));
@@ -664,50 +673,52 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
   }
 }
 
-void *upb_pbdecoder_start(void *closure, const void *handler_data,
-                          size_t size_hint) {
-  UPB_UNUSED(size_hint);
+void *upb_pbdecoder_startbc(void *closure, const void *pc, size_t size_hint) {
   upb_pbdecoder *d = closure;
-  const upb_pbdecoderplan *plan = handler_data;
-  UPB_UNUSED(plan);
-  if (upb_pbdecoderplan_hasjitcode(plan)) {
-    d->top->u.closure = d->sink->top->closure;
-    d->call_len = 0;
-  } else {
-    d->call_len = 1;
-    d->pc = upb_pbdecoderplan_codebase(plan);
-  }
-  assert(d);
-  assert(d->sink);
-  if (plan->topmethod->dest_handlers) {
-    assert(d->sink->top->h == plan->topmethod->dest_handlers);
-  }
-  d->status = &d->sink->pipeline_->status_;
+  UPB_UNUSED(size_hint);
+  d->call_len = 1;
+  d->pc = pc;
+  return d;
+}
+
+void *upb_pbdecoder_startjit(void *closure, const void *hd, size_t size_hint) {
+  UPB_UNUSED(hd);
+  upb_pbdecoder *d = closure;
+  d->call_len = 0;
   return d;
 }
 
 bool upb_pbdecoder_end(void *closure, const void *handler_data) {
   upb_pbdecoder *d = closure;
-  const upb_pbdecoderplan *plan = handler_data;
+  const upb_pbdecodermethod *method = handler_data;
 
   if (d->residual_end > d->residual) {
     seterr(d, "Unexpected EOF");
     return false;
   }
 
+  if (d->top->end_ofs != UINT64_MAX) {
+    seterr(d, "Unexpected EOF inside delimited string");
+    return false;
+  }
+
   // Message ends here.
   uint64_t end = offset(d);
   d->top->end_ofs = end;
+
   char dummy;
-  if (upb_pbdecoderplan_hasjitcode(plan)) {
 #ifdef UPB_USE_JIT_X64
+  const mgroup *group = (const mgroup*)method->group;
+  if (group->jit_code) {
     if (d->top != d->stack)
       d->stack->end_ofs = 0;
-    upb_pbdecoderplan_jitcode(plan)(closure, handler_data, &dummy, 0);
-#endif
+    group->jit_code(closure, method->code_base.ptr, &dummy, 0);
   } else {
+#endif
     d->stack->end_ofs = end;
-    uint32_t *p = d->pc - 1;
+    const uint32_t *p = d->pc;
+    // Check the previous bytecode, but guard against beginning.
+    if (p != method->code_base.ptr) p--;
     if (getop(*p) == OP_CHECKDELIM) {
       // Rewind from OP_TAG* to OP_CHECKDELIM.
       assert(getop(*d->pc) == OP_TAG1 ||
@@ -716,28 +727,29 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
       d->pc = p;
     }
     upb_pbdecoder_decode(closure, handler_data, &dummy, 0);
+#ifdef UPB_USE_JIT_X64
   }
+#endif
 
   if (d->call_len != 0) {
     seterr(d, "Unexpected EOF");
     return false;
   }
 
-  return upb_ok(&d->sink->pipeline_->status_);
+  return true;
 }
 
-void init(void *_d, upb_pipeline *p) {
-  UPB_UNUSED(p);
-  upb_pbdecoder *d = _d;
+void upb_pbdecoder_init(upb_pbdecoder *d, const upb_pbdecodermethod *m,
+                        upb_status *s) {
   d->limit = &d->stack[UPB_DECODER_MAX_NESTING];
-  d->sink = NULL;
+  upb_bytessink_reset(&d->input_, &m->input_handler_, d);
+  d->method_ = m;
   d->callstack[0] = &halt;
-  // reset() must be called before decoding; this is guaranteed by assert() in
-  // start().
+  d->status = s;
+  upb_pbdecoder_reset(d);
 }
 
-void reset(void *_d) {
-  upb_pbdecoder *d = _d;
+void upb_pbdecoder_reset(upb_pbdecoder *d) {
   d->top = d->stack;
   d->top->end_ofs = UINT64_MAX;
   d->bufstart_ofs = 0;
@@ -748,21 +760,27 @@ void reset(void *_d) {
   d->call_len = 1;
 }
 
-bool upb_pbdecoder_resetsink(upb_pbdecoder *d, upb_sink* sink) {
-  // TODO(haberman): typecheck the sink, and test whether the decoder is in the
-  // middle of decoding.  Return false if either assumption is violated.
-  d->sink = sink;
-  reset(d);
+// Not currently required, but to support outgrowing the static stack we need
+// this.
+void upb_pbdecoder_uninit(upb_pbdecoder *d) {}
+
+const upb_pbdecodermethod *upb_pbdecoder_method(const upb_pbdecoder *d) {
+  return d->method_;
+}
+
+bool upb_pbdecoder_resetoutput(upb_pbdecoder *d, upb_sink* sink) {
+  // TODO(haberman): do we need to test whether the decoder is already on the
+  // stack (like calling this from within a callback)?  Should we support
+  // rebinding the output at all?
+  assert(sink);
+  if (d->method_->dest_handlers_) {
+    if (sink->handlers != d->method_->dest_handlers_)
+      return false;
+  }
+  upb_sink_reset(&d->top->sink, sink->handlers, sink->closure);
   return true;
 }
 
-const upb_frametype upb_pbdecoder_frametype = {
-  sizeof(upb_pbdecoder),
-  init,
-  NULL,
-  reset,
-};
-
-const upb_frametype *upb_pbdecoder_getframetype() {
-  return &upb_pbdecoder_frametype;
+upb_bytessink *upb_pbdecoder_input(upb_pbdecoder *d) {
+  return &d->input_;
 }

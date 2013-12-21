@@ -30,10 +30,9 @@ static upb_symtab *load_test_proto(void *owner) {
   upb_status status = UPB_STATUS_INIT;
   if (!upb_load_descriptor_file_into_symtab(s, descriptor_file, &status)) {
     fprintf(stderr, "Error loading descriptor file: %s\n",
-            upb_status_getstr(&status));
+            upb_status_errmsg(&status));
     ASSERT(false);
   }
-  upb_status_uninit(&status);
   return s;
 }
 

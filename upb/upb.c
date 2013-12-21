@@ -14,118 +14,69 @@
 #include <string.h>
 #include "upb/upb.h"
 
-// Like vasprintf (which allocates a string large enough for the result), but
-// uses *buf (which can be NULL) as a starting point and reallocates it only if
-// the new value will not fit.  "size" is updated to reflect the allocated size
-// of the buffer.  Starts writing at the given offset into the string; bytes
-// preceding this offset are unaffected.  Returns the new length of the string,
-// or -1 on memory allocation failure.
-static int upb_vrprintf(char **buf, size_t *size, size_t ofs,
-                        const char *fmt, va_list args) {
-  // Try once without reallocating.  We have to va_copy because we might have
-  // to call vsnprintf again.
-  uint32_t len = *size - ofs;
-  va_list args_copy;
-  va_copy(args_copy, args);
-  uint32_t true_len = vsnprintf(*buf + ofs, len, fmt, args_copy);
-  va_end(args_copy);
-
-  // Resize to be the correct size.
-  if (true_len >= len) {
-    // Need to print again, because some characters were truncated.  vsnprintf
-    // will not write the entire string unless you give it space to store the
-    // NULL terminator also.
-    *size = (ofs + true_len + 1);
-    char *newbuf = realloc(*buf, *size);
-    if (!newbuf) return -1;
-    vsnprintf(newbuf + ofs, true_len + 1, fmt, args);
-    *buf = newbuf;
-  }
-  return true_len;
+bool upb_dumptostderr(void *closure, const upb_status* status) {
+  UPB_UNUSED(closure);
+  fprintf(stderr, "%s\n", upb_status_errmsg(status));
+  return false;
 }
 
-void upb_status_init(upb_status *status) {
-  status->buf = NULL;
-  status->bufsize = 0;
-  upb_status_clear(status);
+// Guarantee null-termination and provide ellipsis truncation.
+// It may be tempting to "optimize" this by initializing these final
+// four bytes up-front and then being careful never to overwrite them,
+// this is safer and simpler.
+static void nullz(upb_status *status) {
+  const char *ellipsis = "...";
+  size_t len = strlen(ellipsis);
+  assert(sizeof(status->msg) > len);
+  memcpy(status->msg + sizeof(status->msg) - len, ellipsis, len);
 }
 
-void upb_status_uninit(upb_status *status) {
-  free(status->buf);
+void upb_status_clear(upb_status *status) {
+  upb_status blank = UPB_STATUS_INIT;
+  upb_status_copy(status, &blank);
 }
 
-bool upb_ok(const upb_status *status) { return !status->error; }
-bool upb_eof(const upb_status *status) { return status->eof_; }
+bool upb_ok(const upb_status *status) { return status->ok_; }
 
-void upb_status_seterrf(upb_status *status, const char *msg, ...) {
+upb_errorspace *upb_status_errspace(const upb_status *status) {
+  return status->error_space_;
+}
+
+int upb_status_errcode(const upb_status *status) { return status->code_; }
+
+const char *upb_status_errmsg(const upb_status *status) { return status->msg; }
+
+void upb_status_seterrmsg(upb_status *status, const char *msg) {
   if (!status) return;
-  status->error = true;
-  status->space = NULL;
+  status->ok_ = false;
+  strncpy(status->msg, msg, sizeof(status->msg));
+  nullz(status);
+}
+
+void upb_status_seterrf(upb_status *status, const char *fmt, ...) {
   va_list args;
-  va_start(args, msg);
-  upb_vrprintf(&status->buf, &status->bufsize, 0, msg, args);
+  va_start(args, fmt);
+  upb_status_vseterrf(status, fmt, args);
   va_end(args);
-  status->str = status->buf;
 }
 
-void upb_status_seterrliteral(upb_status *status, const char *msg) {
+void upb_status_vseterrf(upb_status *status, const char *fmt, va_list args) {
   if (!status) return;
-  status->error = true;
-  status->str = msg;
-  status->space = NULL;
+  status->ok_ = false;
+  vsnprintf(status->msg, sizeof(status->msg), fmt, args);
+  nullz(status);
+}
+
+void upb_status_seterrcode(upb_status *status, upb_errorspace *space,
+                           int code) {
+  if (!status) return;
+  status->ok_ = false;
+  status->error_space_ = space;
+  status->code_ = code;
+  space->set_message(status, code);
 }
 
 void upb_status_copy(upb_status *to, const upb_status *from) {
   if (!to) return;
-  to->error = from->error;
-  to->eof_ = from->eof_;
-  to->code = from->code;
-  to->space = from->space;
-  if (from->str == from->buf) {
-    if (to->bufsize < from->bufsize) {
-      to->bufsize = from->bufsize;
-      to->buf = realloc(to->buf, to->bufsize);
-    }
-    memcpy(to->buf, from->buf, from->bufsize);
-    to->str = to->buf;
-  } else {
-    to->str = from->str;
-  }
-}
-
-const char *upb_status_getstr(const upb_status *_status) {
-  // Function is logically const but can modify internal state to materialize
-  // the string.
-  upb_status *status = (upb_status*)_status;
-  if (status->str == NULL && status->space) {
-    if (status->space->code_to_string) {
-      status->space->code_to_string(status->code, status->buf, status->bufsize);
-      status->str = status->buf;
-    } else {
-      upb_status_seterrf(status, "No message, error space=%s, code=%d\n",
-                         status->space->name, status->code);
-    }
-  }
-  return status->str;
-}
-
-void upb_status_clear(upb_status *status) {
-  if (!status) return;
-  status->error = false;
-  status->eof_ = false;
-  status->code = 0;
-  status->space = NULL;
-  status->str = NULL;
-}
-
-void upb_status_setcode(upb_status *status, upb_errorspace *space, int code) {
-  if (!status) return;
-  status->code = code;
-  status->space = space;
-  status->str = NULL;
-}
-
-void upb_status_seteof(upb_status *status) {
-  if (!status) return;
-  status->eof_ = true;
+  *to = *from;
 }

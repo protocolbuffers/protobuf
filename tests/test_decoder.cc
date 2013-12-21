@@ -35,7 +35,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "upb/bytestream.h"
 #include "upb/handlers.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/varint.int.h"
@@ -345,45 +344,53 @@ void reg_str(upb_handlers *h, uint32_t num) {
   ASSERT(h->SetStringHandler(f, UpbBind(value_string, new uint32_t(num))));
 }
 
-void reghandlers(upb_handlers *h) {
+upb::reffed_ptr<const upb::Handlers> NewHandlers() {
+  upb::reffed_ptr<upb::Handlers> h(
+      upb::Handlers::New(UPB_TEST_DECODER_DECODERTEST));
+
   h->SetStartMessageHandler(UpbMakeHandler(startmsg));
   h->SetEndMessageHandler(UpbMakeHandler(endmsg));
 
   // Register handlers for each type.
-  reg<double,   value_double>(h, UPB_DESCRIPTOR_TYPE_DOUBLE);
-  reg<float,    value_float> (h, UPB_DESCRIPTOR_TYPE_FLOAT);
-  reg<int64_t,  value_int64> (h, UPB_DESCRIPTOR_TYPE_INT64);
-  reg<uint64_t, value_uint64>(h, UPB_DESCRIPTOR_TYPE_UINT64);
-  reg<int32_t,  value_int32> (h, UPB_DESCRIPTOR_TYPE_INT32);
-  reg<uint64_t, value_uint64>(h, UPB_DESCRIPTOR_TYPE_FIXED64);
-  reg<uint32_t, value_uint32>(h, UPB_DESCRIPTOR_TYPE_FIXED32);
-  reg<bool,     value_bool>  (h, UPB_DESCRIPTOR_TYPE_BOOL);
-  reg<uint32_t, value_uint32>(h, UPB_DESCRIPTOR_TYPE_UINT32);
-  reg<int32_t,  value_int32> (h, UPB_DESCRIPTOR_TYPE_ENUM);
-  reg<int32_t,  value_int32> (h, UPB_DESCRIPTOR_TYPE_SFIXED32);
-  reg<int64_t,  value_int64> (h, UPB_DESCRIPTOR_TYPE_SFIXED64);
-  reg<int32_t,  value_int32> (h, UPB_DESCRIPTOR_TYPE_SINT32);
-  reg<int64_t,  value_int64> (h, UPB_DESCRIPTOR_TYPE_SINT64);
+  reg<double,   value_double>(h.get(), UPB_DESCRIPTOR_TYPE_DOUBLE);
+  reg<float,    value_float> (h.get(), UPB_DESCRIPTOR_TYPE_FLOAT);
+  reg<int64_t,  value_int64> (h.get(), UPB_DESCRIPTOR_TYPE_INT64);
+  reg<uint64_t, value_uint64>(h.get(), UPB_DESCRIPTOR_TYPE_UINT64);
+  reg<int32_t,  value_int32> (h.get(), UPB_DESCRIPTOR_TYPE_INT32);
+  reg<uint64_t, value_uint64>(h.get(), UPB_DESCRIPTOR_TYPE_FIXED64);
+  reg<uint32_t, value_uint32>(h.get(), UPB_DESCRIPTOR_TYPE_FIXED32);
+  reg<bool,     value_bool>  (h.get(), UPB_DESCRIPTOR_TYPE_BOOL);
+  reg<uint32_t, value_uint32>(h.get(), UPB_DESCRIPTOR_TYPE_UINT32);
+  reg<int32_t,  value_int32> (h.get(), UPB_DESCRIPTOR_TYPE_ENUM);
+  reg<int32_t,  value_int32> (h.get(), UPB_DESCRIPTOR_TYPE_SFIXED32);
+  reg<int64_t,  value_int64> (h.get(), UPB_DESCRIPTOR_TYPE_SFIXED64);
+  reg<int32_t,  value_int32> (h.get(), UPB_DESCRIPTOR_TYPE_SINT32);
+  reg<int64_t,  value_int64> (h.get(), UPB_DESCRIPTOR_TYPE_SINT64);
 
-  reg_str(h, UPB_DESCRIPTOR_TYPE_STRING);
-  reg_str(h, UPB_DESCRIPTOR_TYPE_BYTES);
-  reg_str(h, rep_fn(UPB_DESCRIPTOR_TYPE_STRING));
-  reg_str(h, rep_fn(UPB_DESCRIPTOR_TYPE_BYTES));
+  reg_str(h.get(), UPB_DESCRIPTOR_TYPE_STRING);
+  reg_str(h.get(), UPB_DESCRIPTOR_TYPE_BYTES);
+  reg_str(h.get(), rep_fn(UPB_DESCRIPTOR_TYPE_STRING));
+  reg_str(h.get(), rep_fn(UPB_DESCRIPTOR_TYPE_BYTES));
 
   // Register submessage/group handlers that are self-recursive
   // to this type, eg: message M { optional M m = 1; }
-  reg_subm(h, UPB_DESCRIPTOR_TYPE_MESSAGE);
-  reg_subm(h, rep_fn(UPB_DESCRIPTOR_TYPE_MESSAGE));
+  reg_subm(h.get(), UPB_DESCRIPTOR_TYPE_MESSAGE);
+  reg_subm(h.get(), rep_fn(UPB_DESCRIPTOR_TYPE_MESSAGE));
 
   // For NOP_FIELD we register no handlers, so we can pad a proto freely without
   // changing the output.
+
+  bool ok = h->Freeze(NULL);
+  ASSERT(ok);
+
+  return h;
 }
 
 
 /* Running of test cases ******************************************************/
 
-const upb::Handlers *handlers;
-const upb::Handlers *plan;
+const upb::Handlers *global_handlers;
+const upb::pb::DecoderMethod *global_method;
 
 uint32_t Hash(const buffer& proto, const buffer* expected_output, size_t seam1,
               size_t seam2) {
@@ -395,19 +402,18 @@ uint32_t Hash(const buffer& proto, const buffer* expected_output, size_t seam1,
   return hash;
 }
 
-bool parse(
-    upb_sink *s, const char *buf, size_t start, size_t end, size_t *ofs) {
+bool parse(upb::BytesSink* s, void* subc, const char* buf, size_t start,
+           size_t end, size_t* ofs, upb::Status* status) {
   start = UPB_MAX(start, *ofs);
   if (start <= end) {
     size_t len = end - start;
-    size_t parsed =
-        s->PutStringBuffer(UPB_BYTESTREAM_BYTES_STRING, buf + start, len);
-    if (s->pipeline()->status().ok() != (parsed >= len)) {
+    size_t parsed = s->PutBuffer(subc, buf + start, len);
+    if (status->ok() != (parsed >= len)) {
       fprintf(stderr, "Status: %s, parsed=%zu, len=%zu\n",
-              s->pipeline()->status().GetString(), parsed, len);
+              status->error_message(), parsed, len);
       ASSERT(false);
     }
-    if (!s->pipeline()->status().ok())
+    if (!status->ok())
       return false;
     *ofs += parsed;
   }
@@ -416,37 +422,35 @@ bool parse(
 
 #define LINE(x) x "\n"
 void run_decoder(const buffer& proto, const buffer* expected_output) {
-  upb::Pipeline pipeline(NULL, 0, upb_realloc, NULL);
-  upb::Sink* sink = pipeline.NewSink(handlers);
-  upb::Sink* decoder_sink = pipeline.NewSink(plan);
-  upb::pb::Decoder* d = decoder_sink->GetObject<upb::pb::Decoder>();
-  upb::pb::ResetDecoderSink(d, sink);
+  upb::Status status;
+  upb::pb::Decoder decoder(global_method, &status);
+  upb::Sink sink(global_handlers, &closures[0]);
+  decoder.ResetOutput(&sink);
   for (size_t i = 0; i < proto.len(); i++) {
     for (size_t j = i; j < UPB_MIN(proto.len(), i + 5); j++) {
       testhash = Hash(proto, expected_output, i, j);
       if (filter_hash && testhash != filter_hash) continue;
       if (!count_only) {
-        pipeline.Reset();
+        decoder.Reset();
         output.clear();
-        sink->Reset(&closures[0]);
+        status.Clear();
         size_t ofs = 0;
+        upb::BytesSink* input = decoder.input();
+        void *sub;
         bool ok =
-            decoder_sink->StartMessage() &&
-            decoder_sink->StartString(
-                UPB_BYTESTREAM_BYTES_STARTSTR, proto.len()) &&
-            parse(decoder_sink, proto.buf(), 0, i, &ofs) &&
-            parse(decoder_sink, proto.buf(), i, j, &ofs) &&
-            parse(decoder_sink, proto.buf(), j, proto.len(), &ofs) &&
+            input->Start(proto.len(), &sub) &&
+            parse(input, sub, proto.buf(), 0, i, &ofs, &status) &&
+            parse(input, sub, proto.buf(), i, j, &ofs, &status) &&
+            parse(input, sub, proto.buf(), j, proto.len(), &ofs, &status) &&
             ofs == proto.len() &&
-            decoder_sink->EndString(UPB_BYTESTREAM_BYTES_ENDSTR);
-        if (ok) decoder_sink->EndMessage();
+            input->End();
         if (expected_output) {
           if (!output.eql(*expected_output)) {
             fprintf(stderr, "Text mismatch: '%s' vs '%s'\n",
                     output.buf(), expected_output->buf());
           }
           if (!ok) {
-            fprintf(stderr, "Failed: %s\n", pipeline.status().GetString());
+            fprintf(stderr, "Failed: %s\n", status.error_message());
           }
           ASSERT(ok);
           ASSERT(output.eql(*expected_output));
@@ -705,6 +709,20 @@ void test_valid() {
   // Empty protobuf.
   assert_successful_parse(buffer(""), "<\n>\n");
 
+  // Empty protobuf where we never call PutString between
+  // StartString/EndString.
+  {
+    upb::Status status;
+    upb::pb::Decoder decoder(global_method, &status);
+    upb::Sink sink(global_handlers, &closures[0]);
+    decoder.ResetOutput(&sink);
+    output.clear();
+    bool ok = upb::BufferSource::PutBuffer("", 0, decoder.input());
+    ASSERT(ok);
+    ASSERT(status.ok());
+    ASSERT(output.eql(buffer("<\n>\n")));
+  }
+
   test_valid_data_for_signed_type(UPB_DESCRIPTOR_TYPE_DOUBLE,
                                   dbl(33),
                                   dbl(-66));
@@ -860,15 +878,21 @@ void run_tests() {
   test_valid();
 }
 
+upb::reffed_ptr<const upb::pb::DecoderMethod> NewMethod(
+    const upb::Handlers* dest_handlers, bool allow_jit) {
+  upb::pb::CodeCache cache;
+  cache.set_allow_jit(allow_jit);
+  return cache.GetDecoderMethodForDestHandlers(dest_handlers);
+}
+
 void test_emptyhandlers(bool allowjit) {
   // Create an empty handlers to make sure that the decoder can handle empty
   // messages.
-  upb::Handlers* h = upb_handlers_new(UPB_TEST_DECODER_EMPTYMESSAGE, NULL, &h);
-  bool ok = upb::Handlers::Freeze(&h, 1, NULL);
+  upb::reffed_ptr<upb::Handlers> h(
+      upb::Handlers::New(UPB_TEST_DECODER_EMPTYMESSAGE));
+  bool ok = h->Freeze(NULL);
   ASSERT(ok);
-  const upb::Handlers* plan = upb::pb::GetDecoderHandlers(h, allowjit, &plan);
-  h->Unref(&h);
-  plan->Unref(&plan);
+  NewMethod(h.get(), allowjit);
 }
 
 extern "C" {
@@ -880,47 +904,44 @@ int run_tests(int argc, char *argv[]) {
     closures[i] = i;
   }
 
+  upb::reffed_ptr<const upb::pb::DecoderMethod> method;
+  upb::reffed_ptr<const upb::Handlers> handlers;
+
   // Construct decoder plan.
-  upb::Handlers* h =
-      upb::Handlers::New(UPB_TEST_DECODER_DECODERTEST, NULL, &handlers);
-  reghandlers(h);
-  bool ok = upb::Handlers::Freeze(&h, 1, NULL);
-  ASSERT(ok);
-  handlers = h;
+  handlers = NewHandlers();
+  global_handlers = handlers.get();
 
   // Count tests.
-  plan = upb::pb::GetDecoderHandlers(handlers, false, &plan);
+  method = NewMethod(handlers.get(), false);
+  global_method = method.get();
   count_only = true;
   count = &total;
   total = 0;
   run_tests();
   count_only = false;
   count = &completed;
-  plan->Unref(&plan);
 
   // Test without JIT.
-  plan = upb::pb::GetDecoderHandlers(handlers, false, &plan);
-  ASSERT(!upb::pb::HasJitCode(plan));
+  method = NewMethod(handlers.get(), false);
+  global_method = method.get();
+  ASSERT(!global_method->is_native());
   completed = 0;
   run_tests();
-  plan->Unref(&plan);
 
   test_emptyhandlers(false);
 
 #ifdef UPB_USE_JIT_X64
   // Test JIT.
-  plan = upb::pb::GetDecoderHandlers(handlers, true, &plan);
-  ASSERT(upb::pb::HasJitCode(plan));
+  method = NewMethod(handlers.get(), true);
+  global_method = method.get();
+  ASSERT(global_method->is_native());
   completed = 0;
   run_tests();
-  plan->Unref(&plan);
 
   test_emptyhandlers(true);
 #endif
 
-  plan = NULL;
   printf("All tests passed, %d assertions.\n", num_assertions);
-  handlers->Unref(&handlers);
   return 0;
 }
 

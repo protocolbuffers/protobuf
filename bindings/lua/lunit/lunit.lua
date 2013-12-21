@@ -529,7 +529,7 @@ function lunit.runtest(tcname, testname)
   orig_assert( is_string(testname) )
 
   if (not getrunner()) then
-    loadrunner("lunit.console")
+    loadrunner("console")
   end
 
   local function callit(context, func)

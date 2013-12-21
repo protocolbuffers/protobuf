@@ -314,28 +314,23 @@ case goog::FieldDescriptor::cpptype:                                           \
   }
 
   template <typename T>
-  static bool AppendPrimitive(goog::RepeatedField<T>* r, T val) {
-    r->Add(val);
-    return true;
-  }
+  static void AppendPrimitive(goog::RepeatedField<T>* r, T val) { r->Add(val); }
 
   template <typename T>
-  static bool AppendPrimitiveExtension(goog::Message* m,
+  static void AppendPrimitiveExtension(goog::Message* m,
                                        const ExtensionFieldData* data, T val) {
     goog::internal::ExtensionSet* set = data->GetExtensionSet(m);
     // TODO(haberman): give an accurate value for "packed"
     goog::internal::RepeatedPrimitiveTypeTraits<T>::Add(
         data->number(), data->type(), true, val, set);
-    return true;
   }
 
   template <typename T>
-  static bool SetPrimitiveExtension(goog::Message* m,
+  static void SetPrimitiveExtension(goog::Message* m,
                                     const ExtensionFieldData* data, T val) {
     goog::internal::ExtensionSet* set = data->GetExtensionSet(m);
     goog::internal::PrimitiveTypeTraits<T>::Set(data->number(), data->type(),
                                                 val, set);
-    return true;
   }
 
   // Enum //////////////////////////////////////////////////////////////////////
@@ -379,7 +374,7 @@ case goog::FieldDescriptor::cpptype:                                           \
     }
   }
 
-  static bool SetEnum(goog::Message* m, const EnumHandlerData* data,
+  static void SetEnum(goog::Message* m, const EnumHandlerData* data,
                       int32_t val) {
     if (data->IsValidValue(val)) {
       int32_t* message_val = data->GetFieldPointer<int32_t>(m);
@@ -388,10 +383,9 @@ case goog::FieldDescriptor::cpptype:                                           \
     } else {
       data->mutable_unknown_fields(m)->AddVarint(data->field_number(), val);
     }
-    return true;
   }
 
-  static bool AppendEnum(goog::Message* m, const EnumHandlerData* data,
+  static void AppendEnum(goog::Message* m, const EnumHandlerData* data,
                          int32_t val) {
     // Closure is the enclosing message.  We can't use the RepeatedField<> as
     // the closure because we need to go back to the message for unrecognized
@@ -403,7 +397,6 @@ case goog::FieldDescriptor::cpptype:                                           \
     } else {
       data->mutable_unknown_fields(m)->AddVarint(data->field_number(), val);
     }
-    return true;
   }
 
   // EnumExtension /////////////////////////////////////////////////////////////
@@ -421,19 +414,17 @@ case goog::FieldDescriptor::cpptype:                                           \
     }
   }
 
-  static bool SetEnumExtension(goog::Message* m, const ExtensionFieldData* data,
+  static void SetEnumExtension(goog::Message* m, const ExtensionFieldData* data,
                                int32_t val) {
     goog::internal::ExtensionSet* set = data->GetExtensionSet(m);
     set->SetEnum(data->number(), data->type(), val, NULL);
-    return true;
   }
 
-  static bool AppendEnumExtension(goog::Message* m,
+  static void AppendEnumExtension(goog::Message* m,
                                   const ExtensionFieldData* data, int32_t val) {
     goog::internal::ExtensionSet* set = data->GetExtensionSet(m);
     // TODO(haberman): give an accurate value for "packed"
     set->AddEnum(data->number(), data->type(), true, val, NULL);
-    return true;
   }
 
   // String ////////////////////////////////////////////////////////////////////

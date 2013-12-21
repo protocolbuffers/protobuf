@@ -44,7 +44,7 @@
 |  sub  DELIMEND, DECODER->buf
 |  add  DELIMEND, DECODER->bufstart_ofs
 |  mov  FRAME->end_ofs, DELIMEND
-|  mov  FRAME->u.closure, CLOSURE
+|  mov  FRAME->sink.closure, CLOSURE
 |.endmacro
 |
 | // Loads unsynced registers from memory back into registers.
@@ -52,7 +52,7 @@
 |  mov  FRAME, DECODER->top
 |  mov  PTR, DECODER->ptr
 |  mov  DATAEND, DECODER->data_end
-|  mov  CLOSURE, FRAME->u.closure
+|  mov  CLOSURE, FRAME->sink.closure
 |  mov  DELIMEND, FRAME->end_ofs
 |  sub  DELIMEND, DECODER->bufstart_ofs
 |  add  DELIMEND, DECODER->buf
@@ -145,7 +145,7 @@ static void asmlabel(jitcompiler *jc, const char *fmt, ...) {
 
   char *str = malloc(len + 1);  // + 1 for NULL terminator.
   if (!str) exit(1);
-  int written = vsnprintf(str, len, fmt, args);
+  int written = vsnprintf(str, len + 1, fmt, args);
   va_end(args);
   UPB_ASSERT_VAR(written, written == len);
 
@@ -153,6 +153,10 @@ static void asmlabel(jitcompiler *jc, const char *fmt, ...) {
   dasm_growpc(jc, jc->pclabel_count);
   |=>label:
   upb_inttable_insert(&jc->asmlabels, label, upb_value_ptr(str));
+}
+
+static upb_func *gethandler(const upb_handlers *h, upb_selector_t sel) {
+  return h ? upb_handlers_gethandler(h, sel) : NULL;
 }
 
 // Emit static assembly routines; code that does not vary based on the message
@@ -174,9 +178,6 @@ static void emit_static_asm(jitcompiler *jc) {
   |->enterjit:
   |1:
   |  push  rbp
-  if (jc->usefp) {
-    |  mov   rbp, rsp
-  }
   |  push  r15
   |  push  r14
   |  push  r13
@@ -189,9 +190,12 @@ static void emit_static_asm(jitcompiler *jc) {
   | // 16-byte stack alignment.
   |  sub   rsp, 8
   |
+  |  mov   rbx, ARG2_64  // Preserve JIT method.
+  |
   |  mov   DECODER, rdi
   |  callp upb_pbdecoder_resume  // Same args as us; reuse regs.
   |  mov   DECODER->saved_rsp, rsp
+  |  mov   rax, rbx
   |  load_regs
   |
   |  // Test whether we have a saved stack to resume.
@@ -199,7 +203,7 @@ static void emit_static_asm(jitcompiler *jc) {
   |  test  ARG3_64, ARG3_64
   |  jnz   >1
   |
-  |  call  =>pclabel(jc, jc->plan->topmethod)
+  |  call  rax
   |
   |  mov   rax, DECODER->size_param
   |  mov   qword DECODER->call_len, 0
@@ -265,7 +269,7 @@ static void emit_static_asm(jitcompiler *jc) {
   asmlabel(jc, "pushlendelim");
   |->pushlendelim:
   |1:
-  |  mov   FRAME->u.closure, CLOSURE
+  |  mov   FRAME->sink.closure, CLOSURE
   |  mov   DECODER->checkpoint, PTR
   |  dv32
   |  mov   rcx, DELIMEND
@@ -511,7 +515,7 @@ static void jitprimitive(jitcompiler *jc, opcode op,
   static char fastpath_bytes[] = { 1, 1, 4, 8 };
   const valtype_t type = types[op];
   const int fastbytes = fastpath_bytes[type];
-  upb_func *handler = upb_handlers_gethandler(h, sel);
+  upb_func *handler = gethandler(h, sel);
 
   if (handler) {
     |1:
@@ -678,12 +682,20 @@ static void jitdispatch(jitcompiler *jc,
   |=>define_pclabel(jc, &method->dispatch):
   |1:
   // Decode the field tag.
-  // OPT: inline two bytes of varint decoding for big messages.
   |  mov     aword DECODER->checkpoint, PTR
-  |  chkeob  1, >6
+  |  chkeob  2, >6
   |  movzx   edx, byte [PTR]
   |  test    dl, dl
-  |  jns     >7
+  |  jns     >7    // Jump if first byte has no continuation bit.
+  |  movzx   ecx, byte [PTR + 1]
+  |  test    cl, cl
+  |  js      >6    // Jump if second byte has continuation bit.
+  |  // Confirmed two-byte varint.
+  |  shl     ecx, 7
+  |  and     edx, 0x7f
+  |  or      edx, ecx
+  |  add     PTR, 2
+  |  jmp     >8
   |6:
   |  call    ->decode_unknown_tag_fallback
   |  test    eax, eax  // Hit DELIMEND?
@@ -848,15 +860,14 @@ static void jittag(jitcompiler *jc, uint64_t tag, int n, int ofs,
 static void jitbytecode(jitcompiler *jc) {
   upb_pbdecodermethod *method = NULL;
   const upb_handlers *h = NULL;
-  for (jc->pc = jc->plan->code; jc->pc < jc->plan->code_end; ) {
+  for (jc->pc = jc->group->bytecode; jc->pc < jc->group->bytecode_end; ) {
     int32_t instr = *jc->pc;
     opcode op = instr & 0xff;
     uint32_t arg = instr >> 8;
     int32_t longofs = arg;
 
     if (op != OP_STARTMSG && op != OP_SETDISPATCH) {
-      asmlabel(jc, "0x%lx.%s", jc->pc - jc->plan->code,
-                               upb_pbdecoder_getopname(op));
+      asmlabel(jc, "0x%lx.%s", pcofs(jc), upb_pbdecoder_getopname(op));
     }
     // TODO: optimize this to only define pclabels that are actually used.
     |=>define_pclabel(jc, jc->pc):
@@ -865,16 +876,11 @@ static void jitbytecode(jitcompiler *jc) {
     switch (op) {
     case OP_STARTMSG: {
       // This opcode serves as a function prolouge also.
-      const char *msgname = upb_msgdef_fullname(method->msg);
-      asmlabel(jc, "parse.%s", msgname);
+      const char *msgname = upb_msgdef_fullname(method->schema_);
+      asmlabel(jc, "0x%lx.parse.%s", pcofs(jc), msgname);
       |=>define_pclabel(jc, method):
-      if (jc->usefp) {
-        |  push  rbp
-        |  mov   rbp, rsp
-      } else {
-        |  sub   rsp, 8
-      }
-      upb_func *startmsg = upb_handlers_gethandler(h, UPB_STARTMSG_SELECTOR);
+      |  sub   rsp, 8
+      upb_func *startmsg = gethandler(h, UPB_STARTMSG_SELECTOR);
       if (startmsg) {
         // bool startmsg(void *closure, const void *hd)
         |1:
@@ -892,7 +898,7 @@ static void jitbytecode(jitcompiler *jc) {
     }
     case OP_ENDMSG: {
       // This opcode serves as a function epiloue also.
-      upb_func *endmsg = upb_handlers_gethandler(h, UPB_ENDMSG_SELECTOR);
+      upb_func *endmsg = gethandler(h, UPB_ENDMSG_SELECTOR);
       |9:
       if (endmsg) {
         // bool endmsg(void *closure, const void *hd, upb_status *status)
@@ -901,11 +907,7 @@ static void jitbytecode(jitcompiler *jc) {
         |  mov   ARG3_64, DECODER->status
         |  callp endmsg
       }
-      if (jc->usefp) {
-        |  pop  rbp
-      } else {
-        |  add  rsp, 8
-      }
+      |  add  rsp, 8
       |  ret
       break;
     }
@@ -917,10 +919,13 @@ static void jitbytecode(jitcompiler *jc) {
       // &method->dispatch; we want to go backwards and recover method.
       method =
           (void*)((char*)dispatch - offsetof(upb_pbdecodermethod, dispatch));
-      h = method->dest_handlers;
-      assert(h);  // We only support statically-bound handlers for now.
-      const char *msgname = upb_msgdef_fullname(method->msg);
-      asmlabel(jc, "dispatch.%s", msgname);
+      // May be NULL, in which case no handlers for this message will be found.
+      // OPT: we should do better by completely skipping the message in this
+      // case instead of parsing it field by field.  We should also do the skip
+      // in the containing message's code.
+      h = method->dest_handlers_;
+      const char *msgname = upb_msgdef_fullname(method->schema_);
+      asmlabel(jc, "0x%lx.dispatch.%s", pcofs(jc), msgname);
       jitdispatch(jc, method);
       break;
     }
@@ -942,7 +947,7 @@ static void jitbytecode(jitcompiler *jc) {
     case OP_STARTSEQ:
     case OP_STARTSUBMSG:
     case OP_STARTSTR: {
-      upb_func *start = upb_handlers_gethandler(h, arg);
+      upb_func *start = gethandler(h, arg);
       if (start) {
         // void *startseq(void *closure, const void *hd)
         // void *startsubmsg(void *closure, const void *hd)
@@ -972,7 +977,7 @@ static void jitbytecode(jitcompiler *jc) {
     case OP_ENDSEQ:
     case OP_ENDSUBMSG:
     case OP_ENDSTR: {
-      upb_func *end = upb_handlers_gethandler(h, arg);
+      upb_func *end = gethandler(h, arg);
       if (end) {
         // bool endseq(void *closure, const void *hd)
         // bool endsubmsg(void *closure, const void *hd)
@@ -995,7 +1000,7 @@ static void jitbytecode(jitcompiler *jc) {
       break;
     }
     case OP_STRING: {
-      upb_func *str = upb_handlers_gethandler(h, arg);
+      upb_func *str = gethandler(h, arg);
       |  cmp   PTR, DELIMEND
       |  je    >4
       |1:
@@ -1028,7 +1033,13 @@ static void jitbytecode(jitcompiler *jc) {
       break;
     }
     case OP_PUSHTAGDELIM:
-      |  mov   FRAME->u.closure, CLOSURE
+      |  mov   FRAME->sink.closure, CLOSURE
+      |  // This shouldn't need to be read, because tag-delimited fields
+      |  // shouldn't have an OP_SETDELIM after them.  But for the moment
+      |  // non-packed repeated fields do OP_SETDELIM so they can share more
+      |  // code with the packed code-path.  If this is changed later, this
+      |  // store can be removed.
+      |  mov   qword FRAME->end_ofs, 0
       |  add   FRAME, sizeof(upb_pbdecoder_frame)
       |  cmp   FRAME, DECODER->limit
       |  je    ->err
@@ -1038,13 +1049,14 @@ static void jitbytecode(jitcompiler *jc) {
       break;
     case OP_POP:
       |  sub   FRAME, sizeof(upb_pbdecoder_frame)
-      |  mov   CLOSURE, FRAME->u.closure
+      |  mov   CLOSURE, FRAME->sink.closure
       break;
     case OP_SETDELIM:
       // OPT: experiment with testing vs old offset to optimize away.
       |  mov   DATAEND, DECODER->end
       |  add   DELIMEND, FRAME->end_ofs
-      |  jc    >1
+      |  cmp   DELIMEND, DECODER->buf
+      |  jb    >1
       |  cmp   DELIMEND, DATAEND
       |  ja    >1   // OPT: try cmov.
       |  mov   DATAEND, DELIMEND

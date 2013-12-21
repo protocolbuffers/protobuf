@@ -4,10 +4,11 @@
 // Copyright (c) 2011-2012 Google Inc.  See LICENSE for details.
 // Author: Josh Haberman <jhaberman@gmail.com>
 //
-// IMPORTANT NOTE!  This file is compiled TWICE, once with UPB_GOOGLE3 defined
-// and once without!  This allows us to provide functionality against proto2
-// and protobuf opensource both in a single binary without the two conflicting.
-// However we must be careful not to violate the ODR.
+// IMPORTANT NOTE!  Inside Google, This file is compiled TWICE, once with
+// UPB_GOOGLE3 defined and once without!  This allows us to provide
+// functionality against proto2 and protobuf opensource both in a single binary
+// without the two conflicting.  However we must be careful not to violate the
+// ODR.
 
 #include "upb/google/bridge.h"
 
@@ -21,204 +22,84 @@
 
 #define ASSERT_STATUS(status) do { \
   if (!upb_ok(status)) { \
-    fprintf(stderr, "upb status failure: %s\n", upb_status_getstr(status)); \
+    fprintf(stderr, "upb status failure: %s\n", upb_status_errmsg(status)); \
     assert(upb_ok(status)); \
   } \
   } while (0)
-
-
-namespace upb {
-namespace proto2_bridge_google3 { class Defs; }
-namespace proto2_bridge_opensource { class Defs; }
-}  // namespace upb
 
 #ifdef UPB_GOOGLE3
 #include "net/proto2/public/descriptor.h"
 #include "net/proto2/public/message.h"
 #include "net/proto2/proto/descriptor.pb.h"
 namespace goog = ::proto2;
-namespace me = ::upb::proto2_bridge_google3;
 #else
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/descriptor.pb.h"
 namespace goog = ::google::protobuf;
-namespace me = ::upb::proto2_bridge_opensource;
 #endif
 
-class me::Defs {
- public:
-  void OnMessage(Handlers* h) {
-    const upb::MessageDef* md = h->message_def();
-    const goog::Message& m = *message_map_[md];
-    const goog::Descriptor* d = m.GetDescriptor();
-    for (upb::MessageDef::const_iterator i = md->begin(); i != md->end(); ++i) {
-      const upb::FieldDef* upb_f = *i;
-      const goog::FieldDescriptor* proto2_f =
-          d->FindFieldByNumber(upb_f->number());
-      if (!proto2_f) {
-        proto2_f = d->file()->pool()->FindExtensionByNumber(d, upb_f->number());
-      }
-      assert(proto2_f);
-      if (!upb::google::TrySetWriteHandlers(proto2_f, m, upb_f, h)
+namespace {
+
+const goog::Message* GetPrototype(const goog::Message& m,
+                                  const goog::FieldDescriptor* f) {
+  const goog::Message* ret = NULL;
 #ifdef UPB_GOOGLE3
-          && !upb::google::TrySetProto1WriteHandlers(proto2_f, m, upb_f, h)
+  ret = upb::google::GetProto1WeakPrototype(m, f);
+  if (ret) return ret;
 #endif
-          ) {
-        // Unsupported reflection class.
-        //
-        // Should we fall back to using the public Reflection interface in this
-        // case?  It's unclear whether it's supported behavior for users to
-        // create their own Reflection classes.
-        assert(false);
-      }
-    }
+
+  if (f->cpp_type() == goog::FieldDescriptor::CPPTYPE_MESSAGE) {
+    ret = upb::google::GetFieldPrototype(m, f);
+#ifdef UPB_GOOGLE3
+    if (!ret) ret = upb::google::GetProto1FieldPrototype(m, f);
+#endif
+    assert(ret);
   }
+  return ret;
+}
 
-  static void StaticOnMessage(void* closure, upb::Handlers* handlers) {
-    me::Defs* defs = static_cast<me::Defs*>(closure);
-    defs->OnMessage(handlers);
-  }
-
-  void AddSymbol(const std::string& name, upb::Def* def) {
-    assert(symbol_map_.find(name) == symbol_map_.end());
-    symbol_map_[name] = def;
-  }
-
-  void AddMessage(const goog::Message* m, upb::MessageDef* md) {
-    assert(message_map_.find(md) == message_map_.end());
-    message_map_[md] = m;
-    AddSymbol(m->GetDescriptor()->full_name(), md->Upcast());
-  }
-
-  upb::Def* FindSymbol(const std::string& name) {
-    SymbolMap::iterator iter = symbol_map_.find(name);
-    return iter != symbol_map_.end() ? iter->second : NULL;
-  }
-
-  void Flatten(std::vector<upb::Def*>* defs) {
-    SymbolMap::iterator iter;
-    for (iter = symbol_map_.begin(); iter != symbol_map_.end(); ++iter) {
-      defs->push_back(iter->second);
-    }
-  }
-
- private:
-  // Maps a new upb::MessageDef* to a corresponding proto2 Message* whose
-  // derived class is of the correct type according to the message the user
-  // gave us.
-  typedef std::map<const upb::MessageDef*, const goog::Message*> MessageMap;
-  MessageMap message_map_;
-
-  // Maps a type name to a upb Def we have constructed to represent it.
-  typedef std::map<std::string, upb::Def*> SymbolMap;
-  SymbolMap symbol_map_;
-};
+}  // namespace
 
 namespace upb {
 namespace google {
 
-// For submessage fields, stores a pointer to an instance of the submessage in
-// *subm (but it is *not* guaranteed to be a prototype).
-FieldDef* AddFieldDef(const goog::Message& m, const goog::FieldDescriptor* f,
-                      upb::MessageDef* md, const goog::Message** subm) {
-  // To parse weak submessages effectively, we need to represent them in the
-  // upb::Def schema even though they are not reflected in the proto2
-  // descriptors (weak fields are represented as FieldDescriptor::TYPE_BYTES).
-  const goog::Message* weak_prototype = NULL;
-#ifdef UPB_GOOGLE3
-  weak_prototype = upb::google::GetProto1WeakPrototype(m, f);
-#endif
 
-  upb::FieldDef* upb_f = upb::FieldDef::New(&upb_f);
-  upb::Status status;
-  upb_f->set_number(f->number(), &status);
-  upb_f->set_name(f->name(), &status);
-  upb_f->set_label(upb::FieldDef::ConvertLabel(f->label()));
-  upb_f->set_descriptor_type(
-      weak_prototype ? UPB_DESCRIPTOR_TYPE_MESSAGE
-                     : upb::FieldDef::ConvertDescriptorType(f->type()));
+/* DefBuilder  ****************************************************************/
 
-  if (weak_prototype) {
-    upb_f->set_subdef_name(
-        weak_prototype->GetDescriptor()->full_name(), &status);
-  } else {
-    switch (upb_f->type()) {
-      case UPB_TYPE_INT32:
-        upb_f->set_default_int32(f->default_value_int32());
-        break;
-      case UPB_TYPE_INT64:
-        upb_f->set_default_int64(f->default_value_int64());
-        break;
-      case UPB_TYPE_UINT32:
-        upb_f->set_default_uint32(f->default_value_uint32());
-        break;
-      case UPB_TYPE_UINT64:
-        upb_f->set_default_uint64(f->default_value_uint64());
-        break;
-      case UPB_TYPE_DOUBLE:
-        upb_f->set_default_double(f->default_value_double());
-        break;
-      case UPB_TYPE_FLOAT:
-        upb_f->set_default_float(f->default_value_float());
-        break;
-      case UPB_TYPE_BOOL:
-        upb_f->set_default_bool(f->default_value_bool());
-        break;
-      case UPB_TYPE_STRING:
-      case UPB_TYPE_BYTES:
-        upb_f->set_default_string(f->default_value_string(), &status);
-        break;
-      case UPB_TYPE_MESSAGE:
-        upb_f->set_subdef_name(f->message_type()->full_name(), &status);
-        break;
-      case UPB_TYPE_ENUM:
-        // We set the enum default numerically.
-        upb_f->set_default_int32(f->default_value_enum()->number());
-        upb_f->set_subdef_name(f->enum_type()->full_name(), &status);
-        break;
-    }
-  }
+const EnumDef* DefBuilder::GetOrCreateEnumDef(const goog::EnumDescriptor* ed) {
+  const EnumDef* cached = FindInCache<EnumDef>(ed);
+  if (cached) return cached;
 
-  md->AddField(upb_f, &upb_f, &status);
-  ASSERT_STATUS(&status);
+  EnumDef* e = AddToCache(ed, EnumDef::New());
 
-  if (weak_prototype) {
-    *subm = weak_prototype;
-  } else if (f->cpp_type() == goog::FieldDescriptor::CPPTYPE_MESSAGE) {
-    *subm = upb::google::GetFieldPrototype(m, f);
-#ifdef UPB_GOOGLE3
-    if (!*subm) *subm = upb::google::GetProto1FieldPrototype(m, f);
-#endif
-    assert(*subm);
-  }
-
-  return upb_f;
-}
-
-upb::EnumDef* NewEnumDef(const goog::EnumDescriptor* desc, const void* owner) {
-  upb::EnumDef* e = upb::EnumDef::New(owner);
-  upb::Status status;
-  e->set_full_name(desc->full_name(), &status);
-  for (int i = 0; i < desc->value_count(); i++) {
-    const goog::EnumValueDescriptor* val = desc->value(i);
+  Status status;
+  e->set_full_name(ed->full_name(), &status);
+  for (int i = 0; i < ed->value_count(); i++) {
+    const goog::EnumValueDescriptor* val = ed->value(i);
     bool success = e->AddValue(val->name(), val->number(), &status);
     UPB_ASSERT_VAR(success, success);
   }
+
+  e->Freeze(&status);
+
   ASSERT_STATUS(&status);
   return e;
 }
 
-static upb::MessageDef* NewMessageDef(const goog::Message& m, const void* owner,
-                                      me::Defs* defs) {
-  upb::MessageDef* md = upb::MessageDef::New(owner);
-  const goog::Descriptor* d = m.GetDescriptor();
-  upb::Status status;
-  md->set_full_name(m.GetDescriptor()->full_name(), &status);
+const MessageDef* DefBuilder::GetOrCreateMaybeUnfrozenMessageDef(
+    const goog::Descriptor* d, const goog::Message* m) {
+  const MessageDef* cached = FindInCache<MessageDef>(d);
+  if (cached) return cached;
 
-  // Must do this before processing submessages to prevent infinite recursion.
-  defs->AddMessage(&m, md);
+  MessageDef* md = AddToCache(d, MessageDef::New());
+  to_freeze_.push_back(upb::upcast(md));
 
+  Status status;
+  md->set_full_name(d->full_name(), &status);
+  ASSERT_STATUS(&status);
+
+  // Find all regular fields and extensions for this message.
   std::vector<const goog::FieldDescriptor*> fields;
   d->file()->pool()->FindAllExtensions(d, &fields);
   for (int i = 0; i < d->field_count(); i++) {
@@ -232,48 +113,160 @@ static upb::MessageDef* NewMessageDef(const goog::Message& m, const void* owner,
     // Skip lazy fields for now since we can't properly handle them.
     if (proto2_f->options().lazy()) continue;
 #endif
-    const goog::Message* subm_prototype;
-    upb::FieldDef* f = AddFieldDef(m, proto2_f, md, &subm_prototype);
-
-    if (!f->HasSubDef()) continue;
-
-    upb::Def* subdef = defs->FindSymbol(f->subdef_name());
-    if (!subdef) {
-      if (f->type() == UPB_TYPE_ENUM) {
-        subdef = NewEnumDef(proto2_f->enum_type(), owner)->Upcast();
-        defs->AddSymbol(subdef->full_name(), subdef);
-      } else {
-        assert(f->IsSubMessage());
-        assert(subm_prototype);
-        subdef = NewMessageDef(*subm_prototype, owner, defs)->Upcast();
-      }
-    }
-    f->set_subdef(subdef, &status);
+    md->AddField(NewFieldDef(proto2_f, m), &status);
   }
   ASSERT_STATUS(&status);
   return md;
 }
 
-const upb::Handlers* NewWriteHandlers(const goog::Message& m,
-                                      const void* owner) {
-  me::Defs defs;
-  const upb::MessageDef* md = NewMessageDef(m, owner, &defs);
+reffed_ptr<FieldDef> DefBuilder::NewFieldDef(const goog::FieldDescriptor* f,
+                                             const goog::Message* m) {
+  const goog::Message* subm = NULL;
+  const goog::Message* weak_prototype = NULL;
 
-  std::vector<upb::Def*> defs_vec;
-  defs.Flatten(&defs_vec);
-  Status status;
-  bool success = Def::Freeze(defs_vec, &status);
-  UPB_ASSERT_VAR(success, success);
-
-  const upb::Handlers* ret = upb::Handlers::NewFrozen(
-      md, NULL, owner, me::Defs::StaticOnMessage, &defs);
-
-  // Unref all defs, since they're now ref'd by the handlers.
-  for (int i = 0; i < static_cast<int>(defs_vec.size()); i++) {
-    defs_vec[i]->Unref(owner);
+  if (m) {
+#ifdef UPB_GOOGLE3
+    weak_prototype = upb::google::GetProto1WeakPrototype(*m, f);
+#endif
+    subm = GetPrototype(*m, f);
   }
 
+  reffed_ptr<FieldDef> upb_f(FieldDef::New());
+  Status status;
+  upb_f->set_number(f->number(), &status);
+  upb_f->set_name(f->name(), &status);
+  upb_f->set_label(FieldDef::ConvertLabel(f->label()));
+
+  // For weak fields, weak_prototype will be non-NULL even though the proto2
+  // descriptor does not indicate a submessage field.
+  upb_f->set_descriptor_type(weak_prototype
+                                 ? UPB_DESCRIPTOR_TYPE_MESSAGE
+                                 : FieldDef::ConvertDescriptorType(f->type()));
+
+  switch (upb_f->type()) {
+    case UPB_TYPE_INT32:
+      upb_f->set_default_int32(f->default_value_int32());
+      break;
+    case UPB_TYPE_INT64:
+      upb_f->set_default_int64(f->default_value_int64());
+      break;
+    case UPB_TYPE_UINT32:
+      upb_f->set_default_uint32(f->default_value_uint32());
+      break;
+    case UPB_TYPE_UINT64:
+      upb_f->set_default_uint64(f->default_value_uint64());
+      break;
+    case UPB_TYPE_DOUBLE:
+      upb_f->set_default_double(f->default_value_double());
+      break;
+    case UPB_TYPE_FLOAT:
+      upb_f->set_default_float(f->default_value_float());
+      break;
+    case UPB_TYPE_BOOL:
+      upb_f->set_default_bool(f->default_value_bool());
+      break;
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:
+      upb_f->set_default_string(f->default_value_string(), &status);
+      break;
+    case UPB_TYPE_MESSAGE:
+      upb_f->set_message_subdef(
+          GetOrCreateMaybeUnfrozenMessageDef(subm->GetDescriptor(), subm),
+          &status);
+      break;
+    case UPB_TYPE_ENUM:
+      // We set the enum default numerically.
+      upb_f->set_default_int32(f->default_value_enum()->number());
+      upb_f->set_enum_subdef(GetOrCreateEnumDef(f->enum_type()), &status);
+      break;
+  }
+
+  ASSERT_STATUS(&status);
+  return upb_f;
+}
+
+void DefBuilder::Freeze() {
+  upb::Status status;
+  upb::Def::Freeze(to_freeze_, &status);
+  ASSERT_STATUS(&status);
+  to_freeze_.clear();
+}
+
+const MessageDef* DefBuilder::GetOrCreateMessageDef(const goog::Descriptor* d) {
+  const MessageDef* ret = GetOrCreateMaybeUnfrozenMessageDef(d, NULL);
+  Freeze();
   return ret;
+}
+
+const MessageDef* DefBuilder::GetOrCreateMessageDefExpandWeak(
+    const goog::Message& m) {
+  const MessageDef* ret =
+      GetOrCreateMaybeUnfrozenMessageDef(m.GetDescriptor(), &m);
+  Freeze();
+  return ret;
+}
+
+
+/* CodeCache  *****************************************************************/
+
+const Handlers* CodeCache::GetOrCreateMaybeUnfrozenWriteHandlers(
+    const MessageDef* md, const goog::Message& m) {
+  const Handlers* cached = FindInCache(md);
+  if (cached) return cached;
+
+  Handlers* h = AddToCache(md, upb::Handlers::New(md));
+  to_freeze_.push_back(h);
+  const goog::Descriptor* d = m.GetDescriptor();
+
+  for (upb::MessageDef::const_iterator i = md->begin(); i != md->end(); ++i) {
+    const FieldDef* upb_f = *i;
+
+    const goog::FieldDescriptor* proto2_f =
+        d->FindFieldByNumber(upb_f->number());
+    if (!proto2_f) {
+      proto2_f = d->file()->pool()->FindExtensionByNumber(d, upb_f->number());
+    }
+    assert(proto2_f);
+
+    if (!upb::google::TrySetWriteHandlers(proto2_f, m, upb_f, h)
+#ifdef UPB_GOOGLE3
+        && !upb::google::TrySetProto1WriteHandlers(proto2_f, m, upb_f, h)
+#endif
+        ) {
+      // Unsupported reflection class.
+      //
+      // Should we fall back to using the public Reflection interface in this
+      // case?  It's unclear whether it's supported behavior for users to
+      // create their own Reflection classes.
+      assert(false);
+    }
+
+    if (upb_f->type() == UPB_TYPE_MESSAGE) {
+      const goog::Message* prototype = GetPrototype(m, proto2_f);
+      assert(prototype);
+      const upb::Handlers* sub_handlers = GetOrCreateMaybeUnfrozenWriteHandlers(
+          upb_f->message_subdef(), *prototype);
+      h->SetSubHandlers(upb_f, sub_handlers);
+    }
+  }
+
+  return h;
+}
+
+const Handlers* CodeCache::GetOrCreateWriteHandlers(const goog::Message& m) {
+  const MessageDef* md = def_builder_.GetOrCreateMessageDefExpandWeak(m);
+  const Handlers* ret = GetOrCreateMaybeUnfrozenWriteHandlers(md, m);
+  upb::Status status;
+  upb::Handlers::Freeze(to_freeze_, &status);
+  ASSERT_STATUS(&status);
+  to_freeze_.clear();
+  return ret;
+}
+
+upb::reffed_ptr<const upb::Handlers> NewWriteHandlers(const goog::Message& m) {
+  CodeCache cache;
+  return upb::reffed_ptr<const upb::Handlers>(
+      cache.GetOrCreateWriteHandlers(m));
 }
 
 }  // namespace google

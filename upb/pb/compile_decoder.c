@@ -11,7 +11,6 @@
 #include <stdarg.h>
 #include "upb/pb/decoder.int.h"
 #include "upb/pb/varint.int.h"
-#include "upb/bytestream.h"
 
 #ifdef UPB_DUMP_BYTECODE
 #include <stdio.h>
@@ -20,76 +19,140 @@
 #define MAXLABEL 5
 #define EMPTYLABEL -1
 
-/* upb_pbdecodermethod ********************************************************/
-
-static upb_pbdecodermethod *newmethod(const upb_msgdef *msg,
-                                      const upb_handlers *dest_handlers) {
-  upb_pbdecodermethod *ret = malloc(sizeof(upb_pbdecodermethod));
-  ret->msg = msg;
-  ret->dest_handlers = dest_handlers;
-  ret->native_code = false;  // If we JIT, it will update this later.
-  upb_inttable_init(&ret->dispatch, UPB_CTYPE_UINT64);
-
-  if (ret->dest_handlers) {
-    upb_handlers_ref(ret->dest_handlers, ret);
-  }
+static const void *methodkey(const upb_msgdef *md, const upb_handlers *h) {
+  const void *ret = h ? (const void*)h : (const void*)md;
+  assert(ret);
   return ret;
 }
 
-static void freemethod(upb_pbdecodermethod *method) {
-  if (method->dest_handlers) {
-    upb_handlers_unref(method->dest_handlers, method);
+
+/* mgroup *********************************************************************/
+
+static void freegroup(upb_refcounted *r) {
+  mgroup *g = (mgroup*)r;
+  upb_inttable_uninit(&g->methods);
+#ifdef UPB_USE_JIT_X64
+  upb_pbdecoder_freejit(g);
+#endif
+  free(g->bytecode);
+  free(g);
+}
+
+static void visitgroup(const upb_refcounted *r, upb_refcounted_visit *visit,
+                       void *closure) {
+  const mgroup *g = (const mgroup*)r;
+  upb_inttable_iter i;
+  upb_inttable_begin(&i, &g->methods);
+  for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
+    upb_pbdecodermethod *method = upb_value_getptr(upb_inttable_iter_value(&i));
+    visit(r, UPB_UPCAST(method), closure);
+  }
+}
+
+mgroup *newgroup(const void *owner) {
+  mgroup *g = malloc(sizeof(*g));
+  static const struct upb_refcounted_vtbl vtbl = {visitgroup, freegroup};
+  upb_refcounted_init(UPB_UPCAST(g), &vtbl, owner);
+  upb_inttable_init(&g->methods, UPB_CTYPE_PTR);
+  g->bytecode = NULL;
+  g->bytecode_end = NULL;
+  return g;
+}
+
+
+/* upb_pbdecodermethod ********************************************************/
+
+static void freemethod(upb_refcounted *r) {
+  upb_pbdecodermethod *method = (upb_pbdecodermethod*)r;
+  upb_byteshandler_uninit(&method->input_handler_);
+
+  if (method->dest_handlers_) {
+    upb_handlers_unref(method->dest_handlers_, method);
   }
 
   upb_inttable_uninit(&method->dispatch);
   free(method);
 }
 
-
-/* upb_pbdecoderplan **********************************************************/
-
-upb_pbdecoderplan *newplan() {
-  upb_pbdecoderplan *p = malloc(sizeof(*p));
-  upb_inttable_init(&p->methods, UPB_CTYPE_PTR);
-  p->code = NULL;
-  p->code_end = NULL;
-  return p;
+static void visitmethod(const upb_refcounted *r, upb_refcounted_visit *visit,
+                        void *closure) {
+  const upb_pbdecodermethod *m = (const upb_pbdecodermethod*)r;
+  visit(r, m->group, closure);
 }
 
-void freeplan(void *_p) {
-  upb_pbdecoderplan *p = _p;
+static upb_pbdecodermethod *newmethod(const upb_msgdef *msg,
+                                      const upb_handlers *dest_handlers,
+                                      mgroup *group,
+                                      const void *key) {
+  static const struct upb_refcounted_vtbl vtbl = {visitmethod, freemethod};
+  upb_pbdecodermethod *ret = malloc(sizeof(*ret));
+  upb_refcounted_init(UPB_UPCAST(ret), &vtbl, &ret);
+  upb_byteshandler_init(&ret->input_handler_);
 
-  upb_inttable_iter i;
-  upb_inttable_begin(&i, &p->methods);
-  for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
-    upb_pbdecodermethod *method = upb_value_getptr(upb_inttable_iter_value(&i));
-    freemethod(method);
+  // The method references the group and vice-versa, in a circular reference.
+  upb_ref2(ret, group);
+  upb_ref2(group, ret);
+  upb_inttable_insertptr(&group->methods, key, upb_value_ptr(ret));  // Owns ref
+  upb_refcounted_unref(UPB_UPCAST(ret), &ret);
+
+  ret->group = UPB_UPCAST(group);
+  ret->schema_ = msg;
+  ret->dest_handlers_ = dest_handlers;
+  ret->is_native_ = false;  // If we JIT, it will update this later.
+  upb_inttable_init(&ret->dispatch, UPB_CTYPE_UINT64);
+
+  if (ret->dest_handlers_) {
+    upb_handlers_ref(ret->dest_handlers_, ret);
   }
-  upb_inttable_uninit(&p->methods);
-  free(p->code);
-#ifdef UPB_USE_JIT_X64
-  upb_pbdecoder_freejit(p);
-#endif
-  free(p);
+  return ret;
 }
 
-void set_bytecode_handlers(upb_pbdecoderplan *p, upb_handlers *h) {
-  upb_handlers_setstartstr(h, UPB_BYTESTREAM_BYTES, upb_pbdecoder_start, p,
-                           NULL);
-  upb_handlers_setstring(h, UPB_BYTESTREAM_BYTES, upb_pbdecoder_decode, p,
-                         freeplan);
-  upb_handlers_setendstr(h, UPB_BYTESTREAM_BYTES, upb_pbdecoder_end, p, NULL);
+void upb_pbdecodermethod_ref(const upb_pbdecodermethod *m, const void *owner) {
+  upb_refcounted_ref(UPB_UPCAST(m), owner);
 }
 
-static const upb_pbdecoderplan *getdecoderplan(const upb_handlers *h) {
-  if (upb_handlers_frametype(h) != &upb_pbdecoder_frametype)
-    return NULL;
-  upb_selector_t sel;
-  if (!upb_handlers_getselector(UPB_BYTESTREAM_BYTES, UPB_HANDLER_STARTSTR,
-                                &sel)) {
-    return NULL;
-  }
-  return upb_handlers_gethandlerdata(h, sel);
+void upb_pbdecodermethod_unref(const upb_pbdecodermethod *m,
+                               const void *owner) {
+  upb_refcounted_unref(UPB_UPCAST(m), owner);
+}
+
+void upb_pbdecodermethod_donateref(const upb_pbdecodermethod *m,
+                                   const void *from, const void *to) {
+  upb_refcounted_donateref(UPB_UPCAST(m), from, to);
+}
+
+void upb_pbdecodermethod_checkref(const upb_pbdecodermethod *m,
+                                  const void *owner) {
+  upb_refcounted_checkref(UPB_UPCAST(m), owner);
+}
+
+const upb_msgdef *upb_pbdecodermethod_schema(const upb_pbdecodermethod *m) {
+  return m->schema_;
+}
+
+const upb_handlers *upb_pbdecodermethod_desthandlers(
+    const upb_pbdecodermethod *m) {
+  return m->dest_handlers_;
+}
+
+const upb_byteshandler *upb_pbdecodermethod_inputhandler(
+    const upb_pbdecodermethod *m) {
+  return &m->input_handler_;
+}
+
+bool upb_pbdecodermethod_isnative(const upb_pbdecodermethod *m) {
+  return m->is_native_;
+}
+
+const upb_pbdecodermethod *upb_pbdecodermethod_newfordesthandlers(
+    const upb_handlers *dest, const void *owner) {
+  upb_pbcodecache cache;
+  upb_pbcodecache_init(&cache);
+  const upb_pbdecodermethod *ret =
+      upb_pbcodecache_getdecodermethodfordesthandlers(&cache, dest);
+  upb_pbdecodermethod_ref(ret, owner);
+  upb_pbcodecache_uninit(&cache);
+  return ret;
 }
 
 
@@ -97,16 +160,16 @@ static const upb_pbdecoderplan *getdecoderplan(const upb_handlers *h) {
 
 // Data used only at compilation time.
 typedef struct {
-  upb_pbdecoderplan *plan;
+  mgroup *group;
 
   uint32_t *pc;
   int fwd_labels[MAXLABEL];
   int back_labels[MAXLABEL];
 } compiler;
 
-static compiler *newcompiler(upb_pbdecoderplan *plan) {
-  compiler *ret = malloc(sizeof(compiler));
-  ret->plan = plan;
+static compiler *newcompiler(mgroup *group) {
+  compiler *ret = malloc(sizeof(*ret));
+  ret->group = group;
   for (int i = 0; i < MAXLABEL; i++) {
     ret->fwd_labels[i] = EMPTYLABEL;
     ret->back_labels[i] = EMPTYLABEL;
@@ -165,7 +228,7 @@ static void setofs(uint32_t *instruction, int32_t ofs) {
   assert(getofs(*instruction) == ofs);  // Would fail in cases of overflow.
 }
 
-static uint32_t pcofs(compiler *c) { return c->pc - c->plan->code; }
+static uint32_t pcofs(compiler *c) { return c->pc - c->group->bytecode; }
 
 // Defines a local label at the current PC location.  All previous forward
 // references are updated to point to this location.  The location is noted
@@ -173,7 +236,7 @@ static uint32_t pcofs(compiler *c) { return c->pc - c->plan->code; }
 static void label(compiler *c, unsigned int label) {
   assert(label < MAXLABEL);
   int val = c->fwd_labels[label];
-  uint32_t *codep = (val == EMPTYLABEL) ? NULL : c->plan->code + val;
+  uint32_t *codep = (val == EMPTYLABEL) ? NULL : c->group->bytecode + val;
   while (codep) {
     int ofs = getofs(*codep);
     setofs(codep, c->pc - codep - instruction_len(*codep));
@@ -197,7 +260,7 @@ static int32_t labelref(compiler *c, int label) {
     return 0;
   } else if (label < 0) {
     // Backward local label.  Relative to the next instruction.
-    uint32_t from = (c->pc + 1) - c->plan->code;
+    uint32_t from = (c->pc + 1) - c->group->bytecode;
     return c->back_labels[-label] - from;
   } else {
     // Forward local label: prepend to (possibly-empty) linked list.
@@ -209,14 +272,15 @@ static int32_t labelref(compiler *c, int label) {
 }
 
 static void put32(compiler *c, uint32_t v) {
-  if (c->pc == c->plan->code_end) {
+  mgroup *g = c->group;
+  if (c->pc == g->bytecode_end) {
     int ofs = pcofs(c);
-    size_t oldsize = c->plan->code_end - c->plan->code;
+    size_t oldsize = g->bytecode_end - g->bytecode;
     size_t newsize = UPB_MAX(oldsize * 2, 64);
     // TODO(haberman): handle OOM.
-    c->plan->code = realloc(c->plan->code, newsize * sizeof(uint32_t));
-    c->plan->code_end = c->plan->code + newsize;
-    c->pc = c->plan->code + ofs;
+    g->bytecode = realloc(g->bytecode, newsize * sizeof(uint32_t));
+    g->bytecode_end = g->bytecode + newsize;
+    c->pc = g->bytecode + ofs;
   }
   *c->pc++ = v;
 }
@@ -272,7 +336,7 @@ static void putop(compiler *c, opcode op, ...) {
       break;
     case OP_CALL: {
       const upb_pbdecodermethod *method = va_arg(ap, upb_pbdecodermethod *);
-      put32(c, op | (method->base.ofs - (pcofs(c) + 1)) << 8);
+      put32(c, op | (method->code_base.ofs - (pcofs(c) + 1)) << 8);
       break;
     }
     case OP_CHECKDELIM:
@@ -349,7 +413,7 @@ static void dumpbc(uint32_t *p, uint32_t *end, FILE *f) {
         const upb_pbdecodermethod *method =
             (void *)((char *)dispatch -
                      offsetof(upb_pbdecodermethod, dispatch));
-        fprintf(f, " %s", upb_msgdef_fullname(method->msg));
+        fprintf(f, " %s", upb_msgdef_fullname(method->schema_));
         break;
       }
       case OP_STARTMSG:
@@ -453,7 +517,7 @@ static upb_selector_t getsel(const upb_fielddef *f, upb_handlertype_t type) {
 static void dispatchtarget(compiler *c, upb_pbdecodermethod *method,
                            const upb_fielddef *f, int wire_type) {
   // Offset is relative to msg base.
-  uint64_t ofs = pcofs(c) - method->base.ofs;
+  uint64_t ofs = pcofs(c) - method->code_base.ofs;
   uint32_t fn = upb_fielddef_number(f);
   upb_inttable *d = &method->dispatch;
   upb_value v;
@@ -485,11 +549,11 @@ static void putpush(compiler *c, const upb_fielddef *f) {
 static upb_pbdecodermethod *find_submethod(const compiler *c,
                                            const upb_pbdecodermethod *method,
                                            const upb_fielddef *f) {
-  const void *key = method->dest_handlers ?
-      (const void*)upb_handlers_getsubhandlers(method->dest_handlers, f) :
-      (const void*)upb_downcast_msgdef(upb_fielddef_subdef(f));
+  const upb_handlers *sub = method->dest_handlers_ ?
+      upb_handlers_getsubhandlers(method->dest_handlers_, f) : NULL;
+  const void *key = methodkey(upb_downcast_msgdef(upb_fielddef_subdef(f)), sub);
   upb_value v;
-  bool ok = upb_inttable_lookupptr(&c->plan->methods, key, &v);
+  bool ok = upb_inttable_lookupptr(&c->group->methods, key, &v);
   UPB_ASSERT_VAR(ok, ok);
   return upb_value_getptr(v);
 }
@@ -532,12 +596,12 @@ static void compile_method(compiler *c, upb_pbdecodermethod *method) {
   upb_inttable_uninit(&method->dispatch);
   upb_inttable_init(&method->dispatch, UPB_CTYPE_UINT64);
 
- method->base.ofs = pcofs(c);
+ method->code_base.ofs = pcofs(c);
   putop(c, OP_SETDISPATCH, &method->dispatch);
   putop(c, OP_STARTMSG);
  label(c, LABEL_FIELD);
   upb_msg_iter i;
-  for(upb_msg_begin(&i, method->msg); !upb_msg_done(&i); upb_msg_next(&i)) {
+  for(upb_msg_begin(&i, method->schema_); !upb_msg_done(&i); upb_msg_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
     upb_descriptortype_t type = upb_fielddef_descriptortype(f);
 
@@ -680,17 +744,15 @@ static void compile_method(compiler *c, upb_pbdecodermethod *method) {
 // On the other hand, if/when the optimization mentioned below is implemented,
 // binding to a upb_handlers can result in *fewer* methods being generated if
 // many of the submessages have no handlers bound to them.
-static upb_pbdecodermethod *find_methods(compiler *c,
-                                         const upb_msgdef *md,
-                                         const upb_handlers *h) {
-  const void *key = h ? (const void*)h : (const void*)md;
+static void find_methods(compiler *c, const upb_msgdef *md,
+                         const upb_handlers *h) {
+  const void *key = methodkey(md, h);
   upb_value v;
-  if (upb_inttable_lookupptr(&c->plan->methods, key, &v))
-    return upb_value_getptr(v);
-  upb_pbdecodermethod *method = newmethod(md, h);
-  // Takes ownership of method.
-  upb_inttable_insertptr(&c->plan->methods, key, upb_value_ptr(method));
+  if (upb_inttable_lookupptr(&c->group->methods, key, &v))
+    return;
+  newmethod(md, h, c->group, key);
 
+  // Find submethods.
   upb_msg_iter i;
   for(upb_msg_begin(&i, md); !upb_msg_done(&i); upb_msg_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
@@ -706,24 +768,34 @@ static upb_pbdecodermethod *find_methods(compiler *c,
 
     find_methods(c, upb_downcast_msgdef(upb_fielddef_subdef(f)), sub_h);
   }
-
-  return method;
 }
 
-// (Re-)compile bytecode for all messages in "msgs", ensuring that the code
-// for "md" is emitted first.  Overwrites any existing bytecode in "c".
+// (Re-)compile bytecode for all messages in "msgs."
+// Overwrites any existing bytecode in "c".
 static void compile_methods(compiler *c) {
   // Start over at the beginning of the bytecode.
-  c->pc = c->plan->code;
-  compile_method(c, c->plan->topmethod);
+  c->pc = c->group->bytecode;
 
   upb_inttable_iter i;
-  upb_inttable_begin(&i, &c->plan->methods);
+  upb_inttable_begin(&i, &c->group->methods);
   for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
     upb_pbdecodermethod *method = upb_value_getptr(upb_inttable_iter_value(&i));
-    if (method != c->plan->topmethod) {
-      compile_method(c, method);
-    }
+    compile_method(c, method);
+  }
+}
+
+static void set_bytecode_handlers(mgroup *g) {
+  upb_inttable_iter i;
+  upb_inttable_begin(&i, &g->methods);
+  for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
+    upb_pbdecodermethod *m = upb_value_getptr(upb_inttable_iter_value(&i));
+
+    m->code_base.ptr = g->bytecode + m->code_base.ofs;
+
+    upb_byteshandler *h = &m->input_handler_;
+    upb_byteshandler_setstartstr(h, upb_pbdecoder_startbc, m->code_base.ptr);
+    upb_byteshandler_setstring(h, upb_pbdecoder_decode, g);
+    upb_byteshandler_setendstr(h, upb_pbdecoder_end, m);
   }
 }
 
@@ -732,17 +804,13 @@ static void compile_methods(compiler *c) {
 
 #ifdef UPB_USE_JIT_X64
 
-static void sethandlers(upb_pbdecoderplan *p, upb_handlers *h, bool allowjit) {
-  p->jit_code = NULL;
-
+static void sethandlers(mgroup *g, bool allowjit) {
+  g->jit_code = NULL;
   if (allowjit) {
-    upb_pbdecoder_jit(p);  // Compile byte-code into machine code.
-    upb_handlers_setstartstr(h, UPB_BYTESTREAM_BYTES, upb_pbdecoder_start, p,
-                             freeplan);
-    upb_handlers_setstring(h, UPB_BYTESTREAM_BYTES, p->jit_code, NULL, NULL);
-    upb_handlers_setendstr(h, UPB_BYTESTREAM_BYTES, upb_pbdecoder_end, p, NULL);
+    // Compile byte-code into machine code, create handlers.
+    upb_pbdecoder_jit(g);
   } else {
-    set_bytecode_handlers(p, h);
+    set_bytecode_handlers(g);
   }
 }
 
@@ -754,10 +822,10 @@ static bool bind_dynamic(bool allowjit) {
 
 #else  // UPB_USE_JIT_X64
 
-static void sethandlers(upb_pbdecoderplan *p, upb_handlers *h, bool allowjit) {
+static void sethandlers(mgroup *g, bool allowjit) {
   // No JIT compiled in; use bytecode handlers unconditionally.
   UPB_UNUSED(allowjit);
-  set_bytecode_handlers(p, h);
+  set_bytecode_handlers(g);
 }
 
 static bool bind_dynamic(bool allowjit) {
@@ -769,56 +837,16 @@ static bool bind_dynamic(bool allowjit) {
 #endif  // UPB_USE_JIT_X64
 
 
-/* Public interface ***********************************************************/
-
-bool upb_pbdecoder_isdecoder(const upb_handlers *h) {
-  return getdecoderplan(h) != NULL;
-}
-
-bool upb_pbdecoderplan_hasjitcode(const upb_pbdecoderplan *p) {
-#ifdef UPB_USE_JIT_X64
-  return p->jit_code != NULL;
-#else
-  UPB_UNUSED(p);
-  return false;
-#endif
-}
-
-bool upb_pbdecoder_hasjitcode(const upb_handlers *h) {
-  const upb_pbdecoderplan *p = getdecoderplan(h);
-  if (!p) return false;
-  return upb_pbdecoderplan_hasjitcode(p);
-}
-
-uint32_t *upb_pbdecoderplan_codebase(const upb_pbdecoderplan *p) {
-  return p->code;
-}
-
-upb_string_handler *upb_pbdecoderplan_jitcode(const upb_pbdecoderplan *p) {
-#ifdef UPB_USE_JIT_X64
-  return p->jit_code;
-#else
-  UPB_UNUSED(p);
-  assert(false);
-  return NULL;
-#endif
-}
-
-const upb_handlers *upb_pbdecoder_getdesthandlers(const upb_handlers *h) {
-  const upb_pbdecoderplan *p = getdecoderplan(h);
-  if (!p) return NULL;
-  return p->topmethod->dest_handlers;
-}
-
-const upb_handlers *upb_pbdecoder_gethandlers(const upb_handlers *dest,
-                                              bool allowjit,
-                                              const void *owner) {
+// TODO(haberman): allow this to be constructed for an arbitrary set of dest
+// handlers and other mgroups (but verify we have a transitive closure).
+const mgroup *mgroup_new(const upb_handlers *dest, bool allowjit,
+                         const void *owner) {
   UPB_UNUSED(allowjit);
   assert(upb_handlers_isfrozen(dest));
   const upb_msgdef *md = upb_handlers_msgdef(dest);
 
-  upb_pbdecoderplan *p = newplan();
-  compiler *c = newcompiler(p);
+  mgroup *g = newgroup(owner);
+  compiler *c = newcompiler(g);
 
   if (bind_dynamic(allowjit)) {
     // If binding dynamically, remove the reference against destination
@@ -826,32 +854,75 @@ const upb_handlers *upb_pbdecoder_gethandlers(const upb_handlers *dest,
     dest = NULL;
   }
 
-  p->topmethod = find_methods(c, md, dest);
+  find_methods(c, md, dest);
 
   // We compile in two passes:
   // 1. all messages are assigned relative offsets from the beginning of the
-  //    bytecode (saved in method->base).
+  //    bytecode (saved in method->code_base).
   // 2. forwards OP_CALL instructions can be correctly linked since message
   //    offsets have been previously assigned.
   //
   // Could avoid the second pass by linking OP_CALL instructions somehow.
   compile_methods(c);
   compile_methods(c);
-  p->code_end = c->pc;
+  g->bytecode_end = c->pc;
+  freecompiler(c);
 
 #ifdef UPB_DUMP_BYTECODE
   FILE *f = fopen("/tmp/upb-bytecode", "wb");
   assert(f);
-  dumpbc(p->code, p->code_end, stderr);
-  dumpbc(p->code, p->code_end, f);
+  dumpbc(g->bytecode, g->bytecode_end, stderr);
+  dumpbc(g->bytecode, g->bytecode_end, f);
   fclose(f);
 #endif
 
-  upb_handlers *h = upb_handlers_new(
-      UPB_BYTESTREAM, &upb_pbdecoder_frametype, owner);
-  sethandlers(p, h, allowjit);
+  sethandlers(g, allowjit);
+  return g;
+}
 
-  freecompiler(c);
 
-  return h;
+/* upb_pbcodecache ************************************************************/
+
+void upb_pbcodecache_init(upb_pbcodecache *c) {
+  upb_inttable_init(&c->groups, UPB_CTYPE_CONSTPTR);
+  c->allow_jit_ = true;
+}
+
+void upb_pbcodecache_uninit(upb_pbcodecache *c) {
+  upb_inttable_iter i;
+  upb_inttable_begin(&i, &c->groups);
+  for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
+    const mgroup *group = upb_value_getconstptr(upb_inttable_iter_value(&i));
+    upb_refcounted_unref(UPB_UPCAST(group), c);
+  }
+  upb_inttable_uninit(&c->groups);
+}
+
+bool upb_pbcodecache_allowjit(const upb_pbcodecache *c) {
+  return c->allow_jit_;
+}
+
+bool upb_pbcodecache_setallowjit(upb_pbcodecache *c, bool allow) {
+  if (upb_inttable_count(&c->groups) > 0)
+    return false;
+  c->allow_jit_ = allow;
+  return true;
+}
+
+const upb_pbdecodermethod *upb_pbcodecache_getdecodermethodfordesthandlers(
+    upb_pbcodecache *c, const upb_handlers *handlers) {
+  // Right now we build a new DecoderMethod every time.
+  // TODO(haberman): properly cache methods by their true key.
+  const mgroup *g = mgroup_new(handlers, c->allow_jit_, c);
+  upb_inttable_push(&c->groups, upb_value_constptr(g));
+
+  const upb_msgdef *md = upb_handlers_msgdef(handlers);
+  if (bind_dynamic(c->allow_jit_)) {
+    handlers = NULL;
+  }
+
+  upb_value v;
+  bool ok = upb_inttable_lookupptr(&g->methods, methodkey(md, handlers), &v);
+  UPB_ASSERT_VAR(ok, ok);
+  return upb_value_getptr(v);
 }

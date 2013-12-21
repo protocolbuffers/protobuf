@@ -18,6 +18,8 @@
 
 #include "upb/google/proto1.h"
 
+#include <memory>
+
 #include "net/proto2/public/repeated_field.h"
 #include "net/proto/internal_layout.h"
 #include "net/proto/proto2_reflection.h"
@@ -226,10 +228,9 @@ class P2R_Handlers {
   }
 
   template <typename T>
-  static bool Append(proto2::RepeatedField<T>* r, T val) {
+  static void Append(proto2::RepeatedField<T>* r, T val) {
     // Proto1's ProtoArray class derives from proto2::RepeatedField.
     r->Add(val);
-    return true;
   }
 
   // String ////////////////////////////////////////////////////////////////////
@@ -316,9 +317,8 @@ class P2R_Handlers {
     return field;
   }
 
-  static size_t OnCordBuf(Cord* c, const char* buf, size_t n) {
+  static void OnCordBuf(Cord* c, const char* buf, size_t n) {
     c->Append(StringPiece(buf, n));
-    return true;
   }
 
   static Cord* StartRepeatedCord(proto2::RepeatedField<Cord>* r,
@@ -370,7 +370,7 @@ class P2R_Handlers {
                                  const proto2::Message& m,
                                  const _pi::Proto2Reflection* r,
                                  const upb::FieldDef* f, upb::Handlers* h) {
-    scoped_ptr<SubMessageHandlerData> data(
+    std::unique_ptr<SubMessageHandlerData> data(
         new SubMessageHandlerData(m, proto2_f, r));
     if (f->IsSequence()) {
       SetStartSequenceHandler(proto2_f, r, f, h);
@@ -385,7 +385,7 @@ class P2R_Handlers {
                                      const proto2::Message& m,
                                      const _pi::Proto2Reflection* r,
                                      const upb::FieldDef* f, upb::Handlers* h) {
-    scoped_ptr<SubMessageHandlerData> data(
+    std::unique_ptr<SubMessageHandlerData> data(
         new SubMessageHandlerData(m, proto2_f, r));
     if (f->IsSequence()) {
       SetStartSequenceHandler(proto2_f, r, f, h);

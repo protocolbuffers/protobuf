@@ -49,18 +49,7 @@ static char *upb_join(const char *base, const char *name) {
 
 /* upb_deflist ****************************************************************/
 
-// upb_deflist is an internal-only dynamic array for storing a growing list of
-// upb_defs.
-typedef struct {
-  upb_pipeline *pipeline;
-  upb_def **defs;
-  size_t len;
-  size_t size;
-  bool owned;
-} upb_deflist;
-
-void upb_deflist_init(upb_deflist *l, upb_pipeline *pipeline) {
-  l->pipeline = pipeline;
+void upb_deflist_init(upb_deflist *l) {
   l->size = 0;
   l->defs = NULL;
   l->len = 0;
@@ -71,15 +60,14 @@ void upb_deflist_uninit(upb_deflist *l) {
   if (l->owned)
     for(size_t i = 0; i < l->len; i++)
       upb_def_unref(l->defs[i], l);
+  free(l->defs);
 }
 
 bool upb_deflist_push(upb_deflist *l, upb_def *d) {
   if(++l->len >= l->size) {
     size_t new_size = UPB_MAX(l->size, 4);
     new_size *= 2;
-    l->defs = upb_pipeline_realloc(
-        l->pipeline, l->defs,
-        l->size * sizeof(void*), new_size * sizeof(void*));
+    l->defs = realloc(l->defs, new_size * sizeof(void *));
     if (!l->defs) return false;
     l->size = new_size;
   }
@@ -111,63 +99,16 @@ static void upb_deflist_qualify(upb_deflist *l, char *str, int32_t start) {
 
 /* upb_descreader  ************************************************************/
 
-// We keep a stack of all the messages scopes we are currently in, as well as
-// the top-level file scope.  This is necessary to correctly qualify the
-// definitions that are contained inside.  "name" tracks the name of the
-// message or package (a bare name -- not qualified by any enclosing scopes).
-typedef struct {
-  char *name;
-  // Index of the first def that is under this scope.  For msgdefs, the
-  // msgdef itself is at start-1.
-  int start;
-} upb_descreader_frame;
-
-struct upb_descreader {
-  upb_deflist defs;
-  upb_descreader_frame stack[UPB_MAX_MESSAGE_NESTING];
-  int stack_len;
-
-  uint32_t number;
-  char *name;
-  bool saw_number;
-  bool saw_name;
-
-  char *default_string;
-
-  upb_fielddef *f;
-};
-
-void upb_descreader_init(void *self, upb_pipeline *p);
-void upb_descreader_uninit(void *self);
-
-const upb_frametype upb_descreader_frametype = {
-  sizeof(upb_descreader),
-  upb_descreader_init,
-  upb_descreader_uninit,
-  NULL,
-};
-
-const upb_frametype *upb_descreader_getframetype() {
-  return &upb_descreader_frametype;
-}
-
-// Registers handlers that will build the defs.  Pass the descreader as the
-// closure.
-const upb_handlers *upb_descreader_gethandlers(const void *owner);
-
-
-/* upb_descreader  ************************************************************/
-
-void upb_descreader_init(void *self, upb_pipeline *pipeline) {
-  upb_descreader *r = self;
-  upb_deflist_init(&r->defs, pipeline);
+void upb_descreader_init(upb_descreader *r, const upb_handlers *handlers,
+                         upb_status *status) {
+  upb_deflist_init(&r->defs);
+  upb_sink_reset(upb_descreader_input(r), handlers, r);
   r->stack_len = 0;
   r->name = NULL;
   r->default_string = NULL;
 }
 
-void upb_descreader_uninit(void *self) {
-  upb_descreader *r = self;
+void upb_descreader_uninit(upb_descreader *r) {
   free(r->name);
   upb_deflist_uninit(&r->defs);
   free(r->default_string);
@@ -181,6 +122,10 @@ upb_def **upb_descreader_getdefs(upb_descreader *r, void *owner, int *n) {
   *n = r->defs.len;
   upb_deflist_donaterefs(&r->defs, owner);
   return r->defs.defs;
+}
+
+upb_sink *upb_descreader_input(upb_descreader *r) {
+  return (upb_sink*)r->sink;
 }
 
 static upb_msgdef *upb_descreader_top(upb_descreader *r) {
@@ -271,7 +216,7 @@ static bool enumval_endmsg(void *closure, const void *hd, upb_status *status) {
   UPB_UNUSED(hd);
   upb_descreader *r = closure;
   if(!r->saw_number || !r->saw_name) {
-    upb_status_seterrliteral(status, "Enum value missing name or number.");
+    upb_status_seterrmsg(status, "Enum value missing name or number.");
     return false;
   }
   upb_enumdef *e = upb_downcast_enumdef_mutable(upb_descreader_last(r));
@@ -300,11 +245,11 @@ static bool enum_endmsg(void *closure, const void *hd, upb_status *status) {
   upb_descreader *r = closure;
   upb_enumdef *e = upb_downcast_enumdef_mutable(upb_descreader_last(r));
   if (upb_def_fullname(upb_descreader_last(r)) == NULL) {
-    upb_status_seterrliteral(status, "Enum had no name.");
+    upb_status_seterrmsg(status, "Enum had no name.");
     return false;
   }
   if (upb_enumdef_numvals(e) == 0) {
-    upb_status_seterrliteral(status, "Enum had no values.");
+    upb_status_seterrmsg(status, "Enum had no values.");
     return false;
   }
   return true;
@@ -409,7 +354,7 @@ static bool field_endmsg(void *closure, const void *hd, upb_status *status) {
 
   if (r->default_string) {
     if (upb_fielddef_issubmsg(f)) {
-      upb_status_seterrliteral(status, "Submessages cannot have defaults.");
+      upb_status_seterrmsg(status, "Submessages cannot have defaults.");
       return false;
     }
     if (upb_fielddef_isstring(f) || upb_fielddef_type(f) == UPB_TYPE_ENUM) {
@@ -418,7 +363,7 @@ static bool field_endmsg(void *closure, const void *hd, upb_status *status) {
       if (r->default_string && !parse_default(r->default_string, f)) {
         // We don't worry too much about giving a great error message since the
         // compiler should have ensured this was correct.
-        upb_status_seterrliteral(status, "Error converting default value.");
+        upb_status_seterrmsg(status, "Error converting default value.");
         return false;
       }
     }
@@ -495,7 +440,7 @@ static bool msg_endmsg(void *closure, const void *hd, upb_status *status) {
   upb_descreader *r = closure;
   upb_msgdef *m = upb_descreader_top(r);
   if(!upb_def_fullname(UPB_UPCAST(m))) {
-    upb_status_seterrliteral(status, "Encountered message with no name.");
+    upb_status_seterrmsg(status, "Encountered message with no name.");
     return false;
   }
   upb_descreader_endcontainer(r);
@@ -543,42 +488,40 @@ static void reghandlers(void *closure, upb_handlers *h) {
   const upb_msgdef *m = upb_handlers_msgdef(h);
 
   if (m == GOOGLE_PROTOBUF_DESCRIPTORPROTO) {
-    upb_handlers_setstartmsg(h, &msg_startmsg, NULL, NULL);
-    upb_handlers_setendmsg(h, &msg_endmsg, NULL, NULL);
-    upb_handlers_setstring(h,    f(h, "name"),  &msg_onname, NULL, NULL);
-    upb_handlers_setendsubmsg(h, f(h, "field"), &msg_onendfield, NULL, NULL);
+    upb_handlers_setstartmsg(h, &msg_startmsg, NULL);
+    upb_handlers_setendmsg(h, &msg_endmsg, NULL);
+    upb_handlers_setstring(h, f(h, "name"), &msg_onname, NULL);
+    upb_handlers_setendsubmsg(h, f(h, "field"), &msg_onendfield, NULL);
     // TODO: support extensions
-    upb_handlers_setendsubmsg(h, f(h, "extension"), &discardfield, NULL, NULL);
+    upb_handlers_setendsubmsg(h, f(h, "extension"), &discardfield, NULL);
   } else if (m == GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO) {
-    upb_handlers_setstartmsg(h, &file_startmsg, NULL, NULL);
-    upb_handlers_setendmsg(h, &file_endmsg, NULL, NULL);
-    upb_handlers_setstring(h, f(h, "package"), &file_onpackage, NULL, NULL);
+    upb_handlers_setstartmsg(h, &file_startmsg, NULL);
+    upb_handlers_setendmsg(h, &file_endmsg, NULL);
+    upb_handlers_setstring(h, f(h, "package"), &file_onpackage, NULL);
     // TODO: support extensions
-    upb_handlers_setendsubmsg(h, f(h, "extension"), &discardfield, NULL, NULL);
+    upb_handlers_setendsubmsg(h, f(h, "extension"), &discardfield, NULL);
   } else if (m == GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO) {
-    upb_handlers_setstartmsg(h, &enumval_startmsg, NULL, NULL);
-    upb_handlers_setendmsg(h, &enumval_endmsg, NULL, NULL);
-    upb_handlers_setstring(h, f(h, "name"),   &enumval_onname, NULL, NULL);
-    upb_handlers_setint32(h,  f(h, "number"), &enumval_onnumber, NULL, NULL);
+    upb_handlers_setstartmsg(h, &enumval_startmsg, NULL);
+    upb_handlers_setendmsg(h, &enumval_endmsg, NULL);
+    upb_handlers_setstring(h, f(h, "name"), &enumval_onname, NULL);
+    upb_handlers_setint32(h, f(h, "number"), &enumval_onnumber, NULL);
   } else if (m == GOOGLE_PROTOBUF_ENUMDESCRIPTORPROTO) {
-    upb_handlers_setstartmsg(h, &enum_startmsg, NULL, NULL);
-    upb_handlers_setendmsg(h, &enum_endmsg, NULL, NULL);
-    upb_handlers_setstring(h, f(h, "name"), &enum_onname, NULL, NULL);
+    upb_handlers_setstartmsg(h, &enum_startmsg, NULL);
+    upb_handlers_setendmsg(h, &enum_endmsg, NULL);
+    upb_handlers_setstring(h, f(h, "name"), &enum_onname, NULL);
   } else if (m == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO) {
-    upb_handlers_setstartmsg(h, &field_startmsg, NULL, NULL);
-    upb_handlers_setendmsg(h, &field_endmsg, NULL, NULL);
-    upb_handlers_setint32 (h, f(h, "type"),      &field_ontype, NULL, NULL);
-    upb_handlers_setint32 (h, f(h, "label"),     &field_onlabel, NULL, NULL);
-    upb_handlers_setint32 (h, f(h, "number"),    &field_onnumber, NULL, NULL);
-    upb_handlers_setstring(h, f(h, "name"),      &field_onname, NULL, NULL);
-    upb_handlers_setstring(h, f(h, "type_name"), &field_ontypename, NULL, NULL);
-    upb_handlers_setstring(h, f(h, "default_value"), &field_ondefaultval, NULL,
-                           NULL);
+    upb_handlers_setstartmsg(h, &field_startmsg, NULL);
+    upb_handlers_setendmsg(h, &field_endmsg, NULL);
+    upb_handlers_setint32(h, f(h, "type"), &field_ontype, NULL);
+    upb_handlers_setint32(h, f(h, "label"), &field_onlabel, NULL);
+    upb_handlers_setint32(h, f(h, "number"), &field_onnumber, NULL);
+    upb_handlers_setstring(h, f(h, "name"), &field_onname, NULL);
+    upb_handlers_setstring(h, f(h, "type_name"), &field_ontypename, NULL);
+    upb_handlers_setstring(h, f(h, "default_value"), &field_ondefaultval, NULL);
   }
 }
 
-const upb_handlers *upb_descreader_gethandlers(const void *owner) {
+const upb_handlers *upb_descreader_newhandlers(const void *owner) {
   return upb_handlers_newfrozen(
-      GOOGLE_PROTOBUF_FILEDESCRIPTORSET, &upb_descreader_frametype,
-      owner, reghandlers, NULL);
+      GOOGLE_PROTOBUF_FILEDESCRIPTORSET, owner, reghandlers, NULL);
 }

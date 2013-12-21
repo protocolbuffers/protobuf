@@ -95,284 +95,497 @@
 
 namespace upb {
 
-// Deleter: class for constructing a function that deletes a pointer type.
-template <class T> struct Deleter {
-  static void Delete(void* p) { delete static_cast<T*>(p); }
+template<>
+class Pointer<Handlers> {
+ public:
+  explicit Pointer(Handlers* ptr) : ptr_(ptr) {}
+  operator Handlers*() { return ptr_; }
+  operator RefCounted*() { return UPB_UPCAST(ptr_); }
+ private:
+  Handlers* ptr_;
 };
 
-template <class T> Deleter<T> MatchDeleter(T* data) {
-  UPB_UNUSED(data);
-  return Deleter<T>();
-}
-
-// Template magic for creating type-safe wrappers around the user's actual
-// function.  These convert between the void*'s of the C API and the C++
-// user's types.  These also handle conversion between multiple types with
-// the same witdh; ie "long long" and "long" are both 64 bits on LP64.
-
-// EndMessageHandler
-template <class C> struct EndMessageHandlerWrapper2 {
-  template <bool F(C *, Status *)>
-  static bool Wrapper(void *closure, const void *hd, Status* s) {
-    UPB_UNUSED(hd);
-    return F(static_cast<C *>(closure), s);
-  }
+template<>
+class Pointer<const Handlers> {
+ public:
+  explicit Pointer(const Handlers* ptr) : ptr_(ptr) {}
+  operator const Handlers*() { return ptr_; }
+  operator const RefCounted*() { return UPB_UPCAST(ptr_); }
+ private:
+  const Handlers* ptr_;
 };
 
-template <class C, class D> struct EndMessageHandlerWrapper3 {
-  template <bool F(C *, const D *, Status*)>
-  inline static bool Wrapper(void *closure, const void *hd, Status* s) {
-    return F(static_cast<C *>(closure), static_cast<const D *>(hd), s);
-  }
+typedef void CleanupFunc(void *ptr);
+
+// Template to remove "const" from "const T*" and just return "T*".
+//
+// We define a nonsense default because otherwise it will fail to instantiate as
+// a function parameter type even in cases where we don't expect any caller to
+// actually match the overload.
+class NonsenseType {};
+template <class T> struct remove_constptr { typedef NonsenseType type; };
+template <class T> struct remove_constptr<const T *> { typedef T *type; };
+
+// Template that we use below to remove a template specialization from
+// consideration if it matches a specific type.
+template <class T, class U> struct disable_if_same { typedef void Type; };
+template <class T> struct disable_if_same<T, T> {};
+
+template <class T> void DeletePointer(void *p) { delete static_cast<T *>(p); }
+
+// Func ////////////////////////////////////////////////////////////////////////
+
+// Func1, Func2, Func3: Template classes representing a function and its
+// signature.
+//
+// Since the function is a template parameter, calling the function can be
+// inlined at compile-time and does not require a function pointer at runtime.
+// These functions are not bound to a handler data so have no data or cleanup
+// handler.
+struct UnboundFunc {
+  CleanupFunc *GetCleanup() { return NULL; }
+  void *GetData() { return NULL; }
 };
 
-template <class C>
-inline EndMessageHandlerWrapper2<C> MatchWrapper(bool (*f)(C *, Status *)) {
-  UPB_UNUSED(f);
-  return EndMessageHandlerWrapper2<C>();
-}
-
-template <class C, class D>
-inline EndMessageHandlerWrapper3<C, D> MatchWrapper(bool (*f)(C *, const D *,
-                                                              Status *)) {
-  UPB_UNUSED(f);
-  return EndMessageHandlerWrapper3<C, D>();
-}
-
-inline Handlers::EndMessageHandler MakeHandler(bool (*wrapper)(void *,
-                                                               const void *,
-                                                               Status *)) {
-  return Handlers::EndMessageHandler::Make(wrapper, NULL, NULL);
-}
-
-template <class C, class D>
-inline Handlers::EndMessageHandler BindHandler(
-    bool (*wrapper)(void *, const void *, Status *),
-    bool (*h)(C *, const D *, Status *), D *data) {
-  UPB_UNUSED(h);  // Only for making sure function matches "D".
-  return Handlers::EndMessageHandler::Make(wrapper, data,
-                                           MatchDeleter(data).Delete);
-}
-
-// ValueHandler
-template <class C, class T1, class T2 = typename CanonicalType<T1>::Type>
-struct ValueHandlerWrapper2 {
-  template <bool F(C *, T1)>
-  inline static bool Wrapper(void *closure, const void *hd, T2 val) {
-    UPB_UNUSED(hd);
-    return F(static_cast<C *>(closure), val);
-  }
+template <class R, class P1, R F(P1)>
+struct Func1 : public UnboundFunc {
+  typedef R Return;
+  static R Call(P1 p1) { return F(p1); }
 };
 
-template <class C, class D, class T1,
-          class T2 = typename CanonicalType<T1>::Type>
-struct ValueHandlerWrapper3 {
-  template <bool F(C *, const D *, T1)>
-  inline static bool Wrapper(void *closure, const void *hd, T2 val) {
-    return F(static_cast<C *>(closure), static_cast<const D *>(hd), val);
-  }
+template <class R, class P1, class P2, R F(P1, P2)>
+struct Func2 : public UnboundFunc {
+  typedef R Return;
+  static R Call(P1 p1, P2 p2) { return F(p1, p2); }
 };
 
-template <class C, class T>
-inline ValueHandlerWrapper2<C, T> MatchWrapper(bool (*f)(C *, T)) {
-  UPB_UNUSED(f);
-  return ValueHandlerWrapper2<C, T>();
-}
+template <class R, class P1, class P2, class P3, R F(P1, P2, P3)>
+struct Func3 : public UnboundFunc {
+  typedef R Return;
+  static R Call(P1 p1, P2 p2, P3 p3) { return F(p1, p2, p3); }
+};
 
-template <class C, class D, class T>
-inline ValueHandlerWrapper3<C, D, T> MatchWrapper(bool (*f)(C *, const D *,
-                                                            T)) {
-  UPB_UNUSED(f);
-  return ValueHandlerWrapper3<C, D, T>();
-}
+template <class R, class P1, class P2, class P3, class P4, R F(P1, P2, P3, P4)>
+struct Func4 : public UnboundFunc {
+  typedef R Return;
+  static R Call(P1 p1, P2 p2, P3 p3, P4 p4) { return F(p1, p2, p3, p4); }
+};
 
+// BoundFunc ///////////////////////////////////////////////////////////////////
+
+// BoundFunc2, BoundFunc3: Like Func2/Func3 except also contains a value that
+// shall be bound to the function's second parameter.
+//
+// Note that the second parameter is a const pointer, but our stored bound value
+// is non-const so we can free it when the handlers are destroyed.
 template <class T>
-inline typename Handlers::ValueHandler<T>::H MakeHandler(
-    bool (*wrapper)(void *, const void *, T)) {
-  return Handlers::ValueHandler<T>::H::Make(wrapper, NULL, NULL);
-}
+struct BoundFunc {
+  typedef typename remove_constptr<T>::type MutableP2;
+  explicit BoundFunc(MutableP2 data_) : data(data_) {}
+  CleanupFunc *GetCleanup() { return &DeletePointer<MutableP2>; }
+  MutableP2 GetData() { return data; }
+  MutableP2 data;
+};
 
-template <class C, class D, class T1, class T2>
-inline typename Handlers::ValueHandler<T1>::H BindHandler(
-    bool (*wrapper)(void *, const void *, T1), bool (*h)(C *, const D *, T2),
-    D *data) {
-  UPB_UNUSED(h);  // Only for making sure function matches "D".
-  return Handlers::ValueHandler<T1>::H::Make(wrapper, data,
-                                             MatchDeleter(data).Delete);
-}
+template <class R, class P1, class P2, R F(P1, P2)>
+struct BoundFunc2 : public BoundFunc<P2> {
+  typedef BoundFunc<P2> Base;
+  explicit BoundFunc2(typename Base::MutableP2 arg) : Base(arg) {}
+};
 
-// StartFieldHandler
-template <class R, class C> struct StartFieldHandlerWrapper2 {
-  template <R *F(C *)> static void *Wrapper(void *closure, const void *hd) {
-    UPB_UNUSED(hd);
-    return F(static_cast<C *>(closure));
+template <class R, class P1, class P2, class P3, R F(P1, P2, P3)>
+struct BoundFunc3 : public BoundFunc<P2> {
+  typedef BoundFunc<P2> Base;
+  explicit BoundFunc3(typename Base::MutableP2 arg) : Base(arg) {}
+};
+
+template <class R, class P1, class P2, class P3, class P4, R F(P1, P2, P3, P4)>
+struct BoundFunc4 : public BoundFunc<P2> {
+  typedef BoundFunc<P2> Base;
+  explicit BoundFunc4(typename Base::MutableP2 arg) : Base(arg) {}
+};
+
+// FuncSig /////////////////////////////////////////////////////////////////////
+
+// FuncSig1, FuncSig2, FuncSig3: template classes reflecting a function
+// *signature*, but without a specific function attached.
+//
+// These classes contain member functions that can be invoked with a
+// specific function to return a Func/BoundFunc class.
+template <class R, class P1>
+struct FuncSig1 {
+  template <R F(P1)>
+  Func1<R, P1, F> GetFunc() {
+    return Func1<R, P1, F>();
   }
 };
 
-template <class R, class C, class D> struct StartFieldHandlerWrapper3 {
-  template <R *F(C *, const D *)>
-  inline static void *Wrapper(void *closure, const void *hd) {
-    return F(static_cast<C *>(closure), static_cast<const D *>(hd));
+template <class R, class P1, class P2>
+struct FuncSig2 {
+  template <R F(P1, P2)>
+  Func2<R, P1, P2, F> GetFunc() {
+    return Func2<R, P1, P2, F>();
+  }
+
+  template <R F(P1, P2)>
+  BoundFunc2<R, P1, P2, F> GetFunc(typename remove_constptr<P2>::type param2) {
+    return BoundFunc2<R, P1, P2, F>(param2);
+  }
+};
+
+template <class R, class P1, class P2, class P3>
+struct FuncSig3 {
+  template <R F(P1, P2, P3)>
+  Func3<R, P1, P2, P3, F> GetFunc() {
+    return Func3<R, P1, P2, P3, F>();
+  }
+
+  template <R F(P1, P2, P3)>
+  BoundFunc3<R, P1, P2, P3, F> GetFunc(
+      typename remove_constptr<P2>::type param2) {
+    return BoundFunc3<R, P1, P2, P3, F>(param2);
+  }
+};
+
+template <class R, class P1, class P2, class P3, class P4>
+struct FuncSig4 {
+  template <R F(P1, P2, P3, P4)>
+  Func4<R, P1, P2, P3, P4, F> GetFunc() {
+    return Func4<R, P1, P2, P3, P4, F>();
+  }
+
+  template <R F(P1, P2, P3, P4)>
+  BoundFunc4<R, P1, P2, P3, P4, F> GetFunc(
+      typename remove_constptr<P2>::type param2) {
+    return BoundFunc4<R, P1, P2, P3, P4, F>(param2);
+  }
+};
+
+// Overloaded template function that can construct the appropriate FuncSig*
+// class given a function pointer by deducing the template parameters.
+template <class R, class P1>
+inline FuncSig1<R, P1> MatchFunc(R (*f)(P1)) {
+  UPB_UNUSED(f);  // Only used for template parameter deduction.
+  return FuncSig1<R, P1>();
+}
+
+template <class R, class P1, class P2>
+inline FuncSig2<R, P1, P2> MatchFunc(R (*f)(P1, P2)) {
+  UPB_UNUSED(f);  // Only used for template parameter deduction.
+  return FuncSig2<R, P1, P2>();
+}
+
+template <class R, class P1, class P2, class P3>
+inline FuncSig3<R, P1, P2, P3> MatchFunc(R (*f)(P1, P2, P3)) {
+  UPB_UNUSED(f);  // Only used for template parameter deduction.
+  return FuncSig3<R, P1, P2, P3>();
+}
+
+template <class R, class P1, class P2, class P3, class P4>
+inline FuncSig4<R, P1, P2, P3, P4> MatchFunc(R (*f)(P1, P2, P3, P4)) {
+  UPB_UNUSED(f);  // Only used for template parameter deduction.
+  return FuncSig4<R, P1, P2, P3, P4>();
+}
+
+// MethodSig ///////////////////////////////////////////////////////////////////
+
+// CallMethod*: a function template that calls a given method.
+template <class R, class C, R (C::*F)()>
+R CallMethod0(C *obj) {
+  return ((*obj).*F)();
+}
+
+template <class R, class C, class P1, R (C::*F)(P1)>
+R CallMethod1(C *obj, P1 arg1) {
+  return ((*obj).*F)(arg1);
+}
+
+template <class R, class C, class P1, class P2, R (C::*F)(P1, P2)>
+R CallMethod2(C *obj, P1 arg1, P2 arg2) {
+  return ((*obj).*F)(arg1, arg2);
+}
+
+template <class R, class C, class P1, class P2, class P3, R (C::*F)(P1, P2, P3)>
+R CallMethod3(C *obj, P1 arg1, P2 arg2, P3 arg3) {
+  return ((*obj).*F)(arg1, arg2, arg3);
+}
+
+// MethodSig: like FuncSig, but for member functions.
+//
+// GetFunc() returns a normal FuncN object, so after calling GetFunc() no
+// more logic is required to special-case methods.
+template <class R, class C>
+struct MethodSig0 {
+  template <R (C::*F)()>
+  Func1<R, C *, CallMethod0<R, C, F> > GetFunc() {
+    return Func1<R, C *, CallMethod0<R, C, F> >();
+  }
+};
+
+template <class R, class C, class P1>
+struct MethodSig1 {
+  template <R (C::*F)(P1)>
+  Func2<R, C *, P1, CallMethod1<R, C, P1, F> > GetFunc() {
+    return Func2<R, C *, P1, CallMethod1<R, C, P1, F> >();
+  }
+
+  template <R (C::*F)(P1)>
+  BoundFunc2<R, C *, P1, CallMethod1<R, C, P1, F> > GetFunc(
+      typename remove_constptr<P1>::type param1) {
+    return BoundFunc2<R, C *, P1, CallMethod1<R, C, P1, F> >(param1);
+  }
+};
+
+template <class R, class C, class P1, class P2>
+struct MethodSig2 {
+  template <R (C::*F)(P1, P2)>
+  Func3<R, C *, P1, P2, CallMethod2<R, C, P1, P2, F> > GetFunc() {
+    return Func3<R, C *, P1, P2, CallMethod2<R, C, P1, P2, F> >();
+  }
+
+  template <R (C::*F)(P1, P2)>
+  BoundFunc3<R, C *, P1, P2, CallMethod2<R, C, P1, P2, F> > GetFunc(
+      typename remove_constptr<P1>::type param1) {
+    return BoundFunc3<R, C *, P1, P2, CallMethod2<R, C, P1, P2, F> >(param1);
+  }
+};
+
+template <class R, class C, class P1, class P2, class P3>
+struct MethodSig3 {
+  template <R (C::*F)(P1, P2, P3)>
+  Func4<R, C *, P1, P2, P3, CallMethod3<R, C, P1, P2, P3, F> > GetFunc() {
+    return Func4<R, C *, P1, P2, P3, CallMethod3<R, C, P1, P2, P3, F> >();
+  }
+
+  template <R (C::*F)(P1, P2, P3)>
+  BoundFunc4<R, C *, P1, P2, P3, CallMethod3<R, C, P1, P2, P3, F> > GetFunc(
+      typename remove_constptr<P1>::type param1) {
+    return BoundFunc4<R, C *, P1, P2, P3, CallMethod3<R, C, P1, P2, P3, F> >(
+        param1);
   }
 };
 
 template <class R, class C>
-inline StartFieldHandlerWrapper2<R, C> MatchWrapper(R *(*f)(C *)) {
-  UPB_UNUSED(f);
-  return StartFieldHandlerWrapper2<R, C>();
+inline MethodSig0<R, C> MatchFunc(R (C::*f)()) {
+  UPB_UNUSED(f);  // Only used for template parameter deduction.
+  return MethodSig0<R, C>();
 }
 
-template <class R, class C, class D>
-inline StartFieldHandlerWrapper3<R, C, D> MatchWrapper(R *(*f)(C *,
-                                                               const D *)) {
-  UPB_UNUSED(f);
-  return StartFieldHandlerWrapper3<R, C, D>();
+template <class R, class C, class P1>
+inline MethodSig1<R, C, P1> MatchFunc(R (C::*f)(P1)) {
+  UPB_UNUSED(f);  // Only used for template parameter deduction.
+  return MethodSig1<R, C, P1>();
 }
 
-inline Handlers::StartFieldHandler MakeHandler(void *(*wrapper)(void *,
-                                                                const void *)) {
-  return Handlers::StartFieldHandler::Make(wrapper, NULL, NULL);
+template <class R, class C, class P1, class P2>
+inline MethodSig2<R, C, P1, P2> MatchFunc(R (C::*f)(P1, P2)) {
+  UPB_UNUSED(f);  // Only used for template parameter deduction.
+  return MethodSig2<R, C, P1, P2>();
 }
 
-template <class R, class C, class D>
-inline Handlers::StartFieldHandler BindHandler(
-    void *(*wrapper)(void *, const void *), R *(*h)(C *, const D *), D *data) {
-  UPB_UNUSED(h);  // Only for making sure function matches "D".
-  return Handlers::StartFieldHandler::Make(wrapper, data,
-                                           MatchDeleter(data).Delete);
+template <class R, class C, class P1, class P2, class P3>
+inline MethodSig3<R, C, P1, P2, P3> MatchFunc(R (C::*f)(P1, P2, P3)) {
+  UPB_UNUSED(f);  // Only used for template parameter deduction.
+  return MethodSig3<R, C, P1, P2, P3>();
 }
 
-// EndFieldHandler
-template <class C> struct EndFieldHandlerWrapper2 {
-  template <bool F(C *)>
-  inline static bool Wrapper(void *closure, const void *hd) {
-    UPB_UNUSED(hd);
-    return F(static_cast<C *>(closure));
-  }
+// MaybeWrapReturn /////////////////////////////////////////////////////////////
+
+// Template class that attempts to wrap the return value of the function so it
+// matches the expected type.  There are two main adjustments it may make:
+//
+//   1. If the function returns void, make it return the expected type and with
+//      a value that always indicates success.
+//   2. If the function is expected to return void* but doesn't, wrap it so it
+//      does (either by returning the closure param if the wrapped function
+//      returns void or by casting a different pointer type to void* for
+//      return).
+
+// Template parameters are FuncN type and desired return type.
+template <class F, class R, class Enable = void>
+struct MaybeWrapReturn;
+
+// If the return type matches, return the given function unwrapped.
+template <class F>
+struct MaybeWrapReturn<F, typename F::Return> {
+  typedef F Func;
 };
 
-template <class C, class D> struct EndFieldHandlerWrapper3 {
-  template <bool F(C *, const D *)>
-  inline static bool Wrapper(void *closure, const void *hd) {
-    return F(static_cast<C *>(closure), static_cast<const D *>(hd));
-  }
+// Function wrapper that munges the return value from void to (bool)true.
+template <class P1, class P2, void F(P1, P2)>
+bool ReturnTrue2(P1 p1, P2 p2) {
+  F(p1, p2);
+  return true;
+}
+
+template <class P1, class P2, class P3, void F(P1, P2, P3)>
+bool ReturnTrue3(P1 p1, P2 p2, P3 p3) {
+  F(p1, p2, p3);
+  return true;
+}
+
+// Function wrapper that munges the return value from void to (void*)arg1
+template <class P1, class P2, void F(P1, P2)>
+void *ReturnClosure2(P1 p1, P2 p2) {
+  F(p1, p2);
+  return p1;
+}
+
+template <class P1, class P2, class P3, void F(P1, P2, P3)>
+void *ReturnClosure3(P1 p1, P2 p2, P3 p3) {
+  F(p1, p2, p3);
+  return p1;
+}
+
+// Function wrapper that munges the return value from R to void*.
+template <class R, class P1, class P2, R F(P1, P2)>
+void *CastReturnToVoidPtr2(P1 p1, P2 p2) {
+  return F(p1, p2);
+}
+
+template <class R, class P1, class P2, class P3, R F(P1, P2, P3)>
+void *CastReturnToVoidPtr3(P1 p1, P2 p2, P3 p3) {
+  return F(p1, p2, p3);
+}
+
+// For the string callback, which takes four params, returns the last param
+// which is the size of the entire string.
+template <class P1, class P2, class P3, void F(P1, P2, P3, size_t)>
+size_t ReturnStringLen(P1 p1, P2 p2, P3 p3, size_t p4) {
+  F(p1, p2, p3, p4);
+  return p4;
+}
+
+// If we have a function returning void but want a function returning bool, wrap
+// it in a function that returns true.
+template <class P1, class P2, void F(P1, P2)>
+struct MaybeWrapReturn<Func2<void, P1, P2, F>, bool> {
+  typedef Func2<bool, P1, P2, ReturnTrue2<P1, P2, F> > Func;
 };
 
-template <class C>
-inline EndFieldHandlerWrapper2<C> MatchWrapper(bool (*f)(C *)) {
-  UPB_UNUSED(f);
-  return EndFieldHandlerWrapper2<C>();
-}
-
-template <class C, class D>
-inline EndFieldHandlerWrapper3<C, D> MatchWrapper(bool (*f)(C *, const D *)) {
-  UPB_UNUSED(f);
-  return EndFieldHandlerWrapper3<C, D>();
-}
-
-inline Handlers::EndFieldHandler MakeHandler(bool (*wrapper)(void *,
-                                                             const void *)) {
-  return Handlers::EndFieldHandler::Make(wrapper, NULL, NULL);
-}
-
-template <class C, class D>
-inline Handlers::EndFieldHandler BindHandler(
-    bool (*wrapper)(void *, const void *), bool (*h)(C *, const D *), D *data) {
-  UPB_UNUSED(h);  // Only for making sure function matches "D".
-  return Handlers::EndFieldHandler::Make(wrapper, data,
-                                         MatchDeleter(data).Delete);
-}
-
-// StartStringHandler
-template <class R, class C> struct StartStringHandlerWrapper2 {
-  template <R *F(C *, size_t)>
-  inline static void *Wrapper(void *closure, const void *hd, size_t hint) {
-    UPB_UNUSED(hd);
-    return F(static_cast<C *>(closure), hint);
-  }
+template <class P1, class P2, class P3, void F(P1, P2, P3)>
+struct MaybeWrapReturn<Func3<void, P1, P2, P3, F>, bool> {
+  typedef Func3<bool, P1, P2, P3, ReturnTrue3<P1, P2, P3, F> > Func;
 };
 
-template <class R, class C, class D> struct StartStringHandlerWrapper3 {
-  template <R *F(C *, const D *, size_t)>
-  inline static void *Wrapper(void *closure, const void *hd, size_t hint) {
-    return F(static_cast<C *>(closure), static_cast<const D *>(hd), hint);
-  }
+// If our function returns void but we want one returning void*, wrap it in a
+// function that returns the first argument.
+template <class P1, class P2, void F(P1, P2)>
+struct MaybeWrapReturn<Func2<void, P1, P2, F>, void *> {
+  typedef Func2<void *, P1, P2, ReturnClosure2<P1, P2, F> > Func;
 };
 
-template <class R, class C>
-inline StartStringHandlerWrapper2<R, C> MatchWrapper(R *(*f)(C *, size_t)) {
-  UPB_UNUSED(f);
-  return StartStringHandlerWrapper2<R, C>();
-}
-
-template <class R, class C, class D>
-inline StartStringHandlerWrapper3<R, C, D> MatchWrapper(R *(*f)(C *, const D *,
-                                                                size_t)) {
-  UPB_UNUSED(f);
-  return StartStringHandlerWrapper3<R, C, D>();
-}
-
-inline Handlers::StartStringHandler MakeHandler(void *(*wrapper)(void *,
-                                                                 const void *,
-                                                                 size_t)) {
-  return Handlers::StartStringHandler::Make(wrapper, NULL, NULL);
-}
-
-template <class R, class C, class D>
-inline Handlers::StartStringHandler BindHandler(
-    void *(*wrapper)(void *, const void *, size_t),
-    R *(*h)(C *, const D *, size_t), D *data) {
-  UPB_UNUSED(h);  // Only for making sure function matches "D".
-  return Handlers::StartStringHandler::Make(wrapper, data,
-                                            MatchDeleter(data).Delete);
-}
-
-// StringHandler
-template <class C> struct StringHandlerWrapper2 {
-  template <size_t F(C *, const char *buf, size_t len)>
-  inline static size_t Wrapper(void *closure, const void *hd, const char *buf,
-                               size_t len) {
-    UPB_UNUSED(hd);
-    return F(static_cast<C *>(closure), buf, len);
-  }
+template <class P1, class P2, class P3, void F(P1, P2, P3)>
+struct MaybeWrapReturn<Func3<void, P1, P2, P3, F>, void *> {
+  typedef Func3<void *, P1, P2, P3, ReturnClosure3<P1, P2, P3, F> > Func;
 };
 
-template <class C, class D> struct StringHandlerWrapper3 {
-  template <size_t F(C *, const D *, const char *buf, size_t len)>
-  inline static size_t Wrapper(void *closure, const void *hd, const char *buf,
-                               size_t len) {
-    return F(static_cast<C *>(closure), static_cast<const D *>(hd), buf, len);
-  }
+// If our function returns void but we want one returning size_t, wrap it in a
+// function that returns the last argument.
+template <class P1, class P2, class P3, void F(P1, P2, P3, size_t)>
+struct MaybeWrapReturn<Func4<void, P1, P2, P3, size_t, F>, size_t> {
+  typedef Func4<size_t, P1, P2, P3, size_t, ReturnStringLen<P1, P2, P3, F> >
+      Func;
 };
 
-template <class C>
-inline StringHandlerWrapper2<C> MatchWrapper(size_t (*f)(C *, const char *,
-                                                         size_t)) {
-  UPB_UNUSED(f);
-  return StringHandlerWrapper2<C>();
+// If our function returns R* but we want one returning void*, wrap it in a
+// function that casts to void*.
+template <class R, class P1, class P2, R *F(P1, P2)>
+struct MaybeWrapReturn<Func2<R *, P1, P2, F>, void *,
+                       typename disable_if_same<R *, void *>::Type> {
+  typedef Func2<void *, P1, P2, CastReturnToVoidPtr2<R *, P1, P2, F> > Func;
+};
+
+template <class R, class P1, class P2, class P3, R *F(P1, P2, P3)>
+struct MaybeWrapReturn<Func3<R *, P1, P2, P3, F>, void *,
+                       typename disable_if_same<R *, void *>::Type> {
+  typedef Func3<void *, P1, P2, P3, CastReturnToVoidPtr3<R *, P1, P2, P3, F> >
+      Func;
+};
+
+// ConvertParams ///////////////////////////////////////////////////////////////
+
+// Template class that converts the function parameters if necessary, and
+// ignores the HandlerData parameter if appropriate.
+//
+// Template parameter is the are FuncN function type.
+template <class F>
+struct ConvertParams;
+
+// Function that discards the handler data parameter.
+template <class R, class P1, R F(P1)>
+R IgnoreHandlerData2(void *p1, const void *hd) {
+  UPB_UNUSED(hd);
+  return F(static_cast<P1>(p1));
 }
 
-template <class C, class D>
-inline StringHandlerWrapper3<C, D> MatchWrapper(size_t (*f)(C *, const D *,
-                                                            const char *,
-                                                            size_t)) {
-  UPB_UNUSED(f);
-  return StringHandlerWrapper3<C, D>();
+template <class R, class P1, class P2Wrapper, class P2Wrapped,
+          R F(P1, P2Wrapped)>
+R IgnoreHandlerData3(void *p1, const void *hd, P2Wrapper p2) {
+  UPB_UNUSED(hd);
+  return F(static_cast<P1>(p1), p2);
 }
 
-inline Handlers::StringHandler MakeHandler(
-    size_t (*wrapper)(void *, const void *, const char *, size_t)) {
-  return Handlers::StringHandler::Make(wrapper, NULL, NULL);
+template <class R, class P1, class P2, class P3, R F(P1, P2, P3)>
+R IgnoreHandlerData4(void *p1, const void *hd, P2 p2, P3 p3) {
+  UPB_UNUSED(hd);
+  return F(static_cast<P1>(p1), p2, p3);
 }
 
-template <class C, class D>
-inline Handlers::StringHandler BindHandler(
-    size_t (*wrapper)(void *, const void *, const char *, size_t),
-    size_t (*h)(C *, const D *, const char *, size_t), D *data) {
-  UPB_UNUSED(h);  // Only for making sure function matches "D".
-  return Handlers::StringHandler::Make(wrapper, data,
-                                       MatchDeleter(data).Delete);
+// Function that casts the handler data parameter.
+template <class R, class P1, class P2, R F(P1, P2)>
+R CastHandlerData2(void *c, const void *hd) {
+  return F(static_cast<P1>(c), static_cast<P2>(hd));
 }
+
+template <class R, class P1, class P2, class P3Wrapper, class P3Wrapped,
+          R F(P1, P2, P3Wrapped)>
+R CastHandlerData3(void *c, const void *hd, P3Wrapper p3) {
+  return F(static_cast<P1>(c), static_cast<P2>(hd), p3);
+}
+
+template <class R, class P1, class P2, class P3, class P4, R F(P1, P2, P3, P4)>
+R CastHandlerData4(void *c, const void *hd, P3 p3, P4 p4) {
+  return F(static_cast<P1>(c), static_cast<P2>(hd), p3, p4);
+}
+
+// For unbound functions, ignore the handler data.
+template <class R, class P1, R F(P1)>
+struct ConvertParams<Func1<R, P1, F> > {
+  typedef Func2<R, void *, const void *, IgnoreHandlerData2<R, P1, F> > Func;
+};
+
+template <class R, class P1, class P2, R F(P1, P2)>
+struct ConvertParams<Func2<R, P1, P2, F> > {
+  typedef typename CanonicalType<P2>::Type CanonicalP2;
+  typedef Func3<R, void *, const void *, CanonicalP2,
+                IgnoreHandlerData3<R, P1, CanonicalP2, P2, F> > Func;
+};
+
+template <class R, class P1, class P2, class P3, R F(P1, P2, P3)>
+struct ConvertParams<Func3<R, P1, P2, P3, F> > {
+  typedef Func4<R, void *, const void *, P2, P3,
+                IgnoreHandlerData4<R, P1, P2, P3, F> > Func;
+};
+
+// For bound functions, cast the handler data.
+template <class R, class P1, class P2, R F(P1, P2)>
+struct ConvertParams<BoundFunc2<R, P1, P2, F> > {
+  typedef Func2<R, void *, const void *, CastHandlerData2<R, P1, P2, F> > Func;
+};
+
+template <class R, class P1, class P2, class P3, R F(P1, P2, P3)>
+struct ConvertParams<BoundFunc3<R, P1, P2, P3, F> > {
+  typedef typename CanonicalType<P3>::Type CanonicalP3;
+  typedef Func3<R, void *, const void *, CanonicalP3,
+                CastHandlerData3<R, P1, P2, CanonicalP3, P3, F> > Func;
+};
+
+template <class R, class P1, class P2, class P3, class P4, R F(P1, P2, P3, P4)>
+struct ConvertParams<BoundFunc4<R, P1, P2, P3, P4, F> > {
+  typedef Func4<R, void *, const void *, P3, P4,
+                CastHandlerData4<R, P1, P2, P3, P4, F> > Func;
+};
 
 // utype/ltype are upper/lower-case, ctype is canonical C type, vtype is
 // variant C type.
@@ -386,8 +599,7 @@ inline Handlers::StringHandler BindHandler(
       const Handlers::utype ## Handler& handler) {                             \
     assert(!handler.registered_);                                              \
     handler.registered_ = true;                                                \
-    return upb_handlers_set##ltype(this, f, handler.handler_, handler.data_,   \
-                                   handler.cleanup_);                          \
+    return upb_handlers_set##ltype(this, f, handler.handler_, &handler.attr_); \
   }                                                                            \
 
 TYPE_METHODS(Double, double, double,   double);
@@ -409,6 +621,10 @@ TYPE_METHODS(UInt64, uint64, uint64_t, UPB_UINT64ALT_T);
 #endif
 #undef TYPE_METHODS
 
+template <> struct CanonicalType<Status*> {
+  typedef Status* Type;
+};
+
 // Type methods that are only one-per-canonical-type and not one-per-cvariant.
 
 #define TYPE_METHODS(utype, ctype) \
@@ -426,23 +642,56 @@ TYPE_METHODS(Int32,  int32_t);
 TYPE_METHODS(Bool,   bool);
 #undef TYPE_METHODS
 
-template <class T1, bool F(T1*)> bool Wrapper1(void *p1) {
-  return F(static_cast<T1*>(p1));
+template <class F> struct ReturnOf;
+
+template <class R, class P1, class P2>
+struct ReturnOf<R (*)(P1, P2)> {
+  typedef R Return;
+};
+
+template <class R, class P1, class P2, class P3>
+struct ReturnOf<R (*)(P1, P2, P3)> {
+  typedef R Return;
+};
+
+template <class R, class P1, class P2, class P3, class P4>
+struct ReturnOf<R (*)(P1, P2, P3, P4)> {
+  typedef R Return;
+};
+
+template <class T>
+template <class F>
+inline Handler<T>::Handler(F func)
+    : registered_(false) {
+  upb_handlerattr_sethandlerdata(&attr_, func.GetData(), func.GetCleanup());
+  typedef typename ReturnOf<T>::Return Return;
+  typedef typename ConvertParams<F>::Func ConvertedParamsFunc;
+  typedef typename MaybeWrapReturn<ConvertedParamsFunc, Return>::Func
+      ReturnWrappedFunc;
+  handler_ = ReturnWrappedFunc().Call;
 }
-template <class T1, bool F(T1 *, upb::Status *)>
-bool EndMessageWrapper(void *p1, upb::Status *s) {
-  return F(static_cast<T1 *>(p1), s);
+
+template <class T>
+inline Handler<T>::~Handler() {
+  assert(registered_);
 }
-inline Handlers *Handlers::New(const MessageDef *m, const FrameType *ft,
-                               const void *owner) {
-  return upb_handlers_new(m, ft, owner);
+
+inline HandlerAttributes::HandlerAttributes() { upb_handlerattr_init(this); }
+inline HandlerAttributes::~HandlerAttributes() { upb_handlerattr_uninit(this); }
+inline bool HandlerAttributes::SetHandlerData(void *hd,
+                                              upb_handlerfree *cleanup) {
+  return upb_handlerattr_sethandlerdata(this, hd, cleanup);
 }
-inline const Handlers *Handlers::NewFrozen(const MessageDef *m,
-                                           const FrameType *ft,
-                                           const void *owner,
-                                           upb_handlers_callback *callback,
-                                           void *closure) {
-  return upb_handlers_newfrozen(m, ft, owner, callback, closure);
+
+inline reffed_ptr<Handlers> Handlers::New(const MessageDef *m) {
+  upb_handlers *h = upb_handlers_new(m, &h);
+  return reffed_ptr<Handlers>(h, &h);
+}
+inline reffed_ptr<const Handlers> Handlers::NewFrozen(
+    const MessageDef *m, upb_handlers_callback *callback,
+    void *closure) {
+  const upb_handlers *h = upb_handlers_newfrozen(m, &h, callback, closure);
+  return reffed_ptr<const Handlers>(h, &h);
 }
 inline bool Handlers::IsFrozen() const { return upb_handlers_isfrozen(this); }
 inline void Handlers::Ref(const void *owner) const {
@@ -463,11 +712,15 @@ inline const Status* Handlers::status() {
 inline void Handlers::ClearError() {
   return upb_handlers_clearerr(this);
 }
+inline bool Handlers::Freeze(Status *s) {
+  upb::Handlers* h = this;
+  return upb_handlers_freeze(&h, 1, s);
+}
 inline bool Handlers::Freeze(Handlers *const *handlers, int n, Status *s) {
   return upb_handlers_freeze(handlers, n, s);
 }
-inline const FrameType *Handlers::frame_type() const {
-  return upb_handlers_frametype(this);
+inline bool Handlers::Freeze(const std::vector<Handlers*>& h, Status* status) {
+  return upb_handlers_freeze((Handlers* const*)&h[0], h.size(), status);
 }
 inline const MessageDef *Handlers::message_def() const {
   return upb_handlers_msgdef(this);
@@ -476,64 +729,55 @@ inline bool Handlers::SetStartMessageHandler(
     const Handlers::StartMessageHandler &handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
-  return upb_handlers_setstartmsg(this, handler.handler_, handler.data_,
-                                  handler.cleanup_);
+  return upb_handlers_setstartmsg(this, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetEndMessageHandler(
     const Handlers::EndMessageHandler &handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
-  return upb_handlers_setendmsg(this, handler.handler_, handler.data_,
-                                handler.cleanup_);
+  return upb_handlers_setendmsg(this, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetStartStringHandler(const FieldDef *f,
                                             const StartStringHandler &handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
-  return upb_handlers_setstartstr(this, f, handler.handler_, handler.data_,
-                                  handler.cleanup_);
+  return upb_handlers_setstartstr(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetEndStringHandler(const FieldDef *f,
                                           const EndFieldHandler &handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
-  return upb_handlers_setendstr(this, f, handler.handler_, handler.data_,
-                                handler.cleanup_);
+  return upb_handlers_setendstr(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetStringHandler(const FieldDef *f,
                                        const StringHandler& handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
-  return upb_handlers_setstring(this, f, handler.handler_, handler.data_,
-                                handler.cleanup_);
+  return upb_handlers_setstring(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetStartSequenceHandler(
     const FieldDef *f, const StartFieldHandler &handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
-  return upb_handlers_setstartseq(this, f, handler.handler_, handler.data_,
-                                  handler.cleanup_);
+  return upb_handlers_setstartseq(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetStartSubMessageHandler(
     const FieldDef *f, const StartFieldHandler &handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
-  return upb_handlers_setstartsubmsg(this, f, handler.handler_, handler.data_,
-                                     handler.cleanup_);
+  return upb_handlers_setstartsubmsg(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetEndSubMessageHandler(const FieldDef *f,
                                               const EndFieldHandler &handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
-  return upb_handlers_setendsubmsg(this, f, handler.handler_, handler.data_,
-                                   handler.cleanup_);
+  return upb_handlers_setendsubmsg(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetEndSequenceHandler(const FieldDef *f,
                                             const EndFieldHandler &handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
-  return upb_handlers_setendseq(this, f, handler.handler_, handler.data_,
-                                handler.cleanup_);
+  return upb_handlers_setendseq(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetSubHandlers(const FieldDef *f, const Handlers *sub) {
   return upb_handlers_setsubhandlers(this, f, sub);
