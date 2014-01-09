@@ -49,6 +49,8 @@ message TestAllTypesNanoHas {
 
   // Singular
   optional int32  optional_int32    =  1;
+  optional float  optional_float    = 11;
+  optional double optional_double   = 12;
   optional string optional_string   = 14;
   optional bytes  optional_bytes    = 15;
 
