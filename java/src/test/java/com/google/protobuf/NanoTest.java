@@ -2886,13 +2886,6 @@ public class NanoTest extends TestCase {
       TestAllTypesNano.BAR,
       TestAllTypesNano.BAZ
     };
-    // We set the _nan fields to something other than nan, because equality
-    // is defined for nan such that Float.NaN != Float.NaN, which makes any
-    // instance of TestAllTypesNano unequal to any other instance unless
-    // these fields are set. This is also the behavior of the regular java
-    // generator when the value of a field is NaN.
-    message.defaultFloatNan = 1.0f;
-    message.defaultDoubleNan = 1.0;
     return message;
   }
 
@@ -2915,7 +2908,6 @@ public class NanoTest extends TestCase {
       TestAllTypesNano.BAR,
       TestAllTypesNano.BAZ
     };
-    message.defaultFloatNan = 1.0f;
     return message;
   }
 
@@ -2924,8 +2916,7 @@ public class NanoTest extends TestCase {
         .setOptionalInt32(5)
         .setOptionalString("Hello")
         .setOptionalBytes(new byte[] {1, 2, 3})
-        .setOptionalNestedEnum(TestNanoAccessors.BAR)
-        .setDefaultFloatNan(1.0f);
+        .setOptionalNestedEnum(TestNanoAccessors.BAR);
     message.optionalNestedMessage = new TestNanoAccessors.NestedMessage().setBb(27);
     message.repeatedInt32 = new int[] { 5, 6, 7, 8 };
     message.repeatedString = new String[] { "One", "Two" };
@@ -2971,6 +2962,126 @@ public class NanoTest extends TestCase {
       NanoReferenceTypes.TestAllTypesNano.BAZ
     };
     return message;
+  }
+
+  public void testEqualsWithSpecialFloatingPointValues() throws Exception {
+    // Checks that the nano implementation complies with Object.equals() when treating
+    // floating point numbers, i.e. NaN == NaN and +0.0 != -0.0.
+    // This test assumes that the generated equals() implementations are symmetric, so
+    // there will only be one direction for each equality check.
+
+    TestAllTypesNano m1 = new TestAllTypesNano();
+    m1.optionalFloat = Float.NaN;
+    m1.optionalDouble = Double.NaN;
+    TestAllTypesNano m2 = new TestAllTypesNano();
+    m2.optionalFloat = Float.NaN;
+    m2.optionalDouble = Double.NaN;
+    assertTrue(m1.equals(m2));
+    assertTrue(m1.equals(
+        MessageNano.mergeFrom(new TestAllTypesNano(), MessageNano.toByteArray(m1))));
+
+    m1.optionalFloat = +0f;
+    m2.optionalFloat = -0f;
+    assertFalse(m1.equals(m2));
+
+    m1.optionalFloat = -0f;
+    m1.optionalDouble = +0d;
+    m2.optionalDouble = -0d;
+    assertFalse(m1.equals(m2));
+
+    m1.optionalDouble = -0d;
+    assertTrue(m1.equals(m2));
+    assertFalse(m1.equals(new TestAllTypesNano())); // -0 does not equals() the default +0
+    assertTrue(m1.equals(
+        MessageNano.mergeFrom(new TestAllTypesNano(), MessageNano.toByteArray(m1))));
+
+    // -------
+
+    TestAllTypesNanoHas m3 = new TestAllTypesNanoHas();
+    m3.optionalFloat = Float.NaN;
+    m3.hasOptionalFloat = true;
+    m3.optionalDouble = Double.NaN;
+    m3.hasOptionalDouble = true;
+    TestAllTypesNanoHas m4 = new TestAllTypesNanoHas();
+    m4.optionalFloat = Float.NaN;
+    m4.hasOptionalFloat = true;
+    m4.optionalDouble = Double.NaN;
+    m4.hasOptionalDouble = true;
+    assertTrue(m3.equals(m4));
+    assertTrue(m3.equals(
+        MessageNano.mergeFrom(new TestAllTypesNanoHas(), MessageNano.toByteArray(m3))));
+
+    m3.optionalFloat = +0f;
+    m4.optionalFloat = -0f;
+    assertFalse(m3.equals(m4));
+
+    m3.optionalFloat = -0f;
+    m3.optionalDouble = +0d;
+    m4.optionalDouble = -0d;
+    assertFalse(m3.equals(m4));
+
+    m3.optionalDouble = -0d;
+    m3.hasOptionalFloat = false;  // -0 does not equals() the default +0,
+    m3.hasOptionalDouble = false; // so these incorrect 'has' flags should be disregarded.
+    assertTrue(m3.equals(m4));    // note: m4 has the 'has' flags set.
+    assertFalse(m3.equals(new TestAllTypesNanoHas())); // note: the new message has +0 defaults
+    assertTrue(m3.equals(
+        MessageNano.mergeFrom(new TestAllTypesNanoHas(), MessageNano.toByteArray(m3))));
+                                  // note: the deserialized message has the 'has' flags set.
+
+    // -------
+
+    TestNanoAccessors m5 = new TestNanoAccessors();
+    m5.setOptionalFloat(Float.NaN);
+    m5.setOptionalDouble(Double.NaN);
+    TestNanoAccessors m6 = new TestNanoAccessors();
+    m6.setOptionalFloat(Float.NaN);
+    m6.setOptionalDouble(Double.NaN);
+    assertTrue(m5.equals(m6));
+    assertTrue(m5.equals(
+        MessageNano.mergeFrom(new TestNanoAccessors(), MessageNano.toByteArray(m6))));
+
+    m5.setOptionalFloat(+0f);
+    m6.setOptionalFloat(-0f);
+    assertFalse(m5.equals(m6));
+
+    m5.setOptionalFloat(-0f);
+    m5.setOptionalDouble(+0d);
+    m6.setOptionalDouble(-0d);
+    assertFalse(m5.equals(m6));
+
+    m5.setOptionalDouble(-0d);
+    assertTrue(m5.equals(m6));
+    assertFalse(m5.equals(new TestNanoAccessors()));
+    assertTrue(m5.equals(
+        MessageNano.mergeFrom(new TestNanoAccessors(), MessageNano.toByteArray(m6))));
+
+    // -------
+
+    NanoReferenceTypes.TestAllTypesNano m7 = new NanoReferenceTypes.TestAllTypesNano();
+    m7.optionalFloat = Float.NaN;
+    m7.optionalDouble = Double.NaN;
+    NanoReferenceTypes.TestAllTypesNano m8 = new NanoReferenceTypes.TestAllTypesNano();
+    m8.optionalFloat = Float.NaN;
+    m8.optionalDouble = Double.NaN;
+    assertTrue(m7.equals(m8));
+    assertTrue(m7.equals(MessageNano.mergeFrom(
+        new NanoReferenceTypes.TestAllTypesNano(), MessageNano.toByteArray(m7))));
+
+    m7.optionalFloat = +0f;
+    m8.optionalFloat = -0f;
+    assertFalse(m7.equals(m8));
+
+    m7.optionalFloat = -0f;
+    m7.optionalDouble = +0d;
+    m8.optionalDouble = -0d;
+    assertFalse(m7.equals(m8));
+
+    m7.optionalDouble = -0d;
+    assertTrue(m7.equals(m8));
+    assertFalse(m7.equals(new NanoReferenceTypes.TestAllTypesNano()));
+    assertTrue(m7.equals(MessageNano.mergeFrom(
+        new NanoReferenceTypes.TestAllTypesNano(), MessageNano.toByteArray(m7))));
   }
 
   public void testNullRepeatedFields() throws Exception {
