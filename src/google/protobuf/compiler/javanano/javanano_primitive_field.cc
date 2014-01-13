@@ -342,7 +342,7 @@ GenerateMembers(io::Printer* printer, bool lazy_init) const {
 
   if (params_.generate_has()) {
     printer->Print(variables_,
-      "public boolean has$capitalized_name$ = false;\n");
+      "public boolean has$capitalized_name$;\n");
   }
 }
 
@@ -401,7 +401,8 @@ GenerateSerializationConditional(io::Printer* printer) const {
 
 void PrimitiveFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
-  if (descriptor_->is_required()) {
+  if (descriptor_->is_required() && !params_.generate_has()) {
+    // Always serialize a required field if we don't have the 'has' signal.
     printer->Print(variables_,
       "output.write$capitalized_type$($number$, this.$name$);\n");
   } else {
@@ -414,7 +415,7 @@ GenerateSerializationCode(io::Printer* printer) const {
 
 void PrimitiveFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
-  if (descriptor_->is_required()) {
+  if (descriptor_->is_required() && !params_.generate_has()) {
     printer->Print(variables_,
       "size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
       "    .compute$capitalized_type$Size($number$, this.$name$);\n");

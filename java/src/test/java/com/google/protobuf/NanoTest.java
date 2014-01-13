@@ -2202,6 +2202,7 @@ public class NanoTest extends TestCase {
       assertFalse(msg.hasDefaultFloatNan);
       assertFalse(msg.hasDefaultNestedEnum);
       assertFalse(msg.hasId);
+      assertFalse(msg.hasRequiredEnum);
       msg.optionalInt32 = 123;
       msg.optionalNestedMessage = new TestAllTypesNanoHas.NestedMessage();
       msg.optionalNestedMessage.bb = 2;
@@ -2211,7 +2212,7 @@ public class NanoTest extends TestCase {
     byte [] result = MessageNano.toByteArray(msg);
     int msgSerializedSize = msg.getSerializedSize();
     //System.out.printf("mss=%d result.length=%d\n", msgSerializedSize, result.length);
-    assertTrue(msgSerializedSize == 13);
+    assertTrue(msgSerializedSize == 10);
     assertEquals(result.length, msgSerializedSize);
 
     // Has fields true upon parse.
@@ -2237,6 +2238,8 @@ public class NanoTest extends TestCase {
     msg.hasDefaultBytes = true;
     msg.hasDefaultFloatNan = true;
     msg.hasDefaultNestedEnum = true;
+    msg.hasId = true;
+    msg.hasRequiredEnum = true;
 
     byte [] result = MessageNano.toByteArray(msg);
     int msgSerializedSize = msg.getSerializedSize();
@@ -2255,6 +2258,7 @@ public class NanoTest extends TestCase {
     assertTrue(newMsg.hasDefaultFloatNan);
     assertTrue(newMsg.hasDefaultNestedEnum);
     assertTrue(newMsg.hasId);
+    assertTrue(newMsg.hasRequiredEnum);
     assertEquals(0, newMsg.optionalInt32);
     assertEquals(0, newMsg.optionalString.length());
     assertEquals(0, newMsg.optionalBytes.length);
@@ -2266,6 +2270,7 @@ public class NanoTest extends TestCase {
     assertEquals(TestAllTypesNanoHas.BAR, newMsg.defaultNestedEnum);
     assertEquals(Float.NaN, newMsg.defaultFloatNan);
     assertEquals(0, newMsg.id);
+    assertEquals(TestAllTypesNanoHas.FOO, newMsg.requiredEnum);
   }
 
   public void testNanoWithAccessorsBasic() throws Exception {
