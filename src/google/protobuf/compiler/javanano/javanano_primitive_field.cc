@@ -175,38 +175,6 @@ int FixedSize(FieldDescriptor::Type type) {
   return -1;
 }
 
-// Returns true if the field has a default value equal to NaN.
-bool IsDefaultNaN(const FieldDescriptor* field) {
-  switch (field->type()) {
-    case FieldDescriptor::TYPE_INT32   : return false;
-    case FieldDescriptor::TYPE_UINT32  : return false;
-    case FieldDescriptor::TYPE_SINT32  : return false;
-    case FieldDescriptor::TYPE_FIXED32 : return false;
-    case FieldDescriptor::TYPE_SFIXED32: return false;
-    case FieldDescriptor::TYPE_INT64   : return false;
-    case FieldDescriptor::TYPE_UINT64  : return false;
-    case FieldDescriptor::TYPE_SINT64  : return false;
-    case FieldDescriptor::TYPE_FIXED64 : return false;
-    case FieldDescriptor::TYPE_SFIXED64: return false;
-    case FieldDescriptor::TYPE_FLOAT   :
-      return isnan(field->default_value_float());
-    case FieldDescriptor::TYPE_DOUBLE  :
-      return isnan(field->default_value_double());
-    case FieldDescriptor::TYPE_BOOL    : return false;
-    case FieldDescriptor::TYPE_STRING  : return false;
-    case FieldDescriptor::TYPE_BYTES   : return false;
-    case FieldDescriptor::TYPE_ENUM    : return false;
-    case FieldDescriptor::TYPE_GROUP   : return false;
-    case FieldDescriptor::TYPE_MESSAGE : return false;
-
-    // No default because we want the compiler to complain if any new
-    // types are added.
-  }
-
-  GOOGLE_LOG(FATAL) << "Can't get here.";
-  return false;
-}
-
 // Return true if the type is a that has variable length
 // for instance String's.
 bool IsVariableLenType(JavaType type) {
@@ -384,15 +352,21 @@ GenerateSerializationConditional(io::Printer* printer) const {
     printer->Print(variables_,
       "if (");
   }
-  if (IsArrayType(GetJavaType(descriptor_))) {
+  JavaType java_type = GetJavaType(descriptor_);
+  if (IsArrayType(java_type)) {
     printer->Print(variables_,
       "!java.util.Arrays.equals(this.$name$, $default$)) {\n");
-  } else if (IsReferenceType(GetJavaType(descriptor_))) {
+  } else if (IsReferenceType(java_type)) {
     printer->Print(variables_,
       "!this.$name$.equals($default$)) {\n");
-  } else if (IsDefaultNaN(descriptor_)) {
+  } else if (java_type == JAVATYPE_FLOAT) {
     printer->Print(variables_,
-      "!$capitalized_type$.isNaN(this.$name$)) {\n");
+      "java.lang.Float.floatToIntBits(this.$name$)\n"
+      "    != java.lang.Float.floatToIntBits($default$)) {\n");
+  } else if (java_type == JAVATYPE_DOUBLE) {
+    printer->Print(variables_,
+      "java.lang.Double.doubleToLongBits(this.$name$)\n"
+      "    != java.lang.Double.doubleToLongBits($default$)) {\n");
   } else {
     printer->Print(variables_,
       "this.$name$ != $default$) {\n");
@@ -463,6 +437,36 @@ GenerateEqualsCode(io::Printer* printer) const {
     }
     printer->Print(") {\n"
       "  return false;\n"
+      "}\n");
+  } else if (java_type == JAVATYPE_FLOAT) {
+    printer->Print(variables_,
+      "{\n"
+      "  int bits = java.lang.Float.floatToIntBits(this.$name$);\n"
+      "  if (bits != java.lang.Float.floatToIntBits(other.$name$)");
+    if (params_.generate_has()) {
+      printer->Print(variables_,
+        "\n"
+        "      || (bits == java.lang.Float.floatToIntBits($default$)\n"
+        "          && this.has$capitalized_name$ != other.has$capitalized_name$)");
+    }
+    printer->Print(") {\n"
+      "    return false;\n"
+      "  }\n"
+      "}\n");
+  } else if (java_type == JAVATYPE_DOUBLE) {
+    printer->Print(variables_,
+      "{\n"
+      "  long bits = java.lang.Double.doubleToLongBits(this.$name$);\n"
+      "  if (bits != java.lang.Double.doubleToLongBits(other.$name$)");
+    if (params_.generate_has()) {
+      printer->Print(variables_,
+        "\n"
+        "      || (bits == java.lang.Double.doubleToLongBits($default$)\n"
+        "          && this.has$capitalized_name$ != other.has$capitalized_name$)");
+    }
+    printer->Print(") {\n"
+      "    return false;\n"
+      "  }\n"
       "}\n");
   } else {
     printer->Print(variables_,
@@ -623,12 +627,26 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
 void AccessorPrimitiveFieldGenerator::
 GenerateEqualsCode(io::Printer* printer) const {
   switch (GetJavaType(descriptor_)) {
-    // For all Java primitive types below, the hash codes match the
-    // results of BoxedType.valueOf(primitiveValue).hashCode().
+    // For all Java primitive types below, the equality checks match the
+    // results of BoxedType.valueOf(primitiveValue).equals(otherValue).
+    case JAVATYPE_FLOAT:
+      printer->Print(variables_,
+        "if ($different_has$\n"
+        "    || java.lang.Float.floatToIntBits($name$_)\n"
+        "        != java.lang.Float.floatToIntBits(other.$name$_)) {\n"
+        "  return false;\n"
+        "}\n");
+      break;
+    case JAVATYPE_DOUBLE:
+      printer->Print(variables_,
+        "if ($different_has$\n"
+        "    || java.lang.Double.doubleToLongBits($name$_)\n"
+        "        != java.lang.Double.doubleToLongBits(other.$name$_)) {\n"
+        "  return false;\n"
+        "}\n");
+      break;
     case JAVATYPE_INT:
     case JAVATYPE_LONG:
-    case JAVATYPE_FLOAT:
-    case JAVATYPE_DOUBLE:
     case JAVATYPE_BOOLEAN:
       printer->Print(variables_,
         "if ($different_has$\n"
