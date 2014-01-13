@@ -121,7 +121,8 @@ GenerateMergingCode(io::Printer* printer) const {
 
 void EnumFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
-  if (descriptor_->is_required()) {
+  if (descriptor_->is_required() && !params_.generate_has()) {
+    // Always serialize a required field if we don't have the 'has' signal.
     printer->Print(variables_,
       "output.writeInt32($number$, this.$name$);\n");
   } else {
@@ -140,7 +141,7 @@ GenerateSerializationCode(io::Printer* printer) const {
 
 void EnumFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
-  if (descriptor_->is_required()) {
+  if (descriptor_->is_required() && !params_.generate_has()) {
     printer->Print(variables_,
       "size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
       "  .computeInt32Size($number$, this.$name$);\n");
