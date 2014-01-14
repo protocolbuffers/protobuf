@@ -580,9 +580,9 @@ To use nano protobufs within the Android repo:
   LOCAL_STATIC_JAVA_LIBRARIES variable, so you don't need to.
 - Set 'LOCAL_PROTO_JAVA_OUTPUT_PARAMS := ...' in your local .mk file
   for any command-line options you need. Use commas to join multiple
-  options. Write all options on the same line; avoid backslash-newline
-  or '+=', because they will introduce spaces in the middle of your
-  options and the generator is not prepared to handle them.
+  options. In the nano flavor only, whitespace surrounding the option
+  names and values are ignored, so you can use backslash-newline or
+  '+=' to structure your make files nicely.
 - The options will be applied to *all* proto files in LOCAL_SRC_FILES
   when you build a Java library or package. In case different options
   are needed for different proto files, build separate Java libraries
@@ -603,10 +603,9 @@ To use nano protobufs outside of Android repo:
 - Invoke with --javanano_out, e.g.:
 
 ./protoc '--javanano_out=\
-java_package=src/proto/simple-data.proto|my_package,\
-java_outer_classname=src/proto/simple-data.proto|OuterName:\
-.' src/proto/simple-data.proto
-
+    java_package=src/proto/simple-data.proto|my_package,\
+    java_outer_classname=src/proto/simple-data.proto|OuterName\
+  :.' src/proto/simple-data.proto
 
 Contributing to nano:
 
