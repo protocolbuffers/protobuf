@@ -46,6 +46,19 @@ namespace protobuf {
 namespace compiler {
 namespace javanano {
 
+namespace {
+
+string TrimString(const string& s) {
+  string::size_type start = s.find_first_not_of(" \n\r\t");
+  if (start == string::npos) {
+    return "";
+  }
+  string::size_type end = s.find_last_not_of(" \n\r\t") + 1;
+  return s.substr(start, end - start);
+}
+
+} // namespace
+
 void UpdateParamsRecursively(Params& params,
     const FileDescriptor* file) {
   // Add any parameters for this file
@@ -93,42 +106,44 @@ bool JavaNanoGenerator::Generate(const FileDescriptor* file,
 
   // Replace any existing options with ones from command line
   for (int i = 0; i < options.size(); i++) {
-    if (options[i].first == "output_list_file") {
-      output_list_file = options[i].second;
-    } else if (options[i].first == "java_package") {
+    string option_name = TrimString(options[i].first);
+    string option_value = TrimString(options[i].second);
+    if (option_name == "output_list_file") {
+      output_list_file = option_value;
+    } else if (option_name == "java_package") {
         vector<string> parts;
-        SplitStringUsing(options[i].second, "|", &parts);
+        SplitStringUsing(option_value, "|", &parts);
         if (parts.size() != 2) {
           *error = "Bad java_package, expecting filename|PackageName found '"
-            + options[i].second + "'";
+            + option_value + "'";
           return false;
         }
         params.set_java_package(parts[0], parts[1]);
-    } else if (options[i].first == "java_outer_classname") {
+    } else if (option_name == "java_outer_classname") {
         vector<string> parts;
-        SplitStringUsing(options[i].second, "|", &parts);
+        SplitStringUsing(option_value, "|", &parts);
         if (parts.size() != 2) {
           *error = "Bad java_outer_classname, "
                    "expecting filename|ClassName found '"
-                   + options[i].second + "'";
+                   + option_value + "'";
           return false;
         }
         params.set_java_outer_classname(parts[0], parts[1]);
-    } else if (options[i].first == "store_unknown_fields") {
-      params.set_store_unknown_fields(options[i].second == "true");
-    } else if (options[i].first == "java_multiple_files") {
-      params.set_override_java_multiple_files(options[i].second == "true");
-    } else if (options[i].first == "java_nano_generate_has") {
-      params.set_generate_has(options[i].second == "true");
-    } else if (options[i].first == "enum_style") {
-      params.set_java_enum_style(options[i].second == "java");
-    } else if (options[i].first == "optional_field_style") {
-      params.set_optional_field_accessors(options[i].second == "accessors");
-      params.set_use_reference_types_for_primitives(options[i].second == "reftypes");
-    } else if (options[i].first == "generate_equals") {
-      params.set_generate_equals(options[i].second == "true");
+    } else if (option_name == "store_unknown_fields") {
+      params.set_store_unknown_fields(option_value == "true");
+    } else if (option_name == "java_multiple_files") {
+      params.set_override_java_multiple_files(option_value == "true");
+    } else if (option_name == "java_nano_generate_has") {
+      params.set_generate_has(option_value == "true");
+    } else if (option_name == "enum_style") {
+      params.set_java_enum_style(option_value == "java");
+    } else if (option_name == "optional_field_style") {
+      params.set_optional_field_accessors(option_value == "accessors");
+      params.set_use_reference_types_for_primitives(option_value == "reftypes");
+    } else if (option_name == "generate_equals") {
+      params.set_generate_equals(option_value == "true");
     } else {
-      *error = "Ignore unknown javanano generator option: " + options[i].first;
+      *error = "Ignore unknown javanano generator option: " + option_name;
     }
   }
 
