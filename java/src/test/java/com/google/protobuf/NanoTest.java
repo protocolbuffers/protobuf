@@ -3370,12 +3370,16 @@ public class NanoTest extends TestCase {
     // Check that repeated fields with packable types can accept both packed and unpacked
     // serialized forms.
     NanoRepeatedPackables.NonPacked nonPacked = new NanoRepeatedPackables.NonPacked();
-    nonPacked.int32S = new int[] {1, 2, 3};
-    nonPacked.int64S = new long[] {4, 5, 6};
-    nonPacked.uint32S = new int[] {7, 8, 9};
-    nonPacked.uint64S = new long[] {10, 11, 12};
-    nonPacked.sint32S = new int[] {13, 14, 15};
-    nonPacked.sint64S = new long[] {16, 17, 18};
+    // Exaggerates the first values of varint-typed arrays. This is to test that the parsing code
+    // of packed fields handles non-packed data correctly. If the code incorrectly thinks it is
+    // reading from a packed tag, it will read the first value as the byte length of the field,
+    // and the large number will cause the input to go out of bounds, thus capturing the error.
+    nonPacked.int32S = new int[] {1000, 2, 3};
+    nonPacked.int64S = new long[] {4000, 5, 6};
+    nonPacked.uint32S = new int[] {7000, 8, 9};
+    nonPacked.uint64S = new long[] {10000, 11, 12};
+    nonPacked.sint32S = new int[] {13000, 14, 15};
+    nonPacked.sint64S = new long[] {16000, 17, 18};
     nonPacked.fixed32S = new int[] {19, 20, 21};
     nonPacked.fixed64S = new long[] {22, 23, 24};
     nonPacked.sfixed32S = new int[] {25, 26, 27};
@@ -3412,8 +3416,8 @@ public class NanoTest extends TestCase {
     nonPacked = MessageNano.mergeFrom(new NanoRepeatedPackables.NonPacked(), mixedSerialized);
     packed = MessageNano.mergeFrom(new NanoRepeatedPackables.Packed(), mixedSerialized);
     assertRepeatedPackablesEqual(nonPacked, packed);
-    assertTrue(Arrays.equals(new int[] {1, 2, 3, 1, 2, 3}, nonPacked.int32S));
-    assertTrue(Arrays.equals(new int[] {13, 14, 15, 13, 14, 15}, nonPacked.sint32S));
+    assertTrue(Arrays.equals(new int[] {1000, 2, 3, 1000, 2, 3}, nonPacked.int32S));
+    assertTrue(Arrays.equals(new int[] {13000, 14, 15, 13000, 14, 15}, nonPacked.sint32S));
     assertTrue(Arrays.equals(new int[] {25, 26, 27, 25, 26, 27}, nonPacked.sfixed32S));
     assertTrue(Arrays.equals(new boolean[] {false, true, false, true}, nonPacked.bools));
   }
