@@ -35,12 +35,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "tests/upb_test.h"
+#include "third_party/upb/tests/pb/test_decoder_schema.upb.h"
 #include "upb/handlers.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/varint.int.h"
-#include "upb_test.h"
 #include "upb/upb.h"
-#include "third_party/upb/tests/test_decoder_schema.upb.h"
 
 #undef PRINT_FAILURE
 #define PRINT_FAILURE(expr) \
@@ -59,6 +60,7 @@ double completed;
 double total;
 double *count;
 bool count_only;
+upb::BufferHandle global_handle;
 
 // Copied from decoder.c, since this is not a public interface.
 typedef struct {
@@ -235,9 +237,10 @@ int* startstr(int* depth, const uint32_t* num, size_t size_hint) {
 }
 
 size_t value_string(int* depth, const uint32_t* num, const char* buf,
-                    size_t n) {
+                    size_t n, const upb::BufferHandle* handle) {
   UPB_UNUSED(num);
   output.append(buf, n);
+  ASSERT(handle == &global_handle);
   return n;
 }
 
@@ -407,7 +410,7 @@ bool parse(upb::BytesSink* s, void* subc, const char* buf, size_t start,
   start = UPB_MAX(start, *ofs);
   if (start <= end) {
     size_t len = end - start;
-    size_t parsed = s->PutBuffer(subc, buf + start, len);
+    size_t parsed = s->PutBuffer(subc, buf + start, len, &global_handle);
     if (status->ok() != (parsed >= len)) {
       fprintf(stderr, "Status: %s, parsed=%zu, len=%zu\n",
               status->error_message(), parsed, len);

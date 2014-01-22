@@ -108,12 +108,12 @@ typedef struct {
 void *upb_pbdecoder_startbc(void *closure, const void *pc, size_t size_hint);
 void *upb_pbdecoder_startjit(void *closure, const void *hd, size_t size_hint);
 size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
-                            size_t size);
+                            size_t size, const upb_bufhandle *handle);
 bool upb_pbdecoder_end(void *closure, const void *handler_data);
 
 // Decoder-internal functions that the JIT calls to handle fallback paths.
 void *upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
-                           size_t size);
+                           size_t size, const upb_bufhandle *handle);
 size_t upb_pbdecoder_suspend(upb_pbdecoder *d);
 int32_t upb_pbdecoder_skipunknown(upb_pbdecoder *d, uint32_t fieldnum,
                                   uint8_t wire_type);

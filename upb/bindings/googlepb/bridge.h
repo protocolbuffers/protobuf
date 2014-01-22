@@ -40,6 +40,7 @@
 
 #include <map>
 #include <vector>
+#include "upb/handlers.h"
 #include "upb/upb.h"
 
 namespace google {
@@ -60,13 +61,7 @@ class Message;
 
 namespace upb {
 
-class Def;
-class EnumDef;
-class FieldDef;
-class MessageDef;
-class Handlers;
-
-namespace google {
+namespace googlepb {
 
 // Returns a upb::Handlers object that can be used to populate a proto2::Message
 // object of the same type as "m."  For more control over handler caching and
@@ -89,12 +84,10 @@ class DefBuilder {
   // The DefBuilder will retain a ref so it can keep the Def cached, but
   // garbage-collection functionality may be added to DefBuilder later that
   // could unref the returned pointer.
-  const EnumDef* GetOrCreateEnumDef(const proto2::EnumDescriptor* d);
-  const EnumDef* GetOrCreateEnumDef(
-      const ::google::protobuf::EnumDescriptor* d);
-  const MessageDef* GetOrCreateMessageDef(const proto2::Descriptor* d);
-  const MessageDef* GetOrCreateMessageDef(
-      const ::google::protobuf::Descriptor* d);
+  const EnumDef* GetEnumDef(const proto2::EnumDescriptor* d);
+  const EnumDef* GetEnumDef(const ::google::protobuf::EnumDescriptor* d);
+  const MessageDef* GetMessageDef(const proto2::Descriptor* d);
+  const MessageDef* GetMessageDef(const ::google::protobuf::Descriptor* d);
 
   // Gets or creates a frozen MessageDef, properly expanding weak fields.
   //
@@ -102,20 +95,27 @@ class DefBuilder {
   // you construct your descriptors in a somewhat complicated way; see
   // https://goto.google.com/weak-field-descriptor), but we can get their true
   // definitions relatively easily from the proto Message class.
-  const MessageDef* GetOrCreateMessageDefExpandWeak(const proto2::Message& m);
-  const MessageDef* GetOrCreateMessageDefExpandWeak(
+  const MessageDef* GetMessageDefExpandWeak(const proto2::Message& m);
+  const MessageDef* GetMessageDefExpandWeak(
       const ::google::protobuf::Message& m);
 
+  // Static methods for converting a def without building a DefBuilder.
+  static reffed_ptr<const MessageDef> NewMessageDef(
+      const proto2::Descriptor* d) {
+    DefBuilder builder;
+    return reffed_ptr<const MessageDef>(builder.GetMessageDef(d));
+  }
+
  private:
-  // Like GetOrCreateMessageDef*(), except the returned def might not be frozen.
+  // Like GetMessageDef*(), except the returned def might not be frozen.
   // We need this function because circular graphs of MessageDefs need to all
   // be frozen together, to we have to create the graphs of defs in an unfrozen
   // state first.
   //
   // If m is non-NULL, expands weak message fields.
-  const MessageDef* GetOrCreateMaybeUnfrozenMessageDef(
-      const proto2::Descriptor* d, const proto2::Message* m);
-  const MessageDef* GetOrCreateMaybeUnfrozenMessageDef(
+  const MessageDef* GetMaybeUnfrozenMessageDef(const proto2::Descriptor* d,
+                                               const proto2::Message* m);
+  const MessageDef* GetMaybeUnfrozenMessageDef(
       const ::google::protobuf::Descriptor* d,
       const ::google::protobuf::Message* m);
 
@@ -156,7 +156,7 @@ class DefBuilder {
   DefCache def_cache_;
 
   // Defs that have not been frozen yet.
-  vector<Def*> to_freeze_;
+  std::vector<Def*> to_freeze_;
 };
 
 // Builds and caches upb::Handlers for populating proto2 generated classes.
@@ -170,14 +170,13 @@ class CodeCache {
   // The CodeCache will retain a ref so it can keep the Def cached, but
   // garbage-collection functionality may be added to CodeCache later that could
   // unref the returned pointer.
-  const Handlers* GetOrCreateWriteHandlers(const proto2::Message& m);
-  const Handlers* GetOrCreateWriteHandlers(
-      const ::google::protobuf::Message& m);
+  const Handlers* GetWriteHandlers(const proto2::Message& m);
+  const Handlers* GetWriteHandlers(const ::google::protobuf::Message& m);
 
  private:
-  const Handlers* GetOrCreateMaybeUnfrozenWriteHandlers(
-      const MessageDef* md, const proto2::Message& m);
-  const Handlers* GetOrCreateMaybeUnfrozenWriteHandlers(
+  const Handlers* GetMaybeUnfrozenWriteHandlers(const MessageDef* md,
+                                                const proto2::Message& m);
+  const Handlers* GetMaybeUnfrozenWriteHandlers(
       const MessageDef* md, const ::google::protobuf::Message& m);
 
   Handlers* AddToCache(const MessageDef* md, reffed_ptr<Handlers> handlers) {
@@ -197,10 +196,10 @@ class CodeCache {
       HandlersCache;
   HandlersCache handlers_cache_;
 
-  vector<Handlers*> to_freeze_;
+  std::vector<Handlers*> to_freeze_;
 };
 
-}  // namespace google
+}  // namespace googlepb
 }  // namespace upb
 
 #endif  // UPB_GOOGLE_BRIDGE_H_

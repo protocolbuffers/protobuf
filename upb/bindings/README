@@ -1,0 +1,25 @@
+This directory contains code that interfaces upb with external C/C++
+libraries.  For example:
+
+ * upb/bindings/{stdc,stdc++}
+     interfaces between upb and the standard libraries of C and C++ (like C's
+     FILE/stdio, C++'s string/iostream, etc.)
+
+ * upb/bindings/googlepb
+     interfaces between upb and the "protobuf" library distributed by Google.
+
+ * upb/bindings/lua:
+     a Lua extension that exposes upb to Lua programs via the Lua C API.
+
+ * upb/bindings/linux:
+     code and build system for building upb as a Linux kernel module.
+
+The two key characteristics that decide whether code belongs in upb/bindings/
+are:
+
+ * Does the code's public API refer to types from another library?
+   If so it belongs in upb/bindings/.  But this doesn't include code that just
+   happens to use another library internally, as an implementation detail.
+
+ * Would this code be useful to someone who is not using this external library
+   in some other way?  If so, the code probably doesn't belong in upb/bindings/.

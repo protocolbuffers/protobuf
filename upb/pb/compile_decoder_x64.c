@@ -56,8 +56,6 @@ typedef struct {
 
   // Used by DynASM to store globals.
   void **globals;
-
-  bool chkret;
 } jitcompiler;
 
 // Functions called by codegen.
@@ -72,7 +70,6 @@ static int pcofs(jitcompiler* jc);
 
 static jitcompiler *newjitcompiler(mgroup *group) {
   jitcompiler *jc = malloc(sizeof(jitcompiler));
-  jc->chkret = false;
   jc->group = group;
   jc->pclabel_count = 0;
   jc->lastlabelofs = -1;

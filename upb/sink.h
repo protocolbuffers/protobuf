@@ -120,7 +120,8 @@ class upb::Sink {
   // For StartString(), the function will write a sink for the string to "sub."
   // The sub-sink must be used for any/all PutStringBuffer() calls.
   bool StartString(Handlers::Selector s, size_t size_hint, Sink* sub);
-  size_t PutStringBuffer(Handlers::Selector s, const char *buf, size_t len);
+  size_t PutStringBuffer(Handlers::Selector s, const char *buf, size_t len,
+                         const BufferHandle *handle);
   bool EndString(Handlers::Selector s);
 
   // For submessage fields.
@@ -160,13 +161,14 @@ class upb::BytesSink {
   //
   // TODO(haberman): once the Handlers know the expected closure type, verify
   // that T matches it.
-  template <class T> BytesSink(const Handlers* handlers, T* closure);
+  template <class T> BytesSink(const BytesHandler* handler, T* closure);
 
   // Resets the value of the sink.
-  template <class T> void Reset(const Handlers* handlers, T* closure);
+  template <class T> void Reset(const BytesHandler* handler, T* closure);
 
   bool Start(size_t size_hint, void **subc);
-  size_t PutBuffer(void *subc, const char *buf, size_t len);
+  size_t PutBuffer(void *subc, const char *buf, size_t len,
+                   const BufferHandle *handle);
   bool End();
 
 #else
@@ -219,6 +221,7 @@ UPB_INLINE void upb_bytessink_reset(upb_bytessink *s, const upb_byteshandler *h,
 
 UPB_INLINE bool upb_bytessink_start(upb_bytessink *s, size_t size_hint,
                                     void **subc) {
+  *subc = NULL;
   if (!s->handler) return true;
   upb_startstr_handlerfunc *start =
       (upb_startstr_handlerfunc *)s->handler->table[UPB_STARTSTR_SELECTOR].func;
@@ -231,7 +234,8 @@ UPB_INLINE bool upb_bytessink_start(upb_bytessink *s, size_t size_hint,
 }
 
 UPB_INLINE size_t upb_bytessink_putbuf(upb_bytessink *s, void *subc,
-                                       const char *buf, size_t size) {
+                                       const char *buf, size_t size,
+                                       const upb_bufhandle* handle) {
   if (!s->handler) return true;
   upb_string_handlerfunc *putbuf =
       (upb_string_handlerfunc *)s->handler->table[UPB_STRING_SELECTOR].func;
@@ -239,7 +243,7 @@ UPB_INLINE size_t upb_bytessink_putbuf(upb_bytessink *s, void *subc,
   if (!putbuf) return true;
   return putbuf(subc, upb_handlerattr_handlerdata(
                           &s->handler->table[UPB_STRING_SELECTOR].attr),
-                buf, size);
+                buf, size, handle);
 }
 
 UPB_INLINE bool upb_bytessink_end(upb_bytessink *s) {
@@ -256,10 +260,18 @@ UPB_INLINE bool upb_bytessink_end(upb_bytessink *s) {
 UPB_INLINE bool upb_bufsrc_putbuf(const char *buf, size_t len,
                                   upb_bytessink *sink) {
   void *subc;
-  return
-      upb_bytessink_start(sink, len, &subc) &&
-      (len == 0 || upb_bytessink_putbuf(sink, subc, buf, len) == len) &&
-      upb_bytessink_end(sink);
+  upb_bufhandle handle;
+  upb_bufhandle_init(&handle);
+  upb_bufhandle_setbuf(&handle, buf, 0);
+  bool ret = upb_bytessink_start(sink, len, &subc);
+  if (ret && len != 0) {
+    ret = (upb_bytessink_putbuf(sink, subc, buf, len, &handle) == len);
+  }
+  if (ret) {
+    ret = upb_bytessink_end(sink);
+  }
+  upb_bufhandle_uninit(&handle);
+  return ret;
 }
 
 #define PUTVAL(type, ctype)                                                    \
@@ -287,15 +299,16 @@ UPB_INLINE void upb_sink_reset(upb_sink *s, const upb_handlers *h, void *c) {
   s->closure = c;
 }
 
-UPB_INLINE size_t
-upb_sink_putstring(upb_sink *s, upb_selector_t sel, const char *buf, size_t n) {
+UPB_INLINE size_t upb_sink_putstring(upb_sink *s, upb_selector_t sel,
+                                     const char *buf, size_t n,
+                                     const upb_bufhandle *handle) {
   if (!s->handlers) return n;
   upb_string_handlerfunc *handler =
       (upb_string_handlerfunc *)upb_handlers_gethandler(s->handlers, sel);
 
   if (!handler) return n;
   const void *hd = upb_handlers_gethandlerdata(s->handlers, sel);
-  return handler(s->closure, hd, buf, n);
+  return handler(s->closure, hd, buf, n, handle);
 }
 
 UPB_INLINE bool upb_sink_startmsg(upb_sink *s) {
@@ -443,8 +456,8 @@ inline bool Sink::StartString(Handlers::Selector sel, size_t size_hint,
   return upb_sink_startstr(this, sel, size_hint, sub);
 }
 inline size_t Sink::PutStringBuffer(Handlers::Selector sel, const char *buf,
-                                  size_t len) {
-  return upb_sink_putstring(this, sel, buf, len);
+                                    size_t len, const BufferHandle* handle) {
+  return upb_sink_putstring(this, sel, buf, len, handle);
 }
 inline bool Sink::EndString(Handlers::Selector sel) {
   return upb_sink_endstr(this, sel);
@@ -462,11 +475,16 @@ inline bool Sink::EndSequence(Handlers::Selector sel) {
   return upb_sink_endseq(this, sel);
 }
 
+template <class T>
+void BytesSink::Reset(const BytesHandler *handler, T *closure) {
+  upb_bytessink_reset(this, handler, closure);
+}
 inline bool BytesSink::Start(size_t size_hint, void **subc) {
   return upb_bytessink_start(this, size_hint, subc);
 }
-inline size_t BytesSink::PutBuffer(void *subc, const char *buf, size_t len) {
-  return upb_bytessink_putbuf(this, subc, buf, len);
+inline size_t BytesSink::PutBuffer(void *subc, const char *buf, size_t len,
+                                   const BufferHandle *handle) {
+  return upb_bytessink_putbuf(this, subc, buf, len, handle);
 }
 inline bool BytesSink::End() {
   return upb_bytessink_end(this);

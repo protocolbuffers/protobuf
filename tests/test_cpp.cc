@@ -12,7 +12,10 @@
 
 #include <iostream>
 #include <set>
+
+#ifdef UPB_CXX11
 #include <type_traits>
+#endif
 
 #include "upb/def.h"
 #include "upb/descriptor/reader.h"
@@ -231,9 +234,10 @@ class StringBufTesterBase {
     upb::Sink sub;
     sink->StartMessage();
     sink->StartString(start, 0, &sub);
-    sub.PutStringBuffer(str, NULL, 5);
+    size_t ret = sub.PutStringBuffer(str, &buf_, 5, &handle_);
     ASSERT(seen_);
     ASSERT(len_ == 5);
+    ASSERT(ret == 5);
     ASSERT(handler_data_val_ == kExpectedHandlerData);
   }
 
@@ -241,47 +245,24 @@ class StringBufTesterBase {
   bool seen_;
   int handler_data_val_;
   size_t len_;
+  char buf_;
+  upb::BufferHandle handle_;
 };
 
-// Test all 8 combinations of:
-//   (handler data?) x  (function/method) x (returns {void, size_t})
+// Test 8 combinations of:
+//   (handler data?) x (buffer handle?) x (function/method)
+//
+// Then we add one test each for this variation: to prevent combinatorial
+// explosion of these tests we don't test the full 16 combinations, but
+// rely on our knowledge that the implementation processes the return wrapping
+// in a second separate and independent stage:
+//
+//   (function/method)
 
-class StringBufTesterVoidFunctionNoHandlerData : public StringBufTesterBase {
+class StringBufTesterVoidMethodNoHandlerDataNoHandle
+    : public StringBufTesterBase {
  public:
-  typedef StringBufTesterVoidFunctionNoHandlerData ME;
-  void Register(upb::Handlers* h, const upb::FieldDef* f) {
-    UPB_UNUSED(f);
-    ASSERT(h->SetStringHandler(f, UpbMakeHandler(&Handler)));
-    handler_data_val_ = kExpectedHandlerData;
-  }
-
- private:
-  static void Handler(ME* t, const char *buf, size_t len) {
-    t->seen_ = true;
-    t->len_ = len;
-  }
-};
-
-class StringBufTesterSizeTFunctionNoHandlerData : public StringBufTesterBase {
- public:
-  typedef StringBufTesterSizeTFunctionNoHandlerData ME;
-  void Register(upb::Handlers* h, const upb::FieldDef* f) {
-    UPB_UNUSED(f);
-    ASSERT(h->SetStringHandler(f, UpbMakeHandler(&Handler)));
-    handler_data_val_ = kExpectedHandlerData;
-  }
-
- private:
-  static size_t Handler(ME* t, const char *buf, size_t len) {
-    t->seen_ = true;
-    t->len_ = len;
-    return len;
-  }
-};
-
-class StringBufTesterVoidMethodNoHandlerData : public StringBufTesterBase {
- public:
-  typedef StringBufTesterVoidMethodNoHandlerData ME;
+  typedef StringBufTesterVoidMethodNoHandlerDataNoHandle ME;
   void Register(upb::Handlers* h, const upb::FieldDef* f) {
     UPB_UNUSED(f);
     ASSERT(h->SetStringHandler(f, UpbMakeHandler(&ME::Handler)));
@@ -290,14 +271,16 @@ class StringBufTesterVoidMethodNoHandlerData : public StringBufTesterBase {
 
  private:
   void Handler(const char *buf, size_t len) {
+    ASSERT(buf == &buf_);
     seen_ = true;
     len_ = len;
   }
 };
 
-class StringBufTesterSizeTMethodNoHandlerData : public StringBufTesterBase {
+class StringBufTesterVoidMethodNoHandlerDataWithHandle
+    : public StringBufTesterBase {
  public:
-  typedef StringBufTesterSizeTMethodNoHandlerData ME;
+  typedef StringBufTesterVoidMethodNoHandlerDataWithHandle ME;
   void Register(upb::Handlers* h, const upb::FieldDef* f) {
     UPB_UNUSED(f);
     ASSERT(h->SetStringHandler(f, UpbMakeHandler(&ME::Handler)));
@@ -305,51 +288,18 @@ class StringBufTesterSizeTMethodNoHandlerData : public StringBufTesterBase {
   }
 
  private:
-  size_t Handler(const char *buf, size_t len) {
+  void Handler(const char *buf, size_t len, const upb::BufferHandle* handle) {
+    ASSERT(buf == &buf_);
+    ASSERT(handle == &handle_);
     seen_ = true;
     len_ = len;
-    return len;
   }
 };
 
-class StringBufTesterVoidFunctionWithHandlerData : public StringBufTesterBase {
+class StringBufTesterVoidMethodWithHandlerDataNoHandle
+    : public StringBufTesterBase {
  public:
-  typedef StringBufTesterVoidFunctionWithHandlerData ME;
-  void Register(upb::Handlers* h, const upb::FieldDef* f) {
-    UPB_UNUSED(f);
-    ASSERT(h->SetStringHandler(
-        f, UpbBind(&Handler, new int(kExpectedHandlerData))));
-  }
-
- private:
-  static void Handler(ME* t, const int* hd, const char *buf, size_t len) {
-    t->handler_data_val_ = *hd;
-    t->seen_ = true;
-    t->len_ = len;
-  }
-};
-
-class StringBufTesterSizeTFunctionWithHandlerData : public StringBufTesterBase {
- public:
-  typedef StringBufTesterSizeTFunctionWithHandlerData ME;
-  void Register(upb::Handlers* h, const upb::FieldDef* f) {
-    UPB_UNUSED(f);
-    ASSERT(h->SetStringHandler(
-        f, UpbBind(&Handler, new int(kExpectedHandlerData))));
-  }
-
- private:
-  static size_t Handler(ME* t, const int* hd, const char *buf, size_t len) {
-    t->handler_data_val_ = *hd;
-    t->seen_ = true;
-    t->len_ = len;
-    return len;
-  }
-};
-
-class StringBufTesterVoidMethodWithHandlerData : public StringBufTesterBase {
- public:
-  typedef StringBufTesterVoidMethodWithHandlerData ME;
+  typedef StringBufTesterVoidMethodWithHandlerDataNoHandle ME;
   void Register(upb::Handlers* h, const upb::FieldDef* f) {
     UPB_UNUSED(f);
     ASSERT(h->SetStringHandler(
@@ -358,15 +308,17 @@ class StringBufTesterVoidMethodWithHandlerData : public StringBufTesterBase {
 
  private:
   void Handler(const int* hd, const char *buf, size_t len) {
+    ASSERT(buf == &buf_);
     handler_data_val_ = *hd;
     seen_ = true;
     len_ = len;
   }
 };
 
-class StringBufTesterSizeTMethodWithHandlerData : public StringBufTesterBase {
+class StringBufTesterVoidMethodWithHandlerDataWithHandle
+    : public StringBufTesterBase {
  public:
-  typedef StringBufTesterSizeTMethodWithHandlerData ME;
+  typedef StringBufTesterVoidMethodWithHandlerDataWithHandle ME;
   void Register(upb::Handlers* h, const upb::FieldDef* f) {
     UPB_UNUSED(f);
     ASSERT(h->SetStringHandler(
@@ -374,8 +326,107 @@ class StringBufTesterSizeTMethodWithHandlerData : public StringBufTesterBase {
   }
 
  private:
-  size_t Handler(const int* hd, const char *buf, size_t len) {
+  void Handler(const int* hd, const char* buf, size_t len,
+               const upb::BufferHandle* handle) {
+    ASSERT(buf == &buf_);
+    ASSERT(handle == &handle_);
     handler_data_val_ = *hd;
+    seen_ = true;
+    len_ = len;
+  }
+};
+
+class StringBufTesterVoidFunctionNoHandlerDataNoHandle
+    : public StringBufTesterBase {
+ public:
+  typedef StringBufTesterVoidFunctionNoHandlerDataNoHandle ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStringHandler(f, UpbMakeHandler(&ME::Handler)));
+    handler_data_val_ = kExpectedHandlerData;
+  }
+
+ private:
+  static void Handler(ME* t, const char *buf, size_t len) {
+    ASSERT(buf == &t->buf_);
+    t->seen_ = true;
+    t->len_ = len;
+  }
+};
+
+class StringBufTesterVoidFunctionNoHandlerDataWithHandle
+    : public StringBufTesterBase {
+ public:
+  typedef StringBufTesterVoidFunctionNoHandlerDataWithHandle ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStringHandler(f, UpbMakeHandler(&ME::Handler)));
+    handler_data_val_ = kExpectedHandlerData;
+  }
+
+ private:
+  static void Handler(ME* t, const char* buf, size_t len,
+                      const upb::BufferHandle* handle) {
+    ASSERT(buf == &t->buf_);
+    ASSERT(handle == &t->handle_);
+    t->seen_ = true;
+    t->len_ = len;
+  }
+};
+
+class StringBufTesterVoidFunctionWithHandlerDataNoHandle
+    : public StringBufTesterBase {
+ public:
+  typedef StringBufTesterVoidFunctionWithHandlerDataNoHandle ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStringHandler(
+        f, UpbBind(&ME::Handler, new int(kExpectedHandlerData))));
+  }
+
+ private:
+  static void Handler(ME* t, const int* hd, const char *buf, size_t len) {
+    ASSERT(buf == &t->buf_);
+    t->handler_data_val_ = *hd;
+    t->seen_ = true;
+    t->len_ = len;
+  }
+};
+
+class StringBufTesterVoidFunctionWithHandlerDataWithHandle
+    : public StringBufTesterBase {
+ public:
+  typedef StringBufTesterVoidFunctionWithHandlerDataWithHandle ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStringHandler(
+        f, UpbBind(&ME::Handler, new int(kExpectedHandlerData))));
+  }
+
+ private:
+  static void Handler(ME* t, const int* hd, const char* buf, size_t len,
+                      const upb::BufferHandle* handle) {
+    ASSERT(buf == &t->buf_);
+    ASSERT(handle == &t->handle_);
+    t->handler_data_val_ = *hd;
+    t->seen_ = true;
+    t->len_ = len;
+  }
+};
+
+class StringBufTesterSizeTMethodNoHandlerDataNoHandle
+    : public StringBufTesterBase {
+ public:
+  typedef StringBufTesterSizeTMethodNoHandlerDataNoHandle ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStringHandler(f, UpbMakeHandler(&ME::Handler)));
+    handler_data_val_ = kExpectedHandlerData;
+  }
+
+ private:
+  size_t Handler(const char *buf, size_t len) {
+    ASSERT(buf == &buf_);
     seen_ = true;
     len_ = len;
     return len;
@@ -712,6 +763,284 @@ void TestHandler() {
   tester.CallAndVerify(&sink, f.get());
 }
 
+class T1 {};
+class T2 {};
+
+template <class C>
+void DoNothingHandler(C* closure) {
+  UPB_UNUSED(closure);
+}
+
+template <class C>
+void DoNothingInt32Handler(C* closure, int32_t val) {
+  UPB_UNUSED(closure);
+  UPB_UNUSED(val);
+}
+
+template <class R, class C>
+R* DoNothingStartHandler(C* closure) {
+  UPB_UNUSED(closure);
+  return NULL;
+}
+
+template <class R, class C>
+R* DoNothingStartStringHandler(C* closure, size_t size_len) {
+  UPB_UNUSED(closure);
+  UPB_UNUSED(size_len);
+  return NULL;
+}
+
+template <class C>
+void DoNothingStringBufHandler(C* closure, const char *buf, size_t len) {
+  UPB_UNUSED(closure);
+  UPB_UNUSED(buf);
+  UPB_UNUSED(len);
+}
+
+template <class C>
+void DoNothingEndMessageHandler(C* closure, upb::Status *status) {
+  UPB_UNUSED(closure);
+  UPB_UNUSED(status);
+}
+
+void TestMismatchedTypes() {
+  // First create a schema for our test.
+  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
+
+  upb::reffed_ptr<upb::FieldDef> f(upb::FieldDef::New());
+  f->set_type(UPB_TYPE_INT32);
+  ASSERT(f->set_name("i32", NULL));
+  ASSERT(f->set_number(1, NULL));
+  ASSERT(md->AddField(f, NULL));
+  const upb::FieldDef* i32 = f.get();
+
+  f = upb::FieldDef::New();
+  f->set_type(UPB_TYPE_INT32);
+  ASSERT(f->set_name("r_i32", NULL));
+  ASSERT(f->set_number(2, NULL));
+  f->set_label(UPB_LABEL_REPEATED);
+  ASSERT(md->AddField(f, NULL));
+  const upb::FieldDef* r_i32 = f.get();
+
+  f = upb::FieldDef::New();
+  f->set_type(UPB_TYPE_STRING);
+  ASSERT(f->set_name("str", NULL));
+  ASSERT(f->set_number(3, NULL));
+  ASSERT(md->AddField(f, NULL));
+  const upb::FieldDef* str = f.get();
+
+  f = upb::FieldDef::New();
+  f->set_type(UPB_TYPE_STRING);
+  ASSERT(f->set_name("r_str", NULL));
+  ASSERT(f->set_number(4, NULL));
+  f->set_label(UPB_LABEL_REPEATED);
+  ASSERT(md->AddField(f, NULL));
+  const upb::FieldDef* r_str = f.get();
+
+  f = upb::FieldDef::New();
+  f->set_type(UPB_TYPE_MESSAGE);
+  ASSERT(f->set_name("msg", NULL));
+  ASSERT(f->set_number(5, NULL));
+  ASSERT(f->set_message_subdef(md.get(), NULL));
+  ASSERT(md->AddField(f, NULL));
+  const upb::FieldDef* msg = f.get();
+
+  f = upb::FieldDef::New();
+  f->set_type(UPB_TYPE_MESSAGE);
+  ASSERT(f->set_name("r_msg", NULL));
+  ASSERT(f->set_number(6, NULL));
+  ASSERT(f->set_message_subdef(md.get(), NULL));
+  f->set_label(UPB_LABEL_REPEATED);
+  ASSERT(md->AddField(f, NULL));
+  const upb::FieldDef* r_msg = f.get();
+
+  ASSERT(md->Freeze(NULL));
+
+  // Now test the type-checking in handler registration.
+  upb::reffed_ptr<upb::Handlers> h(upb::Handlers::New(md.get()));
+
+  // Establish T1 as the top-level closure type.
+  ASSERT(h->SetInt32Handler(i32, UpbMakeHandler(DoNothingInt32Handler<T1>)));
+
+  // Now any other attempt to set another handler with T2 as the top-level
+  // closure should fail.  But setting these same handlers with T1 as the
+  // top-level closure will succeed.
+  ASSERT(!h->SetStartMessageHandler(UpbMakeHandler(DoNothingHandler<T2>)));
+  ASSERT(h->SetStartMessageHandler(UpbMakeHandler(DoNothingHandler<T1>)));
+
+  ASSERT(
+      !h->SetEndMessageHandler(UpbMakeHandler(DoNothingEndMessageHandler<T2>)));
+  ASSERT(
+      h->SetEndMessageHandler(UpbMakeHandler(DoNothingEndMessageHandler<T1>)));
+
+  ASSERT(!h->SetStartStringHandler(
+              str, UpbMakeHandler((DoNothingStartStringHandler<T1, T2>))));
+  ASSERT(h->SetStartStringHandler(
+              str, UpbMakeHandler((DoNothingStartStringHandler<T1, T1>))));
+
+  ASSERT(!h->SetEndStringHandler(str, UpbMakeHandler((DoNothingHandler<T2>))));
+  ASSERT(h->SetEndStringHandler(str, UpbMakeHandler((DoNothingHandler<T1>))));
+
+  ASSERT(!h->SetStartSubMessageHandler(
+              msg, UpbMakeHandler((DoNothingStartHandler<T1, T2>))));
+  ASSERT(h->SetStartSubMessageHandler(
+              msg, UpbMakeHandler((DoNothingStartHandler<T1, T1>))));
+
+  ASSERT(
+      !h->SetEndSubMessageHandler(msg, UpbMakeHandler((DoNothingHandler<T2>))));
+  ASSERT(
+      h->SetEndSubMessageHandler(msg, UpbMakeHandler((DoNothingHandler<T1>))));
+
+  ASSERT(!h->SetStartSequenceHandler(
+              r_i32, UpbMakeHandler((DoNothingStartHandler<T1, T2>))));
+  ASSERT(h->SetStartSequenceHandler(
+              r_i32, UpbMakeHandler((DoNothingStartHandler<T1, T1>))));
+
+  ASSERT(!h->SetEndSequenceHandler(
+              r_i32, UpbMakeHandler((DoNothingHandler<T2>))));
+  ASSERT(h->SetEndSequenceHandler(
+              r_i32, UpbMakeHandler((DoNothingHandler<T1>))));
+
+  ASSERT(!h->SetStartSequenceHandler(
+              r_msg, UpbMakeHandler((DoNothingStartHandler<T1, T2>))));
+  ASSERT(h->SetStartSequenceHandler(
+              r_msg, UpbMakeHandler((DoNothingStartHandler<T1, T1>))));
+
+  ASSERT(!h->SetEndSequenceHandler(
+              r_msg, UpbMakeHandler((DoNothingHandler<T2>))));
+  ASSERT(h->SetEndSequenceHandler(
+              r_msg, UpbMakeHandler((DoNothingHandler<T1>))));
+
+  ASSERT(!h->SetStartSequenceHandler(
+              r_str, UpbMakeHandler((DoNothingStartHandler<T1, T2>))));
+  ASSERT(h->SetStartSequenceHandler(
+              r_str, UpbMakeHandler((DoNothingStartHandler<T1, T1>))));
+
+  ASSERT(!h->SetEndSequenceHandler(
+              r_str, UpbMakeHandler((DoNothingHandler<T2>))));
+  ASSERT(h->SetEndSequenceHandler(
+              r_str, UpbMakeHandler((DoNothingHandler<T1>))));
+
+  // By setting T1 as the return type for the Start* handlers we have
+  // established T1 as the type of the sequence and string frames.
+  // Setting callbacks that use T2 should fail, but T1 should succeed.
+  ASSERT(
+      !h->SetStringHandler(str, UpbMakeHandler(DoNothingStringBufHandler<T2>)));
+  ASSERT(
+      h->SetStringHandler(str, UpbMakeHandler(DoNothingStringBufHandler<T1>)));
+
+  ASSERT(!h->SetInt32Handler(r_i32, UpbMakeHandler(DoNothingInt32Handler<T2>)));
+  ASSERT(h->SetInt32Handler(r_i32, UpbMakeHandler(DoNothingInt32Handler<T1>)));
+
+  ASSERT(!h->SetStartSubMessageHandler(
+              r_msg, UpbMakeHandler((DoNothingStartHandler<T1, T2>))));
+  ASSERT(h->SetStartSubMessageHandler(
+              r_msg, UpbMakeHandler((DoNothingStartHandler<T1, T1>))));
+
+  ASSERT(!h->SetEndSubMessageHandler(r_msg,
+                                     UpbMakeHandler((DoNothingHandler<T2>))));
+  ASSERT(h->SetEndSubMessageHandler(r_msg,
+                                    UpbMakeHandler((DoNothingHandler<T1>))));
+
+  ASSERT(!h->SetStartStringHandler(
+              r_str, UpbMakeHandler((DoNothingStartStringHandler<T1, T2>))));
+  ASSERT(h->SetStartStringHandler(
+              r_str, UpbMakeHandler((DoNothingStartStringHandler<T1, T1>))));
+
+  ASSERT(
+      !h->SetEndStringHandler(r_str, UpbMakeHandler((DoNothingHandler<T2>))));
+  ASSERT(h->SetEndStringHandler(r_str, UpbMakeHandler((DoNothingHandler<T1>))));
+
+  ASSERT(!h->SetStringHandler(r_str,
+                              UpbMakeHandler(DoNothingStringBufHandler<T2>)));
+  ASSERT(h->SetStringHandler(r_str,
+                             UpbMakeHandler(DoNothingStringBufHandler<T1>)));
+
+  h->ClearError();
+  ASSERT(h->Freeze(NULL));
+
+  // For our second test we do the same in reverse.  We directly set the type of
+  // the frame and then observe failures at registering a Start* handler that
+  // returns a different type.
+  h = upb::Handlers::New(md.get());
+
+  // First establish the type of a sequence frame directly.
+  ASSERT(h->SetInt32Handler(r_i32, UpbMakeHandler(DoNothingInt32Handler<T1>)));
+
+  // Now setting a StartSequence callback that returns a different type should
+  // fail.
+  ASSERT(!h->SetStartSequenceHandler(
+              r_i32, UpbMakeHandler((DoNothingStartHandler<T2, T1>))));
+  ASSERT(h->SetStartSequenceHandler(
+              r_i32, UpbMakeHandler((DoNothingStartHandler<T1, T1>))));
+
+  // Establish a string frame directly.
+  ASSERT(h->SetStringHandler(r_str,
+                             UpbMakeHandler(DoNothingStringBufHandler<T1>)));
+
+  // Fail setting a StartString callback that returns a different type.
+  ASSERT(!h->SetStartStringHandler(
+              r_str, UpbMakeHandler((DoNothingStartStringHandler<T2, T1>))));
+  ASSERT(h->SetStartStringHandler(
+      r_str, UpbMakeHandler((DoNothingStartStringHandler<T1, T1>))));
+
+  // The previous established T1 as the frame for the r_str sequence.
+  ASSERT(!h->SetStartSequenceHandler(
+              r_str, UpbMakeHandler((DoNothingStartHandler<T2, T1>))));
+  ASSERT(h->SetStartSequenceHandler(
+      r_str, UpbMakeHandler((DoNothingStartHandler<T1, T1>))));
+
+  // Now test for this error that is not caught until freeze time:
+  // Change-of-closure-type implies that a StartSequence or StartString handler
+  // should exist to return the closure type of the inner frame but no
+  // StartSequence/StartString handler is registered.
+
+  h = upb::Handlers::New(md.get());
+
+  // Establish T1 as top-level closure type.
+  ASSERT(h->SetInt32Handler(i32, UpbMakeHandler(DoNothingInt32Handler<T1>)));
+
+  // Establish T2 as closure type of sequence frame.
+  ASSERT(
+      h->SetInt32Handler(r_i32, UpbMakeHandler((DoNothingInt32Handler<T2>))));
+
+  // Now attempt to freeze; this should fail because a StartSequence handler
+  // needs to be registered that takes a T1 and returns a T2.
+  ASSERT(!h->Freeze(NULL));
+
+  // Now if we register the necessary StartSequence handler, the freezing should
+  // work.
+  ASSERT(h->SetStartSequenceHandler(
+      r_i32, UpbMakeHandler((DoNothingStartHandler<T2, T1>))));
+  h->ClearError();
+  ASSERT(h->Freeze(NULL));
+
+  // Test for a broken chain that is two deep.
+  h = upb::Handlers::New(md.get());
+
+  // Establish T1 as top-level closure type.
+  ASSERT(h->SetInt32Handler(i32, UpbMakeHandler(DoNothingInt32Handler<T1>)));
+
+  // Establish T2 as the closure type of the string frame inside a sequence
+  // frame.
+  ASSERT(h->SetStringHandler(r_str,
+                             UpbMakeHandler(DoNothingStringBufHandler<T2>)));
+
+  // Now attempt to freeze; this should fail because a StartSequence or
+  // StartString handler needs to be registered that takes a T1 and returns a
+  // T2.
+  ASSERT(!h->Freeze(NULL));
+
+  // Now if we register a StartSequence handler it succeeds.
+  ASSERT(h->SetStartSequenceHandler(
+      r_str, UpbMakeHandler((DoNothingStartHandler<T2, T1>))));
+  h->ClearError();
+  ASSERT(h->Freeze(NULL));
+
+  // TODO(haberman): test that closure returned by StartSubMessage does not
+  // match top-level closure of sub-handlers.
+}
+
 extern "C" {
 
 int run_tests(int argc, char *argv[]) {
@@ -753,14 +1082,17 @@ int run_tests(int argc, char *argv[]) {
   TestHandler<StartMsgTesterVoidMethodWithHandlerData>();
   TestHandler<StartMsgTesterBoolMethodWithHandlerData>();
 
-  TestHandler<StringBufTesterVoidFunctionNoHandlerData>();
-  TestHandler<StringBufTesterSizeTFunctionNoHandlerData>();
-  TestHandler<StringBufTesterVoidMethodNoHandlerData>();
-  TestHandler<StringBufTesterSizeTMethodNoHandlerData>();
-  TestHandler<StringBufTesterVoidFunctionWithHandlerData>();
-  TestHandler<StringBufTesterSizeTFunctionWithHandlerData>();
-  TestHandler<StringBufTesterVoidMethodWithHandlerData>();
-  TestHandler<StringBufTesterSizeTMethodWithHandlerData>();
+  TestHandler<StringBufTesterVoidMethodNoHandlerDataNoHandle>();
+  TestHandler<StringBufTesterVoidMethodNoHandlerDataWithHandle>();
+  TestHandler<StringBufTesterVoidMethodWithHandlerDataNoHandle>();
+  TestHandler<StringBufTesterVoidMethodWithHandlerDataWithHandle>();
+  TestHandler<StringBufTesterVoidFunctionNoHandlerDataNoHandle>();
+  TestHandler<StringBufTesterVoidFunctionNoHandlerDataWithHandle>();
+  TestHandler<StringBufTesterVoidFunctionWithHandlerDataNoHandle>();
+  TestHandler<StringBufTesterVoidFunctionWithHandlerDataWithHandle>();
+  TestHandler<StringBufTesterSizeTMethodNoHandlerDataNoHandle>();
+
+  TestMismatchedTypes();
 
 #ifdef UPB_CXX11
 #define ASSERT_STD_LAYOUT(type) \

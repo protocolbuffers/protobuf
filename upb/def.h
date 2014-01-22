@@ -272,6 +272,7 @@ class upb::FieldDef /* : public upb::Def */ {
   Label label() const;       // Defaults to UPB_LABEL_OPTIONAL.
   const char* name() const;  // NULL if uninitialized.
   uint32_t number() const;   // Returns 0 if uninitialized.
+  bool is_extension() const;
 
   // An integer that can be used as an index into an array of fields for
   // whatever message this field belongs to.  Guaranteed to be less than
@@ -279,8 +280,21 @@ class upb::FieldDef /* : public upb::Def */ {
   // been finalized.
   int index() const;
 
-  // The MessageDef to which this field belongs, or NULL if none.
+  // The MessageDef to which this field belongs.
+  //
+  // If this field has been added to a MessageDef, that message can be retrieved
+  // directly (this is always the case for frozen FieldDefs).
+  //
+  // If the field has not yet been added to a MessageDef, you can set the name
+  // of the containing type symbolically instead.  This is mostly useful for
+  // extensions, where the extension is declared separately from the message.
   const MessageDef* containing_type() const;
+  const char* containing_type_name();
+
+  // This may only be called if containing_type() == NULL (ie. the field has not
+  // been added to a message yet).
+  bool set_containing_type_name(const char *name, Status* status);
+  bool set_containing_type_name(const std::string& name, Status* status);
 
   // The field's type according to the enum in descriptor.proto.  This is not
   // the same as UPB_TYPE_*, because it distinguishes between (for example)
@@ -297,6 +311,7 @@ class upb::FieldDef /* : public upb::Def */ {
   void set_type(Type type);
   void set_label(Label label);
   void set_descriptor_type(DescriptorType type);
+  void set_is_extension(bool is_extension);
 
   // "number" and "name" must be set before the FieldDef is added to a
   // MessageDef, and may not be set after that.
@@ -395,9 +410,8 @@ class upb::FieldDef /* : public upb::Def */ {
 
   // Before a fielddef is frozen, its subdef may be set either directly (with a
   // upb::Def*) or symbolically.  Symbolic refs must be resolved before the
-  // containing msgdef can be frozen (see upb_resolve() above).  The client is
-  // responsible for making sure that "subdef" lives until this fielddef is
-  // frozen or deleted.
+  // containing msgdef can be frozen (see upb_resolve() above).  upb always
+  // guarantees that any def reachable from a live def will also be kept alive.
   //
   // Both methods require that upb_hassubdef(f) (so the type must be set prior
   // to calling these methods).  Returns false if this is not the case, or if
@@ -423,14 +437,19 @@ struct upb_fielddef {
     float flt;
     void *bytes;
   } defaultval;
-  const upb_msgdef *msgdef;
+  union {
+    const upb_msgdef *def;  // If !msg_is_symbolic.
+    char *name;             // If msg_is_symbolic.
+  } msg;
   union {
     const upb_def *def;  // If !subdef_is_symbolic.
     char *name;          // If subdef_is_symbolic.
   } sub;  // The msgdef or enumdef for this field, if upb_hassubdef(f).
   bool subdef_is_symbolic;
+  bool msg_is_symbolic;
   bool default_is_string;
   bool type_is_set_;     // False until type is explicitly set.
+  bool is_extension_;
   upb_intfmt_t intfmt;
   bool tagdelim;
   upb_fieldtype_t type_;
@@ -440,13 +459,14 @@ struct upb_fielddef {
   uint32_t index_;
 };
 
-#define UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, name, num, msgdef, \
-                          subdef, selector_base, index, defaultval, refs,   \
-                          ref2s)                                            \
-  {                                                                         \
-    UPB_DEF_INIT(name, UPB_DEF_FIELD, refs, ref2s), defaultval, msgdef,     \
-        {subdef}, false, type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES, \
-        true, intfmt, tagdelim, type, label, num, selector_base, index      \
+#define UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, is_extension, name,   \
+                          num, msgdef, subdef, selector_base, index,           \
+                          defaultval, refs, ref2s)                             \
+  {                                                                            \
+    UPB_DEF_INIT(name, UPB_DEF_FIELD, refs, ref2s), defaultval, {msgdef},      \
+        {subdef}, false, false,                                                \
+        type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES, true, is_extension, \
+        intfmt, tagdelim, type, label, num, selector_base, index               \
   }
 
 // Native C API.
@@ -475,8 +495,10 @@ upb_descriptortype_t upb_fielddef_descriptortype(const upb_fielddef *f);
 upb_label_t upb_fielddef_label(const upb_fielddef *f);
 uint32_t upb_fielddef_number(const upb_fielddef *f);
 const char *upb_fielddef_name(const upb_fielddef *f);
+bool upb_fielddef_isextension(const upb_fielddef *f);
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f);
 upb_msgdef *upb_fielddef_containingtype_mutable(upb_fielddef *f);
+const char *upb_fielddef_containingtypename(upb_fielddef *f);
 upb_intfmt_t upb_fielddef_intfmt(const upb_fielddef *f);
 uint32_t upb_fielddef_index(const upb_fielddef *f);
 bool upb_fielddef_istagdelim(const upb_fielddef *f);
@@ -504,6 +526,9 @@ void upb_fielddef_setdescriptortype(upb_fielddef *f, int type);
 void upb_fielddef_setlabel(upb_fielddef *f, upb_label_t label);
 bool upb_fielddef_setnumber(upb_fielddef *f, uint32_t number, upb_status *s);
 bool upb_fielddef_setname(upb_fielddef *f, const char *name, upb_status *s);
+bool upb_fielddef_setcontainingtypename(upb_fielddef *f, const char *name,
+                                        upb_status *s);
+bool upb_fielddef_setisextension(upb_fielddef *f, bool is_extension);
 bool upb_fielddef_setintfmt(upb_fielddef *f, upb_intfmt_t fmt);
 bool upb_fielddef_settagdelim(upb_fielddef *f, bool tag_delim);
 void upb_fielddef_setdefaultint64(upb_fielddef *f, int64_t val);
@@ -1043,8 +1068,14 @@ inline FieldDef::Label FieldDef::label() const {
 }
 inline uint32_t FieldDef::number() const { return upb_fielddef_number(this); }
 inline const char* FieldDef::name() const { return upb_fielddef_name(this); }
+inline bool FieldDef::is_extension() const {
+  return upb_fielddef_isextension(this);
+}
 inline const MessageDef* FieldDef::containing_type() const {
   return upb_fielddef_containingtype(this);
+}
+inline const char* FieldDef::containing_type_name() {
+  return upb_fielddef_containingtypename(this);
 }
 inline bool FieldDef::set_number(uint32_t number, Status* s) {
   return upb_fielddef_setnumber(this, number, s);
@@ -1055,8 +1086,18 @@ inline bool FieldDef::set_name(const char *name, Status* s) {
 inline bool FieldDef::set_name(const std::string& name, Status* s) {
   return upb_fielddef_setname(this, upb_safecstr(name), s);
 }
+inline bool FieldDef::set_containing_type_name(const char *name, Status* s) {
+  return upb_fielddef_setcontainingtypename(this, name, s);
+}
+inline bool FieldDef::set_containing_type_name(const std::string &name,
+                                               Status *s) {
+  return upb_fielddef_setcontainingtypename(this, upb_safecstr(name), s);
+}
 inline void FieldDef::set_type(upb_fieldtype_t type) {
   upb_fielddef_settype(this, type);
+}
+inline void FieldDef::set_is_extension(bool is_extension) {
+  upb_fielddef_setisextension(this, is_extension);
 }
 inline void FieldDef::set_descriptor_type(FieldDef::DescriptorType type) {
   upb_fielddef_setdescriptortype(this, type);

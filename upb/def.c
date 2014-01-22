@@ -156,17 +156,17 @@ static bool upb_validate_field(upb_fielddef *f, upb_status *s) {
     if (subdef == NULL) {
       upb_status_seterrf(s,
           "field %s.%s is missing required subdef",
-          msgdef_name(f->msgdef), upb_fielddef_name(f));
+          msgdef_name(f->msg.def), upb_fielddef_name(f));
       return false;
     } else if (!upb_def_isfrozen(subdef) && !subdef->came_from_user) {
       upb_status_seterrf(s,
           "subdef of field %s.%s is not frozen or being frozen",
-          msgdef_name(f->msgdef), upb_fielddef_name(f));
+          msgdef_name(f->msg.def), upb_fielddef_name(f));
       return false;
     } else if (upb_fielddef_default_is_symbolic(f)) {
       upb_status_seterrf(s,
           "enum field %s.%s has not been resolved",
-          msgdef_name(f->msgdef), upb_fielddef_name(f));
+          msgdef_name(f->msg.def), upb_fielddef_name(f));
       return false;
     }
   }
@@ -202,7 +202,7 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
   m->submsg_field_count = 0;
   for(i = 0, upb_msg_begin(&j, m); !upb_msg_done(&j); upb_msg_next(&j), i++) {
     upb_fielddef *f = upb_msg_iter_field(&j);
-    assert(f->msgdef == m);
+    assert(f->msg.def == m);
     if (!upb_validate_field(f, s)) {
       free(fields);
       return false;
@@ -428,11 +428,11 @@ static void upb_fielddef_uninit_default(upb_fielddef *f) {
 static void visitfield(const upb_refcounted *r, upb_refcounted_visit *visit,
                        void *closure) {
   const upb_fielddef *f = (const upb_fielddef*)r;
-  if (f->msgdef) {
-    visit(r, UPB_UPCAST2(f->msgdef), closure);
+  if (upb_fielddef_containingtype(f)) {
+    visit(r, UPB_UPCAST2(upb_fielddef_containingtype(f)), closure);
   }
-  if (!f->subdef_is_symbolic && f->sub.def) {
-    visit(r, UPB_UPCAST(f->sub.def), closure);
+  if (upb_fielddef_subdef(f)) {
+    visit(r, UPB_UPCAST(upb_fielddef_subdef(f)), closure);
   }
 }
 
@@ -453,14 +453,16 @@ upb_fielddef *upb_fielddef_new(const void *owner) {
     free(f);
     return NULL;
   }
-  f->msgdef = NULL;
+  f->msg.def = NULL;
   f->sub.def = NULL;
   f->subdef_is_symbolic = false;
+  f->msg_is_symbolic = false;
   f->label_ = UPB_LABEL_OPTIONAL;
   f->type_ = UPB_TYPE_INT32;
   f->number_ = 0;
   f->type_is_set_ = false;
   f->tagdelim = false;
+  f->is_extension_ = false;
 
   // For the moment we default this to UPB_INTFMT_VARIABLE, since it will work
   // with all integer types and is in some since more "default" since the most
@@ -559,16 +561,43 @@ uint32_t upb_fielddef_number(const upb_fielddef *f) {
   return f->number_;
 }
 
+bool upb_fielddef_isextension(const upb_fielddef *f) {
+  return f->is_extension_;
+}
+
 const char *upb_fielddef_name(const upb_fielddef *f) {
   return upb_def_fullname(UPB_UPCAST(f));
 }
 
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f) {
-  return f->msgdef;
+  return f->msg_is_symbolic ? NULL : f->msg.def;
 }
 
 upb_msgdef *upb_fielddef_containingtype_mutable(upb_fielddef *f) {
-  return (upb_msgdef*)f->msgdef;
+  return (upb_msgdef*)upb_fielddef_containingtype(f);
+}
+
+const char *upb_fielddef_containingtypename(upb_fielddef *f) {
+  return f->msg_is_symbolic ? f->msg.name : NULL;
+}
+
+static void release_containingtype(upb_fielddef *f) {
+  if (f->msg_is_symbolic) free(f->msg.name);
+}
+
+bool upb_fielddef_setcontainingtypename(upb_fielddef *f, const char *name,
+                                        upb_status *s) {
+  assert(!upb_fielddef_isfrozen(f));
+  if (upb_fielddef_containingtype(f)) {
+    upb_status_seterrmsg(s, "field has already been added to a message.");
+    return false;
+  }
+  // TODO: validate name (upb_isident() doesn't quite work atm because this name
+  // may have a leading ".").
+  release_containingtype(f);
+  f->msg.name = upb_strdup(name);
+  f->msg_is_symbolic = true;
+  return true;
 }
 
 bool upb_fielddef_setname(upb_fielddef *f, const char *name, upb_status *s) {
@@ -650,12 +679,7 @@ static void upb_fielddef_init_default(upb_fielddef *f) {
 }
 
 const upb_def *upb_fielddef_subdef(const upb_fielddef *f) {
-  if (upb_fielddef_hassubdef(f) && upb_fielddef_isfrozen(f)) {
-    assert(f->sub.def);
-    return f->sub.def;
-  } else {
-    return f->subdef_is_symbolic ? NULL : f->sub.def;
-  }
+  return f->subdef_is_symbolic ? NULL : f->sub.def;
 }
 
 const upb_msgdef *upb_fielddef_msgsubdef(const upb_fielddef *f) {
@@ -678,7 +702,7 @@ const char *upb_fielddef_subdefname(const upb_fielddef *f) {
 }
 
 bool upb_fielddef_setnumber(upb_fielddef *f, uint32_t number, upb_status *s) {
-  if (f->msgdef) {
+  if (upb_fielddef_containingtype(f)) {
     upb_status_seterrmsg(
         s, "cannot change field number after adding to a message");
     return false;
@@ -798,6 +822,12 @@ upb_descriptortype_t upb_fielddef_descriptortype(const upb_fielddef *f) {
           UPB_DESCRIPTOR_TYPE_GROUP : UPB_DESCRIPTOR_TYPE_MESSAGE;
   }
   return 0;
+}
+
+bool upb_fielddef_setisextension(upb_fielddef *f, bool is_extension) {
+  assert(!upb_fielddef_isfrozen(f));
+  f->is_extension_ = is_extension;
+  return true;
 }
 
 void upb_fielddef_setlabel(upb_fielddef *f, upb_label_t label) {
@@ -980,6 +1010,8 @@ bool upb_fielddef_setsubdefname(upb_fielddef *f, const char *name,
     upb_status_seterrmsg(s, "field type does not accept a subdef");
     return false;
   }
+  // TODO: validate name (upb_isident() doesn't quite work atm because this name
+  // may have a leading ".").
   release_subdef(f);
   f->sub.name = upb_strdup(name);
   f->subdef_is_symbolic = true;
@@ -1104,12 +1136,23 @@ bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname,
 
 bool upb_msgdef_addfields(upb_msgdef *m, upb_fielddef *const *fields, int n,
                           const void *ref_donor, upb_status *s) {
+  // TODO: extensions need to have a separate namespace, because proto2 allows a
+  // top-level extension (ie. one not in any package) to have the same name as a
+  // field from the message.
+  //
+  // This also implies that there needs to be a separate lookup-by-name method
+  // for extensions.  It seems desirable for iteration to return both extensions
+  // and non-extensions though.
+  //
+  // We also need to validate that the field number is in an extension range iff
+  // it is an extension.
+
   // Check constraints for all fields before performing any action.
   for (int i = 0; i < n; i++) {
     upb_fielddef *f = fields[i];
     // TODO(haberman): handle the case where two fields of the input duplicate
     // name or number.
-    if (f->msgdef != NULL) {
+    if (upb_fielddef_containingtype(f) != NULL) {
       upb_status_seterrmsg(s, "fielddef already belongs to a message");
       return false;
     } else if (upb_fielddef_name(f) == NULL || upb_fielddef_number(f) == 0) {
@@ -1125,7 +1168,9 @@ bool upb_msgdef_addfields(upb_msgdef *m, upb_fielddef *const *fields, int n,
   // Constraint checks ok, perform the action.
   for (int i = 0; i < n; i++) {
     upb_fielddef *f = fields[i];
-    f->msgdef = m;
+    release_containingtype(f);
+    f->msg.def = m;
+    f->msg_is_symbolic = false;
     upb_inttable_insert(&m->itof, upb_fielddef_number(f), upb_value_ptr(f));
     upb_strtable_insert(&m->ntof, upb_fielddef_name(f), upb_value_ptr(f));
     upb_ref2(f, m);

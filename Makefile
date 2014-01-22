@@ -82,16 +82,14 @@ deps: Makefile $(ALLSRC)
 
 # The core library.
 CORE= \
-  upb/bytestream.upb.c \
   upb/def.c \
   upb/descriptor/reader.c \
   upb/descriptor/descriptor.upb.c \
-  upb/google/bridge.cc \
-  upb/google/proto2.cc \
+  upb/bindings/googlepb/bridge.cc \
+  upb/bindings/googlepb/proto2.cc \
   upb/handlers.c \
   upb/refcounted.c \
   upb/shim/shim.c \
-  upb/sink.c \
   upb/symtab.c \
   upb/table.c \
   upb/upb.c \
@@ -217,8 +215,7 @@ tests/test.proto.pb: tests/test.proto
 
 SIMPLE_TESTS= \
   tests/test_def \
-  tests/test_varint \
-  tests/test_pipeline \
+  tests/pb/test_varint \
   tests/test_handlers
 
 SIMPLE_CXX_TESTS= \

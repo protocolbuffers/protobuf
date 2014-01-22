@@ -43,7 +43,7 @@ if arg[1] == "generate" then
   local appendh = dump_cinit.file_appender(f_h)
   f:write('#include "lua.h"\n')
   f:write('#define ELEMENTS(array) (sizeof(array)/sizeof(*array))\n')
-  f:write('#include "bindings/lua/upb.h"\n')
+  f:write('#include "upb/bindings/lua/upb.h"\n')
   dump_cinit.dump_defs(symtab, "test", appendh, appendc)
   f:write([[int luaopen_staticdefs(lua_State *L) {
     lua_newtable(L);

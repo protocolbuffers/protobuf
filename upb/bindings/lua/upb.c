@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "lauxlib.h"
-#include "bindings/lua/upb.h"
+#include "upb/bindings/lua/upb.h"
 #include "upb/handlers.h"
 #include "upb/pb/glue.h"
 
@@ -63,6 +63,13 @@ static const char *chkname(lua_State *L, int narg) {
   return name;
 }
 
+static bool chkbool(lua_State *L, int narg, const char *type) {
+  if (!lua_isboolean(L, narg)) {
+    luaL_error(L, "%s must be true or false", type);
+  }
+  return lua_toboolean(L, narg);
+}
+
 static bool streql(const char *a, const char *b) { return strcmp(a, b) == 0; }
 
 static uint32_t chkint32(lua_State *L, int narg, const char *name) {
@@ -75,9 +82,7 @@ static uint32_t chkint32(lua_State *L, int narg, const char *name) {
 // Sets a fielddef default from the given Lua value.
 static void lupb_setdefault(lua_State *L, int narg, upb_fielddef *f) {
   if (upb_fielddef_type(f) == UPB_TYPE_BOOL) {
-    if (!lua_isboolean(L, narg))
-      luaL_error(L, "Must explicitly pass true or false for boolean fields");
-    upb_fielddef_setdefaultbool(f, lua_toboolean(L, narg));
+    upb_fielddef_setdefaultbool(f, chkbool(L, narg, "bool default"));
   } else {
     // Numeric type.
     lua_Number num = luaL_checknumber(L, narg);
@@ -309,6 +314,11 @@ static void lupb_fielddef_dosetdefault(lua_State *L, upb_fielddef *f,
   }
 }
 
+static void lupb_fielddef_dosetisextension(lua_State *L, upb_fielddef *f,
+                                           int narg) {
+  CHK(upb_fielddef_setisextension(f, chkbool(L, narg, "is_extension")));
+}
+
 static void lupb_fielddef_dosetlabel(lua_State *L, upb_fielddef *f, int narg) {
   int label = luaL_checkint(L, narg);
   if (!upb_fielddef_checklabel(label))
@@ -339,6 +349,14 @@ static void lupb_fielddef_dosetsubdefname(lua_State *L, upb_fielddef *f,
   CHK(upb_fielddef_setsubdefname(f, name, &status));
 }
 
+static void lupb_fielddef_dosetcontainingtypename(lua_State *L, upb_fielddef *f,
+                                                  int narg) {
+  const char *name = NULL;
+  if (!lua_isnil(L, narg))
+    name = chkname(L, narg);
+  CHK(upb_fielddef_setcontainingtypename(f, name, &status));
+}
+
 static void lupb_fielddef_dosettype(lua_State *L, upb_fielddef *f, int narg) {
   int type = luaL_checkint(L, narg);
   if (!upb_fielddef_checktype(type))
@@ -355,18 +373,26 @@ static void lupb_fielddef_dosetintfmt(lua_State *L, upb_fielddef *f, int narg) {
 
 static void lupb_fielddef_dosettagdelim(lua_State *L, upb_fielddef *f,
                                         int narg) {
-  if (!lua_isboolean(L, narg))
-    luaL_argerror(L, narg, "tagdelim value must be boolean");
-  int32_t tagdelim = luaL_checknumber(L, narg);
-  if (!upb_fielddef_settagdelim(f, tagdelim))
-    luaL_argerror(L, narg, "invalid field tagdelim");
+  CHK(upb_fielddef_settagdelim(f, chkbool(L, narg, "tagdelim")));
 }
 
 // Setter API calls.  These use the setter functions above.
 
+static int lupb_fielddef_setcontainingtypename(lua_State *L) {
+  upb_fielddef *f = lupb_fielddef_checkmutable(L, 1);
+  lupb_fielddef_dosetcontainingtypename(L, f, 2);
+  return 0;
+}
+
 static int lupb_fielddef_setdefault(lua_State *L) {
   upb_fielddef *f = lupb_fielddef_checkmutable(L, 1);
   lupb_fielddef_dosetdefault(L, f, 2);
+  return 0;
+}
+
+static int lupb_fielddef_setisextension(lua_State *L) {
+  upb_fielddef *f = lupb_fielddef_checkmutable(L, 1);
+  lupb_fielddef_dosetisextension(L, f, 2);
   return 0;
 }
 
@@ -440,9 +466,13 @@ static int lupb_fielddef_new(lua_State *L) {
     else if (streql(key, "number")) lupb_fielddef_dosetnumber(L, f, v);
     else if (streql(key, "type")) lupb_fielddef_dosettype(L, f, v);
     else if (streql(key, "label")) lupb_fielddef_dosetlabel(L, f, v);
-    else if (streql(key, "default_value")) ;  // Defer to second pass.
-    else if (streql(key, "subdef")) ;         // Defer to second pass.
-    else if (streql(key, "subdef_name")) ;    // Defer to second pass.
+    else if (streql(key, "is_extension"))
+      lupb_fielddef_dosetisextension(L, f, v);
+    else if (streql(key, "containing_type_name"))
+      lupb_fielddef_dosetcontainingtypename(L, f, v);
+    else if (streql(key, "default_value")) ;        // Defer to second pass.
+    else if (streql(key, "subdef")) ;               // Defer to second pass.
+    else if (streql(key, "subdef_name")) ;          // Defer to second pass.
     else luaL_error(L, "Cannot set fielddef member '%s'", key);
   }
 
@@ -547,6 +577,12 @@ static int lupb_fielddef_containingtype(lua_State *L) {
   return 1;
 }
 
+static int lupb_fielddef_containingtypename(lua_State *L) {
+  upb_fielddef *f = lupb_fielddef_checkmutable(L, 1);
+  lua_pushstring(L, upb_fielddef_containingtypename(f));
+  return 1;
+}
+
 static int lupb_fielddef_subdef(lua_State *L) {
   const upb_fielddef *f = lupb_fielddef_check(L, 1);
   if (!upb_fielddef_hassubdef(f))
@@ -585,6 +621,12 @@ static int lupb_fielddef_intfmt(lua_State *L) {
   return 1;
 }
 
+static int lupb_fielddef_isextension(lua_State *L) {
+  const upb_fielddef *f = lupb_fielddef_check(L, 1);
+  lua_pushboolean(L, upb_fielddef_isextension(f));
+  return 1;
+}
+
 static int lupb_fielddef_istagdelim(lua_State *L) {
   const upb_fielddef *f = lupb_fielddef_check(L, 1);
   lua_pushboolean(L, upb_fielddef_istagdelim(f));
@@ -602,11 +644,13 @@ static const struct luaL_Reg lupb_fielddef_m[] = {
   LUPB_COMMON_DEF_METHODS
 
   {"containing_type", lupb_fielddef_containingtype},
+  {"containing_type_name", lupb_fielddef_containingtypename},
   {"default", lupb_fielddef_default},
   {"getsel", lupb_fielddef_getsel},
   {"has_subdef", lupb_fielddef_hassubdef},
   {"index", lupb_fielddef_index},
   {"intfmt", lupb_fielddef_intfmt},
+  {"is_extension", lupb_fielddef_isextension},
   {"istagdelim", lupb_fielddef_istagdelim},
   {"label", lupb_fielddef_label},
   {"name", lupb_fielddef_name},
@@ -615,7 +659,9 @@ static const struct luaL_Reg lupb_fielddef_m[] = {
   {"subdef_name", lupb_fielddef_subdefname},
   {"type", lupb_fielddef_type},
 
+  {"set_containing_type_name", lupb_fielddef_setcontainingtypename},
   {"set_default", lupb_fielddef_setdefault},
+  {"set_is_extension", lupb_fielddef_setisextension},
   {"set_label", lupb_fielddef_setlabel},
   {"set_name", lupb_fielddef_setname},
   {"set_number", lupb_fielddef_setnumber},

@@ -101,6 +101,7 @@ static void upb_deflist_qualify(upb_deflist *l, char *str, int32_t start) {
 
 void upb_descreader_init(upb_descreader *r, const upb_handlers *handlers,
                          upb_status *status) {
+  UPB_UNUSED(status);
   upb_deflist_init(&r->defs);
   upb_sink_reset(upb_descreader_input(r), handlers, r);
   r->stack_len = 0;
@@ -176,8 +177,9 @@ static bool file_endmsg(void *closure, const void *hd, upb_status *status) {
 }
 
 static size_t file_onpackage(void *closure, const void *hd, const char *buf,
-                             size_t n) {
+                             size_t n, const upb_bufhandle *handle) {
   UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
   upb_descreader *r = closure;
   // XXX: see comment at the top of the file.
   upb_descreader_setscopename(r, upb_strndup(buf, n));
@@ -194,8 +196,9 @@ static bool enumval_startmsg(void *closure, const void *hd) {
 }
 
 static size_t enumval_onname(void *closure, const void *hd, const char *buf,
-                             size_t n) {
+                             size_t n, const upb_bufhandle *handle) {
   UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
   upb_descreader *r = closure;
   // XXX: see comment at the top of the file.
   free(r->name);
@@ -256,8 +259,9 @@ static bool enum_endmsg(void *closure, const void *hd, upb_status *status) {
 }
 
 static size_t enum_onname(void *closure, const void *hd, const char *buf,
-                          size_t n) {
+                          size_t n, const upb_bufhandle *handle) {
   UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
   upb_descreader *r = closure;
   // XXX: see comment at the top of the file.
   char *fullname = upb_strndup(buf, n);
@@ -349,7 +353,8 @@ static bool field_endmsg(void *closure, const void *hd, upb_status *status) {
   upb_descreader *r = closure;
   upb_fielddef *f = r->f;
   // TODO: verify that all required fields were present.
-  assert(upb_fielddef_number(f) != 0 && upb_fielddef_name(f) != NULL);
+  assert(upb_fielddef_number(f) != 0);
+  assert(upb_fielddef_name(f) != NULL);
   assert((upb_fielddef_subdefname(f) != NULL) == upb_fielddef_hassubdef(f));
 
   if (r->default_string) {
@@ -388,13 +393,15 @@ static bool field_onlabel(void *closure, const void *hd, int32_t val) {
 static bool field_onnumber(void *closure, const void *hd, int32_t val) {
   UPB_UNUSED(hd);
   upb_descreader *r = closure;
-  upb_fielddef_setnumber(r->f, val, NULL);
+  bool ok = upb_fielddef_setnumber(r->f, val, NULL);
+  UPB_ASSERT_VAR(ok, ok);
   return true;
 }
 
 static size_t field_onname(void *closure, const void *hd, const char *buf,
-                           size_t n) {
+                           size_t n, const upb_bufhandle *handle) {
   UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
   upb_descreader *r = closure;
   // XXX: see comment at the top of the file.
   char *name = upb_strndup(buf, n);
@@ -404,8 +411,9 @@ static size_t field_onname(void *closure, const void *hd, const char *buf,
 }
 
 static size_t field_ontypename(void *closure, const void *hd, const char *buf,
-                               size_t n) {
+                               size_t n, const upb_bufhandle *handle) {
   UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
   upb_descreader *r = closure;
   // XXX: see comment at the top of the file.
   char *name = upb_strndup(buf, n);
@@ -414,9 +422,22 @@ static size_t field_ontypename(void *closure, const void *hd, const char *buf,
   return n;
 }
 
-static size_t field_ondefaultval(void *closure, const void *hd,
-                                 const char *buf, size_t n) {
+static size_t field_onextendee(void *closure, const void *hd, const char *buf,
+                               size_t n, const upb_bufhandle *handle) {
   UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
+  upb_descreader *r = closure;
+  // XXX: see comment at the top of the file.
+  char *name = upb_strndup(buf, n);
+  upb_fielddef_setcontainingtypename(r->f, name, NULL);
+  free(name);
+  return n;
+}
+
+static size_t field_ondefaultval(void *closure, const void *hd, const char *buf,
+                                 size_t n, const upb_bufhandle *handle) {
+  UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
   upb_descreader *r = closure;
   // Have to convert from string to the correct type, but we might not know the
   // type yet, so we save it as a string until the end of the field.
@@ -448,8 +469,9 @@ static bool msg_endmsg(void *closure, const void *hd, upb_status *status) {
 }
 
 static size_t msg_onname(void *closure, const void *hd, const char *buf,
-                         size_t n) {
+                         size_t n, const upb_bufhandle *handle) {
   UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
   upb_descreader *r = closure;
   upb_msgdef *m = upb_descreader_top(r);
   // XXX: see comment at the top of the file.
@@ -468,11 +490,12 @@ static bool msg_onendfield(void *closure, const void *hd) {
   return true;
 }
 
-static bool discardfield(void *closure, const void *hd) {
+static bool pushextension(void *closure, const void *hd) {
   UPB_UNUSED(hd);
   upb_descreader *r = closure;
-  // Discard extension field so we don't leak it.
-  upb_fielddef_unref(r->f, &r->defs);
+  assert(upb_fielddef_containingtypename(r->f));
+  upb_fielddef_setisextension(r->f, true);
+  upb_deflist_push(&r->defs, UPB_UPCAST(r->f));
   r->f = NULL;
   return true;
 }
@@ -492,14 +515,12 @@ static void reghandlers(void *closure, upb_handlers *h) {
     upb_handlers_setendmsg(h, &msg_endmsg, NULL);
     upb_handlers_setstring(h, f(h, "name"), &msg_onname, NULL);
     upb_handlers_setendsubmsg(h, f(h, "field"), &msg_onendfield, NULL);
-    // TODO: support extensions
-    upb_handlers_setendsubmsg(h, f(h, "extension"), &discardfield, NULL);
+    upb_handlers_setendsubmsg(h, f(h, "extension"), &pushextension, NULL);
   } else if (m == GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO) {
     upb_handlers_setstartmsg(h, &file_startmsg, NULL);
     upb_handlers_setendmsg(h, &file_endmsg, NULL);
     upb_handlers_setstring(h, f(h, "package"), &file_onpackage, NULL);
-    // TODO: support extensions
-    upb_handlers_setendsubmsg(h, f(h, "extension"), &discardfield, NULL);
+    upb_handlers_setendsubmsg(h, f(h, "extension"), &pushextension, NULL);
   } else if (m == GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO) {
     upb_handlers_setstartmsg(h, &enumval_startmsg, NULL);
     upb_handlers_setendmsg(h, &enumval_endmsg, NULL);
@@ -517,6 +538,7 @@ static void reghandlers(void *closure, upb_handlers *h) {
     upb_handlers_setint32(h, f(h, "number"), &field_onnumber, NULL);
     upb_handlers_setstring(h, f(h, "name"), &field_onname, NULL);
     upb_handlers_setstring(h, f(h, "type_name"), &field_ontypename, NULL);
+    upb_handlers_setstring(h, f(h, "extendee"), &field_onextendee, NULL);
     upb_handlers_setstring(h, f(h, "default_value"), &field_ondefaultval, NULL);
   }
 }

@@ -234,6 +234,7 @@ struct upb_pbdecoder {
   // Stores the user buffer passed to our decode function.
   const char *buf_param;
   size_t size_param;
+  const upb_bufhandle *handle;
 
 #ifdef UPB_USE_JIT_X64
   // Used momentarily by the generated code to store a value while a user

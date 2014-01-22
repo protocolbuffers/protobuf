@@ -92,8 +92,8 @@ oom:
 // The selector for a submessage field is the field index.
 #define SUBH_F(h, f) SUBH(h, f->index_)
 
-static int32_t getsel(upb_handlers *h, const upb_fielddef *f,
-                      upb_handlertype_t type) {
+static int32_t trygetsel(upb_handlers *h, const upb_fielddef *f,
+                         upb_handlertype_t type) {
   upb_selector_t sel;
   assert(!upb_handlers_isfrozen(h));
   if (upb_handlers_msgdef(h) != upb_fielddef_containingtype(f)) {
@@ -112,7 +112,20 @@ static int32_t getsel(upb_handlers *h, const upb_fielddef *f,
   return sel;
 }
 
-static bool doset(upb_handlers *h, int32_t sel, upb_func *func,
+static upb_selector_t getsel(upb_handlers *h, const upb_fielddef *f,
+                             upb_handlertype_t type) {
+  int32_t sel = trygetsel(h, f, type);
+  assert(sel >= 0);
+  return sel;
+}
+
+static const void **returntype(upb_handlers *h, const upb_fielddef *f,
+                               upb_handlertype_t type) {
+  return &h->table[getsel(h, f, type)].attr.return_closure_type_;
+}
+
+static bool doset(upb_handlers *h, int32_t sel, const upb_fielddef *f,
+                  upb_handlertype_t type, upb_func *func,
                   upb_handlerattr *attr) {
   assert(!upb_handlers_isfrozen(h));
 
@@ -133,11 +146,103 @@ static bool doset(upb_handlers *h, int32_t sel, upb_func *func,
     set_attr = *attr;
   }
 
+  // Check that the given closure type matches the closure type that has been
+  // established for this context (if any).
+  const void *closure_type = upb_handlerattr_closuretype(&set_attr);
+  const void **context_closure_type;
+
+  if (type == UPB_HANDLER_STRING) {
+    context_closure_type = returntype(h, f, UPB_HANDLER_STARTSTR);
+  } else if (f && upb_fielddef_isseq(f) &&
+             type != UPB_HANDLER_STARTSEQ &&
+             type != UPB_HANDLER_ENDSEQ) {
+    context_closure_type = returntype(h, f, UPB_HANDLER_STARTSEQ);
+  } else {
+    context_closure_type = &h->top_closure_type;
+  }
+
+  if (closure_type && *context_closure_type &&
+      closure_type != *context_closure_type) {
+    // TODO(haberman): better message for debugging.
+    upb_status_seterrmsg(&h->status_, "closure type does not match");
+    return false;
+  }
+
+  if (closure_type)
+    *context_closure_type = closure_type;
+
+  // If this is a STARTSEQ or STARTSTR handler, check that the returned pointer
+  // matches any pre-existing expectations about what type is expected.
+  if (type == UPB_HANDLER_STARTSEQ || type == UPB_HANDLER_STARTSTR) {
+    const void *return_type = upb_handlerattr_returnclosuretype(&set_attr);
+    const void *table_return_type =
+        upb_handlerattr_returnclosuretype(&h->table[sel].attr);
+    if (return_type && table_return_type && return_type != table_return_type) {
+      upb_status_seterrmsg(&h->status_, "closure return type does not match");
+      return false;
+    }
+
+    if (table_return_type && !return_type)
+      upb_handlerattr_setreturnclosuretype(&set_attr, table_return_type);
+  }
+
   h->table[sel].func = (upb_func*)func;
   h->table[sel].attr = set_attr;
   return true;
 }
 
+// Returns the effective closure type for this handler (which will propagate
+// from outer frames if this frame has no START* handler).  Not implemented for
+// UPB_HANDLER_STRING at the moment since this is not needed.  Returns NULL is
+// the effective closure type is unspecified (either no handler was registered
+// to specify it or the handler that was registered did not specify the closure
+// type).
+const void *effective_closure_type(upb_handlers *h, const upb_fielddef *f,
+                                   upb_handlertype_t type) {
+  assert(type != UPB_HANDLER_STRING);
+  const void *ret = h->top_closure_type;
+  upb_selector_t sel;
+  if (upb_fielddef_isseq(f) &&
+      type != UPB_HANDLER_STARTSEQ &&
+      type != UPB_HANDLER_ENDSEQ &&
+      h->table[sel = getsel(h, f, UPB_HANDLER_STARTSEQ)].func) {
+    ret = upb_handlerattr_returnclosuretype(&h->table[sel].attr);
+  }
+
+  if (type == UPB_HANDLER_STRING &&
+      h->table[sel = getsel(h, f, UPB_HANDLER_STARTSTR)].func) {
+    ret = upb_handlerattr_returnclosuretype(&h->table[sel].attr);
+  }
+
+  // The effective type of the submessage; not used yet.
+  // if (type == SUBMESSAGE &&
+  //     h->table[sel = getsel(h, f, UPB_HANDLER_STARTSUBMSG)].func) {
+  //   ret = upb_handlerattr_returnclosuretype(&h->table[sel].attr);
+  // }
+
+  return ret;
+}
+
+// Checks whether the START* handler specified by f & type is missing even
+// though it is required to convert the established type of an outer frame
+// ("closure_type") into the established type of an inner frame (represented in
+// the return closure type of this handler's attr.
+bool checkstart(upb_handlers *h, const upb_fielddef *f, upb_handlertype_t type,
+                upb_status *status) {
+  upb_selector_t sel = getsel(h, f, type);
+  if (h->table[sel].func) return true;
+  const void *closure_type = effective_closure_type(h, f, type);
+  const upb_handlerattr *attr = &h->table[sel].attr;
+  const void *return_closure_type = upb_handlerattr_returnclosuretype(attr);
+  if (closure_type && return_closure_type &&
+      closure_type != return_closure_type) {
+    upb_status_seterrf(status,
+                       "expected start handler to return sub type for field %f",
+                       upb_fielddef_name(f));
+    return false;
+  }
+  return true;
+}
 
 /* Public interface ***********************************************************/
 
@@ -218,8 +323,8 @@ void upb_handlers_clearerr(upb_handlers *h) {
 #define SETTER(name, handlerctype, handlertype) \
   bool upb_handlers_set ## name(upb_handlers *h, const upb_fielddef *f, \
                                 handlerctype func, upb_handlerattr *attr) { \
-    int32_t sel = getsel(h, f, handlertype); \
-    return doset(h, sel, (upb_func*)func, attr); \
+    int32_t sel = trygetsel(h, f, handlertype); \
+    return doset(h, sel, f, handlertype, (upb_func*)func, attr); \
   }
 
 SETTER(int32,       upb_int32_handlerfunc*,       UPB_HANDLER_INT32);
@@ -241,13 +346,15 @@ SETTER(endseq,      upb_endfield_handlerfunc*,    UPB_HANDLER_ENDSEQ);
 
 bool upb_handlers_setstartmsg(upb_handlers *h, upb_startmsg_handlerfunc *func,
                               upb_handlerattr *attr) {
-  return doset(h, UPB_STARTMSG_SELECTOR, (upb_func*)func, attr);
+  return doset(h, UPB_STARTMSG_SELECTOR, NULL, UPB_HANDLER_INT32,
+               (upb_func *)func, attr);
 }
 
 bool upb_handlers_setendmsg(upb_handlers *h, upb_endmsg_handlerfunc *func,
                             upb_handlerattr *attr) {
   assert(!upb_handlers_isfrozen(h));
-  return doset(h, UPB_ENDMSG_SELECTOR, (upb_func*)func, attr);
+  return doset(h, UPB_ENDMSG_SELECTOR, NULL, UPB_HANDLER_INT32,
+               (upb_func *)func, attr);
 }
 
 bool upb_handlers_setsubhandlers(upb_handlers *h, const upb_fielddef *f,
@@ -270,6 +377,14 @@ const upb_handlers *upb_handlers_getsubhandlers(const upb_handlers *h,
   return SUBH_F(h, f);
 }
 
+bool upb_handlers_getattr(const upb_handlers *h, upb_selector_t sel,
+                          upb_handlerattr *attr) {
+  if (!upb_handlers_gethandler(h, sel))
+    return false;
+  *attr = h->table[sel].attr;
+  return true;
+}
+
 const upb_handlers *upb_handlers_getsubhandlers_sel(const upb_handlers *h,
                                                     upb_selector_t sel) {
   // STARTSUBMSG selector in sel is the field's selector base.
@@ -284,11 +399,36 @@ const upb_msgdef *upb_handlers_msgdef(const upb_handlers *h) { return h->msg; }
 bool upb_handlers_freeze(upb_handlers *const*handlers, int n, upb_status *s) {
   // TODO: verify we have a transitive closure.
   for (int i = 0; i < n; i++) {
-    if (!upb_ok(&handlers[i]->status_)) {
+    upb_handlers *h = handlers[i];
+
+    if (!upb_ok(&h->status_)) {
       upb_status_seterrf(s, "handlers for message %s had error status: %s",
-                         upb_msgdef_fullname(upb_handlers_msgdef(handlers[i])),
-                         upb_status_errmsg(&handlers[i]->status_));
+                         upb_msgdef_fullname(upb_handlers_msgdef(h)),
+                         upb_status_errmsg(&h->status_));
       return false;
+    }
+
+    // Check that there are no closure mismatches due to missing Start* handlers
+    // or subhandlers with different type-level types.
+    upb_msg_iter j;
+    for(upb_msg_begin(&j, h->msg); !upb_msg_done(&j); upb_msg_next(&j)) {
+
+      const upb_fielddef *f = upb_msg_iter_field(&j);
+      if (upb_fielddef_isseq(f)) {
+        if (!checkstart(h, f, UPB_HANDLER_STARTSEQ, s))
+          return false;
+      }
+
+      if (upb_fielddef_isstring(f)) {
+        if (!checkstart(h, f, UPB_HANDLER_STARTSTR, s))
+          return false;
+      }
+
+      if (upb_fielddef_issubmsg(f)) {
+        // TODO(haberman): check type of submessage.
+        // This is slightly tricky; also consider whether we should check that
+        // they match at setsubhandlers time.
+      }
     }
   }
 
@@ -394,13 +534,44 @@ void upb_handlerattr_uninit(upb_handlerattr *attr) {
 
 bool upb_handlerattr_sethandlerdata(upb_handlerattr *attr, void *hd,
                                     upb_handlerfree *cleanup) {
-  if (attr->handler_data_)
-    return false;
   attr->handler_data_ = hd;
   attr->cleanup = cleanup;
   return true;
 }
 
+bool upb_handlerattr_setclosuretype(upb_handlerattr *attr, const void *type) {
+  attr->closure_type_ = type;
+  return true;
+}
+
+const void *upb_handlerattr_closuretype(const upb_handlerattr *attr) {
+  return attr->closure_type_;
+}
+
+bool upb_handlerattr_setreturnclosuretype(upb_handlerattr *attr,
+                                          const void *type) {
+  attr->return_closure_type_ = type;
+  return true;
+}
+
+const void *upb_handlerattr_returnclosuretype(const upb_handlerattr *attr) {
+  return attr->return_closure_type_;
+}
+
+bool upb_handlerattr_setalwaysok(upb_handlerattr *attr, bool alwaysok) {
+  attr->alwaysok_ = alwaysok;
+  return true;
+}
+
+bool upb_handlerattr_alwaysok(const upb_handlerattr *attr) {
+  return attr->alwaysok_;
+}
+
+/* upb_bufhandle **************************************************************/
+
+size_t upb_bufhandle_objofs(const upb_bufhandle *h) {
+  return h->objofs_;
+}
 
 /* upb_byteshandler ***********************************************************/
 

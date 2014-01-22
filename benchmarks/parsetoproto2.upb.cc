@@ -8,7 +8,7 @@
 #include "upb/def.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/glue.h"
-#include "upb/google/bridge.h"
+#include "upb/bindings/google/bridge.h"
 #include MESSAGE_HFILE
 
 const char *str;

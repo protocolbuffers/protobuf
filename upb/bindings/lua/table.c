@@ -21,8 +21,9 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "lauxlib.h"
-#include "bindings/lua/upb.h"
+#include "upb/bindings/lua/upb.h"
 #include "upb/def.h"
 
 static void lupbtable_setnum(lua_State *L, int tab, const char *key,

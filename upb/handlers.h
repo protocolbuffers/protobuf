@@ -27,18 +27,26 @@
 #ifdef __cplusplus
 
 namespace upb {
+class BufferHandle;
+class BytesHandler;
 class HandlerAttributes;
 class Handlers;
 template <class T> class Handler;
 template <class T> struct CanonicalType;
 }  // namespace upb
 
+typedef upb::BufferHandle upb_bufhandle;
+typedef upb::BytesHandler upb_byteshandler;
 typedef upb::HandlerAttributes upb_handlerattr;
 typedef upb::Handlers upb_handlers;
 #else
+struct upb_bufhandle;
+struct upb_byteshandler;
 struct upb_handlerattr;
 struct upb_handlers;
 struct upb_sinkframe;
+typedef struct upb_bufhandle upb_bufhandle;
+typedef struct upb_byteshandler upb_byteshandler;
 typedef struct upb_handlerattr upb_handlerattr;
 typedef struct upb_handlers upb_handlers;
 typedef struct upb_sinkframe upb_sinkframe;
@@ -89,11 +97,22 @@ typedef void upb_func();
 extern "C" {
 #endif
 
+// Forward-declares for C inline accessors.  We need to declare these here
+// so we can "friend" them in the class declarations in C++.
 UPB_INLINE upb_func *upb_handlers_gethandler(const upb_handlers *h,
                                              upb_selector_t s);
 UPB_INLINE const void *upb_handlerattr_handlerdata(const upb_handlerattr *attr);
 UPB_INLINE const void *upb_handlers_gethandlerdata(const upb_handlers *h,
                                                    upb_selector_t s);
+
+UPB_INLINE void upb_bufhandle_init(upb_bufhandle *h);
+UPB_INLINE void upb_bufhandle_setobj(upb_bufhandle *h, const void *obj,
+                                     const void *type);
+UPB_INLINE void upb_bufhandle_setbuf(upb_bufhandle *h, const char *buf,
+                                     size_t ofs);
+UPB_INLINE const void *upb_bufhandle_obj(const upb_bufhandle *h);
+UPB_INLINE const void *upb_bufhandle_objtype(const upb_bufhandle *h);
+UPB_INLINE const char *upb_bufhandle_buf(const upb_bufhandle *h);
 
 #ifdef __cplusplus
 }
@@ -114,6 +133,7 @@ typedef void upb_handlerfree(void *d);
 
 #ifdef __cplusplus
 
+// A set of attributes that accompanies a handler's function pointer.
 class upb::HandlerAttributes {
  public:
   HandlerAttributes();
@@ -126,7 +146,27 @@ class upb::HandlerAttributes {
   // cleanup handler will be called once for each handler it was successfully
   // set on.
   bool SetHandlerData(void *handler_data, upb_handlerfree *cleanup);
-  void *handler_data() const;
+  const void* handler_data() const;
+
+  // Use this to specify the type of the closure.  This will be checked against
+  // all other closure types for handler that use the same closure.
+  // Registration will fail if this does not match all other non-NULL closure
+  // types.
+  bool SetClosureType(const void *closure_type);
+  const void* closure_type() const;
+
+  // Use this to specify the type of the returned closure.  Only used for
+  // Start*{String,SubMessage,Sequence} handlers.  This must match the closure
+  // type of any handlers that use it (for example, the StringBuf handler must
+  // match the closure returned from StartString).
+  bool SetReturnClosureType(const void *return_closure_type);
+  const void* return_closure_type() const;
+
+  // Set to indicate that the handler always returns "ok" (either "true" or a
+  // non-NULL closure).  This is a hint that can allow code generators to
+  // generate more efficient code.
+  bool SetAlwaysOk(bool always_ok);
+  bool always_ok() const;
 
  private:
   friend UPB_INLINE const void * ::upb_handlerattr_handlerdata(
@@ -137,12 +177,78 @@ struct upb_handlerattr {
 #endif
   void *handler_data_;
   upb_handlerfree *cleanup;
+  const void *closure_type_;
+  const void *return_closure_type_;
+  bool alwaysok_;
 };
+
+#define UPB_HANDLERATTR_INITIALIZER {NULL, NULL, NULL, NULL, false}
 
 typedef struct {
   upb_func *func;
+  // It is wasteful to include the entire attributes here:
+  //
+  // * Some of the information is redundant (like storing the closure type
+  //   separately for each handler that must match).
+  // * Some of the info is only needed prior to freeze() (like closure types).
+  // * alignment padding wastes a lot of space for alwaysok_.
+  //
+  // If/when the size and locality of handlers is an issue, we can optimize this
+  // not to store the entire attr like this.  We do not expose the table's
+  // layout to allow this optimization in the future.
   upb_handlerattr attr;
 } upb_handlers_tabent;
+
+#ifdef __cplusplus
+
+// Extra information about a buffer that is passed to a StringBuf handler.
+// TODO(haberman): allow the handle to be pinned so that it will outlive
+// the handler invocation.
+class upb::BufferHandle {
+ public:
+  BufferHandle();
+  ~BufferHandle();
+
+  // The beginning of the buffer.  This may be different than the pointer
+  // passed to a StringBuf handler because the handler may receive data
+  // that is from the middle or end of a larger buffer.
+  const char* buffer() const;
+
+  // The offset within the attached object where this buffer begins.  Only
+  // meaningful if there is an attached object.
+  size_t object_offset() const;
+
+  // Note that object_offset is the offset of "buf" within the attached object.
+  void SetBuffer(const char* buf, size_t object_offset);
+
+  // The BufferHandle can have an "attached object", which can be used to
+  // tunnel through a pointer to the buffer's underlying representation.
+  template <class T>
+  void SetAttachedObject(const T* obj);
+
+  // Returns NULL if the attached object is not of this type.
+  template <class T>
+  const T* GetAttachedObject() const;
+
+ private:
+  friend UPB_INLINE void ::upb_bufhandle_init(upb_bufhandle *h);
+  friend UPB_INLINE void ::upb_bufhandle_setobj(upb_bufhandle *h,
+                                                const void *obj,
+                                                const void *type);
+  friend UPB_INLINE void ::upb_bufhandle_setbuf(upb_bufhandle *h,
+                                                const char *buf, size_t ofs);
+  friend UPB_INLINE const void* ::upb_bufhandle_obj(const upb_bufhandle *h);
+  friend UPB_INLINE const void* ::upb_bufhandle_objtype(
+      const upb_bufhandle *h);
+  friend UPB_INLINE const char* ::upb_bufhandle_buf(const upb_bufhandle *h);
+#else
+struct upb_bufhandle {
+#endif
+  const char *buf_;
+  const void *obj_;
+  const void *objtype_;
+  size_t objofs_;
+};
 
 #ifdef __cplusplus
 
@@ -167,8 +273,8 @@ class upb::Handlers {
   typedef Handler<bool (*)(void *, const void *)> StartMessageHandler;
   typedef Handler<bool (*)(void *, const void *, Status*)> EndMessageHandler;
   typedef Handler<void *(*)(void *, const void *, size_t)> StartStringHandler;
-  typedef Handler<size_t(*)(void *, const void *, const char *, size_t)>
-      StringHandler;
+  typedef Handler<size_t (*)(void *, const void *, const char *, size_t,
+                             const BufferHandle *)> StringHandler;
 
   template <class T> struct ValueHandler {
     typedef Handler<bool(*)(void *, const void *, T)> H;
@@ -224,7 +330,7 @@ class upb::Handlers {
   // Freezes the given set of handlers.  You may not freeze a handler without
   // also freezing any handlers they point to.
   static bool Freeze(Handlers*const* handlers, int n, Status* s);
-  static bool Freeze(const vector<Handlers*>& handlers, Status* s);
+  static bool Freeze(const std::vector<Handlers*>& handlers, Status* s);
 
   // Returns the msgdef associated with this handlers object.
   const MessageDef* message_def() const;
@@ -401,6 +507,9 @@ class upb::Handlers {
   // responsibility to cast to the correct function type before calling it.
   GenericFunction* GetHandler(Selector selector);
 
+  // Sets the given attributes to the attributes for this selector.
+  bool GetAttributes(Selector selector, HandlerAttributes* attr);
+
   // Returns the handler data that was registered with this handler.
   const void* GetHandlerData(Selector selector);
 
@@ -424,6 +533,7 @@ struct upb_handlers {
   upb_refcounted base;
   const upb_msgdef *msg;
   const upb_handlers **sub;
+  const void *top_closure_type;
   upb_status status_;  // Used only when mutable.
   upb_handlers_tabent table[1];  // Dynamically-sized field handler array.
 };
@@ -538,31 +648,38 @@ typedef bool upb_bool_handlerfunc(void *c, const void *hd, bool val);
 typedef void *upb_startstr_handlerfunc(void *c, const void *hd,
                                        size_t size_hint);
 typedef size_t upb_string_handlerfunc(void *c, const void *hd, const char *buf,
-                                      size_t n);
-// upb_handlerattr
-#define UPB_HANDLERATTR_INITIALIZER {NULL, NULL}
+                                      size_t n, const upb_bufhandle* handle);
 
+// upb_bufhandle
+size_t upb_bufhandle_objofs(const upb_bufhandle *h);
+
+// upb_handlerattr
 void upb_handlerattr_init(upb_handlerattr *attr);
 void upb_handlerattr_uninit(upb_handlerattr *attr);
 
 bool upb_handlerattr_sethandlerdata(upb_handlerattr *attr, void *hd,
                                     upb_handlerfree *cleanup);
+bool upb_handlerattr_setclosuretype(upb_handlerattr *attr, const void *type);
+const void *upb_handlerattr_closuretype(const upb_handlerattr *attr);
+bool upb_handlerattr_setreturnclosuretype(upb_handlerattr *attr,
+                                          const void *type);
+const void *upb_handlerattr_returnclosuretype(const upb_handlerattr *attr);
+bool upb_handlerattr_setalwaysok(upb_handlerattr *attr, bool alwaysok);
+bool upb_handlerattr_alwaysok(const upb_handlerattr *attr);
+
 UPB_INLINE const void *upb_handlerattr_handlerdata(
     const upb_handlerattr *attr) {
   return attr->handler_data_;
 }
 
-typedef void upb_handlers_callback(void *closure, upb_handlers *h);
-
 // upb_handlers
+typedef void upb_handlers_callback(void *closure, upb_handlers *h);
 upb_handlers *upb_handlers_new(const upb_msgdef *m,
                                const void *owner);
 const upb_handlers *upb_handlers_newfrozen(const upb_msgdef *m,
                                            const void *owner,
                                            upb_handlers_callback *callback,
                                            void *closure);
-
-// From upb_refcounted.
 bool upb_handlers_isfrozen(const upb_handlers *h);
 void upb_handlers_ref(const upb_handlers *h, const void *owner);
 void upb_handlers_unref(const upb_handlers *h, const void *owner);
@@ -630,17 +747,32 @@ UPB_INLINE upb_func *upb_handlers_gethandler(const upb_handlers *h,
   return (upb_func *)h->table[s].func;
 }
 
+bool upb_handlers_getattr(const upb_handlers *h, upb_selector_t s,
+                          upb_handlerattr *attr);
+
 UPB_INLINE const void *upb_handlers_gethandlerdata(const upb_handlers *h,
                                                    upb_selector_t s) {
   return upb_handlerattr_handlerdata(&h->table[s].attr);
 }
+
+#ifdef __cplusplus
 
 // Handler types for single fields.
 // Right now we only have one for TYPE_BYTES but ones for other types
 // should follow.
 //
 // These follow the same handlers protocol for fields of a message.
-typedef struct { upb_handlers_tabent table[3]; } upb_byteshandler;
+class upb::BytesHandler {
+ public:
+  BytesHandler();
+  ~BytesHandler();
+
+  // TODO(haberman): make private and figure out what to friend.
+#else
+struct upb_byteshandler {
+#endif
+  upb_handlers_tabent table[3];
+};
 
 void upb_byteshandler_init(upb_byteshandler *h);
 void upb_byteshandler_uninit(upb_byteshandler *h);
@@ -659,7 +791,7 @@ bool upb_byteshandler_setendstr(upb_byteshandler *h,
 
 #ifdef __cplusplus
 namespace upb {
-typedef upb_byteshandler  BytesHandler;
+typedef upb_byteshandler BytesHandler;
 }
 #endif
 

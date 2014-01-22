@@ -91,6 +91,39 @@
 #undef UPB_LONG_IS_64BITS
 #undef UPB_LLONG_IS_64BITS
 
+// C inline methods.
+
+// upb_bufhandle
+UPB_INLINE void upb_bufhandle_init(upb_bufhandle *h) {
+  h->obj_ = NULL;
+  h->objtype_ = NULL;
+  h->buf_ = NULL;
+  h->objofs_ = 0;
+}
+UPB_INLINE void upb_bufhandle_uninit(upb_bufhandle *h) {
+  UPB_UNUSED(h);
+}
+UPB_INLINE void upb_bufhandle_setobj(upb_bufhandle *h, const void *obj,
+                                     const void *type) {
+  h->obj_ = obj;
+  h->objtype_ = type;
+}
+UPB_INLINE void upb_bufhandle_setbuf(upb_bufhandle *h, const char *buf,
+                                     size_t ofs) {
+  h->buf_ = buf;
+  h->objofs_ = ofs;
+}
+UPB_INLINE const void *upb_bufhandle_obj(const upb_bufhandle *h) {
+  return h->obj_;
+}
+UPB_INLINE const void *upb_bufhandle_objtype(const upb_bufhandle *h) {
+  return h->objtype_;
+}
+UPB_INLINE const char *upb_bufhandle_buf(const upb_bufhandle *h) {
+  return h->buf_;
+}
+
+
 #ifdef __cplusplus
 
 namespace upb {
@@ -122,8 +155,8 @@ typedef void CleanupFunc(void *ptr);
 // We define a nonsense default because otherwise it will fail to instantiate as
 // a function parameter type even in cases where we don't expect any caller to
 // actually match the overload.
-class NonsenseType {};
-template <class T> struct remove_constptr { typedef NonsenseType type; };
+class CouldntRemoveConst {};
+template <class T> struct remove_constptr { typedef CouldntRemoveConst type; };
 template <class T> struct remove_constptr<const T *> { typedef T *type; };
 
 // Template that we use below to remove a template specialization from
@@ -132,6 +165,44 @@ template <class T, class U> struct disable_if_same { typedef void Type; };
 template <class T> struct disable_if_same<T, T> {};
 
 template <class T> void DeletePointer(void *p) { delete static_cast<T *>(p); }
+
+template <class T1, class T2>
+struct FirstUnlessVoid {
+  typedef T1 value;
+};
+
+template <class T2>
+struct FirstUnlessVoid<void, T2> {
+  typedef T2 value;
+};
+
+template<class T, class U>
+struct is_same {
+  static bool value;
+};
+
+template<class T>
+struct is_same<T, T> {
+  static bool value;
+};
+
+template<class T, class U>
+bool is_same<T, U>::value = false;
+
+template<class T>
+bool is_same<T, T>::value = true;
+
+// FuncInfo ////////////////////////////////////////////////////////////////////
+
+// Info about the user's original, pre-wrapped function.
+template <class C, class R = void>
+struct FuncInfo {
+  // The type of the closure that the function takes (its first param).
+  typedef C Closure;
+
+  // The return type.
+  typedef R Return;
+};
 
 // Func ////////////////////////////////////////////////////////////////////////
 
@@ -147,28 +218,43 @@ struct UnboundFunc {
   void *GetData() { return NULL; }
 };
 
-template <class R, class P1, R F(P1)>
+template <class R, class P1, R F(P1), class I>
 struct Func1 : public UnboundFunc {
   typedef R Return;
+  typedef I FuncInfo;
   static R Call(P1 p1) { return F(p1); }
 };
 
-template <class R, class P1, class P2, R F(P1, P2)>
+template <class R, class P1, class P2, R F(P1, P2), class I>
 struct Func2 : public UnboundFunc {
   typedef R Return;
+  typedef I FuncInfo;
   static R Call(P1 p1, P2 p2) { return F(p1, p2); }
 };
 
-template <class R, class P1, class P2, class P3, R F(P1, P2, P3)>
+template <class R, class P1, class P2, class P3, R F(P1, P2, P3), class I>
 struct Func3 : public UnboundFunc {
   typedef R Return;
+  typedef I FuncInfo;
   static R Call(P1 p1, P2 p2, P3 p3) { return F(p1, p2, p3); }
 };
 
-template <class R, class P1, class P2, class P3, class P4, R F(P1, P2, P3, P4)>
+template <class R, class P1, class P2, class P3, class P4, R F(P1, P2, P3, P4),
+          class I>
 struct Func4 : public UnboundFunc {
   typedef R Return;
+  typedef I FuncInfo;
   static R Call(P1 p1, P2 p2, P3 p3, P4 p4) { return F(p1, p2, p3, p4); }
+};
+
+template <class R, class P1, class P2, class P3, class P4, class P5,
+          R F(P1, P2, P3, P4, P5), class I>
+struct Func5 : public UnboundFunc {
+  typedef R Return;
+  typedef I FuncInfo;
+  static R Call(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5) {
+    return F(p1, p2, p3, p4, p5);
+  }
 };
 
 // BoundFunc ///////////////////////////////////////////////////////////////////
@@ -187,22 +273,34 @@ struct BoundFunc {
   MutableP2 data;
 };
 
-template <class R, class P1, class P2, R F(P1, P2)>
+template <class R, class P1, class P2, R F(P1, P2), class I>
 struct BoundFunc2 : public BoundFunc<P2> {
   typedef BoundFunc<P2> Base;
+  typedef I FuncInfo;
   explicit BoundFunc2(typename Base::MutableP2 arg) : Base(arg) {}
 };
 
-template <class R, class P1, class P2, class P3, R F(P1, P2, P3)>
+template <class R, class P1, class P2, class P3, R F(P1, P2, P3), class I>
 struct BoundFunc3 : public BoundFunc<P2> {
   typedef BoundFunc<P2> Base;
+  typedef I FuncInfo;
   explicit BoundFunc3(typename Base::MutableP2 arg) : Base(arg) {}
 };
 
-template <class R, class P1, class P2, class P3, class P4, R F(P1, P2, P3, P4)>
+template <class R, class P1, class P2, class P3, class P4, R F(P1, P2, P3, P4),
+          class I>
 struct BoundFunc4 : public BoundFunc<P2> {
   typedef BoundFunc<P2> Base;
+  typedef I FuncInfo;
   explicit BoundFunc4(typename Base::MutableP2 arg) : Base(arg) {}
+};
+
+template <class R, class P1, class P2, class P3, class P4, class P5,
+          R F(P1, P2, P3, P4, P5), class I>
+struct BoundFunc5 : public BoundFunc<P2> {
+  typedef BoundFunc<P2> Base;
+  typedef I FuncInfo;
+  explicit BoundFunc5(typename Base::MutableP2 arg) : Base(arg) {}
 };
 
 // FuncSig /////////////////////////////////////////////////////////////////////
@@ -215,49 +313,64 @@ struct BoundFunc4 : public BoundFunc<P2> {
 template <class R, class P1>
 struct FuncSig1 {
   template <R F(P1)>
-  Func1<R, P1, F> GetFunc() {
-    return Func1<R, P1, F>();
+  Func1<R, P1, F, FuncInfo<P1, R> > GetFunc() {
+    return Func1<R, P1, F, FuncInfo<P1, R> >();
   }
 };
 
 template <class R, class P1, class P2>
 struct FuncSig2 {
   template <R F(P1, P2)>
-  Func2<R, P1, P2, F> GetFunc() {
-    return Func2<R, P1, P2, F>();
+  Func2<R, P1, P2, F, FuncInfo<P1, R> > GetFunc() {
+    return Func2<R, P1, P2, F, FuncInfo<P1, R> >();
   }
 
   template <R F(P1, P2)>
-  BoundFunc2<R, P1, P2, F> GetFunc(typename remove_constptr<P2>::type param2) {
-    return BoundFunc2<R, P1, P2, F>(param2);
+  BoundFunc2<R, P1, P2, F, FuncInfo<P1, R> > GetFunc(
+      typename remove_constptr<P2>::type param2) {
+    return BoundFunc2<R, P1, P2, F, FuncInfo<P1, R> >(param2);
   }
 };
 
 template <class R, class P1, class P2, class P3>
 struct FuncSig3 {
   template <R F(P1, P2, P3)>
-  Func3<R, P1, P2, P3, F> GetFunc() {
-    return Func3<R, P1, P2, P3, F>();
+  Func3<R, P1, P2, P3, F, FuncInfo<P1, R> > GetFunc() {
+    return Func3<R, P1, P2, P3, F, FuncInfo<P1, R> >();
   }
 
   template <R F(P1, P2, P3)>
-  BoundFunc3<R, P1, P2, P3, F> GetFunc(
+  BoundFunc3<R, P1, P2, P3, F, FuncInfo<P1, R> > GetFunc(
       typename remove_constptr<P2>::type param2) {
-    return BoundFunc3<R, P1, P2, P3, F>(param2);
+    return BoundFunc3<R, P1, P2, P3, F, FuncInfo<P1, R> >(param2);
   }
 };
 
 template <class R, class P1, class P2, class P3, class P4>
 struct FuncSig4 {
   template <R F(P1, P2, P3, P4)>
-  Func4<R, P1, P2, P3, P4, F> GetFunc() {
-    return Func4<R, P1, P2, P3, P4, F>();
+  Func4<R, P1, P2, P3, P4, F, FuncInfo<P1, R> > GetFunc() {
+    return Func4<R, P1, P2, P3, P4, F, FuncInfo<P1, R> >();
   }
 
   template <R F(P1, P2, P3, P4)>
-  BoundFunc4<R, P1, P2, P3, P4, F> GetFunc(
+  BoundFunc4<R, P1, P2, P3, P4, F, FuncInfo<P1, R> > GetFunc(
       typename remove_constptr<P2>::type param2) {
-    return BoundFunc4<R, P1, P2, P3, P4, F>(param2);
+    return BoundFunc4<R, P1, P2, P3, P4, F, FuncInfo<P1, R> >(param2);
+  }
+};
+
+template <class R, class P1, class P2, class P3, class P4, class P5>
+struct FuncSig5 {
+  template <R F(P1, P2, P3, P4, P5)>
+  Func5<R, P1, P2, P3, P4, P5, F, FuncInfo<P1, R> > GetFunc() {
+    return Func5<R, P1, P2, P3, P4, P5, F, FuncInfo<P1, R> >();
+  }
+
+  template <R F(P1, P2, P3, P4, P5)>
+  BoundFunc5<R, P1, P2, P3, P4, P5, F, FuncInfo<P1, R> > GetFunc(
+      typename remove_constptr<P2>::type param2) {
+    return BoundFunc5<R, P1, P2, P3, P4, P5, F, FuncInfo<P1, R> >(param2);
   }
 };
 
@@ -287,6 +400,12 @@ inline FuncSig4<R, P1, P2, P3, P4> MatchFunc(R (*f)(P1, P2, P3, P4)) {
   return FuncSig4<R, P1, P2, P3, P4>();
 }
 
+template <class R, class P1, class P2, class P3, class P4, class P5>
+inline FuncSig5<R, P1, P2, P3, P4, P5> MatchFunc(R (*f)(P1, P2, P3, P4, P5)) {
+  UPB_UNUSED(f);  // Only used for template parameter deduction.
+  return FuncSig5<R, P1, P2, P3, P4, P5>();
+}
+
 // MethodSig ///////////////////////////////////////////////////////////////////
 
 // CallMethod*: a function template that calls a given method.
@@ -310,6 +429,12 @@ R CallMethod3(C *obj, P1 arg1, P2 arg2, P3 arg3) {
   return ((*obj).*F)(arg1, arg2, arg3);
 }
 
+template <class R, class C, class P1, class P2, class P3, class P4,
+          R (C::*F)(P1, P2, P3, P4)>
+R CallMethod4(C *obj, P1 arg1, P2 arg2, P3 arg3, P4 arg4) {
+  return ((*obj).*F)(arg1, arg2, arg3, arg4);
+}
+
 // MethodSig: like FuncSig, but for member functions.
 //
 // GetFunc() returns a normal FuncN object, so after calling GetFunc() no
@@ -317,50 +442,77 @@ R CallMethod3(C *obj, P1 arg1, P2 arg2, P3 arg3) {
 template <class R, class C>
 struct MethodSig0 {
   template <R (C::*F)()>
-  Func1<R, C *, CallMethod0<R, C, F> > GetFunc() {
-    return Func1<R, C *, CallMethod0<R, C, F> >();
+  Func1<R, C *, CallMethod0<R, C, F>, FuncInfo<C *, R> > GetFunc() {
+    return Func1<R, C *, CallMethod0<R, C, F>, FuncInfo<C *, R> >();
   }
 };
 
 template <class R, class C, class P1>
 struct MethodSig1 {
   template <R (C::*F)(P1)>
-  Func2<R, C *, P1, CallMethod1<R, C, P1, F> > GetFunc() {
-    return Func2<R, C *, P1, CallMethod1<R, C, P1, F> >();
+  Func2<R, C *, P1, CallMethod1<R, C, P1, F>, FuncInfo<C *, R> > GetFunc() {
+    return Func2<R, C *, P1, CallMethod1<R, C, P1, F>, FuncInfo<C *, R> >();
   }
 
   template <R (C::*F)(P1)>
-  BoundFunc2<R, C *, P1, CallMethod1<R, C, P1, F> > GetFunc(
+  BoundFunc2<R, C *, P1, CallMethod1<R, C, P1, F>, FuncInfo<C *, R> > GetFunc(
       typename remove_constptr<P1>::type param1) {
-    return BoundFunc2<R, C *, P1, CallMethod1<R, C, P1, F> >(param1);
+    return BoundFunc2<R, C *, P1, CallMethod1<R, C, P1, F>, FuncInfo<C *, R> >(
+        param1);
   }
 };
 
 template <class R, class C, class P1, class P2>
 struct MethodSig2 {
   template <R (C::*F)(P1, P2)>
-  Func3<R, C *, P1, P2, CallMethod2<R, C, P1, P2, F> > GetFunc() {
-    return Func3<R, C *, P1, P2, CallMethod2<R, C, P1, P2, F> >();
+  Func3<R, C *, P1, P2, CallMethod2<R, C, P1, P2, F>, FuncInfo<C *, R> >
+  GetFunc() {
+    return Func3<R, C *, P1, P2, CallMethod2<R, C, P1, P2, F>,
+                 FuncInfo<C *, R> >();
   }
 
   template <R (C::*F)(P1, P2)>
-  BoundFunc3<R, C *, P1, P2, CallMethod2<R, C, P1, P2, F> > GetFunc(
-      typename remove_constptr<P1>::type param1) {
-    return BoundFunc3<R, C *, P1, P2, CallMethod2<R, C, P1, P2, F> >(param1);
+  BoundFunc3<R, C *, P1, P2, CallMethod2<R, C, P1, P2, F>, FuncInfo<C *, R> >
+  GetFunc(typename remove_constptr<P1>::type param1) {
+    return BoundFunc3<R, C *, P1, P2, CallMethod2<R, C, P1, P2, F>,
+                      FuncInfo<C *, R> >(param1);
   }
 };
 
 template <class R, class C, class P1, class P2, class P3>
 struct MethodSig3 {
   template <R (C::*F)(P1, P2, P3)>
-  Func4<R, C *, P1, P2, P3, CallMethod3<R, C, P1, P2, P3, F> > GetFunc() {
-    return Func4<R, C *, P1, P2, P3, CallMethod3<R, C, P1, P2, P3, F> >();
+  Func4<R, C *, P1, P2, P3, CallMethod3<R, C, P1, P2, P3, F>, FuncInfo<C *, R> >
+  GetFunc() {
+    return Func4<R, C *, P1, P2, P3, CallMethod3<R, C, P1, P2, P3, F>,
+                 FuncInfo<C *, R> >();
   }
 
   template <R (C::*F)(P1, P2, P3)>
-  BoundFunc4<R, C *, P1, P2, P3, CallMethod3<R, C, P1, P2, P3, F> > GetFunc(
-      typename remove_constptr<P1>::type param1) {
-    return BoundFunc4<R, C *, P1, P2, P3, CallMethod3<R, C, P1, P2, P3, F> >(
+  BoundFunc4<R, C *, P1, P2, P3, CallMethod3<R, C, P1, P2, P3, F>,
+             FuncInfo<C *, R> >
+  GetFunc(typename remove_constptr<P1>::type param1) {
+    return BoundFunc4<R, C *, P1, P2, P3, CallMethod3<R, C, P1, P2, P3, F>,
+                      FuncInfo<C *, R> >(param1);
+  }
+};
+
+template <class R, class C, class P1, class P2, class P3, class P4>
+struct MethodSig4 {
+  template <R (C::*F)(P1, P2, P3, P4)>
+  Func5<R, C *, P1, P2, P3, P4, CallMethod4<R, C, P1, P2, P3, P4, F>,
+        FuncInfo<C *, R> >
+  GetFunc() {
+    return Func5<R, C *, P1, P2, P3, P4, CallMethod4<R, C, P1, P2, P3, P4, F>,
+                 FuncInfo<C *, R> >();
+  }
+
+  template <R (C::*F)(P1, P2, P3, P4)>
+  BoundFunc5<R, C *, P1, P2, P3, P4, CallMethod4<R, C, P1, P2, P3, P4, F>,
+             FuncInfo<C *, R> >
+  GetFunc(typename remove_constptr<P1>::type param1) {
+    return BoundFunc5<R, C *, P1, P2, P3, P4,
+                      CallMethod4<R, C, P1, P2, P3, P4, F>, FuncInfo<C *, R> >(
         param1);
   }
 };
@@ -387,6 +539,12 @@ template <class R, class C, class P1, class P2, class P3>
 inline MethodSig3<R, C, P1, P2, P3> MatchFunc(R (C::*f)(P1, P2, P3)) {
   UPB_UNUSED(f);  // Only used for template parameter deduction.
   return MethodSig3<R, C, P1, P2, P3>();
+}
+
+template <class R, class C, class P1, class P2, class P3, class P4>
+inline MethodSig4<R, C, P1, P2, P3, P4> MatchFunc(R (C::*f)(P1, P2, P3, P4)) {
+  UPB_UNUSED(f);  // Only used for template parameter deduction.
+  return MethodSig4<R, C, P1, P2, P3, P4>();
 }
 
 // MaybeWrapReturn /////////////////////////////////////////////////////////////
@@ -448,58 +606,62 @@ void *CastReturnToVoidPtr3(P1 p1, P2 p2, P3 p3) {
   return F(p1, p2, p3);
 }
 
-// For the string callback, which takes four params, returns the last param
-// which is the size of the entire string.
-template <class P1, class P2, class P3, void F(P1, P2, P3, size_t)>
-size_t ReturnStringLen(P1 p1, P2 p2, P3 p3, size_t p4) {
-  F(p1, p2, p3, p4);
+// For the string callback, which takes five params, returns the size param.
+template <class P1, class P2,
+          void F(P1, P2, const char *, size_t, const BufferHandle *)>
+size_t ReturnStringLen(P1 p1, P2 p2, const char *p3, size_t p4,
+                       const BufferHandle *p5) {
+  F(p1, p2, p3, p4, p5);
   return p4;
 }
 
 // If we have a function returning void but want a function returning bool, wrap
 // it in a function that returns true.
-template <class P1, class P2, void F(P1, P2)>
-struct MaybeWrapReturn<Func2<void, P1, P2, F>, bool> {
-  typedef Func2<bool, P1, P2, ReturnTrue2<P1, P2, F> > Func;
+template <class P1, class P2, void F(P1, P2), class I>
+struct MaybeWrapReturn<Func2<void, P1, P2, F, I>, bool> {
+  typedef Func2<bool, P1, P2, ReturnTrue2<P1, P2, F>, I> Func;
 };
 
-template <class P1, class P2, class P3, void F(P1, P2, P3)>
-struct MaybeWrapReturn<Func3<void, P1, P2, P3, F>, bool> {
-  typedef Func3<bool, P1, P2, P3, ReturnTrue3<P1, P2, P3, F> > Func;
+template <class P1, class P2, class P3, void F(P1, P2, P3), class I>
+struct MaybeWrapReturn<Func3<void, P1, P2, P3, F, I>, bool> {
+  typedef Func3<bool, P1, P2, P3, ReturnTrue3<P1, P2, P3, F>, I> Func;
 };
 
 // If our function returns void but we want one returning void*, wrap it in a
 // function that returns the first argument.
-template <class P1, class P2, void F(P1, P2)>
-struct MaybeWrapReturn<Func2<void, P1, P2, F>, void *> {
-  typedef Func2<void *, P1, P2, ReturnClosure2<P1, P2, F> > Func;
+template <class P1, class P2, void F(P1, P2), class I>
+struct MaybeWrapReturn<Func2<void, P1, P2, F, I>, void *> {
+  typedef Func2<void *, P1, P2, ReturnClosure2<P1, P2, F>, I> Func;
 };
 
-template <class P1, class P2, class P3, void F(P1, P2, P3)>
-struct MaybeWrapReturn<Func3<void, P1, P2, P3, F>, void *> {
-  typedef Func3<void *, P1, P2, P3, ReturnClosure3<P1, P2, P3, F> > Func;
+template <class P1, class P2, class P3, void F(P1, P2, P3), class I>
+struct MaybeWrapReturn<Func3<void, P1, P2, P3, F, I>, void *> {
+  typedef Func3<void *, P1, P2, P3, ReturnClosure3<P1, P2, P3, F>, I> Func;
 };
 
 // If our function returns void but we want one returning size_t, wrap it in a
-// function that returns the last argument.
-template <class P1, class P2, class P3, void F(P1, P2, P3, size_t)>
-struct MaybeWrapReturn<Func4<void, P1, P2, P3, size_t, F>, size_t> {
-  typedef Func4<size_t, P1, P2, P3, size_t, ReturnStringLen<P1, P2, P3, F> >
-      Func;
+// function that returns the size argument.
+template <class P1, class P2,
+          void F(P1, P2, const char *, size_t, const BufferHandle *), class I>
+struct MaybeWrapReturn<
+    Func5<void, P1, P2, const char *, size_t, const BufferHandle *, F, I>,
+          size_t> {
+  typedef Func5<size_t, P1, P2, const char *, size_t, const BufferHandle *,
+                ReturnStringLen<P1, P2, F>, I> Func;
 };
 
 // If our function returns R* but we want one returning void*, wrap it in a
 // function that casts to void*.
-template <class R, class P1, class P2, R *F(P1, P2)>
-struct MaybeWrapReturn<Func2<R *, P1, P2, F>, void *,
+template <class R, class P1, class P2, R *F(P1, P2), class I>
+struct MaybeWrapReturn<Func2<R *, P1, P2, F, I>, void *,
                        typename disable_if_same<R *, void *>::Type> {
-  typedef Func2<void *, P1, P2, CastReturnToVoidPtr2<R *, P1, P2, F> > Func;
+  typedef Func2<void *, P1, P2, CastReturnToVoidPtr2<R *, P1, P2, F>, I> Func;
 };
 
-template <class R, class P1, class P2, class P3, R *F(P1, P2, P3)>
-struct MaybeWrapReturn<Func3<R *, P1, P2, P3, F>, void *,
+template <class R, class P1, class P2, class P3, R *F(P1, P2, P3), class I>
+struct MaybeWrapReturn<Func3<R *, P1, P2, P3, F, I>, void *,
                        typename disable_if_same<R *, void *>::Type> {
-  typedef Func3<void *, P1, P2, P3, CastReturnToVoidPtr3<R *, P1, P2, P3, F> >
+  typedef Func3<void *, P1, P2, P3, CastReturnToVoidPtr3<R *, P1, P2, P3, F>, I>
       Func;
 };
 
@@ -532,6 +694,20 @@ R IgnoreHandlerData4(void *p1, const void *hd, P2 p2, P3 p3) {
   return F(static_cast<P1>(p1), p2, p3);
 }
 
+template <class R, class P1, class P2, class P3, class P4, R F(P1, P2, P3, P4)>
+R IgnoreHandlerData5(void *p1, const void *hd, P2 p2, P3 p3, P4 p4) {
+  UPB_UNUSED(hd);
+  return F(static_cast<P1>(p1), p2, p3, p4);
+}
+
+template <class R, class P1, R F(P1, const char*, size_t)>
+R IgnoreHandlerDataIgnoreHandle(void *p1, const void *hd, const char *p2,
+                                size_t p3, const BufferHandle *handle) {
+  UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
+  return F(static_cast<P1>(p1), p2, p3);
+}
+
 // Function that casts the handler data parameter.
 template <class R, class P1, class P2, R F(P1, P2)>
 R CastHandlerData2(void *c, const void *hd) {
@@ -544,47 +720,75 @@ R CastHandlerData3(void *c, const void *hd, P3Wrapper p3) {
   return F(static_cast<P1>(c), static_cast<P2>(hd), p3);
 }
 
-template <class R, class P1, class P2, class P3, class P4, R F(P1, P2, P3, P4)>
-R CastHandlerData4(void *c, const void *hd, P3 p3, P4 p4) {
+template <class R, class P1, class P2, class P3, class P4, class P5,
+          R F(P1, P2, P3, P4, P5)>
+R CastHandlerData5(void *c, const void *hd, P3 p3, P4 p4, P5 p5) {
+  return F(static_cast<P1>(c), static_cast<P2>(hd), p3, p4, p5);
+}
+
+template <class R, class P1, class P2, R F(P1, P2, const char *, size_t)>
+R CastHandlerDataIgnoreHandle(void *c, const void *hd, const char *p3,
+                              size_t p4, const BufferHandle *handle) {
+  UPB_UNUSED(handle);
   return F(static_cast<P1>(c), static_cast<P2>(hd), p3, p4);
 }
 
 // For unbound functions, ignore the handler data.
-template <class R, class P1, R F(P1)>
-struct ConvertParams<Func1<R, P1, F> > {
-  typedef Func2<R, void *, const void *, IgnoreHandlerData2<R, P1, F> > Func;
+template <class R, class P1, R F(P1), class I>
+struct ConvertParams<Func1<R, P1, F, I> > {
+  typedef Func2<R, void *, const void *, IgnoreHandlerData2<R, P1, F>, I> Func;
 };
 
-template <class R, class P1, class P2, R F(P1, P2)>
-struct ConvertParams<Func2<R, P1, P2, F> > {
+template <class R, class P1, class P2, R F(P1, P2), class I>
+struct ConvertParams<Func2<R, P1, P2, F, I> > {
   typedef typename CanonicalType<P2>::Type CanonicalP2;
   typedef Func3<R, void *, const void *, CanonicalP2,
-                IgnoreHandlerData3<R, P1, CanonicalP2, P2, F> > Func;
+                IgnoreHandlerData3<R, P1, CanonicalP2, P2, F>, I> Func;
 };
 
-template <class R, class P1, class P2, class P3, R F(P1, P2, P3)>
-struct ConvertParams<Func3<R, P1, P2, P3, F> > {
-  typedef Func4<R, void *, const void *, P2, P3,
-                IgnoreHandlerData4<R, P1, P2, P3, F> > Func;
+// For StringBuffer only; this ignores both the handler data and the
+// BufferHandle.
+template <class R, class P1, R F(P1, const char *, size_t), class I>
+struct ConvertParams<Func3<R, P1, const char *, size_t, F, I> > {
+  typedef Func5<R, void *, const void *, const char *, size_t,
+                const BufferHandle *, IgnoreHandlerDataIgnoreHandle<R, P1, F>,
+                I> Func;
+};
+
+template <class R, class P1, class P2, class P3, class P4, R F(P1, P2, P3, P4), class I>
+struct ConvertParams<Func4<R, P1, P2, P3, P4, F, I> > {
+  typedef Func5<R, void *, const void *, P2, P3, P4,
+                IgnoreHandlerData5<R, P1, P2, P3, P4, F>, I> Func;
 };
 
 // For bound functions, cast the handler data.
-template <class R, class P1, class P2, R F(P1, P2)>
-struct ConvertParams<BoundFunc2<R, P1, P2, F> > {
-  typedef Func2<R, void *, const void *, CastHandlerData2<R, P1, P2, F> > Func;
+template <class R, class P1, class P2, R F(P1, P2), class I>
+struct ConvertParams<BoundFunc2<R, P1, P2, F, I> > {
+  typedef Func2<R, void *, const void *, CastHandlerData2<R, P1, P2, F>, I>
+      Func;
 };
 
-template <class R, class P1, class P2, class P3, R F(P1, P2, P3)>
-struct ConvertParams<BoundFunc3<R, P1, P2, P3, F> > {
+template <class R, class P1, class P2, class P3, R F(P1, P2, P3), class I>
+struct ConvertParams<BoundFunc3<R, P1, P2, P3, F, I> > {
   typedef typename CanonicalType<P3>::Type CanonicalP3;
   typedef Func3<R, void *, const void *, CanonicalP3,
-                CastHandlerData3<R, P1, P2, CanonicalP3, P3, F> > Func;
+                CastHandlerData3<R, P1, P2, CanonicalP3, P3, F>, I> Func;
 };
 
-template <class R, class P1, class P2, class P3, class P4, R F(P1, P2, P3, P4)>
-struct ConvertParams<BoundFunc4<R, P1, P2, P3, P4, F> > {
-  typedef Func4<R, void *, const void *, P3, P4,
-                CastHandlerData4<R, P1, P2, P3, P4, F> > Func;
+// For StringBuffer only; this ignores the BufferHandle.
+template <class R, class P1, class P2, R F(P1, P2, const char *, size_t),
+          class I>
+struct ConvertParams<BoundFunc4<R, P1, P2, const char *, size_t, F, I> > {
+  typedef Func5<R, void *, const void *, const char *, size_t,
+                const BufferHandle *, CastHandlerDataIgnoreHandle<R, P1, P2, F>,
+                I> Func;
+};
+
+template <class R, class P1, class P2, class P3, class P4, class P5,
+          R F(P1, P2, P3, P4, P5), class I>
+struct ConvertParams<BoundFunc5<R, P1, P2, P3, P4, P5, F, I> > {
+  typedef Func5<R, void *, const void *, P3, P4, P5,
+                CastHandlerData5<R, P1, P2, P3, P4, P5, F>, I> Func;
 };
 
 // utype/ltype are upper/lower-case, ctype is canonical C type, vtype is
@@ -659,6 +863,16 @@ struct ReturnOf<R (*)(P1, P2, P3, P4)> {
   typedef R Return;
 };
 
+template <class R, class P1, class P2, class P3, class P4, class P5>
+struct ReturnOf<R (*)(P1, P2, P3, P4, P5)> {
+  typedef R Return;
+};
+
+template<class T> const void *UniquePtrForType() {
+  static const char ch = 0;
+  return &ch;
+}
+
 template <class T>
 template <class F>
 inline Handler<T>::Handler(F func)
@@ -669,6 +883,25 @@ inline Handler<T>::Handler(F func)
   typedef typename MaybeWrapReturn<ConvertedParamsFunc, Return>::Func
       ReturnWrappedFunc;
   handler_ = ReturnWrappedFunc().Call;
+
+  // Set attributes based on what templates can statically tell us about the
+  // user's function.
+
+  // If the original function returns void, then we know that we wrapped it to
+  // always return ok.
+  bool always_ok = is_same<typename F::FuncInfo::Return, void>::value;
+  attr_.SetAlwaysOk(always_ok);
+
+  // Closure parameter and return type.
+  attr_.SetClosureType(UniquePtrForType<typename F::FuncInfo::Closure>());
+
+  // We use the closure type (from the first parameter) if the return type is
+  // void.  This is all nonsense for non START* handlers, but it doesn't matter
+  // because in that case the value will be ignored.
+  typedef typename FirstUnlessVoid<typename F::FuncInfo::Return,
+                                   typename F::FuncInfo::Closure>::value
+      EffectiveReturn;
+  attr_.SetReturnClosureType(UniquePtrForType<EffectiveReturn>());
 }
 
 template <class T>
@@ -681,6 +914,49 @@ inline HandlerAttributes::~HandlerAttributes() { upb_handlerattr_uninit(this); }
 inline bool HandlerAttributes::SetHandlerData(void *hd,
                                               upb_handlerfree *cleanup) {
   return upb_handlerattr_sethandlerdata(this, hd, cleanup);
+}
+inline const void* HandlerAttributes::handler_data() const {
+  return upb_handlerattr_handlerdata(this);
+}
+inline bool HandlerAttributes::SetClosureType(const void *type) {
+  return upb_handlerattr_setclosuretype(this, type);
+}
+inline const void* HandlerAttributes::closure_type() const {
+  return upb_handlerattr_closuretype(this);
+}
+inline bool HandlerAttributes::SetReturnClosureType(const void *type) {
+  return upb_handlerattr_setreturnclosuretype(this, type);
+}
+inline const void* HandlerAttributes::return_closure_type() const {
+  return upb_handlerattr_returnclosuretype(this);
+}
+inline bool HandlerAttributes::SetAlwaysOk(bool always_ok) {
+  return upb_handlerattr_setalwaysok(this, always_ok);
+}
+inline bool HandlerAttributes::always_ok() const {
+  return upb_handlerattr_alwaysok(this);
+}
+
+inline BufferHandle::BufferHandle() { upb_bufhandle_init(this); }
+inline BufferHandle::~BufferHandle() { upb_bufhandle_uninit(this); }
+inline const char* BufferHandle::buffer() const {
+  return upb_bufhandle_buf(this);
+}
+inline size_t BufferHandle::object_offset() const {
+  return upb_bufhandle_objofs(this);
+}
+inline void BufferHandle::SetBuffer(const char* buf, size_t ofs) {
+  upb_bufhandle_setbuf(this, buf, ofs);
+}
+template <class T>
+void BufferHandle::SetAttachedObject(const T* obj) {
+  upb_bufhandle_setobj(this, obj, UniquePtrForType<T>());
+}
+template <class T>
+const T* BufferHandle::GetAttachedObject() const {
+  return upb_bufhandle_objtype(this) == UniquePtrForType<T>()
+      ? static_cast<const T *>(upb_bufhandle_obj(this))
+                               : NULL;
 }
 
 inline reffed_ptr<Handlers> Handlers::New(const MessageDef *m) {
@@ -803,9 +1079,18 @@ inline const void *Handlers::GetHandlerData(Handlers::Selector selector) {
   return upb_handlers_gethandlerdata(this, selector);
 }
 
+inline BytesHandler::BytesHandler() {
+  upb_byteshandler_init(this);
+}
+
+inline BytesHandler::~BytesHandler() {
+  upb_byteshandler_uninit(this);
+}
+
 }  // namespace upb
 
 #endif  // __cplusplus
+
 
 #undef UPB_TWO_32BIT_TYPES
 #undef UPB_TWO_64BIT_TYPES

@@ -146,10 +146,10 @@ static bool upb_resolve_dfs(const upb_def *def, upb_strtable *addtab,
     if (def->type == UPB_DEF_FIELD) continue;
     upb_value v;
     if (upb_strtable_lookup(addtab, upb_def_fullname(def), &v)) {
-      // Because we memoize we should not visit a node after we have dup'd it.
-      assert(((upb_def*)upb_value_getptr(v))->came_from_user);
       need_dup = true;
     }
+
+    // For messages, continue the recursion by visiting all subdefs.
     const upb_msgdef *m = upb_dyncast_msgdef(def);
     if (m) {
       upb_msg_iter i;
@@ -188,6 +188,8 @@ oom:
   return false;
 }
 
+// TODO(haberman): we need a lot more testing of error conditions.
+// The came_from_user stuff in particular is not tested.
 bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
                     upb_status *status) {
   upb_def **add_defs = NULL;
@@ -197,7 +199,7 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
     return false;
   }
 
-  // Add new defs to table.
+  // Add new defs to our "add" set.
   for (int i = 0; i < n; i++) {
     upb_def *def = defs[i];
     if (upb_def_isfrozen(def)) {
@@ -211,20 +213,79 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
           status, "Anonymous defs cannot be added to a symtab");
       goto err;
     }
-    if (upb_strtable_lookup(&addtab, fullname, NULL)) {
-      upb_status_seterrf(status, "Conflicting defs named '%s'", fullname);
+
+    upb_fielddef *f = upb_dyncast_fielddef_mutable(def);
+
+    if (f) {
+      if (!upb_fielddef_containingtypename(f)) {
+        upb_status_seterrmsg(status,
+                             "Standalone fielddefs must have a containing type "
+                             "(extendee) name set");
+        goto err;
+      }
+    } else {
+      if (upb_strtable_lookup(&addtab, fullname, NULL)) {
+        upb_status_seterrf(status, "Conflicting defs named '%s'", fullname);
+        goto err;
+      }
+      // We need this to back out properly, because if there is a failure we
+      // need to donate the ref back to the caller.
+      def->came_from_user = true;
+      upb_def_donateref(def, ref_donor, s);
+      if (!upb_strtable_insert(&addtab, fullname, upb_value_ptr(def)))
+        goto oom_err;
+    }
+  }
+
+  // Add standalone fielddefs (ie. extensions) to the appropriate messages.
+  // If the appropriate message only exists in the existing symtab, duplicate
+  // it so we have a mutable copy we can add the fields to.
+  for (int i = 0; i < n; i++) {
+    upb_def *def = defs[i];
+    upb_fielddef *f = upb_dyncast_fielddef_mutable(def);
+    if (!f) continue;
+    const char *msgname = upb_fielddef_containingtypename(f);
+    // We validated this earlier in this function.
+    assert(msgname);
+
+    // If the extendee name is absolutely qualified, move past the initial ".".
+    // TODO(haberman): it is not obvious what it would mean if this was not
+    // absolutely qualified.
+    if (msgname[0] == '.') {
+      msgname++;
+    }
+
+    upb_value v;
+    upb_msgdef *m;
+    if (upb_strtable_lookup(&addtab, msgname, &v)) {
+      // Extendee is in the set of defs the user asked us to add.
+      m = upb_value_getptr(v);
+    } else {
+      // Need to find and dup the extendee from the existing symtab.
+      const upb_msgdef *frozen_m = upb_symtab_lookupmsg(s, msgname, &frozen_m);
+      if (!frozen_m) {
+        upb_status_seterrf(status,
+                           "Tried to extend message %s that does not exist "
+                           "in this SymbolTable.",
+                           msgname);
+        goto err;
+      }
+      m = upb_msgdef_dup(frozen_m, s);
+      upb_msgdef_unref(frozen_m, &frozen_m);
+      if (!m) goto oom_err;
+      if (!upb_strtable_insert(&addtab, msgname, upb_value_ptr(m))) {
+        upb_msgdef_unref(m, s);
+        goto oom_err;
+      }
+    }
+
+    if (!upb_msgdef_addfield(m, f, ref_donor, status)) {
       goto err;
     }
-    // We need this to back out properly, because if there is a failure we need
-    // to donate the ref back to the caller.
-    def->came_from_user = true;
-    upb_def_donateref(def, ref_donor, s);
-    if (!upb_strtable_insert(&addtab, fullname, upb_value_ptr(def)))
-      goto oom_err;
   }
 
   // Add dups of any existing def that can reach a def with the same name as
-  // one of "defs."
+  // anything in our "add" set.
   upb_inttable seen;
   if (!upb_inttable_init(&seen, UPB_CTYPE_BOOL)) goto oom_err;
   upb_strtable_iter i;
@@ -236,7 +297,7 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
   }
   upb_inttable_uninit(&seen);
 
-  // Now using the table, resolve symbolic references.
+  // Now using the table, resolve symbolic references for subdefs.
   upb_strtable_begin(&i, &addtab);
   for (; !upb_strtable_done(&i); upb_strtable_next(&i)) {
     upb_def *def = upb_value_getptr(upb_strtable_iter_value(&i));
@@ -305,12 +366,13 @@ err: {
     upb_strtable_begin(&i, &addtab);
     for (; !upb_strtable_done(&i); upb_strtable_next(&i)) {
       upb_def *def = upb_value_getptr(upb_strtable_iter_value(&i));
-      if (def->came_from_user) {
+      bool came_from_user = def->came_from_user;
+      def->came_from_user = false;
+      if (came_from_user) {
         upb_def_donateref(def, s, ref_donor);
       } else {
         upb_def_unref(def, s);
       }
-      def->came_from_user = false;
     }
   }
   upb_strtable_uninit(&addtab);

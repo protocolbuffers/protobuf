@@ -93,10 +93,10 @@ static void test_fielddef_accessors() {
 
   ASSERT(!upb_fielddef_isfrozen(f2));
   ASSERT(upb_fielddef_setname(f2, "f2", NULL));
-  ASSERT(upb_fielddef_setnumber(f2, 1572, NULL));
+  ASSERT(upb_fielddef_setnumber(f2, 123456789, NULL));
   upb_fielddef_settype(f2, UPB_TYPE_BYTES);
   upb_fielddef_setlabel(f2, UPB_LABEL_REPEATED);
-  ASSERT(upb_fielddef_number(f2) == 1572);
+  ASSERT(upb_fielddef_number(f2) == 123456789);
 
   upb_fielddef_unref(f1, &f1);
   upb_fielddef_unref(f2, &f2);

@@ -3,6 +3,9 @@
  *
  * Copyright (c) 2009 Google Inc.  See LICENSE for details.
  * Author: Josh Haberman <jhaberman@gmail.com>
+ *
+ * OPT: This is not optimized at all.  It uses printf() which parses the format
+ * string every time, and it allocates memory for every put.
  */
 
 #include "upb/pb/textprinter.h"
@@ -16,29 +19,29 @@
 
 #include "upb/sink.h"
 
-struct _upb_textprinter {
-  int indent_depth;
-  bool single_line;
-  upb_status status;
-};
-
 #define CHECK(x) if ((x) < 0) goto err;
+
+static const char *shortname(const char *longname) {
+  const char *last = strrchr(longname, '.');
+  return last ? last + 1 : longname;
+}
 
 static int indent(upb_textprinter *p) {
   int i;
-  if (!p->single_line)
-    for (i = 0; i < p->indent_depth * 2; i++)
-      putchar(' ');
+  if (!p->single_line_)
+    for (i = 0; i < p->indent_depth_; i++)
+      upb_bytessink_putbuf(p->output_, p->subc, "  ", 2, NULL);
   return 0;
-  return -1;
 }
 
 static int endfield(upb_textprinter *p) {
-  putchar(p->single_line ? ' ' : '\n');
+  const char ch = (p->single_line_ ? ' ' : '\n');
+  upb_bytessink_putbuf(p->output_, p->subc, &ch, 1, NULL);
   return 0;
 }
 
-static int putescaped(const char* buf, size_t len, bool preserve_utf8) {
+static int putescaped(upb_textprinter *p, const char *buf, size_t len,
+                      bool preserve_utf8) {
   // Based on CEscapeInternal() from Google's protobuf release.
   char dstbuf[4096], *dst = dstbuf, *dstend = dstbuf + sizeof(dstbuf);
   const char *end = buf + len;
@@ -50,7 +53,7 @@ static int putescaped(const char* buf, size_t len, bool preserve_utf8) {
 
   for (; buf < end; buf++) {
     if (dstend - dst < 4) {
-      fwrite(dstbuf, dst - dstbuf, 1, stdout);
+      upb_bytessink_putbuf(p->output_, p->subc, dstbuf, dst - dstbuf, NULL);
       dst = dstbuf;
     }
 
@@ -78,8 +81,49 @@ static int putescaped(const char* buf, size_t len, bool preserve_utf8) {
     last_hex_escape = is_hex_escape;
   }
   // Flush remaining data.
-  fwrite(dst, dst - dstbuf, 1, stdout);
+  upb_bytessink_putbuf(p->output_, p->subc, dstbuf, dst - dstbuf, NULL);
   return 0;
+}
+
+bool putf(upb_textprinter *p, const char *fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+
+  // Run once to get the length of the string.
+  va_list args_copy;
+  va_copy(args_copy, args);
+  int len = vsnprintf(NULL, 0, fmt, args_copy);
+  va_end(args_copy);
+
+  // + 1 for NULL terminator (vsnprintf() requires it even if we don't).
+  char *str = malloc(len + 1);
+  if (!str) return false;
+  int written = vsnprintf(str, len + 1, fmt, args);
+  va_end(args);
+  UPB_ASSERT_VAR(written, written == len);
+
+  bool ok = upb_bytessink_putbuf(p->output_, p->subc, str, len, NULL);
+  free(str);
+  return ok;
+}
+
+
+/* handlers *******************************************************************/
+
+static bool startmsg(void *c, const void *hd) {
+  upb_textprinter *p = c;
+  if (p->indent_depth_ == 0) {
+    upb_bytessink_start(p->output_, 0, &p->subc);
+  }
+  return true;
+}
+
+static bool endmsg(void *c, const void *hd, upb_status *s) {
+  upb_textprinter *p = c;
+  if (p->indent_depth_ == 0) {
+    upb_bytessink_end(p->output_);
+  }
+  return true;
 }
 
 #define TYPE(name, ctype, fmt) \
@@ -87,9 +131,7 @@ static int putescaped(const char* buf, size_t len, bool preserve_utf8) {
     upb_textprinter *p = closure;                                              \
     const upb_fielddef *f = handler_data;                                      \
     CHECK(indent(p));                                                          \
-    puts(upb_fielddef_name(f));                                                \
-    puts(": ");                                                                \
-    printf(fmt, val);                                                          \
+    putf(p, "%s: " fmt, upb_fielddef_name(f), val);                            \
     CHECK(endfield(p));                                                        \
     return true;                                                               \
   err:                                                                         \
@@ -100,9 +142,7 @@ static bool putbool(void *closure, const void *handler_data, bool val) {
   upb_textprinter *p = closure;
   const upb_fielddef *f = handler_data;
   CHECK(indent(p));
-  puts(upb_fielddef_name(f));
-  puts(": ");
-  puts(val ? "true" : "false");
+  putf(p, "%s: %s", upb_fielddef_name(f), val ? "true" : "false");
   CHECK(endfield(p));
   return true;
 err:
@@ -121,11 +161,14 @@ TYPE(double, double,   "%." STRINGIFY_MACROVAL(DBL_DIG) "g")
 
 // Output a symbolic value from the enum if found, else just print as int32.
 static bool putenum(void *closure, const void *handler_data, int32_t val) {
+  upb_textprinter *p = closure;
   const upb_fielddef *f = handler_data;
   const upb_enumdef *enum_def = upb_downcast_enumdef(upb_fielddef_subdef(f));
   const char *label = upb_enumdef_iton(enum_def, val);
   if (label) {
-    puts(label);
+    indent(p);
+    putf(p, "%s: %s", upb_fielddef_name(f), label);
+    endfield(p);
   } else {
     CHECK(putint32(closure, handler_data, val));
   }
@@ -136,25 +179,27 @@ err:
 
 static void *startstr(void *closure, const void *handler_data,
                       size_t size_hint) {
-  UPB_UNUSED(handler_data);
+  const upb_fielddef *f = handler_data;
   UPB_UNUSED(size_hint);
   upb_textprinter *p = closure;
-  putchar('"');
+  putf(p, "%s: \"", upb_fielddef_name(f));
   return p;
 }
 
 static bool endstr(void *closure, const void *handler_data) {
-  UPB_UNUSED(closure);
   UPB_UNUSED(handler_data);
-  putchar('"');
+  upb_textprinter *p = closure;
+  putf(p, "\"");
+  endfield(p);
   return true;
 }
 
 static size_t putstr(void *closure, const void *hd, const char *buf,
-                     size_t len) {
-  UPB_UNUSED(closure);
+                     size_t len, const upb_bufhandle *handle) {
+  UPB_UNUSED(handle);
+  upb_textprinter *p = closure;
   const upb_fielddef *f = hd;
-  CHECK(putescaped(buf, len, upb_fielddef_type(f) == UPB_TYPE_STRING));
+  CHECK(putescaped(p, buf, len, upb_fielddef_type(f) == UPB_TYPE_STRING));
   return len;
 err:
   return 0;
@@ -162,12 +207,10 @@ err:
 
 static void *startsubmsg(void *closure, const void *handler_data) {
   upb_textprinter *p = closure;
-  const upb_fielddef *f = handler_data;
+  const char *name = handler_data;
   CHECK(indent(p));
-  printf("%s {", upb_fielddef_name(f));
-  if (!p->single_line)
-    putchar('\n');
-  p->indent_depth++;
+  putf(p, "%s {%c", name, p->single_line_ ? ' ' : '\n');
+  p->indent_depth_++;
   return p;
 err:
   return UPB_BREAK;
@@ -176,30 +219,36 @@ err:
 static bool endsubmsg(void *closure, const void *handler_data) {
   UPB_UNUSED(handler_data);
   upb_textprinter *p = closure;
-  p->indent_depth--;
+  p->indent_depth_--;
   CHECK(indent(p));
-  putchar('}');
+  upb_bytessink_putbuf(p->output_, p->subc, "}", 1, NULL);
   CHECK(endfield(p));
   return true;
 err:
   return false;
 }
 
-upb_textprinter *upb_textprinter_new() {
-  upb_textprinter *p = malloc(sizeof(*p));
-  return p;
+
+/* Public API *****************************************************************/
+
+void upb_textprinter_init(upb_textprinter *p, const upb_handlers *h) {
+  p->single_line_ = false;
+  p->indent_depth_ = 0;
+  upb_sink_reset(&p->input_, h, p);
 }
 
-void upb_textprinter_free(upb_textprinter *p) { free(p); }
+void upb_textprinter_uninit(upb_textprinter *p) {}
 
 void upb_textprinter_reset(upb_textprinter *p, bool single_line) {
-  p->single_line = single_line;
-  p->indent_depth = 0;
+  p->single_line_ = single_line;
+  p->indent_depth_ = 0;
 }
 
 static void onmreg(void *c, upb_handlers *h) {
   (void)c;
   const upb_msgdef *m = upb_handlers_msgdef(h);
+  upb_handlers_setstartmsg(h, startmsg, NULL);
+  upb_handlers_setendmsg(h, endmsg, NULL);
   upb_msg_iter i;
   for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
@@ -233,20 +282,37 @@ static void onmreg(void *c, upb_handlers *h) {
         upb_handlers_setstring(h, f, putstr, &attr);
         upb_handlers_setendstr(h, f, endstr, &attr);
         break;
-      case UPB_TYPE_MESSAGE:
+      case UPB_TYPE_MESSAGE: {
+        const char *name =
+            upb_fielddef_istagdelim(f)
+                ? shortname(upb_msgdef_fullname(upb_fielddef_msgsubdef(f)))
+                : upb_fielddef_name(f);
+        // TODO(haberman): add "setconsthandlerdata"?  If we pass NULL for
+        // cleanup then we don't need a non-const pointer.
+        upb_handlerattr_sethandlerdata(&attr, (void*)name, NULL);
         upb_handlers_setstartsubmsg(h, f, startsubmsg, &attr);
         upb_handlers_setendsubmsg(h, f, endsubmsg, &attr);
         break;
+      }
       case UPB_TYPE_ENUM:
         upb_handlers_setint32(h, f, putenum, &attr);
-      default:
-        assert(false);
         break;
     }
   }
 }
 
-const upb_handlers *upb_textprinter_newhandlers(const void *owner,
-                                                const upb_msgdef *m) {
+const upb_handlers *upb_textprinter_newhandlers(const upb_msgdef *m,
+                                                const void *owner) {
   return upb_handlers_newfrozen(m, owner, &onmreg, NULL);
+}
+
+upb_sink *upb_textprinter_input(upb_textprinter *p) { return &p->input_; }
+
+bool upb_textprinter_resetoutput(upb_textprinter *p, upb_bytessink *output) {
+  p->output_ = output;
+  return true;
+}
+
+void upb_textprinter_setsingleline(upb_textprinter *p, bool single_line) {
+  p->single_line_ = single_line;
 }

@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 #include "upb/pb/varint.int.h"
-#include "upb_test.h"
+#include "tests/upb_test.h"
 
 // Test that we can round-trip from int->varint->int.
 static void test_varint_for_num(upb_decoderet (*decoder)(const char*),

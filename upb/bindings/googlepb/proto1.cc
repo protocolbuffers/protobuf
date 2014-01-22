@@ -16,7 +16,7 @@
 // dynamic_cast<> in this file:
 // https://groups.google.com/a/google.com/d/msg/c-style/7Zp_XCX0e7s/I6dpzno4l-MJ
 
-#include "upb/google/proto1.h"
+#include "upb/bindings/googlepb/proto1.h"
 
 #include <memory>
 
@@ -27,6 +27,9 @@
 #include "upb/handlers.h"
 #include "upb/shim/shim.h"
 #include "upb/sink.h"
+
+// Unconditionally evaluate, but also assert in debug mode.
+#define CHKRET(x) do { bool ok = (x); UPB_UNUSED(ok); assert(ok); } while (0)
 
 template <class T> static T* GetPointer(void* message, size_t offset) {
   return reinterpret_cast<T*>(static_cast<char*>(message) + offset);
@@ -161,7 +164,7 @@ class P2R_Handlers {
       }
     }
 
-    template <class T> T* GetFieldPointer(void* message) const {
+    template <class T> T* GetFieldPointer(proto2::Message* message) const {
       return GetPointer<T>(message, offset_);
     }
 
@@ -201,16 +204,35 @@ class P2R_Handlers {
 
   // StartSequence /////////////////////////////////////////////////////////////
 
-  static void SetStartSequenceHandler(
+  template <class T>
+  static void SetStartRepeatedField(
       const proto2::FieldDescriptor* proto2_f, const _pi::Proto2Reflection* r,
       const upb::FieldDef* f, upb::Handlers* h) {
-    assert(f->IsSequence());
-    h->SetStartSequenceHandler(
-        f, UpbBind(PushOffset, new FieldOffset(proto2_f, r)));
+    CHKRET(h->SetStartSequenceHandler(
+        f, UpbBindT(PushOffset<proto2::RepeatedField<T> >,
+                    new FieldOffset(proto2_f, r))));
   }
 
-  static void* PushOffset(void* m, const FieldOffset* offset) {
-    return offset->GetFieldPointer<void>(m);
+  template <class T>
+  static void SetStartRepeatedPtrField(
+      const proto2::FieldDescriptor* proto2_f, const _pi::Proto2Reflection* r,
+      const upb::FieldDef* f, upb::Handlers* h) {
+    CHKRET(h->SetStartSequenceHandler(
+        f, UpbBindT(PushOffset<proto2::RepeatedPtrField<T> >,
+                    new FieldOffset(proto2_f, r))));
+  }
+
+  static void SetStartRepeatedSubmessageField(
+      const proto2::FieldDescriptor* proto2_f, const _pi::Proto2Reflection* r,
+      const upb::FieldDef* f, upb::Handlers* h) {
+    CHKRET(h->SetStartSequenceHandler(
+        f, UpbBind(PushOffset<proto2::internal::RepeatedPtrFieldBase>,
+                   new FieldOffset(proto2_f, r))));
+  }
+
+  template <class T>
+  static T* PushOffset(proto2::Message* m, const FieldOffset* offset) {
+    return offset->GetFieldPointer<T>(m);
   }
 
   // Primitive Value (numeric, enum, bool) /////////////////////////////////////
@@ -220,10 +242,11 @@ class P2R_Handlers {
                                    const _pi::Proto2Reflection* r,
                                    const upb::FieldDef* f, upb::Handlers* h) {
     if (f->IsSequence()) {
-      SetStartSequenceHandler(proto2_f, r, f, h);
-      h->SetValueHandler<T>(f, UpbMakeHandlerT(Append<T>));
+      SetStartRepeatedField<T>(proto2_f, r, f, h);
+      CHKRET(h->SetValueHandler<T>(f, UpbMakeHandlerT(Append<T>)));
     } else {
-      upb::Shim::Set(h, f, GetOffset(proto2_f, r), GetHasbit(proto2_f, r));
+      CHKRET(
+          upb::Shim::Set(h, f, GetOffset(proto2_f, r), GetHasbit(proto2_f, r)));
     }
   }
 
@@ -240,11 +263,11 @@ class P2R_Handlers {
                                 const upb::FieldDef* f, upb::Handlers* h) {
     h->SetStringHandler(f, UpbMakeHandler(OnStringBuf));
     if (f->IsSequence()) {
-      SetStartSequenceHandler(proto2_f, r, f, h);
-      h->SetStartStringHandler(f, UpbMakeHandler(StartRepeatedString));
+      SetStartRepeatedPtrField<string>(proto2_f, r, f, h);
+      CHKRET(h->SetStartStringHandler(f, UpbMakeHandler(StartRepeatedString)));
     } else {
-      h->SetStartStringHandler(
-          f, UpbBind(StartString, new FieldOffset(proto2_f, r)));
+      CHKRET(h->SetStartStringHandler(
+          f, UpbBind(StartString, new FieldOffset(proto2_f, r))));
     }
   }
 
@@ -257,9 +280,8 @@ class P2R_Handlers {
     return str;
   }
 
-  static size_t OnStringBuf(string* s, const char* buf, size_t n) {
+  static void OnStringBuf(string* s, const char* buf, size_t n) {
     s->append(buf, n);
-    return n;
   }
 
   static string* StartRepeatedString(proto2::RepeatedPtrField<string>* r,
@@ -276,9 +298,9 @@ class P2R_Handlers {
       const upb::FieldDef* f, upb::Handlers* h) {
     // This type is only used for non-repeated string fields.
     assert(!f->IsSequence());
-    h->SetStartStringHandler(
-        f, UpbBind(StartOutOfLineString, new FieldOffset(proto2_f, r)));
-    h->SetStringHandler(f, UpbMakeHandler(OnStringBuf));
+    CHKRET(h->SetStartStringHandler(
+        f, UpbBind(StartOutOfLineString, new FieldOffset(proto2_f, r))));
+    CHKRET(h->SetStringHandler(f, UpbMakeHandler(OnStringBuf)));
   }
 
   static string* StartOutOfLineString(proto2::Message* m,
@@ -299,13 +321,13 @@ class P2R_Handlers {
                               const _pi::Proto2Reflection* r,
                               const upb::FieldDef* f, upb::Handlers* h) {
     if (f->IsSequence()) {
-      SetStartSequenceHandler(proto2_f, r, f, h);
-      h->SetStartStringHandler(f, UpbMakeHandler(StartRepeatedCord));
+      SetStartRepeatedField<Cord>(proto2_f, r, f, h);
+      CHKRET(h->SetStartStringHandler(f, UpbMakeHandler(StartRepeatedCord)));
     } else {
-      h->SetStartStringHandler(
-          f, UpbBind(StartCord, new FieldOffset(proto2_f, r)));
+      CHKRET(h->SetStartStringHandler(
+          f, UpbBind(StartCord, new FieldOffset(proto2_f, r))));
     }
-    h->SetStringHandler(f, UpbMakeHandler(OnCordBuf));
+    CHKRET(h->SetStringHandler(f, UpbMakeHandler(OnCordBuf)));
   }
 
   static Cord* StartCord(proto2::Message* m, const FieldOffset* offset,
@@ -350,13 +372,13 @@ class P2R_Handlers {
       const _pi::Proto2Reflection* r, const upb::FieldDef* f,
       upb::Handlers* h) {
     if (f->IsSequence()) {
-      SetStartSequenceHandler(proto2_f, r, f, h);
-      h->SetStartSubMessageHandler(
+      SetStartRepeatedSubmessageField(proto2_f, r, f, h);
+      CHKRET(h->SetStartSubMessageHandler(
           f, UpbBind(StartRepeatedSubMessage,
-                     new SubMessageHandlerData(m, proto2_f, r)));
+                     new SubMessageHandlerData(m, proto2_f, r))));
     } else {
-      h->SetStartSubMessageHandler(
-          f, UpbBind(StartRequiredSubMessage, new FieldOffset(proto2_f, r)));
+      CHKRET(h->SetStartSubMessageHandler(
+          f, UpbBind(StartRequiredSubMessage, new FieldOffset(proto2_f, r))));
     }
   }
 
@@ -373,11 +395,12 @@ class P2R_Handlers {
     std::unique_ptr<SubMessageHandlerData> data(
         new SubMessageHandlerData(m, proto2_f, r));
     if (f->IsSequence()) {
-      SetStartSequenceHandler(proto2_f, r, f, h);
-      h->SetStartSubMessageHandler(
-          f, UpbBind(StartRepeatedSubMessage, data.release()));
+      SetStartRepeatedSubmessageField(proto2_f, r, f, h);
+      CHKRET(h->SetStartSubMessageHandler(
+          f, UpbBind(StartRepeatedSubMessage, data.release())));
     } else {
-      h->SetStartSubMessageHandler(f, UpbBind(StartSubMessage, data.release()));
+      CHKRET(h->SetStartSubMessageHandler(
+          f, UpbBind(StartSubMessage, data.release())));
     }
   }
 
@@ -388,23 +411,25 @@ class P2R_Handlers {
     std::unique_ptr<SubMessageHandlerData> data(
         new SubMessageHandlerData(m, proto2_f, r));
     if (f->IsSequence()) {
-      SetStartSequenceHandler(proto2_f, r, f, h);
-      h->SetStartSubMessageHandler(
-          f, UpbBind(StartRepeatedSubMessage, data.release()));
+      SetStartRepeatedSubmessageField(proto2_f, r, f, h);
+      CHKRET(h->SetStartSubMessageHandler(
+          f, UpbBind(StartRepeatedSubMessage, data.release())));
     } else {
-      h->SetStartSubMessageHandler(
-          f, UpbBind(StartWeakSubMessage, data.release()));
+      CHKRET(h->SetStartSubMessageHandler(
+          f, UpbBind(StartWeakSubMessage, data.release())));
     }
   }
 
-  static void* StartSubMessage(void *m, const SubMessageHandlerData* info) {
+  static void* StartSubMessage(proto2::Message* m,
+                               const SubMessageHandlerData* info) {
     info->SetHasbit(m);
     proto2::Message** subm = info->GetFieldPointer<proto2::Message*>(m);
     if (*subm == info->prototype()) *subm = (*subm)->New();
     return *subm;
   }
 
-  static void* StartWeakSubMessage(void* m, const SubMessageHandlerData* info) {
+  static void* StartWeakSubMessage(proto2::Message* m,
+                                   const SubMessageHandlerData* info) {
     info->SetHasbit(m);
     proto2::Message** subm = info->GetFieldPointer<proto2::Message*>(m);
     if (*subm == NULL) {

@@ -148,10 +148,11 @@ static void checkpoint(upb_pbdecoder *d) {
 
 // Resumes the decoder from an initial state or from a previous suspend.
 void *upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
-                           size_t size) {
+                           size_t size, const upb_bufhandle *handle) {
   UPB_UNUSED(p);  // Useless; just for the benefit of the JIT.
   d->buf_param = buf;
   d->size_param = size;
+  d->handle = handle;
   d->skip = 0;
   if (d->residual_end > d->residual) {
     // We have residual bytes from the last buffer.
@@ -488,11 +489,11 @@ upb_pbdecoder_frame *outer_frame(upb_pbdecoder *d) {
 /* The main decoding loop *****************************************************/
 
 size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
-                            size_t size) {
+                            size_t size, const upb_bufhandle *handle) {
   upb_pbdecoder *d = closure;
   const mgroup *group = hd;
   assert(buf);
-  upb_pbdecoder_resume(d, NULL, buf, size);
+  upb_pbdecoder_resume(d, NULL, buf, size, handle);
   UPB_UNUSED(group);
 
 #define VMCASE(op, code) \
@@ -578,7 +579,8 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
       )
       VMCASE(OP_STRING,
         uint32_t len = curbufleft(d);
-        CHECK_SUSPEND(upb_sink_putstring(&d->top->sink, arg, ptr(d), len));
+        CHECK_SUSPEND(
+            upb_sink_putstring(&d->top->sink, arg, ptr(d), len, handle));
         advance(d, len);
         if (d->delim_end == NULL) {  // String extends beyond this buf?
           d->pc--;
@@ -683,6 +685,7 @@ void *upb_pbdecoder_startbc(void *closure, const void *pc, size_t size_hint) {
 
 void *upb_pbdecoder_startjit(void *closure, const void *hd, size_t size_hint) {
   UPB_UNUSED(hd);
+  UPB_UNUSED(size_hint);
   upb_pbdecoder *d = closure;
   d->call_len = 0;
   return d;
@@ -712,7 +715,7 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
   if (group->jit_code) {
     if (d->top != d->stack)
       d->stack->end_ofs = 0;
-    group->jit_code(closure, method->code_base.ptr, &dummy, 0);
+    group->jit_code(closure, method->code_base.ptr, &dummy, 0, NULL);
   } else {
 #endif
     d->stack->end_ofs = end;
@@ -726,7 +729,7 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
              getop(*d->pc) == OP_TAGN);
       d->pc = p;
     }
-    upb_pbdecoder_decode(closure, handler_data, &dummy, 0);
+    upb_pbdecoder_decode(closure, handler_data, &dummy, 0, NULL);
 #ifdef UPB_USE_JIT_X64
   }
 #endif
@@ -762,7 +765,9 @@ void upb_pbdecoder_reset(upb_pbdecoder *d) {
 
 // Not currently required, but to support outgrowing the static stack we need
 // this.
-void upb_pbdecoder_uninit(upb_pbdecoder *d) {}
+void upb_pbdecoder_uninit(upb_pbdecoder *d) {
+  UPB_UNUSED(d);
+}
 
 const upb_pbdecodermethod *upb_pbdecoder_method(const upb_pbdecoder *d) {
   return d->method_;

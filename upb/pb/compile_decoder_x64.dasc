@@ -23,6 +23,7 @@
 |.define ARG3_32,   edx
 |.define ARG3_64,   rdx
 |.define ARG4_64,   rcx
+|.define ARG5_64,   r8
 |.define XMMARG1,   xmm0
 |
 |// Register allocation / type map.
@@ -157,6 +158,16 @@ static void asmlabel(jitcompiler *jc, const char *fmt, ...) {
 
 static upb_func *gethandler(const upb_handlers *h, upb_selector_t sel) {
   return h ? upb_handlers_gethandler(h, sel) : NULL;
+}
+
+// Should only be called when the associated handler is known to exist.
+static bool alwaysok(const upb_handlers *h, upb_selector_t sel) {
+  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  bool ok = upb_handlers_getattr(h, sel, &attr);
+  UPB_ASSERT_VAR(ok, ok);
+  bool ret = upb_handlerattr_alwaysok(&attr);
+  upb_handlerattr_uninit(&attr);
+  return ret;
 }
 
 // Emit static assembly routines; code that does not vary based on the message
@@ -623,9 +634,9 @@ static void jitprimitive(jitcompiler *jc, opcode op,
       |  mov    ARG1_64, CLOSURE
       |  load_handler_data h, sel
       |  callp  handler
-      if (jc->chkret) {
+      if (!alwaysok(h, sel)) {
         |  test   al, al
-        |  jz     >5
+        |  jnz    >5
         |  call   ->suspend
         |  jmp    <1
         |5:
@@ -887,10 +898,11 @@ static void jitbytecode(jitcompiler *jc) {
         |  mov   ARG1_64, CLOSURE
         |  load_handler_data h, UPB_STARTMSG_SELECTOR
         |  callp startmsg
-        if (jc->chkret) {
+        if (!alwaysok(h, UPB_STARTMSG_SELECTOR)) {
           |  test  al, al
-          |  jnz   <2
+          |  jnz   >2
           |  call  ->suspend
+          |  jmp   <1
           |2:
         }
       }
@@ -960,7 +972,7 @@ static void jitbytecode(jitcompiler *jc) {
           |  sub    ARG3_64, PTR
         }
         |  callp start
-        if (jc->chkret) {
+        if (!alwaysok(h, arg)) {
           |  test  rax, rax
           |  jnz   >2
           |  call  ->suspend
@@ -986,7 +998,7 @@ static void jitbytecode(jitcompiler *jc) {
         |  mov   ARG1_64, CLOSURE
         |  load_handler_data h, arg
         |  callp end
-        if (jc->chkret) {
+        if (!alwaysok(h, arg)) {
           |  test  al, al
           |  jnz   >2
           |  call  ->suspend
@@ -1016,9 +1028,10 @@ static void jitbytecode(jitcompiler *jc) {
         |  mov   ARG3_64, PTR
         |  mov   ARG4_64, DATAEND
         |  sub   ARG4_64, PTR
+        |  mov   ARG5_64, qword DECODER->handle
         |  callp str
         |  add   PTR, rax
-        if (jc->chkret) {
+        if (!alwaysok(h, arg)) {
           |  cmp   PTR, DATAEND
           |  je    >3
           |  call  ->strret_fallback
