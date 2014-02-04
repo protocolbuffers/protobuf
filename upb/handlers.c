@@ -52,6 +52,9 @@ typedef struct {
   void *closure;
 } dfs_state;
 
+// TODO(haberman): discard upb_handlers* objects that do not actually have any
+// handlers set and cannot reach any upb_handlers* object that does.  This is
+// slightly tricky to do correctly.
 static upb_handlers *newformsg(const upb_msgdef *m, const void *owner,
                                dfs_state *s) {
   upb_handlers *h = upb_handlers_new(m, owner);
@@ -425,6 +428,39 @@ bool upb_handlers_freeze(upb_handlers *const*handlers, int n, upb_status *s) {
       }
 
       if (upb_fielddef_issubmsg(f)) {
+        bool hashandler = false;
+        if (upb_handlers_gethandler(h, getsel(h, f, UPB_HANDLER_STARTSUBMSG)) ||
+            upb_handlers_gethandler(h, getsel(h, f, UPB_HANDLER_ENDSUBMSG))) {
+          hashandler = true;
+        }
+
+        if (upb_fielddef_isseq(f) &&
+            (upb_handlers_gethandler(h, getsel(h, f, UPB_HANDLER_STARTSEQ)) ||
+             upb_handlers_gethandler(h, getsel(h, f, UPB_HANDLER_ENDSEQ)))) {
+          hashandler = true;
+        }
+
+        if (hashandler && !upb_handlers_getsubhandlers(h, f)) {
+          // For now we add an empty subhandlers in this case.  It makes the
+          // decoder code generator simpler, because it only has to handle two
+          // cases (submessage has handlers or not) as opposed to three
+          // (submessage has handlers in enclosing message but no subhandlers).
+          //
+          // This makes parsing less efficient in the case that we want to
+          // notice a submessage but skip its contents (like if we're testing
+          // for submessage presence or counting the number of repeated
+          // submessages).  In this case we will end up parsing the submessage
+          // field by field and throwing away the results for each, instead of
+          // skipping the whole delimited thing at once.  If this is an issue we
+          // can revisit it, but do remember that this only arises when you have
+          // handlers (startseq/startsubmsg/endsubmsg/endseq) set for the
+          // submessage but no subhandlers.  The uses cases for this are
+          // limited.
+          upb_handlers *sub = upb_handlers_new(upb_fielddef_msgsubdef(f), &sub);
+          upb_handlers_setsubhandlers(h, f, sub);
+          upb_handlers_unref(sub, &sub);
+        }
+
         // TODO(haberman): check type of submessage.
         // This is slightly tricky; also consider whether we should check that
         // they match at setsubhandlers time.
@@ -470,16 +506,27 @@ bool upb_handlers_getselector(const upb_fielddef *f, upb_handlertype_t type,
       *s = f->selector_base;
       break;
     case UPB_HANDLER_STRING:
-      if (!upb_fielddef_isstring(f)) return false;
-      *s = f->selector_base;
+      if (upb_fielddef_isstring(f)) {
+        *s = f->selector_base;
+      } else if (upb_fielddef_issubmsg(f)) {
+        *s = f->selector_base + 3;
+      } else {
+        return false;
+      }
       break;
     case UPB_HANDLER_STARTSTR:
-      if (!upb_fielddef_isstring(f)) return false;
-      *s = f->selector_base + 1;
+      if (upb_fielddef_isstring(f) || upb_fielddef_issubmsg(f)) {
+        *s = f->selector_base + 1;
+      } else {
+        return false;
+      }
       break;
     case UPB_HANDLER_ENDSTR:
-      if (!upb_fielddef_isstring(f)) return false;
-      *s = f->selector_base + 2;
+      if (upb_fielddef_isstring(f) || upb_fielddef_issubmsg(f)) {
+        *s = f->selector_base + 2;
+      } else {
+        return false;
+      }
       break;
     case UPB_HANDLER_STARTSEQ:
       if (!upb_fielddef_isseq(f)) return false;
@@ -501,7 +548,6 @@ bool upb_handlers_getselector(const upb_fielddef *f, upb_handlertype_t type,
       if (!upb_fielddef_issubmsg(f)) return false;
       *s = f->selector_base;
       break;
-    // Subhandler slot is selector_base + 2.
   }
   assert(*s < upb_fielddef_containingtype(f)->selector_count);
   return true;
@@ -514,9 +560,15 @@ uint32_t upb_handlers_selectorbaseoffset(const upb_fielddef *f) {
 uint32_t upb_handlers_selectorcount(const upb_fielddef *f) {
   uint32_t ret = 1;
   if (upb_fielddef_isseq(f)) ret += 2;    // STARTSEQ/ENDSEQ
-  if (upb_fielddef_isstring(f)) ret += 2; // [STARTSTR]/STRING/ENDSTR
-   // ENDSUBMSG (STARTSUBMSG is at table beginning)
-  if (upb_fielddef_issubmsg(f)) ret += 0;
+  if (upb_fielddef_isstring(f)) ret += 2; // [STRING]/STARTSTR/ENDSTR
+  if (upb_fielddef_issubmsg(f)) {
+    // ENDSUBMSG (STARTSUBMSG is at table beginning)
+    ret += 0;
+    if (upb_fielddef_lazy(f)) {
+      // STARTSTR/ENDSTR/STRING (for lazy)
+      ret += 3;
+    }
+  }
   return ret;
 }
 

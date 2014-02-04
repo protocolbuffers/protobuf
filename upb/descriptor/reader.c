@@ -376,6 +376,13 @@ static bool field_endmsg(void *closure, const void *hd, upb_status *status) {
   return true;
 }
 
+static bool field_onlazy(void *closure, const void *hd, bool val) {
+  UPB_UNUSED(hd);
+  upb_descreader *r = closure;
+  upb_fielddef_setlazy(r->f, val);
+  return true;
+}
+
 static bool field_ontype(void *closure, const void *hd, int32_t val) {
   UPB_UNUSED(hd);
   upb_descreader *r = closure;
@@ -540,6 +547,8 @@ static void reghandlers(void *closure, upb_handlers *h) {
     upb_handlers_setstring(h, f(h, "type_name"), &field_ontypename, NULL);
     upb_handlers_setstring(h, f(h, "extendee"), &field_onextendee, NULL);
     upb_handlers_setstring(h, f(h, "default_value"), &field_ondefaultval, NULL);
+  } else if (m == GOOGLE_PROTOBUF_FIELDOPTIONS) {
+    upb_handlers_setbool(h, f(h, "lazy"), &field_onlazy, NULL);
   }
 }
 

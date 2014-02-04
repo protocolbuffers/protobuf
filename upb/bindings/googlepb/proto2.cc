@@ -42,9 +42,14 @@ namespace google_opensource { class GMR_Handlers; }
 
 #ifdef UPB_GOOGLE3
 
+// TODO(haberman): Add public functionality to ExtensionSet for populating
+// LazyFields.
+#define private public
+#include "net/proto2/public/extension_set.h"
+#undef private
+
 #include "net/proto2/proto/descriptor.pb.h"
 #include "net/proto2/public/descriptor.h"
-#include "net/proto2/public/extension_set.h"
 #include "net/proto2/public/generated_message_reflection.h"
 #include "net/proto2/public/lazy_field.h"
 #include "net/proto2/public/message.h"
@@ -66,9 +71,12 @@ namespace me = ::upb::google_google3;
 #include "google/protobuf/generated_message_reflection.h"
 #undef private
 
+#define private public
+#include "google/protobuf/extension_set.h"
+#undef private
+
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/extension_set.h"
 #include "google/protobuf/message.h"
 
 namespace goog = ::google::protobuf;
@@ -176,9 +184,14 @@ case goog::FieldDescriptor::cpptype:                                           \
       }
       case goog::FieldDescriptor::CPPTYPE_MESSAGE:
 #ifdef UPB_GOOGLE3
-        if (proto2_f->options().lazy()) {
-          assert(false);
-          return false;  // Not yet implemented.
+        if (proto2_f->options().lazy() &&
+            // proto2 lets you set lazy=true on a repeated field, but doesn't
+            // actually support lazy repeated messages, so just ignore
+            // lazy=true for repeated messages.
+            !proto2_f->is_repeated()) {
+          // Supports lazy fields and lazy extensions.
+          SetLazyFieldHandlers(proto2_f, m, r, upb_f, h);
+          return true;
         }
 #endif
         if (proto2_f->is_extension()) {
@@ -267,12 +280,14 @@ case goog::FieldDescriptor::cpptype:                                           \
         const goog::FieldDescriptor* proto2_f,
         const goog::internal::GeneratedMessageReflection* r)
         : offset_(r->extensions_offset_),
-          number_(proto2_f->number()),
-          type_(proto2_f->type()) {
+          field_descriptor_(proto2_f) {
     }
 
-    int number() const { return number_; }
-    goog::internal::FieldType type() const { return type_; }
+    int number() const { return field_descriptor_->number(); }
+    goog::internal::FieldType type() const { return field_descriptor_->type(); }
+    const goog::FieldDescriptor* field_descriptor() const {
+      return field_descriptor_;
+    }
 
     goog::internal::ExtensionSet* GetExtensionSet(goog::Message* m) const {
       return GetPointer<goog::internal::ExtensionSet>(m, offset_);
@@ -280,8 +295,10 @@ case goog::FieldDescriptor::cpptype:                                           \
 
    private:
     const size_t offset_;
-    int number_;
-    goog::internal::FieldType type_;
+    // We know it will outlive because we require that the input message used to
+    // build these handlers outlives us, and the descriptor will outlive the
+    // message.
+    const goog::FieldDescriptor* field_descriptor_;
   };
 
   // StartSequence /////////////////////////////////////////////////////////////
@@ -693,9 +710,26 @@ case goog::FieldDescriptor::cpptype:                                           \
 #ifdef UPB_GOOGLE3
   // Handlers for types/features only included in internal proto2 release:
   // Cord, StringPiece, LazyField, and MessageSet.
-  // TODO(haberman): LazyField, MessageSet.
+  // TODO(haberman): MessageSet.
 
   // Cord //////////////////////////////////////////////////////////////////////
+
+  static void AppendBufToCord(const char* buf, size_t n,
+                              const upb::BufferHandle* handle, Cord* c) {
+    const Cord* source_cord = handle->GetAttachedObject<Cord>();
+    if (source_cord) {
+      // This TODO is copied from CordReader::CopyToCord():
+      // "We could speed this up by using CordReader internals."
+      Cord piece(*source_cord);
+      piece.RemovePrefix(handle->object_offset() + (buf - handle->buffer()));
+      assert(piece.size() >= n);
+      piece.RemoveSuffix(piece.size() - n);
+
+      c->Append(piece);
+    } else {
+      c->Append(StringPiece(buf, n));
+    }
+  }
 
   static void SetCordHandlers(
       const proto2::FieldDescriptor* proto2_f,
@@ -723,19 +757,7 @@ case goog::FieldDescriptor::cpptype:                                           \
 
   static void OnCordBuf(Cord* c, const char* buf, size_t n,
                         const upb::BufferHandle* handle) {
-    const Cord* source_cord = handle->GetAttachedObject<Cord>();
-    if (source_cord) {
-      // This TODO is copied from CordReader::CopyToCord():
-      // "We could speed this up by using CordReader internals."
-      Cord piece(*source_cord);
-      piece.RemovePrefix(handle->object_offset() + (buf - handle->buffer()));
-      assert(piece.size() >= n);
-      piece.RemoveSuffix(piece.size() - n);
-
-      c->Append(piece);
-    } else {
-      c->Append(StringPiece(buf, n));
-    }
+    AppendBufToCord(buf, n, handle, c);
   }
 
   static Cord* StartRepeatedCord(proto2::RepeatedField<Cord>* r,
@@ -793,6 +815,164 @@ case goog::FieldDescriptor::cpptype:                                           \
     proto2::internal::StringPieceField* field = r->Add();
     field->Clear();
     return field;
+  }
+
+  // LazyField /////////////////////////////////////////////////////////////////
+
+  // For lazy fields we set both lazy and eager handlers.  The user can
+  // configure the data source to call either, though lazy handlers may only be
+  // used when the source data is binary protobuf.
+  static void SetLazyFieldHandlers(
+      const proto2::FieldDescriptor* proto2_f,
+      const proto2::Message& m,
+      const proto2::internal::GeneratedMessageReflection* r,
+      const upb::FieldDef* f, upb::Handlers* h) {
+    assert(!proto2_f->is_repeated());
+    const goog::Message* field_prototype = GetFieldPrototype(m, proto2_f);
+    CHKRET(h->SetStringHandler(f, UpbMakeHandler(OnLazyFieldBuf)));
+    if (proto2_f->is_extension()) {
+      CHKRET(h->SetStartStringHandler(
+          f, UpbBind(StartLazyExtension, new ExtensionFieldData(proto2_f, r))));
+      CHKRET(h->SetStartSubMessageHandler(
+          f, UpbBind(StartSubMessageExtension,
+                     new SubMessageExtensionHandlerData(proto2_f, r,
+                                                        field_prototype))));
+    } else {
+      CHKRET(h->SetStartStringHandler(
+          f, UpbBind(StartLazyField, new FieldOffset(proto2_f, r))));
+      CHKRET(h->SetStartSubMessageHandler(
+          f, UpbBind(StartLazyFieldEager,
+                     new SubMessageHandlerData(proto2_f, r, field_prototype))));
+    }
+  }
+
+  static proto2::internal::LazyField* StartLazyField(proto2::Message* m,
+                                                     const FieldOffset* offset,
+                                                     size_t size_hint) {
+    UPB_UNUSED(size_hint);
+    offset->SetHasbit(m);
+    proto2::internal::LazyField* field =
+        offset->GetFieldPointer<proto2::internal::LazyField>(m);
+    field->Clear();
+    return field;
+  }
+
+  // For when the field has a lazy representation but we parse it eagerly anyway
+  // (either because we want to or because we're parsing from a format other
+  // than binary protobuf).
+  static proto2::Message* StartLazyFieldEager(
+      proto2::Message* m, const SubMessageHandlerData* data) {
+    data->SetHasbit(m);
+    proto2::internal::LazyField* field =
+        data->GetFieldPointer<proto2::internal::LazyField>(m);
+    return field->MutableByPrototype(*data->prototype());
+  }
+
+  class LazyMessageExtensionImpl
+      : public proto2::internal::ExtensionSet::LazyMessageExtension {
+   public:
+    LazyMessageExtensionImpl() {}
+    virtual ~LazyMessageExtensionImpl() {}
+
+    virtual LazyMessageExtension* New() const {
+      return new LazyMessageExtensionImpl();
+    }
+
+    virtual const proto2::MessageLite& GetMessage(
+        const proto2::MessageLite& prototype) const {
+      return lazy_field_.GetByPrototype(
+          static_cast<const proto2::Message&>(prototype));
+    }
+
+    virtual proto2::MessageLite* MutableMessage(
+        const proto2::MessageLite& prototype) {
+      return lazy_field_.MutableByPrototype(
+          static_cast<const proto2::Message&>(prototype));
+    }
+
+    virtual void SetAllocatedMessage(proto2::MessageLite* message) {
+      return lazy_field_.SetAllocated(static_cast<proto2::Message*>(message));
+    }
+
+    virtual proto2::MessageLite* ReleaseMessage(
+        const proto2::MessageLite& prototype) {
+      return lazy_field_.ReleaseByPrototype(
+          static_cast<const proto2::Message&>(prototype));
+    }
+
+    virtual bool IsInitialized() const { return true; }
+
+    virtual int ByteSize() const { return lazy_field_.MessageByteSize(); }
+
+    int SpaceUsed() const {
+      return sizeof(*this) + lazy_field_.SpaceUsedExcludingSelf();
+    }
+
+    virtual void MergeFrom(const LazyMessageExtension& other) {
+      MergeFrom(*static_cast<const LazyMessageExtensionImpl*>(&other));
+    }
+
+    virtual void MergeFrom(const LazyMessageExtensionImpl& other) {
+      lazy_field_.MergeFrom(other.lazy_field_);
+    }
+
+    virtual void Clear() { lazy_field_.Clear(); }
+
+    virtual bool ReadMessage(const proto2::MessageLite& prototype,
+                             proto2::io::CodedInputStream* input) {
+      return lazy_field_.Read(input);
+    }
+
+    virtual void WriteMessage(int number,
+                              proto2::io::CodedOutputStream* output) const {
+      lazy_field_.Write(number, output);
+    }
+
+    virtual uint8* WriteMessageToArray(int number, uint8* target) const {
+      return lazy_field_.WriteToArray(number, target);
+    }
+
+    proto2::internal::LazyField& lazy_field() { return lazy_field_; }
+
+   private:
+    proto2::internal::LazyField lazy_field_;
+    DISALLOW_COPY_AND_ASSIGN(LazyMessageExtensionImpl);
+  };
+
+  static proto2::internal::LazyField* StartLazyExtension(
+      proto2::Message* m, const ExtensionFieldData* data, size_t size_hint) {
+    proto2::internal::ExtensionSet* set = data->GetExtensionSet(m);
+
+    // We have to break encapsulation here since no public accessors expose the
+    // LazyField.
+    //
+    // TODO(haberman): add a function to ExtensionSet that allows us to set the
+    // lazy field directly.
+    proto2::internal::ExtensionSet::Extension* item;
+    LazyMessageExtensionImpl* lazy_extension;
+    if (set->MaybeNewExtension(data->number(), data->field_descriptor(),
+                               &item)) {
+      lazy_extension = new LazyMessageExtensionImpl();
+      item->type = UPB_DESCRIPTOR_TYPE_MESSAGE;
+      item->is_repeated = false;
+      item->is_lazy = true;
+      item->lazymessage_value = lazy_extension;
+    } else {
+      lazy_extension =
+          CheckDownCast<LazyMessageExtensionImpl*>(item->lazymessage_value);
+    }
+
+    item->is_cleared = false;
+
+    return &lazy_extension->lazy_field();
+  }
+
+  static void OnLazyFieldBuf(proto2::internal::LazyField* field,
+                             const char* buf, size_t len,
+                             const upb::BufferHandle* handle) {
+    Cord encoded(field->GetEncoded());
+    AppendBufToCord(buf, len, handle, &encoded);
+    field->SetEncoded(encoded);
   }
 
 #endif  // UPB_GOOGLE3

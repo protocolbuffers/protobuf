@@ -47,7 +47,7 @@ endif
 CC=gcc
 CXX=g++
 CFLAGS=-std=gnu99
-CXXFLAGS=-Ibindings/cpp
+CXXFLAGS=-std=c++11
 INCLUDE=-Itests -I.
 CPPFLAGS=$(INCLUDE) -Wall -Wextra -Wno-sign-compare $(USER_CFLAGS)
 LDLIBS=-lpthread upb/libupb.a
@@ -220,10 +220,7 @@ SIMPLE_TESTS= \
 
 SIMPLE_CXX_TESTS= \
   tests/test_cpp \
-
-  # The build process for this test is complicated and hasn't been
-  # ported to the open-source Makefile yet.
-  # tests/test_decoder \
+  tests/pb/test_decoder
 
 VARIADIC_TESTS= \
   tests/t.test_vs_proto2.googlemessage1 \

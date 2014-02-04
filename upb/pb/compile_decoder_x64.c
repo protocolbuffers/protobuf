@@ -194,6 +194,8 @@ static void patchdispatch(jitcompiler *jc) {
 }
 
 // Define for JIT debugging.
+//#define UPB_JIT_LOAD_SO
+
 #ifdef UPB_JIT_LOAD_SO
 static void load_so(jitcompiler *jc) {
   // Dump to a .so file in /tmp and load that, so all the tooling works right

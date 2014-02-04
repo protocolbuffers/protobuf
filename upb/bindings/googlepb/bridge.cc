@@ -109,10 +109,6 @@ const MessageDef* DefBuilder::GetMaybeUnfrozenMessageDef(
   for (int i = 0; i < fields.size(); i++) {
     const goog::FieldDescriptor* proto2_f = fields[i];
     assert(proto2_f);
-#ifdef UPB_GOOGLE3
-    // Skip lazy fields for now since we can't properly handle them.
-    if (proto2_f->options().lazy()) continue;
-#endif
     md->AddField(NewFieldDef(proto2_f, m), &status);
   }
   ASSERT_STATUS(&status);
@@ -135,6 +131,9 @@ reffed_ptr<FieldDef> DefBuilder::NewFieldDef(const goog::FieldDescriptor* f,
   Status status;
   upb_f->set_number(f->number(), &status);
   upb_f->set_label(FieldDef::ConvertLabel(f->label()));
+#ifdef UPB_GOOGLE3
+  upb_f->set_lazy(f->options().lazy());
+#endif
 
   if (f->is_extension()) {
     upb_f->set_name(f->full_name(), &status);

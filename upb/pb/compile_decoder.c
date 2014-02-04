@@ -19,13 +19,6 @@
 #define MAXLABEL 5
 #define EMPTYLABEL -1
 
-static const void *methodkey(const upb_msgdef *md, const upb_handlers *h) {
-  const void *ret = h ? (const void*)h : (const void*)md;
-  assert(ret);
-  return ret;
-}
-
-
 /* mgroup *********************************************************************/
 
 static void freegroup(upb_refcounted *r) {
@@ -80,10 +73,8 @@ static void visitmethod(const upb_refcounted *r, upb_refcounted_visit *visit,
   visit(r, m->group, closure);
 }
 
-static upb_pbdecodermethod *newmethod(const upb_msgdef *msg,
-                                      const upb_handlers *dest_handlers,
-                                      mgroup *group,
-                                      const void *key) {
+static upb_pbdecodermethod *newmethod(const upb_handlers *dest_handlers,
+                                      mgroup *group) {
   static const struct upb_refcounted_vtbl vtbl = {visitmethod, freemethod};
   upb_pbdecodermethod *ret = malloc(sizeof(*ret));
   upb_refcounted_init(UPB_UPCAST(ret), &vtbl, &ret);
@@ -92,11 +83,10 @@ static upb_pbdecodermethod *newmethod(const upb_msgdef *msg,
   // The method references the group and vice-versa, in a circular reference.
   upb_ref2(ret, group);
   upb_ref2(group, ret);
-  upb_inttable_insertptr(&group->methods, key, upb_value_ptr(ret));  // Owns ref
+  upb_inttable_insertptr(&group->methods, dest_handlers, upb_value_ptr(ret));
   upb_refcounted_unref(UPB_UPCAST(ret), &ret);
 
   ret->group = UPB_UPCAST(group);
-  ret->schema_ = msg;
   ret->dest_handlers_ = dest_handlers;
   ret->is_native_ = false;  // If we JIT, it will update this later.
   upb_inttable_init(&ret->dispatch, UPB_CTYPE_UINT64);
@@ -126,10 +116,6 @@ void upb_pbdecodermethod_checkref(const upb_pbdecodermethod *m,
   upb_refcounted_checkref(UPB_UPCAST(m), owner);
 }
 
-const upb_msgdef *upb_pbdecodermethod_schema(const upb_pbdecodermethod *m) {
-  return m->schema_;
-}
-
 const upb_handlers *upb_pbdecodermethod_desthandlers(
     const upb_pbdecodermethod *m) {
   return m->dest_handlers_;
@@ -144,12 +130,12 @@ bool upb_pbdecodermethod_isnative(const upb_pbdecodermethod *m) {
   return m->is_native_;
 }
 
-const upb_pbdecodermethod *upb_pbdecodermethod_newfordesthandlers(
-    const upb_handlers *dest, const void *owner) {
+const upb_pbdecodermethod *upb_pbdecodermethod_new(
+    const upb_pbdecodermethodopts *opts, const void *owner) {
   upb_pbcodecache cache;
   upb_pbcodecache_init(&cache);
   const upb_pbdecodermethod *ret =
-      upb_pbcodecache_getdecodermethodfordesthandlers(&cache, dest);
+      upb_pbcodecache_getdecodermethod(&cache, opts);
   upb_pbdecodermethod_ref(ret, owner);
   upb_pbcodecache_uninit(&cache);
   return ret;
@@ -165,11 +151,15 @@ typedef struct {
   uint32_t *pc;
   int fwd_labels[MAXLABEL];
   int back_labels[MAXLABEL];
+
+  // For fields marked "lazy", parse them lazily or eagerly?
+  bool lazy;
 } compiler;
 
-static compiler *newcompiler(mgroup *group) {
+static compiler *newcompiler(mgroup *group, bool lazy) {
   compiler *ret = malloc(sizeof(*ret));
   ret->group = group;
+  ret->lazy = lazy;
   for (int i = 0; i < MAXLABEL; i++) {
     ret->fwd_labels[i] = EMPTYLABEL;
     ret->back_labels[i] = EMPTYLABEL;
@@ -300,11 +290,11 @@ static void putop(compiler *c, opcode op, ...) {
     }
     case OP_STARTMSG:
     case OP_ENDMSG:
-    case OP_PUSHTAGDELIM:
     case OP_PUSHLENDELIM:
     case OP_POP:
     case OP_SETDELIM:
     case OP_HALT:
+    case OP_RET:
       put32(c, op);
       break;
     case OP_PARSE_DOUBLE:
@@ -321,13 +311,13 @@ static void putop(compiler *c, opcode op, ...) {
     case OP_PARSE_SINT32:
     case OP_PARSE_SINT64:
     case OP_STARTSEQ:
-    case OP_SETGROUPNUM:
     case OP_ENDSEQ:
     case OP_STARTSUBMSG:
     case OP_ENDSUBMSG:
     case OP_STARTSTR:
     case OP_STRING:
     case OP_ENDSTR:
+    case OP_PUSHTAGDELIM:
       put32(c, op | va_arg(ap, upb_selector_t) << 8);
       break;
     case OP_SETBIGGROUPNUM:
@@ -382,10 +372,10 @@ const char *upb_pbdecoder_getopname(unsigned int op) {
     T(DOUBLE), T(FLOAT), T(INT64), T(UINT64), T(INT32), T(FIXED64), T(FIXED32),
     T(BOOL), T(UINT32), T(SFIXED32), T(SFIXED64), T(SINT32), T(SINT64),
     OP(STARTMSG), OP(ENDMSG), OP(STARTSEQ), OP(ENDSEQ), OP(STARTSUBMSG),
-    OP(ENDSUBMSG), OP(STARTSTR), OP(STRING), OP(ENDSTR), OP(CALL),
+    OP(ENDSUBMSG), OP(STARTSTR), OP(STRING), OP(ENDSTR), OP(CALL), OP(RET),
     OP(PUSHLENDELIM), OP(PUSHTAGDELIM), OP(SETDELIM), OP(CHECKDELIM),
     OP(BRANCH), OP(TAG1), OP(TAG2), OP(TAGN), OP(SETDISPATCH), OP(POP),
-    OP(SETGROUPNUM), OP(SETBIGGROUPNUM), OP(HALT),
+    OP(SETBIGGROUPNUM), OP(HALT),
   };
   return op > OP_HALT ? names[0] : names[op];
 #undef OP
@@ -413,16 +403,17 @@ static void dumpbc(uint32_t *p, uint32_t *end, FILE *f) {
         const upb_pbdecodermethod *method =
             (void *)((char *)dispatch -
                      offsetof(upb_pbdecodermethod, dispatch));
-        fprintf(f, " %s", upb_msgdef_fullname(method->schema_));
+        fprintf(f, " %s", upb_msgdef_fullname(
+                              upb_handlers_msgdef(method->dest_handlers_)));
         break;
       }
       case OP_STARTMSG:
       case OP_ENDMSG:
       case OP_PUSHLENDELIM:
-      case OP_PUSHTAGDELIM:
       case OP_POP:
       case OP_SETDELIM:
       case OP_HALT:
+      case OP_RET:
         break;
       case OP_PARSE_DOUBLE:
       case OP_PARSE_FLOAT:
@@ -444,7 +435,7 @@ static void dumpbc(uint32_t *p, uint32_t *end, FILE *f) {
       case OP_STARTSTR:
       case OP_STRING:
       case OP_ENDSTR:
-      case OP_SETGROUPNUM:
+      case OP_PUSHTAGDELIM:
         fprintf(f, " %d", instr >> 8);
         break;
       case OP_SETBIGGROUPNUM:
@@ -537,11 +528,11 @@ static void putpush(compiler *c, const upb_fielddef *f) {
     putop(c, OP_PUSHLENDELIM);
   } else {
     uint32_t fn = upb_fielddef_number(f);
-    putop(c, OP_PUSHTAGDELIM);
     if (fn >= 1 << 24) {
+      putop(c, OP_PUSHTAGDELIM, 0);
       putop(c, OP_SETBIGGROUPNUM, fn);
     } else {
-      putop(c, OP_SETGROUPNUM, fn);
+      putop(c, OP_PUSHTAGDELIM, fn);
     }
   }
 }
@@ -549,13 +540,35 @@ static void putpush(compiler *c, const upb_fielddef *f) {
 static upb_pbdecodermethod *find_submethod(const compiler *c,
                                            const upb_pbdecodermethod *method,
                                            const upb_fielddef *f) {
-  const upb_handlers *sub = method->dest_handlers_ ?
-      upb_handlers_getsubhandlers(method->dest_handlers_, f) : NULL;
-  const void *key = methodkey(upb_downcast_msgdef(upb_fielddef_subdef(f)), sub);
+  const upb_handlers *sub =
+      upb_handlers_getsubhandlers(method->dest_handlers_, f);
   upb_value v;
-  bool ok = upb_inttable_lookupptr(&c->group->methods, key, &v);
-  UPB_ASSERT_VAR(ok, ok);
-  return upb_value_getptr(v);
+  return upb_inttable_lookupptr(&c->group->methods, sub, &v)
+             ? upb_value_getptr(v)
+             : NULL;
+}
+
+static void putsel(compiler *c, opcode op, upb_selector_t sel,
+                   const upb_handlers *h) {
+  if (upb_handlers_gethandler(h, sel)) {
+    putop(c, op, sel);
+  }
+}
+
+// Puts an opcode to call a callback, but only if a callback actually exists for
+// this field and handler type.
+static void putcb(compiler *c, opcode op, const upb_handlers *h,
+                  const upb_fielddef *f, upb_handlertype_t type) {
+  putsel(c, op, getsel(f, type), h);
+}
+
+static bool haslazyhandlers(const upb_handlers *h, const upb_fielddef *f) {
+  if (!upb_fielddef_lazy(f))
+    return false;
+
+  return upb_handlers_gethandler(h, getsel(f, UPB_HANDLER_STARTSTR)) ||
+         upb_handlers_gethandler(h, getsel(f, UPB_HANDLER_STRING)) ||
+         upb_handlers_gethandler(h, getsel(f, UPB_HANDLER_ENDSTR));
 }
 
 // Adds bytecode for parsing the given message to the given decoderplan,
@@ -596,177 +609,178 @@ static void compile_method(compiler *c, upb_pbdecodermethod *method) {
   upb_inttable_uninit(&method->dispatch);
   upb_inttable_init(&method->dispatch, UPB_CTYPE_UINT64);
 
+  const upb_handlers *h = upb_pbdecodermethod_desthandlers(method);
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+
  method->code_base.ofs = pcofs(c);
   putop(c, OP_SETDISPATCH, &method->dispatch);
-  putop(c, OP_STARTMSG);
+  putsel(c, OP_STARTMSG, UPB_STARTMSG_SELECTOR, h);
  label(c, LABEL_FIELD);
   upb_msg_iter i;
-  for(upb_msg_begin(&i, method->schema_); !upb_msg_done(&i); upb_msg_next(&i)) {
+  for(upb_msg_begin(&i, md); !upb_msg_done(&i); upb_msg_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
-    upb_descriptortype_t type = upb_fielddef_descriptortype(f);
+    upb_descriptortype_t descriptor_type = upb_fielddef_descriptortype(f);
+    upb_fieldtype_t type = upb_fielddef_type(f);
 
     // From a decoding perspective, ENUM is the same as INT32.
-    if (type == UPB_DESCRIPTOR_TYPE_ENUM)
-      type = UPB_DESCRIPTOR_TYPE_INT32;
+    if (descriptor_type == UPB_DESCRIPTOR_TYPE_ENUM)
+      descriptor_type = UPB_DESCRIPTOR_TYPE_INT32;
 
-    label(c, LABEL_FIELD);
-
-    switch (upb_fielddef_type(f)) {
-      case UPB_TYPE_MESSAGE: {
-        const upb_pbdecodermethod *sub_m = find_submethod(c, method, f);
-        int wire_type = (type == UPB_DESCRIPTOR_TYPE_MESSAGE) ?
-            UPB_WIRE_TYPE_DELIMITED : UPB_WIRE_TYPE_START_GROUP;
-        if (upb_fielddef_isseq(f)) {
-          putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
-          putchecktag(c, f, wire_type, LABEL_DISPATCH);
-         dispatchtarget(c, method, f, wire_type);
-          putop(c, OP_PUSHTAGDELIM);
-          putop(c, OP_STARTSEQ, getsel(f, UPB_HANDLER_STARTSEQ));
-         label(c, LABEL_LOOPSTART);
-          putpush(c, f);
-          putop(c, OP_STARTSUBMSG, getsel(f, UPB_HANDLER_STARTSUBMSG));
-          putop(c, OP_CALL, sub_m);
-          putop(c, OP_POP);
-          putop(c, OP_ENDSUBMSG, getsel(f, UPB_HANDLER_ENDSUBMSG));
-          if (wire_type == UPB_WIRE_TYPE_DELIMITED) {
-            putop(c, OP_SETDELIM);
-          }
-          putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
-          putchecktag(c, f, wire_type, LABEL_LOOPBREAK);
-          putop(c, OP_BRANCH, -LABEL_LOOPSTART);
-         label(c, LABEL_LOOPBREAK);
-          putop(c, OP_POP);
-          putop(c, OP_ENDSEQ, getsel(f, UPB_HANDLER_ENDSEQ));
-        } else {
-          putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
-          putchecktag(c, f, wire_type, LABEL_DISPATCH);
-         dispatchtarget(c, method, f, wire_type);
-          putpush(c, f);
-          putop(c, OP_STARTSUBMSG, getsel(f, UPB_HANDLER_STARTSUBMSG));
-          putop(c, OP_CALL, sub_m);
-          putop(c, OP_POP);
-          putop(c, OP_ENDSUBMSG, getsel(f, UPB_HANDLER_ENDSUBMSG));
-          if (wire_type == UPB_WIRE_TYPE_DELIMITED) {
-            putop(c, OP_SETDELIM);
-          }
-        }
-        break;
+    if (type == UPB_TYPE_MESSAGE && !(haslazyhandlers(h, f) && c->lazy)) {
+      const upb_pbdecodermethod *sub_m = find_submethod(c, method, f);
+      if (!sub_m) {
+        // Don't emit any code for this field at all; it will be parsed as an
+        // unknown field.
+        continue;
       }
-      case UPB_TYPE_STRING:
-      case UPB_TYPE_BYTES:
-        if (upb_fielddef_isseq(f)) {
-          putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
-          putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_DISPATCH);
-         dispatchtarget(c, method, f, UPB_WIRE_TYPE_DELIMITED);
-          putop(c, OP_PUSHTAGDELIM);
-          putop(c, OP_STARTSEQ, getsel(f, UPB_HANDLER_STARTSEQ));
-         label(c, LABEL_LOOPSTART);
-          putop(c, OP_PUSHLENDELIM);
-          putop(c, OP_STARTSTR, getsel(f, UPB_HANDLER_STARTSTR));
-          putop(c, OP_STRING, getsel(f, UPB_HANDLER_STRING));
-          putop(c, OP_POP);
-          putop(c, OP_ENDSTR, getsel(f, UPB_HANDLER_ENDSTR));
-          putop(c, OP_SETDELIM);
-          putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
-          putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_LOOPBREAK);
-          putop(c, OP_BRANCH, -LABEL_LOOPSTART);
-         label(c, LABEL_LOOPBREAK);
-          putop(c, OP_POP);
-          putop(c, OP_ENDSEQ, getsel(f, UPB_HANDLER_ENDSEQ));
-        } else {
-          putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
-          putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_DISPATCH);
-         dispatchtarget(c, method, f, UPB_WIRE_TYPE_DELIMITED);
-          putop(c, OP_PUSHLENDELIM);
-          putop(c, OP_STARTSTR, getsel(f, UPB_HANDLER_STARTSTR));
-          putop(c, OP_STRING, getsel(f, UPB_HANDLER_STRING));
-          putop(c, OP_POP);
-          putop(c, OP_ENDSTR, getsel(f, UPB_HANDLER_ENDSTR));
+
+      label(c, LABEL_FIELD);
+
+      int wire_type = (descriptor_type == UPB_DESCRIPTOR_TYPE_MESSAGE)
+                          ? UPB_WIRE_TYPE_DELIMITED
+                          : UPB_WIRE_TYPE_START_GROUP;
+      if (upb_fielddef_isseq(f)) {
+        putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
+        putchecktag(c, f, wire_type, LABEL_DISPATCH);
+       dispatchtarget(c, method, f, wire_type);
+        putop(c, OP_PUSHTAGDELIM, 0);
+        putop(c, OP_STARTSEQ, getsel(f, UPB_HANDLER_STARTSEQ));
+       label(c, LABEL_LOOPSTART);
+        putpush(c, f);
+        putop(c, OP_STARTSUBMSG, getsel(f, UPB_HANDLER_STARTSUBMSG));
+        putop(c, OP_CALL, sub_m);
+        putop(c, OP_POP);
+        putcb(c, OP_ENDSUBMSG, h, f, UPB_HANDLER_ENDSUBMSG);
+        if (wire_type == UPB_WIRE_TYPE_DELIMITED) {
           putop(c, OP_SETDELIM);
         }
-        break;
-      default: {
-        opcode parse_type = (opcode)type;
-        assert((int)parse_type >= 0 && parse_type <= OP_MAX);
-        upb_selector_t sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
-        int wire_type = native_wire_types[upb_fielddef_descriptortype(f)];
-        if (upb_fielddef_isseq(f)) {
-          putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
-          putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_DISPATCH);
-         dispatchtarget(c, method, f, UPB_WIRE_TYPE_DELIMITED);
-          putop(c, OP_PUSHLENDELIM);
-          putop(c, OP_STARTSEQ, getsel(f, UPB_HANDLER_STARTSEQ));  // Packed
-         label(c, LABEL_LOOPSTART);
-          putop(c, parse_type, sel);
-          putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
-          putop(c, OP_BRANCH, -LABEL_LOOPSTART);
-         dispatchtarget(c, method, f, wire_type);
-          putop(c, OP_PUSHTAGDELIM);
-          putop(c, OP_STARTSEQ, getsel(f, UPB_HANDLER_STARTSEQ));  // Non-packed
-         label(c, LABEL_LOOPSTART);
-          putop(c, parse_type, sel);
-          putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
-          putchecktag(c, f, wire_type, LABEL_LOOPBREAK);
-          putop(c, OP_BRANCH, -LABEL_LOOPSTART);
-         label(c, LABEL_LOOPBREAK);
-          putop(c, OP_POP);  // Packed and non-packed join.
-          putop(c, OP_ENDSEQ, getsel(f, UPB_HANDLER_ENDSEQ));
-          putop(c, OP_SETDELIM);  // Could remove for non-packed by dup ENDSEQ.
-        } else {
-          putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
-          putchecktag(c, f, wire_type, LABEL_DISPATCH);
-         dispatchtarget(c, method, f, wire_type);
-          putop(c, parse_type, sel);
+        putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
+        putchecktag(c, f, wire_type, LABEL_LOOPBREAK);
+        putop(c, OP_BRANCH, -LABEL_LOOPSTART);
+       label(c, LABEL_LOOPBREAK);
+        putop(c, OP_POP);
+        putcb(c, OP_ENDSEQ, h, f, UPB_HANDLER_ENDSEQ);
+      } else {
+        putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
+        putchecktag(c, f, wire_type, LABEL_DISPATCH);
+       dispatchtarget(c, method, f, wire_type);
+        putpush(c, f);
+        putop(c, OP_STARTSUBMSG, getsel(f, UPB_HANDLER_STARTSUBMSG));
+        putop(c, OP_CALL, sub_m);
+        putop(c, OP_POP);
+        putcb(c, OP_ENDSUBMSG, h, f, UPB_HANDLER_ENDSUBMSG);
+        if (wire_type == UPB_WIRE_TYPE_DELIMITED) {
+          putop(c, OP_SETDELIM);
         }
+      }
+    } else if (type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES ||
+               type == UPB_TYPE_MESSAGE) {
+      label(c, LABEL_FIELD);
+      if (upb_fielddef_isseq(f)) {
+        putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
+        putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_DISPATCH);
+       dispatchtarget(c, method, f, UPB_WIRE_TYPE_DELIMITED);
+        putop(c, OP_PUSHTAGDELIM, 0);
+        putop(c, OP_STARTSEQ, getsel(f, UPB_HANDLER_STARTSEQ));
+       label(c, LABEL_LOOPSTART);
+        putop(c, OP_PUSHLENDELIM);
+        putop(c, OP_STARTSTR, getsel(f, UPB_HANDLER_STARTSTR));
+        // Need to emit even if no handler to skip past the string.
+        putop(c, OP_STRING, getsel(f, UPB_HANDLER_STRING));
+        putop(c, OP_POP);
+        putcb(c, OP_ENDSTR, h, f, UPB_HANDLER_ENDSTR);
+        putop(c, OP_SETDELIM);
+        putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
+        putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_LOOPBREAK);
+        putop(c, OP_BRANCH, -LABEL_LOOPSTART);
+       label(c, LABEL_LOOPBREAK);
+        putop(c, OP_POP);
+        putcb(c, OP_ENDSEQ, h, f, UPB_HANDLER_ENDSEQ);
+      } else {
+        putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
+        putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_DISPATCH);
+       dispatchtarget(c, method, f, UPB_WIRE_TYPE_DELIMITED);
+        putop(c, OP_PUSHLENDELIM);
+        putop(c, OP_STARTSTR, getsel(f, UPB_HANDLER_STARTSTR));
+        putop(c, OP_STRING, getsel(f, UPB_HANDLER_STRING));
+        putop(c, OP_POP);
+        putcb(c, OP_ENDSTR, h, f, UPB_HANDLER_ENDSTR);
+        putop(c, OP_SETDELIM);
+      }
+    } else {
+      label(c, LABEL_FIELD);
+      opcode parse_type = (opcode)descriptor_type;
+      assert((int)parse_type >= 0 && parse_type <= OP_MAX);
+      upb_selector_t sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
+      int wire_type = native_wire_types[upb_fielddef_descriptortype(f)];
+      if (upb_fielddef_isseq(f)) {
+        putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
+        putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_DISPATCH);
+       dispatchtarget(c, method, f, UPB_WIRE_TYPE_DELIMITED);
+        putop(c, OP_PUSHLENDELIM);
+        putop(c, OP_STARTSEQ, getsel(f, UPB_HANDLER_STARTSEQ));  // Packed
+       label(c, LABEL_LOOPSTART);
+        putop(c, parse_type, sel);
+        putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
+        putop(c, OP_BRANCH, -LABEL_LOOPSTART);
+       dispatchtarget(c, method, f, wire_type);
+        putop(c, OP_PUSHTAGDELIM, 0);
+        putop(c, OP_STARTSEQ, getsel(f, UPB_HANDLER_STARTSEQ));  // Non-packed
+       label(c, LABEL_LOOPSTART);
+        putop(c, parse_type, sel);
+        putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
+        putchecktag(c, f, wire_type, LABEL_LOOPBREAK);
+        putop(c, OP_BRANCH, -LABEL_LOOPSTART);
+       label(c, LABEL_LOOPBREAK);
+        putop(c, OP_POP);  // Packed and non-packed join.
+        putcb(c, OP_ENDSEQ, h, f, UPB_HANDLER_ENDSEQ);
+        putop(c, OP_SETDELIM);  // Could remove for non-packed by dup ENDSEQ.
+      } else {
+        putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
+        putchecktag(c, f, wire_type, LABEL_DISPATCH);
+       dispatchtarget(c, method, f, wire_type);
+        putop(c, parse_type, sel);
       }
     }
   }
+
   // For now we just loop back to the last field of the message (or if none,
   // the DISPATCH opcode for the message.
   putop(c, OP_BRANCH, -LABEL_FIELD);
+
+  // Insert both a label and a dispatch table entry for this end-of-msg.
  label(c, LABEL_ENDMSG);
-  putop(c, OP_ENDMSG);
+  upb_value val = upb_value_uint64(pcofs(c) - method->code_base.ofs);
+  upb_inttable_insert(&method->dispatch, DISPATCH_ENDMSG, val);
+
+  putsel(c, OP_ENDMSG, UPB_ENDMSG_SELECTOR, h);
+  putop(c, OP_RET);
 
   upb_inttable_compact(&method->dispatch);
 }
 
-// Populate "methods" with new upb_pbdecodermethod objects reachable from "md".
-// "h" can be NULL, in which case the methods will not be statically bound to
-// destination handlers.
+// Populate "methods" with new upb_pbdecodermethod objects reachable from "h".
+// Returns the method for these handlers.
 //
-// Returns the method for this msgdef/handlers.
-//
-// Note that there is a deep difference between keying the method table on
-// upb_msgdef and keying it on upb_handlers.  Since upb_msgdef : upb_handlers
-// can be 1:many, binding a handlers statically can result in *more* methods
-// being generated than if the methods are dynamically-bound.
-//
-// On the other hand, if/when the optimization mentioned below is implemented,
-// binding to a upb_handlers can result in *fewer* methods being generated if
-// many of the submessages have no handlers bound to them.
-static void find_methods(compiler *c, const upb_msgdef *md,
-                         const upb_handlers *h) {
-  const void *key = methodkey(md, h);
+// Generates a new method for every destination handlers reachable from "h".
+static void find_methods(compiler *c, const upb_handlers *h) {
   upb_value v;
-  if (upb_inttable_lookupptr(&c->group->methods, key, &v))
+  if (upb_inttable_lookupptr(&c->group->methods, h, &v))
     return;
-  newmethod(md, h, c->group, key);
+  newmethod(h, c->group);
 
   // Find submethods.
   upb_msg_iter i;
+  const upb_msgdef *md = upb_handlers_msgdef(h);
   for(upb_msg_begin(&i, md); !upb_msg_done(&i); upb_msg_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
-    if (upb_fielddef_type(f) != UPB_TYPE_MESSAGE)
-      continue;
-    const upb_handlers *sub_h = h ? upb_handlers_getsubhandlers(h, f) : NULL;
-
-    if (h && !sub_h &&
-        upb_fielddef_descriptortype(f) == UPB_DESCRIPTOR_TYPE_MESSAGE) {
-      // OPT: We could optimize away the sub-method, but would have to make sure
-      // this field is compiled as a string instead of a submessage.
+    const upb_handlers *sub_h;
+    if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE &&
+        (sub_h = upb_handlers_getsubhandlers(h, f)) != NULL) {
+      // We only generate a decoder method for submessages with handlers.
+      // Others will be parsed as unknown fields.
+      find_methods(c, sub_h);
     }
-
-    find_methods(c, upb_downcast_msgdef(upb_fielddef_subdef(f)), sub_h);
   }
 }
 
@@ -814,12 +828,6 @@ static void sethandlers(mgroup *g, bool allowjit) {
   }
 }
 
-static bool bind_dynamic(bool allowjit) {
-  // For the moment, JIT handlers always bind statically, but bytecode handlers
-  // never do.
-  return !allowjit;
-}
-
 #else  // UPB_USE_JIT_X64
 
 static void sethandlers(mgroup *g, bool allowjit) {
@@ -828,33 +836,19 @@ static void sethandlers(mgroup *g, bool allowjit) {
   set_bytecode_handlers(g);
 }
 
-static bool bind_dynamic(bool allowjit) {
-  // Bytecode handlers never bind statically.
-  UPB_UNUSED(allowjit);
-  return true;
-}
-
 #endif  // UPB_USE_JIT_X64
 
 
 // TODO(haberman): allow this to be constructed for an arbitrary set of dest
 // handlers and other mgroups (but verify we have a transitive closure).
-const mgroup *mgroup_new(const upb_handlers *dest, bool allowjit,
+const mgroup *mgroup_new(const upb_handlers *dest, bool allowjit, bool lazy,
                          const void *owner) {
   UPB_UNUSED(allowjit);
   assert(upb_handlers_isfrozen(dest));
-  const upb_msgdef *md = upb_handlers_msgdef(dest);
 
   mgroup *g = newgroup(owner);
-  compiler *c = newcompiler(g);
-
-  if (bind_dynamic(allowjit)) {
-    // If binding dynamically, remove the reference against destination
-    // handlers.
-    dest = NULL;
-  }
-
-  find_methods(c, md, dest);
+  compiler *c = newcompiler(g, lazy);
+  find_methods(c, dest);
 
   // We compile in two passes:
   // 1. all messages are assigned relative offsets from the beginning of the
@@ -909,20 +903,28 @@ bool upb_pbcodecache_setallowjit(upb_pbcodecache *c, bool allow) {
   return true;
 }
 
-const upb_pbdecodermethod *upb_pbcodecache_getdecodermethodfordesthandlers(
-    upb_pbcodecache *c, const upb_handlers *handlers) {
+const upb_pbdecodermethod *upb_pbcodecache_getdecodermethod(
+    upb_pbcodecache *c, const upb_pbdecodermethodopts *opts) {
   // Right now we build a new DecoderMethod every time.
   // TODO(haberman): properly cache methods by their true key.
-  const mgroup *g = mgroup_new(handlers, c->allow_jit_, c);
+  const mgroup *g = mgroup_new(opts->handlers, c->allow_jit_, opts->lazy, c);
   upb_inttable_push(&c->groups, upb_value_constptr(g));
 
-  const upb_msgdef *md = upb_handlers_msgdef(handlers);
-  if (bind_dynamic(c->allow_jit_)) {
-    handlers = NULL;
-  }
-
   upb_value v;
-  bool ok = upb_inttable_lookupptr(&g->methods, methodkey(md, handlers), &v);
+  bool ok = upb_inttable_lookupptr(&g->methods, opts->handlers, &v);
   UPB_ASSERT_VAR(ok, ok);
   return upb_value_getptr(v);
+}
+
+
+/* upb_pbdecodermethodopts ****************************************************/
+
+void upb_pbdecodermethodopts_init(upb_pbdecodermethodopts *opts,
+                                  const upb_handlers *h) {
+  opts->handlers = h;
+  opts->lazy = false;
+}
+
+void upb_pbdecodermethodopts_setlazy(upb_pbdecodermethodopts *opts, bool lazy) {
+  opts->lazy = lazy;
 }

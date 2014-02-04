@@ -45,6 +45,15 @@ void compare_metadata(const google::protobuf::Descriptor* d,
   }
 }
 
+void print_diff(const google::protobuf::Message& msg1,
+                const google::protobuf::Message& msg2) {
+  std::string text_str1;
+  std::string text_str2;
+  google::protobuf::TextFormat::PrintToString(msg1, &text_str1);
+  google::protobuf::TextFormat::PrintToString(msg2, &text_str2);
+  fprintf(stderr, "str1: %s, str2: %s\n", text_str1.c_str(), text_str2.c_str());
+}
+
 void parse_and_compare(google::protobuf::Message *msg1,
                        google::protobuf::Message *msg2,
                        const upb::Handlers *protomsg_handlers,
@@ -55,7 +64,7 @@ void parse_and_compare(google::protobuf::Message *msg1,
   upb::pb::CodeCache cache;
   ASSERT(cache.set_allow_jit(allow_jit));
   upb::reffed_ptr<const upb::pb::DecoderMethod> decoder_method(
-      cache.GetDecoderMethodForDestHandlers(protomsg_handlers));
+      cache.GetDecoderMethod(upb::pb::DecoderMethodOptions(protomsg_handlers)));
 
   upb::Status status;
   upb::pb::Decoder decoder(decoder_method.get(), &status);
@@ -67,6 +76,7 @@ void parse_and_compare(google::protobuf::Message *msg1,
   bool ok = upb::BufferSource::PutBuffer(str, len, decoder.input());
   if (!ok) {
     fprintf(stderr, "error parsing: %s\n", status.error_message());
+    print_diff(*msg1, *msg2);
   }
   ASSERT(ok);
   ASSERT(status.ok());
@@ -79,14 +89,8 @@ void parse_and_compare(google::protobuf::Message *msg1,
   std::string str2;
   msg1->SerializeToString(&str1);
   msg2->SerializeToString(&str2);
-
-  std::string text_str1;
-  std::string text_str2;
-  google::protobuf::TextFormat::PrintToString(*msg1, &text_str1);
-  google::protobuf::TextFormat::PrintToString(*msg2, &text_str2);
   if (str1 != str2) {
-    fprintf(stderr, "str1: %s, str2: %s\n",
-            text_str1.c_str(), text_str2.c_str());
+    print_diff(*msg1, *msg2);
   }
   ASSERT(str1 == str2);
   ASSERT(std::string(str, len) == str2);

@@ -18,7 +18,6 @@
 #endif
 
 #define CHECK_SUSPEND(x) if (!(x)) return upb_pbdecoder_suspend(d);
-#define CHECK_RETURN(x) { int32_t ret = x; if (ret >= 0) return ret; }
 
 // Error messages that are shared between the bytecode and JIT decoders.
 const char *kPbDecoderStackOverflow = "Nesting too deep.";
@@ -45,10 +44,10 @@ static bool consumes_input(opcode op) {
     case OP_PUSHTAGDELIM:
     case OP_POP:
     case OP_SETDELIM:
-    case OP_SETGROUPNUM:
     case OP_SETBIGGROUPNUM:
     case OP_CHECKDELIM:
     case OP_CALL:
+    case OP_RET:
     case OP_BRANCH:
       return false;
     default:
@@ -147,13 +146,12 @@ static void checkpoint(upb_pbdecoder *d) {
 }
 
 // Resumes the decoder from an initial state or from a previous suspend.
-void *upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
-                           size_t size, const upb_bufhandle *handle) {
+int32_t upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
+                             size_t size, const upb_bufhandle *handle) {
   UPB_UNUSED(p);  // Useless; just for the benefit of the JIT.
   d->buf_param = buf;
   d->size_param = size;
   d->handle = handle;
-  d->skip = 0;
   if (d->residual_end > d->residual) {
     // We have residual bytes from the last buffer.
     assert(ptr(d) == d->residual);
@@ -161,7 +159,11 @@ void *upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
     switchtobuf(d, buf, buf + size);
   }
   d->checkpoint = ptr(d);
-  return d;  // For the JIT.
+  if (d->top->groupnum < 0) {
+    CHECK_RETURN(upb_pbdecoder_skipunknown(d, -1, 0));
+    d->checkpoint = ptr(d);
+  }
+  return DECODE_OK;
 }
 
 // Suspends the decoder at the last checkpoint, without saving any residual
@@ -176,10 +178,10 @@ size_t upb_pbdecoder_suspend(upb_pbdecoder *d) {
     assert(!in_residual_buf(d, d->checkpoint));
     assert(d->buf == d->buf_param);
     size_t consumed = d->checkpoint - d->buf;
-    d->bufstart_ofs += consumed + d->skip;
+    d->bufstart_ofs += consumed;
     d->residual_end = d->residual;
     switchtobuf(d, d->residual, d->residual_end);
-    return consumed + d->skip;
+    return consumed;
   }
 }
 
@@ -209,11 +211,11 @@ static size_t suspend_save(upb_pbdecoder *d) {
     assert(save <= sizeof(d->residual));
     memcpy(d->residual, ptr(d), save);
     d->residual_end = d->residual + save;
-    d->bufstart_ofs = offset(d) + d->skip;
+    d->bufstart_ofs = offset(d);
   }
 
   switchtobuf(d, d->residual, d->residual_end);
-  return d->size_param + d->skip;
+  return d->size_param;
 }
 
 static int32_t skip(upb_pbdecoder *d, size_t bytes) {
@@ -221,12 +223,16 @@ static int32_t skip(upb_pbdecoder *d, size_t bytes) {
   if (curbufleft(d) >= bytes) {
     // Skipped data is all in current buffer.
     advance(d, bytes);
+    return DECODE_OK;
   } else {
     // Skipped data extends beyond currently available buffers.
-    d->skip = bytes - curbufleft(d);
-    advance(d, curbufleft(d));
+    d->pc = d->last;
+    size_t skip = bytes - curbufleft(d);
+    d->bufstart_ofs += (d->end - d->buf) + skip;
+    d->residual_end = d->residual;
+    switchtobuf(d, d->residual, d->residual_end);
+    return d->size_param + skip;
   }
-  return DECODE_OK;
 }
 
 FORCEINLINE void consumebytes(upb_pbdecoder *d, void *buf, size_t bytes) {
@@ -247,8 +253,8 @@ static NOINLINE int32_t getbytes_slow(upb_pbdecoder *d, void *buf,
   if (curbufleft(d) >= bytes) {
     consumebytes(d, buf + avail, bytes);
     return DECODE_OK;
-  } else if (d->data_end - d->buf == d->top->end_ofs - d->bufstart_ofs) {
-    seterr(d, "Submessage ended in the middle of a value");
+  } else if (d->data_end == d->delim_end) {
+    seterr(d, "Submessage ended in the middle of a value or group");
     return upb_pbdecoder_suspend(d);
   } else {
     return suspend_save(d);
@@ -378,10 +384,23 @@ static bool push(upb_pbdecoder *d, uint64_t end) {
   fr++;
   fr->end_ofs = end;
   fr->dispatch = NULL;
-  fr->groupnum = -1;
+  fr->groupnum = 0;
   d->top = fr;
   return true;
 }
+
+static bool pushtagdelim(upb_pbdecoder *d, uint32_t arg) {
+  // While we expect to see an "end" tag (either ENDGROUP or a non-sequence
+  // field number) prior to hitting any enclosing submessage end, pushing our
+  // existing delim end prevents us from continuing to parse values from a
+  // corrupt proto that doesn't give us an END tag in time.
+  if (!push(d, d->top->end_ofs))
+    return false;
+  d->top->groupnum = arg;
+  return true;
+}
+
+static void pop(upb_pbdecoder *d) { d->top--; }
 
 NOINLINE int32_t upb_pbdecoder_checktag_slow(upb_pbdecoder *d,
                                              uint64_t expected) {
@@ -400,44 +419,101 @@ NOINLINE int32_t upb_pbdecoder_checktag_slow(upb_pbdecoder *d,
   }
 }
 
-int32_t upb_pbdecoder_skipunknown(upb_pbdecoder *d, uint32_t fieldnum,
+int32_t upb_pbdecoder_skipunknown(upb_pbdecoder *d, int32_t fieldnum,
                                   uint8_t wire_type) {
-  if (fieldnum == 0 || fieldnum > UPB_MAX_FIELDNUMBER) {
-    seterr(d, "Invalid field number");
-    return upb_pbdecoder_suspend(d);
-  }
+  if (fieldnum >= 0)
+    goto have_tag;
 
-  if (wire_type == UPB_WIRE_TYPE_END_GROUP) {
-    if (fieldnum != d->top->groupnum) {
-      seterr(d, "Unmatched ENDGROUP tag.");
-      return upb_pbdecoder_suspend(d);
-    }
-    return DECODE_ENDGROUP;
-  }
+  while (true) {
+    uint32_t tag;
+    CHECK_RETURN(decode_v32(d, &tag));
+    wire_type = tag & 0x7;
+    fieldnum = tag >> 3;
 
-  // TODO: deliver to unknown field callback.
-  switch (wire_type) {
-    case UPB_WIRE_TYPE_VARINT: {
-      uint64_t u64;
-      return decode_varint(d, &u64);
-    }
-    case UPB_WIRE_TYPE_32BIT:
-      return skip(d, 4);
-    case UPB_WIRE_TYPE_64BIT:
-      return skip(d, 8);
-    case UPB_WIRE_TYPE_DELIMITED: {
-      uint32_t len;
-      CHECK_RETURN(decode_v32(d, &len));
-      return skip(d, len);
-    }
-    case UPB_WIRE_TYPE_START_GROUP:
-      seterr(d, "Can't handle unknown groups yet");
+have_tag:
+    if (fieldnum == 0) {
+      seterr(d, "Saw invalid field number (0)");
       return upb_pbdecoder_suspend(d);
-    case UPB_WIRE_TYPE_END_GROUP:
-    default:
-      seterr(d, "Invalid wire type");
+    }
+
+    // TODO: deliver to unknown field callback.
+    switch (wire_type) {
+      case UPB_WIRE_TYPE_32BIT:
+        CHECK_RETURN(skip(d, 4));
+        break;
+      case UPB_WIRE_TYPE_64BIT:
+        CHECK_RETURN(skip(d, 8));
+        break;
+      case UPB_WIRE_TYPE_VARINT: {
+        uint64_t u64;
+        CHECK_RETURN(decode_varint(d, &u64));
+        break;
+      }
+      case UPB_WIRE_TYPE_DELIMITED: {
+        uint32_t len;
+        CHECK_RETURN(decode_v32(d, &len));
+        CHECK_RETURN(skip(d, len));
+        break;
+      }
+      case UPB_WIRE_TYPE_START_GROUP:
+        CHECK_SUSPEND(pushtagdelim(d, -fieldnum));
+        break;
+      case UPB_WIRE_TYPE_END_GROUP:
+        if (fieldnum == -d->top->groupnum) {
+          pop(d);
+        } else if (fieldnum == d->top->groupnum) {
+          return DECODE_ENDGROUP;
+        } else {
+          seterr(d, "Unmatched ENDGROUP tag.");
+          return upb_pbdecoder_suspend(d);
+        }
+        break;
+      default:
+        seterr(d, "Invalid wire type");
+        return upb_pbdecoder_suspend(d);
+    }
+
+    if (d->top->groupnum >= 0) {
+      return DECODE_OK;
+    }
+
+    if (ptr(d) == d->delim_end) {
+      seterr(d, "Enclosing submessage ended in the middle of value or group");
+      // Unlike most errors we notice during parsing, right now we have consumed
+      // all of the user's input.
+      //
+      // There are three different options for how to handle this case:
+      //
+      //   1. decode() = short count, error = set
+      //   2. decode() = full count, error = set
+      //   3. decode() = full count, error NOT set, short count and error will
+      //      be reported on next call to decode() (or end())
+      //
+      // (1) and (3) have the advantage that they preserve the invariant that an
+      // error occurs iff decode() returns a short count.
+      //
+      // (2) and (3) have the advantage of reflecting the fact that all of the
+      // bytes were in fact parsed (and possibly delivered to the unknown field
+      // handler, in the future when that is supported).
+      //
+      // (3) requires extra state in the decode (a place to store the "permanent
+      // error" that we should return for all subsequent attempts to decode).
+      // But we likely want this anyway.
+      //
+      // Right now we do (1), thanks to the fact that we checkpoint *after* this
+      // check.  (3) may be a better choice long term; unclear at the moment.
       return upb_pbdecoder_suspend(d);
+    }
+
+    checkpoint(d);
   }
+}
+
+static void goto_endmsg(upb_pbdecoder *d) {
+  upb_value v;
+  bool found = upb_inttable_lookup32(d->top->dispatch, DISPATCH_ENDMSG, &v);
+  UPB_ASSERT_VAR(found, found);
+  d->pc = d->top->base + upb_value_getuint64(v);
 }
 
 static int32_t dispatch(upb_pbdecoder *d) {
@@ -470,7 +546,7 @@ static int32_t dispatch(upb_pbdecoder *d) {
   int32_t ret = upb_pbdecoder_skipunknown(d, fieldnum, wire_type);
 
   if (ret == DECODE_ENDGROUP) {
-    d->pc = d->top->base - 1;  // Back to OP_ENDMSG.
+    goto_endmsg(d);
     return DECODE_OK;
   } else {
     d->pc = d->last - 1;  // Rewind to CHECKDELIM.
@@ -493,7 +569,11 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
   upb_pbdecoder *d = closure;
   const mgroup *group = hd;
   assert(buf);
-  upb_pbdecoder_resume(d, NULL, buf, size, handle);
+  int32_t result = upb_pbdecoder_resume(d, NULL, buf, size, handle);
+  if (result == DECODE_ENDGROUP) {
+    goto_endmsg(d);
+  }
+  CHECK_RETURN(result);
   UPB_UNUSED(group);
 
 #define VMCASE(op, code) \
@@ -552,8 +632,6 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
       )
       VMCASE(OP_ENDMSG,
         CHECK_SUSPEND(upb_sink_endmsg(&d->top->sink, d->status));
-        assert(d->call_len > 0);
-        d->pc = d->callstack[--d->call_len];
       )
       VMCASE(OP_STARTSEQ,
         upb_pbdecoder_frame *outer = outer_frame(d);
@@ -579,25 +657,39 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
       )
       VMCASE(OP_STRING,
         uint32_t len = curbufleft(d);
-        CHECK_SUSPEND(
-            upb_sink_putstring(&d->top->sink, arg, ptr(d), len, handle));
-        advance(d, len);
-        if (d->delim_end == NULL) {  // String extends beyond this buf?
-          d->pc--;
-          d->bufstart_ofs += size;
-          d->residual_end = d->residual;
-          return size;
+        size_t n = upb_sink_putstring(&d->top->sink, arg, ptr(d), len, handle);
+        if (n > len) {
+          if (n > d->top->end_ofs - offset(d)) {
+            seterr(d, "Tried to skip past end of string.");
+            return upb_pbdecoder_suspend(d);
+          } else {
+            return skip(d, n);
+          }
+        } else if (n < len) {
+          advance(d, n);
+          return upb_pbdecoder_suspend(d);
+        } else {
+          advance(d, n);
+          if (d->delim_end == NULL) {  // String extends beyond this buf?
+            d->pc--;  // Do OP_STRING again when we resume.
+            d->bufstart_ofs += size;
+            d->residual_end = d->residual;
+            return size;
+          }
         }
       )
       VMCASE(OP_ENDSTR,
         CHECK_SUSPEND(upb_sink_endstr(&d->top->sink, arg));
       )
       VMCASE(OP_PUSHTAGDELIM,
-        CHECK_SUSPEND(push(d, d->top->end_ofs));
+        CHECK_SUSPEND(pushtagdelim(d, arg));
+      )
+      VMCASE(OP_SETBIGGROUPNUM,
+        d->top->groupnum = *d->pc++;
       )
       VMCASE(OP_POP,
         assert(d->top > d->stack);
-        d->top--;
+        pop(d);
       )
       VMCASE(OP_PUSHLENDELIM,
         uint32_t len;
@@ -608,13 +700,9 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
       VMCASE(OP_SETDELIM,
         set_delim_end(d);
       )
-      VMCASE(OP_SETGROUPNUM,
-        d->top->groupnum = arg;
-      )
-      VMCASE(OP_SETBIGGROUPNUM,
-        d->top->groupnum = *d->pc++;
-      )
       VMCASE(OP_CHECKDELIM,
+        // We are guaranteed of this assert because we never allow ourselves to
+        // consume bytes beyond data_end, which covers delim_end when non-NULL.
         assert(!(d->delim_end && ptr(d) > d->delim_end));
         if (ptr(d) == d->delim_end)
           d->pc += longofs;
@@ -622,6 +710,10 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
       VMCASE(OP_CALL,
         d->callstack[d->call_len++] = d->pc;
         d->pc += longofs;
+      )
+      VMCASE(OP_RET,
+        assert(d->call_len > 0);
+        d->pc = d->callstack[--d->call_len];
       )
       VMCASE(OP_BRANCH,
         d->pc += longofs;
@@ -755,6 +847,7 @@ void upb_pbdecoder_init(upb_pbdecoder *d, const upb_pbdecodermethod *m,
 void upb_pbdecoder_reset(upb_pbdecoder *d) {
   d->top = d->stack;
   d->top->end_ofs = UINT64_MAX;
+  d->top->groupnum = 0;
   d->bufstart_ofs = 0;
   d->ptr = d->residual;
   d->buf = d->residual;

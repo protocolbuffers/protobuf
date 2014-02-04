@@ -145,6 +145,12 @@ static bool upb_validate_field(upb_fielddef *f, upb_status *s) {
     upb_status_seterrmsg(s, "fielddef type was not initialized");
     return false;
   }
+  if (upb_fielddef_lazy(f) &&
+      upb_fielddef_descriptortype(f) != UPB_DESCRIPTOR_TYPE_MESSAGE) {
+    upb_status_seterrmsg(s,
+                         "only length-delimited submessage fields may be lazy");
+    return false;
+  }
   if (upb_fielddef_hassubdef(f)) {
     if (f->subdef_is_symbolic) {
       upb_status_seterrf(s,
@@ -463,6 +469,7 @@ upb_fielddef *upb_fielddef_new(const void *owner) {
   f->type_is_set_ = false;
   f->tagdelim = false;
   f->is_extension_ = false;
+  f->lazy_ = false;
 
   // For the moment we default this to UPB_INTFMT_VARIABLE, since it will work
   // with all integer types and is in some since more "default" since the most
@@ -563,6 +570,10 @@ uint32_t upb_fielddef_number(const upb_fielddef *f) {
 
 bool upb_fielddef_isextension(const upb_fielddef *f) {
   return f->is_extension_;
+}
+
+bool upb_fielddef_lazy(const upb_fielddef *f) {
+  return f->lazy_;
 }
 
 const char *upb_fielddef_name(const upb_fielddef *f) {
@@ -824,10 +835,14 @@ upb_descriptortype_t upb_fielddef_descriptortype(const upb_fielddef *f) {
   return 0;
 }
 
-bool upb_fielddef_setisextension(upb_fielddef *f, bool is_extension) {
+void upb_fielddef_setisextension(upb_fielddef *f, bool is_extension) {
   assert(!upb_fielddef_isfrozen(f));
   f->is_extension_ = is_extension;
-  return true;
+}
+
+void upb_fielddef_setlazy(upb_fielddef *f, bool lazy) {
+  assert(!upb_fielddef_isfrozen(f));
+  f->lazy_ = lazy;
 }
 
 void upb_fielddef_setlabel(upb_fielddef *f, upb_label_t label) {
@@ -836,17 +851,16 @@ void upb_fielddef_setlabel(upb_fielddef *f, upb_label_t label) {
   f->label_ = label;
 }
 
-bool upb_fielddef_setintfmt(upb_fielddef *f, upb_intfmt_t fmt) {
+void upb_fielddef_setintfmt(upb_fielddef *f, upb_intfmt_t fmt) {
   assert(!upb_fielddef_isfrozen(f));
   assert(upb_fielddef_checkintfmt(fmt));
   f->intfmt = fmt;
-  return true;
 }
 
-bool upb_fielddef_settagdelim(upb_fielddef *f, bool tag_delim) {
+void upb_fielddef_settagdelim(upb_fielddef *f, bool tag_delim) {
   assert(!upb_fielddef_isfrozen(f));
   f->tagdelim = tag_delim;
-  return true;
+  f->tagdelim = tag_delim;
 }
 
 static bool checksetdefault(upb_fielddef *f, upb_fieldtype_t type) {

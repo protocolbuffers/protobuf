@@ -274,6 +274,20 @@ class upb::FieldDef /* : public upb::Def */ {
   uint32_t number() const;   // Returns 0 if uninitialized.
   bool is_extension() const;
 
+  // For UPB_TYPE_MESSAGE fields only where is_tag_delimited() == false,
+  // indicates whether this field should have lazy parsing handlers that yield
+  // the unparsed string for the submessage.
+  //
+  // When we freeze, we ensure that this can only be true for length-delimited
+  // message fields.  Prior to freezing this can be true or false with no
+  // restrictions.
+  //
+  // TODO(haberman): I think we want to move this into a FieldOptions container
+  // when we add support for custom options (the FieldOptions struct will
+  // contain both regular FieldOptions like "lazy" *and* custom options).
+  bool lazy() const;
+  void set_lazy(bool lazy);
+
   // An integer that can be used as an index into an array of fields for
   // whatever message this field belongs to.  Guaranteed to be less than
   // f->containing_type()->field_count().  May only be accessed once the def has
@@ -450,6 +464,7 @@ struct upb_fielddef {
   bool default_is_string;
   bool type_is_set_;     // False until type is explicitly set.
   bool is_extension_;
+  bool lazy_;
   upb_intfmt_t intfmt;
   bool tagdelim;
   upb_fieldtype_t type_;
@@ -459,14 +474,14 @@ struct upb_fielddef {
   uint32_t index_;
 };
 
-#define UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, is_extension, name,   \
-                          num, msgdef, subdef, selector_base, index,           \
+#define UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, is_extension, lazy,   \
+                          name, num, msgdef, subdef, selector_base, index,     \
                           defaultval, refs, ref2s)                             \
   {                                                                            \
     UPB_DEF_INIT(name, UPB_DEF_FIELD, refs, ref2s), defaultval, {msgdef},      \
         {subdef}, false, false,                                                \
         type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES, true, is_extension, \
-        intfmt, tagdelim, type, label, num, selector_base, index               \
+        lazy, intfmt, tagdelim, type, label, num, selector_base, index         \
   }
 
 // Native C API.
@@ -496,6 +511,7 @@ upb_label_t upb_fielddef_label(const upb_fielddef *f);
 uint32_t upb_fielddef_number(const upb_fielddef *f);
 const char *upb_fielddef_name(const upb_fielddef *f);
 bool upb_fielddef_isextension(const upb_fielddef *f);
+bool upb_fielddef_lazy(const upb_fielddef *f);
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f);
 upb_msgdef *upb_fielddef_containingtype_mutable(upb_fielddef *f);
 const char *upb_fielddef_containingtypename(upb_fielddef *f);
@@ -528,9 +544,10 @@ bool upb_fielddef_setnumber(upb_fielddef *f, uint32_t number, upb_status *s);
 bool upb_fielddef_setname(upb_fielddef *f, const char *name, upb_status *s);
 bool upb_fielddef_setcontainingtypename(upb_fielddef *f, const char *name,
                                         upb_status *s);
-bool upb_fielddef_setisextension(upb_fielddef *f, bool is_extension);
-bool upb_fielddef_setintfmt(upb_fielddef *f, upb_intfmt_t fmt);
-bool upb_fielddef_settagdelim(upb_fielddef *f, bool tag_delim);
+void upb_fielddef_setisextension(upb_fielddef *f, bool is_extension);
+void upb_fielddef_setlazy(upb_fielddef *f, bool lazy);
+void upb_fielddef_setintfmt(upb_fielddef *f, upb_intfmt_t fmt);
+void upb_fielddef_settagdelim(upb_fielddef *f, bool tag_delim);
 void upb_fielddef_setdefaultint64(upb_fielddef *f, int64_t val);
 void upb_fielddef_setdefaultint32(upb_fielddef *f, int32_t val);
 void upb_fielddef_setdefaultuint64(upb_fielddef *f, uint64_t val);
@@ -1070,6 +1087,12 @@ inline uint32_t FieldDef::number() const { return upb_fielddef_number(this); }
 inline const char* FieldDef::name() const { return upb_fielddef_name(this); }
 inline bool FieldDef::is_extension() const {
   return upb_fielddef_isextension(this);
+}
+inline bool FieldDef::lazy() const {
+  return upb_fielddef_lazy(this);
+}
+inline void FieldDef::set_lazy(bool lazy) {
+  upb_fielddef_setlazy(this, lazy);
 }
 inline const MessageDef* FieldDef::containing_type() const {
   return upb_fielddef_containingtype(this);

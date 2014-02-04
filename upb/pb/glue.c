@@ -17,8 +17,10 @@ upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
                                         void *owner, upb_status *status) {
   // Create handlers.
   const upb_handlers *reader_h = upb_descreader_newhandlers(&reader_h);
+  upb_pbdecodermethodopts opts;
+  upb_pbdecodermethodopts_init(&opts, reader_h);
   const upb_pbdecodermethod *decoder_m =
-      upb_pbdecodermethod_newfordesthandlers(reader_h, &decoder_m);
+      upb_pbdecodermethod_new(&opts, &decoder_m);
 
   upb_pbdecoder decoder;
   upb_descreader reader;

@@ -326,6 +326,10 @@ static void lupb_fielddef_dosetlabel(lua_State *L, upb_fielddef *f, int narg) {
   upb_fielddef_setlabel(f, label);
 }
 
+static void lupb_fielddef_dosetlazy(lua_State *L, upb_fielddef *f, int narg) {
+  upb_fielddef_setlazy(f, chkbool(L, narg, "lazy"));
+}
+
 static void lupb_fielddef_dosetname(lua_State *L, upb_fielddef *f, int narg) {
   CHK(upb_fielddef_setname(f, chkname(L, narg), &status));
 }
@@ -402,6 +406,12 @@ static int lupb_fielddef_setlabel(lua_State *L) {
   return 0;
 }
 
+static int lupb_fielddef_setlazy(lua_State *L) {
+  upb_fielddef *f = lupb_fielddef_checkmutable(L, 1);
+  lupb_fielddef_dosetlazy(L, f, 2);
+  return 0;
+}
+
 static int lupb_fielddef_setname(lua_State *L) {
   upb_fielddef *f = lupb_fielddef_checkmutable(L, 1);
   lupb_fielddef_dosetname(L, f, 2);
@@ -466,6 +476,7 @@ static int lupb_fielddef_new(lua_State *L) {
     else if (streql(key, "number")) lupb_fielddef_dosetnumber(L, f, v);
     else if (streql(key, "type")) lupb_fielddef_dosettype(L, f, v);
     else if (streql(key, "label")) lupb_fielddef_dosetlabel(L, f, v);
+    else if (streql(key, "lazy")) lupb_fielddef_dosetlazy(L, f, v);
     else if (streql(key, "is_extension"))
       lupb_fielddef_dosetisextension(L, f, v);
     else if (streql(key, "containing_type_name"))
@@ -538,6 +549,12 @@ static int lupb_fielddef_getsel(lua_State *L) {
 static int lupb_fielddef_label(lua_State *L) {
   const upb_fielddef *f = lupb_fielddef_check(L, 1);
   lua_pushnumber(L, upb_fielddef_label(f));
+  return 1;
+}
+
+static int lupb_fielddef_lazy(lua_State *L) {
+  const upb_fielddef *f = lupb_fielddef_check(L, 1);
+  lua_pushboolean(L, upb_fielddef_lazy(f));
   return 1;
 }
 
@@ -653,6 +670,7 @@ static const struct luaL_Reg lupb_fielddef_m[] = {
   {"is_extension", lupb_fielddef_isextension},
   {"istagdelim", lupb_fielddef_istagdelim},
   {"label", lupb_fielddef_label},
+  {"lazy", lupb_fielddef_lazy},
   {"name", lupb_fielddef_name},
   {"number", lupb_fielddef_number},
   {"subdef", lupb_fielddef_subdef},
@@ -663,6 +681,7 @@ static const struct luaL_Reg lupb_fielddef_m[] = {
   {"set_default", lupb_fielddef_setdefault},
   {"set_is_extension", lupb_fielddef_setisextension},
   {"set_label", lupb_fielddef_setlabel},
+  {"set_lazy", lupb_fielddef_setlazy},
   {"set_name", lupb_fielddef_setname},
   {"set_number", lupb_fielddef_setnumber},
   {"set_subdef", lupb_fielddef_setsubdef},

@@ -40,12 +40,10 @@ typedef enum {
   OP_PUSHLENDELIM   = 24,  // No arg.
   OP_POP            = 25,  // No arg.
   OP_SETDELIM       = 26,  // No arg.
-  OP_SETGROUPNUM    = 27,
-  OP_SETBIGGROUPNUM = 28,  // two words: | unused (24) | opc || groupnum (32) |
-
-  // The arg for these opcodes is a local label reference.
-  OP_CHECKDELIM     = 29,
-  OP_CALL           = 30,
+  OP_SETBIGGROUPNUM = 27,  // two words: | unused (24) | opc || groupnum (32) |
+  OP_CHECKDELIM     = 28,
+  OP_CALL           = 29,
+  OP_RET            = 30,
   OP_BRANCH         = 31,
 
   // Different opcodes depending on how many bytes expected.
@@ -112,10 +110,10 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
 bool upb_pbdecoder_end(void *closure, const void *handler_data);
 
 // Decoder-internal functions that the JIT calls to handle fallback paths.
-void *upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
-                           size_t size, const upb_bufhandle *handle);
+int32_t upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
+                             size_t size, const upb_bufhandle *handle);
 size_t upb_pbdecoder_suspend(upb_pbdecoder *d);
-int32_t upb_pbdecoder_skipunknown(upb_pbdecoder *d, uint32_t fieldnum,
+int32_t upb_pbdecoder_skipunknown(upb_pbdecoder *d, int32_t fieldnum,
                                   uint8_t wire_type);
 int32_t upb_pbdecoder_checktag_slow(upb_pbdecoder *d, uint64_t expected);
 int32_t upb_pbdecoder_decode_varint_slow(upb_pbdecoder *d, uint64_t *u64);
@@ -137,8 +135,21 @@ void upb_pbdecoder_freejit(mgroup *group);
 // wherever that takes you."
 #define LABEL_DISPATCH 0
 
+// A special slot in the dispatch table that stores the epilogue (ENDMSG and/or
+// RET) for branching to when we find an appropriate ENDGROUP tag.
+#define DISPATCH_ENDMSG 0
+
+// All of the functions in decoder.c that return int32_t return values according
+// to the following scheme:
+//   1. negative values indicate a return code from the following list.
+//   2. positive values indicate that error or end of buffer was hit, and
+//      that the decode function should immediately return the given value
+//      (the decoder state has already been suspended and is ready to be
+//      resumed).
 #define DECODE_OK -1
 #define DECODE_MISMATCH -2  // Used only from checktag_slow().
-#define DECODE_ENDGROUP -2  // Used only from checkunknown().
+#define DECODE_ENDGROUP -3  // Used only from checkunknown().
+
+#define CHECK_RETURN(x) { int32_t ret = x; if (ret >= 0) return ret; }
 
 #endif  // UPB_DECODER_INT_H_

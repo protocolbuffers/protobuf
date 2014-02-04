@@ -12,10 +12,7 @@
 
 #include <iostream>
 #include <set>
-
-#ifdef UPB_CXX11
 #include <type_traits>
-#endif
 
 #include "upb/def.h"
 #include "upb/descriptor/reader.h"

@@ -20,19 +20,23 @@ namespace pb {
 class CodeCache;
 class Decoder;
 class DecoderMethod;
+class DecoderMethodOptions;
 }  // namespace pb
 }  // namespace upb
 
 typedef upb::pb::CodeCache upb_pbcodecache;
 typedef upb::pb::Decoder upb_pbdecoder;
 typedef upb::pb::DecoderMethod upb_pbdecodermethod;
+typedef upb::pb::DecoderMethodOptions upb_pbdecodermethodopts;
 #else
 struct upb_pbdecoder;
 struct upb_pbdecodermethod;
+struct upb_pbdecodermethodopts;
 struct upb_pbcodecache;
 
 typedef struct upb_pbdecoder upb_pbdecoder;
 typedef struct upb_pbdecodermethod upb_pbdecodermethod;
+typedef struct upb_pbdecodermethodopts upb_pbdecodermethodopts;
 typedef struct upb_pbcodecache upb_pbcodecache;
 #endif
 
@@ -72,14 +76,40 @@ typedef struct {
   // that calls from the JIT into C work correctly.
   uint64_t end_ofs;
   const uint32_t *base;
-  uint32_t groupnum;
+
+  // 0 indicates a length-delimited field.
+  // A positive number indicates a known group.
+  // A negative number indicates an unknown group.
+  int32_t groupnum;
   upb_inttable *dispatch;  // Not used by the JIT.
 } upb_pbdecoder_frame;
 
 #ifdef __cplusplus
 
-// Represents the code to parse a protobuf according to a specific schema,
-// optionally bound to a set of destination handlers.
+// The parameters one uses to construct a DecoderMethod.
+// TODO(haberman): move allowjit here?  Seems more convenient for users.
+class upb::pb::DecoderMethodOptions {
+ public:
+  // Parameter represents the destination handlers that this method will push
+  // to.
+  explicit DecoderMethodOptions(const Handlers* dest_handlers);
+
+  // Should the decoder push submessages to lazy handlers for fields that have
+  // them?  The caller should set this iff the lazy handlers expect data that is
+  // in protobuf binary format and the caller wishes to lazy parse it.
+  void set_lazy(bool lazy);
+
+ private:
+#else
+struct upb_pbdecodermethodopts {
+#endif
+  const upb_handlers *handlers;
+  bool lazy;
+};
+
+#ifdef __cplusplus
+
+// Represents the code to parse a protobuf according to a destination Handlers.
 class upb::pb::DecoderMethod /* : public upb::RefCounted */ {
  public:
   // From upb::ReferenceCounted.
@@ -88,14 +118,9 @@ class upb::pb::DecoderMethod /* : public upb::RefCounted */ {
   void DonateRef(const void* from, const void* to) const;
   void CheckRef(const void* owner) const;
 
-  // The schema that this method parses.  Never NULL.
-  const MessageDef* schema() const;
-
   // The destination handlers that are statically bound to this method.
   // This method is only capable of outputting to a sink that uses these
   // handlers.
-  //
-  // Will be NULL if this method is not statically bound.
   const Handlers* dest_handlers() const;
 
   // The input handlers for this decoder method.
@@ -106,8 +131,7 @@ class upb::pb::DecoderMethod /* : public upb::RefCounted */ {
 
   // Convenience method for generating a DecoderMethod without explicitly
   // creating a CodeCache.
-  static reffed_ptr<const DecoderMethod> NewForDestHandlers(
-      const upb::Handlers *dest);
+  static reffed_ptr<const DecoderMethod> New(const DecoderMethodOptions& opts);
 
  private:
   UPB_DISALLOW_POD_OPS(DecoderMethod, upb::pb::DecoderMethod);
@@ -138,13 +162,7 @@ struct upb_pbdecodermethod {
   // The handler one calls to invoke this method.
   upb_byteshandler input_handler_;
 
-  // The message type that this method is parsing.
-  const upb_msgdef *schema_;
-
-  // The destination handlers this method is bound to, or NULL if this method
-  // can be bound to a destination handlers instance at runtime.
-  //
-  // If non-NULL, we own a ref.
+  // The destination handlers this method is bound to.  We own a ref.
   const upb_handlers *dest_handlers_;
 
   // The dispatch table layout is:
@@ -183,8 +201,7 @@ class upb::pb::Decoder {
   void Reset();
 
   // Resets the output sink of the Decoder.
-  // The given sink must match method()->schema() as well as
-  // method()->dest_handlers() if the latter is non-NULL.
+  // The given sink must match method()->dest_handlers().
   //
   // This must be called at least once before the decoder can be used.  It may
   // only be called with the decoder is in a state where it was just created or
@@ -220,9 +237,6 @@ struct upb_pbdecoder {
 
   // Overall stream offset of "buf."
   uint64_t bufstart_ofs;
-
-  // How many bytes past the end of the user buffer we want to skip.
-  size_t skip;
 
   // Buffer for residual bytes not parsed from the previous buffer.
   // The maximum number of residual bytes we require is 12; a five-byte
@@ -290,8 +304,7 @@ class upb::pb::CodeCache {
   // more efficient decoding.  However the returned method may or may not
   // actually be statically bound.  But in all cases, the returned method can
   // push data to the given handlers.
-  const DecoderMethod *GetDecoderMethodForDestHandlers(
-      const upb::Handlers *handlers);
+  const DecoderMethod *GetDecoderMethod(const DecoderMethodOptions& opts);
 
   // If/when someone needs to explicitly create a dynamically-bound
   // DecoderMethod*, we can add a method to get it here.
@@ -320,27 +333,30 @@ const upb_pbdecodermethod *upb_pbdecoder_method(const upb_pbdecoder *d);
 bool upb_pbdecoder_resetoutput(upb_pbdecoder *d, upb_sink *sink);
 upb_bytessink *upb_pbdecoder_input(upb_pbdecoder *d);
 
+void upb_pbdecodermethodopts_init(upb_pbdecodermethodopts *opts,
+                                  const upb_handlers *h);
+void upb_pbdecodermethodopts_setlazy(upb_pbdecodermethodopts *opts, bool lazy);
+
 void upb_pbdecodermethod_ref(const upb_pbdecodermethod *m, const void *owner);
 void upb_pbdecodermethod_unref(const upb_pbdecodermethod *m, const void *owner);
 void upb_pbdecodermethod_donateref(const upb_pbdecodermethod *m,
                                    const void *from, const void *to);
 void upb_pbdecodermethod_checkref(const upb_pbdecodermethod *m,
                                   const void *owner);
-const upb_msgdef *upb_pbdecodermethod_schema(const upb_pbdecodermethod *m);
 const upb_handlers *upb_pbdecodermethod_desthandlers(
     const upb_pbdecodermethod *m);
 const upb_byteshandler *upb_pbdecodermethod_inputhandler(
     const upb_pbdecodermethod *m);
 bool upb_pbdecodermethod_isnative(const upb_pbdecodermethod *m);
-const upb_pbdecodermethod *upb_pbdecodermethod_newfordesthandlers(
-    const upb_handlers *dest, const void *owner);
+const upb_pbdecodermethod *upb_pbdecodermethod_new(
+    const upb_pbdecodermethodopts *opts, const void *owner);
 
 void upb_pbcodecache_init(upb_pbcodecache *c);
 void upb_pbcodecache_uninit(upb_pbcodecache *c);
 bool upb_pbcodecache_allowjit(const upb_pbcodecache *c);
 bool upb_pbcodecache_setallowjit(upb_pbcodecache *c, bool allow);
-const upb_pbdecodermethod *upb_pbcodecache_getdecodermethodfordesthandlers(
-    upb_pbcodecache *c, const upb_handlers *handlers);
+const upb_pbdecodermethod *upb_pbcodecache_getdecodermethod(
+    upb_pbcodecache *c, const upb_pbdecodermethodopts *opts);
 
 #ifdef __cplusplus
 }  /* extern "C" */
@@ -391,6 +407,13 @@ inline BytesSink* Decoder::input() {
   return upb_pbdecoder_input(this);
 }
 
+inline DecoderMethodOptions::DecoderMethodOptions(const Handlers* h) {
+  upb_pbdecodermethodopts_init(this, h);
+}
+inline void DecoderMethodOptions::set_lazy(bool lazy) {
+  upb_pbdecodermethodopts_setlazy(this, lazy);
+}
+
 inline void DecoderMethod::Ref(const void *owner) const {
   upb_pbdecodermethod_ref(this, owner);
 }
@@ -403,9 +426,6 @@ inline void DecoderMethod::DonateRef(const void *from, const void *to) const {
 inline void DecoderMethod::CheckRef(const void *owner) const {
   upb_pbdecodermethod_checkref(this, owner);
 }
-inline const MessageDef* DecoderMethod::schema() const {
-  return upb_pbdecodermethod_schema(this);
-}
 inline const Handlers* DecoderMethod::dest_handlers() const {
   return upb_pbdecodermethod_desthandlers(this);
 }
@@ -416,10 +436,9 @@ inline bool DecoderMethod::is_native() const {
   return upb_pbdecodermethod_isnative(this);
 }
 // static
-inline reffed_ptr<const DecoderMethod> DecoderMethod::NewForDestHandlers(
-    const Handlers *dest) {
-  const upb_pbdecodermethod *m =
-      upb_pbdecodermethod_newfordesthandlers(dest, &m);
+inline reffed_ptr<const DecoderMethod> DecoderMethod::New(
+    const DecoderMethodOptions &opts) {
+  const upb_pbdecodermethod *m = upb_pbdecodermethod_new(&opts, &m);
   return reffed_ptr<const DecoderMethod>(m, &m);
 }
 
@@ -435,9 +454,9 @@ inline bool CodeCache::allow_jit() const {
 inline bool CodeCache::set_allow_jit(bool allow) {
   return upb_pbcodecache_setallowjit(this, allow);
 }
-inline const DecoderMethod* CodeCache::GetDecoderMethodForDestHandlers(
-    const upb::Handlers* handlers) {
-  return upb_pbcodecache_getdecodermethodfordesthandlers(this, handlers);
+inline const DecoderMethod *CodeCache::GetDecoderMethod(
+    const DecoderMethodOptions& opts) {
+  return upb_pbcodecache_getdecodermethod(this, &opts);
 }
 
 }  // namespace pb
