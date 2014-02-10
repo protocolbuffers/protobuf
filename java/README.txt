@@ -409,33 +409,33 @@ still generated as integer constants in the message class.
 Nano version
 ============================
 
-Nano is even smaller than micro, especially in the number of generated
-functions. It is like micro:
+Nano is a special code generator and runtime library designed specially
+for Android, and is very resource-friendly in both the amount of code
+and the runtime overhead. An overview of Nano features:
 
-- No support for descriptors and reflection;
-- Enum constants are integers with no protection against invalid
-  values set to enum fields.
-
-Except:
-
-- Setter/getter/hazzer/clearer functions are opt-in.
+- No descriptors or message builders.
+- All messages are mutable; fields are public Java fields.
+- For optional fields only, encapsulation behind setter/getter/hazzer/
+  clearer functions is opt-in, which provide proper 'has' state support.
 - If not opted in, has state is not available. Serialization outputs
-  all fields not equal to their default. (See important implications
-  below.)
+  all fields not equal to their defaults (see important implications
+  below).
+- Required fields are always serialized.
+- Enum constants are integers; protection against invalid values only
+  when parsing from the wire.
 - Enum constants can be generated into container interfaces bearing
   the enum's name (so the referencing code is in Java style).
-- CodedInputStreamMicro is renamed to CodedInputByteBufferNano and can
-  only take byte[] (not InputStream).
-- Similar rename from CodedOutputStreamMicro to
-  CodedOutputByteBufferNano.
-- Repeated fields are in arrays, not ArrayList or Vector.
+- CodedInputByteBufferNano can only take byte[] (not InputStream).
+- Similarly CodedOutputByteBufferNano can only write to byte[].
+- Repeated fields are in arrays, not ArrayList or Vector. Null array
+  elements are allowed and silently ignored.
 - Full support of serializing/deserializing repeated packed fields.
+- Support of extensions.
 - Unset messages/groups are null, not an immutable empty default
   instance.
-- Required fields are always serialized.
 - toByteArray(...) and mergeFrom(...) are now static functions of
   MessageNano.
-- "bytes" are of java type byte[].
+- The 'bytes' type translates to the Java type byte[].
 
 IMPORTANT: If you have fields with defaults and opt out of accessors
 

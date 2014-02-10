@@ -261,6 +261,9 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor, const Params param
   (*variables)["tag"] = SimpleItoa(WireFormat::MakeTag(descriptor));
   (*variables)["tag_size"] = SimpleItoa(
       WireFormat::TagSize(descriptor->number(), descriptor->type()));
+  (*variables)["non_packed_tag"] = SimpleItoa(
+      internal::WireFormatLite::MakeTag(descriptor->number(),
+          internal::WireFormat::WireTypeForFieldType(descriptor->type())));
   int fixed_size = FixedSize(descriptor->type());
   if (fixed_size != -1) {
     (*variables)["fixed_size"] = SimpleItoa(fixed_size);
@@ -748,7 +751,7 @@ GenerateMergingCode(io::Printer* printer) const {
   // First, figure out the length of the array, then parse.
   printer->Print(variables_,
     "int arrayLength = com.google.protobuf.nano.WireFormatNano\n"
-    "    .getRepeatedFieldArrayLength(input, $tag$);\n"
+    "    .getRepeatedFieldArrayLength(input, $non_packed_tag$);\n"
     "int i = this.$name$ == null ? 0 : this.$name$.length;\n");
 
   if (GetJavaType(descriptor_) == JAVATYPE_BYTES) {
