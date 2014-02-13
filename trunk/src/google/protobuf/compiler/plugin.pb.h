@@ -438,7 +438,7 @@ inline void CodeGeneratorRequest::clear_has_parameter() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void CodeGeneratorRequest::clear_parameter() {
-  if (parameter_ != &::google::protobuf::internal::kEmptyString) {
+  if (parameter_ != &::google::protobuf::internal::GetEmptyString()) {
     parameter_->clear();
   }
   clear_has_parameter();
@@ -448,44 +448,44 @@ inline const ::std::string& CodeGeneratorRequest::parameter() const {
 }
 inline void CodeGeneratorRequest::set_parameter(const ::std::string& value) {
   set_has_parameter();
-  if (parameter_ == &::google::protobuf::internal::kEmptyString) {
+  if (parameter_ == &::google::protobuf::internal::GetEmptyString()) {
     parameter_ = new ::std::string;
   }
   parameter_->assign(value);
 }
 inline void CodeGeneratorRequest::set_parameter(const char* value) {
   set_has_parameter();
-  if (parameter_ == &::google::protobuf::internal::kEmptyString) {
+  if (parameter_ == &::google::protobuf::internal::GetEmptyString()) {
     parameter_ = new ::std::string;
   }
   parameter_->assign(value);
 }
 inline void CodeGeneratorRequest::set_parameter(const char* value, size_t size) {
   set_has_parameter();
-  if (parameter_ == &::google::protobuf::internal::kEmptyString) {
+  if (parameter_ == &::google::protobuf::internal::GetEmptyString()) {
     parameter_ = new ::std::string;
   }
   parameter_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* CodeGeneratorRequest::mutable_parameter() {
   set_has_parameter();
-  if (parameter_ == &::google::protobuf::internal::kEmptyString) {
+  if (parameter_ == &::google::protobuf::internal::GetEmptyString()) {
     parameter_ = new ::std::string;
   }
   return parameter_;
 }
 inline ::std::string* CodeGeneratorRequest::release_parameter() {
   clear_has_parameter();
-  if (parameter_ == &::google::protobuf::internal::kEmptyString) {
+  if (parameter_ == &::google::protobuf::internal::GetEmptyString()) {
     return NULL;
   } else {
     ::std::string* temp = parameter_;
-    parameter_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    parameter_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
     return temp;
   }
 }
 inline void CodeGeneratorRequest::set_allocated_parameter(::std::string* parameter) {
-  if (parameter_ != &::google::protobuf::internal::kEmptyString) {
+  if (parameter_ != &::google::protobuf::internal::GetEmptyString()) {
     delete parameter_;
   }
   if (parameter) {
@@ -493,7 +493,7 @@ inline void CodeGeneratorRequest::set_allocated_parameter(::std::string* paramet
     parameter_ = parameter;
   } else {
     clear_has_parameter();
-    parameter_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    parameter_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
 }
 
@@ -537,7 +537,7 @@ inline void CodeGeneratorResponse_File::clear_has_name() {
   _has_bits_[0] &= ~0x00000001u;
 }
 inline void CodeGeneratorResponse_File::clear_name() {
-  if (name_ != &::google::protobuf::internal::kEmptyString) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
     name_->clear();
   }
   clear_has_name();
@@ -547,44 +547,44 @@ inline const ::std::string& CodeGeneratorResponse_File::name() const {
 }
 inline void CodeGeneratorResponse_File::set_name(const ::std::string& value) {
   set_has_name();
-  if (name_ == &::google::protobuf::internal::kEmptyString) {
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void CodeGeneratorResponse_File::set_name(const char* value) {
   set_has_name();
-  if (name_ == &::google::protobuf::internal::kEmptyString) {
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
     name_ = new ::std::string;
   }
   name_->assign(value);
 }
 inline void CodeGeneratorResponse_File::set_name(const char* value, size_t size) {
   set_has_name();
-  if (name_ == &::google::protobuf::internal::kEmptyString) {
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
     name_ = new ::std::string;
   }
   name_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* CodeGeneratorResponse_File::mutable_name() {
   set_has_name();
-  if (name_ == &::google::protobuf::internal::kEmptyString) {
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
     name_ = new ::std::string;
   }
   return name_;
 }
 inline ::std::string* CodeGeneratorResponse_File::release_name() {
   clear_has_name();
-  if (name_ == &::google::protobuf::internal::kEmptyString) {
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
     return NULL;
   } else {
     ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
     return temp;
   }
 }
 inline void CodeGeneratorResponse_File::set_allocated_name(::std::string* name) {
-  if (name_ != &::google::protobuf::internal::kEmptyString) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
     delete name_;
   }
   if (name) {
@@ -592,7 +592,7 @@ inline void CodeGeneratorResponse_File::set_allocated_name(::std::string* name) 
     name_ = name;
   } else {
     clear_has_name();
-    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
 }
 
@@ -607,7 +607,7 @@ inline void CodeGeneratorResponse_File::clear_has_insertion_point() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void CodeGeneratorResponse_File::clear_insertion_point() {
-  if (insertion_point_ != &::google::protobuf::internal::kEmptyString) {
+  if (insertion_point_ != &::google::protobuf::internal::GetEmptyString()) {
     insertion_point_->clear();
   }
   clear_has_insertion_point();
@@ -617,44 +617,44 @@ inline const ::std::string& CodeGeneratorResponse_File::insertion_point() const 
 }
 inline void CodeGeneratorResponse_File::set_insertion_point(const ::std::string& value) {
   set_has_insertion_point();
-  if (insertion_point_ == &::google::protobuf::internal::kEmptyString) {
+  if (insertion_point_ == &::google::protobuf::internal::GetEmptyString()) {
     insertion_point_ = new ::std::string;
   }
   insertion_point_->assign(value);
 }
 inline void CodeGeneratorResponse_File::set_insertion_point(const char* value) {
   set_has_insertion_point();
-  if (insertion_point_ == &::google::protobuf::internal::kEmptyString) {
+  if (insertion_point_ == &::google::protobuf::internal::GetEmptyString()) {
     insertion_point_ = new ::std::string;
   }
   insertion_point_->assign(value);
 }
 inline void CodeGeneratorResponse_File::set_insertion_point(const char* value, size_t size) {
   set_has_insertion_point();
-  if (insertion_point_ == &::google::protobuf::internal::kEmptyString) {
+  if (insertion_point_ == &::google::protobuf::internal::GetEmptyString()) {
     insertion_point_ = new ::std::string;
   }
   insertion_point_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* CodeGeneratorResponse_File::mutable_insertion_point() {
   set_has_insertion_point();
-  if (insertion_point_ == &::google::protobuf::internal::kEmptyString) {
+  if (insertion_point_ == &::google::protobuf::internal::GetEmptyString()) {
     insertion_point_ = new ::std::string;
   }
   return insertion_point_;
 }
 inline ::std::string* CodeGeneratorResponse_File::release_insertion_point() {
   clear_has_insertion_point();
-  if (insertion_point_ == &::google::protobuf::internal::kEmptyString) {
+  if (insertion_point_ == &::google::protobuf::internal::GetEmptyString()) {
     return NULL;
   } else {
     ::std::string* temp = insertion_point_;
-    insertion_point_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    insertion_point_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
     return temp;
   }
 }
 inline void CodeGeneratorResponse_File::set_allocated_insertion_point(::std::string* insertion_point) {
-  if (insertion_point_ != &::google::protobuf::internal::kEmptyString) {
+  if (insertion_point_ != &::google::protobuf::internal::GetEmptyString()) {
     delete insertion_point_;
   }
   if (insertion_point) {
@@ -662,7 +662,7 @@ inline void CodeGeneratorResponse_File::set_allocated_insertion_point(::std::str
     insertion_point_ = insertion_point;
   } else {
     clear_has_insertion_point();
-    insertion_point_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    insertion_point_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
 }
 
@@ -677,7 +677,7 @@ inline void CodeGeneratorResponse_File::clear_has_content() {
   _has_bits_[0] &= ~0x00000004u;
 }
 inline void CodeGeneratorResponse_File::clear_content() {
-  if (content_ != &::google::protobuf::internal::kEmptyString) {
+  if (content_ != &::google::protobuf::internal::GetEmptyString()) {
     content_->clear();
   }
   clear_has_content();
@@ -687,44 +687,44 @@ inline const ::std::string& CodeGeneratorResponse_File::content() const {
 }
 inline void CodeGeneratorResponse_File::set_content(const ::std::string& value) {
   set_has_content();
-  if (content_ == &::google::protobuf::internal::kEmptyString) {
+  if (content_ == &::google::protobuf::internal::GetEmptyString()) {
     content_ = new ::std::string;
   }
   content_->assign(value);
 }
 inline void CodeGeneratorResponse_File::set_content(const char* value) {
   set_has_content();
-  if (content_ == &::google::protobuf::internal::kEmptyString) {
+  if (content_ == &::google::protobuf::internal::GetEmptyString()) {
     content_ = new ::std::string;
   }
   content_->assign(value);
 }
 inline void CodeGeneratorResponse_File::set_content(const char* value, size_t size) {
   set_has_content();
-  if (content_ == &::google::protobuf::internal::kEmptyString) {
+  if (content_ == &::google::protobuf::internal::GetEmptyString()) {
     content_ = new ::std::string;
   }
   content_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* CodeGeneratorResponse_File::mutable_content() {
   set_has_content();
-  if (content_ == &::google::protobuf::internal::kEmptyString) {
+  if (content_ == &::google::protobuf::internal::GetEmptyString()) {
     content_ = new ::std::string;
   }
   return content_;
 }
 inline ::std::string* CodeGeneratorResponse_File::release_content() {
   clear_has_content();
-  if (content_ == &::google::protobuf::internal::kEmptyString) {
+  if (content_ == &::google::protobuf::internal::GetEmptyString()) {
     return NULL;
   } else {
     ::std::string* temp = content_;
-    content_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    content_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
     return temp;
   }
 }
 inline void CodeGeneratorResponse_File::set_allocated_content(::std::string* content) {
-  if (content_ != &::google::protobuf::internal::kEmptyString) {
+  if (content_ != &::google::protobuf::internal::GetEmptyString()) {
     delete content_;
   }
   if (content) {
@@ -732,7 +732,7 @@ inline void CodeGeneratorResponse_File::set_allocated_content(::std::string* con
     content_ = content;
   } else {
     clear_has_content();
-    content_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    content_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
 }
 
@@ -751,7 +751,7 @@ inline void CodeGeneratorResponse::clear_has_error() {
   _has_bits_[0] &= ~0x00000001u;
 }
 inline void CodeGeneratorResponse::clear_error() {
-  if (error_ != &::google::protobuf::internal::kEmptyString) {
+  if (error_ != &::google::protobuf::internal::GetEmptyString()) {
     error_->clear();
   }
   clear_has_error();
@@ -761,44 +761,44 @@ inline const ::std::string& CodeGeneratorResponse::error() const {
 }
 inline void CodeGeneratorResponse::set_error(const ::std::string& value) {
   set_has_error();
-  if (error_ == &::google::protobuf::internal::kEmptyString) {
+  if (error_ == &::google::protobuf::internal::GetEmptyString()) {
     error_ = new ::std::string;
   }
   error_->assign(value);
 }
 inline void CodeGeneratorResponse::set_error(const char* value) {
   set_has_error();
-  if (error_ == &::google::protobuf::internal::kEmptyString) {
+  if (error_ == &::google::protobuf::internal::GetEmptyString()) {
     error_ = new ::std::string;
   }
   error_->assign(value);
 }
 inline void CodeGeneratorResponse::set_error(const char* value, size_t size) {
   set_has_error();
-  if (error_ == &::google::protobuf::internal::kEmptyString) {
+  if (error_ == &::google::protobuf::internal::GetEmptyString()) {
     error_ = new ::std::string;
   }
   error_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* CodeGeneratorResponse::mutable_error() {
   set_has_error();
-  if (error_ == &::google::protobuf::internal::kEmptyString) {
+  if (error_ == &::google::protobuf::internal::GetEmptyString()) {
     error_ = new ::std::string;
   }
   return error_;
 }
 inline ::std::string* CodeGeneratorResponse::release_error() {
   clear_has_error();
-  if (error_ == &::google::protobuf::internal::kEmptyString) {
+  if (error_ == &::google::protobuf::internal::GetEmptyString()) {
     return NULL;
   } else {
     ::std::string* temp = error_;
-    error_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    error_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
     return temp;
   }
 }
 inline void CodeGeneratorResponse::set_allocated_error(::std::string* error) {
-  if (error_ != &::google::protobuf::internal::kEmptyString) {
+  if (error_ != &::google::protobuf::internal::GetEmptyString()) {
     delete error_;
   }
   if (error) {
@@ -806,7 +806,7 @@ inline void CodeGeneratorResponse::set_allocated_error(::std::string* error) {
     error_ = error;
   } else {
     clear_has_error();
-    error_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    error_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
 }
 

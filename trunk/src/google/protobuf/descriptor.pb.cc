@@ -962,8 +962,8 @@ FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from)
 
 void FileDescriptorProto::SharedCtor() {
   _cached_size_ = 0;
-  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  package_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  package_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   options_ = NULL;
   source_code_info_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -974,10 +974,10 @@ FileDescriptorProto::~FileDescriptorProto() {
 }
 
 void FileDescriptorProto::SharedDtor() {
-  if (name_ != &::google::protobuf::internal::kEmptyString) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
     delete name_;
   }
-  if (package_ != &::google::protobuf::internal::kEmptyString) {
+  if (package_ != &::google::protobuf::internal::GetEmptyString()) {
     delete package_;
   }
   if (this != default_instance_) {
@@ -1010,12 +1010,12 @@ FileDescriptorProto* FileDescriptorProto::New() const {
 void FileDescriptorProto::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (has_name()) {
-      if (name_ != &::google::protobuf::internal::kEmptyString) {
+      if (name_ != &::google::protobuf::internal::GetEmptyString()) {
         name_->clear();
       }
     }
     if (has_package()) {
-      if (package_ != &::google::protobuf::internal::kEmptyString) {
+      if (package_ != &::google::protobuf::internal::GetEmptyString()) {
         package_->clear();
       }
     }
@@ -1902,7 +1902,7 @@ DescriptorProto::DescriptorProto(const DescriptorProto& from)
 
 void DescriptorProto::SharedCtor() {
   _cached_size_ = 0;
-  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   options_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -1912,7 +1912,7 @@ DescriptorProto::~DescriptorProto() {
 }
 
 void DescriptorProto::SharedDtor() {
-  if (name_ != &::google::protobuf::internal::kEmptyString) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
     delete name_;
   }
   if (this != default_instance_) {
@@ -1944,7 +1944,7 @@ DescriptorProto* DescriptorProto::New() const {
 void DescriptorProto::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (has_name()) {
-      if (name_ != &::google::protobuf::internal::kEmptyString) {
+      if (name_ != &::google::protobuf::internal::GetEmptyString()) {
         name_->clear();
       }
     }
@@ -2464,13 +2464,13 @@ FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& from)
 
 void FieldDescriptorProto::SharedCtor() {
   _cached_size_ = 0;
-  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   number_ = 0;
   label_ = 1;
   type_ = 1;
-  type_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  extendee_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  default_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  type_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  extendee_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  default_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   options_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -2480,16 +2480,16 @@ FieldDescriptorProto::~FieldDescriptorProto() {
 }
 
 void FieldDescriptorProto::SharedDtor() {
-  if (name_ != &::google::protobuf::internal::kEmptyString) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
     delete name_;
   }
-  if (type_name_ != &::google::protobuf::internal::kEmptyString) {
+  if (type_name_ != &::google::protobuf::internal::GetEmptyString()) {
     delete type_name_;
   }
-  if (extendee_ != &::google::protobuf::internal::kEmptyString) {
+  if (extendee_ != &::google::protobuf::internal::GetEmptyString()) {
     delete extendee_;
   }
-  if (default_value_ != &::google::protobuf::internal::kEmptyString) {
+  if (default_value_ != &::google::protobuf::internal::GetEmptyString()) {
     delete default_value_;
   }
   if (this != default_instance_) {
@@ -2521,7 +2521,7 @@ FieldDescriptorProto* FieldDescriptorProto::New() const {
 void FieldDescriptorProto::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (has_name()) {
-      if (name_ != &::google::protobuf::internal::kEmptyString) {
+      if (name_ != &::google::protobuf::internal::GetEmptyString()) {
         name_->clear();
       }
     }
@@ -2529,17 +2529,17 @@ void FieldDescriptorProto::Clear() {
     label_ = 1;
     type_ = 1;
     if (has_type_name()) {
-      if (type_name_ != &::google::protobuf::internal::kEmptyString) {
+      if (type_name_ != &::google::protobuf::internal::GetEmptyString()) {
         type_name_->clear();
       }
     }
     if (has_extendee()) {
-      if (extendee_ != &::google::protobuf::internal::kEmptyString) {
+      if (extendee_ != &::google::protobuf::internal::GetEmptyString()) {
         extendee_->clear();
       }
     }
     if (has_default_value()) {
-      if (default_value_ != &::google::protobuf::internal::kEmptyString) {
+      if (default_value_ != &::google::protobuf::internal::GetEmptyString()) {
         default_value_->clear();
       }
     }
@@ -3035,7 +3035,7 @@ EnumDescriptorProto::EnumDescriptorProto(const EnumDescriptorProto& from)
 
 void EnumDescriptorProto::SharedCtor() {
   _cached_size_ = 0;
-  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   options_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -3045,7 +3045,7 @@ EnumDescriptorProto::~EnumDescriptorProto() {
 }
 
 void EnumDescriptorProto::SharedDtor() {
-  if (name_ != &::google::protobuf::internal::kEmptyString) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
     delete name_;
   }
   if (this != default_instance_) {
@@ -3077,7 +3077,7 @@ EnumDescriptorProto* EnumDescriptorProto::New() const {
 void EnumDescriptorProto::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (has_name()) {
-      if (name_ != &::google::protobuf::internal::kEmptyString) {
+      if (name_ != &::google::protobuf::internal::GetEmptyString()) {
         name_->clear();
       }
     }
@@ -3351,7 +3351,7 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(const EnumValueDescriptorProt
 
 void EnumValueDescriptorProto::SharedCtor() {
   _cached_size_ = 0;
-  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   number_ = 0;
   options_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -3362,7 +3362,7 @@ EnumValueDescriptorProto::~EnumValueDescriptorProto() {
 }
 
 void EnumValueDescriptorProto::SharedDtor() {
-  if (name_ != &::google::protobuf::internal::kEmptyString) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
     delete name_;
   }
   if (this != default_instance_) {
@@ -3394,7 +3394,7 @@ EnumValueDescriptorProto* EnumValueDescriptorProto::New() const {
 void EnumValueDescriptorProto::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (has_name()) {
-      if (name_ != &::google::protobuf::internal::kEmptyString) {
+      if (name_ != &::google::protobuf::internal::GetEmptyString()) {
         name_->clear();
       }
     }
@@ -3664,7 +3664,7 @@ ServiceDescriptorProto::ServiceDescriptorProto(const ServiceDescriptorProto& fro
 
 void ServiceDescriptorProto::SharedCtor() {
   _cached_size_ = 0;
-  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   options_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -3674,7 +3674,7 @@ ServiceDescriptorProto::~ServiceDescriptorProto() {
 }
 
 void ServiceDescriptorProto::SharedDtor() {
-  if (name_ != &::google::protobuf::internal::kEmptyString) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
     delete name_;
   }
   if (this != default_instance_) {
@@ -3706,7 +3706,7 @@ ServiceDescriptorProto* ServiceDescriptorProto::New() const {
 void ServiceDescriptorProto::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (has_name()) {
-      if (name_ != &::google::protobuf::internal::kEmptyString) {
+      if (name_ != &::google::protobuf::internal::GetEmptyString()) {
         name_->clear();
       }
     }
@@ -3981,9 +3981,9 @@ MethodDescriptorProto::MethodDescriptorProto(const MethodDescriptorProto& from)
 
 void MethodDescriptorProto::SharedCtor() {
   _cached_size_ = 0;
-  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  input_type_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  output_type_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  input_type_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  output_type_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   options_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -3993,13 +3993,13 @@ MethodDescriptorProto::~MethodDescriptorProto() {
 }
 
 void MethodDescriptorProto::SharedDtor() {
-  if (name_ != &::google::protobuf::internal::kEmptyString) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
     delete name_;
   }
-  if (input_type_ != &::google::protobuf::internal::kEmptyString) {
+  if (input_type_ != &::google::protobuf::internal::GetEmptyString()) {
     delete input_type_;
   }
-  if (output_type_ != &::google::protobuf::internal::kEmptyString) {
+  if (output_type_ != &::google::protobuf::internal::GetEmptyString()) {
     delete output_type_;
   }
   if (this != default_instance_) {
@@ -4031,17 +4031,17 @@ MethodDescriptorProto* MethodDescriptorProto::New() const {
 void MethodDescriptorProto::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (has_name()) {
-      if (name_ != &::google::protobuf::internal::kEmptyString) {
+      if (name_ != &::google::protobuf::internal::GetEmptyString()) {
         name_->clear();
       }
     }
     if (has_input_type()) {
-      if (input_type_ != &::google::protobuf::internal::kEmptyString) {
+      if (input_type_ != &::google::protobuf::internal::GetEmptyString()) {
         input_type_->clear();
       }
     }
     if (has_output_type()) {
-      if (output_type_ != &::google::protobuf::internal::kEmptyString) {
+      if (output_type_ != &::google::protobuf::internal::GetEmptyString()) {
         output_type_->clear();
       }
     }
@@ -4396,12 +4396,12 @@ FileOptions::FileOptions(const FileOptions& from)
 
 void FileOptions::SharedCtor() {
   _cached_size_ = 0;
-  java_package_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  java_outer_classname_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  java_package_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  java_outer_classname_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   java_multiple_files_ = false;
   java_generate_equals_and_hash_ = false;
   optimize_for_ = 1;
-  go_package_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  go_package_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   cc_generic_services_ = false;
   java_generic_services_ = false;
   py_generic_services_ = false;
@@ -4413,13 +4413,13 @@ FileOptions::~FileOptions() {
 }
 
 void FileOptions::SharedDtor() {
-  if (java_package_ != &::google::protobuf::internal::kEmptyString) {
+  if (java_package_ != &::google::protobuf::internal::GetEmptyString()) {
     delete java_package_;
   }
-  if (java_outer_classname_ != &::google::protobuf::internal::kEmptyString) {
+  if (java_outer_classname_ != &::google::protobuf::internal::GetEmptyString()) {
     delete java_outer_classname_;
   }
-  if (go_package_ != &::google::protobuf::internal::kEmptyString) {
+  if (go_package_ != &::google::protobuf::internal::GetEmptyString()) {
     delete go_package_;
   }
   if (this != default_instance_) {
@@ -4451,12 +4451,12 @@ void FileOptions::Clear() {
   _extensions_.Clear();
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (has_java_package()) {
-      if (java_package_ != &::google::protobuf::internal::kEmptyString) {
+      if (java_package_ != &::google::protobuf::internal::GetEmptyString()) {
         java_package_->clear();
       }
     }
     if (has_java_outer_classname()) {
-      if (java_outer_classname_ != &::google::protobuf::internal::kEmptyString) {
+      if (java_outer_classname_ != &::google::protobuf::internal::GetEmptyString()) {
         java_outer_classname_->clear();
       }
     }
@@ -4464,7 +4464,7 @@ void FileOptions::Clear() {
     java_generate_equals_and_hash_ = false;
     optimize_for_ = 1;
     if (has_go_package()) {
-      if (go_package_ != &::google::protobuf::internal::kEmptyString) {
+      if (go_package_ != &::google::protobuf::internal::GetEmptyString()) {
         go_package_->clear();
       }
     }
@@ -5369,7 +5369,7 @@ void FieldOptions::SharedCtor() {
   packed_ = false;
   lazy_ = false;
   deprecated_ = false;
-  experimental_map_key_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  experimental_map_key_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   weak_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -5379,7 +5379,7 @@ FieldOptions::~FieldOptions() {
 }
 
 void FieldOptions::SharedDtor() {
-  if (experimental_map_key_ != &::google::protobuf::internal::kEmptyString) {
+  if (experimental_map_key_ != &::google::protobuf::internal::GetEmptyString()) {
     delete experimental_map_key_;
   }
   if (this != default_instance_) {
@@ -5415,7 +5415,7 @@ void FieldOptions::Clear() {
     lazy_ = false;
     deprecated_ = false;
     if (has_experimental_map_key()) {
-      if (experimental_map_key_ != &::google::protobuf::internal::kEmptyString) {
+      if (experimental_map_key_ != &::google::protobuf::internal::GetEmptyString()) {
         experimental_map_key_->clear();
       }
     }
@@ -6788,7 +6788,7 @@ UninterpretedOption_NamePart::UninterpretedOption_NamePart(const UninterpretedOp
 
 void UninterpretedOption_NamePart::SharedCtor() {
   _cached_size_ = 0;
-  name_part_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  name_part_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   is_extension_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -6798,7 +6798,7 @@ UninterpretedOption_NamePart::~UninterpretedOption_NamePart() {
 }
 
 void UninterpretedOption_NamePart::SharedDtor() {
-  if (name_part_ != &::google::protobuf::internal::kEmptyString) {
+  if (name_part_ != &::google::protobuf::internal::GetEmptyString()) {
     delete name_part_;
   }
   if (this != default_instance_) {
@@ -6829,7 +6829,7 @@ UninterpretedOption_NamePart* UninterpretedOption_NamePart::New() const {
 void UninterpretedOption_NamePart::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (has_name_part()) {
-      if (name_part_ != &::google::protobuf::internal::kEmptyString) {
+      if (name_part_ != &::google::protobuf::internal::GetEmptyString()) {
         name_part_->clear();
       }
     }
@@ -7057,12 +7057,12 @@ UninterpretedOption::UninterpretedOption(const UninterpretedOption& from)
 
 void UninterpretedOption::SharedCtor() {
   _cached_size_ = 0;
-  identifier_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  identifier_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   positive_int_value_ = GOOGLE_ULONGLONG(0);
   negative_int_value_ = GOOGLE_LONGLONG(0);
   double_value_ = 0;
-  string_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  aggregate_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  string_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  aggregate_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -7071,13 +7071,13 @@ UninterpretedOption::~UninterpretedOption() {
 }
 
 void UninterpretedOption::SharedDtor() {
-  if (identifier_value_ != &::google::protobuf::internal::kEmptyString) {
+  if (identifier_value_ != &::google::protobuf::internal::GetEmptyString()) {
     delete identifier_value_;
   }
-  if (string_value_ != &::google::protobuf::internal::kEmptyString) {
+  if (string_value_ != &::google::protobuf::internal::GetEmptyString()) {
     delete string_value_;
   }
-  if (aggregate_value_ != &::google::protobuf::internal::kEmptyString) {
+  if (aggregate_value_ != &::google::protobuf::internal::GetEmptyString()) {
     delete aggregate_value_;
   }
   if (this != default_instance_) {
@@ -7108,7 +7108,7 @@ UninterpretedOption* UninterpretedOption::New() const {
 void UninterpretedOption::Clear() {
   if (_has_bits_[1 / 32] & (0xffu << (1 % 32))) {
     if (has_identifier_value()) {
-      if (identifier_value_ != &::google::protobuf::internal::kEmptyString) {
+      if (identifier_value_ != &::google::protobuf::internal::GetEmptyString()) {
         identifier_value_->clear();
       }
     }
@@ -7116,12 +7116,12 @@ void UninterpretedOption::Clear() {
     negative_int_value_ = GOOGLE_LONGLONG(0);
     double_value_ = 0;
     if (has_string_value()) {
-      if (string_value_ != &::google::protobuf::internal::kEmptyString) {
+      if (string_value_ != &::google::protobuf::internal::GetEmptyString()) {
         string_value_->clear();
       }
     }
     if (has_aggregate_value()) {
-      if (aggregate_value_ != &::google::protobuf::internal::kEmptyString) {
+      if (aggregate_value_ != &::google::protobuf::internal::GetEmptyString()) {
         aggregate_value_->clear();
       }
     }
@@ -7546,8 +7546,8 @@ SourceCodeInfo_Location::SourceCodeInfo_Location(const SourceCodeInfo_Location& 
 
 void SourceCodeInfo_Location::SharedCtor() {
   _cached_size_ = 0;
-  leading_comments_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  trailing_comments_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  leading_comments_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  trailing_comments_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -7556,10 +7556,10 @@ SourceCodeInfo_Location::~SourceCodeInfo_Location() {
 }
 
 void SourceCodeInfo_Location::SharedDtor() {
-  if (leading_comments_ != &::google::protobuf::internal::kEmptyString) {
+  if (leading_comments_ != &::google::protobuf::internal::GetEmptyString()) {
     delete leading_comments_;
   }
-  if (trailing_comments_ != &::google::protobuf::internal::kEmptyString) {
+  if (trailing_comments_ != &::google::protobuf::internal::GetEmptyString()) {
     delete trailing_comments_;
   }
   if (this != default_instance_) {
@@ -7590,12 +7590,12 @@ SourceCodeInfo_Location* SourceCodeInfo_Location::New() const {
 void SourceCodeInfo_Location::Clear() {
   if (_has_bits_[2 / 32] & (0xffu << (2 % 32))) {
     if (has_leading_comments()) {
-      if (leading_comments_ != &::google::protobuf::internal::kEmptyString) {
+      if (leading_comments_ != &::google::protobuf::internal::GetEmptyString()) {
         leading_comments_->clear();
       }
     }
     if (has_trailing_comments()) {
-      if (trailing_comments_ != &::google::protobuf::internal::kEmptyString) {
+      if (trailing_comments_ != &::google::protobuf::internal::GetEmptyString()) {
         trailing_comments_->clear();
       }
     }
