@@ -53,7 +53,7 @@ void SetStringVariables(const FieldDescriptor* descriptor,
   (*variables)["default_length"] =
       SimpleItoa(descriptor->default_value_string().length());
   (*variables)["default_variable"] = descriptor->default_value_string().empty()
-      ? "&::google::protobuf::internal::kEmptyString"
+      ? "&::google::protobuf::internal::GetEmptyString()"
       : "_default_" + FieldName(descriptor) + "_";
   (*variables)["pointer_type"] =
       descriptor->type() == FieldDescriptor::TYPE_BYTES ? "void" : "char";

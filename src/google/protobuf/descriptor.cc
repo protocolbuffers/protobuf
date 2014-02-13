@@ -139,8 +139,6 @@ const int FieldDescriptor::kLastReservedNumber;
 
 namespace {
 
-const string kEmptyString;
-
 string ToCamelCase(const string& input) {
   bool capitalize_next = false;
   string result;
@@ -2757,7 +2755,7 @@ Symbol DescriptorBuilder::NewPlaceholder(const string& name,
     placeholder_name = tables_->AllocateString(
       placeholder_full_name->substr(dotpos + 1));
   } else {
-    placeholder_package = &kEmptyString;
+    placeholder_package = &::google::protobuf::internal::GetEmptyString();
     placeholder_name = placeholder_full_name;
   }
 
@@ -2843,7 +2841,7 @@ const FileDescriptor* DescriptorBuilder::NewPlaceholderFile(
   memset(placeholder, 0, sizeof(*placeholder));
 
   placeholder->name_ = tables_->AllocateString(name);
-  placeholder->package_ = &kEmptyString;
+  placeholder->package_ = &::google::protobuf::internal::GetEmptyString();
   placeholder->pool_ = pool_;
   placeholder->options_ = &FileOptions::default_instance();
   placeholder->tables_ = &FileDescriptorTables::kEmpty;
@@ -3485,7 +3483,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
           result->default_value_enum_ = NULL;
           break;
         case FieldDescriptor::CPPTYPE_STRING:
-          result->default_value_string_ = &kEmptyString;
+          result->default_value_string_ = &::google::protobuf::internal::GetEmptyString();
           break;
         case FieldDescriptor::CPPTYPE_MESSAGE:
           break;

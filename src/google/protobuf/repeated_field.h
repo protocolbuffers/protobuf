@@ -383,7 +383,7 @@ class LIBPROTOBUF_EXPORT StringTypeHandlerBase {
   static void Clear(string* value) { value->clear(); }
   static void Merge(const string& from, string* to) { *to = from; }
   static const Type& default_instance() {
-    return ::google::protobuf::internal::kEmptyString;
+    return ::google::protobuf::internal::GetEmptyString();
   }
 };
 
