@@ -264,6 +264,22 @@ string FieldDefaultConstantName(const FieldDescriptor *field) {
   return "_" + RenameJavaKeywords(UnderscoresToCamelCase(field)) + "Default";
 }
 
+void PrintFieldComment(io::Printer* printer, const FieldDescriptor* field) {
+  // We don't want to print group bodies so we cut off after the first line
+  // (the second line for extensions).
+  string def = field->DebugString();
+  string::size_type first_line_end = def.find_first_of('\n');
+  printer->Print("// $def$\n",
+    "def", def.substr(0, first_line_end));
+  if (field->is_extension()) {
+    string::size_type second_line_start = first_line_end + 1;
+    string::size_type second_line_length =
+        def.find('\n', second_line_start) - second_line_start;
+    printer->Print("// $def$\n",
+      "def", def.substr(second_line_start, second_line_length));
+  }
+}
+
 JavaType GetJavaType(FieldDescriptor::Type field_type) {
   switch (field_type) {
     case FieldDescriptor::TYPE_INT32:
@@ -310,7 +326,27 @@ JavaType GetJavaType(FieldDescriptor::Type field_type) {
   return JAVATYPE_INT;
 }
 
-const char* BoxedPrimitiveTypeName(JavaType type) {
+string PrimitiveTypeName(JavaType type) {
+  switch (type) {
+    case JAVATYPE_INT    : return "int";
+    case JAVATYPE_LONG   : return "long";
+    case JAVATYPE_FLOAT  : return "float";
+    case JAVATYPE_DOUBLE : return "double";
+    case JAVATYPE_BOOLEAN: return "boolean";
+    case JAVATYPE_STRING : return "java.lang.String";
+    case JAVATYPE_BYTES  : return "byte[]";
+    case JAVATYPE_ENUM   : return "int";
+    case JAVATYPE_MESSAGE: return NULL;
+
+    // No default because we want the compiler to complain if any new
+    // JavaTypes are added.
+  }
+
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return NULL;
+}
+
+string BoxedPrimitiveTypeName(JavaType type) {
   switch (type) {
     case JAVATYPE_INT    : return "java.lang.Integer";
     case JAVATYPE_LONG   : return "java.lang.Long";

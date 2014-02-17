@@ -1,0 +1,34 @@
+syntax = "proto2";
+
+option java_multiple_files = true;
+option java_package = "com.google.protobuf.nano";
+
+import "google/protobuf/unittest_extension_nano.proto";
+
+// Must be compiled separately due to extension number reuse.
+// The reuse is deliberate, for testing wire compatibility.
+
+message SingularExtensions {
+  extend ExtendableMessage {
+    optional int32          some_int32    = 10;
+    optional uint32         some_uint32   = 11;
+    optional sint32         some_sint32   = 12;
+    optional int64          some_int64    = 13;
+    optional uint64         some_uint64   = 14;
+    optional sint64         some_sint64   = 15;
+    optional fixed32        some_fixed32  = 16;
+    optional sfixed32       some_sfixed32 = 17;
+    optional fixed64        some_fixed64  = 18;
+    optional sfixed64       some_sfixed64 = 19;
+    optional bool           some_bool     = 20;
+    optional float          some_float    = 21;
+    optional double         some_double   = 22;
+    optional AnEnum         some_enum     = 23;
+    optional string         some_string   = 24;
+    optional bytes          some_bytes    = 25;
+    optional AnotherMessage some_message  = 26;
+    optional group          SomeGroup     = 27 {
+      optional int32 a = 1;
+    }
+  }
+}
