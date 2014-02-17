@@ -30,6 +30,7 @@
 
 package com.google.protobuf.nano;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,34 +38,81 @@ import java.util.List;
  * Base class of those Protocol Buffer messages that need to store unknown fields,
  * such as extensions.
  */
-public abstract class ExtendableMessageNano extends MessageNano {
+public abstract class ExtendableMessageNano<M extends ExtendableMessageNano<M>>
+        extends MessageNano {
     /**
      * A container for fields unknown to the message, including extensions. Extension fields can
-     * can be accessed through the {@link getExtension()} and {@link setExtension()} methods.
+     * can be accessed through the {@link #getExtension} and {@link #setExtension} methods.
      */
     protected List<UnknownFieldData> unknownFieldData;
 
     @Override
     public int getSerializedSize() {
-        int size = WireFormatNano.computeWireSize(unknownFieldData);
+        int size = 0;
+        int unknownFieldCount = unknownFieldData == null ? 0 : unknownFieldData.size();
+        for (int i = 0; i < unknownFieldCount; i++) {
+            UnknownFieldData unknownField = unknownFieldData.get(i);
+            size += CodedOutputByteBufferNano.computeRawVarint32Size(unknownField.tag);
+            size += unknownField.bytes.length;
+        }
         cachedSize = size;
         return size;
+    }
+
+    @Override
+    public void writeTo(CodedOutputByteBufferNano output) throws IOException {
+        int unknownFieldCount = unknownFieldData == null ? 0 : unknownFieldData.size();
+        for (int i = 0; i < unknownFieldCount; i++) {
+            UnknownFieldData unknownField = unknownFieldData.get(i);
+            output.writeRawVarint32(unknownField.tag);
+            output.writeRawBytes(unknownField.bytes);
+        }
     }
 
     /**
      * Gets the value stored in the specified extension of this message.
      */
-    public <T> T getExtension(Extension<T> extension) {
-        return WireFormatNano.getExtension(extension, unknownFieldData);
+    public final <T> T getExtension(Extension<M, T> extension) {
+        return extension.getValueFrom(unknownFieldData);
     }
 
     /**
      * Sets the value of the specified extension of this message.
      */
-    public <T> void setExtension(Extension<T> extension, T value) {
+    public final <T> M setExtension(Extension<M, T> extension, T value) {
+        unknownFieldData = extension.setValueTo(value, unknownFieldData);
+
+        @SuppressWarnings("unchecked") // Generated code should guarantee type safety
+        M typedThis = (M) this;
+        return typedThis;
+    }
+
+    /**
+     * Stores the binary data of an unknown field.
+     *
+     * <p>Generated messages will call this for unknown fields if the store_unknown_fields
+     * option is on.
+     *
+     * <p>Note that the tag might be a end-group tag (rather than the start of an unknown field) in
+     * which case we do not want to add an unknown field entry.
+     *
+     * @param input the input buffer.
+     * @param tag the tag of the field.
+
+     * @return {@literal true} unless the tag is an end-group tag.
+     */
+    protected final boolean storeUnknownField(CodedInputByteBufferNano input, int tag)
+            throws IOException {
+        int startPos = input.getPosition();
+        if (!input.skipField(tag)) {
+            return false;  // This wasn't an unknown field, it's an end-group tag.
+        }
         if (unknownFieldData == null) {
             unknownFieldData = new ArrayList<UnknownFieldData>();
         }
-        WireFormatNano.setExtension(extension, value, unknownFieldData);
+        int endPos = input.getPosition();
+        byte[] bytes = input.getData(startPos, endPos - startPos);
+        unknownFieldData.add(new UnknownFieldData(tag, bytes));
+        return true;
     }
 }
