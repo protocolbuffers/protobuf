@@ -71,7 +71,33 @@ void SetEnumVariables(const Params& params,
   (*variables)["tag"] = SimpleItoa(internal::WireFormat::MakeTag(descriptor));
   (*variables)["tag_size"] = SimpleItoa(
       internal::WireFormat::TagSize(descriptor->number(), descriptor->type()));
+  (*variables)["non_packed_tag"] = SimpleItoa(
+      internal::WireFormatLite::MakeTag(descriptor->number(),
+          internal::WireFormat::WireTypeForFieldType(descriptor->type())));
   (*variables)["message_name"] = descriptor->containing_type()->name();
+}
+
+void LoadEnumValues(const Params& params,
+    const EnumDescriptor* enum_descriptor, vector<string>* canonical_values) {
+  string enum_class_name = ClassName(params, enum_descriptor);
+  for (int i = 0; i < enum_descriptor->value_count(); i++) {
+    const EnumValueDescriptor* value = enum_descriptor->value(i);
+    const EnumValueDescriptor* canonical_value =
+        enum_descriptor->FindValueByNumber(value->number());
+    if (value == canonical_value) {
+      canonical_values->push_back(
+          enum_class_name + "." + RenameJavaKeywords(value->name()));
+    }
+  }
+}
+
+void PrintCaseLabels(
+    io::Printer* printer, const vector<string>& canonical_values) {
+  for (int i = 0; i < canonical_values.size(); i++) {
+    printer->Print(
+      "  case $value$:\n",
+      "value", canonical_values[i]);
+  }
 }
 
 }  // namespace
@@ -82,6 +108,7 @@ EnumFieldGenerator::
 EnumFieldGenerator(const FieldDescriptor* descriptor, const Params& params)
   : FieldGenerator(params), descriptor_(descriptor) {
   SetEnumVariables(params, descriptor, &variables_);
+  LoadEnumValues(params, descriptor->enum_type(), &canonical_values_);
 }
 
 EnumFieldGenerator::~EnumFieldGenerator() {}
@@ -111,12 +138,21 @@ GenerateClearCode(io::Printer* printer) const {
 void EnumFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "this.$name$ = input.readInt32();\n");
-
+    "int value = input.readInt32();\n"
+    "switch (value) {\n");
+  PrintCaseLabels(printer, canonical_values_);
+  printer->Print(variables_,
+    "    this.$name$ = value;\n");
   if (params_.generate_has()) {
     printer->Print(variables_,
-      "has$capitalized_name$ = true;\n");
+      "    has$capitalized_name$ = true;\n");
   }
+  printer->Print(
+    "    break;\n"
+    "}\n");
+  // No default case: in case of invalid value from the wire, preserve old
+  // field value. Also we are not storing the invalid value into the unknown
+  // fields, because there is no way to get the value out.
 }
 
 void EnumFieldGenerator::
@@ -209,6 +245,7 @@ AccessorEnumFieldGenerator(const FieldDescriptor* descriptor,
     const Params& params, int has_bit_index)
   : FieldGenerator(params), descriptor_(descriptor) {
   SetEnumVariables(params, descriptor, &variables_);
+  LoadEnumValues(params, descriptor->enum_type(), &canonical_values_);
   SetBitOperationVariables("has", has_bit_index, &variables_);
 }
 
@@ -245,8 +282,17 @@ GenerateClearCode(io::Printer* printer) const {
 void AccessorEnumFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "$name$_ = input.readInt32();\n"
-    "$set_has$;\n");
+    "int value = input.readInt32();\n"
+    "switch (value) {\n");
+  PrintCaseLabels(printer, canonical_values_);
+  printer->Print(variables_,
+    "    $name$_ = value;\n"
+    "    $set_has$;\n"
+    "    break;\n"
+    "}\n");
+  // No default case: in case of invalid value from the wire, preserve old
+  // field value. Also we are not storing the invalid value into the unknown
+  // fields, because there is no way to get the value out.
 }
 
 void AccessorEnumFieldGenerator::
@@ -287,6 +333,7 @@ RepeatedEnumFieldGenerator::
 RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor, const Params& params)
   : FieldGenerator(params), descriptor_(descriptor) {
   SetEnumVariables(params, descriptor, &variables_);
+  LoadEnumValues(params, descriptor->enum_type(), &canonical_values_);
 }
 
 RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {}
@@ -305,46 +352,82 @@ GenerateClearCode(io::Printer* printer) const {
 
 void RepeatedEnumFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
-  // First, figure out the length of the array, then parse.
+  // First, figure out the maximum length of the array, then parse,
+  // and finally copy the valid values to the field.
   printer->Print(variables_,
-    "int arrayLength = com.google.protobuf.nano.WireFormatNano\n"
-    "    .getRepeatedFieldArrayLength(input, $tag$);\n"
-    "int i = this.$name$ == null ? 0 : this.$name$.length;\n"
-    "int[] newArray = new int[i + arrayLength];\n"
-    "if (i != 0) {\n"
-    "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
+    "int length = com.google.protobuf.nano.WireFormatNano\n"
+    "    .getRepeatedFieldArrayLength(input, $non_packed_tag$);\n"
+    "int[] validValues = new int[length];\n"
+    "int validCount = 0;\n"
+    "for (int i = 0; i < length; i++) {\n"
+    "  if (i != 0) { // tag for first value already consumed.\n"
+    "    input.readTag();\n"
+    "  }\n"
+    "  int value = input.readInt32();\n"
+    "  switch (value) {\n");
+  printer->Indent();
+  PrintCaseLabels(printer, canonical_values_);
+  printer->Outdent();
+  printer->Print(variables_,
+    "      validValues[validCount++] = value;\n"
+    "      break;\n"
+    "  }\n"
     "}\n"
-    "for (; i < newArray.length - 1; i++) {\n"
-    "  newArray[i] = input.readInt32();\n"
-    "  input.readTag();\n"
-    "}\n"
-    "// Last one without readTag.\n"
-    "newArray[i] = input.readInt32();\n"
-    "this.$name$ = newArray;\n");
+    "if (validCount != 0) {\n"
+    "  int i = this.$name$ == null ? 0 : this.$name$.length;\n"
+    "  if (i == 0 && validCount == validValues.length) {\n"
+    "    this.$name$ = validValues;\n"
+    "  } else {\n"
+    "    int[] newArray = new int[i + validCount];\n"
+    "    if (i != 0) {\n"
+    "      java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
+    "    }\n"
+    "    java.lang.System.arraycopy(validValues, 0, newArray, i, validCount);\n"
+    "    this.$name$ = newArray;\n"
+    "  }\n"
+    "}\n");
 }
 
 void RepeatedEnumFieldGenerator::
 GenerateMergingCodeFromPacked(io::Printer* printer) const {
   printer->Print(variables_,
-    "int length = input.readRawVarint32();\n"
-    "int limit = input.pushLimit(length);\n"
+    "int bytes = input.readRawVarint32();\n"
+    "int limit = input.pushLimit(bytes);\n"
     "// First pass to compute array length.\n"
     "int arrayLength = 0;\n"
     "int startPos = input.getPosition();\n"
     "while (input.getBytesUntilLimit() > 0) {\n"
-    "  input.readInt32();\n"
-    "  arrayLength++;\n"
+    "  switch (input.readInt32()) {\n");
+  printer->Indent();
+  PrintCaseLabels(printer, canonical_values_);
+  printer->Outdent();
+  printer->Print(variables_,
+    "      arrayLength++;\n"
+    "      break;\n"
+    "  }\n"
     "}\n"
-    "input.rewindToPosition(startPos);\n"
-    "int i = this.$name$ == null ? 0 : this.$name$.length;\n"
-    "int[] newArray = new int[i + arrayLength];\n"
-    "if (i != 0) {\n"
-    "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
+    "if (arrayLength != 0) {\n"
+    "  input.rewindToPosition(startPos);\n"
+    "  int i = this.$name$ == null ? 0 : this.$name$.length;\n"
+    "  int[] newArray = new int[i + arrayLength];\n"
+    "  if (i != 0) {\n"
+    "    java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
+    "  }\n"
+    "  while (input.getBytesUntilLimit() > 0) {\n"
+    "    int value = input.readInt32();\n"
+    "    switch (value) {\n");
+  printer->Indent();
+  printer->Indent();
+  PrintCaseLabels(printer, canonical_values_);
+  printer->Outdent();
+  printer->Outdent();
+  printer->Print(variables_,
+    "        newArray[i++] = value;\n"
+    "        break;\n"
+    "    }\n"
+    "  }\n"
+    "  this.$name$ = newArray;\n"
     "}\n"
-    "for (; i < newArray.length; i++) {\n"
-    "  newArray[i] = input.readInt32();\n"
-    "}\n"
-    "this.$name$ = newArray;\n"
     "input.popLimit(limit);\n");
 }
 

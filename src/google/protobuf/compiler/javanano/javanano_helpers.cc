@@ -412,7 +412,7 @@ string DefaultValue(const Params& params, const FieldDescriptor* field) {
 
     case FieldDescriptor::CPPTYPE_ENUM:
       return ClassName(params, field->enum_type()) + "." +
-             field->default_value_enum()->name();
+             RenameJavaKeywords(field->default_value_enum()->name());
 
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return "null";
