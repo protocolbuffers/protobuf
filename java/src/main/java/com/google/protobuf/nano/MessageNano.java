@@ -38,7 +38,7 @@ import java.io.IOException;
  * @author wink@google.com Wink Saville
  */
 public abstract class MessageNano {
-    protected int cachedSize = -1;
+    protected volatile int cachedSize = -1;
 
     /**
      * Get the number of bytes required to encode this message.
@@ -60,10 +60,19 @@ public abstract class MessageNano {
      * The size is cached and the cached result can be retrieved
      * using getCachedSize().
      */
-    public int getSerializedSize() {
-        // This is overridden if the generated message has serialized fields.
-        cachedSize = 0;
-        return 0;
+    public final int getSerializedSize() {
+        int size = computeSerializedSize();
+        cachedSize = size;
+        return size;
+    }
+
+    /**
+     * Computes the number of bytes required to encode this message. This does not update the
+     * cached size.
+     */
+    protected int computeSerializedSize() {
+      // This is overridden if the generated message has serialized fields.
+      return 0;
     }
 
     /**
