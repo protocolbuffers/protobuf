@@ -384,6 +384,18 @@ namespace Google.ProtocolBuffers
             message[f("default_cord")] = "425";
         }
 
+        /// <summary>
+        /// Clears every field of the message, using the reflection interface.
+        /// </summary>
+        /// <param name="message"></param>
+        internal void ClearAllFieldsViaReflection(IBuilder message)
+        {
+            foreach (FieldDescriptor field in message.AllFields.Keys)
+            {
+                message.WeakClearField(field);
+            }
+        }
+
         // -------------------------------------------------------------------
 
         /// <summary>

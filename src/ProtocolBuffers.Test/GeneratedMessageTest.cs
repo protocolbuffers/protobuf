@@ -265,6 +265,16 @@ namespace Google.ProtocolBuffers
         }
 
         [TestMethod]
+        public void ReflectionClear()
+        {
+            TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
+            reflectionTester.SetAllFieldsViaReflection(builder);
+            reflectionTester.ClearAllFieldsViaReflection(builder);
+            TestAllTypes message = builder.Build();
+            TestUtil.AssertClear(message);
+        }
+
+        [TestMethod]
         public void ReflectionSettersRejectNull()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
