@@ -56,7 +56,7 @@ Targets For Tools
     <Copy SourceFiles="$(LibDirectory)\NUnit-config\nunit-console.v2.0.config" DestinationFiles="$(NUnitExePath).config" />
     <Exec 
       WorkingDirectory="%(ToolsTestContainer.RootDir)%(ToolsTestContainer.Directory)"
-      Command="&quot;$(NUnitExePath)&quot; /nologo /noshadow %(ToolsTestContainer.Identity) /xml:$(BuildTempDirectory)\%(ToolsTestContainer.Filename).xml" />
+      Command="&quot;$(NUnitExePath)&quot; /nologo /noshadow &quot;%(ToolsTestContainer.Identity)&quot; /xml:&quot;$(BuildTempDirectory)\%(ToolsTestContainer.Filename).xml&quot;" />
     
   </Target>
 
@@ -65,7 +65,7 @@ Targets For GenerateSource
 *********************************************************************************************** -->
 
   <Target Name="_GenerateProjects">
-    <Exec Command="$(CsProjectProjector) csproj_templates src\ProtocolBuffersLibrary.sln" WorkingDirectory="$(ProjectDirectory)" />
+    <Exec Command="&quot;$(CsProjectProjector)&quot; csproj_templates src\ProtocolBuffersLibrary.sln" WorkingDirectory="$(ProjectDirectory)" />
   </Target>
   
   <Target Name="_CleanTempSource">
@@ -75,8 +75,8 @@ Targets For GenerateSource
   
   <Target Name="_GenerateSource" DependsOnTargets="_CleanTempSource">
     <Message Importance="high" Text="Generating source from proto files" />
-    <Exec Command="$(ProtocExePath) --proto_path=$(ProtosDirectory) --descriptor_set_out=compiled.pb @(Protos->'%(RelativeDir)%(Filename)%(Extension)', ' ')" WorkingDirectory="$(SourceTempDirectory)" />
-    <Exec Command="$(ProtogenExePath) compiled.pb" WorkingDirectory="$(SourceTempDirectory)" />
+    <Exec Command="&quot;$(ProtocExePath)&quot; --proto_path=$(ProtosDirectory) --descriptor_set_out=compiled.pb @(Protos->'%(RelativeDir)%(Filename)%(Extension)', ' ')" WorkingDirectory="$(SourceTempDirectory)" />
+    <Exec Command="&quot;$(ProtogenExePath)&quot; compiled.pb" WorkingDirectory="$(SourceTempDirectory)" />
   </Target>
 
   <Target Name="_CopyGeneratedSource" DependsOnTargets="_GenerateSource">

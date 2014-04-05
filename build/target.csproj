@@ -156,7 +156,7 @@ Targets For Test
 
   <Target Name="_RunNunit">
     <Copy SourceFiles="$(LibDirectory)\NUnit-config\nunit-console.$(TargetFrameworkVersion).config" DestinationFiles="$(NUnitExePath).config" />
-    <Exec Command="&quot;$(NUnitExePath)&quot; /nologo /noshadow %(TestContainer.Identity) /xml:$(BuildTempDirectory)\%(TestContainer.Filename).xml" />
+    <Exec Command="&quot;$(NUnitExePath)&quot; /nologo /noshadow &quot;%(TestContainer.Identity)&quot; /xml:&quot;$(BuildTempDirectory)\%(TestContainer.Filename).xml&quot;" />
   </Target>
 
   <Target Name="_RunStatLight">
