@@ -100,6 +100,20 @@ namespace Google.ProtocolBuffers
         }
 
         /// <summary>
+        /// Tests that a builder prints the same way as a message.
+        /// </summary>
+        [TestMethod]
+        public void PrintBuilder()
+        {
+            TestUtil.TestInMultipleCultures(() =>
+            {
+                string messageText = TextFormat.PrintToString(TestUtil.GetAllSet());
+                string builderText = TextFormat.PrintToString(TestUtil.GetAllSet().ToBuilder());
+                Assert.AreEqual(messageText, builderText);
+            });
+        }
+
+        /// <summary>
         /// Print TestAllExtensions and compare with golden file.
         /// </summary>
         [TestMethod]

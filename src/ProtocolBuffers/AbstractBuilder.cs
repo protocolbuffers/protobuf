@@ -249,5 +249,18 @@ namespace Google.ProtocolBuffers
         }
 
         #endregion
+
+        /// <summary>
+        /// Converts this builder to a string using <see cref="TextFormat" />.
+        /// </summary>
+        /// <remarks>
+        /// This method is not sealed (in the way that it is in <see cref="AbstractMessage{TMessage, TBuilder}" />
+        /// as it was added after earlier releases; some other implementations may already be overriding the
+        /// method.
+        /// </remarks>
+        public override string ToString()
+        {
+            return TextFormat.PrintToString(this);
+        }
     }
 }

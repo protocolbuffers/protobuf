@@ -142,6 +142,13 @@ namespace Google.ProtocolBuffers
         }
 
         [TestMethod]
+        public void UninitializedBuilderToString()
+        {
+            TestRequired.Builder builder = TestRequired.CreateBuilder().SetA(1);
+            Assert.AreEqual("a: 1\n", builder.ToString());
+        }
+
+        [TestMethod]
         public void RequiredForeign()
         {
             TestRequiredForeign.Builder builder = TestRequiredForeign.CreateBuilder();

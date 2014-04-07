@@ -62,6 +62,16 @@ namespace Google.ProtocolBuffers
         }
 
         /// <summary>
+        /// Outputs a textual representation of the Protocol Message builder supplied into
+        /// the parameter output.
+        /// </summary>
+        public static void Print(IBuilder builder, TextWriter output)
+        {
+            TextGenerator generator = new TextGenerator(output, "\n");
+            Print(builder, generator);
+        }
+
+        /// <summary>
         /// Outputs a textual representation of <paramref name="fields" /> to <paramref name="output"/>.
         /// </summary>
         public static void Print(UnknownFieldSet fields, TextWriter output)
@@ -77,6 +87,13 @@ namespace Google.ProtocolBuffers
             return text.ToString();
         }
 
+        public static string PrintToString(IBuilder builder)
+        {
+            StringWriter text = new StringWriter();
+            Print(builder, text);
+            return text.ToString();
+        }
+
         public static string PrintToString(UnknownFieldSet fields)
         {
             StringWriter text = new StringWriter();
@@ -85,6 +102,15 @@ namespace Google.ProtocolBuffers
         }
 
         private static void Print(IMessage message, TextGenerator generator)
+        {
+            foreach (KeyValuePair<FieldDescriptor, object> entry in message.AllFields)
+            {
+                PrintField(entry.Key, entry.Value, generator);
+            }
+            PrintUnknownFields(message.UnknownFields, generator);
+        }
+
+        private static void Print(IBuilder message, TextGenerator generator)
         {
             foreach (KeyValuePair<FieldDescriptor, object> entry in message.AllFields)
             {
