@@ -475,6 +475,7 @@ java_multiple_files    -> true or false
 java_nano_generate_has -> true or false [DEPRECATED]
 optional_field_style   -> default or accessors
 enum_style             -> c or java
+ignore_services        -> true or false
 
 java_package:
 java_outer_classname:
@@ -579,6 +580,13 @@ enum_style={c,java} (default: c)
   implemented and ProGuard shrinking should be used, so after the Java
   compiler inlines all referenced enum constants into the call sites,
   the interface remains unused and can be removed by ProGuard.
+
+ignore_services={true,false} (default: false)
+  Skips services definitions.
+
+  Nano doesn't support services. By default, if a service is defined
+  it will generate a compilation error. If this flag is set to true,
+  services will be silently ignored, instead.
 
 
 To use nano protobufs within the Android repo:

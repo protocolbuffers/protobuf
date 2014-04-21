@@ -105,7 +105,7 @@ bool FileGenerator::Validate(string* error) {
     return false;
   }
 
-  if (file_->service_count() != 0) {
+  if (file_->service_count() != 0 && !params_.ignore_services()) {
     error->assign(file_->name());
     error->append(
       ": Java NANO_RUNTIME does not support services\"");
