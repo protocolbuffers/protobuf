@@ -215,6 +215,11 @@ namespace Google.ProtocolBuffers.ProtoGen
             tmp = process.StandardError.ReadToEnd();
             if (tmp.Trim().Length > 0)
             {
+                // Replace protoc output with something more amenable to Visual Studio.
+                var regexMsvs = new Regex(@"(.*)\((\d+)\).* column=(\d+)\s*:\s*(.*)");
+                tmp = regexMsvs.Replace(tmp, "$1($2,$3): error CS9999: $4");
+                var regexGcc = new Regex(@"(.*):(\d+):(\d+):\s*(.*)");
+                tmp = regexGcc.Replace(tmp, "$1($2,$3): error CS9999: $4");
                 Console.Error.WriteLine(tmp);
             }
             return process.ExitCode;
