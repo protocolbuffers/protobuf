@@ -63,6 +63,7 @@ class Params {
   bool use_reference_types_for_primitives_;
   bool generate_equals_;
   bool ignore_services_;
+  bool parcelable_messages_;
 
  public:
   Params(const string & base_name) :
@@ -75,7 +76,8 @@ class Params {
     optional_field_accessors_(false),
     use_reference_types_for_primitives_(false),
     generate_equals_(false),
-    ignore_services_(false) {
+    ignore_services_(false),
+    parcelable_messages_(false) {
   }
 
   const string& base_name() const {
@@ -203,6 +205,13 @@ class Params {
   }
   bool ignore_services() const {
     return ignore_services_;
+  }
+
+  void set_parcelable_messages(bool value) {
+    parcelable_messages_ = value;
+  }
+  bool parcelable_messages() const {
+    return parcelable_messages_;
   }
 };
 
