@@ -62,6 +62,7 @@ class Params {
   bool optional_field_accessors_;
   bool use_reference_types_for_primitives_;
   bool generate_equals_;
+  bool ignore_services_;
 
  public:
   Params(const string & base_name) :
@@ -73,7 +74,8 @@ class Params {
     java_enum_style_(false),
     optional_field_accessors_(false),
     use_reference_types_for_primitives_(false),
-    generate_equals_(false) {
+    generate_equals_(false),
+    ignore_services_(false) {
   }
 
   const string& base_name() const {
@@ -194,6 +196,13 @@ class Params {
   }
   bool generate_equals() const {
     return generate_equals_;
+  }
+
+  void set_ignore_services(bool value) {
+    ignore_services_ = value;
+  }
+  bool ignore_services() const {
+    return ignore_services_;
   }
 };
 

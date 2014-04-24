@@ -142,6 +142,8 @@ bool JavaNanoGenerator::Generate(const FileDescriptor* file,
       params.set_use_reference_types_for_primitives(option_value == "reftypes");
     } else if (option_name == "generate_equals") {
       params.set_generate_equals(option_value == "true");
+    } else if (option_name == "ignore_services") {
+      params.set_ignore_services(option_value == "true");
     } else {
       *error = "Ignore unknown javanano generator option: " + option_name;
     }
