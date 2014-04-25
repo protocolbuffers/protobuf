@@ -144,6 +144,8 @@ bool JavaNanoGenerator::Generate(const FileDescriptor* file,
       params.set_generate_equals(option_value == "true");
     } else if (option_name == "ignore_services") {
       params.set_ignore_services(option_value == "true");
+    } else if (option_name == "parcelable_messages") {
+      params.set_parcelable_messages(option_value == "true");
     } else {
       *error = "Ignore unknown javanano generator option: " + option_name;
     }

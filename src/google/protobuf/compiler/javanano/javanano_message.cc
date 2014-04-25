@@ -132,10 +132,17 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "public static final class $classname$ extends\n",
       "classname", descriptor_->name());
   }
-  if (params_.store_unknown_fields()) {
+  if (params_.store_unknown_fields() && params_.parcelable_messages()) {
+    printer->Print(
+      "    com.google.protobuf.nano.android.ParcelableExtendableMessageNano<$classname$> {\n",
+      "classname", descriptor_->name());
+  } else if (params_.store_unknown_fields()) {
     printer->Print(
       "    com.google.protobuf.nano.ExtendableMessageNano<$classname$> {\n",
       "classname", descriptor_->name());
+  } else if (params_.parcelable_messages()) {
+    printer->Print(
+      "    com.google.protobuf.nano.android.ParcelableMessageNano {\n");
   } else {
     printer->Print(
       "    com.google.protobuf.nano.MessageNano {\n");
