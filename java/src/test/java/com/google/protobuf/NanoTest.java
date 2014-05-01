@@ -2910,6 +2910,20 @@ public class NanoTest extends TestCase {
     assertTrue(Arrays.equals(enums, message.getExtension(RepeatedExtensions.repeatedEnum)));
   }
 
+  public void testNullExtensions() throws Exception {
+    // Check that clearing the extension on an empty message is a no-op.
+    Extensions.ExtendableMessage message = new Extensions.ExtendableMessage();
+    message.setExtension(SingularExtensions.someMessage, null);
+    assertEquals(0, MessageNano.toByteArray(message).length);
+
+    // Check that the message is empty after setting and clearing an extension.
+    AnotherMessage another = new AnotherMessage();
+    message.setExtension(SingularExtensions.someMessage, another);
+    assertTrue(MessageNano.toByteArray(message).length > 0);
+    message.setExtension(SingularExtensions.someMessage, null);
+    assertEquals(0, MessageNano.toByteArray(message).length);
+  }
+
   public void testUnknownFields() throws Exception {
     // Check that we roundtrip (serialize and deserialize) unrecognized fields.
     AnotherMessage message = new AnotherMessage();

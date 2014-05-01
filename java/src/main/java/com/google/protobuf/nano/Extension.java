@@ -268,7 +268,7 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
 
         // After deletion or no-op addition (due to 'value' being an array of empty or
         // null-only elements), unknownFields may be empty. Discard the ArrayList if so.
-        return (unknownFields.size() == 0) ? null : unknownFields;
+        return (unknownFields == null || unknownFields.isEmpty()) ? null : unknownFields;
     }
 
     protected UnknownFieldData writeData(Object value) {
