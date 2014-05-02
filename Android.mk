@@ -437,6 +437,6 @@ LOCAL_STATIC_JAVA_LIBRARIES := libprotobuf-java-2.3.0-nano \
         android-nano-test-parcelable \
         android-nano-test-parcelable-extendable
 
-WITH_DEXPREOPT := false
+LOCAL_DEX_PREOPT := false
 
 include $(BUILD_PACKAGE)
