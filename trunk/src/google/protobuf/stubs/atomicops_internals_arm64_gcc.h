@@ -117,10 +117,8 @@ inline Atomic32 NoBarrier_AtomicIncrement(volatile Atomic32* ptr,
 
 inline Atomic32 Barrier_AtomicIncrement(volatile Atomic32* ptr,
                                         Atomic32 increment) {
-  Atomic32 result;
-
   MemoryBarrier();
-  result = NoBarrier_AtomicIncrement(ptr, increment);
+  Atomic32 result = NoBarrier_AtomicIncrement(ptr, increment);
   MemoryBarrier();
 
   return result;
@@ -129,9 +127,7 @@ inline Atomic32 Barrier_AtomicIncrement(volatile Atomic32* ptr,
 inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
                                        Atomic32 old_value,
                                        Atomic32 new_value) {
-  Atomic32 prev;
-
-  prev = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
+  Atomic32 prev = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
   MemoryBarrier();
 
   return prev;
@@ -140,10 +136,8 @@ inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
 inline Atomic32 Release_CompareAndSwap(volatile Atomic32* ptr,
                                        Atomic32 old_value,
                                        Atomic32 new_value) {
-  Atomic32 prev;
-
   MemoryBarrier();
-  prev = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
+  Atomic32 prev = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
 
   return prev;
 }
@@ -259,10 +253,8 @@ inline Atomic64 NoBarrier_AtomicIncrement(volatile Atomic64* ptr,
 
 inline Atomic64 Barrier_AtomicIncrement(volatile Atomic64* ptr,
                                         Atomic64 increment) {
-  Atomic64 result;
-
   MemoryBarrier();
-  result = NoBarrier_AtomicIncrement(ptr, increment);
+  Atomic64 result = NoBarrier_AtomicIncrement(ptr, increment);
   MemoryBarrier();
 
   return result;
@@ -271,9 +263,7 @@ inline Atomic64 Barrier_AtomicIncrement(volatile Atomic64* ptr,
 inline Atomic64 Acquire_CompareAndSwap(volatile Atomic64* ptr,
                                        Atomic64 old_value,
                                        Atomic64 new_value) {
-  Atomic64 prev;
-
-  prev = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
+  Atomic64 prev = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
   MemoryBarrier();
 
   return prev;
@@ -282,10 +272,8 @@ inline Atomic64 Acquire_CompareAndSwap(volatile Atomic64* ptr,
 inline Atomic64 Release_CompareAndSwap(volatile Atomic64* ptr,
                                        Atomic64 old_value,
                                        Atomic64 new_value) {
-  Atomic64 prev;
-
   MemoryBarrier();
-  prev = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
+  Atomic64 prev = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
 
   return prev;
 }
@@ -313,7 +301,7 @@ inline Atomic64 NoBarrier_Load(volatile const Atomic64* ptr) {
 }
 
 inline Atomic64 Acquire_Load(volatile const Atomic64* ptr) {
-  Atomic32 value;
+  Atomic64 value;
 
   __asm__ __volatile__ (  // NOLINT
     "ldar %x[value], %[ptr]  \n\t"
