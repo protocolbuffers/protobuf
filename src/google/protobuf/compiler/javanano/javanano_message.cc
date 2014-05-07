@@ -311,8 +311,8 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
   printer->Print(
     "\n"
     "@Override\n"
-    "protected int computeSerializedSize() {\n"
-    "  int size = super.computeSerializedSize();\n");
+    "public int getSerializedSize() {\n"
+    "  int size = super.getSerializedSize();\n");
   printer->Indent();
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -321,6 +321,7 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
 
   printer->Outdent();
   printer->Print(
+    "  cachedSize = size;\n"
     "  return size;\n"
     "}\n");
 }

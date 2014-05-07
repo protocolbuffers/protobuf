@@ -105,12 +105,6 @@ public class NanoTest extends TestCase {
     assertEquals(456, newMsg.d);
     assertEquals(2, msg.nestedMsg.bb);
     assertEquals(SimpleMessageNano.BAR, msg.defaultNestedEnum);
-
-    msg.nestedMsg = null;
-    assertTrue(msgSerializedSize != msg.getSerializedSize());
-
-    msg.clear();
-    assertEquals(0, msg.getSerializedSize());
   }
 
   public void testRecursiveMessageNano() throws Exception {
@@ -147,12 +141,6 @@ public class NanoTest extends TestCase {
     assertEquals(1, newMsg.nestedMessage.a.id);
     assertEquals(2, newMsg.optionalRecursiveMessageNano.id);
     assertEquals(3, newMsg.repeatedRecursiveMessageNano[0].id);
-  }
-
-  public void testMessageNoFields() {
-    SingleMessageNano msg = new SingleMessageNano();
-    assertEquals(0, msg.getSerializedSize());
-    assertEquals(0, MessageNano.toByteArray(msg).length);
   }
 
   public void testNanoRequiredInt32() throws Exception {
@@ -2908,20 +2896,6 @@ public class NanoTest extends TestCase {
     assertTrue(Arrays.equals(floats, message.getExtension(RepeatedExtensions.repeatedFloat)));
     assertTrue(Arrays.equals(doubles, message.getExtension(RepeatedExtensions.repeatedDouble)));
     assertTrue(Arrays.equals(enums, message.getExtension(RepeatedExtensions.repeatedEnum)));
-  }
-
-  public void testNullExtensions() throws Exception {
-    // Check that clearing the extension on an empty message is a no-op.
-    Extensions.ExtendableMessage message = new Extensions.ExtendableMessage();
-    message.setExtension(SingularExtensions.someMessage, null);
-    assertEquals(0, MessageNano.toByteArray(message).length);
-
-    // Check that the message is empty after setting and clearing an extension.
-    AnotherMessage another = new AnotherMessage();
-    message.setExtension(SingularExtensions.someMessage, another);
-    assertTrue(MessageNano.toByteArray(message).length > 0);
-    message.setExtension(SingularExtensions.someMessage, null);
-    assertEquals(0, MessageNano.toByteArray(message).length);
   }
 
   public void testUnknownFields() throws Exception {
