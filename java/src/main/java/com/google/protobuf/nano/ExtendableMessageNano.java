@@ -47,7 +47,7 @@ public abstract class ExtendableMessageNano<M extends ExtendableMessageNano<M>>
     protected List<UnknownFieldData> unknownFieldData;
 
     @Override
-    public int getSerializedSize() {
+    protected int computeSerializedSize() {
         int size = 0;
         int unknownFieldCount = unknownFieldData == null ? 0 : unknownFieldData.size();
         for (int i = 0; i < unknownFieldCount; i++) {
@@ -55,7 +55,6 @@ public abstract class ExtendableMessageNano<M extends ExtendableMessageNano<M>>
             size += CodedOutputByteBufferNano.computeRawVarint32Size(unknownField.tag);
             size += unknownField.bytes.length;
         }
-        cachedSize = size;
         return size;
     }
 
