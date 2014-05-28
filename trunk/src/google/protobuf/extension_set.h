@@ -794,7 +794,7 @@ class MessageTypeTraits {
                                   MutableType message, ExtensionSet* set) {
     set->SetAllocatedMessage(number, field_type, NULL, message);
   }
-  static inline MutableType Release(int number, FieldType field_type,
+  static inline MutableType Release(int number, FieldType /* field_type */,
                                     ExtensionSet* set) {
     return static_cast<Type*>(set->ReleaseMessage(
         number, Type::default_instance()));

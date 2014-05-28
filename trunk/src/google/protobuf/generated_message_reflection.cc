@@ -777,7 +777,7 @@ string GeneratedMessageReflection::GetString(
 
 const string& GeneratedMessageReflection::GetStringReference(
     const Message& message,
-    const FieldDescriptor* field, string* scratch) const {
+    const FieldDescriptor* field, string* /* scratch */) const {
   USAGE_CHECK_ALL(GetStringReference, SINGULAR, STRING);
   if (field->is_extension()) {
     return GetExtensionSet(message).GetString(field->number(),
@@ -838,7 +838,7 @@ string GeneratedMessageReflection::GetRepeatedString(
 
 const string& GeneratedMessageReflection::GetRepeatedStringReference(
     const Message& message, const FieldDescriptor* field,
-    int index, string* scratch) const {
+    int index, string* /* scratch */) const {
   USAGE_CHECK_ALL(GetRepeatedStringReference, REPEATED, STRING);
   if (field->is_extension()) {
     return GetExtensionSet(message).GetRepeatedString(field->number(), index);
