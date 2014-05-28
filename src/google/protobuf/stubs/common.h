@@ -720,7 +720,8 @@ class LIBPROTOBUF_EXPORT LogFinisher {
 
 namespace internal {
 template<typename T>
-T* CheckNotNull(const char *file, int line, const char *name, T* val) {
+T* CheckNotNull(const char* /* file */, int /* line */,
+                const char* name, T* val) {
   if (val == NULL) {
     GOOGLE_LOG(FATAL) << name;
   }

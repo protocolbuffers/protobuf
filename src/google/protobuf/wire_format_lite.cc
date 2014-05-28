@@ -182,7 +182,7 @@ bool FieldSkipper::SkipMessage(io::CodedInputStream* input) {
 }
 
 void FieldSkipper::SkipUnknownEnum(
-    int field_number, int value) {
+    int /* field_number */, int /* value */) {
   // Nothing.
 }
 

@@ -67,7 +67,8 @@ class LIBPROTOBUF_EXPORT ErrorCollector {
   // Indicates that there was a warning in the input at the given line and
   // column numbers.  The numbers are zero-based, so you may want to add
   // 1 to each before printing them.
-  virtual void AddWarning(int line, int column, const string& message) { }
+  virtual void AddWarning(int /* line */, int /* column */,
+                          const string& /* message */) { }
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ErrorCollector);

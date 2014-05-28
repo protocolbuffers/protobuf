@@ -149,7 +149,7 @@ int Message::ByteSize() const {
   return size;
 }
 
-void Message::SetCachedSize(int size) const {
+void Message::SetCachedSize(int /* size */) const {
   GOOGLE_LOG(FATAL) << "Message class \"" << GetDescriptor()->full_name()
              << "\" implements neither SetCachedSize() nor ByteSize().  "
                 "Must implement one or the other.";
@@ -216,7 +216,8 @@ HANDLE_TYPE(bool,   FieldDescriptor::CPPTYPE_BOOL,   -1);
 #undef HANDLE_TYPE
 
 void* Reflection::MutableRawRepeatedString(
-    Message* message, const FieldDescriptor* field, bool is_string) const {
+    Message* message, const FieldDescriptor* field,
+    bool /* is_string */) const {
   return MutableRawRepeatedField(message, field,
       FieldDescriptor::CPPTYPE_STRING, FieldOptions::STRING, NULL);
 }

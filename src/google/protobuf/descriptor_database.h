@@ -96,8 +96,8 @@ class LIBPROTOBUF_EXPORT DescriptorDatabase {
   //
   // This method has a default implementation that always returns
   // false.
-  virtual bool FindAllExtensionNumbers(const string& extendee_type,
-                                       vector<int>* output) {
+  virtual bool FindAllExtensionNumbers(const string& /* extendee_type */,
+                                       vector<int>* /* output */) {
     return false;
   }
 

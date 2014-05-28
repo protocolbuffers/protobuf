@@ -115,8 +115,8 @@ void DefaultLogHandler(LogLevel level, const char* filename, int line,
   fflush(stderr);  // Needed on MSVC.
 }
 
-void NullLogHandler(LogLevel level, const char* filename, int line,
-                    const string& message) {
+void NullLogHandler(LogLevel /* level */, const char* /* filename */,
+                    int /* line */, const string& /* message */) {
   // Nothing.
 }
 

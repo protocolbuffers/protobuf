@@ -1075,7 +1075,7 @@ bool TextFormat::Parser::MergeFromString(const string& input,
   return Merge(&input_stream, output);
 }
 
-bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* input,
+bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* /* input */,
                                         Message* output,
                                         ParserImpl* parser_impl) {
   if (!parser_impl->Parse(output)) return false;
@@ -1280,8 +1280,8 @@ void TextFormat::Printer::PrintShortRepeatedField(
   }
 }
 
-void TextFormat::Printer::PrintFieldName(const Message& message,
-                                         const Reflection* reflection,
+void TextFormat::Printer::PrintFieldName(const Message& /* message */,
+                                         const Reflection* /* reflection */,
                                          const FieldDescriptor* field,
                                          TextGenerator& generator) const {
   if (field->is_extension()) {
