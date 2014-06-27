@@ -25,6 +25,7 @@
 #include "lauxlib.h"
 #include "upb/bindings/lua/upb.h"
 #include "upb/def.h"
+#include "upb/symtab.h"
 
 static void lupbtable_setnum(lua_State *L, int tab, const char *key,
                              lua_Number val) {
@@ -141,6 +142,12 @@ static int lupbtable_enumdef_ntoi(lua_State *L) {
   return 1;
 }
 
+static int lupbtable_symtab_symtab(lua_State *L) {
+  const upb_symtab *s = lupb_symtab_check(L, 1);
+  lupbtable_pushstrtable(L, &s->symtab);
+  return 1;
+}
+
 static void lupbtable_setfieldi(lua_State *L, const char *field, int i) {
   lua_pushnumber(L, i);
   lua_setfield(L, -2, field);
@@ -151,11 +158,15 @@ static const struct luaL_Reg lupbtable_toplevel_m[] = {
   {"msgdef_ntof", lupbtable_msgdef_ntof},
   {"enumdef_iton", lupbtable_enumdef_iton},
   {"enumdef_ntoi", lupbtable_enumdef_ntoi},
+  {"symtab_symtab", lupbtable_symtab_symtab},
   {NULL, NULL}
 };
 
 int luaopen_upbtable(lua_State *L) {
-  lupb_newlib(L, "upb.table", lupbtable_toplevel_m);
+  static char module_key;
+  if (lupb_openlib(L, &module_key, "upb.table", lupbtable_toplevel_m)) {
+    return 1;
+  }
 
   // We define these here because they are not public.
   lupbtable_setfieldi(L, "CTYPE_PTR",   UPB_CTYPE_PTR);

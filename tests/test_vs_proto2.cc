@@ -129,7 +129,8 @@ int run_tests(int argc, char *argv[])
   MESSAGE_CIDENT msg1;
   MESSAGE_CIDENT msg2;
 
-  upb::reffed_ptr<const upb::Handlers> h(upb::googlepb::NewWriteHandlers(msg1));
+  upb::reffed_ptr<const upb::Handlers> h(
+      upb::googlepb::WriteHandlers::New(msg1));
 
   compare_metadata(msg1.GetDescriptor(), h->message_def());
 
@@ -146,7 +147,7 @@ int run_tests(int argc, char *argv[])
       factory->GetPrototype(msg1.descriptor());
   google::protobuf::Message* dyn_msg1 = prototype->New();
   google::protobuf::Message* dyn_msg2 = prototype->New();
-  h = upb::googlepb::NewWriteHandlers(*dyn_msg1);
+  h = upb::googlepb::WriteHandlers::New(*dyn_msg1);
   parse_and_compare(dyn_msg1, dyn_msg2, h.get(), str, len, false);
   parse_and_compare(dyn_msg1, dyn_msg2, h.get(), str, len, true);
   delete dyn_msg1;

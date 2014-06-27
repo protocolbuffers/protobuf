@@ -164,7 +164,7 @@ template <class T> struct remove_constptr<const T *> { typedef T *type; };
 template <class T, class U> struct disable_if_same { typedef void Type; };
 template <class T> struct disable_if_same<T, T> {};
 
-template <class T> void DeletePointer(void *p) { delete static_cast<T *>(p); }
+template <class T> void DeletePointer(void *p) { delete static_cast<T>(p); }
 
 template <class T1, class T2>
 struct FirstUnlessVoid {
@@ -802,6 +802,7 @@ struct ConvertParams<BoundFunc5<R, P1, P2, P3, P4, P5, F, I> > {
       const FieldDef *f,                                                       \
       const Handlers::utype ## Handler& handler) {                             \
     assert(!handler.registered_);                                              \
+    handler.AddCleanup(this);                                                  \
     handler.registered_ = true;                                                \
     return upb_handlers_set##ltype(this, f, handler.handler_, &handler.attr_); \
   }                                                                            \
@@ -876,8 +877,10 @@ template<class T> const void *UniquePtrForType() {
 template <class T>
 template <class F>
 inline Handler<T>::Handler(F func)
-    : registered_(false) {
-  upb_handlerattr_sethandlerdata(&attr_, func.GetData(), func.GetCleanup());
+    : registered_(false),
+      cleanup_data_(func.GetData()),
+      cleanup_func_(func.GetCleanup()) {
+  upb_handlerattr_sethandlerdata(&attr_, func.GetData());
   typedef typename ReturnOf<T>::Return Return;
   typedef typename ConvertParams<F>::Func ConvertedParamsFunc;
   typedef typename MaybeWrapReturn<ConvertedParamsFunc, Return>::Func
@@ -911,9 +914,8 @@ inline Handler<T>::~Handler() {
 
 inline HandlerAttributes::HandlerAttributes() { upb_handlerattr_init(this); }
 inline HandlerAttributes::~HandlerAttributes() { upb_handlerattr_uninit(this); }
-inline bool HandlerAttributes::SetHandlerData(void *hd,
-                                              upb_handlerfree *cleanup) {
-  return upb_handlerattr_sethandlerdata(this, hd, cleanup);
+inline bool HandlerAttributes::SetHandlerData(const void *hd) {
+  return upb_handlerattr_sethandlerdata(this, hd);
 }
 inline const void* HandlerAttributes::handler_data() const {
   return upb_handlerattr_handlerdata(this);
@@ -965,7 +967,7 @@ inline reffed_ptr<Handlers> Handlers::New(const MessageDef *m) {
 }
 inline reffed_ptr<const Handlers> Handlers::NewFrozen(
     const MessageDef *m, upb_handlers_callback *callback,
-    void *closure) {
+    const void *closure) {
   const upb_handlers *h = upb_handlers_newfrozen(m, &h, callback, closure);
   return reffed_ptr<const Handlers>(h, &h);
 }
@@ -1001,58 +1003,70 @@ inline bool Handlers::Freeze(const std::vector<Handlers*>& h, Status* status) {
 inline const MessageDef *Handlers::message_def() const {
   return upb_handlers_msgdef(this);
 }
+inline bool Handlers::AddCleanup(void *p, upb_handlerfree *func) {
+  return upb_handlers_addcleanup(this, p, func);
+}
 inline bool Handlers::SetStartMessageHandler(
     const Handlers::StartMessageHandler &handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
+  handler.AddCleanup(this);
   return upb_handlers_setstartmsg(this, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetEndMessageHandler(
     const Handlers::EndMessageHandler &handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
+  handler.AddCleanup(this);
   return upb_handlers_setendmsg(this, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetStartStringHandler(const FieldDef *f,
                                             const StartStringHandler &handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
+  handler.AddCleanup(this);
   return upb_handlers_setstartstr(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetEndStringHandler(const FieldDef *f,
                                           const EndFieldHandler &handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
+  handler.AddCleanup(this);
   return upb_handlers_setendstr(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetStringHandler(const FieldDef *f,
                                        const StringHandler& handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
+  handler.AddCleanup(this);
   return upb_handlers_setstring(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetStartSequenceHandler(
     const FieldDef *f, const StartFieldHandler &handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
+  handler.AddCleanup(this);
   return upb_handlers_setstartseq(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetStartSubMessageHandler(
     const FieldDef *f, const StartFieldHandler &handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
+  handler.AddCleanup(this);
   return upb_handlers_setstartsubmsg(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetEndSubMessageHandler(const FieldDef *f,
                                               const EndFieldHandler &handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
+  handler.AddCleanup(this);
   return upb_handlers_setendsubmsg(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetEndSequenceHandler(const FieldDef *f,
                                             const EndFieldHandler &handler) {
   assert(!handler.registered_);
   handler.registered_ = true;
+  handler.AddCleanup(this);
   return upb_handlers_setendseq(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetSubHandlers(const FieldDef *f, const Handlers *sub) {

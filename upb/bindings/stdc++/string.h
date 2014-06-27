@@ -6,6 +6,8 @@
 #ifndef UPB_STDCPP_H_
 #define UPB_STDCPP_H_
 
+#include "upb/sink.h"
+
 namespace upb {
 
 template <class T>

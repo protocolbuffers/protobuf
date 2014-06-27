@@ -4,7 +4,14 @@
  * Copyright (c) 2013 Google Inc.  See LICENSE for details.
  * Author: Josh Haberman <jhaberman@gmail.com>
  *
- * Code to compile a upb::MessageDef into bytecode for decoding that message.
+ * Code to compile a upb::Handlers into bytecode for decoding a protobuf
+ * according to that specific schema and destination handlers.
+ *
+ * Compiling to bytecode is always the first step.  If we are using the
+ * interpreted decoder we leave it as bytecode and interpret that.  If we are
+ * using a JIT decoder we use a code generator to turn the bytecode into native
+ * code, LLVM IR, etc.
+ *
  * Bytecode definition is in decoder.int.h.
  */
 

@@ -63,13 +63,6 @@ namespace upb {
 
 namespace googlepb {
 
-// Returns a upb::Handlers object that can be used to populate a proto2::Message
-// object of the same type as "m."  For more control over handler caching and
-// reuse, instantiate a CodeCache object below.
-upb::reffed_ptr<const upb::Handlers> NewWriteHandlers(const proto2::Message& m);
-upb::reffed_ptr<const upb::Handlers> NewWriteHandlers(
-    const ::google::protobuf::Message& m);
-
 // Builds upb::Defs from proto2::Descriptors, and caches all built Defs for
 // reuse.  CodeCache (below) uses this internally; there is no need to use this
 // class directly unless you only want Defs without corresponding Handlers.
@@ -159,6 +152,41 @@ class DefBuilder {
   std::vector<Def*> to_freeze_;
 };
 
+// Handlers to populate a proto2::Message with incoming data.
+class WriteHandlers {
+ public:
+  // Returns a upb::Handlers object that can be used to populate a
+  // proto2::Message object of the same type as "m."  For more control over
+  // handler caching and reuse, instantiate a CodeCache object below.
+  static upb::reffed_ptr<const upb::Handlers> New(const proto2::Message& m);
+  static upb::reffed_ptr<const upb::Handlers> New(
+      const ::google::protobuf::Message& m);
+
+  // TODO(haberman): add an interface that takes a list of field paths,
+  // something like:
+  //
+  //   // Returns a Handlers instance that will populate the given field paths
+  //   // only, dropping data for all other field paths on the floor.
+  //   static upb::reffed_ptr<const upb::Handlers> New(
+  //       const proto2::Message& m,
+  //       const std::vector<std::string>& paths);
+
+  // A lower-level interface with field granularity.
+  //
+  // Adds a handler to the given upb::Handlers for parsing the given field.  If
+  // you only want to write certain fields into the proto2 message at parse
+  // time, call these methods ONLY for the fields you want to parse.
+  //
+  // The given field can be either a regular field or an extension, as long as
+  // its containing_type() matches this message.
+  static bool AddFieldHandler(const proto2::Message& m,
+                              const proto2::FieldDescriptor* f,
+                              upb::Handlers* h);
+  static bool AddFieldHandler(const ::google::protobuf::Message& m,
+                              const ::google::protobuf::FieldDescriptor* f,
+                              upb::Handlers* h);
+};
+
 // Builds and caches upb::Handlers for populating proto2 generated classes.
 //
 // This class is NOT thread-safe.
@@ -198,6 +226,29 @@ class CodeCache {
 
   std::vector<Handlers*> to_freeze_;
 };
+
+// Functions for getting prototypes; these are only necessary if you are
+// building handlers manually, field by field.
+
+// Given a message and a field descriptor for that message, returns a prototype
+// for the submessage.  Requires that this is a submessage field or a weak
+// field.
+const proto2::Message* GetFieldPrototype(const proto2::Message& m,
+                                         const proto2::FieldDescriptor* f);
+const ::google::protobuf::Message* GetFieldPrototype(
+    const ::google::protobuf::Message& m,
+    const ::google::protobuf::FieldDescriptor* f);
+
+// Given a message and a field descriptor for that message, returns a prototype
+// for the submessage, or NULL if this is not a submessage field or a weak
+// field.  If this returns non-NULL even though the descriptor's type is not a
+// submessage, then this is a weak field.  If you don't know what a weak field
+// is, you are probably not using one.
+const proto2::Message* TryGetFieldPrototype(const proto2::Message& m,
+                                            const proto2::FieldDescriptor* f);
+const ::google::protobuf::Message* TryGetFieldPrototype(
+    const ::google::protobuf::Message& m,
+    const ::google::protobuf::FieldDescriptor* f);
 
 }  // namespace googlepb
 }  // namespace upb

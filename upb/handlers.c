@@ -21,12 +21,17 @@ char _upb_noclosure;
 
 static void freehandlers(upb_refcounted *r) {
   upb_handlers *h = (upb_handlers*)r;
-  for (int i = 0; i < h->msg->selector_count; i++) {
-    upb_handlerfree *cleanup = h->table[i].attr.cleanup;
-    if (cleanup) {
-      cleanup(h->table[i].attr.handler_data_);
-    }
+
+  upb_inttable_iter i;
+  upb_inttable_begin(&i, &h->cleanup_);
+  for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
+    void *val = (void*)upb_inttable_iter_key(&i);
+    upb_value func_val = upb_inttable_iter_value(&i);
+    upb_handlerfree *func = upb_value_getfptr(func_val);
+    func(val);
   }
+
+  upb_inttable_uninit(&h->cleanup_);
   upb_msgdef_unref(h->msg, h);
   free(h->sub);
   free(h);
@@ -49,7 +54,7 @@ static const struct upb_refcounted_vtbl vtbl = {visithandlers, freehandlers};
 typedef struct {
   upb_inttable tab;  // maps upb_msgdef* -> upb_handlers*.
   upb_handlers_callback *callback;
-  void *closure;
+  const void *closure;
 } dfs_state;
 
 // TODO(haberman): discard upb_handlers* objects that do not actually have any
@@ -283,6 +288,7 @@ upb_handlers *upb_handlers_new(const upb_msgdef *md, const void *owner) {
   h->sub = calloc(md->submsg_field_count, sizeof(*h->sub));
   if (!h->sub) goto oom;
   if (!upb_refcounted_init(UPB_UPCAST(h), &vtbl, owner)) goto oom;
+  if (!upb_inttable_init(&h->cleanup_, UPB_CTYPE_FPTR)) goto oom;
 
   // calloc() above initialized all handlers to NULL.
   return h;
@@ -295,7 +301,7 @@ oom:
 const upb_handlers *upb_handlers_newfrozen(const upb_msgdef *m,
                                            const void *owner,
                                            upb_handlers_callback *callback,
-                                           void *closure) {
+                                           const void *closure) {
   dfs_state state;
   state.callback = callback;
   state.closure = closure;
@@ -395,6 +401,15 @@ const upb_handlers *upb_handlers_getsubhandlers_sel(const upb_handlers *h,
 }
 
 const upb_msgdef *upb_handlers_msgdef(const upb_handlers *h) { return h->msg; }
+
+bool upb_handlers_addcleanup(upb_handlers *h, void *p, upb_handlerfree *func) {
+  if (upb_inttable_lookupptr(&h->cleanup_, p, NULL)) {
+    return false;
+  }
+  bool ok = upb_inttable_insertptr(&h->cleanup_, p, upb_value_fptr(func));
+  UPB_ASSERT_VAR(ok, ok);
+  return true;
+}
 
 
 /* "Static" methods ***********************************************************/
@@ -584,10 +599,8 @@ void upb_handlerattr_uninit(upb_handlerattr *attr) {
   UPB_UNUSED(attr);
 }
 
-bool upb_handlerattr_sethandlerdata(upb_handlerattr *attr, void *hd,
-                                    upb_handlerfree *cleanup) {
+bool upb_handlerattr_sethandlerdata(upb_handlerattr *attr, const void *hd) {
   attr->handler_data_ = hd;
-  attr->cleanup = cleanup;
   return true;
 }
 

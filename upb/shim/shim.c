@@ -37,8 +37,9 @@ bool upb_shim_set(upb_handlers *h, const upb_fielddef *f, size_t offset,
   d->hasbit = hasbit;
 
   upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
-  upb_handlerattr_sethandlerdata(&attr, d, free);
+  upb_handlerattr_sethandlerdata(&attr, d);
   upb_handlerattr_setalwaysok(&attr, true);
+  upb_handlers_addcleanup(h, d, free);
 
 #define TYPE(u, l) \
   case UPB_TYPE_##u: \

@@ -297,7 +297,7 @@ template<class T, bool F(int*, const uint32_t*, T)>
 void doreg(upb_handlers *h, uint32_t num) {
   const upb_fielddef *f = upb_msgdef_itof(upb_handlers_msgdef(h), num);
   ASSERT(f);
-  ASSERT(h->SetValueHandler<T>(f, UpbBindT(&F, new uint32_t(num))));
+  ASSERT(h->SetValueHandler<T>(f, UpbBindT(F, new uint32_t(num))));
   if (f->IsSequence()) {
     ASSERT(h->SetStartSequenceHandler(f, UpbBind(startseq, new uint32_t(num))));
     ASSERT(h->SetEndSequenceHandler(f, UpbBind(endseq, new uint32_t(num))));
@@ -488,8 +488,22 @@ uint32_t Hash(const string& proto, const string* expected_output, size_t seam1,
   return hash;
 }
 
-bool parse(upb::BytesSink* s, void* subc, const char* buf, size_t start,
-           size_t end, size_t* ofs, upb::Status* status) {
+void CheckBytesParsed(const upb::pb::Decoder& decoder, size_t ofs) {
+  // We could have parsed as many as 10 bytes fewer than what the decoder
+  // previously accepted, since we can buffer up to 10 partial bytes internally
+  // before accumulating an entire value.
+  const int MAX_BUFFERED = 10;
+
+  // We can't have parsed more data than the decoder callback is telling us it
+  // parsed.
+  ASSERT(decoder.BytesParsed() <= ofs);
+  ASSERT(ofs <= (decoder.BytesParsed() + MAX_BUFFERED));
+}
+
+bool parse(upb::pb::Decoder* decoder, void* subc, const char* buf,
+           size_t start, size_t end, size_t* ofs, upb::Status* status) {
+  CheckBytesParsed(*decoder, *ofs);
+  upb::BytesSink* s = decoder->input();
   start = UPB_MAX(start, *ofs);
   if (start <= end) {
     size_t len = end - start;
@@ -532,6 +546,7 @@ bool parse(upb::BytesSink* s, void* subc, const char* buf, size_t start,
     if (!status->ok())
       return false;
     *ofs += parsed;
+    CheckBytesParsed(*decoder, *ofs);
   }
   return true;
 }
@@ -569,12 +584,12 @@ void run_decoder(const string& proto, const string* expected_output) {
           fprintf(stderr, "Calling start()\n");
         }
 
-        bool ok =
-            input->Start(proto.size(), &sub) &&
-            parse(input, sub, proto.c_str(), 0, i, &ofs, &status) &&
-            parse(input, sub, proto.c_str(), i, j, &ofs, &status) &&
-            parse(input, sub, proto.c_str(), j, proto.size(), &ofs, &status) &&
-            ofs == proto.size();
+        bool ok = input->Start(proto.size(), &sub) &&
+                  parse(&decoder, sub, proto.c_str(), 0, i, &ofs, &status) &&
+                  parse(&decoder, sub, proto.c_str(), i, j, &ofs, &status) &&
+                  parse(&decoder, sub, proto.c_str(), j, proto.size(), &ofs,
+                        &status) &&
+                  ofs == proto.size();
 
         if (ok) {
           if (filter_hash) {
@@ -940,6 +955,22 @@ void test_valid() {
       LINE("%u:1")
       LINE(">"), UPB_DESCRIPTOR_TYPE_INT32);
 
+  // String inside submsg.
+  uint32_t msg_fn = UPB_DESCRIPTOR_TYPE_MESSAGE;
+  assert_successful_parse(
+      submsg(msg_fn,
+             cat ( tag(UPB_DESCRIPTOR_TYPE_STRING, UPB_WIRE_TYPE_DELIMITED),
+                   delim(string("abcde"))
+                 )
+             ),
+      LINE("<")
+      LINE("%u:{")
+      LINE("  <")
+      LINE("  %u:(5)\"abcde\"")
+      LINE("  >")
+      LINE("}")
+      LINE(">"), msg_fn, UPB_DESCRIPTOR_TYPE_STRING);
+
   // Test implicit startseq/endseq.
   uint32_t repfl_fn = rep_fn(UPB_DESCRIPTOR_TYPE_FLOAT);
   uint32_t repdb_fn = rep_fn(UPB_DESCRIPTOR_TYPE_DOUBLE);
@@ -956,7 +987,6 @@ void test_valid() {
       LINE(">"), repfl_fn, repfl_fn, repdb_fn, repdb_fn);
 
   // Submessage tests.
-  uint32_t msg_fn = UPB_DESCRIPTOR_TYPE_MESSAGE;
   assert_successful_parse(
       submsg(msg_fn, submsg(msg_fn, submsg(msg_fn, string()))),
       LINE("<")

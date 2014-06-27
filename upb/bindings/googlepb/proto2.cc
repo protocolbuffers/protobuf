@@ -13,10 +13,12 @@
 // and protobuf opensource both in a single binary without the two conflicting.
 // However we must be careful not to violate the ODR.
 
-#include "upb/bindings/googlepb/proto2.h"
+#include "upb/bindings/googlepb/proto2.int.h"
+
+#include <map>
 
 #include "upb/def.h"
-#include "upb/bindings/googlepb/proto1.h"
+#include "upb/bindings/googlepb/proto1.int.h"
 #include "upb/handlers.h"
 #include "upb/shim/shim.h"
 #include "upb/sink.h"
@@ -237,10 +239,26 @@ case goog::FieldDescriptor::cpptype:                                           \
     return (r->has_bits_offset_ * 8) + f->index();
   }
 
+#ifdef GOOGLE_PROTOBUF_HAS_ONEOF
+  static size_t GetOneofDiscriminantOffset(
+      const goog::FieldDescriptor* f,
+      const goog::internal::GeneratedMessageReflection* r) {
+    assert(f->containing_oneof());
+    return r->oneof_case_offset_ + f->containing_oneof()->index();
+  }
+#endif
+
   static uint16_t GetOffset(
       const goog::FieldDescriptor* f,
       const goog::internal::GeneratedMessageReflection* r) {
-    return r->offsets_[f->index()];
+    int index = f->index();
+#ifdef GOOGLE_PROTOBUF_HAS_ONEOF
+    if (f->containing_oneof()) {
+      index =
+          f->containing_type()->field_count() + f->containing_oneof()->index();
+    }
+#endif
+    return r->offsets_[index];
   }
 
   class FieldOffset {
@@ -273,6 +291,154 @@ case goog::FieldDescriptor::cpptype:                                           \
     int32_t hasbyte_;
     int8_t mask_;
   };
+
+#ifdef GOOGLE_PROTOBUF_HAS_ONEOF
+  class OneofFieldData {
+   public:
+    OneofFieldData(const goog::FieldDescriptor* f,
+                   const goog::internal::GeneratedMessageReflection* r)
+        : field_number_offset_(GetOneofDiscriminantOffset(f, r)),
+          field_number_(f->number()) {
+      const goog::OneofDescriptor* oneof = f->containing_oneof();
+
+      // Determine the type of each discriminant value, so we know what kind of
+      // value to delete if we are changing the type.
+      //
+      // For example, we may find that the oneof has three possible values: an
+      // int32, a message, and a string.  For the int32 there is nothing to
+      // delete, but the message and the string need to be deleted when we
+      // switch to another oneof type, to avoid leaking it.
+      //
+      // TODO(haberman): share this map of types between all fields in the
+      // oneof.  Right now we duplicate it for each one, which is wasteful.
+      for (int i = 0; i < oneof->field_count(); i++) {
+        const goog::FieldDescriptor* oneof_f = oneof->field(i);
+        OneofType& type = types_[oneof_f->number()];
+
+        switch (oneof_f->cpp_type()) {
+          case goog::FieldDescriptor::CPPTYPE_STRING:
+            type = GetTypeForString(oneof_f);
+            break;
+          case goog::FieldDescriptor::CPPTYPE_MESSAGE:
+#ifdef UPB_GOOGLE3
+            if (oneof_f->options().lazy()) {
+              type = ONEOF_TYPE_LAZYFIELD;
+              break;
+            }
+#endif
+            type = ONEOF_TYPE_MESSAGE;
+            break;
+
+          default:
+            type = ONEOF_TYPE_NONE;
+            break;
+        }
+      }
+
+      // "0" indicates that the field is not set.
+      types_[0] = ONEOF_TYPE_NONE;
+    }
+
+    int32_t* GetFieldPointer(goog::Message* message) const {
+      return GetPointer<int32_t>(message, field_number_offset_);
+    }
+
+    // Returns whether this is different than the previous value of the
+    // field_number; this implies that the current value was freed (if
+    // necessary) and the caller should allocate a new instance.
+    bool SetOneofHas(goog::Message* m, const FieldOffset* ofs) const {
+      int32_t *field_number = GetFieldPointer(m);
+      if (*field_number == field_number_) {
+        return false;
+      } else {
+        switch (types_.at(*field_number)) {
+          case ONEOF_TYPE_NONE:
+            break;
+          case ONEOF_TYPE_STRING:
+            delete *ofs->GetFieldPointer<std::string*>(m);
+            break;
+          case ONEOF_TYPE_MESSAGE:
+            delete *ofs->GetFieldPointer<goog::Message*>(m);
+            break;
+#ifdef UPB_GOOGLE3
+          case ONEOF_TYPE_GLOBALSTRING:
+            delete *ofs->GetFieldPointer<string*>(m);
+            break;
+          case ONEOF_TYPE_CORD:
+            delete *ofs->GetFieldPointer<Cord*>(m);
+            break;
+          case ONEOF_TYPE_STRINGPIECE:
+            delete *ofs->GetFieldPointer<goog::internal::StringPieceField*>(m);
+            break;
+          case ONEOF_TYPE_LAZYFIELD:
+            delete *ofs->GetFieldPointer<goog::internal::LazyField*>(m);
+            break;
+#endif
+        }
+        *field_number = field_number_;
+        return true;
+      }
+    }
+
+   private:
+    enum OneofType {
+      ONEOF_TYPE_NONE,
+      ONEOF_TYPE_STRING,
+      ONEOF_TYPE_MESSAGE,
+#ifdef UPB_GOOGLE3
+      ONEOF_TYPE_GLOBALSTRING,
+      ONEOF_TYPE_CORD,
+      ONEOF_TYPE_STRINGPIECE,
+      ONEOF_TYPE_LAZYFIELD,
+#endif
+    };
+
+    OneofType GetTypeForString(const goog::FieldDescriptor* f) {
+      switch (f->options().ctype()) {
+        case goog::FieldOptions::STRING:
+#ifdef UPB_GOOGLE3
+          return ONEOF_TYPE_GLOBALSTRING;
+#else
+          return ONEOF_TYPE_STRING;
+#endif
+
+#ifdef UPB_GOOGLE3
+        case goog::FieldOptions::CORD:
+          return ONEOF_TYPE_CORD;
+        case goog::FieldOptions::STRING_PIECE:
+          return ONEOF_TYPE_STRINGPIECE;
+#endif
+        default:
+          assert(false);
+          return ONEOF_TYPE_NONE;
+      }
+    }
+
+    // Offset of the uint32 that specifies which field is set.
+    size_t field_number_offset_;
+
+    // Field number for this field.
+    int32_t field_number_;
+
+    // The types of the oneof fields, indexed by field_number_.
+    std::map<int32_t, OneofType> types_;
+  };
+
+  class OneofFieldHandlerData : public FieldOffset {
+   public:
+    OneofFieldHandlerData(const goog::FieldDescriptor* f,
+                          const goog::internal::GeneratedMessageReflection* r)
+        : FieldOffset(f, r),
+          oneof_data_(f, r) {}
+
+    bool SetOneofHas(goog::Message* message) const {
+      return oneof_data_.SetOneofHas(message, this);
+    }
+
+   public:
+    OneofFieldData oneof_data_;
+  };
+#endif  // GOOGLE_PROTOBUF_HAS_ONEOF
 
   class ExtensionFieldData {
    public:
@@ -352,7 +518,16 @@ case goog::FieldDescriptor::cpptype:                                           \
         CHKRET(h->SetValueHandler<T>(
             f, UpbBindT(SetPrimitiveExtension<T>, data.release())));
       }
-    } else {
+    }
+#ifdef GOOGLE_PROTOBUF_HAS_ONEOF
+      else if (proto2_f->containing_oneof()) {
+      assert(!proto2_f->is_repeated());
+      CHKRET(h->SetValueHandler<T>(
+          f, UpbBindT(SetOneofPrimitive<T>,
+                      new OneofFieldHandlerData(proto2_f, r))));
+    }
+#endif
+      else {
       if (f->IsSequence()) {
         SetStartRepeatedField<T>(proto2_f, r, f, h);
         CHKRET(h->SetValueHandler<T>(f, UpbMakeHandlerT(AppendPrimitive<T>)));
@@ -382,6 +557,17 @@ case goog::FieldDescriptor::cpptype:                                           \
     goog::internal::PrimitiveTypeTraits<T>::Set(data->number(), data->type(),
                                                 val, set);
   }
+
+#ifdef GOOGLE_PROTOBUF_HAS_ONEOF
+  template <typename T>
+  static void SetOneofPrimitive(goog::Message* m,
+                                const OneofFieldHandlerData* data, T val) {
+    data->SetOneofHas(m);
+    const FieldOffset* ofs = data;
+    T* ptr = ofs->GetFieldPointer<T>(m);
+    *ptr = val;
+  }
+#endif
 
   // Enum //////////////////////////////////////////////////////////////////////
 
@@ -506,7 +692,15 @@ case goog::FieldDescriptor::cpptype:                                           \
       upb::Handlers* h) {
     assert(!proto2_f->is_extension());
     CHKRET(h->SetStringHandler(f, UpbMakeHandlerT(&OnStringBuf<T>)));
-    if (f->IsSequence()) {
+#ifdef GOOGLE_PROTOBUF_HAS_ONEOF
+    if (proto2_f->containing_oneof()) {
+      assert(!f->IsSequence());
+      CHKRET(h->SetStartStringHandler(
+          f, UpbBindT(&StartOneofString<T>,
+                      new OneofFieldHandlerData(proto2_f, r))));
+    } else
+#endif
+      if (f->IsSequence()) {
       SetStartRepeatedPtrField<T>(proto2_f, r, f, h);
       CHKRET(
           h->SetStartStringHandler(f, UpbMakeHandlerT(StartRepeatedString<T>)));
@@ -544,6 +738,22 @@ case goog::FieldDescriptor::cpptype:                                           \
     // reserve() here appears to hurt performance rather than help.
     return str;
   }
+
+#ifdef GOOGLE_PROTOBUF_HAS_ONEOF
+  template <typename T>
+  static T* StartOneofString(goog::Message* m,
+                             const OneofFieldHandlerData* data,
+                             size_t size_hint) {
+    const FieldOffset* ofs = data;
+    T** str = ofs->GetFieldPointer<T*>(m);
+    if (data->SetOneofHas(m)) {
+      *str = new T();
+    } else {
+      (*str)->clear();
+    }
+    return *str;
+  }
+#endif
 
   // StringExtension ///////////////////////////////////////////////////////////
 
@@ -598,6 +808,24 @@ case goog::FieldDescriptor::cpptype:                                           \
     const goog::Message* const prototype_;
   };
 
+#ifdef GOOGLE_PROTOBUF_HAS_ONEOF
+  class OneofSubMessageHandlerData : public SubMessageHandlerData {
+   public:
+    OneofSubMessageHandlerData(const goog::FieldDescriptor* f,
+                          const goog::internal::GeneratedMessageReflection* r,
+                          const goog::Message* prototype)
+        : SubMessageHandlerData(f, r, prototype),
+          oneof_data_(f, r) {}
+
+    bool SetOneofHas(goog::Message* m) const {
+      return oneof_data_.SetOneofHas(m, this);
+    }
+
+   private:
+    OneofFieldData oneof_data_;
+  };
+#endif
+
   static void SetSubMessageHandlers(
       const goog::FieldDescriptor* proto2_f, const goog::Message& m,
       const goog::internal::GeneratedMessageReflection* r,
@@ -605,7 +833,15 @@ case goog::FieldDescriptor::cpptype:                                           \
     const goog::Message* field_prototype = GetFieldPrototype(m, proto2_f);
     scoped_ptr<SubMessageHandlerData> data(
         new SubMessageHandlerData(proto2_f, r, field_prototype));
-    if (f->IsSequence()) {
+#ifdef GOOGLE_PROTOBUF_HAS_ONEOF
+    if (proto2_f->containing_oneof()) {
+      assert(!f->IsSequence());
+      CHKRET(h->SetStartSubMessageHandler(
+          f, UpbBind(StartOneofSubMessage, new OneofSubMessageHandlerData(
+                                               proto2_f, r, field_prototype))));
+    } else
+#endif
+      if (f->IsSequence()) {
       SetStartRepeatedSubmessageField(proto2_f, r, f, h);
       CHKRET(h->SetStartSubMessageHandler(
           f, UpbBind(StartRepeatedSubMessage, data.release())));
@@ -648,6 +884,18 @@ case goog::FieldDescriptor::cpptype:                                           \
     }
     return submsg;
   }
+
+#ifdef GOOGLE_PROTOBUF_HAS_ONEOF
+  static goog::Message* StartOneofSubMessage(
+      goog::Message* m, const OneofSubMessageHandlerData* data) {
+    const FieldOffset* ofs = data;
+    goog::Message** subm = ofs->GetFieldPointer<goog::Message*>(m);
+    if (data->SetOneofHas(m)) {
+      *subm = data->prototype()->New();
+    }
+    return *subm;
+  }
+#endif
 
   // SubMessageExtension ///////////////////////////////////////////////////////
 
@@ -979,7 +1227,7 @@ case goog::FieldDescriptor::cpptype:                                           \
 };
 
 namespace upb {
-namespace google {
+namespace googlepb {
 
 bool TrySetWriteHandlers(const goog::FieldDescriptor* proto2_f,
                          const goog::Message& prototype,
@@ -987,10 +1235,13 @@ bool TrySetWriteHandlers(const goog::FieldDescriptor* proto2_f,
   return me::GMR_Handlers::TrySet(proto2_f, prototype, upb_f, h);
 }
 
-const goog::Message* GetFieldPrototype(const goog::Message& m,
-                                       const goog::FieldDescriptor* f) {
+const goog::Message* GetProto2FieldPrototype(const goog::Message& m,
+                                             const goog::FieldDescriptor* f) {
+  if (f->cpp_type() != goog::FieldDescriptor::CPPTYPE_MESSAGE) {
+    return NULL;
+  }
   return me::GMR_Handlers::GetFieldPrototype(m, f);
 }
 
-}  // namespace google
+}  // namespace googlepb
 }  // namespace upb

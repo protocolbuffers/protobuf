@@ -80,6 +80,8 @@
 // debug mode.
 #define UPB_ASSERT_VAR(var, predicate) UPB_UNUSED(var); assert(predicate)
 
+// Generic function type.
+typedef void upb_func();
 
 /* Casts **********************************************************************/
 

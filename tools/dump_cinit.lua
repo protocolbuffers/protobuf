@@ -56,6 +56,15 @@ function const(obj, name, base)
                 " constant for value: " .. val)
 end
 
+function sortedkeys(tab)
+  arr = {}
+  for key in pairs(tab) do
+    arr[#arr + 1] = key
+  end
+  table.sort(arr)
+  return arr
+end
+
 function constlist(pattern)
   local ret = {}
   for k, v in pairs(upb) do
@@ -84,9 +93,8 @@ end
 --]]
 
 local LinkTable = {}
-function LinkTable:new(basename, types)
+function LinkTable:new(types)
   local linktab = {
-    basename = basename,
     types = types,
     table = {},  -- ptr -> {type, 0-based offset}
     obj_arrays = {}  -- Establishes the ordering for each object type
@@ -111,7 +119,7 @@ end
 -- Returns a C symbol name for the given objtype and offset.
 function LinkTable:csym(objtype, offset)
   local typestr = assert(self.types[objtype])
-  return string.format("%s_%s[%d]", self.basename, typestr, offset)
+  return string.format("%s[%d]", typestr, offset)
 end
 
 -- Returns the address of the given C object.
@@ -119,7 +127,7 @@ function LinkTable:addr(obj)
   if obj == upbtable.NULL then
     return "NULL"
   else
-    local tabent = assert(self.table[obj], "unknown object")
+    local tabent = assert(self.table[obj], "unknown object: " .. tostring(obj))
     return "&" .. self:csym(tabent[1], tabent[2])
   end
 end
@@ -246,25 +254,70 @@ local function emit_file_warning(append)
   append('// regenerated.\n\n')
 end
 
+local function join(...)
+  return table.concat({...}, ".")
+end
+
+local function split(str)
+  local ret = {}
+  for word in string.gmatch(str, "%w+") do
+    table.insert(ret, word)
+  end
+  return ret
+end
+
+local function to_cident(...)
+  return string.gsub(join(...), "[%./]", "_")
+end
+
+local function to_preproc(...)
+  return string.upper(to_cident(...))
+end
+
+local function getpackage(name)
+  local package_end = 0
+  for i=1,string.len(name) do
+    if string.byte(name, i) == string.byte(".", 1) then
+      package_end = i - 1
+    end
+  end
+  return string.sub(name, 1, package_end)
+end
+
+local function relname(name)
+  local package = getpackage(name)
+  return string.sub(name, string.len(package) + 2)
+end
+
+local function start_namespace(package, append)
+  local package_components = split(package)
+  for _, component in ipairs(package_components) do
+    append("namespace %s {\n", component)
+  end
+end
+
+local function end_namespace(package, append)
+  local package_components = split(package)
+  for i=#package_components,1,-1 do
+    append("}  // namespace %s\n", package_components[i])
+  end
+end
+
 --[[
 
   Top-level, exported dumper functions
 
 --]]
 
-local function dump_defs_c(symtab, basename, append)
-  -- Add fielddefs for any msgdefs passed in.
-  local fielddefs = {}
-  for _, def in ipairs(symtab:getdefs(upb.DEF_MSG)) do
-    for field in def:fields() do
-      fielddefs[#fielddefs + 1] = field
+local function dump_defs_c(symtab, basename, namespace, append)
+  local defs = {}
+  for def in symtab:defs(upb.DEF_ANY) do
+    defs[#defs + 1] = def
+    if (def:def_type() == upb.DEF_MSG) then
+      for field in def:fields() do
+        defs[#defs + 1] = field
+      end
     end
-  end
-
-  -- Get a list of all defs and add fielddefs to it.
-  local defs = symtab:getdefs(upb.DEF_ANY)
-  for _, fielddef in ipairs(fielddefs) do
-    defs[#defs + 1] = fielddef
   end
 
   -- Sort all defs by (type, name).
@@ -279,14 +332,14 @@ local function dump_defs_c(symtab, basename, append)
   )
 
   -- Perform pre-pass to build the link table.
-  local linktab = LinkTable:new(basename, {
+  local linktab = LinkTable:new{
     [upb.DEF_MSG] = "msgs",
     [upb.DEF_FIELD] = "fields",
     [upb.DEF_ENUM] = "enums",
     intentries = "intentries",
     strentries = "strentries",
     arrays = "arrays",
-  })
+  }
   local reftable_count = 0
 
   for _, def in ipairs(defs) do
@@ -307,15 +360,22 @@ local function dump_defs_c(symtab, basename, append)
     end
   end
 
+  -- Symbol table entries.
+  reftable_count = reftable_count + 2
+  for _, e in ipairs(upbtable.symtab_symtab(symtab).entries) do
+    linktab:add("strentries", e.ptr, e)
+  end
+
   -- Emit forward declarations.
   emit_file_warning(append)
-  append('#include "upb/def.h"\n\n')
-  append("const upb_msgdef %s;\n", linktab:cdecl(upb.DEF_MSG))
-  append("const upb_fielddef %s;\n", linktab:cdecl(upb.DEF_FIELD))
-  append("const upb_enumdef %s;\n", linktab:cdecl(upb.DEF_ENUM))
-  append("const upb_tabent %s;\n", linktab:cdecl("strentries"))
-  append("const upb_tabent %s;\n", linktab:cdecl("intentries"))
-  append("const _upb_value %s;\n", linktab:cdecl("arrays"))
+  append('#include "upb/def.h"\n')
+  append('#include "upb/symtab.h"\n\n')
+  append("static const upb_msgdef %s;\n", linktab:cdecl(upb.DEF_MSG))
+  append("static const upb_fielddef %s;\n", linktab:cdecl(upb.DEF_FIELD))
+  append("static const upb_enumdef %s;\n", linktab:cdecl(upb.DEF_ENUM))
+  append("static const upb_tabent %s;\n", linktab:cdecl("strentries"))
+  append("static const upb_tabent %s;\n", linktab:cdecl("intentries"))
+  append("static const _upb_value %s;\n", linktab:cdecl("arrays"))
   append("\n")
   append("#ifdef UPB_DEBUG_REFS\n")
   append("static upb_inttable reftables[%d];\n", reftable_count)
@@ -327,7 +387,7 @@ local function dump_defs_c(symtab, basename, append)
 
   local reftable = 0
 
-  append("const upb_msgdef %s = {\n", linktab:cdecl(upb.DEF_MSG))
+  append("static const upb_msgdef %s = {\n", linktab:cdecl(upb.DEF_MSG))
   for m in linktab:objs(upb.DEF_MSG) do
     local tables = gettables(m)
     -- UPB_MSGDEF_INIT(name, selector_count, submsg_field_count, itof, ntof,
@@ -344,7 +404,7 @@ local function dump_defs_c(symtab, basename, append)
   end
   append("};\n\n")
 
-  append("const upb_fielddef %s = {\n", linktab:cdecl(upb.DEF_FIELD))
+  append("static const upb_fielddef %s = {\n", linktab:cdecl(upb.DEF_FIELD))
   for f in linktab:objs(upb.DEF_FIELD) do
     local subdef = "NULL"
     if f:has_subdef() then
@@ -376,7 +436,7 @@ local function dump_defs_c(symtab, basename, append)
   end
   append("};\n\n")
 
-  append("const upb_enumdef %s = {\n", linktab:cdecl(upb.DEF_ENUM))
+  append("static const upb_enumdef %s = {\n", linktab:cdecl(upb.DEF_ENUM))
   for e in linktab:objs(upb.DEF_ENUM) do
     local tables = gettables(e)
     -- UPB_ENUMDEF_INIT(name, ntoi, iton, defaultval)
@@ -392,23 +452,36 @@ local function dump_defs_c(symtab, basename, append)
   end
   append("};\n\n")
 
-  append("const upb_tabent %s = {\n", linktab:cdecl("strentries"))
+  append("static const upb_tabent %s = {\n", linktab:cdecl("strentries"))
   for ent in linktab:objs("strentries") do
     append(dumper:tabent(ent))
   end
   append("};\n\n");
 
-  append("const upb_tabent %s = {\n", linktab:cdecl("intentries"))
+  append("static const upb_tabent %s = {\n", linktab:cdecl("intentries"))
   for ent in linktab:objs("intentries") do
     append(dumper:tabent(ent))
   end
   append("};\n\n");
 
-  append("const _upb_value %s = {\n", linktab:cdecl("arrays"))
+  append("static const _upb_value %s = {\n", linktab:cdecl("arrays"))
   for ent in linktab:objs("arrays") do
     append(dumper:arrayval(ent))
   end
   append("};\n\n");
+
+  append("static const upb_symtab symtab = " ..
+           "UPB_SYMTAB_INIT(%s, &reftables[%d], &reftables[%d]);\n\n",
+         dumper:strtable(upbtable.symtab_symtab(symtab)),
+         reftable,
+         reftable + 1);
+
+  -- TODO: don't hardcode this.
+  append("const upb_symtab *%s_%s(const void *owner) " ..
+         "{\n", namespace, to_cident(basename))
+  append("  upb_symtab_ref(&symtab, owner);\n")
+  append("  return &symtab;\n")
+  append("}\n\n")
 
   append("#ifdef UPB_DEBUG_REFS\n")
   append("static upb_inttable reftables[%d] = {\n", reftable_count)
@@ -421,31 +494,52 @@ local function dump_defs_c(symtab, basename, append)
   return linktab
 end
 
-local function join(...)
-  return table.concat({...}, ".")
+local function dump_defs_for_type(format, defs, namespace, append)
+  local sorted_defs = {}
+
+  for def in defs do
+    sorted_defs[#sorted_defs + 1] = def
+  end
+
+  table.sort(sorted_defs,
+             function(a, b) return a:full_name() < b:full_name() end)
+
+  for _, def in ipairs(sorted_defs) do
+    append(format, namespace, to_cident(def:full_name()), def:full_name())
+  end
+
+  append("\n")
 end
 
-local function to_cident(...)
-  return string.gsub(join(...), "%.", "_")
-end
-
-local function to_preproc(...)
-  return string.upper(to_cident(...))
-end
-
-local function dump_defs_h(symtab, basename, append, linktab)
-  local ucase_basename = string.upper(basename)
+local function dump_defs_h(symtab, basename, namespace, append, linktab)
+  local basename_preproc = to_preproc(basename)
+  append("// This file contains accessors for a set of compiled-in defs.\n")
+  append("// Note that unlike Google's protobuf, it does *not* define\n")
+  append("// generated classes or any other kind of data structure for\n")
+  append("// actually storing protobufs.  It only contains *defs* which\n")
+  append("// let you reflect over a protobuf *schema*.\n")
+  append("//\n")
   emit_file_warning(append)
-  append('#ifndef %s_UPB_H_\n', ucase_basename)
-  append('#define %s_UPB_H_\n\n', ucase_basename)
-  append('#include "upb/def.h"\n\n')
+  append('#ifndef %s_UPB_H_\n', basename_preproc)
+  append('#define %s_UPB_H_\n\n', basename_preproc)
+  append('#include "upb/def.h"\n')
+  append('#include "upb/symtab.h"\n\n')
   append('#ifdef __cplusplus\n')
   append('extern "C" {\n')
   append('#endif\n\n')
 
+  local packages = {}
+  for def in symtab:defs(upb.DEF_ANY) do
+    if def:def_type() == upb.DEF_MSG then
+      packages[def:full_name()] = true
+    else
+      packages[getpackage(def:full_name())] = true
+    end
+  end
+
   -- Dump C enums for proto enums.
   append("// Enums\n\n")
-  for _, def in ipairs(symtab:getdefs(upb.DEF_ENUM)) do
+  for def in symtab:defs(upb.DEF_ENUM) do
     local cident = to_cident(def:full_name())
     append('typedef enum {\n')
     for k, v in def:values() do
@@ -454,53 +548,116 @@ local function dump_defs_h(symtab, basename, append, linktab)
     append('} %s;\n\n', cident)
   end
 
-  -- Dump macros for referring to specific defs.
-  append("// Do not refer to these forward declarations; use the constants\n")
-  append("// below.\n")
-  append("extern const upb_msgdef %s;\n", linktab:cdecl(upb.DEF_MSG))
-  append("extern const upb_fielddef %s;\n", linktab:cdecl(upb.DEF_FIELD))
-  append("extern const upb_enumdef %s;\n\n", linktab:cdecl(upb.DEF_ENUM))
-  append("// Constants for references to defs.\n")
-  append("// We hide these behind macros to decouple users from the\n")
-  append("// details of how we have statically defined them (ie. whether\n")
-  append("// each def has its own symbol or lives in an array of defs).\n")
-  for def in linktab:objs(upb.DEF_MSG) do
-    append("#define %s %s\n", to_preproc(def:full_name()), linktab:addr(def))
-  end
+  append("const upb_symtab *%s_%s(const void *owner);" ..
+         "\n\n", namespace, to_cident(basename))
+
+  append("// MessageDefs\n")
+  dump_defs_for_type(
+      "UPB_INLINE const upb_msgdef *%s_%s(const upb_symtab *s) {\n" ..
+      "  const upb_msgdef *m = upb_symtab_lookupmsg(s, \"%s\");\n" ..
+      "  assert(m);\n" ..
+      "  return m;\n" ..
+      "}\n",
+      symtab:defs(upb.DEF_MSG),
+      namespace, append)
+
   append("\n")
 
-  local selector_types = constlist("HANDLER_")
-  local selectors = {}
+  append("// EnumDefs\n")
+  dump_defs_for_type(
+      "UPB_INLINE const upb_enumdef *%s_%s(const upb_symtab *s) {\n" ..
+      "  const upb_enumdef *e = upb_symtab_lookupenum(s, \"%s\");\n" ..
+      "  assert(e);\n" ..
+      "  return e;\n" ..
+      "}\n",
+      symtab:defs(upb.DEF_ENUM),
+      namespace, append)
+
+  -- fields
+  local fields = {}
 
   for f in linktab:objs(upb.DEF_FIELD) do
-    for sel_type_name, sel_type_value in pairs(selector_types) do
-      sel_type_name = sel_type_name:gsub("HANDLER_", "")
-      local sel = f:getsel(sel_type_value)
-      if sel then
-        local symname = f:containing_type():full_name() .. "." .. f:name() ..
-                        "." .. sel_type_name
-        selectors[#selectors + 1] = {to_preproc(symname), sel}
-      end
-    end
+    local symname = f:containing_type():full_name() .. "." .. f:name()
+    fields[#fields + 1] = {to_cident(symname), f}
   end
 
-  table.sort(selectors, function(a, b) return a[1] < b[1] end)
+  table.sort(fields, function(a, b) return a[1] < b[1] end)
 
-  append("// Selector definitions.\n")
-  for _, selector in ipairs(selectors) do
-    append("#define %s %d\n", selector[1], selector[2])
+  for _, field in ipairs(fields) do
+    local f = field[2]
+    append("UPB_INLINE const upb_fielddef *%s_%s(const upb_symtab *s) {" ..
+           " return upb_msgdef_itof(%s_%s(s), %d); }\n",
+           namespace, field[1], namespace,
+           to_cident(f:containing_type():full_name()), f:number())
   end
+
   append("\n")
-
   append('#ifdef __cplusplus\n')
   append('};  // extern "C"\n')
   append('#endif\n\n')
-  append('#endif  // %s_UPB_H_\n', ucase_basename)
+  append("#ifdef __cplusplus\n\n")
+
+  append("namespace %s {\n", namespace)
+
+  start_namespace(basename, append)
+  append("inline upb::reffed_ptr<const upb::SymbolTable> SymbolTable() {\n")
+  append("  const upb::SymbolTable* s = %s_google_protobuf_descriptor(&s);\n",
+         namespace)
+  append("  return upb::reffed_ptr<const upb::SymbolTable>(s, &s);\n")
+  append("}\n")
+  end_namespace(basename, append)
+  append("\n")
+
+
+  append([[#define RETURN_REFFED(type, func) \
+    const type* obj = func(%s::google::protobuf::descriptor::SymbolTable().get()); \
+    return upb::reffed_ptr<const type>(obj);
+
+]], namespace)
+
+  for _, package in ipairs(sortedkeys(packages)) do
+    start_namespace(package, append)
+
+    local def = symtab:lookup(package)
+    if def then
+      assert(def:def_type() == upb.DEF_MSG)
+      append("inline upb::reffed_ptr<const upb::MessageDef> MessageDef() " ..
+             "{ RETURN_REFFED(upb::MessageDef, %s_%s) }\n",
+             namespace, to_cident(def:full_name()))
+    end
+
+    for f in linktab:objs(upb.DEF_FIELD) do
+      if f:containing_type():full_name() == package then
+        append("inline upb::reffed_ptr<const upb::FieldDef> %s() " ..
+               "{ RETURN_REFFED(upb::FieldDef, %s_%s_%s) }\n",
+               f:name(), namespace, to_cident(f:containing_type():full_name()),
+               f:name())
+      end
+    end
+
+    for e in linktab:objs(upb.DEF_ENUM) do
+      if getpackage(e:full_name()) == package then
+        append("inline upb::reffed_ptr<const upb::EnumDef> %s() " ..
+               "{ RETURN_REFFED(upb::EnumDef, %s_%s) }\n",
+               relname(e:full_name()), namespace, to_cident(e:full_name()))
+      end
+    end
+
+    end_namespace(package, append)
+    append("\n")
+  end
+
+  append("}  // namespace %s\n\n\n", namespace)
+
+  append("#undef RETURN_REFFED\n")
+  append("#endif // __cplusplus\n\n")
+
+  append('#endif  // %s_UPB_H_\n', basename_preproc)
 end
 
 function export.dump_defs(symtab, basename, append_h, append_c)
-  local linktab = dump_defs_c(symtab, basename, append_c)
-  dump_defs_h(symtab, basename, append_h, linktab)
+  local linktab = dump_defs_c(symtab, basename, "upbdefs", append_c)
+  dump_defs_h(symtab, basename, "upbdefs", append_h, linktab)
 end
 
 return export

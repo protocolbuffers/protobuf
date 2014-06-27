@@ -170,11 +170,10 @@ static bool putenum(void *closure, const void *handler_data, int32_t val) {
     putf(p, "%s: %s", upb_fielddef_name(f), label);
     endfield(p);
   } else {
-    CHECK(putint32(closure, handler_data, val));
+    if (!putint32(closure, handler_data, val))
+      return false;
   }
   return true;
-err:
-  return false;
 }
 
 static void *startstr(void *closure, const void *handler_data,
@@ -182,6 +181,7 @@ static void *startstr(void *closure, const void *handler_data,
   const upb_fielddef *f = handler_data;
   UPB_UNUSED(size_hint);
   upb_textprinter *p = closure;
+  indent(p);
   putf(p, "%s: \"", upb_fielddef_name(f));
   return p;
 }
@@ -244,16 +244,18 @@ void upb_textprinter_reset(upb_textprinter *p, bool single_line) {
   p->indent_depth_ = 0;
 }
 
-static void onmreg(void *c, upb_handlers *h) {
-  (void)c;
+static void onmreg(const void *c, upb_handlers *h) {
+  UPB_UNUSED(c);
   const upb_msgdef *m = upb_handlers_msgdef(h);
+
   upb_handlers_setstartmsg(h, startmsg, NULL);
   upb_handlers_setendmsg(h, endmsg, NULL);
+
   upb_msg_iter i;
   for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
     upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
-    upb_handlerattr_sethandlerdata(&attr, f, NULL);
+    upb_handlerattr_sethandlerdata(&attr, f);
     switch (upb_fielddef_type(f)) {
       case UPB_TYPE_INT32:
         upb_handlers_setint32(h, f, putint32, &attr);
@@ -287,9 +289,7 @@ static void onmreg(void *c, upb_handlers *h) {
             upb_fielddef_istagdelim(f)
                 ? shortname(upb_msgdef_fullname(upb_fielddef_msgsubdef(f)))
                 : upb_fielddef_name(f);
-        // TODO(haberman): add "setconsthandlerdata"?  If we pass NULL for
-        // cleanup then we don't need a non-const pointer.
-        upb_handlerattr_sethandlerdata(&attr, (void*)name, NULL);
+        upb_handlerattr_sethandlerdata(&attr, name);
         upb_handlers_setstartsubmsg(h, f, startsubmsg, &attr);
         upb_handlers_setendsubmsg(h, f, endsubmsg, &attr);
         break;

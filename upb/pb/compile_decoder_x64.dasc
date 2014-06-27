@@ -5,8 +5,7 @@
 |// Author: Josh Haberman <jhaberman@gmail.com>
 |//
 |// JIT compiler for upb_pbdecoder on x86-64.  Generates machine code from the
-|// bytecode generated in compile_decoder.c, but unlike the interpreter we bind
-|// to a specific set of handlers for greater efficiency.
+|// bytecode generated in compile_decoder.c.
 |
 |.arch x64
 |.actionlist upb_jit_actionlist

@@ -18,7 +18,10 @@ static bool startmsg(void *c, const void *hd) {
 }
 
 static void test_error() {
-  upb_handlers *h = upb_handlers_new(GOOGLE_PROTOBUF_DESCRIPTORPROTO, &h);
+  const upb_symtab *s = upbdefs_google_protobuf_descriptor(&s);
+  upb_handlers *h =
+      upb_handlers_new(upbdefs_google_protobuf_DescriptorProto(s), &h);
+  upb_symtab_unref(s, &s);
 
   // Attempt to set the same handler twice causes error.
   ASSERT(upb_ok(upb_handlers_status(h)));

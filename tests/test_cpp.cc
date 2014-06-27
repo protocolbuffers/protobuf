@@ -153,6 +153,9 @@ static void TestSymbolTable(const char *descriptor_file) {
     std::cerr << "Couldn't load descriptor: " << status.error_message();
     exit(1);
   }
+  ASSERT(!s->IsFrozen());
+  s->Freeze();
+  ASSERT(s->IsFrozen());
   upb::reffed_ptr<const upb::MessageDef> md(s->LookupMessage("C"));
   ASSERT(md.get());
 
@@ -1038,6 +1041,39 @@ void TestMismatchedTypes() {
   // match top-level closure of sub-handlers.
 }
 
+class IntIncrementer {
+ public:
+  IntIncrementer(int* x) : x_(x) { (*x_)++; }
+  ~IntIncrementer() { (*x_)--; }
+
+  static void Handler(void* closure, const IntIncrementer* incrementer,
+                      int32_t x) {}
+
+ private:
+  int* x_;
+};
+
+
+void TestHandlerDataDestruction() {
+  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
+  upb::reffed_ptr<upb::FieldDef> f(upb::FieldDef::New());
+  f->set_type(UPB_TYPE_INT32);
+  ASSERT(f->set_name("test", NULL));
+  ASSERT(f->set_number(1, NULL));
+  ASSERT(md->AddField(f, NULL));
+  ASSERT(md->Freeze(NULL));
+
+  int x = 0;
+  {
+    upb::reffed_ptr<upb::Handlers> h(upb::Handlers::New(md.get()));
+    h->SetInt32Handler(
+        f.get(), UpbBind(&IntIncrementer::Handler, new IntIncrementer(&x)));
+    ASSERT(x == 1);
+  }
+
+  ASSERT(x == 0);
+}
+
 extern "C" {
 
 int run_tests(int argc, char *argv[]) {
@@ -1090,6 +1126,8 @@ int run_tests(int argc, char *argv[]) {
   TestHandler<StringBufTesterSizeTMethodNoHandlerDataNoHandle>();
 
   TestMismatchedTypes();
+
+  TestHandlerDataDestruction();
 
 #ifdef UPB_CXX11
 #define ASSERT_STD_LAYOUT(type) \

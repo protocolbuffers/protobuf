@@ -28,8 +28,14 @@ typedef struct upb_symtab upb_symtab;
 
 #include "upb/def.h"
 
+typedef struct {
+  upb_strtable_iter iter;
+  upb_deftype_t type;
+} upb_symtab_iter;
+
 #ifdef __cplusplus
 
+// Non-const methods in upb::SymbolTable are NOT thread-safe.
 class upb::SymbolTable {
  public:
   // Returns a new symbol table with a single ref owned by "owner."
@@ -43,6 +49,21 @@ class upb::SymbolTable {
   void DonateRef(const void *from, const void *to) const;
   void CheckRef(const void *owner) const;
 
+  // For all lookup functions, the returned pointer is not owned by the
+  // caller; it may be invalidated by any non-const call or unref of the
+  // SymbolTable!  To protect against this, take a ref if desired.
+
+  // Freezes the symbol table: prevents further modification of it.
+  // After the Freeze() operation is successful, the SymbolTable must only be
+  // accessed via a const pointer.
+  //
+  // Unlike with upb::MessageDef/upb::EnumDef/etc, freezing a SymbolTable is not
+  // a necessary step in using a SymbolTable.  If you have no need for it to be
+  // immutable, there is no need to freeze it ever.  However sometimes it is
+  // useful, and SymbolTables that are statically compiled into the binary are
+  // always frozen by nature.
+  void Freeze();
+
   // Resolves the given symbol using the rules described in descriptor.proto,
   // namely:
   //
@@ -52,19 +73,17 @@ class upb::SymbolTable {
   //    to the root namespace).
   //
   // If not found, returns NULL.
-  reffed_ptr<const Def> Resolve(const char* base, const char* sym) const;
+  const Def* Resolve(const char* base, const char* sym) const;
 
   // Finds an entry in the symbol table with this exact name.  If not found,
   // returns NULL.
-  reffed_ptr<const Def> Lookup(const char *sym) const;
-  reffed_ptr<const MessageDef> LookupMessage(const char *sym) const;
+  const Def* Lookup(const char *sym) const;
+  const MessageDef* LookupMessage(const char *sym) const;
+  const EnumDef* LookupEnum(const char *sym) const;
 
-  // Gets an array of pointers to all currently active defs in this symtab.
-  // The caller owns the returned array (which is of length *n) as well as a
-  // ref to each symbol inside (owned by owner).  If type is UPB_DEF_ANY then
-  // defs of all types are returned, otherwise only defs of the required type
-  // are returned.
-  const Def** GetDefs(upb_deftype_t type, const void *owner, int *n) const;
+  // TODO: introduce a C++ iterator, but make it nice and templated so that if
+  // you ask for an iterator of MessageDef the iterated elements are strongly
+  // typed as MessageDef*.
 
   // Adds the given mutable defs to the symtab, resolving all symbols
   // (including enum default values) and finalizing the defs.  Only one def per
@@ -113,6 +132,9 @@ struct upb_symtab {
   upb_strtable symtab;
 };
 
+#define UPB_SYMTAB_INIT(symtab, refs, ref2s) \
+  { UPB_REFCOUNT_INIT(refs, ref2s), symtab }
+
 // Native C API.
 #ifdef __cplusplus
 extern "C" {
@@ -126,16 +148,30 @@ void upb_symtab_donateref(
 void upb_symtab_checkref(const upb_symtab *s, const void *owner);
 
 upb_symtab *upb_symtab_new(const void *owner);
+void upb_symtab_freeze(upb_symtab *s);
 const upb_def *upb_symtab_resolve(const upb_symtab *s, const char *base,
-                                  const char *sym, const void *owner);
-const upb_def *upb_symtab_lookup(
-    const upb_symtab *s, const char *sym, const void *owner);
-const upb_msgdef *upb_symtab_lookupmsg(
-    const upb_symtab *s, const char *sym, const void *owner);
-const upb_def **upb_symtab_getdefs(
-    const upb_symtab *s, upb_deftype_t type, const void *owner, int *n);
+                                  const char *sym);
+const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym);
+const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym);
+const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym);
 bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
                     upb_status *status);
+
+// upb_symtab_iter i;
+// for(upb_symtab_begin(&i, s, type); !upb_symtab_done(&i);
+//     upb_symtab_next(&i)) {
+//   const upb_def *def = upb_symtab_iter_def(&i);
+//   // ...
+// }
+//
+// For C we don't have separate iterators for const and non-const.
+// It is the caller's responsibility to cast the upb_fielddef* to
+// const if the upb_msgdef* is const.
+void upb_symtab_begin(upb_symtab_iter *iter, const upb_symtab *s,
+                      upb_deftype_t type);
+void upb_symtab_next(upb_symtab_iter *iter);
+bool upb_symtab_done(const upb_symtab_iter *iter);
+const upb_def *upb_symtab_iter_def(const upb_symtab_iter *iter);
 
 #ifdef __cplusplus
 }  /* extern "C" */
@@ -184,23 +220,18 @@ inline void SymbolTable::CheckRef(const void *owner) const {
   upb_symtab_checkref(this, owner);
 }
 
-inline reffed_ptr<const Def> SymbolTable::Resolve(
-    const char* base, const char* sym) const {
-  const upb_def *def = upb_symtab_resolve(this, base, sym, &def);
-  return reffed_ptr<const Def>(def, &def);
+inline void SymbolTable::Freeze() {
+  return upb_symtab_freeze(this);
 }
-inline reffed_ptr<const Def> SymbolTable::Lookup(const char *sym) const {
-  const upb_def *def = upb_symtab_lookup(this, sym, &def);
-  return reffed_ptr<const Def>(def, &def);
+inline const Def *SymbolTable::Resolve(const char *base,
+                                       const char *sym) const {
+  return upb_symtab_resolve(this, base, sym);
 }
-inline reffed_ptr<const MessageDef> SymbolTable::LookupMessage(
-    const char *sym) const {
-  const upb_msgdef *m = upb_symtab_lookupmsg(this, sym, &m);
-  return reffed_ptr<const MessageDef>(m, &m);
+inline const Def* SymbolTable::Lookup(const char *sym) const {
+  return upb_symtab_lookup(this, sym);
 }
-inline const Def** SymbolTable::GetDefs(
-    upb_deftype_t type, const void *owner, int *n) const {
-  return upb_symtab_getdefs(this, type, owner, n);
+inline const MessageDef *SymbolTable::LookupMessage(const char *sym) const {
+  return upb_symtab_lookupmsg(this, sym);
 }
 inline bool SymbolTable::Add(
     Def*const* defs, int n, void* ref_donor, upb_status* status) {

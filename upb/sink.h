@@ -476,6 +476,11 @@ inline bool Sink::EndSequence(Handlers::Selector sel) {
 }
 
 template <class T>
+BytesSink::BytesSink(const BytesHandler* handler, T* closure) {
+  Reset(handler, closure);
+}
+
+template <class T>
 void BytesSink::Reset(const BytesHandler *handler, T *closure) {
   upb_bytessink_reset(this, handler, closure);
 }

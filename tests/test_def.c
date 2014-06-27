@@ -17,10 +17,11 @@ const char *descriptor_file;
 
 static void test_empty_symtab() {
   upb_symtab *s = upb_symtab_new(&s);
-  int count;
-  const upb_def **defs = upb_symtab_getdefs(s, UPB_DEF_ANY, NULL, &count);
-  ASSERT(count == 0);
-  free(defs);
+  upb_symtab_iter i;
+  for (upb_symtab_begin(&i, s, UPB_DEF_ANY); !upb_symtab_done(&i);
+       upb_symtab_next(&i)) {
+    ASSERT(false);  // Should not get here.
+  }
   upb_symtab_unref(s, &s);
 }
 
@@ -33,6 +34,9 @@ static upb_symtab *load_test_proto(void *owner) {
             upb_status_errmsg(&status));
     ASSERT(false);
   }
+  ASSERT(!upb_symtab_isfrozen(s));
+  upb_symtab_freeze(s);
+  ASSERT(upb_symtab_isfrozen(s));
   return s;
 }
 
@@ -41,7 +45,8 @@ static void test_cycles() {
 
   // Test cycle detection by making a cyclic def's main refcount go to zero
   // and then be incremented to one again.
-  const upb_def *def = upb_symtab_lookup(s, "A", &def);
+  const upb_def *def = upb_symtab_lookup(s, "A");
+  upb_def_ref(def, &def);
   ASSERT(def);
   ASSERT(upb_def_isfrozen(def));
   upb_symtab_unref(s, &s);
@@ -65,14 +70,12 @@ static void test_cycles() {
 
 static void test_fielddef_unref() {
   upb_symtab *s = load_test_proto(&s);
-  const upb_msgdef *md = upb_symtab_lookupmsg(s, "A", &md);
+  const upb_msgdef *md = upb_symtab_lookupmsg(s, "A");
   const upb_fielddef *f = upb_msgdef_itof(md, 1);
   upb_fielddef_ref(f, &f);
 
-  // Unref symtab and msgdef; now fielddef is the only thing keeping the msgdef
-  // alive.
+  // Unref symtab; now fielddef is the only thing keeping the msgdef alive.
   upb_symtab_unref(s, &s);
-  upb_msgdef_unref(md, &md);
   // Check that md is still alive.
   ASSERT(strcmp(upb_msgdef_fullname(md), "A") == 0);
 
@@ -141,29 +144,28 @@ static void test_replacement() {
                       &s, NULL);
   upb_msgdef *m2 = upb_msgdef_newnamed("MyMessage2", &s);
   upb_enumdef *e = upb_enumdef_newnamed("MyEnum", &s);
+  upb_status status = UPB_STATUS_INIT;
+  ASSERT_STATUS(upb_enumdef_addval(e, "VAL1", 1, &status), &status);
 
   upb_def *newdefs[] = {UPB_UPCAST(m), UPB_UPCAST(m2), UPB_UPCAST(e)};
-  upb_status status = UPB_STATUS_INIT;
   ASSERT_STATUS(upb_symtab_add(s, newdefs, 3, &s, &status), &status);
 
   // Try adding a new definition of MyEnum, MyMessage should get replaced with
   // a new version.
-  upb_enumdef *e2 = upb_enumdef_new(&s);
-  upb_enumdef_setfullname(e2, "MyEnum", NULL);
+  upb_enumdef *e2 = upb_enumdef_newnamed("MyEnum", &s);
+  ASSERT_STATUS(upb_enumdef_addval(e2, "VAL1", 1, &status), &status);
   upb_def *newdefs2[] = {UPB_UPCAST(e2)};
   ASSERT_STATUS(upb_symtab_add(s, newdefs2, 1, &s, &status), &status);
 
-  const upb_msgdef *m3 = upb_symtab_lookupmsg(s, "MyMessage", &m3);
+  const upb_msgdef *m3 = upb_symtab_lookupmsg(s, "MyMessage");
   ASSERT(m3);
   // Must be different because it points to MyEnum which was replaced.
   ASSERT(m3 != m);
-  upb_msgdef_unref(m3, &m3);
 
-  m3 = upb_symtab_lookupmsg(s, "MyMessage2", &m3);
+  m3 = upb_symtab_lookupmsg(s, "MyMessage2");
   // Should be the same because it was not replaced, nor were any defs that
   // are reachable from it.
   ASSERT(m3 == m2);
-  upb_msgdef_unref(m3, &m3);
 
   upb_symtab_unref(s, &s);
 }

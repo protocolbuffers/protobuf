@@ -223,11 +223,6 @@ static bool enumval_endmsg(void *closure, const void *hd, upb_status *status) {
     return false;
   }
   upb_enumdef *e = upb_downcast_enumdef_mutable(upb_descreader_last(r));
-  if (upb_enumdef_numvals(e) == 0) {
-    // The default value of an enum (in the absence of an explicit default) is
-    // its first listed value.
-    upb_enumdef_setdefault(e, r->number);
-  }
   upb_enumdef_addval(e, r->name, r->number, status);
   free(r->name);
   r->name = NULL;
@@ -507,52 +502,65 @@ static bool pushextension(void *closure, const void *hd) {
   return true;
 }
 
-static const upb_fielddef *f(const upb_handlers *h, const char *name) {
-  const upb_fielddef *ret = upb_msgdef_ntof(upb_handlers_msgdef(h), name);
-  assert(ret);
-  return ret;
-}
+#define D(name) upbdefs_google_protobuf_ ## name(s)
 
-static void reghandlers(void *closure, upb_handlers *h) {
-  UPB_UNUSED(closure);
+static void reghandlers(const void *closure, upb_handlers *h) {
+  const upb_symtab *s = closure;
   const upb_msgdef *m = upb_handlers_msgdef(h);
 
-  if (m == GOOGLE_PROTOBUF_DESCRIPTORPROTO) {
+  if (m == D(DescriptorProto)) {
     upb_handlers_setstartmsg(h, &msg_startmsg, NULL);
     upb_handlers_setendmsg(h, &msg_endmsg, NULL);
-    upb_handlers_setstring(h, f(h, "name"), &msg_onname, NULL);
-    upb_handlers_setendsubmsg(h, f(h, "field"), &msg_onendfield, NULL);
-    upb_handlers_setendsubmsg(h, f(h, "extension"), &pushextension, NULL);
-  } else if (m == GOOGLE_PROTOBUF_FILEDESCRIPTORPROTO) {
+    upb_handlers_setstring(h, D(DescriptorProto_name), &msg_onname, NULL);
+    upb_handlers_setendsubmsg(h, D(DescriptorProto_field), &msg_onendfield,
+                              NULL);
+    upb_handlers_setendsubmsg(h, D(DescriptorProto_extension), &pushextension,
+                              NULL);
+  } else if (m == D(FileDescriptorProto)) {
     upb_handlers_setstartmsg(h, &file_startmsg, NULL);
     upb_handlers_setendmsg(h, &file_endmsg, NULL);
-    upb_handlers_setstring(h, f(h, "package"), &file_onpackage, NULL);
-    upb_handlers_setendsubmsg(h, f(h, "extension"), &pushextension, NULL);
-  } else if (m == GOOGLE_PROTOBUF_ENUMVALUEDESCRIPTORPROTO) {
+    upb_handlers_setstring(h, D(FileDescriptorProto_package), &file_onpackage,
+                           NULL);
+    upb_handlers_setendsubmsg(h, D(FileDescriptorProto_extension), &pushextension,
+                              NULL);
+  } else if (m == D(EnumValueDescriptorProto)) {
     upb_handlers_setstartmsg(h, &enumval_startmsg, NULL);
     upb_handlers_setendmsg(h, &enumval_endmsg, NULL);
-    upb_handlers_setstring(h, f(h, "name"), &enumval_onname, NULL);
-    upb_handlers_setint32(h, f(h, "number"), &enumval_onnumber, NULL);
-  } else if (m == GOOGLE_PROTOBUF_ENUMDESCRIPTORPROTO) {
+    upb_handlers_setstring(h, D(EnumValueDescriptorProto_name), &enumval_onname, NULL);
+    upb_handlers_setint32(h, D(EnumValueDescriptorProto_number), &enumval_onnumber,
+                          NULL);
+  } else if (m == D(EnumDescriptorProto)) {
     upb_handlers_setstartmsg(h, &enum_startmsg, NULL);
     upb_handlers_setendmsg(h, &enum_endmsg, NULL);
-    upb_handlers_setstring(h, f(h, "name"), &enum_onname, NULL);
-  } else if (m == GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO) {
+    upb_handlers_setstring(h, D(EnumDescriptorProto_name), &enum_onname, NULL);
+  } else if (m == D(FieldDescriptorProto)) {
     upb_handlers_setstartmsg(h, &field_startmsg, NULL);
     upb_handlers_setendmsg(h, &field_endmsg, NULL);
-    upb_handlers_setint32(h, f(h, "type"), &field_ontype, NULL);
-    upb_handlers_setint32(h, f(h, "label"), &field_onlabel, NULL);
-    upb_handlers_setint32(h, f(h, "number"), &field_onnumber, NULL);
-    upb_handlers_setstring(h, f(h, "name"), &field_onname, NULL);
-    upb_handlers_setstring(h, f(h, "type_name"), &field_ontypename, NULL);
-    upb_handlers_setstring(h, f(h, "extendee"), &field_onextendee, NULL);
-    upb_handlers_setstring(h, f(h, "default_value"), &field_ondefaultval, NULL);
-  } else if (m == GOOGLE_PROTOBUF_FIELDOPTIONS) {
-    upb_handlers_setbool(h, f(h, "lazy"), &field_onlazy, NULL);
+    upb_handlers_setint32(h, D(FieldDescriptorProto_type), &field_ontype,
+                          NULL);
+    upb_handlers_setint32(h, D(FieldDescriptorProto_label), &field_onlabel,
+                          NULL);
+    upb_handlers_setint32(h, D(FieldDescriptorProto_number), &field_onnumber,
+                          NULL);
+    upb_handlers_setstring(h, D(FieldDescriptorProto_name), &field_onname,
+                           NULL);
+    upb_handlers_setstring(h, D(FieldDescriptorProto_type_name),
+                           &field_ontypename, NULL);
+    upb_handlers_setstring(h, D(FieldDescriptorProto_extendee),
+                           &field_onextendee, NULL);
+    upb_handlers_setstring(h, D(FieldDescriptorProto_default_value),
+                           &field_ondefaultval, NULL);
+  } else if (m == D(FieldOptions)) {
+    upb_handlers_setbool(h, D(FieldOptions_lazy), &field_onlazy, NULL);
   }
 }
 
+#undef D
+
 const upb_handlers *upb_descreader_newhandlers(const void *owner) {
-  return upb_handlers_newfrozen(
-      GOOGLE_PROTOBUF_FILEDESCRIPTORSET, owner, reghandlers, NULL);
+  const upb_symtab *s = upbdefs_google_protobuf_descriptor(&s);
+  const upb_handlers *h = upb_handlers_newfrozen(
+      upbdefs_google_protobuf_FileDescriptorSet(s), owner, reghandlers, s);
+  upb_symtab_unref(s, &s);
+  return h;
 }

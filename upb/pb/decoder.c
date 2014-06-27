@@ -3,6 +3,19 @@
  *
  * Copyright (c) 2008-2013 Google Inc.  See LICENSE for details.
  * Author: Josh Haberman <jhaberman@gmail.com>
+ *
+ * This file implements a VM for the interpreted (bytecode) decoder.
+ *
+ * Bytecode must previously have been generated using the bytecode compiler in
+ * compile_decoder.c.  This decoder then walks through the bytecode op-by-op to
+ * parse the input.
+ *
+ * Decoding is fully resumable; we just keep a pointer to the current bytecode
+ * instruction and resume from there.  A fair amount of the logic here is to
+ * handle the fact that values can span buffer seams and we have to be able to
+ * be capable of suspending/resuming from any byte in the stream.  This
+ * sometimes requires keeping a few trailing bytes from the last buffer around
+ * in the "residual" buffer.
  */
 
 #include <inttypes.h>
@@ -55,7 +68,7 @@ static bool consumes_input(opcode op) {
   }
 }
 
-static bool in_residual_buf(upb_pbdecoder *d, const char *p);
+static bool in_residual_buf(const upb_pbdecoder *d, const char *p);
 
 // It's unfortunate that we have to micro-manage the compiler this way,
 // especially since this tuning is necessarily specific to one hardware
@@ -83,18 +96,14 @@ void upb_pbdecoder_seterr(upb_pbdecoder *d, const char *msg) {
 
 // How many bytes can be safely read from d->ptr without reading past end-of-buf
 // or past the current delimited end.
-static size_t curbufleft(upb_pbdecoder *d) {
+static size_t curbufleft(const upb_pbdecoder *d) {
   assert(d->data_end >= d->ptr);
   return d->data_end - d->ptr;
 }
 
-static const char *ptr(upb_pbdecoder *d) {
-  return d->ptr;
-}
-
-// Overall offset of d->ptr.
-uint64_t offset(upb_pbdecoder *d) {
-  return d->bufstart_ofs + (ptr(d) - d->buf);
+// Overall stream offset of d->ptr.
+uint64_t offset(const upb_pbdecoder *d) {
+  return d->bufstart_ofs + (d->ptr - d->buf);
 }
 
 // Advances d->ptr.
@@ -107,12 +116,12 @@ static bool in_buf(const char *p, const char *buf, const char *end) {
   return p >= buf && p <= end;
 }
 
-static bool in_residual_buf(upb_pbdecoder *d, const char *p) {
+static bool in_residual_buf(const upb_pbdecoder *d, const char *p) {
   return in_buf(p, d->residual, d->residual_end);
 }
 
-// Calculates the delim_end value, which represents a combination of the
-// current buffer and the stack, so must be called whenever either is updated.
+// Calculates the delim_end value, which is affected by both the current buffer
+// and the parsing stack, so must be called whenever either is updated.
 static void set_delim_end(upb_pbdecoder *d) {
   size_t delim_ofs = d->top->end_ofs - d->bufstart_ofs;
   if (delim_ofs <= (d->end - d->buf)) {
@@ -141,8 +150,8 @@ static void checkpoint(upb_pbdecoder *d) {
   // The assertion here is in the interests of efficiency, not correctness.
   // We are trying to ensure that we don't checkpoint() more often than
   // necessary.
-  assert(d->checkpoint != ptr(d));
-  d->checkpoint = ptr(d);
+  assert(d->checkpoint != d->ptr);
+  d->checkpoint = d->ptr;
 }
 
 // Resumes the decoder from an initial state or from a previous suspend.
@@ -154,14 +163,14 @@ int32_t upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
   d->handle = handle;
   if (d->residual_end > d->residual) {
     // We have residual bytes from the last buffer.
-    assert(ptr(d) == d->residual);
+    assert(d->ptr == d->residual);
   } else {
     switchtobuf(d, buf, buf + size);
   }
-  d->checkpoint = ptr(d);
+  d->checkpoint = d->ptr;
   if (d->top->groupnum < 0) {
     CHECK_RETURN(upb_pbdecoder_skipunknown(d, -1, 0));
-    d->checkpoint = ptr(d);
+    d->checkpoint = d->ptr;
   }
   return DECODE_OK;
 }
@@ -198,7 +207,7 @@ static size_t suspend_save(upb_pbdecoder *d) {
     // Checkpoint was in residual buf; append user byte(s) to residual buf.
     assert((d->residual_end - d->residual) + d->size_param <=
            sizeof(d->residual));
-    if (!in_residual_buf(d, ptr(d))) {
+    if (!in_residual_buf(d, d->ptr)) {
       d->bufstart_ofs -= (d->residual_end - d->residual);
     }
     memcpy(d->residual_end, d->buf_param, d->size_param);
@@ -209,7 +218,7 @@ static size_t suspend_save(upb_pbdecoder *d) {
     d->ptr = d->checkpoint;
     size_t save = curbufleft(d);
     assert(save <= sizeof(d->residual));
-    memcpy(d->residual, ptr(d), save);
+    memcpy(d->residual, d->ptr, save);
     d->residual_end = d->residual + save;
     d->bufstart_ofs = offset(d);
   }
@@ -218,8 +227,11 @@ static size_t suspend_save(upb_pbdecoder *d) {
   return d->size_param;
 }
 
+// Skips "bytes" bytes in the stream, which may be more than available.  If we
+// skip more bytes than are available, we return a long read count to the caller
+// indicating how many bytes the caller should skip before passing a new buffer.
 static int32_t skip(upb_pbdecoder *d, size_t bytes) {
-  assert(!in_residual_buf(d, ptr(d)) || d->size_param == 0);
+  assert(!in_residual_buf(d, d->ptr) || d->size_param == 0);
   if (curbufleft(d) >= bytes) {
     // Skipped data is all in current buffer.
     advance(d, bytes);
@@ -235,19 +247,24 @@ static int32_t skip(upb_pbdecoder *d, size_t bytes) {
   }
 }
 
+// Copies the next "bytes" bytes into "buf" and advances the stream.
+// Requires that this many bytes are available in the current buffer.
 FORCEINLINE void consumebytes(upb_pbdecoder *d, void *buf, size_t bytes) {
   assert(bytes <= curbufleft(d));
-  memcpy(buf, ptr(d), bytes);
+  memcpy(buf, d->ptr, bytes);
   advance(d, bytes);
 }
 
+// Slow path for getting the next "bytes" bytes, regardless of whether they are
+// available in the current buffer or not.  Returns a status code as described
+// in decoder.int.h.
 static NOINLINE int32_t getbytes_slow(upb_pbdecoder *d, void *buf,
                                       size_t bytes) {
   const size_t avail = curbufleft(d);
   consumebytes(d, buf, avail);
   bytes -= avail;
   assert(bytes > 0);
-  if (in_residual_buf(d, ptr(d))) {
+  if (in_residual_buf(d, d->ptr)) {
     advancetobuf(d, d->buf_param, d->size_param);
   }
   if (curbufleft(d) >= bytes) {
@@ -261,6 +278,8 @@ static NOINLINE int32_t getbytes_slow(upb_pbdecoder *d, void *buf,
   }
 }
 
+// Gets the next "bytes" bytes, regardless of whether they are available in the
+// current buffer or not.  Returns a status code as described in decoder.int.h.
 FORCEINLINE int32_t getbytes(upb_pbdecoder *d, void *buf, size_t bytes) {
   if (curbufleft(d) >= bytes) {
     // Buffer has enough data to satisfy.
@@ -274,8 +293,8 @@ FORCEINLINE int32_t getbytes(upb_pbdecoder *d, void *buf, size_t bytes) {
 static NOINLINE size_t peekbytes_slow(upb_pbdecoder *d, void *buf,
                                       size_t bytes) {
   size_t ret = curbufleft(d);
-  memcpy(buf, ptr(d), ret);
-  if (in_residual_buf(d, ptr(d))) {
+  memcpy(buf, d->ptr, ret);
+  if (in_residual_buf(d, d->ptr)) {
     size_t copy = UPB_MIN(bytes - ret, d->size_param);
     memcpy(buf + ret, d->buf_param, copy);
     ret += copy;
@@ -285,7 +304,7 @@ static NOINLINE size_t peekbytes_slow(upb_pbdecoder *d, void *buf,
 
 FORCEINLINE size_t peekbytes(upb_pbdecoder *d, void *buf, size_t bytes) {
   if (curbufleft(d) >= bytes) {
-    memcpy(buf, ptr(d), bytes);
+    memcpy(buf, d->ptr, bytes);
     return bytes;
   } else {
     return peekbytes_slow(d, buf, bytes);
@@ -295,6 +314,8 @@ FORCEINLINE size_t peekbytes(upb_pbdecoder *d, void *buf, size_t bytes) {
 
 /* Decoding of wire types *****************************************************/
 
+// Slow path for decoding a varint from the current buffer position.
+// Returns a status code as described in decoder.int.h.
 NOINLINE int32_t upb_pbdecoder_decode_varint_slow(upb_pbdecoder *d,
                                                   uint64_t *u64) {
   *u64 = 0;
@@ -312,19 +333,21 @@ NOINLINE int32_t upb_pbdecoder_decode_varint_slow(upb_pbdecoder *d,
   return DECODE_OK;
 }
 
+// Decodes a varint from the current buffer position.
+// Returns a status code as described in decoder.int.h.
 FORCEINLINE int32_t decode_varint(upb_pbdecoder *d, uint64_t *u64) {
-  if (curbufleft(d) > 0 && !(*ptr(d) & 0x80)) {
-    *u64 = *ptr(d);
+  if (curbufleft(d) > 0 && !(*d->ptr & 0x80)) {
+    *u64 = *d->ptr;
     advance(d, 1);
     return DECODE_OK;
   } else if (curbufleft(d) >= 10) {
     // Fast case.
-    upb_decoderet r = upb_vdecode_fast(ptr(d));
+    upb_decoderet r = upb_vdecode_fast(d->ptr);
     if (r.p == NULL) {
       seterr(d, kUnterminatedVarint);
       return upb_pbdecoder_suspend(d);
     }
-    advance(d, r.p - ptr(d));
+    advance(d, r.p - d->ptr);
     *u64 = r.val;
     return DECODE_OK;
   } else {
@@ -333,6 +356,8 @@ FORCEINLINE int32_t decode_varint(upb_pbdecoder *d, uint64_t *u64) {
   }
 }
 
+// Decodes a 32-bit varint from the current buffer position.
+// Returns a status code as described in decoder.int.h.
 FORCEINLINE int32_t decode_v32(upb_pbdecoder *d, uint32_t *u32) {
   uint64_t u64;
   int32_t ret = decode_varint(d, &u64);
@@ -349,16 +374,22 @@ FORCEINLINE int32_t decode_v32(upb_pbdecoder *d, uint32_t *u32) {
   return DECODE_OK;
 }
 
+// Decodes a fixed32 from the current buffer position.
+// Returns a status code as described in decoder.int.h.
 // TODO: proper byte swapping for big-endian machines.
 FORCEINLINE int32_t decode_fixed32(upb_pbdecoder *d, uint32_t *u32) {
   return getbytes(d, u32, 4);
 }
 
+// Decodes a fixed64 from the current buffer position.
+// Returns a status code as described in decoder.int.h.
 // TODO: proper byte swapping for big-endian machines.
 FORCEINLINE int32_t decode_fixed64(upb_pbdecoder *d, uint64_t *u64) {
   return getbytes(d, u64, 8);
 }
 
+// Non-static versions of the above functions.
+// These are called by the JIT for fallback paths.
 int32_t upb_pbdecoder_decode_f32(upb_pbdecoder *d, uint32_t *u32) {
   return decode_fixed32(d, u32);
 }
@@ -370,6 +401,7 @@ int32_t upb_pbdecoder_decode_f64(upb_pbdecoder *d, uint64_t *u64) {
 static double as_double(uint64_t n) { double d; memcpy(&d, &n, 8); return d; }
 static float  as_float(uint32_t n)  { float  f; memcpy(&f, &n, 4); return f; }
 
+// Pushes a frame onto the decoder stack.
 static bool push(upb_pbdecoder *d, uint64_t end) {
   upb_pbdecoder_frame *fr = d->top;
 
@@ -400,6 +432,7 @@ static bool pushtagdelim(upb_pbdecoder *d, uint32_t arg) {
   return true;
 }
 
+// Pops a frame from the decoder stack.
 static void pop(upb_pbdecoder *d) { d->top--; }
 
 NOINLINE int32_t upb_pbdecoder_checktag_slow(upb_pbdecoder *d,
@@ -477,7 +510,7 @@ have_tag:
       return DECODE_OK;
     }
 
-    if (ptr(d) == d->delim_end) {
+    if (d->ptr == d->delim_end) {
       seterr(d, "Enclosing submessage ended in the middle of value or group");
       // Unlike most errors we notice during parsing, right now we have consumed
       // all of the user's input.
@@ -516,6 +549,12 @@ static void goto_endmsg(upb_pbdecoder *d) {
   d->pc = d->top->base + upb_value_getuint64(v);
 }
 
+// Parses a tag and jumps to the corresponding bytecode instruction for this
+// field.
+//
+// If the tag is unknown (or the wire type doesn't match), parses the field as
+// unknown.  If the tag is a valid ENDGROUP tag, jumps to the bytecode
+// instruction for the end of message.
 static int32_t dispatch(upb_pbdecoder *d) {
   upb_inttable *dispatch = d->top->dispatch;
 
@@ -564,6 +603,8 @@ upb_pbdecoder_frame *outer_frame(upb_pbdecoder *d) {
 
 /* The main decoding loop *****************************************************/
 
+// The main decoder VM function.  Uses traditional bytecode dispatch loop with a
+// switch() statement.
 size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
                             size_t size, const upb_bufhandle *handle) {
   upb_pbdecoder *d = closure;
@@ -591,15 +632,15 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
     opcode op = getop(instruction);
     uint32_t arg = instruction >> 8;
     int32_t longofs = arg;
-    assert(ptr(d) != d->residual_end);
+    assert(d->ptr != d->residual_end);
 #ifdef UPB_DUMP_BYTECODE
     fprintf(stderr, "s_ofs=%d buf_ofs=%d data_rem=%d buf_rem=%d delim_rem=%d "
                     "%x %s (%d)\n",
             (int)offset(d),
-            (int)(ptr(d) - d->buf),
-            (int)(d->data_end - ptr(d)),
-            (int)(d->end - ptr(d)),
-            (int)((d->top->end_ofs - d->bufstart_ofs) - (ptr(d) - d->buf)),
+            (int)(d->ptr - d->buf),
+            (int)(d->data_end - d->ptr),
+            (int)(d->end - d->ptr),
+            (int)((d->top->end_ofs - d->bufstart_ofs) - (d->ptr - d->buf)),
             (int)(d->pc - 1 - group->bytecode),
             upb_pbdecoder_getopname(op),
             arg);
@@ -657,25 +698,24 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
       )
       VMCASE(OP_STRING,
         uint32_t len = curbufleft(d);
-        size_t n = upb_sink_putstring(&d->top->sink, arg, ptr(d), len, handle);
+        size_t n = upb_sink_putstring(&d->top->sink, arg, d->ptr, len, handle);
         if (n > len) {
           if (n > d->top->end_ofs - offset(d)) {
             seterr(d, "Tried to skip past end of string.");
             return upb_pbdecoder_suspend(d);
           } else {
-            return skip(d, n);
+            int32_t ret = skip(d, n);
+            // This shouldn't return DECODE_OK, because n > len.
+            assert(ret >= 0);
+            return ret;
           }
-        } else if (n < len) {
-          advance(d, n);
+        }
+        advance(d, n);
+        if (n < len || d->delim_end == NULL) {
+          // We aren't finished with this string yet.
+          d->pc--;  // Repeat OP_STRING.
+          if (n > 0) checkpoint(d);
           return upb_pbdecoder_suspend(d);
-        } else {
-          advance(d, n);
-          if (d->delim_end == NULL) {  // String extends beyond this buf?
-            d->pc--;  // Do OP_STRING again when we resume.
-            d->bufstart_ofs += size;
-            d->residual_end = d->residual;
-            return size;
-          }
         }
       )
       VMCASE(OP_ENDSTR,
@@ -703,8 +743,8 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
       VMCASE(OP_CHECKDELIM,
         // We are guaranteed of this assert because we never allow ourselves to
         // consume bytes beyond data_end, which covers delim_end when non-NULL.
-        assert(!(d->delim_end && ptr(d) > d->delim_end));
-        if (ptr(d) == d->delim_end)
+        assert(!(d->delim_end && d->ptr > d->delim_end));
+        if (d->ptr == d->delim_end)
           d->pc += longofs;
       )
       VMCASE(OP_CALL,
@@ -721,7 +761,7 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
       VMCASE(OP_TAG1,
         CHECK_SUSPEND(curbufleft(d) > 0);
         uint8_t expected = (arg >> 8) & 0xff;
-        if (*ptr(d) == expected) {
+        if (*d->ptr == expected) {
           advance(d, 1);
         } else {
           int8_t shortofs;
@@ -740,7 +780,7 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
         uint16_t expected = (arg >> 8) & 0xffff;
         if (curbufleft(d) >= 2) {
           uint16_t actual;
-          memcpy(&actual, ptr(d), 2);
+          memcpy(&actual, d->ptr, 2);
           if (expected == actual) {
             advance(d, 2);
           } else {
@@ -854,6 +894,10 @@ void upb_pbdecoder_reset(upb_pbdecoder *d) {
   d->end = d->residual;
   d->residual_end = d->residual;
   d->call_len = 1;
+}
+
+uint64_t upb_pbdecoder_bytesparsed(const upb_pbdecoder *d) {
+  return offset(d);
 }
 
 // Not currently required, but to support outgrowing the static stack we need

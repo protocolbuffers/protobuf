@@ -91,7 +91,6 @@ extern char _upb_noclosure;
 // A selector refers to a specific field handler in the Handlers object
 // (for example: the STARTSUBMSG handler for field "field15").
 typedef int32_t upb_selector_t;
-typedef void upb_func();
 
 #ifdef __cplusplus
 extern "C" {
@@ -140,12 +139,9 @@ class upb::HandlerAttributes {
   ~HandlerAttributes();
 
   // Sets the handler data that will be passed as the second parameter of the
-  // handler.
-  //
-  // Warning: if you use these attributes for multiple handlers, the
-  // cleanup handler will be called once for each handler it was successfully
-  // set on.
-  bool SetHandlerData(void *handler_data, upb_handlerfree *cleanup);
+  // handler.  To free this pointer when the handlers are freed, call
+  // Handlers::AddCleanup().
+  bool SetHandlerData(const void *handler_data);
   const void* handler_data() const;
 
   // Use this to specify the type of the closure.  This will be checked against
@@ -175,14 +171,13 @@ class upb::HandlerAttributes {
 #else
 struct upb_handlerattr {
 #endif
-  void *handler_data_;
-  upb_handlerfree *cleanup;
+  const void *handler_data_;
   const void *closure_type_;
   const void *return_closure_type_;
   bool alwaysok_;
 };
 
-#define UPB_HANDLERATTR_INITIALIZER {NULL, NULL, NULL, NULL, false}
+#define UPB_HANDLERATTR_INITIALIZER {NULL, NULL, NULL, false}
 
 typedef struct {
   upb_func *func;
@@ -292,7 +287,7 @@ class upb::Handlers {
   // correct type.
   typedef void GenericFunction();
 
-  typedef void HandlersCallback(void *closure, upb_handlers *h);
+  typedef void HandlersCallback(const void *closure, upb_handlers *h);
 
   // Returns a new handlers object for the given frozen msgdef.
   // Returns NULL if memory allocation failed.
@@ -305,7 +300,7 @@ class upb::Handlers {
   // subhandlers set by the callback will be overwritten.
   static reffed_ptr<const Handlers> NewFrozen(const MessageDef *m,
                                               HandlersCallback *callback,
-                                              void *closure);
+                                              const void *closure);
 
   // Functionality from upb::RefCounted.
   bool IsFrozen() const;
@@ -334,6 +329,11 @@ class upb::Handlers {
 
   // Returns the msgdef associated with this handlers object.
   const MessageDef* message_def() const;
+
+  // Adds the given pointer and function to the list of cleanup functions that
+  // will be run when these handlers are freed.  If this pointer has previously
+  // been registered, the function returns false and does nothing.
+  bool AddCleanup(void *ptr, upb_handlerfree *cleanup);
 
   // Sets the startmsg handler for the message, which is defined as follows:
   //
@@ -534,6 +534,7 @@ struct upb_handlers {
   const upb_msgdef *msg;
   const upb_handlers **sub;
   const void *top_closure_type;
+  upb_inttable cleanup_;
   upb_status status_;  // Used only when mutable.
   upb_handlers_tabent table[1];  // Dynamically-sized field handler array.
 };
@@ -619,11 +620,20 @@ template <class T> class Handler {
   ~Handler();
 
  private:
+  void AddCleanup(Handlers* h) const {
+    if (cleanup_func_) {
+      bool ok = h->AddCleanup(cleanup_data_, cleanup_func_);
+      UPB_ASSERT_VAR(ok, ok);
+    }
+  }
+
   UPB_DISALLOW_COPY_AND_ASSIGN(Handler);
   friend class Handlers;
   FuncPtr handler_;
   mutable HandlerAttributes attr_;
   mutable bool registered_;
+  void *cleanup_data_;
+  upb_handlerfree *cleanup_func_;
 };
 
 }  // namespace upb
@@ -657,8 +667,7 @@ size_t upb_bufhandle_objofs(const upb_bufhandle *h);
 void upb_handlerattr_init(upb_handlerattr *attr);
 void upb_handlerattr_uninit(upb_handlerattr *attr);
 
-bool upb_handlerattr_sethandlerdata(upb_handlerattr *attr, void *hd,
-                                    upb_handlerfree *cleanup);
+bool upb_handlerattr_sethandlerdata(upb_handlerattr *attr, const void *hd);
 bool upb_handlerattr_setclosuretype(upb_handlerattr *attr, const void *type);
 const void *upb_handlerattr_closuretype(const upb_handlerattr *attr);
 bool upb_handlerattr_setreturnclosuretype(upb_handlerattr *attr,
@@ -673,13 +682,13 @@ UPB_INLINE const void *upb_handlerattr_handlerdata(
 }
 
 // upb_handlers
-typedef void upb_handlers_callback(void *closure, upb_handlers *h);
+typedef void upb_handlers_callback(const void *closure, upb_handlers *h);
 upb_handlers *upb_handlers_new(const upb_msgdef *m,
                                const void *owner);
 const upb_handlers *upb_handlers_newfrozen(const upb_msgdef *m,
                                            const void *owner,
                                            upb_handlers_callback *callback,
-                                           void *closure);
+                                           const void *closure);
 bool upb_handlers_isfrozen(const upb_handlers *h);
 void upb_handlers_ref(const upb_handlers *h, const void *owner);
 void upb_handlers_unref(const upb_handlers *h, const void *owner);
@@ -690,6 +699,7 @@ void upb_handlers_checkref(const upb_handlers *h, const void *owner);
 const upb_status *upb_handlers_status(upb_handlers *h);
 void upb_handlers_clearerr(upb_handlers *h);
 const upb_msgdef *upb_handlers_msgdef(const upb_handlers *h);
+bool upb_handlers_addcleanup(upb_handlers *h, void *p, upb_handlerfree *hfree);
 
 bool upb_handlers_setstartmsg(upb_handlers *h, upb_startmsg_handlerfunc *func,
                               upb_handlerattr *attr);

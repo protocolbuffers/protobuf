@@ -16,13 +16,20 @@
 // dynamic_cast<> in this file:
 // https://groups.google.com/a/google.com/d/msg/c-style/7Zp_XCX0e7s/I6dpzno4l-MJ
 
-#include "upb/bindings/googlepb/proto1.h"
+#include "upb/bindings/googlepb/proto1.int.h"
 
 #include <memory>
 
+// TEMPORARY measure until we update the friend declarations in proto1.
+// Can't do in a single CL because of components.
+#define private public
+#define protected public
 #include "net/proto2/public/repeated_field.h"
 #include "net/proto/internal_layout.h"
 #include "net/proto/proto2_reflection.h"
+#undef private
+#undef protected
+
 #include "upb/def.h"
 #include "upb/handlers.h"
 #include "upb/shim/shim.h"
@@ -36,7 +43,7 @@ template <class T> static T* GetPointer(void* message, size_t offset) {
 }
 
 namespace upb {
-namespace google {
+namespace googlepb {
 
 class P2R_Handlers {
  public:
@@ -466,18 +473,18 @@ class P2R_Handlers {
 bool TrySetProto1WriteHandlers(const proto2::FieldDescriptor* proto2_f,
                                const proto2::Message& m,
                                const upb::FieldDef* upb_f, upb::Handlers* h) {
-  return P2R_Handlers::TrySet(proto2_f, m, upb_f, h);
-}
-
-const proto2::Message* GetProto1WeakPrototype(
-    const proto2::Message& m, const proto2::FieldDescriptor* f) {
-  return P2R_Handlers::GetWeakPrototype(m, f);
+  return googlepb::P2R_Handlers::TrySet(proto2_f, m, upb_f, h);
 }
 
 const proto2::Message* GetProto1FieldPrototype(
     const proto2::Message& m, const proto2::FieldDescriptor* f) {
-  return P2R_Handlers::GetFieldPrototype(m, f);
+  const proto2::Message *weak = googlepb::P2R_Handlers::GetWeakPrototype(m, f);
+  if (weak) return weak;
+  if (f->cpp_type() != proto2::FieldDescriptor::CPPTYPE_MESSAGE) {
+    return NULL;
+  }
+  return googlepb::P2R_Handlers::GetFieldPrototype(m, f);
 }
 
-}  // namespace google
+}  // namespace googlepb
 }  // namespace upb

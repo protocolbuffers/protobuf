@@ -16,8 +16,8 @@
 #include <map>
 #include <string>
 #include "upb/def.h"
-#include "upb/bindings/googlepb/proto1.h"
-#include "upb/bindings/googlepb/proto2.h"
+#include "upb/bindings/googlepb/proto1.int.h"
+#include "upb/bindings/googlepb/proto2.int.h"
 #include "upb/handlers.h"
 
 #define ASSERT_STATUS(status) do { \
@@ -39,31 +39,24 @@ namespace goog = ::proto2;
 namespace goog = ::google::protobuf;
 #endif
 
-namespace {
-
-const goog::Message* GetPrototype(const goog::Message& m,
-                                  const goog::FieldDescriptor* f) {
-  const goog::Message* ret = NULL;
-#ifdef UPB_GOOGLE3
-  ret = upb::google::GetProto1WeakPrototype(m, f);
-  if (ret) return ret;
-#endif
-
-  if (f->cpp_type() == goog::FieldDescriptor::CPPTYPE_MESSAGE) {
-    ret = upb::google::GetFieldPrototype(m, f);
-#ifdef UPB_GOOGLE3
-    if (!ret) ret = upb::google::GetProto1FieldPrototype(m, f);
-#endif
-    assert(ret);
-  }
-  return ret;
-}
-
-}  // namespace
-
 namespace upb {
 namespace googlepb {
 
+const goog::Message* TryGetFieldPrototype(const goog::Message& m,
+                                          const goog::FieldDescriptor* f) {
+  const goog::Message* ret = upb::googlepb::GetProto2FieldPrototype(m, f);
+#ifdef UPB_GOOGLE3
+  if (!ret) ret = upb::googlepb::GetProto1FieldPrototype(m, f);
+#endif
+  return ret;
+}
+
+const goog::Message* GetFieldPrototype(const goog::Message& m,
+                                       const goog::FieldDescriptor* f) {
+  const goog::Message* ret = TryGetFieldPrototype(m, f);
+  assert(ret);
+  return ret;
+}
 
 /* DefBuilder  ****************************************************************/
 
@@ -117,20 +110,11 @@ const MessageDef* DefBuilder::GetMaybeUnfrozenMessageDef(
 
 reffed_ptr<FieldDef> DefBuilder::NewFieldDef(const goog::FieldDescriptor* f,
                                              const goog::Message* m) {
-  const goog::Message* subm = NULL;
-  const goog::Message* weak_prototype = NULL;
-
-  if (m) {
-#ifdef UPB_GOOGLE3
-    weak_prototype = upb::google::GetProto1WeakPrototype(*m, f);
-#endif
-    subm = GetPrototype(*m, f);
-  }
-
   reffed_ptr<FieldDef> upb_f(FieldDef::New());
   Status status;
   upb_f->set_number(f->number(), &status);
   upb_f->set_label(FieldDef::ConvertLabel(f->label()));
+  upb_f->set_descriptor_type(FieldDef::ConvertDescriptorType(f->type()));
 #ifdef UPB_GOOGLE3
   upb_f->set_lazy(f->options().lazy());
 #endif
@@ -142,11 +126,19 @@ reffed_ptr<FieldDef> DefBuilder::NewFieldDef(const goog::FieldDescriptor* f,
     upb_f->set_name(f->name(), &status);
   }
 
-  // For weak fields, weak_prototype will be non-NULL even though the proto2
-  // descriptor does not indicate a submessage field.
-  upb_f->set_descriptor_type(weak_prototype
-                                 ? UPB_DESCRIPTOR_TYPE_MESSAGE
-                                 : FieldDef::ConvertDescriptorType(f->type()));
+  const goog::Message* subm = NULL;
+
+  if (m) {
+    subm = TryGetFieldPrototype(*m, f);
+
+    if (upb_f->type() == UPB_TYPE_MESSAGE) {
+      assert(subm);
+    } else if (subm) {
+      // Weak field: subm will be weak prototype even though the proto2
+      // descriptor does not indicate a submessage field.
+      upb_f->set_descriptor_type(UPB_DESCRIPTOR_TYPE_MESSAGE);
+    }
+  }
 
   switch (upb_f->type()) {
     case UPB_TYPE_INT32:
@@ -213,6 +205,35 @@ const MessageDef* DefBuilder::GetMessageDefExpandWeak(
 }
 
 
+/* WriteHandlers  *************************************************************/
+
+// static
+bool WriteHandlers::AddFieldHandler(const goog::Message& m,
+                                    const goog::FieldDescriptor* f,
+                                    upb::Handlers* h) {
+  const FieldDef* upb_f = h->message_def()->FindFieldByNumber(f->number());
+  if (!upb_f) return false;
+  if (upb::googlepb::TrySetWriteHandlers(f, m, upb_f, h)) return true;
+#ifdef UPB_GOOGLE3
+  if (upb::googlepb::TrySetProto1WriteHandlers(f, m, upb_f, h)) return true;
+#endif
+
+  // Unsupported reflection class.
+  //
+  // Should we fall back to using the public Reflection interface in this
+  // case?  It's unclear whether it's supported behavior for users to
+  // create their own Reflection classes.
+  return false;
+}
+
+// static
+upb::reffed_ptr<const upb::Handlers> WriteHandlers::New(
+    const goog::Message& m) {
+  CodeCache cache;
+  return upb::reffed_ptr<const upb::Handlers>(cache.GetWriteHandlers(m));
+}
+
+
 /* CodeCache  *****************************************************************/
 
 const Handlers* CodeCache::GetMaybeUnfrozenWriteHandlers(
@@ -234,21 +255,11 @@ const Handlers* CodeCache::GetMaybeUnfrozenWriteHandlers(
     }
     assert(proto2_f);
 
-    if (!upb::google::TrySetWriteHandlers(proto2_f, m, upb_f, h)
-#ifdef UPB_GOOGLE3
-        && !upb::google::TrySetProto1WriteHandlers(proto2_f, m, upb_f, h)
-#endif
-        ) {
-      // Unsupported reflection class.
-      //
-      // Should we fall back to using the public Reflection interface in this
-      // case?  It's unclear whether it's supported behavior for users to
-      // create their own Reflection classes.
-      assert(false);
-    }
+    bool ok = WriteHandlers::AddFieldHandler(m, proto2_f, h);
+    UPB_ASSERT_VAR(ok, ok);
 
     if (upb_f->type() == UPB_TYPE_MESSAGE) {
-      const goog::Message* prototype = GetPrototype(m, proto2_f);
+      const goog::Message* prototype = GetFieldPrototype(m, proto2_f);
       assert(prototype);
       const upb::Handlers* sub_handlers =
           GetMaybeUnfrozenWriteHandlers(upb_f->message_subdef(), *prototype);
@@ -267,11 +278,6 @@ const Handlers* CodeCache::GetWriteHandlers(const goog::Message& m) {
   ASSERT_STATUS(&status);
   to_freeze_.clear();
   return ret;
-}
-
-upb::reffed_ptr<const upb::Handlers> NewWriteHandlers(const goog::Message& m) {
-  CodeCache cache;
-  return upb::reffed_ptr<const upb::Handlers>(cache.GetWriteHandlers(m));
 }
 
 }  // namespace googlepb

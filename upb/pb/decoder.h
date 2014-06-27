@@ -1,11 +1,18 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * Copyright (c) 2009-2013 Google Inc.  See LICENSE for details.
+ * Copyright (c) 2009-2014 Google Inc.  See LICENSE for details.
  * Author: Josh Haberman <jhaberman@gmail.com>
  *
  * upb::pb::Decoder implements a high performance, streaming, resumable decoder
  * for the binary protobuf format.
+ *
+ * This interface works the same regardless of what decoder backend is being
+ * used.  A client of this class does not need to know whether decoding is using
+ * a JITted decoder (DynASM, LLVM, etc) or an interpreted decoder.  By default,
+ * it will always use the fastest available decoder.  However, you can call
+ * set_allow_jit(false) to disable any JIT decoder that might be available.
+ * This is primarily useful for testing purposes.
  */
 
 #ifndef UPB_DECODER_H_
@@ -200,6 +207,15 @@ class upb::pb::Decoder {
   // Resets the state of the decoder.
   void Reset();
 
+  // Returns number of bytes successfully parsed.
+  //
+  // This can be useful for determining the stream position where an error
+  // occurred.
+  //
+  // This value may not be up-to-date when called from inside a parsing
+  // callback.
+  uint64_t BytesParsed() const;
+
   // Resets the output sink of the Decoder.
   // The given sink must match method()->dest_handlers().
   //
@@ -332,6 +348,7 @@ void upb_pbdecoder_reset(upb_pbdecoder *d);
 const upb_pbdecodermethod *upb_pbdecoder_method(const upb_pbdecoder *d);
 bool upb_pbdecoder_resetoutput(upb_pbdecoder *d, upb_sink *sink);
 upb_bytessink *upb_pbdecoder_input(upb_pbdecoder *d);
+uint64_t upb_pbdecoder_bytesparsed(const upb_pbdecoder *d);
 
 void upb_pbdecodermethodopts_init(upb_pbdecodermethodopts *opts,
                                   const upb_handlers *h);
@@ -399,6 +416,9 @@ inline const DecoderMethod* Decoder::method() const {
 }
 inline void Decoder::Reset() {
   upb_pbdecoder_reset(this);
+}
+inline uint64_t Decoder::BytesParsed() const {
+  return upb_pbdecoder_bytesparsed(this);
 }
 inline bool Decoder::ResetOutput(Sink* sink) {
   return upb_pbdecoder_resetoutput(this, sink);

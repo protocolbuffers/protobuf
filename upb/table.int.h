@@ -46,6 +46,7 @@ typedef enum {
   UPB_CTYPE_CSTR     = 6,
   UPB_CTYPE_PTR      = 7,
   UPB_CTYPE_CONSTPTR = 8,
+  UPB_CTYPE_FPTR     = 9,
 } upb_ctype_t;
 
 typedef union {
@@ -57,6 +58,7 @@ typedef union {
   char     *cstr;
   void     *ptr;
   const void *constptr;
+  upb_func *fptr;
 } _upb_value;
 
 typedef struct {
@@ -90,6 +92,7 @@ typedef struct {
 #define UPB_VALUE_INIT_CSTR(v)   UPB_VALUE_INIT(v, cstr)
 #define UPB_VALUE_INIT_PTR(v)    UPB_VALUE_INIT(v, ptr)
 #define UPB_VALUE_INIT_CONSTPTR(v) UPB_VALUE_INIT(v, constptr)
+#define UPB_VALUE_INIT_FPTR(v)   UPB_VALUE_INIT(v, fptr)
 
 // Like strdup(), which isn't always available since it's not ANSI C.
 char *upb_strdup(const char *s);
@@ -138,6 +141,7 @@ FUNCS(bool,     _bool,        bool,         UPB_CTYPE_BOOL);
 FUNCS(cstr,     cstr,         char*,        UPB_CTYPE_CSTR);
 FUNCS(ptr,      ptr,          void*,        UPB_CTYPE_PTR);
 FUNCS(constptr, constptr,     const void*,  UPB_CTYPE_CONSTPTR);
+FUNCS(fptr,     fptr,         upb_func*,    UPB_CTYPE_FPTR);
 
 #undef FUNCS
 
@@ -302,10 +306,35 @@ UPB_INLINE bool upb_inttable_lookup32(const upb_inttable *t, uint32_t key,
   }
 }
 
+// Exposed for testing only.
+bool upb_strtable_resize(upb_strtable *t, size_t size_lg2);
+
+/* Iterators ******************************************************************/
+
+// Iterators for int and string tables.  We are subject to some kind of unusual
+// design constraints:
+//
+// For high-level languages:
+//  - we must be able to guarantee that we don't crash or corrupt memory even if
+//    the program accesses an invalidated iterator.
+//
+// For C++11 range-based for:
+//  - iterators must be copyable
+//  - iterators must be comparable
+//  - it must be possible to construct an "end" value.
+//
+// Iteration order is undefined.
+//
+// Modifying the table invalidates iterators.  upb_{str,int}table_done() is
+// guaranteed to work even on an invalidated iterator, as long as the table it
+// is iterating over has not been freed.  Calling next() or accessing data from
+// an invalidated iterator yields unspecified elements from the table, but it is
+// guaranteed not to crash and to return real table elements (except when done()
+// is true).
+
 
 /* upb_strtable_iter **********************************************************/
 
-// Strtable iteration.  Order is undefined.  Insertions invalidate iterators.
 //   upb_strtable_iter i;
 //   upb_strtable_begin(&i, t);
 //   for(; !upb_strtable_done(&i); upb_strtable_next(&i)) {
@@ -313,36 +342,24 @@ UPB_INLINE bool upb_inttable_lookup32(const upb_inttable *t, uint32_t key,
 //     const upb_value val = upb_strtable_iter_value(&i);
 //     // ...
 //   }
+
 typedef struct {
   const upb_strtable *t;
-  const upb_tabent *e;
+  size_t index;
 } upb_strtable_iter;
 
 void upb_strtable_begin(upb_strtable_iter *i, const upb_strtable *t);
 void upb_strtable_next(upb_strtable_iter *i);
-UPB_INLINE bool upb_strtable_done(upb_strtable_iter *i) { return i->e == NULL; }
-UPB_INLINE const char *upb_strtable_iter_key(upb_strtable_iter *i) {
-  return i->e->key.str;
-}
-UPB_INLINE upb_value upb_strtable_iter_value(upb_strtable_iter *i) {
-  return _upb_value_val(i->e->val, i->t->t.ctype);
-}
-UPB_INLINE void upb_strtable_iter_copy(upb_strtable_iter *to,
-                                       const upb_strtable_iter *from) {
-  *to = *from;
-}
-UPB_INLINE void upb_strtable_iter_setdone(upb_strtable_iter *i) {
-  i->e = NULL;
-}
-UPB_INLINE bool upb_strtable_iter_isequal(const upb_strtable_iter *i1,
-                                          const upb_strtable_iter *i2) {
-  return i1->e == i2->e;
-}
+bool upb_strtable_done(const upb_strtable_iter *i);
+const char *upb_strtable_iter_key(upb_strtable_iter *i);
+upb_value upb_strtable_iter_value(const upb_strtable_iter *i);
+void upb_strtable_iter_setdone(upb_strtable_iter *i);
+bool upb_strtable_iter_isequal(const upb_strtable_iter *i1,
+                               const upb_strtable_iter *i2);
 
 
 /* upb_inttable_iter **********************************************************/
 
-// Inttable iteration.  Order is undefined.  Insertions invalidate iterators.
 //   upb_inttable_iter i;
 //   upb_inttable_begin(&i, t);
 //   for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
@@ -350,39 +367,22 @@ UPB_INLINE bool upb_strtable_iter_isequal(const upb_strtable_iter *i1,
 //     upb_value val = upb_inttable_iter_value(&i);
 //     // ...
 //   }
+
 typedef struct {
   const upb_inttable *t;
-  union {
-    const upb_tabent *ent;  // For hash iteration.
-    const _upb_value *val;   // For array iteration.
-  } ptr;
-  uintptr_t arrkey;
+  size_t index;
   bool array_part;
 } upb_inttable_iter;
 
 void upb_inttable_begin(upb_inttable_iter *i, const upb_inttable *t);
 void upb_inttable_next(upb_inttable_iter *i);
-UPB_INLINE bool upb_inttable_done(const upb_inttable_iter *i) {
-  return i->ptr.ent == NULL;
-}
-UPB_INLINE uintptr_t upb_inttable_iter_key(const upb_inttable_iter *i) {
-  return i->array_part ? i->arrkey : i->ptr.ent->key.num;
-}
-UPB_INLINE upb_value upb_inttable_iter_value(const upb_inttable_iter *i) {
-  return _upb_value_val(
-      i->array_part ? *i->ptr.val : i->ptr.ent->val, i->t->t.ctype);
-}
-UPB_INLINE void upb_inttable_iter_copy(upb_inttable_iter *to,
-                                       const upb_inttable_iter *from) {
-  *to = *from;
-}
-UPB_INLINE void upb_inttable_iter_setdone(upb_inttable_iter *i) {
-  i->ptr.ent = NULL;
-}
-UPB_INLINE bool upb_inttable_iter_isequal(const upb_inttable_iter *i1,
-                                          const upb_inttable_iter *i2) {
-  return i1->ptr.ent == i2->ptr.ent;
-}
+bool upb_inttable_done(const upb_inttable_iter *i);
+uintptr_t upb_inttable_iter_key(const upb_inttable_iter *i);
+upb_value upb_inttable_iter_value(const upb_inttable_iter *i);
+void upb_inttable_iter_setdone(upb_inttable_iter *i);
+bool upb_inttable_iter_isequal(const upb_inttable_iter *i1,
+                               const upb_inttable_iter *i2);
+
 
 #ifdef __cplusplus
 }  /* extern "C" */

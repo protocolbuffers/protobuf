@@ -7,8 +7,7 @@
 // Support for registering field handlers that can write into a legacy proto1
 // message.  This functionality is only needed inside Google.
 //
-// This is a low-level interface; the high-level interface in google.h is
-// more user-friendly.
+// This is an internal-only interface.
 
 #ifndef UPB_GOOGLE_PROTO1_H_
 #define UPB_GOOGLE_PROTO1_H_
@@ -24,7 +23,7 @@ class Handlers;
 }
 
 namespace upb {
-namespace google {
+namespace googlepb {
 
 // Sets field handlers in the given Handlers object for writing to a single
 // field (as described by "proto2_f" and "upb_f") into a message constructed
@@ -35,17 +34,12 @@ bool TrySetProto1WriteHandlers(const proto2::FieldDescriptor* proto2_f,
                                const proto2::Message& prototype,
                                const upb::FieldDef* upb_f, upb::Handlers* h);
 
-// Returns a prototype for the given field in "m", if it is weak.  The returned
-// message could be the linked-in message type or OpaqueMessage, if the weak
-// message is *not* linked in.  Otherwise returns NULL.
-const proto2::Message* GetProto1WeakPrototype(const proto2::Message& m,
-                                              const proto2::FieldDescriptor* f);
-
-// Returns a prototype for the given non-weak field in "m".
+// Returns a prototype for the given this (possibly-weak) field.  Returns NULL
+// if this is not a submessage field of any kind (weak or no).
 const proto2::Message* GetProto1FieldPrototype(
     const proto2::Message& m, const proto2::FieldDescriptor* f);
 
-}  // namespace google
+}  // namespace googlepb
 }  // namespace upb
 
 #endif  // UPB_GOOGLE_PROTO1_H_

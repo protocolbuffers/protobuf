@@ -264,8 +264,6 @@ class upb::FieldDef /* : public upb::Def */ {
 
   // Functionality from upb::Def.
   const char* full_name() const;
-  bool set_full_name(const char* fullname, upb::Status* s);
-  bool set_full_name(const std::string& fullname, upb::Status* s);
 
   bool type_is_set() const;  // Whether set_[descriptor_]type() has been called.
   Type type() const;         // Requires that type_is_set() == true.
@@ -278,15 +276,10 @@ class upb::FieldDef /* : public upb::Def */ {
   // indicates whether this field should have lazy parsing handlers that yield
   // the unparsed string for the submessage.
   //
-  // When we freeze, we ensure that this can only be true for length-delimited
-  // message fields.  Prior to freezing this can be true or false with no
-  // restrictions.
-  //
   // TODO(haberman): I think we want to move this into a FieldOptions container
   // when we add support for custom options (the FieldOptions struct will
   // contain both regular FieldOptions like "lazy" *and* custom options).
   bool lazy() const;
-  void set_lazy(bool lazy);
 
   // An integer that can be used as an index into an array of fields for
   // whatever message this field belongs to.  Guaranteed to be less than
@@ -305,11 +298,6 @@ class upb::FieldDef /* : public upb::Def */ {
   const MessageDef* containing_type() const;
   const char* containing_type_name();
 
-  // This may only be called if containing_type() == NULL (ie. the field has not
-  // been added to a message yet).
-  bool set_containing_type_name(const char *name, Status* status);
-  bool set_containing_type_name(const std::string& name, Status* status);
-
   // The field's type according to the enum in descriptor.proto.  This is not
   // the same as UPB_TYPE_*, because it distinguishes between (for example)
   // INT32 and SINT32, whereas our "type" enum does not.  This return of
@@ -317,6 +305,92 @@ class upb::FieldDef /* : public upb::Def */ {
   // is_tag_delimited().  Likewise set_descriptor_type() sets all three
   // appropriately.
   DescriptorType descriptor_type() const;
+
+  // Convenient field type tests.
+  bool IsSubMessage() const;
+  bool IsString() const;
+  bool IsSequence() const;
+  bool IsPrimitive() const;
+
+  // How integers are encoded.  Only meaningful for integer types.
+  // Defaults to UPB_INTFMT_VARIABLE, and is reset when "type" changes.
+  IntegerFormat integer_format() const;
+
+  // Whether a submessage field is tag-delimited or not (if false, then
+  // length-delimited).  May only be set when type() == UPB_TYPE_MESSAGE.
+  bool is_tag_delimited() const;
+
+  // Returns the non-string default value for this fielddef, which may either
+  // be something the client set explicitly or the "default default" (0 for
+  // numbers, empty for strings).  The field's type indicates the type of the
+  // returned value, except for enum fields that are still mutable.
+  //
+  // Requires that the given function matches the field's current type.
+  int64_t default_int64() const;
+  int32_t default_int32() const;
+  uint64_t default_uint64() const;
+  uint32_t default_uint32() const;
+  bool default_bool() const;
+  float default_float() const;
+  double default_double() const;
+
+  // The resulting string is always NULL-terminated.  If non-NULL, the length
+  // will be stored in *len.
+  const char *default_string(size_t* len) const;
+
+  // For frozen UPB_TYPE_ENUM fields, enum defaults can always be read as either
+  // string or int32, and both of these methods will always return true.
+  //
+  // For mutable UPB_TYPE_ENUM fields, the story is a bit more complicated.
+  // Enum defaults are unusual. They can be specified either as string or int32,
+  // but to be valid the enum must have that value as a member.  And if no
+  // default is specified, the "default default" comes from the EnumDef.
+  //
+  // We allow reading the default as either an int32 or a string, but only if
+  // we have a meaningful value to report.  We have a meaningful value if it was
+  // set explicitly, or if we could get the "default default" from the EnumDef.
+  // Also if you explicitly set the name and we find the number in the EnumDef
+  bool EnumHasStringDefault() const;
+  bool EnumHasInt32Default() const;
+
+  // Submessage and enum fields must reference a "subdef", which is the
+  // upb::MessageDef or upb::EnumDef that defines their type.  Note that when
+  // the FieldDef is mutable it may not have a subdef *yet*, but this function
+  // still returns true to indicate that the field's type requires a subdef.
+  bool HasSubDef() const;
+
+  // Returns the enum or submessage def for this field, if any.  The field's
+  // type must match (ie. you may only call enum_subdef() for fields where
+  // type() == UPB_TYPE_ENUM).  Returns NULL if the subdef has not been set or
+  // is currently set symbolically.
+  const EnumDef* enum_subdef() const;
+  const MessageDef* message_subdef() const;
+
+  // Returns the generic subdef for this field.  Requires that HasSubDef() (ie.
+  // only works for UPB_TYPE_ENUM and UPB_TYPE_MESSAGE fields).
+  const Def* subdef() const;
+
+  // Returns the symbolic name of the subdef.  If the subdef is currently set
+  // unresolved (ie. set symbolically) returns the symbolic name.  If it has
+  // been resolved to a specific subdef, returns the name from that subdef.
+  const char* subdef_name() const;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Setters (non-const methods), only valid for mutable FieldDefs!
+  //////////////////////////////////////////////////////////////////////////////
+
+  bool set_full_name(const char* fullname, upb::Status* s);
+  bool set_full_name(const std::string& fullname, upb::Status* s);
+
+  // This may only be called if containing_type() == NULL (ie. the field has not
+  // been added to a message yet).
+  bool set_containing_type_name(const char *name, Status* status);
+  bool set_containing_type_name(const std::string& name, Status* status);
+
+  // When we freeze, we ensure that this can only be true for length-delimited
+  // message fields.  Prior to freezing this can be true or false with no
+  // restrictions.
+  void set_lazy(bool lazy);
 
   // "type" or "descriptor_type" MUST be set explicitly before the fielddef is
   // finalized.  These setters require that the enum value is valid; if the
@@ -338,40 +412,8 @@ class upb::FieldDef /* : public upb::Def */ {
   bool set_name(const char* name, upb::Status* s);
   bool set_name(const std::string& name, upb::Status* s);
 
-  // Convenient field type tests.
-  bool IsSubMessage() const;
-  bool IsString() const;
-  bool IsSequence() const;
-  bool IsPrimitive() const;
-
-  // How integers are encoded.  Only meaningful for integer types.
-  // Defaults to UPB_INTFMT_VARIABLE, and is reset when "type" changes.
-  IntegerFormat integer_format() const;
   void set_integer_format(IntegerFormat format);
-
-  // Whether a submessage field is tag-delimited or not (if false, then
-  // length-delimited).  May only be set when type() == UPB_TYPE_MESSAGE.
-  bool is_tag_delimited() const;
   bool set_tag_delimited(bool tag_delimited, upb::Status* s);
-
-  // Returns the non-string default value for this fielddef, which may either
-  // be something the client set explicitly or the "default default" (0 for
-  // numbers, empty for strings).  The field's type indicates the type of the
-  // returned value, except for enum fields that are still mutable.
-  //
-  // Requires that the given function matches the field's current type.
-  int64_t default_int64() const;
-  int32_t default_int32() const;
-  uint64_t default_uint64() const;
-  uint32_t default_uint32() const;
-  bool default_bool() const;
-  float default_float() const;
-  double default_double() const;
-
-  // Returns the default for UPB_TYPE_STRING, UPB_TYPE_BYTES, and UPB_TYPE_ENUM
-  // fields that haven't yet been resolved, The resulting string is always
-  // NULL-terminated.  If non-NULL, the length will be stored in *len.
-  const char *default_string(size_t* len) const;
 
   // Sets default value for the field.  The call must exactly match the type
   // of the field.  Enum fields may use either setint32 or setstring to set
@@ -389,38 +431,6 @@ class upb::FieldDef /* : public upb::Def */ {
   bool set_default_string(const void *str, size_t len, Status *s);
   bool set_default_string(const std::string &str, Status *s);
   void set_default_cstr(const char *str, Status *s);
-
-  // The results of this function are only meaningful for mutable enum fields,
-  // which can have a default specified either as an integer or as a string.
-  // If this returns true, the default should be retrieved as default_int32(),
-  // otherwise it should be retrieved with default_string().
-  bool IsDefaultSymbolic() const;
-
-  // If this is an enum field with a symbolic default, resolves the default and
-  // returns true if resolution was successful or if this field didn't need to
-  // be resolved (because it is not an enum with a symbolic default).
-  bool ResolveEnumDefault(Status* s);
-
-  // Submessage and enum fields must reference a "subdef", which is the
-  // upb_msgdef or upb_enumdef that defines their type.  Note that when the
-  // fielddef is mutable it may not have a subdef *yet*, but this function
-  // still returns true to indicate that the field's type requires a subdef.
-  bool HasSubDef() const;
-
-  // Returns the enum or submessage def or symbolic name for this field, if
-  // any.  Requires that upb_hassubdef(f).  Returns NULL if the subdef has not
-  // been set or if you ask for a subdef when the subdef is currently set
-  // symbolically (or vice-versa).  To access the subdef's name for a linked
-  // fielddef, use upb_def_fullname(upb_fielddef_subdef(f)).
-  //
-  // Caller does *not* own a ref on the returned def or string.
-  // upb_fielddef_subdefename() is non-const because frozen defs will never
-  // have a symbolic reference (they must be resolved before the msgdef can be
-  // frozen).
-  const Def* subdef() const;
-  const EnumDef* enum_subdef() const;
-  const MessageDef* message_subdef() const;
-  const char* subdef_name() const;
 
   // Before a fielddef is frozen, its subdef may be set either directly (with a
   // upb::Def*) or symbolically.  Symbolic refs must be resolved before the
@@ -530,7 +540,8 @@ bool upb_fielddef_defaultbool(const upb_fielddef *f);
 float upb_fielddef_defaultfloat(const upb_fielddef *f);
 double upb_fielddef_defaultdouble(const upb_fielddef *f);
 const char *upb_fielddef_defaultstr(const upb_fielddef *f, size_t *len);
-bool upb_fielddef_default_is_symbolic(const upb_fielddef *f);
+bool upb_fielddef_enumhasdefaultint32(const upb_fielddef *f);
+bool upb_fielddef_enumhasdefaultstr(const upb_fielddef *f);
 bool upb_fielddef_hassubdef(const upb_fielddef *f);
 const upb_def *upb_fielddef_subdef(const upb_fielddef *f);
 const upb_msgdef *upb_fielddef_msgsubdef(const upb_fielddef *f);
@@ -559,7 +570,6 @@ bool upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len,
                                 upb_status *s);
 void upb_fielddef_setdefaultcstr(upb_fielddef *f, const char *str,
                                  upb_status *s);
-bool upb_fielddef_resolveenumdefault(upb_fielddef *f, upb_status *s);
 bool upb_fielddef_setsubdef(upb_fielddef *f, const upb_def *subdef,
                             upb_status *s);
 bool upb_fielddef_setmsgsubdef(upb_fielddef *f, const upb_msgdef *subdef,
@@ -607,6 +617,7 @@ class upb::MessageDef /* : public upb::Def */ {
 
   // Call to freeze this MessageDef.
   // WARNING: this will fail if this message has any unfrozen submessages!
+  // Messages with cycles must be frozen as a batch using upb::Def::Freeze().
   bool Freeze(Status* s);
 
   // The number of fields that belong to the MessageDef.
@@ -639,9 +650,8 @@ class upb::MessageDef /* : public upb::Def */ {
   // Iteration over fields.  The order is undefined.
   class iterator : public std::iterator<std::forward_iterator_tag, FieldDef*> {
    public:
-    iterator();
-    iterator(const iterator& other);
     explicit iterator(MessageDef* md);
+    static iterator end(MessageDef* md);
 
     void operator++();
     FieldDef* operator*() const;
@@ -655,9 +665,8 @@ class upb::MessageDef /* : public upb::Def */ {
   class const_iterator
       : public std::iterator<std::forward_iterator_tag, const FieldDef*> {
    public:
-    const_iterator();
-    const_iterator(const const_iterator& other);
     explicit const_iterator(const MessageDef* md);
+    static const_iterator end(const MessageDef* md);
 
     void operator++();
     const FieldDef* operator*() const;
@@ -710,14 +719,13 @@ void upb_msgdef_unref(const upb_msgdef *m, const void *owner);
 void upb_msgdef_donateref(const upb_msgdef *m, const void *from,
                           const void *to);
 void upb_msgdef_checkref(const upb_msgdef *m, const void *owner);
+bool upb_msgdef_freeze(upb_msgdef *m, upb_status *status);
 
 // From upb_def.
 const char *upb_msgdef_fullname(const upb_msgdef *m);
 bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname, upb_status *s);
 
 upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner);
-bool upb_msgdef_addfields(upb_msgdef *m, upb_fielddef *const *f, int n,
-                          const void *ref_donor, upb_status *s);
 bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f, const void *ref_donor,
                          upb_status *s);
 const upb_fielddef *upb_msgdef_itof(const upb_msgdef *m, uint32_t i);
@@ -739,7 +747,7 @@ void upb_msg_begin(upb_msg_iter *iter, const upb_msgdef *m);
 void upb_msg_next(upb_msg_iter *iter);
 bool upb_msg_done(const upb_msg_iter *iter);
 upb_fielddef *upb_msg_iter_field(const upb_msg_iter *iter);
-void upb_msg_iter_copy(upb_msg_iter *to, const upb_msg_iter *from);
+void upb_msg_iter_setdone(upb_msg_iter *iter);
 #ifdef __cplusplus
 }  // extern "C
 #endif
@@ -774,8 +782,14 @@ class upb::EnumDef /* : public upb::Def */ {
   bool Freeze(Status* s);
 
   // The value that is used as the default when no field default is specified.
+  // If not set explicitly, the first value that was added will be used.
+  // The default value must be a member of the enum.
+  // Requires that value_count() > 0.
   int32_t default_value() const;
-  void set_default_value(int32_t val);
+
+  // Sets the default value.  If this value is not valid, returns false and an
+  // error message in status.
+  bool set_default_value(int32_t val, Status* status);
 
   // Returns the number of values currently defined in the enum.  Note that
   // multiple names can refer to the same number, so this may be greater than
@@ -801,6 +815,8 @@ class upb::EnumDef /* : public upb::Def */ {
 
   // Iteration over name/value pairs.  The order is undefined.
   // Adding an enum val invalidates any iterators.
+  //
+  // TODO: make compatible with range-for, with elements as pairs?
   class Iterator {
    public:
     explicit Iterator(const EnumDef*);
@@ -843,6 +859,7 @@ void upb_enumdef_ref(const upb_enumdef *e, const void *owner);
 void upb_enumdef_donateref(const upb_enumdef *m, const void *from,
                            const void *to);
 void upb_enumdef_checkref(const upb_enumdef *e, const void *owner);
+bool upb_enumdef_freeze(upb_enumdef *e, upb_status *status);
 
 // From upb_def.
 const char *upb_enumdef_fullname(const upb_enumdef *e);
@@ -850,7 +867,7 @@ bool upb_enumdef_setfullname(upb_enumdef *e, const char *fullname,
                              upb_status *s);
 
 int32_t upb_enumdef_default(const upb_enumdef *e);
-void upb_enumdef_setdefault(upb_enumdef *e, int32_t val);
+bool upb_enumdef_setdefault(upb_enumdef *e, int32_t val, upb_status *s);
 int upb_enumdef_numvals(const upb_enumdef *e);
 bool upb_enumdef_addval(upb_enumdef *e, const char *name, int32_t num,
                         upb_status *status);
@@ -1188,12 +1205,6 @@ inline bool FieldDef::set_default_string(const std::string& str, Status* s) {
 inline void FieldDef::set_default_cstr(const char* str, Status* s) {
   return upb_fielddef_setdefaultcstr(this, str, s);
 }
-inline bool FieldDef::IsDefaultSymbolic() const {
-  return upb_fielddef_default_is_symbolic(this);
-}
-inline bool FieldDef::ResolveEnumDefault(Status* s) {
-  return upb_fielddef_resolveenumdefault(this, s);
-}
 inline bool FieldDef::HasSubDef() const { return upb_fielddef_hassubdef(this); }
 inline const Def* FieldDef::subdef() const { return upb_fielddef_subdef(this); }
 inline const MessageDef *FieldDef::message_subdef() const {
@@ -1248,8 +1259,7 @@ inline bool MessageDef::set_full_name(const std::string& fullname, Status* s) {
   return upb_msgdef_setfullname(this, upb_safecstr(fullname), s);
 }
 inline bool MessageDef::Freeze(Status* status) {
-  upb::Def* e = upb::upcast(this);
-  return upb_def_freeze(&e, 1, status);
+  return upb_msgdef_freeze(this, status);
 }
 inline int MessageDef::field_count() const {
   return upb_msgdef_numfields(this);
@@ -1276,19 +1286,21 @@ inline MessageDef* MessageDef::Dup(const void *owner) const {
   return upb_msgdef_dup(this, owner);
 }
 inline MessageDef::iterator MessageDef::begin() { return iterator(this); }
-inline MessageDef::iterator MessageDef::end() { return iterator(); }
+inline MessageDef::iterator MessageDef::end() { return iterator::end(this); }
 inline MessageDef::const_iterator MessageDef::begin() const {
   return const_iterator(this);
 }
 inline MessageDef::const_iterator MessageDef::end() const {
-  return const_iterator();
+  return const_iterator::end(this);
 }
 
-inline MessageDef::iterator::iterator() {
-  upb_inttable_iter_setdone(&iter_);
-}
 inline MessageDef::iterator::iterator(MessageDef* md) {
   upb_msg_begin(&iter_, md);
+}
+inline MessageDef::iterator MessageDef::iterator::end(MessageDef* md) {
+  MessageDef::iterator iter(md);
+  upb_msg_iter_setdone(&iter.iter_);
+  return iter;
 }
 inline FieldDef* MessageDef::iterator::operator*() const {
   return upb_msg_iter_field(&iter_);
@@ -1301,11 +1313,14 @@ inline bool MessageDef::iterator::operator!=(const iterator &other) const {
   return !(*this == other);
 }
 
-inline MessageDef::const_iterator::const_iterator() {
-  upb_inttable_iter_setdone(&iter_);
-}
 inline MessageDef::const_iterator::const_iterator(const MessageDef* md) {
   upb_msg_begin(&iter_, md);
+}
+inline MessageDef::const_iterator MessageDef::const_iterator::end(
+    const MessageDef *md) {
+  MessageDef::const_iterator iter(md);
+  upb_msg_iter_setdone(&iter.iter_);
+  return iter;
 }
 inline const FieldDef* MessageDef::const_iterator::operator*() const {
   return upb_msg_iter_field(&iter_);
@@ -1349,14 +1364,13 @@ inline bool EnumDef::set_full_name(const std::string& fullname, Status* s) {
   return upb_enumdef_setfullname(this, upb_safecstr(fullname), s);
 }
 inline bool EnumDef::Freeze(Status* status) {
-  upb::Def* e = upb::upcast(this);
-  return upb_def_freeze(&e, 1, status);
+  return upb_enumdef_freeze(this, status);
 }
 inline int32_t EnumDef::default_value() const {
   return upb_enumdef_default(this);
 }
-inline void EnumDef::set_default_value(int32_t val) {
-  upb_enumdef_setdefault(this, val);
+inline bool EnumDef::set_default_value(int32_t val, Status* status) {
+  return upb_enumdef_setdefault(this, val, status);
 }
 inline int EnumDef::value_count() const { return upb_enumdef_numvals(this); }
 inline bool EnumDef::AddValue(const char* name, int32_t num, Status* status) {

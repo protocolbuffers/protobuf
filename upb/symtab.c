@@ -52,47 +52,35 @@ upb_symtab *upb_symtab_new(const void *owner) {
   return s;
 }
 
-const upb_def **upb_symtab_getdefs(const upb_symtab *s, upb_deftype_t type,
-                                   const void *owner, int *n) {
-  int total = upb_strtable_count(&s->symtab);
-  // We may only use part of this, depending on how many symbols are of the
-  // correct type.
-  const upb_def **defs = malloc(sizeof(*defs) * total);
-  upb_strtable_iter iter;
-  upb_strtable_begin(&iter, &s->symtab);
-  int i = 0;
-  for(; !upb_strtable_done(&iter); upb_strtable_next(&iter)) {
-    upb_def *def = upb_value_getptr(upb_strtable_iter_value(&iter));
-    assert(def);
-    if(type == UPB_DEF_ANY || def->type == type)
-      defs[i++] = def;
-  }
-  *n = i;
-  if (owner)
-    for(i = 0; i < *n; i++) upb_def_ref(defs[i], owner);
-  return defs;
+void upb_symtab_freeze(upb_symtab *s) {
+  assert(!upb_symtab_isfrozen(s));
+  upb_refcounted *r = UPB_UPCAST(s);
+  // The symtab does not take ref2's (see refcounted.h) on the defs, because
+  // defs cannot refer back to the table and therefore cannot create cycles.  So
+  // 0 will suffice for maxdepth here.
+  bool ok = upb_refcounted_freeze(&r, 1, NULL, 0);
+  UPB_ASSERT_VAR(ok, ok);
 }
 
-const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym,
-                                 const void *owner) {
+const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym) {
   upb_value v;
   upb_def *ret = upb_strtable_lookup(&s->symtab, sym, &v) ?
       upb_value_getptr(v) : NULL;
-  if (ret) upb_def_ref(ret, owner);
   return ret;
 }
 
-const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym,
-                                       const void *owner) {
+const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym) {
   upb_value v;
   upb_def *def = upb_strtable_lookup(&s->symtab, sym, &v) ?
       upb_value_getptr(v) : NULL;
-  upb_msgdef *ret = NULL;
-  if(def && def->type == UPB_DEF_MSG) {
-    ret = upb_downcast_msgdef_mutable(def);
-    upb_def_ref(def, owner);
-  }
-  return ret;
+  return def ? upb_dyncast_msgdef(def) : NULL;
+}
+
+const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym) {
+  upb_value v;
+  upb_def *def = upb_strtable_lookup(&s->symtab, sym, &v) ?
+      upb_value_getptr(v) : NULL;
+  return def ? upb_dyncast_enumdef(def) : NULL;
 }
 
 // Given a symbol and the base symbol inside which it is defined, find the
@@ -115,9 +103,8 @@ static upb_def *upb_resolvename(const upb_strtable *t,
 }
 
 const upb_def *upb_symtab_resolve(const upb_symtab *s, const char *base,
-                                  const char *sym, const void *owner) {
+                                  const char *sym) {
   upb_def *ret = upb_resolvename(&s->symtab, base, sym);
-  if (ret) upb_def_ref(ret, owner);
   return ret;
 }
 
@@ -192,6 +179,7 @@ oom:
 // The came_from_user stuff in particular is not tested.
 bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
                     upb_status *status) {
+  assert(!upb_symtab_isfrozen(s));
   upb_def **add_defs = NULL;
   upb_strtable addtab;
   if (!upb_strtable_init(&addtab, UPB_CTYPE_PTR)) {
@@ -262,7 +250,7 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
       m = upb_value_getptr(v);
     } else {
       // Need to find and dup the extendee from the existing symtab.
-      const upb_msgdef *frozen_m = upb_symtab_lookupmsg(s, msgname, &frozen_m);
+      const upb_msgdef *frozen_m = upb_symtab_lookupmsg(s, msgname);
       if (!frozen_m) {
         upb_status_seterrf(status,
                            "Tried to extend message %s that does not exist "
@@ -271,7 +259,6 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
         goto err;
       }
       m = upb_msgdef_dup(frozen_m, s);
-      upb_msgdef_unref(frozen_m, &frozen_m);
       if (!m) goto oom_err;
       if (!upb_strtable_insert(&addtab, msgname, upb_value_ptr(m))) {
         upb_msgdef_unref(m, s);
@@ -310,7 +297,7 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
     for(upb_msg_begin(&j, m); !upb_msg_done(&j); upb_msg_next(&j)) {
       upb_fielddef *f = upb_msg_iter_field(&j);
       const char *name = upb_fielddef_subdefname(f);
-      if (name) {
+      if (name && !upb_fielddef_subdef(f)) {
         upb_def *subdef = upb_resolvename(&addtab, base, name);
         if (subdef == NULL) {
           upb_status_seterrf(
@@ -319,10 +306,6 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
         } else if (!upb_fielddef_setsubdef(f, subdef, status)) {
           goto err;
         }
-      }
-
-      if (!upb_fielddef_resolveenumdefault(f, status)) {
-        goto err;
       }
     }
   }
@@ -379,4 +362,36 @@ err: {
   free(add_defs);
   assert(!upb_ok(status));
   return false;
+}
+
+// Iteration.
+
+static void advance_to_matching(upb_symtab_iter *iter) {
+  if (iter->type == UPB_DEF_ANY)
+    return;
+
+  while (!upb_strtable_done(&iter->iter) &&
+         iter->type != upb_symtab_iter_def(iter)->type) {
+    upb_strtable_next(&iter->iter);
+  }
+}
+
+void upb_symtab_begin(upb_symtab_iter *iter, const upb_symtab *s,
+                      upb_deftype_t type) {
+  upb_strtable_begin(&iter->iter, &s->symtab);
+  iter->type = type;
+  advance_to_matching(iter);
+}
+
+void upb_symtab_next(upb_symtab_iter *iter) {
+  upb_strtable_next(&iter->iter);
+  advance_to_matching(iter);
+}
+
+bool upb_symtab_done(const upb_symtab_iter *iter) {
+  return upb_strtable_done(&iter->iter);
+}
+
+const upb_def *upb_symtab_iter_def(const upb_symtab_iter *iter) {
+  return upb_value_getptr(upb_strtable_iter_value(&iter->iter));
 }

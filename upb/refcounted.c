@@ -23,7 +23,6 @@
 #include <setjmp.h>
 #include <stdlib.h>
 
-uint32_t static_refcount = 1;
 static void freeobj(upb_refcounted *o);
 
 /* arch-specific atomic primitives  *******************************************/
@@ -51,6 +50,27 @@ static bool atomic_dec(upb_atomic_t *a) {
 #error Atomic primitives not defined for your platform/CPU.  \
        Implement them or compile with UPB_THREAD_UNSAFE.
 #endif
+
+// All static objects point to this refcount.
+// It is special-cased in ref/unref below.
+uint32_t static_refcount = -1;
+
+// We can avoid atomic ops for statically-declared objects.
+// This is a minor optimization but nice since we can avoid degrading under
+// contention in this case.
+
+static void refgroup(uint32_t *group) {
+  if (group != &static_refcount)
+    atomic_inc(group);
+}
+
+static bool unrefgroup(uint32_t *group) {
+  if (group == &static_refcount) {
+    return false;
+  } else {
+    return atomic_dec(group);
+  }
+}
 
 
 /* Reference tracking (debug only) ********************************************/
@@ -82,7 +102,7 @@ typedef struct {
   bool is_ref2;
 } trackedref;
 
-trackedref *trackedref_new(bool is_ref2) {
+static trackedref *trackedref_new(bool is_ref2) {
   trackedref *ret = malloc(sizeof(*ret));
   CHECK_OOM(ret);
   ret->count = 1;
@@ -319,20 +339,20 @@ UPB_NORETURN static void oom(tarjan *t) {
   err(t);
 }
 
-uint64_t trygetattr(const tarjan *t, const upb_refcounted *r) {
+static uint64_t trygetattr(const tarjan *t, const upb_refcounted *r) {
   upb_value v;
   return upb_inttable_lookupptr(&t->objattr, r, &v) ?
       upb_value_getuint64(v) : 0;
 }
 
-uint64_t getattr(const tarjan *t, const upb_refcounted *r) {
+static uint64_t getattr(const tarjan *t, const upb_refcounted *r) {
   upb_value v;
   bool found = upb_inttable_lookupptr(&t->objattr, r, &v);
   UPB_ASSERT_VAR(found, found);
   return upb_value_getuint64(v);
 }
 
-void setattr(tarjan *t, const upb_refcounted *r, uint64_t attr) {
+static void setattr(tarjan *t, const upb_refcounted *r, uint64_t attr) {
   upb_inttable_removeptr(&t->objattr, r, NULL);
   upb_inttable_insertptr(&t->objattr, r, upb_value_uint64(attr));
 }
@@ -400,7 +420,7 @@ static void set_lowlink(tarjan *t, const upb_refcounted *r, uint32_t lowlink) {
   setattr(t, r, ((uint64_t)lowlink << 33) | (getattr(t, r) & 0x1FFFFFFFF));
 }
 
-uint32_t *group(tarjan *t, upb_refcounted *r) {
+static uint32_t *group(tarjan *t, upb_refcounted *r) {
   assert(color(t, r) == WHITE);
   uint64_t groupnum = getattr(t, r) >> 8;
   upb_value v;
@@ -480,7 +500,7 @@ static void crossref(const upb_refcounted *r, const upb_refcounted *subobj,
   if (color(t, subobj) > BLACK && r->group != subobj->group) {
     // Previously this ref was not reflected in subobj->group because they
     // were in the same group; now that they are split a ref must be taken.
-    atomic_inc(subobj->group);
+    refgroup(subobj->group);
   }
 }
 
@@ -668,7 +688,7 @@ static void release_ref2(const upb_refcounted *obj,
 }
 
 static void unref(const upb_refcounted *r) {
-  if (atomic_dec(r->group)) {
+  if (unrefgroup(r->group)) {
     free(r->group);
 
     // In two passes, since release_ref2 needs a guarantee that any subobjs
@@ -720,7 +740,7 @@ void upb_refcounted_ref(const upb_refcounted *r, const void *owner) {
   track(r, owner, false);
   if (!r->is_frozen)
     ((upb_refcounted*)r)->individual_count++;
-  atomic_inc(r->group);
+  refgroup(r->group);
 }
 
 void upb_refcounted_unref(const upb_refcounted *r, const void *owner) {
@@ -734,7 +754,7 @@ void upb_refcounted_ref2(const upb_refcounted *r, upb_refcounted *from) {
   assert(!from->is_frozen);  // Non-const pointer implies this.
   track(r, from, true);
   if (r->is_frozen) {
-    atomic_inc(r->group);
+    refgroup(r->group);
   } else {
     merge((upb_refcounted*)r, from);
   }
@@ -753,8 +773,8 @@ void upb_refcounted_unref2(const upb_refcounted *r, upb_refcounted *from) {
 void upb_refcounted_donateref(
     const upb_refcounted *r, const void *from, const void *to) {
   assert(from != to);
-  assert(to != NULL);
-  upb_refcounted_ref(r, to);
+  if (to != NULL)
+    upb_refcounted_ref(r, to);
   if (from != NULL)
     upb_refcounted_unref(r, from);
 }

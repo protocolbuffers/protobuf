@@ -42,28 +42,19 @@ if arg[1] == "generate" then
   local appendc = dump_cinit.file_appender(f)
   local appendh = dump_cinit.file_appender(f_h)
   f:write('#include "lua.h"\n')
-  f:write('#define ELEMENTS(array) (sizeof(array)/sizeof(*array))\n')
   f:write('#include "upb/bindings/lua/upb.h"\n')
-  dump_cinit.dump_defs(symtab, "test", appendh, appendc)
+  dump_cinit.dump_defs(symtab, "testdefs", appendh, appendc)
   f:write([[int luaopen_staticdefs(lua_State *L) {
-    lua_newtable(L);
-    for (int i = 0; i < ELEMENTS(test_msgs); i++) {
-      lupb_def_pushnewrapper(L, UPB_UPCAST(&test_msgs[i]), NULL);
-      lua_rawseti(L, -2, i + 1);
-    }
-    for (int i = 0; i < ELEMENTS(test_enums); i++) {
-      lupb_def_pushnewrapper(L, UPB_UPCAST(&test_enums[i]), NULL);
-      lua_rawseti(L, -2, ELEMENTS(test_msgs) + i + 1);
-    }
+    const upb_symtab *s = upbdefs_testdefs(&s);
+    lupb_symtab_pushwrapper(L, s, &s);
     return 1;
   }]])
   f_h:close()
   f:close()
 elseif arg[1] == "test" then
-  local staticdefs = require "staticdefs"
-
-  local msg = assert(staticdefs[1])
-  local enum = assert(staticdefs[2])
+  local symtab = require "staticdefs"
+  local msg = assert(symtab:lookup("MyMessage"))
+  local enum = assert(symtab:lookup("MyEnum"))
   local f2 = assert(msg:field("field2"))
   assert(msg:def_type() == upb.DEF_MSG)
   assert(msg:full_name() == "MyMessage")

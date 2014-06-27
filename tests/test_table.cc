@@ -69,6 +69,25 @@ void test_strtable(const vector<std::string>& keys, uint32_t num_to_insert) {
   }
   ASSERT(all.empty());
 
+  // Test iteration with resizes.
+
+  for (int i = 0; i < 10; i++) {
+    for(upb_strtable_begin(&iter, &table); !upb_strtable_done(&iter);
+        upb_strtable_next(&iter)) {
+      // Even if we invalidate the iterator it should only return real elements.
+      const char *key = upb_strtable_iter_key(&iter);
+      std::string tmp(key, strlen(key));
+      ASSERT(upb_value_getint32(upb_strtable_iter_value(&iter)) == m[tmp]);
+
+      // Force a resize even though the size isn't changing.
+      // Also forces the table size to grow so some new buckets end up empty.
+      int new_lg2 = table.t.size_lg2 + 1;
+      // Don't use more than 64k tables, to avoid exhausting memory.
+      new_lg2 = UPB_MIN(new_lg2, 16);
+      upb_strtable_resize(&table, new_lg2);
+    }
+  }
+
   upb_strtable_uninit(&table);
 }
 
@@ -292,7 +311,9 @@ int run_tests(int argc, char *argv[]) {
   keys.push_back("google.protobuf.UninterpretedOption");
   keys.push_back("google.protobuf.UninterpretedOption.NamePart");
 
-  test_strtable(keys, 18);
+  for (int i = 0; i < 10; i++) {
+    test_strtable(keys, 18);
+  }
 
   int32_t *keys1 = get_contiguous_keys(8);
   test_inttable(keys1, 8, "Table size: 8, keys: 1-8 ====");
