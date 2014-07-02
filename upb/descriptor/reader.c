@@ -126,7 +126,7 @@ upb_def **upb_descreader_getdefs(upb_descreader *r, void *owner, int *n) {
 }
 
 upb_sink *upb_descreader_input(upb_descreader *r) {
-  return (upb_sink*)r->sink;
+  return &r->sink;
 }
 
 static upb_msgdef *upb_descreader_top(upb_descreader *r) {

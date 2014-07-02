@@ -19,20 +19,15 @@ namespace json {
 class TypedPrinter;
 }  // namespace json
 }  // namespace upb
-
-typedef upb::json::TypedPrinter upb_json_typedprinter;
-#else
-struct upb_json_typedprinter;
-typedef struct upb_json_typedprinter upb_json_typedprinter;
 #endif
+
+UPB_DECLARE_TYPE(upb::json::TypedPrinter, upb_json_typedprinter);
 
 
 /* upb::json::TypedPrinter ****************************************************/
 
-#ifdef __cplusplus
-
 // Prints an incoming stream of data to a BytesSink in JSON format.
-class upb::json::TypedPrinter {
+UPB_DEFINE_CLASS0(upb::json::TypedPrinter,
  public:
   TypedPrinter(const upb::Handlers* handlers);
   ~TypedPrinter();
@@ -50,11 +45,8 @@ class upb::json::TypedPrinter {
 
   // Returns handlers for printing according to the specified schema.
   static reffed_ptr<const Handlers> NewHandlers(const upb::MessageDef* md);
-
- private:
-#else
-struct upb_json_typedprinter {
-#endif
+,
+UPB_DEFINE_STRUCT0(upb_json_typedprinter,
   upb_sink input_;
   // Pointer to yajl_gen; void* here so we don't have to include YAJL headers.
   void *yajl_gen_;
@@ -63,12 +55,11 @@ struct upb_json_typedprinter {
   // We track the depth so that we know when to emit startstr/endstr on the
   // output.
   int depth_;
-};
+));
+
+UPB_BEGIN_EXTERN_C  // {
 
 // Native C API.
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 void upb_json_typedprinter_init(upb_json_typedprinter *p,
                                 const upb_handlers *h);
@@ -80,9 +71,7 @@ upb_sink *upb_json_typedprinter_input(upb_json_typedprinter *p);
 const upb_handlers *upb_json_typedprinter_newhandlers(const upb_msgdef *md,
                                                       const void *owner);
 
-#ifdef __cplusplus
-}  // extern "C"
-#endif
+UPB_END_EXTERN_C  // }
 
 #ifdef __cplusplus
 

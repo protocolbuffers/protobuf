@@ -45,7 +45,10 @@
   friend class Pointer<full_class_name>; \
   friend class Pointer<const full_class_name>; \
   UPB_DISALLOW_COPY_AND_ASSIGN(class_name)
-#else
+#define UPB_ASSERT_STDLAYOUT(type) \
+  static_assert(std::is_standard_layout<type>::value, \
+                #type " must be standard layout");
+#else  // !defined(UPB_CXX11)
 #define UPB_DISALLOW_COPY_AND_ASSIGN(class_name) \
   class_name(const class_name&); \
   void operator=(const class_name&);
@@ -56,13 +59,85 @@
   friend class Pointer<full_class_name>; \
   friend class Pointer<const full_class_name>; \
   UPB_DISALLOW_COPY_AND_ASSIGN(class_name)
+#define UPB_ASSERT_STDLAYOUT(type)
 #endif
 
+
 #ifdef __cplusplus
+
 #define UPB_PRIVATE_FOR_CPP private:
-#else
+#define UPB_DECLARE_TYPE(cppname, cname) typedef cppname cname;
+#define UPB_BEGIN_EXTERN_C extern "C" {
+#define UPB_END_EXTERN_C }
+#define UPB_DEFINE_STRUCT0(cname, members) members;
+#define UPB_DEFINE_STRUCT(cname, cbase, members) \
+ public:                                         \
+  cbase* base() { return &base_; }               \
+  const cbase* base() const { return &base_; }   \
+                                                 \
+ private:                                        \
+  cbase base_;                                   \
+  members;
+#define UPB_DEFINE_CLASS0(cppname, cppmethods, members) \
+  class cppname {                                      \
+    cppmethods                                         \
+    members                                            \
+  };                                                   \
+  UPB_ASSERT_STDLAYOUT(cppname);
+#define UPB_DEFINE_CLASS1(cppname, cppbase, cppmethods, members)   \
+  UPB_DEFINE_CLASS0(cppname, cppmethods, members)                  \
+  namespace upb {                                                 \
+  template <>                                                     \
+  class Pointer<cppname> : public PointerBase<cppname, cppbase> { \
+   public:                                                        \
+    explicit Pointer(cppname* ptr) : PointerBase(ptr) {}          \
+  };                                                              \
+  template <>                                                     \
+  class Pointer<const cppname>                                    \
+      : public PointerBase<const cppname, const cppbase> {        \
+   public:                                                        \
+    explicit Pointer(const cppname* ptr) : PointerBase(ptr) {}    \
+  };                                                              \
+  }
+#define UPB_DEFINE_CLASS2(cppname, cppbase, cppbase2, cppmethods, members)    \
+  UPB_DEFINE_CLASS0(cppname, UPB_QUOTE(cppmethods), members)                  \
+  namespace upb {                                                            \
+  template <>                                                                \
+  class Pointer<cppname> : public PointerBase2<cppname, cppbase, cppbase2> { \
+   public:                                                                   \
+    explicit Pointer(cppname* ptr) : PointerBase2(ptr) {}                    \
+  };                                                                         \
+  template <>                                                                \
+  class Pointer<const cppname>                                               \
+      : public PointerBase2<const cppname, const cppbase, const cppbase2> {  \
+   public:                                                                   \
+    explicit Pointer(const cppname* ptr) : PointerBase2(ptr) {}              \
+  };                                                                         \
+  }
+
+#else  // !defined(__cplusplus)
+
 #define UPB_PRIVATE_FOR_CPP
-#endif
+#define UPB_DECLARE_TYPE(cppname, cname) \
+  struct cname;                          \
+  typedef struct cname cname;
+#define UPB_BEGIN_EXTERN_C
+#define UPB_END_EXTERN_C
+#define UPB_DEFINE_STRUCT0(cname, members) \
+  struct cname {                           \
+    members;                               \
+  };
+#define UPB_DEFINE_STRUCT(cname, cbase, members) \
+  struct cname {                                 \
+    cbase base;                                  \
+    members;                                     \
+  };
+#define UPB_DEFINE_CLASS0(cppname, cppmethods, members) members
+#define UPB_DEFINE_CLASS1(cppname, cppbase, cppmethods, members) members
+#define UPB_DEFINE_CLASS2(cppname, cppbase, cppbase2, cppmethods, members) \
+  members
+
+#endif  // defined(__cplusplus)
 
 #ifdef __GNUC__
 #define UPB_NORETURN __attribute__((__noreturn__))
@@ -74,6 +149,11 @@
 #define UPB_MIN(x, y) ((x) < (y) ? (x) : (y))
 
 #define UPB_UNUSED(var) (void)var
+
+// Code with commas confuses the preprocessor when passed as arguments, whether
+// C++ type names with commas (eg. Foo<int, int>) or code blocks that declare
+// variables (ie. int foo, bar).
+#define UPB_QUOTE(...) __VA_ARGS__
 
 // For asserting something about a variable when the variable is not used for
 // anything else.  This prevents "unused variable" warnings when compiling in
@@ -118,6 +198,25 @@ template <class T> class Pointer;
 
 // Casts to any base class, or the type itself (ie. can be a no-op).
 template <class T> inline Pointer<T> upcast(T *f) { return Pointer<T>(f); }
+
+template <class T, class Base>
+class PointerBase {
+ public:
+  explicit PointerBase(T* ptr) : ptr_(ptr) {}
+  operator T*() { return ptr_; }
+  operator Base*() { return ptr_->base(); }
+
+ private:
+  T* ptr_;
+};
+
+template <class T, class Base, class Base2>
+class PointerBase2 : public PointerBase<T, Base> {
+ public:
+  explicit PointerBase2(T* ptr) : PointerBase<T, Base>(ptr) {}
+  operator Base2*() { return Pointer<Base>(*this); }
+};
+
 }
 
 #endif
@@ -230,12 +329,14 @@ template <class T> class reffed_ptr {
 /* upb::Status ****************************************************************/
 
 #ifdef __cplusplus
-namespace upb { class Status; }
-typedef upb::Status upb_status;
-#else
-struct upb_status;
-typedef struct upb_status upb_status;
+namespace upb {
+class ErrorSpace;
+class Status;
+}
 #endif
+
+UPB_DECLARE_TYPE(upb::ErrorSpace, upb_errorspace);
+UPB_DECLARE_TYPE(upb::Status, upb_status);
 
 // The maximum length of an error message before it will get truncated.
 #define UPB_STATUS_MAX_MESSAGE 128
@@ -245,20 +346,18 @@ typedef struct upb_status upb_status;
 // to recover and proceed, but this is not always possible.
 typedef bool upb_errcb_t(void *closure, const upb_status* status);
 
-typedef struct {
+UPB_DEFINE_CLASS0(upb::ErrorSpace,
+,
+UPB_DEFINE_STRUCT0(upb_errorspace,
   const char *name;
   // Should the error message in the status object according to this code.
   void (*set_message)(upb_status* status, int code);
-} upb_errorspace;
-
-#ifdef __cplusplus
-
-typedef upb_errorspace ErrorSpace;
+));
 
 // Object representing a success or failure status.
 // It owns no resources and allocates no memory, so it should work
 // even in OOM situations.
-class upb::Status {
+UPB_DEFINE_CLASS0(upb::Status,
  public:
   Status();
 
@@ -289,9 +388,8 @@ class upb::Status {
 
  private:
   UPB_DISALLOW_COPY_AND_ASSIGN(Status);
-#else
-struct upb_status {
-#endif
+,
+UPB_DEFINE_STRUCT0(upb_status,
   bool ok_;
 
   // Specific status code defined by some error space (optional).
@@ -300,7 +398,7 @@ struct upb_status {
 
   // Error message; NULL-terminated.
   char msg[UPB_STATUS_MAX_MESSAGE];
-};
+));
 
 #define UPB_STATUS_INIT {true, 0, NULL, {0}}
 

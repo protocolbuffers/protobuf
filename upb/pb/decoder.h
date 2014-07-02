@@ -30,22 +30,12 @@ class DecoderMethod;
 class DecoderMethodOptions;
 }  // namespace pb
 }  // namespace upb
-
-typedef upb::pb::CodeCache upb_pbcodecache;
-typedef upb::pb::Decoder upb_pbdecoder;
-typedef upb::pb::DecoderMethod upb_pbdecodermethod;
-typedef upb::pb::DecoderMethodOptions upb_pbdecodermethodopts;
-#else
-struct upb_pbdecoder;
-struct upb_pbdecodermethod;
-struct upb_pbdecodermethodopts;
-struct upb_pbcodecache;
-
-typedef struct upb_pbdecoder upb_pbdecoder;
-typedef struct upb_pbdecodermethod upb_pbdecodermethod;
-typedef struct upb_pbdecodermethodopts upb_pbdecodermethodopts;
-typedef struct upb_pbcodecache upb_pbcodecache;
 #endif
+
+UPB_DECLARE_TYPE(upb::pb::CodeCache, upb_pbcodecache);
+UPB_DECLARE_TYPE(upb::pb::Decoder, upb_pbdecoder);
+UPB_DECLARE_TYPE(upb::pb::DecoderMethod, upb_pbdecodermethod);
+UPB_DECLARE_TYPE(upb::pb::DecoderMethodOptions, upb_pbdecodermethodopts);
 
 // The maximum that any submessages can be nested.  Matches proto2's limit.
 // This specifies the size of the decoder's statically-sized array and therefore
@@ -59,20 +49,14 @@ typedef struct upb_pbcodecache upb_pbcodecache;
 
 // Internal-only struct used by the decoder.
 typedef struct {
-#ifdef __cplusplus
- private:
-#endif
+ UPB_PRIVATE_FOR_CPP
   // Space optimization note: we store two pointers here that the JIT
   // doesn't need at all; the upb_handlers* inside the sink and
   // the dispatch table pointer.  We can optimze so that the JIT uses
   // smaller stack frames than the interpreter.  The only thing we need
   // to guarantee is that the fallback routines can find end_ofs.
-
-#ifdef __cplusplus
-  char sink[sizeof(upb_sink)];
-#else
   upb_sink sink;
-#endif
+
   // The absolute stream offset of the end-of-frame delimiter.
   // Non-delimited frames (groups and non-packed repeated fields) reuse the
   // delimiter of their parent, even though the frame may not end there.
@@ -91,11 +75,9 @@ typedef struct {
   upb_inttable *dispatch;  // Not used by the JIT.
 } upb_pbdecoder_frame;
 
-#ifdef __cplusplus
-
 // The parameters one uses to construct a DecoderMethod.
 // TODO(haberman): move allowjit here?  Seems more convenient for users.
-class upb::pb::DecoderMethodOptions {
+UPB_DEFINE_CLASS0(upb::pb::DecoderMethodOptions,
  public:
   // Parameter represents the destination handlers that this method will push
   // to.
@@ -105,19 +87,14 @@ class upb::pb::DecoderMethodOptions {
   // them?  The caller should set this iff the lazy handlers expect data that is
   // in protobuf binary format and the caller wishes to lazy parse it.
   void set_lazy(bool lazy);
-
- private:
-#else
-struct upb_pbdecodermethodopts {
-#endif
+,
+UPB_DEFINE_STRUCT0(upb_pbdecodermethodopts,
   const upb_handlers *handlers;
   bool lazy;
-};
-
-#ifdef __cplusplus
+));
 
 // Represents the code to parse a protobuf according to a destination Handlers.
-class upb::pb::DecoderMethod /* : public upb::RefCounted */ {
+UPB_DEFINE_CLASS1(upb::pb::DecoderMethod, upb::RefCounted,
  public:
   // From upb::ReferenceCounted.
   void Ref(const void* owner) const;
@@ -142,11 +119,8 @@ class upb::pb::DecoderMethod /* : public upb::RefCounted */ {
 
  private:
   UPB_DISALLOW_POD_OPS(DecoderMethod, upb::pb::DecoderMethod);
-#else
-struct upb_pbdecodermethod {
-#endif
-  upb_refcounted base;
-
+,
+UPB_DEFINE_STRUCT(upb_pbdecodermethod, upb_refcounted,
   // While compiling, the base is relative in "ofs", after compiling it is
   // absolute in "ptr".
   union {
@@ -186,13 +160,11 @@ struct upb_pbdecodermethod {
   // the second wire type without needing to do a separate lookup (this case is
   // less common than an unknown field).
   upb_inttable dispatch;
-};
-
-#ifdef __cplusplus
+));
 
 // A Decoder receives binary protobuf data on its input sink and pushes the
 // decoded data to its output sink.
-class upb::pb::Decoder {
+UPB_DEFINE_CLASS0(upb::pb::Decoder,
  public:
   // Constructs a decoder instance for the given method, which must outlive this
   // decoder.  Any errors during parsing will be set on the given status, which
@@ -230,9 +202,8 @@ class upb::pb::Decoder {
 
  private:
   UPB_DISALLOW_COPY_AND_ASSIGN(Decoder);
-#else
-struct upb_pbdecoder {
-#endif
+,
+UPB_DEFINE_STRUCT0(upb_pbdecoder, UPB_QUOTE(
   // Our input sink.
   upb_bytessink input_;
 
@@ -286,15 +257,13 @@ struct upb_pbdecoder {
 #else
   const uint32_t *callstack[UPB_DECODER_MAX_NESTING];
 #endif
-};
-
-#ifdef __cplusplus
+)));
 
 // A class for caching protobuf processing code, whether bytecode for the
 // interpreted decoder or machine code for the JIT.
 //
 // This class is not thread-safe.
-class upb::pb::CodeCache {
+UPB_DEFINE_CLASS0(upb::pb::CodeCache,
  public:
   CodeCache();
   ~CodeCache();
@@ -327,19 +296,15 @@ class upb::pb::CodeCache {
 
  private:
   UPB_DISALLOW_COPY_AND_ASSIGN(CodeCache);
-#else
-struct upb_pbcodecache {
-#endif
+,
+UPB_DEFINE_STRUCT0(upb_pbcodecache,
   bool allow_jit_;
 
   // Array of mgroups.
   upb_inttable groups;
-};
+));
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+UPB_BEGIN_EXTERN_C  // {
 
 void upb_pbdecoder_init(upb_pbdecoder *d, const upb_pbdecodermethod *method,
                         upb_status *status);
@@ -375,33 +340,11 @@ bool upb_pbcodecache_setallowjit(upb_pbcodecache *c, bool allow);
 const upb_pbdecodermethod *upb_pbcodecache_getdecodermethod(
     upb_pbcodecache *c, const upb_pbdecodermethodopts *opts);
 
-#ifdef __cplusplus
-}  /* extern "C" */
-#endif
+UPB_END_EXTERN_C  // }
 
 #ifdef __cplusplus
 
 namespace upb {
-
-template<>
-class Pointer<pb::DecoderMethod> {
- public:
-  explicit Pointer(pb::DecoderMethod* ptr) : ptr_(ptr) {}
-  operator pb::DecoderMethod*() { return ptr_; }
-  operator RefCounted*() { return UPB_UPCAST(ptr_); }
- private:
-  pb::DecoderMethod* ptr_;
-};
-
-template<>
-class Pointer<const pb::DecoderMethod> {
- public:
-  explicit Pointer(const pb::DecoderMethod* ptr) : ptr_(ptr) {}
-  operator const pb::DecoderMethod*() { return ptr_; }
-  operator const RefCounted*() { return UPB_UPCAST(ptr_); }
- private:
-  const pb::DecoderMethod* ptr_;
-};
 
 namespace pb {
 

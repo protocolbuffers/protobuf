@@ -19,12 +19,9 @@ namespace descriptor {
 class Reader;
 }  // namespace descriptor
 }  // namespace upb
-
-typedef upb::descriptor::Reader upb_descreader;
-#else
-struct upb_descreader;
-typedef struct upb_descreader upb_descreader;
 #endif
+
+UPB_DECLARE_TYPE(upb::descriptor::Reader, upb_descreader);
 
 // Internal-only structs used by Reader.
 
@@ -62,11 +59,9 @@ typedef struct {
 // TODO: make this a runtime-settable property of the Reader instance.
 #define UPB_MAX_MESSAGE_NESTING 64
 
-#ifdef __cplusplus
-
 // Class that receives descriptor data according to the descriptor.proto schema
 // and use it to build upb::Defs corresponding to that schema.
-class upb::descriptor::Reader {
+UPB_DEFINE_CLASS0(upb::descriptor::Reader,
  public:
   // These handlers must have come from NewHandlers() and must outlive the
   // Reader.
@@ -96,12 +91,9 @@ class upb::descriptor::Reader {
 
   // Builds and returns handlers for the reader, owned by "owner."
   static Handlers* NewHandlers(const void* owner);
-
- private:
-#else
-struct upb_descreader {
-#endif
-  char sink[sizeof(upb_sink)];
+,
+UPB_DEFINE_STRUCT0(upb_descreader,
+  upb_sink sink;
   upb_deflist defs;
   upb_descreader_frame stack[UPB_MAX_MESSAGE_NESTING];
   int stack_len;
@@ -114,11 +106,9 @@ struct upb_descreader {
   char *default_string;
 
   upb_fielddef *f;
-};
+));
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+UPB_BEGIN_EXTERN_C  // {
 
 // C API.
 void upb_descreader_init(upb_descreader *r, const upb_handlers *handlers,
@@ -129,11 +119,10 @@ upb_sink *upb_descreader_input(upb_descreader *r);
 upb_def **upb_descreader_getdefs(upb_descreader *r, void *owner, int *n);
 const upb_handlers *upb_descreader_newhandlers(const void *owner);
 
+UPB_END_EXTERN_C  // }
+
 #ifdef __cplusplus
-}  // extern "C"
-
 // C++ implementation details. /////////////////////////////////////////////////
-
 namespace upb {
 namespace descriptor {
 inline Reader::Reader(const Handlers *h, Status *s) {

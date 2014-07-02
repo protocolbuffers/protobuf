@@ -29,20 +29,15 @@
 #define UPB_DEBUG_REFS
 #endif
 
-struct upb_refcounted_vtbl;
-
 #ifdef __cplusplus
 namespace upb { class RefCounted; }
-typedef upb::RefCounted upb_refcounted;
-extern "C" {
-#else
-struct upb_refcounted;
-typedef struct upb_refcounted upb_refcounted;
 #endif
 
-#ifdef __cplusplus
+UPB_DECLARE_TYPE(upb::RefCounted, upb_refcounted);
 
-class upb::RefCounted {
+struct upb_refcounted_vtbl;
+
+UPB_DEFINE_CLASS0(upb::RefCounted,
  public:
   // Returns true if the given object is frozen.
   bool IsFrozen() const;
@@ -68,9 +63,8 @@ class upb::RefCounted {
 
  private:
   UPB_DISALLOW_POD_OPS(RefCounted, upb::RefCounted);
-#else
-struct upb_refcounted {
-#endif
+,
+UPB_DEFINE_STRUCT0(upb_refcounted,
   // A single reference count shared by all objects in the group.
   uint32_t *group;
 
@@ -91,7 +85,9 @@ struct upb_refcounted {
   upb_inttable *refs;  // Maps owner -> trackedref for incoming refs.
   upb_inttable *ref2s; // Set of targets for outgoing ref2s.
 #endif
-};
+));
+
+UPB_BEGIN_EXTERN_C  // {
 
 // Native C API.
 bool upb_refcounted_isfrozen(const upb_refcounted *r);
@@ -159,6 +155,8 @@ bool upb_refcounted_freeze(upb_refcounted *const*roots, int n, upb_status *s,
 // Shared by all compiled-in refcounted objects.
 extern uint32_t static_refcount;
 
+UPB_END_EXTERN_C  // }
+
 #ifdef UPB_DEBUG_REFS
 #define UPB_REFCOUNT_INIT(refs, ref2s) \
     {&static_refcount, NULL, NULL, 0, true, refs, ref2s}
@@ -167,8 +165,6 @@ extern uint32_t static_refcount;
 #endif
 
 #ifdef __cplusplus
-}  /* extern "C" */
-
 // C++ Wrappers.
 namespace upb {
 inline bool RefCounted::IsFrozen() const {

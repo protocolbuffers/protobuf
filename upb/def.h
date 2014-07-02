@@ -35,22 +35,12 @@ class EnumDef;
 class FieldDef;
 class MessageDef;
 }
-
-typedef upb::Def upb_def;
-typedef upb::EnumDef upb_enumdef;
-typedef upb::FieldDef upb_fielddef;
-typedef upb::MessageDef upb_msgdef;
-#else
-struct upb_def;
-struct upb_enumdef;
-struct upb_fielddef;
-struct upb_msgdef;
-
-typedef struct upb_def upb_def;
-typedef struct upb_enumdef upb_enumdef;
-typedef struct upb_fielddef upb_fielddef;
-typedef struct upb_msgdef upb_msgdef;
 #endif
+
+UPB_DECLARE_TYPE(upb::Def, upb_def);
+UPB_DECLARE_TYPE(upb::EnumDef, upb_enumdef);
+UPB_DECLARE_TYPE(upb::FieldDef, upb_fielddef);
+UPB_DECLARE_TYPE(upb::MessageDef, upb_msgdef);
 
 // Maximum field number allowed for FieldDefs.  This is an inherent limit of the
 // protobuf wire format.
@@ -78,11 +68,9 @@ typedef enum {
   UPB_DEF_ANY = -1,  // Wildcard for upb_symtab_get*()
 } upb_deftype_t;
 
-#ifdef __cplusplus
-
 // The base class of all defs.  Its base is upb::RefCounted (use upb::upcast()
 // to convert).
-class upb::Def /* : public upb::Refcounted */ {
+UPB_DEFINE_CLASS1(upb::Def, upb::RefCounted,
  public:
   typedef upb_deftype_t Type;
 
@@ -123,11 +111,8 @@ class upb::Def /* : public upb::Refcounted */ {
 
  private:
   UPB_DISALLOW_POD_OPS(Def, upb::Def);
-
-#else
-struct upb_def {
-#endif
-  upb_refcounted base;
+,
+UPB_DEFINE_STRUCT(upb_def, upb_refcounted,
   const char *fullname;
   upb_deftype_t type : 8;
   // Used as a flag during the def's mutable stage.  Must be false unless
@@ -135,15 +120,14 @@ struct upb_def {
   // us to easily determine which defs were passed into the function's
   // current invocation.
   bool came_from_user;
-};
+));
 
 #define UPB_DEF_INIT(name, type, refs, ref2s) \
     { UPB_REFCOUNT_INIT(refs, ref2s), name, type, false }
 
+UPB_BEGIN_EXTERN_C  // {
+
 // Native C API.
-#ifdef __cplusplus
-extern "C" {
-#endif
 upb_def *upb_def_dup(const upb_def *def, const void *owner);
 
 // From upb_refcounted.
@@ -157,9 +141,69 @@ upb_deftype_t upb_def_type(const upb_def *d);
 const char *upb_def_fullname(const upb_def *d);
 bool upb_def_setfullname(upb_def *def, const char *fullname, upb_status *s);
 bool upb_def_freeze(upb_def *const *defs, int n, upb_status *s);
+
+UPB_END_EXTERN_C  // }
+
+
+/* upb::Def casts *************************************************************/
+
 #ifdef __cplusplus
-}  // extern "C"
+#define UPB_CPP_CASTS(cname, cpptype)                                          \
+  namespace upb {                                                              \
+  template <>                                                                  \
+  inline cpptype *down_cast<cpptype *, Def>(Def * def) {                       \
+    return upb_downcast_##cname##_mutable(def);                                \
+  }                                                                            \
+  template <>                                                                  \
+  inline cpptype *dyn_cast<cpptype *, Def>(Def * def) {                        \
+    return upb_dyncast_##cname##_mutable(def);                                 \
+  }                                                                            \
+  template <>                                                                  \
+  inline const cpptype *down_cast<const cpptype *, const Def>(                 \
+      const Def *def) {                                                        \
+    return upb_downcast_##cname(def);                                          \
+  }                                                                            \
+  template <>                                                                  \
+  inline const cpptype *dyn_cast<const cpptype *, const Def>(const Def *def) { \
+    return upb_dyncast_##cname(def);                                           \
+  }                                                                            \
+  template <>                                                                  \
+  inline const cpptype *down_cast<const cpptype *, Def>(Def * def) {           \
+    return upb_downcast_##cname(def);                                          \
+  }                                                                            \
+  template <>                                                                  \
+  inline const cpptype *dyn_cast<const cpptype *, Def>(Def * def) {            \
+    return upb_dyncast_##cname(def);                                           \
+  }                                                                            \
+  }  // namespace upb
+#else
+#define UPB_CPP_CASTS(cname, cpptype)
 #endif
+
+// Dynamic casts, for determining if a def is of a particular type at runtime.
+// Downcasts, for when some wants to assert that a def is of a particular type.
+// These are only checked if we are building debug.
+#define UPB_DEF_CASTS(lower, upper, cpptype)                               \
+  UPB_INLINE const upb_##lower *upb_dyncast_##lower(const upb_def *def) {  \
+    if (upb_def_type(def) != UPB_DEF_##upper) return NULL;                 \
+    return (upb_##lower *)def;                                             \
+  }                                                                        \
+  UPB_INLINE const upb_##lower *upb_downcast_##lower(const upb_def *def) { \
+    assert(upb_def_type(def) == UPB_DEF_##upper);                          \
+    return (const upb_##lower *)def;                                       \
+  }                                                                        \
+  UPB_INLINE upb_##lower *upb_dyncast_##lower##_mutable(upb_def *def) {    \
+    return (upb_##lower *)upb_dyncast_##lower(def);                        \
+  }                                                                        \
+  UPB_INLINE upb_##lower *upb_downcast_##lower##_mutable(upb_def *def) {   \
+    return (upb_##lower *)upb_downcast_##lower(def);                       \
+  }                                                                        \
+  UPB_CPP_CASTS(lower, cpptype)
+
+#define UPB_DEFINE_DEF(cppname, lower, upper, cppmethods, members)             \
+  UPB_DEFINE_CLASS2(cppname, upb::Def, upb::RefCounted, UPB_QUOTE(cppmethods), \
+                   members)                                                    \
+  UPB_DEF_CASTS(lower, upper, cppname)
 
 
 /* upb::FieldDef **************************************************************/
@@ -218,14 +262,13 @@ typedef enum {
   UPB_DESCRIPTOR_TYPE_SINT64   = 18,
 } upb_descriptortype_t;
 
-#ifdef __cplusplus
 
 // A upb_fielddef describes a single field in a message.  It is most often
 // found as a part of a upb_msgdef, but can also stand alone to represent
 // an extension.
 //
 // Its base class is upb::Def (use upb::upcast() to convert).
-class upb::FieldDef /* : public upb::Def */ {
+UPB_DEFINE_DEF(upb::FieldDef, fielddef, FIELD,
  public:
   typedef upb_fieldtype_t Type;
   typedef upb_label_t Label;
@@ -449,11 +492,8 @@ class upb::FieldDef /* : public upb::Def */ {
 
  private:
   UPB_DISALLOW_POD_OPS(FieldDef, upb::FieldDef);
-
-#else
-struct upb_fielddef {
-#endif
-  upb_def base;
+,
+UPB_DEFINE_STRUCT(upb_fielddef, upb_def,
   union {
     int64_t sint;
     uint64_t uint;
@@ -482,7 +522,7 @@ struct upb_fielddef {
   uint32_t number_;
   uint32_t selector_base;  // Used to index into a upb::Handlers table.
   uint32_t index_;
-};
+));
 
 #define UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, is_extension, lazy,   \
                           name, num, msgdef, subdef, selector_base, index,     \
@@ -494,10 +534,9 @@ struct upb_fielddef {
         lazy, intfmt, tagdelim, type, label, num, selector_base, index         \
   }
 
+UPB_BEGIN_EXTERN_C  // {
+
 // Native C API.
-#ifdef __cplusplus
-extern "C" {
-#endif
 upb_fielddef *upb_fielddef_new(const void *owner);
 upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner);
 
@@ -584,21 +623,17 @@ bool upb_fielddef_checktype(int32_t type);
 bool upb_fielddef_checkdescriptortype(int32_t type);
 bool upb_fielddef_checkintfmt(int32_t fmt);
 
-#ifdef __cplusplus
-}  // extern "C"
-#endif
+UPB_END_EXTERN_C  // }
 
 
 /* upb::MessageDef ************************************************************/
 
 typedef upb_inttable_iter upb_msg_iter;
 
-#ifdef __cplusplus
-
 // Structure that describes a single .proto message type.
 //
 // Its base class is upb::Def (use upb::upcast() to convert).
-class upb::MessageDef /* : public upb::Def */ {
+UPB_DEFINE_DEF(upb::MessageDef, msgdef, MSG, UPB_QUOTE(
  public:
   // Returns NULL if memory allocation failed.
   static reffed_ptr<MessageDef> New();
@@ -684,11 +719,8 @@ class upb::MessageDef /* : public upb::Def */ {
 
  private:
   UPB_DISALLOW_POD_OPS(MessageDef, upb::MessageDef);
-
-#else
-struct upb_msgdef {
-#endif
-  upb_def base;
+),
+UPB_DEFINE_STRUCT(upb_msgdef, upb_def,
   size_t selector_count;
   uint32_t submsg_field_count;
 
@@ -697,7 +729,7 @@ struct upb_msgdef {
   upb_strtable ntof;  // name to field
 
   // TODO(haberman): proper extension ranges (there can be multiple).
-};
+));
 
 #define UPB_MSGDEF_INIT(name, selector_count, submsg_field_count, itof, ntof, \
                         refs, ref2s)                                          \
@@ -706,9 +738,8 @@ struct upb_msgdef {
         submsg_field_count, itof, ntof                                        \
   }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+UPB_BEGIN_EXTERN_C  // {
+
 // Returns NULL if memory allocation failed.
 upb_msgdef *upb_msgdef_new(const void *owner);
 
@@ -748,20 +779,17 @@ void upb_msg_next(upb_msg_iter *iter);
 bool upb_msg_done(const upb_msg_iter *iter);
 upb_fielddef *upb_msg_iter_field(const upb_msg_iter *iter);
 void upb_msg_iter_setdone(upb_msg_iter *iter);
-#ifdef __cplusplus
-}  // extern "C
-#endif
+
+UPB_END_EXTERN_C  // }
 
 
 /* upb::EnumDef ***************************************************************/
 
 typedef upb_strtable_iter upb_enum_iter;
 
-#ifdef __cplusplus
-
 // Class that represents an enum.  Its base class is upb::Def (convert with
 // upb::upcast()).
-class upb::EnumDef /* : public upb::Def */ {
+UPB_DEFINE_DEF(upb::EnumDef, enumdef, ENUM,
  public:
   // Returns NULL if memory allocation failed.
   static reffed_ptr<EnumDef> New();
@@ -832,23 +860,19 @@ class upb::EnumDef /* : public upb::Def */ {
 
  private:
   UPB_DISALLOW_POD_OPS(EnumDef, upb::EnumDef);
-
-#else
-struct upb_enumdef {
-#endif
-  upb_def base;
+,
+UPB_DEFINE_STRUCT(upb_enumdef, upb_def,
   upb_strtable ntoi;
   upb_inttable iton;
   int32_t defaultval;
-};
+));
 
 #define UPB_ENUMDEF_INIT(name, ntoi, iton, defaultval, refs, ref2s) \
   { UPB_DEF_INIT(name, UPB_DEF_ENUM, refs, ref2s), ntoi, iton, defaultval }
 
+UPB_BEGIN_EXTERN_C  // {
+
 // Native C API.
-#ifdef __cplusplus
-extern "C" {
-#endif
 upb_enumdef *upb_enumdef_new(const void *owner);
 upb_enumdef *upb_enumdef_dup(const upb_enumdef *e, const void *owner);
 
@@ -883,117 +907,9 @@ void upb_enum_next(upb_enum_iter *iter);
 bool upb_enum_done(upb_enum_iter *iter);
 const char *upb_enum_iter_name(upb_enum_iter *iter);
 int32_t upb_enum_iter_number(upb_enum_iter *iter);
-#ifdef __cplusplus
-}  // extern "C"
-#endif
 
+UPB_END_EXTERN_C  // }
 
-/* upb_def casts **************************************************************/
-
-#ifdef __cplusplus
-
-namespace upb {
-
-template<>
-class Pointer<Def> {
- public:
-  explicit Pointer(Def* ptr) : ptr_(ptr) {}
-  operator Def*() { return ptr_; }
-  operator RefCounted*() { return UPB_UPCAST(ptr_); }
- private:
-  Def* ptr_;
-};
-
-template<>
-class Pointer<const Def> {
- public:
-  explicit Pointer(const Def* ptr) : ptr_(ptr) {}
-  operator const Def*() { return ptr_; }
-  operator const RefCounted*() { return UPB_UPCAST(ptr_); }
- private:
-  const Def* ptr_;
-};
-
-}  // namespace upb
-
-#define UPB_CPP_CASTS(cname, cpptype)                                          \
-  namespace upb {                                                              \
-  template <>                                                                  \
-  class Pointer<cpptype> {                                                     \
-   public:                                                                     \
-    explicit Pointer(cpptype* ptr) : ptr_(ptr) {}                              \
-    operator cpptype*() { return ptr_; }                                       \
-    operator Def*() { return UPB_UPCAST(ptr_); }                               \
-    operator RefCounted*() { return Pointer<Def>(UPB_UPCAST(ptr_)); }          \
-   private:                                                                    \
-    cpptype* ptr_;                                                             \
-  };                                                                           \
-  template <>                                                                  \
-  class Pointer<const cpptype> {                                               \
-   public:                                                                     \
-    explicit Pointer(const cpptype* ptr) : ptr_(ptr) {}                        \
-    operator const cpptype*() { return ptr_; }                                 \
-    operator const Def*() { return UPB_UPCAST(ptr_); }                         \
-    operator const RefCounted*() {                                             \
-      return Pointer<const Def>(UPB_UPCAST(ptr_));                             \
-    }                                                                          \
-   private:                                                                    \
-    const cpptype* ptr_;                                                       \
-  };                                                                           \
-  template <>                                                                  \
-  inline cpptype *down_cast<cpptype*, Def>(Def *def) {                         \
-    return upb_downcast_##cname##_mutable(def);                                \
-  }                                                                            \
-  template <>                                                                  \
-  inline cpptype *dyn_cast<cpptype*, Def>(Def *def) {                          \
-    return upb_dyncast_##cname##_mutable(def);                                 \
-  }                                                                            \
-  template <>                                                                  \
-  inline const cpptype *down_cast<const cpptype*, const Def>(const Def *def) { \
-    return upb_downcast_##cname(def);                                          \
-  }                                                                            \
-  template <>                                                                  \
-  inline const cpptype *dyn_cast<const cpptype*, const Def>(const Def *def) {  \
-    return upb_dyncast_##cname(def);                                           \
-  }                                                                            \
-  template <>                                                                  \
-  inline const cpptype *down_cast<const cpptype*, Def>(Def *def) {             \
-    return upb_downcast_##cname(def);                                          \
-  }                                                                            \
-  template <>                                                                  \
-  inline const cpptype *dyn_cast<const cpptype*, Def>(Def *def) {              \
-    return upb_dyncast_##cname(def);                                           \
-  }                                                                            \
-  }  // namespace upb
-
-#else
-#define UPB_CPP_CASTS(cname, cpptype)
-#endif
-
-// Dynamic casts, for determining if a def is of a particular type at runtime.
-// Downcasts, for when some wants to assert that a def is of a particular type.
-// These are only checked if we are building debug.
-#define UPB_DEF_CASTS(lower, upper, cpptype)                               \
-  UPB_INLINE const upb_##lower *upb_dyncast_##lower(const upb_def *def) {  \
-    if (upb_def_type(def) != UPB_DEF_##upper) return NULL;                 \
-    return (upb_##lower *)def;                                             \
-  }                                                                        \
-  UPB_INLINE const upb_##lower *upb_downcast_##lower(const upb_def *def) { \
-    assert(upb_def_type(def) == UPB_DEF_##upper);                          \
-    return (const upb_##lower *)def;                                       \
-  }                                                                        \
-  UPB_INLINE upb_##lower *upb_dyncast_##lower##_mutable(upb_def *def) {    \
-    return (upb_##lower *)upb_dyncast_##lower(def);                        \
-  }                                                                        \
-  UPB_INLINE upb_##lower *upb_downcast_##lower##_mutable(upb_def *def) {   \
-    return (upb_##lower *)upb_downcast_##lower(def);                       \
-  }                                                                        \
-  UPB_CPP_CASTS(lower, cpptype)
-
-UPB_DEF_CASTS(msgdef, MSG, MessageDef);
-UPB_DEF_CASTS(fielddef, FIELD, FieldDef);
-UPB_DEF_CASTS(enumdef, ENUM, EnumDef);
-#undef UPB_DEF_CASTS
 
 #ifdef __cplusplus
 
@@ -1403,5 +1319,9 @@ inline bool EnumDef::Iterator::Done() { return upb_enum_done(&iter_); }
 inline void EnumDef::Iterator::Next() { return upb_enum_next(&iter_); }
 }  // namespace upb
 #endif
+
+#undef UPB_DEFINE_DEF
+#undef UPB_DEF_CASTS
+#undef UPB_CPP_CASTS
 
 #endif /* UPB_DEF_H_ */

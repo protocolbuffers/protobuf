@@ -25,7 +25,6 @@
 #include "upb/def.h"
 
 #ifdef __cplusplus
-
 namespace upb {
 class BufferHandle;
 class BytesHandler;
@@ -34,23 +33,12 @@ class Handlers;
 template <class T> class Handler;
 template <class T> struct CanonicalType;
 }  // namespace upb
-
-typedef upb::BufferHandle upb_bufhandle;
-typedef upb::BytesHandler upb_byteshandler;
-typedef upb::HandlerAttributes upb_handlerattr;
-typedef upb::Handlers upb_handlers;
-#else
-struct upb_bufhandle;
-struct upb_byteshandler;
-struct upb_handlerattr;
-struct upb_handlers;
-struct upb_sinkframe;
-typedef struct upb_bufhandle upb_bufhandle;
-typedef struct upb_byteshandler upb_byteshandler;
-typedef struct upb_handlerattr upb_handlerattr;
-typedef struct upb_handlers upb_handlers;
-typedef struct upb_sinkframe upb_sinkframe;
 #endif
+
+UPB_DECLARE_TYPE(upb::BufferHandle, upb_bufhandle);
+UPB_DECLARE_TYPE(upb::BytesHandler, upb_byteshandler);
+UPB_DECLARE_TYPE(upb::HandlerAttributes, upb_handlerattr);
+UPB_DECLARE_TYPE(upb::Handlers, upb_handlers);
 
 // The maximum depth that the handler graph can have.  This is a resource limit
 // for the C stack since we sometimes need to recursively traverse the graph.
@@ -92,9 +80,7 @@ extern char _upb_noclosure;
 // (for example: the STARTSUBMSG handler for field "field15").
 typedef int32_t upb_selector_t;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+UPB_BEGIN_EXTERN_C
 
 // Forward-declares for C inline accessors.  We need to declare these here
 // so we can "friend" them in the class declarations in C++.
@@ -113,9 +99,7 @@ UPB_INLINE const void *upb_bufhandle_obj(const upb_bufhandle *h);
 UPB_INLINE const void *upb_bufhandle_objtype(const upb_bufhandle *h);
 UPB_INLINE const char *upb_bufhandle_buf(const upb_bufhandle *h);
 
-#ifdef __cplusplus
-}
-#endif
+UPB_END_EXTERN_C
 
 
 // Static selectors for upb::Handlers.
@@ -130,10 +114,8 @@ UPB_INLINE const char *upb_bufhandle_buf(const upb_bufhandle *h);
 
 typedef void upb_handlerfree(void *d);
 
-#ifdef __cplusplus
-
 // A set of attributes that accompanies a handler's function pointer.
-class upb::HandlerAttributes {
+UPB_DEFINE_CLASS0(upb::HandlerAttributes,
  public:
   HandlerAttributes();
   ~HandlerAttributes();
@@ -167,15 +149,13 @@ class upb::HandlerAttributes {
  private:
   friend UPB_INLINE const void * ::upb_handlerattr_handlerdata(
       const upb_handlerattr *attr);
-
-#else
-struct upb_handlerattr {
-#endif
+,
+UPB_DEFINE_STRUCT0(upb_handlerattr,
   const void *handler_data_;
   const void *closure_type_;
   const void *return_closure_type_;
   bool alwaysok_;
-};
+));
 
 #define UPB_HANDLERATTR_INITIALIZER {NULL, NULL, NULL, false}
 
@@ -194,12 +174,10 @@ typedef struct {
   upb_handlerattr attr;
 } upb_handlers_tabent;
 
-#ifdef __cplusplus
-
 // Extra information about a buffer that is passed to a StringBuf handler.
 // TODO(haberman): allow the handle to be pinned so that it will outlive
 // the handler invocation.
-class upb::BufferHandle {
+UPB_DEFINE_CLASS0(upb::BufferHandle,
  public:
   BufferHandle();
   ~BufferHandle();
@@ -236,16 +214,13 @@ class upb::BufferHandle {
   friend UPB_INLINE const void* ::upb_bufhandle_objtype(
       const upb_bufhandle *h);
   friend UPB_INLINE const char* ::upb_bufhandle_buf(const upb_bufhandle *h);
-#else
-struct upb_bufhandle {
-#endif
+,
+UPB_DEFINE_STRUCT0(upb_bufhandle,
   const char *buf_;
   const void *obj_;
   const void *objtype_;
   size_t objofs_;
-};
-
-#ifdef __cplusplus
+));
 
 // A upb::Handlers object represents the set of handlers associated with a
 // message in the graph of messages.  You can think of it as a big virtual
@@ -258,7 +233,7 @@ struct upb_bufhandle {
 //
 // The easiest way to create the *Handler objects needed by the Set* methods is
 // with the UpbBind() and UpbMakeHandler() macros; see below.
-class upb::Handlers {
+UPB_DEFINE_CLASS1(upb::Handlers, upb::RefCounted,
  public:
   typedef upb_selector_t Selector;
   typedef upb_handlertype_t Type;
@@ -527,17 +502,15 @@ class upb::Handlers {
   friend UPB_INLINE const void *::upb_handlers_gethandlerdata(
       const upb_handlers *h, upb_selector_t s);
 
-#else
-struct upb_handlers {
-#endif
-  upb_refcounted base;
+,
+UPB_DEFINE_STRUCT(upb_handlers, upb_refcounted,
   const upb_msgdef *msg;
   const upb_handlers **sub;
   const void *top_closure_type;
   upb_inttable cleanup_;
   upb_status status_;  // Used only when mutable.
   upb_handlers_tabent table[1];  // Dynamically-sized field handler array.
-};
+));
 
 
 #ifdef __cplusplus
@@ -638,8 +611,9 @@ template <class T> class Handler {
 
 }  // namespace upb
 
-extern "C" {
 #endif  // __cplusplus
+
+UPB_BEGIN_EXTERN_C
 
 // Native C API.
 
@@ -765,24 +739,19 @@ UPB_INLINE const void *upb_handlers_gethandlerdata(const upb_handlers *h,
   return upb_handlerattr_handlerdata(&h->table[s].attr);
 }
 
-#ifdef __cplusplus
-
 // Handler types for single fields.
 // Right now we only have one for TYPE_BYTES but ones for other types
 // should follow.
 //
 // These follow the same handlers protocol for fields of a message.
-class upb::BytesHandler {
+UPB_DEFINE_CLASS0(upb::BytesHandler,
  public:
   BytesHandler();
   ~BytesHandler();
-
-  // TODO(haberman): make private and figure out what to friend.
-#else
-struct upb_byteshandler {
-#endif
+,
+UPB_DEFINE_STRUCT0(upb_byteshandler,
   upb_handlers_tabent table[3];
-};
+));
 
 void upb_byteshandler_init(upb_byteshandler *h);
 void upb_byteshandler_uninit(upb_byteshandler *h);
@@ -799,12 +768,6 @@ bool upb_byteshandler_setstring(upb_byteshandler *h,
 bool upb_byteshandler_setendstr(upb_byteshandler *h,
                                 upb_endfield_handlerfunc *func, void *d);
 
-#ifdef __cplusplus
-namespace upb {
-typedef upb_byteshandler BytesHandler;
-}
-#endif
-
 // "Static" methods
 bool upb_handlers_freeze(upb_handlers *const *handlers, int n, upb_status *s);
 upb_handlertype_t upb_handlers_getprimitivehandlertype(const upb_fielddef *f);
@@ -817,9 +780,8 @@ UPB_INLINE upb_selector_t upb_handlers_getendselector(upb_selector_t start) {
 // Internal-only.
 uint32_t upb_handlers_selectorbaseoffset(const upb_fielddef *f);
 uint32_t upb_handlers_selectorcount(const upb_fielddef *f);
-#ifdef __cplusplus
-}  // extern "C"
-#endif
+
+UPB_END_EXTERN_C
 
 #include "upb/handlers-inl.h"
 

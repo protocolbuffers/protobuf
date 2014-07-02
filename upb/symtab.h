@@ -16,27 +16,23 @@
 #ifndef UPB_SYMTAB_H_
 #define UPB_SYMTAB_H_
 
-#ifdef __cplusplus
-#include <vector>
-
-namespace upb { class SymbolTable; }
-typedef upb::SymbolTable upb_symtab;
-#else
-struct upb_symtab;
-typedef struct upb_symtab upb_symtab;
-#endif
-
 #include "upb/def.h"
 
+#ifdef __cplusplus
+#include <vector>
+namespace upb { class SymbolTable; }
+#endif
+
+UPB_DECLARE_TYPE(upb::SymbolTable, upb_symtab);
+
 typedef struct {
+ UPB_PRIVATE_FOR_CPP
   upb_strtable_iter iter;
   upb_deftype_t type;
 } upb_symtab_iter;
 
-#ifdef __cplusplus
-
 // Non-const methods in upb::SymbolTable are NOT thread-safe.
-class upb::SymbolTable {
+UPB_DEFINE_CLASS1(upb::SymbolTable, upb::RefCounted,
  public:
   // Returns a new symbol table with a single ref owned by "owner."
   // Returns NULL if memory allocation failed.
@@ -124,21 +120,17 @@ class upb::SymbolTable {
 
  private:
   UPB_DISALLOW_POD_OPS(SymbolTable, upb::SymbolTable);
-
-#else
-struct upb_symtab {
-#endif
-  upb_refcounted base;
+,
+UPB_DEFINE_STRUCT(upb_symtab, upb_refcounted,
   upb_strtable symtab;
-};
+));
 
 #define UPB_SYMTAB_INIT(symtab, refs, ref2s) \
   { UPB_REFCOUNT_INIT(refs, ref2s), symtab }
 
+UPB_BEGIN_EXTERN_C  // {
+
 // Native C API.
-#ifdef __cplusplus
-extern "C" {
-#endif
 // From upb_refcounted.
 bool upb_symtab_isfrozen(const upb_symtab *s);
 void upb_symtab_ref(const upb_symtab *s, const void *owner);
@@ -173,32 +165,11 @@ void upb_symtab_next(upb_symtab_iter *iter);
 bool upb_symtab_done(const upb_symtab_iter *iter);
 const upb_def *upb_symtab_iter_def(const upb_symtab_iter *iter);
 
-#ifdef __cplusplus
-}  /* extern "C" */
+UPB_END_EXTERN_C  // }
 
+#ifdef __cplusplus
 // C++ inline wrappers.
 namespace upb {
-
-template<>
-class Pointer<SymbolTable> {
- public:
-  explicit Pointer(SymbolTable* ptr) : ptr_(ptr) {}
-  operator SymbolTable*() { return ptr_; }
-  operator RefCounted*() { return UPB_UPCAST(ptr_); }
- private:
-  SymbolTable* ptr_;
-};
-
-template<>
-class Pointer<const SymbolTable> {
- public:
-  explicit Pointer(const SymbolTable* ptr) : ptr_(ptr) {}
-  operator const SymbolTable*() { return ptr_; }
-  operator const RefCounted*() { return UPB_UPCAST(ptr_); }
- private:
-  const SymbolTable* ptr_;
-};
-
 inline reffed_ptr<SymbolTable> SymbolTable::New() {
   upb_symtab *s = upb_symtab_new(&s);
   return reffed_ptr<SymbolTable>(s, &s);

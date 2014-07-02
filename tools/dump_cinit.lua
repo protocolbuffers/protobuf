@@ -37,6 +37,16 @@ function export.file_appender(file)
   return append
 end
 
+function handler_types(base)
+  local ret = {}
+  for k, _ in pairs(base) do
+    if string.find(k, "^" .. "HANDLER_") then
+      ret[#ret + 1] = k
+    end
+  end
+  return ret
+end
+
 -- const(f, label) -> UPB_LABEL_REPEATED, where f:label() == upb.LABEL_REPEATED
 function const(obj, name, base)
   local val = obj[name]
@@ -63,6 +73,19 @@ function sortedkeys(tab)
   end
   table.sort(arr)
   return arr
+end
+
+function sorted_defs(defs)
+  local sorted = {}
+
+  for def in defs do
+    sorted[#sorted + 1] = def
+  end
+
+  table.sort(sorted,
+             function(a, b) return a:full_name() < b:full_name() end)
+
+  return sorted
 end
 
 function constlist(pattern)
@@ -274,6 +297,8 @@ local function to_preproc(...)
   return string.upper(to_cident(...))
 end
 
+-- Strips away last path element, ie:
+--   foo.Bar.Baz -> foo.Bar
 local function getpackage(name)
   local package_end = 0
   for i=1,string.len(name) do
@@ -284,10 +309,18 @@ local function getpackage(name)
   return string.sub(name, 1, package_end)
 end
 
+-- Returns only the last path element, ie:
+--   foo.Bar.Baz -> Baz
 local function relname(name)
   local package = getpackage(name)
   return string.sub(name, string.len(package) + 2)
 end
+
+local function strip_prefix(prefix, str)
+  assert(string.sub(str, 1, string.len(prefix)) == prefix)
+  return string.sub(str, string.len(prefix) + 1)
+end
+
 
 local function start_namespace(package, append)
   local package_components = split(package)
@@ -495,19 +528,96 @@ local function dump_defs_c(symtab, basename, namespace, append)
 end
 
 local function dump_defs_for_type(format, defs, namespace, append)
-  local sorted_defs = {}
-
-  for def in defs do
-    sorted_defs[#sorted_defs + 1] = def
-  end
-
-  table.sort(sorted_defs,
-             function(a, b) return a:full_name() < b:full_name() end)
-
-  for _, def in ipairs(sorted_defs) do
+  local sorted = sorted_defs(defs)
+  for _, def in ipairs(sorted) do
     append(format, namespace, to_cident(def:full_name()), def:full_name())
   end
 
+  append("\n")
+end
+
+local function dump_enum_vals(enumdef, append)
+  local enum_vals = {}
+
+  for k, v in enumdef:values() do
+    enum_vals[#enum_vals + 1] = {k, v}
+  end
+
+  table.sort(enum_vals, function(a, b) return a[2] < b[2] end)
+
+  -- protobuf convention is that enum values are scoped at the level of the
+  -- enum itself, to follow C++.  Ie, if you have the enum:
+  -- message Foo {
+  --   enum E {
+  --     VAL1 = 1;
+  --     VAL2 = 2;
+  --   }
+  -- }
+  --
+  -- The name of VAL1 is Foo.VAL1, not Foo.E.VAL1.
+  --
+  -- This seems a bit sketchy, but people often name their enum values
+  -- accordingly, ie:
+  --
+  -- enum Foo {
+  --   FOO_VAL1 = 1;
+  --   FOO_VAL2 = 2;
+  -- }
+  --
+  -- So if we don't respect this also, we end up with constants that look like:
+  --
+  --   GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_TYPE_DOUBLE = 1
+  --
+  -- (notice the duplicated "TYPE").
+  local cident = to_cident(getpackage(enumdef:full_name()))
+  for _, pair in ipairs(enum_vals) do
+    k, v = pair[1], pair[2]
+    append('  %s = %d,\n', to_preproc(cident, k), v)
+  end
+end
+
+local function dump_selectors(msgdef, append, base)
+  local selectors = {}
+  local types = handler_types(base)
+
+  for f in msgdef:fields() do
+    for _, handler_type in ipairs(types) do
+      local sel = f:getsel(base[handler_type])
+      if sel then
+        selectors[#selectors + 1] = {
+          f:name() .. "_" .. strip_prefix("HANDLER_", handler_type),
+          sel
+        }
+      end
+    end
+  end
+
+  table.sort(selectors, function(a, b) return a[2] < b[2] end)
+
+  -- This is kind of gross, but unless we add something to selectors to
+  -- distinguish them from enum values, we get conflicts like this:
+  --
+  -- // This can be either the enum value:
+  -- package google.protobuf;
+  -- message FieldDescriptorProto {
+  --   enum Type {
+  --     TYPE_INT32 = X;
+  --   }
+  --   optional Type type = 1;
+  -- }
+  --
+  -- // Now this can be either the enum value or the selector for the
+  -- // int32 handler for the "type" field.
+  -- GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT32
+  --
+  -- // So instead we make the latter the very beautiful:
+  --   SEL_GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_INT32
+  append("// %s\n", msgdef:full_name())
+  local cident = to_cident(msgdef:full_name())
+  for _, pair in ipairs(selectors) do
+    k, v = pair[1], pair[2]
+    append('#define SEL_%s %d\n', to_preproc(cident, k), v)
+  end
   append("\n")
 end
 
@@ -538,14 +648,19 @@ local function dump_defs_h(symtab, basename, namespace, append, linktab)
   end
 
   -- Dump C enums for proto enums.
+
   append("// Enums\n\n")
-  for def in symtab:defs(upb.DEF_ENUM) do
+  for _, def in ipairs(sorted_defs(symtab:defs(upb.DEF_ENUM))) do
     local cident = to_cident(def:full_name())
     append('typedef enum {\n')
-    for k, v in def:values() do
-      append('  %s = %d,\n', to_preproc(cident, k), v)
-    end
+    dump_enum_vals(def, append)
     append('} %s;\n\n', cident)
+  end
+
+  -- selectors
+  append("// Selectors\n\n")
+  for _, def in ipairs(sorted_defs(symtab:defs(upb.DEF_MSG))) do
+    dump_selectors(def, append, upb)
   end
 
   append("const upb_symtab *%s_%s(const void *owner);" ..

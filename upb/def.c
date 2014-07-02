@@ -275,6 +275,40 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
   }
   m->selector_count = selector;
 
+#ifndef NDEBUG
+  // Verify that all selectors for the message are distinct.
+  //
+#define TRY(type) \
+  if (upb_handlers_getselector(f, type, &sel)) upb_inttable_insert(&t, sel, v);
+
+  upb_inttable t;
+  upb_inttable_init(&t, UPB_CTYPE_BOOL);
+  upb_value v = upb_value_bool(true);
+  upb_selector_t sel;
+  upb_inttable_insert(&t, UPB_STARTMSG_SELECTOR, v);
+  upb_inttable_insert(&t, UPB_ENDMSG_SELECTOR, v);
+  for(upb_msg_begin(&j, m); !upb_msg_done(&j); upb_msg_next(&j)) {
+    upb_fielddef *f = upb_msg_iter_field(&j);
+    // These calls will assert-fail in upb_table if the value already exists.
+    TRY(UPB_HANDLER_INT32);
+    TRY(UPB_HANDLER_INT64)
+    TRY(UPB_HANDLER_UINT32)
+    TRY(UPB_HANDLER_UINT64)
+    TRY(UPB_HANDLER_FLOAT)
+    TRY(UPB_HANDLER_DOUBLE)
+    TRY(UPB_HANDLER_BOOL)
+    TRY(UPB_HANDLER_STARTSTR)
+    TRY(UPB_HANDLER_STRING)
+    TRY(UPB_HANDLER_ENDSTR)
+    TRY(UPB_HANDLER_STARTSUBMSG)
+    TRY(UPB_HANDLER_ENDSUBMSG)
+    TRY(UPB_HANDLER_STARTSEQ)
+    TRY(UPB_HANDLER_ENDSEQ)
+  }
+  upb_inttable_uninit(&t);
+#undef TRY
+#endif
+
   free(fields);
   return true;
 }

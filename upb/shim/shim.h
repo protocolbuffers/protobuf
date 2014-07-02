@@ -45,8 +45,9 @@ struct Shim {
 
 }  // namespace upb
 
-extern "C" {
 #endif
+
+UPB_BEGIN_EXTERN_C  // {
 
 // C API.
 bool upb_shim_set(upb_handlers *h, const upb_fielddef *f, size_t offset,
@@ -54,12 +55,11 @@ bool upb_shim_set(upb_handlers *h, const upb_fielddef *f, size_t offset,
 const upb_shim_data *upb_shim_getdata(const upb_handlers *h, upb_selector_t s,
                                       upb_fieldtype_t *type);
 
+UPB_END_EXTERN_C  // }
+
 #ifdef __cplusplus
-}  // extern "C"
-
-namespace upb {
-
 // C++ Wrappers.
+namespace upb {
 inline bool Shim::Set(Handlers* h, const FieldDef* f, size_t ofs,
                       int32_t hasbit) {
   return upb_shim_set(h, f, ofs, hasbit);
@@ -68,9 +68,7 @@ inline const Shim::Data* Shim::GetData(const Handlers* h, Handlers::Selector s,
                                        FieldDef::Type* type) {
   return upb_shim_getdata(h, s, type);
 }
-
-}  // namespace
-
+}  // namespace upb
 #endif
 
 #endif  // UPB_SHIM_H

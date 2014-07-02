@@ -128,26 +128,6 @@ UPB_INLINE const char *upb_bufhandle_buf(const upb_bufhandle *h) {
 
 namespace upb {
 
-template<>
-class Pointer<Handlers> {
- public:
-  explicit Pointer(Handlers* ptr) : ptr_(ptr) {}
-  operator Handlers*() { return ptr_; }
-  operator RefCounted*() { return UPB_UPCAST(ptr_); }
- private:
-  Handlers* ptr_;
-};
-
-template<>
-class Pointer<const Handlers> {
- public:
-  explicit Pointer(const Handlers* ptr) : ptr_(ptr) {}
-  operator const Handlers*() { return ptr_; }
-  operator const RefCounted*() { return UPB_UPCAST(ptr_); }
- private:
-  const Handlers* ptr_;
-};
-
 typedef void CleanupFunc(void *ptr);
 
 // Template to remove "const" from "const T*" and just return "T*".

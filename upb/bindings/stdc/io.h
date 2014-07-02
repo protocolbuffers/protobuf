@@ -13,9 +13,7 @@
 #include <stdio.h>
 #include "upb/bytestream.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+UPB_BEGIN_EXTERN_C
 
 /* upb_stdio ******************************************************************/
 
@@ -66,8 +64,6 @@ void upb_stdio_open(upb_stdio *stdio, const char *filename, const char *mode,
 upb_bytesrc *upb_stdio_bytesrc(upb_stdio *stdio);
 upb_bytesink *upb_stdio_bytesink(upb_stdio *stdio);
 
-#ifdef __cplusplus
-}  /* extern "C" */
-#endif
+UPB_END_EXTERN_C
 
 #endif  /* UPB_STDC_IO_H_ */

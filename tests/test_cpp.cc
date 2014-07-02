@@ -1129,21 +1129,6 @@ int run_tests(int argc, char *argv[]) {
 
   TestHandlerDataDestruction();
 
-#ifdef UPB_CXX11
-#define ASSERT_STD_LAYOUT(type) \
-  static_assert(std::is_standard_layout<type>::value, \
-                #type " must be standard layout");
-  ASSERT_STD_LAYOUT(upb::RefCounted);
-  ASSERT_STD_LAYOUT(upb::Def);
-  ASSERT_STD_LAYOUT(upb::MessageDef);
-  ASSERT_STD_LAYOUT(upb::FieldDef);
-  ASSERT_STD_LAYOUT(upb::EnumDef);
-  ASSERT_STD_LAYOUT(upb::Handlers);
-  ASSERT_STD_LAYOUT(upb::SymbolTable);
-  ASSERT_STD_LAYOUT(upb::pb::Decoder);
-  ASSERT_STD_LAYOUT(upb::descriptor::Reader);
-#endif
-
   return 0;
 }
 

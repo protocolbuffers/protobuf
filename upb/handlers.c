@@ -523,21 +523,21 @@ bool upb_handlers_getselector(const upb_fielddef *f, upb_handlertype_t type,
     case UPB_HANDLER_STRING:
       if (upb_fielddef_isstring(f)) {
         *s = f->selector_base;
-      } else if (upb_fielddef_issubmsg(f)) {
+      } else if (upb_fielddef_lazy(f)) {
         *s = f->selector_base + 3;
       } else {
         return false;
       }
       break;
     case UPB_HANDLER_STARTSTR:
-      if (upb_fielddef_isstring(f) || upb_fielddef_issubmsg(f)) {
+      if (upb_fielddef_isstring(f) || upb_fielddef_lazy(f)) {
         *s = f->selector_base + 1;
       } else {
         return false;
       }
       break;
     case UPB_HANDLER_ENDSTR:
-      if (upb_fielddef_isstring(f) || upb_fielddef_issubmsg(f)) {
+      if (upb_fielddef_isstring(f) || upb_fielddef_lazy(f)) {
         *s = f->selector_base + 2;
       } else {
         return false;

@@ -16,15 +16,11 @@ namespace pb {
 class TextPrinter;
 }  // namespace pb
 }  // namespace upb
-
-typedef upb::pb::TextPrinter upb_textprinter;
-#else
-struct upb_textprinter;
-typedef struct upb_textprinter upb_textprinter;
 #endif
 
-#ifdef __cplusplus
-class upb::pb::TextPrinter {
+UPB_DECLARE_TYPE(upb::pb::TextPrinter, upb_textprinter);
+
+UPB_DEFINE_CLASS0(upb::pb::TextPrinter,
  public:
   // The given handlers must have come from NewHandlers().  It must outlive the
   // TextPrinter.
@@ -40,19 +36,16 @@ class upb::pb::TextPrinter {
   static reffed_ptr<const Handlers> NewHandlers(const MessageDef* md);
 
  private:
-#else
-struct upb_textprinter {
-#endif
+,
+UPB_DEFINE_STRUCT0(upb_textprinter,
   upb_sink input_;
   upb_bytessink *output_;
   int indent_depth_;
   bool single_line_;
   void *subc;
-};
+));
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+UPB_BEGIN_EXTERN_C  // {
 
 // C API.
 void upb_textprinter_init(upb_textprinter *p, const upb_handlers *h);
@@ -64,8 +57,9 @@ upb_sink *upb_textprinter_input(upb_textprinter *p);
 const upb_handlers *upb_textprinter_newhandlers(const upb_msgdef *m,
                                                 const void *owner);
 
+UPB_END_EXTERN_C  // }
+
 #ifdef __cplusplus
-}  /* extern "C" */
 
 namespace upb {
 namespace pb {
