@@ -41,6 +41,7 @@ import com.google.protobuf.nano.Extensions.MessageWithGroup;
 import com.google.protobuf.nano.FileScopeEnumMultiple;
 import com.google.protobuf.nano.FileScopeEnumRefNano;
 import com.google.protobuf.nano.InternalNano;
+import com.google.protobuf.nano.InvalidProtocolBufferNanoException;
 import com.google.protobuf.nano.MessageNano;
 import com.google.protobuf.nano.MessageScopeEnumRefNano;
 import com.google.protobuf.nano.MultipleImportingNonMultipleNano1;
@@ -2826,6 +2827,8 @@ public class NanoTest extends TestCase {
     assertEquals(group2.a, message.getExtension(SingularExtensions.someGroup).a);
 
     // Test reading back using RepeatedExtensions: the arrays should be equal.
+    message = Extensions.ExtendableMessage.parseFrom(data);
+    assertEquals(5, message.field);
     assertTrue(Arrays.equals(int32s, message.getExtension(RepeatedExtensions.repeatedInt32)));
     assertTrue(Arrays.equals(uint32s, message.getExtension(RepeatedExtensions.repeatedUint32)));
     assertTrue(Arrays.equals(sint32s, message.getExtension(RepeatedExtensions.repeatedSint32)));
@@ -2860,6 +2863,8 @@ public class NanoTest extends TestCase {
 
     // Test reading back using PackedExtensions: the arrays should be equal, even the fields
     // are non-packed.
+    message = Extensions.ExtendableMessage.parseFrom(data);
+    assertEquals(5, message.field);
     assertTrue(Arrays.equals(int32s, message.getExtension(PackedExtensions.packedInt32)));
     assertTrue(Arrays.equals(uint32s, message.getExtension(PackedExtensions.packedUint32)));
     assertTrue(Arrays.equals(sint32s, message.getExtension(PackedExtensions.packedSint32)));
@@ -2922,6 +2927,138 @@ public class NanoTest extends TestCase {
     assertTrue(MessageNano.toByteArray(message).length > 0);
     message.setExtension(SingularExtensions.someMessage, null);
     assertEquals(0, MessageNano.toByteArray(message).length);
+  }
+
+  public void testExtensionsMutation() {
+    Extensions.ExtendableMessage extendableMessage = new Extensions.ExtendableMessage();
+    extendableMessage.setExtension(SingularExtensions.someMessage,
+        new Extensions.AnotherMessage());
+
+    extendableMessage.getExtension(SingularExtensions.someMessage).string = "not empty";
+
+    assertEquals("not empty",
+        extendableMessage.getExtension(SingularExtensions.someMessage).string);
+  }
+
+  public void testExtensionsMutation_Equals() throws InvalidProtocolBufferNanoException {
+    Extensions.ExtendableMessage extendableMessage = new Extensions.ExtendableMessage();
+    extendableMessage.field = 5;
+    int int32 = 42;
+    int[] uint32s = {3, 4};
+    int[] sint32s = {-5, -6};
+    long[] int64s = {7, 8};
+    long[] uint64s = {9, 10};
+    long[] sint64s = {-11, -12};
+    int[] fixed32s = {13, 14};
+    int[] sfixed32s = {-15, -16};
+    long[] fixed64s = {17, 18};
+    long[] sfixed64s = {-19, -20};
+    boolean[] bools = {true, false};
+    float[] floats = {2.1f, 2.2f};
+    double[] doubles = {2.3, 2.4};
+    int[] enums = {Extensions.SECOND_VALUE, Extensions.FIRST_VALUE};
+    String[] strings = {"vijfentwintig", "twenty-six"};
+    byte[][] bytess = {{2, 7}, {2, 8}};
+    AnotherMessage another1 = new AnotherMessage();
+    another1.string = "er shi jiu";
+    another1.value = false;
+    AnotherMessage another2 = new AnotherMessage();
+    another2.string = "trente";
+    another2.value = true;
+    AnotherMessage[] messages = {another1, another2};
+    RepeatedExtensions.RepeatedGroup group1 = new RepeatedExtensions.RepeatedGroup();
+    group1.a = 31;
+    RepeatedExtensions.RepeatedGroup group2 = new RepeatedExtensions.RepeatedGroup();
+    group2.a = 32;
+    RepeatedExtensions.RepeatedGroup[] groups = {group1, group2};
+    extendableMessage.setExtension(SingularExtensions.someInt32, int32);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedUint32, uint32s);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedSint32, sint32s);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedInt64, int64s);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedUint64, uint64s);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedSint64, sint64s);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedFixed32, fixed32s);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedSfixed32, sfixed32s);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedFixed64, fixed64s);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedSfixed64, sfixed64s);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedBool, bools);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedFloat, floats);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedDouble, doubles);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedEnum, enums);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedString, strings);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedBytes, bytess);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedMessage, messages);
+    extendableMessage.setExtension(RepeatedExtensions.repeatedGroup, groups);
+
+    byte[] data = MessageNano.toByteArray(extendableMessage);
+
+    extendableMessage = Extensions.ExtendableMessage.parseFrom(data);
+    Extensions.ExtendableMessage messageCopy = Extensions.ExtendableMessage.parseFrom(data);
+
+    // Without deserialising.
+    assertEquals(extendableMessage, messageCopy);
+    assertEquals(extendableMessage.hashCode(), messageCopy.hashCode());
+
+    // Only one deserialized.
+    extendableMessage.getExtension(SingularExtensions.someInt32);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedUint32);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedSint32);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedInt64);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedUint64);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedSint64);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedFixed32);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedSfixed32);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedFixed64);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedSfixed64);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedBool);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedFloat);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedDouble);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedEnum);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedString);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedBytes);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedMessage);
+    extendableMessage.getExtension(RepeatedExtensions.repeatedGroup);
+    assertEquals(extendableMessage, messageCopy);
+    assertEquals(extendableMessage.hashCode(), messageCopy.hashCode());
+
+    // Both deserialized.
+    messageCopy.getExtension(SingularExtensions.someInt32);
+    messageCopy.getExtension(RepeatedExtensions.repeatedUint32);
+    messageCopy.getExtension(RepeatedExtensions.repeatedSint32);
+    messageCopy.getExtension(RepeatedExtensions.repeatedInt64);
+    messageCopy.getExtension(RepeatedExtensions.repeatedUint64);
+    messageCopy.getExtension(RepeatedExtensions.repeatedSint64);
+    messageCopy.getExtension(RepeatedExtensions.repeatedFixed32);
+    messageCopy.getExtension(RepeatedExtensions.repeatedSfixed32);
+    messageCopy.getExtension(RepeatedExtensions.repeatedFixed64);
+    messageCopy.getExtension(RepeatedExtensions.repeatedSfixed64);
+    messageCopy.getExtension(RepeatedExtensions.repeatedBool);
+    messageCopy.getExtension(RepeatedExtensions.repeatedFloat);
+    messageCopy.getExtension(RepeatedExtensions.repeatedDouble);
+    messageCopy.getExtension(RepeatedExtensions.repeatedEnum);
+    messageCopy.getExtension(RepeatedExtensions.repeatedString);
+    messageCopy.getExtension(RepeatedExtensions.repeatedBytes);
+    messageCopy.getExtension(RepeatedExtensions.repeatedMessage);
+    messageCopy.getExtension(RepeatedExtensions.repeatedGroup);
+    assertEquals(extendableMessage, messageCopy);
+    assertEquals(extendableMessage.hashCode(), messageCopy.hashCode());
+
+    // Change one, make sure they are still different.
+    messageCopy.getExtension(RepeatedExtensions.repeatedMessage)[0].string = "not empty";
+    assertFalse(extendableMessage.equals(messageCopy));
+
+    // Even if the extension hasn't been deserialized.
+    extendableMessage = Extensions.ExtendableMessage.parseFrom(data);
+    assertFalse(extendableMessage.equals(messageCopy));
+  }
+
+  public void testExtensionsCaching() {
+    Extensions.ExtendableMessage extendableMessage = new Extensions.ExtendableMessage();
+    extendableMessage.setExtension(SingularExtensions.someMessage,
+        new Extensions.AnotherMessage());
+    assertSame("Consecutive calls to getExtensions should return the same object",
+        extendableMessage.getExtension(SingularExtensions.someMessage),
+        extendableMessage.getExtension(SingularExtensions.someMessage));
   }
 
   public void testUnknownFields() throws Exception {

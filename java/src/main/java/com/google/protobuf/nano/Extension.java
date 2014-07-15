@@ -152,56 +152,50 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
         this.repeated = repeated;
     }
 
-    protected boolean isMatch(int unknownDataTag) {
-        // This implementation is for message/group extensions.
-        return unknownDataTag == tag;
-    }
-
     /**
      * Returns the value of this extension stored in the given list of unknown fields, or
      * {@code null} if no unknown fields matches this extension.
+     *
+     * @param unknownFields a list of {@link UnknownFieldData}. All of the elements must have a tag
+     *                      that matches this Extension's tag.
+     *
      */
     final T getValueFrom(List<UnknownFieldData> unknownFields) {
         if (unknownFields == null) {
             return null;
         }
+        return repeated ? getRepeatedValueFrom(unknownFields) : getSingularValueFrom(unknownFields);
+    }
 
-        if (repeated) {
-            // For repeated extensions, read all matching unknown fields in their original order.
-            List<Object> resultList = new ArrayList<Object>();
-            for (int i = 0; i < unknownFields.size(); i++) {
-                UnknownFieldData data = unknownFields.get(i);
-                if (isMatch(data.tag) && data.bytes.length != 0) {
-                    readDataInto(data, resultList);
-                }
+    private T getRepeatedValueFrom(List<UnknownFieldData> unknownFields) {
+        // For repeated extensions, read all matching unknown fields in their original order.
+        List<Object> resultList = new ArrayList<Object>();
+        for (int i = 0; i < unknownFields.size(); i++) {
+            UnknownFieldData data = unknownFields.get(i);
+            if (data.bytes.length != 0) {
+                readDataInto(data, resultList);
             }
+        }
 
-            int resultSize = resultList.size();
-            if (resultSize == 0) {
-                return null;
-            }
-
+        int resultSize = resultList.size();
+        if (resultSize == 0) {
+            return null;
+        } else {
             T result = clazz.cast(Array.newInstance(clazz.getComponentType(), resultSize));
             for (int i = 0; i < resultSize; i++) {
                 Array.set(result, i, resultList.get(i));
             }
             return result;
-        } else {
-            // For singular extensions, get the last piece of data stored under this extension.
-            UnknownFieldData lastData = null;
-            for (int i = unknownFields.size() - 1; lastData == null && i >= 0; i--) {
-                UnknownFieldData data = unknownFields.get(i);
-                if (isMatch(data.tag) && data.bytes.length != 0) {
-                    lastData = data;
-                }
-            }
-
-            if (lastData == null) {
-                return null;
-            }
-
-            return clazz.cast(readData(CodedInputByteBufferNano.newInstance(lastData.bytes)));
         }
+    }
+
+    private T getSingularValueFrom(List<UnknownFieldData> unknownFields) {
+        // For singular extensions, get the last piece of data stored under this extension.
+        if (unknownFields.isEmpty()) {
+            return null;
+        }
+        UnknownFieldData lastData = unknownFields.get(unknownFields.size() - 1);
+        return clazz.cast(readData(CodedInputByteBufferNano.newInstance(lastData.bytes)));
     }
 
     protected Object readData(CodedInputByteBufferNano input) {
@@ -236,61 +230,29 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
         resultList.add(readData(CodedInputByteBufferNano.newInstance(data.bytes)));
     }
 
-    /**
-     * Sets the value of this extension to the given list of unknown fields. This removes any
-     * previously stored data matching this extension.
-     *
-     * @param value The value of this extension, or {@code null} to clear this extension from the
-     *     unknown fields.
-     * @return The same {@code unknownFields} list, or a new list storing the extension value if
-     *     the argument was null.
-     */
-    final List<UnknownFieldData> setValueTo(T value, List<UnknownFieldData> unknownFields) {
-        if (unknownFields != null) {
-            // Delete all data matching this extension
-            for (int i = unknownFields.size() - 1; i >= 0; i--) {
-                if (isMatch(unknownFields.get(i).tag)) {
-                    unknownFields.remove(i);
-                }
-            }
+    void writeTo(Object value, CodedOutputByteBufferNano output) throws IOException {
+        if (repeated) {
+            writeRepeatedData(value, output);
+        } else {
+            writeSingularData(value, output);
         }
-
-        if (value != null) {
-            if (unknownFields == null) {
-                unknownFields = new ArrayList<UnknownFieldData>();
-            }
-            if (repeated) {
-                writeDataInto(value, unknownFields);
-            } else {
-                unknownFields.add(writeData(value));
-            }
-        }
-
-        // After deletion or no-op addition (due to 'value' being an array of empty or
-        // null-only elements), unknownFields may be empty. Discard the ArrayList if so.
-        return (unknownFields == null || unknownFields.isEmpty()) ? null : unknownFields;
     }
 
-    protected UnknownFieldData writeData(Object value) {
+    protected void writeSingularData(Object value, CodedOutputByteBufferNano out) {
         // This implementation is for message/group extensions.
-        byte[] data;
         try {
+            out.writeRawVarint32(tag);
             switch (type) {
                 case TYPE_GROUP:
                     MessageNano groupValue = (MessageNano) value;
                     int fieldNumber = WireFormatNano.getTagFieldNumber(tag);
-                    data = new byte[CodedOutputByteBufferNano.computeGroupSizeNoTag(groupValue)
-                            + CodedOutputByteBufferNano.computeTagSize(fieldNumber)];
-                    CodedOutputByteBufferNano out = CodedOutputByteBufferNano.newInstance(data);
                     out.writeGroupNoTag(groupValue);
                     // The endgroup tag must be included in the data payload.
                     out.writeTag(fieldNumber, WireFormatNano.WIRETYPE_END_GROUP);
                     break;
                 case TYPE_MESSAGE:
                     MessageNano messageValue = (MessageNano) value;
-                    data = new byte[
-                            CodedOutputByteBufferNano.computeMessageSizeNoTag(messageValue)];
-                    CodedOutputByteBufferNano.newInstance(data).writeMessageNoTag(messageValue);
+                    out.writeMessageNoTag(messageValue);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown type " + type);
@@ -299,17 +261,52 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
             // Should not happen
             throw new IllegalStateException(e);
         }
-        return new UnknownFieldData(tag, data);
     }
 
-    protected void writeDataInto(T array, List<UnknownFieldData> unknownFields) {
+    protected void writeRepeatedData(Object array, CodedOutputByteBufferNano output) {
         // This implementation is for non-packed extensions.
         int arrayLength = Array.getLength(array);
         for (int i = 0; i < arrayLength; i++) {
             Object element = Array.get(array, i);
             if (element != null) {
-                unknownFields.add(writeData(element));
+                writeSingularData(element, output);
             }
+        }
+    }
+
+    int computeSerializedSize(Object value) {
+        if (repeated) {
+            return computeRepeatedSerializedSize(value);
+        } else {
+            return computeSingularSerializedSize(value);
+        }
+    }
+
+    protected int computeRepeatedSerializedSize(Object array) {
+        // This implementation is for non-packed extensions.
+        int size = 0;
+        int arrayLength = Array.getLength(array);
+        for (int i = 0; i < arrayLength; i++) {
+            Object element = Array.get(array, i);
+            if (element != null) {
+                size += computeSingularSerializedSize(Array.get(array, i));
+            }
+        }
+        return size;
+    }
+
+    protected int computeSingularSerializedSize(Object value) {
+        // This implementation is for message/group extensions.
+        int fieldNumber = WireFormatNano.getTagFieldNumber(tag);
+        switch (type) {
+            case TYPE_GROUP:
+                MessageNano groupValue = (MessageNano) value;
+                return CodedOutputByteBufferNano.computeGroupSize(fieldNumber, groupValue);
+            case TYPE_MESSAGE:
+                MessageNano messageValue = (MessageNano) value;
+                return CodedOutputByteBufferNano.computeMessageSize(fieldNumber, messageValue);
+            default:
+                throw new IllegalArgumentException("Unknown type " + type);
         }
     }
 
@@ -336,15 +333,6 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
             super(type, clazz, tag, repeated);
             this.nonPackedTag = nonPackedTag;
             this.packedTag = packedTag;
-        }
-
-        @Override
-        protected boolean isMatch(int unknownDataTag) {
-            if (repeated) {
-                return unknownDataTag == nonPackedTag || unknownDataTag == packedTag;
-            } else {
-                return unknownDataTag == tag;
-            }
         }
 
         @Override
@@ -398,7 +386,8 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
             if (data.tag == nonPackedTag) {
                 resultList.add(readData(CodedInputByteBufferNano.newInstance(data.bytes)));
             } else {
-                CodedInputByteBufferNano buffer = CodedInputByteBufferNano.newInstance(data.bytes);
+                CodedInputByteBufferNano buffer =
+                        CodedInputByteBufferNano.newInstance(data.bytes);
                 try {
                     buffer.pushLimit(buffer.readRawVarint32()); // length limit
                 } catch (IOException e) {
@@ -411,105 +400,73 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
         }
 
         @Override
-        protected final UnknownFieldData writeData(Object value) {
-            byte[] data;
+        protected final void writeSingularData(Object value, CodedOutputByteBufferNano output) {
             try {
+                output.writeRawVarint32(tag);
                 switch (type) {
                     case TYPE_DOUBLE:
                         Double doubleValue = (Double) value;
-                        data = new byte[
-                                CodedOutputByteBufferNano.computeDoubleSizeNoTag(doubleValue)];
-                        CodedOutputByteBufferNano.newInstance(data).writeDoubleNoTag(doubleValue);
+                        output.writeDoubleNoTag(doubleValue);
                         break;
                     case TYPE_FLOAT:
                         Float floatValue = (Float) value;
-                        data = new byte[
-                                CodedOutputByteBufferNano.computeFloatSizeNoTag(floatValue)];
-                        CodedOutputByteBufferNano.newInstance(data).writeFloatNoTag(floatValue);
+                        output.writeFloatNoTag(floatValue);
                         break;
                     case TYPE_INT64:
                         Long int64Value = (Long) value;
-                        data = new byte[
-                                CodedOutputByteBufferNano.computeInt64SizeNoTag(int64Value)];
-                        CodedOutputByteBufferNano.newInstance(data).writeInt64NoTag(int64Value);
+                        output.writeInt64NoTag(int64Value);
                         break;
                     case TYPE_UINT64:
                         Long uint64Value = (Long) value;
-                        data = new byte[
-                                CodedOutputByteBufferNano.computeUInt64SizeNoTag(uint64Value)];
-                        CodedOutputByteBufferNano.newInstance(data).writeUInt64NoTag(uint64Value);
+                        output.writeUInt64NoTag(uint64Value);
                         break;
                     case TYPE_INT32:
                         Integer int32Value = (Integer) value;
-                        data = new byte[
-                                CodedOutputByteBufferNano.computeInt32SizeNoTag(int32Value)];
-                        CodedOutputByteBufferNano.newInstance(data).writeInt32NoTag(int32Value);
+                        output.writeInt32NoTag(int32Value);
                         break;
                     case TYPE_FIXED64:
                         Long fixed64Value = (Long) value;
-                        data = new byte[
-                                CodedOutputByteBufferNano.computeFixed64SizeNoTag(fixed64Value)];
-                        CodedOutputByteBufferNano.newInstance(data).writeFixed64NoTag(fixed64Value);
+                        output.writeFixed64NoTag(fixed64Value);
                         break;
                     case TYPE_FIXED32:
                         Integer fixed32Value = (Integer) value;
-                        data = new byte[
-                                CodedOutputByteBufferNano.computeFixed32SizeNoTag(fixed32Value)];
-                        CodedOutputByteBufferNano.newInstance(data).writeFixed32NoTag(fixed32Value);
+                        output.writeFixed32NoTag(fixed32Value);
                         break;
                     case TYPE_BOOL:
                         Boolean boolValue = (Boolean) value;
-                        data = new byte[CodedOutputByteBufferNano.computeBoolSizeNoTag(boolValue)];
-                        CodedOutputByteBufferNano.newInstance(data).writeBoolNoTag(boolValue);
+                        output.writeBoolNoTag(boolValue);
                         break;
                     case TYPE_STRING:
                         String stringValue = (String) value;
-                        data = new byte[
-                                CodedOutputByteBufferNano.computeStringSizeNoTag(stringValue)];
-                        CodedOutputByteBufferNano.newInstance(data).writeStringNoTag(stringValue);
+                        output.writeStringNoTag(stringValue);
                         break;
                     case TYPE_BYTES:
                         byte[] bytesValue = (byte[]) value;
-                        data = new byte[
-                                CodedOutputByteBufferNano.computeBytesSizeNoTag(bytesValue)];
-                        CodedOutputByteBufferNano.newInstance(data).writeBytesNoTag(bytesValue);
+                        output.writeBytesNoTag(bytesValue);
                         break;
                     case TYPE_UINT32:
                         Integer uint32Value = (Integer) value;
-                        data = new byte[
-                                CodedOutputByteBufferNano.computeUInt32SizeNoTag(uint32Value)];
-                        CodedOutputByteBufferNano.newInstance(data).writeUInt32NoTag(uint32Value);
+                        output.writeUInt32NoTag(uint32Value);
                         break;
                     case TYPE_ENUM:
                         Integer enumValue = (Integer) value;
-                        data = new byte[CodedOutputByteBufferNano.computeEnumSizeNoTag(enumValue)];
-                        CodedOutputByteBufferNano.newInstance(data).writeEnumNoTag(enumValue);
+                        output.writeEnumNoTag(enumValue);
                         break;
                     case TYPE_SFIXED32:
                         Integer sfixed32Value = (Integer) value;
-                        data = new byte[
-                                CodedOutputByteBufferNano.computeSFixed32SizeNoTag(sfixed32Value)];
-                        CodedOutputByteBufferNano.newInstance(data)
-                                .writeSFixed32NoTag(sfixed32Value);
+                        output.writeSFixed32NoTag(sfixed32Value);
                         break;
                     case TYPE_SFIXED64:
                         Long sfixed64Value = (Long) value;
-                        data = new byte[
-                                CodedOutputByteBufferNano.computeSFixed64SizeNoTag(sfixed64Value)];
-                        CodedOutputByteBufferNano.newInstance(data)
-                                .writeSFixed64NoTag(sfixed64Value);
+                        output.writeSFixed64NoTag(sfixed64Value);
                         break;
                     case TYPE_SINT32:
                         Integer sint32Value = (Integer) value;
-                        data = new byte[
-                                CodedOutputByteBufferNano.computeSInt32SizeNoTag(sint32Value)];
-                        CodedOutputByteBufferNano.newInstance(data).writeSInt32NoTag(sint32Value);
+                        output.writeSInt32NoTag(sint32Value);
                         break;
                     case TYPE_SINT64:
                         Long sint64Value = (Long) value;
-                        data = new byte[
-                                CodedOutputByteBufferNano.computeSInt64SizeNoTag(sint64Value)];
-                        CodedOutputByteBufferNano.newInstance(data).writeSInt64NoTag(sint64Value);
+                        output.writeSInt64NoTag(sint64Value);
                         break;
                     default:
                         throw new IllegalArgumentException("Unknown type " + type);
@@ -518,86 +475,21 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
                 // Should not happen
                 throw new IllegalStateException(e);
             }
-            return new UnknownFieldData(tag, data);
         }
 
         @Override
-        protected void writeDataInto(T array, List<UnknownFieldData> unknownFields) {
+        protected void writeRepeatedData(Object array, CodedOutputByteBufferNano output) {
             if (tag == nonPackedTag) {
                 // Use base implementation for non-packed data
-                super.writeDataInto(array, unknownFields);
+                super.writeRepeatedData(array, output);
             } else if (tag == packedTag) {
                 // Packed. Note that the array element type is guaranteed to be primitive, so there
-                // won't be any null elements, so no null check in this block. First get data size.
+                // won't be any null elements, so no null check in this block.
                 int arrayLength = Array.getLength(array);
-                int dataSize = 0;
-                switch (type) {
-                    case TYPE_BOOL:
-                        // Bools are stored as int32 but just as 0 or 1, so 1 byte each.
-                        dataSize = arrayLength;
-                        break;
-                    case TYPE_FIXED32:
-                    case TYPE_SFIXED32:
-                    case TYPE_FLOAT:
-                        dataSize = arrayLength * CodedOutputByteBufferNano.LITTLE_ENDIAN_32_SIZE;
-                        break;
-                    case TYPE_FIXED64:
-                    case TYPE_SFIXED64:
-                    case TYPE_DOUBLE:
-                        dataSize = arrayLength * CodedOutputByteBufferNano.LITTLE_ENDIAN_64_SIZE;
-                        break;
-                    case TYPE_INT32:
-                        for (int i = 0; i < arrayLength; i++) {
-                            dataSize += CodedOutputByteBufferNano.computeInt32SizeNoTag(
-                                    Array.getInt(array, i));
-                        }
-                        break;
-                    case TYPE_SINT32:
-                        for (int i = 0; i < arrayLength; i++) {
-                            dataSize += CodedOutputByteBufferNano.computeSInt32SizeNoTag(
-                                    Array.getInt(array, i));
-                        }
-                        break;
-                    case TYPE_UINT32:
-                        for (int i = 0; i < arrayLength; i++) {
-                            dataSize += CodedOutputByteBufferNano.computeUInt32SizeNoTag(
-                                    Array.getInt(array, i));
-                        }
-                        break;
-                    case TYPE_INT64:
-                        for (int i = 0; i < arrayLength; i++) {
-                            dataSize += CodedOutputByteBufferNano.computeInt64SizeNoTag(
-                                    Array.getLong(array, i));
-                        }
-                        break;
-                    case TYPE_SINT64:
-                        for (int i = 0; i < arrayLength; i++) {
-                            dataSize += CodedOutputByteBufferNano.computeSInt64SizeNoTag(
-                                    Array.getLong(array, i));
-                        }
-                        break;
-                    case TYPE_UINT64:
-                        for (int i = 0; i < arrayLength; i++) {
-                            dataSize += CodedOutputByteBufferNano.computeUInt64SizeNoTag(
-                                    Array.getLong(array, i));
-                        }
-                        break;
-                    case TYPE_ENUM:
-                        for (int i = 0; i < arrayLength; i++) {
-                            dataSize += CodedOutputByteBufferNano.computeEnumSizeNoTag(
-                                    Array.getInt(array, i));
-                        }
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unexpected non-packable type " + type);
-                }
+                int dataSize = computePackedDataSize(array);
 
-                // Then construct payload.
-                int payloadSize =
-                        dataSize + CodedOutputByteBufferNano.computeRawVarint32Size(dataSize);
-                byte[] data = new byte[payloadSize];
-                CodedOutputByteBufferNano output = CodedOutputByteBufferNano.newInstance(data);
                 try {
+                    output.writeRawVarint32(tag);
                     output.writeRawVarint32(dataSize);
                     switch (type) {
                         case TYPE_BOOL:
@@ -677,11 +569,153 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
                     // Should not happen.
                     throw new IllegalStateException(e);
                 }
-                unknownFields.add(new UnknownFieldData(tag, data));
             } else {
                 throw new IllegalArgumentException("Unexpected repeated extension tag " + tag
                         + ", unequal to both non-packed variant " + nonPackedTag
                         + " and packed variant " + packedTag);
+            }
+        }
+
+        private int computePackedDataSize(Object array) {
+            int dataSize = 0;
+            int arrayLength = Array.getLength(array);
+            switch (type) {
+                case TYPE_BOOL:
+                    // Bools are stored as int32 but just as 0 or 1, so 1 byte each.
+                    dataSize = arrayLength;
+                    break;
+                case TYPE_FIXED32:
+                case TYPE_SFIXED32:
+                case TYPE_FLOAT:
+                    dataSize = arrayLength * CodedOutputByteBufferNano.LITTLE_ENDIAN_32_SIZE;
+                    break;
+                case TYPE_FIXED64:
+                case TYPE_SFIXED64:
+                case TYPE_DOUBLE:
+                    dataSize = arrayLength * CodedOutputByteBufferNano.LITTLE_ENDIAN_64_SIZE;
+                    break;
+                case TYPE_INT32:
+                    for (int i = 0; i < arrayLength; i++) {
+                        dataSize += CodedOutputByteBufferNano.computeInt32SizeNoTag(
+                                Array.getInt(array, i));
+                    }
+                    break;
+                case TYPE_SINT32:
+                    for (int i = 0; i < arrayLength; i++) {
+                        dataSize += CodedOutputByteBufferNano.computeSInt32SizeNoTag(
+                                Array.getInt(array, i));
+                    }
+                    break;
+                case TYPE_UINT32:
+                    for (int i = 0; i < arrayLength; i++) {
+                        dataSize += CodedOutputByteBufferNano.computeUInt32SizeNoTag(
+                                Array.getInt(array, i));
+                    }
+                    break;
+                case TYPE_INT64:
+                    for (int i = 0; i < arrayLength; i++) {
+                        dataSize += CodedOutputByteBufferNano.computeInt64SizeNoTag(
+                                Array.getLong(array, i));
+                    }
+                    break;
+                case TYPE_SINT64:
+                    for (int i = 0; i < arrayLength; i++) {
+                        dataSize += CodedOutputByteBufferNano.computeSInt64SizeNoTag(
+                                Array.getLong(array, i));
+                    }
+                    break;
+                case TYPE_UINT64:
+                    for (int i = 0; i < arrayLength; i++) {
+                        dataSize += CodedOutputByteBufferNano.computeUInt64SizeNoTag(
+                                Array.getLong(array, i));
+                    }
+                    break;
+                case TYPE_ENUM:
+                    for (int i = 0; i < arrayLength; i++) {
+                        dataSize += CodedOutputByteBufferNano.computeEnumSizeNoTag(
+                                Array.getInt(array, i));
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unexpected non-packable type " + type);
+            }
+            return dataSize;
+        }
+
+        @Override
+        protected int computeRepeatedSerializedSize(Object array) {
+            if (tag == nonPackedTag) {
+                // Use base implementation for non-packed data
+                return super.computeRepeatedSerializedSize(array);
+            } else if (tag == packedTag) {
+                // Packed.
+                int dataSize = computePackedDataSize(array);
+                int payloadSize =
+                        dataSize + CodedOutputByteBufferNano.computeRawVarint32Size(dataSize);
+                return payloadSize + CodedOutputByteBufferNano.computeRawVarint32Size(tag);
+            } else {
+                throw new IllegalArgumentException("Unexpected repeated extension tag " + tag
+                        + ", unequal to both non-packed variant " + nonPackedTag
+                        + " and packed variant " + packedTag);
+            }
+        }
+
+        @Override
+        protected final int computeSingularSerializedSize(Object value) {
+            int fieldNumber = WireFormatNano.getTagFieldNumber(tag);
+            switch (type) {
+                case TYPE_DOUBLE:
+                    Double doubleValue = (Double) value;
+                    return CodedOutputByteBufferNano.computeDoubleSize(fieldNumber, doubleValue);
+                case TYPE_FLOAT:
+                    Float floatValue = (Float) value;
+                    return CodedOutputByteBufferNano.computeFloatSize(fieldNumber, floatValue);
+                case TYPE_INT64:
+                    Long int64Value = (Long) value;
+                    return CodedOutputByteBufferNano.computeInt64Size(fieldNumber, int64Value);
+                case TYPE_UINT64:
+                    Long uint64Value = (Long) value;
+                    return CodedOutputByteBufferNano.computeUInt64Size(fieldNumber, uint64Value);
+                case TYPE_INT32:
+                    Integer int32Value = (Integer) value;
+                    return CodedOutputByteBufferNano.computeInt32Size(fieldNumber, int32Value);
+                case TYPE_FIXED64:
+                    Long fixed64Value = (Long) value;
+                    return CodedOutputByteBufferNano.computeFixed64Size(fieldNumber, fixed64Value);
+                case TYPE_FIXED32:
+                    Integer fixed32Value = (Integer) value;
+                    return CodedOutputByteBufferNano.computeFixed32Size(fieldNumber, fixed32Value);
+                case TYPE_BOOL:
+                    Boolean boolValue = (Boolean) value;
+                    return CodedOutputByteBufferNano.computeBoolSize(fieldNumber, boolValue);
+                case TYPE_STRING:
+                    String stringValue = (String) value;
+                    return CodedOutputByteBufferNano.computeStringSize(fieldNumber, stringValue);
+                case TYPE_BYTES:
+                    byte[] bytesValue = (byte[]) value;
+                    return CodedOutputByteBufferNano.computeBytesSize(fieldNumber, bytesValue);
+                case TYPE_UINT32:
+                    Integer uint32Value = (Integer) value;
+                    return CodedOutputByteBufferNano.computeUInt32Size(fieldNumber, uint32Value);
+                case TYPE_ENUM:
+                    Integer enumValue = (Integer) value;
+                    return CodedOutputByteBufferNano.computeEnumSize(fieldNumber, enumValue);
+                case TYPE_SFIXED32:
+                    Integer sfixed32Value = (Integer) value;
+                    return CodedOutputByteBufferNano.computeSFixed32Size(fieldNumber,
+                            sfixed32Value);
+                case TYPE_SFIXED64:
+                    Long sfixed64Value = (Long) value;
+                    return CodedOutputByteBufferNano.computeSFixed64Size(fieldNumber,
+                            sfixed64Value);
+                case TYPE_SINT32:
+                    Integer sint32Value = (Integer) value;
+                    return CodedOutputByteBufferNano.computeSInt32Size(fieldNumber, sint32Value);
+                case TYPE_SINT64:
+                    Long sint64Value = (Long) value;
+                    return CodedOutputByteBufferNano.computeSInt64Size(fieldNumber, sint64Value);
+                default:
+                    throw new IllegalArgumentException("Unknown type " + type);
             }
         }
     }
