@@ -35,9 +35,6 @@ import com.google.protobuf.nano.EnumClassNanoMultiple;
 import com.google.protobuf.nano.EnumClassNanos;
 import com.google.protobuf.nano.EnumValidity;
 import com.google.protobuf.nano.EnumValidityAccessors;
-import com.google.protobuf.nano.Extensions;
-import com.google.protobuf.nano.Extensions.AnotherMessage;
-import com.google.protobuf.nano.Extensions.MessageWithGroup;
 import com.google.protobuf.nano.FileScopeEnumMultiple;
 import com.google.protobuf.nano.FileScopeEnumRefNano;
 import com.google.protobuf.nano.InternalNano;
@@ -57,11 +54,14 @@ import com.google.protobuf.nano.PackedExtensions;
 import com.google.protobuf.nano.RepeatedExtensions;
 import com.google.protobuf.nano.SingularExtensions;
 import com.google.protobuf.nano.TestRepeatedMergeNano;
-import com.google.protobuf.nano.UnittestImportNano;
 import com.google.protobuf.nano.UnittestMultipleNano;
 import com.google.protobuf.nano.UnittestRecursiveNano.RecursiveMessageNano;
 import com.google.protobuf.nano.UnittestSimpleNano.SimpleMessageNano;
 import com.google.protobuf.nano.UnittestSingleNano.SingleMessageNano;
+import com.google.protobuf.nano.testext.Extensions;
+import com.google.protobuf.nano.testext.Extensions.AnotherMessage;
+import com.google.protobuf.nano.testext.Extensions.MessageWithGroup;
+import com.google.protobuf.nano.testimport.UnittestImportNano;
 
 import junit.framework.TestCase;
 
