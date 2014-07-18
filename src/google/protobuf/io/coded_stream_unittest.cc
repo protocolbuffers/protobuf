@@ -144,10 +144,6 @@ uint8 CodedStreamTest::buffer_[CodedStreamTest::kBufferSize];
 // checks.
 const int kBlockSizes[] = {1, 2, 3, 5, 7, 13, 32, 1024};
 
-// In several ReadCord test functions, we either clear the Cord before ReadCord
-// calls or not.
-const bool kResetCords[] = {false, true};
-
 // -------------------------------------------------------------------
 // Varint tests.
 
@@ -877,8 +873,6 @@ TEST_F(CodedStreamTest,
 
 const char kSkipTestBytes[] =
   "<Before skipping><To be skipped><After skipping>";
-const char kSkipOutputTestBytes[] =
-  "-----------------<To be skipped>----------------";
 
 TEST_1D(CodedStreamTest, SkipInput, kBlockSizes) {
   memcpy(buffer_, kSkipTestBytes, sizeof(kSkipTestBytes));
