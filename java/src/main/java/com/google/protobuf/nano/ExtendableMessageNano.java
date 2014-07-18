@@ -68,6 +68,18 @@ public abstract class ExtendableMessageNano<M extends ExtendableMessageNano<M>>
     }
 
     /**
+     * Checks if there is a value stored for the specified extension in this
+     * message.
+     */
+    public final boolean hasExtension(Extension<M, ?> extension) {
+        if (unknownFieldData == null) {
+            return false;
+        }
+        FieldData field = unknownFieldData.get(WireFormatNano.getTagFieldNumber(extension.tag));
+        return field != null;
+    }
+
+    /**
      * Gets the value stored in the specified extension of this message.
      */
     public final <T> T getExtension(Extension<M, T> extension) {
