@@ -2780,24 +2780,58 @@ public class NanoTest extends TestCase {
     RepeatedExtensions.RepeatedGroup group2 = new RepeatedExtensions.RepeatedGroup();
     group2.a = 32;
     RepeatedExtensions.RepeatedGroup[] groups = {group1, group2};
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedInt32));
     message.setExtension(RepeatedExtensions.repeatedInt32, int32s);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedInt32));
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedUint32));
     message.setExtension(RepeatedExtensions.repeatedUint32, uint32s);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedUint32));
     message.setExtension(RepeatedExtensions.repeatedSint32, sint32s);
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedInt64));
     message.setExtension(RepeatedExtensions.repeatedInt64, int64s);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedInt64));
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedUint64));
     message.setExtension(RepeatedExtensions.repeatedUint64, uint64s);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedUint64));
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedSint64));
     message.setExtension(RepeatedExtensions.repeatedSint64, sint64s);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedSint64));
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedFixed32));
     message.setExtension(RepeatedExtensions.repeatedFixed32, fixed32s);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedFixed32));
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedSfixed32));
     message.setExtension(RepeatedExtensions.repeatedSfixed32, sfixed32s);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedSfixed32));
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedFixed64));
     message.setExtension(RepeatedExtensions.repeatedFixed64, fixed64s);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedFixed64));
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedSfixed64));
     message.setExtension(RepeatedExtensions.repeatedSfixed64, sfixed64s);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedSfixed64));
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedBool));
     message.setExtension(RepeatedExtensions.repeatedBool, bools);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedBool));
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedFloat));
     message.setExtension(RepeatedExtensions.repeatedFloat, floats);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedFloat));
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedDouble));
     message.setExtension(RepeatedExtensions.repeatedDouble, doubles);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedDouble));
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedEnum));
     message.setExtension(RepeatedExtensions.repeatedEnum, enums);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedEnum));
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedString));
     message.setExtension(RepeatedExtensions.repeatedString, strings);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedString));
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedBytes));
     message.setExtension(RepeatedExtensions.repeatedBytes, bytess);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedBytes));
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedMessage));
     message.setExtension(RepeatedExtensions.repeatedMessage, messages);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedMessage));
+    assertFalse(message.hasExtension(RepeatedExtensions.repeatedGroup));
     message.setExtension(RepeatedExtensions.repeatedGroup, groups);
+    assertTrue(message.hasExtension(RepeatedExtensions.repeatedGroup));
 
     byte[] data = MessageNano.toByteArray(message);
     message = Extensions.ExtendableMessage.parseFrom(data);
@@ -2861,10 +2895,26 @@ public class NanoTest extends TestCase {
     assertEquals(group1.a, deserializedRepeatedGroup[0].a);
     assertEquals(group2.a, deserializedRepeatedGroup[1].a);
 
-    // Test reading back using PackedExtensions: the arrays should be equal, even the fields
-    // are non-packed.
     message = Extensions.ExtendableMessage.parseFrom(data);
     assertEquals(5, message.field);
+    // Test hasExtension using PackedExtensions.
+    assertTrue(message.hasExtension(PackedExtensions.packedInt32));
+    assertTrue(message.hasExtension(PackedExtensions.packedUint32));
+    assertTrue(message.hasExtension(PackedExtensions.packedSint32));
+    assertTrue(message.hasExtension(PackedExtensions.packedInt64));
+    assertTrue(message.hasExtension(PackedExtensions.packedUint64));
+    assertTrue(message.hasExtension(PackedExtensions.packedSint64));
+    assertTrue(message.hasExtension(PackedExtensions.packedFixed32));
+    assertTrue(message.hasExtension(PackedExtensions.packedSfixed32));
+    assertTrue(message.hasExtension(PackedExtensions.packedFixed64));
+    assertTrue(message.hasExtension(PackedExtensions.packedSfixed64));
+    assertTrue(message.hasExtension(PackedExtensions.packedBool));
+    assertTrue(message.hasExtension(PackedExtensions.packedFloat));
+    assertTrue(message.hasExtension(PackedExtensions.packedDouble));
+    assertTrue(message.hasExtension(PackedExtensions.packedEnum));
+
+    // Test reading back using PackedExtensions: the arrays should be equal, even the fields
+    // are non-packed.
     assertTrue(Arrays.equals(int32s, message.getExtension(PackedExtensions.packedInt32)));
     assertTrue(Arrays.equals(uint32s, message.getExtension(PackedExtensions.packedUint32)));
     assertTrue(Arrays.equals(sint32s, message.getExtension(PackedExtensions.packedSint32)));
@@ -2918,14 +2968,19 @@ public class NanoTest extends TestCase {
   public void testNullExtensions() throws Exception {
     // Check that clearing the extension on an empty message is a no-op.
     Extensions.ExtendableMessage message = new Extensions.ExtendableMessage();
+    assertFalse(message.hasExtension(SingularExtensions.someMessage));
     message.setExtension(SingularExtensions.someMessage, null);
+    assertFalse(message.hasExtension(SingularExtensions.someMessage));
     assertEquals(0, MessageNano.toByteArray(message).length);
 
     // Check that the message is empty after setting and clearing an extension.
     AnotherMessage another = new AnotherMessage();
+    assertFalse(message.hasExtension(SingularExtensions.someMessage));
     message.setExtension(SingularExtensions.someMessage, another);
+    assertTrue(message.hasExtension(SingularExtensions.someMessage));
     assertTrue(MessageNano.toByteArray(message).length > 0);
     message.setExtension(SingularExtensions.someMessage, null);
+    assertFalse(message.hasExtension(SingularExtensions.someMessage));
     assertEquals(0, MessageNano.toByteArray(message).length);
   }
 
