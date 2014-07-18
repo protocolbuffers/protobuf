@@ -45,7 +45,6 @@
 #include <sstream>
 #include <fstream>
 
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/descriptor.h>
@@ -53,6 +52,7 @@
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/test_util.h>
 
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -205,7 +205,7 @@ TEST(MessageTest, InitializationErrorString) {
   EXPECT_EQ("a, b, c", message.InitializationErrorString());
 }
 
-#ifdef PROTOBUF_HAS_DEATH_TEST
+#ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet.
 
 TEST(MessageTest, SerializeFailsIfNotInitialized) {
   unittest::TestRequired message;
@@ -220,6 +220,24 @@ TEST(MessageTest, CheckInitialized) {
   EXPECT_DEATH(message.CheckInitialized(),
     "Message of type \"protobuf_unittest.TestRequired\" is missing required "
     "fields: a, b, c");
+}
+
+TEST(MessageTest, CheckOverflow) {
+  unittest::TestAllTypes message;
+  // Create a message with size just over 2GB. This triggers integer overflow
+  // when computing message size.
+  const string data(1024, 'x');
+  Cord one_megabyte;
+  for (int i = 0; i < 1024; i++) {
+    one_megabyte.Append(data);
+  }
+
+  for (int i = 0; i < 2 * 1024 + 1; ++i) {
+    message.add_repeated_cord()->CopyFrom(one_megabyte);
+  }
+
+  Cord serialized;
+  EXPECT_FALSE(message.AppendToCord(&serialized));
 }
 
 #endif  // PROTOBUF_HAS_DEATH_TEST
@@ -327,6 +345,61 @@ TEST(MessageTest, ParsingMerge) {
   EXPECT_EQ(3, parsing_merge.repeatedgroup_size());
   EXPECT_EQ(3, parsing_merge.ExtensionSize(
       unittest::TestParsingMerge::repeated_ext));
+}
+
+TEST(MessageTest, MergeFrom) {
+  unittest::TestAllTypes source;
+  unittest::TestAllTypes dest;
+
+  // Optional fields
+  source.set_optional_int32(1);  // only source
+  source.set_optional_int64(2);  // both source and dest
+  dest.set_optional_int64(3);
+  dest.set_optional_uint32(4);   // only dest
+
+  // Optional fields with defaults
+  source.set_default_int32(13);  // only source
+  source.set_default_int64(14);  // both source and dest
+  dest.set_default_int64(15);
+  dest.set_default_uint32(16);   // only dest
+
+  // Repeated fields
+  source.add_repeated_int32(5);  // only source
+  source.add_repeated_int32(6);
+  source.add_repeated_int64(7);  // both source and dest
+  source.add_repeated_int64(8);
+  dest.add_repeated_int64(9);
+  dest.add_repeated_int64(10);
+  dest.add_repeated_uint32(11);  // only dest
+  dest.add_repeated_uint32(12);
+
+  dest.MergeFrom(source);
+
+  // Optional fields: source overwrites dest if source is specified
+  EXPECT_EQ(1, dest.optional_int32());  // only source: use source
+  EXPECT_EQ(2, dest.optional_int64());  // source and dest: use source
+  EXPECT_EQ(4, dest.optional_uint32());  // only dest: use dest
+  EXPECT_EQ(0, dest.optional_uint64());  // neither: use default
+
+  // Optional fields with defaults
+  EXPECT_EQ(13, dest.default_int32());  // only source: use source
+  EXPECT_EQ(14, dest.default_int64());  // source and dest: use source
+  EXPECT_EQ(16, dest.default_uint32());  // only dest: use dest
+  EXPECT_EQ(44, dest.default_uint64());  // neither: use default
+
+  // Repeated fields: concatenate source onto the end of dest
+  ASSERT_EQ(2, dest.repeated_int32_size());
+  EXPECT_EQ(5, dest.repeated_int32(0));
+  EXPECT_EQ(6, dest.repeated_int32(1));
+  ASSERT_EQ(4, dest.repeated_int64_size());
+  EXPECT_EQ(9,  dest.repeated_int64(0));
+  EXPECT_EQ(10, dest.repeated_int64(1));
+  EXPECT_EQ(7,  dest.repeated_int64(2));
+  EXPECT_EQ(8,  dest.repeated_int64(3));
+  ASSERT_EQ(2, dest.repeated_uint32_size());
+  EXPECT_EQ(11, dest.repeated_uint32(0));
+  EXPECT_EQ(12, dest.repeated_uint32(1));
+  ASSERT_EQ(0, dest.repeated_uint64_size());
 }
 
 TEST(MessageFactoryTest, GeneratedFactoryLookup) {

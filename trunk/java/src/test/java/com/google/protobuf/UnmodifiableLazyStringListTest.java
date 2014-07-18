@@ -33,6 +33,7 @@ package com.google.protobuf;
 import junit.framework.TestCase;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
 
 /**
@@ -60,6 +61,11 @@ public class UnmodifiableLazyStringListTest extends TestCase {
     assertEquals(BYTE_STRING_A, list.getByteString(0));
     assertEquals(BYTE_STRING_B, list.getByteString(1));
     assertEquals(BYTE_STRING_C, list.getByteString(2));
+
+    List<ByteString> byteStringList = list.asByteStringList();
+    assertSame(list.getByteString(0), byteStringList.get(0));
+    assertSame(list.getByteString(1), byteStringList.get(1));
+    assertSame(list.getByteString(2), byteStringList.get(2));
   }
 
   public void testModifyMethods() {
@@ -88,6 +94,35 @@ public class UnmodifiableLazyStringListTest extends TestCase {
     } catch (UnsupportedOperationException e) {
       // expected
     }
+    assertEquals(3, list.size());
+
+    List<ByteString> byteStringList = list.asByteStringList();
+    try {
+      byteStringList.remove(0);
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    assertEquals(3, list.size());
+    assertEquals(3, byteStringList.size());
+
+    try {
+      byteStringList.add(BYTE_STRING_B);
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    assertEquals(3, list.size());
+    assertEquals(3, byteStringList.size());
+
+    try {
+      byteStringList.set(1, BYTE_STRING_B);
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    assertEquals(3, list.size());
+    assertEquals(3, byteStringList.size());
   }
 
   public void testIterator() {
@@ -108,6 +143,20 @@ public class UnmodifiableLazyStringListTest extends TestCase {
     }
     assertEquals(3, count);
 
+    List<ByteString> byteStringList = list.asByteStringList();
+    Iterator<ByteString> byteIter = byteStringList.iterator();
+    count = 0;
+    while (byteIter.hasNext()) {
+      byteIter.next();
+      count++;
+      try {
+        byteIter.remove();
+        fail();
+      } catch (UnsupportedOperationException e) {
+        // expected
+      }
+    }
+    assertEquals(3, count);
   }
 
   public void testListIterator() {
@@ -140,6 +189,32 @@ public class UnmodifiableLazyStringListTest extends TestCase {
     }
     assertEquals(3, count);
 
+    List<ByteString> byteStringList = list.asByteStringList();
+    ListIterator<ByteString> byteIter = byteStringList.listIterator();
+    count = 0;
+    while (byteIter.hasNext()) {
+      byteIter.next();
+      count++;
+      try {
+        byteIter.remove();
+        fail();
+      } catch (UnsupportedOperationException e) {
+        // expected
+      }
+      try {
+        byteIter.set(BYTE_STRING_A);
+        fail();
+      } catch (UnsupportedOperationException e) {
+        // expected
+      }
+      try {
+        byteIter.add(BYTE_STRING_A);
+        fail();
+      } catch (UnsupportedOperationException e) {
+        // expected
+      }
+    }
+    assertEquals(3, count);
   }
 
   private LazyStringArrayList createSampleList() {

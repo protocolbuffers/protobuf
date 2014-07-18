@@ -56,6 +56,10 @@ class File {
   static void ReadFileToStringOrDie(const string& name, string* output);
 
   // Create a file and write a string to it.
+  static bool WriteStringToFile(const string& contents,
+                                const string& name);
+
+  // Same as above, but crash on failure.
   static void WriteStringToFileOrDie(const string& contents,
                                      const string& name);
 
@@ -72,6 +76,16 @@ class File {
   // method but they are not used anywhere in protocol buffers.
   static void DeleteRecursively(const string& name,
                                 void* dummy1, void* dummy2);
+
+  static bool GetContents(
+      const string& name, string* output, bool /*is_default*/) {
+    return ReadFileToString(name, output);
+  }
+
+  static bool SetContents(
+      const string& name, const string& contents, bool /*is_default*/) {
+    return WriteStringToFile(contents, name);
+  }
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(File);

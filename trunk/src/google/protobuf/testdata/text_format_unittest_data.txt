@@ -126,3 +126,9 @@ default_foreign_enum: FOREIGN_FOO
 default_import_enum: IMPORT_FOO
 default_string_piece: "424"
 default_cord: "425"
+oneof_uint32: 601
+oneof_nested_message {
+  bb: 602
+}
+oneof_string: "603"
+oneof_bytes: "604"

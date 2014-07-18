@@ -28,60 +28,23 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: petar@google.com (Petar Petrov)
+// A locale-independent version of strtod(), used to parse floating
+// point default values in .proto files, where the decimal separator
+// is always a dot.
 
-#ifndef GOOGLE_PROTOBUF_PYTHON_DESCRIPTOR_H__
-#define GOOGLE_PROTOBUF_PYTHON_DESCRIPTOR_H__
-
-#include <Python.h>
-#include <structmember.h>
-
-#include <google/protobuf/descriptor.h>
-
-#if PY_VERSION_HEX < 0x02050000 && !defined(PY_SSIZE_T_MIN)
-typedef int Py_ssize_t;
-#define PY_SSIZE_T_MAX INT_MAX
-#define PY_SSIZE_T_MIN INT_MIN
-#endif
+#ifndef GOOGLE_PROTOBUF_IO_STRTOD_H__
+#define GOOGLE_PROTOBUF_IO_STRTOD_H__
 
 namespace google {
 namespace protobuf {
-namespace python {
+namespace io {
 
-typedef struct {
-  PyObject_HEAD
+// A locale-independent version of the standard strtod(), which always
+// uses a dot as the decimal separator.
+double NoLocaleStrtod(const char* str, char** endptr);
 
-  // The proto2 descriptor that this object represents.
-  const google::protobuf::FieldDescriptor* descriptor;
-
-  // Full name of the field (PyString).
-  PyObject* full_name;
-
-  // Name of the field (PyString).
-  PyObject* name;
-
-  // C++ type of the field (PyLong).
-  PyObject* cpp_type;
-
-  // Name of the field (PyLong).
-  PyObject* label;
-
-  // Identity of the descriptor (PyLong used as a poiner).
-  PyObject* id;
-} CFieldDescriptor;
-
-extern PyTypeObject CFieldDescriptor_Type;
-
-extern PyTypeObject CDescriptorPool_Type;
-
-
-PyObject* Python_NewCDescriptorPool(PyObject* ignored, PyObject* args);
-PyObject* Python_BuildFile(PyObject* ignored, PyObject* args);
-bool InitDescriptor();
-google::protobuf::DescriptorPool* GetDescriptorPool();
-
-}  // namespace python
+}  // namespace io
 }  // namespace protobuf
 
 }  // namespace google
-#endif  // GOOGLE_PROTOBUF_PYTHON_DESCRIPTOR_H__
+#endif  // GOOGLE_PROTOBUF_IO_STRTOD_H__

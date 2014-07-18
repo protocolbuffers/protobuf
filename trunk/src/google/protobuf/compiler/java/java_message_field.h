@@ -41,16 +41,26 @@
 
 namespace google {
 namespace protobuf {
+  namespace compiler {
+    namespace java {
+      class Context;           // context.h
+      class ClassNameResolver; // name_resolver.h
+    }
+  }
+}
+
+namespace protobuf {
 namespace compiler {
 namespace java {
 
-class MessageFieldGenerator : public FieldGenerator {
+class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
  public:
-  explicit MessageFieldGenerator(const FieldDescriptor* descriptor,
-      int messageBitIndex, int builderBitIndex);
-  ~MessageFieldGenerator();
+  explicit ImmutableMessageFieldGenerator(
+      const FieldDescriptor* descriptor, int messageBitIndex,
+      int builderBitIndex, Context* context);
+  ~ImmutableMessageFieldGenerator();
 
-  // implements FieldGenerator ---------------------------------------
+  // implements ImmutableFieldGenerator ---------------------------------------
   int GetNumBitsForMessage() const;
   int GetNumBitsForBuilder() const;
   void GenerateInterfaceMembers(io::Printer* printer) const;
@@ -70,13 +80,13 @@ class MessageFieldGenerator : public FieldGenerator {
 
   string GetBoxedType() const;
 
- private:
+ protected:
   const FieldDescriptor* descriptor_;
   map<string, string> variables_;
   const int messageBitIndex_;
   const int builderBitIndex_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageFieldGenerator);
+  Context* context_;
+  ClassNameResolver* name_resolver_;
 
   void PrintNestedBuilderCondition(io::Printer* printer,
       const char* regular_case, const char* nested_builder_case) const;
@@ -84,15 +94,39 @@ class MessageFieldGenerator : public FieldGenerator {
       const char* method_prototype, const char* regular_case,
       const char* nested_builder_case,
       const char* trailing_code) const;
+
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableMessageFieldGenerator);
 };
 
-class RepeatedMessageFieldGenerator : public FieldGenerator {
+class ImmutableMessageOneofFieldGenerator
+    : public ImmutableMessageFieldGenerator {
  public:
-  explicit RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor,
-      int messageBitIndex, int builderBitIndex);
-  ~RepeatedMessageFieldGenerator();
+  ImmutableMessageOneofFieldGenerator(
+      const FieldDescriptor* descriptor, int messageBitIndex,
+      int builderBitIndex, Context* context);
+  ~ImmutableMessageOneofFieldGenerator();
 
-  // implements FieldGenerator ---------------------------------------
+  void GenerateMembers(io::Printer* printer) const;
+  void GenerateBuilderMembers(io::Printer* printer) const;
+  void GenerateBuildingCode(io::Printer* printer) const;
+  void GenerateMergingCode(io::Printer* printer) const;
+  void GenerateParsingCode(io::Printer* printer) const;
+  void GenerateSerializationCode(io::Printer* printer) const;
+  void GenerateSerializedSizeCode(io::Printer* printer) const;
+
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableMessageOneofFieldGenerator);
+};
+
+class RepeatedImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
+ public:
+  explicit RepeatedImmutableMessageFieldGenerator(
+      const FieldDescriptor* descriptor, int messageBitIndex,
+      int builderBitIndex, Context* context);
+  ~RepeatedImmutableMessageFieldGenerator();
+
+  // implements ImmutableFieldGenerator ---------------------------------------
   int GetNumBitsForMessage() const;
   int GetNumBitsForBuilder() const;
   void GenerateInterfaceMembers(io::Printer* printer) const;
@@ -112,13 +146,13 @@ class RepeatedMessageFieldGenerator : public FieldGenerator {
 
   string GetBoxedType() const;
 
- private:
+ protected:
   const FieldDescriptor* descriptor_;
   map<string, string> variables_;
   const int messageBitIndex_;
   const int builderBitIndex_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedMessageFieldGenerator);
+  Context* context_;
+  ClassNameResolver* name_resolver_;
 
   void PrintNestedBuilderCondition(io::Printer* printer,
       const char* regular_case, const char* nested_builder_case) const;
@@ -126,6 +160,9 @@ class RepeatedMessageFieldGenerator : public FieldGenerator {
       const char* method_prototype, const char* regular_case,
       const char* nested_builder_case,
       const char* trailing_code) const;
+
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedImmutableMessageFieldGenerator);
 };
 
 }  // namespace java

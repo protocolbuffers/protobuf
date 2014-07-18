@@ -28,36 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: qrczak@google.com (Marcin Kowalczyk)
+package protobuf_unittest;
 
-#include <google/protobuf/pyext/python_protobuf.h>
 
-namespace google {
-namespace protobuf {
-namespace python {
-
-static const Message* GetCProtoInsidePyProtoStub(PyObject* msg) {
-  return NULL;
+message TestMessage3 {
+  message NestedMessage {
+    // This enum's name is the same with the default outer class name of this
+    // proto file. It's used to test if the compiler can avoid this conflict
+    // correctly.
+    enum OuterClassNameTest3 {
+      DUMMY_VALUE = 1;
+    }
+  }
 }
-static Message* MutableCProtoInsidePyProtoStub(PyObject* msg) {
-  return NULL;
-}
-
-// This is initialized with a default, stub implementation.
-// If python-google.protobuf.cc is loaded, the function pointer is overridden
-// with a full implementation.
-const Message* (*GetCProtoInsidePyProtoPtr)(PyObject* msg) =
-    GetCProtoInsidePyProtoStub;
-Message* (*MutableCProtoInsidePyProtoPtr)(PyObject* msg) =
-    MutableCProtoInsidePyProtoStub;
-
-const Message* GetCProtoInsidePyProto(PyObject* msg) {
-  return GetCProtoInsidePyProtoPtr(msg);
-}
-Message* MutableCProtoInsidePyProto(PyObject* msg) {
-  return MutableCProtoInsidePyProtoPtr(msg);
-}
-
-}  // namespace python
-}  // namespace protobuf
-}  // namespace google

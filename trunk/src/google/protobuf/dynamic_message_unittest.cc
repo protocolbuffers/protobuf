@@ -63,6 +63,8 @@ class DynamicMessageTest : public testing::Test {
   const Message* extensions_prototype_;
   const Descriptor* packed_descriptor_;
   const Message* packed_prototype_;
+  const Descriptor* oneof_descriptor_;
+  const Message* oneof_prototype_;
 
   DynamicMessageTest(): factory_(&pool_) {}
 
@@ -98,6 +100,11 @@ class DynamicMessageTest : public testing::Test {
       pool_.FindMessageTypeByName("protobuf_unittest.TestPackedTypes");
     ASSERT_TRUE(packed_descriptor_ != NULL);
     packed_prototype_ = factory_.GetPrototype(packed_descriptor_);
+
+    oneof_descriptor_ =
+      pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2");
+    ASSERT_TRUE(oneof_descriptor_ != NULL);
+    oneof_prototype_ = factory_.GetPrototype(oneof_descriptor_);
   }
 };
 
@@ -145,6 +152,63 @@ TEST_F(DynamicMessageTest, PackedFields) {
 
   reflection_tester.SetPackedFieldsViaReflection(message.get());
   reflection_tester.ExpectPackedFieldsSetViaReflection(*message);
+}
+
+TEST_F(DynamicMessageTest, Oneof) {
+  // Check that oneof fields work properly.
+  scoped_ptr<Message> message(oneof_prototype_->New());
+
+  // Check default values.
+  const Descriptor* descriptor = message->GetDescriptor();
+  const Reflection* reflection = message->GetReflection();
+  EXPECT_EQ(0, reflection->GetInt32(
+      *message, descriptor->FindFieldByName("foo_int")));
+  EXPECT_EQ("", reflection->GetString(
+      *message, descriptor->FindFieldByName("foo_string")));
+  EXPECT_EQ("", reflection->GetString(
+      *message, descriptor->FindFieldByName("foo_cord")));
+  EXPECT_EQ("", reflection->GetString(
+      *message, descriptor->FindFieldByName("foo_string_piece")));
+  EXPECT_EQ("", reflection->GetString(
+      *message, descriptor->FindFieldByName("foo_bytes")));
+  EXPECT_EQ(unittest::TestOneof2::FOO, reflection->GetEnum(
+      *message, descriptor->FindFieldByName("foo_enum"))->number());
+  const Descriptor* nested_descriptor;
+  const Message* nested_prototype;
+  nested_descriptor =
+      pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2.NestedMessage");
+  nested_prototype = factory_.GetPrototype(nested_descriptor);
+  EXPECT_EQ(nested_prototype,
+            &reflection->GetMessage(
+                *message, descriptor->FindFieldByName("foo_message")));
+  const Descriptor* foogroup_descriptor;
+  const Message* foogroup_prototype;
+  foogroup_descriptor =
+      pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2.FooGroup");
+  foogroup_prototype = factory_.GetPrototype(foogroup_descriptor);
+  EXPECT_EQ(foogroup_prototype,
+            &reflection->GetMessage(
+                *message, descriptor->FindFieldByName("foogroup")));
+  EXPECT_NE(foogroup_prototype,
+            &reflection->GetMessage(
+                *message, descriptor->FindFieldByName("foo_lazy_message")));
+  EXPECT_EQ(5, reflection->GetInt32(
+      *message, descriptor->FindFieldByName("bar_int")));
+  EXPECT_EQ("STRING", reflection->GetString(
+      *message, descriptor->FindFieldByName("bar_string")));
+  EXPECT_EQ("CORD", reflection->GetString(
+      *message, descriptor->FindFieldByName("bar_cord")));
+  EXPECT_EQ("SPIECE", reflection->GetString(
+      *message, descriptor->FindFieldByName("bar_string_piece")));
+  EXPECT_EQ("BYTES", reflection->GetString(
+      *message, descriptor->FindFieldByName("bar_bytes")));
+  EXPECT_EQ(unittest::TestOneof2::BAR, reflection->GetEnum(
+      *message, descriptor->FindFieldByName("bar_enum"))->number());
+
+  // Check set functions.
+  TestUtil::ReflectionTester reflection_tester(oneof_descriptor_);
+  reflection_tester.SetOneofViaReflection(message.get());
+  reflection_tester.ExpectOneofSetViaReflection(*message);
 }
 
 TEST_F(DynamicMessageTest, SpaceUsed) {

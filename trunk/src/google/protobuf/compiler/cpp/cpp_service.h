@@ -37,7 +37,6 @@
 
 #include <map>
 #include <string>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/cpp/cpp_options.h>
 #include <google/protobuf/descriptor.h>
 

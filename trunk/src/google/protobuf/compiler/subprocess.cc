@@ -449,7 +449,7 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   }
 
   if (!output->ParseFromString(output_data)) {
-    *error = "Plugin output is unparseable.";
+    *error = "Plugin output is unparseable: " + CEscape(output_data);
     return false;
   }
 

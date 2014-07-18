@@ -93,6 +93,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   (*variables)["wire_format_field_type"] =
       "::google::protobuf::internal::WireFormatLite::" + FieldDescriptorProto_Type_Name(
           static_cast<FieldDescriptorProto_Type>(descriptor->type()));
+  (*variables)["full_name"] = descriptor->full_name();
 }
 
 }  // namespace
@@ -124,11 +125,13 @@ void PrimitiveFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   printer->Print(variables_,
     "inline $type$ $classname$::$name$() const {\n"
+    "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  return $name$_;\n"
     "}\n"
     "inline void $classname$::set_$name$($type$ value) {\n"
     "  set_has_$name$();\n"
     "  $name$_ = value;\n"
+    "  // @@protoc_insertion_point(field_set:$full_name$)\n"
     "}\n");
 }
 
@@ -191,6 +194,62 @@ GenerateByteSize(io::Printer* printer) const {
 
 // ===================================================================
 
+PrimitiveOneofFieldGenerator::
+PrimitiveOneofFieldGenerator(const FieldDescriptor* descriptor,
+                             const Options& options)
+  : PrimitiveFieldGenerator(descriptor, options) {
+  SetCommonOneofFieldVariables(descriptor, &variables_);
+}
+
+PrimitiveOneofFieldGenerator::~PrimitiveOneofFieldGenerator() {}
+
+void PrimitiveOneofFieldGenerator::
+GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+  printer->Print(variables_,
+    "inline $type$ $classname$::$name$() const {\n"
+    "  if (has_$name$()) {\n"
+    "    return $oneof_prefix$$name$_;\n"
+    "  }\n"
+    "  return $default$;\n"
+    "}\n"
+    "inline void $classname$::set_$name$($type$ value) {\n"
+    "  if (!has_$name$()) {\n"
+    "    clear_$oneof_name$();\n"
+    "    set_has_$name$();\n"
+    "  }\n"
+    "  $oneof_prefix$$name$_ = value;\n"
+    "}\n");
+}
+
+void PrimitiveOneofFieldGenerator::
+GenerateClearingCode(io::Printer* printer) const {
+  printer->Print(variables_, "$oneof_prefix$$name$_ = $default$;\n");
+}
+
+void PrimitiveOneofFieldGenerator::
+GenerateSwappingCode(io::Printer* printer) const {
+  // Don't print any swapping code. Swapping the union will swap this field.
+}
+
+void PrimitiveOneofFieldGenerator::
+GenerateConstructorCode(io::Printer* printer) const {
+  printer->Print(
+      variables_,
+      "  $classname$_default_oneof_instance_->$name$_ = $default$;\n");
+}
+
+void PrimitiveOneofFieldGenerator::
+GenerateMergeFromCodedStream(io::Printer* printer) const {
+  printer->Print(variables_,
+    "clear_$oneof_name$();\n"
+    "DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<\n"
+    "         $type$, $wire_format_field_type$>(\n"
+    "       input, &$oneof_prefix$$name$_)));\n"
+    "set_has_$name$();\n");
+}
+
+// ===================================================================
+
 RepeatedPrimitiveFieldGenerator::
 RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
                                 const Options& options)
@@ -235,21 +294,26 @@ void RepeatedPrimitiveFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   printer->Print(variables_,
     "inline $type$ $classname$::$name$(int index) const {\n"
+    "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  return $name$_.Get(index);\n"
     "}\n"
     "inline void $classname$::set_$name$(int index, $type$ value) {\n"
     "  $name$_.Set(index, value);\n"
+    "  // @@protoc_insertion_point(field_set:$full_name$)\n"
     "}\n"
     "inline void $classname$::add_$name$($type$ value) {\n"
     "  $name$_.Add(value);\n"
+    "  // @@protoc_insertion_point(field_add:$full_name$)\n"
     "}\n");
   printer->Print(variables_,
     "inline const ::google::protobuf::RepeatedField< $type$ >&\n"
     "$classname$::$name$() const {\n"
+    "  // @@protoc_insertion_point(field_list:$full_name$)\n"
     "  return $name$_;\n"
     "}\n"
     "inline ::google::protobuf::RepeatedField< $type$ >*\n"
     "$classname$::mutable_$name$() {\n"
+    "  // @@protoc_insertion_point(field_mutable_list:$full_name$)\n"
     "  return &$name$_;\n"
     "}\n");
 }

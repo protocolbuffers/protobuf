@@ -40,7 +40,7 @@
 #include <google/protobuf/wire_format_lite_inl.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stl_util.h>
-#include <google/protobuf/stubs/map-util.h>
+#include <google/protobuf/stubs/map_util.h>
 
 namespace google {
 namespace protobuf {
@@ -289,6 +289,7 @@ bool SimpleDescriptorDatabase::FindAllExtensionNumbers(
   return index_.FindAllExtensionNumbers(extendee_type, output);
 }
 
+
 bool SimpleDescriptorDatabase::MaybeCopy(const FileDescriptorProto* file,
                                          FileDescriptorProto* output) {
   if (file == NULL) return false;
@@ -536,6 +537,7 @@ bool MergedDescriptorDatabase::FindAllExtensionNumbers(
 
   return success;
 }
+
 
 }  // namespace protobuf
 }  // namespace google

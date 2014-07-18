@@ -35,18 +35,26 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_FILE_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_FILE_H__
 
+#include <memory>
 #include <string>
 #include <vector>
 #include <google/protobuf/stubs/common.h>
 
 namespace google {
 namespace protobuf {
-  class FileDescriptor;        // descriptor.h
+  class FileDescriptor;          // descriptor.h
   namespace io {
-    class Printer;             // printer.h
+    class Printer;               // printer.h
   }
   namespace compiler {
-    class GeneratorContext;     // code_generator.h
+    class GeneratorContext;      // code_generator.h
+    namespace java {
+      class Context;             // context.h
+      class MessageGenerator;    // message.h
+      class GeneratorFactory;    // generator_factory.h
+      class ExtensionGenerator;  // extension.h
+      class ClassNameResolver;   // name_resolver.h
+    }
   }
 }
 
@@ -56,7 +64,7 @@ namespace java {
 
 class FileGenerator {
  public:
-  explicit FileGenerator(const FileDescriptor* file);
+  FileGenerator(const FileDescriptor* file, bool immutable_api = true);
   ~FileGenerator();
 
   // Checks for problems that would otherwise lead to cryptic compile errors.
@@ -78,17 +86,23 @@ class FileGenerator {
 
 
  private:
-  // Returns whether the dependency should be included in the output file.
-  // Always returns true for opensource, but used internally at Google to help
-  // improve compatibility with version 1 of protocol buffers.
-  bool ShouldIncludeDependency(const FileDescriptor* descriptor);
+  void GenerateDescriptorInitializationCodeForImmutable(io::Printer* printer);
+  void GenerateDescriptorInitializationCodeForMutable(io::Printer* printer);
+
+  bool ShouldIncludeDependency(const FileDescriptor* descriptor,
+                               bool immutable_api_);
 
   const FileDescriptor* file_;
   string java_package_;
   string classname_;
 
+  scoped_array<scoped_ptr<MessageGenerator> > message_generators_;
+  scoped_array<scoped_ptr<ExtensionGenerator> > extension_generators_;
+  scoped_ptr<GeneratorFactory> generator_factory_;
+  scoped_ptr<Context> context_;
+  ClassNameResolver* name_resolver_;
+  bool immutable_api_;
 
-  void GenerateEmbeddedDescriptor(io::Printer* printer);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
 };

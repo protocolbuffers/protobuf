@@ -139,6 +139,24 @@ inline void GoogleOnceInit(ProtobufOnceType* once, void (*init_func)(Arg*),
 
 #endif  // GOOGLE_PROTOBUF_NO_THREAD_SAFETY
 
+class GoogleOnceDynamic {
+ public:
+  GoogleOnceDynamic() : state_(GOOGLE_PROTOBUF_ONCE_INIT) { }
+
+  // If this->Init() has not been called before by any thread,
+  // execute (*func_with_arg)(arg) then return.
+  // Otherwise, wait until that prior invocation has finished
+  // executing its function, then return.
+  template<typename T>
+  void Init(void (*func_with_arg)(T*), T* arg) {
+    GoogleOnceInit<T>(&this->state_,
+                      func_with_arg,
+                      arg);
+  }
+ private:
+  ProtobufOnceType state_;
+};
+
 #define GOOGLE_PROTOBUF_DECLARE_ONCE(NAME) \
   ::google::protobuf::ProtobufOnceType NAME = GOOGLE_PROTOBUF_ONCE_INIT
 

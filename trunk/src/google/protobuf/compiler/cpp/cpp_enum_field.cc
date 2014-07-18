@@ -51,7 +51,8 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
   SetCommonFieldVariables(descriptor, variables, options);
   const EnumValueDescriptor* default_value = descriptor->default_value_enum();
   (*variables)["type"] = ClassName(descriptor->enum_type(), true);
-  (*variables)["default"] = SimpleItoa(default_value->number());
+  (*variables)["default"] = Int32ToString(default_value->number());
+  (*variables)["full_name"] = descriptor->full_name();
 }
 
 }  // namespace
@@ -83,12 +84,14 @@ void EnumFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   printer->Print(variables_,
     "inline $type$ $classname$::$name$() const {\n"
+    "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  return static_cast< $type$ >($name$_);\n"
     "}\n"
     "inline void $classname$::set_$name$($type$ value) {\n"
     "  assert($type$_IsValid(value));\n"
     "  set_has_$name$();\n"
     "  $name$_ = value;\n"
+    "  // @@protoc_insertion_point(field_set:$full_name$)\n"
     "}\n");
 }
 
@@ -121,10 +124,15 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
     "       input, &value)));\n"
     "if ($type$_IsValid(value)) {\n"
     "  set_$name$(static_cast< $type$ >(value));\n");
-  if (HasUnknownFields(descriptor_->file())) {
+  if (UseUnknownFieldSet(descriptor_->file())) {
     printer->Print(variables_,
       "} else {\n"
       "  mutable_unknown_fields()->AddVarint($number$, value);\n");
+  } else {
+    printer->Print(
+      "} else {\n"
+      "  unknown_fields_stream.WriteVarint32(tag);\n"
+      "  unknown_fields_stream.WriteVarint32(value);\n");
   }
   printer->Print(variables_,
     "}\n");
@@ -153,6 +161,52 @@ GenerateByteSize(io::Printer* printer) const {
 
 // ===================================================================
 
+EnumOneofFieldGenerator::
+EnumOneofFieldGenerator(const FieldDescriptor* descriptor,
+                        const Options& options)
+  : EnumFieldGenerator(descriptor, options) {
+  SetCommonOneofFieldVariables(descriptor, &variables_);
+}
+
+EnumOneofFieldGenerator::~EnumOneofFieldGenerator() {}
+
+void EnumOneofFieldGenerator::
+GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+  printer->Print(variables_,
+    "inline $type$ $classname$::$name$() const {\n"
+    "  if (has_$name$()) {\n"
+    "    return static_cast< $type$ >($oneof_prefix$$name$_);\n"
+    "  }\n"
+    "  return static_cast< $type$ >($default$);\n"
+    "}\n"
+    "inline void $classname$::set_$name$($type$ value) {\n"
+    "  assert($type$_IsValid(value));\n"
+    "  if (!has_$name$()) {\n"
+    "    clear_$oneof_name$();\n"
+    "    set_has_$name$();\n"
+    "  }\n"
+    "  $oneof_prefix$$name$_ = value;\n"
+    "}\n");
+}
+
+void EnumOneofFieldGenerator::
+GenerateClearingCode(io::Printer* printer) const {
+  printer->Print(variables_, "$oneof_prefix$$name$_ = $default$;\n");
+}
+
+void EnumOneofFieldGenerator::
+GenerateSwappingCode(io::Printer* printer) const {
+  // Don't print any swapping code. Swapping the union will swap this field.
+}
+
+void EnumOneofFieldGenerator::
+GenerateConstructorCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "  $classname$_default_oneof_instance_->$name$_ = $default$;\n");
+}
+
+// ===================================================================
+
 RepeatedEnumFieldGenerator::
 RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor,
                            const Options& options)
@@ -166,7 +220,8 @@ void RepeatedEnumFieldGenerator::
 GeneratePrivateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "::google::protobuf::RepeatedField<int> $name$_;\n");
-  if (descriptor_->options().packed() && HasGeneratedMethods(descriptor_->file())) {
+  if (descriptor_->options().packed()
+      && HasGeneratedMethods(descriptor_->file())) {
     printer->Print(variables_,
       "mutable int _$name$_cached_byte_size_;\n");
   }
@@ -187,23 +242,28 @@ void RepeatedEnumFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   printer->Print(variables_,
     "inline $type$ $classname$::$name$(int index) const {\n"
+    "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  return static_cast< $type$ >($name$_.Get(index));\n"
     "}\n"
     "inline void $classname$::set_$name$(int index, $type$ value) {\n"
     "  assert($type$_IsValid(value));\n"
     "  $name$_.Set(index, value);\n"
+    "  // @@protoc_insertion_point(field_set:$full_name$)\n"
     "}\n"
     "inline void $classname$::add_$name$($type$ value) {\n"
     "  assert($type$_IsValid(value));\n"
     "  $name$_.Add(value);\n"
+    "  // @@protoc_insertion_point(field_add:$full_name$)\n"
     "}\n");
   printer->Print(variables_,
     "inline const ::google::protobuf::RepeatedField<int>&\n"
     "$classname$::$name$() const {\n"
+    "  // @@protoc_insertion_point(field_list:$full_name$)\n"
     "  return $name$_;\n"
     "}\n"
     "inline ::google::protobuf::RepeatedField<int>*\n"
     "$classname$::mutable_$name$() {\n"
+    "  // @@protoc_insertion_point(field_mutable_list:$full_name$)\n"
     "  return &$name$_;\n"
     "}\n");
 }
@@ -238,10 +298,15 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
     "       input, &value)));\n"
     "if ($type$_IsValid(value)) {\n"
     "  add_$name$(static_cast< $type$ >(value));\n");
-  if (HasUnknownFields(descriptor_->file())) {
+  if (UseUnknownFieldSet(descriptor_->file())) {
     printer->Print(variables_,
       "} else {\n"
       "  mutable_unknown_fields()->AddVarint($number$, value);\n");
+  } else {
+    printer->Print(
+      "} else {\n"
+      "  unknown_fields_stream.WriteVarint32(tag);\n"
+      "  unknown_fields_stream.WriteVarint32(value);\n");
   }
   printer->Print("}\n");
 }

@@ -67,6 +67,14 @@ public class LazyStringArrayListTest extends TestCase {
     list.remove(1);
     assertSame(STRING_A, list.get(0));
     assertSame(STRING_C, list.get(1));
+
+    List<ByteString> byteStringList = list.asByteStringList();
+    assertEquals(BYTE_STRING_A, byteStringList.get(0));
+    assertEquals(BYTE_STRING_C, byteStringList.get(1));
+
+    // Underlying list should be transformed.
+    assertSame(byteStringList.get(0), list.getByteString(0));
+    assertSame(byteStringList.get(1), list.getByteString(1));
   }
 
   public void testJustByteString() {
@@ -83,6 +91,10 @@ public class LazyStringArrayListTest extends TestCase {
     list.remove(1);
     assertSame(BYTE_STRING_A, list.getByteString(0));
     assertSame(BYTE_STRING_C, list.getByteString(1));
+
+    List<ByteString> byteStringList = list.asByteStringList();
+    assertSame(BYTE_STRING_A, byteStringList.get(0));
+    assertSame(BYTE_STRING_C, byteStringList.get(1));
   }
 
   public void testConversionBackAndForth() {

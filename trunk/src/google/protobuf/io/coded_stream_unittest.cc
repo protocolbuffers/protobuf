@@ -144,6 +144,10 @@ uint8 CodedStreamTest::buffer_[CodedStreamTest::kBufferSize];
 // checks.
 const int kBlockSizes[] = {1, 2, 3, 5, 7, 13, 32, 1024};
 
+// In several ReadCord test functions, we either clear the Cord before ReadCord
+// calls or not.
+const bool kResetCords[] = {false, true};
+
 // -------------------------------------------------------------------
 // Varint tests.
 
@@ -682,6 +686,191 @@ TEST_F(CodedStreamTest, ReadStringImpossiblyLargeFromStringOnHeap) {
   EXPECT_FALSE(coded_input.ReadString(&str, 1 << 30));
 }
 
+TEST_1D(CodedStreamTest, ReadStringReservesMemoryOnTotalLimit, kBlockSizes) {
+  memcpy(buffer_, kRawBytes, sizeof(kRawBytes));
+  ArrayInputStream input(buffer_, sizeof(buffer_), kBlockSizes_case);
+
+  {
+    CodedInputStream coded_input(&input);
+    coded_input.SetTotalBytesLimit(sizeof(kRawBytes), sizeof(kRawBytes));
+    EXPECT_EQ(sizeof(kRawBytes), coded_input.BytesUntilTotalBytesLimit());
+
+    string str;
+    EXPECT_TRUE(coded_input.ReadString(&str, strlen(kRawBytes)));
+    EXPECT_EQ(sizeof(kRawBytes) - strlen(kRawBytes),
+              coded_input.BytesUntilTotalBytesLimit());
+    EXPECT_EQ(kRawBytes, str);
+    // TODO(liujisi): Replace with a more meaningful test (see cl/60966023).
+    EXPECT_GE(str.capacity(), strlen(kRawBytes));
+  }
+
+  EXPECT_EQ(strlen(kRawBytes), input.ByteCount());
+}
+
+TEST_1D(CodedStreamTest, ReadStringReservesMemoryOnPushedLimit, kBlockSizes) {
+  memcpy(buffer_, kRawBytes, sizeof(kRawBytes));
+  ArrayInputStream input(buffer_, sizeof(buffer_), kBlockSizes_case);
+
+  {
+    CodedInputStream coded_input(&input);
+    coded_input.PushLimit(sizeof(buffer_));
+
+    string str;
+    EXPECT_TRUE(coded_input.ReadString(&str, strlen(kRawBytes)));
+    EXPECT_EQ(kRawBytes, str);
+    // TODO(liujisi): Replace with a more meaningful test (see cl/60966023).
+    EXPECT_GE(str.capacity(), strlen(kRawBytes));
+  }
+
+  EXPECT_EQ(strlen(kRawBytes), input.ByteCount());
+}
+
+TEST_F(CodedStreamTest, ReadStringNoReservationIfLimitsNotSet) {
+  memcpy(buffer_, kRawBytes, sizeof(kRawBytes));
+  // Buffer size in the input must be smaller than sizeof(kRawBytes),
+  // otherwise check against capacity will fail as ReadStringInline()
+  // will handle the reading and will reserve the memory as needed.
+  ArrayInputStream input(buffer_, sizeof(buffer_), 32);
+
+  {
+    CodedInputStream coded_input(&input);
+
+    string str;
+    EXPECT_TRUE(coded_input.ReadString(&str, strlen(kRawBytes)));
+    EXPECT_EQ(kRawBytes, str);
+    // Note: this check depends on string class implementation. It
+    // expects that string will allocate more than strlen(kRawBytes)
+    // if the content of kRawBytes is appended to string in small
+    // chunks.
+    // TODO(liujisi): Replace with a more meaningful test (see cl/60966023).
+    EXPECT_GE(str.capacity(), strlen(kRawBytes));
+  }
+
+  EXPECT_EQ(strlen(kRawBytes), input.ByteCount());
+}
+
+TEST_F(CodedStreamTest, ReadStringNoReservationSizeIsNegative) {
+  memcpy(buffer_, kRawBytes, sizeof(kRawBytes));
+  // Buffer size in the input must be smaller than sizeof(kRawBytes),
+  // otherwise check against capacity will fail as ReadStringInline()
+  // will handle the reading and will reserve the memory as needed.
+  ArrayInputStream input(buffer_, sizeof(buffer_), 32);
+
+  {
+    CodedInputStream coded_input(&input);
+    coded_input.PushLimit(sizeof(buffer_));
+
+    string str;
+    EXPECT_FALSE(coded_input.ReadString(&str, -1));
+    // Note: this check depends on string class implementation. It
+    // expects that string will always allocate the same amount of
+    // memory for an empty string.
+    EXPECT_EQ(string().capacity(), str.capacity());
+  }
+}
+
+TEST_F(CodedStreamTest, ReadStringNoReservationSizeIsLarge) {
+  memcpy(buffer_, kRawBytes, sizeof(kRawBytes));
+  // Buffer size in the input must be smaller than sizeof(kRawBytes),
+  // otherwise check against capacity will fail as ReadStringInline()
+  // will handle the reading and will reserve the memory as needed.
+  ArrayInputStream input(buffer_, sizeof(buffer_), 32);
+
+  {
+    CodedInputStream coded_input(&input);
+    coded_input.PushLimit(sizeof(buffer_));
+
+    string str;
+    EXPECT_FALSE(coded_input.ReadString(&str, 1 << 30));
+    EXPECT_GT(1 << 30, str.capacity());
+  }
+}
+
+TEST_F(CodedStreamTest, ReadStringNoReservationSizeIsOverTheLimit) {
+  memcpy(buffer_, kRawBytes, sizeof(kRawBytes));
+  // Buffer size in the input must be smaller than sizeof(kRawBytes),
+  // otherwise check against capacity will fail as ReadStringInline()
+  // will handle the reading and will reserve the memory as needed.
+  ArrayInputStream input(buffer_, sizeof(buffer_), 32);
+
+  {
+    CodedInputStream coded_input(&input);
+    coded_input.PushLimit(16);
+
+    string str;
+    EXPECT_FALSE(coded_input.ReadString(&str, strlen(kRawBytes)));
+    // Note: this check depends on string class implementation. It
+    // expects that string will allocate less than strlen(kRawBytes)
+    // for an empty string.
+    EXPECT_GT(strlen(kRawBytes), str.capacity());
+  }
+}
+
+TEST_F(CodedStreamTest, ReadStringNoReservationSizeIsOverTheTotalBytesLimit) {
+  memcpy(buffer_, kRawBytes, sizeof(kRawBytes));
+  // Buffer size in the input must be smaller than sizeof(kRawBytes),
+  // otherwise check against capacity will fail as ReadStringInline()
+  // will handle the reading and will reserve the memory as needed.
+  ArrayInputStream input(buffer_, sizeof(buffer_), 32);
+
+  {
+    CodedInputStream coded_input(&input);
+    coded_input.SetTotalBytesLimit(16, 16);
+
+    string str;
+    EXPECT_FALSE(coded_input.ReadString(&str, strlen(kRawBytes)));
+    // Note: this check depends on string class implementation. It
+    // expects that string will allocate less than strlen(kRawBytes)
+    // for an empty string.
+    EXPECT_GT(strlen(kRawBytes), str.capacity());
+  }
+}
+
+TEST_F(CodedStreamTest,
+       ReadStringNoReservationSizeIsOverTheClosestLimit_GlobalLimitIsCloser) {
+  memcpy(buffer_, kRawBytes, sizeof(kRawBytes));
+  // Buffer size in the input must be smaller than sizeof(kRawBytes),
+  // otherwise check against capacity will fail as ReadStringInline()
+  // will handle the reading and will reserve the memory as needed.
+  ArrayInputStream input(buffer_, sizeof(buffer_), 32);
+
+  {
+    CodedInputStream coded_input(&input);
+    coded_input.PushLimit(sizeof(buffer_));
+    coded_input.SetTotalBytesLimit(16, 16);
+
+    string str;
+    EXPECT_FALSE(coded_input.ReadString(&str, strlen(kRawBytes)));
+    // Note: this check depends on string class implementation. It
+    // expects that string will allocate less than strlen(kRawBytes)
+    // for an empty string.
+    EXPECT_GT(strlen(kRawBytes), str.capacity());
+  }
+}
+
+TEST_F(CodedStreamTest,
+       ReadStringNoReservationSizeIsOverTheClosestLimit_LocalLimitIsCloser) {
+  memcpy(buffer_, kRawBytes, sizeof(kRawBytes));
+  // Buffer size in the input must be smaller than sizeof(kRawBytes),
+  // otherwise check against capacity will fail as ReadStringInline()
+  // will handle the reading and will reserve the memory as needed.
+  ArrayInputStream input(buffer_, sizeof(buffer_), 32);
+
+  {
+    CodedInputStream coded_input(&input);
+    coded_input.PushLimit(16);
+    coded_input.SetTotalBytesLimit(sizeof(buffer_), sizeof(buffer_));
+    EXPECT_EQ(sizeof(buffer_), coded_input.BytesUntilTotalBytesLimit());
+
+    string str;
+    EXPECT_FALSE(coded_input.ReadString(&str, strlen(kRawBytes)));
+    // Note: this check depends on string class implementation. It
+    // expects that string will allocate less than strlen(kRawBytes)
+    // for an empty string.
+    EXPECT_GT(strlen(kRawBytes), str.capacity());
+  }
+}
+
 
 // -------------------------------------------------------------------
 // Skip
@@ -980,9 +1169,11 @@ TEST_F(CodedStreamTest, TotalBytesLimit) {
   ArrayInputStream input(buffer_, sizeof(buffer_));
   CodedInputStream coded_input(&input);
   coded_input.SetTotalBytesLimit(16, -1);
+  EXPECT_EQ(16, coded_input.BytesUntilTotalBytesLimit());
 
   string str;
   EXPECT_TRUE(coded_input.ReadString(&str, 16));
+  EXPECT_EQ(0, coded_input.BytesUntilTotalBytesLimit());
 
   vector<string> errors;
 
@@ -997,7 +1188,9 @@ TEST_F(CodedStreamTest, TotalBytesLimit) {
     "A protocol message was rejected because it was too big", errors[0]);
 
   coded_input.SetTotalBytesLimit(32, -1);
+  EXPECT_EQ(16, coded_input.BytesUntilTotalBytesLimit());
   EXPECT_TRUE(coded_input.ReadString(&str, 16));
+  EXPECT_EQ(0, coded_input.BytesUntilTotalBytesLimit());
 }
 
 TEST_F(CodedStreamTest, TotalBytesLimitNotValidMessageEnd) {

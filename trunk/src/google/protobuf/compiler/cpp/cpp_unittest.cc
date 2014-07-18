@@ -46,6 +46,7 @@
 
 #include <google/protobuf/compiler/cpp/cpp_unittest.h>
 
+#include <memory>
 #include <vector>
 
 #include <google/protobuf/unittest.pb.h>
@@ -53,6 +54,7 @@
 #include <google/protobuf/unittest_embed_optimize_for.pb.h>
 #include <google/protobuf/unittest_no_generic_services.pb.h>
 #include <google/protobuf/test_util.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h>
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -148,6 +150,19 @@ TEST(GeneratedMessageTest, Defaults) {
             &message.optional_import_message());
 }
 
+TEST(GeneratedMessageTest, Int32StringConversion) {
+  EXPECT_EQ("971", Int32ToString(971));
+  EXPECT_EQ("(~0x7fffffff)", Int32ToString(kint32min));
+  EXPECT_EQ("2147483647", Int32ToString(kint32max));
+}
+
+TEST(GeneratedMessageTest, Int64StringConversion) {
+  EXPECT_EQ("GOOGLE_LONGLONG(971)", Int64ToString(971));
+  EXPECT_EQ("GOOGLE_LONGLONG(-2147483648)", Int64ToString(kint32min));
+  EXPECT_EQ("GOOGLE_LONGLONG(-0x8000000000000000)", Int64ToString(kint64min));
+  EXPECT_EQ("GOOGLE_LONGLONG(9223372036854775807)", Int64ToString(kint64max));
+}
+
 TEST(GeneratedMessageTest, FloatingPointDefaults) {
   const unittest::TestExtremeDefaultValues& extreme_default =
       unittest::TestExtremeDefaultValues::default_instance();
@@ -233,11 +248,10 @@ TEST(GeneratedMessageTest, ReleaseString) {
 
   message.set_default_string("blah");
   EXPECT_TRUE(message.has_default_string());
-  string* str = message.release_default_string();
+  scoped_ptr<string> str(message.release_default_string());
   EXPECT_FALSE(message.has_default_string());
   ASSERT_TRUE(str != NULL);
   EXPECT_EQ("blah", *str);
-  delete str;
 
   EXPECT_EQ(NULL, message.release_default_string());
   EXPECT_FALSE(message.has_default_string());
@@ -253,12 +267,11 @@ TEST(GeneratedMessageTest, ReleaseMessage) {
   EXPECT_FALSE(message.has_optional_nested_message());
 
   message.mutable_optional_nested_message()->set_bb(1);
-  unittest::TestAllTypes::NestedMessage* nest =
-      message.release_optional_nested_message();
+  scoped_ptr<unittest::TestAllTypes::NestedMessage> nest(
+      message.release_optional_nested_message());
   EXPECT_FALSE(message.has_optional_nested_message());
   ASSERT_TRUE(nest != NULL);
   EXPECT_EQ(1, nest->bb());
-  delete nest;
 
   EXPECT_EQ(NULL, message.release_optional_nested_message());
   EXPECT_FALSE(message.has_optional_nested_message());
@@ -381,6 +394,7 @@ TEST(GeneratedMessageTest, StringCharStarLength) {
   EXPECT_EQ("wx", message.repeated_string(0));
 }
 
+
 TEST(GeneratedMessageTest, CopyFrom) {
   unittest::TestAllTypes message1, message2;
 
@@ -392,6 +406,7 @@ TEST(GeneratedMessageTest, CopyFrom) {
   message2.CopyFrom(message2);
   TestUtil::ExpectAllFieldsSet(message2);
 }
+
 
 TEST(GeneratedMessageTest, SwapWithEmpty) {
   unittest::TestAllTypes message1, message2;
@@ -763,6 +778,9 @@ TEST(GeneratedMessageTest, TestConflictingSymbolNames) {
   message.set_friend_(5);
   EXPECT_EQ(5, message.friend_());
 
+  message.set_class_(6);
+  EXPECT_EQ(6, message.class_());
+
   // Instantiate extension template functions to test conflicting template
   // parameter names.
   typedef protobuf_unittest::TestConflictingSymbolNamesExtension ExtensionMessage;
@@ -840,6 +858,40 @@ TEST(GeneratedMessageTest, TestSpaceUsed) {
             message1.SpaceUsed());
 }
 
+TEST(GeneratedMessageTest, TestOneofSpaceUsed) {
+  unittest::TestOneof2 message1;
+  EXPECT_LE(sizeof(unittest::TestOneof2), message1.SpaceUsed());
+
+  const int empty_message_size = message1.SpaceUsed();
+  // Setting primitive types shouldn't affect the space used.
+  message1.set_foo_int(123);
+  message1.set_bar_int(12345);
+  EXPECT_EQ(empty_message_size, message1.SpaceUsed());
+
+  // Setting a string in oneof to a small value should only increase SpaceUsed()
+  // by the size of a string object.
+  message1.set_foo_string("abc");
+  EXPECT_LE(empty_message_size + sizeof(string), message1.SpaceUsed());
+
+  // Setting a string in oneof to a value larger than the string object itself
+  // should increase SpaceUsed(), because it cannot store the value internally.
+  message1.set_foo_string(string(sizeof(string) + 1, 'x'));
+  int min_expected_increase = message1.foo_string().capacity() +
+      sizeof(string);
+  EXPECT_LE(empty_message_size + min_expected_increase,
+            message1.SpaceUsed());
+
+  // Setting a message in oneof should delete the other fields and increase the
+  // size by the size of the nested message type. NestedMessage is simple enough
+  // that it is equal to sizeof(NestedMessage)
+  message1.mutable_foo_message();
+  ASSERT_EQ(sizeof(unittest::TestOneof2::NestedMessage),
+            message1.foo_message().SpaceUsed());
+  EXPECT_EQ(empty_message_size +
+            sizeof(unittest::TestOneof2::NestedMessage),
+            message1.SpaceUsed());
+}
+
 #endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
 
 
@@ -887,6 +939,9 @@ TEST(GeneratedEnumTest, EnumValuesAsSwitchCases) {
     case unittest::TestAllTypes::BAZ:
       i = 3;
       break;
+    case unittest::TestAllTypes::NEG:
+      i = -1;
+      break;
     // no default case:  We want to make sure the compiler recognizes that
     //   all cases are covered.  (GCC warns if you do not cover all cases of
     //   an enum in a switch.)
@@ -915,7 +970,7 @@ TEST(GeneratedEnumTest, IsValidValue) {
 }
 
 TEST(GeneratedEnumTest, MinAndMax) {
-  EXPECT_EQ(unittest::TestAllTypes::FOO,
+  EXPECT_EQ(unittest::TestAllTypes::NEG,
             unittest::TestAllTypes::NestedEnum_MIN);
   EXPECT_EQ(unittest::TestAllTypes::BAZ,
             unittest::TestAllTypes::NestedEnum_MAX);
@@ -987,6 +1042,20 @@ TEST(GeneratedEnumTest, GetEnumDescriptor) {
             GetEnumDescriptor<unittest::TestEnumWithDupValue>());
   EXPECT_EQ(unittest::TestSparseEnum_descriptor(),
             GetEnumDescriptor<unittest::TestSparseEnum>());
+}
+
+enum NonProtoEnum {
+  kFoo = 1,
+};
+
+TEST(GeneratedEnumTest, IsProtoEnumTypeTrait) {
+  EXPECT_TRUE(is_proto_enum<unittest::TestAllTypes::NestedEnum>::value);
+  EXPECT_TRUE(is_proto_enum<unittest::ForeignEnum>::value);
+  EXPECT_TRUE(is_proto_enum<unittest::TestEnumWithDupValue>::value);
+  EXPECT_TRUE(is_proto_enum<unittest::TestSparseEnum>::value);
+
+  EXPECT_FALSE(is_proto_enum<int>::value);
+  EXPECT_FALSE(is_proto_enum<NonProtoEnum>::value);
 }
 
 #endif  // PROTOBUF_TEST_NO_DESCRIPTORS
@@ -1286,6 +1355,657 @@ TEST_F(GeneratedServiceTest, NotImplemented) {
                             done_.get());
 
   EXPECT_TRUE(controller.called_);
+}
+
+// ===================================================================
+
+class OneofTest : public testing::Test {
+ protected:
+  virtual void SetUp() {
+  }
+
+  void ExpectEnumCasesWork(const unittest::TestOneof2 &message) {
+    switch (message.foo_case()) {
+      case unittest::TestOneof2::kFooInt:
+        EXPECT_TRUE(message.has_foo_int());
+        break;
+      case unittest::TestOneof2::kFooString:
+        EXPECT_TRUE(message.has_foo_string());
+        break;
+      case unittest::TestOneof2::kFooBytes:
+        EXPECT_TRUE(message.has_foo_bytes());
+        break;
+      case unittest::TestOneof2::kFooEnum:
+        EXPECT_TRUE(message.has_foo_enum());
+        break;
+      case unittest::TestOneof2::kFooMessage:
+        EXPECT_TRUE(message.has_foo_message());
+        break;
+      case unittest::TestOneof2::kFoogroup:
+        EXPECT_TRUE(message.has_foogroup());
+        break;
+      case unittest::TestOneof2::FOO_NOT_SET:
+        break;
+    }
+  }
+};
+
+TEST_F(OneofTest, SettingOneFieldClearsOthers) {
+  unittest::TestOneof2 message;
+
+  message.set_foo_int(123);
+  EXPECT_TRUE(message.has_foo_int());
+  TestUtil::ExpectAtMostOneFieldSetInOneof(message);
+
+  message.set_foo_string("foo");
+  EXPECT_TRUE(message.has_foo_string());
+  TestUtil::ExpectAtMostOneFieldSetInOneof(message);
+
+
+  message.set_foo_bytes("qux");
+  EXPECT_TRUE(message.has_foo_bytes());
+  TestUtil::ExpectAtMostOneFieldSetInOneof(message);
+
+  message.set_foo_enum(unittest::TestOneof2::FOO);
+  EXPECT_TRUE(message.has_foo_enum());
+  TestUtil::ExpectAtMostOneFieldSetInOneof(message);
+
+  message.mutable_foo_message()->set_qux_int(234);
+  EXPECT_TRUE(message.has_foo_message());
+  TestUtil::ExpectAtMostOneFieldSetInOneof(message);
+
+  message.mutable_foogroup()->set_a(345);
+  EXPECT_TRUE(message.has_foogroup());
+  TestUtil::ExpectAtMostOneFieldSetInOneof(message);
+
+
+  // we repeat this because we didn't test if this properly clears other fields
+  // at the beginning.
+  message.set_foo_int(123);
+  EXPECT_TRUE(message.has_foo_int());
+  TestUtil::ExpectAtMostOneFieldSetInOneof(message);
+}
+
+TEST_F(OneofTest, EnumCases) {
+  unittest::TestOneof2 message;
+
+  message.set_foo_int(123);
+  ExpectEnumCasesWork(message);
+  message.set_foo_string("foo");
+  ExpectEnumCasesWork(message);
+  message.set_foo_bytes("qux");
+  ExpectEnumCasesWork(message);
+  message.set_foo_enum(unittest::TestOneof2::FOO);
+  ExpectEnumCasesWork(message);
+  message.mutable_foo_message()->set_qux_int(234);
+  ExpectEnumCasesWork(message);
+  message.mutable_foogroup()->set_a(345);
+  ExpectEnumCasesWork(message);
+}
+
+TEST_F(OneofTest, PrimitiveType) {
+  unittest::TestOneof2 message;
+  // Unset field returns default value
+  EXPECT_EQ(message.foo_int(), 0);
+
+  message.set_foo_int(123);
+  EXPECT_TRUE(message.has_foo_int());
+  EXPECT_EQ(message.foo_int(), 123);
+  message.clear_foo_int();
+  EXPECT_FALSE(message.has_foo_int());
+}
+
+TEST_F(OneofTest, EnumType) {
+  unittest::TestOneof2 message;
+  // Unset field returns default value
+  EXPECT_EQ(message.foo_enum(), 1);
+
+  message.set_foo_enum(unittest::TestOneof2::FOO);
+  EXPECT_TRUE(message.has_foo_enum());
+  EXPECT_EQ(message.foo_enum(), unittest::TestOneof2::FOO);
+  message.clear_foo_enum();
+  EXPECT_FALSE(message.has_foo_enum());
+}
+
+TEST_F(OneofTest, SetString) {
+  // Check that setting a string field in various ways works
+  unittest::TestOneof2 message;
+
+  // Unset field returns default value
+  EXPECT_EQ(message.foo_string(), "");
+
+  message.set_foo_string("foo");
+  EXPECT_TRUE(message.has_foo_string());
+  EXPECT_EQ(message.foo_string(), "foo");
+  message.clear_foo_string();
+  EXPECT_FALSE(message.has_foo_string());
+
+  message.set_foo_string(string("bar"));
+  EXPECT_TRUE(message.has_foo_string());
+  EXPECT_EQ(message.foo_string(), "bar");
+  message.clear_foo_string();
+  EXPECT_FALSE(message.has_foo_string());
+
+
+  message.set_foo_string("qux", 3);
+  EXPECT_TRUE(message.has_foo_string());
+  EXPECT_EQ(message.foo_string(), "qux");
+  message.clear_foo_string();
+  EXPECT_FALSE(message.has_foo_string());
+
+  message.mutable_foo_string()->assign("quux");
+  EXPECT_TRUE(message.has_foo_string());
+  EXPECT_EQ(message.foo_string(), "quux");
+  message.clear_foo_string();
+  EXPECT_FALSE(message.has_foo_string());
+
+  message.set_foo_string("corge");
+  EXPECT_TRUE(message.has_foo_string());
+  EXPECT_EQ(message.foo_string(), "corge");
+  message.clear_foo_string();
+  EXPECT_FALSE(message.has_foo_string());
+}
+
+TEST_F(OneofTest, ReleaseString) {
+  // Check that release_foo() starts out NULL, and gives us a value
+  // that we can delete after it's been set.
+  unittest::TestOneof2 message;
+
+  EXPECT_EQ(NULL, message.release_foo_string());
+  EXPECT_FALSE(message.has_foo_string());
+
+  message.set_foo_string("blah");
+  EXPECT_TRUE(message.has_foo_string());
+  scoped_ptr<string> str(message.release_foo_string());
+  EXPECT_FALSE(message.has_foo_string());
+  ASSERT_TRUE(str != NULL);
+  EXPECT_EQ("blah", *str);
+
+  EXPECT_EQ(NULL, message.release_foo_string());
+  EXPECT_FALSE(message.has_foo_string());
+}
+
+TEST_F(OneofTest, SetAllocatedString) {
+  // Check that set_allocated_foo() works for strings.
+  unittest::TestOneof2 message;
+
+  EXPECT_FALSE(message.has_foo_string());
+  const string kHello("hello");
+  message.set_foo_string(kHello);
+  EXPECT_TRUE(message.has_foo_string());
+
+  message.set_allocated_foo_string(NULL);
+  EXPECT_FALSE(message.has_foo_string());
+  EXPECT_EQ("", message.foo_string());
+
+  message.set_allocated_foo_string(new string(kHello));
+  EXPECT_TRUE(message.has_foo_string());
+  EXPECT_EQ(kHello, message.foo_string());
+}
+
+
+TEST_F(OneofTest, SetMessage) {
+  // Check that setting a message field works
+  unittest::TestOneof2 message;
+
+  // Unset field returns default instance
+  EXPECT_EQ(&message.foo_message(),
+            &unittest::TestOneof2_NestedMessage::default_instance());
+  EXPECT_EQ(message.foo_message().qux_int(), 0);
+
+  message.mutable_foo_message()->set_qux_int(234);
+  EXPECT_TRUE(message.has_foo_message());
+  EXPECT_EQ(message.foo_message().qux_int(), 234);
+  message.clear_foo_message();
+  EXPECT_FALSE(message.has_foo_message());
+}
+
+TEST_F(OneofTest, ReleaseMessage) {
+  // Check that release_foo() starts out NULL, and gives us a value
+  // that we can delete after it's been set.
+  unittest::TestOneof2 message;
+
+  EXPECT_EQ(NULL, message.release_foo_message());
+  EXPECT_FALSE(message.has_foo_message());
+
+  message.mutable_foo_message()->set_qux_int(1);
+  EXPECT_TRUE(message.has_foo_message());
+  scoped_ptr<unittest::TestOneof2_NestedMessage> mes(
+      message.release_foo_message());
+  EXPECT_FALSE(message.has_foo_message());
+  ASSERT_TRUE(mes != NULL);
+  EXPECT_EQ(1, mes->qux_int());
+
+  EXPECT_EQ(NULL, message.release_foo_message());
+  EXPECT_FALSE(message.has_foo_message());
+}
+
+TEST_F(OneofTest, SetAllocatedMessage) {
+  // Check that set_allocated_foo() works for messages.
+  unittest::TestOneof2 message;
+
+  EXPECT_FALSE(message.has_foo_message());
+
+  message.mutable_foo_message()->set_qux_int(1);
+  EXPECT_TRUE(message.has_foo_message());
+
+  message.set_allocated_foo_message(NULL);
+  EXPECT_FALSE(message.has_foo_message());
+  EXPECT_EQ(&message.foo_message(),
+            &unittest::TestOneof2_NestedMessage::default_instance());
+
+  message.mutable_foo_message()->set_qux_int(1);
+  unittest::TestOneof2_NestedMessage* mes = message.release_foo_message();
+  ASSERT_TRUE(mes != NULL);
+  EXPECT_FALSE(message.has_foo_message());
+
+  message.set_allocated_foo_message(mes);
+  EXPECT_TRUE(message.has_foo_message());
+  EXPECT_EQ(1, message.foo_message().qux_int());
+}
+
+
+TEST_F(OneofTest, Clear) {
+  unittest::TestOneof2 message;
+
+  message.set_foo_int(1);
+  EXPECT_TRUE(message.has_foo_int());
+  message.clear_foo_int();
+  EXPECT_FALSE(message.has_foo_int());
+}
+
+TEST_F(OneofTest, Defaults) {
+  unittest::TestOneof2 message;
+
+  EXPECT_FALSE(message.has_foo_int());
+  EXPECT_EQ(message.foo_int(), 0);
+
+  EXPECT_FALSE(message.has_foo_string());
+  EXPECT_EQ(message.foo_string(), "");
+
+
+  EXPECT_FALSE(message.has_foo_bytes());
+  EXPECT_EQ(message.foo_bytes(), "");
+
+  EXPECT_FALSE(message.has_foo_enum());
+  EXPECT_EQ(message.foo_enum(), 1);
+
+  EXPECT_FALSE(message.has_foo_message());
+  EXPECT_EQ(message.foo_message().qux_int(), 0);
+
+  EXPECT_FALSE(message.has_foogroup());
+  EXPECT_EQ(message.foogroup().a(), 0);
+
+
+  EXPECT_FALSE(message.has_bar_int());
+  EXPECT_EQ(message.bar_int(), 5);
+
+  EXPECT_FALSE(message.has_bar_string());
+  EXPECT_EQ(message.bar_string(), "STRING");
+
+
+  EXPECT_FALSE(message.has_bar_bytes());
+  EXPECT_EQ(message.bar_bytes(), "BYTES");
+
+  EXPECT_FALSE(message.has_bar_enum());
+  EXPECT_EQ(message.bar_enum(), 2);
+}
+
+TEST_F(OneofTest, SwapWithEmpty) {
+  unittest::TestOneof2 message1, message2;
+  message1.set_foo_string("FOO");
+  EXPECT_TRUE(message1.has_foo_string());
+  message1.Swap(&message2);
+  EXPECT_FALSE(message1.has_foo_string());
+  EXPECT_TRUE(message2.has_foo_string());
+  EXPECT_EQ(message2.foo_string(), "FOO");
+}
+
+TEST_F(OneofTest, SwapWithSelf) {
+  unittest::TestOneof2 message;
+  message.set_foo_string("FOO");
+  EXPECT_TRUE(message.has_foo_string());
+  message.Swap(&message);
+  EXPECT_TRUE(message.has_foo_string());
+  EXPECT_EQ(message.foo_string(), "FOO");
+}
+
+TEST_F(OneofTest, SwapBothHasFields) {
+  unittest::TestOneof2 message1, message2;
+
+  message1.set_foo_string("FOO");
+  EXPECT_TRUE(message1.has_foo_string());
+  message2.mutable_foo_message()->set_qux_int(1);
+  EXPECT_TRUE(message2.has_foo_message());
+
+  message1.Swap(&message2);
+  EXPECT_FALSE(message1.has_foo_string());
+  EXPECT_FALSE(message2.has_foo_message());
+  EXPECT_TRUE(message1.has_foo_message());
+  EXPECT_EQ(message1.foo_message().qux_int(), 1);
+  EXPECT_TRUE(message2.has_foo_string());
+  EXPECT_EQ(message2.foo_string(), "FOO");
+}
+
+TEST_F(OneofTest, CopyContructor) {
+  unittest::TestOneof2 message1;
+  message1.set_foo_bytes("FOO");
+
+  unittest::TestOneof2 message2(message1);
+  EXPECT_TRUE(message2.has_foo_bytes());
+  EXPECT_EQ(message2.foo_bytes(), "FOO");
+}
+
+TEST_F(OneofTest, CopyFrom) {
+  unittest::TestOneof2 message1, message2;
+  message1.set_foo_enum(unittest::TestOneof2::BAR);
+  EXPECT_TRUE(message1.has_foo_enum());
+
+  message2.CopyFrom(message1);
+  EXPECT_TRUE(message2.has_foo_enum());
+  EXPECT_EQ(message2.foo_enum(), unittest::TestOneof2::BAR);
+
+  // Copying from self should be a no-op.
+  message2.CopyFrom(message2);
+  EXPECT_TRUE(message2.has_foo_enum());
+  EXPECT_EQ(message2.foo_enum(), unittest::TestOneof2::BAR);
+}
+
+TEST_F(OneofTest, CopyAssignmentOperator) {
+  unittest::TestOneof2 message1;
+  message1.mutable_foo_message()->set_qux_int(123);
+  EXPECT_TRUE(message1.has_foo_message());
+
+  unittest::TestOneof2 message2;
+  message2 = message1;
+  EXPECT_EQ(message2.foo_message().qux_int(), 123);
+
+  // Make sure that self-assignment does something sane.
+  message2 = message2;
+  EXPECT_EQ(message2.foo_message().qux_int(), 123);
+}
+
+TEST_F(OneofTest, UpcastCopyFrom) {
+  // Test the CopyFrom method that takes in the generic const Message&
+  // parameter.
+  unittest::TestOneof2 message1, message2;
+  message1.mutable_foogroup()->set_a(123);
+  EXPECT_TRUE(message1.has_foogroup());
+
+  const Message* source = implicit_cast<const Message*>(&message1);
+  message2.CopyFrom(*source);
+
+  EXPECT_TRUE(message2.has_foogroup());
+  EXPECT_EQ(message2.foogroup().a(), 123);
+}
+
+// Test the generated SerializeWithCachedSizesToArray(),
+// This indirectly tests MergePartialFromCodedStream()
+// We have to test each field type separately because we cannot set them at the
+// same time
+TEST_F(OneofTest, SerializationToArray) {
+  // Primitive type
+  {
+    unittest::TestOneof2 message1, message2;
+    string data;
+    message1.set_foo_int(123);
+    int size = message1.ByteSize();
+    data.resize(size);
+    uint8* start = reinterpret_cast<uint8*>(string_as_array(&data));
+    uint8* end = message1.SerializeWithCachedSizesToArray(start);
+    EXPECT_EQ(size, end - start);
+    EXPECT_TRUE(message2.ParseFromString(data));
+    EXPECT_EQ(message2.foo_int(), 123);
+  }
+
+  // String
+  {
+    unittest::TestOneof2 message1, message2;
+    string data;
+    message1.set_foo_string("foo");
+    int size = message1.ByteSize();
+    data.resize(size);
+    uint8* start = reinterpret_cast<uint8*>(string_as_array(&data));
+    uint8* end = message1.SerializeWithCachedSizesToArray(start);
+    EXPECT_EQ(size, end - start);
+    EXPECT_TRUE(message2.ParseFromString(data));
+    EXPECT_EQ(message2.foo_string(), "foo");
+  }
+
+
+  // Bytes
+  {
+    unittest::TestOneof2 message1, message2;
+    string data;
+    message1.set_foo_bytes("qux");
+    int size = message1.ByteSize();
+    data.resize(size);
+    uint8* start = reinterpret_cast<uint8*>(string_as_array(&data));
+    uint8* end = message1.SerializeWithCachedSizesToArray(start);
+    EXPECT_EQ(size, end - start);
+    EXPECT_TRUE(message2.ParseFromString(data));
+    EXPECT_EQ(message2.foo_bytes(), "qux");
+  }
+
+  // Enum
+  {
+    unittest::TestOneof2 message1, message2;
+    string data;
+    message1.set_foo_enum(unittest::TestOneof2::FOO);
+    int size = message1.ByteSize();
+    data.resize(size);
+    uint8* start = reinterpret_cast<uint8*>(string_as_array(&data));
+    uint8* end = message1.SerializeWithCachedSizesToArray(start);
+    EXPECT_EQ(size, end - start);
+    EXPECT_TRUE(message2.ParseFromString(data));
+    EXPECT_EQ(message2.foo_enum(), unittest::TestOneof2::FOO);
+  }
+
+  // Message
+  {
+    unittest::TestOneof2 message1, message2;
+    string data;
+    message1.mutable_foo_message()->set_qux_int(234);
+    int size = message1.ByteSize();
+    data.resize(size);
+    uint8* start = reinterpret_cast<uint8*>(string_as_array(&data));
+    uint8* end = message1.SerializeWithCachedSizesToArray(start);
+    EXPECT_EQ(size, end - start);
+    EXPECT_TRUE(message2.ParseFromString(data));
+    EXPECT_EQ(message2.foo_message().qux_int(), 234);
+  }
+
+  // Group
+  {
+    unittest::TestOneof2 message1, message2;
+    string data;
+    message1.mutable_foogroup()->set_a(345);
+    int size = message1.ByteSize();
+    data.resize(size);
+    uint8* start = reinterpret_cast<uint8*>(string_as_array(&data));
+    uint8* end = message1.SerializeWithCachedSizesToArray(start);
+    EXPECT_EQ(size, end - start);
+    EXPECT_TRUE(message2.ParseFromString(data));
+    EXPECT_EQ(message2.foogroup().a(), 345);
+  }
+
+}
+
+// Test the generated SerializeWithCachedSizes() by forcing the buffer to write
+// one byte at a time.
+// This indirectly tests MergePartialFromCodedStream()
+// We have to test each field type separately because we cannot set them at the
+// same time
+TEST_F(OneofTest, SerializationToStream) {
+  // Primitive type
+  {
+    unittest::TestOneof2 message1, message2;
+    string data;
+    message1.set_foo_int(123);
+    int size = message1.ByteSize();
+    data.resize(size);
+
+    {
+      // Allow the output stream to buffer only one byte at a time.
+      io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+      io::CodedOutputStream output_stream(&array_stream);
+      message1.SerializeWithCachedSizes(&output_stream);
+      EXPECT_FALSE(output_stream.HadError());
+      EXPECT_EQ(size, output_stream.ByteCount());
+    }
+
+    EXPECT_TRUE(message2.ParseFromString(data));
+    EXPECT_EQ(message2.foo_int(), 123);
+  }
+
+  // String
+  {
+    unittest::TestOneof2 message1, message2;
+    string data;
+    message1.set_foo_string("foo");
+    int size = message1.ByteSize();
+    data.resize(size);
+
+    {
+      // Allow the output stream to buffer only one byte at a time.
+      io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+      io::CodedOutputStream output_stream(&array_stream);
+      message1.SerializeWithCachedSizes(&output_stream);
+      EXPECT_FALSE(output_stream.HadError());
+      EXPECT_EQ(size, output_stream.ByteCount());
+    }
+
+    EXPECT_TRUE(message2.ParseFromString(data));
+    EXPECT_EQ(message2.foo_string(), "foo");
+  }
+
+
+  // Bytes
+  {
+    unittest::TestOneof2 message1, message2;
+    string data;
+    message1.set_foo_bytes("qux");
+    int size = message1.ByteSize();
+    data.resize(size);
+
+    {
+      // Allow the output stream to buffer only one byte at a time.
+      io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+      io::CodedOutputStream output_stream(&array_stream);
+      message1.SerializeWithCachedSizes(&output_stream);
+      EXPECT_FALSE(output_stream.HadError());
+      EXPECT_EQ(size, output_stream.ByteCount());
+    }
+
+    EXPECT_TRUE(message2.ParseFromString(data));
+    EXPECT_EQ(message2.foo_bytes(), "qux");
+  }
+
+  // Enum
+  {
+    unittest::TestOneof2 message1, message2;
+    string data;
+    message1.set_foo_enum(unittest::TestOneof2::FOO);
+    int size = message1.ByteSize();
+    data.resize(size);
+
+    {
+      // Allow the output stream to buffer only one byte at a time.
+      io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+      io::CodedOutputStream output_stream(&array_stream);
+      message1.SerializeWithCachedSizes(&output_stream);
+      EXPECT_FALSE(output_stream.HadError());
+      EXPECT_EQ(size, output_stream.ByteCount());
+    }
+
+    EXPECT_TRUE(message2.ParseFromString(data));
+    EXPECT_EQ(message2.foo_enum(), unittest::TestOneof2::FOO);
+  }
+
+  // Message
+  {
+    unittest::TestOneof2 message1, message2;
+    string data;
+    message1.mutable_foo_message()->set_qux_int(234);
+    int size = message1.ByteSize();
+    data.resize(size);
+
+    {
+      // Allow the output stream to buffer only one byte at a time.
+      io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+      io::CodedOutputStream output_stream(&array_stream);
+      message1.SerializeWithCachedSizes(&output_stream);
+      EXPECT_FALSE(output_stream.HadError());
+      EXPECT_EQ(size, output_stream.ByteCount());
+    }
+
+    EXPECT_TRUE(message2.ParseFromString(data));
+    EXPECT_EQ(message2.foo_message().qux_int(), 234);
+  }
+
+  // Group
+  {
+    unittest::TestOneof2 message1, message2;
+    string data;
+    message1.mutable_foogroup()->set_a(345);
+    int size = message1.ByteSize();
+    data.resize(size);
+
+    {
+      // Allow the output stream to buffer only one byte at a time.
+      io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+      io::CodedOutputStream output_stream(&array_stream);
+      message1.SerializeWithCachedSizes(&output_stream);
+      EXPECT_FALSE(output_stream.HadError());
+      EXPECT_EQ(size, output_stream.ByteCount());
+    }
+
+    EXPECT_TRUE(message2.ParseFromString(data));
+    EXPECT_EQ(message2.foogroup().a(), 345);
+  }
+
+}
+
+TEST_F(OneofTest, MergeFrom) {
+  unittest::TestOneof2 message1, message2;
+
+  message1.set_foo_int(123);
+  message2.MergeFrom(message1);
+  TestUtil::ExpectAtMostOneFieldSetInOneof(message2);
+  EXPECT_TRUE(message2.has_foo_int());
+  EXPECT_EQ(message2.foo_int(), 123);
+
+  message1.set_foo_string("foo");
+  message2.MergeFrom(message1);
+  TestUtil::ExpectAtMostOneFieldSetInOneof(message2);
+  EXPECT_TRUE(message2.has_foo_string());
+  EXPECT_EQ(message2.foo_string(), "foo");
+
+
+  message1.set_foo_bytes("qux");
+  message2.MergeFrom(message1);
+  TestUtil::ExpectAtMostOneFieldSetInOneof(message2);
+  EXPECT_TRUE(message2.has_foo_bytes());
+  EXPECT_EQ(message2.foo_bytes(), "qux");
+
+  message1.set_foo_enum(unittest::TestOneof2::FOO);
+  message2.MergeFrom(message1);
+  TestUtil::ExpectAtMostOneFieldSetInOneof(message2);
+  EXPECT_TRUE(message2.has_foo_enum());
+  EXPECT_EQ(message2.foo_enum(), unittest::TestOneof2::FOO);
+
+  message1.mutable_foo_message()->set_qux_int(234);
+  message2.MergeFrom(message1);
+  TestUtil::ExpectAtMostOneFieldSetInOneof(message2);
+  EXPECT_TRUE(message2.has_foo_message());
+  EXPECT_EQ(message2.foo_message().qux_int(), 234);
+
+  message1.mutable_foogroup()->set_a(345);
+  message2.MergeFrom(message1);
+  TestUtil::ExpectAtMostOneFieldSetInOneof(message2);
+  EXPECT_TRUE(message2.has_foogroup());
+  EXPECT_EQ(message2.foogroup().a(), 345);
+
 }
 
 }  // namespace cpp_unittest

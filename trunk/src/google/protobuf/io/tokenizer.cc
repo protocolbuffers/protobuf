@@ -91,6 +91,7 @@
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
+#include <google/protobuf/io/strtod.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stl_util.h>
@@ -195,7 +196,9 @@ Tokenizer::Tokenizer(ZeroCopyInputStream* input,
     record_target_(NULL),
     record_start_(-1),
     allow_f_after_float_(false),
-    comment_style_(CPP_COMMENT_STYLE) {
+    comment_style_(CPP_COMMENT_STYLE),
+    require_space_after_number_(true),
+    allow_multiline_strings_(false) {
 
   current_.line = 0;
   current_.column = 0;
@@ -350,9 +353,16 @@ void Tokenizer::ConsumeString(char delimiter) {
   while (true) {
     switch (current_char_) {
       case '\0':
-      case '\n': {
-        AddError("String literals cannot cross line boundaries.");
+        AddError("Unexpected end of string.");
         return;
+
+      case '\n': {
+        if (!allow_multiline_strings_) {
+          AddError("String literals cannot cross line boundaries.");
+          return;
+        }
+        NextChar();
+        break;
       }
 
       case '\\': {
@@ -449,7 +459,7 @@ Tokenizer::TokenType Tokenizer::ConsumeNumber(bool started_with_zero,
     }
   }
 
-  if (LookingAt<Letter>()) {
+  if (LookingAt<Letter>() && require_space_after_number_) {
     AddError("Need space between number and identifier.");
   } else if (current_char_ == '.') {
     if (is_float) {
@@ -618,6 +628,12 @@ bool Tokenizer::Next() {
         ConsumeString('\'');
         current_.type = TYPE_STRING;
       } else {
+        // Check if the high order bit is set.
+        if (current_char_ & 0x80) {
+          error_collector_->AddError(line_, column_,
+              StringPrintf("Interpreting non ascii codepoint %d.",
+                           static_cast<unsigned char>(current_char_)));
+        }
         NextChar();
         current_.type = TYPE_SYMBOL;
       }
@@ -1084,6 +1100,26 @@ void Tokenizer::ParseStringAppend(const string& text, string* output) {
       output->push_back(*ptr);
     }
   }
+}
+
+template<typename CharacterClass>
+static bool AllInClass(const string& s) {
+  for (int i = 0; i < s.size(); ++i) {
+    if (!CharacterClass::InClass(s[i]))
+      return false;
+  }
+  return true;
+}
+
+bool Tokenizer::IsIdentifier(const string& text) {
+  // Mirrors IDENTIFIER definition in Tokenizer::Next() above.
+  if (text.size() == 0)
+    return false;
+  if (!Letter::InClass(text.at(0)))
+    return false;
+  if (!AllInClass<Alphanumeric>(text.substr(1)))
+    return false;
+  return true;
 }
 
 }  // namespace io

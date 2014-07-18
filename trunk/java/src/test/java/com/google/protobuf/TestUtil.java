@@ -56,6 +56,11 @@ import static protobuf_unittest.UnittestProto.defaultImportEnumExtension;
 import static protobuf_unittest.UnittestProto.defaultStringPieceExtension;
 import static protobuf_unittest.UnittestProto.defaultCordExtension;
 
+import static protobuf_unittest.UnittestProto.oneofUint32Extension;
+import static protobuf_unittest.UnittestProto.oneofNestedMessageExtension;
+import static protobuf_unittest.UnittestProto.oneofStringExtension;
+import static protobuf_unittest.UnittestProto.oneofBytesExtension;
+
 import static protobuf_unittest.UnittestProto.optionalInt32Extension;
 import static protobuf_unittest.UnittestProto.optionalInt64Extension;
 import static protobuf_unittest.UnittestProto.optionalUint32Extension;
@@ -148,6 +153,11 @@ import static com.google.protobuf.UnittestLite.defaultImportEnumExtensionLite;
 import static com.google.protobuf.UnittestLite.defaultStringPieceExtensionLite;
 import static com.google.protobuf.UnittestLite.defaultCordExtensionLite;
 
+import static com.google.protobuf.UnittestLite.oneofUint32ExtensionLite;
+import static com.google.protobuf.UnittestLite.oneofNestedMessageExtensionLite;
+import static com.google.protobuf.UnittestLite.oneofStringExtensionLite;
+import static com.google.protobuf.UnittestLite.oneofBytesExtensionLite;
+
 import static com.google.protobuf.UnittestLite.optionalInt32ExtensionLite;
 import static com.google.protobuf.UnittestLite.optionalInt64ExtensionLite;
 import static com.google.protobuf.UnittestLite.optionalUint32ExtensionLite;
@@ -223,6 +233,7 @@ import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllExtensionsOrBuilder;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypesOrBuilder;
+import protobuf_unittest.UnittestProto.TestOneof2;
 import protobuf_unittest.UnittestProto.TestPackedExtensions;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestProto.TestUnpackedTypes;
@@ -469,6 +480,12 @@ public final class TestUtil {
 
     message.setDefaultStringPiece("424");
     message.setDefaultCord("425");
+
+    message.setOneofUint32(601);
+    message.setOneofNestedMessage(
+      TestAllTypes.NestedMessage.newBuilder().setBb(602).build());
+    message.setOneofString("603");
+    message.setOneofBytes(toBytes("604"));
   }
 
   // -------------------------------------------------------------------
@@ -718,6 +735,13 @@ public final class TestUtil {
 
     Assert.assertEquals("424", message.getDefaultStringPiece());
     Assert.assertEquals("425", message.getDefaultCord());
+
+    Assert.assertFalse(message.hasOneofUint32());
+    Assert.assertFalse(message.hasOneofNestedMessage());
+    Assert.assertFalse(message.hasOneofString());
+    Assert.assertTrue(message.hasOneofBytes());
+
+    Assert.assertEquals(toBytes("604"), message.getOneofBytes());
   }
 
   // -------------------------------------------------------------------
@@ -872,6 +896,11 @@ public final class TestUtil {
 
     Assert.assertEquals("abc", message.getDefaultStringPiece());
     Assert.assertEquals("123", message.getDefaultCord());
+
+    Assert.assertFalse(message.hasOneofUint32());
+    Assert.assertFalse(message.hasOneofNestedMessage());
+    Assert.assertFalse(message.hasOneofString());
+    Assert.assertFalse(message.hasOneofBytes());
   }
 
   // -------------------------------------------------------------------
@@ -1358,6 +1387,12 @@ public final class TestUtil {
 
     message.setExtension(defaultStringPieceExtension, "424");
     message.setExtension(defaultCordExtension, "425");
+
+    message.setExtension(oneofUint32Extension, 601);
+    message.setExtension(oneofNestedMessageExtension,
+      TestAllTypes.NestedMessage.newBuilder().setBb(602).build());
+    message.setExtension(oneofStringExtension, "603");
+    message.setExtension(oneofBytesExtension, toBytes("604"));
   }
 
   // -------------------------------------------------------------------
@@ -1621,6 +1656,10 @@ public final class TestUtil {
 
     assertEqualsExactType("424", message.getExtension(defaultStringPieceExtension));
     assertEqualsExactType("425", message.getExtension(defaultCordExtension));
+
+    Assert.assertTrue(message.hasExtension(oneofBytesExtension));
+
+    assertEqualsExactType(toBytes("604"), message.getExtension(oneofBytesExtension));
   }
 
   // -------------------------------------------------------------------
@@ -1807,6 +1846,11 @@ public final class TestUtil {
 
     assertEqualsExactType("abc", message.getExtension(defaultStringPieceExtension));
     assertEqualsExactType("123", message.getExtension(defaultCordExtension));
+
+    Assert.assertFalse(message.hasExtension(oneofUint32Extension));
+    Assert.assertFalse(message.hasExtension(oneofNestedMessageExtension));
+    Assert.assertFalse(message.hasExtension(oneofStringExtension));
+    Assert.assertFalse(message.hasExtension(oneofBytesExtension));
   }
 
   // -------------------------------------------------------------------
@@ -2133,6 +2177,12 @@ public final class TestUtil {
 
     message.setExtension(defaultStringPieceExtensionLite, "424");
     message.setExtension(defaultCordExtensionLite, "425");
+
+    message.setExtension(oneofUint32ExtensionLite, 601);
+    message.setExtension(oneofNestedMessageExtensionLite,
+      TestAllTypesLite.NestedMessage.newBuilder().setBb(602).build());
+    message.setExtension(oneofStringExtensionLite, "603");
+    message.setExtension(oneofBytesExtensionLite, toBytes("604"));
   }
 
   // -------------------------------------------------------------------
@@ -2397,6 +2447,10 @@ public final class TestUtil {
 
     assertEqualsExactType("424", message.getExtension(defaultStringPieceExtensionLite));
     assertEqualsExactType("425", message.getExtension(defaultCordExtensionLite));
+
+    Assert.assertTrue(message.hasExtension(oneofBytesExtensionLite));
+
+    assertEqualsExactType(toBytes("604"), message.getExtension(oneofBytesExtensionLite));
   }
 
   // -------------------------------------------------------------------
@@ -2562,6 +2616,11 @@ public final class TestUtil {
 
     assertEqualsExactType("abc", message.getExtension(defaultStringPieceExtensionLite));
     assertEqualsExactType("123", message.getExtension(defaultCordExtensionLite));
+
+    Assert.assertFalse(message.hasExtension(oneofUint32ExtensionLite));
+    Assert.assertFalse(message.hasExtension(oneofNestedMessageExtensionLite));
+    Assert.assertFalse(message.hasExtension(oneofStringExtensionLite));
+    Assert.assertFalse(message.hasExtension(oneofBytesExtensionLite));
   }
 
   // -------------------------------------------------------------------
@@ -2749,6 +2808,82 @@ public final class TestUtil {
                           message.getExtension(packedEnumExtensionLite, 1));
   }
 
+  // ===================================================================
+  // oneof
+  public static void setOneof(TestOneof2.Builder message) {
+    message.setFooLazyMessage(
+        TestOneof2.NestedMessage.newBuilder().setQuxInt(100).build());
+    message.setBarString("101");
+    message.setBazInt(102);
+    message.setBazString("103");
+  }
+
+  public static void assertOneofSet(TestOneof2 message) {
+    Assert.assertTrue(message.hasFooLazyMessage            ());
+    Assert.assertTrue(message.getFooLazyMessage().hasQuxInt());
+
+    Assert.assertTrue(message.hasBarString());
+    Assert.assertTrue(message.hasBazInt   ());
+    Assert.assertTrue(message.hasBazString());
+
+    Assert.assertEquals(100  , message.getFooLazyMessage().getQuxInt());
+    Assert.assertEquals("101", message.getBarString                 ());
+    Assert.assertEquals(102  , message.getBazInt                    ());
+    Assert.assertEquals("103", message.getBazString                 ());
+  }
+
+  public static void assertAtMostOneFieldSetOneof(TestOneof2 message) {
+    int count = 0;
+    if (message.hasFooInt()) { ++count; }
+    if (message.hasFooString()) { ++count; }
+    if (message.hasFooCord()) { ++count; }
+    if (message.hasFooStringPiece()) { ++count; }
+    if (message.hasFooBytes()) { ++count; }
+    if (message.hasFooEnum()) { ++count; }
+    if (message.hasFooMessage()) { ++count; }
+    if (message.hasFooGroup()) { ++count; }
+    if (message.hasFooLazyMessage()) { ++count; }
+    Assert.assertTrue(count <= 1);
+
+    count = 0;
+    if (message.hasBarInt()) { ++count; }
+    if (message.hasBarString()) { ++count; }
+    if (message.hasBarCord()) { ++count; }
+    if (message.hasBarStringPiece()) { ++count; }
+    if (message.hasBarBytes()) { ++count; }
+    if (message.hasBarEnum()) { ++count; }
+    Assert.assertTrue(count <= 1);
+
+    switch (message.getFooCase()) {
+      case FOO_INT:
+        Assert.assertTrue(message.hasFooInt());
+        break;
+      case FOO_STRING:
+        Assert.assertTrue(message.hasFooString());
+        break;
+      case FOO_CORD:
+        Assert.assertTrue(message.hasFooCord());
+        break;
+      case FOO_BYTES:
+        Assert.assertTrue(message.hasFooBytes());
+        break;
+      case FOO_ENUM:
+        Assert.assertTrue(message.hasFooEnum());
+        break;
+      case FOO_MESSAGE:
+        Assert.assertTrue(message.hasFooMessage());
+        break;
+      case FOOGROUP:
+        Assert.assertTrue(message.hasFooGroup());
+        break;
+      case FOO_LAZY_MESSAGE:
+        Assert.assertTrue(message.hasFooLazyMessage());
+        break;
+      case FOO_NOT_SET:
+        break;
+    }
+  }
+
   // =================================================================
 
   /**
@@ -2915,8 +3050,8 @@ public final class TestUtil {
         return parent.newBuilderForField(field);
       } else {
         ExtensionRegistry.ExtensionInfo extension =
-          extensionRegistry.findExtensionByNumber(field.getContainingType(),
-                                                  field.getNumber());
+          extensionRegistry.findImmutableExtensionByNumber(
+              field.getContainingType(), field.getNumber());
         Assert.assertNotNull(extension);
         Assert.assertNotNull(extension.defaultInstance);
         return extension.defaultInstance.newBuilderForType();
@@ -3078,6 +3213,13 @@ public final class TestUtil {
 
       message.setField(f("default_string_piece" ), "424");
       message.setField(f("default_cord" ), "425");
+
+      message.setField(f("oneof_uint32" ), 601);
+      message.setField(f("oneof_nested_message"),
+        newBuilderForField(message, f("oneof_nested_message"))
+          .setField(nestedB, 602).build());
+      message.setField(f("oneof_string" ), "603");
+      message.setField(f("oneof_bytes" ), toBytes("604"));
     }
 
     // -------------------------------------------------------------------
@@ -3372,6 +3514,24 @@ public final class TestUtil {
 
       Assert.assertEquals("424", message.getField(f("default_string_piece")));
       Assert.assertEquals("425", message.getField(f("default_cord")));
+
+      Assert.assertTrue(message.hasField(f("oneof_bytes")));
+      Assert.assertEquals(toBytes("604"), message.getField(f("oneof_bytes")));
+
+      if (extensionRegistry == null) {
+        Assert.assertFalse(message.hasField(f("oneof_uint32")));
+        Assert.assertFalse(message.hasField(f("oneof_nested_message")));
+        Assert.assertFalse(message.hasField(f("oneof_string")));
+      } else {
+        Assert.assertTrue(message.hasField(f("oneof_uint32")));
+        Assert.assertTrue(message.hasField(f("oneof_nested_message")));
+        Assert.assertTrue(message.hasField(f("oneof_string")));
+        Assert.assertEquals(601, message.getField(f("oneof_uint32")));
+        Assert.assertEquals(602,
+            ((MessageOrBuilder) message.getField(f("oneof_nested_message")))
+            .getField(nestedB));
+        Assert.assertEquals("603", message.getField(f("oneof_string")));
+      }
     }
 
     // -------------------------------------------------------------------
@@ -3549,6 +3709,15 @@ public final class TestUtil {
 
       Assert.assertEquals("abc", message.getField(f("default_string_piece")));
       Assert.assertEquals("123", message.getField(f("default_cord")));
+
+      Assert.assertFalse(message.hasField(f("oneof_uint32")));
+      Assert.assertFalse(message.hasField(f("oneof_nested_message")));
+      Assert.assertFalse(message.hasField(f("oneof_string")));
+      Assert.assertFalse(message.hasField(f("oneof_bytes")));
+
+      Assert.assertEquals(0, message.getField(f("oneof_uint32")));
+      Assert.assertEquals("", message.getField(f("oneof_string")));
+      Assert.assertEquals(toBytes(""), message.getField(f("oneof_bytes")));
     }
 
 
@@ -3910,7 +4079,7 @@ public final class TestUtil {
    */
   public static ByteString getGoldenMessage() {
     if (goldenMessage == null) {
-      goldenMessage = readBytesFromFile("golden_message");
+      goldenMessage = readBytesFromFile("golden_message_oneof_implemented");
     }
     return goldenMessage;
   }

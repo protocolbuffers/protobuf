@@ -36,9 +36,9 @@
 #define GOOGLE_PROTOBUF_COMPILER_CPP_FIELD_H__
 
 #include <map>
+#include <memory>
 #include <string>
 
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/compiler/cpp/cpp_options.h>
 
@@ -61,6 +61,9 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              map<string, string>* variables,
                              const Options& options);
 
+void SetCommonOneofFieldVariables(const FieldDescriptor* descriptor,
+                                  map<string, string>* variables);
+
 class FieldGenerator {
  public:
   FieldGenerator() {}
@@ -70,6 +73,11 @@ class FieldGenerator {
   // needed to represent this field.  These are placed inside the message
   // class.
   virtual void GeneratePrivateMembers(io::Printer* printer) const = 0;
+
+  // Generate static default variable for this field. These are placed inside
+  // the message class. Most field types don't need this, so the default
+  // implementation is empty.
+  virtual void GenerateStaticMembers(io::Printer* printer) const {}
 
   // Generate prototypes for all of the accessor functions related to this
   // field.  These are placed inside the class definition.

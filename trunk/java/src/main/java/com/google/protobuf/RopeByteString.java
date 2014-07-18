@@ -402,6 +402,20 @@ class RopeByteString extends ByteString {
   }
 
   @Override
+  void writeToInternal(OutputStream out, int sourceOffset,
+      int numberToWrite) throws IOException {
+    if (sourceOffset + numberToWrite <= leftLength) {
+      left.writeToInternal(out, sourceOffset, numberToWrite);
+    } else if (sourceOffset >= leftLength) {
+      right.writeToInternal(out, sourceOffset - leftLength, numberToWrite);
+    } else {
+      int numberToWriteInLeft = leftLength - sourceOffset;
+      left.writeToInternal(out, sourceOffset, numberToWriteInLeft);
+      right.writeToInternal(out, 0, numberToWrite - numberToWriteInLeft);
+    }
+  }
+
+  @Override
   public String toString(String charsetName)
       throws UnsupportedEncodingException {
     return new String(toByteArray(), charsetName);

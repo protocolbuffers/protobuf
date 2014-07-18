@@ -118,7 +118,12 @@ TEST_F(UnknownFieldSetTest, AllFieldsPresent) {
     const FieldDescriptor* field = descriptor_->FindFieldByNumber(i);
     if (field != NULL) {
       ASSERT_LT(pos, unknown_fields_->field_count());
-      EXPECT_EQ(i, unknown_fields_->field(pos++).number());
+      // Do not check oneof field if it is not set.
+      if (field->containing_oneof() == NULL) {
+        EXPECT_EQ(i, unknown_fields_->field(pos++).number());
+      } else if (i == unknown_fields_->field(pos).number()) {
+        pos++;
+      }
       if (field->is_repeated()) {
         // Should have a second instance.
         ASSERT_LT(pos, unknown_fields_->field_count());

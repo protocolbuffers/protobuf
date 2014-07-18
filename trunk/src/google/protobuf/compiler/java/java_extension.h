@@ -35,6 +35,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_EXTENSION_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_EXTENSION_H__
 
+#include <map>
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
@@ -42,6 +43,12 @@
 namespace google {
 namespace protobuf {
   class FieldDescriptor;       // descriptor.h
+  namespace compiler {
+    namespace java {
+      class Context;           // context.h
+      class ClassNameResolver; // name_resolver.h
+    }
+  }
   namespace io {
     class Printer;             // printer.h
   }
@@ -56,17 +63,42 @@ namespace java {
 // since extensions are just simple identifiers with interesting types.
 class ExtensionGenerator {
  public:
-  explicit ExtensionGenerator(const FieldDescriptor* descriptor);
-  ~ExtensionGenerator();
+  explicit ExtensionGenerator() {}
+  virtual ~ExtensionGenerator() {}
 
-  void Generate(io::Printer* printer);
-  void GenerateNonNestedInitializationCode(io::Printer* printer);
-  void GenerateRegistrationCode(io::Printer* printer);
+  virtual void Generate(io::Printer* printer) = 0;
+  virtual void GenerateNonNestedInitializationCode(io::Printer* printer) = 0;
+  virtual void GenerateRegistrationCode(io::Printer* printer) = 0;
+
+ protected:
+  static void InitTemplateVars(const FieldDescriptor* descriptor,
+                               const string& scope,
+                               bool immutable,
+                               ClassNameResolver* name_resolver,
+                               map<string, string>* vars_pointer);
 
  private:
-  const FieldDescriptor* descriptor_;
-  string scope_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionGenerator);
+};
+
+class ImmutableExtensionGenerator : public ExtensionGenerator {
+ public:
+  explicit ImmutableExtensionGenerator(const FieldDescriptor* descriptor,
+                                       Context* context);
+  virtual ~ImmutableExtensionGenerator();
+
+  virtual void Generate(io::Printer* printer);
+  virtual void GenerateNonNestedInitializationCode(io::Printer* printer);
+  virtual void GenerateRegistrationCode(io::Printer* printer);
+
+ protected:
+  const FieldDescriptor* descriptor_;
+  Context* context_;
+  ClassNameResolver* name_resolver_;
+  string scope_;
+
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableExtensionGenerator);
 };
 
 }  // namespace java
@@ -74,4 +106,4 @@ class ExtensionGenerator {
 }  // namespace protobuf
 
 }  // namespace google
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_EXTENSION_H__

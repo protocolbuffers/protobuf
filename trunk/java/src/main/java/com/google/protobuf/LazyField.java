@@ -30,7 +30,6 @@
 
 package com.google.protobuf;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -38,110 +37,49 @@ import java.util.Map.Entry;
  * LazyField encapsulates the logic of lazily parsing message fields. It stores
  * the message in a ByteString initially and then parse it on-demand.
  *
- * LazyField is thread-compatible e.g. concurrent read are safe, however,
- * synchronizations are needed under read/write situations.
- *
- * Now LazyField is only used to lazily load MessageSet.
- * TODO(xiangl): Use LazyField to lazily load all messages.
+ * Most of key methods are implemented in {@link LazyFieldLite} but this class
+ * can contain default instance of the message to provide {@code hashCode()},
+ * {@code euqals()} and {@code toString()}.
  *
  * @author xiangl@google.com (Xiang Li)
  */
-class LazyField {
+public class LazyField extends LazyFieldLite {
 
-  final private MessageLite defaultInstance;
-  final private ExtensionRegistryLite extensionRegistry;
-
-  // Mutable because it is initialized lazily.
-  private ByteString bytes;
-  private volatile MessageLite value;
-  private volatile boolean isDirty = false;
+  /**
+   * Carry a message's default instance which is used by {@code hashCode()}, {@code euqals()} and
+   * {@code toString()}.
+   */
+  private final MessageLite defaultInstance;
 
   public LazyField(MessageLite defaultInstance,
       ExtensionRegistryLite extensionRegistry, ByteString bytes) {
+    super(extensionRegistry, bytes);
+
     this.defaultInstance = defaultInstance;
-    this.extensionRegistry = extensionRegistry;
-    this.bytes = bytes;
+  }
+
+  @Override
+  public boolean containsDefaultInstance() {
+    return super.containsDefaultInstance() || value == defaultInstance;
   }
 
   public MessageLite getValue() {
-    ensureInitialized();
-    return value;
-  }
-
-  /**
-   * LazyField is not thread-safe for write access. Synchronizations are needed
-   * under read/write situations.
-   */
-  public MessageLite setValue(MessageLite value) {
-    MessageLite originalValue = this.value;
-    this.value = value;
-    bytes = null;
-    isDirty = true;
-    return originalValue;
-  }
-
-  /**
-   * Due to the optional field can be duplicated at the end of serialized
-   * bytes, which will make the serialized size changed after LazyField
-   * parsed. Be careful when using this method.
-   */
-  public int getSerializedSize() {
-    if (isDirty) {
-      return value.getSerializedSize();
-    }
-    return bytes.size();
-  }
-
-  public ByteString toByteString() {
-    if (!isDirty) {
-      return bytes;
-    }
-    synchronized (this) {
-      if (!isDirty) {
-        return bytes;
-      }
-      bytes = value.toByteString();
-      isDirty = false;
-      return bytes;
-    }
+    return getValue(defaultInstance);
   }
 
   @Override
   public int hashCode() {
-    ensureInitialized();
-    return value.hashCode();
+    return getValue().hashCode();
   }
 
   @Override
   public boolean equals(Object obj) {
-    ensureInitialized();
-    return value.equals(obj);
+    return getValue().equals(obj);
   }
 
   @Override
   public String toString() {
-    ensureInitialized();
-    return value.toString();
-  }
-
-  private void ensureInitialized() {
-    if (value != null) {
-      return;
-    }
-    synchronized (this) {
-      if (value != null) {
-        return;
-      }
-      try {
-        if (bytes != null) {
-          value = defaultInstance.getParserForType()
-              .parseFrom(bytes, extensionRegistry);
-        }
-      } catch (IOException e) {
-        // TODO(xiangl): Refactory the API to support the exception thrown from
-        // lazily load messages.
-      }
-    }
+    return getValue().toString();
   }
 
   // ====================================================
@@ -157,10 +95,12 @@ class LazyField {
       this.entry = entry;
     }
 
+    // @Override
     public K getKey() {
       return entry.getKey();
     }
 
+    // @Override
     public Object getValue() {
       LazyField field = entry.getValue();
       if (field == null) {
@@ -173,6 +113,7 @@ class LazyField {
       return entry.getValue();
     }
 
+    // @Override
     public Object setValue(Object value) {
       if (!(value instanceof MessageLite)) {
         throw new IllegalArgumentException(
@@ -190,11 +131,13 @@ class LazyField {
       this.iterator = iterator;
     }
 
+    // @Override
     public boolean hasNext() {
       return iterator.hasNext();
     }
 
     @SuppressWarnings("unchecked")
+    // @Override
     public Entry<K, Object> next() {
       Entry<K, ?> entry = iterator.next();
       if (entry.getValue() instanceof LazyField) {
@@ -203,6 +146,7 @@ class LazyField {
       return (Entry<K, Object>) entry;
     }
 
+    // @Override
     public void remove() {
       iterator.remove();
     }

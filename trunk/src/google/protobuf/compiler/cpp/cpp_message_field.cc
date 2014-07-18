@@ -53,6 +53,12 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
       (HasFastArraySerialization(descriptor->message_type()->file()) ?
        "MaybeToArray" :
        "");
+  // NOTE: Escaped here to unblock proto1->proto2 migration.
+  // TODO(liujisi): Extend this to apply for other conflicting methods.
+  (*variables)["release_name"] =
+      SafeFunctionName(descriptor->containing_type(),
+                       descriptor, "release_");
+  (*variables)["full_name"] = descriptor->full_name();
 }
 
 }  // namespace
@@ -78,14 +84,15 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
     "inline const $type$& $name$() const$deprecation$;\n"
     "inline $type$* mutable_$name$()$deprecation$;\n"
-    "inline $type$* release_$name$()$deprecation$;\n"
+    "inline $type$* $release_name$()$deprecation$;\n"
     "inline void set_allocated_$name$($type$* $name$)$deprecation$;\n");
 }
 
 void MessageFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   printer->Print(variables_,
-    "inline const $type$& $classname$::$name$() const {\n");
+    "inline const $type$& $classname$::$name$() const {\n"
+    "  // @@protoc_insertion_point(field_get:$full_name$)\n");
 
   PrintHandlingOptionalStaticInitializers(
     variables_, descriptor_->file(), printer,
@@ -99,9 +106,10 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "inline $type$* $classname$::mutable_$name$() {\n"
     "  set_has_$name$();\n"
     "  if ($name$_ == NULL) $name$_ = new $type$;\n"
+    "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
     "  return $name$_;\n"
     "}\n"
-    "inline $type$* $classname$::release_$name$() {\n"
+    "inline $type$* $classname$::$release_name$() {\n"
     "  clear_has_$name$();\n"
     "  $type$* temp = $name$_;\n"
     "  $name$_ = NULL;\n"
@@ -115,6 +123,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "  } else {\n"
     "    clear_has_$name$();\n"
     "  }\n"
+    "  // @@protoc_insertion_point(field_set_allocated:$full_name$)\n"
     "}\n");
 }
 
@@ -178,6 +187,69 @@ GenerateByteSize(io::Printer* printer) const {
 
 // ===================================================================
 
+MessageOneofFieldGenerator::
+MessageOneofFieldGenerator(const FieldDescriptor* descriptor,
+                           const Options& options)
+  : MessageFieldGenerator(descriptor, options) {
+  SetCommonOneofFieldVariables(descriptor, &variables_);
+}
+
+MessageOneofFieldGenerator::~MessageOneofFieldGenerator() {}
+
+void MessageOneofFieldGenerator::
+GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+  printer->Print(variables_,
+    "inline const $type$& $classname$::$name$() const {\n"
+    "  return has_$name$() ? *$oneof_prefix$$name$_\n"
+    "                      : $type$::default_instance();\n"
+    "}\n"
+    "inline $type$* $classname$::mutable_$name$() {\n"
+    "  if (!has_$name$()) {\n"
+    "    clear_$oneof_name$();\n"
+    "    set_has_$name$();\n"
+    "    $oneof_prefix$$name$_ = new $type$;\n"
+    "  }\n"
+    "  return $oneof_prefix$$name$_;\n"
+    "}\n"
+    "inline $type$* $classname$::$release_name$() {\n"
+    "  if (has_$name$()) {\n"
+    "    clear_has_$oneof_name$();\n"
+    "    $type$* temp = $oneof_prefix$$name$_;\n"
+    "    $oneof_prefix$$name$_ = NULL;\n"
+    "    return temp;\n"
+    "  } else {\n"
+    "    return NULL;\n"
+    "  }\n"
+    "}\n"
+    "inline void $classname$::set_allocated_$name$($type$* $name$) {\n"
+    "  clear_$oneof_name$();\n"
+    "  if ($name$) {\n"
+    "    set_has_$name$();\n"
+    "    $oneof_prefix$$name$_ = $name$;\n"
+    "  }\n"
+    "}\n");
+}
+
+void MessageOneofFieldGenerator::
+GenerateClearingCode(io::Printer* printer) const {
+  // if it is the active field, it cannot be NULL.
+  printer->Print(variables_,
+    "delete $oneof_prefix$$name$_;\n");
+}
+
+void MessageOneofFieldGenerator::
+GenerateSwappingCode(io::Printer* printer) const {
+  // Don't print any swapping code. Swapping the union will swap this field.
+}
+
+void MessageOneofFieldGenerator::
+GenerateConstructorCode(io::Printer* printer) const {
+  // Don't print any constructor code. The field is in a union. We allocate
+  // space only when this field is used.
+}
+
+// ===================================================================
+
 RepeatedMessageFieldGenerator::
 RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor,
                               const Options& options)
@@ -210,21 +282,26 @@ void RepeatedMessageFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   printer->Print(variables_,
     "inline const $type$& $classname$::$name$(int index) const {\n"
+    "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  return $name$_.$cppget$(index);\n"
     "}\n"
     "inline $type$* $classname$::mutable_$name$(int index) {\n"
+    "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
     "  return $name$_.Mutable(index);\n"
     "}\n"
     "inline $type$* $classname$::add_$name$() {\n"
+    "  // @@protoc_insertion_point(field_add:$full_name$)\n"
     "  return $name$_.Add();\n"
     "}\n");
   printer->Print(variables_,
     "inline const ::google::protobuf::RepeatedPtrField< $type$ >&\n"
     "$classname$::$name$() const {\n"
+    "  // @@protoc_insertion_point(field_list:$full_name$)\n"
     "  return $name$_;\n"
     "}\n"
     "inline ::google::protobuf::RepeatedPtrField< $type$ >*\n"
     "$classname$::mutable_$name$() {\n"
+    "  // @@protoc_insertion_point(field_mutable_list:$full_name$)\n"
     "  return &$name$_;\n"
     "}\n");
 }

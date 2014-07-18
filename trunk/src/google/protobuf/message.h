@@ -110,21 +110,17 @@
 #ifndef GOOGLE_PROTOBUF_MESSAGE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_H__
 
-#include <vector>
-#include <string>
-
-#ifdef __DECCXX
-// HP C++'s iosfwd doesn't work.
-#include <iostream>
-#else
 #include <iosfwd>
-#endif
+#include <string>
+#include <vector>
 
 #include <google/protobuf/message_lite.h>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
 
+
+#define GOOGLE_PROTOBUF_HAS_ONEOF
 
 namespace google {
 namespace protobuf {
@@ -184,9 +180,10 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   virtual void CopyFrom(const Message& from);
 
   // Merge the fields from the given message into this message.  Singular
-  // fields will be overwritten, except for embedded messages which will
-  // be merged.  Repeated fields will be concatenated.  The given message
-  // must be of the same type as this message (i.e. the exact same class).
+  // fields will be overwritten, if specified in from, except for embedded
+  // messages which will be merged.  Repeated fields will be concatenated.
+  // The given message must be of the same type as this message (i.e. the
+  // exact same class).
   virtual void MergeFrom(const Message& from);
 
   // Verifies that IsInitialized() returns true.  GOOGLE_CHECK-fails otherwise, with
@@ -388,6 +385,26 @@ class LIBPROTOBUF_EXPORT Reflection {
   virtual void ClearField(Message* message,
                           const FieldDescriptor* field) const = 0;
 
+  // Check if the oneof is set. Returns ture if any field in oneof
+  // is set, false otherwise.
+  // TODO(jieluo) - make it pure virtual after updating all
+  // the subclasses.
+  virtual bool HasOneof(const Message& message,
+                        const OneofDescriptor* oneof_descriptor) const {
+    return false;
+  }
+
+  virtual void ClearOneof(Message* message,
+                          const OneofDescriptor* oneof_descriptor) const {}
+
+  // Returns the field descriptor if the oneof is set. NULL otherwise.
+  // TODO(jieluo) - make it pure virtual.
+  virtual const FieldDescriptor* GetOneofFieldDescriptor(
+      const Message& message,
+      const OneofDescriptor* oneof_descriptor) const {
+    return NULL;
+  }
+
   // Removes the last element of a repeated field.
   // We don't provide a way to remove any element other than the last
   // because it invites inefficient use, such as O(n^2) filtering loops
@@ -405,11 +422,17 @@ class LIBPROTOBUF_EXPORT Reflection {
   // Swap the complete contents of two messages.
   virtual void Swap(Message* message1, Message* message2) const = 0;
 
+  // Swap fields listed in fields vector of two messages.
+  virtual void SwapFields(Message* message1,
+                          Message* message2,
+                          const vector<const FieldDescriptor*>& fields)
+      const = 0;
+
   // Swap two elements of a repeated field.
   virtual void SwapElements(Message* message,
-                    const FieldDescriptor* field,
-                    int index1,
-                    int index2) const = 0;
+                            const FieldDescriptor* field,
+                            int index1,
+                            int index2) const = 0;
 
   // List all fields of the message which are currently set.  This includes
   // extensions.  Singular fields will only be listed if HasField(field) would
@@ -502,6 +525,13 @@ class LIBPROTOBUF_EXPORT Reflection {
   virtual Message* MutableMessage(Message* message,
                                   const FieldDescriptor* field,
                                   MessageFactory* factory = NULL) const = 0;
+  // Replaces the message specified by 'field' with the already-allocated object
+  // sub_message, passing ownership to the message.  If the field contained a
+  // message, that message is deleted.  If sub_message is NULL, the field is
+  // cleared.
+  virtual void SetAllocatedMessage(Message* message,
+                                   Message* sub_message,
+                                   const FieldDescriptor* field) const = 0;
   // Releases the message specified by 'field' and returns the pointer,
   // ReleaseMessage() will return the message the message object if it exists.
   // Otherwise, it may or may not return NULL.  In any case, if the return value
@@ -699,7 +729,7 @@ class LIBPROTOBUF_EXPORT MessageFactory {
   // Calling this method twice with the same Descriptor returns the same
   // object.  The returned object remains property of the factory.  Also, any
   // objects created by calling the prototype's New() method share some data
-  // with the prototype, so these must be destoyed before the MessageFactory
+  // with the prototype, so these must be destroyed before the MessageFactory
   // is destroyed.
   //
   // The given descriptor must outlive the returned message, and hence must
@@ -757,7 +787,6 @@ const RepeatedField<TYPE>& Reflection::GetRepeatedField<TYPE>(   \
     const Message& message, const FieldDescriptor* field) const; \
                                                                  \
 template<>                                                       \
-LIBPROTOBUF_EXPORT                                               \
 RepeatedField<TYPE>* Reflection::MutableRepeatedField<TYPE>(     \
     Message* message, const FieldDescriptor* field) const;
 

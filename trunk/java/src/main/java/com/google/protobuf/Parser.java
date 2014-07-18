@@ -35,6 +35,8 @@ import java.io.InputStream;
 /**
  * Abstract interface for parsing Protocol Messages.
  *
+ * The implementation should be stateless and thread-safe.
+ *
  * @author liujisi@google.com (Pherl Liu)
  */
 public interface Parser<MessageType> {

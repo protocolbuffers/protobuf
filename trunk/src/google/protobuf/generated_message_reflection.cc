@@ -33,6 +33,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <algorithm>
+#include <set>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/descriptor.h>
@@ -40,6 +41,8 @@
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/stubs/common.h>
+
+#define GOOGLE_PROTOBUF_HAS_ONEOF
 
 namespace google {
 namespace protobuf {
@@ -49,7 +52,7 @@ int StringSpaceUsedExcludingSelf(const string& str) {
   const void* start = &str;
   const void* end = &str + 1;
 
-  if (start <= str.data() && str.data() <= end) {
+  if (start <= str.data() && str.data() < end) {
     // The string's data is stored inside the string object itself.
     return 0;
   } else {
@@ -188,6 +191,33 @@ GeneratedMessageReflection::GeneratedMessageReflection(
     message_factory_  (factory) {
 }
 
+GeneratedMessageReflection::GeneratedMessageReflection(
+    const Descriptor* descriptor,
+    const Message* default_instance,
+    const int offsets[],
+    int has_bits_offset,
+    int unknown_fields_offset,
+    int extensions_offset,
+    const void* default_oneof_instance,
+    int oneof_case_offset,
+    const DescriptorPool* descriptor_pool,
+    MessageFactory* factory,
+    int object_size)
+  : descriptor_       (descriptor),
+    default_instance_ (default_instance),
+    default_oneof_instance_ (default_oneof_instance),
+    offsets_          (offsets),
+    has_bits_offset_  (has_bits_offset),
+    oneof_case_offset_(oneof_case_offset),
+    unknown_fields_offset_(unknown_fields_offset),
+    extensions_offset_(extensions_offset),
+    object_size_      (object_size),
+    descriptor_pool_  ((descriptor_pool == NULL) ?
+                         DescriptorPool::generated_pool() :
+                         descriptor_pool),
+    message_factory_  (factory) {
+}
+
 GeneratedMessageReflection::~GeneratedMessageReflection() {}
 
 const UnknownFieldSet& GeneratedMessageReflection::GetUnknownFields(
@@ -254,6 +284,9 @@ int GeneratedMessageReflection::SpaceUsed(const Message& message) const {
           break;
       }
     } else {
+      if (field->containing_oneof() && !HasOneofField(message, field)) {
+        continue;
+      }
       switch (field->cpp_type()) {
         case FieldDescriptor::CPPTYPE_INT32 :
         case FieldDescriptor::CPPTYPE_INT64 :
@@ -306,6 +339,195 @@ int GeneratedMessageReflection::SpaceUsed(const Message& message) const {
   return total_size;
 }
 
+void GeneratedMessageReflection::SwapField(
+    Message* message1,
+    Message* message2,
+    const FieldDescriptor* field) const {
+  if (field->is_repeated()) {
+    switch (field->cpp_type()) {
+#define SWAP_ARRAYS(CPPTYPE, TYPE)                                      \
+      case FieldDescriptor::CPPTYPE_##CPPTYPE:                          \
+        MutableRaw<RepeatedField<TYPE> >(message1, field)->Swap(        \
+            MutableRaw<RepeatedField<TYPE> >(message2, field));         \
+        break;
+
+      SWAP_ARRAYS(INT32 , int32 );
+      SWAP_ARRAYS(INT64 , int64 );
+      SWAP_ARRAYS(UINT32, uint32);
+      SWAP_ARRAYS(UINT64, uint64);
+      SWAP_ARRAYS(FLOAT , float );
+      SWAP_ARRAYS(DOUBLE, double);
+      SWAP_ARRAYS(BOOL  , bool  );
+      SWAP_ARRAYS(ENUM  , int   );
+#undef SWAP_ARRAYS
+
+      case FieldDescriptor::CPPTYPE_STRING:
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        MutableRaw<RepeatedPtrFieldBase>(message1, field)->Swap(
+            MutableRaw<RepeatedPtrFieldBase>(message2, field));
+        break;
+
+      default:
+        GOOGLE_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
+    }
+  } else {
+    switch (field->cpp_type()) {
+#define SWAP_VALUES(CPPTYPE, TYPE)                                      \
+      case FieldDescriptor::CPPTYPE_##CPPTYPE:                          \
+        std::swap(*MutableRaw<TYPE>(message1, field),                   \
+                  *MutableRaw<TYPE>(message2, field));                  \
+        break;
+
+      SWAP_VALUES(INT32 , int32 );
+      SWAP_VALUES(INT64 , int64 );
+      SWAP_VALUES(UINT32, uint32);
+      SWAP_VALUES(UINT64, uint64);
+      SWAP_VALUES(FLOAT , float );
+      SWAP_VALUES(DOUBLE, double);
+      SWAP_VALUES(BOOL  , bool  );
+      SWAP_VALUES(ENUM  , int   );
+#undef SWAP_VALUES
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        std::swap(*MutableRaw<Message*>(message1, field),
+                  *MutableRaw<Message*>(message2, field));
+        break;
+
+      case FieldDescriptor::CPPTYPE_STRING:
+        switch (field->options().ctype()) {
+          default:  // TODO(kenton):  Support other string reps.
+          case FieldOptions::STRING:
+            std::swap(*MutableRaw<string*>(message1, field),
+                      *MutableRaw<string*>(message2, field));
+            break;
+        }
+        break;
+
+      default:
+        GOOGLE_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
+    }
+  }
+}
+
+void GeneratedMessageReflection::SwapOneofField(
+    Message* message1,
+    Message* message2,
+    const OneofDescriptor* oneof_descriptor) const {
+  uint32 oneof_case1 = GetOneofCase(*message1, oneof_descriptor);
+  uint32 oneof_case2 = GetOneofCase(*message2, oneof_descriptor);
+
+  int32 temp_int32;
+  int64 temp_int64;
+  uint32 temp_uint32;
+  uint64 temp_uint64;
+  float temp_float;
+  double temp_double;
+  bool temp_bool;
+  int temp_int;
+  Message* temp_message;
+  string temp_string;
+
+  // Stores message1's oneof field to a temp variable.
+  const FieldDescriptor* field1;
+  if (oneof_case1 > 0) {
+    field1 = descriptor_->FindFieldByNumber(oneof_case1);
+    //oneof_descriptor->field(oneof_case1);
+    switch (field1->cpp_type()) {
+#define GET_TEMP_VALUE(CPPTYPE, TYPE)                                   \
+      case FieldDescriptor::CPPTYPE_##CPPTYPE:                          \
+        temp_##TYPE = GetField<TYPE>(*message1, field1);                \
+        break;
+
+      GET_TEMP_VALUE(INT32 , int32 );
+      GET_TEMP_VALUE(INT64 , int64 );
+      GET_TEMP_VALUE(UINT32, uint32);
+      GET_TEMP_VALUE(UINT64, uint64);
+      GET_TEMP_VALUE(FLOAT , float );
+      GET_TEMP_VALUE(DOUBLE, double);
+      GET_TEMP_VALUE(BOOL  , bool  );
+      GET_TEMP_VALUE(ENUM  , int   );
+#undef GET_TEMP_VALUE
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        temp_message = ReleaseMessage(message1, field1);
+        break;
+
+      case FieldDescriptor::CPPTYPE_STRING:
+        temp_string = GetString(*message1, field1);
+        break;
+
+      default:
+        GOOGLE_LOG(FATAL) << "Unimplemented type: " << field1->cpp_type();
+    }
+  }
+
+  // Sets message1's oneof field from the message2's oneof field.
+  if (oneof_case2 > 0) {
+    const FieldDescriptor* field2 =
+        descriptor_->FindFieldByNumber(oneof_case2);
+    switch (field2->cpp_type()) {
+#define SET_ONEOF_VALUE1(CPPTYPE, TYPE)                                 \
+      case FieldDescriptor::CPPTYPE_##CPPTYPE:                          \
+        SetField<TYPE>(message1, field2, GetField<TYPE>(*message2, field2)); \
+        break;
+
+      SET_ONEOF_VALUE1(INT32 , int32 );
+      SET_ONEOF_VALUE1(INT64 , int64 );
+      SET_ONEOF_VALUE1(UINT32, uint32);
+      SET_ONEOF_VALUE1(UINT64, uint64);
+      SET_ONEOF_VALUE1(FLOAT , float );
+      SET_ONEOF_VALUE1(DOUBLE, double);
+      SET_ONEOF_VALUE1(BOOL  , bool  );
+      SET_ONEOF_VALUE1(ENUM  , int   );
+#undef SET_ONEOF_VALUE1
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        SetAllocatedMessage(message1,
+                            ReleaseMessage(message2, field2),
+                            field2);
+        break;
+
+      case FieldDescriptor::CPPTYPE_STRING:
+        SetString(message1, field2, GetString(*message2, field2));
+        break;
+
+      default:
+        GOOGLE_LOG(FATAL) << "Unimplemented type: " << field2->cpp_type();
+    }
+  } else {
+    ClearOneof(message1, oneof_descriptor);
+  }
+
+  // Sets message2's oneof field from the temp variable.
+  if (oneof_case1 > 0) {
+    switch (field1->cpp_type()) {
+#define SET_ONEOF_VALUE2(CPPTYPE, TYPE)                                 \
+      case FieldDescriptor::CPPTYPE_##CPPTYPE:                          \
+        SetField<TYPE>(message2, field1, temp_##TYPE);                  \
+        break;
+
+      SET_ONEOF_VALUE2(INT32 , int32 );
+      SET_ONEOF_VALUE2(INT64 , int64 );
+      SET_ONEOF_VALUE2(UINT32, uint32);
+      SET_ONEOF_VALUE2(UINT64, uint64);
+      SET_ONEOF_VALUE2(FLOAT , float );
+      SET_ONEOF_VALUE2(DOUBLE, double);
+      SET_ONEOF_VALUE2(BOOL  , bool  );
+      SET_ONEOF_VALUE2(ENUM  , int   );
+#undef SET_ONEOF_VALUE2
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        SetAllocatedMessage(message2, temp_message, field1);
+        break;
+
+      case FieldDescriptor::CPPTYPE_STRING:
+        SetString(message2, field1, temp_string);
+        break;
+
+      default:
+        GOOGLE_LOG(FATAL) << "Unimplemented type: " << field1->cpp_type();
+    }
+  } else {
+    ClearOneof(message2, oneof_descriptor);
+  }
+}
+
 void GeneratedMessageReflection::Swap(
     Message* message1,
     Message* message2) const {
@@ -337,69 +559,13 @@ void GeneratedMessageReflection::Swap(
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-    if (field->is_repeated()) {
-      switch (field->cpp_type()) {
-#define SWAP_ARRAYS(CPPTYPE, TYPE)                                           \
-        case FieldDescriptor::CPPTYPE_##CPPTYPE:                             \
-          MutableRaw<RepeatedField<TYPE> >(message1, field)->Swap(           \
-              MutableRaw<RepeatedField<TYPE> >(message2, field));            \
-          break;
-
-          SWAP_ARRAYS(INT32 , int32 );
-          SWAP_ARRAYS(INT64 , int64 );
-          SWAP_ARRAYS(UINT32, uint32);
-          SWAP_ARRAYS(UINT64, uint64);
-          SWAP_ARRAYS(FLOAT , float );
-          SWAP_ARRAYS(DOUBLE, double);
-          SWAP_ARRAYS(BOOL  , bool  );
-          SWAP_ARRAYS(ENUM  , int   );
-#undef SWAP_ARRAYS
-
-        case FieldDescriptor::CPPTYPE_STRING:
-        case FieldDescriptor::CPPTYPE_MESSAGE:
-          MutableRaw<RepeatedPtrFieldBase>(message1, field)->Swap(
-              MutableRaw<RepeatedPtrFieldBase>(message2, field));
-          break;
-
-        default:
-          GOOGLE_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
-      }
-    } else {
-      switch (field->cpp_type()) {
-#define SWAP_VALUES(CPPTYPE, TYPE)                                           \
-        case FieldDescriptor::CPPTYPE_##CPPTYPE:                             \
-          std::swap(*MutableRaw<TYPE>(message1, field),                      \
-                    *MutableRaw<TYPE>(message2, field));                     \
-          break;
-
-          SWAP_VALUES(INT32 , int32 );
-          SWAP_VALUES(INT64 , int64 );
-          SWAP_VALUES(UINT32, uint32);
-          SWAP_VALUES(UINT64, uint64);
-          SWAP_VALUES(FLOAT , float );
-          SWAP_VALUES(DOUBLE, double);
-          SWAP_VALUES(BOOL  , bool  );
-          SWAP_VALUES(ENUM  , int   );
-#undef SWAP_VALUES
-        case FieldDescriptor::CPPTYPE_MESSAGE:
-          std::swap(*MutableRaw<Message*>(message1, field),
-                    *MutableRaw<Message*>(message2, field));
-          break;
-
-        case FieldDescriptor::CPPTYPE_STRING:
-          switch (field->options().ctype()) {
-            default:  // TODO(kenton):  Support other string reps.
-            case FieldOptions::STRING:
-              std::swap(*MutableRaw<string*>(message1, field),
-                        *MutableRaw<string*>(message2, field));
-              break;
-          }
-          break;
-
-        default:
-          GOOGLE_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
-      }
+    if (!field->containing_oneof()) {
+      SwapField(message1, message2, field);
     }
+  }
+
+  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+    SwapOneofField(message1, message2, descriptor_->oneof_decl(i));
   }
 
   if (extensions_offset_ != -1) {
@@ -407,6 +573,55 @@ void GeneratedMessageReflection::Swap(
   }
 
   MutableUnknownFields(message1)->Swap(MutableUnknownFields(message2));
+}
+
+void GeneratedMessageReflection::SwapFields(
+    Message* message1,
+    Message* message2,
+    const vector<const FieldDescriptor*>& fields) const {
+  if (message1 == message2) return;
+
+  // TODO(kenton):  Other Reflection methods should probably check this too.
+  GOOGLE_CHECK_EQ(message1->GetReflection(), this)
+    << "First argument to SwapFields() (of type \""
+    << message1->GetDescriptor()->full_name()
+    << "\") is not compatible with this reflection object (which is for type \""
+    << descriptor_->full_name()
+    << "\").  Note that the exact same class is required; not just the same "
+       "descriptor.";
+  GOOGLE_CHECK_EQ(message2->GetReflection(), this)
+    << "Second argument to SwapFields() (of type \""
+    << message2->GetDescriptor()->full_name()
+    << "\") is not compatible with this reflection object (which is for type \""
+    << descriptor_->full_name()
+    << "\").  Note that the exact same class is required; not just the same "
+       "descriptor.";
+
+  std::set<int> swapped_oneof;
+
+  for (int i = 0; i < fields.size(); i++) {
+    const FieldDescriptor* field = fields[i];
+    if (field->is_extension()) {
+      MutableExtensionSet(message1)->SwapExtension(
+          MutableExtensionSet(message2),
+          field->number());
+    } else {
+      if (field->containing_oneof()) {
+        int oneof_index = field->containing_oneof()->index();
+        // Only swap the oneof field once.
+        if (swapped_oneof.find(oneof_index) != swapped_oneof.end()) {
+          continue;
+        }
+        swapped_oneof.insert(oneof_index);
+        SwapOneofField(message1, message2, field->containing_oneof());
+      } else {
+        // Swap has bit.
+        SwapBit(message1, message2, field);
+        // Swap field.
+        SwapField(message1, message2, field);
+      }
+    }
+  }
 }
 
 // -------------------------------------------------------------------
@@ -419,7 +634,11 @@ bool GeneratedMessageReflection::HasField(const Message& message,
   if (field->is_extension()) {
     return GetExtensionSet(message).Has(field->number());
   } else {
-    return HasBit(message, field);
+    if (field->containing_oneof()) {
+      return HasOneofField(message, field);
+    } else {
+      return HasBit(message, field);
+    }
   }
 }
 
@@ -463,6 +682,11 @@ void GeneratedMessageReflection::ClearField(
   if (field->is_extension()) {
     MutableExtensionSet(message)->ClearExtension(field->number());
   } else if (!field->is_repeated()) {
+    if (field->containing_oneof()) {
+      ClearOneofField(message, field);
+      return;
+    }
+
     if (HasBit(*message, field)) {
       ClearBit(message, field);
 
@@ -667,7 +891,11 @@ void GeneratedMessageReflection::ListFields(
         output->push_back(field);
       }
     } else {
-      if (HasBit(message, field)) {
+      if (field->containing_oneof()) {
+        if (HasOneofField(message, field)) {
+          output->push_back(field);
+        }
+      } else if (HasBit(message, field)) {
         output->push_back(field);
       }
     }
@@ -777,7 +1005,7 @@ string GeneratedMessageReflection::GetString(
 
 const string& GeneratedMessageReflection::GetStringReference(
     const Message& message,
-    const FieldDescriptor* field, string* /* scratch */) const {
+    const FieldDescriptor* field, string* scratch) const {
   USAGE_CHECK_ALL(GetStringReference, SINGULAR, STRING);
   if (field->is_extension()) {
     return GetExtensionSet(message).GetString(field->number(),
@@ -806,6 +1034,10 @@ void GeneratedMessageReflection::SetString(
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING: {
+        if (field->containing_oneof() && !HasOneofField(*message, field)) {
+          ClearOneof(message, field->containing_oneof());
+          *MutableField<string*>(message, field) = new string;
+        }
         string** ptr = MutableField<string*>(message, field);
         if (*ptr == DefaultRaw<const string*>(field)) {
           *ptr = new string(value);
@@ -838,7 +1070,7 @@ string GeneratedMessageReflection::GetRepeatedString(
 
 const string& GeneratedMessageReflection::GetRepeatedStringReference(
     const Message& message, const FieldDescriptor* field,
-    int index, string* /* scratch */) const {
+    int index, string* scratch) const {
   USAGE_CHECK_ALL(GetRepeatedStringReference, REPEATED, STRING);
   if (field->is_extension()) {
     return GetExtensionSet(message).GetRepeatedString(field->number(), index);
@@ -1000,8 +1232,6 @@ const Message& GeneratedMessageReflection::GetMessage(
 Message* GeneratedMessageReflection::MutableMessage(
     Message* message, const FieldDescriptor* field,
     MessageFactory* factory) const {
-  USAGE_CHECK_ALL(MutableMessage, SINGULAR, MESSAGE);
-
   if (factory == NULL) factory = message_factory_;
 
   if (field->is_extension()) {
@@ -1009,13 +1239,57 @@ Message* GeneratedMessageReflection::MutableMessage(
         MutableExtensionSet(message)->MutableMessage(field, factory));
   } else {
     Message* result;
-    Message** result_holder = MutableField<Message*>(message, field);
+    Message** result_holder = MutableRaw<Message*>(message, field);
+
+    if (field->containing_oneof()) {
+      if (!HasOneofField(*message, field)) {
+        ClearOneof(message, field->containing_oneof());
+        result_holder = MutableField<Message*>(message, field);
+        const Message* default_message = DefaultRaw<const Message*>(field);
+        *result_holder = default_message->New();
+      }
+    } else {
+      SetBit(message, field);
+    }
+
     if (*result_holder == NULL) {
       const Message* default_message = DefaultRaw<const Message*>(field);
       *result_holder = default_message->New();
     }
     result = *result_holder;
     return result;
+  }
+}
+
+void GeneratedMessageReflection::SetAllocatedMessage(
+    Message* message,
+    Message* sub_message,
+    const FieldDescriptor* field) const {
+  USAGE_CHECK_ALL(SetAllocatedMessage, SINGULAR, MESSAGE);
+
+  if (field->is_extension()) {
+    MutableExtensionSet(message)->SetAllocatedMessage(
+        field->number(), field->type(), field, sub_message);
+  } else {
+    if (field->containing_oneof()) {
+      if (sub_message == NULL) {
+        ClearOneof(message, field->containing_oneof());
+        return;
+      }
+        ClearOneof(message, field->containing_oneof());
+        *MutableRaw<Message*>(message, field) = sub_message;
+      SetOneofCase(message, field);
+      return;
+    }
+
+    if (sub_message == NULL) {
+      ClearBit(message, field);
+    } else {
+      SetBit(message, field);
+    }
+    Message** sub_message_holder = MutableRaw<Message*>(message, field);
+    delete *sub_message_holder;
+    *sub_message_holder = sub_message;
   }
 }
 
@@ -1032,6 +1306,13 @@ Message* GeneratedMessageReflection::ReleaseMessage(
         MutableExtensionSet(message)->ReleaseMessage(field, factory));
   } else {
     ClearBit(message, field);
+    if (field->containing_oneof()) {
+      if (HasOneofField(*message, field)) {
+        *MutableOneofCase(message, field->containing_oneof()) = 0;
+      } else {
+        return NULL;
+      }
+    }
     Message** result = MutableRaw<Message*>(message, field);
     Message* ret = *result;
     *result = NULL;
@@ -1111,9 +1392,19 @@ void* GeneratedMessageReflection::MutableRawRepeatedField(
     GOOGLE_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension())
     return MutableExtensionSet(message)->MutableRawRepeatedField(
-        field->number());
+        field->number(), field->type(), field->is_packed(), field);
   else
     return reinterpret_cast<uint8*>(message) + offsets_[field->index()];
+}
+
+const FieldDescriptor* GeneratedMessageReflection::GetOneofFieldDescriptor(
+    const Message& message,
+    const OneofDescriptor* oneof_descriptor) const {
+  uint32 field_number = GetOneofCase(message, oneof_descriptor);
+  if (field_number == 0) {
+    return NULL;
+  }
+  return descriptor_->FindFieldByNumber(field_number);
 }
 
 // -----------------------------------------------------------------------------
@@ -1162,23 +1453,35 @@ const FieldDescriptor* GeneratedMessageReflection::FindKnownExtensionByNumber(
 template <typename Type>
 inline const Type& GeneratedMessageReflection::GetRaw(
     const Message& message, const FieldDescriptor* field) const {
+  if (field->containing_oneof() && !HasOneofField(message, field)) {
+    return DefaultRaw<Type>(field);
+  }
+  int index = field->containing_oneof() ?
+      descriptor_->field_count() + field->containing_oneof()->index() :
+      field->index();
   const void* ptr = reinterpret_cast<const uint8*>(&message) +
-                    offsets_[field->index()];
+      offsets_[index];
   return *reinterpret_cast<const Type*>(ptr);
 }
 
 template <typename Type>
 inline Type* GeneratedMessageReflection::MutableRaw(
     Message* message, const FieldDescriptor* field) const {
-  void* ptr = reinterpret_cast<uint8*>(message) + offsets_[field->index()];
+  int index = field->containing_oneof() ?
+      descriptor_->field_count() + field->containing_oneof()->index() :
+      field->index();
+  void* ptr = reinterpret_cast<uint8*>(message) + offsets_[index];
   return reinterpret_cast<Type*>(ptr);
 }
 
 template <typename Type>
 inline const Type& GeneratedMessageReflection::DefaultRaw(
     const FieldDescriptor* field) const {
-  const void* ptr = reinterpret_cast<const uint8*>(default_instance_) +
-                    offsets_[field->index()];
+  const void* ptr = field->containing_oneof() ?
+      reinterpret_cast<const uint8*>(default_oneof_instance_) +
+      offsets_[field->index()] :
+      reinterpret_cast<const uint8*>(default_instance_) +
+      offsets_[field->index()];
   return *reinterpret_cast<const Type*>(ptr);
 }
 
@@ -1191,6 +1494,21 @@ inline uint32* GeneratedMessageReflection::MutableHasBits(
     Message* message) const {
   void* ptr = reinterpret_cast<uint8*>(message) + has_bits_offset_;
   return reinterpret_cast<uint32*>(ptr);
+}
+
+inline const uint32 GeneratedMessageReflection::GetOneofCase(
+    const Message& message,
+    const OneofDescriptor* oneof_descriptor) const {
+  const void* ptr = reinterpret_cast<const uint8*>(&message)
+      + oneof_case_offset_;
+  return reinterpret_cast<const uint32*>(ptr)[oneof_descriptor->index()];
+}
+
+inline uint32* GeneratedMessageReflection::MutableOneofCase(
+    Message* message,
+    const OneofDescriptor* oneof_descriptor) const {
+  void* ptr = reinterpret_cast<uint8*>(message) + oneof_case_offset_;
+  return &(reinterpret_cast<uint32*>(ptr)[oneof_descriptor->index()]);
 }
 
 inline const ExtensionSet& GeneratedMessageReflection::GetExtensionSet(
@@ -1224,6 +1542,73 @@ inline void GeneratedMessageReflection::ClearBit(
   MutableHasBits(message)[field->index() / 32] &= ~(1 << (field->index() % 32));
 }
 
+inline void GeneratedMessageReflection::SwapBit(
+    Message* message1, Message* message2, const FieldDescriptor* field) const {
+  bool temp_has_bit = HasBit(*message1, field);
+  if (HasBit(*message2, field)) {
+    SetBit(message1, field);
+  } else {
+    ClearBit(message1, field);
+  }
+  if (temp_has_bit) {
+    SetBit(message2, field);
+  } else {
+    ClearBit(message2, field);
+  }
+}
+
+inline bool GeneratedMessageReflection::HasOneof(
+    const Message& message, const OneofDescriptor* oneof_descriptor) const {
+  return (GetOneofCase(message, oneof_descriptor) > 0);
+}
+
+inline bool GeneratedMessageReflection::HasOneofField(
+    const Message& message, const FieldDescriptor* field) const {
+  return (GetOneofCase(message, field->containing_oneof()) == field->number());
+}
+
+inline void GeneratedMessageReflection::SetOneofCase(
+    Message* message, const FieldDescriptor* field) const {
+  *MutableOneofCase(message, field->containing_oneof()) = field->number();
+}
+
+inline void GeneratedMessageReflection::ClearOneofField(
+    Message* message, const FieldDescriptor* field) const {
+  if (HasOneofField(*message, field)) {
+    ClearOneof(message, field->containing_oneof());
+  }
+}
+
+inline void GeneratedMessageReflection::ClearOneof(
+    Message* message, const OneofDescriptor* oneof_descriptor) const {
+  // TODO(jieluo): Consider to cache the unused object instead of deleting
+  // it. It will be much faster if an aplication switches a lot from
+  // a few oneof fields.  Time/space tradeoff
+  uint32 oneof_case = GetOneofCase(*message, oneof_descriptor);
+  if (oneof_case > 0) {
+    const FieldDescriptor* field = descriptor_->FindFieldByNumber(oneof_case);
+    switch (field->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_STRING: {
+        switch (field->options().ctype()) {
+          default:  // TODO(kenton):  Support other string reps.
+          case FieldOptions::STRING:
+            delete *MutableRaw<string*>(message, field);
+            break;
+        }
+        break;
+      }
+
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        delete *MutableRaw<Message*>(message, field);
+        break;
+      default:
+        break;
+    }
+
+    *MutableOneofCase(message, oneof_descriptor) = 0;
+  }
+}
+
 // Template implementations of basic accessors.  Inline because each
 // template instance is only called from one location.  These are
 // used for all types except messages.
@@ -1236,14 +1621,19 @@ inline const Type& GeneratedMessageReflection::GetField(
 template <typename Type>
 inline void GeneratedMessageReflection::SetField(
     Message* message, const FieldDescriptor* field, const Type& value) const {
+  if (field->containing_oneof() && !HasOneofField(*message, field)) {
+    ClearOneof(message, field->containing_oneof());
+  }
   *MutableRaw<Type>(message, field) = value;
-  SetBit(message, field);
+  field->containing_oneof() ?
+      SetOneofCase(message, field) : SetBit(message, field);
 }
 
 template <typename Type>
 inline Type* GeneratedMessageReflection::MutableField(
     Message* message, const FieldDescriptor* field) const {
-  SetBit(message, field);
+  field->containing_oneof() ?
+      SetOneofCase(message, field) : SetBit(message, field);
   return MutableRaw<Type>(message, field);
 }
 

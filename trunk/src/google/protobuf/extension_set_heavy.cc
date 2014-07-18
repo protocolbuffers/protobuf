@@ -48,6 +48,29 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+// A FieldSkipper used to store unknown MessageSet fields into UnknownFieldSet.
+class MessageSetFieldSkipper
+    : public UnknownFieldSetFieldSkipper {
+ public:
+  explicit MessageSetFieldSkipper(UnknownFieldSet* unknown_fields)
+      : UnknownFieldSetFieldSkipper(unknown_fields) {}
+  virtual ~MessageSetFieldSkipper() {}
+
+  virtual bool SkipMessageSetField(io::CodedInputStream* input,
+                                   int field_number);
+};
+bool MessageSetFieldSkipper::SkipMessageSetField(
+    io::CodedInputStream* input, int field_number) {
+  uint32 length;
+  if (!input->ReadVarint32(&length)) return false;
+  if (unknown_fields_ == NULL) {
+    return input->Skip(length);
+  } else {
+    return input->ReadString(
+        unknown_fields_->AddLengthDelimited(field_number), length);
+  }
+}
+
 
 // Implementation of ExtensionFinder which finds extensions in a given
 // DescriptorPool, using the given MessageFactory to construct sub-objects.
@@ -172,7 +195,7 @@ MessageLite* ExtensionSet::ReleaseMessage(const FieldDescriptor* descriptor,
     MessageLite* ret = NULL;
     if (iter->second.is_lazy) {
       ret = iter->second.lazymessage_value->ReleaseMessage(
-        *factory->GetPrototype(descriptor->message_type()));
+          *factory->GetPrototype(descriptor->message_type()));
       delete iter->second.lazymessage_value;
     } else {
       ret = iter->second.message_value;
@@ -261,7 +284,7 @@ bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
 bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
                                    const Message* containing_type,
                                    UnknownFieldSet* unknown_fields) {
-  UnknownFieldSetFieldSkipper skipper(unknown_fields);
+  MessageSetFieldSkipper skipper(unknown_fields);
   if (input->GetExtensionPool() == NULL) {
     GeneratedExtensionFinder finder(containing_type);
     return ParseMessageSet(input, &finder, &skipper);
@@ -511,17 +534,19 @@ uint8* ExtensionSet::Extension::SerializeMessageSetItemWithCachedSizesToArray(
 
 
 bool ExtensionSet::ParseFieldMaybeLazily(
-    uint32 tag, io::CodedInputStream* input,
+    int wire_type, int field_number, io::CodedInputStream* input,
     ExtensionFinder* extension_finder,
-    FieldSkipper* field_skipper) {
-  return ParseField(tag, input, extension_finder, field_skipper);
+    MessageSetFieldSkipper* field_skipper) {
+  return ParseField(WireFormatLite::MakeTag(
+      field_number, static_cast<WireFormatLite::WireType>(wire_type)),
+                    input, extension_finder, field_skipper);
 }
 
 bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
                                    ExtensionFinder* extension_finder,
-                                   FieldSkipper* field_skipper) {
+                                   MessageSetFieldSkipper* field_skipper) {
   while (true) {
-    uint32 tag = input->ReadTag();
+    const uint32 tag = input->ReadTag();
     switch (tag) {
       case 0:
         return true;
@@ -541,14 +566,14 @@ bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
 
 bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
                                    const MessageLite* containing_type) {
-  FieldSkipper skipper;
+  MessageSetFieldSkipper skipper(NULL);
   GeneratedExtensionFinder finder(containing_type);
   return ParseMessageSet(input, &finder, &skipper);
 }
 
 bool ExtensionSet::ParseMessageSetItem(io::CodedInputStream* input,
                                        ExtensionFinder* extension_finder,
-                                       FieldSkipper* field_skipper) {
+                                       MessageSetFieldSkipper* field_skipper) {
   // TODO(kenton):  It would be nice to share code between this and
   // WireFormatLite::ParseAndMergeMessageSetItem(), but I think the
   // differences would be hard to factor out.
@@ -557,25 +582,21 @@ bool ExtensionSet::ParseMessageSetItem(io::CodedInputStream* input,
   //   required int32 type_id = 2;
   //   required data message = 3;
 
-  // Once we see a type_id, we'll construct a fake tag for this extension
-  // which is the tag it would have had under the proto2 extensions wire
-  // format.
-  uint32 fake_tag = 0;
+  uint32 last_type_id = 0;
 
   // If we see message data before the type_id, we'll append it to this so
   // we can parse it later.
   string message_data;
 
   while (true) {
-    uint32 tag = input->ReadTag();
+    const uint32 tag = input->ReadTag();
     if (tag == 0) return false;
 
     switch (tag) {
       case WireFormatLite::kMessageSetTypeIdTag: {
         uint32 type_id;
         if (!input->ReadVarint32(&type_id)) return false;
-        fake_tag = WireFormatLite::MakeTag(type_id,
-            WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+        last_type_id = type_id;
 
         if (!message_data.empty()) {
           // We saw some message data before the type_id.  Have to parse it
@@ -583,7 +604,8 @@ bool ExtensionSet::ParseMessageSetItem(io::CodedInputStream* input,
           io::CodedInputStream sub_input(
               reinterpret_cast<const uint8*>(message_data.data()),
               message_data.size());
-          if (!ParseFieldMaybeLazily(fake_tag, &sub_input,
+          if (!ParseFieldMaybeLazily(WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+                                     last_type_id, &sub_input,
                                      extension_finder, field_skipper)) {
             return false;
           }
@@ -594,7 +616,7 @@ bool ExtensionSet::ParseMessageSetItem(io::CodedInputStream* input,
       }
 
       case WireFormatLite::kMessageSetMessageTag: {
-        if (fake_tag == 0) {
+        if (last_type_id == 0) {
           // We haven't seen a type_id yet.  Append this data to message_data.
           string temp;
           uint32 length;
@@ -606,7 +628,8 @@ bool ExtensionSet::ParseMessageSetItem(io::CodedInputStream* input,
           coded_output.WriteString(temp);
         } else {
           // Already saw type_id, so we can parse this directly.
-          if (!ParseFieldMaybeLazily(fake_tag, input,
+          if (!ParseFieldMaybeLazily(WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+                                     last_type_id, input,
                                      extension_finder, field_skipper)) {
             return false;
           }
@@ -689,8 +712,8 @@ int ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
 
 void ExtensionSet::SerializeMessageSetWithCachedSizes(
     io::CodedOutputStream* output) const {
-  map<int, Extension>::const_iterator iter;
-  for (iter = extensions_.begin(); iter != extensions_.end(); ++iter) {
+  for (map<int, Extension>::const_iterator iter = extensions_.begin();
+       iter != extensions_.end(); ++iter) {
     iter->second.SerializeMessageSetItemWithCachedSizes(iter->first, output);
   }
 }

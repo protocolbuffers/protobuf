@@ -104,6 +104,9 @@ class LIBPROTOC_EXPORT GeneratorContext {
   // contain "." or ".." components.
   virtual io::ZeroCopyOutputStream* Open(const string& filename) = 0;
 
+  // Similar to Open() but the output will be appended to the file if exists
+  virtual io::ZeroCopyOutputStream* OpenForAppend(const string& filename);
+
   // Creates a ZeroCopyOutputStream which will insert code into the given file
   // at the given insertion point.  See plugin.proto (plugin.pb.h) for more
   // information on insertion points.  The default implementation

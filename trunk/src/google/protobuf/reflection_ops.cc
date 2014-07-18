@@ -56,7 +56,9 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
 
   const Descriptor* descriptor = from.GetDescriptor();
   GOOGLE_CHECK_EQ(to->GetDescriptor(), descriptor)
-    << "Tried to merge messages of different types.";
+    << "Tried to merge messages of different types "
+    << "(merge " << descriptor->full_name()
+    << " to " << to->GetDescriptor()->full_name() << ")";
 
   const Reflection* from_reflection = from.GetReflection();
   const Reflection* to_reflection = to->GetReflection();

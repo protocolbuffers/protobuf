@@ -30,9 +30,12 @@
 
 package com.google.protobuf;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -88,6 +91,53 @@ public final class CodedInputStream {
     return result;
   }
 
+  /**
+   * Create a new CodedInputStream wrapping the given ByteBuffer. The data
+   * starting from the ByteBuffer's current position to its limit will be read.
+   * The returned CodedInputStream may or may not share the underlying data
+   * in the ByteBuffer, therefore the ByteBuffer cannot be changed while the
+   * CodedInputStream is in use.
+   * Note that the ByteBuffer's position won't be changed by this function.
+   * Concurrent calls with the same ByteBuffer object are safe if no other
+   * thread is trying to alter the ByteBuffer's status.
+   */
+  public static CodedInputStream newInstance(ByteBuffer buf) {
+    if (buf.hasArray()) {
+      return newInstance(buf.array(), buf.arrayOffset() + buf.position(),
+          buf.remaining());
+    } else {
+      ByteBuffer temp = buf.duplicate();
+      byte[] buffer = new byte[temp.remaining()];
+      temp.get(buffer);
+      return newInstance(buffer);
+    }
+  }
+
+  /**
+   * Create a new CodedInputStream wrapping a LiteralByteString.
+   */
+  static CodedInputStream newInstance(LiteralByteString byteString) {
+    CodedInputStream result = new CodedInputStream(byteString);
+    try {
+      // Some uses of CodedInputStream can be more efficient if they know
+      // exactly how many bytes are available.  By pushing the end point of the
+      // buffer as a limit, we allow them to get this information via
+      // getBytesUntilLimit().  Pushing a limit that we know is at the end of
+      // the stream can never hurt, since we can never past that point anyway.
+      result.pushLimit(byteString.size());
+    } catch (InvalidProtocolBufferException ex) {
+      // The only reason pushLimit() might throw an exception here is if len
+      // is negative. Normally pushLimit()'s parameter comes directly off the
+      // wire, so it's important to catch exceptions in case of corrupt or
+      // malicious data. However, in this case, we expect that len is not a
+      // user-supplied value, so we can assume that it being negative indicates
+      // a programming error. Therefore, throwing an unchecked exception is
+      // appropriate.
+      throw new IllegalArgumentException(ex);
+    }
+    return result;
+  }
+
   // -----------------------------------------------------------------
 
   /**
@@ -125,6 +175,10 @@ public final class CodedInputStream {
     }
   }
 
+  public int getLastTag() {
+    return lastTag;
+  }
+
   /**
    * Reads and discards a single field, given its tag value.
    *
@@ -134,10 +188,10 @@ public final class CodedInputStream {
   public boolean skipField(final int tag) throws IOException {
     switch (WireFormat.getTagWireType(tag)) {
       case WireFormat.WIRETYPE_VARINT:
-        readInt32();
+        skipRawVarint();
         return true;
       case WireFormat.WIRETYPE_FIXED64:
-        readRawLittleEndian64();
+        skipRawBytes(8);
         return true;
       case WireFormat.WIRETYPE_LENGTH_DELIMITED:
         skipRawBytes(readRawVarint32());
@@ -151,8 +205,59 @@ public final class CodedInputStream {
       case WireFormat.WIRETYPE_END_GROUP:
         return false;
       case WireFormat.WIRETYPE_FIXED32:
-        readRawLittleEndian32();
+        skipRawBytes(4);
         return true;
+      default:
+        throw InvalidProtocolBufferException.invalidWireType();
+    }
+  }
+
+  /**
+   * Reads a single field and writes it to output in wire format,
+   * given its tag value.
+   *
+   * @return {@code false} if the tag is an endgroup tag, in which case
+   *         nothing is skipped.  Otherwise, returns {@code true}.
+   */
+  public boolean skipField(final int tag, final CodedOutputStream output)
+      throws IOException {
+    switch (WireFormat.getTagWireType(tag)) {
+      case WireFormat.WIRETYPE_VARINT: {
+        long value = readInt64();
+        output.writeRawVarint32(tag);
+        output.writeUInt64NoTag(value);
+        return true;
+      }
+      case WireFormat.WIRETYPE_FIXED64: {
+        long value = readRawLittleEndian64();
+        output.writeRawVarint32(tag);
+        output.writeFixed64NoTag(value);
+        return true;
+      }
+      case WireFormat.WIRETYPE_LENGTH_DELIMITED: {
+        ByteString value = readBytes();
+        output.writeRawVarint32(tag);
+        output.writeBytesNoTag(value);
+        return true;
+      }
+      case WireFormat.WIRETYPE_START_GROUP: {
+        output.writeRawVarint32(tag);
+        skipMessage(output);
+        int endtag = WireFormat.makeTag(WireFormat.getTagFieldNumber(tag),
+                                        WireFormat.WIRETYPE_END_GROUP);
+        checkLastTagWas(endtag);
+        output.writeRawVarint32(endtag);
+        return true;
+      }
+      case WireFormat.WIRETYPE_END_GROUP: {
+        return false;
+      }
+      case WireFormat.WIRETYPE_FIXED32: {
+        int value = readRawLittleEndian32();
+        output.writeRawVarint32(tag);
+        output.writeFixed32NoTag(value);
+        return true;
+      }
       default:
         throw InvalidProtocolBufferException.invalidWireType();
     }
@@ -170,6 +275,51 @@ public final class CodedInputStream {
       }
     }
   }
+
+  /**
+   * Reads an entire message and writes it to output in wire format.
+   * This will read either until EOF or until an endgroup tag,
+   * whichever comes first.
+   */
+  public void skipMessage(CodedOutputStream output) throws IOException {
+    while (true) {
+      final int tag = readTag();
+      if (tag == 0 || !skipField(tag, output)) {
+        return;
+      }
+    }
+  }
+
+  /**
+   * Collects the bytes skipped and returns the data in a ByteBuffer.
+   */
+  private class SkippedDataSink implements RefillCallback {
+    private int lastPos = bufferPos;
+    private ByteArrayOutputStream byteArrayStream;
+
+    @Override
+    public void onRefill() {
+      if (byteArrayStream == null) {
+        byteArrayStream = new ByteArrayOutputStream();
+      }
+      byteArrayStream.write(buffer, lastPos, bufferPos - lastPos);
+      lastPos = 0;
+    }
+
+    /**
+     * Gets skipped data in a ByteBuffer. This method should only be
+     * called once.
+     */
+    ByteBuffer getSkippedData() {
+      if (byteArrayStream == null) {
+        return ByteBuffer.wrap(buffer, lastPos, bufferPos - lastPos);
+      } else {
+        byteArrayStream.write(buffer, lastPos, bufferPos);
+        return ByteBuffer.wrap(byteArrayStream.toByteArray());
+      }
+    }
+  }
+
 
   // -----------------------------------------------------------------
 
@@ -210,10 +360,14 @@ public final class CodedInputStream {
 
   /** Read a {@code bool} field value from the stream. */
   public boolean readBool() throws IOException {
-    return readRawVarint32() != 0;
+    return readRawVarint64() != 0;
   }
 
-  /** Read a {@code string} field value from the stream. */
+  /**
+   * Read a {@code string} field value from the stream.
+   * If the stream contains malformed UTF-8,
+   * replace the offending bytes with the standard UTF-8 replacement character.
+   */
   public String readString() throws IOException {
     final int size = readRawVarint32();
     if (size <= (bufferSize - bufferPos) && size > 0) {
@@ -222,10 +376,40 @@ public final class CodedInputStream {
       final String result = new String(buffer, bufferPos, size, "UTF-8");
       bufferPos += size;
       return result;
+    } else if (size == 0) {
+      return "";
     } else {
       // Slow path:  Build a byte array first then copy it.
-      return new String(readRawBytes(size), "UTF-8");
+      return new String(readRawBytesSlowPath(size), "UTF-8");
     }
+  }
+
+  /**
+   * Read a {@code string} field value from the stream.
+   * If the stream contains malformed UTF-8,
+   * throw exception {@link InvalidProtocolBufferException}.
+   */
+  public String readStringRequireUtf8() throws IOException {
+    final int size = readRawVarint32();
+    final byte[] bytes;
+    int pos = bufferPos;
+    if (size <= (bufferSize - pos) && size > 0) {
+      // Fast path:  We already have the bytes in a contiguous buffer, so
+      //   just copy directly from it.
+      bytes = buffer;
+      bufferPos = pos + size;
+    } else if (size == 0) {
+      return "";
+    } else {
+      // Slow path:  Build a byte array first then copy it.
+      bytes = readRawBytesSlowPath(size);
+      pos = 0;
+    }
+    // TODO(martinrb): We could save a pass by validating while decoding.
+    if (!Utf8.isValidUtf8(bytes, pos, pos + size)) {
+      throw InvalidProtocolBufferException.invalidUtf8();
+    }
+    return new String(bytes, pos, size, "UTF-8");
   }
 
   /** Read a {@code group} field value from the stream. */
@@ -242,6 +426,7 @@ public final class CodedInputStream {
       WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
     --recursionDepth;
   }
+
 
   /** Read a {@code group} field value from the stream. */
   public <T extends MessageLite> T readGroup(
@@ -295,6 +480,7 @@ public final class CodedInputStream {
     popLimit(oldLimit);
   }
 
+
   /** Read an embedded message field value from the stream. */
   public <T extends MessageLite> T readMessage(
       final Parser<T> parser,
@@ -316,17 +502,58 @@ public final class CodedInputStream {
   /** Read a {@code bytes} field value from the stream. */
   public ByteString readBytes() throws IOException {
     final int size = readRawVarint32();
-    if (size == 0) {
-      return ByteString.EMPTY;
-    } else if (size <= (bufferSize - bufferPos) && size > 0) {
+    if (size <= (bufferSize - bufferPos) && size > 0) {
       // Fast path:  We already have the bytes in a contiguous buffer, so
       //   just copy directly from it.
-      final ByteString result = ByteString.copyFrom(buffer, bufferPos, size);
+      final ByteString result = bufferIsImmutable && enableAliasing
+          ? new BoundedByteString(buffer, bufferPos, size)
+          : ByteString.copyFrom(buffer, bufferPos, size);
+      bufferPos += size;
+      return result;
+    } else if (size == 0) {
+      return ByteString.EMPTY;
+    } else {
+      // Slow path:  Build a byte array first then copy it.
+      return new LiteralByteString(readRawBytesSlowPath(size));
+    }
+  }
+
+  /** Read a {@code bytes} field value from the stream. */
+  public byte[] readByteArray() throws IOException {
+    final int size = readRawVarint32();
+    if (size <= (bufferSize - bufferPos) && size > 0) {
+      // Fast path: We already have the bytes in a contiguous buffer, so
+      // just copy directly from it.
+      final byte[] result =
+          Arrays.copyOfRange(buffer, bufferPos, bufferPos + size);
       bufferPos += size;
       return result;
     } else {
-      // Slow path:  Build a byte array first then copy it.
-      return ByteString.copyFrom(readRawBytes(size));
+      // Slow path: Build a byte array first then copy it.
+      return readRawBytesSlowPath(size);
+    }
+  }
+
+  /** Read a {@code bytes} field value from the stream. */
+  public ByteBuffer readByteBuffer() throws IOException {
+    final int size = readRawVarint32();
+    if (size <= (bufferSize - bufferPos) && size > 0) {
+      // Fast path: We already have the bytes in a contiguous buffer.
+      // When aliasing is enabled, we can return a ByteBuffer pointing directly
+      // into the underlying byte array without copy if the CodedInputStream is
+      // constructed from a byte array. If aliasing is disabled or the input is
+      // from an InputStream or ByteString, we have to make a copy of the bytes.
+      ByteBuffer result = input == null && !bufferIsImmutable && enableAliasing
+          ? ByteBuffer.wrap(buffer, bufferPos, size).slice()
+          : ByteBuffer.wrap(Arrays.copyOfRange(
+              buffer, bufferPos, bufferPos + size));
+      bufferPos += size;
+      return result;
+    } else if (size == 0) {
+      return Internal.EMPTY_BYTE_BUFFER;
+    } else {
+      // Slow path: Build a byte array first then copy it.
+      return ByteBuffer.wrap(readRawBytesSlowPath(size));
     }
   }
 
@@ -370,37 +597,67 @@ public final class CodedInputStream {
    * upper bits.
    */
   public int readRawVarint32() throws IOException {
-    byte tmp = readRawByte();
-    if (tmp >= 0) {
-      return tmp;
-    }
-    int result = tmp & 0x7f;
-    if ((tmp = readRawByte()) >= 0) {
-      result |= tmp << 7;
-    } else {
-      result |= (tmp & 0x7f) << 7;
-      if ((tmp = readRawByte()) >= 0) {
-        result |= tmp << 14;
+    // See implementation notes for readRawVarint64
+ fastpath: {
+      int pos = bufferPos;
+
+      if (bufferSize == pos) {
+        break fastpath;
+      }
+
+      final byte[] buffer = this.buffer;
+      int x;
+      if ((x = buffer[pos++]) >= 0) {
+        bufferPos = pos;
+        return x;
+      } else if (bufferSize - pos < 9) {
+        break fastpath;
+      } else if ((x ^= (buffer[pos++] << 7)) < 0L) {
+        x ^= (~0L << 7);
+      } else if ((x ^= (buffer[pos++] << 14)) >= 0L) {
+        x ^= (~0L << 7) ^ (~0L << 14);
+      } else if ((x ^= (buffer[pos++] << 21)) < 0L) {
+        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21);
       } else {
-        result |= (tmp & 0x7f) << 14;
-        if ((tmp = readRawByte()) >= 0) {
-          result |= tmp << 21;
-        } else {
-          result |= (tmp & 0x7f) << 21;
-          result |= (tmp = readRawByte()) << 28;
-          if (tmp < 0) {
-            // Discard upper 32 bits.
-            for (int i = 0; i < 5; i++) {
-              if (readRawByte() >= 0) {
-                return result;
-              }
-            }
-            throw InvalidProtocolBufferException.malformedVarint();
-          }
+        int y = buffer[pos++];
+        x ^= y << 28;
+        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28);
+        if (y < 0 &&
+            buffer[pos++] < 0 &&
+            buffer[pos++] < 0 &&
+            buffer[pos++] < 0 &&
+            buffer[pos++] < 0 &&
+            buffer[pos++] < 0) {
+          break fastpath;  // Will throw malformedVarint()
+        }
+      }
+      bufferPos = pos;
+      return x;
+    }
+    return (int) readRawVarint64SlowPath();
+  }
+
+  private void skipRawVarint() throws IOException {
+    if (bufferSize - bufferPos >= 10) {
+      final byte[] buffer = this.buffer;
+      int pos = bufferPos;
+      for (int i = 0; i < 10; i++) {
+        if (buffer[pos++] >= 0) {
+          bufferPos = pos;
+          return;
         }
       }
     }
-    return result;
+    skipRawVarintSlowPath();
+  }
+
+  private void skipRawVarintSlowPath() throws IOException {
+    for (int i = 0; i < 10; i++) {
+      if (readRawByte() >= 0) {
+        return;
+      }
+    }
+    throw InvalidProtocolBufferException.malformedVarint();
   }
 
   /**
@@ -456,49 +713,115 @@ public final class CodedInputStream {
 
   /** Read a raw Varint from the stream. */
   public long readRawVarint64() throws IOException {
-    int shift = 0;
+    // Implementation notes:
+    //
+    // Optimized for one-byte values, expected to be common.
+    // The particular code below was selected from various candidates
+    // empirically, by winning VarintBenchmark.
+    //
+    // Sign extension of (signed) Java bytes is usually a nuisance, but
+    // we exploit it here to more easily obtain the sign of bytes read.
+    // Instead of cleaning up the sign extension bits by masking eagerly,
+    // we delay until we find the final (positive) byte, when we clear all
+    // accumulated bits with one xor.  We depend on javac to constant fold.
+ fastpath: {
+      int pos = bufferPos;
+
+      if (bufferSize == pos) {
+        break fastpath;
+      }
+
+      final byte[] buffer = this.buffer;
+      long x;
+      int y;
+      if ((y = buffer[pos++]) >= 0) {
+        bufferPos = pos;
+        return y;
+      } else if (bufferSize - pos < 9) {
+        break fastpath;
+      } else if ((x = y ^ (buffer[pos++] << 7)) < 0L) {
+        x ^= (~0L << 7);
+      } else if ((x ^= (buffer[pos++] << 14)) >= 0L) {
+        x ^= (~0L << 7) ^ (~0L << 14);
+      } else if ((x ^= (buffer[pos++] << 21)) < 0L) {
+        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21);
+      } else if ((x ^= ((long) buffer[pos++] << 28)) >= 0L) {
+        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28);
+      } else if ((x ^= ((long) buffer[pos++] << 35)) < 0L) {
+        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35);
+      } else if ((x ^= ((long) buffer[pos++] << 42)) >= 0L) {
+        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35) ^ (~0L << 42);
+      } else if ((x ^= ((long) buffer[pos++] << 49)) < 0L) {
+        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35) ^ (~0L << 42)
+            ^ (~0L << 49);
+      } else {
+        x ^= ((long) buffer[pos++] << 56);
+        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35) ^ (~0L << 42)
+            ^ (~0L << 49) ^ (~0L << 56);
+        if (x < 0L) {
+          if (buffer[pos++] < 0L) {
+            break fastpath;  // Will throw malformedVarint()
+          }
+        }
+      }
+      bufferPos = pos;
+      return x;
+    }
+    return readRawVarint64SlowPath();
+  }
+
+  /** Variant of readRawVarint64 for when uncomfortably close to the limit. */
+  /* Visible for testing */
+  long readRawVarint64SlowPath() throws IOException {
     long result = 0;
-    while (shift < 64) {
+    for (int shift = 0; shift < 64; shift += 7) {
       final byte b = readRawByte();
-      result |= (long)(b & 0x7F) << shift;
+      result |= (long) (b & 0x7F) << shift;
       if ((b & 0x80) == 0) {
         return result;
       }
-      shift += 7;
     }
     throw InvalidProtocolBufferException.malformedVarint();
   }
 
   /** Read a 32-bit little-endian integer from the stream. */
   public int readRawLittleEndian32() throws IOException {
-    final byte b1 = readRawByte();
-    final byte b2 = readRawByte();
-    final byte b3 = readRawByte();
-    final byte b4 = readRawByte();
-    return (((int)b1 & 0xff)      ) |
-           (((int)b2 & 0xff) <<  8) |
-           (((int)b3 & 0xff) << 16) |
-           (((int)b4 & 0xff) << 24);
+    int pos = bufferPos;
+
+    // hand-inlined ensureAvailable(4);
+    if (bufferSize - pos < 4) {
+      refillBuffer(4);
+      pos = bufferPos;
+    }
+
+    final byte[] buffer = this.buffer;
+    bufferPos = pos + 4;
+    return (((buffer[pos]     & 0xff))       |
+            ((buffer[pos + 1] & 0xff) <<  8) |
+            ((buffer[pos + 2] & 0xff) << 16) |
+            ((buffer[pos + 3] & 0xff) << 24));
   }
 
   /** Read a 64-bit little-endian integer from the stream. */
   public long readRawLittleEndian64() throws IOException {
-    final byte b1 = readRawByte();
-    final byte b2 = readRawByte();
-    final byte b3 = readRawByte();
-    final byte b4 = readRawByte();
-    final byte b5 = readRawByte();
-    final byte b6 = readRawByte();
-    final byte b7 = readRawByte();
-    final byte b8 = readRawByte();
-    return (((long)b1 & 0xff)      ) |
-           (((long)b2 & 0xff) <<  8) |
-           (((long)b3 & 0xff) << 16) |
-           (((long)b4 & 0xff) << 24) |
-           (((long)b5 & 0xff) << 32) |
-           (((long)b6 & 0xff) << 40) |
-           (((long)b7 & 0xff) << 48) |
-           (((long)b8 & 0xff) << 56);
+    int pos = bufferPos;
+
+    // hand-inlined ensureAvailable(8);
+    if (bufferSize - pos < 8) {
+      refillBuffer(8);
+      pos = bufferPos;
+    }
+
+    final byte[] buffer = this.buffer;
+    bufferPos = pos + 8;
+    return ((((long) buffer[pos]     & 0xffL))       |
+            (((long) buffer[pos + 1] & 0xffL) <<  8) |
+            (((long) buffer[pos + 2] & 0xffL) << 16) |
+            (((long) buffer[pos + 3] & 0xffL) << 24) |
+            (((long) buffer[pos + 4] & 0xffL) << 32) |
+            (((long) buffer[pos + 5] & 0xffL) << 40) |
+            (((long) buffer[pos + 6] & 0xffL) << 48) |
+            (((long) buffer[pos + 7] & 0xffL) << 56));
   }
 
   /**
@@ -532,11 +855,13 @@ public final class CodedInputStream {
   // -----------------------------------------------------------------
 
   private final byte[] buffer;
+  private final boolean bufferIsImmutable;
   private int bufferSize;
   private int bufferSizeAfterLimit;
   private int bufferPos;
   private final InputStream input;
   private int lastTag;
+  private boolean enableAliasing = false;
 
   /**
    * The total number of bytes read before the current buffer.  The total
@@ -567,6 +892,7 @@ public final class CodedInputStream {
     bufferPos = off;
     totalBytesRetired = -off;
     input = null;
+    bufferIsImmutable = false;
   }
 
   private CodedInputStream(final InputStream input) {
@@ -575,6 +901,20 @@ public final class CodedInputStream {
     bufferPos = 0;
     totalBytesRetired = 0;
     this.input = input;
+    bufferIsImmutable = false;
+  }
+
+  private CodedInputStream(final LiteralByteString byteString) {
+    buffer = byteString.bytes;
+    bufferPos = byteString.getOffsetIntoBytes();
+    bufferSize = bufferPos + byteString.size();
+    totalBytesRetired = -bufferPos;
+    input = null;
+    bufferIsImmutable = true;
+  }
+
+  public void enableAliasing(boolean enabled) {
+    this.enableAliasing = enabled;
   }
 
   /**
@@ -698,7 +1038,7 @@ public final class CodedInputStream {
    * if the stream has reached a limit created using {@link #pushLimit(int)}.
    */
   public boolean isAtEnd() throws IOException {
-    return bufferPos == bufferSize && !refillBuffer(false);
+    return bufferPos == bufferSize && !tryRefillBuffer(1);
   }
 
   /**
@@ -709,53 +1049,93 @@ public final class CodedInputStream {
       return totalBytesRetired + bufferPos;
   }
 
+  private interface RefillCallback {
+    void onRefill();
+  }
+
+  private RefillCallback refillCallback = null;
+
   /**
-   * Called with {@code this.buffer} is empty to read more bytes from the
-   * input.  If {@code mustSucceed} is true, refillBuffer() guarantees that
-   * either there will be at least one byte in the buffer when it returns
-   * or it will throw an exception.  If {@code mustSucceed} is false,
-   * refillBuffer() returns false if no more bytes were available.
+   * Ensures that at least {@code n} bytes are available in the buffer, reading
+   * more bytes from the input if necessary to make it so.  Caller must ensure
+   * that the requested space is less than BUFFER_SIZE.
+   *
+   * @throws InvalidProtocolBufferException The end of the stream or the current
+   *                                        limit was reached.
    */
-  private boolean refillBuffer(final boolean mustSucceed) throws IOException {
-    if (bufferPos < bufferSize) {
+  private void ensureAvailable(int n) throws IOException {
+    if (bufferSize - bufferPos < n) {
+      refillBuffer(n);
+    }
+  }
+
+  /**
+   * Reads more bytes from the input, making at least {@code n} bytes available
+   * in the buffer.  Caller must ensure that the requested space is not yet
+   * available, and that the requested space is less than BUFFER_SIZE.
+   *
+   * @throws InvalidProtocolBufferException The end of the stream or the current
+   *                                        limit was reached.
+   */
+  private void refillBuffer(int n) throws IOException {
+    if (!tryRefillBuffer(n)) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+  }
+
+  /**
+   * Tries to read more bytes from the input, making at least {@code n} bytes
+   * available in the buffer.  Caller must ensure that the requested space is
+   * not yet available, and that the requested space is less than BUFFER_SIZE.
+   *
+   * @return {@code true} if the bytes could be made available; {@code false}
+   *         if the end of the stream or the current limit was reached.
+   */
+  private boolean tryRefillBuffer(int n) throws IOException {
+    if (bufferPos + n <= bufferSize) {
       throw new IllegalStateException(
-        "refillBuffer() called when buffer wasn't empty.");
+          "refillBuffer() called when " + n +
+          " bytes were already available in buffer");
     }
 
-    if (totalBytesRetired + bufferSize == currentLimit) {
+    if (totalBytesRetired + bufferPos + n > currentLimit) {
       // Oops, we hit a limit.
-      if (mustSucceed) {
-        throw InvalidProtocolBufferException.truncatedMessage();
-      } else {
-        return false;
+      return false;
+    }
+
+    if (refillCallback != null) {
+      refillCallback.onRefill();
+    }
+
+    if (input != null) {
+      int pos = bufferPos;
+      if (pos > 0) {
+        if (bufferSize > pos) {
+          System.arraycopy(buffer, pos, buffer, 0, bufferSize - pos);
+        }
+        totalBytesRetired += pos;
+        bufferSize -= pos;
+        bufferPos = 0;
+      }
+
+      int bytesRead = input.read(buffer, bufferSize, buffer.length - bufferSize);
+      if (bytesRead == 0 || bytesRead < -1 || bytesRead > buffer.length) {
+        throw new IllegalStateException(
+            "InputStream#read(byte[]) returned invalid result: " + bytesRead +
+            "\nThe InputStream implementation is buggy.");
+      }
+      if (bytesRead > 0) {
+        bufferSize += bytesRead;
+        // Integer-overflow-conscious check against sizeLimit
+        if (totalBytesRetired + n - sizeLimit > 0) {
+          throw InvalidProtocolBufferException.sizeLimitExceeded();
+        }
+        recomputeBufferSizeAfterLimit();
+        return (bufferSize >= n) ? true : tryRefillBuffer(n);
       }
     }
 
-    totalBytesRetired += bufferSize;
-
-    bufferPos = 0;
-    bufferSize = (input == null) ? -1 : input.read(buffer);
-    if (bufferSize == 0 || bufferSize < -1) {
-      throw new IllegalStateException(
-          "InputStream#read(byte[]) returned invalid result: " + bufferSize +
-          "\nThe InputStream implementation is buggy.");
-    }
-    if (bufferSize == -1) {
-      bufferSize = 0;
-      if (mustSucceed) {
-        throw InvalidProtocolBufferException.truncatedMessage();
-      } else {
-        return false;
-      }
-    } else {
-      recomputeBufferSizeAfterLimit();
-      final int totalBytesRead =
-        totalBytesRetired + bufferSize + bufferSizeAfterLimit;
-      if (totalBytesRead > sizeLimit || totalBytesRead < 0) {
-        throw InvalidProtocolBufferException.sizeLimitExceeded();
-      }
-      return true;
-    }
+    return false;
   }
 
   /**
@@ -766,7 +1146,7 @@ public final class CodedInputStream {
    */
   public byte readRawByte() throws IOException {
     if (bufferPos == bufferSize) {
-      refillBuffer(true);
+      refillBuffer(1);
     }
     return buffer[bufferPos++];
   }
@@ -778,8 +1158,26 @@ public final class CodedInputStream {
    *                                        limit was reached.
    */
   public byte[] readRawBytes(final int size) throws IOException {
-    if (size < 0) {
-      throw InvalidProtocolBufferException.negativeSize();
+    final int pos = bufferPos;
+    if (size <= (bufferSize - pos) && size > 0) {
+      bufferPos = pos + size;
+      return Arrays.copyOfRange(buffer, pos, pos + size);
+    } else {
+      return readRawBytesSlowPath(size);
+    }
+  }
+
+  /**
+   * Exactly like readRawBytes, but caller must have already checked the fast
+   * path: (size <= (bufferSize - pos) && size > 0)
+   */
+  private byte[] readRawBytesSlowPath(final int size) throws IOException {
+    if (size <= 0) {
+      if (size == 0) {
+        return Internal.EMPTY_BYTE_ARRAY;
+      } else {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
     }
 
     if (totalBytesRetired + bufferPos + size > currentLimit) {
@@ -789,13 +1187,7 @@ public final class CodedInputStream {
       throw InvalidProtocolBufferException.truncatedMessage();
     }
 
-    if (size <= bufferSize - bufferPos) {
-      // We have all the bytes we need already.
-      final byte[] bytes = new byte[size];
-      System.arraycopy(buffer, bufferPos, bytes, 0, size);
-      bufferPos += size;
-      return bytes;
-    } else if (size < BUFFER_SIZE) {
+    if (size < BUFFER_SIZE) {
       // Reading more bytes than are in the buffer, but not an excessive number
       // of bytes.  We can safely allocate the resulting array ahead of time.
 
@@ -805,18 +1197,10 @@ public final class CodedInputStream {
       System.arraycopy(buffer, bufferPos, bytes, 0, pos);
       bufferPos = bufferSize;
 
-      // We want to use refillBuffer() and then copy from the buffer into our
+      // We want to refill the buffer and then copy from the buffer into our
       // byte array rather than reading directly into our byte array because
       // the input may be unbuffered.
-      refillBuffer(true);
-
-      while (size - pos > bufferSize) {
-        System.arraycopy(buffer, 0, bytes, pos, bufferSize);
-        pos += bufferSize;
-        bufferPos = bufferSize;
-        refillBuffer(true);
-      }
-
+      ensureAvailable(size - pos);
       System.arraycopy(buffer, 0, bytes, pos, size - pos);
       bufferPos = size - pos;
 
@@ -885,6 +1269,19 @@ public final class CodedInputStream {
    *                                        limit was reached.
    */
   public void skipRawBytes(final int size) throws IOException {
+    if (size <= (bufferSize - bufferPos) && size >= 0) {
+      // We have all the bytes we need already.
+      bufferPos += size;
+    } else {
+      skipRawBytesSlowPath(size);
+    }
+  }
+
+  /**
+   * Exactly like skipRawBytes, but caller must have already checked the fast
+   * path: (size <= (bufferSize - pos) && size >= 0)
+   */
+  private void skipRawBytesSlowPath(final int size) throws IOException {
     if (size < 0) {
       throw InvalidProtocolBufferException.negativeSize();
     }
@@ -896,25 +1293,19 @@ public final class CodedInputStream {
       throw InvalidProtocolBufferException.truncatedMessage();
     }
 
-    if (size <= bufferSize - bufferPos) {
-      // We have all the bytes we need already.
-      bufferPos += size;
-    } else {
-      // Skipping more bytes than are in the buffer.  First skip what we have.
-      int pos = bufferSize - bufferPos;
+    // Skipping more bytes than are in the buffer.  First skip what we have.
+    int pos = bufferSize - bufferPos;
+    bufferPos = bufferSize;
+
+    // Keep refilling the buffer until we get to the point we wanted to skip to.
+    // This has the side effect of ensuring the limits are updated correctly.
+    refillBuffer(1);
+    while (size - pos > bufferSize) {
+      pos += bufferSize;
       bufferPos = bufferSize;
-
-      // Keep refilling the buffer until we get to the point we wanted to skip
-      // to.  This has the side effect of ensuring the limits are updated
-      // correctly.
-      refillBuffer(true);
-      while (size - pos > bufferSize) {
-        pos += bufferSize;
-        bufferPos = bufferSize;
-        refillBuffer(true);
-      }
-
-      bufferPos = size - pos;
+      refillBuffer(1);
     }
+
+    bufferPos = size - pos;
   }
 }

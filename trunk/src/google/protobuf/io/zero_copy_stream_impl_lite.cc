@@ -33,10 +33,12 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/stl_util.h>
 
 #include <algorithm>
+#include <limits>
+
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
 namespace protobuf {
@@ -161,15 +163,23 @@ bool StringOutputStream::Next(void** data, int* size) {
     // without a memory allocation this way.
     STLStringResizeUninitialized(target_, target_->capacity());
   } else {
-    // Size has reached capacity, so double the size.  Also make sure
-    // that the new size is at least kMinimumSize.
+    // Size has reached capacity, try to double the size.
+    if (old_size > std::numeric_limits<int>::max() / 2) {
+      // Can not double the size otherwise it is going to cause integer
+      // overflow in the expression below: old_size * 2 ";
+      GOOGLE_LOG(ERROR) << "Cannot allocate buffer larger than kint32max for "
+                 << "StringOutputStream.";
+      return false;
+    }
+    // Double the size, also make sure that the new size is at least
+    // kMinimumSize.
     STLStringResizeUninitialized(
       target_,
       max(old_size * 2,
           kMinimumSize + 0));  // "+ 0" works around GCC4 weirdness.
   }
 
-  *data = string_as_array(target_) + old_size;
+  *data = mutable_string_data(target_) + old_size;
   *size = target_->size() - old_size;
   return true;
 }

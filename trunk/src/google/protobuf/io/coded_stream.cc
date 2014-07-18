@@ -83,6 +83,10 @@ CodedInputStream::~CodedInputStream() {
 int CodedInputStream::default_recursion_limit_ = 100;
 
 
+void CodedOutputStream::EnableAliasing(bool enabled) {
+  aliasing_enabled_ = enabled && output_->AllowsAliasing();
+}
+
 void CodedInputStream::BackUpInputToCurrentPosition() {
   int backup_bytes = BufferSize() + buffer_size_after_limit_ + overflow_bytes_;
   if (backup_bytes > 0) {
@@ -167,6 +171,11 @@ void CodedInputStream::SetTotalBytesLimit(
   RecomputeBufferLimits();
 }
 
+int CodedInputStream::BytesUntilTotalBytesLimit() const {
+  if (total_bytes_limit_ == INT_MAX) return -1;
+  return total_bytes_limit_ - CurrentPosition();
+}
+
 void CodedInputStream::PrintTotalBytesLimitError() {
   GOOGLE_LOG(ERROR) << "A protocol message was rejected because it was too "
                 "big (more than " << total_bytes_limit_
@@ -247,6 +256,14 @@ bool CodedInputStream::ReadStringFallback(string* buffer, int size) {
     buffer->clear();
   }
 
+  int closest_limit = min(current_limit_, total_bytes_limit_);
+  if (closest_limit != INT_MAX) {
+    int bytes_to_limit = closest_limit - CurrentPosition();
+    if (bytes_to_limit > 0 && size > 0 && size <= bytes_to_limit) {
+      buffer->reserve(size);
+    }
+  }
+
   int current_buffer_size;
   while ((current_buffer_size = BufferSize()) < size) {
     // Some STL implementations "helpfully" crash on buffer->append(NULL, 0).
@@ -313,11 +330,16 @@ inline const uint8* ReadVarint32FromArray(const uint8* buffer, uint32* value) {
   uint32 b;
   uint32 result;
 
-  b = *(ptr++); result  = (b & 0x7F)      ; if (!(b & 0x80)) goto done;
-  b = *(ptr++); result |= (b & 0x7F) <<  7; if (!(b & 0x80)) goto done;
-  b = *(ptr++); result |= (b & 0x7F) << 14; if (!(b & 0x80)) goto done;
-  b = *(ptr++); result |= (b & 0x7F) << 21; if (!(b & 0x80)) goto done;
-  b = *(ptr++); result |=  b         << 28; if (!(b & 0x80)) goto done;
+  b = *(ptr++); result  = b      ; if (!(b & 0x80)) goto done;
+  result -= 0x80;
+  b = *(ptr++); result += b <<  7; if (!(b & 0x80)) goto done;
+  result -= 0x80 << 7;
+  b = *(ptr++); result += b << 14; if (!(b & 0x80)) goto done;
+  result -= 0x80 << 14;
+  b = *(ptr++); result += b << 21; if (!(b & 0x80)) goto done;
+  result -= 0x80 << 21;
+  b = *(ptr++); result += b << 28; if (!(b & 0x80)) goto done;
+  // "result -= 0x80 << 28" is irrevelant.
 
   // If the input is larger than 32 bits, we still need to read it all
   // and discard the high-order bits.
@@ -347,8 +369,8 @@ bool CodedInputStream::ReadVarint32Slow(uint32* value) {
 
 bool CodedInputStream::ReadVarint32Fallback(uint32* value) {
   if (BufferSize() >= kMaxVarintBytes ||
-      // Optimization:  If the varint ends at exactly the end of the buffer,
-      // we can detect that and still use the fast path.
+      // Optimization:  We're also safe if the buffer is non-empty and it ends
+      // with a byte that would terminate a varint.
       (buffer_end_ > buffer_ && !(buffer_end_[-1] & 0x80))) {
     const uint8* end = ReadVarint32FromArray(buffer_, value);
     if (end == NULL) return false;
@@ -391,8 +413,8 @@ uint32 CodedInputStream::ReadTagSlow() {
 uint32 CodedInputStream::ReadTagFallback() {
   const int buf_size = BufferSize();
   if (buf_size >= kMaxVarintBytes ||
-      // Optimization:  If the varint ends at exactly the end of the buffer,
-      // we can detect that and still use the fast path.
+      // Optimization:  We're also safe if the buffer is non-empty and it ends
+      // with a byte that would terminate a varint.
       (buf_size > 0 && !(buffer_end_[-1] & 0x80))) {
     uint32 tag;
     const uint8* end = ReadVarint32FromArray(buffer_, &tag);
@@ -444,8 +466,8 @@ bool CodedInputStream::ReadVarint64Slow(uint64* value) {
 
 bool CodedInputStream::ReadVarint64Fallback(uint64* value) {
   if (BufferSize() >= kMaxVarintBytes ||
-      // Optimization:  If the varint ends at exactly the end of the buffer,
-      // we can detect that and still use the fast path.
+      // Optimization:  We're also safe if the buffer is non-empty and it ends
+      // with a byte that would terminate a varint.
       (buffer_end_ > buffer_ && !(buffer_end_[-1] & 0x80))) {
     // Fast path:  We have enough bytes left in the buffer to guarantee that
     // this read won't cross the end, so we can skip the checks.
@@ -457,16 +479,26 @@ bool CodedInputStream::ReadVarint64Fallback(uint64* value) {
     // processors.
     uint32 part0 = 0, part1 = 0, part2 = 0;
 
-    b = *(ptr++); part0  = (b & 0x7F)      ; if (!(b & 0x80)) goto done;
-    b = *(ptr++); part0 |= (b & 0x7F) <<  7; if (!(b & 0x80)) goto done;
-    b = *(ptr++); part0 |= (b & 0x7F) << 14; if (!(b & 0x80)) goto done;
-    b = *(ptr++); part0 |= (b & 0x7F) << 21; if (!(b & 0x80)) goto done;
-    b = *(ptr++); part1  = (b & 0x7F)      ; if (!(b & 0x80)) goto done;
-    b = *(ptr++); part1 |= (b & 0x7F) <<  7; if (!(b & 0x80)) goto done;
-    b = *(ptr++); part1 |= (b & 0x7F) << 14; if (!(b & 0x80)) goto done;
-    b = *(ptr++); part1 |= (b & 0x7F) << 21; if (!(b & 0x80)) goto done;
-    b = *(ptr++); part2  = (b & 0x7F)      ; if (!(b & 0x80)) goto done;
-    b = *(ptr++); part2 |= (b & 0x7F) <<  7; if (!(b & 0x80)) goto done;
+    b = *(ptr++); part0  = b      ; if (!(b & 0x80)) goto done;
+    part0 -= 0x80;
+    b = *(ptr++); part0 += b <<  7; if (!(b & 0x80)) goto done;
+    part0 -= 0x80 << 7;
+    b = *(ptr++); part0 += b << 14; if (!(b & 0x80)) goto done;
+    part0 -= 0x80 << 14;
+    b = *(ptr++); part0 += b << 21; if (!(b & 0x80)) goto done;
+    part0 -= 0x80 << 21;
+    b = *(ptr++); part1  = b      ; if (!(b & 0x80)) goto done;
+    part1 -= 0x80;
+    b = *(ptr++); part1 += b <<  7; if (!(b & 0x80)) goto done;
+    part1 -= 0x80 << 7;
+    b = *(ptr++); part1 += b << 14; if (!(b & 0x80)) goto done;
+    part1 -= 0x80 << 14;
+    b = *(ptr++); part1 += b << 21; if (!(b & 0x80)) goto done;
+    part1 -= 0x80 << 21;
+    b = *(ptr++); part2  = b      ; if (!(b & 0x80)) goto done;
+    part2 -= 0x80;
+    b = *(ptr++); part2 += b <<  7; if (!(b & 0x80)) goto done;
+    // "part2 -= 0x80 << 7" is irrelevant because (0x80 << 7) << 56 is 0.
 
     // We have overrun the maximum size of a varint (10 bytes).  The data
     // must be corrupt.
@@ -555,7 +587,8 @@ CodedOutputStream::CodedOutputStream(ZeroCopyOutputStream* output)
     buffer_(NULL),
     buffer_size_(0),
     total_bytes_(0),
-    had_error_(false) {
+    had_error_(false),
+    aliasing_enabled_(false) {
   // Eagerly Refresh() so buffer space is immediately available.
   Refresh();
   // The Refresh() may have failed. If the client doesn't write any data,
@@ -608,6 +641,23 @@ uint8* CodedOutputStream::WriteRawToArray(
   return target + size;
 }
 
+
+void CodedOutputStream::WriteAliasedRaw(const void* data, int size) {
+  if (size < buffer_size_
+      ) {
+    WriteRaw(data, size);
+  } else {
+    if (buffer_size_ > 0) {
+      output_->BackUp(buffer_size_);
+      total_bytes_ -= buffer_size_;
+      buffer_ = NULL;
+      buffer_size_ = 0;
+    }
+
+    total_bytes_ += size;
+    had_error_ |= !output_->WriteAliasedRaw(data, size);
+  }
+}
 
 void CodedOutputStream::WriteLittleEndian32(uint32 value) {
   uint8 bytes[sizeof(value)];
@@ -850,6 +900,13 @@ int CodedOutputStream::VarintSize64(uint64 value) {
       return 10;
     }
   }
+}
+
+uint8* CodedOutputStream::WriteStringWithSizeToArray(const string& str,
+                                                     uint8* target) {
+  GOOGLE_DCHECK_LE(str.size(), kuint32max);
+  target = WriteVarint32ToArray(str.size(), target);
+  return WriteStringToArray(str, target);
 }
 
 }  // namespace io

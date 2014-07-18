@@ -40,6 +40,7 @@
 #else
 #include <unistd.h>
 #endif
+#include <memory>
 #include <vector>
 
 #include <google/protobuf/descriptor.pb.h>
@@ -126,6 +127,9 @@ class CommandLineInterfaceTest : public testing::Test {
   void ExpectErrorSubstringWithZeroReturnCode(
       const string& expected_substring);
 
+  // Checks that the captured stdout is the same as the expected_text.
+  void ExpectCapturedStdout(const string& expected_text);
+
   // Returns true if ExpectErrorSubstring(expected_substring) would pass, but
   // does not fail otherwise.
   bool HasAlternateErrorSubstring(const string& expected_substring);
@@ -182,6 +186,9 @@ class CommandLineInterfaceTest : public testing::Test {
   // The captured stderr output.
   string error_text_;
 
+  // The captured stdout.
+  string captured_stdout_;
+
   // Pointers which need to be deleted later.
   vector<CodeGenerator*> mock_generators_to_delete_;
 
@@ -224,7 +231,7 @@ void CommandLineInterfaceTest::SetUp() {
   }
 
   // Create the temp directory.
-  GOOGLE_CHECK(File::CreateDir(temp_directory_.c_str(), DEFAULT_FILE_MODE));
+  GOOGLE_CHECK_OK(File::CreateDir(temp_directory_, 0777));
 
   // Register generators.
   CodeGenerator* generator = new MockCodeGenerator("test_generator");
@@ -255,8 +262,7 @@ void CommandLineInterfaceTest::TearDown() {
 }
 
 void CommandLineInterfaceTest::Run(const string& command) {
-  vector<string> args;
-  SplitStringUsing(command, " ", &args);
+  vector<string> args = Split(command, " ", true);
 
   if (!disallow_plugins_) {
     cli_.AllowPlugins("prefix-");
@@ -295,18 +301,20 @@ void CommandLineInterfaceTest::Run(const string& command) {
     }
   }
 
-  scoped_array<const char*> argv(new const char*[args.size()]);
+  scoped_array<const char*> argv(new const char* [args.size()]);
 
   for (int i = 0; i < args.size(); i++) {
     args[i] = StringReplace(args[i], "$tmpdir", temp_directory_, true);
     argv[i] = args[i].c_str();
   }
 
+  CaptureTestStdout();
   CaptureTestStderr();
 
   return_code_ = cli_.Run(args.size(), argv.get());
 
   error_text_ = GetCapturedTestStderr();
+  captured_stdout_ = GetCapturedTestStdout();
 }
 
 // -------------------------------------------------------------------
@@ -318,16 +326,20 @@ void CommandLineInterfaceTest::CreateTempFile(
   string::size_type slash_pos = name.find_last_of('/');
   if (slash_pos != string::npos) {
     string dir = name.substr(0, slash_pos);
-    File::RecursivelyCreateDir(temp_directory_ + "/" + dir, 0777);
+    if (!File::Exists(temp_directory_ + "/" + dir)) {
+      GOOGLE_CHECK_OK(File::RecursivelyCreateDir(temp_directory_ + "/" + dir,
+                                          0777));
+    }
   }
 
   // Write file.
   string full_name = temp_directory_ + "/" + name;
-  File::WriteStringToFileOrDie(contents, full_name);
+  GOOGLE_CHECK_OK(File::SetContents(full_name, contents, true));
 }
 
 void CommandLineInterfaceTest::CreateTempDir(const string& name) {
-  File::RecursivelyCreateDir(temp_directory_ + "/" + name, 0777);
+  GOOGLE_CHECK_OK(File::RecursivelyCreateDir(temp_directory_ + "/" + name,
+                                      0777));
 }
 
 // -------------------------------------------------------------------
@@ -414,12 +426,16 @@ void CommandLineInterfaceTest::ReadDescriptorSet(
     const string& filename, FileDescriptorSet* descriptor_set) {
   string path = temp_directory_ + "/" + filename;
   string file_contents;
-  if (!File::ReadFileToString(path, &file_contents)) {
-    FAIL() << "File not found: " << path;
-  }
+  GOOGLE_CHECK_OK(File::GetContents(path, &file_contents, true));
+
   if (!descriptor_set->ParseFromString(file_contents)) {
     FAIL() << "Could not parse file contents: " << path;
   }
+}
+
+void CommandLineInterfaceTest::ExpectCapturedStdout(
+    const string& expected_text) {
+  EXPECT_EQ(expected_text, captured_stdout_);
 }
 
 // ===================================================================
@@ -813,7 +829,7 @@ TEST_F(CommandLineInterfaceTest, WriteDescriptorSet) {
   FileDescriptorSet descriptor_set;
   ReadDescriptorSet("descriptor_set", &descriptor_set);
   if (HasFatalFailure()) return;
-  ASSERT_EQ(1, descriptor_set.file_size());
+  EXPECT_EQ(1, descriptor_set.file_size());
   EXPECT_EQ("bar.proto", descriptor_set.file(0).name());
   // Descriptor set should not have source code info.
   EXPECT_FALSE(descriptor_set.file(0).has_source_code_info());
@@ -838,7 +854,7 @@ TEST_F(CommandLineInterfaceTest, WriteDescriptorSetWithSourceInfo) {
   FileDescriptorSet descriptor_set;
   ReadDescriptorSet("descriptor_set", &descriptor_set);
   if (HasFatalFailure()) return;
-  ASSERT_EQ(1, descriptor_set.file_size());
+  EXPECT_EQ(1, descriptor_set.file_size());
   EXPECT_EQ("bar.proto", descriptor_set.file(0).name());
   // Source code info included.
   EXPECT_TRUE(descriptor_set.file(0).has_source_code_info());
@@ -863,7 +879,7 @@ TEST_F(CommandLineInterfaceTest, WriteTransitiveDescriptorSet) {
   FileDescriptorSet descriptor_set;
   ReadDescriptorSet("descriptor_set", &descriptor_set);
   if (HasFatalFailure()) return;
-  ASSERT_EQ(2, descriptor_set.file_size());
+  EXPECT_EQ(2, descriptor_set.file_size());
   if (descriptor_set.file(0).name() == "bar.proto") {
     std::swap(descriptor_set.mutable_file()->mutable_data()[0],
               descriptor_set.mutable_file()->mutable_data()[1]);
@@ -894,7 +910,7 @@ TEST_F(CommandLineInterfaceTest, WriteTransitiveDescriptorSetWithSourceInfo) {
   FileDescriptorSet descriptor_set;
   ReadDescriptorSet("descriptor_set", &descriptor_set);
   if (HasFatalFailure()) return;
-  ASSERT_EQ(2, descriptor_set.file_size());
+  EXPECT_EQ(2, descriptor_set.file_size());
   if (descriptor_set.file(0).name() == "bar.proto") {
     std::swap(descriptor_set.mutable_file()->mutable_data()[0],
               descriptor_set.mutable_file()->mutable_data()[1]);
@@ -1393,6 +1409,70 @@ TEST_F(CommandLineInterfaceTest, MissingValueAtEndError) {
   ExpectErrorText("Missing value for flag: --test_out\n");
 }
 
+TEST_F(CommandLineInterfaceTest, PrintFreeFieldNumbers) {
+  CreateTempFile(
+      "foo.proto",
+      "syntax = \"proto2\";\n"
+      "package foo;\n"
+      "message Foo {\n"
+      "  optional int32 a = 2;\n"
+      "  optional string b = 4;\n"
+      "  optional string c = 5;\n"
+      "  optional int64 d = 8;\n"
+      "  optional double e = 10;\n"
+      "}\n");
+  CreateTempFile(
+      "bar.proto",
+      "syntax = \"proto2\";\n"
+      "message Bar {\n"
+      "  optional int32 a = 2;\n"
+      "  extensions 4 to 5;\n"
+      "  optional int64 d = 8;\n"
+      "  extensions 10;\n"
+      "}\n");
+  CreateTempFile(
+      "baz.proto",
+      "syntax = \"proto2\";\n"
+      "message Baz {\n"
+      "  optional int32 a = 2;\n"
+      "  optional int64 d = 8;\n"
+      "  extensions 15 to max;\n"  // unordered.
+      "  extensions 13;\n"
+      "  extensions 10 to 12;\n"
+      "  extensions 5;\n"
+      "  extensions 4;\n"
+      "}\n");
+  CreateTempFile(
+      "quz.proto",
+      "syntax = \"proto2\";\n"
+      "message Quz {\n"
+      "  message Foo {}\n"  // nested message
+      "  optional int32 a = 2;\n"
+      "  optional group C = 4 {\n"
+      "    optional int32 d = 5;\n"
+      "  }\n"
+      "  extensions 8 to 10;\n"
+      "  optional group E = 11 {\n"
+      "    optional int32 f = 9;\n"    // explicitly reuse extension range 8-10
+      "    optional group G = 15 {\n"  // nested group
+      "      message Foo {}\n"         // nested message inside nested group
+      "    }\n"
+      "  }\n"
+      "}\n");
+
+  Run("protocol_compiler --print_free_field_numbers --proto_path=$tmpdir "
+      "foo.proto bar.proto baz.proto quz.proto");
+
+  ExpectNoErrors();
+  ExpectCapturedStdout(
+      "foo.Foo                             free: 1 3 6-7 9 11-INF\n"
+      "Bar                                 free: 1 3 6-7 9 11-INF\n"
+      "Baz                                 free: 1 3 6-7 9 14\n"
+      "Quz.Foo                             free: 1-INF\n"
+      "Quz.E.G.Foo                         free: 1-INF\n"
+      "Quz                                 free: 1 3 6-7 12-14 16-INF\n");
+}
+
 // ===================================================================
 
 // Test for --encode and --decode.  Note that it would be easier to do this
@@ -1412,7 +1492,7 @@ class EncodeDecodeTest : public testing::Test {
 
   void RedirectStdinFromText(const string& input) {
     string filename = TestTempDir() + "/test_stdin";
-    File::WriteStringToFileOrDie(input, filename);
+    GOOGLE_CHECK_OK(File::SetContents(filename, input, true));
     GOOGLE_CHECK(RedirectStdinFromFile(filename));
   }
 
@@ -1446,7 +1526,7 @@ class EncodeDecodeTest : public testing::Test {
     SplitStringUsing(command, " ", &args);
     args.push_back("--proto_path=" + TestSourceDir());
 
-    scoped_array<const char*> argv(new const char*[args.size()]);
+    scoped_array<const char*> argv(new const char* [args.size()]);
     for (int i = 0; i < args.size(); i++) {
       argv[i] = args[i].c_str();
     }
@@ -1467,7 +1547,7 @@ class EncodeDecodeTest : public testing::Test {
 
   void ExpectStdoutMatchesBinaryFile(const string& filename) {
     string expected_output;
-    ASSERT_TRUE(File::ReadFileToString(filename, &expected_output));
+    GOOGLE_CHECK_OK(File::GetContents(filename, &expected_output, true));
 
     // Don't use EXPECT_EQ because we don't want to print raw binary data to
     // stdout on failure.
@@ -1476,7 +1556,7 @@ class EncodeDecodeTest : public testing::Test {
 
   void ExpectStdoutMatchesTextFile(const string& filename) {
     string expected_output;
-    ASSERT_TRUE(File::ReadFileToString(filename, &expected_output));
+    GOOGLE_CHECK_OK(File::GetContents(filename, &expected_output, true));
 
     ExpectStdoutMatchesText(expected_output);
   }
@@ -1496,22 +1576,23 @@ class EncodeDecodeTest : public testing::Test {
 };
 
 TEST_F(EncodeDecodeTest, Encode) {
-  RedirectStdinFromFile(TestSourceDir() +
-    "/google/protobuf/testdata/text_format_unittest_data.txt");
+  RedirectStdinFromFile(TestSourceDir() + "/google/protobuf/"
+    "testdata/text_format_unittest_data_oneof_implemented.txt");
   EXPECT_TRUE(Run("google/protobuf/unittest.proto "
                   "--encode=protobuf_unittest.TestAllTypes"));
   ExpectStdoutMatchesBinaryFile(TestSourceDir() +
-    "/google/protobuf/testdata/golden_message");
+    "/google/protobuf/testdata/golden_message_oneof_implemented");
   ExpectStderrMatchesText("");
 }
 
 TEST_F(EncodeDecodeTest, Decode) {
   RedirectStdinFromFile(TestSourceDir() +
-    "/google/protobuf/testdata/golden_message");
+    "/google/protobuf/testdata/golden_message_oneof_implemented");
   EXPECT_TRUE(Run("google/protobuf/unittest.proto "
                   "--decode=protobuf_unittest.TestAllTypes"));
   ExpectStdoutMatchesTextFile(TestSourceDir() +
-    "/google/protobuf/testdata/text_format_unittest_data.txt");
+    "/google/protobuf/"
+    "testdata/text_format_unittest_data_oneof_implemented.txt");
   ExpectStderrMatchesText("");
 }
 

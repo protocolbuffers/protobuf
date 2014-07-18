@@ -48,8 +48,9 @@
 namespace google {
 namespace protobuf {
 
-class FileDescriptor;        // descriptor.h
+class Descriptor;            // descriptor.h
 class DescriptorPool;        // descriptor.h
+class FileDescriptor;        // descriptor.h
 class FileDescriptorProto;   // descriptor.pb.h
 template<typename T> class RepeatedPtrField;  // repeated_field.h
 
@@ -259,6 +260,22 @@ class LIBPROTOC_EXPORT CommandLineInterface {
       set<const FileDescriptor*>* already_seen,
       RepeatedPtrField<FileDescriptorProto>* output);
 
+  // Implements the --print_free_field_numbers. This function prints free field
+  // numbers into stdout for the message and it's nested message types in
+  // post-order, i.e. nested types first. Printed range are left-right
+  // inclusive, i.e. [a, b].
+  //
+  // Groups:
+  // For historical reasons, groups are considered to share the same
+  // field number space with the parent message, thus it will not print free
+  // field numbers for groups. The field numbers used in the groups are
+  // excluded in the free field numbers of the parent message.
+  //
+  // Extension Ranges:
+  // Extension ranges are considered ocuppied field numbers and they will not be
+  // listed as free numbers in the output.
+  void PrintFreeFieldNumbers(const Descriptor* descriptor);
+
   // -----------------------------------------------------------------
 
   // The name of the executable as invoked (i.e. argv[0]).
@@ -295,10 +312,18 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   enum Mode {
     MODE_COMPILE,  // Normal mode:  parse .proto files and compile them.
     MODE_ENCODE,   // --encode:  read text from stdin, write binary to stdout.
-    MODE_DECODE    // --decode:  read binary from stdin, write text to stdout.
+    MODE_DECODE,   // --decode:  read binary from stdin, write text to stdout.
+    MODE_PRINT,    // Print mode: print info of the given .proto files and exit.
   };
 
   Mode mode_;
+
+  enum PrintMode {
+    PRINT_NONE,               // Not in MODE_PRINT
+    PRINT_FREE_FIELDS,        // --print_free_fields
+  };
+
+  PrintMode print_mode_;
 
   enum ErrorFormat {
     ERROR_FORMAT_GCC,   // GCC error output format (default).

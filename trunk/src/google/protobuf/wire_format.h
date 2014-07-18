@@ -79,7 +79,7 @@ class LIBPROTOBUF_EXPORT WireFormat {
   static inline WireFormatLite::WireType WireTypeForField(
       const FieldDescriptor* field);
 
-  // Given a FieldSescriptor::Type return its WireType
+  // Given a FieldDescriptor::Type return its WireType
   static inline WireFormatLite::WireType WireTypeForFieldType(
       FieldDescriptor::Type type);
 
@@ -180,7 +180,7 @@ class LIBPROTOBUF_EXPORT WireFormat {
   // of packed repeated fields.
   static uint32 MakeTag(const FieldDescriptor* field);
 
-  // Parse a single field.  The input should start out positioned immidately
+  // Parse a single field.  The input should start out positioned immediately
   // after the tag.
   static bool ParseAndMergeField(
       uint32 tag,
@@ -228,14 +228,34 @@ class LIBPROTOBUF_EXPORT WireFormat {
   };
 
   // Verifies that a string field is valid UTF8, logging an error if not.
+  // This function will not be called by newly generated protobuf code
+  // but remains present to support existing code.
   static void VerifyUTF8String(const char* data, int size, Operation op);
+  // The NamedField variant takes a field name in order to produce an
+  // informative error message if verification fails.
+  static void VerifyUTF8StringNamedField(const char* data,
+                                         int size,
+                                         Operation op,
+                                         const char* field_name);
 
  private:
   // Verifies that a string field is valid UTF8, logging an error if not.
   static void VerifyUTF8StringFallback(
       const char* data,
       int size,
-      Operation op);
+      Operation op,
+      const char* field_name);
+
+  // Skip a MessageSet field.
+  static bool SkipMessageSetField(io::CodedInputStream* input,
+                                  uint32 field_number,
+                                  UnknownFieldSet* unknown_fields);
+
+  // Parse a MessageSet field.
+  static bool ParseAndMergeMessageSetField(uint32 field_number,
+                                           const FieldDescriptor* field,
+                                           Message* message,
+                                           io::CodedInputStream* input);
 
 
 
@@ -293,10 +313,18 @@ inline int WireFormat::TagSize(int field_number, FieldDescriptor::Type type) {
 inline void WireFormat::VerifyUTF8String(const char* data, int size,
     WireFormat::Operation op) {
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-  WireFormat::VerifyUTF8StringFallback(data, size, op);
+  WireFormat::VerifyUTF8StringFallback(data, size, op, NULL);
 #else
   // Avoid the compiler warning about unsued variables.
   (void)data; (void)size; (void)op;
+#endif
+}
+
+inline void WireFormat::VerifyUTF8StringNamedField(
+    const char* data, int size, WireFormat::Operation op,
+    const char* field_name) {
+#ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+  WireFormat::VerifyUTF8StringFallback(data, size, op, field_name);
 #endif
 }
 

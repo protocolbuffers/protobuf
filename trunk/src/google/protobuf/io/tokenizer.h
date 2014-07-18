@@ -229,6 +229,21 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   // Sets the comment style.
   void set_comment_style(CommentStyle style) { comment_style_ = style; }
 
+  // Whether to require whitespace between a number and a field name.
+  // Default is true. Do not use this; for Google-internal cleanup only.
+  void set_require_space_after_number(bool require) {
+    require_space_after_number_ = require;
+  }
+
+  // Whether to allow string literals to span multiple lines. Default is false.
+  // Do not use this; for Google-internal cleanup only.
+  void set_allow_multiline_strings(bool allow) {
+    allow_multiline_strings_ = allow;
+  }
+
+  // External helper: validate an identifier.
+  static bool IsIdentifier(const string& text);
+
   // -----------------------------------------------------------------
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Tokenizer);
@@ -259,6 +274,8 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   // Options.
   bool allow_f_after_float_;
   CommentStyle comment_style_;
+  bool require_space_after_number_;
+  bool allow_multiline_strings_;
 
   // Since we count columns we need to interpret tabs somehow.  We'll take
   // the standard 8-character definition for lack of any way to do better.

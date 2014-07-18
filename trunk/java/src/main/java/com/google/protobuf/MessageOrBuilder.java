@@ -76,7 +76,7 @@ public interface MessageOrBuilder extends MessageLiteOrBuilder {
    * Returns a collection of all the fields in this message which are set
    * and their corresponding values.  A singular ("required" or "optional")
    * field is set iff hasField() returns true for that field.  A "repeated"
-   * field is set iff getRepeatedFieldSize() is greater than zero.  The
+   * field is set iff getRepeatedFieldCount() is greater than zero.  The
    * values are exactly what would be returned by calling
    * {@link #getField(Descriptors.FieldDescriptor)} for each field.  The map
    * is guaranteed to be a sorted map, so iterating over it will return fields
@@ -87,6 +87,20 @@ public interface MessageOrBuilder extends MessageLiteOrBuilder {
    * unmodifiable.
    */
   Map<Descriptors.FieldDescriptor, Object> getAllFields();
+
+  /**
+   * Returns true if the given oneof is set.
+   * @throws IllegalArgumentException if
+   *           {@code oneof.getContainingType() != getDescriptorForType()}.
+   */
+  boolean hasOneof(Descriptors.OneofDescriptor oneof);
+
+  /**
+   * Obtains the FieldDescriptor if the given oneof is set. Returns null
+   * if no field is set.
+   */
+  Descriptors.FieldDescriptor getOneofFieldDescriptor(
+      Descriptors.OneofDescriptor oneof);
 
   /**
    * Returns true if the given field is set.  This is exactly equivalent to

@@ -218,6 +218,7 @@ message ComplexOptionType1 {
   optional int32 foo = 1;
   optional int32 foo2 = 2;
   optional int32 foo3 = 3;
+  repeated int32 foo4 = 4;
 
   extensions 100 to max;
 }
@@ -235,6 +236,7 @@ message ComplexOptionType2 {
   }
 
   optional ComplexOptionType4 fred = 3;
+  repeated ComplexOptionType4 barney = 4;
 
   extensions 100 to max;
 }
@@ -271,6 +273,8 @@ message VariousComplexOptions {
   option (.protobuf_unittest.complex_opt1).foo = 42;
   option (protobuf_unittest.complex_opt1).(.protobuf_unittest.quux) = 324;
   option (.protobuf_unittest.complex_opt1).(protobuf_unittest.corge).qux = 876;
+  option (protobuf_unittest.complex_opt1).foo4 = 99;
+  option (protobuf_unittest.complex_opt1).foo4 = 88;
   option (complex_opt2).baz = 987;
   option (complex_opt2).(grault) = 654;
   option (complex_opt2).bar.foo = 743;
@@ -281,6 +285,8 @@ message VariousComplexOptions {
   option (complex_opt2).(protobuf_unittest.garply).(corge).qux = 2121;
   option (ComplexOptionType2.ComplexOptionType4.complex_opt4).waldo = 1971;
   option (complex_opt2).fred.waldo = 321;
+  option (complex_opt2).barney = { waldo: 101 };
+  option (complex_opt2).barney = { waldo: 212 };
   option (protobuf_unittest.complex_opt3).qux = 9;
   option (complex_opt3).complexoptiontype5.plugh = 22;
   option (complexopt6).xyzzy = 24;

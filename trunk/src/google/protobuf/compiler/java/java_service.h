@@ -40,8 +40,14 @@
 
 namespace google {
 namespace protobuf {
+  namespace compiler {
+    namespace java {
+      class Context;            // context.h
+      class ClassNameResolver;  // name_resolver.h
+    }
+  }
   namespace io {
-    class Printer;             // printer.h
+    class Printer;              // printer.h
   }
 }
 
@@ -52,9 +58,27 @@ namespace java {
 class ServiceGenerator {
  public:
   explicit ServiceGenerator(const ServiceDescriptor* descriptor);
-  ~ServiceGenerator();
+  virtual ~ServiceGenerator();
 
-  void Generate(io::Printer* printer);
+  virtual void Generate(io::Printer* printer) = 0;
+
+  enum RequestOrResponse { REQUEST, RESPONSE };
+  enum IsAbstract { IS_ABSTRACT, IS_CONCRETE };
+
+ protected:
+  const ServiceDescriptor* descriptor_;
+
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ServiceGenerator);
+};
+
+class ImmutableServiceGenerator : public ServiceGenerator {
+ public:
+  explicit ImmutableServiceGenerator(const ServiceDescriptor* descriptor,
+                                     Context* context);
+  virtual ~ImmutableServiceGenerator();
+
+  virtual void Generate(io::Printer* printer);
 
  private:
 
@@ -80,7 +104,6 @@ class ServiceGenerator {
   void GenerateCallBlockingMethod(io::Printer* printer);
 
   // Generate the implementations of Service.get{Request,Response}Prototype().
-  enum RequestOrResponse { REQUEST, RESPONSE };
   void GenerateGetPrototype(RequestOrResponse which, io::Printer* printer);
 
   // Generate a stub implementation of the service.
@@ -88,7 +111,6 @@ class ServiceGenerator {
 
   // Generate a method signature, possibly abstract, without body or trailing
   // semicolon.
-  enum IsAbstract { IS_ABSTRACT, IS_CONCRETE };
   void GenerateMethodSignature(io::Printer* printer,
                                const MethodDescriptor* method,
                                IsAbstract is_abstract);
@@ -100,9 +122,9 @@ class ServiceGenerator {
   void GenerateBlockingMethodSignature(io::Printer* printer,
                                        const MethodDescriptor* method);
 
-  const ServiceDescriptor* descriptor_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ServiceGenerator);
+  Context* context_;
+  ClassNameResolver* name_resolver_;
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableServiceGenerator);
 };
 
 }  // namespace java

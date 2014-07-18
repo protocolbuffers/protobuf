@@ -48,7 +48,7 @@
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/stubs/map-util.h>
+#include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
@@ -93,9 +93,9 @@ class MockGeneratorContext : public GeneratorContext {
       << "Generator failed to generate file: " << virtual_filename;
 
     string actual_contents;
-    File::ReadFileToStringOrDie(
-      TestSourceDir() + "/" + physical_filename,
-      &actual_contents);
+    GOOGLE_CHECK_OK(
+        File::GetContents(TestSourceDir() + "/" + physical_filename,
+                          &actual_contents, true));
     EXPECT_TRUE(actual_contents == *expected_contents)
       << physical_filename << " needs to be regenerated.  Please run "
          "generate_descriptor_proto.sh and add this file "

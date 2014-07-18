@@ -48,6 +48,7 @@
 #include <iosfwd>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/stl_util.h>
 
 
 namespace google {
@@ -332,6 +333,19 @@ class LIBPROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStrea
 };
 
 // ===================================================================
+
+// Return a pointer to mutable characters underlying the given string.  The
+// return value is valid until the next time the string is resized.  We
+// trust the caller to treat the return value as an array of length s->size().
+inline char* mutable_string_data(string* s) {
+#ifdef LANG_CXX11
+  // This should be simpler & faster than string_as_array() because the latter
+  // is guaranteed to return NULL when *s is empty, so it has to check for that.
+  return &(*s)[0];
+#else
+  return string_as_array(s);
+#endif
+}
 
 }  // namespace io
 }  // namespace protobuf

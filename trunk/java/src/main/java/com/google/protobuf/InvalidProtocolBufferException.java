@@ -111,4 +111,12 @@ public class InvalidProtocolBufferException extends IOException {
       "Protocol message was too large.  May be malicious.  " +
       "Use CodedInputStream.setSizeLimit() to increase the size limit.");
   }
+
+  static InvalidProtocolBufferException parseFailure() {
+    return new InvalidProtocolBufferException("Failed to parse the message.");
+  }
+
+  static InvalidProtocolBufferException invalidUtf8() {
+    return new InvalidProtocolBufferException("Protocol message had invalid UTF-8.");
+  }
 }

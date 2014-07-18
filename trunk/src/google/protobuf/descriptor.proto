@@ -96,6 +96,8 @@ message DescriptorProto {
   }
   repeated ExtensionRange extension_range = 5;
 
+  repeated OneofDescriptorProto oneof_decl = 8;
+
   optional MessageOptions options = 7;
 }
 
@@ -143,7 +145,7 @@ message FieldDescriptorProto {
   optional Label label = 4;
 
   // If type_name is set, this need not be set.  If both this and type_name
-  // are set, this must be either TYPE_ENUM or TYPE_MESSAGE.
+  // are set, this must be one of TYPE_ENUM, TYPE_MESSAGE or TYPE_GROUP.
   optional Type type = 5;
 
   // For message and enum types, this is the name of the type.  If the name
@@ -164,7 +166,18 @@ message FieldDescriptorProto {
   // TODO(kenton):  Base-64 encode?
   optional string default_value = 7;
 
+  // If set, gives the index of a oneof in the containing type's oneof_decl
+  // list.  This field is a member of that oneof.  Extensions of a oneof should
+  // not set this since the oneof to which they belong will be inferred based
+  // on the extension range containing the extension's field number.
+  optional int32 oneof_index = 9;
+
   optional FieldOptions options = 8;
+}
+
+// Describes a oneof.
+message OneofDescriptorProto {
+  optional string name = 1;
 }
 
 // Describes an enum type.
@@ -263,10 +276,25 @@ message FileOptions {
   optional bool java_multiple_files = 10 [default=false];
 
   // If set true, then the Java code generator will generate equals() and
-  // hashCode() methods for all messages defined in the .proto file. This is
-  // purely a speed optimization, as the AbstractMessage base class includes
-  // reflection-based implementations of these methods.
+  // hashCode() methods for all messages defined in the .proto file.
+  // - In the full runtime, this is purely a speed optimization, as the
+  // AbstractMessage base class includes reflection-based implementations of
+  // these methods.
+  //- In the lite runtime, setting this option changes the semantics of
+  // equals() and hashCode() to more closely match those of the full runtime;
+  // the generated methods compute their results based on field values rather
+  // than object identity. (Implementations should not assume that hashcodes
+  // will be consistent across runtimes or versions of the protocol compiler.)
   optional bool java_generate_equals_and_hash = 20 [default=false];
+
+  // If set true, then the Java2 code generator will generate code that
+  // throws an exception whenever an attempt is made to assign a non-UTF-8
+  // byte sequence to a string field.
+  // Message reflection will do the same.
+  // However, an extension field still accepts non-UTF-8 byte sequences.
+  // This option has no effect on when used with the lite runtime.
+  optional bool java_string_check_utf8 = 27 [default=false];
+
 
   // Generated classes can be optimized for speed or code size.
   enum OptimizeMode {
@@ -296,6 +324,13 @@ message FileOptions {
   optional bool cc_generic_services = 16 [default=false];
   optional bool java_generic_services = 17 [default=false];
   optional bool py_generic_services = 18 [default=false];
+
+  // Is this file deprecated?
+  // Depending on the target platform, this can emit Deprecated annotations
+  // for everything in the file, or it will be completely ignored; in the very
+  // least, this is a formalization for deprecating files.
+  optional bool deprecated = 23 [default=false];
+
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -329,6 +364,12 @@ message MessageOptions {
   // conflict with a field of the same name.  This is meant to make migration
   // from proto1 easier; new code should avoid fields named "descriptor".
   optional bool no_standard_descriptor_accessor = 2 [default=false];
+
+  // Is this message deprecated?
+  // Depending on the target platform, this can emit Deprecated annotations
+  // for the message, or it will be completely ignored; in the very least,
+  // this is a formalization for deprecating messages.
+  optional bool deprecated = 3 [default=false];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -412,6 +453,8 @@ message FieldOptions {
   // For Google-internal migration only. Do not use.
   optional bool weak = 10 [default=false];
 
+
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -421,9 +464,15 @@ message FieldOptions {
 
 message EnumOptions {
 
-  // Set this option to false to disallow mapping different tag names to a same
+  // Set this option to true to allow mapping different tag names to the same
   // value.
-  optional bool allow_alias = 2 [default=true];
+  optional bool allow_alias = 2;
+
+  // Is this enum deprecated?
+  // Depending on the target platform, this can emit Deprecated annotations
+  // for the enum, or it will be completely ignored; in the very least, this
+  // is a formalization for deprecating enums.
+  optional bool deprecated = 3 [default=false];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -433,6 +482,12 @@ message EnumOptions {
 }
 
 message EnumValueOptions {
+  // Is this enum value deprecated?
+  // Depending on the target platform, this can emit Deprecated annotations
+  // for the enum value, or it will be completely ignored; in the very least,
+  // this is a formalization for deprecating enum values.
+  optional bool deprecated = 1 [default=false];
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -447,6 +502,12 @@ message ServiceOptions {
   //   we were already using them long before we decided to release Protocol
   //   Buffers.
 
+  // Is this service deprecated?
+  // Depending on the target platform, this can emit Deprecated annotations
+  // for the service, or it will be completely ignored; in the very least,
+  // this is a formalization for deprecating services.
+  optional bool deprecated = 33 [default=false];
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -460,6 +521,12 @@ message MethodOptions {
   //   framework.  We apologize for hoarding these numbers to ourselves, but
   //   we were already using them long before we decided to release Protocol
   //   Buffers.
+
+  // Is this method deprecated?
+  // Depending on the target platform, this can emit Deprecated annotations
+  // for the method, or it will be completely ignored; in the very least,
+  // this is a formalization for deprecating methods.
+  optional bool deprecated = 33 [default=false];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;

@@ -35,6 +35,7 @@ import com.google.protobuf.ByteString.Output;
 import junit.framework.TestCase;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -676,6 +677,21 @@ public class ByteStringTest extends TestCase {
     assertTrue(ByteString.EMPTY.startsWith(ByteString.EMPTY));
   }
 
+  public void testEndsWith() {
+    byte[] bytes = getTestBytes(1000, 1234L);
+    ByteString string = ByteString.copyFrom(bytes);
+    ByteString prefix = ByteString.copyFrom(bytes, 0, 500);
+    ByteString suffix = ByteString.copyFrom(bytes, 400, 600);
+    assertTrue(string.endsWith(ByteString.EMPTY));
+    assertTrue(string.endsWith(string));
+    assertTrue(string.endsWith(suffix));
+    assertFalse(string.endsWith(prefix));
+    assertFalse(suffix.endsWith(prefix));
+    assertFalse(prefix.endsWith(suffix));
+    assertFalse(ByteString.EMPTY.endsWith(suffix));
+    assertTrue(ByteString.EMPTY.endsWith(ByteString.EMPTY));
+  }
+
   static List<ByteString> makeConcretePieces(byte[] referenceBytes) {
     List<ByteString> pieces = new ArrayList<ByteString>();
     // Starting length should be small enough that we'll do some concatenating by
@@ -688,5 +704,56 @@ public class ByteStringTest extends TestCase {
       pieces.add(ByteString.copyFrom(referenceBytes, start, length));
     }
     return pieces;
+  }
+  
+  private byte[] substringUsingWriteTo(
+      ByteString data, int offset, int length) throws IOException {
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    data.writeTo(output, offset, length);
+    return output.toByteArray();
+  }
+  
+  public void testWriteToOutputStream() throws Exception {
+    // Choose a size large enough so when two ByteStrings are concatenated they
+    // won't be merged into one byte array due to some optimizations.
+    final int dataSize = ByteString.CONCATENATE_BY_COPY_SIZE + 1;
+    byte[] data1 = new byte[dataSize];
+    for (int i = 0; i < data1.length; i++) {
+      data1[i] = (byte) 1;
+    }
+    data1[1] = (byte) 11;
+    // Test LiteralByteString.writeTo(OutputStream,int,int)
+    LiteralByteString left = new LiteralByteString(data1);
+    byte[] result = substringUsingWriteTo(left, 1, 1);
+    assertEquals(1, result.length);
+    assertEquals((byte) 11, result[0]);
+    
+    byte[] data2 = new byte[dataSize];
+    for (int i = 0; i < data1.length; i++) {
+      data2[i] = (byte) 2;
+    }
+    LiteralByteString right = new LiteralByteString(data2);
+    // Concatenate two ByteStrings to create a RopeByteString.
+    ByteString root = left.concat(right);
+    // Make sure we are actually testing a RopeByteString with a simple tree
+    // structure.
+    assertEquals(1, root.getTreeDepth());
+    // Write parts of the left node.
+    result = substringUsingWriteTo(root, 0, dataSize);
+    assertEquals(dataSize, result.length);
+    assertEquals((byte) 1, result[0]);
+    assertEquals((byte) 1, result[dataSize - 1]);
+    // Write parts of the right node.
+    result = substringUsingWriteTo(root, dataSize, dataSize);
+    assertEquals(dataSize, result.length);
+    assertEquals((byte) 2, result[0]);
+    assertEquals((byte) 2, result[dataSize - 1]);
+    // Write a segment of bytes that runs across both nodes.
+    result = substringUsingWriteTo(root, dataSize / 2, dataSize);
+    assertEquals(dataSize, result.length);
+    assertEquals((byte) 1, result[0]);
+    assertEquals((byte) 1, result[dataSize - dataSize / 2 - 1]);
+    assertEquals((byte) 2, result[dataSize - dataSize / 2]);
+    assertEquals((byte) 2, result[dataSize - 1]);
   }
 }
