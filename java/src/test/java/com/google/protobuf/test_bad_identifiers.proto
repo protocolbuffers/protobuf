@@ -42,8 +42,12 @@ package io_protocol_tests;
 
 option java_package = "com.google.protobuf";
 option java_outer_classname = "TestBadIdentifiersProto";
+option java_generate_equals_and_hash = true;
 
 message TestMessage {
+  optional string cached_size = 1;
+  optional string serialized_size = 2;
+  optional string class = 3;
 }
 
 message Descriptor {
@@ -54,6 +58,9 @@ message Descriptor {
     optional string descriptor = 1;
   }
   optional NestedDescriptor nested_descriptor = 2;
+  enum NestedEnum {
+    FOO = 1;
+  }
 }
 
 message Parser {
@@ -66,6 +73,9 @@ message Parser {
 message Deprecated {
   enum TestEnum {
     FOO = 1;
+
+    // Test if @Deprecated annotation conflicts with Deprecated message name.
+    BAR = 2 [ deprecated = true ];
   }
 
   optional int32 field1 = 1 [deprecated=true];
@@ -104,5 +114,44 @@ message Double {
 
 service TestConflictingMethodNames {
   rpc Override(TestMessage) returns (TestMessage);
+}
+
+message TestConflictingFieldNames {
+  enum TestEnum {
+    FOO = 1;
+  }
+  message TestMessage {
+  }
+  repeated int32 int32_field = 1;
+  repeated TestEnum enum_field = 2;
+  repeated string string_field = 3;
+  repeated bytes bytes_field = 4;
+  repeated TestMessage message_field = 5;
+
+  optional int32 int32_field_count = 11;
+  optional TestEnum enum_field_count = 12;
+  optional string string_field_count = 13;
+  optional bytes bytes_field_count = 14;
+  optional TestMessage message_field_count = 15;
+
+  repeated int32 Int32Field = 21;
+  repeated TestEnum EnumField = 22;
+  repeated string StringField = 23;
+  repeated bytes BytesField = 24;
+  repeated TestMessage MessageField = 25;
+
+  // This field conflicts with "int32_field" as they both generate
+  // the method getInt32FieldList().
+  required int32 int32_field_list = 31;
+
+  extensions 1000 to max;
+
+  repeated int64 int64_field = 41;
+  extend TestConflictingFieldNames {
+    // We don't generate accessors for extensions so the following extension
+    // fields don't conflict with the repeated field "int64_field".
+    optional int64 int64_field_count = 1001;
+    optional int64 int64_field_list = 1002;
+  }
 }
 

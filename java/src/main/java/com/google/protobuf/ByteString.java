@@ -177,6 +177,20 @@ public abstract class ByteString implements Iterable<Byte> {
            substring(0, prefix.size()).equals(prefix);
   }
 
+  /**
+   * Tests if this bytestring ends with the specified suffix.
+   * Similar to {@link String#endsWith(String)}
+   *
+   * @param suffix the suffix.
+   * @return <code>true</code> if the byte sequence represented by the
+   *         argument is a suffix of the byte sequence represented by
+   *         this string; <code>false</code> otherwise.
+   */
+  public boolean endsWith(ByteString suffix) {
+    return size() >= suffix.size() &&
+        substring(size() - suffix.size()).equals(suffix);
+  }
+
   // =================================================================
   // byte[] -> ByteString
 
@@ -512,6 +526,9 @@ public abstract class ByteString implements Iterable<Byte> {
    */
   public byte[] toByteArray() {
     int size = size();
+    if (size == 0) {
+      return Internal.EMPTY_BYTE_ARRAY;
+    }
     byte[] result = new byte[size];
     copyToInternal(result, 0, 0, size);
     return result;
@@ -525,6 +542,41 @@ public abstract class ByteString implements Iterable<Byte> {
    * @throws IOException  if an I/O error occurs.
    */
   public abstract void writeTo(OutputStream out) throws IOException;
+  
+  /**
+   * Writes a specified part of this byte string to an output stream.
+   *
+   * @param  out  the output stream to which to write the data.
+   * @param  sourceOffset offset within these bytes
+   * @param  numberToWrite number of bytes to write
+   * @throws IOException  if an I/O error occurs.
+   * @throws IndexOutOfBoundsException if an offset or size is negative or too
+   *     large
+   */
+  void writeTo(OutputStream out, int sourceOffset, int numberToWrite)
+      throws IOException {
+    if (sourceOffset < 0) {
+      throw new IndexOutOfBoundsException("Source offset < 0: " + sourceOffset);
+    }
+    if (numberToWrite < 0) {
+      throw new IndexOutOfBoundsException("Length < 0: " + numberToWrite);
+    }
+    if (sourceOffset + numberToWrite > size()) {
+      throw new IndexOutOfBoundsException(
+          "Source end offset exceeded: " + (sourceOffset + numberToWrite));
+    }
+    if (numberToWrite > 0) {
+      writeToInternal(out, sourceOffset, numberToWrite);
+    }
+    
+  }
+
+  /**
+   * Internal version of {@link #writeTo(OutputStream,int,int)} that assumes
+   * all error checking has already been done.
+   */
+  abstract void writeToInternal(OutputStream out, int sourceOffset,
+      int numberToWrite) throws IOException;
 
   /**
    * Constructs a read-only {@code java.nio.ByteBuffer} whose content

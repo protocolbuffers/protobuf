@@ -38,10 +38,9 @@
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 #include <google/protobuf/repeated_field.h>
-#include <google/protobuf/stubs/map-util.h>
+#include <google/protobuf/stubs/map_util.h>
 
 namespace google {
 namespace protobuf {
@@ -56,6 +55,22 @@ inline WireFormatLite::FieldType real_type(FieldType type) {
 
 inline WireFormatLite::CppType cpp_type(FieldType type) {
   return WireFormatLite::FieldTypeToCppType(real_type(type));
+}
+
+inline bool is_packable(WireFormatLite::WireType type) {
+  switch (type) {
+    case WireFormatLite::WIRETYPE_VARINT:
+    case WireFormatLite::WIRETYPE_FIXED64:
+    case WireFormatLite::WIRETYPE_FIXED32:
+      return true;
+    case WireFormatLite::WIRETYPE_LENGTH_DELIMITED:
+    case WireFormatLite::WIRETYPE_START_GROUP:
+    case WireFormatLite::WIRETYPE_END_GROUP:
+      return false;
+
+    // Do not add a default statement. Let the compiler complain when someone
+    // adds a new wire type.
+  }
 }
 
 // Registry stuff.
@@ -304,13 +319,79 @@ PRIMITIVE_ACCESSORS(  BOOL,   bool,   Bool)
 
 #undef PRIMITIVE_ACCESSORS
 
-void* ExtensionSet::MutableRawRepeatedField(int number) {
+const void* ExtensionSet::GetRawRepeatedField(int number,
+                                              const void* default_value) const {
+  map<int, Extension>::const_iterator iter = extensions_.find(number);
+  if (iter == extensions_.end()) {
+    return default_value;
+  }
   // We assume that all the RepeatedField<>* pointers have the same
   // size and alignment within the anonymous union in Extension.
-  map<int, Extension>::const_iterator iter = extensions_.find(number);
-  GOOGLE_CHECK(iter != extensions_.end()) << "no extension numbered " << number;
   return iter->second.repeated_int32_value;
 }
+
+void* ExtensionSet::MutableRawRepeatedField(int number, FieldType field_type,
+                                            bool packed,
+                                            const FieldDescriptor* desc) {
+  Extension* extension;
+
+  // We instantiate an empty Repeated{,Ptr}Field if one doesn't exist for this
+  // extension.
+  if (MaybeNewExtension(number, desc, &extension)) {
+    extension->is_repeated = true;
+    extension->type = field_type;
+    extension->is_packed = packed;
+
+    switch (WireFormatLite::FieldTypeToCppType(
+        static_cast<WireFormatLite::FieldType>(field_type))) {
+      case WireFormatLite::CPPTYPE_INT32:
+        extension->repeated_int32_value = new RepeatedField<int32>();
+        break;
+      case WireFormatLite::CPPTYPE_INT64:
+        extension->repeated_int64_value = new RepeatedField<int64>();
+        break;
+      case WireFormatLite::CPPTYPE_UINT32:
+        extension->repeated_uint32_value = new RepeatedField<uint32>();
+        break;
+      case WireFormatLite::CPPTYPE_UINT64:
+        extension->repeated_uint64_value = new RepeatedField<uint64>();
+        break;
+      case WireFormatLite::CPPTYPE_DOUBLE:
+        extension->repeated_double_value = new RepeatedField<double>();
+        break;
+      case WireFormatLite::CPPTYPE_FLOAT:
+        extension->repeated_float_value = new RepeatedField<float>();
+        break;
+      case WireFormatLite::CPPTYPE_BOOL:
+        extension->repeated_bool_value = new RepeatedField<bool>();
+        break;
+      case WireFormatLite::CPPTYPE_ENUM:
+        extension->repeated_enum_value = new RepeatedField<int>();
+        break;
+      case WireFormatLite::CPPTYPE_STRING:
+        extension->repeated_string_value = new RepeatedPtrField< ::std::string>();
+        break;
+      case WireFormatLite::CPPTYPE_MESSAGE:
+        extension->repeated_message_value = new RepeatedPtrField<MessageLite>();
+        break;
+    }
+  }
+
+  // We assume that all the RepeatedField<>* pointers have the same
+  // size and alignment within the anonymous union in Extension.
+  return extension->repeated_int32_value;
+}
+
+// Compatible version using old call signature. Does not create extensions when
+// the don't already exist; instead, just GOOGLE_CHECK-fails.
+void* ExtensionSet::MutableRawRepeatedField(int number) {
+  map<int, Extension>::iterator iter = extensions_.find(number);
+  GOOGLE_CHECK(iter == extensions_.end()) << "Extension not found.";
+  // We assume that all the RepeatedField<>* pointers have the same
+  // size and alignment within the anonymous union in Extension.
+  return iter->second.repeated_int32_value;
+}
+
 
 // -------------------------------------------------------------------
 // Enums
@@ -826,6 +907,36 @@ void ExtensionSet::Swap(ExtensionSet* x) {
   extensions_.swap(x->extensions_);
 }
 
+void ExtensionSet::SwapExtension(ExtensionSet* other,
+                                 int number) {
+  if (this == other) return;
+  map<int, Extension>::iterator this_iter = extensions_.find(number);
+  map<int, Extension>::iterator other_iter = other->extensions_.find(number);
+
+  if (this_iter == extensions_.end() &&
+      other_iter == other->extensions_.end()) {
+    return;
+  }
+
+  if (this_iter != extensions_.end() &&
+      other_iter != other->extensions_.end()) {
+    std::swap(this_iter->second, other_iter->second);
+    return;
+  }
+
+  if (this_iter == extensions_.end()) {
+    extensions_.insert(make_pair(number, other_iter->second));
+    other->extensions_.erase(number);
+    return;
+  }
+
+  if (other_iter == other->extensions_.end()) {
+    other->extensions_.insert(make_pair(number, this_iter->second));
+    extensions_.erase(number);
+    return;
+  }
+}
+
 bool ExtensionSet::IsInitialized() const {
   // Extensions are never required.  However, we need to check that all
   // embedded messages are initialized.
@@ -855,41 +966,59 @@ bool ExtensionSet::IsInitialized() const {
 }
 
 bool ExtensionSet::FindExtensionInfoFromTag(
-    uint32 tag, ExtensionFinder* extension_finder,
-    int* field_number, ExtensionInfo* extension) {
+    uint32 tag, ExtensionFinder* extension_finder, int* field_number,
+    ExtensionInfo* extension, bool* was_packed_on_wire) {
   *field_number = WireFormatLite::GetTagFieldNumber(tag);
   WireFormatLite::WireType wire_type = WireFormatLite::GetTagWireType(tag);
+  return FindExtensionInfoFromFieldNumber(wire_type, *field_number,
+                                          extension_finder, extension,
+                                          was_packed_on_wire);
+}
 
-  bool is_unknown;
-  if (!extension_finder->Find(*field_number, extension)) {
-    is_unknown = true;
-  } else if (extension->is_packed) {
-    is_unknown = (wire_type != WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
-  } else {
-    WireFormatLite::WireType expected_wire_type =
-        WireFormatLite::WireTypeForFieldType(real_type(extension->type));
-    is_unknown = (wire_type != expected_wire_type);
+bool ExtensionSet::FindExtensionInfoFromFieldNumber(
+    int wire_type, int field_number, ExtensionFinder* extension_finder,
+    ExtensionInfo* extension, bool* was_packed_on_wire) {
+  if (!extension_finder->Find(field_number, extension)) {
+    return false;
   }
-  return !is_unknown;
+
+  WireFormatLite::WireType expected_wire_type =
+      WireFormatLite::WireTypeForFieldType(real_type(extension->type));
+
+  // Check if this is a packed field.
+  *was_packed_on_wire = false;
+  if (extension->is_repeated &&
+      wire_type == WireFormatLite::WIRETYPE_LENGTH_DELIMITED &&
+      is_packable(expected_wire_type)) {
+    *was_packed_on_wire = true;
+    return true;
+  }
+  // Otherwise the wire type must match.
+  return expected_wire_type == wire_type;
 }
 
 bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
                               ExtensionFinder* extension_finder,
                               FieldSkipper* field_skipper) {
   int number;
+  bool was_packed_on_wire;
   ExtensionInfo extension;
-  if (!FindExtensionInfoFromTag(tag, extension_finder, &number, &extension)) {
+  if (!FindExtensionInfoFromTag(
+      tag, extension_finder, &number, &extension, &was_packed_on_wire)) {
     return field_skipper->SkipField(input, tag);
   } else {
-    return ParseFieldWithExtensionInfo(number, extension, input, field_skipper);
+    return ParseFieldWithExtensionInfo(
+        number, was_packed_on_wire, extension, input, field_skipper);
   }
 }
 
 bool ExtensionSet::ParseFieldWithExtensionInfo(
-    int number, const ExtensionInfo& extension,
+    int number, bool was_packed_on_wire, const ExtensionInfo& extension,
     io::CodedInputStream* input,
     FieldSkipper* field_skipper) {
-  if (extension.is_packed) {
+  // Explicitly not read extension.is_packed, instead check whether the field
+  // was encoded in packed form on the wire.
+  if (was_packed_on_wire) {
     uint32 size;
     if (!input->ReadVarint32(&size)) return false;
     io::CodedInputStream::Limit limit = input->PushLimit(size);
@@ -903,7 +1032,8 @@ bool ExtensionSet::ParseFieldWithExtensionInfo(
                   CPP_LOWERCASE, WireFormatLite::TYPE_##UPPERCASE>(            \
                 input, &value)) return false;                                  \
           Add##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE,         \
-                             true, value, extension.descriptor);               \
+                             extension.is_packed, value,                       \
+                             extension.descriptor);                            \
         }                                                                      \
         break
 
@@ -929,8 +1059,8 @@ bool ExtensionSet::ParseFieldWithExtensionInfo(
                   input, &value)) return false;
           if (extension.enum_validity_check.func(
                   extension.enum_validity_check.arg, value)) {
-            AddEnum(number, WireFormatLite::TYPE_ENUM, true, value,
-                    extension.descriptor);
+            AddEnum(number, WireFormatLite::TYPE_ENUM, extension.is_packed,
+                    value, extension.descriptor);
           }
         }
         break;
@@ -952,9 +1082,10 @@ bool ExtensionSet::ParseFieldWithExtensionInfo(
         if (!WireFormatLite::ReadPrimitive<                                    \
                 CPP_LOWERCASE, WireFormatLite::TYPE_##UPPERCASE>(              \
                input, &value)) return false;                                   \
-        if (extension.is_repeated) {                                          \
+        if (extension.is_repeated) {                                           \
           Add##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE,         \
-                             false, value, extension.descriptor);              \
+                             extension.is_packed, value,                       \
+                             extension.descriptor);                            \
         } else {                                                               \
           Set##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE, value,  \
                              extension.descriptor);                            \
@@ -986,7 +1117,7 @@ bool ExtensionSet::ParseFieldWithExtensionInfo(
           // Invalid value.  Treat as unknown.
           field_skipper->SkipUnknownEnum(number, value);
         } else if (extension.is_repeated) {
-          AddEnum(number, WireFormatLite::TYPE_ENUM, false, value,
+          AddEnum(number, WireFormatLite::TYPE_ENUM, extension.is_packed, value,
                   extension.descriptor);
         } else {
           SetEnum(number, WireFormatLite::TYPE_ENUM, value,
@@ -1041,6 +1172,14 @@ bool ExtensionSet::ParseFieldWithExtensionInfo(
 bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
                               const MessageLite* containing_type) {
   FieldSkipper skipper;
+  GeneratedExtensionFinder finder(containing_type);
+  return ParseField(tag, input, &finder, &skipper);
+}
+
+bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
+                              const MessageLite* containing_type,
+                              io::CodedOutputStream* unknown_fields) {
+  CodedOutputStreamFieldSkipper skipper(unknown_fields);
   GeneratedExtensionFinder finder(containing_type);
   return ParseField(tag, input, &finder, &skipper);
 }
@@ -1455,6 +1594,56 @@ void ExtensionSet::Extension::Free() {
 
 // Defined in extension_set_heavy.cc.
 // int ExtensionSet::Extension::SpaceUsedExcludingSelf() const
+
+// ==================================================================
+// Default repeated field instances for iterator-compatible accessors
+
+const RepeatedStringTypeTraits::RepeatedFieldType*
+RepeatedStringTypeTraits::default_repeated_field_ = NULL;
+
+const RepeatedMessageGenericTypeTraits::RepeatedFieldType*
+RepeatedMessageGenericTypeTraits::default_repeated_field_ = NULL;
+
+#define PROTOBUF_DEFINE_DEFAULT_REPEATED(TYPE)                                 \
+    const RepeatedField<TYPE>*                                                 \
+    RepeatedPrimitiveGenericTypeTraits::default_repeated_field_##TYPE##_ = NULL;
+
+PROTOBUF_DEFINE_DEFAULT_REPEATED(int32)
+PROTOBUF_DEFINE_DEFAULT_REPEATED(int64)
+PROTOBUF_DEFINE_DEFAULT_REPEATED(uint32)
+PROTOBUF_DEFINE_DEFAULT_REPEATED(uint64)
+PROTOBUF_DEFINE_DEFAULT_REPEATED(double)
+PROTOBUF_DEFINE_DEFAULT_REPEATED(float)
+PROTOBUF_DEFINE_DEFAULT_REPEATED(bool)
+
+#undef PROTOBUF_DEFINE_DEFAULT_REPEATED
+
+struct StaticDefaultRepeatedFieldsInitializer {
+  StaticDefaultRepeatedFieldsInitializer() {
+    InitializeDefaultRepeatedFields();
+  }
+} static_repeated_fields_initializer;
+
+void InitializeDefaultRepeatedFields() {
+  RepeatedStringTypeTraits::default_repeated_field_ =
+      new RepeatedStringTypeTraits::RepeatedFieldType;
+  RepeatedMessageGenericTypeTraits::default_repeated_field_ =
+      new RepeatedMessageGenericTypeTraits::RepeatedFieldType;
+  RepeatedPrimitiveGenericTypeTraits::default_repeated_field_int32_ =
+      new RepeatedField<int32>;
+  RepeatedPrimitiveGenericTypeTraits::default_repeated_field_int64_ =
+      new RepeatedField<int64>;
+  RepeatedPrimitiveGenericTypeTraits::default_repeated_field_uint32_ =
+      new RepeatedField<uint32>;
+  RepeatedPrimitiveGenericTypeTraits::default_repeated_field_uint64_ =
+      new RepeatedField<uint64>;
+  RepeatedPrimitiveGenericTypeTraits::default_repeated_field_double_ =
+      new RepeatedField<double>;
+  RepeatedPrimitiveGenericTypeTraits::default_repeated_field_float_ =
+      new RepeatedField<float>;
+  RepeatedPrimitiveGenericTypeTraits::default_repeated_field_bool_ =
+      new RepeatedField<bool>;
+}
 
 }  // namespace internal
 }  // namespace protobuf

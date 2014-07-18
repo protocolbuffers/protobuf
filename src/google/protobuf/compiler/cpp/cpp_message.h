@@ -35,8 +35,9 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 
+#include <memory>
 #include <string>
-#include <google/protobuf/stubs/common.h>
+#include <vector>
 #include <google/protobuf/compiler/cpp/cpp_field.h>
 #include <google/protobuf/compiler/cpp/cpp_options.h>
 
@@ -132,6 +133,7 @@ class MessageGenerator {
 
   // Generate standard Message methods.
   void GenerateClear(io::Printer* printer);
+  void GenerateOneofClear(io::Printer* printer);
   void GenerateMergeFromCodedStream(io::Printer* printer);
   void GenerateSerializeWithCachedSizes(io::Printer* printer);
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer);
@@ -156,9 +158,11 @@ class MessageGenerator {
   string classname_;
   Options options_;
   FieldGeneratorMap field_generators_;
+  vector< vector<string> > runs_of_fields_;  // that might be trivially cleared
   scoped_array<scoped_ptr<MessageGenerator> > nested_generators_;
   scoped_array<scoped_ptr<EnumGenerator> > enum_generators_;
   scoped_array<scoped_ptr<ExtensionGenerator> > extension_generators_;
+  bool uses_string_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageGenerator);
 };

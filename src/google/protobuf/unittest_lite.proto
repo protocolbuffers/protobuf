@@ -151,6 +151,14 @@ message TestAllTypesLite {
 
   optional string default_string_piece = 84 [ctype=STRING_PIECE,default="abc"];
   optional string default_cord = 85 [ctype=CORD,default="123"];
+
+  // For oneof test
+  oneof oneof_field {
+    uint32 oneof_uint32 = 111;
+    NestedMessage oneof_nested_message = 112;
+    string oneof_string = 113;
+    bytes oneof_bytes = 114;
+  }
 }
 
 message ForeignMessageLite {
@@ -293,6 +301,12 @@ extend TestAllExtensionsLite {
   optional string default_string_piece_extension_lite = 84 [ctype=STRING_PIECE,
                                                             default="abc"];
   optional string default_cord_extension_lite = 85 [ctype=CORD, default="123"];
+
+  // For oneof test
+  optional uint32 oneof_uint32_extension_lite = 111;
+  optional TestAllTypesLite.NestedMessage oneof_nested_message_extension_lite = 112;
+  optional string oneof_string_extension_lite = 113;
+  optional bytes oneof_bytes_extension_lite = 114;
 }
 
 message TestPackedExtensionsLite {
@@ -357,4 +371,14 @@ message TestParsingMergeLite {
     optional TestAllTypesLite optional_ext = 1000;
     repeated TestAllTypesLite repeated_ext = 1001;
   }
+}
+
+// TestEmptyMessageLite is used to test unknown fields support in lite mode.
+message TestEmptyMessageLite{
+}
+
+// Like above, but declare all field numbers as potential extensions.  No
+// actual extensions should ever be defined for this type.
+message TestEmptyMessageWithExtensionsLite {
+  extensions 1 to max;
 }

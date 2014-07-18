@@ -35,6 +35,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_FILE_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_FILE_H__
 
+#include <memory>
 #include <string>
 #include <vector>
 #include <google/protobuf/stubs/common.h>
@@ -85,7 +86,6 @@ class FileGenerator {
 
   // E.g. if the package is foo.bar, package_parts_ is {"foo", "bar"}.
   vector<string> package_parts_;
-
   const Options options_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);

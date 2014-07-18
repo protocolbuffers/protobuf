@@ -103,6 +103,12 @@ const char* PrimitiveTypeName(FieldDescriptor::CppType type);
 // methods of WireFormat.  For example, TYPE_INT32 becomes "Int32".
 const char* DeclaredTypeMethodName(FieldDescriptor::Type type);
 
+// Return the code that evaluates to the number when compiled.
+string Int32ToString(int number);
+
+// Return the code that evaluates to the number when compiled.
+string Int64ToString(int64 number);
+
 // Get code that evaluates to the field's default value.
 string DefaultValue(const FieldDescriptor* field);
 
@@ -115,14 +121,23 @@ string GlobalAddDescriptorsName(const string& filename);
 // Return the name of the AssignDescriptors() function for a given file.
 string GlobalAssignDescriptorsName(const string& filename);
 
+// Return the qualified C++ name for a file level symbol.
+string QualifiedFileLevelSymbol(const string& package, const string& name);
+
 // Return the name of the ShutdownFile() function for a given file.
 string GlobalShutdownFileName(const string& filename);
 
 // Escape C++ trigraphs by escaping question marks to \?
 string EscapeTrigraphs(const string& to_escape);
 
-// Do message classes in this file keep track of unknown fields?
-inline bool HasUnknownFields(const FileDescriptor* file) {
+// Escaped function name to eliminate naming conflict.
+string SafeFunctionName(const Descriptor* descriptor,
+                        const FieldDescriptor* field,
+                        const string& prefix);
+
+// Do message classes in this file use UnknownFieldSet?
+// Otherwise, messages will store unknown fields in a string
+inline bool UseUnknownFieldSet(const FileDescriptor* file) {
   return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
 }
 
@@ -177,6 +192,11 @@ void PrintHandlingOptionalStaticInitializers(
     io::Printer* printer, const char* with_static_init,
     const char* without_static_init);
 
+
+// Returns true if the field's CPPTYPE is string or message.
+bool IsStringOrMessage(const FieldDescriptor* field);
+
+string UnderscoresToCamelCase(const string& input, bool cap_next_letter);
 
 }  // namespace cpp
 }  // namespace compiler

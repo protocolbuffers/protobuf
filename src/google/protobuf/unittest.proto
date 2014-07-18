@@ -69,6 +69,7 @@ message TestAllTypes {
     FOO = 1;
     BAR = 2;
     BAZ = 3;
+    NEG = -1;  // Intentionally negative.
   }
 
   // Singular
@@ -167,6 +168,20 @@ message TestAllTypes {
 
   optional string default_string_piece = 84 [ctype=STRING_PIECE,default="abc"];
   optional string default_cord = 85 [ctype=CORD,default="123"];
+
+  // For oneof test
+  oneof oneof_field {
+    uint32 oneof_uint32 = 111;
+    NestedMessage oneof_nested_message = 112;
+    string oneof_string = 113;
+    bytes oneof_bytes = 114;
+  }
+}
+
+// This proto includes a recusively nested message.
+message NestedTestAllTypes {
+  optional NestedTestAllTypes child = 1;
+  optional TestAllTypes payload = 2;
 }
 
 message TestDeprecatedFields {
@@ -294,6 +309,12 @@ extend TestAllExtensions {
   optional string default_string_piece_extension = 84 [ctype=STRING_PIECE,
                                                        default="abc"];
   optional string default_cord_extension = 85 [ctype=CORD, default="123"];
+
+  // For oneof test
+  optional uint32 oneof_uint32_extension = 111;
+  optional TestAllTypes.NestedMessage oneof_nested_message_extension = 112;
+  optional string oneof_string_extension = 113;
+  optional bytes oneof_bytes_extension = 114;
 }
 
 message TestNestedExtension {
@@ -301,6 +322,9 @@ message TestNestedExtension {
     // Check for bug where string extensions declared in tested scope did not
     // compile.
     optional string test = 1002 [default="test"];
+    // Used to test if generated extension name is correct when there are
+    // underscores.
+    optional string nested_string_extension = 1003;
   }
 }
 
@@ -435,6 +459,7 @@ message TestNestedMessageHasBits {
 // Test an enum that has multiple values with the same number.
 enum TestEnumWithDupValue {
   option allow_alias = true;
+
   FOO1 = 1;
   BAR1 = 2;
   BAZ = 3;
@@ -535,6 +560,7 @@ message TestExtremeDefaultValues {
                                                default="ab\000c"];
   optional string cord_with_zero         = 26 [ctype=CORD,
                                                default="12\0003"];
+  optional string replacement_string     = 27 [default="${unknown}"];
 }
 
 message SparseEnumMessage {
@@ -558,6 +584,100 @@ message MoreBytes {
   repeated bytes data = 1;
 }
 
+// Test int32, uint32, int64, uint64, and bool are all compatible
+message Int32Message {
+  optional int32 data = 1;
+}
+
+message Uint32Message {
+  optional uint32 data = 1;
+}
+
+message Int64Message {
+  optional int64 data = 1;
+}
+
+message Uint64Message {
+  optional uint64 data = 1;
+}
+
+message BoolMessage {
+  optional bool data = 1;
+}
+
+// Test oneofs.
+message TestOneof {
+  oneof foo {
+    int32 foo_int = 1;
+    string foo_string = 2;
+    TestAllTypes foo_message = 3;
+    group FooGroup = 4 {
+      optional int32 a = 5;
+      optional string b = 6;
+    }
+  }
+}
+
+message TestOneofBackwardsCompatible {
+  optional int32 foo_int = 1;
+  optional string foo_string = 2;
+  optional TestAllTypes foo_message = 3;
+  optional group FooGroup = 4 {
+    optional int32 a = 5;
+    optional string b = 6;
+  }
+}
+
+message TestOneof2 {
+  oneof foo {
+    int32 foo_int = 1;
+    string foo_string = 2;
+    string foo_cord = 3 [ctype=CORD];
+    string foo_string_piece = 4 [ctype=STRING_PIECE];
+    bytes foo_bytes = 5;
+    NestedEnum foo_enum = 6;
+    NestedMessage foo_message = 7;
+    group FooGroup = 8 {
+      optional int32 a = 9;
+      optional string b = 10;
+    }
+    NestedMessage foo_lazy_message = 11 [lazy=true];
+  }
+
+  oneof bar {
+    int32 bar_int = 12 [default = 5];
+    string bar_string = 13 [default = "STRING"];
+    string bar_cord = 14 [ctype=CORD, default = "CORD"];
+    string bar_string_piece = 15 [ctype=STRING_PIECE, default = "SPIECE"];
+    bytes bar_bytes = 16 [default = "BYTES"];
+    NestedEnum bar_enum = 17 [default = BAR];
+  }
+
+  optional int32 baz_int = 18;
+  optional string baz_string = 19 [default = "BAZ"];
+
+  message NestedMessage {
+    optional int64 qux_int = 1;
+    repeated int32 corge_int = 2;
+  }
+
+  enum NestedEnum {
+    FOO = 1;
+    BAR = 2;
+    BAZ = 3;
+  }
+}
+
+message TestRequiredOneof {
+  oneof foo {
+    int32 foo_int = 1;
+    string foo_string = 2;
+    NestedMessage foo_message = 3;
+  }
+  message NestedMessage {
+    required double required_double = 1;
+  }
+}
 
 // Test messages for packed fields
 
@@ -616,6 +736,27 @@ extend TestPackedExtensions {
   repeated   double packed_double_extension   = 101 [packed = true];
   repeated     bool packed_bool_extension     = 102 [packed = true];
   repeated ForeignEnum packed_enum_extension  = 103 [packed = true];
+}
+
+message TestUnpackedExtensions {
+  extensions 1 to max;
+}
+
+extend TestUnpackedExtensions {
+  repeated    int32 unpacked_int32_extension    =  90 [packed = false];
+  repeated    int64 unpacked_int64_extension    =  91 [packed = false];
+  repeated   uint32 unpacked_uint32_extension   =  92 [packed = false];
+  repeated   uint64 unpacked_uint64_extension   =  93 [packed = false];
+  repeated   sint32 unpacked_sint32_extension   =  94 [packed = false];
+  repeated   sint64 unpacked_sint64_extension   =  95 [packed = false];
+  repeated  fixed32 unpacked_fixed32_extension  =  96 [packed = false];
+  repeated  fixed64 unpacked_fixed64_extension  =  97 [packed = false];
+  repeated sfixed32 unpacked_sfixed32_extension =  98 [packed = false];
+  repeated sfixed64 unpacked_sfixed64_extension =  99 [packed = false];
+  repeated    float unpacked_float_extension    = 100 [packed = false];
+  repeated   double unpacked_double_extension   = 101 [packed = false];
+  repeated     bool unpacked_bool_extension     = 102 [packed = false];
+  repeated ForeignEnum unpacked_enum_extension  = 103 [packed = false];
 }
 
 // Used by ExtensionSetTest/DynamicExtensions.  The test actually builds
@@ -717,3 +858,4 @@ service TestService {
 
 message BarRequest  {}
 message BarResponse {}
+

@@ -45,11 +45,27 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
+namespace {
+// The GOOGLE_ARRAYSIZE constant is the max enum value plus 1. If the max enum value
+// is kint32max, GOOGLE_ARRAYSIZE will overflow. In such cases we should omit the
+// generation of the GOOGLE_ARRAYSIZE constant.
+bool ShouldGenerateArraySize(const EnumDescriptor* descriptor) {
+  int32 max_value = descriptor->value(0)->number();
+  for (int i = 0; i < descriptor->value_count(); i++) {
+    if (descriptor->value(i)->number() > max_value) {
+      max_value = descriptor->value(i)->number();
+    }
+  }
+  return max_value != kint32max;
+}
+}  // namespace
+
 EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
                              const Options& options)
   : descriptor_(descriptor),
     classname_(ClassName(descriptor, false)),
-    options_(options) {
+    options_(options),
+    generate_array_size_(ShouldGenerateArraySize(descriptor)) {
 }
 
 EnumGenerator::~EnumGenerator() {}
@@ -67,7 +83,10 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
 
   for (int i = 0; i < descriptor_->value_count(); i++) {
     vars["name"] = descriptor_->value(i)->name();
-    vars["number"] = SimpleItoa(descriptor_->value(i)->number());
+    // In C++, an value of -2147483648 gets interpreted as the negative of
+    // 2147483648, and since 2147483648 can't fit in an integer, this produces a
+    // compiler warning.  This works around that issue.
+    vars["number"] = Int32ToString(descriptor_->value(i)->number());
     vars["prefix"] = (descriptor_->containing_type() == NULL) ?
       "" : classname_ + "_";
 
@@ -97,9 +116,13 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
   printer->Print(vars,
     "$dllexport$bool $classname$_IsValid(int value);\n"
     "const $classname$ $prefix$$short_name$_MIN = $prefix$$min_name$;\n"
-    "const $classname$ $prefix$$short_name$_MAX = $prefix$$max_name$;\n"
-    "const int $prefix$$short_name$_ARRAYSIZE = $prefix$$short_name$_MAX + 1;\n"
-    "\n");
+    "const $classname$ $prefix$$short_name$_MAX = $prefix$$max_name$;\n");
+
+  if (generate_array_size_) {
+    printer->Print(vars,
+      "const int $prefix$$short_name$_ARRAYSIZE = "
+      "$prefix$$short_name$_MAX + 1;\n\n");
+  }
 
   if (HasDescriptorMethods(descriptor_->file())) {
     printer->Print(vars,
@@ -123,6 +146,7 @@ void EnumGenerator::
 GenerateGetEnumDescriptorSpecializations(io::Printer* printer) {
   if (HasDescriptorMethods(descriptor_->file())) {
     printer->Print(
+      "template <> struct is_proto_enum< $classname$> : ::google::protobuf::internal::true_type {};\n"
       "template <>\n"
       "inline const EnumDescriptor* GetEnumDescriptor< $classname$>() {\n"
       "  return $classname$_descriptor();\n"
@@ -150,9 +174,12 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) {
     "static const $nested_name$ $nested_name$_MIN =\n"
     "  $classname$_$nested_name$_MIN;\n"
     "static const $nested_name$ $nested_name$_MAX =\n"
-    "  $classname$_$nested_name$_MAX;\n"
-    "static const int $nested_name$_ARRAYSIZE =\n"
-    "  $classname$_$nested_name$_ARRAYSIZE;\n");
+    "  $classname$_$nested_name$_MAX;\n");
+  if (generate_array_size_) {
+    printer->Print(vars,
+      "static const int $nested_name$_ARRAYSIZE =\n"
+      "  $classname$_$nested_name$_ARRAYSIZE;\n");
+  }
 
   if (HasDescriptorMethods(descriptor_->file())) {
     printer->Print(vars,
@@ -218,7 +245,7 @@ void EnumGenerator::GenerateMethods(io::Printer* printer) {
        iter != numbers.end(); ++iter) {
     printer->Print(
       "    case $number$:\n",
-      "number", SimpleItoa(*iter));
+      "number", Int32ToString(*iter));
   }
 
   printer->Print(vars,
@@ -245,8 +272,11 @@ void EnumGenerator::GenerateMethods(io::Printer* printer) {
     }
     printer->Print(vars,
       "const $classname$ $parent$::$nested_name$_MIN;\n"
-      "const $classname$ $parent$::$nested_name$_MAX;\n"
-      "const int $parent$::$nested_name$_ARRAYSIZE;\n");
+      "const $classname$ $parent$::$nested_name$_MAX;\n");
+    if (generate_array_size_) {
+      printer->Print(vars,
+        "const int $parent$::$nested_name$_ARRAYSIZE;\n");
+    }
 
     printer->Print("#endif  // _MSC_VER\n");
   }

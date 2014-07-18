@@ -89,6 +89,8 @@ class EnumGenerator {
   const EnumDescriptor* descriptor_;
   string classname_;
   Options options_;
+  // whether to generate the *_ARRAYSIZE constant.
+  bool generate_array_size_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumGenerator);
 };

@@ -413,7 +413,9 @@ int64 ConcatenatingInputStream::ByteCount() const {
 
 LimitingInputStream::LimitingInputStream(ZeroCopyInputStream* input,
                                          int64 limit)
-  : input_(input), limit_(limit) {}
+  : input_(input), limit_(limit) {
+  prior_bytes_read_ = input_->ByteCount();
+}
 
 LimitingInputStream::~LimitingInputStream() {
   // If we overshot the limit, back up.
@@ -457,9 +459,9 @@ bool LimitingInputStream::Skip(int count) {
 
 int64 LimitingInputStream::ByteCount() const {
   if (limit_ < 0) {
-    return input_->ByteCount() + limit_;
+    return input_->ByteCount() + limit_ - prior_bytes_read_;
   } else {
-    return input_->ByteCount();
+    return input_->ByteCount() - prior_bytes_read_;
   }
 }
 

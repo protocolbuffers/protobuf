@@ -44,6 +44,8 @@ import java.util.Collection;
  * @author kenton@google.com Kenton Varda
  */
 public abstract class AbstractMessageLite implements MessageLite {
+  protected int memoizedHashCode = 0;
+
   public ByteString toByteString() {
     try {
       final ByteString.CodedBuilder out =
@@ -91,12 +93,20 @@ public abstract class AbstractMessageLite implements MessageLite {
     codedOutput.flush();
   }
 
+
   /**
    * Package private helper method for AbstractParser to create
    * UninitializedMessageException.
    */
   UninitializedMessageException newUninitializedMessageException() {
     return new UninitializedMessageException(this);
+  }
+
+  protected static void checkByteStringIsUtf8(ByteString byteString)
+      throws IllegalArgumentException {
+    if (!byteString.isValidUtf8()) {
+      throw new IllegalArgumentException("Byte string is not UTF-8.");
+    }
   }
 
   /**
@@ -311,7 +321,8 @@ public abstract class AbstractMessageLite implements MessageLite {
      * used by generated code.  Users should ignore it.
      *
      * @throws NullPointerException if any of the elements of {@code values} is
-     * null.
+     * null. When that happens, some elements of {@code values} may have already
+     * been added to the result {@code list}.
      */
     protected static <T> void addAll(final Iterable<T> values,
                                      final Collection<? super T> list) {
@@ -319,14 +330,15 @@ public abstract class AbstractMessageLite implements MessageLite {
         // For StringOrByteStringLists, check the underlying elements to avoid
         // forcing conversions of ByteStrings to Strings.
         checkForNullValues(((LazyStringList) values).getUnderlyingElements());
-      } else {
+        list.addAll((Collection<T>) values);
+      } else if (values instanceof Collection) {
         checkForNullValues(values);
-      }
-      if (values instanceof Collection) {
-        final Collection<T> collection = (Collection<T>) values;
-        list.addAll(collection);
+        list.addAll((Collection<T>) values);
       } else {
         for (final T value : values) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
           list.add(value);
         }
       }

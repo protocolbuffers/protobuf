@@ -51,15 +51,8 @@ TEST(StringUtilityTest, ImmuneToLocales) {
   // Set the locale to "C".
   ASSERT_TRUE(setlocale(LC_NUMERIC, "C") != NULL);
 
-  EXPECT_EQ(1.5, NoLocaleStrtod("1.5", NULL));
   EXPECT_EQ("1.5", SimpleDtoa(1.5));
   EXPECT_EQ("1.5", SimpleFtoa(1.5));
-
-  // Verify that the endptr is set correctly even if not all text was parsed.
-  const char* text = "1.5f";
-  char* endptr;
-  EXPECT_EQ(1.5, NoLocaleStrtod(text, &endptr));
-  EXPECT_EQ(3, endptr - text);
 
   if (setlocale(LC_NUMERIC, "es_ES") == NULL &&
       setlocale(LC_NUMERIC, "es_ES.utf8") == NULL) {
@@ -67,11 +60,8 @@ TEST(StringUtilityTest, ImmuneToLocales) {
     GOOGLE_LOG(WARNING)
       << "Couldn't set locale to es_ES.  Skipping this test.";
   } else {
-    EXPECT_EQ(1.5, NoLocaleStrtod("1.5", NULL));
     EXPECT_EQ("1.5", SimpleDtoa(1.5));
     EXPECT_EQ("1.5", SimpleFtoa(1.5));
-    EXPECT_EQ(1.5, NoLocaleStrtod(text, &endptr));
-    EXPECT_EQ(3, endptr - text);
   }
 
   // Return to original locale.

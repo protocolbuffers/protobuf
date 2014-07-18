@@ -98,6 +98,7 @@ message TestConflictingSymbolNames {
   // Some keywords.
   optional uint32 int = 30;
   optional uint32 friend = 31;
+  optional uint32 class = 37;
 
   // The generator used to #define a macro called "DO" inside the .cc file.
   message DO {}
@@ -106,6 +107,14 @@ message TestConflictingSymbolNames {
   // Some template parameter names for extensions.
   optional int32 field_type = 33;
   optional bool is_packed = 34;
+
+  // test conflicting release_$name$. "length" and "do" field in this message
+  // must remain string or message fields to make the test valid.
+  optional string release_length = 35;
+  // A more extreme case, the field name "do" here is a keyword, which will be
+  // escaped to "do_" already. Test there is no conflict even with escaped field
+  // names.
+  optional DO release_do = 36;
 
   extensions 1000 to max;
 }

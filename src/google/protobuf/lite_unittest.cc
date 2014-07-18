@@ -36,6 +36,10 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/test_util_lite.h>
 #include <google/protobuf/unittest_lite.pb.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include <google/protobuf/wire_format_lite.h>
+#include <google/protobuf/wire_format_lite_inl.h>
 
 using namespace std;
 
@@ -57,10 +61,31 @@ void AssignParsingMergeMessages(
   msg3->set_optional_string("hello");
 }
 
+void SetAllTypesInEmptyMessageUnknownFields(
+    google::protobuf::unittest::TestEmptyMessageLite* empty_message) {
+  protobuf_unittest::TestAllTypesLite message;
+  google::protobuf::TestUtilLite::ExpectClear(message);
+  google::protobuf::TestUtilLite::SetAllFields(&message);
+  string data = message.SerializeAsString();
+  empty_message->ParseFromString(data);
+}
+
+void SetSomeTypesInEmptyMessageUnknownFields(
+    google::protobuf::unittest::TestEmptyMessageLite* empty_message) {
+  protobuf_unittest::TestAllTypesLite message;
+  google::protobuf::TestUtilLite::ExpectClear(message);
+  message.set_optional_int32(101);
+  message.set_optional_int64(102);
+  message.set_optional_uint32(103);
+  message.set_optional_uint64(104);
+  string data = message.SerializeAsString();
+  empty_message->ParseFromString(data);
+}
+
 }  // namespace
 
 int main(int argc, char* argv[]) {
-  string data, packed_data;
+  string data, data2, packed_data;
 
   {
     protobuf_unittest::TestAllTypesLite message, message2, message3;
@@ -84,7 +109,6 @@ int main(int argc, char* argv[]) {
     google::protobuf::TestUtilLite::SetAllExtensions(&message);
     message2.CopyFrom(message);
     string extensions_data = message.SerializeAsString();
-    GOOGLE_CHECK(extensions_data == data);
     message3.ParseFromString(extensions_data);
     google::protobuf::TestUtilLite::ExpectAllExtensionsSet(message);
     google::protobuf::TestUtilLite::ExpectAllExtensionsSet(message2);
@@ -178,6 +202,147 @@ int main(int argc, char* argv[]) {
     GOOGLE_CHECK(parsing_merge.repeatedgroup_size() == 3);
     GOOGLE_CHECK(parsing_merge.ExtensionSize(
         google::protobuf::unittest::TestParsingMergeLite::repeated_ext) == 3);
+  }
+
+  // Test unknown fields support for lite messages.
+  {
+    protobuf_unittest::TestAllTypesLite message, message2;
+    protobuf_unittest::TestEmptyMessageLite empty_message;
+    google::protobuf::TestUtilLite::ExpectClear(message);
+    google::protobuf::TestUtilLite::SetAllFields(&message);
+    data = message.SerializeAsString();
+    empty_message.ParseFromString(data);
+    data.clear();
+    data = empty_message.SerializeAsString();
+    message2.ParseFromString(data);
+    data = message2.SerializeAsString();
+    google::protobuf::TestUtilLite::ExpectAllFieldsSet(message2);
+    message.Clear();
+    google::protobuf::TestUtilLite::ExpectClear(message);
+  }
+
+  {
+    protobuf_unittest::TestAllExtensionsLite message, message2;
+    protobuf_unittest::TestEmptyMessageLite empty_message;
+    google::protobuf::TestUtilLite::ExpectExtensionsClear(message);
+    google::protobuf::TestUtilLite::SetAllExtensions(&message);
+    data = message.SerializeAsString();
+    empty_message.ParseFromString(data);
+    data.clear();
+    data = empty_message.SerializeAsString();
+    message2.ParseFromString(data);
+    data = message2.SerializeAsString();
+    google::protobuf::TestUtilLite::ExpectAllExtensionsSet(message2);
+    message.Clear();
+    google::protobuf::TestUtilLite::ExpectExtensionsClear(message);
+  }
+
+  {
+    protobuf_unittest::TestPackedTypesLite message, message2;
+    protobuf_unittest::TestEmptyMessageLite empty_message;
+    google::protobuf::TestUtilLite::ExpectPackedClear(message);
+    google::protobuf::TestUtilLite::SetPackedFields(&message);
+    data = message.SerializeAsString();
+    empty_message.ParseFromString(data);
+    data.clear();
+    data = empty_message.SerializeAsString();
+    message2.ParseFromString(data);
+    data = message2.SerializeAsString();
+    google::protobuf::TestUtilLite::ExpectPackedFieldsSet(message2);
+    message.Clear();
+    google::protobuf::TestUtilLite::ExpectPackedClear(message);
+  }
+
+  {
+    protobuf_unittest::TestPackedExtensionsLite message, message2;
+    protobuf_unittest::TestEmptyMessageLite empty_message;
+    google::protobuf::TestUtilLite::ExpectPackedExtensionsClear(message);
+    google::protobuf::TestUtilLite::SetPackedExtensions(&message);
+    data = message.SerializeAsString();
+    empty_message.ParseFromString(data);
+    data.clear();
+    data = empty_message.SerializeAsString();
+    message2.ParseFromString(data);
+    data = message2.SerializeAsString();
+    google::protobuf::TestUtilLite::ExpectPackedExtensionsSet(message2);
+    message.Clear();
+    google::protobuf::TestUtilLite::ExpectPackedExtensionsClear(message);
+  }
+
+  {
+    // Test Unknown fields swap
+    protobuf_unittest::TestEmptyMessageLite empty_message, empty_message2;
+    SetAllTypesInEmptyMessageUnknownFields(&empty_message);
+    SetSomeTypesInEmptyMessageUnknownFields(&empty_message2);
+    data = empty_message.SerializeAsString();
+    data2 = empty_message2.SerializeAsString();
+    empty_message.Swap(&empty_message2);
+    GOOGLE_CHECK_EQ(data, empty_message2.SerializeAsString());
+    GOOGLE_CHECK_EQ(data2, empty_message.SerializeAsString());
+  }
+
+  {
+    // Test unknown fields swap with self
+    protobuf_unittest::TestEmptyMessageLite empty_message;
+    SetAllTypesInEmptyMessageUnknownFields(&empty_message);
+    data = empty_message.SerializeAsString();
+    empty_message.Swap(&empty_message);
+    GOOGLE_CHECK_EQ(data, empty_message.SerializeAsString());
+  }
+
+  {
+    // Test MergeFrom with unknown fields
+    protobuf_unittest::TestAllTypesLite message, message2;
+    protobuf_unittest::TestEmptyMessageLite empty_message, empty_message2;
+    message.set_optional_int32(101);
+    message.add_repeated_int32(201);
+    message.set_optional_nested_enum(google::protobuf::unittest::TestAllTypesLite::BAZ);
+    message2.set_optional_int64(102);
+    message2.add_repeated_int64(202);
+    message2.set_optional_foreign_enum(google::protobuf::unittest::FOREIGN_LITE_BAZ);
+
+    data = message.SerializeAsString();
+    empty_message.ParseFromString(data);
+    data = message2.SerializeAsString();
+    empty_message2.ParseFromString(data);
+    message.MergeFrom(message2);
+    empty_message.MergeFrom(empty_message2);
+
+    data = empty_message.SerializeAsString();
+    message2.ParseFromString(data);
+    // We do not compare the serialized output of a normal message and a lite
+    // message because the order of fields do not match. We convert lite message
+    // back into normal message, then compare.
+    GOOGLE_CHECK_EQ(message.SerializeAsString(), message2.SerializeAsString());
+  }
+
+  {
+    // Test unknown enum value
+    protobuf_unittest::TestAllTypesLite message;
+    string buffer;
+    {
+      google::protobuf::io::StringOutputStream output_stream(&buffer);
+      google::protobuf::io::CodedOutputStream coded_output(&output_stream);
+      google::protobuf::internal::WireFormatLite::WriteTag(
+          protobuf_unittest::TestAllTypesLite::kOptionalNestedEnumFieldNumber,
+          google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT, &coded_output);
+      coded_output.WriteVarint32(10);
+      google::protobuf::internal::WireFormatLite::WriteTag(
+          protobuf_unittest::TestAllTypesLite::kRepeatedNestedEnumFieldNumber,
+          google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT, &coded_output);
+      coded_output.WriteVarint32(20);
+    }
+    message.ParseFromString(buffer);
+    data = message.SerializeAsString();
+    GOOGLE_CHECK_EQ(data, buffer);
+  }
+
+  {
+    // Test Clear with unknown fields
+    protobuf_unittest::TestEmptyMessageLite empty_message;
+    SetAllTypesInEmptyMessageUnknownFields(&empty_message);
+    empty_message.Clear();
+    GOOGLE_CHECK_EQ(0, empty_message.unknown_fields().size());
   }
 
   cout << "PASS" << endl;

@@ -32,11 +32,15 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <algorithm>
+#include <google/protobuf/stubs/hash.h>
 #include <limits>
 #include <vector>
 
 #include <google/protobuf/compiler/java/java_helpers.h>
+#include <google/protobuf/compiler/java/java_name_resolver.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 
@@ -44,6 +48,9 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
+
+using internal::WireFormat;
+using internal::WireFormatLite;
 
 const char kThickSeparator[] =
   "// ===================================================================\n";
@@ -54,18 +61,47 @@ namespace {
 
 const char* kDefaultPackage = "";
 
-const string& FieldName(const FieldDescriptor* field) {
+// Names that should be avoided as field names.
+// Using them will cause the compiler to generate accessors whose names are
+// colliding with methods defined in base classes.
+const char* kForbiddenWordList[] = {
+  // message base class:
+  "cached_size", "serialized_size",
+  // java.lang.Object:
+  "class",
+};
+
+bool IsForbidden(const string& field_name) {
+  for (int i = 0; i < GOOGLE_ARRAYSIZE(kForbiddenWordList); ++i) {
+    if (field_name == kForbiddenWordList[i]) {
+      return true;
+    }
+  }
+  return false;
+}
+
+string FieldName(const FieldDescriptor* field) {
+  string field_name;
   // Groups are hacky:  The name of the field is just the lower-cased name
   // of the group type.  In Java, though, we would like to retain the original
   // capitalization of the type name.
   if (GetType(field) == FieldDescriptor::TYPE_GROUP) {
-    return field->message_type()->name();
+    field_name = field->message_type()->name();
   } else {
-    return field->name();
+    field_name = field->name();
   }
+  if (IsForbidden(field_name)) {
+    // Append a trailing "#" to indicate that the name should be decorated to
+    // avoid collision with other names.
+    field_name += "#";
+  }
+  return field_name;
 }
 
-string UnderscoresToCamelCaseImpl(const string& input, bool cap_next_letter) {
+
+}  // namespace
+
+string UnderscoresToCamelCase(const string& input, bool cap_next_letter) {
   string result;
   // Note:  I distrust ctype.h due to locales.
   for (int i = 0; i < input.size(); i++) {
@@ -93,21 +129,27 @@ string UnderscoresToCamelCaseImpl(const string& input, bool cap_next_letter) {
       cap_next_letter = true;
     }
   }
+  // Add a trailing "_" if the name should be altered.
+  if (input[input.size() - 1] == '#') {
+    result += '_';
+  }
   return result;
 }
 
-}  // namespace
-
 string UnderscoresToCamelCase(const FieldDescriptor* field) {
-  return UnderscoresToCamelCaseImpl(FieldName(field), false);
+  return UnderscoresToCamelCase(FieldName(field), false);
 }
 
 string UnderscoresToCapitalizedCamelCase(const FieldDescriptor* field) {
-  return UnderscoresToCamelCaseImpl(FieldName(field), true);
+  return UnderscoresToCamelCase(FieldName(field), true);
 }
 
 string UnderscoresToCamelCase(const MethodDescriptor* method) {
-  return UnderscoresToCamelCaseImpl(method->name(), false);
+  return UnderscoresToCamelCase(method->name(), false);
+}
+
+string UniqueFileScopeIdentifier(const Descriptor* descriptor) {
+  return "static_" + StringReplace(descriptor->full_name(), ".", "_", true);
 }
 
 string StripProto(const string& filename) {
@@ -118,22 +160,12 @@ string StripProto(const string& filename) {
   }
 }
 
-string FileClassName(const FileDescriptor* file) {
-  if (file->options().has_java_outer_classname()) {
-    return file->options().java_outer_classname();
-  } else {
-    string basename;
-    string::size_type last_slash = file->name().find_last_of('/');
-    if (last_slash == string::npos) {
-      basename = file->name();
-    } else {
-      basename = file->name().substr(last_slash + 1);
-    }
-    return UnderscoresToCamelCaseImpl(StripProto(basename), true);
-  }
+string FileClassName(const FileDescriptor* file, bool immutable) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetFileClassName(file, immutable);
 }
 
-string FileJavaPackage(const FileDescriptor* file) {
+string FileJavaPackage(const FileDescriptor* file, bool immutable) {
   string result;
 
   if (file->options().has_java_package()) {
@@ -146,7 +178,6 @@ string FileJavaPackage(const FileDescriptor* file) {
     }
   }
 
-
   return result;
 }
 
@@ -157,7 +188,10 @@ string JavaPackageToDir(string package_name) {
   return package_dir;
 }
 
-string ToJavaName(const string& full_name, const FileDescriptor* file) {
+// TODO(xiaofeng): This function is only kept for it's publicly referenced.
+// It should be removed after mutable API up-integration.
+string ToJavaName(const string& full_name,
+                  const FileDescriptor* file) {
   string result;
   if (file->options().java_multiple_files()) {
     result = FileJavaPackage(file);
@@ -178,22 +212,42 @@ string ToJavaName(const string& full_name, const FileDescriptor* file) {
 }
 
 string ClassName(const Descriptor* descriptor) {
-  return ToJavaName(descriptor->full_name(), descriptor->file());
+  ClassNameResolver name_resolver;
+  return name_resolver.GetClassName(descriptor, true);
 }
 
 string ClassName(const EnumDescriptor* descriptor) {
-  return ToJavaName(descriptor->full_name(), descriptor->file());
+  ClassNameResolver name_resolver;
+  return name_resolver.GetClassName(descriptor, true);
 }
 
 string ClassName(const ServiceDescriptor* descriptor) {
-  return ToJavaName(descriptor->full_name(), descriptor->file());
+  ClassNameResolver name_resolver;
+  return name_resolver.GetClassName(descriptor, true);
 }
 
 string ClassName(const FileDescriptor* descriptor) {
-  string result = FileJavaPackage(descriptor);
-  if (!result.empty()) result += '.';
-  result += FileClassName(descriptor);
-  return result;
+  ClassNameResolver name_resolver;
+  return name_resolver.GetClassName(descriptor, true);
+}
+
+string ExtraMessageInterfaces(const Descriptor* descriptor) {
+  string interfaces = "// @@protoc_insertion_point(message_implements:"
+      + descriptor->full_name() + ")";
+  return interfaces;
+}
+
+
+string ExtraBuilderInterfaces(const Descriptor* descriptor) {
+  string interfaces = "// @@protoc_insertion_point(builder_implements:"
+      + descriptor->full_name() + ")";
+  return interfaces;
+}
+
+string ExtraMessageOrBuilderInterfaces(const Descriptor* descriptor) {
+  string interfaces = "// @@protoc_insertion_point(interface_extends:"
+      + descriptor->full_name() + ")";
+  return interfaces;
 }
 
 string FieldConstantName(const FieldDescriptor *field) {
@@ -272,6 +326,35 @@ const char* BoxedPrimitiveTypeName(JavaType type) {
   return NULL;
 }
 
+const char* FieldTypeName(FieldDescriptor::Type field_type) {
+  switch (field_type) {
+    case FieldDescriptor::TYPE_INT32   : return "INT32";
+    case FieldDescriptor::TYPE_UINT32  : return "UINT32";
+    case FieldDescriptor::TYPE_SINT32  : return "SINT32";
+    case FieldDescriptor::TYPE_FIXED32 : return "FIXED32";
+    case FieldDescriptor::TYPE_SFIXED32: return "SFIXED32";
+    case FieldDescriptor::TYPE_INT64   : return "INT64";
+    case FieldDescriptor::TYPE_UINT64  : return "UINT64";
+    case FieldDescriptor::TYPE_SINT64  : return "SINT64";
+    case FieldDescriptor::TYPE_FIXED64 : return "FIXED64";
+    case FieldDescriptor::TYPE_SFIXED64: return "SFIXED64";
+    case FieldDescriptor::TYPE_FLOAT   : return "FLOAT";
+    case FieldDescriptor::TYPE_DOUBLE  : return "DOUBLE";
+    case FieldDescriptor::TYPE_BOOL    : return "BOOL";
+    case FieldDescriptor::TYPE_STRING  : return "STRING";
+    case FieldDescriptor::TYPE_BYTES   : return "BYTES";
+    case FieldDescriptor::TYPE_ENUM    : return "ENUM";
+    case FieldDescriptor::TYPE_GROUP   : return "GROUP";
+    case FieldDescriptor::TYPE_MESSAGE : return "MESSAGE";
+
+    // No default because we want the compiler to complain if any new
+    // types are added.
+  }
+
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return NULL;
+}
+
 bool AllAscii(const string& text) {
   for (int i = 0; i < text.size(); i++) {
     if ((text[i] & 0x80) != 0) {
@@ -281,7 +364,8 @@ bool AllAscii(const string& text) {
   return true;
 }
 
-string DefaultValue(const FieldDescriptor* field) {
+string DefaultValue(const FieldDescriptor* field, bool immutable,
+                    ClassNameResolver* name_resolver) {
   // Switch on CppType since we need to know which default_value_* method
   // of FieldDescriptor to call.
   switch (field->cpp_type()) {
@@ -344,11 +428,12 @@ string DefaultValue(const FieldDescriptor* field) {
       }
 
     case FieldDescriptor::CPPTYPE_ENUM:
-      return ClassName(field->enum_type()) + "." +
+      return name_resolver->GetClassName(field->enum_type(), immutable) + "." +
           field->default_value_enum()->name();
 
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      return ClassName(field->message_type()) + ".getDefaultInstance()";
+      return name_resolver->GetClassName(field->message_type(), immutable) +
+          ".getDefaultInstance()";
 
     // No default because we want the compiler to complain if any new
     // types are added.
@@ -492,6 +577,158 @@ string GenerateGetBitMutableLocal(int bitIndex) {
 
 string GenerateSetBitMutableLocal(int bitIndex) {
   return GenerateSetBitInternal("mutable_", bitIndex);
+}
+
+bool IsReferenceType(JavaType type) {
+  switch (type) {
+    case JAVATYPE_INT    : return false;
+    case JAVATYPE_LONG   : return false;
+    case JAVATYPE_FLOAT  : return false;
+    case JAVATYPE_DOUBLE : return false;
+    case JAVATYPE_BOOLEAN: return false;
+    case JAVATYPE_STRING : return true;
+    case JAVATYPE_BYTES  : return true;
+    case JAVATYPE_ENUM   : return true;
+    case JAVATYPE_MESSAGE: return true;
+
+    // No default because we want the compiler to complain if any new
+    // JavaTypes are added.
+  }
+
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return false;
+}
+
+const char* GetCapitalizedType(const FieldDescriptor* field, bool immutable) {
+  switch (GetType(field)) {
+    case FieldDescriptor::TYPE_INT32   : return "Int32";
+    case FieldDescriptor::TYPE_UINT32  : return "UInt32";
+    case FieldDescriptor::TYPE_SINT32  : return "SInt32";
+    case FieldDescriptor::TYPE_FIXED32 : return "Fixed32";
+    case FieldDescriptor::TYPE_SFIXED32: return "SFixed32";
+    case FieldDescriptor::TYPE_INT64   : return "Int64";
+    case FieldDescriptor::TYPE_UINT64  : return "UInt64";
+    case FieldDescriptor::TYPE_SINT64  : return "SInt64";
+    case FieldDescriptor::TYPE_FIXED64 : return "Fixed64";
+    case FieldDescriptor::TYPE_SFIXED64: return "SFixed64";
+    case FieldDescriptor::TYPE_FLOAT   : return "Float";
+    case FieldDescriptor::TYPE_DOUBLE  : return "Double";
+    case FieldDescriptor::TYPE_BOOL    : return "Bool";
+    case FieldDescriptor::TYPE_STRING  : return "String";
+    case FieldDescriptor::TYPE_BYTES   : {
+      return "Bytes";
+    }
+    case FieldDescriptor::TYPE_ENUM    : return "Enum";
+    case FieldDescriptor::TYPE_GROUP   : return "Group";
+    case FieldDescriptor::TYPE_MESSAGE : return "Message";
+
+    // No default because we want the compiler to complain if any new
+    // types are added.
+  }
+
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return NULL;
+}
+
+// For encodings with fixed sizes, returns that size in bytes.  Otherwise
+// returns -1.
+int FixedSize(FieldDescriptor::Type type) {
+  switch (type) {
+    case FieldDescriptor::TYPE_INT32   : return -1;
+    case FieldDescriptor::TYPE_INT64   : return -1;
+    case FieldDescriptor::TYPE_UINT32  : return -1;
+    case FieldDescriptor::TYPE_UINT64  : return -1;
+    case FieldDescriptor::TYPE_SINT32  : return -1;
+    case FieldDescriptor::TYPE_SINT64  : return -1;
+    case FieldDescriptor::TYPE_FIXED32 : return WireFormatLite::kFixed32Size;
+    case FieldDescriptor::TYPE_FIXED64 : return WireFormatLite::kFixed64Size;
+    case FieldDescriptor::TYPE_SFIXED32: return WireFormatLite::kSFixed32Size;
+    case FieldDescriptor::TYPE_SFIXED64: return WireFormatLite::kSFixed64Size;
+    case FieldDescriptor::TYPE_FLOAT   : return WireFormatLite::kFloatSize;
+    case FieldDescriptor::TYPE_DOUBLE  : return WireFormatLite::kDoubleSize;
+
+    case FieldDescriptor::TYPE_BOOL    : return WireFormatLite::kBoolSize;
+    case FieldDescriptor::TYPE_ENUM    : return -1;
+
+    case FieldDescriptor::TYPE_STRING  : return -1;
+    case FieldDescriptor::TYPE_BYTES   : return -1;
+    case FieldDescriptor::TYPE_GROUP   : return -1;
+    case FieldDescriptor::TYPE_MESSAGE : return -1;
+
+    // No default because we want the compiler to complain if any new
+    // types are added.
+  }
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return -1;
+}
+
+// Sort the fields of the given Descriptor by number into a new[]'d array
+// and return it. The caller should delete the returned array.
+const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor) {
+  const FieldDescriptor** fields =
+    new const FieldDescriptor*[descriptor->field_count()];
+  for (int i = 0; i < descriptor->field_count(); i++) {
+    fields[i] = descriptor->field(i);
+  }
+  sort(fields, fields + descriptor->field_count(),
+       FieldOrderingByNumber());
+  return fields;
+}
+
+// Returns true if the message type has any required fields.  If it doesn't,
+// we can optimize out calls to its isInitialized() method.
+//
+// already_seen is used to avoid checking the same type multiple times
+// (and also to protect against recursion).
+bool HasRequiredFields(
+    const Descriptor* type,
+    hash_set<const Descriptor*>* already_seen) {
+  if (already_seen->count(type) > 0) {
+    // The type is already in cache.  This means that either:
+    // a. The type has no required fields.
+    // b. We are in the midst of checking if the type has required fields,
+    //    somewhere up the stack.  In this case, we know that if the type
+    //    has any required fields, they'll be found when we return to it,
+    //    and the whole call to HasRequiredFields() will return true.
+    //    Therefore, we don't have to check if this type has required fields
+    //    here.
+    return false;
+  }
+  already_seen->insert(type);
+
+  // If the type has extensions, an extension with message type could contain
+  // required fields, so we have to be conservative and assume such an
+  // extension exists.
+  if (type->extension_range_count() > 0) return true;
+
+  for (int i = 0; i < type->field_count(); i++) {
+    const FieldDescriptor* field = type->field(i);
+    if (field->is_required()) {
+      return true;
+    }
+    if (GetJavaType(field) == JAVATYPE_MESSAGE) {
+      if (HasRequiredFields(field->message_type(), already_seen)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool HasRequiredFields(const Descriptor* type) {
+  hash_set<const Descriptor*> already_seen;
+  return HasRequiredFields(type, &already_seen);
+}
+
+bool HasRepeatedFields(const Descriptor* descriptor) {
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    const FieldDescriptor* field = descriptor->field(i);
+    if (field->is_repeated()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace java

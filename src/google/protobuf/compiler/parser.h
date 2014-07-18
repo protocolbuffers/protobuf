@@ -40,7 +40,6 @@
 #include <map>
 #include <string>
 #include <utility>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/repeated_field.h>
@@ -233,6 +232,9 @@ class LIBPROTOBUF_EXPORT Parser {
     // location to the given token instead.
     void StartAt(const io::Tokenizer::Token& token);
 
+    // Start at the same location as some other LocationRecorder.
+    void StartAt(const LocationRecorder& other);
+
     // By default the location is considered to end at the previous token at
     // the time the LocationRecorder is destroyed.  EndAt() sets the end
     // location to the given token instead.
@@ -284,38 +286,50 @@ class LIBPROTOBUF_EXPORT Parser {
 
   // Parse various language high-level language construrcts.
   bool ParseMessageDefinition(DescriptorProto* message,
-                              const LocationRecorder& message_location);
+                              const LocationRecorder& message_location,
+                              const FileDescriptorProto* containing_file);
   bool ParseEnumDefinition(EnumDescriptorProto* enum_type,
-                           const LocationRecorder& enum_location);
+                           const LocationRecorder& enum_location,
+                           const FileDescriptorProto* containing_file);
   bool ParseServiceDefinition(ServiceDescriptorProto* service,
-                              const LocationRecorder& service_location);
+                              const LocationRecorder& service_location,
+                              const FileDescriptorProto* containing_file);
   bool ParsePackage(FileDescriptorProto* file,
-                    const LocationRecorder& root_location);
+                    const LocationRecorder& root_location,
+                    const FileDescriptorProto* containing_file);
   bool ParseImport(RepeatedPtrField<string>* dependency,
                    RepeatedField<int32>* public_dependency,
                    RepeatedField<int32>* weak_dependency,
-                   const LocationRecorder& root_location);
+                   const LocationRecorder& root_location,
+                   const FileDescriptorProto* containing_file);
   bool ParseOption(Message* options,
-                   const LocationRecorder& options_location);
+                   const LocationRecorder& options_location,
+                   const FileDescriptorProto* containing_file);
 
   // These methods parse the contents of a message, enum, or service type and
   // add them to the given object.  They consume the entire block including
   // the beginning and ending brace.
   bool ParseMessageBlock(DescriptorProto* message,
-                         const LocationRecorder& message_location);
+                         const LocationRecorder& message_location,
+                         const FileDescriptorProto* containing_file);
   bool ParseEnumBlock(EnumDescriptorProto* enum_type,
-                      const LocationRecorder& enum_location);
+                      const LocationRecorder& enum_location,
+                      const FileDescriptorProto* containing_file);
   bool ParseServiceBlock(ServiceDescriptorProto* service,
-                         const LocationRecorder& service_location);
+                         const LocationRecorder& service_location,
+                         const FileDescriptorProto* containing_file);
 
   // Parse one statement within a message, enum, or service block, inclunding
   // final semicolon.
   bool ParseMessageStatement(DescriptorProto* message,
-                             const LocationRecorder& message_location);
+                             const LocationRecorder& message_location,
+                             const FileDescriptorProto* containing_file);
   bool ParseEnumStatement(EnumDescriptorProto* message,
-                          const LocationRecorder& enum_location);
+                          const LocationRecorder& enum_location,
+                          const FileDescriptorProto* containing_file);
   bool ParseServiceStatement(ServiceDescriptorProto* message,
-                             const LocationRecorder& service_location);
+                             const LocationRecorder& service_location,
+                             const FileDescriptorProto* containing_file);
 
   // Parse a field of a message.  If the field is a group, its type will be
   // added to "messages".
@@ -329,11 +343,22 @@ class LIBPROTOBUF_EXPORT Parser {
                          RepeatedPtrField<DescriptorProto>* messages,
                          const LocationRecorder& parent_location,
                          int location_field_number_for_nested_type,
-                         const LocationRecorder& field_location);
+                         const LocationRecorder& field_location,
+                         const FileDescriptorProto* containing_file);
+
+  // Like ParseMessageField() but expects the label has already been filled in
+  // by the caller.
+  bool ParseMessageFieldNoLabel(FieldDescriptorProto* field,
+                                RepeatedPtrField<DescriptorProto>* messages,
+                                const LocationRecorder& parent_location,
+                                int location_field_number_for_nested_type,
+                                const LocationRecorder& field_location,
+                                const FileDescriptorProto* containing_file);
 
   // Parse an "extensions" declaration.
   bool ParseExtensions(DescriptorProto* message,
-                       const LocationRecorder& extensions_location);
+                       const LocationRecorder& extensions_location,
+                       const FileDescriptorProto* containing_file);
 
   // Parse an "extend" declaration.  (See also comments for
   // ParseMessageField().)
@@ -341,30 +366,46 @@ class LIBPROTOBUF_EXPORT Parser {
                    RepeatedPtrField<DescriptorProto>* messages,
                    const LocationRecorder& parent_location,
                    int location_field_number_for_nested_type,
-                   const LocationRecorder& extend_location);
+                   const LocationRecorder& extend_location,
+                   const FileDescriptorProto* containing_file);
+
+  // Parse a "oneof" declaration.  The caller is responsible for setting
+  // oneof_decl->label() since it will have had to parse the label before it
+  // knew it was parsing a oneof.
+  bool ParseOneof(OneofDescriptorProto* oneof_decl,
+                  DescriptorProto* containing_type,
+                  int oneof_index,
+                  const LocationRecorder& oneof_location,
+                  const LocationRecorder& containing_type_location,
+                  const FileDescriptorProto* containing_file);
 
   // Parse a single enum value within an enum block.
   bool ParseEnumConstant(EnumValueDescriptorProto* enum_value,
-                         const LocationRecorder& enum_value_location);
+                         const LocationRecorder& enum_value_location,
+                         const FileDescriptorProto* containing_file);
 
   // Parse enum constant options, i.e. the list in square brackets at the end
   // of the enum constant value definition.
   bool ParseEnumConstantOptions(EnumValueDescriptorProto* value,
-                                const LocationRecorder& enum_value_location);
+                                const LocationRecorder& enum_value_location,
+                                const FileDescriptorProto* containing_file);
 
   // Parse a single method within a service definition.
   bool ParseServiceMethod(MethodDescriptorProto* method,
-                          const LocationRecorder& method_location);
+                          const LocationRecorder& method_location,
+                          const FileDescriptorProto* containing_file);
 
 
   // Parse options of a single method or stream.
   bool ParseOptions(const LocationRecorder& parent_location,
+                    const FileDescriptorProto* containing_file,
                     const int optionsFieldNumber,
                     Message* mutable_options);
 
   // Parse "required", "optional", or "repeated" and fill in "label"
   // with the value.
-  bool ParseLabel(FieldDescriptorProto::Label* label);
+  bool ParseLabel(FieldDescriptorProto::Label* label,
+                  const FileDescriptorProto* containing_file);
 
   // Parse a type name and fill in "type" (if it is a primitive) or
   // "type_name" (if it is not) with the type parsed.
@@ -377,12 +418,14 @@ class LIBPROTOBUF_EXPORT Parser {
   // Parses field options, i.e. the stuff in square brackets at the end
   // of a field definition.  Also parses default value.
   bool ParseFieldOptions(FieldDescriptorProto* field,
-                         const LocationRecorder& field_location);
+                         const LocationRecorder& field_location,
+                         const FileDescriptorProto* containing_file);
 
   // Parse the "default" option.  This needs special handling because its
   // type is the field's type.
   bool ParseDefaultAssignment(FieldDescriptorProto* field,
-                              const LocationRecorder& field_location);
+                              const LocationRecorder& field_location,
+                              const FileDescriptorProto* containing_file);
 
   enum OptionStyle {
     OPTION_ASSIGNMENT,  // just "name = value"
@@ -394,6 +437,7 @@ class LIBPROTOBUF_EXPORT Parser {
   // is set to the parsed value.
   bool ParseOption(Message* options,
                    const LocationRecorder& options_location,
+                   const FileDescriptorProto* containing_file,
                    OptionStyle style);
 
   // Parses a single part of a multipart option name. A multipart name consists
@@ -401,7 +445,8 @@ class LIBPROTOBUF_EXPORT Parser {
   // of identifiers separated by dots and enclosed in parentheses. E.g.,
   // "foo.(bar.baz).qux".
   bool ParseOptionNamePart(UninterpretedOption* uninterpreted_option,
-                           const LocationRecorder& part_location);
+                           const LocationRecorder& part_location,
+                           const FileDescriptorProto* containing_file);
 
   // Parses a string surrounded by balanced braces.  Strips off the outer
   // braces and stores the enclosed string in *value.

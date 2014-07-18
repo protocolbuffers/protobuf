@@ -101,6 +101,7 @@ class LIBPROTOBUF_EXPORT DescriptorDatabase {
     return false;
   }
 
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DescriptorDatabase);
 };
@@ -355,6 +356,7 @@ class LIBPROTOBUF_EXPORT MergedDescriptorDatabase : public DescriptorDatabase {
   // of the databases returned true.
   bool FindAllExtensionNumbers(const string& extendee_type,
                                vector<int>* output);
+
 
  private:
   vector<DescriptorDatabase*> sources_;

@@ -38,6 +38,7 @@ import protobuf_unittest.UnittestProto.TestSparseEnum;
 import junit.framework.TestCase;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -313,5 +314,88 @@ public class CodedOutputStreamTest extends TestCase {
     byte[] rawBytes = message.toByteArray();
     SparseEnumMessage message2 = SparseEnumMessage.parseFrom(rawBytes);
     assertEquals(TestSparseEnum.SPARSE_E, message2.getSparseEnum());
+  }
+
+  /** Test getTotalBytesWritten() */
+  public void testGetTotalBytesWritten() throws Exception {
+    final int BUFFER_SIZE = 4 * 1024;
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream(BUFFER_SIZE);
+    CodedOutputStream codedStream = CodedOutputStream.newInstance(outputStream);
+    byte[] value = "abcde".getBytes("UTF-8");
+    for (int i = 0; i < 1024; ++i) {
+      codedStream.writeRawBytes(value, 0, value.length);
+    }
+    // Make sure we have written more bytes than the buffer could hold. This is
+    // to make the test complete.
+    assertTrue(codedStream.getTotalBytesWritten() > BUFFER_SIZE);
+    assertEquals(value.length * 1024, codedStream.getTotalBytesWritten());
+  }
+  
+  public void testWriteToByteBuffer() throws Exception {
+    final int bufferSize = 16 * 1024;
+    ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
+    CodedOutputStream codedStream = CodedOutputStream.newInstance(buffer);
+    // Write raw bytes into the ByteBuffer.
+    final int length1 = 5000;
+    for (int i = 0; i < length1; i++) {
+      codedStream.writeRawByte((byte) 1);
+    }
+    final int length2 = 8 * 1024;
+    byte[] data = new byte[length2];
+    for (int i = 0; i < length2; i++) {
+      data[i] = (byte) 2;
+    }
+    codedStream.writeRawBytes(data);
+    final int length3 = bufferSize - length1 - length2;
+    for (int i = 0; i < length3; i++) {
+      codedStream.writeRawByte((byte) 3);
+    }
+    codedStream.flush();
+    
+    // Check that data is correctly written to the ByteBuffer.
+    assertEquals(0, buffer.remaining());
+    buffer.flip();
+    for (int i = 0; i < length1; i++) {
+      assertEquals((byte) 1, buffer.get());
+    }
+    for (int i = 0; i < length2; i++) {
+      assertEquals((byte) 2, buffer.get());
+    }
+    for (int i = 0; i < length3; i++) {
+      assertEquals((byte) 3, buffer.get());
+    }
+  }
+  
+  public void testWriteByteBuffer() throws Exception {
+    byte[] value = "abcde".getBytes("UTF-8");
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    CodedOutputStream codedStream = CodedOutputStream.newInstance(outputStream);
+    ByteBuffer byteBuffer = ByteBuffer.wrap(value, 0, 1);
+    // This will actually write 5 bytes into the CodedOutputStream as the
+    // ByteBuffer's capacity() is 5.
+    codedStream.writeRawBytes(byteBuffer);
+    // The above call shouldn't affect the ByteBuffer's state.
+    assertEquals(0, byteBuffer.position());
+    assertEquals(1, byteBuffer.limit());
+    
+    // The correct way to write part of an array using ByteBuffer.
+    codedStream.writeRawBytes(ByteBuffer.wrap(value, 2, 1).slice());
+    
+    codedStream.flush();
+    byte[] result = outputStream.toByteArray();
+    assertEquals(6, result.length);
+    for (int i = 0; i < 5; i++) {
+      assertEquals(value[i], result[i]);
+    }
+    assertEquals(value[2], result[5]);
+  }
+
+  public void testWriteByteArrayWithOffsets() throws Exception {
+    byte[] fullArray = bytes(0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88);
+    byte[] destination = new byte[4];
+    CodedOutputStream codedStream = CodedOutputStream.newInstance(destination);
+    codedStream.writeByteArrayNoTag(fullArray, 2, 2);
+    assertEqualBytes(bytes(0x02, 0x33, 0x44, 0x00), destination);
+    assertEquals(3, codedStream.getTotalBytesWritten());
   }
 }

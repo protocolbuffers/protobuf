@@ -49,6 +49,9 @@ namespace java {
 extern const char kThickSeparator[];
 extern const char kThinSeparator[];
 
+// Converts a name to camel-case. If cap_first_letter is true, capitalize the
+// first letter.
+string UnderscoresToCamelCase(const string& name, bool cap_first_letter);
 // Converts the field's name to camel-case, e.g. "foo_bar_baz" becomes
 // "fooBarBaz" or "FooBarBaz", respectively.
 string UnderscoresToCamelCase(const FieldDescriptor* field);
@@ -58,15 +61,22 @@ string UnderscoresToCapitalizedCamelCase(const FieldDescriptor* field);
 // of lower-casing the first letter of the name.)
 string UnderscoresToCamelCase(const MethodDescriptor* method);
 
+// Get an identifier that uniquely identifies this type within the file.
+// This is used to declare static variables related to this type at the
+// outermost file scope.
+string UniqueFileScopeIdentifier(const Descriptor* descriptor);
+
 // Strips ".proto" or ".protodevel" from the end of a filename.
 string StripProto(const string& filename);
 
-// Gets the unqualified class name for the file.  Each .proto file becomes a
-// single Java class, with all its contents nested in that class.
-string FileClassName(const FileDescriptor* file);
+// Gets the unqualified class name for the file.  For each .proto file, there
+// will be one Java class containing all the immutable messages and another
+// Java class containing all the mutable messages.
+// TODO(xiaofeng): remove the default value after updating client code.
+string FileClassName(const FileDescriptor* file, bool immutable = true);
 
 // Returns the file's Java package name.
-string FileJavaPackage(const FileDescriptor* file);
+string FileJavaPackage(const FileDescriptor* file, bool immutable = true);
 
 // Returns output directory for the given package name.
 string JavaPackageToDir(string package_name);
@@ -74,17 +84,46 @@ string JavaPackageToDir(string package_name);
 // Converts the given fully-qualified name in the proto namespace to its
 // fully-qualified name in the Java namespace, given that it is in the given
 // file.
-string ToJavaName(const string& full_name, const FileDescriptor* file);
+// TODO(xiaofeng): this method is deprecated and should be removed in the
+// future.
+string ToJavaName(const string& full_name,
+                  const FileDescriptor* file);
 
-// These return the fully-qualified class name corresponding to the given
-// descriptor.
+// TODO(xiaofeng): the following methods are kept for they are exposed
+// publicly in //google/protobuf/compiler/java/names.h. They return
+// immutable names only and should be removed after mutable API is
+// integrated into google3.
 string ClassName(const Descriptor* descriptor);
 string ClassName(const EnumDescriptor* descriptor);
 string ClassName(const ServiceDescriptor* descriptor);
 string ClassName(const FileDescriptor* descriptor);
 
-inline string ExtensionIdentifierName(const FieldDescriptor* descriptor) {
-  return ToJavaName(descriptor->full_name(), descriptor->file());
+// Comma-separate list of option-specified interfaces implemented by the
+// Message, to follow the "implements" declaration of the Message definition.
+string ExtraMessageInterfaces(const Descriptor* descriptor);
+// Comma-separate list of option-specified interfaces implemented by the
+// MutableMessage, to follow the "implements" declaration of the MutableMessage
+// definition.
+string ExtraMutableMessageInterfaces(const Descriptor* descriptor);
+// Comma-separate list of option-specified interfaces implemented by the
+// Builder, to follow the "implements" declaration of the Builder definition.
+string ExtraBuilderInterfaces(const Descriptor* descriptor);
+// Comma-separate list of option-specified interfaces extended by the
+// MessageOrBuilder, to follow the "extends" declaration of the
+// MessageOrBuilder definition.
+string ExtraMessageOrBuilderInterfaces(const Descriptor* descriptor);
+
+// Get the unqualified Java class name for mutable messages. i.e. without
+// package or outer classnames.
+inline string ShortMutableJavaClassName(const Descriptor* descriptor) {
+  return descriptor->name();
+}
+
+
+// Whether we should generate multiple java files for messages.
+inline bool MultipleJavaFiles(
+    const FileDescriptor* descriptor, bool immutable) {
+  return descriptor->options().java_multiple_files();
 }
 
 // Get the unqualified name that should be used for a field's field
@@ -115,11 +154,23 @@ JavaType GetJavaType(const FieldDescriptor* field);
 // types.
 const char* BoxedPrimitiveTypeName(JavaType type);
 
-string DefaultValue(const FieldDescriptor* field);
+// Get the name of the java enum constant representing this type. E.g.,
+// "INT32" for FieldDescriptor::TYPE_INT32. The enum constant's full
+// name is "com.google.protobuf.WireFormat.FieldType.INT32".
+const char* FieldTypeName(const FieldDescriptor::Type field_type);
+
+class ClassNameResolver;
+string DefaultValue(const FieldDescriptor* field, bool immutable,
+                    ClassNameResolver* name_resolver);
+inline string ImmutableDefaultValue(const FieldDescriptor* field,
+                                    ClassNameResolver* name_resolver) {
+  return DefaultValue(field, true, name_resolver);
+}
 bool IsDefaultValueJavaDefault(const FieldDescriptor* field);
 
-// Does this message class keep track of unknown fields?
-inline bool HasUnknownFields(const Descriptor* descriptor) {
+// Does this message class use UnknownFieldSet?
+// Otherwise, unknown fields will be stored in a ByteString object
+inline bool UseUnknownFieldSet(const Descriptor* descriptor) {
   return descriptor->file()->options().optimize_for() !=
            FileOptions::LITE_RUNTIME;
 }
@@ -163,6 +214,15 @@ inline bool HasGenericServices(const FileDescriptor *file) {
          file->options().java_generic_services();
 }
 
+inline bool IsLazy(const FieldDescriptor* descriptor) {
+  // Currently, the proto-lite version suports lazy field.
+  // TODO(niwasaki): Support lazy fields also for other proto runtimes.
+  if (descriptor->file()->options().optimize_for() !=
+      FileOptions::LITE_RUNTIME) {
+    return false;
+  }
+  return descriptor->options().lazy();
+}
 
 // Methods for shared bitfields.
 
@@ -211,6 +271,48 @@ string GenerateGetBitMutableLocal(int bitIndex);
 // field is mutable.
 // Example: "mutable_bitField1_ = (mutable_bitField1_ | 0x04)"
 string GenerateSetBitMutableLocal(int bitIndex);
+
+// Returns whether the JavaType is a reference type.
+bool IsReferenceType(JavaType type);
+
+// Returns the capitalized name for calling relative functions in
+// CodedInputStream
+const char* GetCapitalizedType(const FieldDescriptor* field, bool immutable);
+
+// For encodings with fixed sizes, returns that size in bytes.  Otherwise
+// returns -1.
+int FixedSize(FieldDescriptor::Type type);
+
+// Comparators used to sort fields in MessageGenerator
+struct FieldOrderingByNumber {
+  inline bool operator()(const FieldDescriptor* a,
+                         const FieldDescriptor* b) const {
+    return a->number() < b->number();
+  }
+};
+
+struct ExtensionRangeOrdering {
+  bool operator()(const Descriptor::ExtensionRange* a,
+                  const Descriptor::ExtensionRange* b) const {
+    return a->start < b->start;
+  }
+};
+
+// Sort the fields of the given Descriptor by number into a new[]'d array
+// and return it. The caller should delete the returned array.
+const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor);
+
+// Check a message type and its sub-message types recursively to see if any of
+// them has a required field. Return true if a required field is found.
+bool HasRequiredFields(const Descriptor* descriptor);
+
+// Whether a .proto file supports field presence test for non-message types.
+inline bool SupportFieldPresence(const FileDescriptor* descriptor) {
+  return true;
+}
+
+// Check whether a mesasge has repeated fields.
+bool HasRepeatedFields(const Descriptor* descriptor);
 
 }  // namespace java
 }  // namespace compiler

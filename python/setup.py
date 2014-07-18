@@ -72,7 +72,11 @@ def GenerateUnittestProtos():
   generate_proto("../src/google/protobuf/unittest_import_public.proto")
   generate_proto("../src/google/protobuf/unittest_mset.proto")
   generate_proto("../src/google/protobuf/unittest_no_generic_services.proto")
+  generate_proto("google/protobuf/internal/compatibility_mode_test.proto")
+  generate_proto("google/protobuf/internal/descriptor_pool_test1.proto")
+  generate_proto("google/protobuf/internal/descriptor_pool_test2.proto")
   generate_proto("google/protobuf/internal/test_bad_identifiers.proto")
+  generate_proto("google/protobuf/internal/missing_enum_values.proto")
   generate_proto("google/protobuf/internal/more_extensions.proto")
   generate_proto("google/protobuf/internal/more_extensions_dynamic.proto")
   generate_proto("google/protobuf/internal/more_messages.proto")
@@ -102,6 +106,22 @@ def MakeTestSuite():
   import google.protobuf.internal.message_cpp_test as message_cpp_test
   import google.protobuf.internal.reflection_cpp_generated_test \
       as reflection_cpp_generated_test
+  import google.protobuf.internal.api_implementation_default_test \
+      as api_implementation_default_test
+  import google.protobuf.internal.descriptor_cpp2_test as descriptor_cpp2_test
+  import google.protobuf.internal.descriptor_python_test \
+      as descriptor_python_test
+  import google.protobuf.internal.message_factory_cpp2_test \
+      as message_factory_cpp2_test
+  import google.protobuf.internal.message_factory_cpp_test \
+      as message_factory_cpp_test
+  import google.protobuf.internal.message_factory_python_test \
+      as message_factory_python_test
+  import google.protobuf.internal.message_python_test as message_python_test
+  import google.protobuf.internal.reflection_cpp2_generated_test \
+      as reflection_cpp2_generated_test
+  import google.protobuf.internal.symbol_database_test as symbol_database_test
+  import google.protobuf.internal.text_encoding_test as text_encoding_test
 
   loader = unittest.defaultTestLoader
   suite = unittest.TestSuite()
@@ -110,7 +130,23 @@ def MakeTestSuite():
                 reflection_test,
                 service_reflection_test,
                 text_format_test,
-                wire_format_test ]:
+                wire_format_test,
+                unknown_fields_test,
+                descriptor_pool_test,
+                message_factory_test,
+                message_cpp_test,
+                reflection_cpp_generated_test,
+                api_implementation_default_test,
+                descriptor_cpp2_test,
+                descriptor_python_test,
+                message_factory_cpp2_test,
+                message_factory_cpp_test,
+                message_factory_python_test,
+                message_python_test,
+                reflection_cpp2_generated_test,
+                symbol_database_test,
+                text_encoding_test ]:
+
     suite.addTest(loader.loadTestsFromModule(test))
 
   return suite

@@ -39,6 +39,7 @@ import com.google.protobuf.Descriptors.DescriptorValidationException;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.ServiceDescriptor;
@@ -53,9 +54,12 @@ import protobuf_unittest.UnittestProto.ForeignMessage;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestExtremeDefaultValues;
+import protobuf_unittest.UnittestProto.TestMultipleExtensionRanges;
 import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestService;
 import protobuf_unittest.UnittestCustomOptions;
+
+import protobuf_unittest.TestCustomOptions;
 
 
 import junit.framework.TestCase;
@@ -308,6 +312,7 @@ public class DescriptorsTest extends TestCase {
     EnumValueDescriptor value = ForeignEnum.FOREIGN_FOO.getValueDescriptor();
     assertEquals(value, enumType.getValues().get(0));
     assertEquals("FOREIGN_FOO", value.getName());
+    assertEquals("FOREIGN_FOO", value.toString());
     assertEquals(4, value.getNumber());
     assertEquals(value, enumType.findValueByName("FOREIGN_FOO"));
     assertEquals(value, enumType.findValueByNumber(4));
@@ -324,7 +329,6 @@ public class DescriptorsTest extends TestCase {
     assertEquals("protobuf_unittest.TestService", service.getFullName());
     assertEquals(UnittestProto.getDescriptor(), service.getFile());
 
-    assertEquals(2, service.getMethods().size());
 
     MethodDescriptor fooMethod = service.getMethods().get(0);
     assertEquals("Foo", fooMethod.getName());
@@ -351,8 +355,12 @@ public class DescriptorsTest extends TestCase {
 
 
   public void testCustomOptions() throws Exception {
+    // Get the descriptor indirectly from a dependent proto class. This is to
+    // ensure that when a proto class is loaded, custom options defined in its
+    // dependencies are also properly initialized.
     Descriptor descriptor =
-      UnittestCustomOptions.TestMessageWithCustomOptions.getDescriptor();
+        TestCustomOptions.TestMessageWithCustomOptionsContainer.getDescriptor()
+        .findFieldByName("field").getMessageType();
 
     assertTrue(
       descriptor.getOptions().hasExtension(UnittestCustomOptions.messageOpt1));
@@ -511,9 +519,35 @@ public class DescriptorsTest extends TestCase {
     assertTrue(barFound);
   }
   
+  public void testDependencyOrder() throws Exception {
+    FileDescriptorProto fooProto = FileDescriptorProto.newBuilder()
+        .setName("foo.proto").build();
+    FileDescriptorProto barProto = FileDescriptorProto.newBuilder()
+        .setName("bar.proto")
+        .addDependency("foo.proto")
+        .build();
+    FileDescriptorProto bazProto = FileDescriptorProto.newBuilder()
+        .setName("baz.proto")
+        .addDependency("foo.proto")
+        .addDependency("bar.proto")
+        .addPublicDependency(0)
+        .addPublicDependency(1)
+        .build();
+    FileDescriptor fooFile = Descriptors.FileDescriptor.buildFrom(fooProto,
+        new FileDescriptor[0]);
+    FileDescriptor barFile = Descriptors.FileDescriptor.buildFrom(barProto,
+        new FileDescriptor[] {fooFile});
+    
+    // Items in the FileDescriptor array can be in any order. 
+    Descriptors.FileDescriptor.buildFrom(bazProto,
+        new FileDescriptor[] {fooFile, barFile});
+    Descriptors.FileDescriptor.buildFrom(bazProto,
+        new FileDescriptor[] {barFile, fooFile});
+  }
+  
   public void testInvalidPublicDependency() throws Exception {
     FileDescriptorProto fooProto = FileDescriptorProto.newBuilder()
-        .setName("foo.proto") .build();
+        .setName("foo.proto").build();
     FileDescriptorProto barProto = FileDescriptorProto.newBuilder()
         .setName("boo.proto")
         .addDependency("foo.proto")
@@ -644,5 +678,31 @@ public class DescriptorsTest extends TestCase {
       assertTrue(field.getEnumType().getFile().getPackage().equals(
           "a.b.c.d.bar.shared"));
     }   
+  }
+
+  public void testOneofDescriptor() throws Exception {
+    Descriptor messageType = TestAllTypes.getDescriptor();
+    FieldDescriptor field =
+        messageType.findFieldByName("oneof_nested_message");
+    OneofDescriptor oneofDescriptor = field.getContainingOneof();
+    assertNotNull(oneofDescriptor);
+    assertSame(oneofDescriptor, messageType.getOneofs().get(0));
+    assertEquals("oneof_field", oneofDescriptor.getName());
+
+    assertEquals(4, oneofDescriptor.getFieldCount());
+    assertSame(oneofDescriptor.getField(1), field);
+  }
+
+  public void testMessageDescriptorExtensions() throws Exception {
+    assertFalse(TestAllTypes.getDescriptor().isExtendable());
+    assertTrue(TestAllExtensions.getDescriptor().isExtendable());
+    assertTrue(TestMultipleExtensionRanges.getDescriptor().isExtendable());
+
+    assertFalse(TestAllTypes.getDescriptor().isExtensionNumber(3));
+    assertTrue(TestAllExtensions.getDescriptor().isExtensionNumber(3));
+    assertTrue(TestMultipleExtensionRanges.getDescriptor().isExtensionNumber(42));
+    assertFalse(TestMultipleExtensionRanges.getDescriptor().isExtensionNumber(43));
+    assertFalse(TestMultipleExtensionRanges.getDescriptor().isExtensionNumber(4142));
+    assertTrue(TestMultipleExtensionRanges.getDescriptor().isExtensionNumber(4143));
   }
 }

@@ -143,6 +143,13 @@ class LiteralByteString extends ByteString {
   }
 
   @Override
+  void writeToInternal(OutputStream outputStream, int sourceOffset,
+      int numberToWrite) throws IOException {
+    outputStream.write(bytes, getOffsetIntoBytes() + sourceOffset,
+        numberToWrite);
+  }
+
+  @Override
   public String toString(String charsetName)
       throws UnsupportedEncodingException {
     return new String(bytes, getOffsetIntoBytes(), size(), charsetName);
@@ -261,12 +268,19 @@ class LiteralByteString extends ByteString {
 
   @Override
   protected int partialHash(int h, int offset, int length) {
-    byte[] thisBytes = bytes;
-    for (int i = getOffsetIntoBytes() + offset, limit = i + length; i < limit;
-        i++) {
-      h = h * 31 + thisBytes[i];
+    return hashCode(h, bytes, getOffsetIntoBytes() + offset, length);
+  }
+  
+  static int hashCode(int h, byte[] bytes, int offset, int length) {
+    for (int i = offset; i < offset + length; i++) {
+      h = h * 31 + bytes[i];
     }
     return h;
+  }
+  
+  static int hashCode(byte[] bytes) {
+    int h = hashCode(bytes.length, bytes, 0, bytes.length);
+    return h == 0 ? 1 : h;
   }
 
   // =================================================================
@@ -282,8 +296,7 @@ class LiteralByteString extends ByteString {
   public CodedInputStream newCodedInput() {
     // We trust CodedInputStream not to modify the bytes, or to give anyone
     // else access to them.
-    return CodedInputStream
-        .newInstance(bytes, getOffsetIntoBytes(), size());  // No copy
+    return CodedInputStream.newInstance(this);
   }
 
   // =================================================================

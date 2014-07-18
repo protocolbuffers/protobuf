@@ -60,4 +60,37 @@ public class TestBadIdentifiers extends TestCase {
         .Descriptor.NestedDescriptor.getDefaultInstance()
         .getDescriptorForType();
   }
+
+  public void testConflictingFieldNames() throws Exception {
+    TestBadIdentifiersProto.TestConflictingFieldNames message =
+        TestBadIdentifiersProto.TestConflictingFieldNames.getDefaultInstance();
+    // Make sure generated accessors are properly named.
+    assertEquals(0, message.getInt32Field1Count());
+    assertEquals(0, message.getEnumField2Count());
+    assertEquals(0, message.getStringField3Count());
+    assertEquals(0, message.getBytesField4Count());
+    assertEquals(0, message.getMessageField5Count());
+
+    assertEquals(0, message.getInt32FieldCount11());
+    assertEquals(1, message.getEnumFieldCount12().getNumber());
+    assertEquals("", message.getStringFieldCount13());
+    assertEquals(ByteString.EMPTY, message.getBytesFieldCount14());
+    assertEquals(0, message.getMessageFieldCount15().getSerializedSize());
+
+    assertEquals(0, message.getInt32Field21Count());
+    assertEquals(0, message.getEnumField22Count());
+    assertEquals(0, message.getStringField23Count());
+    assertEquals(0, message.getBytesField24Count());
+    assertEquals(0, message.getMessageField25Count());
+
+    assertEquals(0, message.getInt32Field1List().size());
+    assertEquals(0, message.getInt32FieldList31());
+
+    assertEquals(0, message.getInt64FieldCount());
+    assertEquals(0L, message.getExtension(
+        TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldCount).longValue());
+    assertEquals(0L, message.getExtension(
+        TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldList).longValue());
+
+  }
 }

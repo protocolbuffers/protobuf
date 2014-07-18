@@ -36,6 +36,7 @@
 
 #include <limits>
 
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -48,11 +49,12 @@ double NaN() {
 }
 
 const ::std::string* empty_string_;
-ProtobufOnceType empty_string_once_init_;
+GOOGLE_PROTOBUF_DECLARE_ONCE(empty_string_once_init_);
 
 void InitEmptyString() {
-  empty_string_ = new std::string;
+  empty_string_ = new string;
 }
+
 
 }  // namespace internal
 }  // namespace protobuf

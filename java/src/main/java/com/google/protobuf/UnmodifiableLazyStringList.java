@@ -31,10 +31,12 @@
 package com.google.protobuf;
 
 import java.util.AbstractList;
-import java.util.RandomAccess;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Iterator;
+import java.util.RandomAccess;
 
 /**
  * An implementation of {@link LazyStringList} that wraps another
@@ -72,6 +74,36 @@ public class UnmodifiableLazyStringList extends AbstractList<String>
   }
 
   //@Override (Java 1.6 override semantics, but we must support 1.5)
+  public void set(int index, ByteString element) {
+    throw new UnsupportedOperationException();
+  }
+
+  //@Override (Java 1.6 override semantics, but we must support 1.5)
+  public boolean addAllByteString(Collection<? extends ByteString> element) {
+    throw new UnsupportedOperationException();
+  }
+
+  //@Override (Java 1.6 override semantics, but we must support 1.5)
+  public byte[] getByteArray(int index) {
+    return list.getByteArray(index);
+  }
+
+  //@Override (Java 1.6 override semantics, but we must support 1.5)
+  public void add(byte[] element) {
+    throw new UnsupportedOperationException();
+  }
+  
+  //@Override (Java 1.6 override semantics, but we must support 1.5)
+  public void set(int index, byte[] element) {
+    throw new UnsupportedOperationException();
+  }
+
+  //@Override (Java 1.6 override semantics, but we must support 1.5)
+  public boolean addAllByteArray(Collection<byte[]> element) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public ListIterator<String> listIterator(final int index) {
     return new ListIterator<String>() {
       ListIterator<String> iter = list.listIterator(index);
@@ -145,8 +177,29 @@ public class UnmodifiableLazyStringList extends AbstractList<String>
     };
   }
 
+  //@Override (Java 1.6 override semantics, but we must support 1.5)
   public List<?> getUnderlyingElements() {
     // The returned value is already unmodifiable.
     return list.getUnderlyingElements();
+  }
+
+  //@Override (Java 1.6 override semantics, but we must support 1.5)
+  public void mergeFrom(LazyStringList other) {
+    throw new UnsupportedOperationException();
+  }
+
+  //@Override (Java 1.6 override semantics, but we must support 1.5)
+  public List<byte[]> asByteArrayList() {
+    return Collections.unmodifiableList(list.asByteArrayList());
+  }
+
+  //@Override (Java 1.6 override semantics, but we must support 1.5)
+  public List<ByteString> asByteStringList() {
+    return Collections.unmodifiableList(list.asByteStringList());
+  }
+
+  //@Override (Java 1.6 override semantics, but we must support 1.5)
+  public LazyStringList getUnmodifiableView() {
+    return this;
   }
 }

@@ -33,15 +33,14 @@ package com.google.protobuf;
 import com.google.protobuf.UnittestLite.TestAllTypesLite;
 import com.google.protobuf.UnittestLite.TestPackedExtensionsLite;
 import com.google.protobuf.UnittestLite.TestParsingMergeLite;
-import com.google.protobuf.UnittestLite;
 import protobuf_unittest.UnittestOptimizeFor.TestOptimizedForSize;
 import protobuf_unittest.UnittestOptimizeFor.TestRequiredOptimizedForSize;
 import protobuf_unittest.UnittestOptimizeFor;
 import protobuf_unittest.UnittestProto.ForeignMessage;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
-import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestParsingMerge;
+import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto;
 
 import junit.framework.TestCase;
@@ -84,12 +83,15 @@ public class ParserTest extends TestCase {
         CodedInputStream.newInstance(data), registry));
   }
 
+  @SuppressWarnings("unchecked")
   private void assertRoundTripEquals(MessageLite message) throws Exception {
     final byte[] data = message.toByteArray();
     final int offset = 20;
     final int length = data.length;
     final int padding = 30;
-    Parser<? extends MessageLite> parser = message.getParserForType();
+
+    Parser<MessageLite> parser =
+        (Parser<MessageLite>) message.getParserForType();
     assertMessageEquals(message, parser.parseFrom(data));
     assertMessageEquals(message, parser.parseFrom(
         generatePaddingArray(data, offset, padding),
@@ -101,7 +103,8 @@ public class ParserTest extends TestCase {
         CodedInputStream.newInstance(data)));
   }
 
-  private void assertMessageEquals(MessageLite expected, MessageLite actual)
+  private void assertMessageEquals(
+      MessageLite expected, MessageLite actual)
       throws Exception {
     if (expected instanceof Message) {
       assertEquals(expected, actual);
@@ -120,14 +123,16 @@ public class ParserTest extends TestCase {
     assertRoundTripEquals(TestUtil.getAllSet());
   }
 
+
   public void testParsePartial() throws Exception {
-    Parser<TestRequired> parser = TestRequired.PARSER;
+    assertParsePartial(TestRequired.PARSER,
+        TestRequired.newBuilder().setA(1).buildPartial());
+  }
+
+  private <T extends MessageLite> void assertParsePartial(
+      Parser<T> parser, T partialMessage) throws Exception {
     final String errorString =
         "Should throw exceptions when the parsed message isn't initialized.";
-
-    // TestRequired.b and TestRequired.c are not set.
-    TestRequired partialMessage = TestRequired.newBuilder()
-        .setA(1).buildPartial();
 
     // parsePartialFrom should pass.
     byte[] data = partialMessage.toByteArray();
@@ -217,6 +222,7 @@ public class ParserTest extends TestCase {
         TestUtil.getAllSet().toByteString(),
         emptyMessage.toByteString());
   }
+
 
   public void testOptimizeForSize() throws Exception {
     TestOptimizedForSize.Builder builder = TestOptimizedForSize.newBuilder();

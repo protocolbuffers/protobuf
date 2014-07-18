@@ -30,6 +30,9 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.OneofDescriptor;
+
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
@@ -241,6 +244,19 @@ public class DynamicMessageTest extends TestCase {
 
     DynamicMessage copy = DynamicMessage.newBuilder(message).build();
     reflectionTester.assertAllFieldsSetViaReflection(copy);
+
+    // Test oneof behavior
+    FieldDescriptor bytesField =
+        TestAllTypes.getDescriptor().findFieldByName("oneof_bytes");
+    FieldDescriptor uint32Field =
+        TestAllTypes.getDescriptor().findFieldByName("oneof_uint32");
+    assertTrue(copy.hasField(bytesField));
+    assertFalse(copy.hasField(uint32Field));
+    DynamicMessage copy2 =
+        DynamicMessage.newBuilder(message).setField(uint32Field, 123).build();
+    assertFalse(copy2.hasField(bytesField));
+    assertTrue(copy2.hasField(uint32Field));
+    assertEquals(123, copy2.getField(uint32Field));
   }
 
   public void testToBuilder() throws Exception {
@@ -260,5 +276,35 @@ public class DynamicMessageTest extends TestCase {
     reflectionTester.assertAllFieldsSetViaReflection(derived);
     assertEquals(Arrays.asList(unknownFieldVal),
         derived.getUnknownFields().getField(unknownFieldNum).getVarintList());
+  }
+
+  public void testDynamicOneofMessage() throws Exception {
+    DynamicMessage.Builder builder =
+        DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    OneofDescriptor oneof = TestAllTypes.getDescriptor().getOneofs().get(0);
+    assertFalse(builder.hasOneof(oneof));
+    assertSame(null, builder.getOneofFieldDescriptor(oneof));
+
+    reflectionTester.setAllFieldsViaReflection(builder);
+    assertTrue(builder.hasOneof(oneof));
+    FieldDescriptor field = oneof.getField(3);
+    assertSame(field, builder.getOneofFieldDescriptor(oneof));
+
+    DynamicMessage message = builder.buildPartial();
+    assertTrue(message.hasOneof(oneof));
+
+    DynamicMessage.Builder mergedBuilder =
+        DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    FieldDescriptor mergedField = oneof.getField(0);
+    mergedBuilder.setField(mergedField, 123);
+    assertTrue(mergedBuilder.hasField(mergedField));
+    mergedBuilder.mergeFrom(message);
+    assertTrue(mergedBuilder.hasField(field));
+    assertFalse(mergedBuilder.hasField(mergedField));
+
+    builder.clearOneof(oneof);
+    assertSame(null, builder.getOneofFieldDescriptor(oneof));
+    message = builder.build();
+    assertSame(null, message.getOneofFieldDescriptor(oneof));
   }
 }

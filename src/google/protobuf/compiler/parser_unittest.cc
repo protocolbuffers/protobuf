@@ -32,6 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <memory>
 #include <vector>
 #include <algorithm>
 #include <map>
@@ -47,7 +48,7 @@
 #include <google/protobuf/unittest_custom_options.pb.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
-#include <google/protobuf/stubs/map-util.h>
+#include <google/protobuf/stubs/map_util.h>
 
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -436,6 +437,69 @@ TEST_F(ParseMessageTest, FieldOptions) {
     "}");
 }
 
+TEST_F(ParseMessageTest, Oneof) {
+  ExpectParsesTo(
+    "message TestMessage {\n"
+    "  oneof foo {\n"
+    "    int32 a = 1;\n"
+    "    string b = 2;\n"
+    "    TestMessage c = 3;\n"
+    "    group D = 4 { optional int32 i = 5; }\n"
+    "  }\n"
+    "}\n",
+
+    "message_type {"
+    "  name: \"TestMessage\""
+    "  field { name:\"a\" label:LABEL_OPTIONAL type:TYPE_INT32 number:1 "
+    "          oneof_index:0 }"
+    "  field { name:\"b\" label:LABEL_OPTIONAL type:TYPE_STRING number:2 "
+    "          oneof_index:0 }"
+    "  field { name:\"c\" label:LABEL_OPTIONAL type_name:\"TestMessage\" "
+    "          number:3 oneof_index:0 }"
+    "  field { name:\"d\" label:LABEL_OPTIONAL type:TYPE_GROUP "
+    "          type_name:\"D\" number:4 oneof_index:0 }"
+    "  oneof_decl {"
+    "    name: \"foo\""
+    "  }"
+    "  nested_type {"
+    "    name: \"D\""
+    "    field { name:\"i\" label:LABEL_OPTIONAL type:TYPE_INT32 number:5 }"
+    "  }"
+    "}");
+}
+
+TEST_F(ParseMessageTest, MultipleOneofs) {
+  ExpectParsesTo(
+    "message TestMessage {\n"
+    "  oneof foo {\n"
+    "    int32 a = 1;\n"
+    "    string b = 2;\n"
+    "  }\n"
+    "  oneof bar {\n"
+    "    int32 c = 3;\n"
+    "    string d = 4;\n"
+    "  }\n"
+    "}\n",
+
+    "message_type {"
+    "  name: \"TestMessage\""
+    "  field { name:\"a\" label:LABEL_OPTIONAL type:TYPE_INT32 number:1 "
+    "          oneof_index:0 }"
+    "  field { name:\"b\" label:LABEL_OPTIONAL type:TYPE_STRING number:2 "
+    "          oneof_index:0 }"
+    "  field { name:\"c\" label:LABEL_OPTIONAL type:TYPE_INT32 number:3 "
+    "          oneof_index:1 }"
+    "  field { name:\"d\" label:LABEL_OPTIONAL type:TYPE_STRING number:4 "
+    "          oneof_index:1 }"
+    "  oneof_decl {"
+    "    name: \"foo\""
+    "  }"
+    "  oneof_decl {"
+    "    name: \"bar\""
+    "  }"
+    "}");
+}
+
 TEST_F(ParseMessageTest, Group) {
   ExpectParsesTo(
     "message TestMessage {\n"
@@ -575,6 +639,7 @@ TEST_F(ParseMessageTest, MultipleExtensionsOneExtendee) {
     "            type_name:\"TestMessage\" extendee: \"Extendee1\" }");
 }
 
+
 // ===================================================================
 
 typedef ParserTest ParseEnumTest;
@@ -680,6 +745,8 @@ TEST_F(ParseServiceTest, MethodsAndStreams) {
     "  method { name:\"Baz\" input_type:\"In3\" output_type:\"Out3\" }"
     "}");
 }
+
+
 
 // ===================================================================
 // imports and packages
@@ -870,7 +937,7 @@ TEST_F(ParseErrorTest, DefaultValueTypeMismatch) {
     "message TestMessage {\n"
     "  optional uint32 foo = 1 [default=true];\n"
     "}\n",
-    "1:35: Expected integer.\n");
+    "1:35: Expected integer for field default value.\n");
 }
 
 TEST_F(ParseErrorTest, DefaultValueNotBoolean) {
@@ -886,7 +953,7 @@ TEST_F(ParseErrorTest, DefaultValueNotString) {
     "message TestMessage {\n"
     "  optional string foo = 1 [default=1];\n"
     "}\n",
-    "1:35: Expected string.\n");
+    "1:35: Expected string for field default value.\n");
 }
 
 TEST_F(ParseErrorTest, DefaultValueUnsignedNegative) {
@@ -934,7 +1001,7 @@ TEST_F(ParseErrorTest, DefaultValueMissing) {
     "message TestMessage {\n"
     "  optional uint32 foo = 1 [default=];\n"
     "}\n",
-    "1:35: Expected integer.\n");
+    "1:35: Expected integer for field default value.\n");
 }
 
 TEST_F(ParseErrorTest, DefaultValueForGroup) {
@@ -951,6 +1018,27 @@ TEST_F(ParseErrorTest, DuplicateDefaultValue) {
     "  optional uint32 foo = 1 [default=1,default=2];\n"
     "}\n",
     "1:37: Already set option \"default\".\n");
+}
+
+TEST_F(ParseErrorTest, MissingOneofName) {
+  ExpectHasErrors(
+    "message TestMessage {\n"
+    "  oneof {\n"
+    "    int32 bar = 1;\n"
+    "  }\n"
+    "}\n",
+    "1:8: Expected oneof name.\n");
+}
+
+TEST_F(ParseErrorTest, LabelInOneof) {
+  ExpectHasErrors(
+    "message TestMessage {\n"
+    "  oneof foo {\n"
+    "    optional int32 bar = 1;\n"
+    "  }\n"
+    "}\n",
+    "2:4: Fields in oneofs must not have labels (required / optional "
+      "/ repeated).\n");
 }
 
 TEST_F(ParseErrorTest, GroupNotCapitalized) {
@@ -1244,17 +1332,93 @@ TEST_F(ParserValidationErrorTest, MethodOutputTypeError) {
 }
 
 
+TEST_F(ParserValidationErrorTest, ResovledUndefinedError) {
+  // Create another file which defines symbol ".base.bar".
+  FileDescriptorProto other_file;
+  other_file.set_name("base.proto");
+  other_file.set_package("base");
+  other_file.add_message_type()->set_name("bar");
+  EXPECT_TRUE(pool_.BuildFile(other_file) != NULL);
+
+  // Define "foo.base" and try "base.bar".
+  // "base.bar" is resolved to "foo.base.bar" which is not defined.
+  ExpectHasValidationErrors(
+    "package foo.base;\n"
+    "import \"base.proto\";\n"
+    "message qux {\n"
+    "  optional base.bar baz = 1;\n"
+    "  optional .base.bar quz = 2;\n"
+    "}\n",
+    "3:11: \"base.bar\" is resolved to \"foo.base.bar\","
+    " which is not defined. The innermost scope is searched first "
+    "in name resolution. Consider using a leading '.'(i.e., \".base.bar\")"
+    " to start from the outermost scope.\n");
+}
+
+TEST_F(ParserValidationErrorTest, ResovledUndefinedOptionError) {
+  // Build descriptor message in test pool
+  FileDescriptorProto descriptor_proto;
+  DescriptorProto::descriptor()->file()->CopyTo(&descriptor_proto);
+  ASSERT_TRUE(pool_.BuildFile(descriptor_proto) != NULL);
+
+  // base2.proto:
+  //   package baz
+  //   import google/protobuf/descriptor.proto
+  //   message Bar { optional int32 foo = 1; }
+  //   extend FileOptions { optional Bar bar = 7672757; }
+  FileDescriptorProto other_file;
+  other_file.set_name("base2.proto");
+  other_file.set_package("baz");
+  other_file.add_dependency();
+  other_file.set_dependency(0, descriptor_proto.name());
+
+  DescriptorProto* message(other_file.add_message_type());
+  message->set_name("Bar");
+  FieldDescriptorProto* field(message->add_field());
+  field->set_name("foo");
+  field->set_number(1);
+  field->set_label(FieldDescriptorProto_Label_LABEL_OPTIONAL);
+  field->set_type(FieldDescriptorProto_Type_TYPE_INT32);
+
+  FieldDescriptorProto* extension(other_file.add_extension());
+  extension->set_name("bar");
+  extension->set_number(7672757);
+  extension->set_label(FieldDescriptorProto_Label_LABEL_OPTIONAL);
+  extension->set_type(FieldDescriptorProto_Type_TYPE_MESSAGE);
+  extension->set_type_name("Bar");
+  extension->set_extendee("google.protobuf.FileOptions");
+
+  EXPECT_TRUE(pool_.BuildFile(other_file) != NULL);
+
+  // qux.proto:
+  //   package qux.baz
+  //   option (baz.bar).foo = 1;
+  //
+  // Although "baz.bar" is already defined, the lookup code will try
+  // "qux.baz.bar", since it's the match from the innermost scope,
+  // which will cause a symbol not defined error.
+  ExpectHasValidationErrors(
+      "package qux.baz;\n"
+      "import \"base2.proto\";\n"
+      "option (baz.bar).foo = 1;\n",
+      "2:7: Option \"(baz.bar)\" is resolved to \"(qux.baz.bar)\","
+      " which is not defined. The innermost scope is searched first "
+      "in name resolution. Consider using a leading '.'(i.e., \"(.baz.bar)\")"
+      " to start from the outermost scope.\n");
+}
+
 // ===================================================================
 // Test that the output from FileDescriptor::DebugString() (and all other
 // descriptor types) is parseable, and results in the same Descriptor
-// definitions again afoter parsing (not, however, that the order of messages
+// definitions again afoter parsing (note, however, that the order of messages
 // cannot be guaranteed to be the same)
 
 typedef ParserTest ParseDecriptorDebugTest;
 
 class CompareDescriptorNames {
  public:
-  bool operator()(const DescriptorProto* left, const DescriptorProto* right) {
+  bool operator()(const DescriptorProto* left,
+                  const DescriptorProto* right) const {
     return left->name() < right->name();
   }
 };
@@ -1298,7 +1462,8 @@ TEST_F(ParseDecriptorDebugTest, TestAllDescriptorTypes) {
   FileDescriptorProto parsed;
   parser_->Parse(input_.get(), &parsed);
   EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
-  ASSERT_EQ("", error_collector_.text_);
+  ASSERT_EQ("", error_collector_.text_)
+      << "Failed to parse:\n" << debug_string;
 
   // We now have a FileDescriptorProto, but to compare with the expected we
   // need to link to a FileDecriptor, then output back to a proto. We'll
@@ -1317,6 +1482,8 @@ TEST_F(ParseDecriptorDebugTest, TestAllDescriptorTypes) {
   ASSERT_TRUE(pool_.BuildFile(import_proto) != NULL);
   const FileDescriptor* actual = pool_.BuildFile(parsed);
   parsed.Clear();
+  ASSERT_TRUE(actual != NULL)
+      << "Failed to validate:\n" << debug_string;
   actual->CopyTo(&parsed);
   ASSERT_TRUE(actual != NULL);
 
@@ -1871,6 +2038,31 @@ TEST_F(SourceInfoTest, ExtensionRanges) {
   EXPECT_TRUE(HasSpan(file_.message_type(0), "name"));
 }
 
+TEST_F(SourceInfoTest, Oneofs) {
+  EXPECT_TRUE(Parse(
+      "message Foo {\n"
+      "  $a$oneof $c$foo$d$ {\n"
+      "    $e$int32$f$ $g$a$h$ = $i$1$j$;$k$\n"
+      "  }$r$\n"
+      "}\n"));
+
+  const OneofDescriptorProto& oneof_decl = file_.message_type(0).oneof_decl(0);
+  const FieldDescriptorProto& field = file_.message_type(0).field(0);
+
+  EXPECT_TRUE(HasSpan('a', 'r', oneof_decl));
+  EXPECT_TRUE(HasSpan('c', 'd', oneof_decl, "name"));
+
+  EXPECT_TRUE(HasSpan('e', 'k', field));
+  EXPECT_TRUE(HasSpan('e', 'f', field, "type"));
+  EXPECT_TRUE(HasSpan('g', 'h', field, "name"));
+  EXPECT_TRUE(HasSpan('i', 'j', field, "number"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.message_type(0)));
+  EXPECT_TRUE(HasSpan(file_.message_type(0), "name"));
+}
+
 TEST_F(SourceInfoTest, NestedMessages) {
   EXPECT_TRUE(Parse(
       "message Foo {\n"
@@ -2028,6 +2220,7 @@ TEST_F(SourceInfoTest, MethodsAndStreams) {
   EXPECT_TRUE(HasSpan(file_.service(0)));
   EXPECT_TRUE(HasSpan(file_.service(0), "name"));
 }
+
 
 TEST_F(SourceInfoTest, Options) {
   EXPECT_TRUE(Parse(
@@ -2363,6 +2556,51 @@ TEST_F(SourceInfoTest, DocComments3) {
       bar.options().uninterpreted_option(0).name(0), "name_part"));
   EXPECT_TRUE(HasSpan(
       bar.options().uninterpreted_option(0), "aggregate_value"));
+}
+
+TEST_F(SourceInfoTest, DocCommentsOneof) {
+  EXPECT_TRUE(Parse(
+      "// ignored\n"
+      "syntax = \"proto2\";\n"
+      "// Foo leading\n"
+      "$a$message Foo {\n"
+      "  /* Foo trailing\n"
+      "   */\n"
+      "  // ignored\n"
+      "  /* bar leading\n"
+      "   * line 2 */\n"
+      "  $b$oneof bar {\n"
+      "  /* bar trailing\n"
+      "   * line 2 */\n"
+      "  // ignored\n"
+      "  /* bar_int leading\n"
+      "   */\n"
+      "  $c$int32 bar_int = 1;$d$  // bar_int trailing\n"
+      "  // ignored\n"
+      "  }$e$\n"
+      "}$f$\n"));
+
+  const DescriptorProto& foo = file_.message_type(0);
+  const OneofDescriptorProto& bar = foo.oneof_decl(0);
+  const FieldDescriptorProto& bar_int = foo.field(0);
+
+  EXPECT_TRUE(HasSpanWithComment('a', 'f', foo,
+      " Foo leading\n",
+      " Foo trailing\n"));
+  EXPECT_TRUE(HasSpanWithComment('b', 'e', bar,
+      " bar leading\n line 2 ",
+      " bar trailing\n line 2 "));
+  EXPECT_TRUE(HasSpanWithComment('c', 'd', bar_int,
+      " bar_int leading\n",
+      " bar_int trailing\n"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(foo, "name"));
+  EXPECT_TRUE(HasSpan(bar, "name"));
+  EXPECT_TRUE(HasSpan(bar_int, "type"));
+  EXPECT_TRUE(HasSpan(bar_int, "name"));
+  EXPECT_TRUE(HasSpan(bar_int, "number"));
 }
 
 // ===================================================================

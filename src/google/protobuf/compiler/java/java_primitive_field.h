@@ -41,16 +41,26 @@
 
 namespace google {
 namespace protobuf {
+  namespace compiler {
+    namespace java {
+      class Context;           // context.h
+      class ClassNameResolver; // name_resolver.h
+    }
+  }
+}
+
+namespace protobuf {
 namespace compiler {
 namespace java {
 
-class PrimitiveFieldGenerator : public FieldGenerator {
+class ImmutablePrimitiveFieldGenerator : public ImmutableFieldGenerator {
  public:
-  explicit PrimitiveFieldGenerator(const FieldDescriptor* descriptor,
-      int messageBitIndex, int builderBitIndex);
-  ~PrimitiveFieldGenerator();
+  explicit ImmutablePrimitiveFieldGenerator(
+      const FieldDescriptor* descriptor, int messageBitIndex,
+      int builderBitIndex, Context* context);
+  ~ImmutablePrimitiveFieldGenerator();
 
-  // implements FieldGenerator ---------------------------------------
+  // implements ImmutableFieldGenerator ---------------------------------------
   int GetNumBitsForMessage() const;
   int GetNumBitsForBuilder() const;
   void GenerateInterfaceMembers(io::Printer* printer) const;
@@ -70,22 +80,47 @@ class PrimitiveFieldGenerator : public FieldGenerator {
 
   string GetBoxedType() const;
 
- private:
+ protected:
   const FieldDescriptor* descriptor_;
   map<string, string> variables_;
   const int messageBitIndex_;
   const int builderBitIndex_;
+  Context* context_;
+  ClassNameResolver* name_resolver_;
 
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(PrimitiveFieldGenerator);
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutablePrimitiveFieldGenerator);
 };
 
-class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
+class ImmutablePrimitiveOneofFieldGenerator
+    : public ImmutablePrimitiveFieldGenerator {
  public:
-  explicit RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
-      int messageBitIndex, int builderBitIndex);
-  ~RepeatedPrimitiveFieldGenerator();
+  ImmutablePrimitiveOneofFieldGenerator(
+      const FieldDescriptor* descriptor, int messageBitIndex,
+      int builderBitIndex, Context* context);
+  ~ImmutablePrimitiveOneofFieldGenerator();
 
-  // implements FieldGenerator ---------------------------------------
+  void GenerateMembers(io::Printer* printer) const;
+  void GenerateBuilderMembers(io::Printer* printer) const;
+  void GenerateBuildingCode(io::Printer* printer) const;
+  void GenerateMergingCode(io::Printer* printer) const;
+  void GenerateParsingCode(io::Printer* printer) const;
+  void GenerateSerializationCode(io::Printer* printer) const;
+  void GenerateSerializedSizeCode(io::Printer* printer) const;
+
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutablePrimitiveOneofFieldGenerator);
+};
+
+class RepeatedImmutablePrimitiveFieldGenerator
+    : public ImmutableFieldGenerator {
+ public:
+  explicit RepeatedImmutablePrimitiveFieldGenerator(
+      const FieldDescriptor* descriptor, int messageBitIndex,
+      int builderBitIndex, Context* context);
+  virtual ~RepeatedImmutablePrimitiveFieldGenerator();
+
+  // implements ImmutableFieldGenerator ---------------------------------------
   int GetNumBitsForMessage() const;
   int GetNumBitsForBuilder() const;
   void GenerateInterfaceMembers(io::Printer* printer) const;
@@ -111,8 +146,10 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
   map<string, string> variables_;
   const int messageBitIndex_;
   const int builderBitIndex_;
+  Context* context_;
+  ClassNameResolver* name_resolver_;
 
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedPrimitiveFieldGenerator);
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedImmutablePrimitiveFieldGenerator);
 };
 
 }  // namespace java

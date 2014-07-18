@@ -40,6 +40,8 @@ import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestFieldOrderings;
+import protobuf_unittest.UnittestProto.TestOneof2;
+import protobuf_unittest.UnittestProto.TestOneofBackwardsCompatible;
 import protobuf_unittest.UnittestProto.TestPackedExtensions;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestMset.TestMessageSet;
@@ -218,8 +220,8 @@ public class WireFormatTest extends TestCase {
   }
 
   public void testExtensionsSerializedSize() throws Exception {
-    assertEquals(TestUtil.getAllSet().getSerializedSize(),
-                 TestUtil.getAllExtensionsSet().getSerializedSize());
+    assertNotSame(TestUtil.getAllSet().getSerializedSize(),
+                  TestUtil.getAllExtensionsSet().getSerializedSize());
   }
 
   public void testSerializeDelimited() throws Exception {
@@ -576,5 +578,29 @@ public class WireFormatTest extends TestCase {
         TestMessageSet.newBuilder().mergeFrom(data, extensionRegistry).build();
     assertEquals(123, messageSet.getExtension(
         TestMessageSetExtension1.messageSetExtension).getI());
+  }
+
+  // ================================================================
+  // oneof
+  public void testOneofWireFormat() throws Exception {
+    TestOneof2.Builder builder = TestOneof2.newBuilder();
+    TestUtil.setOneof(builder);
+    TestOneof2 message = builder.build();
+    ByteString rawBytes = message.toByteString();
+
+    assertEquals(rawBytes.size(), message.getSerializedSize());
+
+    TestOneof2 message2 = TestOneof2.parseFrom(rawBytes);
+    TestUtil.assertOneofSet(message2);
+  }
+
+  public void testOneofOnlyLastSet() throws Exception {
+    TestOneofBackwardsCompatible source = TestOneofBackwardsCompatible
+        .newBuilder().setFooInt(100).setFooString("101").build();
+
+    ByteString rawBytes = source.toByteString();
+    TestOneof2 message = TestOneof2.parseFrom(rawBytes);
+    assertFalse(message.hasFooInt());
+    assertTrue(message.hasFooString());
   }
 }

@@ -596,6 +596,120 @@ uint32 strtou32_adaptor(const char *nptr, char **endptr, int base) {
   return static_cast<uint32>(result);
 }
 
+inline bool safe_parse_sign(string* text  /*inout*/,
+                            bool* negative_ptr  /*output*/) {
+  const char* start = text->data();
+  const char* end = start + text->size();
+
+  // Consume whitespace.
+  while (start < end && (start[0] == ' ')) {
+    ++start;
+  }
+  while (start < end && (end[-1] == ' ')) {
+    --end;
+  }
+  if (start >= end) {
+    return false;
+  }
+
+  // Consume sign.
+  *negative_ptr = (start[0] == '-');
+  if (*negative_ptr || start[0] == '+') {
+    ++start;
+    if (start >= end) {
+      return false;
+    }
+  }
+  *text = text->substr(start - text->data(), end - start);
+  return true;
+}
+
+inline bool safe_parse_positive_int(
+    string text, int32* value_p) {
+  int base = 10;
+  int32 value = 0;
+  const int32 vmax = std::numeric_limits<int32>::max();
+  assert(vmax > 0);
+  assert(vmax >= base);
+  const int32 vmax_over_base = vmax / base;
+  const char* start = text.data();
+  const char* end = start + text.size();
+  // loop over digits
+  for (; start < end; ++start) {
+    unsigned char c = static_cast<unsigned char>(start[0]);
+    int digit = c - '0';
+    if (digit >= base || digit < 0) {
+      *value_p = value;
+      return false;
+    }
+    if (value > vmax_over_base) {
+      *value_p = vmax;
+      return false;
+    }
+    value *= base;
+    if (value > vmax - digit) {
+      *value_p = vmax;
+      return false;
+    }
+    value += digit;
+  }
+  *value_p = value;
+  return true;
+}
+
+inline bool safe_parse_negative_int(
+    string text, int32* value_p) {
+  int base = 10;
+  int32 value = 0;
+  const int32 vmin = std::numeric_limits<int32>::min();
+  assert(vmin < 0);
+  assert(vmin <= 0 - base);
+  int32 vmin_over_base = vmin / base;
+  // 2003 c++ standard [expr.mul]
+  // "... the sign of the remainder is implementation-defined."
+  // Although (vmin/base)*base + vmin%base is always vmin.
+  // 2011 c++ standard tightens the spec but we cannot rely on it.
+  if (vmin % base > 0) {
+    vmin_over_base += 1;
+  }
+  const char* start = text.data();
+  const char* end = start + text.size();
+  // loop over digits
+  for (; start < end; ++start) {
+    unsigned char c = static_cast<unsigned char>(start[0]);
+    int digit = c - '0';
+    if (digit >= base || digit < 0) {
+      *value_p = value;
+      return false;
+    }
+    if (value < vmin_over_base) {
+      *value_p = vmin;
+      return false;
+    }
+    value *= base;
+    if (value < vmin + digit) {
+      *value_p = vmin;
+      return false;
+    }
+    value -= digit;
+  }
+  *value_p = value;
+  return true;
+}
+
+bool safe_int(string text, int32* value_p) {
+  *value_p = 0;
+  bool negative;
+  if (!safe_parse_sign(&text, &negative)) {
+    return false;
+  }
+  if (!negative) {
+    return safe_parse_positive_int(text, value_p);
+  } else {
+    return safe_parse_negative_int(text, value_p);
+  }
+}
+
 // ----------------------------------------------------------------------
 // FastIntToBuffer()
 // FastInt64ToBuffer()
@@ -1143,68 +1257,22 @@ char* FloatToBuffer(float value, char* buffer) {
   return buffer;
 }
 
-// ----------------------------------------------------------------------
-// NoLocaleStrtod()
-//   This code will make you cry.
-// ----------------------------------------------------------------------
-
-// Returns a string identical to *input except that the character pointed to
-// by radix_pos (which should be '.') is replaced with the locale-specific
-// radix character.
-string LocalizeRadix(const char* input, const char* radix_pos) {
-  // Determine the locale-specific radix character by calling sprintf() to
-  // print the number 1.5, then stripping off the digits.  As far as I can
-  // tell, this is the only portable, thread-safe way to get the C library
-  // to divuldge the locale's radix character.  No, localeconv() is NOT
-  // thread-safe.
-  char temp[16];
-  int size = sprintf(temp, "%.1f", 1.5);
-  GOOGLE_CHECK_EQ(temp[0], '1');
-  GOOGLE_CHECK_EQ(temp[size-1], '5');
-  GOOGLE_CHECK_LE(size, 6);
-
-  // Now replace the '.' in the input with it.
-  string result;
-  result.reserve(strlen(input) + size - 3);
-  result.append(input, radix_pos);
-  result.append(temp + 1, size - 2);
-  result.append(radix_pos + 1);
-  return result;
-}
-
-double NoLocaleStrtod(const char* text, char** original_endptr) {
-  // We cannot simply set the locale to "C" temporarily with setlocale()
-  // as this is not thread-safe.  Instead, we try to parse in the current
-  // locale first.  If parsing stops at a '.' character, then this is a
-  // pretty good hint that we're actually in some other locale in which
-  // '.' is not the radix character.
-
-  char* temp_endptr;
-  double result = strtod(text, &temp_endptr);
-  if (original_endptr != NULL) *original_endptr = temp_endptr;
-  if (*temp_endptr != '.') return result;
-
-  // Parsing halted on a '.'.  Perhaps we're in a different locale?  Let's
-  // try to replace the '.' with a locale-specific radix character and
-  // try again.
-  string localized = LocalizeRadix(text, temp_endptr);
-  const char* localized_cstr = localized.c_str();
-  char* localized_endptr;
-  result = strtod(localized_cstr, &localized_endptr);
-  if ((localized_endptr - localized_cstr) >
-      (temp_endptr - text)) {
-    // This attempt got further, so replacing the decimal must have helped.
-    // Update original_endptr to point at the right location.
-    if (original_endptr != NULL) {
-      // size_diff is non-zero if the localized radix has multiple bytes.
-      int size_diff = localized.size() - strlen(text);
-      // const_cast is necessary to match the strtod() interface.
-      *original_endptr = const_cast<char*>(
-        text + (localized_endptr - localized_cstr - size_diff));
-    }
+string ToHex(uint64 num) {
+  if (num == 0) {
+    return string("0");
   }
 
-  return result;
+  // Compute hex bytes in reverse order, writing to the back of the
+  // buffer.
+  char buf[16];  // No more than 16 hex digits needed.
+  char* bufptr = buf + 16;
+  static const char kHexChars[] = "0123456789abcdef";
+  while (num != 0) {
+    *--bufptr = kHexChars[num & 0xf];
+    num >>= 4;
+  }
+
+  return string(bufptr, buf + 16 - bufptr);
 }
 
 }  // namespace protobuf

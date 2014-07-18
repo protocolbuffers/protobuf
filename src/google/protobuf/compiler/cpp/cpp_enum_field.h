@@ -63,11 +63,28 @@ class EnumFieldGenerator : public FieldGenerator {
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const;
   void GenerateByteSize(io::Printer* printer) const;
 
- private:
+ protected:
   const FieldDescriptor* descriptor_;
   map<string, string> variables_;
 
+ private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumFieldGenerator);
+};
+
+class EnumOneofFieldGenerator : public EnumFieldGenerator {
+ public:
+  explicit EnumOneofFieldGenerator(const FieldDescriptor* descriptor,
+                                   const Options& options);
+  ~EnumOneofFieldGenerator();
+
+  // implements FieldGenerator ---------------------------------------
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const;
+  void GenerateClearingCode(io::Printer* printer) const;
+  void GenerateSwappingCode(io::Printer* printer) const;
+  void GenerateConstructorCode(io::Printer* printer) const;
+
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumOneofFieldGenerator);
 };
 
 class RepeatedEnumFieldGenerator : public FieldGenerator {

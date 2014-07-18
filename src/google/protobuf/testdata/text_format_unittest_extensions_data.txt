@@ -126,3 +126,9 @@
 [protobuf_unittest.default_import_enum_extension]: IMPORT_FOO
 [protobuf_unittest.default_string_piece_extension]: "424"
 [protobuf_unittest.default_cord_extension]: "425"
+[protobuf_unittest.oneof_uint32_extension]: 601
+[protobuf_unittest.oneof_nested_message_extension] {
+  bb: 602
+}
+[protobuf_unittest.oneof_string_extension]: "603"
+[protobuf_unittest.oneof_bytes_extension]: "604"

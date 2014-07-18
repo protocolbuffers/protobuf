@@ -82,6 +82,24 @@ void File::ReadFileToStringOrDie(const string& name, string* output) {
   GOOGLE_CHECK(ReadFileToString(name, output)) << "Could not read: " << name;
 }
 
+bool File::WriteStringToFile(const string& contents, const string& name) {
+  FILE* file = fopen(name.c_str(), "wb");
+  if (file == NULL) {
+    GOOGLE_LOG(ERROR) << "fopen(" << name << ", \"wb\"): " << strerror(errno);
+    return false;
+  }
+
+  if (fwrite(contents.data(), 1, contents.size(), file) != contents.size()) {
+    GOOGLE_LOG(ERROR) << "fwrite(" << name << "): " << strerror(errno);
+    return false;
+  }
+
+  if (fclose(file) != 0) {
+    return false;
+  }
+  return true;
+}
+
 void File::WriteStringToFileOrDie(const string& contents, const string& name) {
   FILE* file = fopen(name.c_str(), "wb");
   GOOGLE_CHECK(file != NULL)

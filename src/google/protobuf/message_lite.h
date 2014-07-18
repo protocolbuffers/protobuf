@@ -109,7 +109,8 @@ class LIBPROTOBUF_EXPORT MessageLite {
 
   // Parsing ---------------------------------------------------------
   // Methods for parsing in protocol buffer format.  Most of these are
-  // just simple wrappers around MergeFromCodedStream().
+  // just simple wrappers around MergeFromCodedStream().  Clear() will be called
+  // before merging the input.
 
   // Fill the message with a protocol buffer parsed from the given input
   // stream.  Returns false on a read error or if the input is in the

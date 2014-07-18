@@ -226,6 +226,16 @@ class LIBPROTOBUF_EXPORT ZeroCopyOutputStream {
   // Returns the total number of bytes written since this object was created.
   virtual int64 ByteCount() const = 0;
 
+  // Write a given chunk of data to the output.  Some output streams may
+  // implement this in a way that avoids copying. Check AllowsAliasing() before
+  // calling WriteAliasedRaw(). It will GOOGLE_CHECK fail if WriteAliasedRaw() is
+  // called on a stream that does not allow aliasing.
+  //
+  // NOTE: It is caller's responsibility to ensure that the chunk of memory
+  // remains live until all of the data has been consumed from the stream.
+  virtual bool WriteAliasedRaw(const void* data, int size);
+  virtual bool AllowsAliasing() const { return false; }
+
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ZeroCopyOutputStream);

@@ -42,7 +42,6 @@
 #include <string>
 #include <vector>
 #include <google/protobuf/stubs/common.h>
-// TODO(jasonh): some people seem to rely on protobufs to include this for them!
 
 namespace google {
 namespace protobuf {
@@ -53,7 +52,7 @@ namespace protobuf {
   }
   namespace internal {
     class WireFormat;               // wire_format.h
-    class UnknownFieldSetFieldSkipperUsingCord;
+    class MessageSetFieldSkipperUsingCord;
                                     // extension_set_heavy.cc
   }
 
@@ -202,9 +201,12 @@ class LIBPROTOBUF_EXPORT UnknownField {
   // Make a deep copy of any pointers in this UnknownField.
   void DeepCopy();
 
+  // Set the wire type of this UnknownField. Should only be used when this
+  // UnknownField is being created.
+  inline void SetType(Type type);
 
-  unsigned int number_ : 29;
-  unsigned int type_   : 3;
+  uint32 number_;
+  uint32 type_;
   union {
     uint64 varint_;
     uint32 fixed32_;
@@ -254,56 +256,61 @@ inline UnknownField::Type UnknownField::type() const {
   return static_cast<Type>(type_);
 }
 
-inline uint64 UnknownField::varint () const {
-  assert(type_ == TYPE_VARINT);
+inline uint64 UnknownField::varint() const {
+  assert(type() == TYPE_VARINT);
   return varint_;
 }
 inline uint32 UnknownField::fixed32() const {
-  assert(type_ == TYPE_FIXED32);
+  assert(type() == TYPE_FIXED32);
   return fixed32_;
 }
 inline uint64 UnknownField::fixed64() const {
-  assert(type_ == TYPE_FIXED64);
+  assert(type() == TYPE_FIXED64);
   return fixed64_;
 }
 inline const string& UnknownField::length_delimited() const {
-  assert(type_ == TYPE_LENGTH_DELIMITED);
+  assert(type() == TYPE_LENGTH_DELIMITED);
   return *length_delimited_.string_value_;
 }
 inline const UnknownFieldSet& UnknownField::group() const {
-  assert(type_ == TYPE_GROUP);
+  assert(type() == TYPE_GROUP);
   return *group_;
 }
 
 inline void UnknownField::set_varint(uint64 value) {
-  assert(type_ == TYPE_VARINT);
+  assert(type() == TYPE_VARINT);
   varint_ = value;
 }
 inline void UnknownField::set_fixed32(uint32 value) {
-  assert(type_ == TYPE_FIXED32);
+  assert(type() == TYPE_FIXED32);
   fixed32_ = value;
 }
 inline void UnknownField::set_fixed64(uint64 value) {
-  assert(type_ == TYPE_FIXED64);
+  assert(type() == TYPE_FIXED64);
   fixed64_ = value;
 }
 inline void UnknownField::set_length_delimited(const string& value) {
-  assert(type_ == TYPE_LENGTH_DELIMITED);
+  assert(type() == TYPE_LENGTH_DELIMITED);
   length_delimited_.string_value_->assign(value);
 }
 inline string* UnknownField::mutable_length_delimited() {
-  assert(type_ == TYPE_LENGTH_DELIMITED);
+  assert(type() == TYPE_LENGTH_DELIMITED);
   return length_delimited_.string_value_;
 }
 inline UnknownFieldSet* UnknownField::mutable_group() {
-  assert(type_ == TYPE_GROUP);
+  assert(type() == TYPE_GROUP);
   return group_;
 }
 
 inline int UnknownField::GetLengthDelimitedSize() const {
-  GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type_);
+  GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
   return length_delimited_.string_value_->size();
 }
+
+inline void UnknownField::SetType(Type type) {
+  type_ = type;
+}
+
 
 }  // namespace protobuf
 

@@ -30,15 +30,20 @@
 
 package com.google.protobuf;
 
+import protobuf_unittest.UnittestProto.BoolMessage;
+import protobuf_unittest.UnittestProto.Int32Message;
+import protobuf_unittest.UnittestProto.Int64Message;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestRecursiveMessage;
 
 import junit.framework.TestCase;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 /**
  * Unit test for {@link CodedInputStream}.
@@ -85,28 +90,54 @@ public class CodedInputStreamTest extends TestCase {
     }
   }
 
+  private void assertDataConsumed(byte[] data, CodedInputStream input)
+      throws IOException {
+    assertEquals(data.length, input.getTotalBytesRead());
+    assertTrue(input.isAtEnd());
+  }
+
   /**
    * Parses the given bytes using readRawVarint32() and readRawVarint64() and
    * checks that the result matches the given value.
    */
   private void assertReadVarint(byte[] data, long value) throws Exception {
     CodedInputStream input = CodedInputStream.newInstance(data);
-    assertEquals((int)value, input.readRawVarint32());
+    assertEquals((int) value, input.readRawVarint32());
+    assertDataConsumed(data, input);
 
     input = CodedInputStream.newInstance(data);
     assertEquals(value, input.readRawVarint64());
-    assertTrue(input.isAtEnd());
+    assertDataConsumed(data, input);
+
+    input = CodedInputStream.newInstance(data);
+    assertEquals(value, input.readRawVarint64SlowPath());
+    assertDataConsumed(data, input);
+
+    input = CodedInputStream.newInstance(data);
+    assertTrue(input.skipField(WireFormat.WIRETYPE_VARINT));
+    assertDataConsumed(data, input);
 
     // Try different block sizes.
     for (int blockSize = 1; blockSize <= 16; blockSize *= 2) {
       input = CodedInputStream.newInstance(
         new SmallBlockInputStream(data, blockSize));
-      assertEquals((int)value, input.readRawVarint32());
+      assertEquals((int) value, input.readRawVarint32());
+      assertDataConsumed(data, input);
 
       input = CodedInputStream.newInstance(
         new SmallBlockInputStream(data, blockSize));
       assertEquals(value, input.readRawVarint64());
-      assertTrue(input.isAtEnd());
+      assertDataConsumed(data, input);
+
+      input = CodedInputStream.newInstance(
+        new SmallBlockInputStream(data, blockSize));
+      assertEquals(value, input.readRawVarint64SlowPath());
+      assertDataConsumed(data, input);
+
+      input = CodedInputStream.newInstance(
+        new SmallBlockInputStream(data, blockSize));
+      assertTrue(input.skipField(WireFormat.WIRETYPE_VARINT));
+      assertDataConsumed(data, input);
     }
 
     // Try reading direct from an InputStream.  We want to verify that it
@@ -115,7 +146,7 @@ public class CodedInputStreamTest extends TestCase {
     byte[] longerData = new byte[data.length + 1];
     System.arraycopy(data, 0, longerData, 0, data.length);
     InputStream rawInput = new ByteArrayInputStream(longerData);
-    assertEquals((int)value, CodedInputStream.readRawVarint32(rawInput));
+    assertEquals((int) value, CodedInputStream.readRawVarint32(rawInput));
     assertEquals(1, rawInput.available());
   }
 
@@ -138,6 +169,14 @@ public class CodedInputStreamTest extends TestCase {
     input = CodedInputStream.newInstance(data);
     try {
       input.readRawVarint64();
+      fail("Should have thrown an exception.");
+    } catch (InvalidProtocolBufferException e) {
+      assertEquals(expected.getMessage(), e.getMessage());
+    }
+
+    input = CodedInputStream.newInstance(data);
+    try {
+      input.readRawVarint64SlowPath();
       fail("Should have thrown an exception.");
     } catch (InvalidProtocolBufferException e) {
       assertEquals(expected.getMessage(), e.getMessage());
@@ -311,6 +350,7 @@ public class CodedInputStreamTest extends TestCase {
     }
   }
 
+
   /**
    * Test that a bug in skipRawBytes() has been fixed:  if the skip skips
    * exactly up to a limit, this should not break things.
@@ -350,7 +390,7 @@ public class CodedInputStreamTest extends TestCase {
     // Allocate and initialize a 1MB blob.
     byte[] blob = new byte[1 << 20];
     for (int i = 0; i < blob.length; i++) {
-      blob[i] = (byte)i;
+      blob[i] = (byte) i;
     }
 
     // Make a message containing it.
@@ -437,16 +477,23 @@ public class CodedInputStreamTest extends TestCase {
     }
   }
 
+  private void checkSizeLimitExceeded(InvalidProtocolBufferException e) {
+      assertEquals(
+          InvalidProtocolBufferException.sizeLimitExceeded().getMessage(),
+          e.getMessage());
+  }
+
   public void testSizeLimit() throws Exception {
     CodedInputStream input = CodedInputStream.newInstance(
-      TestUtil.getAllSet().toByteString().newInput());
+        new SmallBlockInputStream(
+            TestUtil.getAllSet().toByteString().newInput(), 16));
     input.setSizeLimit(16);
 
     try {
       TestAllTypes.parseFrom(input);
       fail("Should have thrown an exception!");
-    } catch (InvalidProtocolBufferException e) {
-      // success.
+    } catch (InvalidProtocolBufferException expected) {
+      checkSizeLimitExceeded(expected);
     }
   }
 
@@ -460,8 +507,8 @@ public class CodedInputStreamTest extends TestCase {
     try {
       input.readRawByte();
       fail("Should have thrown an exception!");
-    } catch (InvalidProtocolBufferException e) {
-      // success.
+    } catch (InvalidProtocolBufferException expected) {
+      checkSizeLimitExceeded(expected);
     }
 
     input.resetSizeCounter();
@@ -469,28 +516,50 @@ public class CodedInputStreamTest extends TestCase {
     input.readRawByte();  // No exception thrown.
     input.resetSizeCounter();
     assertEquals(0, input.getTotalBytesRead());
+    input.readRawBytes(16);
+    assertEquals(16, input.getTotalBytesRead());
+    input.resetSizeCounter();
 
     try {
-      input.readRawBytes(16);  // Hits limit again.
+      input.readRawBytes(17);  // Hits limit again.
       fail("Should have thrown an exception!");
-    } catch (InvalidProtocolBufferException e) {
-      // success.
+    } catch (InvalidProtocolBufferException expected) {
+      checkSizeLimitExceeded(expected);
+    }
+  }
+
+  public void testSizeLimitMultipleMessages() throws Exception {
+    byte[] bytes = new byte[256];
+    for (int i = 0; i < bytes.length; i++) {
+      bytes[i] = (byte) i;
+    }
+    CodedInputStream input = CodedInputStream.newInstance(
+        new SmallBlockInputStream(bytes, 7));
+    input.setSizeLimit(16);
+    for (int i = 0; i < 256 / 16; i++) {
+      byte[] message = input.readRawBytes(16);
+      for (int j = 0; j < message.length; j++) {
+        assertEquals(i * 16 + j, message[j] & 0xff);
+      }
+      assertEquals(16, input.getTotalBytesRead());
+      input.resetSizeCounter();
+      assertEquals(0, input.getTotalBytesRead());
     }
   }
 
   /**
-   * Tests that if we read an string that contains invalid UTF-8, no exception
+   * Tests that if we readString invalid UTF-8 bytes, no exception
    * is thrown.  Instead, the invalid bytes are replaced with the Unicode
    * "replacement character" U+FFFD.
    */
-  public void testReadInvalidUtf8() throws Exception {
+  public void testReadStringInvalidUtf8() throws Exception {
     ByteString.Output rawOutput = ByteString.newOutput();
     CodedOutputStream output = CodedOutputStream.newInstance(rawOutput);
 
     int tag = WireFormat.makeTag(1, WireFormat.WIRETYPE_LENGTH_DELIMITED);
     output.writeRawVarint32(tag);
     output.writeRawVarint32(1);
-    output.writeRawBytes(new byte[] { (byte)0x80 });
+    output.writeRawBytes(new byte[] { (byte) 0x80 });
     output.flush();
 
     CodedInputStream input = rawOutput.toByteString().newCodedInput();
@@ -499,13 +568,37 @@ public class CodedInputStreamTest extends TestCase {
     assertEquals(0xfffd, text.charAt(0));
   }
 
+  /**
+   * Tests that if we readStringRequireUtf8 invalid UTF-8 bytes, an
+   * InvalidProtocolBufferException is thrown.
+   */
+  public void testReadStringRequireUtf8InvalidUtf8() throws Exception {
+    ByteString.Output rawOutput = ByteString.newOutput();
+    CodedOutputStream output = CodedOutputStream.newInstance(rawOutput);
+
+    int tag = WireFormat.makeTag(1, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    output.writeRawVarint32(tag);
+    output.writeRawVarint32(1);
+    output.writeRawBytes(new byte[] { (byte) 0x80 });
+    output.flush();
+
+    CodedInputStream input = rawOutput.toByteString().newCodedInput();
+    assertEquals(tag, input.readTag());
+    try {
+      input.readStringRequireUtf8();
+      fail("Expected invalid UTF-8 exception.");
+    } catch (InvalidProtocolBufferException exception) {
+      assertEquals("Protocol message had invalid UTF-8.", exception.getMessage());
+    }
+  }
+
   public void testReadFromSlice() throws Exception {
     byte[] bytes = bytes(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     CodedInputStream in = CodedInputStream.newInstance(bytes, 3, 5);
     assertEquals(0, in.getTotalBytesRead());
     for (int i = 3; i < 8; i++) {
       assertEquals(i, in.readRawByte());
-      assertEquals(i-2, in.getTotalBytesRead());
+      assertEquals(i - 2, in.getTotalBytesRead());
     }
     // eof
     assertEquals(0, in.readTag());
@@ -524,5 +617,153 @@ public class CodedInputStreamTest extends TestCase {
                      e.getMessage());
       }
     }
+  }
+
+  public void testReadByteArray() throws Exception {
+    ByteString.Output rawOutput = ByteString.newOutput();
+    CodedOutputStream output = CodedOutputStream.newInstance(rawOutput);
+    // Zero-sized bytes field.
+    output.writeRawVarint32(0);
+    // One one-byte bytes field
+    output.writeRawVarint32(1);
+    output.writeRawBytes(new byte[] { (byte) 23 });
+    // Another one-byte bytes field
+    output.writeRawVarint32(1);
+    output.writeRawBytes(new byte[] { (byte) 45 });
+    // A bytes field large enough that won't fit into the 4K buffer.
+    final int bytesLength = 16 * 1024;
+    byte[] bytes = new byte[bytesLength];
+    bytes[0] = (byte) 67;
+    bytes[bytesLength - 1] = (byte) 89;
+    output.writeRawVarint32(bytesLength);
+    output.writeRawBytes(bytes);
+
+    output.flush();
+    CodedInputStream inputStream = rawOutput.toByteString().newCodedInput();
+
+    byte[] result = inputStream.readByteArray();
+    assertEquals(0, result.length);
+    result = inputStream.readByteArray();
+    assertEquals(1, result.length);
+    assertEquals((byte) 23, result[0]);
+    result = inputStream.readByteArray();
+    assertEquals(1, result.length);
+    assertEquals((byte) 45, result[0]);
+    result = inputStream.readByteArray();
+    assertEquals(bytesLength, result.length);
+    assertEquals((byte) 67, result[0]);
+    assertEquals((byte) 89, result[bytesLength - 1]);
+  }
+
+  public void testReadByteBuffer() throws Exception {
+    ByteString.Output rawOutput = ByteString.newOutput();
+    CodedOutputStream output = CodedOutputStream.newInstance(rawOutput);
+    // Zero-sized bytes field.
+    output.writeRawVarint32(0);
+    // One one-byte bytes field
+    output.writeRawVarint32(1);
+    output.writeRawBytes(new byte[]{(byte) 23});
+    // Another one-byte bytes field
+    output.writeRawVarint32(1);
+    output.writeRawBytes(new byte[]{(byte) 45});
+    // A bytes field large enough that won't fit into the 4K buffer.
+    final int bytesLength = 16 * 1024;
+    byte[] bytes = new byte[bytesLength];
+    bytes[0] = (byte) 67;
+    bytes[bytesLength - 1] = (byte) 89;
+    output.writeRawVarint32(bytesLength);
+    output.writeRawBytes(bytes);
+
+    output.flush();
+    CodedInputStream inputStream = rawOutput.toByteString().newCodedInput();
+
+    ByteBuffer result = inputStream.readByteBuffer();
+    assertEquals(0, result.capacity());
+    result = inputStream.readByteBuffer();
+    assertEquals(1, result.capacity());
+    assertEquals((byte) 23, result.get());
+    result = inputStream.readByteBuffer();
+    assertEquals(1, result.capacity());
+    assertEquals((byte) 45, result.get());
+    result = inputStream.readByteBuffer();
+    assertEquals(bytesLength, result.capacity());
+    assertEquals((byte) 67, result.get());
+    result.position(bytesLength - 1);
+    assertEquals((byte) 89, result.get());
+  }
+
+  public void testReadByteBufferAliasing() throws Exception {
+    ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
+    CodedOutputStream output = CodedOutputStream.newInstance(byteArrayStream);
+    // Zero-sized bytes field.
+    output.writeRawVarint32(0);
+    // One one-byte bytes field
+    output.writeRawVarint32(1);
+    output.writeRawBytes(new byte[]{(byte) 23});
+    // Another one-byte bytes field
+    output.writeRawVarint32(1);
+    output.writeRawBytes(new byte[]{(byte) 45});
+    // A bytes field large enough that won't fit into the 4K buffer.
+    final int bytesLength = 16 * 1024;
+    byte[] bytes = new byte[bytesLength];
+    bytes[0] = (byte) 67;
+    bytes[bytesLength - 1] = (byte) 89;
+    output.writeRawVarint32(bytesLength);
+    output.writeRawBytes(bytes);
+    output.flush();
+    byte[] data = byteArrayStream.toByteArray();
+
+    // Without aliasing
+    CodedInputStream inputStream = CodedInputStream.newInstance(data);
+    ByteBuffer result = inputStream.readByteBuffer();
+    assertEquals(0, result.capacity());
+    result = inputStream.readByteBuffer();
+    assertTrue(result.array() != data);
+    assertEquals(1, result.capacity());
+    assertEquals((byte) 23, result.get());
+    result = inputStream.readByteBuffer();
+    assertTrue(result.array() != data);
+    assertEquals(1, result.capacity());
+    assertEquals((byte) 45, result.get());
+    result = inputStream.readByteBuffer();
+    assertTrue(result.array() != data);
+    assertEquals(bytesLength, result.capacity());
+    assertEquals((byte) 67, result.get());
+    result.position(bytesLength - 1);
+    assertEquals((byte) 89, result.get());
+
+    // Enable aliasing
+    inputStream = CodedInputStream.newInstance(data);
+    inputStream.enableAliasing(true);
+    result = inputStream.readByteBuffer();
+    assertEquals(0, result.capacity());
+    result = inputStream.readByteBuffer();
+    assertTrue(result.array() == data);
+    assertEquals(1, result.capacity());
+    assertEquals((byte) 23, result.get());
+    result = inputStream.readByteBuffer();
+    assertTrue(result.array() == data);
+    assertEquals(1, result.capacity());
+    assertEquals((byte) 45, result.get());
+    result = inputStream.readByteBuffer();
+    assertTrue(result.array() == data);
+    assertEquals(bytesLength, result.capacity());
+    assertEquals((byte) 67, result.get());
+    result.position(bytesLength - 1);
+    assertEquals((byte) 89, result.get());
+  }
+
+  public void testCompatibleTypes() throws Exception {
+    long data = 0x100000000L;
+    Int64Message message = Int64Message.newBuilder().setData(data).build();
+    ByteString serialized = message.toByteString();
+
+    // Test int64(long) is compatible with bool(boolean)
+    BoolMessage msg2 = BoolMessage.parseFrom(serialized);
+    assertTrue(msg2.getData());
+
+    // Test int64(long) is compatible with int32(int)
+    Int32Message msg3 = Int32Message.parseFrom(serialized);
+    assertEquals((int) data, msg3.getData());
   }
 }

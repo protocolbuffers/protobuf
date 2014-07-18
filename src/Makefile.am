@@ -40,11 +40,13 @@ MAINTAINERCLEANFILES =   \
 nobase_include_HEADERS =                                        \
   google/protobuf/stubs/atomicops.h                             \
   google/protobuf/stubs/atomicops_internals_arm_gcc.h           \
+  google/protobuf/stubs/atomicops_internals_arm64_gcc.h         \
   google/protobuf/stubs/atomicops_internals_arm_qnx.h           \
   google/protobuf/stubs/atomicops_internals_atomicword_compat.h \
   google/protobuf/stubs/atomicops_internals_macosx.h            \
   google/protobuf/stubs/atomicops_internals_mips_gcc.h          \
   google/protobuf/stubs/atomicops_internals_pnacl.h             \
+  google/protobuf/stubs/atomicops_internals_tsan.h              \
   google/protobuf/stubs/atomicops_internals_x86_gcc.h           \
   google/protobuf/stubs/atomicops_internals_x86_msvc.h          \
   google/protobuf/stubs/common.h                                \
@@ -73,6 +75,7 @@ nobase_include_HEADERS =                                        \
   google/protobuf/io/coded_stream.h                             \
   $(GZHEADERS)                                                  \
   google/protobuf/io/printer.h                                  \
+  google/protobuf/io/strtod.h                                   \
   google/protobuf/io/tokenizer.h                                \
   google/protobuf/io/zero_copy_stream.h                         \
   google/protobuf/io/zero_copy_stream_impl.h                    \
@@ -97,7 +100,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/common.cc                              \
   google/protobuf/stubs/once.cc                                \
   google/protobuf/stubs/hash.h                                 \
-  google/protobuf/stubs/map-util.h                             \
+  google/protobuf/stubs/map_util.h                             \
   google/protobuf/stubs/stl_util.h                             \
   google/protobuf/stubs/stringprintf.cc                        \
   google/protobuf/stubs/stringprintf.h                         \
@@ -134,6 +137,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/wire_format.cc                               \
   google/protobuf/io/gzip_stream.cc                            \
   google/protobuf/io/printer.cc                                \
+  google/protobuf/io/strtod.cc                                 \
   google/protobuf/io/tokenizer.cc                              \
   google/protobuf/io/zero_copy_stream_impl.cc                  \
   google/protobuf/compiler/importer.cc                         \
@@ -174,6 +178,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/cpp/cpp_service.h                   \
   google/protobuf/compiler/cpp/cpp_string_field.cc             \
   google/protobuf/compiler/cpp/cpp_string_field.h              \
+  google/protobuf/compiler/java/java_context.cc                \
+  google/protobuf/compiler/java/java_context.h                 \
   google/protobuf/compiler/java/java_enum.cc                   \
   google/protobuf/compiler/java/java_enum.h                    \
   google/protobuf/compiler/java/java_enum_field.cc             \
@@ -185,14 +191,22 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_file.cc                   \
   google/protobuf/compiler/java/java_file.h                    \
   google/protobuf/compiler/java/java_generator.cc              \
+  google/protobuf/compiler/java/java_generator_factory.cc      \
+  google/protobuf/compiler/java/java_generator_factory.h       \
   google/protobuf/compiler/java/java_helpers.cc                \
   google/protobuf/compiler/java/java_helpers.h                 \
+  google/protobuf/compiler/java/java_lazy_message_field.cc     \
+  google/protobuf/compiler/java/java_lazy_message_field.h      \
   google/protobuf/compiler/java/java_message.cc                \
   google/protobuf/compiler/java/java_message.h                 \
   google/protobuf/compiler/java/java_message_field.cc          \
   google/protobuf/compiler/java/java_message_field.h           \
+  google/protobuf/compiler/java/java_name_resolver.cc          \
+  google/protobuf/compiler/java/java_name_resolver.h           \
   google/protobuf/compiler/java/java_primitive_field.cc        \
   google/protobuf/compiler/java/java_primitive_field.h         \
+  google/protobuf/compiler/java/java_shared_code_generator.cc  \
+  google/protobuf/compiler/java/java_shared_code_generator.h   \
   google/protobuf/compiler/java/java_service.cc                \
   google/protobuf/compiler/java/java_service.h                 \
   google/protobuf/compiler/java/java_string_field.cc           \
@@ -229,9 +243,10 @@ EXTRA_DIST =                                                   \
   google/protobuf/io/gzip_stream.h                             \
   google/protobuf/io/gzip_stream_unittest.sh                   \
   google/protobuf/testdata/golden_message                      \
+  google/protobuf/testdata/golden_message_oneof_implemented    \
   google/protobuf/testdata/golden_packed_fields_message        \
-  google/protobuf/testdata/text_format_unittest_data.txt       \
-  google/protobuf/testdata/text_format_unittest_extensions_data.txt  \
+  google/protobuf/testdata/text_format_unittest_data_oneof_implemented.txt  \
+  google/protobuf/testdata/text_format_unittest_extensions_data.txt         \
   google/protobuf/package_info.h                               \
   google/protobuf/io/package_info.h                            \
   google/protobuf/compiler/package_info.h                      \
@@ -352,7 +367,8 @@ nodist_protobuf_test_SOURCES = $(protoc_outputs)
 
 # Run cpp_unittest again with PROTOBUF_TEST_NO_DESCRIPTORS defined.
 protobuf_lazy_descriptor_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la \
-                      $(top_builddir)/gtest/lib/libgtest.la       \
+                      libprotoc.la                                   \
+                      $(top_builddir)/gtest/lib/libgtest.la          \
                       $(top_builddir)/gtest/lib/libgtest_main.la
 protobuf_lazy_descriptor_test_CPPFLAGS = -I$(top_srcdir)/gtest/include    \
                                          -I$(top_builddir)/gtest/include  \

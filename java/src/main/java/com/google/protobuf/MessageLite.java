@@ -128,6 +128,7 @@ public interface MessageLite extends MessageLiteOrBuilder {
    */
   void writeDelimitedTo(OutputStream output) throws IOException;
 
+
   // =================================================================
   // Builders
 

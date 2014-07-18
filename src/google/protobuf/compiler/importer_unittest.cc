@@ -33,12 +33,13 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/stubs/hash.h>
+#include <memory>
 
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
-#include <google/protobuf/stubs/map-util.h>
+#include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -90,6 +91,10 @@ class MockSourceTree : public SourceTree {
     } else {
       return new io::ArrayInputStream(contents, strlen(contents));
     }
+  }
+
+  string GetLastErrorMessage() {
+    return "File not found.";
   }
 
  private:
@@ -324,6 +329,7 @@ TEST_F(ImporterTest, MapFieldKeyNotScalar) {
   EXPECT_SUBSTRING("must name a scalar or string", error());
 }
 
+
 // ===================================================================
 
 class DiskSourceTreeTest : public testing::Test {
@@ -336,7 +342,7 @@ class DiskSourceTreeTest : public testing::Test {
       if (File::Exists(dirnames_[i])) {
         File::DeleteRecursively(dirnames_[i], NULL, NULL);
       }
-      GOOGLE_CHECK(File::CreateDir(dirnames_[i].c_str(), DEFAULT_FILE_MODE));
+      GOOGLE_CHECK_OK(File::CreateDir(dirnames_[i], 0777));
     }
   }
 
@@ -347,11 +353,11 @@ class DiskSourceTreeTest : public testing::Test {
   }
 
   void AddFile(const string& filename, const char* contents) {
-    File::WriteStringToFileOrDie(contents, filename);
+    GOOGLE_CHECK_OK(File::SetContents(filename, contents, true));
   }
 
   void AddSubdir(const string& dirname) {
-    GOOGLE_CHECK(File::CreateDir(dirname.c_str(), DEFAULT_FILE_MODE));
+    GOOGLE_CHECK_OK(File::CreateDir(dirname, 0777));
   }
 
   void ExpectFileContents(const string& filename,
@@ -371,9 +377,11 @@ class DiskSourceTreeTest : public testing::Test {
     EXPECT_EQ(expected_contents, file_contents);
   }
 
-  void ExpectFileNotFound(const string& filename) {
+  void ExpectCannotOpenFile(const string& filename,
+                            const string& error_message) {
     scoped_ptr<io::ZeroCopyInputStream> input(source_tree_.Open(filename));
     EXPECT_TRUE(input == NULL);
+    EXPECT_EQ(error_message, source_tree_.GetLastErrorMessage());
   }
 
   DiskSourceTree source_tree_;
@@ -389,7 +397,7 @@ TEST_F(DiskSourceTreeTest, MapRoot) {
   source_tree_.MapPath("", dirnames_[0]);
 
   ExpectFileContents("foo", "Hello World!");
-  ExpectFileNotFound("bar");
+  ExpectCannotOpenFile("bar", "File not found.");
 }
 
 TEST_F(DiskSourceTreeTest, MapDirectory) {
@@ -400,15 +408,21 @@ TEST_F(DiskSourceTreeTest, MapDirectory) {
   source_tree_.MapPath("baz", dirnames_[0]);
 
   ExpectFileContents("baz/foo", "Hello World!");
-  ExpectFileNotFound("baz/bar");
-  ExpectFileNotFound("foo");
-  ExpectFileNotFound("bar");
+  ExpectCannotOpenFile("baz/bar", "File not found.");
+  ExpectCannotOpenFile("foo", "File not found.");
+  ExpectCannotOpenFile("bar", "File not found.");
 
   // Non-canonical file names should not work.
-  ExpectFileNotFound("baz//foo");
-  ExpectFileNotFound("baz/../baz/foo");
-  ExpectFileNotFound("baz/./foo");
-  ExpectFileNotFound("baz/foo/");
+  ExpectCannotOpenFile("baz//foo",
+                       "Backslashes, consecutive slashes, \".\", or \"..\" are "
+                       "not allowed in the virtual path");
+  ExpectCannotOpenFile("baz/../baz/foo",
+                       "Backslashes, consecutive slashes, \".\", or \"..\" are "
+                       "not allowed in the virtual path");
+  ExpectCannotOpenFile("baz/./foo",
+                       "Backslashes, consecutive slashes, \".\", or \"..\" are "
+                       "not allowed in the virtual path");
+  ExpectCannotOpenFile("baz/foo/", "File not found.");
 }
 
 TEST_F(DiskSourceTreeTest, NoParent) {
@@ -420,8 +434,12 @@ TEST_F(DiskSourceTreeTest, NoParent) {
   source_tree_.MapPath("", dirnames_[0] + "/bar");
 
   ExpectFileContents("baz", "Blah.");
-  ExpectFileNotFound("../foo");
-  ExpectFileNotFound("../bar/baz");
+  ExpectCannotOpenFile("../foo",
+                       "Backslashes, consecutive slashes, \".\", or \"..\" are "
+                       "not allowed in the virtual path");
+  ExpectCannotOpenFile("../bar/baz",
+                       "Backslashes, consecutive slashes, \".\", or \"..\" are "
+                       "not allowed in the virtual path");
 }
 
 TEST_F(DiskSourceTreeTest, MapFile) {
@@ -431,7 +449,7 @@ TEST_F(DiskSourceTreeTest, MapFile) {
   source_tree_.MapPath("foo", dirnames_[0] + "/foo");
 
   ExpectFileContents("foo", "Hello World!");
-  ExpectFileNotFound("bar");
+  ExpectCannotOpenFile("bar", "File not found.");
 }
 
 TEST_F(DiskSourceTreeTest, SearchMultipleDirectories) {
@@ -445,7 +463,7 @@ TEST_F(DiskSourceTreeTest, SearchMultipleDirectories) {
 
   ExpectFileContents("foo", "Hello World!");
   ExpectFileContents("bar", "Goodbye World!");
-  ExpectFileNotFound("baz");
+  ExpectCannotOpenFile("baz", "File not found.");
 }
 
 TEST_F(DiskSourceTreeTest, OrderingTrumpsSpecificity) {
@@ -453,8 +471,7 @@ TEST_F(DiskSourceTreeTest, OrderingTrumpsSpecificity) {
   // directory is more-specific than a former one.
 
   // Create the "bar" directory so we can put a file in it.
-  ASSERT_TRUE(File::CreateDir((dirnames_[0] + "/bar").c_str(),
-                              DEFAULT_FILE_MODE));
+  GOOGLE_CHECK_OK(File::CreateDir(dirnames_[0] + "/bar", 0777));
 
   // Add files and map paths.
   AddFile(dirnames_[0] + "/bar/foo", "Hello World!");

@@ -32,7 +32,6 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <istream>
 #include <stack>
 #include <google/protobuf/stubs/hash.h>
 
@@ -48,7 +47,7 @@
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/map-util.h>
+#include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
@@ -75,7 +74,7 @@ void Message::CheckTypeAndMergeFrom(const MessageLite& other) {
 void Message::CopyFrom(const Message& from) {
   const Descriptor* descriptor = GetDescriptor();
   GOOGLE_CHECK_EQ(from.GetDescriptor(), descriptor)
-    << ": Tried to copy from a message with a different type."
+    << ": Tried to copy from a message with a different type. "
        "to: " << descriptor->full_name() << ", "
        "from:" << from.GetDescriptor()->full_name();
   ReflectionOps::Copy(from, this);
@@ -100,7 +99,7 @@ void Message::FindInitializationErrors(vector<string>* errors) const {
 string Message::InitializationErrorString() const {
   vector<string> errors;
   FindInitializationErrors(&errors);
-  return JoinStrings(errors, ", ");
+  return Join(errors, ", ");
 }
 
 void Message::CheckInitialized() const {
@@ -216,8 +215,7 @@ HANDLE_TYPE(bool,   FieldDescriptor::CPPTYPE_BOOL,   -1);
 #undef HANDLE_TYPE
 
 void* Reflection::MutableRawRepeatedString(
-    Message* message, const FieldDescriptor* field,
-    bool /* is_string */) const {
+    Message* message, const FieldDescriptor* field, bool is_string) const {
   return MutableRawRepeatedField(message, field,
       FieldDescriptor::CPPTYPE_STRING, FieldOptions::STRING, NULL);
 }

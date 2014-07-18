@@ -104,6 +104,8 @@
                   <arg value="../src/google/protobuf/unittest_import.proto" />
                   <arg value="../src/google/protobuf/unittest_import_public.proto" />
                   <arg value="../src/google/protobuf/unittest_mset.proto" />
+                  <arg value="src/test/java/com/google/protobuf/lazy_fields_lite.proto" />
+                  <arg value="src/test/java/com/google/protobuf/lite_equals_and_hash.proto" />
                   <arg
                     value="src/test/java/com/google/protobuf/multiple_files_test.proto" />
                   <arg value="src/test/java/com/google/protobuf/nested_builders_test.proto" />
@@ -111,7 +113,13 @@
                   <arg value="src/test/java/com/google/protobuf/nested_extension_lite.proto" />
                   <arg value="src/test/java/com/google/protobuf/non_nested_extension.proto" />
                   <arg value="src/test/java/com/google/protobuf/non_nested_extension_lite.proto" />
+                  <arg value="src/test/java/com/google/protobuf/outer_class_name_test.proto" />
+                  <arg value="src/test/java/com/google/protobuf/outer_class_name_test2.proto" />
+                  <arg value="src/test/java/com/google/protobuf/outer_class_name_test3.proto" />
                   <arg value="src/test/java/com/google/protobuf/test_bad_identifiers.proto" />
+                  <arg value="src/test/java/com/google/protobuf/test_check_utf8.proto" />
+                  <arg value="src/test/java/com/google/protobuf/test_check_utf8_size.proto" />
+                  <arg value="src/test/java/com/google/protobuf/test_custom_options.proto" />
                   <arg
                     value="../src/google/protobuf/unittest_optimize_for.proto" />
                   <arg
@@ -179,6 +187,8 @@
                 <include>**/RopeByteString.java</include>
                 <include>**/Utf8.java</include>
                 <include>**/LazyField.java</include>
+                <include>**/LazyFieldLite.java</include>
+                <include>**/ProtocolStringList.java</include>
               </includes>
               <testIncludes>
                 <testInclude>**/LiteTest.java</testInclude>

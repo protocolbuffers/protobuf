@@ -91,9 +91,8 @@ public final class RpcUtil {
   @SuppressWarnings("unchecked")
   private static <Type extends Message> Type copyAsType(
       final Type typeDefaultInstance, final Message source) {
-    return (Type)typeDefaultInstance.newBuilderForType()
-                                    .mergeFrom(source)
-                                    .build();
+    return (Type) typeDefaultInstance
+        .newBuilderForType().mergeFrom(source).build();
   }
 
   /**
