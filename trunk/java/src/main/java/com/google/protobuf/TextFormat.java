@@ -84,6 +84,26 @@ public final class TextFormat {
   }
 
   /**
+   * Same as {@code print()}, except that non-ASCII characters are not
+   * escaped.
+   */
+  public static void printUnicode(
+      final MessageOrBuilder message, final Appendable output)
+      throws IOException {
+    UNICODE_PRINTER.print(message, new TextGenerator(output));
+  }
+
+  /**
+   * Same as {@code print()}, except that non-ASCII characters are not
+   * escaped.
+   */
+  public static void printUnicode(final UnknownFieldSet fields,
+                                  final Appendable output)
+                                  throws IOException {
+    UNICODE_PRINTER.printUnknownFields(fields, new TextGenerator(output));
+  }
+
+  /**
    * Generates a human readable form of this message, useful for debugging and
    * other purposes, with no newline characters.
    */
