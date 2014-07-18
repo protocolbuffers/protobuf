@@ -226,8 +226,6 @@ struct PointerStringPairHash {
   }
 
   // Used only by MSVC and platforms where hash_map is not available.
-  static const size_t bucket_size = 4;
-  static const size_t min_buckets = 8;
   inline bool operator()(const PointerStringPair& a,
                          const PointerStringPair& b) const {
     if (a.first < b.first) return true;
