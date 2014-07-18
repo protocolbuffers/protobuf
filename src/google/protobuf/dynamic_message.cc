@@ -749,8 +749,6 @@ void DynamicMessageFactory::DeleteDefaultOneofInstance(
   for (int i = 0; i < type->oneof_decl_count(); i++) {
     for (int j = 0; j < type->oneof_decl(i)->field_count(); j++) {
       const FieldDescriptor* field = type->oneof_decl(i)->field(j);
-      void* field_ptr = reinterpret_cast<uint8*>(
-          default_oneof_instance) + offsets[field->index()];
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
         switch (field->options().ctype()) {
           default:
