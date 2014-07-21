@@ -3212,6 +3212,9 @@ public class NanoTest extends TestCase {
     TestAllTypesNano a = createMessageForHashCodeEqualsTest();
     TestAllTypesNano aEquivalent = createMessageForHashCodeEqualsTest();
 
+    assertTrue(MessageNano.messageNanoEquals(a, aEquivalent));
+    assertFalse(MessageNano.messageNanoEquals(a, new TestAllTypesNano()));
+
     // Null and empty array for repeated fields equality:
     TestAllTypesNano b = createMessageForHashCodeEqualsTest();
     b.repeatedBool = null;

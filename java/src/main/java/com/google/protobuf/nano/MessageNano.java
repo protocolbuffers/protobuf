@@ -31,6 +31,7 @@
 package com.google.protobuf.nano;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Abstract interface implemented by Protocol Message objects.
@@ -148,6 +149,31 @@ public abstract class MessageNano {
             throw new RuntimeException("Reading from a byte array threw an IOException (should "
                     + "never happen).");
         }
+    }
+
+    /**
+     * Compares two {@code MessageNano}s and returns true if the message's are the same class and
+     * have serialized form equality (i.e. all of the field values are the same).
+     */
+    public static final boolean messageNanoEquals(MessageNano a, MessageNano b) {
+        if (a == b) {
+            return true;
+        }
+        if (a == null || b == null) {
+            return false;
+        }
+        if (a.getClass() != b.getClass()) {
+          return false;
+        }
+        final int serializedSize = a.getSerializedSize();
+        if (b.getSerializedSize() != serializedSize) {
+            return false;
+        }
+        final byte[] aByteArray = new byte[serializedSize];
+        final byte[] bByteArray = new byte[serializedSize];
+        toByteArray(a, aByteArray, 0, serializedSize);
+        toByteArray(b, bByteArray, 0, serializedSize);
+        return Arrays.equals(aByteArray, bByteArray);
     }
 
     /**
