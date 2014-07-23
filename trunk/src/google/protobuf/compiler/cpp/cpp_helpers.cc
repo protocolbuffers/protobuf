@@ -270,9 +270,9 @@ string Int64ToString(int64 number) {
   // gcc rejects the decimal form of kint64min
   if (number == kint64min) {
     // Make sure we are in a 2's complement system.
-    GOOGLE_COMPILE_ASSERT(kint64min == GOOGLE_LONGLONG(-0x8000000000000000),
+    GOOGLE_COMPILE_ASSERT(kint64min == GOOGLE_LONGLONG(~0x7fffffffffffffff),
                    kint64min_value_error);
-    return "GOOGLE_LONGLONG(-0x8000000000000000)";
+    return "GOOGLE_LONGLONG(~0x7fffffffffffffff)";
   }
   return "GOOGLE_LONGLONG(" + SimpleItoa(number) + ")";
 }
