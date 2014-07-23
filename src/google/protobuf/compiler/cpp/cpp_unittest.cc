@@ -159,7 +159,7 @@ TEST(GeneratedMessageTest, Int32StringConversion) {
 TEST(GeneratedMessageTest, Int64StringConversion) {
   EXPECT_EQ("GOOGLE_LONGLONG(971)", Int64ToString(971));
   EXPECT_EQ("GOOGLE_LONGLONG(-2147483648)", Int64ToString(kint32min));
-  EXPECT_EQ("GOOGLE_LONGLONG(-0x8000000000000000)", Int64ToString(kint64min));
+  EXPECT_EQ("GOOGLE_LONGLONG(~0x7fffffffffffffff)", Int64ToString(kint64min));
   EXPECT_EQ("GOOGLE_LONGLONG(9223372036854775807)", Int64ToString(kint64max));
 }
 
@@ -196,8 +196,8 @@ TEST(GeneratedMessageTest, Trigraph) {
 TEST(GeneratedMessageTest, ExtremeSmallIntegerDefault) {
   const unittest::TestExtremeDefaultValues& extreme_default =
       unittest::TestExtremeDefaultValues::default_instance();
-  EXPECT_EQ(-0x80000000, kint32min);
-  EXPECT_EQ(GOOGLE_LONGLONG(-0x8000000000000000), kint64min);
+  EXPECT_EQ(~0x7fffffff, kint32min);
+  EXPECT_EQ(GOOGLE_LONGLONG(~0x7fffffffffffffff), kint64min);
   EXPECT_EQ(kint32min, extreme_default.really_small_int32());
   EXPECT_EQ(kint64min, extreme_default.really_small_int64());
 }
