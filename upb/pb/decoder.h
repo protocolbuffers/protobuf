@@ -146,19 +146,9 @@ UPB_DEFINE_STRUCT(upb_pbdecodermethod, upb_refcounted,
   // The destination handlers this method is bound to.  We own a ref.
   const upb_handlers *dest_handlers_;
 
-  // The dispatch table layout is:
-  //   [field number] -> [ 48-bit offset ][ 8-bit wt2 ][ 8-bit wt1 ]
-  //
-  // If wt1 matches, jump to the 48-bit offset.  If wt2 matches, lookup
-  // (UPB_MAX_FIELDNUMBER + fieldnum) and jump there.
-  //
-  // We need two wire types because of packed/non-packed compatibility.  A
-  // primitive repeated field can use either wire type and be valid.  While we
-  // could key the table on fieldnum+wiretype, the table would be 8x sparser.
-  //
-  // Storing two wire types in the primary value allows us to quickly rule out
-  // the second wire type without needing to do a separate lookup (this case is
-  // less common than an unknown field).
+  // Dispatch table -- used by both bytecode decoder and JIT when encountering a
+  // field number that wasn't the one we were expecting to see.  See
+  // decoder.int.h for the layout of this table.
   upb_inttable dispatch;
 ));
 

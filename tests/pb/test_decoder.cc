@@ -612,6 +612,9 @@ void run_decoder(const string& proto, const string* expected_output) {
           if (ok) {
             fprintf(stderr, "Didn't expect ok result, but got output: '%s'\n",
                     output.c_str());
+          } else if (filter_hash) {
+            fprintf(stderr, "Failed as we expected, with message: %s\n",
+                    status.error_message());
           }
           ASSERT(!ok);
         }
@@ -838,6 +841,10 @@ void test_invalid() {
   // Field number is 0.
   assert_does_not_parse(
       cat( tag(0, UPB_WIRE_TYPE_DELIMITED), varint(0) ));
+  // The previous test alone did not catch this particular pattern which could
+  // corrupt the internal state.
+  assert_does_not_parse(
+      cat( tag(0, UPB_WIRE_TYPE_64BIT), uint64(0) ));
 
   // Field number is too large.
   assert_does_not_parse(
@@ -926,6 +933,12 @@ void test_valid() {
       "<\n>\n");
   assert_successful_parse(
       submsg(12345, string("                ")),
+      "<\n>\n");
+
+  // This triggered a previous bug in the decoder.
+  assert_successful_parse(
+      cat( tag(UPB_DESCRIPTOR_TYPE_SFIXED32, UPB_WIRE_TYPE_VARINT),
+           varint(0) ),
       "<\n>\n");
 
   assert_successful_parse(

@@ -147,6 +147,35 @@ void upb_pbdecoder_freejit(mgroup *group);
 // RET) for branching to when we find an appropriate ENDGROUP tag.
 #define DISPATCH_ENDMSG 0
 
+// It's important to use this invalid wire type instead of 0 (which is a valid
+// wire type).
+#define NO_WIRE_TYPE 0xff
+
+// The dispatch table layout is:
+//   [field number] -> [ 48-bit offset ][ 8-bit wt2 ][ 8-bit wt1 ]
+//
+// If wt1 matches, jump to the 48-bit offset.  If wt2 matches, lookup
+// (UPB_MAX_FIELDNUMBER + fieldnum) and jump there.
+//
+// We need two wire types because of packed/non-packed compatibility.  A
+// primitive repeated field can use either wire type and be valid.  While we
+// could key the table on fieldnum+wiretype, the table would be 8x sparser.
+//
+// Storing two wire types in the primary value allows us to quickly rule out
+// the second wire type without needing to do a separate lookup (this case is
+// less common than an unknown field).
+UPB_INLINE uint64_t upb_pbdecoder_packdispatch(uint64_t ofs, uint8_t wt1,
+                                               uint8_t wt2) {
+  return (ofs << 16) | (wt2 << 8) | wt1;
+}
+
+UPB_INLINE void upb_pbdecoder_unpackdispatch(uint64_t dispatch, uint64_t *ofs,
+                                             uint8_t *wt1, uint8_t *wt2) {
+  *wt1 = (uint8_t)dispatch;
+  *wt2 = (uint8_t)(dispatch >> 8);
+  *ofs = dispatch >> 16;
+}
+
 // All of the functions in decoder.c that return int32_t return values according
 // to the following scheme:
 //   1. negative values indicate a return code from the following list.

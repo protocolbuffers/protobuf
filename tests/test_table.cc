@@ -284,6 +284,26 @@ int32_t *get_contiguous_keys(int32_t num) {
   return buf;
 }
 
+void test_delete() {
+  upb_inttable t;
+  upb_inttable_init(&t, UPB_CTYPE_BOOL);
+  upb_inttable_insert(&t, 0, upb_value_bool(true));
+  upb_inttable_insert(&t, 2, upb_value_bool(true));
+  upb_inttable_insert(&t, 4, upb_value_bool(true));
+  upb_inttable_compact(&t);
+  upb_inttable_remove(&t, 0, NULL);
+  upb_inttable_remove(&t, 2, NULL);
+  upb_inttable_remove(&t, 4, NULL);
+
+  upb_inttable_iter iter;
+  for (upb_inttable_begin(&iter, &t); !upb_inttable_done(&iter);
+       upb_inttable_next(&iter)) {
+    ASSERT(false);
+  }
+
+  upb_inttable_uninit(&t);
+}
+
 extern "C" {
 
 int run_tests(int argc, char *argv[]) {
@@ -336,6 +356,9 @@ int run_tests(int argc, char *argv[]) {
   }
   test_inttable(keys4, 64, "Table size: 64, keys: 1-32 and 10133-10164 ====\n");
   delete[] keys4;
+
+  test_delete();
+
   return 0;
 }
 

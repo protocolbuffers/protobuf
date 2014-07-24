@@ -133,33 +133,44 @@
 |  add     PTR, 1
 |.endmacro
 
-static void asmlabel(jitcompiler *jc, const char *fmt, ...) {
-  int ofs = jc->dynasm->section->ofs;
-  assert(ofs != jc->lastlabelofs);
-  jc->lastlabelofs = ofs;
-  va_list args;
-  va_start(args, fmt);
-
-  // Run once to get the length of the string.
-  va_list args_copy;
-  va_copy(args_copy, args);
-  int len = vsnprintf(NULL, 0, fmt, args_copy);
-  va_end(args_copy);
-
-  char *str = malloc(len + 1);  // + 1 for NULL terminator.
-  if (!str) exit(1);
-  int written = vsnprintf(str, len + 1, fmt, args);
-  va_end(args);
-  UPB_ASSERT_VAR(written, written == len);
-
-  uint32_t label = jc->pclabel_count++;
-  dasm_growpc(jc, jc->pclabel_count);
-  |=>label:
-  upb_inttable_insert(&jc->asmlabels, label, upb_value_ptr(str));
-}
+#define DECODE_EOF -3
 
 static upb_func *gethandler(const upb_handlers *h, upb_selector_t sel) {
   return h ? upb_handlers_gethandler(h, sel) : NULL;
+}
+
+// Defines an "assembly label" for the current code generation offset.
+// This label exists *purely* for debugging purposes: it is emitted into
+// the .so, and printed as part of JIT debugging output when UPB_JIT_LOAD_SO is
+// defined.
+//
+// We would define this in the .c file except that it conditionally defines a
+// pclabel.
+static void asmlabel(jitcompiler *jc, const char *fmt, ...) {
+#ifndef NDEBUG
+  int ofs = jc->dynasm->section->ofs;
+  assert(ofs != jc->lastlabelofs);
+  jc->lastlabelofs = ofs;
+#endif
+
+#ifndef UPB_JIT_LOAD_SO
+  UPB_UNUSED(jc);
+  UPB_UNUSED(fmt);
+#else
+  va_list args;
+  va_start(args, fmt);
+  char *str = upb_vasprintf(fmt, args);
+  va_end(args);
+
+  int pclabel = alloc_pclabel(jc);
+  // Normally we would prefer to allocate this inline with the codegen,
+  // ie.
+  //   |=>asmlabel(...)
+  // But since we do this conditionally, only when UPB_JIT_LOAD_SO is defined,
+  // we do it here instead.
+  |=>pclabel:
+  upb_inttable_insert(&jc->asmlabels, pclabel, upb_value_ptr(str));
+#endif
 }
 
 // Should only be called when the associated handler is known to exist.
@@ -696,7 +707,7 @@ static void jitdispatch(jitcompiler *jc,
   // this characteristic.
   bool has_multi_wiretype = has_hash_entries;
 
-  |=>define_pclabel(jc, &method->dispatch):
+  |=>define_jmptarget(jc, &method->dispatch):
   |1:
   // Decode the field tag.
   |  mov     aword DECODER->checkpoint, PTR
@@ -751,8 +762,17 @@ static void jitdispatch(jitcompiler *jc,
     |  jne  >5
   }
   |  shr  rax, 16
+  |
+  |  // Load the machine code address from the table entry.
+  |  // The table entry is relative to the dispatch->array jmptarget
+  |  // (patchdispatch() took care of this) which is the same as
+  |  // local label "4".  The "lea" is really just trying to do
+  |  //    lea  rax, [>4 + rax]
+  |  //
+  |  // But we can't write that directly for some reason, so we use
+  |  // rdx as a temporary.
   |  lea  rdx, [>4]
-  |=>define_pclabel(jc, dispatch->array):
+  |=>define_jmptarget(jc, dispatch->array):
   |4:
   |  add  rax, rdx
   |  ret
@@ -812,7 +832,7 @@ static void jittag(jitcompiler *jc, uint64_t tag, int n, int ofs,
   |  cmp   eax, DECODE_MISMATCH
   |  je    >3
   |  cmp   eax, DECODE_EOF
-  |  je     =>pclabel(jc, delimend)
+  |  je     =>jmptarget(jc, delimend)
   |  jmp   >5
 
   |1:
@@ -844,12 +864,12 @@ static void jittag(jitcompiler *jc, uint64_t tag, int n, int ofs,
   |  je    >4
   |3:
   if (ofs == 0) {
-    |  call   =>pclabel(jc, &method->dispatch)
+    |  call   =>jmptarget(jc, &method->dispatch)
     |  test   rax, rax
-    |  jz     =>pclabel(jc, delimend)
+    |  jz     =>jmptarget(jc, delimend)
     |  jmp    rax
   } else {
-    |  jmp    =>pclabel(jc, jc->pc + ofs)
+    |  jmp    =>jmptarget(jc, jc->pc + ofs)
   }
   |4:
   |  add    PTR, n
@@ -874,7 +894,7 @@ static void jitbytecode(jitcompiler *jc) {
       // Skipped for SETDISPATCH because it should point at the function
       // prologue, not the dispatch function that is emitted first.
       // TODO: optimize this to only define pclabels that are actually used.
-      |=>define_pclabel(jc, jc->pc):
+      |=>define_jmptarget(jc, jc->pc):
     }
 
     jc->pc++;
@@ -936,8 +956,8 @@ static void jitbytecode(jitcompiler *jc) {
 
       // Emit function prologue for new method.
       asmlabel(jc, "0x%lx.parse.%s", pcofs(jc), msgname);
-      |=>define_pclabel(jc, op_pc):
-      |=>define_pclabel(jc, method):
+      |=>define_jmptarget(jc, op_pc):
+      |=>define_jmptarget(jc, method):
       |  sub   rsp, 8
 
       break;
@@ -1082,13 +1102,13 @@ static void jitbytecode(jitcompiler *jc) {
       break;
     case OP_CHECKDELIM:
       |  cmp  DELIMEND, PTR
-      |  je   =>pclabel(jc, jc->pc + longofs)
+      |  je   =>jmptarget(jc, jc->pc + longofs)
       break;
     case OP_CALL:
-      |  call =>pclabel(jc, jc->pc + longofs)
+      |  call =>jmptarget(jc, jc->pc + longofs)
       break;
     case OP_BRANCH:
-      |  jmp  =>pclabel(jc, jc->pc + longofs);
+      |  jmp  =>jmptarget(jc, jc->pc + longofs);
       break;
     case OP_RET:
       |9:

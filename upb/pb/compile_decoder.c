@@ -509,9 +509,20 @@ static upb_selector_t getsel(const upb_fielddef *f, upb_handlertype_t type) {
   return selector;
 }
 
+// Takes an existing, primary dispatch table entry and repacks it with a
+// different alternate wire type.  Called when we are inserting a secondary
+// dispatch table entry for an alternate wire type.
+static uint64_t repack(uint64_t dispatch, int new_wt2) {
+  uint64_t ofs;
+  uint8_t wt1;
+  uint8_t old_wt2;
+  upb_pbdecoder_unpackdispatch(dispatch, &ofs, &wt1, &old_wt2);
+  assert(old_wt2 == NO_WIRE_TYPE);  // wt2 should not be set yet.
+  return upb_pbdecoder_packdispatch(ofs, wt1, new_wt2);
+}
+
 // Marks the current bytecode position as the dispatch target for this message,
 // field, and wire type.
-//
 static void dispatchtarget(compiler *c, upb_pbdecodermethod *method,
                            const upb_fielddef *f, int wire_type) {
   // Offset is relative to msg base.
@@ -521,12 +532,12 @@ static void dispatchtarget(compiler *c, upb_pbdecodermethod *method,
   upb_value v;
   if (upb_inttable_remove(d, fn, &v)) {
     // TODO: prioritize based on packed setting in .proto file.
-    uint64_t oldval = upb_value_getuint64(v);
-    assert(((oldval >> 8) & 0xff) == 0);  // wt2 should not be set yet.
-    upb_inttable_insert(d, fn, upb_value_uint64(oldval | (wire_type << 8)));
+    uint64_t repacked = repack(upb_value_getuint64(v), wire_type);
+    upb_inttable_insert(d, fn, upb_value_uint64(repacked));
     upb_inttable_insert(d, fn + UPB_MAX_FIELDNUMBER, upb_value_uint64(ofs));
   } else {
-    upb_inttable_insert(d, fn, upb_value_uint64((ofs << 16) | wire_type));
+    uint64_t val = upb_pbdecoder_packdispatch(ofs, wire_type, NO_WIRE_TYPE);
+    upb_inttable_insert(d, fn, upb_value_uint64(val));
   }
 }
 

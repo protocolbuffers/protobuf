@@ -567,7 +567,8 @@ static int32_t dispatch(upb_pbdecoder *d) {
   // Lookup tag.  Because of packed/non-packed compatibility, we have to
   // check the wire type against two possibilities.
   upb_value val;
-  if (upb_inttable_lookup32(dispatch, fieldnum, &val)) {
+  if (fieldnum != DISPATCH_ENDMSG &&
+      upb_inttable_lookup32(dispatch, fieldnum, &val)) {
     uint64_t v = upb_value_getuint64(val);
     if (wire_type == (v & 0xff)) {
       d->pc = d->top->base + (v >> 16);

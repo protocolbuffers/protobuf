@@ -175,7 +175,13 @@ typedef struct {
   size_t mask;           // Mask to turn hash value -> bucket.
   upb_ctype_t ctype;     // Type of all values.
   uint8_t size_lg2;      // Size of the hash table part is 2^size_lg2 entries.
-  const upb_tabent *entries;   // Hash table.
+
+  // Hash table entries.
+  // Making this const isn't entirely accurate; what we really want is for it to
+  // have the same const-ness as the table it's inside.  But there's no way to
+  // declare that in C.  So we have to make it const so that we can statically
+  // initialize const hash tables.  Then we cast away const when we have to.
+  const upb_tabent *entries;
 } upb_table;
 
 typedef struct {
@@ -186,10 +192,10 @@ typedef struct {
   {{count, mask, ctype, size_lg2, entries}}
 
 typedef struct {
-  upb_table t;             // For entries that don't fit in the array part.
-  const _upb_value *array;  // Array part of the table.
-  size_t array_size;       // Array part size.
-  size_t array_count;      // Array part number of elements.
+  upb_table t;              // For entries that don't fit in the array part.
+  const _upb_value *array;  // Array part of the table.  See const note above.
+  size_t array_size;        // Array part size.
+  size_t array_count;       // Array part number of elements.
 } upb_inttable;
 
 #define UPB_INTTABLE_INIT(count, mask, ctype, size_lg2, ent, a, asize, acount) \
@@ -198,7 +204,8 @@ typedef struct {
 #define UPB_EMPTY_INTTABLE_INIT(ctype) \
   UPB_INTTABLE_INIT(0, 0, ctype, 0, NULL, NULL, 0, 0)
 
-#define UPB_ARRAY_EMPTYENT UPB_VALUE_INIT_INT64(-1)
+#define UPB_ARRAY_EMPTYVAL -1
+#define UPB_ARRAY_EMPTYENT UPB_VALUE_INIT_INT64(UPB_ARRAY_EMPTYVAL)
 
 UPB_INLINE size_t upb_table_size(const upb_table *t) {
   if (t->size_lg2 == 0)
@@ -221,7 +228,7 @@ UPB_INLINE const upb_tabent *upb_inthash(const upb_table *t, upb_tabkey key) {
 }
 
 UPB_INLINE bool upb_arrhas(_upb_value v) {
-  return v.uint64 != (uint64_t)-1;
+  return v.uint64 != (uint64_t)UPB_ARRAY_EMPTYVAL;
 }
 
 uint32_t MurmurHash2(const void *key, size_t len, uint32_t seed);
@@ -249,9 +256,8 @@ UPB_INLINE size_t upb_strtable_count(const upb_strtable *t) {
 bool upb_inttable_insert(upb_inttable *t, uintptr_t key, upb_value val);
 bool upb_strtable_insert(upb_strtable *t, const char *key, upb_value val);
 
-// Looks up key in this table, returning a pointer to the table's internal copy
-// of the user's inserted data, or NULL if this key is not in the table.  The
-// returned pointer is invalidated by inserts.
+// Looks up key in this table, returning "true" if the key was found.
+// If v is non-NULL, copies the value for this key into *v.
 bool upb_inttable_lookup(const upb_inttable *t, uintptr_t key, upb_value *v);
 bool upb_strtable_lookup(const upb_strtable *t, const char *key, upb_value *v);
 

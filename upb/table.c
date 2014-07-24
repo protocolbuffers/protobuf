@@ -53,6 +53,11 @@ typedef bool eqlfunc_t(upb_tabkey k1, upb_tabkey k2);
 
 /* Base table (shared code) ***************************************************/
 
+// For when we need to cast away const.
+static upb_tabent *mutable_entries(upb_table *t) {
+  return (upb_tabent*)t->entries;
+}
+
 static bool isfull(upb_table *t) {
   return (double)(t->count + 1) / upb_table_size(t) > MAX_LOAD;
 }
@@ -66,17 +71,17 @@ static bool init(upb_table *t, upb_ctype_t ctype, uint8_t size_lg2) {
   if (bytes > 0) {
     t->entries = malloc(bytes);
     if (!t->entries) return false;
-    memset((void*)t->entries, 0, bytes);
+    memset(mutable_entries(t), 0, bytes);
   } else {
     t->entries = NULL;
   }
   return true;
 }
 
-static void uninit(upb_table *t) { free((void*)t->entries); }
+static void uninit(upb_table *t) { free(mutable_entries(t)); }
 
 static upb_tabent *emptyent(upb_table *t) {
-  upb_tabent *e = (upb_tabent*)t->entries + upb_table_size(t);
+  upb_tabent *e = mutable_entries(t) + upb_table_size(t);
   while (1) { if (upb_tabent_isempty(--e)) return e; assert(e > t->entries); }
 }
 
@@ -315,9 +320,13 @@ static bool inteql(upb_tabkey k1, upb_tabkey k2) {
   return k1.num == k2.num;
 }
 
+static _upb_value *mutable_array(upb_inttable *t) {
+  return (_upb_value*)t->array;
+}
+
 static _upb_value *inttable_val(upb_inttable *t, uintptr_t key) {
   if (key < t->array_size) {
-    return upb_arrhas(t->array[key]) ? (_upb_value*)&t->array[key] : NULL;
+    return upb_arrhas(t->array[key]) ? &(mutable_array(t)[key]) : NULL;
   } else {
     upb_tabent *e =
         (upb_tabent*)findentry(&t->t, upb_intkey(key), &upb_inthash, &inteql);
@@ -361,7 +370,7 @@ bool upb_inttable_sizedinit(upb_inttable *t, upb_ctype_t ctype,
     uninit(&t->t);
     return false;
   }
-  memset((void*)t->array, 0xff, array_bytes);
+  memset(mutable_array(t), 0xff, array_bytes);
   check(t);
   return true;
 }
@@ -372,7 +381,7 @@ bool upb_inttable_init(upb_inttable *t, upb_ctype_t ctype) {
 
 void upb_inttable_uninit(upb_inttable *t) {
   uninit(&t->t);
-  free((void*)t->array);
+  free(mutable_array(t));
 }
 
 bool upb_inttable_insert(upb_inttable *t, uintptr_t key, upb_value val) {
@@ -380,7 +389,7 @@ bool upb_inttable_insert(upb_inttable *t, uintptr_t key, upb_value val) {
   if (key < t->array_size) {
     assert(!upb_arrhas(t->array[key]));
     t->array_count++;
-    ((_upb_value*)t->array)[key] = val.val;
+    mutable_array(t)[key] = val.val;
   } else {
     if (isfull(&t->t)) {
       // Need to resize the hash part, but we re-use the array part.
@@ -428,7 +437,8 @@ bool upb_inttable_remove(upb_inttable *t, uintptr_t key, upb_value *val) {
       if (val) {
         _upb_value_setval(val, t->array[key], t->t.ctype);
       }
-      ((upb_value*)t->array)[key] = upb_value_uint64(-1);
+      _upb_value empty = UPB_ARRAY_EMPTYENT;
+      mutable_array(t)[key] = empty;
       success = true;
     } else {
       success = false;
