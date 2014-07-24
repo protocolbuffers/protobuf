@@ -897,8 +897,8 @@ inline typename TypeHandler::Type* RepeatedPtrFieldBase::Add() {
     return cast<TypeHandler>(elements_[current_size_++]);
   }
   if (allocated_size_ == total_size_) Reserve(total_size_ + 1);
-  ++allocated_size_;
   typename TypeHandler::Type* result = TypeHandler::New();
+  ++allocated_size_;
   elements_[current_size_++] = result;
   return result;
 }
