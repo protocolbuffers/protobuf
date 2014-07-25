@@ -1212,21 +1212,6 @@ public final class TextFormat {
           SingularOverwritePolicy.ALLOW_SINGULAR_OVERWRITES;
 
       /**
-       * Set whether this parser will allow unknown fields. By default, an
-       * exception is thrown if an unknown field is encountered. If this is
-       * set, the parser will only log a warning.
-       *
-       * <p>Use of this parameter is discouraged. See:
-       * https://sites.google.com/a/google.com/protocol-buffers/migration/
-       *     proto2-faq#How_do_I_ignore_unknown_fields_w
-       * for more details.
-       */
-      public Builder setAllowUnknownFields(boolean allowUnknownFields) {
-        this.allowUnknownFields = allowUnknownFields;
-        return this;
-      }
-
-      /**
        * Sets parser behavior when a non-repeated field appears more than once.
        */
       public Builder setSingularOverwritePolicy(SingularOverwritePolicy p) {
