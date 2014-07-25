@@ -31,6 +31,7 @@
 package com.google.protobuf;
 
 import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
 
@@ -482,6 +483,9 @@ public final class DynamicMessage extends AbstractMessage {
     public Builder setField(FieldDescriptor field, Object value) {
       verifyContainingType(field);
       ensureIsMutable();
+      if (field.getType() == FieldDescriptor.Type.ENUM) {
+        verifyEnumType(field, value);
+      }
       OneofDescriptor oneofDescriptor = field.getContainingOneof();
       if (oneofDescriptor != null) {
         int index = oneofDescriptor.getIndex();
@@ -565,6 +569,21 @@ public final class DynamicMessage extends AbstractMessage {
       if (oneof.getContainingType() != type) {
         throw new IllegalArgumentException(
           "OneofDescriptor does not match message type.");
+      }
+    }
+
+    /** Verifies that the value is EnumValueDescriptor and matchs Enum Type. */
+    private void verifyEnumType(FieldDescriptor field, Object value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      if (!(value instanceof EnumValueDescriptor)) {
+        throw new IllegalArgumentException(
+          "DynamicMessage should use EnumValueDescriptor to set Enum Value.");
+      }
+      if (field.getEnumType() != ((EnumValueDescriptor) value).getType()) {
+        throw new IllegalArgumentException(
+          "EnumValueDescriptor doesn't much Enum Field.");
       }
     }
 

@@ -119,9 +119,6 @@ public class TextFormatTest extends TestCase {
       "  i: 456\n" +
       "}\n";
 
-  private final TextFormat.Parser parserAllowingUnknownFields =
-      TextFormat.Parser.newBuilder().setAllowUnknownFields(true).build();
-
   private final TextFormat.Parser parserWithOverwriteForbidden =
       TextFormat.Parser.newBuilder()
           .setSingularOverwritePolicy(
@@ -461,25 +458,6 @@ public class TextFormatTest extends TestCase {
     } catch (TextFormat.ParseException e) {
       assertEquals(error, e.getMessage());
     }
-  }
-
-  private void assertParseErrorWithUnknownFields(String error, String text) {
-    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-    try {
-      parserAllowingUnknownFields.merge(
-          text, TestUtil.getExtensionRegistry(), builder);
-      fail("Expected parse exception.");
-    } catch (TextFormat.ParseException e) {
-      assertEquals(error, e.getMessage());
-    }
-  }
-
-  private TestAllTypes assertParseSuccessWithUnknownFields(String text)
-      throws TextFormat.ParseException {
-    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-    parserAllowingUnknownFields.merge(
-        text, TestUtil.getExtensionRegistry(), builder);
-    return builder.build();
   }
 
   private void assertParseErrorWithOverwriteForbidden(String error,
@@ -920,87 +898,6 @@ public class TextFormatTest extends TestCase {
                 UnknownFieldSet.Field.newBuilder()
                 .addLengthDelimited(bytes(0xe3, 0x81, 0x82)).build())
             .build()));
-  }
-
-  public void testParseUnknownFields() throws Exception {
-    assertParseSuccessWithUnknownFields("unknown_field: 12345");
-    assertParseSuccessWithUnknownFields("unknown_field: -12345");
-    assertParseSuccessWithUnknownFields("unknown_field: 1.2345");
-    assertParseSuccessWithUnknownFields("unknown_field: -1.2345");
-    assertParseSuccessWithUnknownFields("unknown_field: 1.2345f");
-    assertParseSuccessWithUnknownFields("unknown_field: -1.2345f");
-    assertParseSuccessWithUnknownFields("unknown_field: inf");
-    assertParseSuccessWithUnknownFields("unknown_field: -inf");
-    assertParseSuccessWithUnknownFields("unknown_field: TYPE_STRING");
-    assertParseSuccessWithUnknownFields("unknown_field: \"string value\"");
-    // Invalid field value
-    assertParseErrorWithUnknownFields(
-        "1:16: Invalid field value: -TYPE_STRING",
-        "unknown_field: -TYPE_STRING");
-    // Two or more unknown fields
-    assertParseSuccessWithUnknownFields("unknown_field1: TYPE_STRING\n" +
-                                        "unknown_field2: 12345");
-    // Unknown nested message
-    assertParseSuccessWithUnknownFields("unknown_message1: {}\n" +
-                                        "unknown_message2 {\n" +
-                                        "  unknown_field: 12345\n" +
-                                        "}\n" +
-                                        "unknown_message3 <\n" +
-                                        "  unknown_nested_message {\n" +
-                                        "    unknown_field: 12345\n" +
-                                        "  }\n" +
-                                        ">");
-    // Unmatched delimeters for message body
-    assertParseErrorWithUnknownFields(
-        "1:19: Expected \"}\".", "unknown_message: {>");
-    // Unknown extension
-    assertParseSuccessWithUnknownFields(
-        "[somewhere.unknown_extension1]: 12345\n" +
-        "[somewhere.unknown_extension2] {\n" +
-        "  unknown_field: 12345\n" +
-        "}");
-    // Unknown fields between known fields.
-    TestAllTypes expected = TestAllTypes.newBuilder()
-        .setOptionalInt32(1)
-        .setOptionalString("string")
-        .setOptionalNestedMessage(NestedMessage.newBuilder()
-            .setBb(2))
-        .build();
-    assertEquals(expected, assertParseSuccessWithUnknownFields(
-        "optional_int32: 1\n" +
-        "unknown_field: 12345\n" +
-        "optional_string: \"string\"\n" +
-        "unknown_message { unknown : 0 }\n" +
-        "optional_nested_message { bb: 2 }"));
-    // Nested unknown extensions.
-    assertParseSuccessWithUnknownFields(
-        "[test.extension1] <\n" +
-        "  unknown_nested_message <\n" +
-        "    [test.extension2] <\n" +
-        "      unknown_field: 12345\n" +
-        "    >\n" +
-        "  >\n" +
-        ">");
-    assertParseSuccessWithUnknownFields(
-        "[test.extension1] {\n" +
-        "  unknown_nested_message {\n" +
-        "    [test.extension2] {\n" +
-        "      unknown_field: 12345\n" +
-        "    }\n" +
-        "  }\n" +
-        "}");
-    assertParseSuccessWithUnknownFields(
-        "[test.extension1] <\n" +
-        "  some_unknown_fields: <\n" +
-        "    unknown_field: 12345\n" +
-        "  >\n" +
-        ">");
-    assertParseSuccessWithUnknownFields(
-        "[test.extension1] {\n" +
-        "  some_unknown_fields: {\n" +
-        "    unknown_field: 12345\n" +
-        "  }\n" +
-        "}");
   }
 
   public void testParseNonRepeatedFields() throws Exception {
