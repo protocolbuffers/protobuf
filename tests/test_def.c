@@ -25,6 +25,23 @@ static void test_empty_symtab() {
   upb_symtab_unref(s, &s);
 }
 
+static void test_noreftracking() {
+  // Reftracking is not required; clients can pass UPB_UNTRACKED_REF for owner.
+  upb_msgdef *md = upb_msgdef_new(UPB_UNTRACKED_REF);
+  upb_msgdef_ref(md, UPB_UNTRACKED_REF);
+
+  // Clients can mix tracked and untracked refs.
+  upb_msgdef_ref(md, &md);
+
+  upb_msgdef_unref(md, UPB_UNTRACKED_REF);
+  upb_msgdef_unref(md, UPB_UNTRACKED_REF);
+
+  // Call some random function on the messagedef to test that it is alive.
+  ASSERT(!upb_msgdef_isfrozen(md));
+
+  upb_msgdef_unref(md, &md);
+}
+
 static upb_symtab *load_test_proto(void *owner) {
   upb_symtab *s = upb_symtab_new(owner);
   ASSERT(s);
@@ -271,5 +288,6 @@ int run_tests(int argc, char *argv[]) {
   test_replacement();
   test_freeze_free();
   test_partial_freeze();
+  test_noreftracking();
   return 0;
 }

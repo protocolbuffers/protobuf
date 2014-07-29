@@ -89,6 +89,12 @@ UPB_DEFINE_STRUCT0(upb_refcounted,
 
 UPB_BEGIN_EXTERN_C  // {
 
+// It is better to use tracked refs when possible, for the extra debugging
+// capability.  But if this is not possible (because you don't have easy access
+// to a stable pointer value that is associated with the ref), you can pass
+// UPB_UNTRACKED_REF instead.
+extern const void *UPB_UNTRACKED_REF;
+
 // Native C API.
 bool upb_refcounted_isfrozen(const upb_refcounted *r);
 void upb_refcounted_ref(const upb_refcounted *r, const void *owner);

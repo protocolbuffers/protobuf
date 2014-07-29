@@ -25,6 +25,9 @@
 
 static void freeobj(upb_refcounted *o);
 
+const char untracked_val;
+const void *UPB_UNTRACKED_REF = &untracked_val;
+
 /* arch-specific atomic primitives  *******************************************/
 
 #ifdef UPB_THREAD_UNSAFE  //////////////////////////////////////////////////////
@@ -111,6 +114,9 @@ static trackedref *trackedref_new(bool is_ref2) {
 }
 
 static void track(const upb_refcounted *r, const void *owner, bool ref2) {
+  assert(owner);
+  if (owner == UPB_UNTRACKED_REF) return;
+
   upb_lock();
   upb_value v;
   if (upb_inttable_lookupptr(r->refs, owner, &v)) {
@@ -140,6 +146,9 @@ static void track(const upb_refcounted *r, const void *owner, bool ref2) {
 }
 
 static void untrack(const upb_refcounted *r, const void *owner, bool ref2) {
+  assert(owner);
+  if (owner == UPB_UNTRACKED_REF) return;
+
   upb_lock();
   upb_value v;
   bool found = upb_inttable_lookupptr(r->refs, owner, &v);

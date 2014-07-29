@@ -433,6 +433,25 @@ class StringBufTesterSizeTMethodNoHandlerDataNoHandle
   }
 };
 
+class StringBufTesterBoolMethodNoHandlerDataNoHandle
+    : public StringBufTesterBase {
+ public:
+  typedef StringBufTesterBoolMethodNoHandlerDataNoHandle ME;
+  void Register(upb::Handlers* h, const upb::FieldDef* f) {
+    UPB_UNUSED(f);
+    ASSERT(h->SetStringHandler(f, UpbMakeHandler(&ME::Handler)));
+    handler_data_val_ = kExpectedHandlerData;
+  }
+
+ private:
+  bool Handler(const char *buf, size_t len) {
+    ASSERT(buf == &buf_);
+    seen_ = true;
+    len_ = len;
+    return true;
+  }
+};
+
 class StartMsgTesterBase {
  public:
   // We don't need the FieldDef it will create, but the test harness still
@@ -1124,6 +1143,7 @@ int run_tests(int argc, char *argv[]) {
   TestHandler<StringBufTesterVoidFunctionWithHandlerDataNoHandle>();
   TestHandler<StringBufTesterVoidFunctionWithHandlerDataWithHandle>();
   TestHandler<StringBufTesterSizeTMethodNoHandlerDataNoHandle>();
+  TestHandler<StringBufTesterBoolMethodNoHandlerDataNoHandle>();
 
   TestMismatchedTypes();
 

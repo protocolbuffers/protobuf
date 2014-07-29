@@ -586,6 +586,17 @@ void *CastReturnToVoidPtr3(P1 p1, P2 p2, P3 p3) {
   return F(p1, p2, p3);
 }
 
+// Function wrapper that munges the return value from bool to void*.
+template <class P1, class P2, bool F(P1, P2)>
+void *ReturnClosureOrBreak2(P1 p1, P2 p2) {
+  return F(p1, p2) ? p1 : UPB_BREAK;
+}
+
+template <class P1, class P2, class P3, bool F(P1, P2, P3)>
+void *ReturnClosureOrBreak3(P1 p1, P2 p2, P3 p3) {
+  return F(p1, p2, p3) ? p1 : UPB_BREAK;
+}
+
 // For the string callback, which takes five params, returns the size param.
 template <class P1, class P2,
           void F(P1, P2, const char *, size_t, const BufferHandle *)>
@@ -593,6 +604,15 @@ size_t ReturnStringLen(P1 p1, P2 p2, const char *p3, size_t p4,
                        const BufferHandle *p5) {
   F(p1, p2, p3, p4, p5);
   return p4;
+}
+
+// For the string callback, which takes five params, returns the size param or
+// zero.
+template <class P1, class P2,
+          bool F(P1, P2, const char *, size_t, const BufferHandle *)>
+size_t ReturnNOr0(P1 p1, P2 p2, const char *p3, size_t p4,
+                  const BufferHandle *p5) {
+  return F(p1, p2, p3, p4, p5) ? p4 : 0;
 }
 
 // If we have a function returning void but want a function returning bool, wrap
@@ -619,17 +639,6 @@ struct MaybeWrapReturn<Func3<void, P1, P2, P3, F, I>, void *> {
   typedef Func3<void *, P1, P2, P3, ReturnClosure3<P1, P2, P3, F>, I> Func;
 };
 
-// If our function returns void but we want one returning size_t, wrap it in a
-// function that returns the size argument.
-template <class P1, class P2,
-          void F(P1, P2, const char *, size_t, const BufferHandle *), class I>
-struct MaybeWrapReturn<
-    Func5<void, P1, P2, const char *, size_t, const BufferHandle *, F, I>,
-          size_t> {
-  typedef Func5<size_t, P1, P2, const char *, size_t, const BufferHandle *,
-                ReturnStringLen<P1, P2, F>, I> Func;
-};
-
 // If our function returns R* but we want one returning void*, wrap it in a
 // function that casts to void*.
 template <class R, class P1, class P2, R *F(P1, P2), class I>
@@ -643,6 +652,41 @@ struct MaybeWrapReturn<Func3<R *, P1, P2, P3, F, I>, void *,
                        typename disable_if_same<R *, void *>::Type> {
   typedef Func3<void *, P1, P2, P3, CastReturnToVoidPtr3<R *, P1, P2, P3, F>, I>
       Func;
+};
+
+// If our function returns bool but we want one returning void*, wrap it in a
+// function that returns either the first param or UPB_BREAK.
+template <class P1, class P2, bool F(P1, P2), class I>
+struct MaybeWrapReturn<Func2<bool, P1, P2, F, I>, void *> {
+  typedef Func2<void *, P1, P2, ReturnClosureOrBreak2<P1, P2, F>, I> Func;
+};
+
+template <class P1, class P2, class P3, bool F(P1, P2, P3), class I>
+struct MaybeWrapReturn<Func3<bool, P1, P2, P3, F, I>, void *> {
+  typedef Func3<void *, P1, P2, P3, ReturnClosureOrBreak3<P1, P2, P3, F>, I>
+      Func;
+};
+
+// If our function returns void but we want one returning size_t, wrap it in a
+// function that returns the size argument.
+template <class P1, class P2,
+          void F(P1, P2, const char *, size_t, const BufferHandle *), class I>
+struct MaybeWrapReturn<
+    Func5<void, P1, P2, const char *, size_t, const BufferHandle *, F, I>,
+          size_t> {
+  typedef Func5<size_t, P1, P2, const char *, size_t, const BufferHandle *,
+                ReturnStringLen<P1, P2, F>, I> Func;
+};
+
+// If our function returns bool but we want one returning size_t, wrap it in a
+// function that returns either 0 or the buf size.
+template <class P1, class P2,
+          bool F(P1, P2, const char *, size_t, const BufferHandle *), class I>
+struct MaybeWrapReturn<
+    Func5<bool, P1, P2, const char *, size_t, const BufferHandle *, F, I>,
+    size_t> {
+  typedef Func5<size_t, P1, P2, const char *, size_t, const BufferHandle *,
+                ReturnNOr0<P1, P2, F>, I> Func;
 };
 
 // ConvertParams ///////////////////////////////////////////////////////////////
