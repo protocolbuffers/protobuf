@@ -35,6 +35,7 @@ copy ..\src\google\protobuf\wire_format_lite_inl.h include\google\protobuf\wire_
 copy ..\src\google\protobuf\io\coded_stream.h include\google\protobuf\io\coded_stream.h
 copy ..\src\google\protobuf\io\gzip_stream.h include\google\protobuf\io\gzip_stream.h
 copy ..\src\google\protobuf\io\printer.h include\google\protobuf\io\printer.h
+copy ..\src\google\protobuf\io\strtod.h include\google\protobuf\io\strtod.h
 copy ..\src\google\protobuf\io\tokenizer.h include\google\protobuf\io\tokenizer.h
 copy ..\src\google\protobuf\io\zero_copy_stream.h include\google\protobuf\io\zero_copy_stream.h
 copy ..\src\google\protobuf\io\zero_copy_stream_impl.h include\google\protobuf\io\zero_copy_stream_impl.h

@@ -812,8 +812,8 @@ TEST(ExtensionSetTest, RepeatedFields) {
   ASSERT_EQ(110, SumAllExtensions<double>(
       message, unittest::repeated_double_extension, 0));
 
-  typename RepeatedPtrField< ::std::string>::iterator string_iter;
-  typename RepeatedPtrField< ::std::string>::iterator string_end;
+  RepeatedPtrField< ::std::string>::iterator string_iter;
+  RepeatedPtrField< ::std::string>::iterator string_end;
   for (string_iter = message.MutableRepeatedExtension(
           unittest::repeated_string_extension)->begin(),
        string_end  = message.MutableRepeatedExtension(
@@ -821,8 +821,8 @@ TEST(ExtensionSetTest, RepeatedFields) {
        string_iter != string_end; ++string_iter) {
     *string_iter += "test";
   }
-  typename RepeatedPtrField< ::std::string>::const_iterator string_const_iter;
-  typename RepeatedPtrField< ::std::string>::const_iterator string_const_end;
+  RepeatedPtrField< ::std::string>::const_iterator string_const_iter;
+  RepeatedPtrField< ::std::string>::const_iterator string_const_end;
   for (string_const_iter = message.GetRepeatedExtension(
            unittest::repeated_string_extension).begin(),
        string_const_end  = message.GetRepeatedExtension(
@@ -831,8 +831,8 @@ TEST(ExtensionSetTest, RepeatedFields) {
     ASSERT_TRUE(*string_iter == "testtest");
   }
 
-  typename RepeatedField<unittest::TestAllTypes_NestedEnum>::iterator enum_iter;
-  typename RepeatedField<unittest::TestAllTypes_NestedEnum>::iterator enum_end;
+  RepeatedField<unittest::TestAllTypes_NestedEnum>::iterator enum_iter;
+  RepeatedField<unittest::TestAllTypes_NestedEnum>::iterator enum_end;
   for (enum_iter = message.MutableRepeatedExtension(
            unittest::repeated_nested_enum_extension)->begin(),
        enum_end  = message.MutableRepeatedExtension(
@@ -840,9 +840,9 @@ TEST(ExtensionSetTest, RepeatedFields) {
        enum_iter != enum_end; ++enum_iter) {
     *enum_iter = unittest::TestAllTypes::NestedEnum_MAX;
   }
-  typename RepeatedField<unittest::TestAllTypes_NestedEnum>::const_iterator
+  RepeatedField<unittest::TestAllTypes_NestedEnum>::const_iterator
       enum_const_iter;
-  typename RepeatedField<unittest::TestAllTypes_NestedEnum>::const_iterator
+  RepeatedField<unittest::TestAllTypes_NestedEnum>::const_iterator
       enum_const_end;
   for (enum_const_iter = message.GetRepeatedExtension(
            unittest::repeated_nested_enum_extension).begin(),
@@ -852,9 +852,9 @@ TEST(ExtensionSetTest, RepeatedFields) {
     ASSERT_EQ(*enum_const_iter, unittest::TestAllTypes::NestedEnum_MAX);
   }
 
-  typename RepeatedPtrField<unittest::TestAllTypes_NestedMessage>::iterator
+  RepeatedPtrField<unittest::TestAllTypes_NestedMessage>::iterator
       msg_iter;
-  typename RepeatedPtrField<unittest::TestAllTypes_NestedMessage>::iterator
+  RepeatedPtrField<unittest::TestAllTypes_NestedMessage>::iterator
       msg_end;
   for (msg_iter = message.MutableRepeatedExtension(
            unittest::repeated_nested_message_extension)->begin(),
@@ -863,9 +863,9 @@ TEST(ExtensionSetTest, RepeatedFields) {
        msg_iter != msg_end; ++msg_iter) {
     msg_iter->set_bb(1234);
   }
-  typename RepeatedPtrField<unittest::TestAllTypes_NestedMessage>::
+  RepeatedPtrField<unittest::TestAllTypes_NestedMessage>::
       const_iterator msg_const_iter;
-  typename RepeatedPtrField<unittest::TestAllTypes_NestedMessage>::
+  RepeatedPtrField<unittest::TestAllTypes_NestedMessage>::
       const_iterator msg_const_end;
   for (msg_const_iter = message.GetRepeatedExtension(
            unittest::repeated_nested_message_extension).begin(),

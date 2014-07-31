@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
@@ -248,7 +248,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\compiler\java\java_generator_factory.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\compiler\java\java_helpers.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\compiler\java\java_lazy_message_field.h"
 				>
 			</File>
 			<File
@@ -260,11 +268,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\compiler\java\java_name_resolver.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\compiler\java\java_primitive_field.h"
 				>
 			</File>
 			<File
 				RelativePath="..\src\google\protobuf\compiler\java\java_service.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\compiler\java\java_shared_code_generator.h"
 				>
 			</File>
 			<File
@@ -392,7 +408,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\compiler\java\java_generator_factory.cc"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\compiler\java\java_helpers.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\compiler\java\java_lazy_message_field.cc"
 				>
 			</File>
 			<File
@@ -404,11 +428,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\compiler\java\java_name_resolver.cc"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\compiler\java\java_primitive_field.cc"
 				>
 			</File>
 			<File
 				RelativePath="..\src\google\protobuf\compiler\java\java_service.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\src\google\protobuf\compiler\java\java_shared_code_generator.cc"
 				>
 			</File>
 			<File
