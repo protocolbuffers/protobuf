@@ -204,9 +204,11 @@ struct PointerIntegerPairHash {
     return reinterpret_cast<intptr_t>(p.first) * ((1 << 16) - 1) + p.second;
   }
 
+#ifdef _MSC_VER
   // Used only by MSVC and platforms where hash_map is not available.
   static const size_t bucket_size = 4;
   static const size_t min_buckets = 8;
+#endif
   inline bool operator()(const PairType& a, const PairType& b) const {
     return a.first < b.first ||
           (a.first == b.first && a.second < b.second);
@@ -226,6 +228,10 @@ struct PointerStringPairHash {
   }
 
   // Used only by MSVC and platforms where hash_map is not available.
+  // These two lines produce unused warning, but do not delete them
+  // unless hash_map is available on MSVC and platforms.
+  static const size_t bucket_size = 4;
+  static const size_t min_buckets = 8;
   inline bool operator()(const PointerStringPair& a,
                          const PointerStringPair& b) const {
     if (a.first < b.first) return true;

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
@@ -196,6 +196,10 @@
 				>
 			</File>
 			<File
+			        RelativePath="..\src\google\protobuf\io\strtod.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\stubs\hash.h"
 				>
 			</File>
@@ -204,7 +208,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\google\protobuf\stubs\map-util.h"
+				RelativePath="..\src\google\protobuf\stubs\map_util.h"
 				>
 			</File>
 			<File
@@ -365,6 +369,10 @@
 			</File>
 			<File
 				RelativePath="..\src\google\protobuf\io\gzip_stream.cc"
+				>
+			</File>
+			<File
+			        RelativePath="..\src\google\protobuf\io\strtod.cc"
 				>
 			</File>
 			<File
