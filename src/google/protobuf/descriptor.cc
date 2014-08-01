@@ -227,11 +227,11 @@ struct PointerStringPairHash {
            cstring_hash(p.second);
   }
 
+#ifdef _MSC_VER
   // Used only by MSVC and platforms where hash_map is not available.
-  // These two lines produce unused warning, but do not delete them
-  // unless hash_map is available on MSVC and platforms.
   static const size_t bucket_size = 4;
   static const size_t min_buckets = 8;
+#endif
   inline bool operator()(const PointerStringPair& a,
                          const PointerStringPair& b) const {
     if (a.first < b.first) return true;
