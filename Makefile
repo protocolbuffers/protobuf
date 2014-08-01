@@ -47,7 +47,7 @@ endif
 CC=gcc
 CXX=g++
 CFLAGS=-std=gnu99
-CXXFLAGS=-std=c++11
+CXXFLAGS=
 INCLUDE=-Itests -I.
 CPPFLAGS=$(INCLUDE) -Wall -Wextra -Wno-sign-compare $(USER_CFLAGS)
 LDLIBS=-lpthread upb/libupb.a
@@ -61,6 +61,9 @@ ifeq ($(Q), @)
 else
   E=@:
 endif
+
+install:
+	test -f upb/bindings/ruby/upb.so && cd upb/bindings/ruby && make install
 
 # Dependency generating. #######################################################
 
@@ -85,8 +88,6 @@ CORE= \
   upb/def.c \
   upb/descriptor/reader.c \
   upb/descriptor/descriptor.upb.c \
-  upb/bindings/googlepb/bridge.cc \
-  upb/bindings/googlepb/proto2.cc \
   upb/handlers.c \
   upb/refcounted.c \
   upb/shim/shim.c \
@@ -94,7 +95,9 @@ CORE= \
   upb/table.c \
   upb/upb.c \
 
-# TODO: the proto2 bridge should be built as a separate library.
+GOOGLEPB= \
+  upb/bindings/googlepb/bridge.cc \
+  upb/bindings/googlepb/proto2.cc \
 
 # Library for the protocol buffer format (both text and binary).
 PB= \
@@ -120,6 +123,8 @@ clean_leave_profile:
 	rm -rf tools/upbc deps
 	rm -rf bindings/lua/upb.so
 	rm -rf bindings/python/build
+	rm -rf upb/bindings/ruby/Makefile
+	rm -rf upb/bindings/ruby/upb.so
 
 clean: clean_leave_profile
 	rm -rf $(call rwildcard,,*.gcno) $(call rwildcard,,*.gcda)
@@ -219,14 +224,16 @@ SIMPLE_TESTS= \
   tests/test_handlers
 
 SIMPLE_CXX_TESTS= \
-  tests/test_cpp \
-  tests/pb/test_decoder
+  tests/pb/test_decoder \
+
+  # tests/test_cpp \
 
 VARIADIC_TESTS= \
   tests/t.test_vs_proto2.googlemessage1 \
   tests/t.test_vs_proto2.googlemessage2 \
 
-TESTS=$(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS) $(VARIADIC_TESTS) tests/test_table
+#TESTS=$(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS) $(VARIADIC_TESTS) tests/test_table
+TESTS=$(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS) tests/test_table
 
 
 tests: $(TESTS) $(INTERACTIVE_TESTS)
@@ -501,3 +508,15 @@ $(PYTHONEXT): $(LIBUPB_PIC) bindings/python/upb.c
 
 pythontest: $(PYTHONEXT)
 	cd bindings/python && cp test.py build/install/lib/python && valgrind $(PYTHON) ./build/install/lib/python/test.py
+
+# Ruby extension ###############################################################
+
+RUBY=ruby
+RUBYEXT=upb/bindings/ruby/upb.so
+ruby: $(RUBYEXT)
+upb/bindings/ruby/Makefile: upb/bindings/ruby/extconf.rb
+	$(E) RUBY upb/bindings/ruby/extconf.rb
+	$(Q) cd upb/bindings/ruby && ruby extconf.rb
+$(RUBYEXT): $(LIBUPB_PIC) upb/bindings/ruby/upb.c upb/bindings/ruby/Makefile
+	$(E) CC upb/bindings/ruby/upb.c
+	$(Q) cd upb/bindings/ruby && make
