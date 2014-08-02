@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <EnvironmentFlavor>CLIENTPROFILE</EnvironmentFlavor>
@@ -7,16 +7,13 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{250ADE34-82FD-4BAE-86D5-985FBE589C4A}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{C1024C9C-8176-48C3-B547-B9F6DF6B80A6}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Google.ProtocolBuffers.ProtoGen</RootNamespace>
-    <AssemblyName>ProtoGen</AssemblyName>
+    <AssemblyName>protoc-gen-cs.Test</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\..\keys\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
-    <StartupObject>Google.ProtocolBuffers.ProtoGen.ProgramPreprocess</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,7 +21,7 @@
     <Optimize>false</Optimize>
     <OutputPath>bin\NET35\Debug</OutputPath>
     <IntermediateOutputPath>obj\NET35\Debug\</IntermediateOutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;$(EnvironmentFlavor);$(EnvironmentTemplate)</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -36,7 +33,7 @@
     <Optimize>true</Optimize>
     <OutputPath>bin\NET35\Release</OutputPath>
     <IntermediateOutputPath>obj\NET35\Release\</IntermediateOutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;$(EnvironmentFlavor);$(EnvironmentTemplate)</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -44,48 +41,48 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="nunit.framework">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\NUnit\lib\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DescriptorUtil.cs" />
-    <Compile Include="EnumFieldGenerator.cs" />
-    <Compile Include="EnumGenerator.cs" />
-    <Compile Include="ExtensionGenerator.cs" />
-    <Compile Include="FieldGeneratorBase.cs" />
-    <Compile Include="IFieldSourceGenerator.cs" />
-    <Compile Include="ISourceGenerator.cs" />
-    <Compile Include="MessageFieldGenerator.cs" />
-    <Compile Include="MessageGenerator.cs" />
-    <Compile Include="PluginProtoFile.cs" />
-    <Compile Include="PrimitiveFieldGenerator.cs" />
-    <Compile Include="ProgramPreprocess.cs" />
-    <Compile Include="RepeatedEnumFieldGenerator.cs" />
-    <Compile Include="RepeatedMessageFieldGenerator.cs" />
-    <Compile Include="RepeatedPrimitiveFieldGenerator.cs" />
-    <Compile Include="ServiceGenerator.cs" />
-    <Compile Include="DependencyResolutionException.cs" />
-    <Compile Include="Generator.cs" />
-    <Compile Include="GeneratorOptions.cs" />
-    <Compile Include="Helpers.cs" />
-    <Compile Include="InvalidOptionsException.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="ProtocGenCsUnittests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServiceInterfaceGenerator.cs" />
-    <Compile Include="SourceGeneratorBase.cs" />
-    <Compile Include="SourceGenerators.cs" />
-    <Compile Include="UmbrellaClassGenerator.cs" />
+    <Compile Include="TempFile.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffers.csproj">
-      <Project>{6908BDCE-D925-43F3-94AC-A531E6DF2591}</Project>
+      <Project>{6908bdce-d925-43f3-94ac-a531e6df2591}</Project>
       <Name>ProtocolBuffers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ProtoGen\protoc-gen-cs.csproj">
+      <Project>{250ade34-82fd-4bae-86d5-985fbe589c4b}</Project>
+      <Name>protoc-gen-cs</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <Content Include="..\..\lib\protoc.exe">
+      <Link>protoc.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\protos\google\protobuf\csharp_options.proto">
+      <Link>google\protobuf\csharp_options.proto</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\protos\google\protobuf\descriptor.proto">
+      <Link>google\protobuf\descriptor.proto</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -95,4 +92,10 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <StartAction>Program</StartAction>
+    <StartProgram>$(ProjectDir)..\..\lib\NUnit\tools\nunit-console.exe</StartProgram>
+    <StartArguments>/nologo /noshadow /labels /wait $(AssemblyName).dll</StartArguments>
+    <StartWorkingDirectory>$(ProjectDir)$(OutputPath)</StartWorkingDirectory>
+  </PropertyGroup>
 </Project>

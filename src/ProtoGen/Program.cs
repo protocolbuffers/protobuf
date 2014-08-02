@@ -35,7 +35,9 @@
 #endregion
 
 using System;
+using System.IO;
 using System.Collections.Generic;
+using Google.ProtocolBuffers.Compiler.PluginProto;
 using Google.ProtocolBuffers.DescriptorProtos;
 
 namespace Google.ProtocolBuffers.ProtoGen
@@ -62,8 +64,33 @@ namespace Google.ProtocolBuffers.ProtoGen
                     return 1;
                 }
 
+                var request = new CodeGeneratorRequest.Builder();
+                foreach (string inputFile in options.InputFiles)
+                {
+                    ExtensionRegistry extensionRegistry = ExtensionRegistry.CreateInstance();
+                    CSharpOptions.RegisterAllExtensions(extensionRegistry);
+                    using (Stream inputStream = File.OpenRead(inputFile))
+                    {
+                        var fileSet = FileDescriptorSet.ParseFrom(inputStream, extensionRegistry);
+                        foreach (var fileProto in fileSet.FileList)
+                        {
+                            request.AddFileToGenerate(fileProto.Name);
+                            request.AddProtoFile(fileProto);
+                        }
+                    }
+                }
+
                 Generator generator = Generator.CreateGenerator(options);
-                generator.Generate();
+                var response = new CodeGeneratorResponse.Builder();
+                generator.Generate(request.Build(), response);
+                if (response.HasError)
+                {
+                    throw new Exception(response.Error);
+                }
+                foreach (var file in response.FileList)
+                {
+                    File.WriteAllText(file.Name, file.Content);
+                }
                 return 0;
             }
             catch (Exception e)

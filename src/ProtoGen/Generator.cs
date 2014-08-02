@@ -39,6 +39,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Google.ProtocolBuffers.Collections;
+using Google.ProtocolBuffers.Compiler.PluginProto;
 using Google.ProtocolBuffers.DescriptorProtos;
 using Google.ProtocolBuffers.Descriptors;
 
@@ -65,20 +66,9 @@ namespace Google.ProtocolBuffers.ProtoGen
             return new Generator(options);
         }
 
-        public void Generate()
+        public void Generate(CodeGeneratorRequest request, CodeGeneratorResponse.Builder response)
         {
-            List<FileDescriptorSet> descriptorProtos = new List<FileDescriptorSet>();
-            foreach (string inputFile in options.InputFiles)
-            {
-                ExtensionRegistry extensionRegistry = ExtensionRegistry.CreateInstance();
-                CSharpOptions.RegisterAllExtensions(extensionRegistry);
-                using (Stream inputStream = File.OpenRead(inputFile))
-                {
-                    descriptorProtos.Add(FileDescriptorSet.ParseFrom(inputStream, extensionRegistry));
-                }
-            }
-
-            IList<FileDescriptor> descriptors = ConvertDescriptors(options.FileOptions, descriptorProtos.ToArray());
+            IList<FileDescriptor> descriptors = ConvertDescriptors(options.FileOptions, request.ProtoFileList);
 
             // Combine with options from command line
             foreach (FileDescriptor descriptor in descriptors)
@@ -99,6 +89,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                 names.Add(file, true);
             }
 
+            var filesToGenerate = new HashSet<string>(request.FileToGenerateList);
             foreach (FileDescriptor descriptor in descriptors)
             {
                 // Optionally exclude descriptors in google.protobuf
@@ -106,7 +97,10 @@ namespace Google.ProtocolBuffers.ProtoGen
                 {
                     continue;
                 }
-                Generate(descriptor, duplicates);
+                if (filesToGenerate.Contains(descriptor.Name))
+                {
+                    Generate(descriptor, duplicates, response);
+                }
             }
         }
 
@@ -114,14 +108,20 @@ namespace Google.ProtocolBuffers.ProtoGen
         /// Generates code for a particular file. All dependencies must
         /// already have been resolved.
         /// </summary>
-        private void Generate(FileDescriptor descriptor, bool duplicates)
+        private void Generate(FileDescriptor descriptor, bool duplicates, CodeGeneratorResponse.Builder response)
         {
-            UmbrellaClassGenerator ucg = new UmbrellaClassGenerator(descriptor);
-            using (TextWriter textWriter = File.CreateText(GetOutputFile(descriptor, duplicates)))
+            var code = new StringBuilder();
+            var ucg = new UmbrellaClassGenerator(descriptor);
+            using (StringWriter textWriter = new StringWriter(code))
             {
                 TextGenerator writer = new TextGenerator(textWriter, options.LineBreak);
                 ucg.Generate(writer);
             }
+            response.AddFile(new CodeGeneratorResponse.Types.File.Builder
+            {
+                Name = GetOutputFile(descriptor, duplicates),
+                Content = code.ToString(),
+            }.Build());
         }
 
         private string GetOutputFile(FileDescriptor descriptor, bool duplicates)
@@ -164,16 +164,8 @@ namespace Google.ProtocolBuffers.ProtoGen
         /// </summary>
         /// <exception cref="DependencyResolutionException">Not all dependencies could be resolved.</exception>
         public static IList<FileDescriptor> ConvertDescriptors(CSharpFileOptions options,
-                                                               params FileDescriptorSet[] descriptorProtos)
+                                                               IList<FileDescriptorProto> fileList)
         {
-            // Simple strategy: Keep going through the list of protos to convert, only doing ones where
-            // we've already converted all the dependencies, until we get to a stalemate
-            List<FileDescriptorProto> fileList = new List<FileDescriptorProto>();
-            foreach (FileDescriptorSet set in descriptorProtos)
-            {
-                fileList.AddRange(set.FileList);
-            }
-
             FileDescriptor[] converted = new FileDescriptor[fileList.Count];
 
             Dictionary<string, FileDescriptor> convertedMap = new Dictionary<string, FileDescriptor>();

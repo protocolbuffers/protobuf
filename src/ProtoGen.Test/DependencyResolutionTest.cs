@@ -52,7 +52,7 @@ namespace Google.ProtocolBuffers.ProtoGen
         {
             FileDescriptorProto first = new FileDescriptorProto.Builder {Name = "First"}.Build();
             FileDescriptorProto second = new FileDescriptorProto.Builder {Name = "Second"}.Build();
-            FileDescriptorSet set = new FileDescriptorSet.Builder { FileList = { first, second } }.Build();
+            var set = new List<FileDescriptorProto> { first, second };
 
             IList<FileDescriptor> converted = Generator.ConvertDescriptors(CSharpFileOptions.DefaultInstance, set);
             Assert.AreEqual(2, converted.Count);
@@ -68,7 +68,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             FileDescriptorProto first =
                 new FileDescriptorProto.Builder {Name = "First", DependencyList = {"Second"}}.Build();
             FileDescriptorProto second = new FileDescriptorProto.Builder {Name = "Second"}.Build();
-            FileDescriptorSet set = new FileDescriptorSet.Builder { FileList = { first, second } }.Build();
+            var set = new List<FileDescriptorProto> { first, second };
             IList<FileDescriptor> converted = Generator.ConvertDescriptors(CSharpFileOptions.DefaultInstance, set);
             Assert.AreEqual(2, converted.Count);
             Assert.AreEqual("First", converted[0].Name);
@@ -84,7 +84,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             FileDescriptorProto first = new FileDescriptorProto.Builder {Name = "First"}.Build();
             FileDescriptorProto second =
                 new FileDescriptorProto.Builder {Name = "Second", DependencyList = {"First"}}.Build();
-            FileDescriptorSet set = new FileDescriptorSet.Builder { FileList = { first, second } }.Build();
+            var set = new List<FileDescriptorProto> { first, second };
             IList<FileDescriptor> converted = Generator.ConvertDescriptors(CSharpFileOptions.DefaultInstance, set);
             Assert.AreEqual(2, converted.Count);
             Assert.AreEqual("First", converted[0].Name);
@@ -101,7 +101,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                 new FileDescriptorProto.Builder {Name = "First", DependencyList = {"Second"}}.Build();
             FileDescriptorProto second =
                 new FileDescriptorProto.Builder {Name = "Second", DependencyList = {"First"}}.Build();
-            FileDescriptorSet set = new FileDescriptorSet.Builder { FileList = { first, second } }.Build();
+            var set = new List<FileDescriptorProto> { first, second };
             try
             {
                 Generator.ConvertDescriptors(CSharpFileOptions.DefaultInstance, set);
@@ -118,7 +118,7 @@ namespace Google.ProtocolBuffers.ProtoGen
         {
             FileDescriptorProto first =
                 new FileDescriptorProto.Builder {Name = "First", DependencyList = {"Second"}}.Build();
-            FileDescriptorSet set = new FileDescriptorSet.Builder { FileList = { first } }.Build();
+            var set = new List<FileDescriptorProto> { first };
             try
             {
                 Generator.ConvertDescriptors(CSharpFileOptions.DefaultInstance, set);
@@ -135,7 +135,7 @@ namespace Google.ProtocolBuffers.ProtoGen
         {
             FileDescriptorProto first =
                 new FileDescriptorProto.Builder {Name = "First", DependencyList = {"First"}}.Build();
-            FileDescriptorSet set = new FileDescriptorSet.Builder { FileList = { first } }.Build();
+            var set = new List<FileDescriptorProto> { first };
             try
             {
                 Generator.ConvertDescriptors(CSharpFileOptions.DefaultInstance, set);

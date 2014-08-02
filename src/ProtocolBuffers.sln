@@ -5,6 +5,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "proto", "proto", "{1F896D5C
 		..\protos\tutorial\addressbook.proto = ..\protos\tutorial\addressbook.proto
 		..\protos\google\protobuf\csharp_options.proto = ..\protos\google\protobuf\csharp_options.proto
 		..\protos\google\protobuf\descriptor.proto = ..\protos\google\protobuf\descriptor.proto
+		..\protos\google\protobuf\compiler\plugin.proto = ..\protos\google\protobuf\compiler\plugin.proto
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unittest", "unittest", "{C8D3015A-EA39-4F03-AEEC-3FF1F2087A12}"
@@ -87,6 +88,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", 
 		..\protos\benchmarks\google_size.proto = ..\protos\benchmarks\google_size.proto
 		..\protos\benchmarks\google_speed.proto = ..\protos\benchmarks\google_speed.proto
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "protoc-gen-cs", "ProtoGen\protoc-gen-cs.csproj", "{250ADE34-82FD-4BAE-86D5-985FBE589C4B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "protoc-gen-cs.Test", "ProtoGen.Test\protoc-gen-cs.Test.csproj", "{C1024C9C-8176-48C3-B547-B9F6DF6B80A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -174,6 +179,22 @@ Global
 		{E067A59D-9D0A-4A1F-92B1-38E4457241D1}.Release_Silverlight|Any CPU.ActiveCfg = Release|Any CPU
 		{E067A59D-9D0A-4A1F-92B1-38E4457241D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E067A59D-9D0A-4A1F-92B1-38E4457241D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{250ADE34-82FD-4BAE-86D5-985FBE589C4B}.Debug_Silverlight|Any CPU.ActiveCfg = Debug|Any CPU
+		{250ADE34-82FD-4BAE-86D5-985FBE589C4B}.Debug_Silverlight|Any CPU.Build.0 = Debug|Any CPU
+		{250ADE34-82FD-4BAE-86D5-985FBE589C4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{250ADE34-82FD-4BAE-86D5-985FBE589C4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{250ADE34-82FD-4BAE-86D5-985FBE589C4B}.Release_Silverlight|Any CPU.ActiveCfg = Release|Any CPU
+		{250ADE34-82FD-4BAE-86D5-985FBE589C4B}.Release_Silverlight|Any CPU.Build.0 = Release|Any CPU
+		{250ADE34-82FD-4BAE-86D5-985FBE589C4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{250ADE34-82FD-4BAE-86D5-985FBE589C4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1024C9C-8176-48C3-B547-B9F6DF6B80A6}.Debug_Silverlight|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1024C9C-8176-48C3-B547-B9F6DF6B80A6}.Debug_Silverlight|Any CPU.Build.0 = Debug|Any CPU
+		{C1024C9C-8176-48C3-B547-B9F6DF6B80A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1024C9C-8176-48C3-B547-B9F6DF6B80A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1024C9C-8176-48C3-B547-B9F6DF6B80A6}.Release_Silverlight|Any CPU.ActiveCfg = Release|Any CPU
+		{C1024C9C-8176-48C3-B547-B9F6DF6B80A6}.Release_Silverlight|Any CPU.Build.0 = Release|Any CPU
+		{C1024C9C-8176-48C3-B547-B9F6DF6B80A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1024C9C-8176-48C3-B547-B9F6DF6B80A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -185,6 +206,7 @@ Global
 		{EE01ED24-3750-4567-9A23-1DB676A15610} = {C7B69674-7A51-4AC6-8674-0330BA742CE4}
 		{EEFFED24-3750-4567-9A23-1DB676A15610} = {C7B69674-7A51-4AC6-8674-0330BA742CE4}
 		{DD01ED24-3750-4567-9A23-1DB676A15610} = {C7B69674-7A51-4AC6-8674-0330BA742CE4}
+		{C1024C9C-8176-48C3-B547-B9F6DF6B80A6} = {C7B69674-7A51-4AC6-8674-0330BA742CE4}
 		{A31F5FB2-4FF3-432A-B35B-5CD203606311} = {75D5D25A-01A6-4594-957F-5993FB83F450}
 		{C7A4A435-2813-41C8-AA87-BD914BA5223D} = {0D7CDA8F-1BBF-4E0F-8D35-31AEA21A96E6}
 		{D7282E99-2DC3-405B-946F-177DB2FD2AE2} = {0D7CDA8F-1BBF-4E0F-8D35-31AEA21A96E6}

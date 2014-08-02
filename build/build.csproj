@@ -189,6 +189,9 @@
     <StaticPackageItem Include="$(ProjectDirectory)\protos\google\protobuf\descriptor.proto">
       <TargetDirectory>\protos\google\protobuf</TargetDirectory>
     </StaticPackageItem>
+    <StaticPackageItem Include="$(ProjectDirectory)\protos\google\protobuf\compiler\plugin.proto">
+      <TargetDirectory>\protos\google\protobuf\compiler</TargetDirectory>
+    </StaticPackageItem>
     <StaticPackageItem Include="$(ProjectDirectory)\protos\google\protobuf\csharp_options.proto">
       <TargetDirectory>\protos\google\protobuf</TargetDirectory>
     </StaticPackageItem>
