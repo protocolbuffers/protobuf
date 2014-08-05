@@ -347,6 +347,7 @@ LOCAL_SRC_FILES := $(COMPILER_SRC_FILES)
 
 LOCAL_C_INCLUDES := \
     $(LOCAL_PATH)/android \
+    external/zlib \
     $(LOCAL_PATH)/src
 
 LOCAL_STATIC_LIBRARIES += libz
