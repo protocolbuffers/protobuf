@@ -46,7 +46,6 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_LANG([C++])
 ACX_USE_SYSTEM_EXTENSIONS
-AM_PROG_AR
 AM_CONDITIONAL(GCC, test "$GCC" = yes)   # let the Makefile know if we're gcc
 
 # test_util.cc takes forever to compile with GCC and optimization turned on.
