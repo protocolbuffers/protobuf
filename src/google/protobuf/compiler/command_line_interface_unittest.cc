@@ -85,7 +85,7 @@ class CommandLineInterfaceTest : public testing::Test {
   // Runs the CommandLineInterface with the given command line.  The
   // command is automatically split on spaces, and the string "$tmpdir"
   // is replaced with TestTempDir().
-  void Run(const string& command);
+  void Run(const string& command, bool capture_stdout = false);
 
   // -----------------------------------------------------------------
   // Methods to set up the test (called before Run()).
@@ -261,7 +261,7 @@ void CommandLineInterfaceTest::TearDown() {
   mock_generators_to_delete_.clear();
 }
 
-void CommandLineInterfaceTest::Run(const string& command) {
+void CommandLineInterfaceTest::Run(const string& command, bool capture_stdout) {
   vector<string> args = Split(command, " ", true);
 
   if (!disallow_plugins_) {
@@ -308,13 +308,17 @@ void CommandLineInterfaceTest::Run(const string& command) {
     argv[i] = args[i].c_str();
   }
 
-  CaptureTestStdout();
+  if (capture_stdout) {
+    CaptureTestStdout();
+  }
   CaptureTestStderr();
 
   return_code_ = cli_.Run(args.size(), argv.get());
 
   error_text_ = GetCapturedTestStderr();
-  captured_stdout_ = GetCapturedTestStdout();
+  if (capture_stdout) {
+    captured_stdout_ = GetCapturedTestStdout();
+  }
 }
 
 // -------------------------------------------------------------------
@@ -1461,7 +1465,7 @@ TEST_F(CommandLineInterfaceTest, PrintFreeFieldNumbers) {
       "}\n");
 
   Run("protocol_compiler --print_free_field_numbers --proto_path=$tmpdir "
-      "foo.proto bar.proto baz.proto quz.proto");
+      "foo.proto bar.proto baz.proto quz.proto", true);
 
   ExpectNoErrors();
   ExpectCapturedStdout(
