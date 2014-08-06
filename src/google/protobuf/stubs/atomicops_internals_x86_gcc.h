@@ -119,18 +119,18 @@ inline void NoBarrier_Store(volatile Atomic32* ptr, Atomic32 value) {
 
 // 64-bit implementations of memory barrier can be simpler, because it
 // "mfence" is guaranteed to exist.
-inline void MemoryBarrierInternal() {
+inline void MemoryBarrier() {
   __asm__ __volatile__("mfence" : : : "memory");
 }
 
 inline void Acquire_Store(volatile Atomic32* ptr, Atomic32 value) {
   *ptr = value;
-  MemoryBarrierInternal();
+  MemoryBarrier();
 }
 
 #else
 
-inline void MemoryBarrierInternal() {
+inline void MemoryBarrier() {
   if (AtomicOps_Internalx86CPUFeatures.has_sse2) {
     __asm__ __volatile__("mfence" : : : "memory");
   } else {  // mfence is faster but not present on PIII
@@ -168,7 +168,7 @@ inline Atomic32 Acquire_Load(volatile const Atomic32* ptr) {
 }
 
 inline Atomic32 Release_Load(volatile const Atomic32* ptr) {
-  MemoryBarrierInternal();
+  MemoryBarrier();
   return *ptr;
 }
 
@@ -225,7 +225,7 @@ inline void NoBarrier_Store(volatile Atomic64* ptr, Atomic64 value) {
 
 inline void Acquire_Store(volatile Atomic64* ptr, Atomic64 value) {
   *ptr = value;
-  MemoryBarrierInternal();
+  MemoryBarrier();
 }
 
 inline void Release_Store(volatile Atomic64* ptr, Atomic64 value) {
@@ -262,7 +262,7 @@ inline Atomic64 Acquire_Load(volatile const Atomic64* ptr) {
 }
 
 inline Atomic64 Release_Load(volatile const Atomic64* ptr) {
-  MemoryBarrierInternal();
+  MemoryBarrier();
   return *ptr;
 }
 
