@@ -85,7 +85,7 @@ class CommandLineInterfaceTest : public testing::Test {
   // Runs the CommandLineInterface with the given command line.  The
   // command is automatically split on spaces, and the string "$tmpdir"
   // is replaced with TestTempDir().
-  void Run(const string& command, bool capture_stdout = false);
+  void Run(const string& command);
 
   // -----------------------------------------------------------------
   // Methods to set up the test (called before Run()).
@@ -261,7 +261,7 @@ void CommandLineInterfaceTest::TearDown() {
   mock_generators_to_delete_.clear();
 }
 
-void CommandLineInterfaceTest::Run(const string& command, bool capture_stdout) {
+void CommandLineInterfaceTest::Run(const string& command) {
   vector<string> args = Split(command, " ", true);
 
   if (!disallow_plugins_) {
@@ -308,17 +308,20 @@ void CommandLineInterfaceTest::Run(const string& command, bool capture_stdout) {
     argv[i] = args[i].c_str();
   }
 
-  if (capture_stdout) {
-    CaptureTestStdout();
-  }
+  // TODO(jieluo): Cygwin doesn't work well if we try to capture stderr and
+  // stdout at the same time. Need to figure out why and add this capture back
+  // for Cygwin.
+#if !defined(__CYGWIN__)
+  CaptureTestStdout();
+#endif
   CaptureTestStderr();
 
   return_code_ = cli_.Run(args.size(), argv.get());
 
   error_text_ = GetCapturedTestStderr();
-  if (capture_stdout) {
-    captured_stdout_ = GetCapturedTestStdout();
-  }
+#if !defined(__CYGWIN__)
+  captured_stdout_ = GetCapturedTestStdout();
+#endif
 }
 
 // -------------------------------------------------------------------
@@ -1465,9 +1468,14 @@ TEST_F(CommandLineInterfaceTest, PrintFreeFieldNumbers) {
       "}\n");
 
   Run("protocol_compiler --print_free_field_numbers --proto_path=$tmpdir "
-      "foo.proto bar.proto baz.proto quz.proto", true);
+      "foo.proto bar.proto baz.proto quz.proto");
 
   ExpectNoErrors();
+
+  // TODO(jieluo): Cygwin doesn't work well if we try to capture stderr and
+  // stdout at the same time. Need to figure out why and add this test back
+  // for Cygwin.
+#if !defined(__CYGWIN__)
   ExpectCapturedStdout(
       "foo.Foo                             free: 1 3 6-7 9 11-INF\n"
       "Bar                                 free: 1 3 6-7 9 11-INF\n"
@@ -1475,6 +1483,7 @@ TEST_F(CommandLineInterfaceTest, PrintFreeFieldNumbers) {
       "Quz.Foo                             free: 1-INF\n"
       "Quz.E.G.Foo                         free: 1-INF\n"
       "Quz                                 free: 1 3 6-7 12-14 16-INF\n");
+#endif
 }
 
 // ===================================================================
