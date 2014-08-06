@@ -43,7 +43,7 @@ inline Atomic32 NoBarrier_CompareAndSwap(volatile Atomic32* ptr,
   return __sync_val_compare_and_swap(ptr, old_value, new_value);
 }
 
-inline void MemoryBarrierInternal() {
+inline void MemoryBarrier() {
   __sync_synchronize();
 }
 
@@ -51,18 +51,18 @@ inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
                                        Atomic32 old_value,
                                        Atomic32 new_value) {
   Atomic32 ret = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
-  MemoryBarrierInternal();
+  MemoryBarrier();
   return ret;
 }
 
 inline void Release_Store(volatile Atomic32* ptr, Atomic32 value) {
-  MemoryBarrierInternal();
+  MemoryBarrier();
   *ptr = value;
 }
 
 inline Atomic32 Acquire_Load(volatile const Atomic32* ptr) {
   Atomic32 value = *ptr;
-  MemoryBarrierInternal();
+  MemoryBarrier();
   return value;
 }
 
