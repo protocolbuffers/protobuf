@@ -231,7 +231,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
             "index", SimpleItoa(descriptor_->index()));
         }
         printer->Print(
-          "return $immutable_package$.$descriptor_class$.descriptor\n"
+          "return $immutable_package$.$descriptor_class$.getDescriptor()\n"
           "    .getEnumTypes().get($index$);\n",
           "immutable_package", FileJavaPackage(descriptor_->file(), true),
           "descriptor_class",

@@ -315,7 +315,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
     "    getDescriptor() {\n"
     "  return descriptor;\n"
     "}\n"
-    "public static com.google.protobuf.Descriptors.FileDescriptor\n"
+    "private static com.google.protobuf.Descriptors.FileDescriptor\n"
     "    descriptor;\n"
     "static {\n");
   printer->Indent();
