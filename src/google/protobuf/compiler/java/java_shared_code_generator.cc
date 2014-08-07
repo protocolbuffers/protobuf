@@ -176,34 +176,14 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
   // Invoke internalBuildGeneratedFileFrom() to build the file.
   printer->Print(
     "com.google.protobuf.Descriptors.FileDescriptor\n"
-    "  .internalBuildGeneratedFileFrom(descriptorData,\n");
+    "  .internalBuildGeneratedFileFrom(descriptorData,\n"
+    "    new com.google.protobuf.Descriptors.FileDescriptor[] {\n");
 
-  printer->Print(
-    "    $classname$.class,\n"
-    "    new java.lang.String[] {\n",
-    "classname", name_resolver_->GetDescriptorClassName(file_));
   for (int i = 0; i < dependencies.size(); i++) {
     const string& dependency = dependencies[i].second;
     printer->Print(
-        // Here we load the dependency FileDescriptors lazily via Java
-        // reflection. This is to avoid breaking proto1 targets who have
-        // genproto dependencies for which we can't generate the descriptor
-        // class. They will compile fine but when users try to call reflection
-        // functions upon them it will fail. Users will have to get rid of
-        // genproto dependencies before they can use proto2 reflection on
-        // proto1 messages.
-        "      \"$dependency$\",\n",
+        "      $dependency$.getDescriptor(),\n",
         "dependency", dependency);
-  }
-
-  printer->Print(
-      "    }, new java.lang.String[] {\n");
-
-  for (int i = 0; i < dependencies.size(); i++) {
-    const string& filename = dependencies[i].first;
-    printer->Print(
-        "      \"$filename$\",\n",
-        "filename", filename);
   }
 
   printer->Print(
