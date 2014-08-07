@@ -99,18 +99,9 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
 
   vector<string> all_files;
 
-  if (generate_shared_code) {
-    // Generate code shared between immutable and mutable API.
-    SharedCodeGenerator shared_code_generator(file);
-    shared_code_generator.Generate(context, &all_files);
-  }
-
   vector<FileGenerator*> file_generators;
   if (generate_immutable_code) {
     file_generators.push_back(new FileGenerator(file, /* immutable = */ true));
-  }
-  if (generate_mutable_code) {
-    file_generators.push_back(new FileGenerator(file, /* mutable = */ false));
   }
   for (int i = 0; i < file_generators.size(); ++i) {
     if (!file_generators[i]->Validate(error)) {

@@ -68,10 +68,9 @@ class SharedCodeGenerator {
 
   void Generate(GeneratorContext* generator_context,
                 vector<string>* file_list);
-
- private:
   void GenerateDescriptors(io::Printer* printer);
 
+ private:
   // Returns whether the dependency should be included in the output file.
   // Always returns true for opensource, but used internally at Google to help
   // improve compatibility with version 1 of protocol buffers.

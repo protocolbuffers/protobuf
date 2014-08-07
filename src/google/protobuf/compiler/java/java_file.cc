@@ -44,6 +44,7 @@
 #include <google/protobuf/compiler/java/java_message.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
 #include <google/protobuf/compiler/java/java_service.h>
+#include <google/protobuf/compiler/java/java_shared_code_generator.h>
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -314,14 +315,13 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
     "    getDescriptor() {\n"
     "  return descriptor;\n"
     "}\n"
-    "private static com.google.protobuf.Descriptors.FileDescriptor\n"
+    "public static com.google.protobuf.Descriptors.FileDescriptor\n"
     "    descriptor;\n"
     "static {\n");
   printer->Indent();
 
-  printer->Print(
-    "descriptor = $descriptor_classname$.descriptor;\n",
-    "descriptor_classname", name_resolver_->GetDescriptorClassName(file_));
+  SharedCodeGenerator shared_code_generator(file_);
+  shared_code_generator.GenerateDescriptors(printer);
 
   for (int i = 0; i < file_->message_type_count(); i++) {
     message_generators_[i]->GenerateStaticVariableInitializers(printer);
