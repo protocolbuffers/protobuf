@@ -177,7 +177,7 @@ bool ClassNameResolver::HasConflictingClassName(
 
 string ClassNameResolver::GetDescriptorClassName(
     const FileDescriptor* descriptor) {
-  return GetFileImmutableClassName(descriptor) + "InternalDescriptors";
+  return GetFileImmutableClassName(descriptor);
 }
 
 string ClassNameResolver::GetClassName(const FileDescriptor* descriptor,

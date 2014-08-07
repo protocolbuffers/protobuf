@@ -80,12 +80,18 @@ void SharedCodeGenerator::Generate(GeneratorContext* context,
         "package", java_package);
     }
     printer->Print(
-      "public final class $classname$ {\n",
+      "public final class $classname$ {\n"
+      "  public static com.google.protobuf.Descriptors.FileDescriptor\n"
+      "      descriptor;\n"
+      "  static {\n",
       "classname", classname);
+    printer->Indent();
     printer->Indent();
     GenerateDescriptors(printer.get());
     printer->Outdent();
+    printer->Outdent();
     printer->Print(
+      "  }\n"
       "}\n");
 
     printer.reset();
@@ -113,11 +119,7 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
   file_proto.SerializeToString(&file_data);
 
   printer->Print(
-    "public static com.google.protobuf.Descriptors.FileDescriptor\n"
-    "    descriptor;\n"
-    "static {\n"
-    "  java.lang.String[] descriptorData = {\n");
-  printer->Indent();
+    "java.lang.String[] descriptorData = {\n");
   printer->Indent();
 
   // Only write 40 bytes per line.
@@ -206,10 +208,6 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
 
   printer->Print(
     "    }, assigner);\n");
-
-  printer->Outdent();
-  printer->Print(
-    "}\n");
 }
 
 bool SharedCodeGenerator::ShouldIncludeDependency(
