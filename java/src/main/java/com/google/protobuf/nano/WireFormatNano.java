@@ -113,11 +113,7 @@ public final class WireFormatNano {
     int arrayLength = 1;
     int startPos = input.getPosition();
     input.skipField(tag);
-    while (input.getBytesUntilLimit() > 0) {
-      int thisTag = input.readTag();
-      if (thisTag != tag) {
-        break;
-      }
+    while (input.readTag() == tag) {
       input.skipField(tag);
       arrayLength++;
     }
