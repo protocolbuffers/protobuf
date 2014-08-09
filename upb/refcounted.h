@@ -21,10 +21,13 @@
 
 #include "upb/table.int.h"
 
-// Reference tracking is designed to be used with a tool like Valgrind; when
-// enabled, it will cause reference leaks to show up as actual memory leaks
-// that are attributed to the code that leaked the ref, *not* the code that
-// originally created the object.
+// Reference tracking will check ref()/unref() operations to make sure the
+// ref ownership is correct.  Where possible it will also make tools like
+// Valgrind attribute ref leaks to the code that took the leaked ref, not
+// the code that originally created the object.
+//
+// Enabling this requires the application to define upb_lock()/upb_unlock()
+// functions that acquire/release a global mutex (or #define UPB_THREAD_UNSAFE).
 #ifndef NDEBUG
 #define UPB_DEBUG_REFS
 #endif

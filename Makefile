@@ -7,17 +7,13 @@
 #
 # Summary of compiler flags you may want to use:
 #
-# * -DNDEBUG: makes binary smaller and faster by removing sanity checks.
-# * -O3: optimize for maximum speed
+# * -UNDEBUG: enables assertions() (makes binary larger and slower)
+# * -O0: disable optimizations
+# * -g: enable debug symbols
 # * -fomit-frame-pointer: makes code smaller and faster by freeing up a reg.
 #
 # Threading:
-# * -DUPB_USE_PTHREADS: configures upb to use pthreads r/w lock.
 # * -DUPB_THREAD_UNSAFE: remove all thread-safety.
-# * -pthread: required on GCC to enable pthreads (but what does it do?)
-#
-# Other:
-# * -DUPB_UNALIGNED_READS_OK: makes code smaller, but not standard compliant
 
 .PHONY: all lib clean tests test benchmarks benchmark descriptorgen
 .PHONY: clean_leave_profile
@@ -49,7 +45,7 @@ CXX=g++
 CFLAGS=-std=gnu99
 CXXFLAGS=
 INCLUDE=-Itests -I.
-CPPFLAGS=$(INCLUDE) -Wall -Wextra -Wno-sign-compare $(USER_CFLAGS)
+CPPFLAGS=$(INCLUDE) -DNDEBUG -Wall -Wextra -Wno-sign-compare $(USER_CFLAGS)
 LDLIBS=-lpthread upb/libupb.a
 LUA=lua  # 5.1 and 5.2 should both be supported
 

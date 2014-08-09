@@ -112,6 +112,7 @@ static bool lookup(const upb_table *t, upb_tabkey key, upb_value *v,
 // The given key must not already exist in the table.
 static void insert(upb_table *t, upb_tabkey key, upb_value val,
                    hashfunc_t *hash, eqlfunc_t *eql) {
+  UPB_UNUSED(eql);
   assert(findentry(t, key, hash, eql) == NULL);
   assert(val.ctype == t->ctype);
   t->count++;

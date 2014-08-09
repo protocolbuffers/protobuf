@@ -35,7 +35,7 @@ const void *UPB_UNTRACKED_REF = &untracked_val;
 static void atomic_inc(uint32_t *a) { (*a)++; }
 static bool atomic_dec(uint32_t *a) { return --(*a) == 0; }
 
-#elif (__GNUC__ == 4 && __GNUC_MINOR__ >= 1) || __GNUC__ > 4 ///////////////////
+#elif defined(__GNUC__) || defined(__clang__) //////////////////////////////////
 
 static void atomic_inc(uint32_t *a) { __sync_fetch_and_add(a, 1); }
 static bool atomic_dec(uint32_t *a) { return __sync_sub_and_fetch(a, 1) == 0; }
