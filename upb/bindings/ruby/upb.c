@@ -40,10 +40,7 @@ static void symtab_free(void *md) {
 
 void rupb_checkstatus(upb_status *s) {
   if (!upb_ok(s)) {
-    fprintf(stderr, "YO, error! %s", upb_status_errmsg(s));
     rb_raise(rb_eRuntimeError, "%s", upb_status_errmsg(s));
-  } else {
-    fprintf(stderr, "A-OK!");
   }
 }
 
@@ -152,6 +149,9 @@ static void msg_mark(void *p) {
   rb_msgdef *rmd;
   Data_Get_Struct(msg->data.rbmsgdef, rb_msgdef, rmd);
 
+  // Mark the msgdef to keep it alive.
+  rb_gc_mark(msg->data.rbmsgdef);
+
   // We need to mark all references to other Ruby values: strings, arrays, and
   // submessages that we point to.  Only strings are implemented so far.
   upb_msg_iter i;
@@ -164,7 +164,7 @@ static void msg_mark(void *p) {
   }
 }
 
-VALUE msg_new(VALUE msgdef) {
+static VALUE msg_new(VALUE msgdef) {
   const rb_msgdef *rmd;
   Data_Get_Struct(msgdef, rb_msgdef, rmd);
 
@@ -176,12 +176,106 @@ VALUE msg_new(VALUE msgdef) {
   return ret;
 }
 
+static const upb_fielddef *lookup_field(rb_msg *msg, const char *field,
+                                        size_t *ofs) {
+  const rb_msgdef *rmd;
+  Data_Get_Struct(msg->data.rbmsgdef, rb_msgdef, rmd);
+  const upb_fielddef *f = upb_msgdef_ntof(rmd->md, field);
+  if (!f) {
+    rb_raise(rb_eArgError, "No such field: %s", field);
+  }
+  *ofs = rmd->field_offsets[upb_fielddef_index(f)];
+  return f;
+}
+
+static VALUE msg_setter(rb_msg *msg, VALUE field, VALUE val) {
+  size_t ofs;
+  char *fieldp = RSTRING_PTR(field);
+  size_t field_last = RSTRING_LEN(field) - 1;
+
+  // fieldp is a string like "id=".  But we want to look up "id".
+  // We take the liberty of temporarily setting the "=" to NULL.
+  assert(fieldp[field_last] == '=');
+  fieldp[field_last] = '\0';
+  const upb_fielddef *f = lookup_field(msg, fieldp, &ofs);
+  fieldp[field_last] = '=';
+
+  // Possibly introduce stricter type checking.
+  switch (upb_fielddef_type(f)) {
+    case UPB_TYPE_FLOAT:   DEREF(msg, ofs, float) = NUM2DBL(val);
+    case UPB_TYPE_DOUBLE:  DEREF(msg, ofs, double) = NUM2DBL(val);
+    case UPB_TYPE_BOOL:    DEREF(msg, ofs, bool) = RTEST(val);
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:   DEREF(msg, ofs, VALUE) = val;
+    case UPB_TYPE_MESSAGE: return Qnil;
+    case UPB_TYPE_ENUM:
+    case UPB_TYPE_INT32:   DEREF(msg, ofs, int32_t) = NUM2INT(val);
+    case UPB_TYPE_UINT32:  DEREF(msg, ofs, uint32_t) = NUM2LONG(val);
+    case UPB_TYPE_INT64:   DEREF(msg, ofs, int64_t) = NUM2LONG(val);
+    case UPB_TYPE_UINT64:  DEREF(msg, ofs, uint64_t) = NUM2ULL(val);
+  }
+
+  return val;
+}
+
+static VALUE msg_getter(rb_msg *msg, VALUE field) {
+  size_t ofs;
+  const upb_fielddef *f = lookup_field(msg, RSTRING_PTR(field), &ofs);
+
+  switch (upb_fielddef_type(f)) {
+    case UPB_TYPE_FLOAT:   return rb_float_new(DEREF(msg, ofs, float));
+    case UPB_TYPE_DOUBLE:  return rb_float_new(DEREF(msg, ofs, double));
+    case UPB_TYPE_BOOL:    return DEREF(msg, ofs, bool) ? Qtrue : Qfalse;
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:   return DEREF(msg, ofs, VALUE);
+    case UPB_TYPE_MESSAGE: return Qnil;
+    case UPB_TYPE_ENUM:
+    case UPB_TYPE_INT32:   return INT2NUM(DEREF(msg, ofs, int32_t));
+    case UPB_TYPE_UINT32:  return LONG2NUM(DEREF(msg, ofs, uint32_t));
+    case UPB_TYPE_INT64:   return LONG2NUM(DEREF(msg, ofs, int64_t));
+    case UPB_TYPE_UINT64:  return ULL2NUM(DEREF(msg, ofs, uint64_t));
+  }
+
+  rb_bug("Unexpected type");
+}
+
+static VALUE msg_accessor(int argc, VALUE *argv, VALUE obj) {
+  rb_msg *msg;
+  Data_Get_Struct(obj, rb_msg, msg);
+
+  // method_missing protocol: (method [, arg1, arg2, ...])
+  assert(argc >= 1 && SYMBOL_P(argv[0]));
+  VALUE method = rb_id2str(SYM2ID(argv[0]));
+  const char *method_str = RSTRING_PTR(method);
+  size_t method_len = RSTRING_LEN(method);
+
+  if (method_str[method_len - 1] == '=') {
+    // Call was:
+    //   foo.bar = x
+    //
+    // Ruby should guarantee that we have exactly one more argument (x)
+    assert(argc == 2);
+    return msg_setter(msg, method, argv[1]);
+  } else {
+    // Call was:
+    //   foo.bar
+    //
+    // ...but may have had arguments. We want to disallow arguments.
+    if (argc > 1) {
+      rb_raise(rb_eArgError, "Accessor %s takes no arguments", method_str);
+    }
+    return msg_getter(msg, method);
+  }
+}
+
 /* msgdef *********************************************************************/
 
 static void msgdef_free(void *_rmd) {
   rb_msgdef *rmd = _rmd;
   upb_msgdef_unref(rmd->md, &rmd->md);
-  upb_pbdecodermethod_unref(rmd->fill_method, &rmd->fill_method);
+  if (rmd->fill_method) {
+    upb_pbdecodermethod_unref(rmd->fill_method, &rmd->fill_method);
+  }
   free(rmd->field_offsets);
 }
 
@@ -202,7 +296,7 @@ const upb_pbdecodermethod *new_fillmsg_decodermethod(const rb_msgdef *rmd,
 // dictionaries.  This speeds up a parsing a lot and also saves memory
 // (unless messages are very sparse).
 static void assign_offsets(rb_msgdef *rmd) {
-  size_t ofs = sizeof(rb_msgdef);  // Msg starts with msgdef pointer.
+  size_t ofs = sizeof(rb_msg);  // Msg starts with predeclared members.
   upb_msg_iter i;
   for (upb_msg_begin(&i, rmd->md); !upb_msg_done(&i); upb_msg_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
@@ -223,9 +317,11 @@ static VALUE make_msgdef(const upb_msgdef *md) {
 
   rmd->md = md;
   rmd->field_offsets = ALLOC_N(uint32_t, upb_msgdef_numfields(md));
-  rmd->fill_method = new_fillmsg_decodermethod(rmd, &rmd->fill_method);
+  rmd->fill_method = NULL;
 
   assign_offsets(rmd);
+
+  rmd->fill_method = new_fillmsg_decodermethod(rmd, &rmd->fill_method);
 
   return ret;
 }
@@ -274,12 +370,9 @@ static VALUE msgdef_parse(VALUE self, VALUE binary_protobuf) {
   upb_pbdecoder_init(&decoder, rmd->fill_method, &status);
   upb_sink_reset(&sink, h, msgp);
   upb_pbdecoder_resetoutput(&decoder, &sink);
-  fprintf(stderr, "STR: %s\n", RSTRING_PTR(binary_protobuf));
-  fprintf(stderr, "LEN: %d\n", (int)RSTRING_LEN(binary_protobuf));
-  size_t n = upb_bufsrc_putbuf(RSTRING_PTR(binary_protobuf),
+  upb_bufsrc_putbuf(RSTRING_PTR(binary_protobuf),
                     RSTRING_LEN(binary_protobuf),
                     upb_pbdecoder_input(&decoder));
-  fprintf(stderr, "n: %d\n", (int)n);
   // TODO(haberman): make uninit optional if custom allocator for parsing
   // returns GC-rooted memory.  That will make decoding longjmp-safe (required
   // if parsing triggers any VM errors like OOM or errors in user handlers).
@@ -297,4 +390,5 @@ void Init_upb() {
   rb_define_method(cMessageDef, "parse", msgdef_parse, 1);
 
   cMessage = rb_define_class_under(upb, "Message", rb_cObject);
+  rb_define_method(cMessage, "method_missing", msg_accessor, -1);
 }
