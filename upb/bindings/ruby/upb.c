@@ -245,6 +245,8 @@ static VALUE msg_accessor(int argc, VALUE *argv, VALUE obj) {
 
   // method_missing protocol: (method [, arg1, arg2, ...])
   assert(argc >= 1 && SYMBOL_P(argv[0]));
+  // OPT(haberman): find a better way to get the method name.
+  // This is allocating a new string each time, which should not be necessary.
   VALUE method = rb_id2str(SYM2ID(argv[0]));
   const char *method_str = RSTRING_PTR(method);
   size_t method_len = RSTRING_LEN(method);
