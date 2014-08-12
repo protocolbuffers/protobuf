@@ -35,15 +35,16 @@
 
 __author__ = 'bohdank@google.com (Bohdan Koval)'
 
-import unittest
+from google.apputils import basetest
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf.internal import encoder
+from google.protobuf.internal import missing_enum_values_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import type_checkers
 
 
-class UnknownFieldsTest(unittest.TestCase):
+class UnknownFieldsTest(basetest.TestCase):
 
   def setUp(self):
     self.descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
@@ -58,12 +59,20 @@ class UnknownFieldsTest(unittest.TestCase):
     field_descriptor = self.descriptor.fields_by_name[name]
     wire_type = type_checkers.FIELD_TYPE_TO_WIRE_TYPE[field_descriptor.type]
     field_tag = encoder.TagBytes(field_descriptor.number, wire_type)
+    result_dict = {}
     for tag_bytes, value in self.unknown_fields:
       if tag_bytes == field_tag:
         decoder = unittest_pb2.TestAllTypes._decoders_by_tag[tag_bytes]
-        result_dict = {}
         decoder(value, 0, len(value), self.all_fields, result_dict)
-        return result_dict[field_descriptor]
+    return result_dict[field_descriptor]
+
+  def testEnum(self):
+    value = self.GetField('optional_nested_enum')
+    self.assertEqual(self.all_fields.optional_nested_enum, value)
+
+  def testRepeatedEnum(self):
+    value = self.GetField('repeated_nested_enum')
+    self.assertEqual(self.all_fields.repeated_nested_enum, value)
 
   def testVarint(self):
     value = self.GetField('optional_int32')
@@ -166,5 +175,57 @@ class UnknownFieldsTest(unittest.TestCase):
     self.assertNotEqual(self.empty_message, message)
 
 
+class UnknownFieldsTest(basetest.TestCase):
+
+  def setUp(self):
+    self.descriptor = missing_enum_values_pb2.TestEnumValues.DESCRIPTOR
+
+    self.message = missing_enum_values_pb2.TestEnumValues()
+    self.message.optional_nested_enum = (
+      missing_enum_values_pb2.TestEnumValues.ZERO)
+    self.message.repeated_nested_enum.extend([
+      missing_enum_values_pb2.TestEnumValues.ZERO,
+      missing_enum_values_pb2.TestEnumValues.ONE,
+      ])
+    self.message.packed_nested_enum.extend([
+      missing_enum_values_pb2.TestEnumValues.ZERO,
+      missing_enum_values_pb2.TestEnumValues.ONE,
+      ])
+    self.message_data = self.message.SerializeToString()
+    self.missing_message = missing_enum_values_pb2.TestMissingEnumValues()
+    self.missing_message.ParseFromString(self.message_data)
+    self.unknown_fields = self.missing_message._unknown_fields
+
+  def GetField(self, name):
+    field_descriptor = self.descriptor.fields_by_name[name]
+    wire_type = type_checkers.FIELD_TYPE_TO_WIRE_TYPE[field_descriptor.type]
+    field_tag = encoder.TagBytes(field_descriptor.number, wire_type)
+    result_dict = {}
+    for tag_bytes, value in self.unknown_fields:
+      if tag_bytes == field_tag:
+        decoder = missing_enum_values_pb2.TestEnumValues._decoders_by_tag[
+          tag_bytes]
+        decoder(value, 0, len(value), self.message, result_dict)
+    return result_dict[field_descriptor]
+
+  def testUnknownEnumValue(self):
+    self.assertFalse(self.missing_message.HasField('optional_nested_enum'))
+    value = self.GetField('optional_nested_enum')
+    self.assertEqual(self.message.optional_nested_enum, value)
+
+  def testUnknownRepeatedEnumValue(self):
+    value = self.GetField('repeated_nested_enum')
+    self.assertEqual(self.message.repeated_nested_enum, value)
+
+  def testUnknownPackedEnumValue(self):
+    value = self.GetField('packed_nested_enum')
+    self.assertEqual(self.message.packed_nested_enum, value)
+
+  def testRoundTrip(self):
+    new_message = missing_enum_values_pb2.TestEnumValues()
+    new_message.ParseFromString(self.missing_message.SerializeToString())
+    self.assertEqual(self.message, new_message)
+
+
 if __name__ == '__main__':
-  unittest.main()
+  basetest.main()

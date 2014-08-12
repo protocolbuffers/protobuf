@@ -610,7 +610,7 @@ def _AddMessageMethods(message_descriptor, cls):
     return self._cmsg.FindInitializationErrors()
 
   def __str__(self):
-    return self._cmsg.DebugString()
+    return str(self._cmsg)
 
   def __eq__(self, other):
     if self is other:

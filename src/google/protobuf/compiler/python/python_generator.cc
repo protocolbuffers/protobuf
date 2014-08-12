@@ -642,7 +642,22 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
                     "end", SimpleItoa(range->end));
   }
   printer_->Print("],\n");
-
+  printer_->Print("oneofs=[\n");
+  printer_->Indent();
+  for (int i = 0; i < message_descriptor.oneof_decl_count(); ++i) {
+    const OneofDescriptor* desc = message_descriptor.oneof_decl(i);
+    map<string, string> m;
+    m["name"] = desc->name();
+    m["full_name"] = desc->full_name();
+    m["index"] = SimpleItoa(desc->index());
+    printer_->Print(
+        m,
+        "_descriptor.OneofDescriptor(\n"
+        "  name='$name$', full_name='$full_name$',\n"
+        "  index=$index$, containing_type=None, fields=[]),\n");
+  }
+  printer_->Outdent();
+  printer_->Print("],\n");
   // Serialization of proto
   DescriptorProto edp;
   PrintSerializedPbInterval(message_descriptor, edp);
@@ -742,6 +757,23 @@ void Generator::FixForeignFieldsInDescriptor(
   for (int i = 0; i < descriptor.enum_type_count(); ++i) {
     const EnumDescriptor& enum_descriptor = *descriptor.enum_type(i);
     FixContainingTypeInDescriptor(enum_descriptor, &descriptor);
+  }
+  for (int i = 0; i < descriptor.oneof_decl_count(); ++i) {
+    map<string, string> m;
+    const OneofDescriptor* oneof = descriptor.oneof_decl(i);
+    m["descriptor_name"] = ModuleLevelDescriptorName(descriptor);
+    m["oneof_name"] = oneof->name();
+    for (int j = 0; j < oneof->field_count(); ++j) {
+      m["field_name"] = oneof->field(j)->name();
+      printer_->Print(
+          m,
+          "$descriptor_name$.oneofs_by_name['$oneof_name$'].fields.append(\n"
+          "  $descriptor_name$.fields_by_name['$field_name$'])\n");
+      printer_->Print(
+          m,
+          "$descriptor_name$.fields_by_name['$field_name$'].containing_oneof = "
+          "$descriptor_name$.oneofs_by_name['$oneof_name$']\n");
+    }
   }
 }
 

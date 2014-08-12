@@ -34,7 +34,7 @@
 
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
-import unittest
+from google.apputils import basetest
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import factory_test1_pb2
 from google.protobuf.internal import factory_test2_pb2
@@ -43,7 +43,7 @@ from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 
 
-class MessageFactoryTest(unittest.TestCase):
+class MessageFactoryTest(basetest.TestCase):
 
   def setUp(self):
     self.factory_test1_fd = descriptor_pb2.FileDescriptorProto.FromString(
@@ -61,8 +61,8 @@ class MessageFactoryTest(unittest.TestCase):
     msg.factory_1_message.nested_factory_1_message.value = (
         'nested message value')
     msg.factory_1_message.scalar_value = 22
-    msg.factory_1_message.list_value.extend(['one', 'two', 'three'])
-    msg.factory_1_message.list_value.append('four')
+    msg.factory_1_message.list_value.extend([u'one', u'two', u'three'])
+    msg.factory_1_message.list_value.append(u'four')
     msg.factory_1_enum = 1
     msg.nested_factory_1_enum = 0
     msg.nested_factory_1_message.value = 'nested message value'
@@ -70,8 +70,8 @@ class MessageFactoryTest(unittest.TestCase):
     msg.circular_message.circular_message.mandatory = 2
     msg.circular_message.scalar_value = 'one deep'
     msg.scalar_value = 'zero deep'
-    msg.list_value.extend(['four', 'three', 'two'])
-    msg.list_value.append('one')
+    msg.list_value.extend([u'four', u'three', u'two'])
+    msg.list_value.append(u'one')
     msg.grouped.add()
     msg.grouped[0].part_1 = 'hello'
     msg.grouped[0].part_2 = 'world'
@@ -92,22 +92,40 @@ class MessageFactoryTest(unittest.TestCase):
     db.Add(self.factory_test2_fd)
     factory = message_factory.MessageFactory()
     cls = factory.GetPrototype(pool.FindMessageTypeByName(
-        'net.proto2.python.internal.Factory2Message'))
+        'google.protobuf.python.internal.Factory2Message'))
     self.assertIsNot(cls, factory_test2_pb2.Factory2Message)
     self._ExerciseDynamicClass(cls)
     cls2 = factory.GetPrototype(pool.FindMessageTypeByName(
-        'net.proto2.python.internal.Factory2Message'))
+        'google.protobuf.python.internal.Factory2Message'))
     self.assertIs(cls, cls2)
 
   def testGetMessages(self):
-    messages = message_factory.GetMessages([self.factory_test2_fd,
-                                            self.factory_test1_fd])
-    self.assertContainsSubset(
-        ['net.proto2.python.internal.Factory2Message',
-         'net.proto2.python.internal.Factory1Message'],
-        messages.keys())
-    self._ExerciseDynamicClass(
-        messages['net.proto2.python.internal.Factory2Message'])
+    # performed twice because multiple calls with the same input must be allowed
+    for _ in range(2):
+      messages = message_factory.GetMessages([self.factory_test2_fd,
+                                              self.factory_test1_fd])
+      self.assertContainsSubset(
+          ['google.protobuf.python.internal.Factory2Message',
+           'google.protobuf.python.internal.Factory1Message'],
+          messages.keys())
+      self._ExerciseDynamicClass(
+          messages['google.protobuf.python.internal.Factory2Message'])
+      self.assertContainsSubset(
+          ['google.protobuf.python.internal.Factory2Message.one_more_field',
+           'google.protobuf.python.internal.another_field'],
+          (messages['google.protobuf.python.internal.Factory1Message']
+           ._extensions_by_name.keys()))
+      factory_msg1 = messages['google.protobuf.python.internal.Factory1Message']
+      msg1 = messages['google.protobuf.python.internal.Factory1Message']()
+      ext1 = factory_msg1._extensions_by_name[
+          'google.protobuf.python.internal.Factory2Message.one_more_field']
+      ext2 = factory_msg1._extensions_by_name[
+          'google.protobuf.python.internal.another_field']
+      msg1.Extensions[ext1] = 'test1'
+      msg1.Extensions[ext2] = 'test2'
+      self.assertEquals('test1', msg1.Extensions[ext1])
+      self.assertEquals('test2', msg1.Extensions[ext2])
+
 
 if __name__ == '__main__':
-  unittest.main()
+  basetest.main()
