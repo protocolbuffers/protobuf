@@ -177,7 +177,11 @@ class Message(object):
     raise NotImplementedError
 
   def ParseFromString(self, serialized):
-    """Like MergeFromString(), except we clear the object first."""
+    """Parse serialized protocol buffer data into this message.
+
+    Like MergeFromString(), except we clear the object first and
+    do not return the value that MergeFromString returns.
+    """
     self.Clear()
     self.MergeFromString(serialized)
 

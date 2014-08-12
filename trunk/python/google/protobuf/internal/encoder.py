@@ -28,6 +28,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#PY25 compatible for GAE.
+#
+# Copyright 2009 Google Inc. All Rights Reserved.
+
 """Code for encoding protocol message primitives.
 
 Contains the logic for encoding every logical protocol field type
@@ -67,6 +71,8 @@ sizer rather than when calling them.  In particular:
 __author__ = 'kenton@google.com (Kenton Varda)'
 
 import struct
+import sys  ##PY25
+_PY2 = sys.version_info[0] < 3  ##PY25
 from google.protobuf.internal import wire_format
 
 
@@ -340,7 +346,8 @@ def MessageSetItemSizer(field_number):
 def _VarintEncoder():
   """Return an encoder for a basic varint value (does not include tag)."""
 
-  local_chr = chr
+  local_chr = _PY2 and chr or (lambda x: bytes((x,)))  ##PY25
+##!PY25  local_chr = chr if bytes is str else lambda x: bytes((x,))
   def EncodeVarint(write, value):
     bits = value & 0x7f
     value >>= 7
@@ -357,7 +364,8 @@ def _SignedVarintEncoder():
   """Return an encoder for a basic signed varint value (does not include
   tag)."""
 
-  local_chr = chr
+  local_chr = _PY2 and chr or (lambda x: bytes((x,)))  ##PY25
+##!PY25  local_chr = chr if bytes is str else lambda x: bytes((x,))
   def EncodeSignedVarint(write, value):
     if value < 0:
       value += (1 << 64)
@@ -382,7 +390,8 @@ def _VarintBytes(value):
 
   pieces = []
   _EncodeVarint(pieces.append, value)
-  return "".join(pieces)
+  return "".encode("latin1").join(pieces)  ##PY25
+##!PY25  return b"".join(pieces)
 
 
 def TagBytes(field_number, wire_type):
@@ -520,26 +529,33 @@ def _FloatingPointEncoder(wire_type, format):
       format:  The format string to pass to struct.pack().
   """
 
+  b = _PY2 and (lambda x:x) or (lambda x:x.encode('latin1'))  ##PY25
   value_size = struct.calcsize(format)
   if value_size == 4:
     def EncodeNonFiniteOrRaise(write, value):
       # Remember that the serialized form uses little-endian byte order.
       if value == _POS_INF:
-        write('\x00\x00\x80\x7F')
+        write(b('\x00\x00\x80\x7F'))  ##PY25
+##!PY25        write(b'\x00\x00\x80\x7F')
       elif value == _NEG_INF:
-        write('\x00\x00\x80\xFF')
+        write(b('\x00\x00\x80\xFF'))  ##PY25
+##!PY25        write(b'\x00\x00\x80\xFF')
       elif value != value:           # NaN
-        write('\x00\x00\xC0\x7F')
+        write(b('\x00\x00\xC0\x7F'))  ##PY25
+##!PY25        write(b'\x00\x00\xC0\x7F')
       else:
         raise
   elif value_size == 8:
     def EncodeNonFiniteOrRaise(write, value):
       if value == _POS_INF:
-        write('\x00\x00\x00\x00\x00\x00\xF0\x7F')
+        write(b('\x00\x00\x00\x00\x00\x00\xF0\x7F'))  ##PY25
+##!PY25        write(b'\x00\x00\x00\x00\x00\x00\xF0\x7F')
       elif value == _NEG_INF:
-        write('\x00\x00\x00\x00\x00\x00\xF0\xFF')
+        write(b('\x00\x00\x00\x00\x00\x00\xF0\xFF'))  ##PY25
+##!PY25        write(b'\x00\x00\x00\x00\x00\x00\xF0\xFF')
       elif value != value:                         # NaN
-        write('\x00\x00\x00\x00\x00\x00\xF8\x7F')
+        write(b('\x00\x00\x00\x00\x00\x00\xF8\x7F'))  ##PY25
+##!PY25        write(b'\x00\x00\x00\x00\x00\x00\xF8\x7F')
       else:
         raise
   else:
@@ -615,8 +631,10 @@ DoubleEncoder   = _FloatingPointEncoder(wire_format.WIRETYPE_FIXED64, '<d')
 def BoolEncoder(field_number, is_repeated, is_packed):
   """Returns an encoder for a boolean field."""
 
-  false_byte = chr(0)
-  true_byte = chr(1)
+##!PY25  false_byte = b'\x00'
+##!PY25  true_byte = b'\x01'
+  false_byte = '\x00'.encode('latin1')  ##PY25
+  true_byte = '\x01'.encode('latin1')  ##PY25
   if is_packed:
     tag_bytes = TagBytes(field_number, wire_format.WIRETYPE_LENGTH_DELIMITED)
     local_EncodeVarint = _EncodeVarint
@@ -752,7 +770,8 @@ def MessageSetItemEncoder(field_number):
       }
     }
   """
-  start_bytes = "".join([
+  start_bytes = "".encode("latin1").join([  ##PY25
+##!PY25  start_bytes = b"".join([
       TagBytes(1, wire_format.WIRETYPE_START_GROUP),
       TagBytes(2, wire_format.WIRETYPE_VARINT),
       _VarintBytes(field_number),

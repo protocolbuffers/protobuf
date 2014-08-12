@@ -101,6 +101,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/once.cc                                \
   google/protobuf/stubs/hash.h                                 \
   google/protobuf/stubs/map_util.h                             \
+  google/protobuf/stubs/shared_ptr.h                           \
   google/protobuf/stubs/stl_util.h                             \
   google/protobuf/stubs/stringprintf.cc                        \
   google/protobuf/stubs/stringprintf.h                         \
@@ -246,7 +247,10 @@ EXTRA_DIST =                                                   \
   google/protobuf/testdata/golden_message_oneof_implemented    \
   google/protobuf/testdata/golden_packed_fields_message        \
   google/protobuf/testdata/text_format_unittest_data_oneof_implemented.txt  \
+  google/protobuf/testdata/text_format_unittest_data_pointy.txt             \
+  google/protobuf/testdata/text_format_unittest_data_pointy_oneof_implemented.txt \
   google/protobuf/testdata/text_format_unittest_extensions_data.txt         \
+  google/protobuf/testdata/text_format_unittest_extensions_data_pointy.txt  \
   google/protobuf/package_info.h                               \
   google/protobuf/io/package_info.h                            \
   google/protobuf/compiler/package_info.h                      \

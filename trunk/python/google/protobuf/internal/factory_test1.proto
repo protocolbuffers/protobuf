@@ -52,4 +52,6 @@ message Factory1Message {
   optional NestedFactory1Message nested_factory_1_message = 3;
   optional int32 scalar_value = 4;
   repeated string list_value = 5;
+
+  extensions 1000 to max;
 }

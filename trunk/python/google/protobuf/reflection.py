@@ -57,7 +57,7 @@ _FieldDescriptor = descriptor_mod.FieldDescriptor
 
 if api_implementation.Type() == 'cpp':
   if api_implementation.Version() == 2:
-    from google.protobuf.internal.cpp import cpp_message
+    from google.protobuf.pyext import cpp_message
     _NewMessage = cpp_message.NewMessage
     _InitMessage = cpp_message.InitMessage
   else:
@@ -91,6 +91,10 @@ class GeneratedProtocolMessageType(type):
   myproto_instance = MyProtoClass()
   myproto.foo_field = 23
   ...
+
+  The above example will not work for nested types. If you wish to include them,
+  use reflection.MakeClass() instead of manually instantiating the class in
+  order to create the appropriate class structure.
   """
 
   # Must be consistent with the protocol-compiler code in
@@ -159,11 +163,43 @@ def ParseMessage(descriptor, byte_str):
   Returns:
     Newly created protobuf Message object.
   """
-
-  class _ResultClass(message.Message):
-    __metaclass__ = GeneratedProtocolMessageType
-    DESCRIPTOR = descriptor
-
-  new_msg = _ResultClass()
+  result_class = MakeClass(descriptor)
+  new_msg = result_class()
   new_msg.ParseFromString(byte_str)
   return new_msg
+
+
+def MakeClass(descriptor):
+  """Construct a class object for a protobuf described by descriptor.
+
+  Composite descriptors are handled by defining the new class as a member of the
+  parent class, recursing as deep as necessary.
+  This is the dynamic equivalent to:
+
+  class Parent(message.Message):
+    __metaclass__ = GeneratedProtocolMessageType
+    DESCRIPTOR = descriptor
+    class Child(message.Message):
+      __metaclass__ = GeneratedProtocolMessageType
+      DESCRIPTOR = descriptor.nested_types[0]
+
+  Sample usage:
+    file_descriptor = descriptor_pb2.FileDescriptorProto()
+    file_descriptor.ParseFromString(proto2_string)
+    msg_descriptor = descriptor.MakeDescriptor(file_descriptor.message_type[0])
+    msg_class = reflection.MakeClass(msg_descriptor)
+    msg = msg_class()
+
+  Args:
+    descriptor: A descriptor.Descriptor object describing the protobuf.
+  Returns:
+    The Message class object described by the descriptor.
+  """
+  attributes = {}
+  for name, nested_type in descriptor.nested_types_by_name.items():
+    attributes[name] = MakeClass(nested_type)
+
+  attributes[GeneratedProtocolMessageType._DESCRIPTOR_KEY] = descriptor
+
+  return GeneratedProtocolMessageType(str(descriptor.name), (message.Message,),
+                                      attributes)

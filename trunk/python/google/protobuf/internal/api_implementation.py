@@ -28,41 +28,44 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+"""Determine which implementation of the protobuf API is used in this process.
 """
-This module is the central entity that determines which implementation of the
-API is used.
-"""
-
-__author__ = 'petar@google.com (Petar Petrov)'
 
 import os
-# This environment variable can be used to switch to a certain implementation
-# of the Python API. Right now only 'python' and 'cpp' are valid values. Any
-# other value will be ignored.
-_implementation_type = os.getenv('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION',
-                                 'python')
+import sys
 
+try:
+  # pylint: disable=g-import-not-at-top
+  from google.protobuf.internal import _api_implementation
+  # The compile-time constants in the _api_implementation module can be used to
+  # switch to a certain implementation of the Python API at build time.
+  _api_version = _api_implementation.api_version
+  del _api_implementation
+except ImportError:
+  _api_version = 0
+
+_default_implementation_type = (
+    'python' if _api_version == 0 else 'cpp')
+_default_version_str = (
+    '1' if _api_version <= 1 else '2')
+
+# This environment variable can be used to switch to a certain implementation
+# of the Python API, overriding the compile-time constants in the
+# _api_implementation module. Right now only 'python' and 'cpp' are valid
+# values. Any other value will be ignored.
+_implementation_type = os.getenv('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION',
+                                 _default_implementation_type)
 
 if _implementation_type != 'python':
-  # For now, by default use the pure-Python implementation.
-  # The code below checks if the C extension is available and
-  # uses it if it is available.
   _implementation_type = 'cpp'
-  ## Determine automatically which implementation to use.
-  #try:
-  #  from google.protobuf.internal import cpp_message
-  #  _implementation_type = 'cpp'
-  #except ImportError, e:
-  #  _implementation_type = 'python'
-
 
 # This environment variable can be used to switch between the two
-# 'cpp' implementations. Right now only 1 and 2 are valid values. Any
-# other value will be ignored.
+# 'cpp' implementations, overriding the compile-time constants in the
+# _api_implementation module. Right now only 1 and 2 are valid values. Any other
+# value will be ignored.
 _implementation_version_str = os.getenv(
     'PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION',
-    '1')
-
+    _default_version_str)
 
 if _implementation_version_str not in ('1', '2'):
   raise ValueError(
@@ -70,9 +73,7 @@ if _implementation_version_str not in ('1', '2'):
       _implementation_version_str + "' (supported versions: 1, 2)"
       )
 
-
 _implementation_version = int(_implementation_version_str)
-
 
 
 # Usage of this function is discouraged. Clients shouldn't care which
@@ -81,6 +82,7 @@ _implementation_version = int(_implementation_version_str)
 # Please don't use this function if possible.
 def Type():
   return _implementation_type
+
 
 # See comment on 'Type' above.
 def Version():

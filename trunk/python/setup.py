@@ -8,17 +8,14 @@ import subprocess
 # We must use setuptools, not distutils, because we need to use the
 # namespace_packages option for the "google" package.
 try:
-  from setuptools import setup, Extension
+  from ez_setup import use_setuptools
+  use_setuptools()
+  from setuptools import setup, Extension, __version__
 except ImportError:
-  try:
-    from ez_setup import use_setuptools
-    use_setuptools()
-    from setuptools import setup, Extension
-  except ImportError:
-    sys.stderr.write(
-        "Could not import setuptools; make sure you have setuptools or "
-        "ez_setup installed.\n")
-    raise
+  sys.stderr.write(
+      "Could not import setuptools; make sure you have setuptools or "
+      "ez_setup installed.\n")
+  raise
 from distutils.command.clean import clean as _clean
 from distutils.command.build_py import build_py as _build_py
 from distutils.spawn import find_executable
@@ -49,7 +46,7 @@ def generate_proto(source):
   if (not os.path.exists(output) or
       (os.path.exists(source) and
        os.path.getmtime(source) > os.path.getmtime(output))):
-    print "Generating %s..." % output
+    print ("Generating %s..." % output)
 
     if not os.path.exists(source):
       sys.stderr.write("Can't find required file: %s\n" % source)
@@ -72,7 +69,6 @@ def GenerateUnittestProtos():
   generate_proto("../src/google/protobuf/unittest_import_public.proto")
   generate_proto("../src/google/protobuf/unittest_mset.proto")
   generate_proto("../src/google/protobuf/unittest_no_generic_services.proto")
-  generate_proto("google/protobuf/internal/compatibility_mode_test.proto")
   generate_proto("google/protobuf/internal/descriptor_pool_test1.proto")
   generate_proto("google/protobuf/internal/descriptor_pool_test2.proto")
   generate_proto("google/protobuf/internal/test_bad_identifiers.proto")
@@ -82,75 +78,7 @@ def GenerateUnittestProtos():
   generate_proto("google/protobuf/internal/more_messages.proto")
   generate_proto("google/protobuf/internal/factory_test1.proto")
   generate_proto("google/protobuf/internal/factory_test2.proto")
-
-def MakeTestSuite():
-  # This is apparently needed on some systems to make sure that the tests
-  # work even if a previous version is already installed.
-  if 'google' in sys.modules:
-    del sys.modules['google']
-  GenerateUnittestProtos()
-
-  import unittest
-  import google.protobuf.internal.generator_test     as generator_test
-  import google.protobuf.internal.descriptor_test    as descriptor_test
-  import google.protobuf.internal.reflection_test    as reflection_test
-  import google.protobuf.internal.service_reflection_test \
-    as service_reflection_test
-  import google.protobuf.internal.text_format_test   as text_format_test
-  import google.protobuf.internal.wire_format_test   as wire_format_test
-  import google.protobuf.internal.unknown_fields_test as unknown_fields_test
-  import google.protobuf.internal.descriptor_database_test \
-      as descriptor_database_test
-  import google.protobuf.internal.descriptor_pool_test as descriptor_pool_test
-  import google.protobuf.internal.message_factory_test as message_factory_test
-  import google.protobuf.internal.message_cpp_test as message_cpp_test
-  import google.protobuf.internal.reflection_cpp_generated_test \
-      as reflection_cpp_generated_test
-  import google.protobuf.internal.api_implementation_default_test \
-      as api_implementation_default_test
-  import google.protobuf.internal.descriptor_cpp2_test as descriptor_cpp2_test
-  import google.protobuf.internal.descriptor_python_test \
-      as descriptor_python_test
-  import google.protobuf.internal.message_factory_cpp2_test \
-      as message_factory_cpp2_test
-  import google.protobuf.internal.message_factory_cpp_test \
-      as message_factory_cpp_test
-  import google.protobuf.internal.message_factory_python_test \
-      as message_factory_python_test
-  import google.protobuf.internal.message_python_test as message_python_test
-  import google.protobuf.internal.reflection_cpp2_generated_test \
-      as reflection_cpp2_generated_test
-  import google.protobuf.internal.symbol_database_test as symbol_database_test
-  import google.protobuf.internal.text_encoding_test as text_encoding_test
-
-  loader = unittest.defaultTestLoader
-  suite = unittest.TestSuite()
-  for test in [ generator_test,
-                descriptor_test,
-                reflection_test,
-                service_reflection_test,
-                text_format_test,
-                wire_format_test,
-                unknown_fields_test,
-                descriptor_pool_test,
-                message_factory_test,
-                message_cpp_test,
-                reflection_cpp_generated_test,
-                api_implementation_default_test,
-                descriptor_cpp2_test,
-                descriptor_python_test,
-                message_factory_cpp2_test,
-                message_factory_cpp_test,
-                message_factory_python_test,
-                message_python_test,
-                reflection_cpp2_generated_test,
-                symbol_database_test,
-                text_encoding_test ]:
-
-    suite.addTest(loader.loadTestsFromModule(test))
-
-  return suite
-
+  generate_proto("google/protobuf/pyext/python.proto")
 
 class clean(_clean):
   def run(self):
@@ -170,31 +98,52 @@ class build_py(_build_py):
     # Generate necessary .proto file if it doesn't exist.
     generate_proto("../src/google/protobuf/descriptor.proto")
     generate_proto("../src/google/protobuf/compiler/plugin.proto")
+    GenerateUnittestProtos()
 
-    # Make sure google.protobuf.compiler is a valid package.
-    open('google/protobuf/compiler/__init__.py', 'a').close()
+    # Make sure google.protobuf/** are valid packages.
+    for path in ['', 'internal/', 'compiler/', 'pyext/']:
+      try:
+        open('google/protobuf/%s__init__.py' % path, 'a').close()
+      except EnvironmentError:
+        pass
     # _build_py is an old-style class, so super() doesn't work.
     _build_py.run(self)
+  # TODO(mrovner): Subclass to run 2to3 on some files only.
+  # Tracing what https://wiki.python.org/moin/PortingPythonToPy3k's "Approach 2"
+  # section on how to get 2to3 to run on source files during install under
+  # Python 3.  This class seems like a good place to put logic that calls
+  # python3's distutils.util.run_2to3 on the subset of the files we have in our
+  # release that are subject to conversion.
+  # See code reference in previous code review.
+
 
 if __name__ == '__main__':
-  ext_module_list = []
-
+  print(__version__)
   # C++ implementation extension
-  if os.getenv("PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION", "python") == "cpp":
-    print "Using EXPERIMENTAL C++ Implmenetation."
-    ext_module_list.append(Extension(
-        "google.protobuf.internal._net_proto2___python",
-        [ "google/protobuf/pyext/python_descriptor.cc",
-          "google/protobuf/pyext/python_protobuf.cc",
-          "google/protobuf/pyext/python-proto2.cc" ],
-        include_dirs = [ "." ],
-        libraries = [ "protobuf" ]))
+  nocpp = '--nocpp_implementation'
+  if nocpp in sys.argv:
+    ext_module_list = []
+    sys.argv.remove(nocpp)
+  else:
+    nocpp = False
+    ext_module_list = [Extension(
+        "google.protobuf.pyext._message",
+        [ "google/protobuf/pyext/descriptor.cc",
+          "google/protobuf/pyext/message.cc",
+          "google/protobuf/pyext/extension_dict.cc",
+          "google/protobuf/pyext/repeated_scalar_container.cc",
+          "google/protobuf/pyext/repeated_composite_container.cc" ],
+        define_macros=[('GOOGLE_PROTOBUF_HAS_ONEOF', '1')],
+        include_dirs = [ ".", "../src" ],
+        libraries = [ "protobuf" ],
+        library_dirs = [ '../src/.libs' ],
+        )]
 
   setup(name = 'protobuf',
-        version = '2.5.1-pre',
+        version = '2.6-pre',
         packages = [ 'google' ],
         namespace_packages = [ 'google' ],
-        test_suite = 'setup.MakeTestSuite',
+        google_test_dir = "google/protobuf/internal",
         # Must list modules explicitly so that we don't install tests.
         py_modules = [
           'google.protobuf.internal.api_implementation',
@@ -217,9 +166,12 @@ if __name__ == '__main__':
           'google.protobuf.reflection',
           'google.protobuf.service',
           'google.protobuf.service_reflection',
-          'google.protobuf.text_format' ],
+          'google.protobuf.symbol_database',
+          'google.protobuf.text_encoding',
+          'google.protobuf.text_format'],
         cmdclass = { 'clean': clean, 'build_py': build_py },
         install_requires = ['setuptools'],
+        setup_requires = ['google-apputils'],
         ext_modules = ext_module_list,
         url = 'http://code.google.com/p/protobuf/',
         maintainer = maintainer_email,
@@ -228,4 +180,5 @@ if __name__ == '__main__':
         description = 'Protocol Buffers',
         long_description =
           "Protocol Buffers are Google's data interchange format.",
+        use_2to3=True,
         )

@@ -168,37 +168,64 @@ EXTRA_DIST =                                                                 \
   java/src/test/java/com/google/protobuf/test_custom_options.proto           \
   java/pom.xml                                                               \
   java/README.txt                                                            \
-  python/google/protobuf/internal/generator_test.py                          \
+  python/google/protobuf/internal/api_implementation.cc                      \
+  python/google/protobuf/internal/api_implementation.py                      \
+  python/google/protobuf/internal/api_implementation_default_test.py         \
   python/google/protobuf/internal/containers.py                              \
+  python/google/protobuf/internal/cpp_message.py                             \
   python/google/protobuf/internal/decoder.py                                 \
+  python/google/protobuf/internal/descriptor_cpp2_test.py                    \
   python/google/protobuf/internal/descriptor_database_test.py                \
   python/google/protobuf/internal/descriptor_pool_test.py                    \
+  python/google/protobuf/internal/descriptor_pool_test1.proto                \
+  python/google/protobuf/internal/descriptor_pool_test2.proto                \
+  python/google/protobuf/internal/descriptor_python_test.py                  \
   python/google/protobuf/internal/descriptor_test.py                         \
   python/google/protobuf/internal/encoder.py                                 \
   python/google/protobuf/internal/enum_type_wrapper.py                       \
   python/google/protobuf/internal/factory_test1.proto                        \
   python/google/protobuf/internal/factory_test2.proto                        \
-  python/google/protobuf/internal/message_cpp_test.py                        \
+  python/google/protobuf/internal/generator_test.py                          \
+  python/google/protobuf/internal/message_factory_cpp2_test.py               \
+  python/google/protobuf/internal/message_factory_python_test.py             \
   python/google/protobuf/internal/message_factory_test.py                    \
   python/google/protobuf/internal/message_listener.py                        \
+  python/google/protobuf/internal/message_python_test.py                     \
   python/google/protobuf/internal/message_test.py                            \
+  python/google/protobuf/internal/missing_enum_values.proto                  \
   python/google/protobuf/internal/more_extensions.proto                      \
   python/google/protobuf/internal/more_extensions_dynamic.proto              \
   python/google/protobuf/internal/more_messages.proto                        \
   python/google/protobuf/internal/python_message.py                          \
-  python/google/protobuf/internal/cpp_message.py                             \
-  python/google/protobuf/internal/api_implementation.py                      \
+  python/google/protobuf/internal/reflection_cpp2_generated_test.py          \
   python/google/protobuf/internal/reflection_test.py                         \
-  python/google/protobuf/internal/reflection_cpp_generated_test.py           \
   python/google/protobuf/internal/service_reflection_test.py                 \
   python/google/protobuf/internal/test_bad_identifiers.proto                 \
   python/google/protobuf/internal/test_util.py                               \
+  python/google/protobuf/internal/text_encoding_test.py                      \
   python/google/protobuf/internal/text_format_test.py                        \
   python/google/protobuf/internal/type_checkers.py                           \
   python/google/protobuf/internal/unknown_fields_test.py                     \
   python/google/protobuf/internal/wire_format.py                             \
   python/google/protobuf/internal/wire_format_test.py                        \
   python/google/protobuf/internal/__init__.py                                \
+  python/google/protobuf/pyext/README                                        \
+  python/google/protobuf/pyext/cpp_message.py                                \
+  python/google/protobuf/pyext/descriptor.h                                  \
+  python/google/protobuf/pyext/descriptor.cc                                 \
+  python/google/protobuf/pyext/extension_dict.h                              \
+  python/google/protobuf/pyext/extension_dict.cc                             \
+  python/google/protobuf/pyext/message.h                                     \
+  python/google/protobuf/pyext/message.cc                                    \
+  python/google/protobuf/pyext/proto2_api_test.proto                         \
+  python/google/protobuf/pyext/python.proto                                  \
+  python/google/protobuf/pyext/python_protobuf.h                             \
+  python/google/protobuf/pyext/repeated_composite_container.h                \
+  python/google/protobuf/pyext/repeated_composite_container.cc               \
+  python/google/protobuf/pyext/repeated_scalar_container.h                   \
+  python/google/protobuf/pyext/repeated_scalar_container.cc                  \
+  python/google/protobuf/pyext/scoped_pyobject_ptr.h                         \
+  python/google/protobuf/pyext/__init__.py                                   \
   python/google/protobuf/descriptor.py                                       \
   python/google/protobuf/descriptor_database.py                              \
   python/google/protobuf/descriptor_pool.py                                  \
@@ -207,6 +234,8 @@ EXTRA_DIST =                                                                 \
   python/google/protobuf/reflection.py                                       \
   python/google/protobuf/service.py                                          \
   python/google/protobuf/service_reflection.py                               \
+  python/google/protobuf/symbol_database.py                                  \
+  python/google/protobuf/text_encoding.py                                    \
   python/google/protobuf/text_format.py                                      \
   python/google/protobuf/__init__.py                                         \
   python/google/__init__.py                                                  \

@@ -47,6 +47,7 @@ Installation
 
      $ python setup.py build
      $ python setup.py test
+     $ python setup.py exttest  # To test C++ implementation (see below).
 
    If some tests fail, this library may not work correctly on your
    system.  Continue at your own risk.
@@ -90,6 +91,7 @@ To use the C++ implementation, you need to:
 2) Export an environment variable:
 
   $ export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
+  $ export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION=2
 
 You need to export this variable before running setup.py script to build and
 install the extension.  You must also set the variable at runtime, otherwise
