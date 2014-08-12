@@ -103,7 +103,6 @@ def use_setuptools(
         sys.path.insert(0, egg)
         import setuptools; setuptools.bootstrap_install_from = egg
     try:
-        return do_download()
         import pkg_resources
     except ImportError:
         return do_download()       

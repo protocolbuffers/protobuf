@@ -8,14 +8,17 @@ import subprocess
 # We must use setuptools, not distutils, because we need to use the
 # namespace_packages option for the "google" package.
 try:
-  from ez_setup import use_setuptools
-  use_setuptools()
-  from setuptools import setup, Extension, __version__
+  from setuptools import setup, Extension
 except ImportError:
-  sys.stderr.write(
-      "Could not import setuptools; make sure you have setuptools or "
-      "ez_setup installed.\n")
-  raise
+  try:
+    from ez_setup import use_setuptools
+    use_setuptools()
+    from setuptools import setup, Extension
+  except ImportError:
+    sys.stderr.write(
+        "Could not import setuptools; make sure you have setuptools or "
+        "ez_setup installed.\n")
+    raise
 from distutils.command.clean import clean as _clean
 from distutils.command.build_py import build_py as _build_py
 from distutils.spawn import find_executable
@@ -118,7 +121,6 @@ class build_py(_build_py):
 
 
 if __name__ == '__main__':
-  print(__version__)
   # C++ implementation extension
   nocpp = '--nocpp_implementation'
   if nocpp in sys.argv:
