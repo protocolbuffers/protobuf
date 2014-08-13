@@ -1556,7 +1556,6 @@ class ReflectionTest(basetest.TestCase):
 
   def assertNotInitialized(self, proto):
     self.assertFalse(proto.IsInitialized())
-    self.assertRaises(message.EncodeError, proto.SerializeToString)
     # "Partial" serialization doesn't care if message is uninitialized.
     proto.SerializePartialToString()
 
@@ -2491,11 +2490,6 @@ class SerializationTest(basetest.TestCase):
 
   def testSerializeUninitialized(self):
     proto = unittest_pb2.TestRequired()
-    self._CheckRaises(
-        message.EncodeError,
-        proto.SerializeToString,
-        'Message protobuf_unittest.TestRequired is missing required fields: '
-        'a,b,c')
     # Shouldn't raise exceptions.
     partial = proto.SerializePartialToString()
 
@@ -2506,18 +2500,10 @@ class SerializationTest(basetest.TestCase):
     self.assertFalse(proto2.HasField('a'))
 
     proto.a = 1
-    self._CheckRaises(
-        message.EncodeError,
-        proto.SerializeToString,
-        'Message protobuf_unittest.TestRequired is missing required fields: b,c')
     # Shouldn't raise exceptions.
     partial = proto.SerializePartialToString()
 
     proto.b = 2
-    self._CheckRaises(
-        message.EncodeError,
-        proto.SerializeToString,
-        'Message protobuf_unittest.TestRequired is missing required fields: c')
     # Shouldn't raise exceptions.
     partial = proto.SerializePartialToString()
 
@@ -2547,12 +2533,6 @@ class SerializationTest(basetest.TestCase):
     proto.SerializeToString()
 
     proto.optional_message.a = 1
-    self._CheckRaises(
-        message.EncodeError,
-        proto.SerializeToString,
-        'Message protobuf_unittest.TestRequiredForeign '
-        'is missing required fields: '
-        'optional_message.b,optional_message.c')
 
     proto.optional_message.b = 2
     proto.optional_message.c = 3
@@ -2560,12 +2540,6 @@ class SerializationTest(basetest.TestCase):
 
     proto.repeated_message.add().a = 1
     proto.repeated_message.add().b = 2
-    self._CheckRaises(
-        message.EncodeError,
-        proto.SerializeToString,
-        'Message protobuf_unittest.TestRequiredForeign is missing required fields: '
-        'repeated_message[0].b,repeated_message[0].c,'
-        'repeated_message[1].a,repeated_message[1].c')
 
     proto.repeated_message[0].b = 2
     proto.repeated_message[0].c = 3
