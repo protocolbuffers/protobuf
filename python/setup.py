@@ -122,12 +122,10 @@ class build_py(_build_py):
 
 if __name__ == '__main__':
   # C++ implementation extension
-  nocpp = '--nocpp_implementation'
-  if nocpp in sys.argv:
-    ext_module_list = []
-    sys.argv.remove(nocpp)
-  else:
-    nocpp = False
+  cpp_impl = '--cpp_implementation'
+  if cpp_impl in sys.argv:
+    sys.argv.remove(cpp_impl)
+    test_dir = "google/protobuf/pyext"
     ext_module_list = [Extension(
         "google.protobuf.pyext._message",
         [ "google/protobuf/pyext/descriptor.cc",
@@ -140,12 +138,16 @@ if __name__ == '__main__':
         libraries = [ "protobuf" ],
         library_dirs = [ '../src/.libs' ],
         )]
+  else:
+    test_dir = "google/protobuf/internal"
+    ext_module_list = []
+
 
   setup(name = 'protobuf',
         version = '2.6-pre',
         packages = [ 'google' ],
         namespace_packages = [ 'google' ],
-        google_test_dir = "google/protobuf/internal",
+        google_test_dir = test_dir,
         # Must list modules explicitly so that we don't install tests.
         py_modules = [
           'google.protobuf.internal.api_implementation',
@@ -182,5 +184,4 @@ if __name__ == '__main__':
         description = 'Protocol Buffers',
         long_description =
           "Protocol Buffers are Google's data interchange format.",
-        use_2to3=True,
         )
