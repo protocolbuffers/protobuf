@@ -41,6 +41,7 @@ import copy
 import gc
 import operator
 import struct
+import sys
 
 from google.apputils import basetest
 from google.protobuf import unittest_import_pb2
@@ -1556,6 +1557,20 @@ class ReflectionTest(basetest.TestCase):
 
   def assertNotInitialized(self, proto):
     self.assertFalse(proto.IsInitialized())
+    try:
+      proto.SerializeToString()
+    except message.EncodeError:
+      return
+    except:
+      # C++ implementation in opensource do not consider the catched
+      # exception google.protobuf.message.EncodeError same as
+      # message.EncodeError. Add an additional catch to deal with it.
+      if api_implementation.Type() == 'python':
+        raise self.failureException('message.EncodeError not raised')
+      self.assertEqual('<class \'google.protobuf.message.EncodeError\'>',
+                       str(sys.exc_info()[0]))
+    else:
+      raise self.failureException('message.EncodeError not raised')
     # "Partial" serialization doesn't care if message is uninitialized.
     proto.SerializePartialToString()
 
@@ -2485,11 +2500,23 @@ class SerializationTest(basetest.TestCase):
       # Check if the exception message is the right one.
       self.assertEqual(exception, str(ex))
       return
+    except:
+      # C++ implementation in opensource do not consider the catched
+      # exception google.protobuf.message.EncodeError same as
+      # message.EncodeError. Add an additional catch to deal with it.
+      if api_implementation.Type() == 'python':
+        raise self.failureException('%s not raised' % str(exc_class))
+      self.assertEqual(exception, str(sys.exc_info()[1]))
     else:
       raise self.failureException('%s not raised' % str(exc_class))
 
   def testSerializeUninitialized(self):
     proto = unittest_pb2.TestRequired()
+    self._CheckRaises(
+        message.EncodeError,
+        proto.SerializeToString,
+        'Message protobuf_unittest.TestRequired is missing required fields: '
+        'a,b,c')
     # Shouldn't raise exceptions.
     partial = proto.SerializePartialToString()
 
@@ -2500,10 +2527,18 @@ class SerializationTest(basetest.TestCase):
     self.assertFalse(proto2.HasField('a'))
 
     proto.a = 1
+    self._CheckRaises(
+        message.EncodeError,
+        proto.SerializeToString,
+        'Message protobuf_unittest.TestRequired is missing required fields: b,c')
     # Shouldn't raise exceptions.
     partial = proto.SerializePartialToString()
 
     proto.b = 2
+    self._CheckRaises(
+        message.EncodeError,
+        proto.SerializeToString,
+        'Message protobuf_unittest.TestRequired is missing required fields: c')
     # Shouldn't raise exceptions.
     partial = proto.SerializePartialToString()
 
@@ -2533,6 +2568,12 @@ class SerializationTest(basetest.TestCase):
     proto.SerializeToString()
 
     proto.optional_message.a = 1
+    self._CheckRaises(
+        message.EncodeError,
+        proto.SerializeToString,
+        'Message protobuf_unittest.TestRequiredForeign '
+        'is missing required fields: '
+        'optional_message.b,optional_message.c')
 
     proto.optional_message.b = 2
     proto.optional_message.c = 3
@@ -2540,6 +2581,12 @@ class SerializationTest(basetest.TestCase):
 
     proto.repeated_message.add().a = 1
     proto.repeated_message.add().b = 2
+    self._CheckRaises(
+        message.EncodeError,
+        proto.SerializeToString,
+        'Message protobuf_unittest.TestRequiredForeign is missing required fields: '
+        'repeated_message[0].b,repeated_message[0].c,'
+        'repeated_message[1].a,repeated_message[1].c')
 
     proto.repeated_message[0].b = 2
     proto.repeated_message[0].c = 3
