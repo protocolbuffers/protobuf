@@ -90,7 +90,7 @@ class TextFormatTest(basetest.TestCase):
     self.CompareToGoldenFile(
         self.RemoveRedundantZeros(
             text_format.MessageToString(message, pointy_brackets=True)),
-        'text_format_unittest_data_pointy_oneof_implemented.txt')
+        'text_format_unittest_data_pointy_oneof.txt')
 
   def testPrintAllExtensionsPointy(self):
     message = unittest_pb2.TestAllExtensions()
