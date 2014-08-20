@@ -188,7 +188,7 @@ GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 #include <google/protobuf/stubs/atomicops_internals_arm64_gcc.h>
 #elif defined(GOOGLE_PROTOBUF_ARCH_ARM_QNX)
 #include <google/protobuf/stubs/atomicops_internals_arm_qnx.h>
-#elif defined(GOOGLE_PROTOBUF_ARCH_MIPS)
+#elif defined(GOOGLE_PROTOBUF_ARCH_MIPS) || defined(GOOGLE_PROTOBUF_ARCH_MIPS64)
 #include <google/protobuf/stubs/atomicops_internals_mips_gcc.h>
 #elif defined(__native_client__)
 #include <google/protobuf/stubs/atomicops_internals_pnacl.h>

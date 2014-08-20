@@ -53,8 +53,13 @@
 #define GOOGLE_PROTOBUF_ARCH_AARCH64 1
 #define GOOGLE_PROTOBUF_ARCH_64_BIT 1
 #elif defined(__MIPSEL__)
+#if defined(__LP64__)
+#define GOOGLE_PROTOBUF_ARCH_MIPS64 1
+#define GOOGLE_PROTOBUF_ARCH_64_BIT 1
+#else
 #define GOOGLE_PROTOBUF_ARCH_MIPS 1
 #define GOOGLE_PROTOBUF_ARCH_32_BIT 1
+#endif
 #elif defined(__pnacl__)
 #define GOOGLE_PROTOBUF_ARCH_32_BIT 1
 #elif defined(__ppc__)
