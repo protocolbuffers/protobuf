@@ -442,9 +442,10 @@ used simultaneously from multiple threads in a read-only manner.
 In other words, an appropriate synchronization mechanism (such as
 a ReadWriteLock) must be used to ensure that a message, its
 ancestors, and descendants are not accessed by any other threads
-while the message is being modified. Field reads, getter methods,
-toByteArray(...), writeTo(...), getCachedSize(), and
-getSerializedSize() are all considered read-only operations.
+while the message is being modified. Field reads, getter methods
+(but not getExtension(...)), toByteArray(...), writeTo(...),
+getCachedSize(), and getSerializedSize() are all considered read-only
+operations.
 
 IMPORTANT: If you have fields with defaults and opt out of accessors
 
