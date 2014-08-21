@@ -147,4 +147,29 @@ public abstract class ExtendableMessageNano<M extends ExtendableMessageNano<M>>
         field.addUnknownField(unknownField);
         return true;
     }
+
+    /**
+     * Returns whether the stored unknown field data in this message is equivalent to that in the
+     * other message.
+     *
+     * @param other the other message.
+     * @return whether the two sets of unknown field data are equal.
+     */
+    protected final boolean unknownFieldDataEquals(M other) {
+        if (unknownFieldData == null || unknownFieldData.isEmpty()) {
+            return other.unknownFieldData == null || other.unknownFieldData.isEmpty();
+        } else {
+            return unknownFieldData.equals(other.unknownFieldData);
+        }
+    }
+
+    /**
+     * Computes the hashcode representing the unknown field data stored in this message.
+     *
+     * @return the hashcode for the unknown field data.
+     */
+    protected final int unknownFieldDataHashCode() {
+        return (unknownFieldData == null || unknownFieldData.isEmpty()
+                ? 0 : unknownFieldData.hashCode());
+    }
 }
