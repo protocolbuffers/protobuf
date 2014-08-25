@@ -1,3 +1,47 @@
+2014-08-15 version 2.6.0:
+
+  General
+  * Added oneofs(unions) feature. Fields in the same oneof will share
+    memory and at most one field can be set at the same time. Use the
+    oneof keyword to define a oneof like:
+      message SampleMessage {
+        oneof test_oneof {
+          string name = 4;
+          YourMessage sub_message = 9;
+        }
+      }
+  * Files, services, enums, messages, methods and enum values can be marked
+    as deprecated now.
+  * Added Support for list values, including lists of mesaages, when
+    parsing text-formatted protos in C++ and Java.
+      For example:  foo: [1, 2, 3]
+
+  C++
+  * Enhanced customization on TestFormat printing.
+  * Added SwapFields() in reflection API to swap a subset of fields.
+    Added SetAllocatedMessage() in reflection API.
+  * Repeated primitive extensions are now packable. The
+    [packed=true] option only affects serializers. Therefore, it is
+    possible to switch a repeated extension field to packed format
+    without breaking backwards-compatibility.
+  * Various speed optimizations.
+
+  Java
+  * writeTo() method in ByteString can now write a substring to an
+    output stream. Added endWith() method for ByteString.
+  * ByteString and ByteBuffer are now supported in CodedInputStream
+    and CodedOutputStream.
+  * java_generate_equals_and_hash can now be used with the LITE_RUNTIME.
+
+  Python
+  * A new C++-backed extension module (aka "cpp api v2") that replaces the
+    old ("cpp api v1") one.  Much faster than the pure Python code.  This one
+    resolves many bugs and is recommended for general use over the
+    pure Python when possible.
+  * Descriptors now have enum_types_by_name and extension_types_by_name dict
+    attributes.
+  * Support for Python 3.
+
 2013-02-27 version 2.5.0:
 
   General

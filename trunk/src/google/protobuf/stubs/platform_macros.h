@@ -65,6 +65,14 @@
 #elif defined(__ppc__)
 #define GOOGLE_PROTOBUF_ARCH_PPC 1
 #define GOOGLE_PROTOBUF_ARCH_32_BIT 1
+#elif defined(__GNUC__) && \
+ (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)) || (__GNUC__ > 4))
+// We fallback to the generic GCC >= 4.7 implementation in atomicops.h
+# if __LP64__
+#  define GOOGLE_PROTOBUF_ARCH_64_BIT 1
+# else
+#  define GOOGLE_PROTOBUF_ARCH_32_BIT 1
+# endif
 #else
 #error Host architecture was not detected as supported by protobuf
 #endif

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include "addressbook.pb.h"
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 using namespace std;
 
 // Iterates though all people in the AddressBook and prints info about them.
