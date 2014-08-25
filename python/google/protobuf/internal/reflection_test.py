@@ -41,7 +41,6 @@ import copy
 import gc
 import operator
 import struct
-import sys
 
 from google.apputils import basetest
 from google.protobuf import unittest_import_pb2
@@ -1557,20 +1556,7 @@ class ReflectionTest(basetest.TestCase):
 
   def assertNotInitialized(self, proto):
     self.assertFalse(proto.IsInitialized())
-    try:
-      proto.SerializeToString()
-    except message.EncodeError:
-      return
-    except:
-      # C++ implementation in opensource do not consider the catched
-      # exception google.protobuf.message.EncodeError same as
-      # message.EncodeError. Add an additional catch to deal with it.
-      if api_implementation.Type() == 'python':
-        raise self.failureException('message.EncodeError not raised')
-      self.assertEqual('<class \'google.protobuf.message.EncodeError\'>',
-                       str(sys.exc_info()[0]))
-    else:
-      raise self.failureException('message.EncodeError not raised')
+    self.assertRaises(message.EncodeError, proto.SerializeToString)
     # "Partial" serialization doesn't care if message is uninitialized.
     proto.SerializePartialToString()
 
@@ -2500,13 +2486,6 @@ class SerializationTest(basetest.TestCase):
       # Check if the exception message is the right one.
       self.assertEqual(exception, str(ex))
       return
-    except:
-      # C++ implementation in opensource do not consider the catched
-      # exception google.protobuf.message.EncodeError same as
-      # message.EncodeError. Add an additional catch to deal with it.
-      if api_implementation.Type() == 'python':
-        raise self.failureException('%s not raised' % str(exc_class))
-      self.assertEqual(exception, str(sys.exc_info()[1]))
     else:
       raise self.failureException('%s not raised' % str(exc_class))
 

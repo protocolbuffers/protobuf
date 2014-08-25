@@ -83,6 +83,23 @@ def GenerateUnittestProtos():
   generate_proto("google/protobuf/internal/factory_test2.proto")
   generate_proto("google/protobuf/pyext/python.proto")
 
+def MakeTestSuite():
+  # Test C++ implementation
+  import unittest
+  import google.protobuf.pyext.descriptor_cpp2_test as descriptor_cpp2_test
+  import google.protobuf.pyext.message_factory_cpp2_test \
+      as message_factory_cpp2_test
+  import google.protobuf.pyext.reflection_cpp2_generated_test \
+      as reflection_cpp2_generated_test
+
+  loader = unittest.defaultTestLoader
+  suite = unittest.TestSuite()
+  for test in [  descriptor_cpp2_test,
+                 message_factory_cpp2_test,
+                 reflection_cpp2_generated_test]:
+    suite.addTest(loader.loadTestsFromModule(test))
+  return suite
+
 class clean(_clean):
   def run(self):
     # Delete generated files in the code tree.
@@ -119,14 +136,14 @@ class build_py(_build_py):
   # release that are subject to conversion.
   # See code reference in previous code review.
 
-
 if __name__ == '__main__':
-  # C++ implementation extension
-  cpp_impl = '--cpp_implementation'
-  if cpp_impl in sys.argv:
+  ext_module_list = []
+  nocpp = '--nocpp_implementation'
+  if nocpp in sys.argv:
     sys.argv.remove(cpp_impl)
-    test_dir = "google/protobuf/pyext"
-    ext_module_list = [Extension(
+  else:
+    # C++ implementation extension
+    ext_module_list.append(Extension(
         "google.protobuf.pyext._message",
         [ "google/protobuf/pyext/descriptor.cc",
           "google/protobuf/pyext/message.cc",
@@ -134,20 +151,17 @@ if __name__ == '__main__':
           "google/protobuf/pyext/repeated_scalar_container.cc",
           "google/protobuf/pyext/repeated_composite_container.cc" ],
         define_macros=[('GOOGLE_PROTOBUF_HAS_ONEOF', '1')],
-        include_dirs = [ ".", "../src" ],
+        include_dirs = [ ".", "../src"],
         libraries = [ "protobuf" ],
         library_dirs = [ '../src/.libs' ],
-        )]
-  else:
-    test_dir = "google/protobuf/internal"
-    ext_module_list = []
-
+        ))
 
   setup(name = 'protobuf',
-        version = '2.6-pre',
+        version = '2.6.0',
         packages = [ 'google' ],
         namespace_packages = [ 'google' ],
-        google_test_dir = test_dir,
+        test_suite = 'setup.MakeTestSuite',
+        google_test_dir = "google/protobuf/internal",
         # Must list modules explicitly so that we don't install tests.
         py_modules = [
           'google.protobuf.internal.api_implementation',
