@@ -138,10 +138,9 @@ class build_py(_build_py):
 
 if __name__ == '__main__':
   ext_module_list = []
-  nocpp = '--nocpp_implementation'
-  if nocpp in sys.argv:
+  cpp_impl = '--cpp_implementation'
+  if cpp_impl in sys.argv:
     sys.argv.remove(cpp_impl)
-  else:
     # C++ implementation extension
     ext_module_list.append(Extension(
         "google.protobuf.pyext._message",

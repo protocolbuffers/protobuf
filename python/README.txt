@@ -48,8 +48,8 @@ Installation
      $ python setup.py build
      $ python setup.py google_test
 
-     if you want to test c++ implementation, run:
-     $ python setup.py test
+     If you want to test c++ implementation, run:
+     $ python setup.py test --cpp_implementation
 
    If some tests fail, this library may not work correctly on your
    system.  Continue at your own risk.
@@ -66,7 +66,7 @@ Installation
 
      $ python setup.py install
      or:
-     $ python setup.py install --nocpp_implementation
+     $ python setup.py install --cpp_implementation
 
    This step may require superuser privileges.
    NOTE: To use C++ implementation, you need to install C++ protobuf runtime
@@ -83,8 +83,6 @@ web at:
 
 C++ Implementation
 ==================
-
-WARNING: This is EXPERIMENTAL and only available for CPython platforms.
 
 The C++ implementation for Python messages is built as a Python extension to
 improve the overall protobuf Python performance.
