@@ -40,7 +40,7 @@ EXTRA_DIST =                                                                 \
   generate_descriptor_proto.sh                                               \
   README.txt                                                                 \
   INSTALL.txt                                                                \
-  COPYING.txt                                                                \
+  LICENSE                                                                    \
   CONTRIBUTORS.txt                                                           \
   CHANGES.txt                                                                \
   editors/README.txt                                                         \
