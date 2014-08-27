@@ -180,6 +180,7 @@ if __name__ == '__main__':
           'google.protobuf.descriptor_database',
           'google.protobuf.descriptor_pool',
           'google.protobuf.message_factory',
+          'google.protobuf.pyext.cpp_message',
           'google.protobuf.reflection',
           'google.protobuf.service',
           'google.protobuf.service_reflection',
