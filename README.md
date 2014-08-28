@@ -36,7 +36,7 @@ Proceed at your own risk.
 
 For advanced usage information on configure and make, see INSTALL.txt.
 
-** Hint on install location **
+**Hint on install location**
 
   By default, the package will be installed to /usr/local.  However,
   on many platforms, /usr/local/lib is not part of LD_LIBRARY_PATH.
@@ -48,7 +48,7 @@ For advanced usage information on configure and make, see INSTALL.txt.
   If you already built the package with a different prefix, make sure
   to run "make clean" before building again.
 
-** Compiling dependent packages **
+**Compiling dependent packages**
 
   To compile a package that uses Protocol Buffers, you need to pass
   various flags to your compiler and linker.  As of version 2.2.0,
@@ -86,7 +86,7 @@ For advanced usage information on configure and make, see INSTALL.txt.
   If you only want protobuf-lite, substitute "protobuf-lite" in place
   of "protobuf" in these examples.
 
-** Note for cross-compiling **
+**Note for cross-compiling**
 
   The makefiles normally invoke the protoc executable that they just
   built in order to build tests.  When cross-compiling, the protoc
@@ -109,7 +109,7 @@ For advanced usage information on configure and make, see INSTALL.txt.
   has the same version as the protobuf source code you are trying to
   use it with.
 
-** Note for Solaris users **
+**Note for Solaris users**
 
   Solaris 10 x86 has a bug that will make linking fail, complaining
   about libstdc++.la being invalid.  We have included a work-around
@@ -119,7 +119,7 @@ For advanced usage information on configure and make, see INSTALL.txt.
 
   See src/solaris/libstdc++.la for more info on this bug.
 
-** Note for HP C++ Tru64 users **
+**Note for HP C++ Tru64 users**
 
   To compile invoke configure as follows:
 
