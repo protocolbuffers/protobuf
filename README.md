@@ -1,14 +1,17 @@
 Protocol Buffers - Google's data interchange format
+===================================================
+
 Copyright 2008 Google Inc.
+
 https://developers.google.com/protocol-buffers/
 
 C++ Installation - Unix
-=======================
+-----------------------
 
 If you get the source from github, you need to generate the configure script
 first:
 
-  $ ./autogen.sh
+    $ ./autogen.sh
 
 This will download gtest source (which is used for C++ Protocol Buffer
 unit-tests) to the current directory and run automake, autoconf, etc.
@@ -20,10 +23,10 @@ contains gtest and the configure script).
 To build and install the C++ Protocol Buffer runtime and the Protocol
 Buffer compiler (protoc) execute the following:
 
-  $ ./configure
-  $ make
-  $ make check
-  $ make install
+    $ ./configure
+    $ make
+    $ make check
+    $ make install
 
 If "make check" fails, you can still install, but it is likely that
 some features of this library will not work correctly on your system.
@@ -125,7 +128,7 @@ For advanced usage information on configure and make, see INSTALL.txt.
   Also, you will need to use gmake instead of make.
 
 C++ Installation - Windows
-==========================
+--------------------------
 
 If you are using Microsoft Visual C++, see vsprojects/readme.txt.
 
@@ -133,7 +136,7 @@ If you are using Cygwin or MinGW, follow the Unix installation
 instructions, above.
 
 Binary Compatibility Warning
-============================
+----------------------------
 
 Due to the nature of C++, it is unlikely that any two versions of the
 Protocol Buffers C++ runtime libraries will have compatible ABIs.
@@ -144,10 +147,10 @@ immediately on startup of your app.  Still, you may want to consider
 using static linkage.  You can configure this package to install
 static libraries only using:
 
-  ./configure --disable-shared
+    ./configure --disable-shared
 
 Java and Python Installation
-============================
+----------------------------
 
 The Java and Python runtime libraries for Protocol Buffers are located
 in the java and python directories.  See the README file in each
@@ -156,9 +159,9 @@ Note that both of them require you to first install the Protocol
 Buffer compiler (protoc), which is part of the C++ package.
 
 Usage
-=====
+-----
 
 The complete documentation for Protocol Buffers is available via the
 web at:
 
-  https://developers.google.com/protocol-buffers/
+    https://developers.google.com/protocol-buffers/
