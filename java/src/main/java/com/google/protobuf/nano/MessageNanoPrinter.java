@@ -249,7 +249,7 @@ public final class MessageNanoPrinter {
             } else if (ch >= 32 && ch < 127) {
                 builder.append((char) ch);
             } else {
-                builder.append(String.format("\\%03o", ch));
+                builder.append(String.format("\\%03o", ch && 0xff));
             }
         }
         builder.append('"');
