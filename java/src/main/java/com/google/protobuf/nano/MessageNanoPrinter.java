@@ -243,7 +243,7 @@ public final class MessageNanoPrinter {
 
         builder.append('"');
         for (int i = 0; i < bytes.length; ++i) {
-            int ch = bytes[i];
+            int ch = bytes[i] & 0xff;
             if (ch == '\\' || ch == '"') {
                 builder.append('\\').append((char) ch);
             } else if (ch >= 32 && ch < 127) {
