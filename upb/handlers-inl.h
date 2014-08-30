@@ -695,7 +695,7 @@ struct MaybeWrapReturn<
 // ignores the HandlerData parameter if appropriate.
 //
 // Template parameter is the are FuncN function type.
-template <class F>
+template <class F, class T>
 struct ConvertParams;
 
 // Function that discards the handler data parameter.
@@ -758,59 +758,62 @@ R CastHandlerDataIgnoreHandle(void *c, const void *hd, const char *p3,
 }
 
 // For unbound functions, ignore the handler data.
-template <class R, class P1, R F(P1), class I>
-struct ConvertParams<Func1<R, P1, F, I> > {
+template <class R, class P1, R F(P1), class I, class T>
+struct ConvertParams<Func1<R, P1, F, I>, T> {
   typedef Func2<R, void *, const void *, IgnoreHandlerData2<R, P1, F>, I> Func;
 };
 
-template <class R, class P1, class P2, R F(P1, P2), class I>
-struct ConvertParams<Func2<R, P1, P2, F, I> > {
-  typedef typename CanonicalType<P2>::Type CanonicalP2;
-  typedef Func3<R, void *, const void *, CanonicalP2,
-                IgnoreHandlerData3<R, P1, CanonicalP2, P2, F>, I> Func;
+template <class R, class P1, class P2, R F(P1, P2), class I,
+          class R2, class P1_2, class P2_2, class P3_2>
+struct ConvertParams<Func2<R, P1, P2, F, I>,
+                     R2 (*)(P1_2, P2_2, P3_2)> {
+  typedef Func3<R, void *, const void *, P3_2,
+                IgnoreHandlerData3<R, P1, P3_2, P2, F>, I> Func;
 };
 
 // For StringBuffer only; this ignores both the handler data and the
 // BufferHandle.
-template <class R, class P1, R F(P1, const char *, size_t), class I>
-struct ConvertParams<Func3<R, P1, const char *, size_t, F, I> > {
+template <class R, class P1, R F(P1, const char *, size_t), class I, class T>
+struct ConvertParams<Func3<R, P1, const char *, size_t, F, I>, T> {
   typedef Func5<R, void *, const void *, const char *, size_t,
                 const BufferHandle *, IgnoreHandlerDataIgnoreHandle<R, P1, F>,
                 I> Func;
 };
 
-template <class R, class P1, class P2, class P3, class P4, R F(P1, P2, P3, P4), class I>
-struct ConvertParams<Func4<R, P1, P2, P3, P4, F, I> > {
+template <class R, class P1, class P2, class P3, class P4, R F(P1, P2, P3, P4),
+          class I, class T>
+struct ConvertParams<Func4<R, P1, P2, P3, P4, F, I>, T> {
   typedef Func5<R, void *, const void *, P2, P3, P4,
                 IgnoreHandlerData5<R, P1, P2, P3, P4, F>, I> Func;
 };
 
 // For bound functions, cast the handler data.
-template <class R, class P1, class P2, R F(P1, P2), class I>
-struct ConvertParams<BoundFunc2<R, P1, P2, F, I> > {
+template <class R, class P1, class P2, R F(P1, P2), class I, class T>
+struct ConvertParams<BoundFunc2<R, P1, P2, F, I>, T> {
   typedef Func2<R, void *, const void *, CastHandlerData2<R, P1, P2, F>, I>
       Func;
 };
 
-template <class R, class P1, class P2, class P3, R F(P1, P2, P3), class I>
-struct ConvertParams<BoundFunc3<R, P1, P2, P3, F, I> > {
-  typedef typename CanonicalType<P3>::Type CanonicalP3;
-  typedef Func3<R, void *, const void *, CanonicalP3,
-                CastHandlerData3<R, P1, P2, CanonicalP3, P3, F>, I> Func;
+template <class R, class P1, class P2, class P3, R F(P1, P2, P3), class I,
+          class R2, class P1_2, class P2_2, class P3_2>
+struct ConvertParams<BoundFunc3<R, P1, P2, P3, F, I>,
+                     R2 (*)(P1_2, P2_2, P3_2)> {
+  typedef Func3<R, void *, const void *, P3_2,
+                CastHandlerData3<R, P1, P2, P3_2, P3, F>, I> Func;
 };
 
 // For StringBuffer only; this ignores the BufferHandle.
 template <class R, class P1, class P2, R F(P1, P2, const char *, size_t),
-          class I>
-struct ConvertParams<BoundFunc4<R, P1, P2, const char *, size_t, F, I> > {
+          class I, class T>
+struct ConvertParams<BoundFunc4<R, P1, P2, const char *, size_t, F, I>, T> {
   typedef Func5<R, void *, const void *, const char *, size_t,
                 const BufferHandle *, CastHandlerDataIgnoreHandle<R, P1, P2, F>,
                 I> Func;
 };
 
 template <class R, class P1, class P2, class P3, class P4, class P5,
-          R F(P1, P2, P3, P4, P5), class I>
-struct ConvertParams<BoundFunc5<R, P1, P2, P3, P4, P5, F, I> > {
+          R F(P1, P2, P3, P4, P5), class I, class T>
+struct ConvertParams<BoundFunc5<R, P1, P2, P3, P4, P5, F, I>, T> {
   typedef Func5<R, void *, const void *, P3, P4, P5,
                 CastHandlerData5<R, P1, P2, P3, P4, P5, F>, I> Func;
 };
@@ -906,7 +909,7 @@ inline Handler<T>::Handler(F func)
       cleanup_func_(func.GetCleanup()) {
   upb_handlerattr_sethandlerdata(&attr_, func.GetData());
   typedef typename ReturnOf<T>::Return Return;
-  typedef typename ConvertParams<F>::Func ConvertedParamsFunc;
+  typedef typename ConvertParams<F, T>::Func ConvertedParamsFunc;
   typedef typename MaybeWrapReturn<ConvertedParamsFunc, Return>::Func
       ReturnWrappedFunc;
   handler_ = ReturnWrappedFunc().Call;

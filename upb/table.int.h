@@ -301,7 +301,7 @@ UPB_INLINE bool upb_inttable_lookup32(const upb_inttable *t, uint32_t key,
     }
   } else {
     const upb_tabent *e;
-    if (t->t.entries == NULL) return NULL;
+    if (t->t.entries == NULL) return false;
     for (e = upb_inthash(&t->t, upb_intkey(key)); true; e = e->next) {
       if ((uint32_t)e->key.num == key) {
         _upb_value_setval(v, e->val, t->t.ctype);

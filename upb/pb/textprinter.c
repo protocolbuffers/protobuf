@@ -111,6 +111,7 @@ bool putf(upb_textprinter *p, const char *fmt, ...) {
 /* handlers *******************************************************************/
 
 static bool startmsg(void *c, const void *hd) {
+  UPB_UNUSED(hd);
   upb_textprinter *p = c;
   if (p->indent_depth_ == 0) {
     upb_bytessink_start(p->output_, 0, &p->subc);
@@ -119,6 +120,8 @@ static bool startmsg(void *c, const void *hd) {
 }
 
 static bool endmsg(void *c, const void *hd, upb_status *s) {
+  UPB_UNUSED(hd);
+  UPB_UNUSED(s);
   upb_textprinter *p = c;
   if (p->indent_depth_ == 0) {
     upb_bytessink_end(p->output_);
@@ -237,7 +240,9 @@ void upb_textprinter_init(upb_textprinter *p, const upb_handlers *h) {
   upb_sink_reset(&p->input_, h, p);
 }
 
-void upb_textprinter_uninit(upb_textprinter *p) {}
+void upb_textprinter_uninit(upb_textprinter *p) {
+  UPB_UNUSED(p);
+}
 
 void upb_textprinter_reset(upb_textprinter *p, bool single_line) {
   p->single_line_ = single_line;

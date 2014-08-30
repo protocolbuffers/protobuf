@@ -1,0 +1,4 @@
+install:
+  - sudo apt-get update -qq
+  - sudo apt-get install protobuf-compiler libprotobuf-dev
+script: make test

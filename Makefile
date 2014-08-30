@@ -26,7 +26,8 @@ all: lib tests benchmarks tools/upbc lua python
 testall: test pythontest
 
 # User-specified CFLAGS.
-USER_CFLAGS=$(strip $(shell test -f perf-cppflags && cat perf-cppflags))
+USER_CFLAGS=
+USER_CXXFLAGS=
 
 # If the user doesn't specify an -O setting, we default to -O3, except
 # for def which gets -Os.
@@ -40,12 +41,12 @@ ifneq (, $(findstring DUPB_USE_JIT_X64, $(USER_CFLAGS)))
 endif
 
 # Basic compiler/flag setup.
-CC=gcc
-CXX=g++
+CC=cc
+CXX=c++
 CFLAGS=-std=gnu99
-CXXFLAGS=
+CXXFLAGS=$(USER_CXXFLAGS)
 INCLUDE=-Itests -I.
-CPPFLAGS=$(INCLUDE) -DNDEBUG -Wall -Wextra -Wno-sign-compare $(USER_CFLAGS)
+CPPFLAGS=$(INCLUDE) -DNDEBUG -Wall -Wextra -Wno-sign-compare -Wno-unused-private-field $(USER_CFLAGS)
 LDLIBS=-lpthread upb/libupb.a
 LUA=lua  # 5.1 and 5.2 should both be supported
 
@@ -101,8 +102,7 @@ PB= \
   upb/pb/compile_decoder.c \
   upb/pb/glue.c \
   upb/pb/varint.c \
-
-  #upb/pb/textprinter.c \
+  upb/pb/textprinter.c \
 
 
 # Rules. #######################################################################
@@ -117,8 +117,8 @@ clean_leave_profile:
 	rm -rf $(TESTS) tests/t.*
 	rm -rf upb/descriptor.pb
 	rm -rf tools/upbc deps
-	rm -rf bindings/lua/upb.so
-	rm -rf bindings/python/build
+	rm -rf upb/bindings/lua/upb.so
+	rm -rf upb/bindings/python/build
 	rm -rf upb/bindings/ruby/Makefile
 	rm -rf upb/bindings/ruby/upb.so
 
@@ -126,7 +126,7 @@ clean: clean_leave_profile
 	rm -rf $(call rwildcard,,*.gcno) $(call rwildcard,,*.gcda)
 
 # Core library (libupb.a).
-SRC=$(CORE) $(PB)
+SRC=$(CORE) $(PB) $(GOOGLEPB)
 LIBUPB=upb/libupb.a
 LIBUPB_PIC=upb/libupb_pic.a
 lib: $(LIBUPB)
@@ -221,16 +221,14 @@ SIMPLE_TESTS= \
 
 SIMPLE_CXX_TESTS= \
   tests/pb/test_decoder \
+  tests/test_cpp
 
-  # tests/test_cpp \
 
 VARIADIC_TESTS= \
   tests/t.test_vs_proto2.googlemessage1 \
   tests/t.test_vs_proto2.googlemessage2 \
 
-#TESTS=$(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS) $(VARIADIC_TESTS) tests/test_table
-TESTS=$(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS) tests/test_table
-
+TESTS=$(SIMPLE_TESTS) $(SIMPLE_CXX_TESTS) $(VARIADIC_TESTS) tests/test_table
 
 tests: $(TESTS) $(INTERACTIVE_TESTS)
 $(TESTS): $(LIBUPB)
@@ -486,9 +484,9 @@ else
   LUA_LDFLAGS =
 endif
 
-LUAEXT=bindings/lua/upb.so
+LUAEXT=upb/bindings/lua/upb.so
 lua: $(LUAEXT)
-bindings/lua/upb.so: bindings/lua/upb.c $(LIBUPB_PIC)
+upb/bindings/lua/upb.so: upb/bindings/lua/upb.c $(LIBUPB_PIC)
 	$(E) CC bindings/lua/upb.c
 	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) $(LUA_CPPFLAGS) -fpic -shared -o $@ $< upb/libupb_pic.a $(LUA_LDFLAGS)
 

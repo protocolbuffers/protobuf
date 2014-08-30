@@ -12,7 +12,6 @@
 
 #include <iostream>
 #include <set>
-#include <type_traits>
 
 #include "upb/def.h"
 #include "upb/descriptor/reader.h"
@@ -1062,11 +1061,15 @@ void TestMismatchedTypes() {
 
 class IntIncrementer {
  public:
-  IntIncrementer(int* x) : x_(x) { (*x_)++; }
+  explicit IntIncrementer(int* x) : x_(x) { (*x_)++; }
   ~IntIncrementer() { (*x_)--; }
 
   static void Handler(void* closure, const IntIncrementer* incrementer,
-                      int32_t x) {}
+                      int32_t x) {
+    UPB_UNUSED(closure);
+    UPB_UNUSED(incrementer);
+    UPB_UNUSED(x);
+  }
 
  private:
   int* x_;
