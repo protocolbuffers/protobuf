@@ -744,6 +744,7 @@ case goog::FieldDescriptor::cpptype:                                           \
   static T* StartOneofString(goog::Message* m,
                              const OneofFieldHandlerData* data,
                              size_t size_hint) {
+    UPB_UNUSED(size_hint);
     const FieldOffset* ofs = data;
     T** str = ofs->GetFieldPointer<T*>(m);
     if (data->SetOneofHas(m)) {

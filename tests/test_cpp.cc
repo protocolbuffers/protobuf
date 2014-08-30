@@ -795,18 +795,39 @@ void DoNothingInt32Handler(C* closure, int32_t val) {
   UPB_UNUSED(val);
 }
 
-template <class R, class C>
-R* DoNothingStartHandler(C* closure) {
-  UPB_UNUSED(closure);
-  return NULL;
-}
+template <class R>
+class DoNothingStartHandler {
+ public:
+  // We wrap these functions inside of a class for a somewhat annoying reason.
+  // UpbMakeHandler() is a macro, so we can't say
+  //    UpbMakeHandler(DoNothingStartHandler<T1, T2>)
+  //
+  // because otherwise the preprocessor gets confused at the comma and tries to
+  // make it two macro arguments.  The usual solution doesn't work either:
+  //    UpbMakeHandler((DoNothingStartHandler<T1, T2>))
+  //
+  // If we do that the macro expands correctly, but then it tries to pass that
+  // parenthesized expression as a template parameter, ie. Type<(F)>, which
+  // isn't legal C++ (Clang will compile it but complains with
+  //    warning: address non-type template argument cannot be surrounded by
+  //    parentheses
+  //
+  // This two-level thing allows us to effectively pass two template parameters,
+  // but without any commas:
+  //    UpbMakeHandler(DoNothingStartHandler<T1>::Handler<T2>)
+  template <class C>
+  static R* Handler(C* closure) {
+    UPB_UNUSED(closure);
+    return NULL;
+  }
 
-template <class R, class C>
-R* DoNothingStartStringHandler(C* closure, size_t size_len) {
-  UPB_UNUSED(closure);
-  UPB_UNUSED(size_len);
-  return NULL;
-}
+  template <class C>
+  static R* String(C* closure, size_t size_len) {
+    UPB_UNUSED(closure);
+    UPB_UNUSED(size_len);
+    return NULL;
+  }
+};
 
 template <class C>
 void DoNothingStringBufHandler(C* closure, const char *buf, size_t len) {
@@ -892,52 +913,52 @@ void TestMismatchedTypes() {
       h->SetEndMessageHandler(UpbMakeHandler(DoNothingEndMessageHandler<T1>)));
 
   ASSERT(!h->SetStartStringHandler(
-              str, UpbMakeHandler((DoNothingStartStringHandler<T1, T2>))));
+              str, UpbMakeHandler(DoNothingStartHandler<T1>::String<T2>)));
   ASSERT(h->SetStartStringHandler(
-              str, UpbMakeHandler((DoNothingStartStringHandler<T1, T1>))));
+              str, UpbMakeHandler(DoNothingStartHandler<T1>::String<T1>)));
 
-  ASSERT(!h->SetEndStringHandler(str, UpbMakeHandler((DoNothingHandler<T2>))));
-  ASSERT(h->SetEndStringHandler(str, UpbMakeHandler((DoNothingHandler<T1>))));
+  ASSERT(!h->SetEndStringHandler(str, UpbMakeHandler(DoNothingHandler<T2>)));
+  ASSERT(h->SetEndStringHandler(str, UpbMakeHandler(DoNothingHandler<T1>)));
 
   ASSERT(!h->SetStartSubMessageHandler(
-              msg, UpbMakeHandler((DoNothingStartHandler<T1, T2>))));
+              msg, UpbMakeHandler(DoNothingStartHandler<T1>::Handler<T2>)));
   ASSERT(h->SetStartSubMessageHandler(
-              msg, UpbMakeHandler((DoNothingStartHandler<T1, T1>))));
+              msg, UpbMakeHandler(DoNothingStartHandler<T1>::Handler<T1>)));
 
   ASSERT(
-      !h->SetEndSubMessageHandler(msg, UpbMakeHandler((DoNothingHandler<T2>))));
+      !h->SetEndSubMessageHandler(msg, UpbMakeHandler(DoNothingHandler<T2>)));
   ASSERT(
-      h->SetEndSubMessageHandler(msg, UpbMakeHandler((DoNothingHandler<T1>))));
+      h->SetEndSubMessageHandler(msg, UpbMakeHandler(DoNothingHandler<T1>)));
 
   ASSERT(!h->SetStartSequenceHandler(
-              r_i32, UpbMakeHandler((DoNothingStartHandler<T1, T2>))));
+              r_i32, UpbMakeHandler(DoNothingStartHandler<T1>::Handler<T2>)));
   ASSERT(h->SetStartSequenceHandler(
-              r_i32, UpbMakeHandler((DoNothingStartHandler<T1, T1>))));
+              r_i32, UpbMakeHandler(DoNothingStartHandler<T1>::Handler<T1>)));
 
   ASSERT(!h->SetEndSequenceHandler(
-              r_i32, UpbMakeHandler((DoNothingHandler<T2>))));
+              r_i32, UpbMakeHandler(DoNothingHandler<T2>)));
   ASSERT(h->SetEndSequenceHandler(
-              r_i32, UpbMakeHandler((DoNothingHandler<T1>))));
+              r_i32, UpbMakeHandler(DoNothingHandler<T1>)));
 
   ASSERT(!h->SetStartSequenceHandler(
-              r_msg, UpbMakeHandler((DoNothingStartHandler<T1, T2>))));
+              r_msg, UpbMakeHandler(DoNothingStartHandler<T1>::Handler<T2>)));
   ASSERT(h->SetStartSequenceHandler(
-              r_msg, UpbMakeHandler((DoNothingStartHandler<T1, T1>))));
+              r_msg, UpbMakeHandler(DoNothingStartHandler<T1>::Handler<T1>)));
 
   ASSERT(!h->SetEndSequenceHandler(
-              r_msg, UpbMakeHandler((DoNothingHandler<T2>))));
+              r_msg, UpbMakeHandler(DoNothingHandler<T2>)));
   ASSERT(h->SetEndSequenceHandler(
-              r_msg, UpbMakeHandler((DoNothingHandler<T1>))));
+              r_msg, UpbMakeHandler(DoNothingHandler<T1>)));
 
   ASSERT(!h->SetStartSequenceHandler(
-              r_str, UpbMakeHandler((DoNothingStartHandler<T1, T2>))));
+              r_str, UpbMakeHandler(DoNothingStartHandler<T1>::Handler<T2>)));
   ASSERT(h->SetStartSequenceHandler(
-              r_str, UpbMakeHandler((DoNothingStartHandler<T1, T1>))));
+              r_str, UpbMakeHandler(DoNothingStartHandler<T1>::Handler<T1>)));
 
   ASSERT(!h->SetEndSequenceHandler(
-              r_str, UpbMakeHandler((DoNothingHandler<T2>))));
+              r_str, UpbMakeHandler(DoNothingHandler<T2>)));
   ASSERT(h->SetEndSequenceHandler(
-              r_str, UpbMakeHandler((DoNothingHandler<T1>))));
+              r_str, UpbMakeHandler(DoNothingHandler<T1>)));
 
   // By setting T1 as the return type for the Start* handlers we have
   // established T1 as the type of the sequence and string frames.
@@ -951,23 +972,23 @@ void TestMismatchedTypes() {
   ASSERT(h->SetInt32Handler(r_i32, UpbMakeHandler(DoNothingInt32Handler<T1>)));
 
   ASSERT(!h->SetStartSubMessageHandler(
-              r_msg, UpbMakeHandler((DoNothingStartHandler<T1, T2>))));
+              r_msg, UpbMakeHandler(DoNothingStartHandler<T1>::Handler<T2>)));
   ASSERT(h->SetStartSubMessageHandler(
-              r_msg, UpbMakeHandler((DoNothingStartHandler<T1, T1>))));
+              r_msg, UpbMakeHandler(DoNothingStartHandler<T1>::Handler<T1>)));
 
   ASSERT(!h->SetEndSubMessageHandler(r_msg,
-                                     UpbMakeHandler((DoNothingHandler<T2>))));
+                                     UpbMakeHandler(DoNothingHandler<T2>)));
   ASSERT(h->SetEndSubMessageHandler(r_msg,
-                                    UpbMakeHandler((DoNothingHandler<T1>))));
+                                    UpbMakeHandler(DoNothingHandler<T1>)));
 
   ASSERT(!h->SetStartStringHandler(
-              r_str, UpbMakeHandler((DoNothingStartStringHandler<T1, T2>))));
+              r_str, UpbMakeHandler(DoNothingStartHandler<T1>::String<T2>)));
   ASSERT(h->SetStartStringHandler(
-              r_str, UpbMakeHandler((DoNothingStartStringHandler<T1, T1>))));
+              r_str, UpbMakeHandler(DoNothingStartHandler<T1>::String<T1>)));
 
   ASSERT(
-      !h->SetEndStringHandler(r_str, UpbMakeHandler((DoNothingHandler<T2>))));
-  ASSERT(h->SetEndStringHandler(r_str, UpbMakeHandler((DoNothingHandler<T1>))));
+      !h->SetEndStringHandler(r_str, UpbMakeHandler(DoNothingHandler<T2>)));
+  ASSERT(h->SetEndStringHandler(r_str, UpbMakeHandler(DoNothingHandler<T1>)));
 
   ASSERT(!h->SetStringHandler(r_str,
                               UpbMakeHandler(DoNothingStringBufHandler<T2>)));
@@ -988,9 +1009,9 @@ void TestMismatchedTypes() {
   // Now setting a StartSequence callback that returns a different type should
   // fail.
   ASSERT(!h->SetStartSequenceHandler(
-              r_i32, UpbMakeHandler((DoNothingStartHandler<T2, T1>))));
+              r_i32, UpbMakeHandler(DoNothingStartHandler<T2>::Handler<T1>)));
   ASSERT(h->SetStartSequenceHandler(
-              r_i32, UpbMakeHandler((DoNothingStartHandler<T1, T1>))));
+              r_i32, UpbMakeHandler(DoNothingStartHandler<T1>::Handler<T1>)));
 
   // Establish a string frame directly.
   ASSERT(h->SetStringHandler(r_str,
@@ -998,15 +1019,15 @@ void TestMismatchedTypes() {
 
   // Fail setting a StartString callback that returns a different type.
   ASSERT(!h->SetStartStringHandler(
-              r_str, UpbMakeHandler((DoNothingStartStringHandler<T2, T1>))));
+              r_str, UpbMakeHandler(DoNothingStartHandler<T2>::String<T1>)));
   ASSERT(h->SetStartStringHandler(
-      r_str, UpbMakeHandler((DoNothingStartStringHandler<T1, T1>))));
+      r_str, UpbMakeHandler(DoNothingStartHandler<T1>::String<T1>)));
 
   // The previous established T1 as the frame for the r_str sequence.
   ASSERT(!h->SetStartSequenceHandler(
-              r_str, UpbMakeHandler((DoNothingStartHandler<T2, T1>))));
+              r_str, UpbMakeHandler(DoNothingStartHandler<T2>::Handler<T1>)));
   ASSERT(h->SetStartSequenceHandler(
-      r_str, UpbMakeHandler((DoNothingStartHandler<T1, T1>))));
+      r_str, UpbMakeHandler(DoNothingStartHandler<T1>::Handler<T1>)));
 
   // Now test for this error that is not caught until freeze time:
   // Change-of-closure-type implies that a StartSequence or StartString handler
@@ -1020,7 +1041,7 @@ void TestMismatchedTypes() {
 
   // Establish T2 as closure type of sequence frame.
   ASSERT(
-      h->SetInt32Handler(r_i32, UpbMakeHandler((DoNothingInt32Handler<T2>))));
+      h->SetInt32Handler(r_i32, UpbMakeHandler(DoNothingInt32Handler<T2>)));
 
   // Now attempt to freeze; this should fail because a StartSequence handler
   // needs to be registered that takes a T1 and returns a T2.
@@ -1029,7 +1050,7 @@ void TestMismatchedTypes() {
   // Now if we register the necessary StartSequence handler, the freezing should
   // work.
   ASSERT(h->SetStartSequenceHandler(
-      r_i32, UpbMakeHandler((DoNothingStartHandler<T2, T1>))));
+      r_i32, UpbMakeHandler(DoNothingStartHandler<T2>::Handler<T1>)));
   h->ClearError();
   ASSERT(h->Freeze(NULL));
 
@@ -1051,7 +1072,7 @@ void TestMismatchedTypes() {
 
   // Now if we register a StartSequence handler it succeeds.
   ASSERT(h->SetStartSequenceHandler(
-      r_str, UpbMakeHandler((DoNothingStartHandler<T2, T1>))));
+      r_str, UpbMakeHandler(DoNothingStartHandler<T2>::Handler<T1>)));
   h->ClearError();
   ASSERT(h->Freeze(NULL));
 
