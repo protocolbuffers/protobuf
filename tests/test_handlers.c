@@ -18,6 +18,7 @@ static bool startmsg(void *c, const void *hd) {
 }
 
 static void test_error() {
+  // Test creating handlers of a static msgdef.
   const upb_symtab *s = upbdefs_google_protobuf_descriptor(&s);
   upb_handlers *h =
       upb_handlers_new(upbdefs_google_protobuf_DescriptorProto(s), &h);

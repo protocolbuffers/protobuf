@@ -1622,6 +1622,7 @@ static void lupb_sethasbit(lupb_msg *msg, uint32_t hasbit) {
 
 static size_t strhandler(void *closure, const void *hd, const char *str,
                          size_t len, const upb_bufhandle *handle) {
+  UPB_UNUSED(handle);
   lupb_msg *msg = closure;
   const lupb_handlerdata *data = hd;
   lua_State *L = msg->lmd->L;

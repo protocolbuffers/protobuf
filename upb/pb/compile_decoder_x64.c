@@ -259,8 +259,6 @@ static int pcofs(jitcompiler *jc) {
   return jc->pc - jc->group->bytecode;
 }
 
-static void upb_reg_jit_gdb(jitcompiler *jc);
-
 // Returns a machine code offset corresponding to the given key.
 // Requires that this key was defined with define_jmptarget.
 static int machine_code_ofs(jitcompiler *jc, const void *key) {
@@ -470,7 +468,6 @@ void upb_pbdecoder_jit(mgroup *group) {
                         MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
   dasm_encode(jc, jit_code);
   mprotect(jit_code, jc->group->jit_size, PROT_EXEC | PROT_READ);
-  upb_reg_jit_gdb(jc);
   jc->group->jit_code = (upb_string_handlerfunc *)jit_code;
 
 #ifdef UPB_JIT_LOAD_SO
@@ -496,84 +493,4 @@ void upb_pbdecoder_freejit(mgroup *group) {
     munmap(group->jit_code, group->jit_size);
   }
   free(group->debug_info);
-  // TODO: unregister GDB JIT interface.
 }
-
-// To debug JIT-ted code with GDB we need to tell GDB about the JIT-ted code
-// at runtime.  GDB 7.x+ has defined an interface for doing this, and these
-// structure/function defintions are copied out of gdb/jit.h
-//
-// We need to give GDB an ELF file at runtime describing the symbols we have
-// generated.  To avoid implementing the ELF format, we generate an ELF file
-// at compile-time and compile it in as a character string.  We can replace
-// a few key constants (address of JIT-ted function and its size) by looking
-// for a few magic numbers and doing a dumb string replacement.
-//
-// Unfortunately this approach is showing its limits; we can only define one
-// symbol, and this approach only works with GDB.  The .so approach above is
-// more reliable.
-
-#ifndef __APPLE__
-const unsigned char upb_jit_debug_elf_file[] = {
-#include "upb/pb/jit_debug_elf_file.h"
-};
-
-typedef enum {
-  GDB_JIT_NOACTION = 0,
-  GDB_JIT_REGISTER,
-  GDB_JIT_UNREGISTER
-} jit_actions_t;
-
-typedef struct gdb_jit_entry {
-  struct gdb_jit_entry *next_entry;
-  struct gdb_jit_entry *prev_entry;
-  const char *symfile_addr;
-  uint64_t symfile_size;
-} gdb_jit_entry;
-
-typedef struct {
-  uint32_t version;
-  uint32_t action_flag;
-  gdb_jit_entry *relevant_entry;
-  gdb_jit_entry *first_entry;
-} gdb_jit_descriptor;
-
-gdb_jit_descriptor __jit_debug_descriptor = {1, GDB_JIT_NOACTION, NULL, NULL};
-
-void __attribute__((noinline)) __jit_debug_register_code() {
-  __asm__ __volatile__("");
-}
-
-static void upb_reg_jit_gdb(jitcompiler *jc) {
-  // Create debug info.
-  size_t elf_len = sizeof(upb_jit_debug_elf_file);
-  jc->group->debug_info = malloc(elf_len);
-  memcpy(jc->group->debug_info, upb_jit_debug_elf_file, elf_len);
-  uint64_t *p = (void *)jc->group->debug_info;
-  for (; (void *)(p + 1) <= (void *)jc->group->debug_info + elf_len; ++p) {
-    if (*p == 0x12345678) {
-      *p = (uintptr_t)jc->group->jit_code;
-    }
-    if (*p == 0x321) {
-      *p = jc->group->jit_size;
-    }
-  }
-
-  // Register the JIT-ted code with GDB.
-  gdb_jit_entry *e = malloc(sizeof(gdb_jit_entry));
-  e->next_entry = __jit_debug_descriptor.first_entry;
-  e->prev_entry = NULL;
-  if (e->next_entry) e->next_entry->prev_entry = e;
-  e->symfile_addr = jc->group->debug_info;
-  e->symfile_size = elf_len;
-  __jit_debug_descriptor.first_entry = e;
-  __jit_debug_descriptor.relevant_entry = e;
-  __jit_debug_descriptor.action_flag = GDB_JIT_REGISTER;
-  __jit_debug_register_code();
-}
-
-#else
-
-static void upb_reg_jit_gdb(jitcompiler *jc) { (void)jc; }
-
-#endif
