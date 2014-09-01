@@ -32,7 +32,7 @@ withprotobuf_script() {
 # need to be available as 32-bit libs also, which gets hairy fast.
 # Can't enable the JIT because it only supports x64.
 core32_install() {
-  :
+  sudo apt-get install libc6-dev-i386
 }
 core32_script() {
   make -j12 tests USER_CPPFLAGS=-m32
