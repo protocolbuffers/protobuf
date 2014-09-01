@@ -84,20 +84,20 @@ dep:
 
 
 clean_leave_profile:
-	rm -rf obj lib
-	rm -f benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
-	rm -f $(TESTS) tests/testmain.o tests/t.*
-	rm -f tests/test.proto.pb
-	rm -f upb/descriptor.pb
-	rm -rf tools/upbc deps
-	rm -rf upb/bindings/python/build
-	rm -f upb/bindings/ruby/Makefile
-	rm -f upb/bindings/ruby/upb.so
-	rm -f upb/bindings/ruby/mkmf.log
-	find . | grep dSYM | xargs rm -rf
+	@rm -rf obj lib
+	@rm -f benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
+	@rm -f $(TESTS) tests/testmain.o tests/t.*
+	@rm -f tests/test.proto.pb
+	@rm -f upb/descriptor.pb
+	@rm -rf tools/upbc deps
+	@rm -rf upb/bindings/python/build
+	@rm -f upb/bindings/ruby/Makefile
+	@rm -f upb/bindings/ruby/upb.so
+	@rm -f upb/bindings/ruby/mkmf.log
+	@find . | grep dSYM | xargs rm -rf
 
 clean: clean_leave_profile
-	rm -rf $(call rwildcard,,*.gcno) $(call rwildcard,,*.gcda)
+	@rm -rf $(call rwildcard,,*.gcno) $(call rwildcard,,*.gcda)
 
 # A little bit of Make voodoo: you can call this from the deps of a patterned
 # rule like so:
@@ -146,6 +146,8 @@ upb_pb_SRCS = \
 ifdef USE_JIT
 upb_pb_SRCS += upb/pb/compile_decoder_x64.c
 obj/pb/compile_decoder_x64.o obj/pb/compile_decoder_x64.lo: upb/pb/compile_decoder_x64.h
+obj/pb/compile_decoder_x64.o: CFLAGS=-std=gnu99
+obj/pb/compile_decoder_x64.o: OPT=-Os
 
 upb/pb/compile_decoder_x64.h: upb/pb/compile_decoder_x64.dasc
 	$(E) DYNASM $<
@@ -161,6 +163,8 @@ ifeq (, $(findstring -O, $(USER_CFLAGS)))
 OPT = -O3
 lib/libupb.a : OPT = -Os
 lib/libupb.descriptor.a : OPT = -Os
+obj/pb/compile_decoder.o : OPT = -Os
+obj/pb/compile_decoder_64.o : OPT = -Os
 endif
 
 $(UPB_PICLIBS): lib/lib%_pic.a: $(call make_objs,lo)
@@ -265,7 +269,7 @@ ifeq ($(RUN_UNDER), valgrind)
 RUN_UNDER=valgrind --leak-check=full --error-exitcode=1 --track-origins=yes
 endif
 
-test: tests
+test:
 	@set -e  # Abort on error.
 	@find tests -perm -u+x -type f | while read test; do \
 	  if [ -x ./$$test ] ; then \
@@ -289,50 +293,65 @@ GOOGLEPB_TESTS = \
 GOOGLEPB_LIB=lib/libupb.bindings.googlepb.a
 
 .PHONY: googlepb clean_googlepb googlepbtest
+
 clean: clean_googlepb
 clean_googlepb:
-	rm -f tests/bindings/googlepb/test_vs_proto2.googlemessage*
-	rm -f $(GOOGLEPB_LIB)
+	@rm -f tests/bindings/googlepb/test_vs_proto2.googlemessage*
+	@rm -f benchmarks/googlemessage?.h
+	@rm -f $(GOOGLEPB_LIB)
+
 googlepb: default $(GOOGLEPB_LIB)
-googlepbtest: $(GOOGLEPB_TESTS)
+googlepbtests: googlepb $(GOOGLEPB_TESTS)
 
 lib/libupb.bindings.googlepb.a: $(upb_bindings_googlepb_SRCS:upb/%.cc=obj/%.o)
 	$(E) AR $@
 	$(Q) mkdir -p lib && ar rcs $@ $^
 
-# These generated files live in benchmarks/ but are used by both tests and
-# benchmarks.
+# Generate C++ with Google's protobuf compiler, to test and benchmark against.
 benchmarks/google_messages.proto.pb: benchmarks/google_messages.proto
 	@# TODO: replace with upbc.
 	protoc benchmarks/google_messages.proto -obenchmarks/google_messages.proto.pb
 benchmarks/google_messages.pb.cc: benchmarks/google_messages.proto
 	protoc benchmarks/google_messages.proto --cpp_out=.
 
-tests/bindings/googlepb/test_vs_proto2.googlemessage1: \
-    tests/bindings/googlepb/test_vs_proto2.cc $(LIBUPB) benchmarks/google_messages.proto.pb \
-    benchmarks/google_messages.pb.cc
+benchmarks/googlemessage1.h:
+	$(E) XXD benchmarks/google_message1.dat
+	$(Q) xxd -i < benchmarks/google_message1.dat > benchmarks/googlemessage1.h
+
+benchmarks/googlemessage2.h:
+	$(E) XXD benchmarks/google_message2.dat
+	$(Q) xxd -i < benchmarks/google_message2.dat > benchmarks/googlemessage2.h
+
+GOOGLEPB_TEST_LIBS = \
+  lib/libupb.bindings.googlepb.a \
+  lib/libupb.pb.a \
+  lib/libupb.descriptor.a \
+  lib/libupb.a
+
+GOOGLEPB_TEST_DEPS = \
+  tests/bindings/googlepb/test_vs_proto2.cc \
+  benchmarks/google_messages.proto.pb \
+  benchmarks/google_messages.pb.cc \
+  tests/testmain.o \
+  $(GOOGLEPB_TEST_LIBS)
+
+tests/bindings/googlepb/test_vs_proto2.googlemessage1: $(GOOGLEPB_TEST_DEPS) \
+    benchmarks/googlemessage1.h
 	$(E) CXX $< '(benchmarks::SpeedMessage1)'
 	$(Q) $(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
-	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage1\" \
-	  -DMESSAGE_DESCRIPTOR_FILE=\"../benchmarks/google_messages.proto.pb\" \
-	  -DMESSAGE_FILE=\"../benchmarks/google_message1.dat\" \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
-	  -DMESSAGE_HFILE=\"../benchmarks/google_messages.pb.h\" \
+	  -DMESSAGE_DATA_HFILE=\"benchmarks/googlemessage1.h\" \
 	  benchmarks/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread \
-	  lib/libupb.bindings.googlepb.a lib/libupb.pb.a lib/libupb.descriptor.a lib/libupb.a
+	  $(GOOGLEPB_TEST_LIBS)
 
-tests/bindings/googlepb/test_vs_proto2.googlemessage2: \
-    tests/bindings/googlepb/test_vs_proto2.cc $(LIBUPB) benchmarks/google_messages.proto.pb \
-    benchmarks/google_messages.pb.cc
+tests/bindings/googlepb/test_vs_proto2.googlemessage2: $(GOOGLEPB_TEST_DEPS) \
+    benchmarks/googlemessage2.h
 	$(E) CXX $< '(benchmarks::SpeedMessage2)'
 	$(Q) $(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
-	  -DMESSAGE_NAME=\"benchmarks.SpeedMessage2\" \
-	  -DMESSAGE_DESCRIPTOR_FILE=\"../benchmarks/google_messages.proto.pb\" \
-	  -DMESSAGE_FILE=\"../benchmarks/google_message2.dat\" \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage2" \
-	  -DMESSAGE_HFILE=\"../benchmarks/google_messages.pb.h\" \
+	  -DMESSAGE_DATA_HFILE=\"benchmarks/googlemessage2.h\" \
 	  benchmarks/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread \
-	  lib/libupb.bindings.googlepb.a lib/libupb.pb.a lib/libupb.descriptor.a lib/libupb.a
+	  $(GOOGLEPB_TEST_LIBS)
 
 
 # Lua extension ##################################################################
@@ -348,14 +367,15 @@ LUAEXTS = \
   upb/bindings/lua/upb.pb.so \
 
 .PHONY: clean_lua testlua lua
-clean: clean_lua
+
 testlua:
 	LUA_PATH=tests/bindings/lua/?.lua LUA_CPATH=upb/bindings/lua/?.so lua tests/bindings/lua/upb.lua
 
+clean: clean_lua
 clean_lua:
-	rm -f upb/bindings/lua/upb.lua.h
-	rm -f upb/bindings/lua/upb.so
-	rm -f upb/bindings/lua/upb.pb.so
+	@rm -f upb/bindings/lua/upb.lua.h
+	@rm -f upb/bindings/lua/upb.so
+	@rm -f upb/bindings/lua/upb.pb.so
 
 lua: $(LUAEXTS)
 

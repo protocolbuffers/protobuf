@@ -220,7 +220,7 @@ static bool try_getjmptarget(jitcompiler *jc, const void *key, int *pclabel) {
 // Gets the pclabel for this bytecode location's jmptarget.  Requires that the
 // jmptarget() has been previously defined.
 static int getjmptarget(jitcompiler *jc, const void *key) {
-  int pclabel;
+  int pclabel = 0;
   assert(upb_inttable_lookupptr(&jc->jmpdefined, key, NULL));
   bool ok = try_getjmptarget(jc, key, &pclabel);
   UPB_ASSERT_VAR(ok, ok);

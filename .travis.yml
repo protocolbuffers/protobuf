@@ -1,4 +1,6 @@
-install:
-  - sudo apt-get update -qq
-  - sudo apt-get install protobuf-compiler libprotobuf-dev
-script: make test
+install: ./travis.sh install
+script: ./travis.sh script
+env:
+  - UPB_TRAVIS_BUILD=bare
+  - UPB_TRAVIS_BUILD=barejit
+  - UPB_TRAVIS_BUILD=withprotobuf
