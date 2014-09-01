@@ -1323,9 +1323,10 @@ static size_t lupb_sizeof(lua_State *L, const upb_fielddef *f) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
     case UPB_TYPE_MESSAGE:
-      lupb_assert(L, false);
-      return 0;
+      break;
   }
+  lupb_assert(L, false);
+  return 0;
 }
 
 static int div_round_up(size_t n, size_t d) {

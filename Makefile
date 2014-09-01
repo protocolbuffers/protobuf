@@ -42,7 +42,7 @@ WITH_JIT=no
 CC=cc
 CXX=c++
 CFLAGS=-std=c99
-CXXFLAGS=-Wno-unused-private-field $(USER_CXXFLAGS)
+CXXFLAGS=-Wno-unused-private-field
 INCLUDE=-I.
 CPPFLAGS=$(INCLUDE) -DNDEBUG -Wall -Wextra -Wno-sign-compare $(USER_CPPFLAGS)
 LDLIBS=-lpthread upb/libupb.a
@@ -87,7 +87,6 @@ clean_leave_profile:
 	@rm -rf obj lib
 	@rm -f benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
 	@rm -f $(TESTS) tests/testmain.o tests/t.*
-	@rm -f tests/test.proto.pb
 	@rm -f upb/descriptor.pb
 	@rm -rf tools/upbc deps
 	@rm -rf upb/bindings/python/build
@@ -159,7 +158,7 @@ upb_json_SRCS = \
 
 # If the user doesn't specify an -O setting, we use -O3 for critical-path
 # code and -Os for the rest.
-ifeq (, $(findstring -O, $(USER_CFLAGS)))
+ifeq (, $(findstring -O, $(USER_CPPFLAGS)))
 OPT = -O3
 lib/libupb.a : OPT = -Os
 lib/libupb.descriptor.a : OPT = -Os
@@ -364,18 +363,28 @@ endif
 
 LUAEXTS = \
   upb/bindings/lua/upb.so \
-  upb/bindings/lua/upb.pb.so \
+  upb/bindings/lua/upb/pb.so \
+
+LUATESTS = \
+  tests/bindings/lua/test_upb.lua \
+  tests/bindings/lua/test_upb.pb.lua \
 
 .PHONY: clean_lua testlua lua
 
-testlua:
-	LUA_PATH=tests/bindings/lua/?.lua LUA_CPATH=upb/bindings/lua/?.so lua tests/bindings/lua/upb.lua
+testlua: lua
+	@set -e  # Abort on error.
+	@for test in $(LUATESTS) ; do \
+	  echo LUA $$test; \
+	  LUA_PATH="tests/bindings/lua/lunit/?.lua" \
+	    LUA_CPATH=upb/bindings/lua/?.so \
+	    lua $$test; \
+	done
 
 clean: clean_lua
 clean_lua:
 	@rm -f upb/bindings/lua/upb.lua.h
 	@rm -f upb/bindings/lua/upb.so
-	@rm -f upb/bindings/lua/upb.pb.so
+	@rm -f upb/bindings/lua/upb/pb.so
 
 lua: $(LUAEXTS)
 
@@ -383,13 +392,29 @@ upb/bindings/lua/upb.lua.h:
 	$(E) XXD upb/bindings/lua/upb.lua
 	$(Q) xxd -i < upb/bindings/lua/upb.lua > upb/bindings/lua/upb.lua.h
 
-upb/bindings/lua/upb.so: upb/bindings/lua/upb.c upb/bindings/lua/upb.lua.h lib/libupb.descriptor_pic.a lib/libupb_pic.a lib/libupb.pb_pic.a
-	$(E) CC upb/bindings/lua/upb.c
-	$(Q) $(CC) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< lib/libupb.pb_pic.a lib/libupb.descriptor_pic.a lib/libupb_pic.a $(LUA_LDFLAGS)
+# Right now the core upb module depends on all of these.
+# It's a TODO to factor this more cleanly in the code.
+LUA_LIB_DEPS = \
+  lib/libupb.pb_pic.a \
+  lib/libupb.descriptor_pic.a \
+  lib/libupb_pic.a \
 
-upb/bindings/lua/upb.pb.so: upb/bindings/lua/upb.pb.c lib/libupb_pic.a lib/libupb.pb_pic.a
+upb/bindings/lua/upb.so: upb/bindings/lua/upb.c upb/bindings/lua/upb.lua.h $(LUA_LIB_DEPS)
+	$(E) CC upb/bindings/lua/upb.c
+	$(Q) $(CC) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS) $(LUA_LIB_DEPS)
+
+# TODO: the dependency between upb/pb.so and upb.so is expressed at the
+# .so level, which means that the OS will try to load upb.so when upb/pb.so
+# is loaded.  This is what we want, but getting the paths right is tricky.
+# Basically the dynamic linker needs to be able to find upb.so at:
+#   $(LD_LIBRARY_PATH)/upb/bindings/lua/upb.so
+# So the user has to set both LD_LIBRARY_PATH and LUA_CPATH correctly.
+# Another option would be to require the Lua program to always require
+# "upb" before requiring eg. "upb.pb", and then the dependency would not
+# be expressed at the .so level.
+upb/bindings/lua/upb/pb.so: upb/bindings/lua/upb/pb.c upb/bindings/lua/upb.so
 	$(E) CC upb/bindings/lua/upb.pb.c
-	$(Q) $(CC) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS)
+	$(Q) $(CC) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< upb/bindings/lua/upb.so $(LUA_LDFLAGS)
 
 
 # Python extension #############################################################

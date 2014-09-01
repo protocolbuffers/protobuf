@@ -3,4 +3,6 @@ script: ./travis.sh script
 env:
   - UPB_TRAVIS_BUILD=bare
   - UPB_TRAVIS_BUILD=barejit
+  - UPB_TRAVIS_BUILD=core32
   - UPB_TRAVIS_BUILD=withprotobuf
+  - UPB_TRAVIS_BUILD=lua
