@@ -1559,7 +1559,7 @@ void FormatFreeFieldNumbers(const string& name,
   string output;
   StringAppendF(&output, "%-35s free:", name.c_str());
   int next_free_number = 1;
-  for (set<FieldRange>::iterator i = ranges.begin();
+  for (set<FieldRange>::const_iterator i = ranges.begin();
        i != ranges.end(); ++i) {
     // This happens when groups re-use parent field numbers, in which
     // case we skip the FieldRange entirely.
