@@ -138,7 +138,7 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
     /**
      * Tag number of this extension.
      */
-    protected final int tag;
+    public final int tag;
 
     /**
      * Whether this extension is repeated.
