@@ -368,7 +368,7 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
 
   inline const uint32* GetHasBits(const Message& message) const;
   inline uint32* MutableHasBits(Message* message) const;
-  inline const uint32 GetOneofCase(
+  inline uint32 GetOneofCase(
       const Message& message,
       const OneofDescriptor* oneof_descriptor) const;
   inline uint32* MutableOneofCase(
