@@ -1496,7 +1496,7 @@ inline uint32* GeneratedMessageReflection::MutableHasBits(
   return reinterpret_cast<uint32*>(ptr);
 }
 
-inline const uint32 GeneratedMessageReflection::GetOneofCase(
+inline uint32 GeneratedMessageReflection::GetOneofCase(
     const Message& message,
     const OneofDescriptor* oneof_descriptor) const {
   const void* ptr = reinterpret_cast<const uint8*>(&message)
