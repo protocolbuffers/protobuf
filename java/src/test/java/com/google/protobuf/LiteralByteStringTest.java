@@ -298,6 +298,13 @@ public class LiteralByteStringTest extends TestCase {
     assertEquals(classUnderTest + " unicode must match", testString, roundTripString);
   }
 
+  public void testCharsetToString() throws UnsupportedEncodingException {
+    String testString = "I love unicode \u1234\u5678 characters";
+    LiteralByteString unicode = new LiteralByteString(testString.getBytes(ByteString.UTF_8));
+    String roundTripString = unicode.toString(ByteString.UTF_8);
+    assertEquals(classUnderTest + " unicode must match", testString, roundTripString);
+  }
+
   public void testToString_returnsCanonicalEmptyString() throws UnsupportedEncodingException{
     assertSame(classUnderTest + " must be the same string references",
         ByteString.EMPTY.toString(UTF_8), new LiteralByteString(new byte[]{}).toString(UTF_8));

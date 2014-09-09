@@ -37,6 +37,8 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -76,8 +78,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   static final int MIN_READ_FROM_CHUNK_SIZE = 0x100;  // 256b
   static final int MAX_READ_FROM_CHUNK_SIZE = 0x2000;  // 8k
 
-  // Defined by java.nio.charset.Charset
-  protected static final String UTF_8 = "UTF-8";
+  protected static final Charset UTF_8 = Charset.forName("UTF-8");
 
   /**
    * Empty {@code ByteString}.
@@ -269,11 +270,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return new {@code ByteString}
    */
   public static ByteString copyFromUtf8(String text) {
-    try {
-      return new LiteralByteString(text.getBytes(UTF_8));
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException("UTF-8 not supported?", e);
-    }
+    return new LiteralByteString(text.getBytes(UTF_8));
   }
 
   // =================================================================
@@ -612,8 +609,36 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return new string
    * @throws UnsupportedEncodingException if charset isn't recognized
    */
-  public abstract String toString(String charsetName)
-      throws UnsupportedEncodingException;
+  public String toString(String charsetName)
+      throws UnsupportedEncodingException {
+    try {
+      return toString(Charset.forName(charsetName));
+    } catch (UnsupportedCharsetException e) {
+      UnsupportedEncodingException exception = new UnsupportedEncodingException(charsetName);
+      exception.initCause(e);
+      throw exception;
+    }
+  }
+
+  /**
+   * Constructs a new {@code String} by decoding the bytes using the
+   * specified charset. Returns the same empty String if empty.
+   *
+   * @param charset encode using this charset
+   * @return new string
+   */
+  public String toString(Charset charset) {
+    return size() == 0 ? "" : toStringInternal(charset);
+  }
+
+  /**
+   * Constructs a new {@code String} by decoding the bytes using the
+   * specified charset.
+   *
+   * @param charset encode using this charset
+   * @return new string
+   */
+  protected abstract String toStringInternal(Charset charset);
 
   // =================================================================
   // UTF-8 decoding
@@ -624,11 +649,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return new string using UTF-8 encoding
    */
   public String toStringUtf8() {
-    try {
-      return toString(UTF_8);
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException("UTF-8 not supported?", e);
-    }
+    return toString(UTF_8);
   }
 
   /**

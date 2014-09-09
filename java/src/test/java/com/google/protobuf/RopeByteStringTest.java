@@ -119,6 +119,32 @@ public class RopeByteStringTest extends LiteralByteStringTest {
   }
 
   @Override
+  public void testCharsetToString() throws UnsupportedEncodingException {
+    String sourceString = "I love unicode \u1234\u5678 characters";
+    ByteString sourceByteString = ByteString.copyFromUtf8(sourceString);
+    int copies = 250;
+
+    // By building the RopeByteString by concatenating, this is actually a fairly strenuous test.
+    StringBuilder builder = new StringBuilder(copies * sourceString.length());
+    ByteString unicode = ByteString.EMPTY;
+    for (int i = 0; i < copies; ++i) {
+      builder.append(sourceString);
+      unicode = RopeByteString.concatenate(unicode, sourceByteString);
+    }
+    String testString = builder.toString();
+
+    assertEquals(classUnderTest + " from string must have the expected type",
+        classUnderTest, getActualClassName(unicode));
+    String roundTripString = unicode.toString(ByteString.UTF_8);
+    assertEquals(classUnderTest + " unicode bytes must match",
+        testString, roundTripString);
+    ByteString flatString = ByteString.copyFromUtf8(testString);
+    assertEquals(classUnderTest + " string must equal the flat string", flatString, unicode);
+    assertEquals(classUnderTest + " string must must have same hashCode as the flat string",
+        flatString.hashCode(), unicode.hashCode());
+  }
+
+  @Override
   public void testToString_returnsCanonicalEmptyString() throws UnsupportedEncodingException {
     RopeByteString ropeByteString =
         RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.EMPTY);

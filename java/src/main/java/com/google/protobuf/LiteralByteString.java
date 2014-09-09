@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -152,13 +153,8 @@ class LiteralByteString extends ByteString {
   }
 
   @Override
-  public String toString(String charsetName)
-      throws UnsupportedEncodingException {
-    // Optimize for empty strings, but ensure we don't silently ignore invalid
-    // encodings.
-    return size() == 0 && UTF_8.equals(charsetName)
-        ? ""
-        : new String(bytes, getOffsetIntoBytes(), size(), charsetName);
+  protected String toStringInternal(Charset charset) {
+    return new String(bytes, getOffsetIntoBytes(), size(), charset);
   }
 
   // =================================================================
