@@ -36,6 +36,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -604,12 +606,10 @@ public abstract class ByteString implements Iterable<Byte> {
    * Constructs a new {@code String} by decoding the bytes using the
    * specified charset.
    *
-   * @param charsetName encode using this charset
+   * @param charset encode using this charset
    * @return new string
-   * @throws UnsupportedEncodingException if charset isn't recognized
    */
-  public abstract String toString(String charsetName)
-      throws UnsupportedEncodingException;
+  public abstract String toString(Charset charset);
 
   // =================================================================
   // UTF-8 decoding
@@ -620,11 +620,7 @@ public abstract class ByteString implements Iterable<Byte> {
    * @return new string using UTF-8 encoding
    */
   public String toStringUtf8() {
-    try {
-      return toString("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException("UTF-8 not supported?", e);
-    }
+    return toString(StandardCharsets.UTF_8);
   }
 
   /**

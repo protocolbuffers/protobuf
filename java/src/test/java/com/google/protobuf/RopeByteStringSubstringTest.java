@@ -31,6 +31,7 @@
 package com.google.protobuf;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
 /**
@@ -86,7 +87,7 @@ public class RopeByteStringSubstringTest extends LiteralByteStringTest {
 
     assertEquals(classUnderTest + " from string must have the expected type",
         classUnderTest, getActualClassName(unicode));
-    String roundTripString = unicode.toString(UTF_8);
+    String roundTripString = unicode.toString(StandardCharsets.UTF_8);
     assertEquals(classUnderTest + " unicode bytes must match",
         testString, roundTripString);
     ByteString flatString = ByteString.copyFromUtf8(testString);

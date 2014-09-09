@@ -33,9 +33,9 @@ package com.google.protobuf;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -416,9 +416,8 @@ class RopeByteString extends ByteString {
   }
 
   @Override
-  public String toString(String charsetName)
-      throws UnsupportedEncodingException {
-    return new String(toByteArray(), charsetName);
+  public String toString(Charset charset) {
+    return new String(toByteArray(), charset);
   }
 
   // =================================================================
