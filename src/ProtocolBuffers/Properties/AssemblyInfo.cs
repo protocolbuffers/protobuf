@@ -37,6 +37,7 @@ using System.Runtime.CompilerServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
+using System.Security;
 
 [assembly: AssemblyTitle("ProtocolBuffers")]
 [assembly: AssemblyDescription("")]
@@ -65,3 +66,4 @@ using System.Runtime.CompilerServices;
 #endif
 
 [assembly: CLSCompliant(true)]
+[assembly: AllowPartiallyTrustedCallers]

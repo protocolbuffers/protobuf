@@ -37,9 +37,9 @@
  * This entire source file is not supported on some platform
  */
 #if !NOSERIALIZABLE
-
 using System;
 using System.Runtime.Serialization;
+using System.Security;
 
 namespace Google.ProtocolBuffers
 {
@@ -51,6 +51,7 @@ namespace Google.ProtocolBuffers
     [Serializable]
     partial class AbstractMessageLite<TMessage, TBuilder> : ISerializable
     {
+        [SecurityCritical]
         void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
         {
             info.SetType(typeof(SerializationSurrogate));
@@ -93,6 +94,7 @@ namespace Google.ProtocolBuffers
                 return message;
             }
 
+            [SecurityCritical]
             void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
             {
                 info.AddValue("message", _message);
@@ -103,6 +105,7 @@ namespace Google.ProtocolBuffers
     [Serializable]
     partial class AbstractBuilderLite<TMessage, TBuilder> : ISerializable
     {
+        [SecurityCritical]
         void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
         {
             info.SetType(typeof(SerializationSurrogate));
@@ -135,6 +138,7 @@ namespace Google.ProtocolBuffers
                 return builder;
             }
 
+            [SecurityCritical]
             void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
             {
                 info.AddValue("message", _message);
