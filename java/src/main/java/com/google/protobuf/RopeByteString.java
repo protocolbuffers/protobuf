@@ -33,6 +33,7 @@ package com.google.protobuf;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -413,6 +414,12 @@ class RopeByteString extends ByteString {
       left.writeToInternal(out, sourceOffset, numberToWriteInLeft);
       right.writeToInternal(out, 0, numberToWrite - numberToWriteInLeft);
     }
+  }
+
+  @Override
+  public String toString(String charsetName)
+      throws UnsupportedEncodingException {
+    return new String(toByteArray(), charsetName);
   }
 
   @Override

@@ -606,6 +606,17 @@ public abstract class ByteString implements Iterable<Byte> {
    * Constructs a new {@code String} by decoding the bytes using the
    * specified charset.
    *
+   * @param charsetName encode using this charset
+   * @return new string
+   * @throws UnsupportedEncodingException if charset isn't recognized
+   */
+  public abstract String toString(String charsetName)
+      throws UnsupportedEncodingException;
+
+  /**
+   * Constructs a new {@code String} by decoding the bytes using the
+   * specified charset.
+   *
    * @param charset encode using this charset
    * @return new string
    */
