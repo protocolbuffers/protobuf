@@ -523,6 +523,7 @@ void MessageGenerator::GenerateHashCode(io::Printer* printer) {
   printer->Indent();
 
   printer->Print("int result = 17;\n");
+  printer->Print("result = 31 * result + getClass().getName().hashCode();\n");
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     field_generators_.get(field).GenerateHashCodeCode(printer);
