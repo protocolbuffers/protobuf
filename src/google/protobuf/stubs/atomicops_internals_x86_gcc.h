@@ -123,11 +123,6 @@ inline void MemoryBarrier() {
   __asm__ __volatile__("mfence" : : : "memory");
 }
 
-inline void Acquire_Store(volatile Atomic32* ptr, Atomic32 value) {
-  *ptr = value;
-  MemoryBarrier();
-}
-
 #else
 
 inline void MemoryBarrier() {
@@ -139,15 +134,6 @@ inline void MemoryBarrier() {
   }
 }
 
-inline void Acquire_Store(volatile Atomic32* ptr, Atomic32 value) {
-  if (AtomicOps_Internalx86CPUFeatures.has_sse2) {
-    *ptr = value;
-    __asm__ __volatile__("mfence" : : : "memory");
-  } else {
-    NoBarrier_AtomicExchange(ptr, value);
-                          // acts as a barrier on PIII
-  }
-}
 #endif
 
 inline void Release_Store(volatile Atomic32* ptr, Atomic32 value) {
@@ -165,11 +151,6 @@ inline Atomic32 Acquire_Load(volatile const Atomic32* ptr) {
   // See comments in Atomic64 version of Release_Store(), below.
   ATOMICOPS_COMPILER_BARRIER();
   return value;
-}
-
-inline Atomic32 Release_Load(volatile const Atomic32* ptr) {
-  MemoryBarrier();
-  return *ptr;
 }
 
 #if defined(__x86_64__)
@@ -223,11 +204,6 @@ inline void NoBarrier_Store(volatile Atomic64* ptr, Atomic64 value) {
   *ptr = value;
 }
 
-inline void Acquire_Store(volatile Atomic64* ptr, Atomic64 value) {
-  *ptr = value;
-  MemoryBarrier();
-}
-
 inline void Release_Store(volatile Atomic64* ptr, Atomic64 value) {
   ATOMICOPS_COMPILER_BARRIER();
 
@@ -259,11 +235,6 @@ inline Atomic64 Acquire_Load(volatile const Atomic64* ptr) {
                           // See also Release_Store(), above.
   ATOMICOPS_COMPILER_BARRIER();
   return value;
-}
-
-inline Atomic64 Release_Load(volatile const Atomic64* ptr) {
-  MemoryBarrier();
-  return *ptr;
 }
 
 inline Atomic64 Acquire_CompareAndSwap(volatile Atomic64* ptr,

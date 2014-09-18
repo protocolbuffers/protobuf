@@ -146,11 +146,6 @@ inline void NoBarrier_Store(volatile Atomic32* ptr, Atomic32 value) {
   *ptr = value;
 }
 
-inline void Acquire_Store(volatile Atomic32* ptr, Atomic32 value) {
-  *ptr = value;
-  MemoryBarrier();
-}
-
 inline void Release_Store(volatile Atomic32* ptr, Atomic32 value) {
   __asm__ __volatile__ (  // NOLINT
     "stlr %w[value], %[ptr]  \n\t"
@@ -175,11 +170,6 @@ inline Atomic32 Acquire_Load(volatile const Atomic32* ptr) {
   );  // NOLINT
 
   return value;
-}
-
-inline Atomic32 Release_Load(volatile const Atomic32* ptr) {
-  MemoryBarrier();
-  return *ptr;
 }
 
 // 64-bit versions of the operations.
@@ -282,11 +272,6 @@ inline void NoBarrier_Store(volatile Atomic64* ptr, Atomic64 value) {
   *ptr = value;
 }
 
-inline void Acquire_Store(volatile Atomic64* ptr, Atomic64 value) {
-  *ptr = value;
-  MemoryBarrier();
-}
-
 inline void Release_Store(volatile Atomic64* ptr, Atomic64 value) {
   __asm__ __volatile__ (  // NOLINT
     "stlr %x[value], %[ptr]  \n\t"
@@ -311,11 +296,6 @@ inline Atomic64 Acquire_Load(volatile const Atomic64* ptr) {
   );  // NOLINT
 
   return value;
-}
-
-inline Atomic64 Release_Load(volatile const Atomic64* ptr) {
-  MemoryBarrier();
-  return *ptr;
 }
 
 }  // namespace internal

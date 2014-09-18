@@ -104,11 +104,6 @@ inline void NoBarrier_Store(volatile Atomic32 *ptr, Atomic32 value) {
   __tsan_atomic32_store(ptr, value, __tsan_memory_order_relaxed);
 }
 
-inline void Acquire_Store(volatile Atomic32 *ptr, Atomic32 value) {
-  __tsan_atomic32_store(ptr, value, __tsan_memory_order_relaxed);
-  __tsan_atomic_thread_fence(__tsan_memory_order_seq_cst);
-}
-
 inline void Release_Store(volatile Atomic32 *ptr, Atomic32 value) {
   __tsan_atomic32_store(ptr, value, __tsan_memory_order_release);
 }
@@ -119,11 +114,6 @@ inline Atomic32 NoBarrier_Load(volatile const Atomic32 *ptr) {
 
 inline Atomic32 Acquire_Load(volatile const Atomic32 *ptr) {
   return __tsan_atomic32_load(ptr, __tsan_memory_order_acquire);
-}
-
-inline Atomic32 Release_Load(volatile const Atomic32 *ptr) {
-  __tsan_atomic_thread_fence(__tsan_memory_order_seq_cst);
-  return __tsan_atomic32_load(ptr, __tsan_memory_order_relaxed);
 }
 
 inline Atomic64 NoBarrier_CompareAndSwap(volatile Atomic64 *ptr,
@@ -166,11 +156,6 @@ inline void NoBarrier_Store(volatile Atomic64 *ptr, Atomic64 value) {
   __tsan_atomic64_store(ptr, value, __tsan_memory_order_relaxed);
 }
 
-inline void Acquire_Store(volatile Atomic64 *ptr, Atomic64 value) {
-  __tsan_atomic64_store(ptr, value, __tsan_memory_order_relaxed);
-  __tsan_atomic_thread_fence(__tsan_memory_order_seq_cst);
-}
-
 inline void Release_Store(volatile Atomic64 *ptr, Atomic64 value) {
   __tsan_atomic64_store(ptr, value, __tsan_memory_order_release);
 }
@@ -181,11 +166,6 @@ inline Atomic64 NoBarrier_Load(volatile const Atomic64 *ptr) {
 
 inline Atomic64 Acquire_Load(volatile const Atomic64 *ptr) {
   return __tsan_atomic64_load(ptr, __tsan_memory_order_acquire);
-}
-
-inline Atomic64 Release_Load(volatile const Atomic64 *ptr) {
-  __tsan_atomic_thread_fence(__tsan_memory_order_seq_cst);
-  return __tsan_atomic64_load(ptr, __tsan_memory_order_relaxed);
 }
 
 inline Atomic64 Acquire_CompareAndSwap(volatile Atomic64 *ptr,
