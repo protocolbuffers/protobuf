@@ -63,7 +63,8 @@
 #elif defined(__pnacl__)
 #define GOOGLE_PROTOBUF_ARCH_32_BIT 1
 #elif defined(__GNUC__) && \
- (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)) || (__GNUC__ > 4))
+ ((((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)) || (__GNUC__ > 4)) || \
+  (defined(__clang__) && __has_extension(c_atomic)))
 // We fallback to the generic GCC >= 4.7 implementation in atomicops.h
 # if __LP64__
 #  define GOOGLE_PROTOBUF_ARCH_64_BIT 1
