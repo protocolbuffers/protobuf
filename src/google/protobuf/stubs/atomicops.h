@@ -192,9 +192,14 @@ GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 #include <google/protobuf/stubs/atomicops_internals_mips_gcc.h>
 #elif defined(__native_client__)
 #include <google/protobuf/stubs/atomicops_internals_pnacl.h>
-#elif (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)) || (__GNUC__ > 4)) || \
- (defined(__clang__) && __has_extension(c_atomic))
+#elif (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)) || (__GNUC__ > 4))
 #include <google/protobuf/stubs/atomicops_internals_generic_gcc.h>
+#elif defined(__clang__)
+#if __has_extension(c_atomic)
+#include <google/protobuf/stubs/atomicops_internals_generic_gcc.h>
+#else
+GOOGLE_PROTOBUF_ATOMICOPS_ERROR
+#endif
 #else
 GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 #endif
