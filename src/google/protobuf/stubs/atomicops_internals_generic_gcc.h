@@ -82,10 +82,6 @@ inline void MemoryBarrier() {
   __sync_synchronize();
 }
 
-inline void Acquire_Store(volatile Atomic32* ptr, Atomic32 value) {
-  __atomic_store_n(ptr, value, __ATOMIC_ACQUIRE);
-}
-
 inline void Release_Store(volatile Atomic32* ptr, Atomic32 value) {
   __atomic_store_n(ptr, value, __ATOMIC_RELEASE);
 }
@@ -96,10 +92,6 @@ inline Atomic32 NoBarrier_Load(volatile const Atomic32* ptr) {
 
 inline Atomic32 Acquire_Load(volatile const Atomic32* ptr) {
   return __atomic_load_n(ptr, __ATOMIC_ACQUIRE);
-}
-
-inline Atomic32 Release_Load(volatile const Atomic32* ptr) {
-  return __atomic_load_n(ptr, __ATOMIC_RELEASE);
 }
 
 #ifdef __LP64__
