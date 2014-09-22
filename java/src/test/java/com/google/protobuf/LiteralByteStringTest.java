@@ -38,7 +38,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -291,8 +290,8 @@ public class LiteralByteStringTest extends TestCase {
 
   public void testToString() throws UnsupportedEncodingException {
     String testString = "I love unicode \u1234\u5678 characters";
-    LiteralByteString unicode = new LiteralByteString(testString.getBytes(StandardCharsets.UTF_8));
-    String roundTripString = unicode.toString(StandardCharsets.UTF_8);
+    LiteralByteString unicode = new LiteralByteString(testString.getBytes(ByteString.UTF_8));
+    String roundTripString = unicode.toString(ByteString.UTF_8);
     assertEquals(classUnderTest + " unicode must match", testString, roundTripString);
   }
 

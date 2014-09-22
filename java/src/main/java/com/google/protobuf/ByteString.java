@@ -37,7 +37,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -60,6 +59,8 @@ import java.util.NoSuchElementException;
  * @author martinrb@google.com Martin Buchholz
  */
 public abstract class ByteString implements Iterable<Byte> {
+
+  static final Charset UTF_8 = Charset.forName("UTF-8");
 
   /**
    * When two strings to be concatenated have a combined length shorter than
@@ -631,7 +632,7 @@ public abstract class ByteString implements Iterable<Byte> {
    * @return new string using UTF-8 encoding
    */
   public String toStringUtf8() {
-    return toString(StandardCharsets.UTF_8);
+    return toString(UTF_8);
   }
 
   /**
