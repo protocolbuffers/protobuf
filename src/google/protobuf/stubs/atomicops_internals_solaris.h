@@ -1,5 +1,4 @@
-// Protocol Buffers - Google's data interchange format
-// Copyright 2013 William Orr All rights reserved.
+// Copyright 2014 Google Inc. All rights reserved.
 // http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
