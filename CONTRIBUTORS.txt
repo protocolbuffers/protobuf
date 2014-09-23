@@ -50,7 +50,7 @@ Patch contributors:
       text format.
   Brian Atkinson <nairb774@gmail.com>
     * Added @Override annotation to generated Java code where appropriate.
-  Vincent Choinière <Choiniere.Vincent@hydro.qc.ca>
+  Vincent ChoiniÃ¨re <Choiniere.Vincent@hydro.qc.ca>
     * Tru64 support.
   Monty Taylor <monty.taylor@gmail.com>
     * Solaris 10 + Sun Studio fixes.
@@ -88,3 +88,6 @@ Patch contributors:
     * Added CodedInputStream.getTotalBytesRead().
   Kacper Kowalik <xarthisius.kk@gmail.com>
     * Fixed m4/acx_pthread.m4 problem for some Linux distributions.
+  William Orr <will@worrbase.com>
+    * Fixed detection of sched_yield on Solaris.
+    * Added atomicops for Solaris
