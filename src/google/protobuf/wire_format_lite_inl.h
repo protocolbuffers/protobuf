@@ -390,7 +390,7 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
     // safely allocate.  We read as much as we can into *values
     // without pre-allocating "length" bytes.
     CType value;
-    for (int i = 0; i < new_entries; ++i) {
+    for (uint32 i = 0; i < new_entries; ++i) {
       if (!ReadPrimitive<CType, DeclaredType>(input, &value)) return false;
       values->Add(value);
     }
