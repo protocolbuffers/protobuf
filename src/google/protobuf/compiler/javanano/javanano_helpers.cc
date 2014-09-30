@@ -392,6 +392,10 @@ string DefaultValue(const Params& params, const FieldDescriptor* field) {
   }
 
   if (params.use_reference_types_for_primitives()) {
+    if (params.reftypes_primitive_enums()
+          && field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
+      return "Integer.MIN_VALUE";
+    }
     return "null";
   }
 
