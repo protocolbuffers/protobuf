@@ -18,7 +18,7 @@
     extensible format.
   </description>
   <inceptionYear>2008</inceptionYear>
-  <url>http://code.google.com/p/protobuf</url>
+  <url>https://developers.google.com/protocol-buffers/</url>
   <licenses>
     <license>
       <name>New BSD license</name>
@@ -27,9 +27,9 @@
     </license>
   </licenses>
   <scm>
-    <url>http://code.google.com/p/protobuf/source/browse</url>
+    <url>https://github.com/google/protobuf</url>
     <connection>
-      scm:svn:http://protobuf.googlecode.com/svn/trunk/
+      scm:git:https://github.com/google/protobuf.git
     </connection>
   </scm>
   <dependencies>
@@ -146,7 +146,7 @@
         <extensions>true</extensions>
         <configuration>
           <instructions>
-            <Bundle-DocURL>http://code.google.com/p/protobuf</Bundle-DocURL>
+            <Bundle-DocURL>https://developers.google.com/protocol-buffers/</Bundle-DocURL>
             <Bundle-SymbolicName>com.google.protobuf</Bundle-SymbolicName>
             <Export-Package>com.google.protobuf;version=2.6.0</Export-Package>
           </instructions>
