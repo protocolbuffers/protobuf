@@ -59,6 +59,7 @@ void SetEnumVariables(const Params& params,
     RenameJavaKeywords(UnderscoresToCapitalizedCamelCase(descriptor));
   (*variables)["number"] = SimpleItoa(descriptor->number());
   if (params.use_reference_types_for_primitives()
+      && !params.reftypes_primitive_enums()
       && !descriptor->is_repeated()) {
     (*variables)["type"] = "java.lang.Integer";
     (*variables)["default"] = "null";
@@ -197,7 +198,8 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
 }
 
 void EnumFieldGenerator::GenerateEqualsCode(io::Printer* printer) const {
-  if (params_.use_reference_types_for_primitives()) {
+  if (params_.use_reference_types_for_primitives()
+        && !params_.reftypes_primitive_enums()) {
     printer->Print(variables_,
       "if (this.$name$ == null) {\n"
       "  if (other.$name$ != null) {\n"
@@ -228,7 +230,8 @@ void EnumFieldGenerator::GenerateEqualsCode(io::Printer* printer) const {
 void EnumFieldGenerator::GenerateHashCodeCode(io::Printer* printer) const {
   printer->Print(
     "result = 31 * result + ");
-  if (params_.use_reference_types_for_primitives()) {
+  if (params_.use_reference_types_for_primitives()
+        && !params_.reftypes_primitive_enums()) {
     printer->Print(variables_,
       "(this.$name$ == null ? 0 : this.$name$)");
   } else {
