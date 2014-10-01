@@ -64,6 +64,7 @@ class Params {
   bool generate_equals_;
   bool ignore_services_;
   bool parcelable_messages_;
+  bool reftypes_primitive_enums_;
 
  public:
   Params(const string & base_name) :
@@ -77,7 +78,8 @@ class Params {
     use_reference_types_for_primitives_(false),
     generate_equals_(false),
     ignore_services_(false),
-    parcelable_messages_(false) {
+    parcelable_messages_(false),
+    reftypes_primitive_enums_(false) {
   }
 
   const string& base_name() const {
@@ -212,6 +214,13 @@ class Params {
   }
   bool parcelable_messages() const {
     return parcelable_messages_;
+  }
+
+  void set_reftypes_primitive_enums(bool value) {
+    reftypes_primitive_enums_ = value;
+  }
+  bool reftypes_primitive_enums() const {
+    return reftypes_primitive_enums_;
   }
 };
 
