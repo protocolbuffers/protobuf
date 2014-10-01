@@ -499,6 +499,14 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
 }
 
 void RepeatedEnumFieldGenerator::
+GenerateFixClonedCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (this.$name$ != null && this.$name$.length > 0) {\n"
+    "  cloned.$name$ = this.$name$.clone();\n"
+    "}\n");
+}
+
+void RepeatedEnumFieldGenerator::
 GenerateEqualsCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if (!com.google.protobuf.nano.InternalNano.equals(\n"

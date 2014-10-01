@@ -37,7 +37,7 @@ package com.google.protobuf.nano;
  *
  * Based on {@link android.support.v4.util.SpareArrayCompat}.
  */
-class FieldArray {
+class FieldArray implements Cloneable {
     private static final FieldData DELETED = new FieldData();
     private boolean mGarbage = false;
 
@@ -269,5 +269,20 @@ class FieldArray {
             }
         }
         return true;
+    }
+
+    @Override
+    public final FieldArray clone() {
+        // Trigger GC so we compact and don't copy DELETED elements.
+        int size = size();
+        FieldArray clone = new FieldArray(size);
+        System.arraycopy(mFieldNumbers, 0, clone.mFieldNumbers, 0, size);
+        for (int i = 0; i < size; i++) {
+            if (mData[i] != null) {
+                clone.mData[i] = mData[i].clone();
+            }
+        }
+        clone.mSize = size;
+        return clone;
     }
 }

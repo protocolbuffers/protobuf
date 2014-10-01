@@ -39,7 +39,7 @@ import java.util.List;
  * Stores unknown fields. These might be extensions or fields that the generated API doesn't
  * know about yet.
  */
-class FieldData {
+class FieldData implements Cloneable {
     private Extension<?, ?> cachedExtension;
     private Object value;
     /** The serialised values for this object. Will be cleared if getValue is called */
@@ -187,4 +187,54 @@ class FieldData {
         return result;
     }
 
+    @Override
+    public final FieldData clone() {
+        FieldData clone = new FieldData();
+        try {
+            clone.cachedExtension = cachedExtension;
+            if (unknownFieldData == null) {
+                clone.unknownFieldData = null;
+            } else {
+                clone.unknownFieldData.addAll(unknownFieldData);
+            }
+
+            // Whether we need to deep clone value depends on its type. Primitive reference types
+            // (e.g. Integer, Long etc.) are ok, since they're immutable. We need to clone arrays
+            // and messages.
+            if (value == null) {
+                // No cloning required.
+            } else if (value instanceof MessageNano) {
+                clone.value = ((MessageNano) value).clone();
+            } else if (value instanceof byte[]) {
+                clone.value = ((byte[]) value).clone();
+            } else if (value instanceof byte[][]) {
+                byte[][] valueArray = (byte[][]) value;
+                byte[][] cloneArray = new byte[valueArray.length][];
+                clone.value = cloneArray;
+                for (int i = 0; i < valueArray.length; i++) {
+                    cloneArray[i] = valueArray[i].clone();
+                }
+            } else if (value instanceof boolean[]) {
+                clone.value = ((boolean[]) value).clone();
+            } else if (value instanceof int[]) {
+                clone.value = ((int[]) value).clone();
+            } else if (value instanceof long[]) {
+                clone.value = ((long[]) value).clone();
+            } else if (value instanceof float[]) {
+                clone.value = ((float[]) value).clone();
+            } else if (value instanceof double[]) {
+                clone.value = ((double[]) value).clone();
+            } else if (value instanceof MessageNano[]) {
+                MessageNano[] valueArray = (MessageNano[]) value;
+                MessageNano[] cloneArray = new MessageNano[valueArray.length];
+                clone.value = cloneArray;
+                for (int i = 0; i < valueArray.length; i++) {
+                    cloneArray[i] = valueArray[i].clone();
+                }
+            }
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
+    }
 }

@@ -16,6 +16,7 @@ enum AnEnum {
 message AnotherMessage {
   optional string string = 1;
   optional bool value = 2;
+  repeated int32 integers = 3;
 }
 
 message ContainerMessage {

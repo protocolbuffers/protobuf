@@ -184,4 +184,11 @@ public abstract class ExtendableMessageNano<M extends ExtendableMessageNano<M>>
         return (unknownFieldData == null || unknownFieldData.isEmpty()
                 ? 0 : unknownFieldData.hashCode());
     }
+
+    @Override
+    public M clone() throws CloneNotSupportedException {
+        M cloned = (M) super.clone();
+        InternalNano.cloneUnknownFieldData(this, cloned);
+        return cloned;
+    }
 }
