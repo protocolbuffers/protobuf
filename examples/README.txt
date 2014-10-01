@@ -22,7 +22,7 @@ All of these programs simply take an address book file as their parameter.
 The add_person programs will create the file if it doesn't already exist.
 
 These examples are part of the Protocol Buffers tutorial, located at:
-  http://code.google.com/apis/protocolbuffers/docs/tutorials.html
+  https://developers.google.com/protocol-buffers/docs/tutorials
 
 * Note that on some platforms you may have to edit the Makefile and remove
 "-lpthread" from the linker commands (perhaps replacing it with something else).

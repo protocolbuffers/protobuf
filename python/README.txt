@@ -6,7 +6,7 @@ This directory contains the Python Protocol Buffers runtime library.
 Normally, this directory comes as part of the protobuf package, available
 from:
 
-  http://code.google.com/p/protobuf
+  https://developers.google.com/protocol-buffers/
 
 The complete package includes the C++ source code, which includes the
 Protocol Compiler (protoc).  If you downloaded this package from PyPI
@@ -79,7 +79,7 @@ Usage
 The complete documentation for Protocol Buffers is available via the
 web at:
 
-  http://code.google.com/apis/protocolbuffers/
+  https://developers.google.com/protocol-buffers/
 
 C++ Implementation
 ==================

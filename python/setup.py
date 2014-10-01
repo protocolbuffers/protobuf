@@ -190,7 +190,7 @@ if __name__ == '__main__':
         install_requires = ['setuptools'],
         setup_requires = ['google-apputils'],
         ext_modules = ext_module_list,
-        url = 'http://code.google.com/p/protobuf/',
+        url = 'https://developers.google.com/protocol-buffers/',
         maintainer = maintainer_email,
         maintainer_email = 'protobuf@googlegroups.com',
         license = 'New BSD License',
