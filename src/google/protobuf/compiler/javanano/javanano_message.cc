@@ -245,16 +245,20 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "        _classInitialized = true;\n"
       "      }\n"
       "    }\n"
-      "  }\n"
-      "  clear();\n"
-      "}\n");
+      "  }\n");
+    if (params_.generate_clear()) {
+      printer->Print("  clear();\n");
+    }
+    printer->Print("}\n");
   } else {
-    printer->Print(
-      "\n"
-      "public $classname$() {\n"
-      "  clear();\n"
-      "}\n",
-      "classname", descriptor_->name());
+    if (params_.generate_clear()) {
+      printer->Print(
+        "\n"
+        "public $classname$() {\n"
+        "  clear();\n"
+        "}\n",
+        "classname", descriptor_->name());
+    }
   }
 
   // Other methods in this class
@@ -440,6 +444,9 @@ void MessageGenerator::GenerateSerializeOneField(
 }
 
 void MessageGenerator::GenerateClear(io::Printer* printer) {
+  if (!params_.generate_clear()) {
+    return;
+  }
   printer->Print(
     "\n"
     "public $classname$ clear() {\n",
