@@ -30,6 +30,7 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
 
@@ -306,5 +307,20 @@ public class DynamicMessageTest extends TestCase {
     assertSame(null, builder.getOneofFieldDescriptor(oneof));
     message = builder.build();
     assertSame(null, message.getOneofFieldDescriptor(oneof));
+  }
+
+  // Regression test for a bug that makes setField() not work for repeated
+  // enum fields.
+  public void testSettersForRepeatedEnumField() throws Exception {
+    DynamicMessage.Builder builder =
+        DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    FieldDescriptor repeatedEnumField =
+        TestAllTypes.getDescriptor().findFieldByName(
+            "repeated_nested_enum");
+    EnumDescriptor enumDescriptor = TestAllTypes.NestedEnum.getDescriptor();
+    builder.setField(repeatedEnumField, enumDescriptor.getValues());
+    DynamicMessage message = builder.build();
+    assertEquals(
+        enumDescriptor.getValues(), message.getField(repeatedEnumField));
   }
 }

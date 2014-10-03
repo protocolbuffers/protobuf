@@ -38,6 +38,7 @@ import com.google.protobuf.Descriptors.OneofDescriptor;
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -483,8 +484,13 @@ public final class DynamicMessage extends AbstractMessage {
     public Builder setField(FieldDescriptor field, Object value) {
       verifyContainingType(field);
       ensureIsMutable();
+      // TODO(xiaofeng): This check should really be put in FieldSet.setField()
+      // where all other such checks are done. However, currently
+      // FieldSet.setField() permits Integer value for enum fields probably
+      // because of some internal features we support. Should figure it out
+      // and move this check to a more appropriate place.
       if (field.getType() == FieldDescriptor.Type.ENUM) {
-        verifyEnumType(field, value);
+        ensureEnumValueDescriptor(field, value);
       }
       OneofDescriptor oneofDescriptor = field.getContainingOneof();
       if (oneofDescriptor != null) {
@@ -572,8 +578,9 @@ public final class DynamicMessage extends AbstractMessage {
       }
     }
 
-    /** Verifies that the value is EnumValueDescriptor and matchs Enum Type. */
-    private void verifyEnumType(FieldDescriptor field, Object value) {
+    /** Verifies that the value is EnumValueDescriptor and matches Enum Type. */
+    private void ensureSingularEnumValueDescriptor(
+        FieldDescriptor field, Object value) {
       if (value == null) {
         throw new NullPointerException();
       }
@@ -584,6 +591,18 @@ public final class DynamicMessage extends AbstractMessage {
       if (field.getEnumType() != ((EnumValueDescriptor) value).getType()) {
         throw new IllegalArgumentException(
           "EnumValueDescriptor doesn't much Enum Field.");
+      }
+    }
+
+    /** Verifies the value for an enum field. */
+    private void ensureEnumValueDescriptor(
+        FieldDescriptor field, Object value) {
+      if (field.isRepeated()) {
+        for (Object item : (List) value) {
+          ensureSingularEnumValueDescriptor(field, item);
+        }
+      } else {
+         ensureSingularEnumValueDescriptor(field, value);
       }
     }
 
