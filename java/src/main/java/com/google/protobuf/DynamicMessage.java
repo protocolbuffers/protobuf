@@ -490,7 +490,7 @@ public final class DynamicMessage extends AbstractMessage {
       // because of some internal features we support. Should figure it out
       // and move this check to a more appropriate place.
       if (field.getType() == FieldDescriptor.Type.ENUM) {
-        verifyEnumValue(field, value);
+        ensureEnumValueDescriptor(field, value);
       }
       OneofDescriptor oneofDescriptor = field.getContainingOneof();
       if (oneofDescriptor != null) {
@@ -578,8 +578,9 @@ public final class DynamicMessage extends AbstractMessage {
       }
     }
 
-    /** Verifies that the value is EnumValueDescriptor and matchs Enum Type. */
-    private void verifySingleEnumValue(FieldDescriptor field, Object value) {
+    /** Verifies that the value is EnumValueDescriptor and matches Enum Type. */
+    private void ensureSingularEnumValueDescriptor(
+        FieldDescriptor field, Object value) {
       if (value == null) {
         throw new NullPointerException();
       }
@@ -594,13 +595,14 @@ public final class DynamicMessage extends AbstractMessage {
     }
 
     /** Verifies the value for an enum field. */
-    private void verifyEnumValue(FieldDescriptor field, Object value) {
+    private void ensureEnumValueDescriptor(
+        FieldDescriptor field, Object value) {
       if (field.isRepeated()) {
         for (Object item : (List) value) {
-          verifySingleEnumValue(field, item);
+          ensureSingularEnumValueDescriptor(field, item);
         }
       } else {
-         verifySingleEnumValue(field, value);
+         ensureSingularEnumValueDescriptor(field, value);
       }
     }
 
