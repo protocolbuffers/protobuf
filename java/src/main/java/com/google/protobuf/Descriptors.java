@@ -1103,13 +1103,6 @@ public final class Descriptors {
           "Field numbers must be positive integers.");
       }
 
-      // Only repeated primitive fields may be packed.
-      if (proto.getOptions().getPacked() && !isPackable()) {
-        throw new DescriptorValidationException(this,
-          "[packed = true] can only be specified for repeated primitive " +
-          "fields.");
-      }
-
       if (isExtension) {
         if (!proto.hasExtendee()) {
           throw new DescriptorValidationException(this,
@@ -1216,6 +1209,13 @@ public final class Descriptors {
           throw new DescriptorValidationException(this,
             "Field with message or enum type missing type_name.");
         }
+      }
+
+      // Only repeated primitive fields may be packed.
+      if (proto.getOptions().getPacked() && !isPackable()) {
+        throw new DescriptorValidationException(this,
+          "[packed = true] can only be specified for repeated primitive " +
+          "fields.");
       }
 
       // We don't attempt to parse the default value until here because for
