@@ -138,7 +138,7 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
   bool ParseFromZeroCopyStream(io::ZeroCopyInputStream* input);
   bool ParseFromArray(const void* data, int size);
   inline bool ParseFromString(const string& data) {
-    return ParseFromArray(data.data(), data.size());
+    return ParseFromArray(data.data(), static_cast<int>(data.size()));
   }
 
  private:
@@ -236,7 +236,7 @@ inline void UnknownFieldSet::Swap(UnknownFieldSet* x) {
 }
 
 inline int UnknownFieldSet::field_count() const {
-  return (fields_ == NULL) ? 0 : fields_->size();
+  return (fields_ == NULL) ? 0 : static_cast<int>(fields_->size());
 }
 inline const UnknownField& UnknownFieldSet::field(int index) const {
   return (*fields_)[index];
@@ -304,7 +304,7 @@ inline UnknownFieldSet* UnknownField::mutable_group() {
 
 inline int UnknownField::GetLengthDelimitedSize() const {
   GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
-  return length_delimited_.string_value_->size();
+  return static_cast<int>(length_delimited_.string_value_->size());
 }
 
 inline void UnknownField::SetType(Type type) {
