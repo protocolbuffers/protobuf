@@ -140,7 +140,7 @@ void ExtensionGenerator::Generate(io::Printer* printer) const {
     "        com.google.protobuf.nano.Extension.create$repeated$$ext_type$(\n"
     "            com.google.protobuf.nano.Extension.$type$,\n"
     "            $class$.class,\n"
-    "            $tag_params$);\n");
+    "            $tag_params$L);\n");
 }
 
 }  // namespace javanano

@@ -21,6 +21,9 @@ message AnotherMessage {
 message ContainerMessage {
   extend ExtendableMessage {
     optional bool another_thing = 100;
+    // The largest permitted field number, per
+    // https://developers.google.com/protocol-buffers/docs/proto#simple
+    optional bool large_field_number = 536870911;
   }
 }
 
