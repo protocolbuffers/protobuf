@@ -634,7 +634,12 @@ class MessageTest(basetest.TestCase):
     self.assertTrue(m.HasField('oneof_uint32'))
     self.assertEqual('oneof_uint32', m.WhichOneof('oneof_field'))
 
-
+  def testOneofDeserialize(self):
+    m = unittest_pb2.TestAllTypes()
+    m.oneof_uint32 = 11
+    m2 = unittest_pb2.TestAllTypes()
+    m2.ParseFromString(m.SerializeToString())
+    self.assertEqual('oneof_uint32', m2.WhichOneof('oneof_field'))
 
   def testSortEmptyRepeatedCompositeContainer(self):
     """Exercise a scenario that has led to segfaults in the past.

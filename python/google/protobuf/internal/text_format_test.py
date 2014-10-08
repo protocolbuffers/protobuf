@@ -587,6 +587,13 @@ class TextFormatTest(basetest.TestCase):
     test_util.SetAllFields(message)
     self.assertEqual(message, parsed_message)
 
+  def testParseOneof(self):
+    m = unittest_pb2.TestAllTypes()
+    m.oneof_uint32 = 11
+    m2 = unittest_pb2.TestAllTypes()
+    text_format.Parse(text_format.MessageToString(m), m2)
+    self.assertEqual('oneof_uint32', m2.WhichOneof('oneof_field'))
+
 
 class TokenizerTest(basetest.TestCase):
 
