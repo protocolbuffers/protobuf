@@ -1622,6 +1622,9 @@ struct StaticDefaultRepeatedFieldsInitializer {
   StaticDefaultRepeatedFieldsInitializer() {
     InitializeDefaultRepeatedFields();
   }
+  ~StaticDefaultRepeatedFieldsInitializer() {
+    DestroyDefaultRepeatedFields();
+  }
 } static_repeated_fields_initializer;
 
 void InitializeDefaultRepeatedFields() {
@@ -1643,6 +1646,18 @@ void InitializeDefaultRepeatedFields() {
       new RepeatedField<float>;
   RepeatedPrimitiveGenericTypeTraits::default_repeated_field_bool_ =
       new RepeatedField<bool>;
+}
+
+void DestroyDefaultRepeatedFields() {
+  delete RepeatedStringTypeTraits::default_repeated_field_;
+  delete RepeatedMessageGenericTypeTraits::default_repeated_field_;
+  delete RepeatedPrimitiveGenericTypeTraits::default_repeated_field_int32_;
+  delete RepeatedPrimitiveGenericTypeTraits::default_repeated_field_int64_;
+  delete RepeatedPrimitiveGenericTypeTraits::default_repeated_field_uint32_;
+  delete RepeatedPrimitiveGenericTypeTraits::default_repeated_field_uint64_;
+  delete RepeatedPrimitiveGenericTypeTraits::default_repeated_field_double_;
+  delete RepeatedPrimitiveGenericTypeTraits::default_repeated_field_float_;
+  delete RepeatedPrimitiveGenericTypeTraits::default_repeated_field_bool_;
 }
 
 }  // namespace internal
