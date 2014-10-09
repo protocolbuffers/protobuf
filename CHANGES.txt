@@ -1,3 +1,20 @@
+2014-10-09 version 2.6.1rc1:
+
+  C++
+  * Added atomicops support for Solaris.
+  * Released memory allocated by InitializeDefaultRepeatedFields() and
+    GetEmptyString(). Some memory sanitizers reported them as memory leaks.
+
+  Java
+  * Updated DynamicMessage.setField() to handle repeated enum values
+    correctly.
+  * Fixed a bug that caused NullPointerException to be thrown when
+    converting manually constructed FileDescriptorProto to
+    FileDescriptor.
+
+  Python
+  * Fixed a missing file problem of Python C++ implementation.
+
 2014-08-15 version 2.6.0:
 
   General
