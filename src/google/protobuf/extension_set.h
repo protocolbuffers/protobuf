@@ -704,11 +704,13 @@ class RepeatedPrimitiveTypeTraits {
 
 // Declared here so that this can be friended below.
 void InitializeDefaultRepeatedFields();
+void DestroyDefaultRepeatedFields();
 
 class LIBPROTOBUF_EXPORT RepeatedPrimitiveGenericTypeTraits {
  private:
   template<typename Type> friend class RepeatedPrimitiveTypeTraits;
   friend void InitializeDefaultRepeatedFields();
+  friend void DestroyDefaultRepeatedFields();
   static const RepeatedField<int32>* default_repeated_field_int32_;
   static const RepeatedField<int64>* default_repeated_field_int64_;
   static const RepeatedField<uint32>* default_repeated_field_uint32_;
@@ -844,6 +846,7 @@ class LIBPROTOBUF_EXPORT RepeatedStringTypeTraits {
 
  private:
   friend void InitializeDefaultRepeatedFields();
+  friend void DestroyDefaultRepeatedFields();
   static const RepeatedFieldType *default_repeated_field_;
 };
 
@@ -1010,6 +1013,7 @@ class LIBPROTOBUF_EXPORT RepeatedMessageGenericTypeTraits {
  private:
   template<typename Type> friend class RepeatedMessageTypeTraits;
   friend void InitializeDefaultRepeatedFields();
+  friend void DestroyDefaultRepeatedFields();
   static const RepeatedFieldType* default_repeated_field_;
 };
 
