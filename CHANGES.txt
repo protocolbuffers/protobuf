@@ -13,6 +13,7 @@
     FileDescriptor.
 
   Python
+  * Fixed WhichOneof() to work with de-serialized protobuf messages.
   * Fixed a missing file problem of Python C++ implementation.
 
 2014-08-15 version 2.6.0:
