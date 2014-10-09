@@ -239,9 +239,9 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   // that file to use these.
 
 // Avoid ugly line wrapping
-#define input  io::CodedInputStream*  input
-#define output io::CodedOutputStream* output
-#define field_number int field_number
+#define input  io::CodedInputStream*  input_arg
+#define output io::CodedOutputStream* output_arg
+#define field_number int field_number_arg
 #define INL GOOGLE_ATTRIBUTE_ALWAYS_INLINE
 
   // Read fields, not including tags.  The assumption is that you already
