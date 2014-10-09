@@ -36,7 +36,6 @@
 
 #include <limits>
 
-
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -51,8 +50,13 @@ double NaN() {
 const ::std::string* empty_string_;
 GOOGLE_PROTOBUF_DECLARE_ONCE(empty_string_once_init_);
 
+void DeleteEmptyString() {
+  delete empty_string_;
+}
+
 void InitEmptyString() {
   empty_string_ = new string;
+  OnShutdown(&DeleteEmptyString);
 }
 
 
