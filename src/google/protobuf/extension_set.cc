@@ -1621,9 +1621,7 @@ PROTOBUF_DEFINE_DEFAULT_REPEATED(bool)
 struct StaticDefaultRepeatedFieldsInitializer {
   StaticDefaultRepeatedFieldsInitializer() {
     InitializeDefaultRepeatedFields();
-  }
-  ~StaticDefaultRepeatedFieldsInitializer() {
-    DestroyDefaultRepeatedFields();
+    OnShutdown(&DestroyDefaultRepeatedFields);
   }
 } static_repeated_fields_initializer;
 
