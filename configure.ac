@@ -139,8 +139,14 @@ AM_CONDITIONAL([USE_EXTERNAL_PROTOC], [test "$with_protoc" != "no"])
 ACX_PTHREAD
 AC_CXX_STL_HASH
 
-# Need to link against rt on Solaris
-AC_SEARCH_LIBS([sched_yield], [rt], [], [AC_MSG_FAILURE([sched_yield was not found on your system])])
+case "$target_os" in
+  mingw* | cygwin* | win*)
+    ;;
+  *)
+    # Need to link against rt on Solaris
+    AC_SEARCH_LIBS([sched_yield], [rt], [], [AC_MSG_FAILURE([sched_yield was not found on your system])])
+    ;;
+esac
 
 # HACK:  Make gtest's configure script pick up our copy of CFLAGS and CXXFLAGS,
 #   since the flags added by ACX_CHECK_SUNCC must be used when compiling gtest
