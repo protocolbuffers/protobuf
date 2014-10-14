@@ -20,7 +20,12 @@ except ImportError:
         "ez_setup installed.\n")
     raise
 from distutils.command.clean import clean as _clean
-from distutils.command.build_py import build_py as _build_py
+if sys.version_info[0] >= 3:
+    # Python 3
+    from distutils.command.build_py import build_py_2to3 as _build_py
+else:
+    # Python 2
+    from distutils.command.build_py import build_py as _build_py
 from distutils.spawn import find_executable
 
 maintainer_email = "protobuf@googlegroups.com"
