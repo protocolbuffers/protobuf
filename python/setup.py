@@ -194,7 +194,11 @@ if __name__ == '__main__':
           'google.protobuf.text_format'],
         cmdclass = { 'clean': clean, 'build_py': build_py },
         install_requires = ['setuptools'],
-        setup_requires = ['google-apputils'],
+        # TODO: Restore dependency once a Python 3 compatible google-apputils
+        # is released.
+        setup_requires = (['google-apputils']
+                          if sys.version_info[0] < 3 else
+                          []),
         ext_modules = ext_module_list,
         url = 'https://developers.google.com/protocol-buffers/',
         maintainer = maintainer_email,
