@@ -137,7 +137,7 @@ COMPILER_SRC_FILES :=  \
 # =======================================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libprotobuf-java-2.3.0-nano
+LOCAL_MODULE := libprotobuf-java-nano
 LOCAL_MODULE_TAGS := optional
 LOCAL_SDK_VERSION := 8
 
@@ -150,7 +150,7 @@ include $(BUILD_STATIC_JAVA_LIBRARY)
 # =======================================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := host-libprotobuf-java-2.3.0-nano
+LOCAL_MODULE := host-libprotobuf-java-nano
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SRC_FILES := $(call all-java-files-under, java/src/main/java/com/google/protobuf/nano)
@@ -161,7 +161,7 @@ include $(BUILD_HOST_JAVA_LIBRARY)
 # =======================================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libprotobuf-java-2.3.0-micro
+LOCAL_MODULE := libprotobuf-java-micro
 LOCAL_MODULE_TAGS := optional
 LOCAL_SDK_VERSION := 8
 
@@ -173,7 +173,7 @@ include $(BUILD_STATIC_JAVA_LIBRARY)
 # =======================================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := host-libprotobuf-java-2.3.0-micro
+LOCAL_MODULE := host-libprotobuf-java-micro
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SRC_FILES := $(call all-java-files-under, java/src/main/java/com/google/protobuf/micro)
@@ -184,7 +184,7 @@ include $(BUILD_HOST_JAVA_LIBRARY)
 # =======================================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libprotobuf-java-2.3.0-lite
+LOCAL_MODULE := libprotobuf-java-lite
 LOCAL_MODULE_TAGS := optional
 LOCAL_SDK_VERSION := 8
 
@@ -196,7 +196,7 @@ include $(BUILD_STATIC_JAVA_LIBRARY)
 # =======================================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := host-libprotobuf-java-2.3.0-lite
+LOCAL_MODULE := host-libprotobuf-java-lite
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SRC_FILES := $(JAVA_LITE_SRC_FILES)
@@ -207,7 +207,7 @@ include $(BUILD_HOST_JAVA_LIBRARY)
 # =======================================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libprotobuf-cpp-2.3.0-lite
+LOCAL_MODULE := libprotobuf-cpp-lite
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_CPP_EXTENSION := .cc
@@ -275,7 +275,7 @@ protobuf_cc_full_src_files := \
 # =======================================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libprotobuf-cpp-2.3.0-full
+LOCAL_MODULE := libprotobuf-cpp-full
 LOCAL_MODULE_TAGS := optional
 LOCAL_CPP_EXTENSION := .cc
 LOCAL_SRC_FILES := $(protobuf_cc_full_src_files)
@@ -313,7 +313,7 @@ include $(BUILD_STATIC_LIBRARY)
 # =======================================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libprotobuf-cpp-2.3.0-full-gnustl-rtti
+LOCAL_MODULE := libprotobuf-cpp-full-gnustl-rtti
 LOCAL_MODULE_TAGS := optional
 LOCAL_CPP_EXTENSION := .cc
 LOCAL_SRC_FILES := $(protobuf_cc_full_src_files)
@@ -437,10 +437,13 @@ LOCAL_SRC_FILES := $(call all-java-files-under, java/src/device/test/java/com/go
 
 LOCAL_MANIFEST_FILE := java/src/device/test/AndroidManifest.xml
 
-LOCAL_STATIC_JAVA_LIBRARIES := libprotobuf-java-2.3.0-nano \
+LOCAL_STATIC_JAVA_LIBRARIES := libprotobuf-java-nano \
         android-nano-test-parcelable \
         android-nano-test-parcelable-extendable
 
 LOCAL_DEX_PREOPT := false
 
 include $(BUILD_PACKAGE)
+
+# 2.3.0 prebuilts for backwards compatibility.
+include $(LOCAL_PATH)/prebuilts/Android.mk
