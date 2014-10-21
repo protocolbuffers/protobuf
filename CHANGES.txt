@@ -1,4 +1,4 @@
-2014-10-09 version 2.6.1rc1:
+2014-10-20 version 2.6.1:
 
   C++
   * Added atomicops support for Solaris.
