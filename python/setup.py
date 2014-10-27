@@ -172,6 +172,7 @@ if __name__ == '__main__':
           'google.protobuf.internal.message_listener',
           'google.protobuf.internal.python_message',
           'google.protobuf.internal.type_checkers',
+          'google.protobuf.internal.utils',
           'google.protobuf.internal.wire_format',
           'google.protobuf.descriptor',
           'google.protobuf.descriptor_pb2',
