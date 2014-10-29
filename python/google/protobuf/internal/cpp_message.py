@@ -39,7 +39,21 @@ import operator
 from google.protobuf.internal import _net_proto2___python
 from google.protobuf.internal import enum_type_wrapper
 from google.protobuf import message
+from google.protobuf.internal.utils import bytestr_to_string, iteritems, PY2
 
+if PY2:
+  import copy_reg
+  def is_sequence(other):
+    return operator.isSequenceType(other)
+  def copy_reg_pickle(type, function):
+    return copy_reg.pickle(type,function)
+else:
+  import collections
+  import copyreg
+  def is_sequence(other):
+    return isinstance(other, collections.Sequence)
+  def copy_reg_pickle(type, function):
+    return copyreg.pickle(type,function)
 
 _LABEL_REPEATED = _net_proto2___python.LABEL_REPEATED
 _LABEL_OPTIONAL = _net_proto2___python.LABEL_OPTIONAL
@@ -146,7 +160,7 @@ class RepeatedScalarContainer(object):
   def __eq__(self, other):
     if self is other:
       return True
-    if not operator.isSequenceType(other):
+    if not is_sequence(other):
       raise TypeError(
           'Can only compare repeated scalar fields against sequences.')
     # We are presumably comparing against some other sequence type.
@@ -385,7 +399,7 @@ def InitMessage(message_descriptor, cls):
   _AddInitMethod(message_descriptor, cls)
   _AddMessageMethods(message_descriptor, cls)
   _AddPropertiesForExtensions(message_descriptor, cls)
-  copy_reg.pickle(cls, lambda obj: (cls, (), obj.__getstate__()))
+  copy_reg_pickle(cls, lambda obj: (cls, (), obj.__getstate__()))
 
 
 def _AddDescriptors(message_descriptor, dictionary):
@@ -610,7 +624,10 @@ def _AddMessageMethods(message_descriptor, cls):
     return self._cmsg.FindInitializationErrors()
 
   def __str__(self):
-    return str(self._cmsg)
+    if PY2:
+      return str(self._cmsg)
+    else:
+      return bytestr_to_string(self._cmsg)
 
   def __eq__(self, other):
     if self is other:
@@ -628,10 +645,10 @@ def _AddMessageMethods(message_descriptor, cls):
   def __unicode__(self):
     # Lazy import to prevent circular import when text_format imports this file.
     from google.protobuf import text_format
-    return text_format.MessageToString(self, as_utf8=True).decode('utf-8')
+    return bytestr_to_string(text_format.MessageToString(self, as_utf8=True))
 
   # Attach the local methods to the message class.
-  for key, value in locals().copy().iteritems():
+  for key, value in iteritems(locals().copy()):
     if key not in ('key', 'value', '__builtins__', '__name__', '__doc__'):
       setattr(cls, key, value)
 
@@ -658,6 +675,6 @@ def _AddMessageMethods(message_descriptor, cls):
 def _AddPropertiesForExtensions(message_descriptor, cls):
   """Adds properties for all fields in this protocol message type."""
   extension_dict = message_descriptor.extensions_by_name
-  for extension_name, extension_field in extension_dict.iteritems():
+  for extension_name, extension_field in iteritems(extension_dict):
     constant_name = extension_name.upper() + '_FIELD_NUMBER'
     setattr(cls, constant_name, extension_field.number)
