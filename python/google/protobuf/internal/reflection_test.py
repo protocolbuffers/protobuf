@@ -41,6 +41,7 @@ import copy
 import gc
 import operator
 import struct
+import sys
 
 from google.apputils import basetest
 from google.protobuf import unittest_import_pb2
@@ -57,6 +58,7 @@ from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import wire_format
 from google.protobuf.internal import test_util
 from google.protobuf.internal import decoder
+from google.protobuf.internal.utils import string_to_bytestr, unichr, range, unicode, b, u
 
 
 class _MiniDecoder(object):
@@ -91,12 +93,14 @@ class _MiniDecoder(object):
     return wire_format.UnpackTag(self.ReadVarint())
 
   def ReadFloat(self):
-    result = struct.unpack("<f", self._bytes[self._pos:self._pos+4])[0]
+    float_bytes = self._bytes[self._pos:self._pos+4]
+    result = struct.unpack("<f", float_bytes)[0]
     self._pos += 4
     return result
 
   def ReadDouble(self):
-    result = struct.unpack("<d", self._bytes[self._pos:self._pos+8])[0]
+    double_bytes = self._bytes[self._pos:self._pos+8]
+    result = struct.unpack("<d", double_bytes)[0]
     self._pos += 8
     return result
 
@@ -469,7 +473,7 @@ class ReflectionTest(basetest.TestCase):
     proto.repeated_string.extend(['foo', 'bar'])
     proto.repeated_string.extend([])
     proto.repeated_string.append('baz')
-    proto.repeated_string.extend(str(x) for x in xrange(2))
+    proto.repeated_string.extend(unicode(x) for x in range(2))
     proto.optional_int32 = 21
     proto.repeated_bool  # Access but don't set anything; should not be listed.
     self.assertEqual(
@@ -535,7 +539,7 @@ class ReflectionTest(basetest.TestCase):
     self.assertEqual(0.0, proto.optional_double)
     self.assertEqual(False, proto.optional_bool)
     self.assertEqual('', proto.optional_string)
-    self.assertEqual(b'', proto.optional_bytes)
+    self.assertEqual(b(''), proto.optional_bytes)
 
     self.assertEqual(41, proto.default_int32)
     self.assertEqual(42, proto.default_int64)
@@ -551,14 +555,14 @@ class ReflectionTest(basetest.TestCase):
     self.assertEqual(52e3, proto.default_double)
     self.assertEqual(True, proto.default_bool)
     self.assertEqual('hello', proto.default_string)
-    self.assertEqual(b'world', proto.default_bytes)
+    self.assertEqual(b('world'), proto.default_bytes)
     self.assertEqual(unittest_pb2.TestAllTypes.BAR, proto.default_nested_enum)
     self.assertEqual(unittest_pb2.FOREIGN_BAR, proto.default_foreign_enum)
     self.assertEqual(unittest_import_pb2.IMPORT_BAR,
                      proto.default_import_enum)
 
     proto = unittest_pb2.TestExtremeDefaultValues()
-    self.assertEqual(u'\u1234', proto.utf8_string)
+    self.assertEqual(unichr(0x1234), proto.utf8_string)
 
   def testHasFieldWithUnknownFieldName(self):
     proto = unittest_pb2.TestAllTypes()
@@ -805,7 +809,7 @@ class ReflectionTest(basetest.TestCase):
     self.assertEqual([5, 25, 20, 15, 30], proto.repeated_int32[:])
 
     # Test slice assignment with an iterator
-    proto.repeated_int32[1:4] = (i for i in xrange(3))
+    proto.repeated_int32[1:4] = (i for i in range(3))
     self.assertEqual([5, 0, 1, 2, 30], proto.repeated_int32)
 
     # Test slice assignment.
@@ -1008,9 +1012,10 @@ class ReflectionTest(basetest.TestCase):
         containing_type=None, nested_types=[], enum_types=[],
         fields=[foo_field_descriptor], extensions=[],
         options=descriptor_pb2.MessageOptions())
-    class MyProtoClass(message.Message):
-      DESCRIPTOR = mydescriptor
-      __metaclass__ = reflection.GeneratedProtocolMessageType
+    #The first input has to be a string, and literals are unicode
+    MyProtoClass = reflection.GeneratedProtocolMessageType(str('MyProtoClass'),
+                                                           (message.Message,),
+                                                           {'DESCRIPTOR': mydescriptor})
     myproto_instance = MyProtoClass()
     self.assertEqual(0, myproto_instance.foo_field)
     self.assertTrue(not myproto_instance.HasField('foo_field'))
@@ -1050,15 +1055,13 @@ class ReflectionTest(basetest.TestCase):
     new_field.label = descriptor_pb2.FieldDescriptorProto.LABEL_REPEATED
 
     desc = descriptor.MakeDescriptor(desc_proto)
-    self.assertTrue(desc.fields_by_name.has_key('name'))
-    self.assertTrue(desc.fields_by_name.has_key('year'))
-    self.assertTrue(desc.fields_by_name.has_key('automatic'))
-    self.assertTrue(desc.fields_by_name.has_key('price'))
-    self.assertTrue(desc.fields_by_name.has_key('owners'))
+    self.assertTrue('name' in desc.fields_by_name)
+    self.assertTrue('year' in desc.fields_by_name)
+    self.assertTrue('automatic' in desc.fields_by_name)
+    self.assertTrue('price' in desc.fields_by_name)
+    self.assertTrue('owners' in desc.fields_by_name)
 
-    class CarMessage(message.Message):
-      __metaclass__ = reflection.GeneratedProtocolMessageType
-      DESCRIPTOR = desc
+    CarMessage=reflection.GeneratedProtocolMessageType(str('CarMessage'),(message.Message,),{'DESCRIPTOR':desc})
 
     prius = CarMessage()
     prius.name = 'prius'
@@ -1657,7 +1660,7 @@ class ReflectionTest(basetest.TestCase):
 
     # Assignment of a unicode object to a field of type 'bytes' is not allowed.
     self.assertRaises(TypeError,
-                      setattr, proto, 'optional_bytes', u'unicode object')
+                      setattr, proto, 'optional_bytes', u('unicode object'))
 
     # Check that the default value is of python's 'unicode' type.
     self.assertEqual(type(proto.optional_string), unicode)
@@ -1671,13 +1674,10 @@ class ReflectionTest(basetest.TestCase):
 
     # Try to assign a 'str' value which contains bytes that aren't 7-bit ASCII.
     self.assertRaises(ValueError,
-                      setattr, proto, 'optional_string', b'a\x80a')
-    if str is bytes:  # PY2
-      # Assign a 'str' object which contains a UTF-8 encoded string.
-      self.assertRaises(ValueError,
-                        setattr, proto, 'optional_string', 'Тест')
-    else:
-      proto.optional_string = 'Тест'
+                      setattr, proto, 'optional_string', b('a\x80a'))
+    # Assign a 'str' object which contains a UTF-8 encoded string.
+    self.assertRaises(ValueError,
+                      setattr, proto, 'optional_string', b('\xd0\xa2\xd0\xb5\xd1\x81\xd1\x82'))
     # No exception thrown.
     proto.optional_string = 'abc'
 
@@ -1686,7 +1686,7 @@ class ReflectionTest(basetest.TestCase):
     extension_message = unittest_mset_pb2.TestMessageSetExtension2
     extension = extension_message.message_set_extension
 
-    test_utf8 = u'Тест'
+    test_utf8 = u('Тест')
     test_utf8_bytes = test_utf8.encode('utf-8')
 
     # 'Test' in another language, using UTF-8 charset.
@@ -1726,7 +1726,7 @@ class ReflectionTest(basetest.TestCase):
     # The pure Python API always returns objects of type 'unicode' (UTF-8
     # encoded), or 'bytes' (in 7 bit ASCII).
     badbytes = raw.item[0].message.replace(
-        test_utf8_bytes, len(test_utf8_bytes) * b'\xff')
+        test_utf8_bytes, len(test_utf8_bytes) * b('\xff'))
 
     unicode_decode_failed = False
     try:
@@ -1737,8 +1737,8 @@ class ReflectionTest(basetest.TestCase):
     self.assertTrue(unicode_decode_failed or type(string_field) is bytes)
 
   def testBytesInTextFormat(self):
-    proto = unittest_pb2.TestAllTypes(optional_bytes=b'\x00\x7f\x80\xff')
-    self.assertEqual(u'optional_bytes: "\\000\\177\\200\\377"\n',
+    proto = unittest_pb2.TestAllTypes(optional_bytes=b('\x00\x7f\x80\xff'))
+    self.assertEqual(u('optional_bytes: "\\000\\177\\200\\377"\n'),
                      unicode(proto))
 
   def testEmptyNestedMessage(self):
@@ -1753,12 +1753,12 @@ class ReflectionTest(basetest.TestCase):
     self.assertTrue(proto.HasField('optional_nested_message'))
 
     proto = unittest_pb2.TestAllTypes()
-    bytes_read = proto.optional_nested_message.MergeFromString(b'')
+    bytes_read = proto.optional_nested_message.MergeFromString(b(''))
     self.assertEqual(0, bytes_read)
     self.assertTrue(proto.HasField('optional_nested_message'))
 
     proto = unittest_pb2.TestAllTypes()
-    proto.optional_nested_message.ParseFromString(b'')
+    proto.optional_nested_message.ParseFromString('')
     self.assertTrue(proto.HasField('optional_nested_message'))
 
     serialized = proto.SerializeToString()
@@ -1957,7 +1957,7 @@ class ByteSizeTest(basetest.TestCase):
       self.assertEqual(expected_varint_size + 1, self.Size())
     Test(0, 1)
     Test(1, 1)
-    for i, num_bytes in zip(range(7, 63, 7), range(1, 10000)):
+    for i, num_bytes in zip(list(range(7, 63, 7)), list(range(1, 10000))):
       Test((1 << i) - 1, num_bytes)
     Test(-1, 10)
     Test(-2, 10)
@@ -2289,7 +2289,7 @@ class SerializationTest(basetest.TestCase):
     test_util.SetAllFields(first_proto)
     serialized = first_proto.SerializeToString()
 
-    for truncation_point in xrange(len(serialized) + 1):
+    for truncation_point in range(len(serialized) + 1):
       try:
         second_proto = unittest_pb2.TestAllTypes()
         unknown_fields = unittest_pb2.TestEmptyMessage()
@@ -2479,10 +2479,11 @@ class SerializationTest(basetest.TestCase):
         proto2.MergeFromString(serialized))
 
   def _CheckRaises(self, exc_class, callable_obj, exception):
-    """This method checks if the excpetion type and message are as expected."""
+    """This method checks if the exception type and message are as expected."""
     try:
       callable_obj()
-    except exc_class as ex:
+    except exc_class:
+      _, ex, _ = sys.exc_info()
       # Check if the exception message is the right one.
       self.assertEqual(exception, str(ex))
       return
@@ -2705,7 +2706,7 @@ class SerializationTest(basetest.TestCase):
         optional_int32=1,
         optional_string='foo',
         optional_bool=True,
-        optional_bytes=b'bar',
+        optional_bytes=b('bar'),
         optional_nested_message=unittest_pb2.TestAllTypes.NestedMessage(bb=1),
         optional_foreign_message=unittest_pb2.ForeignMessage(c=1),
         optional_nested_enum=unittest_pb2.TestAllTypes.FOO,
@@ -2723,7 +2724,7 @@ class SerializationTest(basetest.TestCase):
     self.assertEqual(1, proto.optional_int32)
     self.assertEqual('foo', proto.optional_string)
     self.assertEqual(True, proto.optional_bool)
-    self.assertEqual(b'bar', proto.optional_bytes)
+    self.assertEqual(b('bar'), proto.optional_bytes)
     self.assertEqual(1, proto.optional_nested_message.bb)
     self.assertEqual(1, proto.optional_foreign_message.c)
     self.assertEqual(unittest_pb2.TestAllTypes.FOO,
