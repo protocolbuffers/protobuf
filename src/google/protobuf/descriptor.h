@@ -1280,11 +1280,11 @@ class LIBPROTOBUF_EXPORT DescriptorPool {
     // Reports a warning in the FileDescriptorProto. Use this function if the
     // problem occured should NOT interrupt building the FileDescriptorProto.
     virtual void AddWarning(
-      const string& filename,      // File name in which the error occurred.
-      const string& element_name,  // Full name of the erroneous element.
-      const Message* descriptor,   // Descriptor of the erroneous element.
-      ErrorLocation location,      // One of the location constants, above.
-      const string& message        // Human-readable error message.
+      const string& /*filename*/,      // File name in which the error occurred.
+      const string& /*element_name*/,  // Full name of the erroneous element.
+      const Message* /*descriptor*/,   // Descriptor of the erroneous element.
+      ErrorLocation /*location*/,      // One of the location constants, above.
+      const string& /*message*/        // Human-readable error message.
       ) {}
 
    private:
