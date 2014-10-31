@@ -91,3 +91,6 @@ Patch contributors:
   William Orr <will@worrbase.com>
     * Fixed detection of sched_yield on Solaris.
     * Added atomicops for Solaris
+  Andrew Paprocki <andrew@ishiboo.com>
+    * Fixed minor IBM xlC compiler build issues
+    * Added atomicops for AIX (POWER)

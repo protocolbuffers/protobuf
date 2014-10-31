@@ -127,6 +127,14 @@ For advanced usage information on configure and make, see INSTALL.txt.
 
   Also, you will need to use gmake instead of make.
 
+**Note for AIX users**
+
+  Compile using the IBM xlC C++ compiler as follows:
+
+    ./configure CXX=xlC
+
+  Also, you will need to use GNU `make` (`gmake`) instead of AIX `make`.
+
 C++ Installation - Windows
 --------------------------
 
