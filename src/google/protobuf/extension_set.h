@@ -182,7 +182,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   // is useful to implement Reflection::ListFields().
   void AppendToList(const Descriptor* containing_type,
                     const DescriptorPool* pool,
-                    vector<const FieldDescriptor*>* output) const;
+                    std::vector<const FieldDescriptor*>* output) const;
 
   // =================================================================
   // Accessors
