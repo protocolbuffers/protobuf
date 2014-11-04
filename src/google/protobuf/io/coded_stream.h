@@ -49,7 +49,7 @@
 //   // to identify the file type, then write a length-delimited string.  The
 //   // string is composed of a varint giving the length followed by the raw
 //   // bytes.
-//   int fd = open("myfile", O_WRONLY);
+//   int fd = open("myfile", O_CREAT | O_WRONLY);
 //   ZeroCopyOutputStream* raw_output = new FileOutputStream(fd);
 //   CodedOutputStream* coded_output = new CodedOutputStream(raw_output);
 //
