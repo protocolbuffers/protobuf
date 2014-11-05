@@ -83,7 +83,8 @@ inline int CalculateReserve(Iter begin, Iter end, std::forward_iterator_tag) {
 }
 
 template <typename Iter>
-inline int CalculateReserve(Iter begin, Iter end, std::input_iterator_tag) {
+inline int CalculateReserve(Iter /*begin*/, Iter /*end*/,
+                            std::input_iterator_tag) {
   return -1;
 }
 

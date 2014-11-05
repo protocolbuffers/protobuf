@@ -389,19 +389,19 @@ class LIBPROTOBUF_EXPORT Reflection {
   // is set, false otherwise.
   // TODO(jieluo) - make it pure virtual after updating all
   // the subclasses.
-  virtual bool HasOneof(const Message& message,
-                        const OneofDescriptor* oneof_descriptor) const {
+  virtual bool HasOneof(const Message& /*message*/,
+                        const OneofDescriptor* /*oneof_descriptor*/) const {
     return false;
   }
 
-  virtual void ClearOneof(Message* message,
-                          const OneofDescriptor* oneof_descriptor) const {}
+  virtual void ClearOneof(Message* /*message*/,
+                          const OneofDescriptor* /*oneof_descriptor*/) const {}
 
   // Returns the field descriptor if the oneof is set. NULL otherwise.
   // TODO(jieluo) - make it pure virtual.
   virtual const FieldDescriptor* GetOneofFieldDescriptor(
-      const Message& message,
-      const OneofDescriptor* oneof_descriptor) const {
+      const Message& /*message*/,
+      const OneofDescriptor* /*oneof_descriptor*/) const {
     return NULL;
   }
 
