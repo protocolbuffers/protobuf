@@ -58,6 +58,23 @@ class FieldData {
         unknownFieldData.add(unknownField);
     }
 
+    UnknownFieldData getUnknownField(int index) {
+        if (unknownFieldData == null) {
+            return null;
+        }
+        if (index < unknownFieldData.size()) {
+            return unknownFieldData.get(index);
+        }
+        return null;
+    }
+
+    int getUnknownFieldSize() {
+        if (unknownFieldData == null) {
+            return 0;
+        }
+        return unknownFieldData.size();
+    }
+
     <T> T getValue(Extension<?, T> extension) {
         if (value != null){
             if (cachedExtension != extension) {  // Extension objects are singletons.
