@@ -133,6 +133,8 @@ bool File::RecursivelyCreateDir(const string& path, int mode) {
 
 void File::DeleteRecursively(const string& name,
                              void* dummy1, void* dummy2) {
+  if (name.empty()) return;
+
   // We don't care too much about error checking here since this is only used
   // in tests to delete temporary directories that are under /tmp anyway.
 

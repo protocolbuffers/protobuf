@@ -252,7 +252,9 @@ void CommandLineInterfaceTest::SetUp() {
 
 void CommandLineInterfaceTest::TearDown() {
   // Delete the temp directory.
-  File::DeleteRecursively(temp_directory_, NULL, NULL);
+  if (File::Exists(temp_directory_)) {
+    File::DeleteRecursively(temp_directory_, NULL, NULL);
+  }
 
   // Delete all the MockCodeGenerators.
   for (int i = 0; i < mock_generators_to_delete_.size(); i++) {

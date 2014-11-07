@@ -348,7 +348,9 @@ class DiskSourceTreeTest : public testing::Test {
 
   virtual void TearDown() {
     for (int i = 0; i < dirnames_.size(); i++) {
-      File::DeleteRecursively(dirnames_[i], NULL, NULL);
+      if (File::Exists(dirnames_[i])) {
+        File::DeleteRecursively(dirnames_[i], NULL, NULL);
+      }
     }
   }
 
