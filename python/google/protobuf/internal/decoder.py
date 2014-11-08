@@ -85,18 +85,17 @@ we repeatedly read a tag, look up the corresponding decoder, and invoke it.
 __author__ = 'kenton@google.com (Kenton Varda)'
 
 import struct
-import sys  ##PY25
-_PY2 = sys.version_info[0] < 3  ##PY25
 from google.protobuf.internal import encoder
 from google.protobuf.internal import wire_format
+from google.protobuf.internal.utils import bytestr_to_string, b
 from google.protobuf import message
 
 
 # This will overflow and thus become IEEE-754 "infinity".  We would use
 # "float('inf')" but it doesn't work on Windows pre-Python-2.6.
-_POS_INF = 1e10000
-_NEG_INF = -_POS_INF
-_NAN = _POS_INF * 0
+_POS_INF = float('inf')
+_NEG_INF = float('-inf')
+_NAN = float('nan')
 
 
 # This is not for optimization, but rather to avoid conflicts with local
@@ -114,14 +113,11 @@ def _VarintDecoder(mask, result_type):
   decoder returns a (value, new_pos) pair.
   """
 
-  local_ord = ord
-  py2 = _PY2  ##PY25
-##!PY25  py2 = str is bytes
   def DecodeVarint(buffer, pos):
     result = 0
     shift = 0
     while 1:
-      b = local_ord(buffer[pos]) if py2 else buffer[pos]
+      b = ord(buffer[pos:pos+1])
       result |= ((b & 0x7f) << shift)
       pos += 1
       if not (b & 0x80):
@@ -137,14 +133,11 @@ def _VarintDecoder(mask, result_type):
 def _SignedVarintDecoder(mask, result_type):
   """Like _VarintDecoder() but decodes signed values."""
 
-  local_ord = ord
-  py2 = _PY2  ##PY25
-##!PY25  py2 = str is bytes
   def DecodeVarint(buffer, pos):
     result = 0
     shift = 0
     while 1:
-      b = local_ord(buffer[pos]) if py2 else buffer[pos]
+      b = ord(buffer[pos:pos+1])
       result |= ((b & 0x7f) << shift)
       pos += 1
       if not (b & 0x80):
@@ -183,10 +176,8 @@ def ReadTag(buffer, pos):
   use that, but not in Python.
   """
 
-  py2 = _PY2  ##PY25
-##!PY25  py2 = str is bytes
   start = pos
-  while (ord(buffer[pos]) if py2 else buffer[pos]) & 0x80:
+  while ord(buffer[pos:pos+1]) & 0x80:
     pos += 1
   pos += 1
   return (buffer[start:pos], pos)
@@ -301,7 +292,6 @@ def _FloatDecoder():
   """
 
   local_unpack = struct.unpack
-  b = (lambda x:x) if _PY2 else lambda x:x.encode('latin1')  ##PY25
 
   def InnerDecode(buffer, pos):
     # We expect a 32-bit value in little-endian byte order.  Bit 1 is the sign
@@ -312,17 +302,13 @@ def _FloatDecoder():
     # If this value has all its exponent bits set, then it's non-finite.
     # In Python 2.4, struct.unpack will convert it to a finite 64-bit value.
     # To avoid that, we parse it specially.
-    if ((float_bytes[3:4] in b('\x7F\xFF'))  ##PY25
-##!PY25    if ((float_bytes[3:4] in b'\x7F\xFF')
-        and (float_bytes[2:3] >= b('\x80'))):  ##PY25
-##!PY25        and (float_bytes[2:3] >= b'\x80')):
+    if ((float_bytes[3] in b('\x7F\xFF'))
+        and (float_bytes[2] >= 128)):
       # If at least one significand bit is set...
-      if float_bytes[0:3] != b('\x00\x00\x80'):  ##PY25
-##!PY25      if float_bytes[0:3] != b'\x00\x00\x80':
+      if float_bytes[0:3] != b('\x00\x00\x80'):
         return (_NAN, new_pos)
       # If sign bit is set...
-      if float_bytes[3:4] == b('\xFF'):  ##PY25
-##!PY25      if float_bytes[3:4] == b'\xFF':
+      if float_bytes[3] == b('\xFF'):
         return (_NEG_INF, new_pos)
       return (_POS_INF, new_pos)
 
@@ -341,7 +327,6 @@ def _DoubleDecoder():
   """
 
   local_unpack = struct.unpack
-  b = (lambda x:x) if _PY2 else lambda x:x.encode('latin1')  ##PY25
 
   def InnerDecode(buffer, pos):
     # We expect a 64-bit value in little-endian byte order.  Bit 1 is the sign
@@ -352,12 +337,9 @@ def _DoubleDecoder():
     # If this value has all its exponent bits set and at least one significand
     # bit set, it's not a number.  In Python 2.4, struct.unpack will treat it
     # as inf or -inf.  To avoid that, we treat it specially.
-##!PY25    if ((double_bytes[7:8] in b'\x7F\xFF')
-##!PY25        and (double_bytes[6:7] >= b'\xF0')
-##!PY25        and (double_bytes[0:7] != b'\x00\x00\x00\x00\x00\x00\xF0')):
-    if ((double_bytes[7:8] in b('\x7F\xFF'))  ##PY25
-        and (double_bytes[6:7] >= b('\xF0'))  ##PY25
-        and (double_bytes[0:7] != b('\x00\x00\x00\x00\x00\x00\xF0'))):  ##PY25
+    if ((double_bytes[7] in b('\x7F\xFF'))
+        and (double_bytes[6] >= 240)
+        and (double_bytes[0:7] != b('\x00\x00\x00\x00\x00\x00\xF0'))):
       return (_NAN, new_pos)
 
     # Note that we expect someone up-stack to catch struct.error and convert
@@ -480,15 +462,6 @@ def StringDecoder(field_number, is_repeated, is_packed, key, new_default):
   """Returns a decoder for a string field."""
 
   local_DecodeVarint = _DecodeVarint
-  local_unicode = unicode
-
-  def _ConvertToUnicode(byte_str):
-    try:
-      return local_unicode(byte_str, 'utf-8')
-    except UnicodeDecodeError, e:
-      # add more information to the error message and re-raise it.
-      e.reason = '%s in field: %s' % (e, key.full_name)
-      raise
 
   assert not is_packed
   if is_repeated:
@@ -504,7 +477,7 @@ def StringDecoder(field_number, is_repeated, is_packed, key, new_default):
         new_pos = pos + size
         if new_pos > end:
           raise _DecodeError('Truncated string.')
-        value.append(_ConvertToUnicode(buffer[pos:new_pos]))
+        value.append(bytestr_to_string(buffer[pos:new_pos]))
         # Predict that the next tag is another copy of the same repeated field.
         pos = new_pos + tag_len
         if buffer[new_pos:pos] != tag_bytes or new_pos == end:
@@ -517,7 +490,7 @@ def StringDecoder(field_number, is_repeated, is_packed, key, new_default):
       new_pos = pos + size
       if new_pos > end:
         raise _DecodeError('Truncated string.')
-      field_dict[key] = _ConvertToUnicode(buffer[pos:new_pos])
+      field_dict[key] = bytestr_to_string(buffer[pos:new_pos])
       return new_pos
     return DecodeField
 
