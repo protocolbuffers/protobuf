@@ -1687,7 +1687,7 @@ TEST_F(OneofTest, SwapBothHasFields) {
   EXPECT_EQ(message2.foo_string(), "FOO");
 }
 
-TEST_F(OneofTest, CopyContructor) {
+TEST_F(OneofTest, CopyConstructor) {
   unittest::TestOneof2 message1;
   message1.set_foo_bytes("FOO");
 

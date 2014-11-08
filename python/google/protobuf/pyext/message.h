@@ -136,7 +136,7 @@ PyObject* InternalGetSubMessage(CMessage* self,
 //
 // Releases messages to the provided cmessage_list if it is not NULL rather
 // than just removing them from the underlying proto. This cmessage_list must
-// have a CMessage for each underlying submessage. The CMessages refered to
+// have a CMessage for each underlying submessage. The CMessages referred to
 // by slice will be removed from cmessage_list by this function.
 //
 // Corresponds to reflection api method RemoveLast.

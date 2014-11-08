@@ -3296,7 +3296,7 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
   // Note:  This only works if the input is canonical -- that is, it
   //   fully-qualifies all type names, has no UninterpretedOptions, etc.
   //   This is fine, because this idempotency "feature" really only exists to
-  //   accomodate one hack in the proto1->proto2 migration layer.
+  //   accommodate one hack in the proto1->proto2 migration layer.
   const FileDescriptor* existing_file = tables_->FindFile(filename_);
   if (existing_file != NULL) {
     // File already in pool.  Compare the existing one to the input.

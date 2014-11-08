@@ -186,7 +186,7 @@ bool FileGenerator::Validate(string* error) {
   // proto2 API without code change. When this happens we'd like to issue an
   // warning to let the user know that the outer class name has been changed.
   // Although we only do this automatic naming fix for immutable API, mutable
-  // outer class name will also be affected as it's contructed from immutable
+  // outer class name will also be affected as it's constructed from immutable
   // outer class name with an additional "Mutable" prefix. Since the naming
   // change in mutable API is not caused by a naming conflict, we generate the
   // warning for immutable API only.

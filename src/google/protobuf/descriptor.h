@@ -1268,7 +1268,7 @@ class LIBPROTOBUF_EXPORT DescriptorPool {
     };
 
     // Reports an error in the FileDescriptorProto. Use this function if the
-    // problem occured should interrupt building the FileDescriptorProto.
+    // problem occurred should interrupt building the FileDescriptorProto.
     virtual void AddError(
       const string& filename,      // File name in which the error occurred.
       const string& element_name,  // Full name of the erroneous element.
@@ -1278,7 +1278,7 @@ class LIBPROTOBUF_EXPORT DescriptorPool {
       ) = 0;
 
     // Reports a warning in the FileDescriptorProto. Use this function if the
-    // problem occured should NOT interrupt building the FileDescriptorProto.
+    // problem occurred should NOT interrupt building the FileDescriptorProto.
     virtual void AddWarning(
       const string& /*filename*/,      // File name in which the error occurred.
       const string& /*element_name*/,  // Full name of the erroneous element.

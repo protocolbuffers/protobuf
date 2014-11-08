@@ -59,7 +59,7 @@ public final class DynamicMessage extends AbstractMessage {
    * oneofCases stores the FieldDescriptor for each oneof to indicate
    * which field is set. Caller should make sure the array is immutable.
    *
-   * This contructor is package private and will be used in
+   * This constructor is package private and will be used in
    * {@code DynamicMutableMessage} to convert a mutable message to an immutable
    * message.
    */

@@ -1386,7 +1386,7 @@ public final class TextFormat {
         // Try to guess the type of this field.
         // If this field is not a message, there should be a ":" between the
         // field name and the field value and also the field value should not
-        // start with "{" or "<" which indicates the begining of a message body.
+        // start with "{" or "<" which indicates the beginning of a message body.
         // If there is no ":" or there is a "{" or "<" after ":", this field has
         // to be a message or the input is ill-formed.
         if (tokenizer.tryConsume(":") && !tokenizer.lookingAt("{") &&
@@ -1567,7 +1567,7 @@ public final class TextFormat {
       // Try to guess the type of this field.
       // If this field is not a message, there should be a ":" between the
       // field name and the field value and also the field value should not
-      // start with "{" or "<" which indicates the begining of a message body.
+      // start with "{" or "<" which indicates the beginning of a message body.
       // If there is no ":" or there is a "{" or "<" after ":", this field has
       // to be a message or the input is ill-formed.
       if (tokenizer.tryConsume(":") && !tokenizer.lookingAt("<") &&
@@ -1584,8 +1584,8 @@ public final class TextFormat {
     }
 
     /**
-     * Skips the whole body of a message including the beginning delimeter and
-     * the ending delimeter.
+     * Skips the whole body of a message including the beginning delimiter and
+     * the ending delimiter.
      */
     private void skipFieldMessage(Tokenizer tokenizer) throws ParseException {
       final String delimiter;

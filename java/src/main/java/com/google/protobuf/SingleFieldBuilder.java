@@ -47,7 +47,7 @@ package com.google.protobuf;
  * that desires a Message instead of a Builder. In terms of the implementation,
  * the {@code SingleFieldBuilder} and {@code RepeatedFieldBuilder}
  * classes cache messages that were created so that messages only need to be
- * created when some change occured in its builder or a builder for one of its
+ * created when some change occurred in its builder or a builder for one of its
  * descendants.
  *
  * @param <MType> the type of message for the field
