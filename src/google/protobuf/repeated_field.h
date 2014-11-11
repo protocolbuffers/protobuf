@@ -2075,11 +2075,11 @@ class RepeatedPtrIterator
     it_ += d;
     return *this;
   }
-  friend iterator operator+(iterator it, difference_type d) {
+  friend iterator operator+(iterator it, const difference_type d) {
     it += d;
     return it;
   }
-  friend iterator operator+(difference_type d, iterator it) {
+  friend iterator operator+(const difference_type d, iterator it) {
     it += d;
     return it;
   }
