@@ -132,7 +132,7 @@ string FieldConstantName(const FieldDescriptor *field);
 
 // Returns the type of the FieldDescriptor.
 // This does nothing interesting for the open source release, but is used for
-// hacks that improve compatability with version 1 protocol buffers at Google.
+// hacks that improve compatibility with version 1 protocol buffers at Google.
 FieldDescriptor::Type GetType(const FieldDescriptor* field);
 
 enum JavaType {

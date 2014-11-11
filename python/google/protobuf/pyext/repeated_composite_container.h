@@ -61,7 +61,7 @@ struct CMessage;
 //
 // When in the attached state all modifications to the container are
 // done both on the 'message' and on the 'child_messages'
-// list.  In this state all Messages refered to by the children in
+// list.  In this state all Messages referred to by the children in
 // 'child_messages' are owner by the 'owner'.
 //
 // When in the released state 'message', 'owner', 'parent', and

@@ -350,7 +350,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
 
   // -----------------------------------------------------------------
   // These helper methods make the parsing code more readable.  The
-  // "character classes" refered to are defined at the top of the .cc file.
+  // "character classes" referred to are defined at the top of the .cc file.
   // Basically it is a C++ class with one method:
   //   static bool InClass(char c);
   // The method returns true if c is a member of this "class", like "Letter"

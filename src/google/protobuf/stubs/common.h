@@ -450,7 +450,7 @@ class scoped_ptr {
   // The element type
   typedef C element_type;
 
-  // Constructor.  Defaults to intializing with NULL.
+  // Constructor.  Defaults to initializing with NULL.
   // There is no way to create an uninitialized scoped_ptr.
   // The input parameter must be allocated with new.
   explicit scoped_ptr(C* p = NULL) : ptr_(p) { }
@@ -537,7 +537,7 @@ class scoped_array {
   // The element type
   typedef C element_type;
 
-  // Constructor.  Defaults to intializing with NULL.
+  // Constructor.  Defaults to initializing with NULL.
   // There is no way to create an uninitialized scoped_array.
   // The input parameter must be allocated with new [].
   explicit scoped_array(C* p = NULL) : array_(p) { }

@@ -320,16 +320,16 @@ class TextFormat::Parser::ParserImpl {
                   message);
   }
 
-  // Consumes the specified message with the given starting delimeter.
-  // This method checks to see that the end delimeter at the conclusion of
-  // the consumption matches the starting delimeter passed in here.
-  bool ConsumeMessage(Message* message, const string delimeter) {
+  // Consumes the specified message with the given starting delimiter.
+  // This method checks to see that the end delimiter at the conclusion of
+  // the consumption matches the starting delimiter passed in here.
+  bool ConsumeMessage(Message* message, const string delimiter) {
     while (!LookingAt(">") &&  !LookingAt("}")) {
       DO(ConsumeField(message));
     }
 
-    // Confirm that we have a valid ending delimeter.
-    DO(Consume(delimeter));
+    // Confirm that we have a valid ending delimiter.
+    DO(Consume(delimiter));
 
     return true;
   }
@@ -429,7 +429,7 @@ class TextFormat::Parser::ParserImpl {
       // Try to guess the type of this field.
       // If this field is not a message, there should be a ":" between the
       // field name and the field value and also the field value should not
-      // start with "{" or "<" which indicates the begining of a message body.
+      // start with "{" or "<" which indicates the beginning of a message body.
       // If there is no ":" or there is a "{" or "<" after ":", this field has
       // to be a message or the input is ill-formed.
       if (TryConsume(":") && !LookingAt("{") && !LookingAt("<")) {
@@ -527,7 +527,7 @@ class TextFormat::Parser::ParserImpl {
     // Try to guess the type of this field.
     // If this field is not a message, there should be a ":" between the
     // field name and the field value and also the field value should not
-    // start with "{" or "<" which indicates the begining of a message body.
+    // start with "{" or "<" which indicates the beginning of a message body.
     // If there is no ":" or there is a "{" or "<" after ":", this field has
     // to be a message or the input is ill-formed.
     if (TryConsume(":") && !LookingAt("{") && !LookingAt("<")) {
@@ -552,19 +552,19 @@ class TextFormat::Parser::ParserImpl {
       parse_info_tree_ = CreateNested(parent, field);
     }
 
-    string delimeter;
+    string delimiter;
     if (TryConsume("<")) {
-      delimeter = ">";
+      delimiter = ">";
     } else {
       DO(Consume("{"));
-      delimeter = "}";
+      delimiter = "}";
     }
 
     if (field->is_repeated()) {
-      DO(ConsumeMessage(reflection->AddMessage(message, field), delimeter));
+      DO(ConsumeMessage(reflection->AddMessage(message, field), delimiter));
     } else {
       DO(ConsumeMessage(reflection->MutableMessage(message, field),
-                        delimeter));
+                        delimiter));
     }
 
     // Reset the parse information tree.
@@ -572,20 +572,20 @@ class TextFormat::Parser::ParserImpl {
     return true;
   }
 
-  // Skips the whole body of a message including the begining delimeter and
-  // the ending delimeter.
+  // Skips the whole body of a message including the beginning delimiter and
+  // the ending delimiter.
   bool SkipFieldMessage() {
-    string delimeter;
+    string delimiter;
     if (TryConsume("<")) {
-      delimeter = ">";
+      delimiter = ">";
     } else {
       DO(Consume("{"));
-      delimeter = "}";
+      delimiter = "}";
     }
     while (!LookingAt(">") &&  !LookingAt("}")) {
       DO(SkipField());
     }
-    DO(Consume(delimeter));
+    DO(Consume(delimiter));
     return true;
   }
 

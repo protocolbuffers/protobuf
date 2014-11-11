@@ -214,7 +214,7 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // true if the next argument in the argv should be used as the value,
   // false otherwise.
   //
-  // Exmaples:
+  // Examples:
   //   "-Isrc/protos" ->
   //     name = "-I", value = "src/protos"
   //   "--cpp_out=src/foo.pb2.cc" ->

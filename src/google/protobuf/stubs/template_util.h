@@ -37,7 +37,7 @@
 // any changes here, make sure that you're not breaking any platforms.
 //
 //
-// The names choosen here reflect those used in tr1 and the boost::mpl
+// The names chosen here reflect those used in tr1 and the boost::mpl
 // library, there are similar operations used in the Loki library as
 // well.  I prefer the boost names for 2 reasons:
 // 1.  I think that portions of the Boost libraries are more likely to

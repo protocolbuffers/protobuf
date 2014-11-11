@@ -40,7 +40,7 @@
 namespace google {
 class ScopedPyObjectPtr {
  public:
-  // Constructor.  Defaults to intializing with NULL.
+  // Constructor.  Defaults to initializing with NULL.
   // There is no way to create an uninitialized ScopedPyObjectPtr.
   explicit ScopedPyObjectPtr(PyObject* p = NULL) : ptr_(p) { }
 
