@@ -50,6 +50,7 @@
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/tokenizer.h>
+#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
@@ -1583,10 +1584,23 @@ void TextFormat::Printer::PrintFieldValue(
     }
 
     case FieldDescriptor::CPPTYPE_ENUM: {
-      const EnumValueDescriptor *enum_val = field->is_repeated()
-          ? reflection->GetRepeatedEnum(message, field, index)
-          : reflection->GetEnum(message, field);
-      generator.Print(printer->PrintEnum(enum_val->number(), enum_val->name()));
+      int enum_value = field->is_repeated()
+          ? reflection->GetRepeatedEnumValue(message, field, index)
+          : reflection->GetEnumValue(message, field);
+      const EnumValueDescriptor* enum_desc =
+          field->enum_type()->FindValueByNumber(enum_value);
+      if (enum_desc != NULL) {
+        generator.Print(printer->PrintEnum(enum_value, enum_desc->name()));
+      } else {
+        // Ordinarily, enum_desc should not be null, because proto2 has the
+        // invariant that set enum field values must be in-range, but with the
+        // new integer-based API for enums (or the RepeatedField<int> loophole),
+        // it is possible for the user to force an unknown integer value.  So we
+        // simply use the integer value itself as the enum value name in this
+        // case.
+        generator.Print(printer->PrintEnum(enum_value,
+                                           StringPrintf("%d", enum_value)));
+      }
       break;
     }
 

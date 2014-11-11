@@ -39,6 +39,9 @@
 #define GOOGLE_PROTOBUF_DYNAMIC_MESSAGE_H__
 
 #include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 
 #include <google/protobuf/message.h>
 #include <google/protobuf/stubs/common.h>

@@ -337,6 +337,20 @@ class MessageTest(basetest.TestCase):
     empty.ParseFromString(populated.SerializeToString())
     self.assertEqual(str(empty), '')
 
+  def testRepeatedNestedFieldIteration(self):
+    msg = unittest_pb2.TestAllTypes()
+    msg.repeated_nested_message.add(bb=1)
+    msg.repeated_nested_message.add(bb=2)
+    msg.repeated_nested_message.add(bb=3)
+    msg.repeated_nested_message.add(bb=4)
+
+    self.assertEquals([1, 2, 3, 4],
+                      [m.bb for m in msg.repeated_nested_message])
+    self.assertEquals([4, 3, 2, 1],
+                      [m.bb for m in reversed(msg.repeated_nested_message)])
+    self.assertEquals([4, 3, 2, 1],
+                      [m.bb for m in msg.repeated_nested_message[::-1]])
+
   def testSortingRepeatedScalarFieldsDefaultComparator(self):
     """Check some different types with the default comparator."""
     message = unittest_pb2.TestAllTypes()
@@ -640,6 +654,32 @@ class MessageTest(basetest.TestCase):
     m2 = unittest_pb2.TestAllTypes()
     m2.ParseFromString(m.SerializeToString())
     self.assertEqual('oneof_uint32', m2.WhichOneof('oneof_field'))
+
+  def testOneofCopyFrom(self):
+    m = unittest_pb2.TestAllTypes()
+    m.oneof_uint32 = 11
+    m2 = unittest_pb2.TestAllTypes()
+    m2.CopyFrom(m)
+    self.assertEqual('oneof_uint32', m2.WhichOneof('oneof_field'))
+
+  def testOneofNestedMergeFrom(self):
+    m = unittest_pb2.NestedTestAllTypes()
+    m.payload.oneof_uint32 = 11
+    m2 = unittest_pb2.NestedTestAllTypes()
+    m2.payload.oneof_bytes = b'bb'
+    m2.child.payload.oneof_bytes = b'bb'
+    m2.MergeFrom(m)
+    self.assertEqual('oneof_uint32', m2.payload.WhichOneof('oneof_field'))
+    self.assertEqual('oneof_bytes', m2.child.payload.WhichOneof('oneof_field'))
+
+  def testOneofClear(self):
+    m = unittest_pb2.TestAllTypes()
+    m.oneof_uint32 = 11
+    m.Clear()
+    self.assertIsNone(m.WhichOneof('oneof_field'))
+    m.oneof_bytes = b'bb'
+    self.assertTrue(m.HasField('oneof_field'))
+
 
   def testSortEmptyRepeatedCompositeContainer(self):
     """Exercise a scenario that has led to segfaults in the past.

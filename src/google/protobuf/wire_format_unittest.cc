@@ -980,7 +980,8 @@ TEST_F(Utf8ValidationTest, WriteInvalidUTF8String) {
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
   ASSERT_EQ(1, errors.size());
   EXPECT_TRUE(StartsWith(errors[0],
-                         "String field 'data' contains invalid UTF-8 data when "
+                         "String field 'protobuf_unittest.OneString.data' "
+                         "contains invalid UTF-8 data when "
                          "serializing a protocol buffer. Use the "
                          "'bytes' type if you intend to send raw bytes."));
 #else
@@ -1003,7 +1004,8 @@ TEST_F(Utf8ValidationTest, ReadInvalidUTF8String) {
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
   ASSERT_EQ(1, errors.size());
   EXPECT_TRUE(StartsWith(errors[0],
-                         "String field 'data' contains invalid UTF-8 data when "
+                         "String field 'protobuf_unittest.OneString.data' "
+                         "contains invalid UTF-8 data when "
                          "parsing a protocol buffer. Use the "
                          "'bytes' type if you intend to send raw bytes."));
 

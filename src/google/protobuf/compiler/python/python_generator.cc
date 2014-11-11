@@ -44,11 +44,15 @@
 // performance-minded Python code leverage the fast C++ implementation
 // directly.
 
+#include <google/protobuf/stubs/hash.h>
 #include <limits>
 #include <map>
-#include <utility>
 #include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <google/protobuf/compiler/python/python_generator.h>
@@ -69,6 +73,41 @@ namespace python {
 
 namespace {
 
+const char* const kKeywordList[] = {
+  "and", "as", "break", "class", "continue", "def", "elif", "else", "except",
+  "False", "for", "from", "if", "import", "not", "or", "raise", "return",
+  "True", "try", "with", "while", "yield"
+};
+
+hash_set<string> MakeKeywordsMap() {
+  hash_set<string> result;
+  for (int i = 0; i < GOOGLE_ARRAYSIZE(kKeywordList); ++i) {
+    result.insert(kKeywordList[i]);
+  }
+  return result;
+}
+
+hash_set<string>* keywords_ = NULL;
+GOOGLE_PROTOBUF_DECLARE_ONCE(keywords_once_);
+
+void InitKeywords() {
+  keywords_ = new hash_set<string>();
+  *keywords_ = MakeKeywordsMap();
+}
+
+hash_set<string>& GetKeywords() {
+  ::google::protobuf::GoogleOnceInit(&keywords_once_, &InitKeywords);
+  return *keywords_;
+}
+
+string FieldName(const FieldDescriptor& field) {
+  string result = field.name();
+  if (GetKeywords().count(result) > 0) {
+    result.append("_");
+  }
+  return result;
+}
+
 // Returns a copy of |filename| with any trailing ".protodevel" or ".proto
 // suffix stripped.
 // TODO(robinson): Unify with copy in compiler/cpp/internal/helpers.cc.
@@ -85,6 +124,37 @@ string ModuleName(const string& filename) {
   StripString(&basename, "-", '_');
   StripString(&basename, "/", '.');
   return basename + "_pb2";
+}
+
+
+// Returns the alias we assign to the module of the given .proto filename
+// when importing. See testPackageInitializationImport in
+// google/protobuf/python/reflection_test.py
+// to see why we need the alias.
+string ModuleAlias(const string& filename) {
+  string module_name = ModuleName(filename);
+  // We can't have dots in the module name, so we replace each with _dot_.
+  // But that could lead to a collision between a.b and a_dot_b, so we also
+  // duplicate each underscore.
+  GlobalReplaceSubstring("_", "__", &module_name);
+  GlobalReplaceSubstring(".", "_dot_", &module_name);
+  return module_name;
+}
+
+
+// Returns an import statement of form "from X.Y.Z import T" for the given
+// .proto filename.
+string ModuleImportStatement(const string& filename) {
+  string module_name = ModuleName(filename);
+  int last_dot_pos = module_name.rfind('.');
+  if (last_dot_pos == string::npos) {
+    // NOTE(petya): this is not tested as it would require a protocol buffer
+    // outside of any package, and I don't think that is easily achievable.
+    return "import " + module_name;
+  } else {
+    return "from " + module_name.substr(0, last_dot_pos) + " import " +
+        module_name.substr(last_dot_pos + 1);
+  }
 }
 
 
@@ -309,9 +379,12 @@ bool Generator::Generate(const FileDescriptor* file,
 // Prints Python imports for all modules imported by |file|.
 void Generator::PrintImports() const {
   for (int i = 0; i < file_->dependency_count(); ++i) {
-    string module_name = ModuleName(file_->dependency(i)->name());
-    printer_->Print("import $module$\n", "module",
-                    module_name);
+    const string& filename = file_->dependency(i)->name();
+    string import_statement = ModuleImportStatement(filename);
+    string module_alias = ModuleAlias(filename);
+    printer_->Print("$statement$ as $alias$\n", "statement",
+                    import_statement, "alias", module_alias);
+    CopyPublicDependenciesAliases(module_alias, file_->dependency(i));
   }
   printer_->Print("\n");
 
@@ -342,8 +415,9 @@ void Generator::PrintFileDescriptor() const {
   if (file_->dependency_count() != 0) {
     printer_->Print(",\ndependencies=[");
     for (int i = 0; i < file_->dependency_count(); ++i) {
-      string module_name = ModuleName(file_->dependency(i)->name());
-      printer_->Print("$module_name$.DESCRIPTOR,", "module_name", module_name);
+      string module_alias = ModuleAlias(file_->dependency(i)->name());
+      printer_->Print("$module_alias$.DESCRIPTOR,", "module_alias",
+                      module_alias);
     }
     printer_->Print("]");
   }
@@ -457,7 +531,7 @@ void Generator::PrintTopLevelExtensions() const {
     printer_->Print("$constant_name$ = $number$\n",
       "constant_name", constant_name,
       "number", SimpleItoa(extension_field.number()));
-    printer_->Print("$name$ = ", "name", extension_field.name());
+    printer_->Print("$name$ = ", "name", FieldName(extension_field));
     PrintFieldDescriptor(extension_field, is_extension);
     printer_->Print("\n");
   }
@@ -804,7 +878,7 @@ void Generator::AddExtensionToFileDescriptor(
     const FieldDescriptor& descriptor) const {
   map<string, string> m;
   m["descriptor_name"] = kDescriptorKey;
-  m["field_name"] = descriptor.name();
+  m["field_name"] = FieldName(descriptor);
   const char file_descriptor_template[] =
       "$descriptor_name$.extensions_by_name['$field_name$'] = "
       "$field_name$\n";
@@ -857,12 +931,12 @@ string Generator::FieldReferencingExpression(
   GOOGLE_CHECK_EQ(field.file(), file_) << field.file()->name() << " vs. "
                                 << file_->name();
   if (!containing_type) {
-    return field.name();
+    return FieldName(field);
   }
   return strings::Substitute(
       "$0.$1['$2']",
       ModuleLevelDescriptorName(*containing_type),
-      python_dict_name, field.name());
+      python_dict_name, FieldName(field));
 }
 
 // Prints containing_type for nested descriptors or enum descriptors.
@@ -991,7 +1065,7 @@ void Generator::PrintFieldDescriptor(
   string options_string;
   field.options().SerializeToString(&options_string);
   map<string, string> m;
-  m["name"] = field.name();
+  m["name"] = FieldName(field);
   m["full_name"] = field.full_name();
   m["index"] = SimpleItoa(field.index());
   m["number"] = SimpleItoa(field.number());
@@ -1084,7 +1158,7 @@ string Generator::ModuleLevelDescriptorName(
   // We now have the name relative to its own module.  Also qualify with
   // the module name iff this descriptor is from a different .proto file.
   if (descriptor.file() != file_) {
-    name = ModuleName(descriptor.file()->name()) + "." + name;
+    name = ModuleAlias(descriptor.file()->name()) + "." + name;
   }
   return name;
 }
@@ -1096,7 +1170,7 @@ string Generator::ModuleLevelDescriptorName(
 string Generator::ModuleLevelMessageName(const Descriptor& descriptor) const {
   string name = NamePrefixedWithNestedTypes(descriptor, ".");
   if (descriptor.file() != file_) {
-    name = ModuleName(descriptor.file()->name()) + "." + name;
+    name = ModuleAlias(descriptor.file()->name()) + "." + name;
   }
   return name;
 }
@@ -1109,7 +1183,7 @@ string Generator::ModuleLevelServiceDescriptorName(
   UpperString(&name);
   name = "_" + name;
   if (descriptor.file() != file_) {
-    name = ModuleName(descriptor.file()->name()) + "." + name;
+    name = ModuleAlias(descriptor.file()->name()) + "." + name;
   }
   return name;
 }
@@ -1211,7 +1285,7 @@ void Generator::FixOptionsForField(
     if (field.is_extension()) {
       if (field.extension_scope() == NULL) {
         // Top level extensions.
-        field_name = field.name();
+        field_name = FieldName(field);
       } else {
         field_name = FieldReferencingExpression(
             field.extension_scope(), field, "extensions_by_name");
@@ -1253,6 +1327,18 @@ void Generator::FixOptionsForMessage(const Descriptor& descriptor) const {
     PrintDescriptorOptionsFixingCode(descriptor_name,
                                      message_options,
                                      printer_);
+  }
+}
+
+// If a dependency forwards other files through public dependencies, let's
+// copy over the corresponding module aliases.
+void Generator::CopyPublicDependenciesAliases(
+    const string& copy_from, const FileDescriptor* file) const {
+  for (int i = 0; i < file->public_dependency_count(); ++i) {
+    string module_alias = ModuleAlias(file->public_dependency(i)->name());
+    printer_->Print("$alias$ = $copy_from$.$alias$\n", "alias", module_alias,
+                    "copy_from", copy_from);
+    CopyPublicDependenciesAliases(copy_from, file->public_dependency(i));
   }
 }
 

@@ -101,6 +101,15 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
     }
   }
 
+  if (HasPreservingUnknownEnumSemantics(descriptor_->file())) {
+    // For new enum semantics: generate min and max sentinel values equal to
+    // INT32_MIN and INT32_MAX
+    if (descriptor_->value_count() > 0) printer->Print(",\n");
+    printer->Print(vars,
+        "$classname$_$prefix$INT_MIN_SENTINEL_DO_NOT_USE_ = INT32_MIN,\n"
+        "$classname$_$prefix$INT_MAX_SENTINEL_DO_NOT_USE_ = INT32_MAX");
+  }
+
   printer->Outdent();
   printer->Print("\n};\n");
 

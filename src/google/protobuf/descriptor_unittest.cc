@@ -360,6 +360,34 @@ TEST_F(FileDescriptorTest, BuildAgain) {
   EXPECT_TRUE(pool_.BuildFile(file) == NULL);
 }
 
+TEST_F(FileDescriptorTest, Syntax) {
+  FileDescriptorProto proto;
+  proto.set_name("foo");
+  // Enable the test when we also populate the syntax for proto2.
+#if 0
+  {
+    proto.set_syntax("proto2");
+    DescriptorPool pool;
+    const FileDescriptor* file = pool.BuildFile(proto);
+    EXPECT_TRUE(file != NULL);
+    EXPECT_EQ(FileDescriptor::SYNTAX_PROTO2, file->syntax());
+    FileDescriptorProto other;
+    file->CopyTo(&other);
+    EXPECT_EQ("proto2", other.syntax());
+  }
+#endif
+  {
+    proto.set_syntax("proto3");
+    DescriptorPool pool;
+    const FileDescriptor* file = pool.BuildFile(proto);
+    EXPECT_TRUE(file != NULL);
+    EXPECT_EQ(FileDescriptor::SYNTAX_PROTO3, file->syntax());
+    FileDescriptorProto other;
+    file->CopyTo(&other);
+    EXPECT_EQ("proto3", other.syntax());
+  }
+}
+
 // ===================================================================
 
 // Test simple flat messages and fields.
@@ -2157,6 +2185,12 @@ TEST_P(AllowUnknownDependenciesTest, PlaceholderFile) {
   // Placeholder files should not be findable.
   EXPECT_EQ(bar_file_, pool_->FindFileByName(bar_file_->name()));
   EXPECT_TRUE(pool_->FindFileByName(baz_file->name()) == NULL);
+
+  // Copy*To should not crash for placeholder files.
+  FileDescriptorProto baz_file_proto;
+  baz_file->CopyTo(&baz_file_proto);
+  baz_file->CopySourceCodeInfoTo(&baz_file_proto);
+  EXPECT_FALSE(baz_file_proto.has_source_code_info());
 }
 
 TEST_P(AllowUnknownDependenciesTest, PlaceholderTypes) {
@@ -4736,6 +4770,553 @@ TEST_F(ValidationErrorTest, UnusedImportWarning) {
     "}");
 }
 
+namespace {
+void FillValidMapEntry(FileDescriptorProto* file_proto) {
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      "name: 'foo.proto' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  field { "
+      "    name: 'foo_map' number: 1 label:LABEL_REPEATED "
+      "    type_name: 'FooMapEntry' "
+      "  } "
+      "  nested_type { "
+      "    name: 'FooMapEntry' "
+      "    options {  map_entry: true } "
+      "    field { "
+      "      name: 'key' number: 1 type:TYPE_INT32 label:LABEL_OPTIONAL "
+      "    } "
+      "    field { "
+      "      name: 'value' number: 2 type:TYPE_INT32 label:LABEL_OPTIONAL "
+      "    } "
+      "  } "
+      "} "
+      "message_type { "
+      "  name: 'Bar' "
+      "  extension_range { start: 1 end: 10 }"
+      "} ",
+      file_proto));
+}
+static const char* kMapEntryErrorMessage =
+    "foo.proto: Foo.foo_map: OTHER: map_entry should not be set explicitly. "
+    "Use map<KeyType, ValueType> instead.\n";
+static const char* kMapEntryKeyTypeErrorMessage =
+    "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot be float/double, "
+    "bytes or message types.\n";
+
+}  // namespace
+
+TEST_F(ValidationErrorTest, MapEntryBase) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  BuildFile(file_proto.DebugString());
+}
+
+TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  TextFormat::MergeFromString(
+      "extension_range { "
+      "  start: 10 end: 20 "
+      "} ",
+      file_proto.mutable_message_type(0)->mutable_nested_type(0));
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryExtension) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  TextFormat::MergeFromString(
+      "extension { "
+      "  name: 'foo_ext' extendee: '.Bar' number: 5"
+      "} ",
+      file_proto.mutable_message_type(0)->mutable_nested_type(0));
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryNestedType) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  TextFormat::MergeFromString(
+      "nested_type { "
+      "  name: 'Bar' "
+      "} ",
+      file_proto.mutable_message_type(0)->mutable_nested_type(0));
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryEnumTypes) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  TextFormat::MergeFromString(
+      "enum_type { "
+      "  name: 'BarEnum' "
+      "  value { name: 'BAR_BAR' number:0 } "
+      "} ",
+      file_proto.mutable_message_type(0)->mutable_nested_type(0));
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryExtraField) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  TextFormat::MergeFromString(
+      "field { "
+      "  name: 'other_field' "
+      "  label: LABEL_OPTIONAL "
+      "  type: TYPE_INT32 "
+      "  number: 3 "
+      "} ",
+      file_proto.mutable_message_type(0)->mutable_nested_type(0));
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryMessageName) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  file_proto.mutable_message_type(0)->mutable_nested_type(0)->set_name(
+      "OtherMapEntry");
+  file_proto.mutable_message_type(0)->mutable_field(0)->set_type_name(
+      "OtherMapEntry");
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryNoneRepeatedMapEntry) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  file_proto.mutable_message_type(0)->mutable_field(0)->set_label(
+      FieldDescriptorProto::LABEL_OPTIONAL);
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryDifferentContainingType) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  // Move the nested MapEntry message into the top level, which should not pass
+  // the validation.
+  file_proto.mutable_message_type()->AddAllocated(
+      file_proto.mutable_message_type(0)->mutable_nested_type()->ReleaseLast());
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryKeyName) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  FieldDescriptorProto* key = file_proto.mutable_message_type(0)
+      ->mutable_nested_type(0)
+      ->mutable_field(0);
+  key->set_name("Key");
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryKeyLabel) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  FieldDescriptorProto* key = file_proto.mutable_message_type(0)
+      ->mutable_nested_type(0)
+      ->mutable_field(0);
+  key->set_label(FieldDescriptorProto::LABEL_REQUIRED);
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryKeyNumber) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  FieldDescriptorProto* key = file_proto.mutable_message_type(0)
+      ->mutable_nested_type(0)
+      ->mutable_field(0);
+  key->set_number(3);
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryValueName) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  FieldDescriptorProto* value = file_proto.mutable_message_type(0)
+      ->mutable_nested_type(0)
+      ->mutable_field(1);
+  value->set_name("Value");
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryValueLabel) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  FieldDescriptorProto* value = file_proto.mutable_message_type(0)
+      ->mutable_nested_type(0)
+      ->mutable_field(1);
+  value->set_label(FieldDescriptorProto::LABEL_REQUIRED);
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryValueNumber) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  FieldDescriptorProto* value = file_proto.mutable_message_type(0)
+      ->mutable_nested_type(0)
+      ->mutable_field(1);
+  value->set_number(3);
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryKeyTypeFloat) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  FieldDescriptorProto* key = file_proto.mutable_message_type(0)
+      ->mutable_nested_type(0)
+      ->mutable_field(0);
+  key->set_type(FieldDescriptorProto::TYPE_FLOAT);
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryKeyTypeErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryKeyTypeDouble) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  FieldDescriptorProto* key = file_proto.mutable_message_type(0)
+      ->mutable_nested_type(0)
+      ->mutable_field(0);
+  key->set_type(FieldDescriptorProto::TYPE_DOUBLE);
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryKeyTypeErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryKeyTypeBytes) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  FieldDescriptorProto* key = file_proto.mutable_message_type(0)
+      ->mutable_nested_type(0)
+      ->mutable_field(0);
+  key->set_type(FieldDescriptorProto::TYPE_BYTES);
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryKeyTypeErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryKeyTypeEnum) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  FieldDescriptorProto* key = file_proto.mutable_message_type(0)
+      ->mutable_nested_type(0)
+      ->mutable_field(0);
+  key->clear_type();
+  key->set_type_name("BarEnum");
+  EnumDescriptorProto* enum_proto = file_proto.add_enum_type();
+  enum_proto->set_name("BarEnum");
+  EnumValueDescriptorProto* enum_value_proto = enum_proto->add_value();
+  enum_value_proto->set_name("BAR_VALUE0");
+  enum_value_proto->set_number(0);
+  BuildFileWithErrors(file_proto.DebugString(),
+                      "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot "
+                      "be enum types.\n");
+  // Enum keys are not allowed in proto3 as well.
+  // Get rid of extensions for proto3 to make it proto3 compatible.
+  file_proto.mutable_message_type()->RemoveLast();
+  file_proto.set_syntax("proto3");
+  BuildFileWithErrors(file_proto.DebugString(),
+                      "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot "
+                      "be enum types.\n");
+}
+
+
+TEST_F(ValidationErrorTest, MapEntryKeyTypeMessage) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  FieldDescriptorProto* key = file_proto.mutable_message_type(0)
+      ->mutable_nested_type(0)
+      ->mutable_field(0);
+  key->clear_type();
+  key->set_type_name(".Bar");
+  BuildFileWithErrors(file_proto.DebugString(), kMapEntryKeyTypeErrorMessage);
+}
+
+TEST_F(ValidationErrorTest, MapEntryConflictsWithField) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  TextFormat::MergeFromString(
+      "field { "
+      "  name: 'FooMapEntry' "
+      "  type: TYPE_INT32 "
+      "  label: LABEL_OPTIONAL "
+      "  number: 100 "
+      "}",
+      file_proto.mutable_message_type(0));
+  BuildFileWithErrors(
+      file_proto.DebugString(),
+      "foo.proto: Foo.FooMapEntry: NAME: \"FooMapEntry\" is already defined in "
+      "\"Foo\".\n"
+      "foo.proto: Foo.foo_map: TYPE: \"FooMapEntry\" is not defined.\n"
+      "foo.proto: Foo: NAME: Expanded map entry type FooMapEntry conflicts "
+      "with an existing field.\n");
+}
+
+TEST_F(ValidationErrorTest, MapEntryConflictsWithMessage) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  TextFormat::MergeFromString(
+      "nested_type { "
+      "  name: 'FooMapEntry' "
+      "}",
+      file_proto.mutable_message_type(0));
+  BuildFileWithErrors(
+      file_proto.DebugString(),
+      "foo.proto: Foo.FooMapEntry: NAME: \"FooMapEntry\" is already defined in "
+      "\"Foo\".\n"
+      "foo.proto: Foo: NAME: Expanded map entry type FooMapEntry conflicts "
+      "with an existing nested message type.\n");
+}
+
+TEST_F(ValidationErrorTest, MapEntryConflictsWithEnum) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  TextFormat::MergeFromString(
+      "enum_type { "
+      "  name: 'FooMapEntry' "
+      "  value { name: 'ENTRY_FOO' number: 0 }"
+      "}",
+      file_proto.mutable_message_type(0));
+  BuildFileWithErrors(
+      file_proto.DebugString(),
+      "foo.proto: Foo.FooMapEntry: NAME: \"FooMapEntry\" is already defined in "
+      "\"Foo\".\n"
+      "foo.proto: Foo: NAME: Expanded map entry type FooMapEntry conflicts "
+      "with an existing enum type.\n");
+}
+
+TEST_F(ValidationErrorTest, MapEntryConflictsWithOneof) {
+  FileDescriptorProto file_proto;
+  FillValidMapEntry(&file_proto);
+  TextFormat::MergeFromString(
+      "oneof_decl { "
+      "  name: 'FooMapEntry' "
+      "}"
+      "field { "
+      "  name: 'int_field' "
+      "  type: TYPE_INT32 "
+      "  label: LABEL_OPTIONAL "
+      "  oneof_index: 0 "
+      "  number: 100 "
+      "} ",
+      file_proto.mutable_message_type(0));
+  BuildFileWithErrors(
+      file_proto.DebugString(),
+      "foo.proto: Foo.FooMapEntry: NAME: \"FooMapEntry\" is already defined in "
+      "\"Foo\".\n"
+      "foo.proto: Foo.foo_map: TYPE: \"FooMapEntry\" is not defined.\n"
+      "foo.proto: Foo: NAME: Expanded map entry type FooMapEntry conflicts "
+      "with an existing oneof type.\n");
+}
+
+TEST_F(ValidationErrorTest, Proto3RequiredFields) {
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "syntax: 'proto3' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  field { name:'foo' number:1 label:LABEL_REQUIRED type:TYPE_INT32 } "
+      "}",
+      "foo.proto: Foo.foo: OTHER: Required fields are not allowed in "
+      "proto3.\n");
+
+  // applied to nested types as well.
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "syntax: 'proto3' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  nested_type { "
+      "    name : 'Bar' "
+      "    field { name:'bar' number:1 label:LABEL_REQUIRED type:TYPE_INT32 } "
+      "  } "
+      "}",
+      "foo.proto: Foo.Bar.bar: OTHER: Required fields are not allowed in "
+      "proto3.\n");
+
+  // optional and repeated fields are OK.
+  BuildFile(
+      "name: 'foo.proto' "
+      "syntax: 'proto3' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  field { name:'foo' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 } "
+      "  field { name:'bar' number:2 label:LABEL_REPEATED type:TYPE_INT32 } "
+      "}");
+}
+
+TEST_F(ValidationErrorTest, ValidateProto3DefaultValue) {
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "syntax: 'proto3' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  field { name:'foo' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 "
+      "          default_value: '1' }"
+      "}",
+      "foo.proto: Foo.foo: OTHER: Explicit default values are not allowed in "
+      "proto3.\n");
+
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "syntax: 'proto3' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  nested_type { "
+      "    name : 'Bar' "
+      "    field { name:'bar' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 "
+      "            default_value: '1' }"
+      "  } "
+      "}",
+      "foo.proto: Foo.Bar.bar: OTHER: Explicit default values are not allowed "
+      "in proto3.\n");
+}
+
+TEST_F(ValidationErrorTest, ValidateProto3ExtensionRange) {
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "syntax: 'proto3' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  field { name:'foo' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 } "
+      "  extension_range { start:10 end:100 } "
+      "}",
+      "foo.proto: Foo: OTHER: Extension ranges are not allowed in "
+      "proto3.\n");
+
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "syntax: 'proto3' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  nested_type { "
+      "    name : 'Bar' "
+      "    field { name:'bar' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 } "
+      "    extension_range { start:10 end:100 } "
+      "  } "
+      "}",
+      "foo.proto: Foo.Bar: OTHER: Extension ranges are not allowed in "
+      "proto3.\n");
+}
+
+TEST_F(ValidationErrorTest, ValidateProto3MessageSetWireFormat) {
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "syntax: 'proto3' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  options { message_set_wire_format: true } "
+      "}",
+      "foo.proto: Foo: OTHER: MessageSet is not supported "
+      "in proto3.\n");
+}
+
+TEST_F(ValidationErrorTest, ValidateProto3Enum) {
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "syntax: 'proto3' "
+      "enum_type { "
+      "  name: 'FooEnum' "
+      "  value { name: 'FOO_FOO' number:1 } "
+      "}",
+      "foo.proto: FooEnum: OTHER: The first enum value must be "
+      "zero in proto3.\n");
+
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "syntax: 'proto3' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  enum_type { "
+      "    name: 'FooEnum' "
+      "    value { name: 'FOO_FOO' number:1 } "
+      "  } "
+      "}",
+      "foo.proto: Foo.FooEnum: OTHER: The first enum value must be "
+      "zero in proto3.\n");
+
+  // valid case.
+  BuildFile(
+      "name: 'foo.proto' "
+      "syntax: 'proto3' "
+      "enum_type { "
+      "  name: 'FooEnum' "
+      "  value { name: 'FOO_FOO' number:0 } "
+      "}");
+}
+
+TEST_F(ValidationErrorTest, ValidateProto3LiteRuntime) {
+  // Lite runtime is not supported in proto3.
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "syntax: 'proto3' "
+      "options { "
+      "  optimize_for: LITE_RUNTIME "
+      "} ",
+      "foo.proto: foo.proto: OTHER: Lite runtime is not supported "
+      "in proto3.\n");
+}
+
+
+TEST_F(ValidationErrorTest, ValidateProto3EnumFromProto2) {
+  // Define an enum in a proto2 file.
+  BuildFile(
+      "name: 'foo.proto' "
+      "package: 'foo' "
+      "syntax: 'proto2' "
+      "enum_type { "
+      "  name: 'FooEnum' "
+      "  value { name: 'DEFAULT_OPTION' number:0 } "
+      "}");
+
+  // Now try to refer to it. (All tests in the fixture use the same pool, so we
+  // can refer to the enum above in this definition.)
+  BuildFileWithErrors(
+      "name: 'bar.proto' "
+      "dependency: 'foo.proto' "
+      "syntax: 'proto3' "
+      "message_type { "
+      "  name: 'Foo' "
+      "    field { name:'bar' number:1 label:LABEL_OPTIONAL type:TYPE_ENUM "
+      "            type_name: 'foo.FooEnum' }"
+      "}",
+      "bar.proto: Foo.bar: TYPE: Enum type \"foo.FooEnum\" is not a proto3 "
+      "enum, but is used in \"Foo\" which is a proto3 message type.\n");
+}
+
+TEST_F(ValidationErrorTest, ValidateProto3Extension) {
+  // Valid for options.
+  DescriptorPool pool;
+  FileDescriptorProto file_proto;
+  // Add "google/protobuf/descriptor.proto".
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != NULL);
+  // Add "foo.proto":
+  //   import "google/protobuf/descriptor.proto";
+  //   extend google.protobuf.FieldOptions {
+  //     optional int32 option1 = 1000;
+  //   }
+  file_proto.Clear();
+  file_proto.set_name("foo.proto");
+  file_proto.set_syntax("proto3");
+  file_proto.add_dependency("google/protobuf/descriptor.proto");
+  AddExtension(&file_proto, "google.protobuf.FieldOptions", "option1", 1000,
+               FieldDescriptorProto::LABEL_OPTIONAL,
+               FieldDescriptorProto::TYPE_INT32);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != NULL);
+
+  // Copy and change the package of the descriptor.proto
+  BuildFile(
+      "name: 'google.protobuf.proto' "
+      "syntax: 'proto2' "
+      "message_type { "
+      "  name: 'Container' extension_range { start: 1 end: 1000 } "
+      "}");
+  BuildFileWithErrors(
+      "name: 'bar.proto' "
+      "syntax: 'proto3' "
+      "dependency: 'google.protobuf.proto' "
+      "extension { "
+      "  name: 'bar' number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 "
+      "  extendee: 'Container' "
+      "}",
+      "bar.proto: bar: OTHER: Extensions in proto3 are only allowed for "
+      "defining options.\n");
+}
 
 // ===================================================================
 // DescriptorDatabase

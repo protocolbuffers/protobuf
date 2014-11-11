@@ -169,7 +169,7 @@ MessageLite* ExtensionSet::MutableMessage(const FieldDescriptor* descriptor,
     const MessageLite* prototype =
         factory->GetPrototype(descriptor->message_type());
     extension->is_lazy = false;
-    extension->message_value = prototype->New();
+    extension->message_value = prototype->New(arena_);
     extension->is_cleared = false;
     return extension->message_value;
   } else {
@@ -196,9 +196,16 @@ MessageLite* ExtensionSet::ReleaseMessage(const FieldDescriptor* descriptor,
     if (iter->second.is_lazy) {
       ret = iter->second.lazymessage_value->ReleaseMessage(
           *factory->GetPrototype(descriptor->message_type()));
-      delete iter->second.lazymessage_value;
+      if (arena_ == NULL) {
+        delete iter->second.lazymessage_value;
+      }
     } else {
-      ret = iter->second.message_value;
+      if (arena_ != NULL) {
+        ret = (iter->second.message_value)->New();
+        ret->CheckTypeAndMergeFrom(*(iter->second.message_value));
+      } else {
+        ret = iter->second.message_value;
+      }
     }
     extensions_.erase(descriptor->number());
     return ret;
@@ -213,7 +220,7 @@ MessageLite* ExtensionSet::AddMessage(const FieldDescriptor* descriptor,
     GOOGLE_DCHECK_EQ(cpp_type(extension->type), FieldDescriptor::CPPTYPE_MESSAGE);
     extension->is_repeated = true;
     extension->repeated_message_value =
-      new RepeatedPtrField<MessageLite>();
+        ::google::protobuf::Arena::Create<RepeatedPtrField<MessageLite> >(arena_, arena_);
   } else {
     GOOGLE_DCHECK_TYPE(*extension, REPEATED, MESSAGE);
   }
@@ -230,7 +237,7 @@ MessageLite* ExtensionSet::AddMessage(const FieldDescriptor* descriptor,
     } else {
       prototype = &extension->repeated_message_value->Get(0);
     }
-    result = prototype->New();
+    result = prototype->New(arena_);
     extension->repeated_message_value->AddAllocated(result);
   }
   return result;

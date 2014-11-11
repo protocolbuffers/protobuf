@@ -55,7 +55,6 @@ using internal::shared_ptr;
 namespace python {
 
 struct CMessage;
-struct CFieldDescriptor;
 
 // A RepeatedCompositeContainer can be in one of two states: attached
 // or released.
@@ -66,7 +65,7 @@ struct CFieldDescriptor;
 // 'child_messages' are owner by the 'owner'.
 //
 // When in the released state 'message', 'owner', 'parent', and
-// 'parent_field' are NULL.
+// 'parent_field_descriptor' are NULL.
 typedef struct RepeatedCompositeContainer {
   PyObject_HEAD;
 
@@ -82,7 +81,8 @@ typedef struct RepeatedCompositeContainer {
   CMessage* parent;
 
   // A descriptor used to modify the underlying 'message'.
-  CFieldDescriptor* parent_field;
+  // The pointer is owned by the global DescriptorPool.
+  const google::protobuf::FieldDescriptor* parent_field_descriptor;
 
   // Pointer to the C++ Message that contains this container.  The
   // RepeatedCompositeContainer does not own this pointer.
@@ -101,6 +101,13 @@ typedef struct RepeatedCompositeContainer {
 extern PyTypeObject RepeatedCompositeContainer_Type;
 
 namespace repeated_composite_container {
+
+// Builds a RepeatedCompositeContainer object, from a parent message and a
+// field descriptor.
+PyObject *NewContainer(
+    CMessage* parent,
+    const google::protobuf::FieldDescriptor* parent_field_descriptor,
+    PyObject *concrete_class);
 
 // Returns the number of items in this repeated composite container.
 static Py_ssize_t Length(RepeatedCompositeContainer* self);

@@ -37,6 +37,9 @@ import com.google.protobuf.Internal.EnumLite;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -144,6 +147,40 @@ public abstract class AbstractMessage extends AbstractMessageLite
   }
   
   /**
+   * Converts a list of MapEntry messages into a Map used for equals() and
+   * hashCode().
+   */
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private static Map convertMapEntryListToMap(List list) {
+    if (list.isEmpty()) {
+      return Collections.emptyMap();
+    }
+    Map result = new HashMap();
+    Iterator iterator = list.iterator();
+    Message entry = (Message) iterator.next();
+    Descriptors.Descriptor descriptor = entry.getDescriptorForType();
+    Descriptors.FieldDescriptor key = descriptor.findFieldByName("key");
+    Descriptors.FieldDescriptor value = descriptor.findFieldByName("value");
+    result.put(entry.getField(key), entry.getField(value));
+    while (iterator.hasNext()) {
+      entry = (Message) iterator.next();
+      result.put(entry.getField(key), entry.getField(value));
+    }
+    return result;
+  }
+  
+  /**
+   * Compares two map fields. The parameters must be a list of MapEntry
+   * messages.
+   */
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private static boolean compareMapField(Object a, Object b) {
+    Map ma = convertMapEntryListToMap((List) a);
+    Map mb = convertMapEntryListToMap((List) b);
+    return MapFieldLite.equals(ma, mb);
+  }
+  
+  /**
    * Compares two set of fields.
    * This method is used to implement {@link AbstractMessage#equals(Object)}
    * and {@link AbstractMutableMessage#equals(Object)}. It takes special care
@@ -181,6 +218,10 @@ public abstract class AbstractMessage extends AbstractMessageLite
             return false;
           }
         }
+      } else if (descriptor.isMapField()) {
+        if (!compareMapField(value1, value2)) {
+          return false;
+        }
       } else {
         // Compare non-bytes fields.
         if (!value1.equals(value2)) {
@@ -190,6 +231,15 @@ public abstract class AbstractMessage extends AbstractMessageLite
     }
     return true;
   }
+  
+  /**
+   * Calculates the hash code of a map field. {@code value} must be a list of
+   * MapEntry messages.
+   */
+  @SuppressWarnings("unchecked")
+  private static int hashMapField(Object value) {
+    return MapFieldLite.calculateHashCodeForMap(convertMapEntryListToMap((List) value));
+  }
 
   /** Get a hash code for given fields and values, using the given seed. */
   @SuppressWarnings("unchecked")
@@ -198,7 +248,9 @@ public abstract class AbstractMessage extends AbstractMessageLite
       FieldDescriptor field = entry.getKey();
       Object value = entry.getValue();
       hash = (37 * hash) + field.getNumber();
-      if (field.getType() != FieldDescriptor.Type.ENUM){
+      if (field.isMapField()) {
+        hash = (53 * hash) + hashMapField(value);
+      } else if (field.getType() != FieldDescriptor.Type.ENUM){
         hash = (53 * hash) + value.hashCode();
       } else if (field.isRepeated()) {
         List<? extends EnumLite> list = (List<? extends EnumLite>) value;
@@ -357,6 +409,12 @@ public abstract class AbstractMessage extends AbstractMessageLite
     public Message.Builder getFieldBuilder(final FieldDescriptor field) {
       throw new UnsupportedOperationException(
           "getFieldBuilder() called on an unsupported message type.");
+    }
+
+    public Message.Builder getRepeatedFieldBuilder(final FieldDescriptor field,
+        int index) {
+      throw new UnsupportedOperationException(
+          "getRepeatedFieldBuilder() called on an unsupported message type.");
     }
 
     public String toString() {

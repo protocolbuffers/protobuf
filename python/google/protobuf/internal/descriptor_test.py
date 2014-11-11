@@ -665,5 +665,15 @@ class MakeDescriptorTest(basetest.TestCase):
                      descriptor.FieldDescriptor.CPPTYPE_UINT64)
 
 
+  def testMakeDescriptorWithOptions(self):
+    descriptor_proto = descriptor_pb2.DescriptorProto()
+    aggregate_message = unittest_custom_options_pb2.AggregateMessage
+    aggregate_message.DESCRIPTOR.CopyToProto(descriptor_proto)
+    reformed_descriptor = descriptor.MakeDescriptor(descriptor_proto)
+
+    options = reformed_descriptor.GetOptions()
+    self.assertEquals(101,
+                      options.Extensions[unittest_custom_options_pb2.msgopt].i)
+
 if __name__ == '__main__':
   basetest.main()

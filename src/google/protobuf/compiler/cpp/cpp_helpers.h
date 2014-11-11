@@ -135,8 +135,15 @@ string SafeFunctionName(const Descriptor* descriptor,
                         const FieldDescriptor* field,
                         const string& prefix);
 
-// Do message classes in this file use UnknownFieldSet?
-// Otherwise, messages will store unknown fields in a string
+// Returns true if unknown fields are preseved after parsing.
+inline bool PreserveUnknownFields(const Descriptor* message) {
+  return message->file()->syntax() != FileDescriptor::SYNTAX_PROTO3;
+}
+
+// If PreserveUnknownFields() is true, determines whether unknown
+// fields will be stored in an UnknownFieldSet or a string.
+// If PreserveUnknownFields() is false, this method will not be
+// used.
 inline bool UseUnknownFieldSet(const FileDescriptor* file) {
   return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
 }
@@ -197,6 +204,28 @@ void PrintHandlingOptionalStaticInitializers(
 bool IsStringOrMessage(const FieldDescriptor* field);
 
 string UnderscoresToCamelCase(const string& input, bool cap_next_letter);
+
+inline bool HasFieldPresence(const FileDescriptor* file) {
+  return file->syntax() != FileDescriptor::SYNTAX_PROTO3;
+}
+
+// Returns true if 'enum' semantics are such that unknown values are preserved
+// in the enum field itself, rather than going to the UnknownFieldSet.
+inline bool HasPreservingUnknownEnumSemantics(const FileDescriptor* file) {
+  return file->syntax() == FileDescriptor::SYNTAX_PROTO3;
+}
+
+inline bool SupportsArenas(const FileDescriptor* file) {
+  return true;
+}
+
+inline bool SupportsArenas(const Descriptor* desc) {
+  return SupportsArenas(desc->file());
+}
+
+inline bool SupportsArenas(const FieldDescriptor* field) {
+  return SupportsArenas(field->file());
+}
 
 }  // namespace cpp
 }  // namespace compiler

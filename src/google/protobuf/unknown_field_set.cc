@@ -44,6 +44,25 @@
 namespace google {
 namespace protobuf {
 
+namespace {
+// This global instance is returned by unknown_fields() on any message class
+// when the object has no unknown fields. This is necessary because we now
+// instantiate the UnknownFieldSet dynamically only when required.
+UnknownFieldSet* default_unknown_field_set_instance_ = NULL;
+
+void InitDefaultUnknownFieldSet() {
+  default_unknown_field_set_instance_ = new UnknownFieldSet();
+}
+
+GOOGLE_PROTOBUF_DECLARE_ONCE(default_unknown_field_set_once_init_);
+}
+
+const UnknownFieldSet* UnknownFieldSet::default_instance() {
+  ::google::protobuf::GoogleOnceInit(&default_unknown_field_set_once_init_,
+                 &InitDefaultUnknownFieldSet);
+  return default_unknown_field_set_instance_;
+}
+
 UnknownFieldSet::UnknownFieldSet()
     : fields_(NULL) {}
 
@@ -53,31 +72,63 @@ UnknownFieldSet::~UnknownFieldSet() {
 }
 
 void UnknownFieldSet::ClearFallback() {
-  GOOGLE_DCHECK(fields_ != NULL);
-  for (int i = 0; i < fields_->size(); i++) {
-    (*fields_)[i].Delete();
-  }
-  fields_->clear();
-}
-
-void UnknownFieldSet::ClearAndFreeMemory() {
   if (fields_ != NULL) {
-    Clear();
+    for (int i = 0; i < fields_->size(); i++) {
+      (*fields_)[i].Delete();
+    }
     delete fields_;
     fields_ = NULL;
   }
 }
 
-void UnknownFieldSet::MergeFrom(const UnknownFieldSet& other) {
-  for (int i = 0; i < other.field_count(); i++) {
-    AddField(other.field(i));
+void UnknownFieldSet::ClearAndFreeMemory() {
+  if (fields_ != NULL) {
+    Clear();
   }
+}
+
+void UnknownFieldSet::InternalMergeFrom(const UnknownFieldSet& other) {
+  int other_field_count = other.field_count();
+  if (other_field_count > 0) {
+    fields_ = new vector<UnknownField>();
+    for (int i = 0; i < other_field_count; i++) {
+      fields_->push_back((*other.fields_)[i]);
+      fields_->back().DeepCopy();
+    }
+  }
+}
+
+void UnknownFieldSet::MergeFrom(const UnknownFieldSet& other) {
+  int other_field_count = other.field_count();
+  if (other_field_count > 0) {
+    if (fields_ == NULL) fields_ = new vector<UnknownField>();
+    for (int i = 0; i < other_field_count; i++) {
+      fields_->push_back((*other.fields_)[i]);
+      fields_->back().DeepCopy();
+    }
+  }
+}
+
+// A specialized MergeFrom for performance when we are merging from an UFS that
+// is temporary and can be destroyed in the process.
+void UnknownFieldSet::MergeFromAndDestroy(UnknownFieldSet* other) {
+  int other_field_count = other->field_count();
+  if (other_field_count > 0) {
+    if (fields_ == NULL) fields_ = new vector<UnknownField>();
+    for (int i = 0; i < other_field_count; i++) {
+      fields_->push_back((*other->fields_)[i]);
+      (*other->fields_)[i].Reset();
+    }
+  }
+  delete other->fields_;
+  other->fields_ = NULL;
 }
 
 int UnknownFieldSet::SpaceUsedExcludingSelf() const {
   if (fields_ == NULL) return 0;
 
   int total_size = sizeof(*fields_) + sizeof(UnknownField) * fields_->size();
+
   for (int i = 0; i < fields_->size(); i++) {
     const UnknownField& field = (*fields_)[i];
     switch (field.type()) {
@@ -101,61 +152,60 @@ int UnknownFieldSet::SpaceUsed() const {
 }
 
 void UnknownFieldSet::AddVarint(int number, uint64 value) {
-  if (fields_ == NULL) fields_ = new vector<UnknownField>;
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_VARINT);
   field.varint_ = value;
+  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
 }
 
 void UnknownFieldSet::AddFixed32(int number, uint32 value) {
-  if (fields_ == NULL) fields_ = new vector<UnknownField>;
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_FIXED32);
   field.fixed32_ = value;
+  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
 }
 
 void UnknownFieldSet::AddFixed64(int number, uint64 value) {
-  if (fields_ == NULL) fields_ = new vector<UnknownField>;
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_FIXED64);
   field.fixed64_ = value;
+  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
 }
 
 string* UnknownFieldSet::AddLengthDelimited(int number) {
-  if (fields_ == NULL) fields_ = new vector<UnknownField>;
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_LENGTH_DELIMITED);
   field.length_delimited_.string_value_ = new string;
+  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
   return field.length_delimited_.string_value_;
 }
 
 
 UnknownFieldSet* UnknownFieldSet::AddGroup(int number) {
-  if (fields_ == NULL) fields_ = new vector<UnknownField>;
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_GROUP);
   field.group_ = new UnknownFieldSet;
+  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
   return field.group_;
 }
 
 void UnknownFieldSet::AddField(const UnknownField& field) {
-  if (fields_ == NULL) fields_ = new vector<UnknownField>;
+  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
   fields_->back().DeepCopy();
 }
 
 void UnknownFieldSet::DeleteSubrange(int start, int num) {
-  GOOGLE_DCHECK(fields_ != NULL);
   // Delete the specified fields.
   for (int i = 0; i < num; ++i) {
     (*fields_)[i + start].Delete();
@@ -167,6 +217,11 @@ void UnknownFieldSet::DeleteSubrange(int start, int num) {
   // Pop off the # of deleted fields.
   for (int i = 0; i < num; ++i) {
     fields_->pop_back();
+  }
+  if (fields_ && fields_->size() == 0) {
+    // maintain invariant: never hold fields_ if empty.
+    delete fields_;
+    fields_ = NULL;
   }
 }
 
@@ -185,13 +240,18 @@ void UnknownFieldSet::DeleteByNumber(int number) {
     }
   }
   fields_->resize(left);
+  if (left == 0) {
+    // maintain invariant: never hold fields_ if empty.
+    delete fields_;
+    fields_ = NULL;
+  }
 }
 
 bool UnknownFieldSet::MergeFromCodedStream(io::CodedInputStream* input) {
   UnknownFieldSet other;
   if (internal::WireFormat::SkipMessage(input, &other) &&
       input->ConsumedEntireMessage()) {
-    MergeFrom(other);
+    MergeFromAndDestroy(&other);
     return true;
   } else {
     return false;
@@ -227,6 +287,22 @@ void UnknownField::Delete() {
   }
 }
 
+// Reset all owned ptrs, a special function for performance, to avoid double
+// owning the ptrs, when we merge from a temporary UnknownFieldSet objects.
+void UnknownField::Reset() {
+  switch (type()) {
+    case UnknownField::TYPE_LENGTH_DELIMITED:
+      length_delimited_.string_value_ = NULL;
+      break;
+    case UnknownField::TYPE_GROUP: {
+      group_ = NULL;
+      break;
+    }
+    default:
+      break;
+  }
+}
+
 void UnknownField::DeepCopy() {
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
@@ -234,8 +310,8 @@ void UnknownField::DeepCopy() {
           *length_delimited_.string_value_);
       break;
     case UnknownField::TYPE_GROUP: {
-      UnknownFieldSet* group = new UnknownFieldSet;
-      group->MergeFrom(*group_);
+      UnknownFieldSet* group = new UnknownFieldSet();
+      group->InternalMergeFrom(*group_);
       group_ = group;
       break;
     }

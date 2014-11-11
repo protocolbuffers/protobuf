@@ -455,19 +455,19 @@ public class CodedInputStreamTest extends TestCase {
   }
 
   public void testMaliciousRecursion() throws Exception {
-    ByteString data64 = makeRecursiveMessage(64).toByteString();
-    ByteString data65 = makeRecursiveMessage(65).toByteString();
+    ByteString data100 = makeRecursiveMessage(100).toByteString();
+    ByteString data101 = makeRecursiveMessage(101).toByteString();
 
-    assertMessageDepth(TestRecursiveMessage.parseFrom(data64), 64);
+    assertMessageDepth(TestRecursiveMessage.parseFrom(data100), 100);
 
     try {
-      TestRecursiveMessage.parseFrom(data65);
+      TestRecursiveMessage.parseFrom(data101);
       fail("Should have thrown an exception!");
     } catch (InvalidProtocolBufferException e) {
       // success.
     }
 
-    CodedInputStream input = data64.newCodedInput();
+    CodedInputStream input = data100.newCodedInput();
     input.setRecursionLimit(8);
     try {
       TestRecursiveMessage.parseFrom(input);

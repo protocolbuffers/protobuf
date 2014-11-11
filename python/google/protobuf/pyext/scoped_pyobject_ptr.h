@@ -33,6 +33,8 @@
 #ifndef GOOGLE_PROTOBUF_PYTHON_CPP_SCOPED_PYOBJECT_PTR_H__
 #define GOOGLE_PROTOBUF_PYTHON_CPP_SCOPED_PYOBJECT_PTR_H__
 
+#include <google/protobuf/stubs/common.h>
+
 #include <Python.h>
 
 namespace google {

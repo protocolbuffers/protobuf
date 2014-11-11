@@ -144,6 +144,7 @@ uint8 CodedStreamTest::buffer_[CodedStreamTest::kBufferSize];
 // checks.
 const int kBlockSizes[] = {1, 2, 3, 5, 7, 13, 32, 1024};
 
+
 // -------------------------------------------------------------------
 // Varint tests.
 

@@ -44,6 +44,7 @@
 // plugin should be named "protoc-gen-$NAME", and will then be used when the
 // flag "--${NAME}_out" is passed to protoc.
 
+syntax = "proto2";
 package google.protobuf.compiler;
 option java_package = "com.google.protobuf.compiler";
 option java_outer_classname = "PluginProtos";

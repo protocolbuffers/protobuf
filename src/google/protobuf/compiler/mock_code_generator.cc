@@ -33,6 +33,9 @@
 #include <google/protobuf/compiler/mock_code_generator.h>
 
 #include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/descriptor.pb.h>

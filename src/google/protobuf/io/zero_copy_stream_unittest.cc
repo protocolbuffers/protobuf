@@ -656,6 +656,43 @@ TEST_F(IoTest, TwoSessionWriteGzip) {
   delete [] temp_buffer;
   delete [] buffer;
 }
+
+TEST_F(IoTest, GzipInputByteCountAfterClosed) {
+  string golden = "abcdefghijklmnopqrstuvwxyz";
+  string compressed = Compress(golden, GzipOutputStream::Options());
+
+  for (int i = 0; i < kBlockSizeCount; i++) {
+    ArrayInputStream arr_input(compressed.data(), compressed.size(),
+                               kBlockSizes[i]);
+    GzipInputStream gz_input(&arr_input);
+    const void* buffer;
+    int size;
+    while (gz_input.Next(&buffer, &size)) {
+      EXPECT_LE(gz_input.ByteCount(), golden.size());
+    }
+    EXPECT_EQ(golden.size(), gz_input.ByteCount());
+  }
+}
+
+TEST_F(IoTest, GzipInputByteCountAfterClosedConcatenatedStreams) {
+  string golden1 = "abcdefghijklmnopqrstuvwxyz";
+  string golden2 = "the quick brown fox jumps over the lazy dog";
+  const size_t total_size = golden1.size() + golden2.size();
+  string compressed = Compress(golden1, GzipOutputStream::Options()) +
+                      Compress(golden2, GzipOutputStream::Options());
+
+  for (int i = 0; i < kBlockSizeCount; i++) {
+    ArrayInputStream arr_input(compressed.data(), compressed.size(),
+                               kBlockSizes[i]);
+    GzipInputStream gz_input(&arr_input);
+    const void* buffer;
+    int size;
+    while (gz_input.Next(&buffer, &size)) {
+      EXPECT_LE(gz_input.ByteCount(), total_size);
+    }
+    EXPECT_EQ(total_size, gz_input.ByteCount());
+  }
+}
 #endif
 
 // There is no string input, only string output.  Also, it doesn't support

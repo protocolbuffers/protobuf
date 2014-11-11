@@ -37,6 +37,7 @@
 #include <google/protobuf/unittest_mset.pb.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/arena.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/wire_format.h>
@@ -317,6 +318,117 @@ TEST(ExtensionSetTest, SwapExtensionBothFull) {
 
   TestUtil::ExpectAllExtensionsSet(message1);
   TestUtil::ExpectAllExtensionsSet(message2);
+}
+
+TEST(ExtensionSetTest, ArenaSetAllExtension) {
+  ::google::protobuf::Arena arena1;
+  unittest::TestAllExtensions* message1 =
+      ::google::protobuf::Arena::CreateMessage<unittest::TestAllExtensions>(&arena1);
+  TestUtil::SetAllExtensions(message1);
+  TestUtil::ExpectAllExtensionsSet(*message1);
+}
+
+TEST(ExtensionSetTest, ArenaCopyConstructor) {
+  ::google::protobuf::Arena arena1;
+  unittest::TestAllExtensions* message1 =
+      ::google::protobuf::Arena::CreateMessage<unittest::TestAllExtensions>(&arena1);
+  TestUtil::SetAllExtensions(message1);
+  unittest::TestAllExtensions message2(*message1);
+  arena1.Reset();
+  TestUtil::ExpectAllExtensionsSet(message2);
+}
+
+TEST(ExtensionSetTest, ArenaMergeFrom) {
+  ::google::protobuf::Arena arena1;
+  unittest::TestAllExtensions* message1 =
+      ::google::protobuf::Arena::CreateMessage<unittest::TestAllExtensions>(&arena1);
+  TestUtil::SetAllExtensions(message1);
+  unittest::TestAllExtensions message2;
+  message2.MergeFrom(*message1);
+  arena1.Reset();
+  TestUtil::ExpectAllExtensionsSet(message2);
+}
+
+TEST(ExtensionSetTest, ArenaSetAllocatedMessageAndRelease) {
+  ::google::protobuf::Arena arena;
+  unittest::TestAllExtensions* message =
+      ::google::protobuf::Arena::CreateMessage<unittest::TestAllExtensions>(&arena);
+  EXPECT_FALSE(message->HasExtension(
+      unittest::optional_foreign_message_extension));
+  // Add a extension using SetAllocatedExtension
+  unittest::ForeignMessage* foreign_message = new unittest::ForeignMessage();
+  message->SetAllocatedExtension(unittest::optional_foreign_message_extension,
+                                 foreign_message);
+  // foreign_message is copied underneath, as foreign_message is on heap
+  // and extension_set is on an arena.
+  EXPECT_NE(foreign_message,
+            message->MutableExtension(
+                unittest::optional_foreign_message_extension));
+
+  // Underlying message is copied, and returned.
+  unittest::ForeignMessage* released_message = message->ReleaseExtension(
+      unittest::optional_foreign_message_extension);
+  delete released_message;
+  EXPECT_FALSE(message->HasExtension(
+      unittest::optional_foreign_message_extension));
+}
+
+TEST(ExtensionSetTest, SwapExtensionBothFullWithArena) {
+  ::google::protobuf::Arena arena1;
+  scoped_ptr<google::protobuf::Arena> arena2(new ::google::protobuf::Arena());
+
+  unittest::TestAllExtensions* message1 =
+      Arena::CreateMessage<unittest::TestAllExtensions>(&arena1);
+  unittest::TestAllExtensions* message2 =
+      Arena::CreateMessage<unittest::TestAllExtensions>(arena2.get());
+
+  TestUtil::SetAllExtensions(message1);
+  TestUtil::SetAllExtensions(message2);
+  message1->SetExtension(unittest::optional_int32_extension, 1);
+  message2->SetExtension(unittest::optional_int32_extension, 2);
+  message1->Swap(message2);
+  EXPECT_EQ(2, message1->GetExtension(unittest::optional_int32_extension));
+  EXPECT_EQ(1, message2->GetExtension(unittest::optional_int32_extension));
+  // Re-set the original values so ExpectAllExtensionsSet is happy.
+  message1->SetExtension(unittest::optional_int32_extension, 101);
+  message2->SetExtension(unittest::optional_int32_extension, 101);
+  TestUtil::ExpectAllExtensionsSet(*message1);
+  TestUtil::ExpectAllExtensionsSet(*message2);
+  arena2.reset(NULL);
+  TestUtil::ExpectAllExtensionsSet(*message1);
+  // Test corner cases, when one is empty and other is not.
+  ::google::protobuf::Arena arena3, arena4;
+
+  unittest::TestAllExtensions* message3 =
+      Arena::CreateMessage<unittest::TestAllExtensions>(&arena3);
+  unittest::TestAllExtensions* message4 =
+      Arena::CreateMessage<unittest::TestAllExtensions>(&arena4);
+  TestUtil::SetAllExtensions(message3);
+  message3->Swap(message4);
+  arena3.Reset();
+  TestUtil::ExpectAllExtensionsSet(*message4);
+}
+
+TEST(ExtensionSetTest, SwapFieldsOfExtensionBothFullWithArena) {
+  google::protobuf::Arena arena1;
+  google::protobuf::Arena* arena2 = new ::google::protobuf::Arena();
+
+  unittest::TestAllExtensions* message1 =
+      Arena::CreateMessage<unittest::TestAllExtensions>(&arena1);
+  unittest::TestAllExtensions* message2 =
+      Arena::CreateMessage<unittest::TestAllExtensions>(arena2);
+
+  TestUtil::SetAllExtensions(message1);
+  TestUtil::SetAllExtensions(message2);
+
+  const Reflection* reflection = message1->GetReflection();
+  vector<const FieldDescriptor*> fields;
+  reflection->ListFields(*message1, &fields);
+  reflection->SwapFields(message1, message2, fields);
+  TestUtil::ExpectAllExtensionsSet(*message1);
+  TestUtil::ExpectAllExtensionsSet(*message2);
+  delete arena2;
+  TestUtil::ExpectAllExtensionsSet(*message1);
 }
 
 TEST(ExtensionSetTest, SwapExtensionWithSelf) {

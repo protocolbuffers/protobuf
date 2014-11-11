@@ -38,6 +38,7 @@ MAINTAINERCLEANFILES =   \
   Makefile.in
 
 nobase_include_HEADERS =                                        \
+  google/protobuf/stubs/atomic_sequence_num.h                   \
   google/protobuf/stubs/atomicops.h                             \
   google/protobuf/stubs/atomicops_internals_arm64_gcc.h         \
   google/protobuf/stubs/atomicops_internals_arm_gcc.h           \
@@ -51,24 +52,32 @@ nobase_include_HEADERS =                                        \
   google/protobuf/stubs/atomicops_internals_tsan.h              \
   google/protobuf/stubs/atomicops_internals_x86_gcc.h           \
   google/protobuf/stubs/atomicops_internals_x86_msvc.h          \
+  google/protobuf/stubs/casts.h                                 \
+  google/protobuf/stubs/singleton.h                             \
   google/protobuf/stubs/common.h                                \
-  google/protobuf/stubs/platform_macros.h                       \
+  google/protobuf/stubs/fastmem.h                               \
   google/protobuf/stubs/once.h                                  \
+  google/protobuf/stubs/platform_macros.h                       \
   google/protobuf/stubs/stl_util.h                              \
   google/protobuf/stubs/template_util.h                         \
   google/protobuf/stubs/type_traits.h                           \
+  google/protobuf/arena.h                                       \
+  google/protobuf/arenastring.h                                 \
+  google/protobuf/descriptor_database.h                         \
   google/protobuf/descriptor.h                                  \
   google/protobuf/descriptor.pb.h                               \
-  google/protobuf/descriptor_database.h                         \
   google/protobuf/dynamic_message.h                             \
   google/protobuf/extension_set.h                               \
   google/protobuf/generated_enum_reflection.h                   \
-  google/protobuf/generated_message_util.h                      \
   google/protobuf/generated_message_reflection.h                \
+  google/protobuf/generated_message_util.h                      \
   google/protobuf/message.h                                     \
   google/protobuf/message_lite.h                                \
+  google/protobuf/metadata.h                                    \
+  google/protobuf/reflection.h                                  \
   google/protobuf/reflection_ops.h                              \
   google/protobuf/repeated_field.h                              \
+  google/protobuf/repeated_field_reflection.h                   \
   google/protobuf/service.h                                     \
   google/protobuf/text_format.h                                 \
   google/protobuf/unknown_field_set.h                           \
@@ -107,6 +116,8 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/shared_ptr.h                           \
   google/protobuf/stubs/stringprintf.cc                        \
   google/protobuf/stubs/stringprintf.h                         \
+  google/protobuf/arena.cc                                     \
+  google/protobuf/arenastring.cc                               \
   google/protobuf/extension_set.cc                             \
   google/protobuf/generated_message_util.cc                    \
   google/protobuf/message_lite.cc                              \
@@ -127,12 +138,13 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/stubs/substitute.h                           \
   google/protobuf/stubs/structurally_valid.cc                  \
   google/protobuf/descriptor.cc                                \
-  google/protobuf/descriptor.pb.cc                             \
   google/protobuf/descriptor_database.cc                       \
+  google/protobuf/descriptor.pb.cc                             \
   google/protobuf/dynamic_message.cc                           \
   google/protobuf/extension_set_heavy.cc                       \
   google/protobuf/generated_message_reflection.cc              \
   google/protobuf/message.cc                                   \
+  google/protobuf/reflection_internal.h                        \
   google/protobuf/reflection_ops.cc                            \
   google/protobuf/service.cc                                   \
   google/protobuf/text_format.cc                               \
@@ -184,9 +196,9 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_context.cc                \
   google/protobuf/compiler/java/java_context.h                 \
   google/protobuf/compiler/java/java_enum.cc                   \
-  google/protobuf/compiler/java/java_enum.h                    \
   google/protobuf/compiler/java/java_enum_field.cc             \
   google/protobuf/compiler/java/java_enum_field.h              \
+  google/protobuf/compiler/java/java_enum.h                    \
   google/protobuf/compiler/java/java_extension.cc              \
   google/protobuf/compiler/java/java_extension.h               \
   google/protobuf/compiler/java/java_field.cc                  \
@@ -200,10 +212,12 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_helpers.h                 \
   google/protobuf/compiler/java/java_lazy_message_field.cc     \
   google/protobuf/compiler/java/java_lazy_message_field.h      \
+  google/protobuf/compiler/java/java_map_field.cc              \
+  google/protobuf/compiler/java/java_map_field.h               \
   google/protobuf/compiler/java/java_message.cc                \
-  google/protobuf/compiler/java/java_message.h                 \
   google/protobuf/compiler/java/java_message_field.cc          \
   google/protobuf/compiler/java/java_message_field.h           \
+  google/protobuf/compiler/java/java_message.h                 \
   google/protobuf/compiler/java/java_name_resolver.cc          \
   google/protobuf/compiler/java/java_name_resolver.h           \
   google/protobuf/compiler/java/java_primitive_field.cc        \
@@ -226,18 +240,25 @@ protoc_SOURCES = google/protobuf/compiler/main.cc
 
 protoc_inputs =                                                \
   google/protobuf/unittest.proto                               \
-  google/protobuf/unittest_empty.proto                         \
-  google/protobuf/unittest_import.proto                        \
-  google/protobuf/unittest_import_public.proto                 \
-  google/protobuf/unittest_mset.proto                          \
-  google/protobuf/unittest_optimize_for.proto                  \
-  google/protobuf/unittest_embed_optimize_for.proto            \
+  google/protobuf/unittest_arena.proto                         \
   google/protobuf/unittest_custom_options.proto                \
-  google/protobuf/unittest_lite.proto                          \
+  google/protobuf/unittest_drop_unknown_fields.proto           \
+  google/protobuf/unittest_embed_optimize_for.proto            \
+  google/protobuf/unittest_empty.proto                         \
   google/protobuf/unittest_import_lite.proto                   \
+  google/protobuf/unittest_import.proto                        \
   google/protobuf/unittest_import_public_lite.proto            \
+  google/protobuf/unittest_import_public.proto                 \
   google/protobuf/unittest_lite_imports_nonlite.proto          \
+  google/protobuf/unittest_lite.proto                          \
+  google/protobuf/unittest_mset.proto                          \
+  google/protobuf/unittest_no_arena_import.proto               \
+  google/protobuf/unittest_no_arena.proto                      \
+  google/protobuf/unittest_no_field_presence.proto             \
   google/protobuf/unittest_no_generic_services.proto           \
+  google/protobuf/unittest_optimize_for.proto                  \
+  google/protobuf/unittest_preserve_unknown_enum.proto         \
+  google/protobuf/unittest_proto3_arena.proto                  \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.proto
 
 EXTRA_DIST =                                                   \
@@ -273,24 +294,38 @@ protoc_outputs =                                               \
   $(protoc_lite_outputs)                                       \
   google/protobuf/unittest.pb.cc                               \
   google/protobuf/unittest.pb.h                                \
+  google/protobuf/unittest_arena.pb.cc                         \
+  google/protobuf/unittest_arena.pb.h                          \
+  google/protobuf/unittest_custom_options.pb.cc                \
+  google/protobuf/unittest_custom_options.pb.h                 \
+  google/protobuf/unittest_drop_unknown_fields.pb.cc           \
+  google/protobuf/unittest_drop_unknown_fields.pb.h            \
+  google/protobuf/unittest_embed_optimize_for.pb.cc            \
+  google/protobuf/unittest_embed_optimize_for.pb.h             \
   google/protobuf/unittest_empty.pb.cc                         \
   google/protobuf/unittest_empty.pb.h                          \
   google/protobuf/unittest_import.pb.cc                        \
   google/protobuf/unittest_import.pb.h                         \
   google/protobuf/unittest_import_public.pb.cc                 \
   google/protobuf/unittest_import_public.pb.h                  \
-  google/protobuf/unittest_mset.pb.cc                          \
-  google/protobuf/unittest_mset.pb.h                           \
-  google/protobuf/unittest_optimize_for.pb.cc                  \
-  google/protobuf/unittest_optimize_for.pb.h                   \
-  google/protobuf/unittest_embed_optimize_for.pb.cc            \
-  google/protobuf/unittest_embed_optimize_for.pb.h             \
-  google/protobuf/unittest_custom_options.pb.cc                \
-  google/protobuf/unittest_custom_options.pb.h                 \
   google/protobuf/unittest_lite_imports_nonlite.pb.cc          \
   google/protobuf/unittest_lite_imports_nonlite.pb.h           \
+  google/protobuf/unittest_mset.pb.cc                          \
+  google/protobuf/unittest_mset.pb.h                           \
+  google/protobuf/unittest_no_arena.pb.cc                      \
+  google/protobuf/unittest_no_arena.pb.h                       \
+  google/protobuf/unittest_no_arena_import.pb.cc               \
+  google/protobuf/unittest_no_arena_import.pb.h                \
+  google/protobuf/unittest_no_field_presence.pb.cc             \
+  google/protobuf/unittest_no_field_presence.pb.h              \
   google/protobuf/unittest_no_generic_services.pb.cc           \
   google/protobuf/unittest_no_generic_services.pb.h            \
+  google/protobuf/unittest_optimize_for.pb.cc                  \
+  google/protobuf/unittest_optimize_for.pb.h                   \
+  google/protobuf/unittest_preserve_unknown_enum.pb.cc         \
+  google/protobuf/unittest_preserve_unknown_enum.pb.h          \
+  google/protobuf/unittest_proto3_arena.pb.cc                  \
+  google/protobuf/unittest_proto3_arena.pb.h                   \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.cc  \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h
 
@@ -342,15 +377,21 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/stubs/stringprintf_unittest.cc               \
   google/protobuf/stubs/template_util_unittest.cc              \
   google/protobuf/stubs/type_traits_unittest.cc                \
+  google/protobuf/arenastring_unittest.cc                      \
+  google/protobuf/arena_unittest.cc                            \
   google/protobuf/descriptor_database_unittest.cc              \
   google/protobuf/descriptor_unittest.cc                       \
+  google/protobuf/drop_unknown_fields_test.cc                  \
   google/protobuf/dynamic_message_unittest.cc                  \
   google/protobuf/extension_set_unittest.cc                    \
   google/protobuf/generated_message_reflection_unittest.cc     \
   google/protobuf/message_unittest.cc                          \
+  google/protobuf/no_field_presence_test.cc                    \
+  google/protobuf/preserve_unknown_enum_test.cc                \
+  google/protobuf/proto3_arena_unittest.cc                     \
   google/protobuf/reflection_ops_unittest.cc                   \
-  google/protobuf/repeated_field_unittest.cc                   \
   google/protobuf/repeated_field_reflection_unittest.cc        \
+  google/protobuf/repeated_field_unittest.cc                   \
   google/protobuf/text_format_unittest.cc                      \
   google/protobuf/unknown_field_set_unittest.cc                \
   google/protobuf/wire_format_unittest.cc                      \

@@ -168,6 +168,25 @@ public interface Message extends MessageLite, MessageOrBuilder {
     Builder getFieldBuilder(Descriptors.FieldDescriptor field);
 
     /**
+     * Get a nested builder instance for the given repeated field instance.
+     * <p>
+     * Normally, we hold a reference to the immutable message object for the
+     * message type field. Some implementations(the generated message builders),
+     * however, can also hold a reference to the builder object (a nested
+     * builder) for the field.
+     * <p>
+     * If the field is already backed up by a nested builder, the nested builder
+     * will be returned. Otherwise, a new field builder will be created and
+     * returned. The original message field (if exist) will be merged into the
+     * field builder, which will then be nested into its parent builder.
+     * <p>
+     * NOTE: implementations that do not support nested builders will throw
+     * <code>UnsupportedException</code>.
+     */
+    Builder getRepeatedFieldBuilder(Descriptors.FieldDescriptor field,
+                                    int index);
+
+    /**
      * Sets a field to the given value.  The value must be of the correct type
      * for this field, i.e. the same type that
      * {@link Message#getField(Descriptors.FieldDescriptor)} would return.

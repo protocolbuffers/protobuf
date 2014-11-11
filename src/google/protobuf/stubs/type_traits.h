@@ -35,6 +35,7 @@
 // any changes here, make sure that you're not breaking any platforms.
 //
 // Define a small subset of tr1 type traits. The traits we define are:
+//   enable_if
 //   is_integral
 //   is_floating_point
 //   is_pointer
@@ -60,12 +61,27 @@
 
 #include <utility>                  // For pair
 
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/template_util.h>  // For true_type and false_type
 
 namespace google {
 namespace protobuf {
 namespace internal {
 
+template<typename B, typename D>
+struct is_base_of {
+  typedef char (&yes)[1];
+  typedef char (&no)[2];
+
+  static yes check(const B*);
+  static no check(const void*);
+
+  enum {
+    value = sizeof(check(static_cast<const D*>(NULL))) == sizeof(yes),
+  };
+};
+
+template <bool cond, class T = void> struct enable_if;
 template <class T> struct is_integral;
 template <class T> struct is_floating_point;
 template <class T> struct is_pointer;
@@ -91,6 +107,13 @@ template <class T, class U> struct is_same;
 template <class From, class To> struct is_convertible;
 #endif
 
+// enable_if, equivalent semantics to c++11 std::enable_if, specifically:
+//   "If B is true, the member typedef type shall equal T; otherwise, there
+//    shall be no member typedef type."
+// Specified by 20.9.7.6 [Other transformations]
+
+template<bool cond, class T> struct enable_if { typedef T type; };
+template<class T> struct enable_if<false, T> {};
 // is_integral is false except for the built-in integer types. A
 // cv-qualified type is integral if and only if the underlying type is.
 template <class T> struct is_integral : false_type { };
@@ -144,7 +167,7 @@ template <class T> struct is_pointer<const volatile T> : is_pointer<T> { };
 
 #if !defined(_MSC_VER) && !(defined(__GNUC__) && __GNUC__ <= 3)
 
-namespace internal {
+namespace type_traits_internal {
 
 template <class T> struct is_class_or_union {
   template <class U> static small_ tester(void (U::*)());
@@ -159,7 +182,7 @@ template <bool NotUnum, class T> struct is_enum_impl
 
 template <class T> struct is_enum_impl<true, T> : false_type { };
 
-}  // namespace internal
+}  // namespace type_traits_internal
 
 // Specified by TR1 [4.5.1] primary type categories.
 
@@ -177,12 +200,12 @@ template <class T> struct is_enum_impl<true, T> : false_type { };
 // because it can't be used with some types (e.g. void or classes with
 // inaccessible conversion operators).
 template <class T> struct is_enum
-    : internal::is_enum_impl<
+    : type_traits_internal::is_enum_impl<
           is_same<T, void>::value ||
               is_integral<T>::value ||
               is_floating_point<T>::value ||
               is_reference<T>::value ||
-              internal::is_class_or_union<T>::value,
+              type_traits_internal::is_class_or_union<T>::value,
           T> { };
 
 template <class T> struct is_enum<const T> : is_enum<T> { };
@@ -300,7 +323,7 @@ template<typename T> struct is_same<T, T> : public true_type { };
 
 // Specified by TR1 [4.6] Relationships between types
 #if !defined(_MSC_VER) && !(defined(__GNUC__) && __GNUC__ <= 3)
-namespace internal {
+namespace type_traits_internal {
 
 // This class is an implementation detail for is_convertible, and you
 // don't need to know how it works to use is_convertible. For those
@@ -317,14 +340,14 @@ struct ConvertHelper {
   static big_ Test(...);
   static From Create();
 };
-}  // namespace internal
+}  // namespace type_traits_internal
 
 // Inherits from true_type if From is convertible to To, false_type otherwise.
 template <typename From, typename To>
 struct is_convertible
     : integral_constant<bool,
-                        sizeof(internal::ConvertHelper<From, To>::Test(
-                                  internal::ConvertHelper<From, To>::Create()))
+                        sizeof(type_traits_internal::ConvertHelper<From, To>::Test(
+                                  type_traits_internal::ConvertHelper<From, To>::Create()))
                         == sizeof(small_)> {
 };
 #endif

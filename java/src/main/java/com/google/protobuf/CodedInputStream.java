@@ -612,16 +612,16 @@ public final class CodedInputStream {
         return x;
       } else if (bufferSize - pos < 9) {
         break fastpath;
-      } else if ((x ^= (buffer[pos++] << 7)) < 0L) {
-        x ^= (~0L << 7);
-      } else if ((x ^= (buffer[pos++] << 14)) >= 0L) {
-        x ^= (~0L << 7) ^ (~0L << 14);
-      } else if ((x ^= (buffer[pos++] << 21)) < 0L) {
-        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21);
+      } else if ((x ^= (buffer[pos++] << 7)) < 0) {
+        x ^= (~0 << 7);
+      } else if ((x ^= (buffer[pos++] << 14)) >= 0) {
+        x ^= (~0 << 7) ^ (~0 << 14);
+      } else if ((x ^= (buffer[pos++] << 21)) < 0) {
+        x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21);
       } else {
         int y = buffer[pos++];
         x ^= y << 28;
-        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28);
+        x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21) ^ (~0 << 28);
         if (y < 0 &&
             buffer[pos++] < 0 &&
             buffer[pos++] < 0 &&
@@ -739,13 +739,13 @@ public final class CodedInputStream {
         return y;
       } else if (bufferSize - pos < 9) {
         break fastpath;
-      } else if ((x = y ^ (buffer[pos++] << 7)) < 0L) {
-        x ^= (~0L << 7);
-      } else if ((x ^= (buffer[pos++] << 14)) >= 0L) {
-        x ^= (~0L << 7) ^ (~0L << 14);
-      } else if ((x ^= (buffer[pos++] << 21)) < 0L) {
-        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21);
-      } else if ((x ^= ((long) buffer[pos++] << 28)) >= 0L) {
+      } else if ((y ^= (buffer[pos++] << 7)) < 0) {
+        x = y ^ (~0 << 7);
+      } else if ((y ^= (buffer[pos++] << 14)) >= 0) {
+        x = y ^ ((~0 << 7) ^ (~0 << 14));
+      } else if ((y ^= (buffer[pos++] << 21)) < 0) {
+        x = y ^ ((~0 << 7) ^ (~0 << 14) ^ (~0 << 21));
+      } else if ((x = ((long) y) ^ ((long) buffer[pos++] << 28)) >= 0L) {
         x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28);
       } else if ((x ^= ((long) buffer[pos++] << 35)) < 0L) {
         x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35);
@@ -882,7 +882,7 @@ public final class CodedInputStream {
   /** See setSizeLimit() */
   private int sizeLimit = DEFAULT_SIZE_LIMIT;
 
-  private static final int DEFAULT_RECURSION_LIMIT = 64;
+  private static final int DEFAULT_RECURSION_LIMIT = 100;
   private static final int DEFAULT_SIZE_LIMIT = 64 << 20;  // 64MB
   private static final int BUFFER_SIZE = 4096;
 

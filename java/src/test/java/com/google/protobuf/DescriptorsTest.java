@@ -706,6 +706,12 @@ public class DescriptorsTest extends TestCase {
     assertTrue(TestMultipleExtensionRanges.getDescriptor().isExtensionNumber(4143));
   }
 
+  public void testToString() {
+    assertEquals("protobuf_unittest.TestAllTypes.optional_uint64",
+        UnittestProto.TestAllTypes.getDescriptor().findFieldByNumber(
+            UnittestProto.TestAllTypes.OPTIONAL_UINT64_FIELD_NUMBER).toString());
+  }
+
   public void testPackedEnumField() throws Exception {
     FileDescriptorProto fileDescriptorProto = FileDescriptorProto.newBuilder()
         .setName("foo.proto")

@@ -171,6 +171,7 @@ DECLARE_STREAM_OPERATOR(uint         , "%u" )
 DECLARE_STREAM_OPERATOR(long         , "%ld")
 DECLARE_STREAM_OPERATOR(unsigned long, "%lu")
 DECLARE_STREAM_OPERATOR(double       , "%g" )
+DECLARE_STREAM_OPERATOR(void*        , "%p" )
 #undef DECLARE_STREAM_OPERATOR
 
 LogMessage::LogMessage(LogLevel level, const char* filename, int line)

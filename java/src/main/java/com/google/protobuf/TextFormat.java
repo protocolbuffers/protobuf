@@ -1211,6 +1211,7 @@ public final class TextFormat {
       private SingularOverwritePolicy singularOverwritePolicy =
           SingularOverwritePolicy.ALLOW_SINGULAR_OVERWRITES;
 
+
       /**
        * Sets parser behavior when a non-repeated field appears more than once.
        */
@@ -1417,6 +1418,12 @@ public final class TextFormat {
         }
       } else {
         consumeFieldValue(tokenizer, extensionRegistry, target, field, extension);
+      }
+
+      // For historical reasons, fields may optionally be separated by commas or
+      // semicolons.
+      if (!tokenizer.tryConsume(";")) {
+        tokenizer.tryConsume(",");
       }
     }
 
@@ -1656,10 +1663,9 @@ public final class TextFormat {
         case '\'': builder.append("\\\'"); break;
         case '"' : builder.append("\\\""); break;
         default:
-          // Note:  Bytes with the high-order bit set should be escaped.  Since
-          //   bytes are signed, such bytes will compare less than 0x20, hence
-          //   the following line is correct.
-          if (b >= 0x20) {
+          // Only ASCII characters between 0x20 (space) and 0x7e (tilde) are
+          // printable.  Other byte values must be escaped.
+          if (b >= 0x20 && b <= 0x7e) {
             builder.append((char) b);
           } else {
             builder.append('\\');

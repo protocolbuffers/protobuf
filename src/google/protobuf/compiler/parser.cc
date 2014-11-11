@@ -84,6 +84,32 @@ TypeNameMap MakeTypeNameTable() {
 
 const TypeNameMap kTypeNames = MakeTypeNameTable();
 
+// Camel-case the field name and append "Entry" for generated map entry name.
+// e.g. map<KeyType, ValueType> foo_map => FooMapEntry
+string MapEntryName(const string& field_name) {
+  string result;
+  static const char kSuffix[] = "Entry";
+  result.reserve(field_name.size() + sizeof(kSuffix));
+  bool cap_next = true;
+  for (int i = 0; i < field_name.size(); ++i) {
+    if (field_name[i] == '_') {
+      cap_next = true;
+    } else if (cap_next) {
+      // Note: Do not use ctype.h due to locales.
+      if ('a' <= field_name[i] && field_name[i] <= 'z') {
+        result.push_back(field_name[i] - 'a' + 'A');
+      } else {
+        result.push_back(field_name[i]);
+      }
+      cap_next = false;
+    } else {
+      result.push_back(field_name[i]);
+    }
+  }
+  result.append(kSuffix);
+  return result;
+}
+
 }  // anonymous namespace
 
 // Makes code slightly more readable.  The meaning of "DO(foo)" is
@@ -439,6 +465,8 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
         // identifier.
         return false;
       }
+      // Store the syntax into the file.
+      if (file != NULL) file->set_syntax(syntax_identifier_);
     } else if (!stop_after_syntax_identifier_) {
       syntax_identifier_ = "proto2";
     }
@@ -467,7 +495,9 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
 }
 
 bool Parser::ParseSyntaxIdentifier() {
-  DO(Consume("syntax", "File must begin with 'syntax = \"proto2\";'."));
+  DO(Consume(
+      "syntax",
+      "File must begin with a syntax statement, e.g. 'syntax = \"proto2\";'."));
   DO(Consume("="));
   io::Tokenizer::Token syntax_token = input_->current();
   string syntax;
@@ -476,10 +506,11 @@ bool Parser::ParseSyntaxIdentifier() {
 
   syntax_identifier_ = syntax;
 
-  if (syntax != "proto2" && !stop_after_syntax_identifier_) {
+  if (syntax != "proto2" && syntax != "proto3" &&
+      !stop_after_syntax_identifier_) {
     AddError(syntax_token.line, syntax_token.column,
       "Unrecognized syntax identifier \"" + syntax + "\".  This parser "
-      "only recognizes \"proto2\".");
+      "only recognizes \"proto2\" and \"proto3\".");
     return false;
   }
 
@@ -673,8 +704,9 @@ bool Parser::ParseMessageField(FieldDescriptorProto* field,
     LocationRecorder location(field_location,
                               FieldDescriptorProto::kLabelFieldNumber);
     FieldDescriptorProto::Label label;
-    DO(ParseLabel(&label, containing_file));
-    field->set_label(label);
+    if (ParseLabel(&label, containing_file)) {
+      field->set_label(label);
+    }
   }
 
   return ParseMessageFieldNoLabel(field, messages, parent_location,
@@ -690,20 +722,75 @@ bool Parser::ParseMessageFieldNoLabel(
     int location_field_number_for_nested_type,
     const LocationRecorder& field_location,
     const FileDescriptorProto* containing_file) {
+  MapField map_field;
   // Parse type.
   {
     LocationRecorder location(field_location);  // add path later
     location.RecordLegacyLocation(field, DescriptorPool::ErrorCollector::TYPE);
 
+    bool type_parsed = false;
     FieldDescriptorProto::Type type = FieldDescriptorProto::TYPE_INT32;
     string type_name;
-    DO(ParseType(&type, &type_name));
-    if (type_name.empty()) {
-      location.AddPath(FieldDescriptorProto::kTypeFieldNumber);
-      field->set_type(type);
-    } else {
+
+    // Special case map field. We only treat the field as a map field if the
+    // field type name starts with the word "map" with a following "<".
+    if (TryConsume("map")) {
+      if (LookingAt("<")) {
+        map_field.is_map_field = true;
+      } else {
+        // False positive
+        type_parsed = true;
+        type_name = "map";
+      }
+    }
+    if (map_field.is_map_field) {
+      if (field->has_oneof_index()) {
+        AddError("Map fields are not allowed in oneofs.");
+        return false;
+      }
+      if (field->has_label()) {
+        AddError(
+            "Field labels (required/optional/repeated) are not allowed on "
+            "map fields.");
+        return false;
+      }
+      if (field->has_extendee()) {
+        AddError("Map fields are not allowed to be extensions.");
+        return false;
+      }
+      field->set_label(FieldDescriptorProto::LABEL_REPEATED);
+      DO(Consume("<"));
+      DO(ParseType(&map_field.key_type, &map_field.key_type_name));
+      DO(Consume(","));
+      DO(ParseType(&map_field.value_type, &map_field.value_type_name));
+      DO(Consume(">"));
+      // Defer setting of the type name of the map field until the
+      // field name is parsed. Add the source location though.
       location.AddPath(FieldDescriptorProto::kTypeNameFieldNumber);
-      field->set_type_name(type_name);
+    } else {
+      // Handle the case where no explicit label is given for a non-map field.
+      if (!field->has_label() && DefaultToOptionalFields()) {
+        field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+      }
+      if (!field->has_label()) {
+        AddError("Expected \"required\", \"optional\", or \"repeated\".");
+        // We can actually reasonably recover here by just assuming the user
+        // forgot the label altogether.
+        field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+      }
+
+      // Handle the case where the actual type is a message or enum named "map",
+      // which we already consumed in the code above.
+      if (!type_parsed) {
+        DO(ParseType(&type, &type_name));
+      }
+      if (type_name.empty()) {
+        location.AddPath(FieldDescriptorProto::kTypeFieldNumber);
+        field->set_type(type);
+      } else {
+        location.AddPath(FieldDescriptorProto::kTypeNameFieldNumber);
+        field->set_type_name(type_name);
+      }
     }
   }
 
@@ -781,7 +868,40 @@ bool Parser::ParseMessageFieldNoLabel(
     DO(ConsumeEndOfDeclaration(";", &field_location));
   }
 
+  // Create a map entry type if this is a map field.
+  if (map_field.is_map_field) {
+    GenerateMapEntry(map_field, field, messages);
+  }
+
   return true;
+}
+
+void Parser::GenerateMapEntry(const MapField& map_field,
+                              FieldDescriptorProto* field,
+                              RepeatedPtrField<DescriptorProto>* messages) {
+  DescriptorProto* entry = messages->Add();
+  string entry_name = MapEntryName(field->name());
+  field->set_type_name(entry_name);
+  entry->set_name(entry_name);
+  entry->mutable_options()->set_map_entry(true);
+  FieldDescriptorProto* key_field = entry->add_field();
+  key_field->set_name("key");
+  key_field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  key_field->set_number(1);
+  if (map_field.key_type_name.empty()) {
+    key_field->set_type(map_field.key_type);
+  } else {
+    key_field->set_type_name(map_field.key_type_name);
+  }
+  FieldDescriptorProto* value_field = entry->add_field();
+  value_field->set_name("value");
+  value_field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  value_field->set_number(2);
+  if (map_field.value_type_name.empty()) {
+    value_field->set_type(map_field.value_type);
+  } else {
+    value_field->set_type_name(map_field.value_type_name);
+  }
 }
 
 bool Parser::ParseFieldOptions(FieldDescriptorProto* field,
@@ -1588,13 +1708,8 @@ bool Parser::ParseLabel(FieldDescriptorProto::Label* label,
   } else if (TryConsume("required")) {
     *label = FieldDescriptorProto::LABEL_REQUIRED;
     return true;
-  } else {
-    AddError("Expected \"required\", \"optional\", or \"repeated\".");
-    // We can actually reasonably recover here by just assuming the user
-    // forgot the label altogether.
-    *label = FieldDescriptorProto::LABEL_OPTIONAL;
-    return true;
   }
+  return false;
 }
 
 bool Parser::ParseType(FieldDescriptorProto::Type* type,

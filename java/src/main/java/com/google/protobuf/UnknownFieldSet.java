@@ -431,6 +431,21 @@ public final class UnknownFieldSet implements MessageLite {
       return this;
     }
 
+
+    /**
+     * Convenience method for merging a length-delimited field.
+     *
+     * <p>For use by generated code only.
+     */
+    public Builder mergeLengthDelimitedField(
+        final int number, final ByteString value) {  
+      if (number == 0) {
+        throw new IllegalArgumentException("Zero is not a valid field number.");
+      }
+      getFieldBuilder(number).addLengthDelimited(value);
+      return this;
+    }
+
     /** Check if the given field number is present in the set. */
     public boolean hasField(final int number) {
       if (number == 0) {

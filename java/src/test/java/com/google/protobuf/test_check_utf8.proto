@@ -31,6 +31,7 @@
 // Author: Jacob Butcher (jbaum@google.com)
 //
 // Test file option java_string_check_utf8.
+syntax = "proto2";
 
 package proto2_test_check_utf8;
 

@@ -74,6 +74,10 @@ public class LazyStringArrayList extends AbstractList<String>
     list = new ArrayList<Object>();
   }
 
+  public LazyStringArrayList(int intialCapacity) {
+    list = new ArrayList<Object>(intialCapacity);
+  }
+
   public LazyStringArrayList(LazyStringList from) {
     list = new ArrayList<Object>(from.size());
     addAll(from);

@@ -34,9 +34,13 @@
 
 #include <google/protobuf/stubs/hash.h>
 #include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/testing/file.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
 #include <google/protobuf/stubs/map_util.h>
@@ -52,6 +56,10 @@ namespace protobuf {
 namespace compiler {
 
 namespace {
+
+bool FileExists(const string& path) {
+  return File::Exists(path);
+}
 
 #define EXPECT_SUBSTRING(needle, haystack) \
   EXPECT_PRED_FORMAT2(testing::IsSubstring, (needle), (haystack))
@@ -215,120 +223,6 @@ TEST_F(ImporterTest, RecursiveImport) {
     error_collector_.text_);
 }
 
-// TODO(sanjay): The MapField tests below more properly belong in
-// descriptor_unittest, but are more convenient to test here.
-TEST_F(ImporterTest, MapFieldValid) {
-  AddFile(
-      "map.proto",
-      "syntax = \"proto2\";\n"
-      "message Item {\n"
-      "  required string key = 1;\n"
-      "}\n"
-      "message Map {\n"
-      "  repeated Item items = 1 [experimental_map_key = \"key\"];\n"
-      "}\n"
-      );
-  const FileDescriptor* file = importer_.Import("map.proto");
-  ASSERT_TRUE(file != NULL) << error_collector_.text_;
-  EXPECT_EQ("", error_collector_.text_);
-
-  // Check that Map::items points to Item::key
-  const Descriptor* item_type = file->FindMessageTypeByName("Item");
-  ASSERT_TRUE(item_type != NULL);
-  const Descriptor* map_type = file->FindMessageTypeByName("Map");
-  ASSERT_TRUE(map_type != NULL);
-  const FieldDescriptor* key_field = item_type->FindFieldByName("key");
-  ASSERT_TRUE(key_field != NULL);
-  const FieldDescriptor* items_field = map_type->FindFieldByName("items");
-  ASSERT_TRUE(items_field != NULL);
-  EXPECT_EQ(items_field->experimental_map_key(), key_field);
-}
-
-TEST_F(ImporterTest, MapFieldNotRepeated) {
-  AddFile(
-      "map.proto",
-      "syntax = \"proto2\";\n"
-      "message Item {\n"
-      "  required string key = 1;\n"
-      "}\n"
-      "message Map {\n"
-      "  required Item items = 1 [experimental_map_key = \"key\"];\n"
-      "}\n"
-      );
-  EXPECT_TRUE(importer_.Import("map.proto") == NULL);
-  EXPECT_SUBSTRING("only allowed for repeated fields", error());
-}
-
-TEST_F(ImporterTest, MapFieldNotMessageType) {
-  AddFile(
-      "map.proto",
-      "syntax = \"proto2\";\n"
-      "message Map {\n"
-      "  repeated int32 items = 1 [experimental_map_key = \"key\"];\n"
-      "}\n"
-      );
-  EXPECT_TRUE(importer_.Import("map.proto") == NULL);
-  EXPECT_SUBSTRING("only allowed for fields with a message type", error());
-}
-
-TEST_F(ImporterTest, MapFieldTypeNotFound) {
-  AddFile(
-      "map.proto",
-      "syntax = \"proto2\";\n"
-      "message Map {\n"
-      "  repeated Unknown items = 1 [experimental_map_key = \"key\"];\n"
-      "}\n"
-      );
-  EXPECT_TRUE(importer_.Import("map.proto") == NULL);
-  EXPECT_SUBSTRING("not defined", error());
-}
-
-TEST_F(ImporterTest, MapFieldKeyNotFound) {
-  AddFile(
-      "map.proto",
-      "syntax = \"proto2\";\n"
-      "message Item {\n"
-      "  required string key = 1;\n"
-      "}\n"
-      "message Map {\n"
-      "  repeated Item items = 1 [experimental_map_key = \"badkey\"];\n"
-      "}\n"
-      );
-  EXPECT_TRUE(importer_.Import("map.proto") == NULL);
-  EXPECT_SUBSTRING("Could not find field", error());
-}
-
-TEST_F(ImporterTest, MapFieldKeyRepeated) {
-  AddFile(
-      "map.proto",
-      "syntax = \"proto2\";\n"
-      "message Item {\n"
-      "  repeated string key = 1;\n"
-      "}\n"
-      "message Map {\n"
-      "  repeated Item items = 1 [experimental_map_key = \"key\"];\n"
-      "}\n"
-      );
-  EXPECT_TRUE(importer_.Import("map.proto") == NULL);
-  EXPECT_SUBSTRING("must not name a repeated field", error());
-}
-
-TEST_F(ImporterTest, MapFieldKeyNotScalar) {
-  AddFile(
-      "map.proto",
-      "syntax = \"proto2\";\n"
-      "message ItemKey { }\n"
-      "message Item {\n"
-      "  required ItemKey key = 1;\n"
-      "}\n"
-      "message Map {\n"
-      "  repeated Item items = 1 [experimental_map_key = \"key\"];\n"
-      "}\n"
-      );
-  EXPECT_TRUE(importer_.Import("map.proto") == NULL);
-  EXPECT_SUBSTRING("must name a scalar or string", error());
-}
-
 
 // ===================================================================
 
@@ -339,7 +233,7 @@ class DiskSourceTreeTest : public testing::Test {
     dirnames_.push_back(TestTempDir() + "/test_proto2_import_path_2");
 
     for (int i = 0; i < dirnames_.size(); i++) {
-      if (File::Exists(dirnames_[i])) {
+      if (FileExists(dirnames_[i])) {
         File::DeleteRecursively(dirnames_[i], NULL, NULL);
       }
       GOOGLE_CHECK_OK(File::CreateDir(dirnames_[i], 0777));

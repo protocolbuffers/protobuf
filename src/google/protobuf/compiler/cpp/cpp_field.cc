@@ -34,6 +34,9 @@
 
 #include <google/protobuf/compiler/cpp/cpp_field.h>
 #include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_primitive_field.h>
@@ -68,6 +71,20 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
       ? " PROTOBUF_DEPRECATED" : "";
 
   (*variables)["cppget"] = "Get";
+
+  if (HasFieldPresence(descriptor->file())) {
+    (*variables)["set_hasbit"] =
+        "set_has_" + FieldName(descriptor) + "();";
+    (*variables)["clear_hasbit"] =
+        "clear_has_" + FieldName(descriptor) + "();";
+  } else {
+    (*variables)["set_hasbit"] = "";
+    (*variables)["clear_hasbit"] = "";
+  }
+
+  // By default, empty string, so that generic code used for both oneofs and
+  // singular fields can be written.
+  (*variables)["oneof_prefix"] = "";
 }
 
 void SetCommonOneofFieldVariables(const FieldDescriptor* descriptor,

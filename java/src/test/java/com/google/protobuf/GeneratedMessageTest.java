@@ -157,15 +157,12 @@ public class GeneratedMessageTest extends TestCase {
   public void testProtosShareRepeatedArraysIfDidntChange() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     builder.addRepeatedInt32(100);
-    builder.addRepeatedImportEnum(UnittestImport.ImportEnum.IMPORT_BAR);
     builder.addRepeatedForeignMessage(ForeignMessage.getDefaultInstance());
 
     TestAllTypes value1 = builder.build();
     TestAllTypes value2 = value1.toBuilder().build();
 
     assertSame(value1.getRepeatedInt32List(), value2.getRepeatedInt32List());
-    assertSame(value1.getRepeatedImportEnumList(),
-        value2.getRepeatedImportEnumList());
     assertSame(value1.getRepeatedForeignMessageList(),
         value2.getRepeatedForeignMessageList());
   }
@@ -1510,6 +1507,144 @@ public class GeneratedMessageTest extends TestCase {
       TestOneof2 message2 = TestOneof2.parseFrom(serialized);
       assertTrue(message2.hasFooMessage());
       assertEquals(message2.getFooMessage().getQuxInt(), 234);
+    }
+  }
+
+  public void testGetRepeatedFieldBuilder() {
+    Descriptor descriptor = TestAllTypes.getDescriptor();
+
+    FieldDescriptor fieldDescriptor =
+        descriptor.findFieldByName("repeated_nested_message");
+    FieldDescriptor foreignFieldDescriptor =
+        descriptor.findFieldByName("repeated_foreign_message");
+    FieldDescriptor importFieldDescriptor =
+        descriptor.findFieldByName("repeated_import_message");
+
+    // Mutate the message with new field builder
+    // Mutate nested message
+    TestAllTypes.Builder builder1 = TestAllTypes.newBuilder();
+    Message.Builder fieldBuilder1 = builder1.newBuilderForField(
+        fieldDescriptor);
+    FieldDescriptor subFieldDescriptor1 =
+        fieldBuilder1.getDescriptorForType().findFieldByName("bb");
+    fieldBuilder1.setField(subFieldDescriptor1, 1);
+    builder1.addRepeatedField(fieldDescriptor, fieldBuilder1.build());
+
+    // Mutate foreign message
+    Message.Builder foreignFieldBuilder1 = builder1.newBuilderForField(
+        foreignFieldDescriptor);
+    FieldDescriptor subForeignFieldDescriptor1 =
+        foreignFieldBuilder1.getDescriptorForType().findFieldByName("c");
+    foreignFieldBuilder1.setField(subForeignFieldDescriptor1, 2);
+    builder1.addRepeatedField(foreignFieldDescriptor,
+        foreignFieldBuilder1.build());
+
+    // Mutate import message
+    Message.Builder importFieldBuilder1 = builder1.newBuilderForField(
+        importFieldDescriptor);
+    FieldDescriptor subImportFieldDescriptor1 =
+        importFieldBuilder1.getDescriptorForType().findFieldByName("d");
+    importFieldBuilder1.setField(subImportFieldDescriptor1, 3);
+    builder1.addRepeatedField(importFieldDescriptor,
+        importFieldBuilder1.build());
+
+    Message newMessage1 = builder1.build();
+
+    // Mutate the message with existing field builder
+    // Mutate nested message
+    TestAllTypes.Builder builder2 = TestAllTypes.newBuilder();
+    builder2.addRepeatedNestedMessageBuilder();
+    Message.Builder fieldBuilder2 = builder2.getRepeatedFieldBuilder(
+        fieldDescriptor, 0);
+    FieldDescriptor subFieldDescriptor2 =
+        fieldBuilder2.getDescriptorForType().findFieldByName("bb");
+    fieldBuilder2.setField(subFieldDescriptor2, 1);
+
+    // Mutate foreign message
+    Message.Builder foreignFieldBuilder2 = builder2.newBuilderForField(
+        foreignFieldDescriptor);
+    FieldDescriptor subForeignFieldDescriptor2 =
+        foreignFieldBuilder2.getDescriptorForType().findFieldByName("c");
+    foreignFieldBuilder2.setField(subForeignFieldDescriptor2, 2);
+    builder2.addRepeatedField(foreignFieldDescriptor,
+        foreignFieldBuilder2.build());
+
+    // Mutate import message
+    Message.Builder importFieldBuilder2 = builder2.newBuilderForField(
+        importFieldDescriptor);
+    FieldDescriptor subImportFieldDescriptor2 =
+        importFieldBuilder2.getDescriptorForType().findFieldByName("d");
+    importFieldBuilder2.setField(subImportFieldDescriptor2, 3);
+    builder2.addRepeatedField(importFieldDescriptor,
+        importFieldBuilder2.build());
+
+    Message newMessage2 = builder2.build();
+
+    // These two messages should be equal.
+    assertEquals(newMessage1, newMessage2);
+  }
+
+  public void testGetRepeatedFieldBuilderWithInitializedValue() {
+    Descriptor descriptor = TestAllTypes.getDescriptor();
+    FieldDescriptor fieldDescriptor =
+        descriptor.findFieldByName("repeated_nested_message");
+
+    // Before setting field, builder is initialized by default value. 
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    builder.addRepeatedNestedMessageBuilder();
+    NestedMessage.Builder fieldBuilder =
+        (NestedMessage.Builder) builder.getRepeatedFieldBuilder(fieldDescriptor, 0);
+    assertEquals(0, fieldBuilder.getBb());
+
+    // Setting field value with new field builder instance.
+    builder = TestAllTypes.newBuilder();
+    NestedMessage.Builder newFieldBuilder =
+        builder.addRepeatedNestedMessageBuilder();
+    newFieldBuilder.setBb(2);
+    // Then get the field builder instance by getRepeatedFieldBuilder().
+    fieldBuilder =
+        (NestedMessage.Builder) builder.getRepeatedFieldBuilder(fieldDescriptor, 0);
+    // It should contain new value.
+    assertEquals(2, fieldBuilder.getBb());
+    // These two builder should be equal.
+    assertSame(fieldBuilder, newFieldBuilder);
+  }
+
+  public void testGetRepeatedFieldBuilderNotSupportedException() {
+    Descriptor descriptor = TestAllTypes.getDescriptor();
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    try {
+      builder.getRepeatedFieldBuilder(descriptor.findFieldByName("repeated_int32"), 0);
+      fail("Exception was not thrown");
+    } catch (UnsupportedOperationException e) {
+      // We expect this exception.
+    }
+    try {
+      builder.getRepeatedFieldBuilder(
+          descriptor.findFieldByName("repeated_nested_enum"), 0);
+      fail("Exception was not thrown");
+    } catch (UnsupportedOperationException e) {
+      // We expect this exception.
+    }
+    try {
+      builder.getRepeatedFieldBuilder(descriptor.findFieldByName("optional_int32"), 0);
+      fail("Exception was not thrown");
+    } catch (UnsupportedOperationException e) {
+      // We expect this exception.
+    }
+    try {
+      builder.getRepeatedFieldBuilder(
+          descriptor.findFieldByName("optional_nested_enum"), 0);
+      fail("Exception was not thrown");
+    } catch (UnsupportedOperationException e) {
+      // We expect this exception.
+    }
+    try {
+      builder.getRepeatedFieldBuilder(
+          descriptor.findFieldByName("optional_nested_message"), 0);
+      fail("Exception was not thrown");
+    } catch (UnsupportedOperationException e) {
+      // We expect this exception.
     }
   }
 }

@@ -841,9 +841,10 @@ def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True):
         field_proto.number, field_proto.type,
         FieldDescriptor.ProtoTypeToCppProtoType(field_proto.type),
         field_proto.label, None, nested_desc, enum_desc, None, False, None,
-        has_default_value=False)
+        options=field_proto.options, has_default_value=False)
     fields.append(field)
 
   desc_name = '.'.join(full_message_name)
   return Descriptor(desc_proto.name, desc_name, None, None, fields,
-                    nested_types.values(), enum_types.values(), [])
+                    nested_types.values(), enum_types.values(), [],
+                    options=desc_proto.options)

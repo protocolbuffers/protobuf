@@ -35,6 +35,7 @@
 // This file tests that various identifiers work as field and type names even
 // though the same identifiers are used internally by the C++ code generator.
 
+syntax = "proto2";
 
 // Some generic_services option(s) added automatically.
 // See:  http://go/proto2-generic-services-default
@@ -58,7 +59,7 @@ message TestConflictingSymbolNames {
   optional int32 total_size = 6;
   optional int32 tag = 7;
 
-  enum TestEnum { FOO = 1; }
+  enum TestEnum { FOO = 0; }
   message Data1 { repeated int32 data = 1; }
   message Data2 { repeated TestEnum data = 1; }
   message Data3 { repeated string data = 1; }
@@ -99,6 +100,8 @@ message TestConflictingSymbolNames {
   optional uint32 int = 30;
   optional uint32 friend = 31;
   optional uint32 class = 37;
+  optional uint32 typedecl = 39;
+  optional uint32 auto = 40;
 
   // The generator used to #define a macro called "DO" inside the .cc file.
   message DO {}
@@ -116,14 +119,17 @@ message TestConflictingSymbolNames {
   // names.
   optional DO release_do = 36;
 
-  extensions 1000 to max;
+  // For clashing local variables in Serialize and ByteSize calculation.
+  optional string target = 38;
+
+  extensions 1000 to max;  // NO_PROTO3
 }
 
-message TestConflictingSymbolNamesExtension {
-  extend TestConflictingSymbolNames {
-    repeated int32 repeated_int32_ext = 20423638 [packed=true];
-  }
-}
+message TestConflictingSymbolNamesExtension {                    // NO_PROTO3
+  extend TestConflictingSymbolNames {                            // NO_PROTO3
+    repeated int32 repeated_int32_ext = 20423638 [packed=true];  // NO_PROTO3
+  }                                                              // NO_PROTO3
+}                                                                // NO_PROTO3
 
 message DummyMessage {}
 

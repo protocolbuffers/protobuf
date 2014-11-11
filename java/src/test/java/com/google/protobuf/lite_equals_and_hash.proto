@@ -30,6 +30,7 @@
 
 // Author: pbogle@google.com (Phil Bogle)
 
+syntax = "proto2";
 
 package protobuf_unittest.lite_equals_and_hash;
 
@@ -41,9 +42,15 @@ option optimize_for = LITE_RUNTIME;
 message Foo {
   optional int32 value = 1;
   repeated Bar bar = 2;
+
+  extensions 100 to max;
 }
 
 message Bar {
+  extend Foo {
+    optional Bar foo_ext = 100;
+  }
+
   optional string name = 1;
 }
 
@@ -53,3 +60,13 @@ message BarPrime {
 
 message Empty {
 }
+
+extend Foo {
+  optional int32 varint = 101;
+  optional fixed32 fixed32 = 102;
+  optional fixed64 fixed64 = 103;
+  optional group MyGroup = 104 {
+    optional string group_value = 1;
+  }
+}
+

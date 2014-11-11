@@ -30,6 +30,7 @@
 
 // Author: liujisi@google.com (Pherl Liu)
 
+syntax = "proto2";
 
 package protobuf_unittest_import;
 

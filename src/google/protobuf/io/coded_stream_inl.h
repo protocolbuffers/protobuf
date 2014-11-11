@@ -36,6 +36,7 @@
 #ifndef GOOGLE_PROTOBUF_IO_CODED_STREAM_INL_H__
 #define GOOGLE_PROTOBUF_IO_CODED_STREAM_INL_H__
 
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <string>
@@ -51,10 +52,12 @@ inline bool CodedInputStream::InternalReadStringInline(string* buffer,
 
   if (BufferSize() >= size) {
     STLStringResizeUninitialized(buffer, size);
-    // When buffer is empty, string_as_array(buffer) will return NULL but memcpy
-    // requires non-NULL pointers even when size is 0. Hench this check.
-    if (size > 0) {
-      memcpy(mutable_string_data(buffer), buffer_, size);
+    std::pair<char*, bool> z = as_string_data(buffer);
+    if (z.second) {
+      // Oddly enough, memcpy() requires its first two args to be non-NULL even
+      // if we copy 0 bytes.  So, we have ensured that z.first is non-NULL here.
+      GOOGLE_DCHECK(z.first != NULL);
+      memcpy(z.first, buffer_, size);
       Advance(size);
     }
     return true;

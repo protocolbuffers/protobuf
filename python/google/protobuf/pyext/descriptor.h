@@ -36,6 +36,8 @@
 #include <Python.h>
 #include <structmember.h>
 
+#include <google/protobuf/stubs/hash.h>
+
 #include <google/protobuf/descriptor.h>
 
 #if PY_VERSION_HEX < 0x02050000 && !defined(PY_SSIZE_T_MIN)
@@ -48,46 +50,90 @@ namespace google {
 namespace protobuf {
 namespace python {
 
+typedef struct CMessageDescriptor {
+  PyObject_HEAD
+
+  // The proto2 descriptor that this object represents.
+  const google::protobuf::Descriptor* descriptor;
+} CMessageDescriptor;
+
+
 typedef struct CFieldDescriptor {
   PyObject_HEAD
 
   // The proto2 descriptor that this object represents.
   const google::protobuf::FieldDescriptor* descriptor;
-
-  // Reference to the original field object in the Python DESCRIPTOR.
-  PyObject* descriptor_field;
 } CFieldDescriptor;
 
-typedef struct {
+
+// Wraps operations to the global DescriptorPool which contains information
+// about all messages and fields.
+//
+// There is normally one pool per process. We make it a Python object only
+// because it contains many Python references.
+// TODO(amauryfa): See whether such objects can appear in reference cycles, and
+// consider adding support for the cyclic GC.
+//
+// "Methods" that interacts with this DescriptorPool are in the cdescriptor_pool
+// namespace.
+typedef struct PyDescriptorPool {
   PyObject_HEAD
 
-  const google::protobuf::DescriptorPool* pool;
-} CDescriptorPool;
+  google::protobuf::DescriptorPool* pool;
 
+  // Make our own mapping to retrieve Python classes from C++ descriptors.
+  //
+  // Descriptor pointers stored here are owned by the DescriptorPool above.
+  // Python references to classes are owned by this PyDescriptorPool.
+  typedef hash_map<const Descriptor *, PyObject *> ClassesByMessageMap;
+  ClassesByMessageMap *classes_by_descriptor;
+} PyDescriptorPool;
+
+
+extern PyTypeObject CMessageDescriptor_Type;
 extern PyTypeObject CFieldDescriptor_Type;
 
-extern PyTypeObject CDescriptorPool_Type;
+extern PyTypeObject PyDescriptorPool_Type;
+
 
 namespace cdescriptor_pool {
+
+// Builds a new DescriptorPool. Normally called only once per process.
+PyDescriptorPool* NewDescriptorPool();
+
+// Looks up a message by name.
+// Returns a message Descriptor, or NULL if not found.
+const google::protobuf::Descriptor* FindMessageTypeByName(PyDescriptorPool* self,
+                                                const string& name);
+
+// Registers a new Python class for the given message descriptor.
+// Returns the message Descriptor.
+// On error, returns NULL with a Python exception set.
+const google::protobuf::Descriptor* RegisterMessageClass(
+    PyDescriptorPool* self, PyObject *message_class, PyObject *descriptor);
+
+// Retrieves the Python class registered with the given message descriptor.
+//
+// Returns a *borrowed* reference if found, otherwise returns NULL with an
+// exception set.
+PyObject *GetMessageClass(PyDescriptorPool* self,
+                          const Descriptor *message_descriptor);
 
 // Looks up a field by name. Returns a CDescriptor corresponding to
 // the field on success, or NULL on failure.
 //
 // Returns a new reference.
-PyObject* FindFieldByName(CDescriptorPool* self, PyObject* name);
+PyObject* FindFieldByName(PyDescriptorPool* self, PyObject* name);
 
 // Looks up an extension by name. Returns a CDescriptor corresponding
 // to the field on success, or NULL on failure.
 //
 // Returns a new reference.
-PyObject* FindExtensionByName(CDescriptorPool* self, PyObject* arg);
-
+PyObject* FindExtensionByName(PyDescriptorPool* self, PyObject* arg);
 }  // namespace cdescriptor_pool
 
-PyObject* Python_NewCDescriptorPool(PyObject* ignored, PyObject* args);
 PyObject* Python_BuildFile(PyObject* ignored, PyObject* args);
 bool InitDescriptor();
-google::protobuf::DescriptorPool* GetDescriptorPool();
 
 }  // namespace python
 }  // namespace protobuf

@@ -33,6 +33,9 @@
 #include <google/protobuf/compiler/java/java_shared_code_generator.h>
 
 #include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
@@ -176,7 +179,8 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
   // Invoke internalBuildGeneratedFileFrom() to build the file.
   printer->Print(
     "com.google.protobuf.Descriptors.FileDescriptor\n"
-    "  .internalBuildGeneratedFileFrom(descriptorData,\n"
+    "  .internalBuildGeneratedFileFrom(descriptorData,\n");
+  printer->Print(
     "    new com.google.protobuf.Descriptors.FileDescriptor[] {\n");
 
   for (int i = 0; i < dependencies.size(); i++) {

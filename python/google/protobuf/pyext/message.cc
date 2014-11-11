@@ -71,7 +71,7 @@
     #error "Python 3.0 - 3.2 are not supported."
   #else
   #define PyString_AsString(ob) \
-    (PyUnicode_Check(ob)? PyUnicode_AsUTF8(ob): PyBytes_AS_STRING(ob))
+    (PyUnicode_Check(ob)? PyUnicode_AsUTF8(ob): PyBytes_AsString(ob))
   #endif
 #endif
 
@@ -81,7 +81,9 @@ namespace python {
 
 // Forward declarations
 namespace cmessage {
-static PyObject* GetDescriptor(CMessage* self, PyObject* name);
+static const google::protobuf::FieldDescriptor* GetFieldDescriptor(
+    CMessage* self, PyObject* name);
+static const google::protobuf::Descriptor* GetMessageDescriptor(PyTypeObject* cls);
 static string GetMessageName(CMessage* self);
 int InternalReleaseFieldByDescriptor(
     const google::protobuf::FieldDescriptor* field_descriptor,
@@ -147,12 +149,15 @@ int ForEachCompositeField(CMessage* self, Visitor visitor) {
   PyObject* key;
   PyObject* field;
 
+  // Never use self->message in this function, it may be already freed.
+  const google::protobuf::Descriptor* message_descriptor =
+      cmessage::GetMessageDescriptor(Py_TYPE(self));
+
   // Visit normal fields.
   while (PyDict_Next(self->composite_fields, &pos, &key, &field)) {
-    PyObject* cdescriptor = cmessage::GetDescriptor(self, key);
-    if (cdescriptor != NULL) {
-      const google::protobuf::FieldDescriptor* descriptor =
-          reinterpret_cast<CFieldDescriptor*>(cdescriptor)->descriptor;
+    const google::protobuf::FieldDescriptor* descriptor =
+      message_descriptor->FindFieldByName(PyString_AsString(key));
+    if (descriptor != NULL) {
       if (VisitCompositeField(descriptor, field, visitor) == -1)
         return -1;
     }
@@ -161,11 +166,11 @@ int ForEachCompositeField(CMessage* self, Visitor visitor) {
   // Visit extension fields.
   if (self->extensions != NULL) {
     while (PyDict_Next(self->extensions->values, &pos, &key, &field)) {
-      CFieldDescriptor* cdescriptor =
-          extension_dict::InternalGetCDescriptorFromExtension(key);
-      if (cdescriptor == NULL)
+      const google::protobuf::FieldDescriptor* descriptor =
+          cmessage::GetExtensionDescriptor(key);
+      if (descriptor == NULL)
         return -1;
-      if (VisitCompositeField(cdescriptor->descriptor, field, visitor) == -1)
+      if (VisitCompositeField(descriptor, field, visitor) == -1)
         return -1;
     }
   }
@@ -191,18 +196,19 @@ PyObject* PickleError_class;
 
 // Constant PyString values used for GetAttr/GetItem.
 static PyObject* kDESCRIPTOR;
-static PyObject* k__descriptors;
+static PyObject* k_cdescriptor;
 static PyObject* kfull_name;
 static PyObject* kname;
-static PyObject* kmessage_type;
-static PyObject* kis_extendable;
 static PyObject* kextensions_by_name;
 static PyObject* k_extensions_by_name;
 static PyObject* k_extensions_by_number;
-static PyObject* k_concrete_class;
 static PyObject* kfields_by_name;
 
-static CDescriptorPool* descriptor_pool;
+static PyDescriptorPool* descriptor_pool;
+
+PyDescriptorPool* GetDescriptorPool() {
+  return descriptor_pool;
+}
 
 /* Is 64bit */
 void FormatTypeError(PyObject* arg, char* expected_types) {
@@ -313,12 +319,12 @@ bool CheckAndSetString(
     }
 
     if (PyBytes_Check(arg)) {
-      PyObject* unicode = PyUnicode_FromEncodedObject(arg, "ascii", NULL);
+      PyObject* unicode = PyUnicode_FromEncodedObject(arg, "utf-8", NULL);
       if (unicode == NULL) {
         PyObject* repr = PyObject_Repr(arg);
         PyErr_Format(PyExc_ValueError,
-                     "%s has type str, but isn't in 7-bit ASCII "
-                     "encoding. Non-ASCII strings must be converted to "
+                     "%s has type str, but isn't valid UTF-8 "
+                     "encoding. Non-UTF-8 strings must be converted to "
                      "unicode objects before being added.",
                      PyString_AsString(repr));
         Py_DECREF(repr);
@@ -335,12 +341,9 @@ bool CheckAndSetString(
   PyObject* encoded_string = NULL;
   if (descriptor->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
     if (PyBytes_Check(arg)) {
-#if PY_MAJOR_VERSION < 3
-      encoded_string = PyString_AsEncodedObject(arg, "utf-8", NULL);
-#else
+      // The bytes were already validated as correctly encoded UTF-8 above.
       encoded_string = arg;  // Already encoded.
       Py_INCREF(encoded_string);
-#endif
     } else {
       encoded_string = PyUnicode_AsEncodedObject(arg, "utf-8", NULL);
     }
@@ -389,6 +392,17 @@ PyObject* ToStringObject(
     result = PyBytes_FromStringAndSize(value.c_str(), value.length());
   }
   return result;
+}
+
+bool CheckFieldBelongsToMessage(const google::protobuf::FieldDescriptor* field_descriptor,
+                                const google::protobuf::Message* message) {
+  if (message->GetDescriptor() == field_descriptor->containing_type()) {
+    return true;
+  }
+  PyErr_Format(PyExc_KeyError, "Field '%s' does not belong to message '%s'",
+               field_descriptor->full_name().c_str(),
+               message->GetDescriptor()->full_name().c_str());
+  return false;
 }
 
 google::protobuf::DynamicMessageFactory* global_message_factory;
@@ -489,7 +503,7 @@ int AssureWritable(CMessage* self) {
     google::protobuf::Message* parent_message = self->parent->message;
     google::protobuf::Message* mutable_message = GetMutableMessage(
         self->parent,
-        self->parent_field->descriptor);
+        self->parent_field_descriptor);
     if (mutable_message == NULL) {
       return -1;
     }
@@ -512,26 +526,61 @@ int AssureWritable(CMessage* self) {
 
 // --- Globals:
 
-static PyObject* GetDescriptor(CMessage* self, PyObject* name) {
-  PyObject* descriptors =
-      PyDict_GetItem(Py_TYPE(self)->tp_dict, k__descriptors);
-  if (descriptors == NULL) {
-    PyErr_SetString(PyExc_TypeError, "No __descriptors");
+// Retrieve the C++ Descriptor of a message class.
+// On error, returns NULL with an exception set.
+static const google::protobuf::Descriptor* GetMessageDescriptor(PyTypeObject* cls) {
+  ScopedPyObjectPtr descriptor(PyObject_GetAttr(
+      reinterpret_cast<PyObject*>(cls), kDESCRIPTOR));
+  if (descriptor == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Message class has no DESCRIPTOR");
     return NULL;
   }
-
-  return PyDict_GetItem(descriptors, name);
+  ScopedPyObjectPtr cdescriptor(PyObject_GetAttr(descriptor, k_cdescriptor));
+  if (cdescriptor == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Unregistered message.");
+    return NULL;
+  }
+  if (!PyObject_TypeCheck(cdescriptor, &CMessageDescriptor_Type)) {
+    PyErr_SetString(PyExc_TypeError, "Not a CMessageDescriptor");
+    return NULL;
+  }
+  return reinterpret_cast<CMessageDescriptor*>(cdescriptor.get())->descriptor;
 }
 
-static const google::protobuf::Message* CreateMessage(const char* message_type) {
-  string message_name(message_type);
-  const google::protobuf::Descriptor* descriptor =
-      GetDescriptorPool()->FindMessageTypeByName(message_name);
-  if (descriptor == NULL) {
-    PyErr_SetString(PyExc_TypeError, message_type);
+// Retrieve a C++ FieldDescriptor for a message attribute.
+// The C++ message must be valid.
+// TODO(amauryfa): This function should stay internal, because exception
+// handling is not consistent.
+static const google::protobuf::FieldDescriptor* GetFieldDescriptor(
+    CMessage* self, PyObject* name) {
+  const google::protobuf::Descriptor *message_descriptor = self->message->GetDescriptor();
+  const char* field_name = PyString_AsString(name);
+  if (field_name == NULL) {
     return NULL;
   }
-  return global_message_factory->GetPrototype(descriptor);
+  const google::protobuf::FieldDescriptor *field_descriptor =
+      message_descriptor->FindFieldByName(field_name);
+  if (field_descriptor == NULL) {
+    // Note: No exception is set!
+    return NULL;
+  }
+  return field_descriptor;
+}
+
+// Retrieve a C++ FieldDescriptor for an extension handle.
+const google::protobuf::FieldDescriptor* GetExtensionDescriptor(PyObject* extension) {
+  ScopedPyObjectPtr cdescriptor(
+      PyObject_GetAttrString(extension, "_cdescriptor"));
+  if (cdescriptor == NULL) {
+    PyErr_SetString(PyExc_KeyError, "Unregistered extension.");
+    return NULL;
+  }
+  if (!PyObject_TypeCheck(cdescriptor, &CFieldDescriptor_Type)) {
+    PyErr_SetString(PyExc_TypeError, "Not a CFieldDescriptor");
+    Py_DECREF(cdescriptor);
+    return NULL;
+  }
+  return reinterpret_cast<CFieldDescriptor*>(cdescriptor.get())->descriptor;
 }
 
 // If cmessage_list is not NULL, this function releases values into the
@@ -627,39 +676,8 @@ int InternalDeleteRepeatedField(
   return 0;
 }
 
-int InitAttributes(CMessage* self, PyObject* arg, PyObject* kwargs) {
-  ScopedPyObjectPtr descriptor;
-  if (arg == NULL) {
-    descriptor.reset(
-        PyObject_GetAttr(reinterpret_cast<PyObject*>(self), kDESCRIPTOR));
-    if (descriptor == NULL) {
-      return NULL;
-    }
-  } else {
-    descriptor.reset(arg);
-    descriptor.inc();
-  }
-  ScopedPyObjectPtr is_extendable(PyObject_GetAttr(descriptor, kis_extendable));
-  if (is_extendable == NULL) {
-    return NULL;
-  }
-  int retcode = PyObject_IsTrue(is_extendable);
-  if (retcode == -1) {
-    return NULL;
-  }
-  if (retcode) {
-    PyObject* py_extension_dict = PyObject_CallObject(
-        reinterpret_cast<PyObject*>(&ExtensionDict_Type), NULL);
-    if (py_extension_dict == NULL) {
-      return NULL;
-    }
-    ExtensionDict* extension_dict = reinterpret_cast<ExtensionDict*>(
-        py_extension_dict);
-    extension_dict->parent = self;
-    extension_dict->message = self->message;
-    self->extensions = extension_dict;
-  }
-
+// Initializes fields of a message. Used in constructors.
+int InitAttributes(CMessage* self, PyObject* kwargs) {
   if (kwargs == NULL) {
     return 0;
   }
@@ -672,14 +690,12 @@ int InitAttributes(CMessage* self, PyObject* arg, PyObject* kwargs) {
       PyErr_SetString(PyExc_ValueError, "Field name must be a string");
       return -1;
     }
-    PyObject* py_cdescriptor = GetDescriptor(self, name);
-    if (py_cdescriptor == NULL) {
+    const google::protobuf::FieldDescriptor* descriptor = GetFieldDescriptor(self, name);
+    if (descriptor == NULL) {
       PyErr_Format(PyExc_ValueError, "Protocol message has no \"%s\" field.",
                    PyString_AsString(name));
       return -1;
     }
-    const google::protobuf::FieldDescriptor* descriptor =
-        reinterpret_cast<CFieldDescriptor*>(py_cdescriptor)->descriptor;
     if (descriptor->label() == google::protobuf::FieldDescriptor::LABEL_REPEATED) {
       ScopedPyObjectPtr container(GetAttr(self, name));
       if (container == NULL) {
@@ -719,15 +735,19 @@ int InitAttributes(CMessage* self, PyObject* arg, PyObject* kwargs) {
   return 0;
 }
 
-static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
-  CMessage* self = reinterpret_cast<CMessage*>(type->tp_alloc(type, 0));
+// Allocates an incomplete Python Message: the caller must fill self->message,
+// self->owner and eventually self->parent.
+CMessage* NewEmptyMessage(PyObject* type,
+                          const google::protobuf::Descriptor *descriptor) {
+  CMessage* self = reinterpret_cast<CMessage*>(
+      PyType_GenericAlloc(reinterpret_cast<PyTypeObject*>(type), 0));
   if (self == NULL) {
     return NULL;
   }
 
   self->message = NULL;
   self->parent = NULL;
-  self->parent_field = NULL;
+  self->parent_field_descriptor = NULL;
   self->read_only = false;
   self->extensions = NULL;
 
@@ -735,43 +755,58 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   if (self->composite_fields == NULL) {
     return NULL;
   }
+
+  // If there are extension_ranges, the message is "extendable". Allocate a
+  // dictionary to store the extension fields.
+  if (descriptor->extension_range_count() > 0) {
+    // TODO(amauryfa): Delay the construction of this dict until extensions are
+    // really used on the object.
+    ExtensionDict* extension_dict = extension_dict::NewExtensionDict(self);
+    if (extension_dict == NULL) {
+      return NULL;
+    }
+    self->extensions = extension_dict;
+  }
+
+  return self;
+}
+
+// The __new__ method of Message classes.
+// Creates a new C++ message and takes ownership.
+static PyObject* New(PyTypeObject* type,
+                     PyObject* unused_args, PyObject* unused_kwargs) {
+  // Retrieve the message descriptor and the default instance (=prototype).
+  const google::protobuf::Descriptor* message_descriptor = GetMessageDescriptor(type);
+  if (message_descriptor == NULL) {
+    return NULL;
+  }
+  const google::protobuf::Message* default_message =
+      global_message_factory->GetPrototype(message_descriptor);
+  if (default_message == NULL) {
+    PyErr_SetString(PyExc_TypeError, message_descriptor->full_name().c_str());
+    return NULL;
+  }
+
+  CMessage* self = NewEmptyMessage(reinterpret_cast<PyObject*>(type),
+                                   message_descriptor);
+  if (self == NULL) {
+    return NULL;
+  }
+  self->message = default_message->New();
+  self->owner.reset(self->message);
+
   return reinterpret_cast<PyObject*>(self);
 }
 
-PyObject* NewEmpty(PyObject* type) {
-  return New(reinterpret_cast<PyTypeObject*>(type), NULL, NULL);
-}
-
+// The __init__ method of Message classes.
+// It initializes fields from keywords passed to the constructor.
 static int Init(CMessage* self, PyObject* args, PyObject* kwargs) {
-  if (kwargs == NULL) {
-    // TODO(anuraag): Set error
+  if (PyTuple_Size(args) != 0) {
+    PyErr_SetString(PyExc_TypeError, "No positional arguments allowed");
     return -1;
   }
 
-  PyObject* descriptor = PyTuple_GetItem(args, 0);
-  if (descriptor == NULL || PyTuple_Size(args) != 1) {
-    PyErr_SetString(PyExc_ValueError, "args must contain one arg: descriptor");
-    return -1;
-  }
-
-  ScopedPyObjectPtr py_message_type(PyObject_GetAttr(descriptor, kfull_name));
-  if (py_message_type == NULL) {
-    return -1;
-  }
-
-  const char* message_type = PyString_AsString(py_message_type.get());
-  const google::protobuf::Message* message = CreateMessage(message_type);
-  if (message == NULL) {
-    return -1;
-  }
-
-  self->message = message->New();
-  self->owner.reset(self->message);
-
-  if (InitAttributes(self, descriptor, kwargs) < 0) {
-    return -1;
-  }
-  return 0;
+  return InitAttributes(self, kwargs);
 }
 
 // ---------------------------------------------------------------------
@@ -853,9 +888,7 @@ PyObject* IsInitialized(CMessage* self, PyObject* args) {
 PyObject* HasFieldByDescriptor(
     CMessage* self, const google::protobuf::FieldDescriptor* field_descriptor) {
   google::protobuf::Message* message = self->message;
-  if (!FIELD_BELONGS_TO_MESSAGE(field_descriptor, message)) {
-    PyErr_SetString(PyExc_KeyError,
-                    "Field does not belong to message!");
+  if (!CheckFieldBelongsToMessage(field_descriptor, message)) {
     return NULL;
   }
   if (field_descriptor->label() == google::protobuf::FieldDescriptor::LABEL_REPEATED) {
@@ -1048,7 +1081,7 @@ int ReleaseSubMessage(google::protobuf::Message* message,
   child_cmessage->message = released_message.get();
   child_cmessage->owner.swap(released_message);
   child_cmessage->parent = NULL;
-  child_cmessage->parent_field = NULL;
+  child_cmessage->parent_field_descriptor = NULL;
   child_cmessage->read_only = false;
   return ForEachCompositeField(child_cmessage,
                                SetOwnerVisitor(child_cmessage->owner));
@@ -1090,10 +1123,8 @@ int InternalReleaseFieldByDescriptor(
 
 int InternalReleaseField(CMessage* self, PyObject* composite_field,
                          PyObject* name) {
-  PyObject* cdescriptor = GetDescriptor(self, name);
-  if (cdescriptor != NULL) {
-    const google::protobuf::FieldDescriptor* descriptor =
-        reinterpret_cast<CFieldDescriptor*>(cdescriptor)->descriptor;
+  const google::protobuf::FieldDescriptor* descriptor = GetFieldDescriptor(self, name);
+  if (descriptor != NULL) {
     return InternalReleaseFieldByDescriptor(
         descriptor, composite_field, self->message);
   }
@@ -1104,9 +1135,7 @@ int InternalReleaseField(CMessage* self, PyObject* composite_field,
 PyObject* ClearFieldByDescriptor(
     CMessage* self,
     const google::protobuf::FieldDescriptor* descriptor) {
-  if (!FIELD_BELONGS_TO_MESSAGE(descriptor, self->message)) {
-    PyErr_SetString(PyExc_KeyError,
-                    "Field does not belong to message!");
+  if (!CheckFieldBelongsToMessage(descriptor, self->message)) {
     return NULL;
   }
   AssureWritable(self);
@@ -1177,15 +1206,10 @@ PyObject* Clear(CMessage* self) {
   // fields have been released.
   if (self->extensions != NULL) {
     Py_CLEAR(self->extensions);
-    PyObject* py_extension_dict = PyObject_CallObject(
-        reinterpret_cast<PyObject*>(&ExtensionDict_Type), NULL);
-    if (py_extension_dict == NULL) {
+    ExtensionDict* extension_dict = extension_dict::NewExtensionDict(self);
+    if (extension_dict == NULL) {
       return NULL;
     }
-    ExtensionDict* extension_dict = reinterpret_cast<ExtensionDict*>(
-        py_extension_dict);
-    extension_dict->parent = self;
-    extension_dict->message = self->message;
     self->extensions = extension_dict;
   }
   PyDict_Clear(self->composite_fields);
@@ -1196,8 +1220,8 @@ PyObject* Clear(CMessage* self) {
 // ---------------------------------------------------------------------
 
 static string GetMessageName(CMessage* self) {
-  if (self->parent_field != NULL) {
-    return self->parent_field->descriptor->full_name();
+  if (self->parent_field_descriptor != NULL) {
+    return self->parent_field_descriptor->full_name();
   } else {
     return self->message->GetDescriptor()->full_name();
   }
@@ -1219,7 +1243,7 @@ static PyObject* SerializeToString(CMessage* self, PyObject* args) {
       return NULL;
     }
     PyErr_Format(EncodeError_class, "Message %s is missing required fields: %s",
-                 GetMessageName(self).c_str(), PyString_AsString(joined.get()));
+                 GetMessageName(self).c_str(), PyString_AsString(joined));
     return NULL;
   }
   int size = self->message->ByteSize();
@@ -1361,7 +1385,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   AssureWritable(self);
   google::protobuf::io::CodedInputStream input(
       reinterpret_cast<const uint8*>(data), data_length);
-  input.SetExtensionRegistry(GetDescriptorPool(), global_message_factory);
+  input.SetExtensionRegistry(descriptor_pool->pool, global_message_factory);
   bool success = self->message->MergePartialFromCodedStream(&input);
   if (success) {
     return PyInt_FromLong(input.CurrentPosition());
@@ -1421,15 +1445,11 @@ static PyObject* RegisterExtension(PyObject* cls,
     return NULL;
   }
 
-  CFieldDescriptor* cdescriptor =
-      extension_dict::InternalGetCDescriptorFromExtension(extension_handle);
-  ScopedPyObjectPtr py_cdescriptor(reinterpret_cast<PyObject*>(cdescriptor));
-  if (cdescriptor == NULL) {
+  const google::protobuf::FieldDescriptor* descriptor =
+      GetExtensionDescriptor(extension_handle);
+  if (descriptor == NULL) {
     return NULL;
   }
-  Py_INCREF(extension_handle);
-  cdescriptor->descriptor_field = extension_handle;
-  const google::protobuf::FieldDescriptor* descriptor = cdescriptor->descriptor;
   // Check if it's a message set
   if (descriptor->is_extension() &&
       descriptor->containing_type()->options().message_set_wire_format() &&
@@ -1608,8 +1628,14 @@ static PyObject* RichCompare(CMessage* self, PyObject* other, int opid) {
   }
   if (opid == Py_EQ || opid == Py_NE) {
     ScopedPyObjectPtr self_fields(ListFields(self));
+    if (!self_fields) {
+      return NULL;
+    }
     ScopedPyObjectPtr other_fields(ListFields(
         reinterpret_cast<CMessage*>(other)));
+    if (!other_fields) {
+      return NULL;
+    }
     return PyObject_RichCompare(self_fields, other_fields, opid);
   } else {
     Py_INCREF(Py_NotImplemented);
@@ -1623,9 +1649,7 @@ PyObject* InternalGetScalar(
   google::protobuf::Message* message = self->message;
   const google::protobuf::Reflection* reflection = message->GetReflection();
 
-  if (!FIELD_BELONGS_TO_MESSAGE(field_descriptor, message)) {
-    PyErr_SetString(
-        PyExc_KeyError, "Field does not belong to message!");
+  if (!CheckFieldBelongsToMessage(field_descriptor, message)) {
     return NULL;
   }
 
@@ -1701,43 +1725,31 @@ PyObject* InternalGetScalar(
   return result;
 }
 
-PyObject* InternalGetSubMessage(CMessage* self,
-                                CFieldDescriptor* cfield_descriptor) {
-  PyObject* field = cfield_descriptor->descriptor_field;
-  ScopedPyObjectPtr message_type(PyObject_GetAttr(field, kmessage_type));
-  if (message_type == NULL) {
-    return NULL;
-  }
-  ScopedPyObjectPtr concrete_class(
-      PyObject_GetAttr(message_type, k_concrete_class));
-  if (concrete_class == NULL) {
-    return NULL;
-  }
-  PyObject* py_cmsg = cmessage::NewEmpty(concrete_class);
-  if (py_cmsg == NULL) {
-    return NULL;
-  }
-  if (!PyObject_TypeCheck(py_cmsg, &CMessage_Type)) {
-    PyErr_SetString(PyExc_TypeError, "Not a CMessage!");
-  }
-  CMessage* cmsg = reinterpret_cast<CMessage*>(py_cmsg);
-
-  const google::protobuf::FieldDescriptor* field_descriptor =
-      cfield_descriptor->descriptor;
+PyObject* InternalGetSubMessage(
+    CMessage* self, const google::protobuf::FieldDescriptor* field_descriptor) {
   const google::protobuf::Reflection* reflection = self->message->GetReflection();
   const google::protobuf::Message& sub_message = reflection->GetMessage(
       *self->message, field_descriptor, global_message_factory);
+
+  PyObject *message_class = cdescriptor_pool::GetMessageClass(
+      descriptor_pool, field_descriptor->message_type());
+  if (message_class == NULL) {
+    return NULL;
+  }
+
+  CMessage* cmsg = cmessage::NewEmptyMessage(message_class,
+                                             sub_message.GetDescriptor());
+  if (cmsg == NULL) {
+    return NULL;
+  }
+
   cmsg->owner = self->owner;
   cmsg->parent = self;
-  cmsg->parent_field = cfield_descriptor;
+  cmsg->parent_field_descriptor = field_descriptor;
   cmsg->read_only = !reflection->HasField(*self->message, field_descriptor);
   cmsg->message = const_cast<google::protobuf::Message*>(&sub_message);
 
-  if (InitAttributes(cmsg, NULL, NULL) < 0) {
-    Py_DECREF(py_cmsg);
-    return NULL;
-  }
-  return py_cmsg;
+  return reinterpret_cast<PyObject*>(cmsg);
 }
 
 int InternalSetScalar(
@@ -1747,9 +1759,7 @@ int InternalSetScalar(
   google::protobuf::Message* message = self->message;
   const google::protobuf::Reflection* reflection = message->GetReflection();
 
-  if (!FIELD_BELONGS_TO_MESSAGE(field_descriptor, message)) {
-    PyErr_SetString(
-        PyExc_KeyError, "Field does not belong to message!");
+  if (!CheckFieldBelongsToMessage(field_descriptor, message)) {
     return -1;
   }
 
@@ -1838,25 +1848,35 @@ PyObject* FromString(PyTypeObject* cls, PyObject* serialized) {
     return NULL;
   }
 
-  if (InitAttributes(cmsg, NULL, NULL) < 0) {
-    Py_DECREF(py_cmsg);
-    return NULL;
-  }
   return py_cmsg;
 }
 
+
+// Finalize the creation of the Message class.
+// Called from its metaclass: GeneratedProtocolMessageType.__init__().
 static PyObject* AddDescriptors(PyTypeObject* cls,
                                 PyObject* descriptor) {
-  if (PyObject_SetAttr(reinterpret_cast<PyObject*>(cls),
-                       k_extensions_by_name, PyDict_New()) < 0) {
-    return NULL;
-  }
-  if (PyObject_SetAttr(reinterpret_cast<PyObject*>(cls),
-                       k_extensions_by_number, PyDict_New()) < 0) {
+  const google::protobuf::Descriptor* message_descriptor =
+      cdescriptor_pool::RegisterMessageClass(
+          descriptor_pool, reinterpret_cast<PyObject*>(cls), descriptor);
+  if (message_descriptor == NULL) {
     return NULL;
   }
 
-  ScopedPyObjectPtr field_descriptors(PyDict_New());
+  // If there are extension_ranges, the message is "extendable", and extension
+  // classes will register themselves in this class.
+  if (message_descriptor->extension_range_count() > 0) {
+    ScopedPyObjectPtr by_name(PyDict_New());
+    if (PyObject_SetAttr(reinterpret_cast<PyObject*>(cls),
+                         k_extensions_by_name, by_name) < 0) {
+      return NULL;
+    }
+    ScopedPyObjectPtr by_number(PyDict_New());
+    if (PyObject_SetAttr(reinterpret_cast<PyObject*>(cls),
+                         k_extensions_by_number, by_number) < 0) {
+      return NULL;
+    }
+  }
 
   ScopedPyObjectPtr fields(PyObject_GetAttrString(descriptor, "fields"));
   if (fields == NULL) {
@@ -1878,19 +1898,14 @@ static PyObject* AddDescriptors(PyTypeObject* cls,
       return NULL;
     }
 
-    PyObject* field_descriptor =
-        cdescriptor_pool::FindFieldByName(descriptor_pool, full_field_name);
+    ScopedPyObjectPtr field_descriptor(
+        cdescriptor_pool::FindFieldByName(descriptor_pool, full_field_name));
     if (field_descriptor == NULL) {
       PyErr_SetString(PyExc_TypeError, "Couldn't find field");
       return NULL;
     }
-    Py_INCREF(field);
     CFieldDescriptor* cfield_descriptor = reinterpret_cast<CFieldDescriptor*>(
-        field_descriptor);
-    cfield_descriptor->descriptor_field = field;
-    if (PyDict_SetItem(field_descriptors, field_name, field_descriptor) < 0) {
-      return NULL;
-    }
+        field_descriptor.get());
 
     // The FieldDescriptor's name field might either be of type bytes or
     // of type unicode, depending on whether the FieldDescriptor was
@@ -1918,8 +1933,6 @@ static PyObject* AddDescriptors(PyTypeObject* cls,
       return NULL;
     }
   }
-
-  PyDict_SetItem(cls->tp_dict, k__descriptors, field_descriptors);
 
   // Enum Values
   ScopedPyObjectPtr enum_types(PyObject_GetAttrString(descriptor,
@@ -1994,15 +2007,11 @@ static PyObject* AddDescriptors(PyTypeObject* cls,
                          extension_name, extension_field) == -1) {
       return NULL;
     }
-    ScopedPyObjectPtr py_cfield_descriptor(
-        PyObject_GetAttrString(extension_field, "_cdescriptor"));
-    if (py_cfield_descriptor == NULL) {
+    const google::protobuf::FieldDescriptor* field_descriptor =
+        GetExtensionDescriptor(extension_field);
+    if (field_descriptor == NULL) {
       return NULL;
     }
-    CFieldDescriptor* cfield_descriptor =
-        reinterpret_cast<CFieldDescriptor*>(py_cfield_descriptor.get());
-    Py_INCREF(extension_field);
-    cfield_descriptor->descriptor_field = extension_field;
 
     ScopedPyObjectPtr field_name_upcased(
         PyObject_CallMethod(extension_name, "upper", NULL));
@@ -2015,13 +2024,12 @@ static PyObject* AddDescriptors(PyTypeObject* cls,
       return NULL;
     }
     ScopedPyObjectPtr number(PyInt_FromLong(
-        cfield_descriptor->descriptor->number()));
+        field_descriptor->number()));
     if (number == NULL) {
       return NULL;
     }
     if (PyObject_SetAttr(reinterpret_cast<PyObject*>(cls),
-                         field_number_name, PyInt_FromLong(
-            cfield_descriptor->descriptor->number())) == -1) {
+                         field_number_name, number) == -1) {
       return NULL;
     }
   }
@@ -2036,10 +2044,6 @@ PyObject* DeepCopy(CMessage* self, PyObject* arg) {
     return NULL;
   }
   if (!PyObject_TypeCheck(clone, &CMessage_Type)) {
-    Py_DECREF(clone);
-    return NULL;
-  }
-  if (InitAttributes(reinterpret_cast<CMessage*>(clone), NULL, NULL) < 0) {
     Py_DECREF(clone);
     return NULL;
   }
@@ -2202,48 +2206,30 @@ PyObject* GetAttr(CMessage* self, PyObject* name) {
     return value;
   }
 
-  PyObject* descriptor = GetDescriptor(self, name);
-  if (descriptor != NULL) {
-    CFieldDescriptor* cdescriptor =
-        reinterpret_cast<CFieldDescriptor*>(descriptor);
-    const google::protobuf::FieldDescriptor* field_descriptor = cdescriptor->descriptor;
+  const google::protobuf::FieldDescriptor* field_descriptor = GetFieldDescriptor(
+      self, name);
+  if (field_descriptor != NULL) {
     if (field_descriptor->label() == google::protobuf::FieldDescriptor::LABEL_REPEATED) {
       if (field_descriptor->cpp_type() ==
           google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-        PyObject* py_container = PyObject_CallObject(
-            reinterpret_cast<PyObject*>(&RepeatedCompositeContainer_Type),
-            NULL);
+        PyObject *message_class = cdescriptor_pool::GetMessageClass(
+            descriptor_pool, field_descriptor->message_type());
+        if (message_class == NULL) {
+          return NULL;
+        }
+        PyObject* py_container = repeated_composite_container::NewContainer(
+            self, field_descriptor, message_class);
         if (py_container == NULL) {
           return NULL;
         }
-        RepeatedCompositeContainer* container =
-            reinterpret_cast<RepeatedCompositeContainer*>(py_container);
-        PyObject* field = cdescriptor->descriptor_field;
-        PyObject* message_type = PyObject_GetAttr(field, kmessage_type);
-        if (message_type == NULL) {
-          return NULL;
-        }
-        PyObject* concrete_class =
-            PyObject_GetAttr(message_type, k_concrete_class);
-        if (concrete_class == NULL) {
-          return NULL;
-        }
-        container->parent = self;
-        container->parent_field = cdescriptor;
-        container->message = self->message;
-        container->owner = self->owner;
-        container->subclass_init = concrete_class;
-        Py_DECREF(message_type);
         if (PyDict_SetItem(self->composite_fields, name, py_container) < 0) {
           Py_DECREF(py_container);
           return NULL;
         }
         return py_container;
       } else {
-        ScopedPyObjectPtr init_args(PyTuple_Pack(2, self, cdescriptor));
-        PyObject* py_container = PyObject_CallObject(
-            reinterpret_cast<PyObject*>(&RepeatedScalarContainer_Type),
-            init_args);
+        PyObject* py_container = repeated_scalar_container::NewContainer(
+            self, field_descriptor);
         if (py_container == NULL) {
           return NULL;
         }
@@ -2256,7 +2242,7 @@ PyObject* GetAttr(CMessage* self, PyObject* name) {
     } else {
       if (field_descriptor->cpp_type() ==
           google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-        PyObject* sub_message = InternalGetSubMessage(self, cdescriptor);
+        PyObject* sub_message = InternalGetSubMessage(self, field_descriptor);
         if (PyDict_SetItem(self->composite_fields, name, sub_message) < 0) {
           Py_DECREF(sub_message);
           return NULL;
@@ -2278,12 +2264,10 @@ int SetAttr(CMessage* self, PyObject* name, PyObject* value) {
     return -1;
   }
 
-  PyObject* descriptor = GetDescriptor(self, name);
-  if (descriptor != NULL) {
+  const google::protobuf::FieldDescriptor* field_descriptor =
+      GetFieldDescriptor(self, name);
+  if (field_descriptor != NULL) {
     AssureWritable(self);
-    CFieldDescriptor* cdescriptor =
-        reinterpret_cast<CFieldDescriptor*>(descriptor);
-    const google::protobuf::FieldDescriptor* field_descriptor = cdescriptor->descriptor;
     if (field_descriptor->label() == google::protobuf::FieldDescriptor::LABEL_REPEATED) {
       PyErr_Format(PyExc_AttributeError, "Assignment not allowed to repeated "
                    "field \"%s\" in protocol message object.",
@@ -2401,22 +2385,18 @@ void InitGlobals() {
   kuint64max_py = PyLong_FromUnsignedLongLong(kuint64max);
 
   kDESCRIPTOR = PyString_FromString("DESCRIPTOR");
-  k__descriptors = PyString_FromString("__descriptors");
+  k_cdescriptor = PyString_FromString("_cdescriptor");
   kfull_name = PyString_FromString("full_name");
-  kis_extendable = PyString_FromString("is_extendable");
   kextensions_by_name = PyString_FromString("extensions_by_name");
   k_extensions_by_name = PyString_FromString("_extensions_by_name");
   k_extensions_by_number = PyString_FromString("_extensions_by_number");
-  k_concrete_class = PyString_FromString("_concrete_class");
-  kmessage_type = PyString_FromString("message_type");
   kname = PyString_FromString("name");
   kfields_by_name = PyString_FromString("fields_by_name");
 
-  global_message_factory = new DynamicMessageFactory(GetDescriptorPool());
-  global_message_factory->SetDelegateToGeneratedFactory(true);
+  descriptor_pool = cdescriptor_pool::NewDescriptorPool();
 
-  descriptor_pool = reinterpret_cast<google::protobuf::python::CDescriptorPool*>(
-      Python_NewCDescriptorPool(NULL, NULL));
+  global_message_factory = new DynamicMessageFactory(descriptor_pool->pool);
+  global_message_factory->SetDelegateToGeneratedFactory(true);
 }
 
 bool InitProto2MessageModule(PyObject *m) {
@@ -2427,19 +2407,32 @@ bool InitProto2MessageModule(PyObject *m) {
     return false;
   }
 
-  // All three of these are actually set elsewhere, directly onto the child
-  // protocol buffer message class, but set them here as well to document that
-  // subclasses need to set these.
+  // DESCRIPTOR is set on each protocol buffer message class elsewhere, but set
+  // it here as well to document that subclasses need to set it.
   PyDict_SetItem(google::protobuf::python::CMessage_Type.tp_dict, kDESCRIPTOR, Py_None);
-  PyDict_SetItem(google::protobuf::python::CMessage_Type.tp_dict,
-                 k_extensions_by_name, Py_None);
-  PyDict_SetItem(google::protobuf::python::CMessage_Type.tp_dict,
-                 k_extensions_by_number, Py_None);
+  // Subclasses with message extensions will override _extensions_by_name and
+  // _extensions_by_number with fresh mutable dictionaries in AddDescriptors.
+  // All other classes can share this same immutable mapping.
+  ScopedPyObjectPtr empty_dict(PyDict_New());
+  if (empty_dict == NULL) {
+    return false;
+  }
+  ScopedPyObjectPtr immutable_dict(PyDictProxy_New(empty_dict));
+  if (immutable_dict == NULL) {
+    return false;
+  }
+  if (PyDict_SetItem(google::protobuf::python::CMessage_Type.tp_dict,
+                     k_extensions_by_name, immutable_dict) < 0) {
+    return false;
+  }
+  if (PyDict_SetItem(google::protobuf::python::CMessage_Type.tp_dict,
+                     k_extensions_by_number, immutable_dict) < 0) {
+    return false;
+  }
 
   PyModule_AddObject(m, "Message", reinterpret_cast<PyObject*>(
       &google::protobuf::python::CMessage_Type));
 
-  google::protobuf::python::RepeatedScalarContainer_Type.tp_new = PyType_GenericNew;
   google::protobuf::python::RepeatedScalarContainer_Type.tp_hash =
       PyObject_HashNotImplemented;
   if (PyType_Ready(&google::protobuf::python::RepeatedScalarContainer_Type) < 0) {
@@ -2450,7 +2443,6 @@ bool InitProto2MessageModule(PyObject *m) {
                      reinterpret_cast<PyObject*>(
                          &google::protobuf::python::RepeatedScalarContainer_Type));
 
-  google::protobuf::python::RepeatedCompositeContainer_Type.tp_new = PyType_GenericNew;
   google::protobuf::python::RepeatedCompositeContainer_Type.tp_hash =
       PyObject_HashNotImplemented;
   if (PyType_Ready(&google::protobuf::python::RepeatedCompositeContainer_Type) < 0) {
@@ -2462,7 +2454,6 @@ bool InitProto2MessageModule(PyObject *m) {
       reinterpret_cast<PyObject*>(
           &google::protobuf::python::RepeatedCompositeContainer_Type));
 
-  google::protobuf::python::ExtensionDict_Type.tp_new = PyType_GenericNew;
   google::protobuf::python::ExtensionDict_Type.tp_hash = PyObject_HashNotImplemented;
   if (PyType_Ready(&google::protobuf::python::ExtensionDict_Type) < 0) {
     return false;

@@ -154,14 +154,13 @@ class UnicodeValueChecker(object):
                  (proposed_value, type(proposed_value), (bytes, unicode)))
       raise TypeError(message)
 
-    # If the value is of type 'bytes' make sure that it is in 7-bit ASCII
-    # encoding.
+    # If the value is of type 'bytes' make sure that it is valid UTF-8 data.
     if isinstance(proposed_value, bytes):
       try:
-        proposed_value = proposed_value.decode('ascii')
+        proposed_value = proposed_value.decode('utf-8')
       except UnicodeDecodeError:
-        raise ValueError('%.1024r has type bytes, but isn\'t in 7-bit ASCII '
-                         'encoding. Non-ASCII strings must be converted to '
+        raise ValueError('%.1024r has type bytes, but isn\'t valid UTF-8 '
+                         'encoding. Non-UTF-8 strings must be converted to '
                          'unicode objects before being added.' %
                          (proposed_value))
     return proposed_value

@@ -58,6 +58,8 @@ class DescriptorDatabaseTest(basetest.TestCase):
         'google.protobuf.python.internal.Factory2Enum'))
     self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.Factory2Message.NestedFactory2Enum'))
+    self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
+        'google.protobuf.python.internal.MessageWithNestedEnumOnly.NestedEnum'))
 
 if __name__ == '__main__':
   basetest.main()

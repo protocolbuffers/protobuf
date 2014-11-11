@@ -35,18 +35,23 @@
 #include <google/protobuf/compiler/java/java_field.h>
 
 #include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/compiler/java/java_enum_field.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/compiler/java/java_lazy_message_field.h>
+#include <google/protobuf/compiler/java/java_map_field.h>
 #include <google/protobuf/compiler/java/java_message_field.h>
 #include <google/protobuf/compiler/java/java_primitive_field.h>
 #include <google/protobuf/compiler/java/java_string_field.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
+
 
 namespace google {
 namespace protobuf {
@@ -61,12 +66,17 @@ ImmutableFieldGenerator* MakeImmutableGenerator(
   if (field->is_repeated()) {
     switch (GetJavaType(field)) {
       case JAVATYPE_MESSAGE:
-        if (IsLazy(field)) {
-          return new RepeatedImmutableLazyMessageFieldGenerator(
+        if (IsMapEntry(field->message_type())) {
+          return new ImmutableMapFieldGenerator(
               field, messageBitIndex, builderBitIndex, context);
         } else {
-          return new RepeatedImmutableMessageFieldGenerator(
-              field, messageBitIndex, builderBitIndex, context);
+          if (IsLazy(field)) {
+            return new RepeatedImmutableLazyMessageFieldGenerator(
+                field, messageBitIndex, builderBitIndex, context);
+          } else {
+            return new RepeatedImmutableMessageFieldGenerator(
+                field, messageBitIndex, builderBitIndex, context);
+          }
         }
       case JAVATYPE_ENUM:
         return new RepeatedImmutableEnumFieldGenerator(

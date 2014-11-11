@@ -149,6 +149,8 @@ enum JavaType {
 
 JavaType GetJavaType(const FieldDescriptor* field);
 
+const char* PrimitiveTypeName(JavaType type);
+
 // Get the fully-qualified class name for a boxed primitive type, e.g.
 // "java.lang.Integer" for JAVATYPE_INT.  Returns NULL for enum and message
 // types.
@@ -167,13 +169,6 @@ inline string ImmutableDefaultValue(const FieldDescriptor* field,
   return DefaultValue(field, true, name_resolver);
 }
 bool IsDefaultValueJavaDefault(const FieldDescriptor* field);
-
-// Does this message class use UnknownFieldSet?
-// Otherwise, unknown fields will be stored in a ByteString object
-inline bool UseUnknownFieldSet(const Descriptor* descriptor) {
-  return descriptor->file()->options().optimize_for() !=
-           FileOptions::LITE_RUNTIME;
-}
 
 // Does this message class have generated parsing, serialization, and other
 // standard methods for which reflection-based fallback implementations exist?
@@ -308,11 +303,26 @@ bool HasRequiredFields(const Descriptor* descriptor);
 
 // Whether a .proto file supports field presence test for non-message types.
 inline bool SupportFieldPresence(const FileDescriptor* descriptor) {
-  return true;
+  return descriptor->syntax() != FileDescriptor::SYNTAX_PROTO3;
+}
+
+// Whether unknown enum values are kept (i.e., not stored in UnknownFieldSet
+// but in the message and can be queried using additional getters that return
+// ints.
+inline bool SupportUnknownEnumValue(const FileDescriptor* descriptor) {
+  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }
 
 // Check whether a mesasge has repeated fields.
 bool HasRepeatedFields(const Descriptor* descriptor);
+
+inline bool IsMapEntry(const Descriptor* descriptor) {
+  return descriptor->options().map_entry();
+}
+
+inline bool PreserveUnknownFields(const Descriptor* descriptor) {
+  return descriptor->file()->syntax() != FileDescriptor::SYNTAX_PROTO3;
+}
 
 }  // namespace java
 }  // namespace compiler

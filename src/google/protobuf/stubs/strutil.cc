@@ -94,6 +94,34 @@ void StripString(string* s, const char* remove, char replacewith) {
   }
 }
 
+void StripWhitespace(string* str) {
+  int str_length = str->length();
+
+  // Strip off leading whitespace.
+  int first = 0;
+  while (first < str_length && ascii_isspace(str->at(first))) {
+    ++first;
+  }
+  // If entire string is white space.
+  if (first == str_length) {
+    str->clear();
+    return;
+  }
+  if (first > 0) {
+    str->erase(0, first);
+    str_length -= first;
+  }
+
+  // Strip off trailing whitespace.
+  int last = str_length - 1;
+  while (last >= 0 && ascii_isspace(str->at(last))) {
+    --last;
+  }
+  if (last != (str_length - 1) && last >= 0) {
+    str->erase(last + 1, string::npos);
+  }
+}
+
 // ----------------------------------------------------------------------
 // StringReplace()
 //    Replace the "old" pattern with the "new" pattern in a string,
@@ -1273,6 +1301,34 @@ string ToHex(uint64 num) {
   }
 
   return string(bufptr, buf + 16 - bufptr);
+}
+
+int GlobalReplaceSubstring(const string& substring,
+                           const string& replacement,
+                           string* s) {
+  GOOGLE_CHECK(s != NULL);
+  if (s->empty() || substring.empty())
+    return 0;
+  string tmp;
+  int num_replacements = 0;
+  int pos = 0;
+  for (int match_pos = s->find(substring.data(), pos, substring.length());
+       match_pos != string::npos;
+       pos = match_pos + substring.length(),
+           match_pos = s->find(substring.data(), pos, substring.length())) {
+    ++num_replacements;
+    // Append the original content before the match.
+    tmp.append(*s, pos, match_pos - pos);
+    // Append the replacement for the match.
+    tmp.append(replacement.begin(), replacement.end());
+  }
+  // Append the content after the last match. If no replacements were made, the
+  // original string is left untouched.
+  if (num_replacements > 0) {
+    tmp.append(*s, pos, s->length() - pos);
+    s->swap(tmp);
+  }
+  return num_replacements;
 }
 
 }  // namespace protobuf

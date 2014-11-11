@@ -38,12 +38,16 @@ __author__ = 'bohdank@google.com (Bohdan Koval)'
 from google.apputils import basetest
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
+from google.protobuf.internal import api_implementation
 from google.protobuf.internal import encoder
 from google.protobuf.internal import missing_enum_values_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import type_checkers
 
 
+@basetest.unittest.skipIf(
+    api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
+    'C++ implementation does not expose unknown fields to Python')
 class UnknownFieldsTest(basetest.TestCase):
 
   def setUp(self):
@@ -175,7 +179,10 @@ class UnknownFieldsTest(basetest.TestCase):
     self.assertNotEqual(self.empty_message, message)
 
 
-class UnknownFieldsTest(basetest.TestCase):
+@basetest.unittest.skipIf(
+    api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
+    'C++ implementation does not expose unknown fields to Python')
+class UnknownEnumValuesTest(basetest.TestCase):
 
   def setUp(self):
     self.descriptor = missing_enum_values_pb2.TestEnumValues.DESCRIPTOR

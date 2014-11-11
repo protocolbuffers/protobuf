@@ -42,42 +42,52 @@ namespace protobuf {
 
 namespace internal {
 
-void RepeatedPtrFieldBase::Reserve(int new_size) {
-  if (total_size_ >= new_size) return;
+void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
+  int new_size = current_size_ + extend_amount;
+  if (total_size_ >= new_size) {
+    // N.B.: rep_ is non-NULL because extend_amount is always > 0, hence
+    // total_size must be non-zero since it is lower-bounded by new_size.
+    return &rep_->elements[current_size_];
+  }
+  Rep* old_rep = rep_;
+  Arena* arena = GetArenaNoVirtual();
+  new_size = max(kMinRepeatedFieldAllocationSize,
+                 max(total_size_ * 2, new_size));
+  if (arena == NULL) {
+    rep_ = reinterpret_cast<Rep*>(
+        new char[kRepHeaderSize + sizeof(old_rep->elements[0])*new_size]);
+  } else {
+    rep_ = reinterpret_cast<Rep*>(
+        ::google::protobuf::Arena::CreateArray<char>(arena,
+            kRepHeaderSize + sizeof(old_rep->elements[0])*new_size));
+  }
+  total_size_ = new_size;
+  if (old_rep && old_rep->allocated_size > 0) {
+    memcpy(rep_->elements, old_rep->elements,
+           old_rep->allocated_size * sizeof(rep_->elements[0]));
+    rep_->allocated_size = old_rep->allocated_size;
+  } else {
+    rep_->allocated_size = 0;
+  }
+  if (arena == NULL) {
+    delete [] reinterpret_cast<char*>(old_rep);
+  }
+  return &rep_->elements[current_size_];
+}
 
-  void** old_elements = elements_;
-  total_size_ = max(kMinRepeatedFieldAllocationSize,
-                    max(total_size_ * 2, new_size));
-  elements_ = new void*[total_size_];
-  if (old_elements != NULL) {
-    memcpy(elements_, old_elements, allocated_size_ * sizeof(elements_[0]));
-    delete [] old_elements;
+void RepeatedPtrFieldBase::Reserve(int new_size) {
+  if (new_size > current_size_) {
+    InternalExtend(new_size - current_size_);
   }
 }
 
-void RepeatedPtrFieldBase::Swap(RepeatedPtrFieldBase* other) {
-  if (this == other) return;
-  void** swap_elements       = elements_;
-  int    swap_current_size   = current_size_;
-  int    swap_allocated_size = allocated_size_;
-  int    swap_total_size     = total_size_;
-
-  elements_       = other->elements_;
-  current_size_   = other->current_size_;
-  allocated_size_ = other->allocated_size_;
-  total_size_     = other->total_size_;
-
-  other->elements_       = swap_elements;
-  other->current_size_   = swap_current_size;
-  other->allocated_size_ = swap_allocated_size;
-  other->total_size_     = swap_total_size;
-}
-
-string* StringTypeHandlerBase::New() {
-  return new string;
-}
-void StringTypeHandlerBase::Delete(string* value) {
-  delete value;
+void RepeatedPtrFieldBase::CloseGap(int start, int num) {
+  if (rep_ == NULL) return;
+  // Close up a gap of "num" elements starting at offset "start".
+  for (int i = start + num; i < rep_->allocated_size; ++i)
+    rep_->elements[i - num] = rep_->elements[i];
+  current_size_ -= num;
+  rep_->allocated_size -= num;
 }
 
 }  // namespace internal

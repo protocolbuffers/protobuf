@@ -34,6 +34,7 @@
 // generated C++ type is available for the extendee, but the extension is
 // defined in a file whose C++ type is not in the binary.
 
+syntax = "proto2";
 
 import "google/protobuf/internal/more_extensions.proto";
 

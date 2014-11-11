@@ -148,6 +148,9 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
   void FixOptionsForEnum(const EnumDescriptor& descriptor) const;
   void FixOptionsForMessage(const Descriptor& descriptor) const;
 
+  void CopyPublicDependenciesAliases(
+      const string& copy_from, const FileDescriptor* file) const;
+
   // Very coarse-grained lock to ensure that Generate() is reentrant.
   // Guards file_, printer_ and file_descriptor_serialized_.
   mutable Mutex mutex_;

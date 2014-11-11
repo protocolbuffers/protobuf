@@ -34,6 +34,9 @@
 
 #include <google/protobuf/compiler/cpp/cpp_file.h>
 #include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 #include <set>
 
 #include <google/protobuf/compiler/cpp/cpp_enum.h>
@@ -102,6 +105,7 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
     "#define PROTOBUF_$filename_identifier$__INCLUDED\n"
     "\n"
     "#include <string>\n"
+    "#include <stdint.h>\n"  // INT32_MIN, INT32_MAX
     "\n",
     "filename", file_->name(),
     "filename_identifier", filename_identifier);
@@ -131,7 +135,10 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
 
   // OK, it's now safe to #include other files.
   printer->Print(
-    "#include <google/protobuf/generated_message_util.h>\n");
+    "#include <google/protobuf/arena.h>\n"
+    "#include <google/protobuf/arenastring.h>\n"
+    "#include <google/protobuf/generated_message_util.h>\n"
+    "#include <google/protobuf/metadata.h>\n");
   if (file_->message_type_count() > 0) {
     if (HasDescriptorMethods(file_)) {
       printer->Print(
@@ -181,6 +188,7 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
     "// @@protoc_insertion_point(includes)\n");
 
 
+
   // Open namespace.
   GenerateNamespaceOpeners(printer);
 
@@ -189,9 +197,10 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
   printer->Print(
     "\n"
     "// Internal implementation detail -- do not call these.\n"
-    "void $dllexport_decl$ $adddescriptorsname$();\n",
+    "void $dllexport_decl$$adddescriptorsname$();\n",
     "adddescriptorsname", GlobalAddDescriptorsName(file_->name()),
-    "dllexport_decl", options_.dllexport_decl);
+    "dllexport_decl",
+    options_.dllexport_decl.empty() ? "" : options_.dllexport_decl + " ");
 
   printer->Print(
     // Note that we don't put dllexport_decl on these because they are only
@@ -295,7 +304,7 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
     }
     printer->Print(
         "\n"
-        "}  // namespace google\n}  // namespace protobuf\n"
+        "}  // namespace protobuf\n}  // namespace google\n"
         "#endif  // SWIG\n");
   }
 

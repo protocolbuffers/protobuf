@@ -403,7 +403,7 @@ class LIBPROTOBUF_EXPORT Parser {
                     Message* mutable_options);
 
   // Parse "required", "optional", or "repeated" and fill in "label"
-  // with the value.
+  // with the value. Returns true if shuch a label is consumed.
   bool ParseLabel(FieldDescriptorProto::Label* label,
                   const FileDescriptorProto* containing_file);
 
@@ -459,6 +459,28 @@ class LIBPROTOBUF_EXPORT Parser {
   // When finished successfully, we are looking at the first token past
   // the ending brace.
   bool ParseUninterpretedBlock(string* value);
+
+  struct MapField {
+    // Whether the field is a map field.
+    bool is_map_field;
+    // The types of the key and value if they are primitive types.
+    FieldDescriptorProto::Type key_type;
+    FieldDescriptorProto::Type value_type;
+    // Or the type names string if the types are customized types.
+    string key_type_name;
+    string value_type_name;
+
+    MapField() : is_map_field(false) {}
+  };
+  // Desugar the map syntax to generate a nested map entry message.
+  void GenerateMapEntry(const MapField& map_field, FieldDescriptorProto* field,
+                        RepeatedPtrField<DescriptorProto>* messages);
+
+  // Whether fields without label default to optional fields.
+  bool DefaultToOptionalFields() const {
+    return syntax_identifier_ == "proto3";
+  }
+
 
   // =================================================================
 

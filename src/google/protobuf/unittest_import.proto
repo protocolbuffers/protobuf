@@ -34,6 +34,7 @@
 //
 // A proto file which is imported by unittest.proto to test importing.
 
+syntax = "proto2";
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.

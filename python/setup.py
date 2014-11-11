@@ -86,6 +86,8 @@ def GenerateUnittestProtos():
   generate_proto("google/protobuf/internal/more_messages.proto")
   generate_proto("google/protobuf/internal/factory_test1.proto")
   generate_proto("google/protobuf/internal/factory_test2.proto")
+  generate_proto("google/protobuf/internal/import_test_package/inner.proto")
+  generate_proto("google/protobuf/internal/import_test_package/outer.proto")
   generate_proto("google/protobuf/pyext/python.proto")
 
 def MakeTestSuite():
@@ -185,6 +187,7 @@ if __name__ == '__main__':
           'google.protobuf.descriptor_database',
           'google.protobuf.descriptor_pool',
           'google.protobuf.message_factory',
+          'google.protobuf.proto_builder',
           'google.protobuf.pyext.cpp_message',
           'google.protobuf.reflection',
           'google.protobuf.service',

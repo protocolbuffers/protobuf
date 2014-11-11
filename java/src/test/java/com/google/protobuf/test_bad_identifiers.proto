@@ -33,6 +33,7 @@
 // This file tests that various identifiers work as field and type names even
 // though the same identifiers are used internally by the java code generator.
 
+syntax = "proto2";
 
 // Some generic_services option(s) added automatically.
 // See:  http://go/proto2-generic-services-default
@@ -59,12 +60,14 @@ message Descriptor {
   }
   optional NestedDescriptor nested_descriptor = 2;
   enum NestedEnum {
+    UNKNOWN = 0;
     FOO = 1;
   }
 }
 
 message Parser {
   enum ParserEnum {
+    UNKNOWN = 0;
     PARSER = 1;
   }
   optional ParserEnum parser = 1;
@@ -72,6 +75,7 @@ message Parser {
 
 message Deprecated {
   enum TestEnum {
+    UNKNOWN = 0;
     FOO = 1;
 
     // Test if @Deprecated annotation conflicts with Deprecated message name.
@@ -118,6 +122,7 @@ service TestConflictingMethodNames {
 
 message TestConflictingFieldNames {
   enum TestEnum {
+    UNKNOWN = 0;
     FOO = 1;
   }
   message TestMessage {
@@ -142,16 +147,23 @@ message TestConflictingFieldNames {
 
   // This field conflicts with "int32_field" as they both generate
   // the method getInt32FieldList().
-  required int32 int32_field_list = 31;
+  required int32 int32_field_list = 31;  // NO_PROTO3
 
-  extensions 1000 to max;
+  extensions 1000 to max;  // NO_PROTO3
 
   repeated int64 int64_field = 41;
-  extend TestConflictingFieldNames {
+  extend TestConflictingFieldNames {  // NO_PROTO3
     // We don't generate accessors for extensions so the following extension
     // fields don't conflict with the repeated field "int64_field".
-    optional int64 int64_field_count = 1001;
-    optional int64 int64_field_list = 1002;
-  }
+    optional int64 int64_field_count = 1001;  // NO_PROTO3
+    optional int64 int64_field_list = 1002;  // NO_PROTO3
+  }  // NO_PROTO3
 }
 
+message TestMapField {
+  message MapField {}
+  message Pair {}
+  message Message {}
+
+  map<int32, int32> map_field = 1;
+}

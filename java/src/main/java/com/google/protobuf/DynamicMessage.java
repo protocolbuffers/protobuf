@@ -549,12 +549,22 @@ public final class DynamicMessage extends AbstractMessage {
     }
 
     public Builder setUnknownFields(UnknownFieldSet unknownFields) {
+      if (getDescriptorForType().getFile().getSyntax()
+          == Descriptors.FileDescriptor.Syntax.PROTO3) {
+        // Proto3 discards unknown fields.
+        return this;
+      }
       this.unknownFields = unknownFields;
       return this;
     }
 
     @Override
     public Builder mergeUnknownFields(UnknownFieldSet unknownFields) {
+      if (getDescriptorForType().getFile().getSyntax()
+          == Descriptors.FileDescriptor.Syntax.PROTO3) {
+        // Proto3 discards unknown fields.
+        return this;
+      }
       this.unknownFields =
         UnknownFieldSet.newBuilder(this.unknownFields)
                        .mergeFrom(unknownFields)
@@ -588,10 +598,12 @@ public final class DynamicMessage extends AbstractMessage {
         throw new IllegalArgumentException(
           "DynamicMessage should use EnumValueDescriptor to set Enum Value.");
       }
-      if (field.getEnumType() != ((EnumValueDescriptor) value).getType()) {
-        throw new IllegalArgumentException(
-          "EnumValueDescriptor doesn't much Enum Field.");
-      }
+      // TODO(xiaofeng): Re-enable this check after Orgstore is fixed to not
+      // set incorrect EnumValueDescriptors.
+      // if (field.getEnumType() != ((EnumValueDescriptor) value).getType()) {
+      //   throw new IllegalArgumentException(
+      //     "EnumValueDescriptor doesn't match Enum Field.");
+      // }
     }
 
     /** Verifies the value for an enum field. */
@@ -617,6 +629,13 @@ public final class DynamicMessage extends AbstractMessage {
       // TODO(xiangl): need implementation for dynamic message
       throw new UnsupportedOperationException(
         "getFieldBuilder() called on a dynamic message type.");
+    }
+
+    @Override
+    public com.google.protobuf.Message.Builder getRepeatedFieldBuilder(FieldDescriptor field,
+        int index) {
+      throw new UnsupportedOperationException(
+        "getRepeatedFieldBuilder() called on a dynamic message type.");
     }
   }
 }

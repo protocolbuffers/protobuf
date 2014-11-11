@@ -242,6 +242,25 @@ TEST(MessageTest, CheckOverflow) {
 
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
+namespace {
+
+class NegativeByteSize : public unittest::TestRequired {
+ public:
+  virtual int ByteSize() const { return -1; }
+};
+
+}  // namespace
+
+TEST(MessageTest, SerializationFailsOnNegativeByteSize) {
+  NegativeByteSize message;
+  string string_output;
+  EXPECT_FALSE(message.AppendPartialToString(&string_output));
+
+  io::ArrayOutputStream coded_raw_output(NULL, 100);
+  io::CodedOutputStream coded_output(&coded_raw_output);
+  EXPECT_FALSE(message.SerializePartialToCodedStream(&coded_output));
+}
+
 TEST(MessageTest, BypassInitializationCheckOnSerialize) {
   unittest::TestRequired message;
   io::ArrayOutputStream raw_output(NULL, 0);

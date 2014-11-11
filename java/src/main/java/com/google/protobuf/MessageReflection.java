@@ -752,13 +752,18 @@ class MessageReflection {
       if (field.getLiteType() == WireFormat.FieldType.ENUM) {
         while (input.getBytesUntilLimit() > 0) {
           final int rawValue = input.readEnum();
-          final Object value = field.getEnumType().findValueByNumber(rawValue);
-          if (value == null) {
-            // If the number isn't recognized as a valid value for this
-            // enum, drop it (don't even add it to unknownFields).
-            return true;
+          if (field.getFile().supportsUnknownEnumValue()) {
+            target.addRepeatedField(field,
+                field.getEnumType().findValueByNumberCreatingIfUnknown(rawValue));
+          } else {
+            final Object value = field.getEnumType().findValueByNumber(rawValue);
+            if (value == null) {
+              // If the number isn't recognized as a valid value for this
+              // enum, drop it (don't even add it to unknownFields).
+              return true;
+            }
+            target.addRepeatedField(field, value);
           }
-          target.addRepeatedField(field, value);
         }
       } else {
         while (input.getBytesUntilLimit() > 0) {
@@ -783,12 +788,16 @@ class MessageReflection {
         }
         case ENUM:
           final int rawValue = input.readEnum();
-          value = field.getEnumType().findValueByNumber(rawValue);
-          // If the number isn't recognized as a valid value for this enum,
-          // drop it.
-          if (value == null) {
-            unknownFields.mergeVarintField(fieldNumber, rawValue);
-            return true;
+          if (field.getFile().supportsUnknownEnumValue()) {
+            value = field.getEnumType().findValueByNumberCreatingIfUnknown(rawValue);
+          } else {
+            value = field.getEnumType().findValueByNumber(rawValue);
+            // If the number isn't recognized as a valid value for this enum,
+            // drop it.
+            if (value == null) {
+              unknownFields.mergeVarintField(fieldNumber, rawValue);
+              return true;
+            }
           }
           break;
         default:

@@ -79,6 +79,7 @@ EXTRA_DIST =                                                                 \
   java/src/main/java/com/google/protobuf/Descriptors.java                    \
   java/src/main/java/com/google/protobuf/DynamicMessage.java                 \
   java/src/main/java/com/google/protobuf/Extension.java                      \
+  java/src/main/java/com/google/protobuf/ExtensionLite.java                  \
   java/src/main/java/com/google/protobuf/ExtensionRegistry.java              \
   java/src/main/java/com/google/protobuf/ExtensionRegistryLite.java          \
   java/src/main/java/com/google/protobuf/FieldSet.java                       \
@@ -91,6 +92,10 @@ EXTRA_DIST =                                                                 \
   java/src/main/java/com/google/protobuf/LazyStringArrayList.java            \
   java/src/main/java/com/google/protobuf/LazyStringList.java                 \
   java/src/main/java/com/google/protobuf/LiteralByteString.java              \
+  java/src/main/java/com/google/protobuf/MapEntry.java                       \
+  java/src/main/java/com/google/protobuf/MapEntryLite.java                   \
+  java/src/main/java/com/google/protobuf/MapField.java                       \
+  java/src/main/java/com/google/protobuf/MapFieldLite.java                   \
   java/src/main/java/com/google/protobuf/Message.java                        \
   java/src/main/java/com/google/protobuf/MessageLite.java                    \
   java/src/main/java/com/google/protobuf/MessageLiteOrBuilder.java           \
@@ -112,6 +117,7 @@ EXTRA_DIST =                                                                 \
   java/src/main/java/com/google/protobuf/TextFormat.java                     \
   java/src/main/java/com/google/protobuf/UninitializedMessageException.java  \
   java/src/main/java/com/google/protobuf/UnknownFieldSet.java                \
+  java/src/main/java/com/google/protobuf/UnknownFieldSetLite.java            \
   java/src/main/java/com/google/protobuf/UnmodifiableLazyStringList.java     \
   java/src/main/java/com/google/protobuf/Utf8.java                           \
   java/src/main/java/com/google/protobuf/WireFormat.java                     \
@@ -124,18 +130,22 @@ EXTRA_DIST =                                                                 \
   java/src/test/java/com/google/protobuf/DeprecatedFieldTest.java            \
   java/src/test/java/com/google/protobuf/DescriptorsTest.java                \
   java/src/test/java/com/google/protobuf/DynamicMessageTest.java             \
+  java/src/test/java/com/google/protobuf/FieldPresenceTest.java              \
   java/src/test/java/com/google/protobuf/ForceFieldBuildersPreRun.java       \
   java/src/test/java/com/google/protobuf/GeneratedMessageTest.java           \
   java/src/test/java/com/google/protobuf/IsValidUtf8Test.java                \
   java/src/test/java/com/google/protobuf/IsValidUtf8TestUtil.java            \
-  java/src/test/java/com/google/protobuf/LazyFieldTest.java                  \
   java/src/test/java/com/google/protobuf/LazyFieldLiteTest.java              \
+  java/src/test/java/com/google/protobuf/LazyFieldTest.java                  \
   java/src/test/java/com/google/protobuf/LazyMessageLiteTest.java            \
   java/src/test/java/com/google/protobuf/LazyStringArrayListTest.java        \
   java/src/test/java/com/google/protobuf/LazyStringEndToEndTest.java         \
   java/src/test/java/com/google/protobuf/LiteEqualsAndHashTest.java          \
   java/src/test/java/com/google/protobuf/LiteralByteStringTest.java          \
   java/src/test/java/com/google/protobuf/LiteTest.java                       \
+  java/src/test/java/com/google/protobuf/MapForProto2LiteTest.java           \
+  java/src/test/java/com/google/protobuf/MapForProto2Test.java               \
+  java/src/test/java/com/google/protobuf/MapTest.java                        \
   java/src/test/java/com/google/protobuf/MessageTest.java                    \
   java/src/test/java/com/google/protobuf/NestedBuildersTest.java             \
   java/src/test/java/com/google/protobuf/ParserTest.java                     \
@@ -148,20 +158,25 @@ EXTRA_DIST =                                                                 \
   java/src/test/java/com/google/protobuf/TestBadIdentifiers.java             \
   java/src/test/java/com/google/protobuf/TestUtil.java                       \
   java/src/test/java/com/google/protobuf/TextFormatTest.java                 \
+  java/src/test/java/com/google/protobuf/UnknownEnumValueTest.java           \
+  java/src/test/java/com/google/protobuf/UnknownFieldSetLiteTest.java        \
   java/src/test/java/com/google/protobuf/UnknownFieldSetTest.java            \
   java/src/test/java/com/google/protobuf/UnmodifiableLazyStringListTest.java \
   java/src/test/java/com/google/protobuf/WireFormatTest.java                 \
+  java/src/test/java/com/google/protobuf/field_presence_test.proto           \
   java/src/test/java/com/google/protobuf/lazy_fields_lite.proto              \
   java/src/test/java/com/google/protobuf/lite_equals_and_hash.proto          \
+  java/src/test/java/com/google/protobuf/map_for_proto2_test.proto           \
+  java/src/test/java/com/google/protobuf/map_test.proto                      \
   java/src/test/java/com/google/protobuf/multiple_files_test.proto           \
   java/src/test/java/com/google/protobuf/nested_builders_test.proto          \
   java/src/test/java/com/google/protobuf/nested_extension_lite.proto         \
   java/src/test/java/com/google/protobuf/nested_extension.proto              \
   java/src/test/java/com/google/protobuf/non_nested_extension_lite.proto     \
   java/src/test/java/com/google/protobuf/non_nested_extension.proto          \
-  java/src/test/java/com/google/protobuf/outer_class_name_test.proto         \
   java/src/test/java/com/google/protobuf/outer_class_name_test2.proto        \
   java/src/test/java/com/google/protobuf/outer_class_name_test3.proto        \
+  java/src/test/java/com/google/protobuf/outer_class_name_test.proto         \
   java/src/test/java/com/google/protobuf/test_bad_identifiers.proto          \
   java/src/test/java/com/google/protobuf/test_check_utf8.proto               \
   java/src/test/java/com/google/protobuf/test_check_utf8_size.proto          \
@@ -194,6 +209,7 @@ EXTRA_DIST =                                                                 \
   python/google/protobuf/internal/more_extensions.proto                      \
   python/google/protobuf/internal/more_extensions_dynamic.proto              \
   python/google/protobuf/internal/more_messages.proto                        \
+  python/google/protobuf/internal/proto_builder_test.py                      \
   python/google/protobuf/internal/python_message.py                          \
   python/google/protobuf/internal/reflection_test.py                         \
   python/google/protobuf/internal/service_reflection_test.py                 \
@@ -207,6 +223,10 @@ EXTRA_DIST =                                                                 \
   python/google/protobuf/internal/wire_format.py                             \
   python/google/protobuf/internal/wire_format_test.py                        \
   python/google/protobuf/internal/__init__.py                                \
+  python/google/protobuf/internal/import_test_package/BUILD                  \
+  python/google/protobuf/internal/import_test_package/__init__.py            \
+  python/google/protobuf/internal/import_test_package/inner.proto            \
+  python/google/protobuf/internal/import_test_package/outer.proto            \
   python/google/protobuf/pyext/README                                        \
   python/google/protobuf/pyext/cpp_message.py                                \
   python/google/protobuf/pyext/descriptor.h                                  \
@@ -232,6 +252,7 @@ EXTRA_DIST =                                                                 \
   python/google/protobuf/descriptor_pool.py                                  \
   python/google/protobuf/message.py                                          \
   python/google/protobuf/message_factory.py                                  \
+  python/google/protobuf/proto_builder.py                                    \
   python/google/protobuf/reflection.py                                       \
   python/google/protobuf/service.py                                          \
   python/google/protobuf/service_reflection.py                               \

@@ -47,6 +47,9 @@
 #include <google/protobuf/compiler/cpp/cpp_unittest.h>
 
 #include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 #include <vector>
 
 #include <google/protobuf/unittest.pb.h>

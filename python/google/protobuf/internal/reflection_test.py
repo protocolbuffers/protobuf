@@ -35,8 +35,6 @@
 pure-Python protocol compiler.
 """
 
-__author__ = 'robinson@google.com (Will Robinson)'
-
 import copy
 import gc
 import operator
@@ -1252,15 +1250,18 @@ class ReflectionTest(basetest.TestCase):
 
     # Try something that *is* an extension handle, just not for
     # this message...
-    unknown_handle = more_extensions_pb2.optional_int_extension
-    self.assertRaises(KeyError, extendee_proto.HasExtension,
-                      unknown_handle)
-    self.assertRaises(KeyError, extendee_proto.ClearExtension,
-                      unknown_handle)
-    self.assertRaises(KeyError, extendee_proto.Extensions.__getitem__,
-                      unknown_handle)
-    self.assertRaises(KeyError, extendee_proto.Extensions.__setitem__,
-                      unknown_handle, 5)
+    for unknown_handle in (more_extensions_pb2.optional_int_extension,
+                           more_extensions_pb2.optional_message_extension,
+                           more_extensions_pb2.repeated_int_extension,
+                           more_extensions_pb2.repeated_message_extension):
+      self.assertRaises(KeyError, extendee_proto.HasExtension,
+                        unknown_handle)
+      self.assertRaises(KeyError, extendee_proto.ClearExtension,
+                        unknown_handle)
+      self.assertRaises(KeyError, extendee_proto.Extensions.__getitem__,
+                        unknown_handle)
+      self.assertRaises(KeyError, extendee_proto.Extensions.__setitem__,
+                        unknown_handle, 5)
 
     # Try call HasExtension() with a valid handle, but for a
     # *repeated* field.  (Just as with non-extension repeated
@@ -1669,16 +1670,15 @@ class ReflectionTest(basetest.TestCase):
     proto.optional_string = str('Testing')
     self.assertEqual(proto.optional_string, unicode('Testing'))
 
-    # Try to assign a 'str' value which contains bytes that aren't 7-bit ASCII.
+    # Try to assign a 'bytes' object which contains non-UTF-8.
     self.assertRaises(ValueError,
                       setattr, proto, 'optional_string', b'a\x80a')
-    if str is bytes:  # PY2
-      # Assign a 'str' object which contains a UTF-8 encoded string.
-      self.assertRaises(ValueError,
-                        setattr, proto, 'optional_string', 'Тест')
-    else:
-      proto.optional_string = 'Тест'
-    # No exception thrown.
+    # No exception: Assign already encoded UTF-8 bytes to a string field.
+    utf8_bytes = u'Тест'.encode('utf-8')
+    proto.optional_string = utf8_bytes
+    # No exception: Assign the a non-ascii unicode object.
+    proto.optional_string = u'Тест'
+    # No exception thrown (normal str assignment containing ASCII).
     proto.optional_string = 'abc'
 
   def testStringUTF8Serialization(self):
@@ -1773,6 +1773,24 @@ class ReflectionTest(basetest.TestCase):
     self.assertFalse(proto.HasField('optionalgroup'))
     proto.optionalgroup.SetInParent()
     self.assertTrue(proto.HasField('optionalgroup'))
+
+  def testPackageInitializationImport(self):
+    """Test that we can import nested messages from their __init__.py.
+
+    Such setup is not trivial since at the time of processing of __init__.py one
+    can't refer to its submodules by name in code, so expressions like
+    google.protobuf.internal.import_test_package.inner_pb2
+    don't work. They do work in imports, so we have assign an alias at import
+    and then use that alias in generated code.
+    """
+    # We import here since it's the import that used to fail, and we want
+    # the failure to have the right context.
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf.internal import import_test_package
+    # pylint: enable=g-import-not-at-top
+    msg = import_test_package.myproto.Outer()
+    # Just check the default value.
+    self.assertEqual(57, msg.inner.value)
 
 
 #  Since we had so many tests for protocol buffer equality, we broke these out
@@ -2802,6 +2820,9 @@ class OptionsTest(basetest.TestCase):
 
 class ClassAPITest(basetest.TestCase):
 
+  @basetest.unittest.skipIf(
+      api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
+      'C++ implementation requires a call to MakeDescriptor()')
   def testMakeClassWithNestedDescriptor(self):
     leaf_desc = descriptor.Descriptor('leaf', 'package.parent.child.leaf', '',
                                       containing_type=None, fields=[],

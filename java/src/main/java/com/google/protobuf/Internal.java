@@ -33,8 +33,14 @@ package com.google.protobuf;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.util.AbstractList;
+import java.util.AbstractMap;
+import java.util.AbstractSet;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The classes contained within are used internally by the Protocol Buffer
@@ -388,4 +394,164 @@ public class Internal {
   public static final ByteBuffer EMPTY_BYTE_BUFFER =
       ByteBuffer.wrap(EMPTY_BYTE_ARRAY);
 
+
+  /**
+   * Provides an immutable view of List<T> around a List<F>.
+   *
+   * Protobuf internal. Used in protobuf generated code only.
+   */
+  public static class ListAdapter<F, T> extends AbstractList<T> {
+    /**
+     * Convert individual elements of the List from F to T.
+     */
+    public interface Converter<F, T> {
+      T convert(F from);
+    }
+
+    private final List<F> fromList;
+    private final Converter<F, T> converter;
+
+    public ListAdapter(List<F> fromList, Converter<F, T> converter) {
+      this.fromList = fromList;
+      this.converter = converter;
+    }
+
+    @Override
+    public T get(int index) {
+      return converter.convert(fromList.get(index));
+    }
+
+    @Override
+    public int size() {
+      return fromList.size();
+    }
+  }
+
+  /**
+   * Wrap around a Map<K, RealValue> and provide a Map<K, V> interface.
+   */
+  public static class MapAdapter<K, V, RealValue> extends AbstractMap<K, V> {
+    /**
+     * An interface used to convert between two types.
+     */
+    public interface Converter<A, B> {
+      B doForward(A object);
+      A doBackward(B object);
+    }
+
+    public static <T extends EnumLite> Converter<Integer, T> newEnumConverter(
+        final EnumLiteMap<T> enumMap, final T unrecognizedValue) {
+      return new Converter<Integer, T>() {
+        public T doForward(Integer value) {
+          T result = enumMap.findValueByNumber(value);
+          return result == null ? unrecognizedValue : result;
+        }
+        public Integer doBackward(T value) {
+          return value.getNumber();
+        }
+      };
+    }
+
+    private final Map<K, RealValue> realMap;
+    private final Converter<RealValue, V> valueConverter;
+    
+    public MapAdapter(Map<K, RealValue> realMap,
+        Converter<RealValue, V> valueConverter) {
+      this.realMap = realMap;
+      this.valueConverter = valueConverter;
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public V get(Object key) {
+      RealValue result = realMap.get(key);
+      if (result == null) {
+        return null;
+      }
+      return valueConverter.doForward(result);
+    }
+    
+    @Override
+    public V put(K key, V value) {
+      RealValue oldValue = realMap.put(key, valueConverter.doBackward(value));
+      if (oldValue == null) {
+        return null;
+      }
+      return valueConverter.doForward(oldValue);
+    }
+
+    @Override
+    public Set<java.util.Map.Entry<K, V>> entrySet() {
+      return new SetAdapter(realMap.entrySet());
+    }
+    
+    private class SetAdapter extends AbstractSet<Map.Entry<K, V>> {
+      private final Set<Map.Entry<K, RealValue>> realSet;
+      public SetAdapter(Set<Map.Entry<K, RealValue>> realSet) {
+        this.realSet = realSet;
+      }
+      
+      @Override
+      public Iterator<java.util.Map.Entry<K, V>> iterator() {
+        return new IteratorAdapter(realSet.iterator());
+      }
+
+      @Override
+      public int size() {
+        return realSet.size();
+      } 
+    }
+    
+    private class IteratorAdapter implements Iterator<Map.Entry<K, V>> {
+      private final Iterator<Map.Entry<K, RealValue>> realIterator;
+      
+      public IteratorAdapter(
+          Iterator<Map.Entry<K, RealValue>> realIterator) {
+        this.realIterator = realIterator;
+      }
+      
+      @Override
+      public boolean hasNext() {
+        return realIterator.hasNext();
+      }
+
+      @Override
+      public java.util.Map.Entry<K, V> next() {
+        return new EntryAdapter(realIterator.next());
+      }
+
+      @Override
+      public void remove() {
+        realIterator.remove();
+      }
+    }
+    
+    private class EntryAdapter implements Map.Entry<K, V> {
+      private final Map.Entry<K, RealValue> realEntry;
+      
+      public EntryAdapter(Map.Entry<K, RealValue> realEntry) {
+        this.realEntry = realEntry;
+      }
+      
+      @Override
+      public K getKey() {
+        return realEntry.getKey();
+      }
+
+      @Override
+      public V getValue() {
+        return valueConverter.doForward(realEntry.getValue());
+      }
+
+      @Override
+      public V setValue(V value) {
+        RealValue oldValue = realEntry.setValue(
+            valueConverter.doBackward(value));
+        if (oldValue == null) {
+          return null;
+        }
+        return valueConverter.doForward(oldValue);
+      }
+    }
+  }
 }

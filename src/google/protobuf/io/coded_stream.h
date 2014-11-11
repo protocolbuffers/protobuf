@@ -110,6 +110,7 @@
 #define GOOGLE_PROTOBUF_IO_CODED_STREAM_H__
 
 #include <string>
+#include <utility>
 #ifdef _MSC_VER
   #if defined(_M_IX86) && \
       !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
@@ -129,8 +130,8 @@
 #endif
 #include <google/protobuf/stubs/common.h>
 
-
 namespace google {
+
 namespace protobuf {
 
 class DescriptorPool;
@@ -388,6 +389,23 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // Decrements the recursion depth.
   void DecrementRecursionDepth();
 
+  // Shorthand for make_pair(PushLimit(byte_limit), --recursion_budget_).
+  // Using this can reduce code size and complexity in some cases.  The caller
+  // is expected to check that the second part of the result is non-negative (to
+  // bail out if the depth of recursion is too high) and, if all is well, to
+  // later pass the first part of the result to PopLimit() or similar.
+  std::pair<CodedInputStream::Limit, int> IncrementRecursionDepthAndPushLimit(
+      int byte_limit);
+
+  // Helper that is equivalent to: {
+  //  bool result = ConsumedEntireMessage();
+  //  PopLimit(limit);
+  //  DecrementRecursionDepth();
+  //  return result; }
+  // Using this can reduce code size and complexity in some cases.
+  // Do not use unless the current recursion depth is greater than zero.
+  bool DecrementRecursionDepthAndPopLimit(Limit limit);
+
   // Extension Registry ----------------------------------------------
   // ADVANCED USAGE:  99.9% of people can ignore this section.
   //
@@ -470,9 +488,9 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CodedInputStream);
 
-  ZeroCopyInputStream* input_;
   const uint8* buffer_;
   const uint8* buffer_end_;     // pointer to the end of the buffer.
+  ZeroCopyInputStream* input_;
   int total_bytes_read_;  // total bytes read from input_, including
                           // the current buffer
 
@@ -513,9 +531,10 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // If -2: Internal: Limit has been reached, print full size when destructing.
   int total_bytes_warning_threshold_;
 
-  // Current recursion depth, controlled by IncrementRecursionDepth() and
-  // DecrementRecursionDepth().
-  int recursion_depth_;
+  // Current recursion budget, controlled by IncrementRecursionDepth() and
+  // similar.  Starts at recursion_limit_ and goes down: if this reaches
+  // -1 we are over budget.
+  int recursion_budget_;
   // Recursion depth limit, set by SetRecursionLimit().
   int recursion_limit_;
 
@@ -1132,16 +1151,17 @@ inline void CodedOutputStream::Advance(int amount) {
 }
 
 inline void CodedInputStream::SetRecursionLimit(int limit) {
+  recursion_budget_ += limit - recursion_limit_;
   recursion_limit_ = limit;
 }
 
 inline bool CodedInputStream::IncrementRecursionDepth() {
-  ++recursion_depth_;
-  return recursion_depth_ <= recursion_limit_;
+  --recursion_budget_;
+  return recursion_budget_ >= 0;
 }
 
 inline void CodedInputStream::DecrementRecursionDepth() {
-  if (recursion_depth_ > 0) --recursion_depth_;
+  if (recursion_budget_ < recursion_limit_) ++recursion_budget_;
 }
 
 inline void CodedInputStream::SetExtensionRegistry(const DescriptorPool* pool,
@@ -1163,9 +1183,9 @@ inline int CodedInputStream::BufferSize() const {
 }
 
 inline CodedInputStream::CodedInputStream(ZeroCopyInputStream* input)
-  : input_(input),
-    buffer_(NULL),
+  : buffer_(NULL),
     buffer_end_(NULL),
+    input_(input),
     total_bytes_read_(0),
     overflow_bytes_(0),
     last_tag_(0),
@@ -1175,7 +1195,7 @@ inline CodedInputStream::CodedInputStream(ZeroCopyInputStream* input)
     buffer_size_after_limit_(0),
     total_bytes_limit_(kDefaultTotalBytesLimit),
     total_bytes_warning_threshold_(kDefaultTotalBytesWarningThreshold),
-    recursion_depth_(0),
+    recursion_budget_(default_recursion_limit_),
     recursion_limit_(default_recursion_limit_),
     extension_pool_(NULL),
     extension_factory_(NULL) {
@@ -1184,9 +1204,9 @@ inline CodedInputStream::CodedInputStream(ZeroCopyInputStream* input)
 }
 
 inline CodedInputStream::CodedInputStream(const uint8* buffer, int size)
-  : input_(NULL),
-    buffer_(buffer),
+  : buffer_(buffer),
     buffer_end_(buffer + size),
+    input_(NULL),
     total_bytes_read_(size),
     overflow_bytes_(0),
     last_tag_(0),
@@ -1196,7 +1216,7 @@ inline CodedInputStream::CodedInputStream(const uint8* buffer, int size)
     buffer_size_after_limit_(0),
     total_bytes_limit_(kDefaultTotalBytesLimit),
     total_bytes_warning_threshold_(kDefaultTotalBytesWarningThreshold),
-    recursion_depth_(0),
+    recursion_budget_(default_recursion_limit_),
     recursion_limit_(default_recursion_limit_),
     extension_pool_(NULL),
     extension_factory_(NULL) {

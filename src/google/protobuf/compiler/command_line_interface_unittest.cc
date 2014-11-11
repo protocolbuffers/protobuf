@@ -41,6 +41,9 @@
 #include <unistd.h>
 #endif
 #include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 #include <vector>
 
 #include <google/protobuf/descriptor.pb.h>
@@ -48,6 +51,7 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/testing/file.h>
 #include <google/protobuf/compiler/mock_code_generator.h>
 #include <google/protobuf/compiler/subprocess.h>
 #include <google/protobuf/io/printer.h>
@@ -58,6 +62,7 @@
 
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+
 
 namespace google {
 namespace protobuf {
@@ -76,6 +81,10 @@ namespace compiler {
 #endif
 
 namespace {
+
+bool FileExists(const string& path) {
+  return File::Exists(path);
+}
 
 class CommandLineInterfaceTest : public testing::Test {
  protected:
@@ -226,7 +235,7 @@ void CommandLineInterfaceTest::SetUp() {
 
   // If the temp directory already exists, it must be left over from a
   // previous run.  Delete it.
-  if (File::Exists(temp_directory_)) {
+  if (FileExists(temp_directory_)) {
     File::DeleteRecursively(temp_directory_, NULL, NULL);
   }
 
@@ -335,7 +344,7 @@ void CommandLineInterfaceTest::CreateTempFile(
   string::size_type slash_pos = name.find_last_of('/');
   if (slash_pos != string::npos) {
     string dir = name.substr(0, slash_pos);
-    if (!File::Exists(temp_directory_ + "/" + dir)) {
+    if (!FileExists(temp_directory_ + "/" + dir)) {
       GOOGLE_CHECK_OK(File::RecursivelyCreateDir(temp_directory_ + "/" + dir,
                                           0777));
     }

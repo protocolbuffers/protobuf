@@ -35,6 +35,9 @@
 #include <google/protobuf/compiler/java/java_generator.h>
 
 #include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 
 #include <google/protobuf/compiler/java/java_file.h>
 #include <google/protobuf/compiler/java/java_generator_factory.h>
@@ -99,9 +102,13 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
 
   vector<string> all_files;
 
+
   vector<FileGenerator*> file_generators;
   if (generate_immutable_code) {
     file_generators.push_back(new FileGenerator(file, /* immutable = */ true));
+  }
+  if (generate_mutable_code) {
+    file_generators.push_back(new FileGenerator(file, /* mutable = */ false));
   }
   for (int i = 0; i < file_generators.size(); ++i) {
     if (!file_generators[i]->Validate(error)) {

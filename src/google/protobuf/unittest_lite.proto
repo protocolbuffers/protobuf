@@ -32,6 +32,7 @@
 //
 // This is like unittest.proto but with optimize_for = LITE_RUNTIME.
 
+syntax = "proto2";
 package protobuf_unittest;
 
 import "google/protobuf/unittest_import_lite.proto";

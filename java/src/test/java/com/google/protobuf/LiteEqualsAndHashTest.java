@@ -82,4 +82,27 @@ public class LiteEqualsAndHashTest extends TestCase {
     BarPrime barPrime = BarPrime.newBuilder().setName("bar").build();
     assertFalse(bar.equals(barPrime));
   }
+
+  public void testEqualsAndHashCodeWithUnknownFields() throws InvalidProtocolBufferException {
+    Foo fooWithOnlyValue = Foo.newBuilder()
+        .setValue(1)
+        .build();
+
+    Foo fooWithValueAndExtension = fooWithOnlyValue.toBuilder()
+        .setValue(1)
+        .setExtension(Bar.fooExt, Bar.newBuilder()
+            .setName("name")
+            .build())
+        .build();
+
+    Foo fooWithValueAndUnknownFields = Foo.parseFrom(fooWithValueAndExtension.toByteArray());
+
+    assertEqualsAndHashCodeAreFalse(fooWithOnlyValue, fooWithValueAndUnknownFields);
+    assertEqualsAndHashCodeAreFalse(fooWithValueAndExtension, fooWithValueAndUnknownFields);
+  }
+
+  private void assertEqualsAndHashCodeAreFalse(Object o1, Object o2) {
+    assertFalse(o1.equals(o2));
+    assertFalse(o1.hashCode() == o2.hashCode());
+  }
 }

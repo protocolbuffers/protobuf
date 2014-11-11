@@ -33,14 +33,14 @@
 # Verify that prebuild and checkedin version of descriptor_pb2.py is up to date.
 
 from google3.pyglib import resources
-import unittest
+from google.apputils import basetest
 
 _DESC = 'google3/net/proto2/proto/descriptor_pb2.'
 _OLD = _DESC + 'py-prebuilt'
 _NEW = _DESC + 'compiled'
 
 
-class PregeneratedFileChanged(unittest.TestCase):
+class PregeneratedFileChanged(basetest.TestCase):
 
   def testSameText(self):
     generated = resources.GetResource(_NEW)
@@ -51,4 +51,4 @@ class PregeneratedFileChanged(unittest.TestCase):
         'regnerate a new version of %s and add it to your CL' % _OLD)
 
 if __name__ == '__main__':
-  unittest.main()
+  basetest.main()

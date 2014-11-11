@@ -367,22 +367,28 @@ public class RepeatedFieldBuilder
         throw new NullPointerException();
       }
     }
+
+    // If we can inspect the size, we can more efficiently add messages.
+    int size = -1;
     if (values instanceof Collection) {
       @SuppressWarnings("unchecked") final
       Collection<MType> collection = (Collection<MType>) values;
       if (collection.size() == 0) {
         return this;
       }
-      ensureMutableMessageList();
-      for (MType value : values) {
-        addMessage(value);
-      }
-    } else {
-      ensureMutableMessageList();
-      for (MType value : values) {
-        addMessage(value);
-      }
+      size = collection.size();
     }
+    ensureMutableMessageList();
+
+    if (size >= 0 && messages instanceof ArrayList) {
+      ((ArrayList<MType>) messages)
+          .ensureCapacity(messages.size() + size);
+    }
+
+    for (MType value : values) {
+      addMessage(value);
+    }
+
     onChanged();
     incrementModCounts();
     return this;

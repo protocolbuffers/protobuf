@@ -291,7 +291,7 @@ bool WireFormatLite::ReadPackedEnumNoInline(io::CodedInputStream* input,
         int, WireFormatLite::TYPE_ENUM>(input, &value)) {
       return false;
     }
-    if (is_valid(value)) {
+    if (is_valid == NULL || is_valid(value)) {
       values->Add(value);
     }
   }
@@ -451,19 +451,24 @@ void WireFormatLite::WriteMessageMaybeToArray(int field_number,
   }
 }
 
-bool WireFormatLite::ReadString(io::CodedInputStream* input,
-                                string* value) {
-  // String is for UTF-8 text only
+static inline bool ReadBytesToString(io::CodedInputStream* input,
+                                     string* value) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+static inline bool ReadBytesToString(io::CodedInputStream* input,
+                                     string* value) {
   uint32 length;
-  if (!input->ReadVarint32(&length)) return false;
-  if (!input->InternalReadStringInline(value, length)) return false;
-  return true;
+  return input->ReadVarint32(&length) &&
+      input->InternalReadStringInline(value, length);
 }
-bool WireFormatLite::ReadBytes(io::CodedInputStream* input,
-                               string* value) {
-  uint32 length;
-  if (!input->ReadVarint32(&length)) return false;
-  return input->InternalReadStringInline(value, length);
+
+bool WireFormatLite::ReadBytes(io::CodedInputStream* input, string* value) {
+  return ReadBytesToString(input, value);
+}
+
+bool WireFormatLite::ReadBytes(io::CodedInputStream* input, string** p) {
+  if (*p == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    *p = new ::std::string();
+  }
+  return ReadBytesToString(input, *p);
 }
 
 }  // namespace internal

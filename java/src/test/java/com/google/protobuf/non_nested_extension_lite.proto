@@ -32,6 +32,7 @@
 //
 // A proto file with extensions for a MessageLite messages.
 
+syntax = "proto2";
 
 package protobuf_unittest;
 

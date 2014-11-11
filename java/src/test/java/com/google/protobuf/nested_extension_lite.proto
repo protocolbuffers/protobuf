@@ -34,6 +34,7 @@
 // this must be defined in a separate file to properly test the initialization
 // of the outer class.
 
+syntax = "proto2";
 
 package protobuf_unittest;
 

@@ -31,6 +31,7 @@
 // Author: kenton@google.com (Kenton Varda)
 
 #include <vector>
+#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>

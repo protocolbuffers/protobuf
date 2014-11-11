@@ -40,8 +40,10 @@
 
 #include <google/protobuf/io/coded_stream_inl.h>
 #include <algorithm>
+#include <utility>
 #include <limits.h>
 #include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/arena.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stl_util.h>
 
@@ -147,6 +149,19 @@ void CodedInputStream::PopLimit(Limit limit) {
   // We may no longer be at a legitimate message end.  ReadTag() needs to be
   // called again to find out.
   legitimate_message_end_ = false;
+}
+
+std::pair<CodedInputStream::Limit, int>
+CodedInputStream::IncrementRecursionDepthAndPushLimit(int byte_limit) {
+  return make_pair(PushLimit(byte_limit), --recursion_budget_);
+}
+
+bool CodedInputStream::DecrementRecursionDepthAndPopLimit(Limit limit) {
+  bool result = ConsumedEntireMessage();
+  PopLimit(limit);
+  GOOGLE_DCHECK_LT(recursion_budget_, recursion_limit_);
+  ++recursion_budget_;
+  return result;
 }
 
 int CodedInputStream::BytesUntilLimit() const {

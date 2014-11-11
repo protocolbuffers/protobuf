@@ -99,6 +99,7 @@ class LIBPROTOBUF_EXPORT GzipInputStream : public ZeroCopyInputStream {
   void* output_buffer_;
   void* output_position_;
   size_t output_buffer_length_;
+  int64 byte_count_;
 
   int Inflate(int flush);
   void DoNextOutput(const void** data, int* size);

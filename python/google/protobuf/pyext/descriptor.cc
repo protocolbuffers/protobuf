@@ -35,6 +35,7 @@
 
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/pyext/descriptor.h>
+#include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 
 #define C(str) const_cast<char*>(str)
@@ -46,7 +47,7 @@
     #error "Python 3.0 - 3.2 are not supported."
   #else
   #define PyString_AsString(ob) \
-    (PyUnicode_Check(ob)? PyUnicode_AsUTF8(ob): PyBytes_AS_STRING(ob))
+    (PyUnicode_Check(ob)? PyUnicode_AsUTF8(ob): PyBytes_AsString(ob))
   #endif
 #endif
 
@@ -65,10 +66,80 @@ namespace python {
 
 static google::protobuf::DescriptorPool* g_descriptor_pool = NULL;
 
+namespace cmessage_descriptor {
+
+static void Dealloc(CMessageDescriptor* self) {
+  Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
+}
+
+static PyObject* GetFullName(CMessageDescriptor* self, void *closure) {
+  return PyString_FromStringAndSize(
+      self->descriptor->full_name().c_str(),
+      self->descriptor->full_name().size());
+}
+
+static PyObject* GetName(CMessageDescriptor *self, void *closure) {
+  return PyString_FromStringAndSize(
+      self->descriptor->name().c_str(),
+      self->descriptor->name().size());
+}
+
+static PyGetSetDef Getters[] = {
+  { C("full_name"), (getter)GetFullName, NULL, "Full name", NULL},
+  { C("name"), (getter)GetName, NULL, "Unqualified name", NULL},
+  {NULL}
+};
+
+}  // namespace cmessage_descriptor
+
+PyTypeObject CMessageDescriptor_Type = {
+  PyVarObject_HEAD_INIT(&PyType_Type, 0)
+  C("google.protobuf.internal."
+    "_net_proto2___python."
+    "CMessageDescriptor"),              // tp_name
+  sizeof(CMessageDescriptor),           // tp_basicsize
+  0,                                    // tp_itemsize
+  (destructor)cmessage_descriptor::Dealloc,  // tp_dealloc
+  0,                                    // tp_print
+  0,                                    // tp_getattr
+  0,                                    // tp_setattr
+  0,                                    // tp_compare
+  0,                                    // tp_repr
+  0,                                    // tp_as_number
+  0,                                    // tp_as_sequence
+  0,                                    // tp_as_mapping
+  0,                                    // tp_hash
+  0,                                    // tp_call
+  0,                                    // tp_str
+  0,                                    // tp_getattro
+  0,                                    // tp_setattro
+  0,                                    // tp_as_buffer
+  Py_TPFLAGS_DEFAULT,                   // tp_flags
+  C("A Message Descriptor"),            // tp_doc
+  0,                                    // tp_traverse
+  0,                                    // tp_clear
+  0,                                    // tp_richcompare
+  0,                                    // tp_weaklistoffset
+  0,                                    // tp_iter
+  0,                                    // tp_iternext
+  0,                                    // tp_methods
+  0,                                    // tp_members
+  cmessage_descriptor::Getters,         // tp_getset
+  0,                                    // tp_base
+  0,                                    // tp_dict
+  0,                                    // tp_descr_get
+  0,                                    // tp_descr_set
+  0,                                    // tp_dictoffset
+  0,                                    // tp_init
+  PyType_GenericAlloc,                  // tp_alloc
+  PyType_GenericNew,                    // tp_new
+  PyObject_Del,                         // tp_free
+};
+
+
 namespace cfield_descriptor {
 
 static void Dealloc(CFieldDescriptor* self) {
-  Py_CLEAR(self->descriptor_field);
   Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
 }
 
@@ -98,7 +169,7 @@ static PyObject* GetID(CFieldDescriptor *self, void *closure) {
 
 static PyGetSetDef Getters[] = {
   { C("full_name"), (getter)GetFullName, NULL, "Full name", NULL},
-  { C("name"), (getter)GetName, NULL, "last name", NULL},
+  { C("name"), (getter)GetName, NULL, "Unqualified name", NULL},
   { C("cpp_type"), (getter)GetCppType, NULL, "C++ Type", NULL},
   { C("label"), (getter)GetLabel, NULL, "Label", NULL},
   { C("id"), (getter)GetID, NULL, "ID", NULL},
@@ -151,13 +222,56 @@ PyTypeObject CFieldDescriptor_Type = {
   PyObject_Del,                         // tp_free
 };
 
+
 namespace cdescriptor_pool {
 
-static void Dealloc(CDescriptorPool* self) {
+PyDescriptorPool* NewDescriptorPool() {
+  PyDescriptorPool* cdescriptor_pool = PyObject_New(
+      PyDescriptorPool, &PyDescriptorPool_Type);
+  if (cdescriptor_pool == NULL) {
+    return NULL;
+  }
+
+  // Build a DescriptorPool for messages only declared in Python libraries.
+  // generated_pool() contains all messages linked in C++ libraries, and is used
+  // as underlay.
+  cdescriptor_pool->pool = new google::protobuf::DescriptorPool(
+      google::protobuf::DescriptorPool::generated_pool());
+
+  // TODO(amauryfa): Rewrite the SymbolDatabase in C so that it uses the same
+  // storage.
+  cdescriptor_pool->classes_by_descriptor =
+      new PyDescriptorPool::ClassesByMessageMap();
+
+  return cdescriptor_pool;
+}
+
+static void Dealloc(PyDescriptorPool* self) {
+  for (auto it : (*self->classes_by_descriptor)) {
+    Py_DECREF(it.second);
+  }
+  delete self->classes_by_descriptor;
   Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
 }
 
-static PyObject* NewCDescriptor(
+const google::protobuf::Descriptor* FindMessageTypeByName(PyDescriptorPool* self,
+                                                const string& name) {
+  return self->pool->FindMessageTypeByName(name);
+}
+
+static PyObject* NewCMessageDescriptor(
+    const google::protobuf::Descriptor* message_descriptor) {
+  CMessageDescriptor* cmessage_descriptor = PyObject_New(
+      CMessageDescriptor, &CMessageDescriptor_Type);
+  if (cmessage_descriptor == NULL) {
+    return NULL;
+  }
+  cmessage_descriptor->descriptor = message_descriptor;
+
+  return reinterpret_cast<PyObject*>(cmessage_descriptor);
+}
+
+static PyObject* NewCFieldDescriptor(
     const google::protobuf::FieldDescriptor* field_descriptor) {
   CFieldDescriptor* cfield_descriptor = PyObject_New(
       CFieldDescriptor, &CFieldDescriptor_Type);
@@ -165,12 +279,61 @@ static PyObject* NewCDescriptor(
     return NULL;
   }
   cfield_descriptor->descriptor = field_descriptor;
-  cfield_descriptor->descriptor_field = NULL;
 
   return reinterpret_cast<PyObject*>(cfield_descriptor);
 }
 
-PyObject* FindFieldByName(CDescriptorPool* self, PyObject* name) {
+// Add a message class to our database.
+const google::protobuf::Descriptor* RegisterMessageClass(
+    PyDescriptorPool* self, PyObject *message_class, PyObject* descriptor) {
+  ScopedPyObjectPtr full_message_name(
+      PyObject_GetAttrString(descriptor, "full_name"));
+  const char* full_name = PyString_AsString(full_message_name);
+  if (full_name == NULL) {
+    return NULL;
+  }
+  const Descriptor *message_descriptor =
+      self->pool->FindMessageTypeByName(full_name);
+  if (!message_descriptor) {
+    PyErr_Format(PyExc_TypeError, "Could not find C++ descriptor for '%s'",
+                 full_name);
+    return NULL;
+  }
+  Py_INCREF(message_class);
+  auto ret = self->classes_by_descriptor->insert(
+      make_pair(message_descriptor, message_class));
+  if (!ret.second) {
+    // Update case: DECREF the previous value.
+    Py_DECREF(ret.first->second);
+    ret.first->second = message_class;
+  }
+
+  // Also add the C++ descriptor to the Python descriptor class.
+  ScopedPyObjectPtr cdescriptor(NewCMessageDescriptor(message_descriptor));
+  if (cdescriptor == NULL) {
+    return NULL;
+  }
+  if (PyObject_SetAttrString(
+          descriptor, "_cdescriptor", cdescriptor) < 0) {
+      return NULL;
+  }
+  return message_descriptor;
+}
+
+// Retrieve the message class added to our database.
+PyObject *GetMessageClass(PyDescriptorPool* self,
+                          const Descriptor *message_descriptor) {
+  auto ret = self->classes_by_descriptor->find(message_descriptor);
+  if (ret == self->classes_by_descriptor->end()) {
+    PyErr_Format(PyExc_TypeError, "No message class registered for '%s'",
+                 message_descriptor->full_name().c_str());
+    return NULL;
+  } else {
+    return ret->second;
+  }
+}
+
+PyObject* FindFieldByName(PyDescriptorPool* self, PyObject* name) {
   const char* full_field_name = PyString_AsString(name);
   if (full_field_name == NULL) {
     return NULL;
@@ -186,10 +349,10 @@ PyObject* FindFieldByName(CDescriptorPool* self, PyObject* name) {
     return NULL;
   }
 
-  return NewCDescriptor(field_descriptor);
+  return NewCFieldDescriptor(field_descriptor);
 }
 
-PyObject* FindExtensionByName(CDescriptorPool* self, PyObject* arg) {
+PyObject* FindExtensionByName(PyDescriptorPool* self, PyObject* arg) {
   const char* full_field_name = PyString_AsString(arg);
   if (full_field_name == NULL) {
     return NULL;
@@ -203,7 +366,7 @@ PyObject* FindExtensionByName(CDescriptorPool* self, PyObject* arg) {
     return NULL;
   }
 
-  return NewCDescriptor(field_descriptor);
+  return NewCFieldDescriptor(field_descriptor);
 }
 
 static PyMethodDef Methods[] = {
@@ -220,12 +383,12 @@ static PyMethodDef Methods[] = {
 
 }  // namespace cdescriptor_pool
 
-PyTypeObject CDescriptorPool_Type = {
+PyTypeObject PyDescriptorPool_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
   C("google.protobuf.internal."
     "_net_proto2___python."
     "CFieldDescriptor"),               // tp_name
-  sizeof(CDescriptorPool),             // tp_basicsize
+  sizeof(PyDescriptorPool),            // tp_basicsize
   0,                                   // tp_itemsize
   (destructor)cdescriptor_pool::Dealloc,  // tp_dealloc
   0,                                   // tp_print
@@ -259,28 +422,10 @@ PyTypeObject CDescriptorPool_Type = {
   0,                                   // tp_descr_set
   0,                                   // tp_dictoffset
   0,                                   // tp_init
-  PyType_GenericAlloc,                 // tp_alloc
-  PyType_GenericNew,                   // tp_new
+  0,                                   // tp_alloc
+  0,                                   // tp_new
   PyObject_Del,                        // tp_free
 };
-
-google::protobuf::DescriptorPool* GetDescriptorPool() {
-  if (g_descriptor_pool == NULL) {
-    g_descriptor_pool = new google::protobuf::DescriptorPool(
-        google::protobuf::DescriptorPool::generated_pool());
-  }
-  return g_descriptor_pool;
-}
-
-PyObject* Python_NewCDescriptorPool(PyObject* ignored, PyObject* args) {
-  CDescriptorPool* cdescriptor_pool = PyObject_New(
-      CDescriptorPool, &CDescriptorPool_Type);
-  if (cdescriptor_pool == NULL) {
-    return NULL;
-  }
-  cdescriptor_pool->pool = GetDescriptorPool();
-  return reinterpret_cast<PyObject*>(cdescriptor_pool);
-}
 
 
 // Collects errors that occur during proto file building to allow them to be
@@ -321,6 +466,8 @@ PyObject* Python_BuildFile(PyObject* ignored, PyObject* arg) {
     return NULL;
   }
 
+  // If the file was already part of a C++ library, all its descriptors are in
+  // the underlying pool.  No need to do anything else.
   if (google::protobuf::DescriptorPool::generated_pool()->FindFileByName(
           file_proto.name()) != NULL) {
     Py_RETURN_NONE;
@@ -328,8 +475,8 @@ PyObject* Python_BuildFile(PyObject* ignored, PyObject* arg) {
 
   BuildFileErrorCollector error_collector;
   const google::protobuf::FileDescriptor* descriptor =
-      GetDescriptorPool()->BuildFileCollectingErrors(file_proto,
-                                                     &error_collector);
+      GetDescriptorPool()->pool->BuildFileCollectingErrors(file_proto,
+                                                           &error_collector);
   if (descriptor == NULL) {
     PyErr_Format(PyExc_TypeError,
                  "Couldn't build proto file into descriptor pool!\n%s",
@@ -341,12 +488,13 @@ PyObject* Python_BuildFile(PyObject* ignored, PyObject* arg) {
 }
 
 bool InitDescriptor() {
-  CFieldDescriptor_Type.tp_new = PyType_GenericNew;
+  if (PyType_Ready(&CMessageDescriptor_Type) < 0)
+    return false;
   if (PyType_Ready(&CFieldDescriptor_Type) < 0)
     return false;
 
-  CDescriptorPool_Type.tp_new = PyType_GenericNew;
-  if (PyType_Ready(&CDescriptorPool_Type) < 0)
+  PyDescriptorPool_Type.tp_new = PyType_GenericNew;
+  if (PyType_Ready(&PyDescriptorPool_Type) < 0)
     return false;
 
   return true;

@@ -36,6 +36,9 @@
 #define GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 
 #include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 #include <string>
 #include <vector>
 #include <google/protobuf/compiler/cpp/cpp_field.h>
@@ -58,8 +61,7 @@ class ExtensionGenerator;      // extension.h
 class MessageGenerator {
  public:
   // See generator.cc for the meaning of dllexport_decl.
-  explicit MessageGenerator(const Descriptor* descriptor,
-                            const Options& options);
+  MessageGenerator(const Descriptor* descriptor, const Options& options);
   ~MessageGenerator();
 
   // Header stuff.
@@ -130,6 +132,8 @@ class MessageGenerator {
   void GenerateSharedConstructorCode(io::Printer* printer);
   // Generate the shared destructor code.
   void GenerateSharedDestructorCode(io::Printer* printer);
+  // Generate the arena-specific destructor code.
+  void GenerateArenaDestructorCode(io::Printer* printer);
 
   // Generate standard Message methods.
   void GenerateClear(io::Printer* printer);
@@ -162,6 +166,7 @@ class MessageGenerator {
   scoped_array<scoped_ptr<MessageGenerator> > nested_generators_;
   scoped_array<scoped_ptr<EnumGenerator> > enum_generators_;
   scoped_array<scoped_ptr<ExtensionGenerator> > extension_generators_;
+  int num_required_fields_;
   bool uses_string_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageGenerator);

@@ -35,7 +35,7 @@
 # indirect testing of the protocol compiler output.
 
 """Unittest that directly tests the output of the pure-Python protocol
-compiler.  See //google/protobuf/reflection_test.py for a test which
+compiler.  See //google/protobuf/internal/reflection_test.py for a test which
 further ensures that we can use Python protocol message objects as we expect.
 """
 
@@ -281,6 +281,8 @@ class GeneratorTest(basetest.TestCase):
                      "baz")
     self.assertEqual(message.Extensions[test_bad_identifiers_pb2.service],
                      "qux")
+    self.assertEqual(message.Extensions[test_bad_identifiers_pb2.class_],
+                     "Foo")
 
   def testOneof(self):
     desc = unittest_pb2.TestAllTypes.DESCRIPTOR

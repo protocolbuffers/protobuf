@@ -34,6 +34,7 @@
 //
 // A proto file we will use for unit testing.
 
+syntax = "proto2";
 
 // Some generic_services option(s) added automatically.
 // See:  http://go/proto2-generic-services-default
@@ -429,7 +430,7 @@ message TestMutualRecursionB {
 }
 
 // Test that groups have disjoint field numbers from their siblings and
-// parents.  This is NOT possible in proto1; only proto2.  When attempting
+// parents.  This is NOT possible in proto1; only google.protobuf.  When attempting
 // to compile with proto1, this will emit an error; so we only include it
 // in protobuf_unittest_proto.
 message TestDupFieldNumber {                        // NO_PROTO1
@@ -505,6 +506,15 @@ message TestFieldOrderings {
   optional int64 my_int = 1;
   extensions 12 to 100;
   optional float my_float = 101;
+  message NestedMessage {
+    optional int64 oo = 2;
+    // The field name "b" fails to compile in proto1 because it conflicts with
+    // a local variable named "b" in one of the generated methods.  Doh.
+    // This file needs to compile in proto1 to test backwards-compatibility.
+    optional int32 bb = 1;
+  }
+
+  optional NestedMessage optional_nested_message  = 200;
 }
 
 

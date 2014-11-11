@@ -33,6 +33,7 @@
 // A proto file with nested extensions. Note that this must be defined in
 // a separate file to properly test the initialization of the outer class.
 
+syntax = "proto2";
 
 import "com/google/protobuf/non_nested_extension.proto";
 

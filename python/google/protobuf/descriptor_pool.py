@@ -554,7 +554,7 @@ class DescriptorPool(object):
         field_desc.default_value = field_proto.default_value.lower() == 'true'
       elif field_proto.type == descriptor.FieldDescriptor.TYPE_ENUM:
         field_desc.default_value = field_desc.enum_type.values_by_name[
-            field_proto.default_value].index
+            field_proto.default_value].number
       elif field_proto.type == descriptor.FieldDescriptor.TYPE_BYTES:
         field_desc.default_value = text_encoding.CUnescape(
             field_proto.default_value)

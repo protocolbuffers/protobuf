@@ -226,5 +226,13 @@ TEST_F(DynamicMessageTest, SpaceUsed) {
   EXPECT_LT(initial_space_used, message->SpaceUsed());
 }
 
+TEST_F(DynamicMessageTest, Arena) {
+  Arena arena;
+  Message* message = prototype_->New(&arena);
+  (void)message;  // avoid unused-variable error.
+  // Return without freeing: should not leak.
+}
+
+
 }  // namespace protobuf
 }  // namespace google

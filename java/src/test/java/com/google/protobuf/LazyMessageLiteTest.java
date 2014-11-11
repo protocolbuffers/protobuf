@@ -36,8 +36,6 @@ import protobuf_unittest.LazyFieldsLite.LazyNestedInnerMessageLite;
 
 import junit.framework.TestCase;
 
-import org.easymock.classextension.EasyMock;
-
 import java.util.ArrayList;
 
 /**
@@ -52,14 +50,10 @@ public class LazyMessageLiteTest extends TestCase {
   @Override
   protected void setUp() throws Exception {
     super.setUp();
-
-    originalLazyInnerMessageLiteParser = LazyInnerMessageLite.PARSER;
   }
 
   @Override
   protected void tearDown() throws Exception {
-    LazyInnerMessageLite.PARSER = originalLazyInnerMessageLiteParser;
-
     super.tearDown();
   }
 
@@ -290,30 +284,5 @@ public class LazyMessageLiteTest extends TestCase {
     assertEquals(4,  deserialized.getOneofInner().getNested().getNumWithDefault());
 
     assertEquals(bytes, deserialized.toByteString());
-  }
-
-  public void testLaziness() throws InvalidProtocolBufferException {
-    LazyInnerMessageLite inner = LazyInnerMessageLite.newBuilder()
-        .setNum(2)
-        .build();
-    LazyMessageLite outer = LazyMessageLite.newBuilder()
-        .setNum(1)
-        .setInner(inner)
-        .setOneofInner(inner)
-        .build();
-    ByteString bytes = outer.toByteString();
-
-
-    // The parser for inner / oneofInner message shouldn't be used if
-    // getInner / getOneofInner is not called.
-    LazyInnerMessageLite.PARSER = EasyMock.createStrictMock(Parser.class);
-
-    EasyMock.replay(LazyInnerMessageLite.PARSER);
-
-    LazyMessageLite deserialized = LazyMessageLite.parseFrom(bytes);
-    assertEquals(1, deserialized.getNum());
-    assertEquals(421,  deserialized.getNumWithDefault());
-
-    EasyMock.verify(LazyInnerMessageLite.PARSER);
   }
 }

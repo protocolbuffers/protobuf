@@ -32,6 +32,7 @@
 //
 // A proto file with extensions.
 
+syntax = "proto2";
 
 package protobuf_unittest;
 

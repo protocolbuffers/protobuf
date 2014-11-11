@@ -32,6 +32,7 @@
 //
 // Test that custom options defined in a proto file's dependencies are properly
 // initialized.
+syntax = "proto2";
 
 package protobuf_unittest;
 

@@ -32,6 +32,7 @@
 //
 // This is like unittest_import.proto but with optimize_for = LITE_RUNTIME.
 
+syntax = "proto2";
 package protobuf_unittest_import;
 
 option optimize_for = LITE_RUNTIME;

@@ -32,6 +32,7 @@ package com.google.protobuf;
 
 import com.google.protobuf.DescriptorProtos.*;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Logger;
 import java.io.UnsupportedEncodingException;
 
@@ -121,6 +123,26 @@ public final class Descriptors {
     /** Get a list of this file's public dependencies (public imports). */
     public List<FileDescriptor> getPublicDependencies() {
       return Collections.unmodifiableList(Arrays.asList(publicDependencies));
+    }
+
+    /** The syntax of the .proto file. */
+    public enum Syntax {
+      UNKNOWN("unknown"),
+      PROTO2("proto2"),
+      PROTO3("proto3");
+
+      Syntax(String name) {
+        this.name = name;
+      }
+      private final String name;
+    }
+
+    /** Get the syntax of the .proto file. */
+    public Syntax getSyntax() {
+      if (Syntax.PROTO3.name.equals(proto.getSyntax())) {
+        return Syntax.PROTO3;
+      }
+      return Syntax.PROTO2;
     }
 
     /**
@@ -539,6 +561,10 @@ public final class Descriptors {
         extensions[i].setProto(proto.getExtension(i));
       }
     }
+    
+    boolean supportsUnknownEnumValue() {
+      return getSyntax() == Syntax.PROTO3;
+    }
   }
 
   // =================================================================
@@ -871,6 +897,11 @@ public final class Descriptors {
       return (type == Type.STRING) && (getFile().getOptions().getJavaStringCheckUtf8());
     }
 
+    boolean isMapField() {
+      return getType() == Type.MESSAGE && isRepeated()
+          && getMessageType().getOptions().getMapEntry();
+    }
+
     // I'm pretty sure values() constructs a new array every time, since there
     // is nothing stopping the caller from mutating the array.  Therefore we
     // make a static copy here.
@@ -999,6 +1030,11 @@ public final class Descriptors {
           "for fields of the same message type.");
       }
       return getNumber() - other.getNumber();
+    }
+
+    @Override
+    public String toString() {
+      return getFullName();
     }
 
     private final int index;
@@ -1420,6 +1456,64 @@ public final class Descriptors {
       return file.pool.enumValuesByNumber.get(
         new DescriptorPool.DescriptorIntPair(this, number));
     }
+    
+    /**
+     * Get the enum value for a number. If no enum value has this number,
+     * construct an EnumValueDescriptor for it.
+     */
+    public EnumValueDescriptor findValueByNumberCreatingIfUnknown(final int number) {
+      EnumValueDescriptor result = findValueByNumber(number);
+      if (result != null) {
+        return result;
+      }
+      // The number represents an unknown enum value.
+      synchronized (this) {
+        // Descriptors are compared by object identity so for the same number
+        // we need to return the same EnumValueDescriptor object. This means
+        // we have to store created EnumValueDescriptors. However, as there
+        // are potentially 2G unknown enum values, storing all of these
+        // objects persistently will consume lots of memory for long-running
+        // services and it's also unnecessary as not many EnumValueDescriptors
+        // will be used at the same time.
+        //
+        // To solve the problem we take advantage of Java's weak references and
+        // rely on gc to release unused descriptors.
+        //
+        // Here is how it works:
+        //   * We store unknown EnumValueDescriptors in a WeakHashMap with the
+        //     value being a weak reference to the descriptor.
+        //   * The descriptor holds a strong reference to the key so as long
+        //     as the EnumValueDescriptor is in use, the key will be there
+        //     and the corresponding map entry will be there. Following-up
+        //     queries with the same number will return the same descriptor.
+        //   * If the user no longer uses an unknown EnumValueDescriptor,
+        //     it will be gc-ed since we only hold a weak reference to it in
+        //     the map. The key in the corresponding map entry will also be
+        //     gc-ed as the only strong reference to it is in the descriptor
+        //     which is just gc-ed. With the key being gone WeakHashMap will
+        //     then remove the whole entry. This way unknown descriptors will
+        //     be freed automatically and we don't need to do anything to
+        //     clean-up unused map entries.
+        
+        // Note: We must use "new Integer(number)" here because we don't want
+        // these Integer objects to be cached.
+        Integer key = new Integer(number);
+        WeakReference<EnumValueDescriptor> reference = unknownValues.get(key);
+        if (reference != null) {
+          result = reference.get();
+        }
+        if (result == null) {
+          result = new EnumValueDescriptor(file, this, key);
+          unknownValues.put(key, new WeakReference<EnumValueDescriptor>(result));
+        }
+      }
+      return result;
+    }
+    
+    // Used in tests only.
+    int getUnknownEnumValueDescriptorCount() {
+      return unknownValues.size();
+    }
 
     private final int index;
     private EnumDescriptorProto proto;
@@ -1427,6 +1521,8 @@ public final class Descriptors {
     private final FileDescriptor file;
     private final Descriptor containingType;
     private EnumValueDescriptor[] values;
+    private final WeakHashMap<Integer, WeakReference<EnumValueDescriptor>> unknownValues =
+        new WeakHashMap<Integer, WeakReference<EnumValueDescriptor>>();
 
     private EnumDescriptor(final EnumDescriptorProto proto,
                            final FileDescriptor file,
@@ -1530,6 +1626,25 @@ public final class Descriptors {
 
       file.pool.addSymbol(this);
       file.pool.addEnumValueByNumber(this);
+    }
+    
+    private Integer number;
+    // Create an unknown enum value.
+    private EnumValueDescriptor(
+        final FileDescriptor file,
+        final EnumDescriptor parent,
+        final Integer number) {
+      String name = "UNKNOWN_ENUM_VALUE_" + parent.getName() + "_" + number;
+      EnumValueDescriptorProto proto = EnumValueDescriptorProto
+          .newBuilder().setName(name).setNumber(number).build();
+      this.index = -1;
+      this.proto = proto;
+      this.file = file;
+      this.type = parent;
+      this.fullName = parent.getFullName() + '.' + proto.getName();
+      this.number = number;
+      
+      // Don't add this descriptor into pool.
     }
 
     /** See {@link FileDescriptor#setProto}. */

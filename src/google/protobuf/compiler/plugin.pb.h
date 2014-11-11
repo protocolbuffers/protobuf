@@ -5,6 +5,7 @@
 #define PROTOBUF_google_2fprotobuf_2fcompiler_2fplugin_2eproto__INCLUDED
 
 #include <string>
+#include <stdint.h>
 
 #include <google/protobuf/stubs/common.h>
 
@@ -19,7 +20,10 @@
 #error regenerate this file with a newer version of protoc.
 #endif
 
+#include <google/protobuf/arena.h>
+#include <google/protobuf/arenastring.h>
 #include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/metadata.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/extension_set.h>
@@ -55,21 +59,28 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   }
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
+    return _internal_metadata_.unknown_fields();
   }
 
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
+    return _internal_metadata_.mutable_unknown_fields();
   }
 
+  inline ::google::protobuf::Arena* GetArena() const { return GetArenaNoVirtual(); }
+  inline void* GetMaybeArenaPointer() const {
+    return MaybeArenaPtr();
+  }
   static const ::google::protobuf::Descriptor* descriptor();
   static const CodeGeneratorRequest& default_instance();
 
+  void UnsafeArenaSwap(CodeGeneratorRequest* other);
   void Swap(CodeGeneratorRequest* other);
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorRequest* New() const;
+  inline CodeGeneratorRequest* New() const { return New(NULL); }
+
+  CodeGeneratorRequest* New(::google::protobuf::Arena* arena) const;
   void CopyFrom(const ::google::protobuf::Message& from);
   void MergeFrom(const ::google::protobuf::Message& from);
   void CopyFrom(const CodeGeneratorRequest& from);
@@ -88,7 +99,21 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
+  void InternalSwap(CodeGeneratorRequest* other);
+  protected:
+  explicit CodeGeneratorRequest(::google::protobuf::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::google::protobuf::Arena* arena);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
   public:
+
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -122,6 +147,9 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   inline ::std::string* mutable_parameter();
   inline ::std::string* release_parameter();
   inline void set_allocated_parameter(::std::string* parameter);
+  inline ::std::string* unsafe_arena_release_parameter();
+  inline void unsafe_arena_set_allocated_parameter(
+      ::std::string* parameter);
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   inline int proto_file_size() const;
@@ -140,12 +168,14 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   inline void set_has_parameter();
   inline void clear_has_parameter();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  friend class ::google::protobuf::Arena;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::std::string> file_to_generate_;
-  ::std::string* parameter_;
+  ::google::protobuf::internal::ArenaStringPtr parameter_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > proto_file_;
   friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
@@ -169,21 +199,28 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   }
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
+    return _internal_metadata_.unknown_fields();
   }
 
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
+    return _internal_metadata_.mutable_unknown_fields();
   }
 
+  inline ::google::protobuf::Arena* GetArena() const { return GetArenaNoVirtual(); }
+  inline void* GetMaybeArenaPointer() const {
+    return MaybeArenaPtr();
+  }
   static const ::google::protobuf::Descriptor* descriptor();
   static const CodeGeneratorResponse_File& default_instance();
 
+  void UnsafeArenaSwap(CodeGeneratorResponse_File* other);
   void Swap(CodeGeneratorResponse_File* other);
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorResponse_File* New() const;
+  inline CodeGeneratorResponse_File* New() const { return New(NULL); }
+
+  CodeGeneratorResponse_File* New(::google::protobuf::Arena* arena) const;
   void CopyFrom(const ::google::protobuf::Message& from);
   void MergeFrom(const ::google::protobuf::Message& from);
   void CopyFrom(const CodeGeneratorResponse_File& from);
@@ -202,7 +239,21 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
+  void InternalSwap(CodeGeneratorResponse_File* other);
+  protected:
+  explicit CodeGeneratorResponse_File(::google::protobuf::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::google::protobuf::Arena* arena);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
   public:
+
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -220,6 +271,9 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   inline ::std::string* mutable_name();
   inline ::std::string* release_name();
   inline void set_allocated_name(::std::string* name);
+  inline ::std::string* unsafe_arena_release_name();
+  inline void unsafe_arena_set_allocated_name(
+      ::std::string* name);
 
   // optional string insertion_point = 2;
   inline bool has_insertion_point() const;
@@ -232,6 +286,9 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   inline ::std::string* mutable_insertion_point();
   inline ::std::string* release_insertion_point();
   inline void set_allocated_insertion_point(::std::string* insertion_point);
+  inline ::std::string* unsafe_arena_release_insertion_point();
+  inline void unsafe_arena_set_allocated_insertion_point(
+      ::std::string* insertion_point);
 
   // optional string content = 15;
   inline bool has_content() const;
@@ -244,6 +301,9 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   inline ::std::string* mutable_content();
   inline ::std::string* release_content();
   inline void set_allocated_content(::std::string* content);
+  inline ::std::string* unsafe_arena_release_content();
+  inline void unsafe_arena_set_allocated_content(
+      ::std::string* content);
 
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse.File)
  private:
@@ -254,13 +314,15 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   inline void set_has_content();
   inline void clear_has_content();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  friend class ::google::protobuf::Arena;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::std::string* name_;
-  ::std::string* insertion_point_;
-  ::std::string* content_;
+  ::google::protobuf::internal::ArenaStringPtr name_;
+  ::google::protobuf::internal::ArenaStringPtr insertion_point_;
+  ::google::protobuf::internal::ArenaStringPtr content_;
   friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
@@ -283,21 +345,28 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   }
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
+    return _internal_metadata_.unknown_fields();
   }
 
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
+    return _internal_metadata_.mutable_unknown_fields();
   }
 
+  inline ::google::protobuf::Arena* GetArena() const { return GetArenaNoVirtual(); }
+  inline void* GetMaybeArenaPointer() const {
+    return MaybeArenaPtr();
+  }
   static const ::google::protobuf::Descriptor* descriptor();
   static const CodeGeneratorResponse& default_instance();
 
+  void UnsafeArenaSwap(CodeGeneratorResponse* other);
   void Swap(CodeGeneratorResponse* other);
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorResponse* New() const;
+  inline CodeGeneratorResponse* New() const { return New(NULL); }
+
+  CodeGeneratorResponse* New(::google::protobuf::Arena* arena) const;
   void CopyFrom(const ::google::protobuf::Message& from);
   void MergeFrom(const ::google::protobuf::Message& from);
   void CopyFrom(const CodeGeneratorResponse& from);
@@ -316,7 +385,21 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const;
+  void InternalSwap(CodeGeneratorResponse* other);
+  protected:
+  explicit CodeGeneratorResponse(::google::protobuf::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::google::protobuf::Arena* arena);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
   public:
+
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
@@ -336,6 +419,9 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   inline ::std::string* mutable_error();
   inline ::std::string* release_error();
   inline void set_allocated_error(::std::string* error);
+  inline ::std::string* unsafe_arena_release_error();
+  inline void unsafe_arena_set_allocated_error(
+      ::std::string* error);
 
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
   inline int file_size() const;
@@ -354,11 +440,13 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   inline void set_has_error();
   inline void clear_has_error();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  friend class ::google::protobuf::Arena;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::std::string* error_;
+  ::google::protobuf::internal::ArenaStringPtr error_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File > file_;
   friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
@@ -439,68 +527,67 @@ inline void CodeGeneratorRequest::clear_has_parameter() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void CodeGeneratorRequest::clear_parameter() {
-  if (parameter_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    parameter_->clear();
-  }
+  parameter_.ClearToEmpty(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
   clear_has_parameter();
 }
 inline const ::std::string& CodeGeneratorRequest::parameter() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.parameter)
-  return *parameter_;
+  return parameter_.Get(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void CodeGeneratorRequest::set_parameter(const ::std::string& value) {
   set_has_parameter();
-  if (parameter_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    parameter_ = new ::std::string;
-  }
-  parameter_->assign(value);
+  parameter_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
 inline void CodeGeneratorRequest::set_parameter(const char* value) {
   set_has_parameter();
-  if (parameter_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    parameter_ = new ::std::string;
-  }
-  parameter_->assign(value);
+  parameter_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
-inline void CodeGeneratorRequest::set_parameter(const char* value, size_t size) {
+inline void CodeGeneratorRequest::set_parameter(const char* value,
+    size_t size) {
   set_has_parameter();
-  if (parameter_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    parameter_ = new ::std::string;
-  }
-  parameter_->assign(reinterpret_cast<const char*>(value), size);
+  parameter_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
 inline ::std::string* CodeGeneratorRequest::mutable_parameter() {
   set_has_parameter();
-  if (parameter_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    parameter_ = new ::std::string;
-  }
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.parameter)
-  return parameter_;
+  return parameter_.Mutable(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline ::std::string* CodeGeneratorRequest::release_parameter() {
   clear_has_parameter();
-  if (parameter_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    return NULL;
-  } else {
-    ::std::string* temp = parameter_;
-    parameter_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-    return temp;
-  }
+  return parameter_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
+}
+inline ::std::string* CodeGeneratorRequest::unsafe_arena_release_parameter() {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_parameter();
+  return parameter_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void CodeGeneratorRequest::set_allocated_parameter(::std::string* parameter) {
-  if (parameter_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    delete parameter_;
-  }
-  if (parameter) {
+  if (parameter != NULL) {
     set_has_parameter();
-    parameter_ = parameter;
   } else {
     clear_has_parameter();
-    parameter_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
+  parameter_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), parameter,
+      GetArenaNoVirtual());
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.parameter)
+}
+inline void CodeGeneratorRequest::unsafe_arena_set_allocated_parameter(
+    ::std::string* parameter) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  if (parameter != NULL) {
+    set_has_parameter();
+  } else {
+    clear_has_parameter();
+  }
+  set_has_parameter();
+  parameter_.UnsafeArenaSetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      parameter, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
 
@@ -549,68 +636,67 @@ inline void CodeGeneratorResponse_File::clear_has_name() {
   _has_bits_[0] &= ~0x00000001u;
 }
 inline void CodeGeneratorResponse_File::clear_name() {
-  if (name_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    name_->clear();
-  }
+  name_.ClearToEmpty(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
   clear_has_name();
 }
 inline const ::std::string& CodeGeneratorResponse_File::name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.name)
-  return *name_;
+  return name_.Get(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void CodeGeneratorResponse_File::set_name(const ::std::string& value) {
   set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
+  name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
 inline void CodeGeneratorResponse_File::set_name(const char* value) {
   set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
+  name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
-inline void CodeGeneratorResponse_File::set_name(const char* value, size_t size) {
+inline void CodeGeneratorResponse_File::set_name(const char* value,
+    size_t size) {
   set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
+  name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
 inline ::std::string* CodeGeneratorResponse_File::mutable_name() {
   set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    name_ = new ::std::string;
-  }
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.name)
-  return name_;
+  return name_.Mutable(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline ::std::string* CodeGeneratorResponse_File::release_name() {
   clear_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-    return temp;
-  }
+  return name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
+}
+inline ::std::string* CodeGeneratorResponse_File::unsafe_arena_release_name() {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_name();
+  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void CodeGeneratorResponse_File::set_allocated_name(::std::string* name) {
-  if (name_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    delete name_;
-  }
-  if (name) {
+  if (name != NULL) {
     set_has_name();
-    name_ = name;
   } else {
     clear_has_name();
-    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
+  name_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name,
+      GetArenaNoVirtual());
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.name)
+}
+inline void CodeGeneratorResponse_File::unsafe_arena_set_allocated_name(
+    ::std::string* name) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  if (name != NULL) {
+    set_has_name();
+  } else {
+    clear_has_name();
+  }
+  set_has_name();
+  name_.UnsafeArenaSetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      name, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
 
@@ -625,68 +711,67 @@ inline void CodeGeneratorResponse_File::clear_has_insertion_point() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void CodeGeneratorResponse_File::clear_insertion_point() {
-  if (insertion_point_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    insertion_point_->clear();
-  }
+  insertion_point_.ClearToEmpty(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
   clear_has_insertion_point();
 }
 inline const ::std::string& CodeGeneratorResponse_File::insertion_point() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
-  return *insertion_point_;
+  return insertion_point_.Get(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void CodeGeneratorResponse_File::set_insertion_point(const ::std::string& value) {
   set_has_insertion_point();
-  if (insertion_point_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    insertion_point_ = new ::std::string;
-  }
-  insertion_point_->assign(value);
+  insertion_point_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
 inline void CodeGeneratorResponse_File::set_insertion_point(const char* value) {
   set_has_insertion_point();
-  if (insertion_point_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    insertion_point_ = new ::std::string;
-  }
-  insertion_point_->assign(value);
+  insertion_point_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
-inline void CodeGeneratorResponse_File::set_insertion_point(const char* value, size_t size) {
+inline void CodeGeneratorResponse_File::set_insertion_point(const char* value,
+    size_t size) {
   set_has_insertion_point();
-  if (insertion_point_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    insertion_point_ = new ::std::string;
-  }
-  insertion_point_->assign(reinterpret_cast<const char*>(value), size);
+  insertion_point_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
 inline ::std::string* CodeGeneratorResponse_File::mutable_insertion_point() {
   set_has_insertion_point();
-  if (insertion_point_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    insertion_point_ = new ::std::string;
-  }
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
-  return insertion_point_;
+  return insertion_point_.Mutable(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline ::std::string* CodeGeneratorResponse_File::release_insertion_point() {
   clear_has_insertion_point();
-  if (insertion_point_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    return NULL;
-  } else {
-    ::std::string* temp = insertion_point_;
-    insertion_point_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-    return temp;
-  }
+  return insertion_point_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
+}
+inline ::std::string* CodeGeneratorResponse_File::unsafe_arena_release_insertion_point() {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_insertion_point();
+  return insertion_point_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void CodeGeneratorResponse_File::set_allocated_insertion_point(::std::string* insertion_point) {
-  if (insertion_point_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    delete insertion_point_;
-  }
-  if (insertion_point) {
+  if (insertion_point != NULL) {
     set_has_insertion_point();
-    insertion_point_ = insertion_point;
   } else {
     clear_has_insertion_point();
-    insertion_point_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
+  insertion_point_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), insertion_point,
+      GetArenaNoVirtual());
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
+}
+inline void CodeGeneratorResponse_File::unsafe_arena_set_allocated_insertion_point(
+    ::std::string* insertion_point) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  if (insertion_point != NULL) {
+    set_has_insertion_point();
+  } else {
+    clear_has_insertion_point();
+  }
+  set_has_insertion_point();
+  insertion_point_.UnsafeArenaSetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      insertion_point, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
 
@@ -701,68 +786,67 @@ inline void CodeGeneratorResponse_File::clear_has_content() {
   _has_bits_[0] &= ~0x00000004u;
 }
 inline void CodeGeneratorResponse_File::clear_content() {
-  if (content_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    content_->clear();
-  }
+  content_.ClearToEmpty(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
   clear_has_content();
 }
 inline const ::std::string& CodeGeneratorResponse_File::content() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.content)
-  return *content_;
+  return content_.Get(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void CodeGeneratorResponse_File::set_content(const ::std::string& value) {
   set_has_content();
-  if (content_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    content_ = new ::std::string;
-  }
-  content_->assign(value);
+  content_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
 inline void CodeGeneratorResponse_File::set_content(const char* value) {
   set_has_content();
-  if (content_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    content_ = new ::std::string;
-  }
-  content_->assign(value);
+  content_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
-inline void CodeGeneratorResponse_File::set_content(const char* value, size_t size) {
+inline void CodeGeneratorResponse_File::set_content(const char* value,
+    size_t size) {
   set_has_content();
-  if (content_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    content_ = new ::std::string;
-  }
-  content_->assign(reinterpret_cast<const char*>(value), size);
+  content_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
 inline ::std::string* CodeGeneratorResponse_File::mutable_content() {
   set_has_content();
-  if (content_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    content_ = new ::std::string;
-  }
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.content)
-  return content_;
+  return content_.Mutable(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline ::std::string* CodeGeneratorResponse_File::release_content() {
   clear_has_content();
-  if (content_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    return NULL;
-  } else {
-    ::std::string* temp = content_;
-    content_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-    return temp;
-  }
+  return content_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
+}
+inline ::std::string* CodeGeneratorResponse_File::unsafe_arena_release_content() {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_content();
+  return content_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void CodeGeneratorResponse_File::set_allocated_content(::std::string* content) {
-  if (content_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    delete content_;
-  }
-  if (content) {
+  if (content != NULL) {
     set_has_content();
-    content_ = content;
   } else {
     clear_has_content();
-    content_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
+  content_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), content,
+      GetArenaNoVirtual());
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.content)
+}
+inline void CodeGeneratorResponse_File::unsafe_arena_set_allocated_content(
+    ::std::string* content) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  if (content != NULL) {
+    set_has_content();
+  } else {
+    clear_has_content();
+  }
+  set_has_content();
+  content_.UnsafeArenaSetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      content, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
 
@@ -781,68 +865,67 @@ inline void CodeGeneratorResponse::clear_has_error() {
   _has_bits_[0] &= ~0x00000001u;
 }
 inline void CodeGeneratorResponse::clear_error() {
-  if (error_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    error_->clear();
-  }
+  error_.ClearToEmpty(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
   clear_has_error();
 }
 inline const ::std::string& CodeGeneratorResponse::error() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.error)
-  return *error_;
+  return error_.Get(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void CodeGeneratorResponse::set_error(const ::std::string& value) {
   set_has_error();
-  if (error_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    error_ = new ::std::string;
-  }
-  error_->assign(value);
+  error_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
 inline void CodeGeneratorResponse::set_error(const char* value) {
   set_has_error();
-  if (error_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    error_ = new ::std::string;
-  }
-  error_->assign(value);
+  error_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
-inline void CodeGeneratorResponse::set_error(const char* value, size_t size) {
+inline void CodeGeneratorResponse::set_error(const char* value,
+    size_t size) {
   set_has_error();
-  if (error_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    error_ = new ::std::string;
-  }
-  error_->assign(reinterpret_cast<const char*>(value), size);
+  error_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
 inline ::std::string* CodeGeneratorResponse::mutable_error() {
   set_has_error();
-  if (error_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    error_ = new ::std::string;
-  }
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.error)
-  return error_;
+  return error_.Mutable(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline ::std::string* CodeGeneratorResponse::release_error() {
   clear_has_error();
-  if (error_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    return NULL;
-  } else {
-    ::std::string* temp = error_;
-    error_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-    return temp;
-  }
+  return error_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
+}
+inline ::std::string* CodeGeneratorResponse::unsafe_arena_release_error() {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_error();
+  return error_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void CodeGeneratorResponse::set_allocated_error(::std::string* error) {
-  if (error_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    delete error_;
-  }
-  if (error) {
+  if (error != NULL) {
     set_has_error();
-    error_ = error;
   } else {
     clear_has_error();
-    error_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
+  error_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), error,
+      GetArenaNoVirtual());
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.error)
+}
+inline void CodeGeneratorResponse::unsafe_arena_set_allocated_error(
+    ::std::string* error) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  if (error != NULL) {
+    set_has_error();
+  } else {
+    clear_has_error();
+  }
+  set_has_error();
+  error_.UnsafeArenaSetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      error, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
 
@@ -888,8 +971,8 @@ namespace google {
 namespace protobuf {
 
 
-}  // namespace google
 }  // namespace protobuf
+}  // namespace google
 #endif  // SWIG
 
 // @@protoc_insertion_point(global_scope)

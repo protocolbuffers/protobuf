@@ -133,5 +133,5 @@ def _ExtractSymbols(desc_proto, package):
   for nested_type in desc_proto.nested_type:
     for symbol in _ExtractSymbols(nested_type, message_name):
       yield symbol
-    for enum_type in desc_proto.enum_type:
-      yield '.'.join((message_name, enum_type.name))
+  for enum_type in desc_proto.enum_type:
+    yield '.'.join((message_name, enum_type.name))

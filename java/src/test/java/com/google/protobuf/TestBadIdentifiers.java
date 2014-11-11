@@ -72,7 +72,7 @@ public class TestBadIdentifiers extends TestCase {
     assertEquals(0, message.getMessageField5Count());
 
     assertEquals(0, message.getInt32FieldCount11());
-    assertEquals(1, message.getEnumFieldCount12().getNumber());
+    assertEquals(0, message.getEnumFieldCount12().getNumber());
     assertEquals("", message.getStringFieldCount13());
     assertEquals(ByteString.EMPTY, message.getBytesFieldCount14());
     assertEquals(0, message.getMessageFieldCount15().getSerializedSize());

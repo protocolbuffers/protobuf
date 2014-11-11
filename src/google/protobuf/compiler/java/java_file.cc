@@ -35,6 +35,9 @@
 #include <google/protobuf/compiler/java/java_file.h>
 
 #include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 
 #include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/compiler/java/java_enum.h>
@@ -180,29 +183,6 @@ bool FileGenerator::Validate(string* error) {
       "option to specify a different outer class name for the .proto file.");
     return false;
   }
-  // If java_outer_classname option is not set and the default outer class name
-  // conflicts with a type defined in the message, we will append a suffix to
-  // avoid the conflict. This allows proto1 API protos to be dual-compiled into
-  // proto2 API without code change. When this happens we'd like to issue an
-  // warning to let the user know that the outer class name has been changed.
-  // Although we only do this automatic naming fix for immutable API, mutable
-  // outer class name will also be affected as it's contructed from immutable
-  // outer class name with an additional "Mutable" prefix. Since the naming
-  // change in mutable API is not caused by a naming conflict, we generate the
-  // warning for immutable API only.
-  if (immutable_api_ && !file_->options().has_java_outer_classname()) {
-    string default_classname =
-        name_resolver_->GetFileDefaultImmutableClassName(file_);
-    if (default_classname != classname_) {
-      GOOGLE_LOG(WARNING) << file_->name() << ": The default outer class name, \""
-                   << default_classname << "\", conflicts with a type "
-                   << "declared in the proto file and an alternative outer "
-                   << "class name is used: \"" << classname_ << "\". To avoid "
-                   << "this warning, please use the java_outer_classname "
-                   << "option to specify a different outer class name for "
-                   << "the .proto file.";
-    }
-  }
   return true;
 }
 
@@ -322,6 +302,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
 
   SharedCodeGenerator shared_code_generator(file_);
   shared_code_generator.GenerateDescriptors(printer);
+
 
   for (int i = 0; i < file_->message_type_count(); i++) {
     message_generators_[i]->GenerateStaticVariableInitializers(printer);

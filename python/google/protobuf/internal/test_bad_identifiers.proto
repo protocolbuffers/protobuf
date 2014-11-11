@@ -30,6 +30,7 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
+syntax = "proto2";
 
 package protobuf_unittest;
 
@@ -39,13 +40,15 @@ message TestBadIdentifiers {
   extensions 100 to max;
 }
 
-// Make sure these reasonable extension names don't conflict with internal
-// variables.
 extend TestBadIdentifiers {
+  // Make sure these reasonable extension names don't conflict with internal
+  // variables.
   optional string message = 100 [default="foo"];
   optional string descriptor = 101 [default="bar"];
   optional string reflection = 102 [default="baz"];
   optional string service = 103 [default="qux"];
+  // And Python keywords.
+  optional string class = 104 [default="Foo"];
 }
 
 message AnotherMessage {}

@@ -35,6 +35,9 @@
 //   worth.
 
 #include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 
 #include <google/protobuf/compiler/java/java_generator.h>
 #include <google/protobuf/compiler/command_line_interface.h>

@@ -190,6 +190,15 @@ class LiteralByteString extends ByteString {
     }
 
     if (other instanceof LiteralByteString) {
+      LiteralByteString otherAsLiteral = (LiteralByteString) other;
+      // If we know the hash codes and they are not equal, we know the byte
+      // strings are not equal.
+      if (hash != 0 
+          && otherAsLiteral.hash != 0 
+          && hash != otherAsLiteral.hash) {
+        return false;
+      }
+      
       return equalsRange((LiteralByteString) other, 0, size());
     } else if (other instanceof RopeByteString) {
       return other.equals(this);

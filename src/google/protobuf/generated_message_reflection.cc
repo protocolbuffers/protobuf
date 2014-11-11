@@ -74,6 +74,19 @@ const string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
   return (d == NULL ? GetEmptyString() : d->name());
 }
 
+namespace {
+inline bool SupportsArenas(const Descriptor* descriptor) {
+  // In open-source release we enable arena support by default but as we also
+  // down-integrate descriptor.pb.(h|cc) from our internal code base which
+  // hasn't enabled arena support yet, here we need to be able to handle both
+  // cases for descriptor protos.
+  if (!Arena::is_arena_constructable<FileDescriptorProto>::type::value) {
+    return descriptor->name() != "google/protobuf/descriptor.proto";
+  }
+  return true;
+}
+}  // anonymous namespace
+
 // ===================================================================
 // Helpers for reporting usage errors (e.g. trying to use GetInt32() on
 // a string field).
@@ -177,13 +190,15 @@ GeneratedMessageReflection::GeneratedMessageReflection(
     int extensions_offset,
     const DescriptorPool* descriptor_pool,
     MessageFactory* factory,
-    int object_size)
+    int object_size,
+    int arena_offset)
   : descriptor_       (descriptor),
     default_instance_ (default_instance),
     offsets_          (offsets),
     has_bits_offset_  (has_bits_offset),
     unknown_fields_offset_(unknown_fields_offset),
     extensions_offset_(extensions_offset),
+    arena_offset_     (arena_offset),
     object_size_      (object_size),
     descriptor_pool_  ((descriptor_pool == NULL) ?
                          DescriptorPool::generated_pool() :
@@ -202,7 +217,8 @@ GeneratedMessageReflection::GeneratedMessageReflection(
     int oneof_case_offset,
     const DescriptorPool* descriptor_pool,
     MessageFactory* factory,
-    int object_size)
+    int object_size,
+    int arena_offset)
   : descriptor_       (descriptor),
     default_instance_ (default_instance),
     default_oneof_instance_ (default_oneof_instance),
@@ -211,6 +227,7 @@ GeneratedMessageReflection::GeneratedMessageReflection(
     oneof_case_offset_(oneof_case_offset),
     unknown_fields_offset_(unknown_fields_offset),
     extensions_offset_(extensions_offset),
+    arena_offset_     (arena_offset),
     object_size_      (object_size),
     descriptor_pool_  ((descriptor_pool == NULL) ?
                          DescriptorPool::generated_pool() :
@@ -220,14 +237,39 @@ GeneratedMessageReflection::GeneratedMessageReflection(
 
 GeneratedMessageReflection::~GeneratedMessageReflection() {}
 
+namespace {
+UnknownFieldSet* empty_unknown_field_set_ = NULL;
+GOOGLE_PROTOBUF_DECLARE_ONCE(empty_unknown_field_set_once_);
+
+void InitEmptyUnknownFieldSet() {
+  empty_unknown_field_set_ = new UnknownFieldSet;
+}
+
+const UnknownFieldSet& GetEmptyUnknownFieldSet() {
+  ::google::protobuf::GoogleOnceInit(&empty_unknown_field_set_once_, &InitEmptyUnknownFieldSet);
+  return *empty_unknown_field_set_;
+}
+}  // namespace
+
 const UnknownFieldSet& GeneratedMessageReflection::GetUnknownFields(
     const Message& message) const {
+  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+    return GetEmptyUnknownFieldSet();
+  }
+  if (unknown_fields_offset_ == kUnknownFieldSetInMetadata) {
+    return GetInternalMetadataWithArena(message).unknown_fields();
+  }
   const void* ptr = reinterpret_cast<const uint8*>(&message) +
                     unknown_fields_offset_;
   return *reinterpret_cast<const UnknownFieldSet*>(ptr);
 }
+
 UnknownFieldSet* GeneratedMessageReflection::MutableUnknownFields(
     Message* message) const {
+  if (unknown_fields_offset_ == kUnknownFieldSetInMetadata) {
+    return MutableInternalMetadataWithArena(message)->
+        mutable_unknown_fields();
+  }
   void* ptr = reinterpret_cast<uint8*>(message) + unknown_fields_offset_;
   return reinterpret_cast<UnknownFieldSet*>(ptr);
 }
@@ -303,12 +345,13 @@ int GeneratedMessageReflection::SpaceUsed(const Message& message) const {
           switch (field->options().ctype()) {
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING: {
-              const string* ptr = GetField<const string*>(message, field);
-
               // Initially, the string points to the default value stored in
               // the prototype. Only count the string if it has been changed
               // from the default value.
-              const string* default_ptr = DefaultRaw<const string*>(field);
+              const string* default_ptr =
+                  &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
+              const string* ptr =
+                  &GetField<ArenaStringPtr>(message, field).Get(default_ptr);
 
               if (ptr != default_ptr) {
                 // string fields are represented by just a pointer, so also
@@ -363,8 +406,9 @@ void GeneratedMessageReflection::SwapField(
 
       case FieldDescriptor::CPPTYPE_STRING:
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        MutableRaw<RepeatedPtrFieldBase>(message1, field)->Swap(
-            MutableRaw<RepeatedPtrFieldBase>(message2, field));
+        MutableRaw<RepeatedPtrFieldBase>(message1, field)->
+            Swap<GenericTypeHandler<google::protobuf::Message> >(
+              MutableRaw<RepeatedPtrFieldBase>(message2, field));
         break;
 
       default:
@@ -396,8 +440,8 @@ void GeneratedMessageReflection::SwapField(
         switch (field->options().ctype()) {
           default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
-            std::swap(*MutableRaw<string*>(message1, field),
-                      *MutableRaw<string*>(message2, field));
+            MutableRaw<ArenaStringPtr>(message1, field)->Swap(
+                MutableRaw<ArenaStringPtr>(message2, field));
             break;
         }
         break;
@@ -549,12 +593,29 @@ void GeneratedMessageReflection::Swap(
     << "\").  Note that the exact same class is required; not just the same "
        "descriptor.";
 
-  uint32* has_bits1 = MutableHasBits(message1);
-  uint32* has_bits2 = MutableHasBits(message2);
-  int has_bits_size = (descriptor_->field_count() + 31) / 32;
+  // Check that both messages are in the same arena (or both on the heap). We
+  // need to copy all data if not, due to ownership semantics.
+  if (GetArena(message1) != GetArena(message2)) {
+    // Slow copy path.
+    // Use our arena as temp space, if available.
+    Message* temp = message1->New(GetArena(message1));
+    temp->MergeFrom(*message1);
+    message1->CopyFrom(*message2);
+    message2->CopyFrom(*temp);
+    if (GetArena(message1) == NULL) {
+      delete temp;
+    }
+    return;
+  }
 
-  for (int i = 0; i < has_bits_size; i++) {
-    std::swap(has_bits1[i], has_bits2[i]);
+  if (has_bits_offset_ != -1) {
+    uint32* has_bits1 = MutableHasBits(message1);
+    uint32* has_bits2 = MutableHasBits(message2);
+    int has_bits_size = (descriptor_->field_count() + 31) / 32;
+
+    for (int i = 0; i < has_bits_size; i++) {
+      std::swap(has_bits1[i], has_bits2[i]);
+    }
   }
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -715,17 +776,13 @@ void GeneratedMessageReflection::ClearField(
         case FieldDescriptor::CPPTYPE_STRING: {
           switch (field->options().ctype()) {
             default:  // TODO(kenton):  Support other string reps.
-            case FieldOptions::STRING:
-              const string* default_ptr = DefaultRaw<const string*>(field);
-              string** value = MutableRaw<string*>(message, field);
-              if (*value != default_ptr) {
-                if (field->has_default_value()) {
-                  (*value)->assign(field->default_value_string());
-                } else {
-                  (*value)->clear();
-                }
-              }
+            case FieldOptions::STRING: {
+              const string* default_ptr =
+                  &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
+              MutableRaw<ArenaStringPtr>(message, field)->Destroy(default_ptr,
+                  GetArena(message));
               break;
+            }
           }
           break;
         }
@@ -994,8 +1051,11 @@ string GeneratedMessageReflection::GetString(
   } else {
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
-      case FieldOptions::STRING:
-        return *GetField<const string*>(message, field);
+      case FieldOptions::STRING: {
+        const string* default_ptr =
+            &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
+        return GetField<ArenaStringPtr>(message, field).Get(default_ptr);
+      }
     }
 
     GOOGLE_LOG(FATAL) << "Can't get here.";
@@ -1013,8 +1073,11 @@ const string& GeneratedMessageReflection::GetStringReference(
   } else {
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
-      case FieldOptions::STRING:
-        return *GetField<const string*>(message, field);
+      case FieldOptions::STRING: {
+        const string* default_ptr =
+            &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
+        return GetField<ArenaStringPtr>(message, field).Get(default_ptr);
+      }
     }
 
     GOOGLE_LOG(FATAL) << "Can't get here.";
@@ -1034,16 +1097,15 @@ void GeneratedMessageReflection::SetString(
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING: {
+        const string* default_ptr =
+            &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
         if (field->containing_oneof() && !HasOneofField(*message, field)) {
           ClearOneof(message, field->containing_oneof());
-          *MutableField<string*>(message, field) = new string;
+          MutableField<ArenaStringPtr>(message, field)->UnsafeSetDefault(
+              default_ptr);
         }
-        string** ptr = MutableField<string*>(message, field);
-        if (*ptr == DefaultRaw<const string*>(field)) {
-          *ptr = new string(value);
-        } else {
-          (*ptr)->assign(value);
-        }
+        MutableField<ArenaStringPtr>(message, field)->Set(default_ptr,
+            value, GetArena(message));
         break;
       }
     }
@@ -1125,42 +1187,80 @@ void GeneratedMessageReflection::AddString(
 
 // -------------------------------------------------------------------
 
+inline bool CreateUnknownEnumValues(const FileDescriptor* file) {
+  return file->syntax() == FileDescriptor::SYNTAX_PROTO3;
+}
+
 const EnumValueDescriptor* GeneratedMessageReflection::GetEnum(
     const Message& message, const FieldDescriptor* field) const {
-  USAGE_CHECK_ALL(GetEnum, SINGULAR, ENUM);
+  // Usage checked by GetEnumValue.
+  int value = GetEnumValue(message, field);
+  return field->enum_type()->FindValueByNumberCreatingIfUnknown(value);
+}
 
-  int value;
+int GeneratedMessageReflection::GetEnumValue(
+    const Message& message, const FieldDescriptor* field) const {
+  USAGE_CHECK_ALL(GetEnumValue, SINGULAR, ENUM);
+
+  int32 value;
   if (field->is_extension()) {
     value = GetExtensionSet(message).GetEnum(
       field->number(), field->default_value_enum()->number());
   } else {
     value = GetField<int>(message, field);
   }
-  const EnumValueDescriptor* result =
-    field->enum_type()->FindValueByNumber(value);
-  GOOGLE_CHECK(result != NULL) << "Value " << value << " is not valid for field "
-                        << field->full_name() << " of type "
-                        << field->enum_type()->full_name() << ".";
-  return result;
+  return value;
 }
 
 void GeneratedMessageReflection::SetEnum(
     Message* message, const FieldDescriptor* field,
     const EnumValueDescriptor* value) const {
-  USAGE_CHECK_ALL(SetEnum, SINGULAR, ENUM);
+  // Usage checked by SetEnumValue.
   USAGE_CHECK_ENUM_VALUE(SetEnum);
+  SetEnumValueInternal(message, field, value->number());
+}
 
+void GeneratedMessageReflection::SetEnumValue(
+    Message* message, const FieldDescriptor* field,
+    int value) const {
+  USAGE_CHECK_ALL(SetEnumValue, SINGULAR, ENUM);
+  if (!CreateUnknownEnumValues(descriptor_->file())) {
+    // Check that the value is valid if we don't support direct storage of
+    // unknown enum values.
+    const EnumValueDescriptor* value_desc =
+        field->enum_type()->FindValueByNumber(value);
+    if (value_desc == NULL) {
+      GOOGLE_LOG(DFATAL) << "SetEnumValue accepts only valid integer values: value "
+                  << value << " unexpected for field " << field->full_name();
+      // In production builds, DFATAL will not terminate the program, so we have
+      // to do something reasonable: just set the default value.
+      value = field->default_value_enum()->number();
+    }
+  }
+  SetEnumValueInternal(message, field, value);
+}
+
+void GeneratedMessageReflection::SetEnumValueInternal(
+    Message* message, const FieldDescriptor* field,
+    int value) const {
   if (field->is_extension()) {
     MutableExtensionSet(message)->SetEnum(field->number(), field->type(),
-                                          value->number(), field);
+                                          value, field);
   } else {
-    SetField<int>(message, field, value->number());
+    SetField<int>(message, field, value);
   }
 }
 
 const EnumValueDescriptor* GeneratedMessageReflection::GetRepeatedEnum(
     const Message& message, const FieldDescriptor* field, int index) const {
-  USAGE_CHECK_ALL(GetRepeatedEnum, REPEATED, ENUM);
+  // Usage checked by GetRepeatedEnumValue.
+  int value = GetRepeatedEnumValue(message, field, index);
+  return field->enum_type()->FindValueByNumberCreatingIfUnknown(value);
+}
+
+int GeneratedMessageReflection::GetRepeatedEnumValue(
+    const Message& message, const FieldDescriptor* field, int index) const {
+  USAGE_CHECK_ALL(GetRepeatedEnumValue, REPEATED, ENUM);
 
   int value;
   if (field->is_extension()) {
@@ -1168,41 +1268,89 @@ const EnumValueDescriptor* GeneratedMessageReflection::GetRepeatedEnum(
   } else {
     value = GetRepeatedField<int>(message, field, index);
   }
-  const EnumValueDescriptor* result =
-    field->enum_type()->FindValueByNumber(value);
-  GOOGLE_CHECK(result != NULL) << "Value " << value << " is not valid for field "
-                        << field->full_name() << " of type "
-                        << field->enum_type()->full_name() << ".";
-  return result;
+  return value;
 }
 
 void GeneratedMessageReflection::SetRepeatedEnum(
     Message* message,
     const FieldDescriptor* field, int index,
     const EnumValueDescriptor* value) const {
-  USAGE_CHECK_ALL(SetRepeatedEnum, REPEATED, ENUM);
+  // Usage checked by SetRepeatedEnumValue.
   USAGE_CHECK_ENUM_VALUE(SetRepeatedEnum);
+  SetRepeatedEnumValueInternal(message, field, index, value->number());
+}
 
+void GeneratedMessageReflection::SetRepeatedEnumValue(
+    Message* message,
+    const FieldDescriptor* field, int index,
+    int value) const {
+  USAGE_CHECK_ALL(SetRepeatedEnum, REPEATED, ENUM);
+  if (!CreateUnknownEnumValues(descriptor_->file())) {
+    // Check that the value is valid if we don't support direct storage of
+    // unknown enum values.
+    const EnumValueDescriptor* value_desc =
+        field->enum_type()->FindValueByNumber(value);
+    if (value_desc == NULL) {
+      GOOGLE_LOG(DFATAL) << "SetRepeatedEnumValue accepts only valid integer values: "
+                  << "value " << value << " unexpected for field "
+                  << field->full_name();
+      // In production builds, DFATAL will not terminate the program, so we have
+      // to do something reasonable: just set the default value.
+      value = field->default_value_enum()->number();
+    }
+  }
+  SetRepeatedEnumValueInternal(message, field, index, value);
+}
+
+void GeneratedMessageReflection::SetRepeatedEnumValueInternal(
+    Message* message,
+    const FieldDescriptor* field, int index,
+    int value) const {
   if (field->is_extension()) {
     MutableExtensionSet(message)->SetRepeatedEnum(
-      field->number(), index, value->number());
+      field->number(), index, value);
   } else {
-    SetRepeatedField<int>(message, field, index, value->number());
+    SetRepeatedField<int>(message, field, index, value);
   }
 }
 
 void GeneratedMessageReflection::AddEnum(
     Message* message, const FieldDescriptor* field,
     const EnumValueDescriptor* value) const {
-  USAGE_CHECK_ALL(AddEnum, REPEATED, ENUM);
+  // Usage checked by AddEnumValue.
   USAGE_CHECK_ENUM_VALUE(AddEnum);
+  AddEnumValueInternal(message, field, value->number());
+}
 
+void GeneratedMessageReflection::AddEnumValue(
+    Message* message, const FieldDescriptor* field,
+    int value) const {
+  USAGE_CHECK_ALL(AddEnum, REPEATED, ENUM);
+  if (!CreateUnknownEnumValues(descriptor_->file())) {
+    // Check that the value is valid if we don't support direct storage of
+    // unknown enum values.
+    const EnumValueDescriptor* value_desc =
+        field->enum_type()->FindValueByNumber(value);
+    if (value_desc == NULL) {
+      GOOGLE_LOG(DFATAL) << "AddEnumValue accepts only valid integer values: value "
+                  << value << " unexpected for field " << field->full_name();
+      // In production builds, DFATAL will not terminate the program, so we have
+      // to do something reasonable: just set the default value.
+      value = field->default_value_enum()->number();
+    }
+  }
+  AddEnumValueInternal(message, field, value);
+}
+
+void GeneratedMessageReflection::AddEnumValueInternal(
+    Message* message, const FieldDescriptor* field,
+    int value) const {
   if (field->is_extension()) {
     MutableExtensionSet(message)->AddEnum(field->number(), field->type(),
                                           field->options().packed(),
-                                          value->number(), field);
+                                          value, field);
   } else {
-    AddField<int>(message, field, value->number());
+    AddField<int>(message, field, value);
   }
 }
 
@@ -1246,7 +1394,7 @@ Message* GeneratedMessageReflection::MutableMessage(
         ClearOneof(message, field->containing_oneof());
         result_holder = MutableField<Message*>(message, field);
         const Message* default_message = DefaultRaw<const Message*>(field);
-        *result_holder = default_message->New();
+        *result_holder = default_message->New(message->GetArena());
       }
     } else {
       SetBit(message, field);
@@ -1254,14 +1402,14 @@ Message* GeneratedMessageReflection::MutableMessage(
 
     if (*result_holder == NULL) {
       const Message* default_message = DefaultRaw<const Message*>(field);
-      *result_holder = default_message->New();
+      *result_holder = default_message->New(message->GetArena());
     }
     result = *result_holder;
     return result;
   }
 }
 
-void GeneratedMessageReflection::SetAllocatedMessage(
+void GeneratedMessageReflection::UnsafeArenaSetAllocatedMessage(
     Message* message,
     Message* sub_message,
     const FieldDescriptor* field) const {
@@ -1288,12 +1436,42 @@ void GeneratedMessageReflection::SetAllocatedMessage(
       SetBit(message, field);
     }
     Message** sub_message_holder = MutableRaw<Message*>(message, field);
-    delete *sub_message_holder;
+    if (GetArena(message) == NULL) {
+      delete *sub_message_holder;
+    }
     *sub_message_holder = sub_message;
   }
 }
 
-Message* GeneratedMessageReflection::ReleaseMessage(
+void GeneratedMessageReflection::SetAllocatedMessage(
+    Message* message,
+    Message* sub_message,
+    const FieldDescriptor* field) const {
+  // If message and sub-message are in different memory ownership domains
+  // (different arenas, or one is on heap and one is not), then we may need to
+  // do a copy.
+  if (sub_message != NULL &&
+      sub_message->GetArena() != message->GetArena()) {
+    if (sub_message->GetArena() == NULL && message->GetArena() != NULL) {
+      // Case 1: parent is on an arena and child is heap-allocated. We can add
+      // the child to the arena's Own() list to free on arena destruction, then
+      // set our pointer.
+      message->GetArena()->Own(sub_message);
+      UnsafeArenaSetAllocatedMessage(message, sub_message, field);
+    } else {
+      // Case 2: all other cases. We need to make a copy. MutableMessage() will
+      // either get the existing message object, or instantiate a new one as
+      // appropriate w.r.t. our arena.
+      Message* sub_message_copy = MutableMessage(message, field);
+      sub_message_copy->CopyFrom(*sub_message);
+    }
+  } else {
+    // Same memory ownership domains.
+    UnsafeArenaSetAllocatedMessage(message, sub_message, field);
+  }
+}
+
+Message* GeneratedMessageReflection::UnsafeArenaReleaseMessage(
     Message* message,
     const FieldDescriptor* field,
     MessageFactory* factory) const {
@@ -1318,6 +1496,19 @@ Message* GeneratedMessageReflection::ReleaseMessage(
     *result = NULL;
     return ret;
   }
+}
+
+Message* GeneratedMessageReflection::ReleaseMessage(
+    Message* message,
+    const FieldDescriptor* field,
+    MessageFactory* factory) const {
+  Message* released = UnsafeArenaReleaseMessage(message, field, factory);
+  if (GetArena(message) != NULL && released != NULL) {
+    Message* copy_from_arena = released->New();
+    copy_from_arena->CopyFrom(*released);
+    released = copy_from_arena;
+  }
+  return released;
 }
 
 const Message& GeneratedMessageReflection::GetRepeatedMessage(
@@ -1371,8 +1562,11 @@ Message* GeneratedMessageReflection::AddMessage(
       } else {
         prototype = &repeated->Get<GenericTypeHandler<Message> >(0);
       }
-      result = prototype->New();
-      repeated->AddAllocated<GenericTypeHandler<Message> >(result);
+      result = prototype->New(message->GetArena());
+      // We can guarantee here that repeated and result are either both heap
+      // allocated or arena owned. So it is safe to call the unsafe version
+      // of AddAllocated.
+      repeated->UnsafeArenaAddAllocated<GenericTypeHandler<Message> >(result);
     }
     return result;
   }
@@ -1445,6 +1639,10 @@ const FieldDescriptor* GeneratedMessageReflection::FindKnownExtensionByNumber(
   return descriptor_pool_->FindExtensionByNumber(descriptor_, number);
 }
 
+bool GeneratedMessageReflection::SupportsUnknownEnumValues() const {
+  return CreateUnknownEnumValues(descriptor_->file());
+}
+
 // ===================================================================
 // Some private helpers.
 
@@ -1487,11 +1685,17 @@ inline const Type& GeneratedMessageReflection::DefaultRaw(
 
 inline const uint32* GeneratedMessageReflection::GetHasBits(
     const Message& message) const {
+  if (has_bits_offset_ == -1) {  // proto3 with no has-bits.
+    return NULL;
+  }
   const void* ptr = reinterpret_cast<const uint8*>(&message) + has_bits_offset_;
   return reinterpret_cast<const uint32*>(ptr);
 }
 inline uint32* GeneratedMessageReflection::MutableHasBits(
     Message* message) const {
+  if (has_bits_offset_ == -1) {
+    return NULL;
+  }
   void* ptr = reinterpret_cast<uint8*>(message) + has_bits_offset_;
   return reinterpret_cast<uint32*>(ptr);
 }
@@ -1525,25 +1729,113 @@ inline ExtensionSet* GeneratedMessageReflection::MutableExtensionSet(
   return reinterpret_cast<ExtensionSet*>(ptr);
 }
 
+inline Arena* GeneratedMessageReflection::GetArena(Message* message) const {
+  if (arena_offset_ == kNoArenaPointer) {
+    return NULL;
+  }
+
+  if (unknown_fields_offset_ == kUnknownFieldSetInMetadata) {
+    // zero-overhead arena pointer overloading UnknownFields
+    return GetInternalMetadataWithArena(*message).arena();
+  }
+
+  // Baseline case: message class has a dedicated arena pointer.
+  void* ptr = reinterpret_cast<uint8*>(message) + arena_offset_;
+  return *reinterpret_cast<Arena**>(ptr);
+}
+
+inline const InternalMetadataWithArena&
+GeneratedMessageReflection::GetInternalMetadataWithArena(
+    const Message& message) const {
+  const void* ptr = reinterpret_cast<const uint8*>(&message) + arena_offset_;
+  return *reinterpret_cast<const InternalMetadataWithArena*>(ptr);
+}
+
+inline InternalMetadataWithArena*
+GeneratedMessageReflection::MutableInternalMetadataWithArena(
+    Message* message) const {
+  void* ptr = reinterpret_cast<uint8*>(message) + arena_offset_;
+  return reinterpret_cast<InternalMetadataWithArena*>(ptr);
+}
+
 // Simple accessors for manipulating has_bits_.
 inline bool GeneratedMessageReflection::HasBit(
     const Message& message, const FieldDescriptor* field) const {
+  if (has_bits_offset_ == -1) {
+    // proto3: no has-bits. All fields present except messages, which are
+    // present only if their message-field pointer is non-NULL.
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      return GetRaw<const Message*>(message, field) != NULL;
+    } else {
+      // Non-message field (and non-oneof, since that was handled in HasField()
+      // before calling us), and singular (again, checked in HasField). So, this
+      // field must be a scalar.
+
+      // Scalar primitive (numeric or string/bytes) fields are present if
+      // their value is non-zero (numeric) or non-empty (string/bytes).  N.B.:
+      // we must use this definition here, rather than the "scalar fields
+      // always present" in the proto3 docs, because MergeFrom() semantics
+      // require presence as "present on wire", and reflection-based merge
+      // (which uses HasField()) needs to be consistent with this.
+      switch (field->cpp_type()) {
+        case FieldDescriptor::CPPTYPE_STRING:
+          switch (field->options().ctype()) {
+            default: {
+              const string* default_ptr =
+                  &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
+              return GetField<ArenaStringPtr>(message, field).Get(
+                  default_ptr).size() > 0;
+            }
+          }
+          return false;
+        case FieldDescriptor::CPPTYPE_BOOL:
+          return GetRaw<bool>(message, field) != false;
+        case FieldDescriptor::CPPTYPE_INT32:
+          return GetRaw<int32>(message, field) != 0;
+        case FieldDescriptor::CPPTYPE_INT64:
+          return GetRaw<int64>(message, field) != 0;
+        case FieldDescriptor::CPPTYPE_UINT32:
+          return GetRaw<uint32>(message, field) != 0;
+        case FieldDescriptor::CPPTYPE_UINT64:
+          return GetRaw<uint64>(message, field) != 0;
+        case FieldDescriptor::CPPTYPE_FLOAT:
+          return GetRaw<float>(message, field) != 0.0;
+        case FieldDescriptor::CPPTYPE_DOUBLE:
+          return GetRaw<double>(message, field) != 0.0;
+        case FieldDescriptor::CPPTYPE_ENUM:
+          return GetRaw<int>(message, field) != 0;
+        case FieldDescriptor::CPPTYPE_MESSAGE:
+          // handled above; avoid warning
+          GOOGLE_LOG(FATAL) << "Reached impossible case in HasBit().";
+          break;
+      }
+    }
+  }
   return GetHasBits(message)[field->index() / 32] &
     (1 << (field->index() % 32));
 }
 
 inline void GeneratedMessageReflection::SetBit(
     Message* message, const FieldDescriptor* field) const {
+  if (has_bits_offset_ == -1) {
+    return;
+  }
   MutableHasBits(message)[field->index() / 32] |= (1 << (field->index() % 32));
 }
 
 inline void GeneratedMessageReflection::ClearBit(
     Message* message, const FieldDescriptor* field) const {
+  if (has_bits_offset_ == -1) {
+    return;
+  }
   MutableHasBits(message)[field->index() / 32] &= ~(1 << (field->index() % 32));
 }
 
 inline void GeneratedMessageReflection::SwapBit(
     Message* message1, Message* message2, const FieldDescriptor* field) const {
+  if (has_bits_offset_ == -1) {
+    return;
+  }
   bool temp_has_bit = HasBit(*message1, field);
   if (HasBit(*message2, field)) {
     SetBit(message1, field);
@@ -1591,9 +1883,13 @@ inline void GeneratedMessageReflection::ClearOneof(
       case FieldDescriptor::CPPTYPE_STRING: {
         switch (field->options().ctype()) {
           default:  // TODO(kenton):  Support other string reps.
-          case FieldOptions::STRING:
-            delete *MutableRaw<string*>(message, field);
+          case FieldOptions::STRING: {
+            const string* default_ptr =
+                &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
+            MutableField<ArenaStringPtr>(message, field)->
+                Destroy(default_ptr, GetArena(message));
             break;
+          }
         }
         break;
       }
@@ -1676,6 +1972,32 @@ inline Type* GeneratedMessageReflection::AddField(
   RepeatedPtrField<Type>* repeated =
     MutableRaw<RepeatedPtrField<Type> >(message, field);
   return repeated->Add();
+}
+
+MessageFactory* GeneratedMessageReflection::GetMessageFactory() const {
+  return message_factory_;
+}
+
+void* GeneratedMessageReflection::RepeatedFieldData(
+    Message* message, const FieldDescriptor* field,
+    FieldDescriptor::CppType cpp_type,
+    const Descriptor* message_type) const {
+  GOOGLE_CHECK(field->is_repeated());
+  GOOGLE_CHECK(field->cpp_type() == cpp_type ||
+        (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM &&
+         cpp_type == FieldDescriptor::CPPTYPE_INT32))
+      << "The type parameter T in RepeatedFieldRef<T> API doesn't match "
+      << "the actual field type (for enums T should be the generated enum "
+      << "type or int32).";
+  if (message_type != NULL) {
+    GOOGLE_CHECK_EQ(message_type, field->message_type());
+  }
+  if (field->is_extension()) {
+    return MutableExtensionSet(message)->MutableRawRepeatedField(
+        field->number(), field->type(), field->is_packed(), field);
+  } else {
+    return reinterpret_cast<uint8*>(message) + offsets_[field->index()];
+  }
 }
 
 }  // namespace internal

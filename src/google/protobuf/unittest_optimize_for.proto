@@ -34,6 +34,7 @@
 //
 // A proto file which uses optimize_for = CODE_SIZE.
 
+syntax = "proto2";
 import "google/protobuf/unittest.proto";
 
 package protobuf_unittest;

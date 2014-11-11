@@ -30,6 +30,7 @@
 
 // Author: robinson@google.com (Will Robinson)
 
+syntax = "proto2";
 
 package google.protobuf.internal;
 

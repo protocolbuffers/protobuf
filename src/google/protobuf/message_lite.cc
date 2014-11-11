@@ -34,6 +34,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/message_lite.h>
+#include <google/protobuf/arena.h>
 #include <string>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -153,6 +154,15 @@ bool InlineParsePartialFromArray(const void* data, int size,
 
 }  // namespace
 
+
+MessageLite* MessageLite::New(::google::protobuf::Arena* arena) const {
+  MessageLite* message = New();
+  if (arena != NULL) {
+    arena->Own(message);
+  }
+  return message;
+}
+
 bool MessageLite::MergeFromCodedStream(io::CodedInputStream* input) {
   return InlineMergeFromCodedStream(input, this);
 }
@@ -233,6 +243,12 @@ bool MessageLite::SerializeToCodedStream(io::CodedOutputStream* output) const {
 bool MessageLite::SerializePartialToCodedStream(
     io::CodedOutputStream* output) const {
   const int size = ByteSize();  // Force size to be cached.
+  if (size < 0) {
+    // Messages >2G cannot be serialized due to overflow computing ByteSize.
+    GOOGLE_LOG(ERROR) << "Error computing ByteSize (possible overflow?).";
+    return false;
+  }
+
   uint8* buffer = output->GetDirectBufferForNBytesAndAdvance(size);
   if (buffer != NULL) {
     uint8* end = SerializeWithCachedSizesToArray(buffer);
@@ -277,6 +293,12 @@ bool MessageLite::AppendToString(string* output) const {
 bool MessageLite::AppendPartialToString(string* output) const {
   int old_size = output->size();
   int byte_size = ByteSize();
+  if (byte_size < 0) {
+    // Messages >2G cannot be serialized due to overflow computing ByteSize.
+    GOOGLE_LOG(ERROR) << "Error computing ByteSize (possible overflow?).";
+    return false;
+  }
+
   STLStringResizeUninitialized(output, old_size + byte_size);
   uint8* start =
       reinterpret_cast<uint8*>(io::mutable_string_data(output) + old_size);

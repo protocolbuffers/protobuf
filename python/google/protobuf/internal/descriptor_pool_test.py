@@ -48,6 +48,7 @@ from google.protobuf.internal import factory_test2_pb2
 from google.protobuf import descriptor
 from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pool
+from google.protobuf import symbol_database
 
 
 class DescriptorPoolTest(basetest.TestCase):
@@ -237,6 +238,32 @@ class DescriptorPoolTest(basetest.TestCase):
     TEST2_FILE.CheckFile(self, self.pool)
 
 
+  def testEnumDefaultValue(self):
+    """Test the default value of enums which don't start at zero."""
+    def _CheckDefaultValue(file_descriptor):
+      default_value = (file_descriptor
+                       .message_types_by_name['DescriptorPoolTest1']
+                       .fields_by_name['nested_enum']
+                       .default_value)
+      self.assertEqual(default_value,
+                       descriptor_pool_test1_pb2.DescriptorPoolTest1.BETA)
+    # First check what the generated descriptor contains.
+    _CheckDefaultValue(descriptor_pool_test1_pb2.DESCRIPTOR)
+    # Then check the generated pool. Normally this is the same descriptor.
+    file_descriptor = symbol_database.Default().pool.FindFileByName(
+        'google/protobuf/internal/descriptor_pool_test1.proto')
+    self.assertIs(file_descriptor, descriptor_pool_test1_pb2.DESCRIPTOR)
+    _CheckDefaultValue(file_descriptor)
+
+    # Then check the dynamic pool and its internal DescriptorDatabase.
+    descriptor_proto = descriptor_pb2.FileDescriptorProto.FromString(
+        descriptor_pool_test1_pb2.DESCRIPTOR.serialized_pb)
+    self.pool.Add(descriptor_proto)
+    # And do the same check as above
+    file_descriptor = self.pool.FindFileByName(
+        'google/protobuf/internal/descriptor_pool_test1.proto')
+    _CheckDefaultValue(file_descriptor)
+
 
 class ProtoFile(object):
 
@@ -328,7 +355,7 @@ class EnumField(object):
     test.assertEqual(descriptor.FieldDescriptor.CPPTYPE_ENUM,
                      field_desc.cpp_type)
     test.assertTrue(field_desc.has_default_value)
-    test.assertEqual(enum_desc.values_by_name[self.default_value].index,
+    test.assertEqual(enum_desc.values_by_name[self.default_value].number,
                      field_desc.default_value)
     test.assertEqual(msg_desc, field_desc.containing_type)
     test.assertEqual(enum_desc, field_desc.enum_type)

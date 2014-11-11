@@ -34,6 +34,7 @@
 //
 // This file contains messages for testing message_set_wire_format.
 
+syntax = "proto2";
 package protobuf_unittest;
 
 option optimize_for = SPEED;

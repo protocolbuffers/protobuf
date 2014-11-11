@@ -292,13 +292,22 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   static bool ReadPackedPrimitiveNoInline(input, RepeatedField<CType>* value);
 
   // Read a packed enum field. Values for which is_valid() returns false are
-  // dropped.
+  // dropped. If is_valid == NULL, no values are dropped.
   static bool ReadPackedEnumNoInline(input,
                                      bool (*is_valid)(int),
                                      RepeatedField<int>* value);
 
-  static bool ReadString(input, string* value);
-  static bool ReadBytes (input, string* value);
+  // Read a string.  ReadString(..., string* value) requires an existing string.
+  static inline bool ReadString(input, string* value);
+  // ReadString(..., string** p) is internal-only, and should only be called
+  // from generated code. It starts by setting *p to "new string"
+  // if *p == &GetEmptyStringAlreadyInited().  It then invokes
+  // ReadString(input, *p).  This is useful for reducing code size.
+  static inline bool ReadString(input, string** p);
+  // Analogous to ReadString().
+  static bool ReadBytes(input, string* value);
+  static bool ReadBytes(input, string** p);
+
 
   static inline bool ReadGroup  (field_number, input, MessageLite* value);
   static inline bool ReadMessage(input, MessageLite* value);
@@ -652,6 +661,19 @@ inline uint64 WireFormatLite::ZigZagEncode64(int64 n) {
 
 inline int64 WireFormatLite::ZigZagDecode64(uint64 n) {
   return (n >> 1) ^ -static_cast<int64>(n & 1);
+}
+
+// String is for UTF-8 text only, but, even so, ReadString() can simply
+// call ReadBytes().
+
+inline bool WireFormatLite::ReadString(io::CodedInputStream* input,
+                                       string* value) {
+  return ReadBytes(input, value);
+}
+
+inline bool WireFormatLite::ReadString(io::CodedInputStream* input,
+                                       string** p) {
+  return ReadBytes(input, p);
 }
 
 }  // namespace internal

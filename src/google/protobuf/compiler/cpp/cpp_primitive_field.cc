@@ -129,7 +129,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "  return $name$_;\n"
     "}\n"
     "inline void $classname$::set_$name$($type$ value) {\n"
-    "  set_has_$name$();\n"
+    "  $set_hasbit$\n"
     "  $name$_ = value;\n"
     "  // @@protoc_insertion_point(field_set:$full_name$)\n"
     "}\n");
@@ -161,7 +161,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
     "DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<\n"
     "         $type$, $wire_format_field_type$>(\n"
     "       input, &$name$_)));\n"
-    "set_has_$name$();\n");
+    "$set_hasbit$\n");
 }
 
 void PrimitiveFieldGenerator::
@@ -207,6 +207,7 @@ void PrimitiveOneofFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   printer->Print(variables_,
     "inline $type$ $classname$::$name$() const {\n"
+    "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  if (has_$name$()) {\n"
     "    return $oneof_prefix$$name$_;\n"
     "  }\n"
@@ -218,6 +219,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "    set_has_$name$();\n"
     "  }\n"
     "  $oneof_prefix$$name$_ = value;\n"
+    "  // @@protoc_insertion_point(field_set:$full_name$)\n"
     "}\n");
 }
 
@@ -330,7 +332,7 @@ GenerateMergingCode(io::Printer* printer) const {
 
 void RepeatedPrimitiveFieldGenerator::
 GenerateSwappingCode(io::Printer* printer) const {
-  printer->Print(variables_, "$name$_.Swap(&other->$name$_);\n");
+  printer->Print(variables_, "$name$_.UnsafeArenaSwap(&other->$name$_);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::

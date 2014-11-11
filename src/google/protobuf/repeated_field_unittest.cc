@@ -92,7 +92,8 @@ TEST(RepeatedField, Small) {
 
   EXPECT_TRUE(field.empty());
   EXPECT_EQ(field.size(), 0);
-  int expected_usage = 4 * sizeof(int);
+  // Additional 8 bytes are for 'struct Rep' header.
+  int expected_usage = 4 * sizeof(int) + 8;
   EXPECT_EQ(field.SpaceUsedExcludingSelf(), expected_usage);
 }
 
@@ -293,6 +294,39 @@ TEST(RepeatedField, CopyFromSelf) {
   me.CopyFrom(me);
   ASSERT_EQ(1, me.size());
   EXPECT_EQ(3, me.Get(0));
+}
+
+TEST(RepeatedField, Erase) {
+  RepeatedField<int> me;
+  RepeatedField<int>::iterator it = me.erase(me.begin(), me.end());
+  EXPECT_TRUE(me.begin() == it);
+  EXPECT_EQ(0, me.size());
+
+  me.Add(1);
+  me.Add(2);
+  me.Add(3);
+  it = me.erase(me.begin(), me.end());
+  EXPECT_TRUE(me.begin() == it);
+  EXPECT_EQ(0, me.size());
+
+  me.Add(4);
+  me.Add(5);
+  me.Add(6);
+  it = me.erase(me.begin() + 2, me.end());
+  EXPECT_TRUE(me.begin() + 2 == it);
+  EXPECT_EQ(2, me.size());
+  EXPECT_EQ(4, me.Get(0));
+  EXPECT_EQ(5, me.Get(1));
+
+  me.Add(6);
+  me.Add(7);
+  me.Add(8);
+  it = me.erase(me.begin() + 1, me.begin() + 3);
+  EXPECT_TRUE(me.begin() + 1 == it);
+  EXPECT_EQ(3, me.size());
+  EXPECT_EQ(4, me.Get(0));
+  EXPECT_EQ(7, me.Get(1));
+  EXPECT_EQ(8, me.Get(2));
 }
 
 TEST(RepeatedField, CopyConstruct) {
@@ -739,6 +773,39 @@ TEST(RepeatedPtrField, CopyFromSelf) {
   me.CopyFrom(me);
   ASSERT_EQ(1, me.size());
   EXPECT_EQ("1", me.Get(0));
+}
+
+TEST(RepeatedPtrField, Erase) {
+  RepeatedPtrField<string> me;
+  RepeatedPtrField<string>::iterator it = me.erase(me.begin(), me.end());
+  EXPECT_TRUE(me.begin() == it);
+  EXPECT_EQ(0, me.size());
+
+  *me.Add() = "1";
+  *me.Add() = "2";
+  *me.Add() = "3";
+  it = me.erase(me.begin(), me.end());
+  EXPECT_TRUE(me.begin() == it);
+  EXPECT_EQ(0, me.size());
+
+  *me.Add() = "4";
+  *me.Add() = "5";
+  *me.Add() = "6";
+  it = me.erase(me.begin() + 2, me.end());
+  EXPECT_TRUE(me.begin() + 2 == it);
+  EXPECT_EQ(2, me.size());
+  EXPECT_EQ("4", me.Get(0));
+  EXPECT_EQ("5", me.Get(1));
+
+  *me.Add() = "6";
+  *me.Add() = "7";
+  *me.Add() = "8";
+  it = me.erase(me.begin() + 1, me.begin() + 3);
+  EXPECT_TRUE(me.begin() + 1 == it);
+  EXPECT_EQ(3, me.size());
+  EXPECT_EQ("4", me.Get(0));
+  EXPECT_EQ("7", me.Get(1));
+  EXPECT_EQ("8", me.Get(2));
 }
 
 TEST(RepeatedPtrField, CopyConstruct) {
