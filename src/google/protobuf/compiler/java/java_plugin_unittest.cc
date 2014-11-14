@@ -75,7 +75,7 @@ class TestGenerator : public CodeGenerator {
 
   void TryInsert(const string& filename, const string& insertion_point,
                  GeneratorContext* context) const {
-    scoped_ptr<io::ZeroCopyOutputStream> output(
+    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
         context->OpenForInsert(filename, insertion_point));
     io::Printer printer(output.get(), '$');
     printer.Print("// inserted $name$\n", "name", insertion_point);

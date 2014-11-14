@@ -86,7 +86,7 @@ inline int CalculateReserve(Iter begin, Iter end, std::forward_iterator_tag) {
 
 template <typename Iter>
 inline int CalculateReserve(Iter /*begin*/, Iter /*end*/,
-                            std::input_iterator_tag) {
+                            std::input_iterator_tag /*unused*/) {
   return -1;
 }
 
@@ -348,6 +348,11 @@ class LIBPROTOBUF_EXPORT RepeatedPtrFieldBase {
   // reinterpreting MessageLite as Message.  ExtensionSet also needs to make
   // use of AddFromCleared(), which is not part of the public interface.
   friend class ExtensionSet;
+
+  // The MapFieldBase implementation needs to call protected methods directly,
+  // reinterpreting pointers as being to Message instead of a specific Message
+  // subclass.
+  friend class MapFieldBase;
 
   // To parse directly into a proto2 generated class, the upb class GMR_Handlers
   // needs to be able to modify a RepeatedPtrFieldBase directly.

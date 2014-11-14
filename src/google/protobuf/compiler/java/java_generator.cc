@@ -130,7 +130,7 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
     all_files.push_back(java_filename);
 
     // Generate main java file.
-    scoped_ptr<io::ZeroCopyOutputStream> output(
+    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
         context->Open(java_filename));
     io::Printer printer(output.get(), '$');
     file_generator->Generate(&printer);
@@ -148,7 +148,7 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
   if (!output_list_file.empty()) {
     // Generate output list.  This is just a simple text file placed in a
     // deterministic location which lists the .java files being generated.
-    scoped_ptr<io::ZeroCopyOutputStream> srclist_raw_output(
+    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> srclist_raw_output(
         context->Open(output_list_file));
     io::Printer srclist_printer(srclist_raw_output.get(), '$');
     for (int i = 0; i < all_files.size(); i++) {

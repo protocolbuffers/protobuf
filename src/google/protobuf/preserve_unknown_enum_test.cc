@@ -110,7 +110,7 @@ TEST(PreserveUnknownEnumTest, PreserveParseAndSerializeDynamicMessage) {
   string serialized = orig_message.SerializeAsString();
 
   google::protobuf::DynamicMessageFactory factory;
-  scoped_ptr<google::protobuf::Message> message(factory.GetPrototype(
+  google::protobuf::scoped_ptr<google::protobuf::Message> message(factory.GetPrototype(
       proto2_preserve_unknown_enum_unittest::MyMessage::descriptor())->New());
   EXPECT_EQ(true, message->ParseFromString(serialized));
   message->DiscardUnknownFields();

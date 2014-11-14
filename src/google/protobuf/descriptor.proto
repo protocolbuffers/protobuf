@@ -340,6 +340,11 @@ message FileOptions {
   optional bool deprecated = 23 [default=false];
 
 
+  // Enables the use of arenas for the proto messages in this file. This applies
+  // only to generated classes for C++.
+  optional bool cc_enable_arenas = 31 [default=false];
+
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 

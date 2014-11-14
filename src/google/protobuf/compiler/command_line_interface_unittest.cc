@@ -261,7 +261,7 @@ void CommandLineInterfaceTest::SetUp() {
 
 void CommandLineInterfaceTest::TearDown() {
   // Delete the temp directory.
-  if (File::Exists(temp_directory_)) {
+  if (FileExists(temp_directory_)) {
     File::DeleteRecursively(temp_directory_, NULL, NULL);
   }
 
@@ -312,7 +312,7 @@ void CommandLineInterfaceTest::Run(const string& command) {
     }
   }
 
-  scoped_array<const char*> argv(new const char* [args.size()]);
+  google::protobuf::scoped_array<const char * > argv(new const char* [args.size()]);
 
   for (int i = 0; i < args.size(); i++) {
     args[i] = StringReplace(args[i], "$tmpdir", temp_directory_, true);
@@ -1550,7 +1550,7 @@ class EncodeDecodeTest : public testing::Test {
     SplitStringUsing(command, " ", &args);
     args.push_back("--proto_path=" + TestSourceDir());
 
-    scoped_array<const char*> argv(new const char* [args.size()]);
+    google::protobuf::scoped_array<const char * > argv(new const char* [args.size()]);
     for (int i = 0; i < args.size(); i++) {
       argv[i] = args[i].c_str();
     }

@@ -271,7 +271,7 @@ class LIBPROTOBUF_EXPORT TextFormat {
 
     bool print_message_fields_in_index_order_;
 
-    scoped_ptr<const FieldValuePrinter> default_field_value_printer_;
+    google::protobuf::scoped_ptr<const FieldValuePrinter> default_field_value_printer_;
     typedef map<const FieldDescriptor*,
                 const FieldValuePrinter*> CustomPrinterMap;
     CustomPrinterMap custom_printers_;

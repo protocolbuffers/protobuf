@@ -178,9 +178,9 @@ class ParserTest : public testing::Test {
   MockErrorCollector error_collector_;
   DescriptorPool pool_;
 
-  scoped_ptr<io::ZeroCopyInputStream> raw_input_;
-  scoped_ptr<io::Tokenizer> input_;
-  scoped_ptr<Parser> parser_;
+  google::protobuf::scoped_ptr<io::ZeroCopyInputStream> raw_input_;
+  google::protobuf::scoped_ptr<io::Tokenizer> input_;
+  google::protobuf::scoped_ptr<Parser> parser_;
   bool require_syntax_identifier_;
 };
 

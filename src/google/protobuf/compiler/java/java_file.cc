@@ -121,7 +121,7 @@ void CollectExtensions(const FileDescriptorProto& file_proto,
            "descriptor.proto is not in the transitive dependencies. "
            "This normally should not happen. Please report a bug.";
     DynamicMessageFactory factory;
-    scoped_ptr<Message> dynamic_file_proto(
+    google::protobuf::scoped_ptr<Message> dynamic_file_proto(
         factory.GetPrototype(file_proto_desc)->New());
     GOOGLE_CHECK(dynamic_file_proto.get() != NULL);
     GOOGLE_CHECK(dynamic_file_proto->ParseFromString(file_data));
@@ -146,9 +146,9 @@ FileGenerator::FileGenerator(const FileDescriptor* file, bool immutable_api)
     : file_(file),
       java_package_(FileJavaPackage(file, immutable_api)),
       message_generators_(
-          new scoped_ptr<MessageGenerator>[file->message_type_count()]),
+          new google::protobuf::scoped_ptr<MessageGenerator>[file->message_type_count()]),
       extension_generators_(
-          new scoped_ptr<ExtensionGenerator>[file->extension_count()]),
+          new google::protobuf::scoped_ptr<ExtensionGenerator>[file->extension_count()]),
       context_(new Context(file)),
       name_resolver_(context_->GetNameResolver()),
       immutable_api_(immutable_api) {
@@ -240,7 +240,7 @@ void FileGenerator::Generate(io::Printer* printer) {
     }
     if (HasGenericServices(file_)) {
       for (int i = 0; i < file_->service_count(); i++) {
-        scoped_ptr<ServiceGenerator> generator(
+        google::protobuf::scoped_ptr<ServiceGenerator> generator(
             generator_factory_->NewServiceGenerator(file_->service(i)));
         generator->Generate(printer);
       }
@@ -340,7 +340,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
       "com.google.protobuf.ExtensionRegistry registry =\n"
       "    com.google.protobuf.ExtensionRegistry.newInstance();\n");
     for (int i = 0; i < extensions.size(); i++) {
-      scoped_ptr<ExtensionGenerator> generator(
+      google::protobuf::scoped_ptr<ExtensionGenerator> generator(
           generator_factory_->NewExtensionGenerator(extensions[i]));
       generator->GenerateRegistrationCode(printer);
     }
@@ -444,7 +444,7 @@ static void GenerateSibling(const string& package_dir,
   string filename = package_dir + descriptor->name() + name_suffix + ".java";
   file_list->push_back(filename);
 
-  scoped_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
+  google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
   io::Printer printer(output.get(), '$');
 
   printer.Print(
@@ -492,7 +492,7 @@ void FileGenerator::GenerateSiblings(const string& package_dir,
     }
     if (HasGenericServices(file_)) {
       for (int i = 0; i < file_->service_count(); i++) {
-        scoped_ptr<ServiceGenerator> generator(
+        google::protobuf::scoped_ptr<ServiceGenerator> generator(
             generator_factory_->NewServiceGenerator(file_->service(i)));
         GenerateSibling<ServiceGenerator>(package_dir, java_package_,
                                           file_->service(i),

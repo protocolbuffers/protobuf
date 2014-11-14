@@ -30,14 +30,26 @@
 
 #include <google/protobuf/arena.h>
 
+#include <algorithm>
+#include <cstring>
+#include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 #include <string>
 #include <vector>
 
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/test_util.h>
+#include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_arena.pb.h>
 #include <google/protobuf/unittest_no_arena.pb.h>
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/testing/googletest.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/extension_set.h>
+#include <google/protobuf/message.h>
+#include <google/protobuf/message_lite.h>
+#include <google/protobuf/repeated_field.h>
+#include <google/protobuf/unknown_field_set.h>
 #include <gtest/gtest.h>
 
 
@@ -108,6 +120,31 @@ TEST(ArenaTest, BasicCreate) {
   arena.Own(data);
   arena.Reset();
   EXPECT_EQ(2, notifier.GetCount());
+}
+
+TEST(ArenaTest, InitialBlockTooSmall) {
+  // Construct a small (64 byte) initial block of memory to be used by the
+  // arena allocator; then, allocate an object which will not fit in the
+  // initial block.
+  std::vector<char> arena_block(64);
+  ArenaOptions options;
+  options.initial_block = arena_block.data();
+  options.initial_block_size = arena_block.size();
+  Arena arena(options);
+
+  char* p = ::google::protobuf::Arena::CreateArray<char>(&arena, 96);
+  uintptr_t allocation = reinterpret_cast<uintptr_t>(p);
+
+  // Ensure that the arena allocator did not return memory pointing into the
+  // initial block of memory.
+  uintptr_t arena_start = reinterpret_cast<uintptr_t>(arena_block.data());
+  uintptr_t arena_end = arena_start + arena_block.size();
+  EXPECT_FALSE(allocation >= arena_start && allocation < arena_end);
+
+  // Write to the memory we allocated; this should (but is not guaranteed to)
+  // trigger a check for heap corruption if the object was allocated from the
+  // initially-provided block.
+  memset(p, '\0', 128);
 }
 
 TEST(ArenaTest, Parsing) {

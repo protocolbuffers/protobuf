@@ -334,6 +334,31 @@ bool HasHasMethod(const FieldDescriptor* field) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE;
 }
 
+// Collects map entry message type information.
+void CollectMapInfo(const Descriptor* descriptor,
+                    map<string, string>* variables) {
+  GOOGLE_CHECK(IsMapEntryMessage(descriptor));
+  const FieldDescriptor* key = descriptor->FindFieldByName("key");
+  const FieldDescriptor* val = descriptor->FindFieldByName("value");
+  (*variables)["key"] = PrimitiveTypeName(key->cpp_type());
+  switch (val->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      (*variables)["val"] = FieldMessageTypeName(val);
+      break;
+    case FieldDescriptor::CPPTYPE_ENUM:
+      (*variables)["val"] = ClassName(val->enum_type(), false);
+      break;
+    default:
+      (*variables)["val"] = PrimitiveTypeName(val->cpp_type());
+  }
+  (*variables)["key_type"] =
+      "::google::protobuf::FieldDescriptor::TYPE_" +
+      ToUpper(DeclaredTypeMethodName(key->type()));
+  (*variables)["val_type"] =
+      "::google::protobuf::FieldDescriptor::TYPE_" +
+      ToUpper(DeclaredTypeMethodName(val->type()));
+}
+
 // Does the given field have a private (internal helper only) has_$name$()
 // method?
 bool HasPrivateHasMethod(const FieldDescriptor* field) {
@@ -353,11 +378,11 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
       classname_(ClassName(descriptor, false)),
       options_(options),
       field_generators_(descriptor, options),
-      nested_generators_(new scoped_ptr<
+      nested_generators_(new google::protobuf::scoped_ptr<
           MessageGenerator>[descriptor->nested_type_count()]),
       enum_generators_(
-          new scoped_ptr<EnumGenerator>[descriptor->enum_type_count()]),
-      extension_generators_(new scoped_ptr<
+          new google::protobuf::scoped_ptr<EnumGenerator>[descriptor->enum_type_count()]),
+      extension_generators_(new google::protobuf::scoped_ptr<
           ExtensionGenerator>[descriptor->extension_count()]) {
 
   for (int i = 0; i < descriptor->nested_type_count(); i++) {
@@ -391,6 +416,10 @@ GenerateForwardDeclaration(io::Printer* printer) {
                  "classname", classname_);
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    // map entry message doesn't need forward declaration. Since map entry
+    // message cannot be a top level class, we just need to avoid calling
+    // GenerateForwardDeclaration here.
+    if (IsMapEntryMessage(descriptor_->nested_type(i))) continue;
     nested_generators_[i]->GenerateForwardDeclaration(printer);
   }
 }
@@ -622,6 +651,10 @@ static bool CanClearByZeroing(const FieldDescriptor* field) {
 void MessageGenerator::
 GenerateClassDefinition(io::Printer* printer) {
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    // map entry message doesn't need class definition. Since map entry message
+    // cannot be a top level class, we just need to avoid calling
+    // GenerateClassDefinition here.
+    if (IsMapEntryMessage(descriptor_->nested_type(i))) continue;
     nested_generators_[i]->GenerateClassDefinition(printer);
     printer->Print("\n");
     printer->Print(kThinSeparator);
@@ -876,9 +909,11 @@ GenerateClassDefinition(io::Printer* printer) {
   // Import all nested message classes into this class's scope with typedefs.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     const Descriptor* nested_type = descriptor_->nested_type(i);
-    printer->Print("typedef $nested_full_name$ $nested_name$;\n",
-                   "nested_name", nested_type->name(),
-                   "nested_full_name", ClassName(nested_type, false));
+    if (!IsMapEntryMessage(nested_type)) {
+      printer->Print("typedef $nested_full_name$ $nested_name$;\n",
+                     "nested_name", nested_type->name(),
+                     "nested_full_name", ClassName(nested_type, false));
+    }
   }
 
   if (descriptor_->nested_type_count() > 0) {
@@ -1124,6 +1159,10 @@ GenerateClassDefinition(io::Printer* printer) {
 void MessageGenerator::
 GenerateInlineMethods(io::Printer* printer) {
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    // map entry message doesn't need inline methods. Since map entry message
+    // cannot be a top level class, we just need to avoid calling
+    // GenerateInlineMethods here.
+    if (IsMapEntryMessage(descriptor_->nested_type(i))) continue;
     nested_generators_[i]->GenerateInlineMethods(printer);
     printer->Print(kThinSeparator);
     printer->Print("\n");
@@ -1151,11 +1190,17 @@ GenerateInlineMethods(io::Printer* printer) {
 
 void MessageGenerator::
 GenerateDescriptorDeclarations(io::Printer* printer) {
-  printer->Print(
-    "const ::google::protobuf::Descriptor* $name$_descriptor_ = NULL;\n"
-    "const ::google::protobuf::internal::GeneratedMessageReflection*\n"
-    "  $name$_reflection_ = NULL;\n",
-    "name", classname_);
+  if (!IsMapEntryMessage(descriptor_)) {
+    printer->Print(
+      "const ::google::protobuf::Descriptor* $name$_descriptor_ = NULL;\n"
+      "const ::google::protobuf::internal::GeneratedMessageReflection*\n"
+      "  $name$_reflection_ = NULL;\n",
+      "name", classname_);
+  } else {
+    printer->Print(
+      "const ::google::protobuf::Descriptor* $name$_descriptor_ = NULL;\n",
+      "name", classname_);
+  }
 
   // Generate oneof default instance for reflection usage.
   if (descriptor_->oneof_decl_count() > 0) {
@@ -1206,13 +1251,20 @@ GenerateDescriptorInitializer(io::Printer* printer, int index) {
         "$parent$_descriptor_->nested_type($index$);\n");
   }
 
+  if (IsMapEntryMessage(descriptor_)) return;
+
   // Generate the offsets.
   GenerateOffsets(printer);
 
+  const bool pass_pool_and_factory = false;
+  vars["fn"] = pass_pool_and_factory ?
+      "new ::google::protobuf::internal::GeneratedMessageReflection" :
+      "::google::protobuf::internal::GeneratedMessageReflection"
+      "::NewGeneratedMessageReflection";
   // Construct the reflection object.
   printer->Print(vars,
     "$classname$_reflection_ =\n"
-    "  new ::google::protobuf::internal::GeneratedMessageReflection(\n"
+    "  $fn$(\n"
     "    $classname$_descriptor_,\n"
     "    $classname$::default_instance_,\n"
     "    $classname$_offsets_,\n");
@@ -1254,10 +1306,12 @@ GenerateDescriptorInitializer(io::Printer* printer, int index) {
       "$classname$, _oneof_case_[0]),\n");
   }
 
-  printer->Print(
-    "    ::google::protobuf::DescriptorPool::generated_pool(),\n");
-  printer->Print(vars,
-    "    ::google::protobuf::MessageFactory::generated_factory(),\n");
+  if (pass_pool_and_factory) {
+    printer->Print(
+        "    ::google::protobuf::DescriptorPool::generated_pool(),\n");
+      printer->Print(vars,
+                     "    ::google::protobuf::MessageFactory::generated_factory(),\n");
+  }
 
   printer->Print(vars,
     "    sizeof($classname$),\n");
@@ -1289,10 +1343,37 @@ GenerateDescriptorInitializer(io::Printer* printer, int index) {
 void MessageGenerator::
 GenerateTypeRegistrations(io::Printer* printer) {
   // Register this message type with the message factory.
-  printer->Print(
-    "::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(\n"
-    "  $classname$_descriptor_, &$classname$::default_instance());\n",
-    "classname", classname_);
+  if (!IsMapEntryMessage(descriptor_)) {
+    printer->Print(
+      "::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(\n"
+      "    $classname$_descriptor_, &$classname$::default_instance());\n",
+      "classname", classname_);
+  }
+  else {
+    map<string, string> vars;
+    CollectMapInfo(descriptor_, &vars);
+    vars["classname"] = classname_;
+
+    const FieldDescriptor* val = descriptor_->FindFieldByName("value");
+    if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2 &&
+        val->type() == FieldDescriptor::TYPE_ENUM) {
+      const EnumValueDescriptor* default_value = val->default_value_enum();
+      vars["default_enum_value"] = Int32ToString(default_value->number());
+    } else {
+      vars["default_enum_value"] = "0";
+    }
+
+    printer->Print(vars,
+      "::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(\n"
+      "      $classname$_descriptor_,\n"
+      "      ::google::protobuf::internal::MapEntry<\n"
+      "          $key$,\n"
+      "          $val$,\n"
+      "          $key_type$,\n"
+      "          $val_type$,\n"
+      "          $default_enum_value$>::CreateDefaultInstance(\n"
+      "              $classname$_descriptor_));\n");
+  }
 
   // Handle nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
@@ -1308,6 +1389,8 @@ GenerateDefaultInstanceAllocator(io::Printer* printer) {
     field_generators_.get(descriptor_->field(i))
                      .GenerateDefaultInstanceAllocator(printer);
   }
+
+  if (IsMapEntryMessage(descriptor_)) return;
 
   // Construct the default instance.  We can't call InitAsDefaultInstance() yet
   // because we need to make sure all default instances that this one might
@@ -1343,6 +1426,10 @@ GenerateDefaultInstanceInitializer(io::Printer* printer) {
 
   // Handle nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    // map entry message doesn't need to initialize default instance manually.
+    // Since map entry message cannot be a top level class, we just need to
+    // avoid calling DefaultInstanceInitializer here.
+    if (IsMapEntryMessage(descriptor_->nested_type(i))) continue;
     nested_generators_[i]->GenerateDefaultInstanceInitializer(printer);
   }
 }
@@ -1372,6 +1459,7 @@ GenerateShutdownCode(io::Printer* printer) {
 
   // Handle nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    if (IsMapEntryMessage(descriptor_->nested_type(i))) continue;
     nested_generators_[i]->GenerateShutdownCode(printer);
   }
 }
@@ -1383,6 +1471,10 @@ GenerateClassMethods(io::Printer* printer) {
   }
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    // map entry message doesn't need class methods. Since map entry message
+    // cannot be a top level class, we just need to avoid calling
+    // GenerateClassMethods here.
+    if (IsMapEntryMessage(descriptor_->nested_type(i))) continue;
     nested_generators_[i]->GenerateClassMethods(printer);
     printer->Print("\n");
     printer->Print(kThinSeparator);
@@ -2195,7 +2287,7 @@ GenerateMergeFrom(io::Printer* printer) {
     // base class as a parameter).
     printer->Print(
       "void $classname$::MergeFrom(const ::google::protobuf::Message& from) {\n"
-      "  GOOGLE_CHECK_NE(&from, this);\n",
+      "  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);\n",
       "classname", classname_);
     printer->Indent();
 
@@ -2230,7 +2322,7 @@ GenerateMergeFrom(io::Printer* printer) {
   // Generate the class-specific MergeFrom, which avoids the GOOGLE_CHECK and cast.
   printer->Print(
     "void $classname$::MergeFrom(const $classname$& from) {\n"
-    "  GOOGLE_CHECK_NE(&from, this);\n",
+    "  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);\n",
     "classname", classname_);
   printer->Indent();
 
@@ -2429,7 +2521,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
   printer->Print("for (;;) {\n");
   printer->Indent();
 
-  scoped_array<const FieldDescriptor*> ordered_fields(
+  google::protobuf::scoped_array<const FieldDescriptor * > ordered_fields(
       SortFieldsByNumber(descriptor_));
   uint32 maxtag = descriptor_->field_count() == 0 ? 0 :
       WireFormat::MakeTag(ordered_fields[descriptor_->field_count() - 1]);
@@ -2788,7 +2880,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) {
 
 void MessageGenerator::
 GenerateSerializeWithCachedSizesBody(io::Printer* printer, bool to_array) {
-  scoped_array<const FieldDescriptor*> ordered_fields(
+  google::protobuf::scoped_array<const FieldDescriptor * > ordered_fields(
       SortFieldsByNumber(descriptor_));
 
   vector<const Descriptor::ExtensionRange*> sorted_extensions;
@@ -3186,14 +3278,14 @@ GenerateIsInitialized(io::Printer* printer) {
           " return false;\n",
           "name", FieldName(field));
       } else {
-        if (field->options().weak()) {
+        if (field->options().weak() || !field->containing_oneof()) {
           // For weak fields, use the data member (::google::protobuf::Message*) instead
           // of the getter to avoid a link dependency on the weak message type
           // which is only forward declared.
           printer->Print(
-            "if (has_$name$()) {\n"
-            "  if (!this->$name$_->IsInitialized()) return false;\n"
-            "}\n",
+              "if (has_$name$()) {\n"
+              "  if (!this->$name$_->IsInitialized()) return false;\n"
+              "}\n",
             "name", FieldName(field));
         } else {
           printer->Print(

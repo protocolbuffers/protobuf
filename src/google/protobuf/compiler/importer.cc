@@ -125,7 +125,7 @@ SourceTreeDescriptorDatabase::~SourceTreeDescriptorDatabase() {}
 
 bool SourceTreeDescriptorDatabase::FindFileByName(
     const string& filename, FileDescriptorProto* output) {
-  scoped_ptr<io::ZeroCopyInputStream> input(source_tree_->Open(filename));
+  google::protobuf::scoped_ptr<io::ZeroCopyInputStream> input(source_tree_->Open(filename));
   if (input == NULL) {
     if (error_collector_ != NULL) {
       error_collector_->AddError(filename, -1, 0,
@@ -403,7 +403,7 @@ DiskSourceTree::DiskFileToVirtualFile(
   // Verify that we can open the file.  Note that this also has the side-effect
   // of verifying that we are not canonicalizing away any non-existent
   // directories.
-  scoped_ptr<io::ZeroCopyInputStream> stream(OpenDiskFile(disk_file));
+  google::protobuf::scoped_ptr<io::ZeroCopyInputStream> stream(OpenDiskFile(disk_file));
   if (stream == NULL) {
     return CANNOT_OPEN;
   }
@@ -413,7 +413,7 @@ DiskSourceTree::DiskFileToVirtualFile(
 
 bool DiskSourceTree::VirtualFileToDiskFile(const string& virtual_file,
                                            string* disk_file) {
-  scoped_ptr<io::ZeroCopyInputStream> stream(
+  google::protobuf::scoped_ptr<io::ZeroCopyInputStream> stream(
       OpenVirtualFile(virtual_file, disk_file));
   return stream != NULL;
 }

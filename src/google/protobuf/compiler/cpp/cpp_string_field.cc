@@ -306,7 +306,14 @@ GenerateClearingCode(io::Printer* printer) const {
 
 void StringFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
-  printer->Print(variables_, "set_$name$(from.$name$());\n");
+  if (SupportsArenas(descriptor_) || descriptor_->containing_oneof() != NULL) {
+    // TODO(gpike): improve this
+    printer->Print(variables_, "set_$name$(from.$name$());\n");
+  } else {
+    printer->Print(variables_,
+      "$set_hasbit$\n"
+      "$name$_.AssignWithDefault($default_variable$, from.$name$_);\n");
+  }
 }
 
 void StringFieldGenerator::

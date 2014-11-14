@@ -415,6 +415,11 @@ class DescriptorTest : public testing::Test {
     //     required string quux = 6;
     //   }
     //
+    //   // in "map.proto"
+    //   message TestMessage3 {
+    //     map<int32, int32> map_int32_int32 = 1;
+    //   }
+    //
     // We cheat and use TestForeign as the type for qux rather than create
     // an actual nested type.
     //
@@ -462,12 +467,33 @@ class DescriptorTest : public testing::Test {
              FieldDescriptorProto::LABEL_REQUIRED,
              FieldDescriptorProto::TYPE_STRING);
 
+    FileDescriptorProto map_file;
+    map_file.set_name("map.proto");
+    DescriptorProto* message3 = AddMessage(&map_file, "TestMessage3");
+
+    DescriptorProto* entry = AddNestedMessage(message3, "MapInt32Int32Entry");
+    AddField(entry, "key", 1,
+             FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    AddField(entry, "value", 2,
+             FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    entry->mutable_options()->set_map_entry(true);
+
+    AddField(message3, "map_int32_int32", 1,
+             FieldDescriptorProto::LABEL_REPEATED,
+             FieldDescriptorProto::TYPE_MESSAGE)
+        ->set_type_name("MapInt32Int32Entry");
+
     // Build the descriptors and get the pointers.
     foo_file_ = pool_.BuildFile(foo_file);
     ASSERT_TRUE(foo_file_ != NULL);
 
     bar_file_ = pool_.BuildFile(bar_file);
     ASSERT_TRUE(bar_file_ != NULL);
+
+    map_file_ = pool_.BuildFile(map_file);
+    ASSERT_TRUE(map_file_ != NULL);
 
     ASSERT_EQ(1, foo_file_->enum_type_count());
     enum_ = foo_file_->enum_type(0);
@@ -489,15 +515,23 @@ class DescriptorTest : public testing::Test {
     foo2_  = message2_->field(0);
     bar2_  = message2_->field(1);
     quux2_ = message2_->field(2);
+
+    ASSERT_EQ(1, map_file_->message_type_count());
+    message3_ = map_file_->message_type(0);
+
+    ASSERT_EQ(1, message3_->field_count());
+    map_  = message3_->field(0);
   }
 
   DescriptorPool pool_;
 
   const FileDescriptor* foo_file_;
   const FileDescriptor* bar_file_;
+  const FileDescriptor* map_file_;
 
   const Descriptor* message_;
   const Descriptor* message2_;
+  const Descriptor* message3_;
   const Descriptor* foreign_;
   const EnumDescriptor* enum_;
 
@@ -509,6 +543,8 @@ class DescriptorTest : public testing::Test {
   const FieldDescriptor* foo2_;
   const FieldDescriptor* bar2_;
   const FieldDescriptor* quux2_;
+
+  const FieldDescriptor* map_;
 };
 
 TEST_F(DescriptorTest, Name) {
@@ -636,6 +672,12 @@ TEST_F(DescriptorTest, FieldLabel) {
   EXPECT_FALSE(baz_->is_required());
   EXPECT_FALSE(baz_->is_optional());
   EXPECT_TRUE (baz_->is_repeated());
+}
+
+TEST_F(DescriptorTest, IsMap) {
+  EXPECT_TRUE(map_->is_map());
+  EXPECT_FALSE(baz_->is_map());
+  EXPECT_TRUE(map_->message_type()->options().map_entry());
 }
 
 TEST_F(DescriptorTest, FieldHasDefault) {

@@ -686,7 +686,7 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefDynamicMessage) {
       desc->FindFieldByName("repeated_int32");
 
   DynamicMessageFactory factory;
-  scoped_ptr<Message> dynamic_message(factory.GetPrototype(desc)->New());
+  google::protobuf::scoped_ptr<Message> dynamic_message(factory.GetPrototype(desc)->New());
   const Reflection* refl = dynamic_message->GetReflection();
 
   MutableRepeatedFieldRef<int32> rf_int32 =

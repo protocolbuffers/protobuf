@@ -49,6 +49,10 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
                          const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = FieldMessageTypeName(descriptor);
+  if (descriptor->options().weak() || !descriptor->containing_oneof()) {
+    (*variables)["non_null_ptr_to_name"] =
+        StrCat("this->", (*variables)["name"], "_");
+  }
   (*variables)["stream_writer"] = (*variables)["declared_type"] +
       (HasFastArraySerialization(descriptor->message_type()->file()) ?
        "MaybeToArray" :
@@ -293,7 +297,7 @@ void MessageFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
   printer->Print(variables_,
     "::google::protobuf::internal::WireFormatLite::Write$stream_writer$(\n"
-    "  $number$, this->$name$(), output);\n");
+    "  $number$, *$non_null_ptr_to_name$, output);\n");
 }
 
 void MessageFieldGenerator::
@@ -301,7 +305,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
   printer->Print(variables_,
     "target = ::google::protobuf::internal::WireFormatLite::\n"
     "  Write$declared_type$NoVirtualToArray(\n"
-    "    $number$, this->$name$(), target);\n");
+    "    $number$, *$non_null_ptr_to_name$, target);\n");
 }
 
 void MessageFieldGenerator::
@@ -309,7 +313,7 @@ GenerateByteSize(io::Printer* printer) const {
   printer->Print(variables_,
     "total_size += $tag_size$ +\n"
     "  ::google::protobuf::internal::WireFormatLite::$declared_type$SizeNoVirtual(\n"
-    "    this->$name$());\n");
+    "    *$non_null_ptr_to_name$);\n");
 }
 
 // ===================================================================
@@ -591,7 +595,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
   printer->Print(variables_,
-    "for (int i = 0; i < this->$name$_size(); i++) {\n"
+    "for (unsigned int i = 0, n = this->$name$_size(); i < n; i++) {\n"
     "  ::google::protobuf::internal::WireFormatLite::Write$stream_writer$(\n"
     "    $number$, this->$name$(i), output);\n"
     "}\n");
@@ -600,7 +604,7 @@ GenerateSerializeWithCachedSizes(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
   printer->Print(variables_,
-    "for (int i = 0; i < this->$name$_size(); i++) {\n"
+    "for (unsigned int i = 0, n = this->$name$_size(); i < n; i++) {\n"
     "  target = ::google::protobuf::internal::WireFormatLite::\n"
     "    Write$declared_type$NoVirtualToArray(\n"
     "      $number$, this->$name$(i), target);\n"
