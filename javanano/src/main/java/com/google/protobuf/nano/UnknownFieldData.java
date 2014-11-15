@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// Copyright 2013 Google Inc.  All rights reserved.
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -28,39 +28,57 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: kenton@google.com (Kenton Varda)
+package com.google.protobuf.nano;
 
-#include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/compiler/cpp/cpp_generator.h>
-#include <google/protobuf/compiler/python/python_generator.h>
-#include <google/protobuf/compiler/java/java_generator.h>
-#include <google/protobuf/compiler/javanano/javanano_generator.h>
+import java.io.IOException;
+import java.util.Arrays;
 
+/**
+ * Stores unknown fields. These might be extensions or fields that the generated
+ * API doesn't know about yet.
+ *
+ * @author bduff@google.com (Brian Duff)
+ */
+final class UnknownFieldData {
 
-int main(int argc, char* argv[]) {
+    final int tag;
+    final byte[] bytes;
 
-  google::protobuf::compiler::CommandLineInterface cli;
-  cli.AllowPlugins("protoc-");
+    UnknownFieldData(int tag, byte[] bytes) {
+        this.tag = tag;
+        this.bytes = bytes;
+    }
 
-  // Proto2 C++
-  google::protobuf::compiler::cpp::CppGenerator cpp_generator;
-  cli.RegisterGenerator("--cpp_out", "--cpp_opt", &cpp_generator,
-                        "Generate C++ header and source.");
+    int computeSerializedSize() {
+        int size = 0;
+        size += CodedOutputByteBufferNano.computeRawVarint32Size(tag);
+        size += bytes.length;
+        return size;
+    }
 
-  // Proto2 Java
-  google::protobuf::compiler::java::JavaGenerator java_generator;
-  cli.RegisterGenerator("--java_out", &java_generator,
-                        "Generate Java source file.");
+    void writeTo(CodedOutputByteBufferNano output) throws IOException {
+        output.writeRawVarint32(tag);
+        output.writeRawBytes(bytes);
+    }
 
-  // Proto2 JavaNano
-  google::protobuf::compiler::javanano::JavaNanoGenerator javanano_generator;
-  cli.RegisterGenerator("--javanano_out", &javanano_generator,
-                        "Generate JavaNano source file.");
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof UnknownFieldData)) {
+            return false;
+        }
 
-  // Proto2 Python
-  google::protobuf::compiler::python::Generator py_generator;
-  cli.RegisterGenerator("--python_out", &py_generator,
-                        "Generate Python source file.");
+        UnknownFieldData other = (UnknownFieldData) o;
+        return tag == other.tag && Arrays.equals(bytes, other.bytes);
+    }
 
-  return cli.Run(argc, argv);
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + tag;
+        result = 31 * result + Arrays.hashCode(bytes);
+        return result;
+    }
 }
