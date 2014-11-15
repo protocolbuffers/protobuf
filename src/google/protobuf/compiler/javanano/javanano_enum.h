@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -29,38 +29,59 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/compiler/cpp/cpp_generator.h>
-#include <google/protobuf/compiler/python/python_generator.h>
-#include <google/protobuf/compiler/java/java_generator.h>
-#include <google/protobuf/compiler/javanano/javanano_generator.h>
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVANANO_ENUM_H__
+#define GOOGLE_PROTOBUF_COMPILER_JAVANANO_ENUM_H__
 
+#include <string>
+#include <vector>
 
-int main(int argc, char* argv[]) {
+#include <google/protobuf/compiler/javanano/javanano_params.h>
+#include <google/protobuf/descriptor.h>
 
-  google::protobuf::compiler::CommandLineInterface cli;
-  cli.AllowPlugins("protoc-");
-
-  // Proto2 C++
-  google::protobuf::compiler::cpp::CppGenerator cpp_generator;
-  cli.RegisterGenerator("--cpp_out", "--cpp_opt", &cpp_generator,
-                        "Generate C++ header and source.");
-
-  // Proto2 Java
-  google::protobuf::compiler::java::JavaGenerator java_generator;
-  cli.RegisterGenerator("--java_out", &java_generator,
-                        "Generate Java source file.");
-
-  // Proto2 JavaNano
-  google::protobuf::compiler::javanano::JavaNanoGenerator javanano_generator;
-  cli.RegisterGenerator("--javanano_out", &javanano_generator,
-                        "Generate JavaNano source file.");
-
-  // Proto2 Python
-  google::protobuf::compiler::python::Generator py_generator;
-  cli.RegisterGenerator("--python_out", &py_generator,
-                        "Generate Python source file.");
-
-  return cli.Run(argc, argv);
+namespace google {
+namespace protobuf {
+  namespace io {
+    class Printer;             // printer.h
+  }
 }
+
+namespace protobuf {
+namespace compiler {
+namespace javanano {
+
+class EnumGenerator {
+ public:
+  explicit EnumGenerator(const EnumDescriptor* descriptor, const Params& params);
+  ~EnumGenerator();
+
+  void Generate(io::Printer* printer);
+
+ private:
+  const Params& params_;
+  const EnumDescriptor* descriptor_;
+
+  // The proto language allows multiple enum constants to have the same numeric
+  // value.  Java, however, does not allow multiple enum constants to be
+  // considered equivalent.  We treat the first defined constant for any
+  // given numeric value as "canonical" and the rest as aliases of that
+  // canonical value.
+  vector<const EnumValueDescriptor*> canonical_values_;
+
+  struct Alias {
+    const EnumValueDescriptor* value;
+    const EnumValueDescriptor* canonical_value;
+  };
+  vector<Alias> aliases_;
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumGenerator);
+};
+
+}  // namespace javanano
+}  // namespace compiler
+}  // namespace protobuf
+
+}  // namespace google
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVANANO_ENUM_H__
