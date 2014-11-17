@@ -44,6 +44,13 @@ src/.libs
 unittest*.pb.*
 cpp_test*.pb.*
 
+*.pyc
+*.egg-info
+*_pb2.py
+python/.eggs/
+python/build/
+python/google/protobuf/compiler/
+
 src/protoc
 src/unittest_proto_middleman
 
