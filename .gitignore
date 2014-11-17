@@ -30,19 +30,19 @@ config.status
 libtool
 protobuf-lite.pc
 protobuf.pc
-**/.deps
+.deps
 stamp-h1
 
 # in-tree build products
-**/*.o
-**/*.lo
-**/*.la
+*.o
+*.lo
+*.la
 src/.libs
 
-**/.dirstamp
+.dirstamp
 
-**/unittest*.pb.*
-**/cpp_test*.pb.*
+unittest*.pb.*
+cpp_test*.pb.*
 
 src/protoc
 src/unittest_proto_middleman
