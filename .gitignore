@@ -47,3 +47,8 @@ cpp_test*.pb.*
 src/protoc
 src/unittest_proto_middleman
 
+# Generated test scaffolding
+src/protobuf*-test
+src/test_plugin
+src/testzip.*
+src/zcg*zip
