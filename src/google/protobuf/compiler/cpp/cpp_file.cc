@@ -105,7 +105,12 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
     "#define PROTOBUF_$filename_identifier$__INCLUDED\n"
     "\n"
     "#include <string>\n"
-    "#include <stdint.h>\n"  // INT32_MIN, INT32_MAX
+    "#ifndef PROTOBUF_ENUM_MIN\n"
+    "#define PROTOBUF_ENUM_MIN		(int32_t)0x80000000\n"
+    "#endif\n"
+    "#ifndef PROTOBUF_ENUM_MAX\n"
+    "#define PROTOBUF_ENUM_MAX		(int32_t)0x7fffffff\n"
+    "#endif\n"
     "\n",
     "filename", file_->name(),
     "filename_identifier", filename_identifier);
