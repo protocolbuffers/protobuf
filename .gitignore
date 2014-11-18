@@ -41,6 +41,7 @@ src/.libs
 
 .dirstamp
 
+map*unittest.pb.*
 unittest*.pb.*
 cpp_test*.pb.*
 
