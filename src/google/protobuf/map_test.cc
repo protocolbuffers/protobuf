@@ -85,7 +85,7 @@ class MapImplTest : public ::testing::Test {
     EXPECT_TRUE(map_.empty());
     EXPECT_EQ(0, map_.size());
   }
-  ~MapImplTest() override {}
+  ~MapImplTest() {}
 
   void ExpectSingleElement(int32 key, int32 value) {
     EXPECT_FALSE(map_.empty());
