@@ -44,8 +44,8 @@ CXX=c++
 CFLAGS=-std=c99
 CXXFLAGS=-Wno-unused-private-field
 INCLUDE=-I.
-CPPFLAGS=$(INCLUDE) -DNDEBUG -Wall -Wextra -Wno-sign-compare $(USER_CPPFLAGS)
-LDLIBS=-lpthread upb/libupb.a
+WARNFLAGS=-Wall -Wextra -Wno-sign-compare 
+CPPFLAGS=$(INCLUDE) -DNDEBUG $(USER_CPPFLAGS)
 LUA=lua  # 5.1 and 5.2 should both be supported
 
 ifneq ($(WITH_JIT), no)
@@ -91,6 +91,7 @@ clean_leave_profile:
 	@rm -rf tools/upbc deps
 	@rm -rf upb/bindings/python/build
 	@rm -f upb/bindings/ruby/Makefile
+	@rm -f upb/bindings/ruby/upb.o
 	@rm -f upb/bindings/ruby/upb.so
 	@rm -f upb/bindings/ruby/mkmf.log
 	@find . | grep dSYM | xargs rm -rf
@@ -109,7 +110,7 @@ clean: clean_leave_profile
 # lib/lib%.a: $(call make_objs,o)
 #	gcc -c -o $@ $^
 #
-# SECONDEXPANSION: flips on a bit essentially that allows this "seconary
+# SECONDEXPANSION: flips on a bit essentially that allows this "secondary
 # expansion": it must appear before anything that uses make_objs.
 .SECONDEXPANSION:
 to_srcs = $(subst .,_,$(1)_SRCS)
@@ -130,15 +131,16 @@ upb_SRCS = \
   upb/upb.c \
 
 upb_descriptor_SRCS = \
-  upb/descriptor/reader.c \
   upb/descriptor/descriptor.upb.c \
+  upb/descriptor/reader.c \
 
 upb_pb_SRCS = \
-  upb/pb/decoder.c \
   upb/pb/compile_decoder.c \
+  upb/pb/decoder.c \
+  upb/pb/encoder.c \
   upb/pb/glue.c \
-  upb/pb/varint.c \
   upb/pb/textprinter.c \
+  upb/pb/varint.c \
 
 # If the JIT is enabled we include its source.
 # If Lua is present we can use DynASM to regenerate the .h file.
@@ -146,7 +148,6 @@ ifdef USE_JIT
 upb_pb_SRCS += upb/pb/compile_decoder_x64.c
 obj/pb/compile_decoder_x64.o obj/pb/compile_decoder_x64.lo: upb/pb/compile_decoder_x64.h
 obj/pb/compile_decoder_x64.o: CFLAGS=-std=gnu99
-obj/pb/compile_decoder_x64.o: OPT=-Os
 
 upb/pb/compile_decoder_x64.h: upb/pb/compile_decoder_x64.dasc
 	$(E) DYNASM $<
@@ -164,6 +165,11 @@ lib/libupb.a : OPT = -Os
 lib/libupb.descriptor.a : OPT = -Os
 obj/pb/compile_decoder.o : OPT = -Os
 obj/pb/compile_decoder_64.o : OPT = -Os
+
+ifdef USE_JIT
+obj/pb/compile_decoder_x64.o: OPT=-Os
+endif
+
 endif
 
 $(UPB_PICLIBS): lib/lib%_pic.a: $(call make_objs,lo)
@@ -177,32 +183,32 @@ $(UPB_LIBS): lib/lib%.a: $(call make_objs,o)
 
 obj/%.o: upb/%.c | $$(@D)/.
 	$(E) CC $<
-	$(Q) $(CC) $(OPT) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 obj/%.o: upb/%.cc | $$(@D)/.
 	$(E) CXX $<
-	$(Q) $(CXX) $(OPT) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 
 obj/%.lo: upb/%.c | $$(@D)/.
 	$(E) 'CC -fPIC' $<
-	$(Q) $(CC) $(OPT) $(CPPFLAGS) $(CFLAGS) -c -o $@ $< -fPIC
+	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $< -fPIC
 
 obj/%.lo: upb/%.cc | $$(@D)/.
 	$(E) CXX $<
-	$(Q) $(CXX) $(OPT) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $< -fPIC
+	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $< -fPIC
 
 # Note: mkdir -p is technically susceptible to races when used with make -j.
 %/.:
 	$(Q) mkdir -p $@
 
 # Regenerating the auto-generated files in upb/.
-upb/descriptor.pb: upb/descriptor.proto
+upb/descriptor/descriptor.pb: upb/descriptor/descriptor.proto
 	@# TODO: replace with upbc
-	protoc upb/descriptor.proto -oupb/descriptor.pb
+	protoc upb/descriptor/descriptor.proto -oupb/descriptor/descriptor.pb
 
-descriptorgen: upb/descriptor.pb tools/upbc
+descriptorgen: upb/descriptor/descriptor.pb tools/upbc
 	@# Regenerate descriptor_const.h
-	./tools/upbc -o upb/descriptor upb/descriptor.pb
+	./tools/upbc -o upb/descriptor/descriptor upb/descriptor/descriptor.pb
 
 tools/upbc: tools/upbc.c $(LIBUPB)
 	$(E) CC $<
@@ -232,15 +238,15 @@ tests: $(TESTS)
 
 tests/testmain.o: tests/testmain.cc
 	$(E) CXX $<
-	$(Q) $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 $(C_TESTS): % : %.c tests/testmain.o $$(LIBS)
 	$(E) CC $<
-	$(Q) $(CC) $(CPPFLAGS) $(CFLAGS) -o $@ tests/testmain.o $< $(LIBS)
+	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -o $@ tests/testmain.o $< $(LIBS)
 
 $(CC_TESTS): % : %.cc tests/testmain.o $$(LIBS)
 	$(E) CXX $<
-	$(Q) $(CXX) $(CPPFLAGS) $(CXXFLAGS) -Wno-deprecated -o $@ tests/testmain.o $< $(LIBS)
+	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -Wno-deprecated -o $@ tests/testmain.o $< $(LIBS)
 
 # Several of these tests don't actually test these libs, but use them
 # incidentally to load a descriptor
@@ -337,7 +343,7 @@ GOOGLEPB_TEST_DEPS = \
 tests/bindings/googlepb/test_vs_proto2.googlemessage1: $(GOOGLEPB_TEST_DEPS) \
     benchmarks/googlemessage1.h
 	$(E) CXX $< '(benchmarks::SpeedMessage1)'
-	$(Q) $(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
+	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
 	  -DMESSAGE_DATA_HFILE=\"benchmarks/googlemessage1.h\" \
 	  benchmarks/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread \
@@ -346,7 +352,7 @@ tests/bindings/googlepb/test_vs_proto2.googlemessage1: $(GOOGLEPB_TEST_DEPS) \
 tests/bindings/googlepb/test_vs_proto2.googlemessage2: $(GOOGLEPB_TEST_DEPS) \
     benchmarks/googlemessage2.h
 	$(E) CXX $< '(benchmarks::SpeedMessage2)'
-	$(Q) $(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
+	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage2" \
 	  -DMESSAGE_DATA_HFILE=\"benchmarks/googlemessage2.h\" \
 	  benchmarks/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread \
@@ -401,7 +407,7 @@ LUA_LIB_DEPS = \
 
 upb/bindings/lua/upb.so: upb/bindings/lua/upb.c upb/bindings/lua/upb.lua.h $(LUA_LIB_DEPS)
 	$(E) CC upb/bindings/lua/upb.c
-	$(Q) $(CC) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS) $(LUA_LIB_DEPS)
+	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS) $(LUA_LIB_DEPS)
 
 # TODO: the dependency between upb/pb.so and upb.so is expressed at the
 # .so level, which means that the OS will try to load upb.so when upb/pb.so
@@ -414,7 +420,7 @@ upb/bindings/lua/upb.so: upb/bindings/lua/upb.c upb/bindings/lua/upb.lua.h $(LUA
 # be expressed at the .so level.
 upb/bindings/lua/upb/pb.so: upb/bindings/lua/upb/pb.c upb/bindings/lua/upb.so
 	$(E) CC upb/bindings/lua/upb.pb.c
-	$(Q) $(CC) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< upb/bindings/lua/upb.so $(LUA_LDFLAGS)
+	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< upb/bindings/lua/upb.so $(LUA_LDFLAGS)
 
 
 # Python extension #############################################################
@@ -434,9 +440,16 @@ pythontest: $(PYTHONEXT)
 RUBY=ruby
 RUBYEXT=upb/bindings/ruby/upb.so
 ruby: $(RUBYEXT)
+
+# We pass our important flags to Ruby, but leave the warning flags out.
+# Some uses of the Ruby/C API trigger the warnings we normally use, so
+# we let Ruby decide the set of warning options to use.
 upb/bindings/ruby/Makefile: upb/bindings/ruby/extconf.rb lib/libupb_pic.a lib/libupb.pb_pic.a lib/libupb.descriptor_pic.a
 	$(E) RUBY upb/bindings/ruby/extconf.rb
-	$(Q) cd upb/bindings/ruby && ruby extconf.rb
+	$(Q) cd upb/bindings/ruby && ruby extconf.rb "$(OPT) $(CPPFLAGS) $(CFLAGS)"
 $(RUBYEXT): upb/bindings/ruby/upb.c upb/bindings/ruby/Makefile
 	$(E) CC upb/bindings/ruby/upb.c
 	$(Q) cd upb/bindings/ruby && make
+
+rubytest: $(RUBYEXT) upb/descriptor/descriptor.pb
+	RUBYLIB="upb/bindings/ruby" ruby tests/bindings/ruby/upb.rb

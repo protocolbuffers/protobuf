@@ -61,17 +61,21 @@
 |  add  DELIMEND, DECODER->buf
 |.endmacro
 |
-| // OPT: use "call rel32" where possible.
+| // Calls an external C function at address "addr".
 |.macro callp, addr
-|| {
-|| //int64_t ofs = (int64_t)addr - (int64_t)upb_status_init;
-|| //if (ofs > (1 << 30) || ofs < -(1 << 30)) {
 |    mov64  rax, (uintptr_t)addr
+|
+|    // Stack must be 16-byte aligned (x86-64 ABI requires this).
+|    //
+|    // OPT: possibly remove this by statically ensuring correct alignment.
+|    //
+|    // OPT: use "call rel32" where possible.
+|    push   r12
+|    mov    r12, rsp
+|    and    rsp, 0xfffffffffffffff0UL   // Align stack.
 |    call   rax
-|| //} else {
-|  //  call   &addr
-|| //}
-|| }
+|    mov    rsp, r12
+|    pop    r12
 |.endmacro
 |
 |.macro ld64, val
@@ -208,12 +212,6 @@ static void emit_static_asm(jitcompiler *jc) {
   |  push  r12
   |  push  rbx
   |
-  | // Align stack.
-  | // Since the JIT can call other functions (the JIT'ted code is not a leaf
-  | // function) we must respect alignment rules.  All x86-64 systems require
-  | // 16-byte stack alignment.
-  |  sub   rsp, 8
-  |
   |  mov   rbx, ARG2_64  // Preserve JIT method.
   |
   |  mov   DECODER, rdi
@@ -234,7 +232,6 @@ static void emit_static_asm(jitcompiler *jc) {
   |  mov   rax, DECODER->size_param
   |  mov   qword DECODER->call_len, 0
   |1:
-  |  add   rsp, 8  // Counter previous alignment.
   |  pop   rbx
   |  pop   r12
   |  pop   r13
@@ -270,7 +267,6 @@ static void emit_static_asm(jitcompiler *jc) {
   |  // Must NOT do this before the memcpy(), otherwise memcpy() will
   |  // clobber the stack we are trying to save!
   |  mov   rsp, DECODER->saved_rsp
-  |  add   rsp, 8  // Counter previous alignment.
   |  pop   rbx
   |  pop   r12
   |  pop   r13

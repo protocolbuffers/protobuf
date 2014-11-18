@@ -207,8 +207,16 @@ void indentbuf(string *buf, int depth) {
   buf->append(2 * depth, ' ');
 }
 
+void check_stack_alignment() {
+#ifdef UPB_USE_JIT_X64
+  void *rsp = __builtin_frame_address(0);
+  ASSERT(((uintptr_t)rsp % 16) == 0);
+#endif
+}
+
 #define NUMERIC_VALUE_HANDLER(member, ctype, fmt)                   \
   bool value_##member(int* depth, const uint32_t* num, ctype val) { \
+    check_stack_alignment();                                        \
     indentbuf(&output, *depth);                                     \
     appendf(&output, "%" PRIu32 ":%" fmt "\n", *num, val);          \
     return true;                                                    \
@@ -222,12 +230,14 @@ NUMERIC_VALUE_HANDLER(float,  float,    "g")
 NUMERIC_VALUE_HANDLER(double, double,   "g")
 
 bool value_bool(int* depth, const uint32_t* num, bool val) {
+  check_stack_alignment();
   indentbuf(&output, *depth);
   appendf(&output, "%" PRIu32 ":%s\n", *num, val ? "true" : "false");
   return true;
 }
 
 int* startstr(int* depth, const uint32_t* num, size_t size_hint) {
+  check_stack_alignment();
   indentbuf(&output, *depth);
   appendf(&output, "%" PRIu32 ":(%zu)\"", *num, size_hint);
   return depth + 1;
@@ -237,6 +247,7 @@ size_t value_string(int* depth, const uint32_t* num, const char* buf,
                     size_t n, const upb::BufferHandle* handle) {
   UPB_UNUSED(num);
   UPB_UNUSED(depth);
+  check_stack_alignment();
   output.append(buf, n);
   ASSERT(handle == &global_handle);
   return n;
@@ -245,11 +256,13 @@ size_t value_string(int* depth, const uint32_t* num, const char* buf,
 bool endstr(int* depth, const uint32_t* num) {
   UPB_UNUSED(depth);
   UPB_UNUSED(num);
+  check_stack_alignment();
   output.append("\"\n");
   return true;
 }
 
 int* startsubmsg(int* depth, const uint32_t* num) {
+  check_stack_alignment();
   indentbuf(&output, *depth);
   appendf(&output, "%" PRIu32 ":{\n", *num);
   return depth + 1;
@@ -257,12 +270,14 @@ int* startsubmsg(int* depth, const uint32_t* num) {
 
 bool endsubmsg(int* depth, const uint32_t* num) {
   UPB_UNUSED(num);
+  check_stack_alignment();
   indentbuf(&output, *depth);
   output.append("}\n");
   return true;
 }
 
 int* startseq(int* depth, const uint32_t* num) {
+  check_stack_alignment();
   indentbuf(&output, *depth);
   appendf(&output, "%" PRIu32 ":[\n", *num);
   return depth + 1;
@@ -270,12 +285,14 @@ int* startseq(int* depth, const uint32_t* num) {
 
 bool endseq(int* depth, const uint32_t* num) {
   UPB_UNUSED(num);
+  check_stack_alignment();
   indentbuf(&output, *depth);
   output.append("]\n");
   return true;
 }
 
 bool startmsg(int* depth) {
+  check_stack_alignment();
   indentbuf(&output, *depth);
   output.append("<\n");
   return true;
@@ -283,6 +300,7 @@ bool startmsg(int* depth) {
 
 bool endmsg(int* depth, upb_status* status) {
   UPB_UNUSED(status);
+  check_stack_alignment();
   indentbuf(&output, *depth);
   output.append(">\n");
   return true;

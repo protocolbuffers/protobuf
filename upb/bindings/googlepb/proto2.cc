@@ -261,11 +261,64 @@ case goog::FieldDescriptor::cpptype:                                           \
     return r->offsets_[index];
   }
 
-  class FieldOffset {
+  // Base class that provides access to elements of the message as a whole, such
+  // as the unknown-field set, and is inherited by context classes for specific
+  // field handlers.
+  class FieldDataBase {
+   public:
+    FieldDataBase(const goog::internal::GeneratedMessageReflection* r)
+        : unknown_fields_offset_(r->unknown_fields_offset_)
+#ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+        , arena_offset_(r->arena_offset_)
+#endif  // GOOGLE_PROTOBUF_HAS_ARENAS
+    {}
+
+#ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+    goog::Arena* GetArena(const goog::Message& message) const {
+      if (unknown_fields_offset_ ==
+          goog::internal::GeneratedMessageReflection::
+          kUnknownFieldSetInMetadata) {
+        const goog::internal::InternalMetadataWithArena* metadata =
+            GetConstPointer<goog::internal::InternalMetadataWithArena>(
+                &message, arena_offset_);
+        return metadata->arena();
+      } else if (arena_offset_ !=
+                 goog::internal::GeneratedMessageReflection::kNoArenaPointer) {
+        return *GetConstPointer<goog::Arena*>(&message, arena_offset_);
+      } else {
+        return NULL;
+      }
+    }
+
+    goog::UnknownFieldSet* GetUnknownFieldSet(goog::Message* message) const {
+      if (unknown_fields_offset_ ==
+          goog::internal::GeneratedMessageReflection::
+          kUnknownFieldSetInMetadata) {
+        goog::internal::InternalMetadataWithArena* metadata =
+            GetPointer<goog::internal::InternalMetadataWithArena>(
+                message, arena_offset_);
+        return metadata->mutable_unknown_fields();
+      }
+      return GetPointer<goog::UnknownFieldSet>(message, unknown_fields_offset_);
+    }
+#else  // ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+    goog::UnknownFieldSet* GetUnknownFieldSet(goog::Message* message) const {
+      return GetPointer<goog::UnknownFieldSet>(message, unknown_fields_offset_);
+    }
+#endif  // ifdef !GOOGLE_PROTOBUF_HAS_ARENAS
+   private:
+    int unknown_fields_offset_;
+#ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+    int arena_offset_;
+#endif  // GOOGLE_PROTOBUF_HAS_ARENAS
+  };
+
+  class FieldOffset : public FieldDataBase {
    public:
     FieldOffset(const goog::FieldDescriptor* f,
                 const goog::internal::GeneratedMessageReflection* r)
-        : offset_(GetOffset(f, r)), is_repeated_(f->is_repeated()) {
+        : FieldDataBase(r),
+          offset_(GetOffset(f, r)), is_repeated_(f->is_repeated()) {
       if (!is_repeated_) {
         int64_t hasbit = GetHasbit(f, r);
         hasbyte_ = hasbit / 8;
@@ -293,11 +346,12 @@ case goog::FieldDescriptor::cpptype:                                           \
   };
 
 #ifdef GOOGLE_PROTOBUF_HAS_ONEOF
-  class OneofFieldData {
+  class OneofFieldData : public FieldDataBase {
    public:
     OneofFieldData(const goog::FieldDescriptor* f,
                    const goog::internal::GeneratedMessageReflection* r)
-        : field_number_offset_(GetOneofDiscriminantOffset(f, r)),
+        : FieldDataBase(r),
+          field_number_offset_(GetOneofDiscriminantOffset(f, r)),
           field_number_(f->number()) {
       const goog::OneofDescriptor* oneof = f->containing_oneof();
 
@@ -343,6 +397,40 @@ case goog::FieldDescriptor::cpptype:                                           \
       return GetPointer<int32_t>(message, field_number_offset_);
     }
 
+    void ClearOneof(goog::Message* m, const FieldOffset* ofs,
+                    int field_number) const {
+#ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+      if (GetArena(*m) != NULL) {
+        return;
+      }
+#endif
+      switch (types_.at(field_number)) {
+        case ONEOF_TYPE_NONE:
+          break;
+        case ONEOF_TYPE_STRING:
+          delete *ofs->GetFieldPointer<std::string*>(m);
+          break;
+        case ONEOF_TYPE_MESSAGE:
+          delete *ofs->GetFieldPointer<goog::Message*>(m);
+          break;
+#ifdef UPB_GOOGLE3
+        case ONEOF_TYPE_GLOBALSTRING:
+          delete *ofs->GetFieldPointer<string*>(m);
+          break;
+        case ONEOF_TYPE_CORD:
+          delete *ofs->GetFieldPointer<Cord*>(m);
+          break;
+        case ONEOF_TYPE_STRINGPIECE:
+          delete *ofs->GetFieldPointer<
+              goog::internal::StringPieceField*>(m);
+          break;
+        case ONEOF_TYPE_LAZYFIELD:
+          delete *ofs->GetFieldPointer<goog::internal::LazyField*>(m);
+          break;
+#endif
+      }
+    }
+
     // Returns whether this is different than the previous value of the
     // field_number; this implies that the current value was freed (if
     // necessary) and the caller should allocate a new instance.
@@ -351,30 +439,7 @@ case goog::FieldDescriptor::cpptype:                                           \
       if (*field_number == field_number_) {
         return false;
       } else {
-        switch (types_.at(*field_number)) {
-          case ONEOF_TYPE_NONE:
-            break;
-          case ONEOF_TYPE_STRING:
-            delete *ofs->GetFieldPointer<std::string*>(m);
-            break;
-          case ONEOF_TYPE_MESSAGE:
-            delete *ofs->GetFieldPointer<goog::Message*>(m);
-            break;
-#ifdef UPB_GOOGLE3
-          case ONEOF_TYPE_GLOBALSTRING:
-            delete *ofs->GetFieldPointer<string*>(m);
-            break;
-          case ONEOF_TYPE_CORD:
-            delete *ofs->GetFieldPointer<Cord*>(m);
-            break;
-          case ONEOF_TYPE_STRINGPIECE:
-            delete *ofs->GetFieldPointer<goog::internal::StringPieceField*>(m);
-            break;
-          case ONEOF_TYPE_LAZYFIELD:
-            delete *ofs->GetFieldPointer<goog::internal::LazyField*>(m);
-            break;
-#endif
-        }
+        ClearOneof(m, ofs, *field_number);
         *field_number = field_number_;
         return true;
       }
@@ -578,7 +643,6 @@ case goog::FieldDescriptor::cpptype:                                           \
                     const upb::FieldDef* f)
         : FieldOffset(proto2_f, r),
           field_number_(f->number()),
-          unknown_fields_offset_(r->unknown_fields_offset_),
           enum_(upb_downcast_enumdef(f->subdef())) {}
 
     bool IsValidValue(int32_t val) const {
@@ -587,13 +651,8 @@ case goog::FieldDescriptor::cpptype:                                           \
 
     int32_t field_number() const { return field_number_; }
 
-    goog::UnknownFieldSet* mutable_unknown_fields(goog::Message* m) const {
-      return GetPointer<goog::UnknownFieldSet>(m, unknown_fields_offset_);
-    }
-
    private:
     int32_t field_number_;
-    size_t unknown_fields_offset_;
     const upb::EnumDef* enum_;
   };
 
@@ -617,7 +676,7 @@ case goog::FieldDescriptor::cpptype:                                           \
       *message_val = val;
       data->SetHasbit(m);
     } else {
-      data->mutable_unknown_fields(m)->AddVarint(data->field_number(), val);
+      data->GetUnknownFieldSet(m)->AddVarint(data->field_number(), val);
     }
   }
 
@@ -631,7 +690,7 @@ case goog::FieldDescriptor::cpptype:                                           \
           data->GetFieldPointer<goog::RepeatedField<int32_t> >(m);
       r->Add(val);
     } else {
-      data->mutable_unknown_fields(m)->AddVarint(data->field_number(), val);
+      data->GetUnknownFieldSet(m)->AddVarint(data->field_number(), val);
     }
   }
 
@@ -718,7 +777,14 @@ case goog::FieldDescriptor::cpptype:                                           \
     T** str = data->GetStringPointer(m);
     data->SetHasbit(m);
     // If it points to the default instance, we must create a new instance.
-    if (*str == data->prototype()) *str = new T();
+    if (*str == data->prototype()) {
+      *str = new T();
+#ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+      if (data->GetArena(*m)) {
+        data->GetArena(*m)->Own(*str);
+      }
+#endif
+    }
     (*str)->clear();
     // reserve() here appears to hurt performance rather than help.
     return *str;
@@ -749,6 +815,16 @@ case goog::FieldDescriptor::cpptype:                                           \
     T** str = ofs->GetFieldPointer<T*>(m);
     if (data->SetOneofHas(m)) {
       *str = new T();
+#ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+      // Note that in the main proto2-arenas implementation, the parsing code
+      // creates ArenaString instances for string field data, and the
+      // implementation later dynamically converts to ::string if a mutable
+      // version is requested. To keep complexity down in this binding, we
+      // create an ordinary string and allow the arena to own its destruction.
+      if (data->GetArena(*m) != NULL) {
+        data->GetArena(*m)->Own(*str);
+      }
+#endif
     } else {
       (*str)->clear();
     }
@@ -857,7 +933,11 @@ case goog::FieldDescriptor::cpptype:                                           \
     data->SetHasbit(m);
     goog::Message** subm = data->GetFieldPointer<goog::Message*>(m);
     if (*subm == NULL || *subm == data->prototype()) {
+#ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+      *subm = data->prototype()->New(data->GetArena(*m));
+#else
       *subm = data->prototype()->New();
+#endif
     }
     return *subm;
   }
@@ -865,14 +945,50 @@ case goog::FieldDescriptor::cpptype:                                           \
   class RepeatedMessageTypeHandler {
    public:
     typedef goog::Message Type;
+#ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+    static ::proto2::Arena* GetArena(Type* t) {
+      return t->GetArena();
+    }
+    static void* GetMaybeArenaPointer(Type* t) {
+      return t->GetMaybeArenaPointer();
+    }
+    static inline Type* NewFromPrototype(
+        const Type* prototype, ::proto2::Arena* arena = NULL) {
+      return prototype->New(arena);
+    }
+    static void Delete(Type* t, goog::Arena* arena = NULL) {
+      if (arena == NULL) {
+        delete t;
+      }
+    }
+#else  // ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+    static inline Type* NewFromPrototype(const Type* prototype) {
+      return prototype->New();
+    }
     // AddAllocated() calls this, but only if other objects are sitting
     // around waiting for reuse, which we will not do.
     static void Delete(Type* t) {
       UPB_UNUSED(t);
       assert(false);
     }
+#endif  // ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+
+    static void Merge(const Type& from, Type* to) {
+      to->MergeFrom(from);
+    }
   };
 
+#ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+  // Closure is a RepeatedPtrField<SubMessageType>*, but we access it through
+  // its base class RepeatedPtrFieldBase*.
+  static goog::Message* StartRepeatedSubMessage(
+      goog::internal::RepeatedPtrFieldBase* r,
+      const SubMessageHandlerData* data) {
+    goog::Message* submsg = data->prototype()->New(r->GetArenaNoVirtual());
+    r->AddAllocated<RepeatedMessageTypeHandler>(submsg);
+    return submsg;
+  }
+#else  // ifdef GOOGLE_PROTOBUF_HAS_ARENAS
   // Closure is a RepeatedPtrField<SubMessageType>*, but we access it through
   // its base class RepeatedPtrFieldBase*.
   static goog::Message* StartRepeatedSubMessage(
@@ -886,13 +1002,19 @@ case goog::FieldDescriptor::cpptype:                                           \
     return submsg;
   }
 
+#endif  // ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+
 #ifdef GOOGLE_PROTOBUF_HAS_ONEOF
   static goog::Message* StartOneofSubMessage(
       goog::Message* m, const OneofSubMessageHandlerData* data) {
     const FieldOffset* ofs = data;
     goog::Message** subm = ofs->GetFieldPointer<goog::Message*>(m);
     if (data->SetOneofHas(m)) {
+#ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+      *subm = data->prototype()->New(data->GetArena(*m));
+#else
       *subm = data->prototype()->New();
+#endif
     }
     return *subm;
   }
@@ -1123,9 +1245,21 @@ case goog::FieldDescriptor::cpptype:                                           \
     LazyMessageExtensionImpl() {}
     virtual ~LazyMessageExtensionImpl() {}
 
+#ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+    virtual LazyMessageExtension* New() const {
+      return New(NULL);
+    }
+
+    virtual LazyMessageExtension* New(proto2::Arena* arena) const {
+      LazyMessageExtensionImpl* message =
+          ::proto2::Arena::Create<LazyMessageExtensionImpl>(arena);
+      return message;
+    }
+#else  // ifdef GOOGLE_PROTOBUF_HAS_ARENAS
     virtual LazyMessageExtension* New() const {
       return new LazyMessageExtensionImpl();
     }
+#endif  // ifdef GOOGLE_PROTOBUF_HAS_ARENAS
 
     virtual const proto2::MessageLite& GetMessage(
         const proto2::MessageLite& prototype) const {
@@ -1146,6 +1280,12 @@ case goog::FieldDescriptor::cpptype:                                           \
     virtual proto2::MessageLite* ReleaseMessage(
         const proto2::MessageLite& prototype) {
       return lazy_field_.ReleaseByPrototype(
+          static_cast<const proto2::Message&>(prototype));
+    }
+
+    virtual proto2::MessageLite* UnsafeArenaReleaseMessage(
+        const proto2::MessageLite& prototype) {
+      return lazy_field_.UnsafeArenaReleaseByPrototype(
           static_cast<const proto2::Message&>(prototype));
     }
 
@@ -1201,7 +1341,13 @@ case goog::FieldDescriptor::cpptype:                                           \
     LazyMessageExtensionImpl* lazy_extension;
     if (set->MaybeNewExtension(data->number(), data->field_descriptor(),
                                &item)) {
+#ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+      lazy_extension =
+          ::proto2::Arena::Create<LazyMessageExtensionImpl>(
+              m->GetArena());
+#else
       lazy_extension = new LazyMessageExtensionImpl();
+#endif
       item->type = UPB_DESCRIPTOR_TYPE_MESSAGE;
       item->is_repeated = false;
       item->is_lazy = true;

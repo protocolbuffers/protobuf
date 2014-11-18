@@ -7,6 +7,29 @@
 
 #include "upb/pb/varint.int.h"
 
+// Index is descriptor type.
+const uint8_t upb_pb_native_wire_types[] = {
+  UPB_WIRE_TYPE_END_GROUP,     // ENDGROUP
+  UPB_WIRE_TYPE_64BIT,         // DOUBLE
+  UPB_WIRE_TYPE_32BIT,         // FLOAT
+  UPB_WIRE_TYPE_VARINT,        // INT64
+  UPB_WIRE_TYPE_VARINT,        // UINT64
+  UPB_WIRE_TYPE_VARINT,        // INT32
+  UPB_WIRE_TYPE_64BIT,         // FIXED64
+  UPB_WIRE_TYPE_32BIT,         // FIXED32
+  UPB_WIRE_TYPE_VARINT,        // BOOL
+  UPB_WIRE_TYPE_DELIMITED,     // STRING
+  UPB_WIRE_TYPE_START_GROUP,   // GROUP
+  UPB_WIRE_TYPE_DELIMITED,     // MESSAGE
+  UPB_WIRE_TYPE_DELIMITED,     // BYTES
+  UPB_WIRE_TYPE_VARINT,        // UINT32
+  UPB_WIRE_TYPE_VARINT,        // ENUM
+  UPB_WIRE_TYPE_32BIT,         // SFIXED32
+  UPB_WIRE_TYPE_64BIT,         // SFIXED64
+  UPB_WIRE_TYPE_VARINT,        // SINT32
+  UPB_WIRE_TYPE_VARINT,        // SINT64
+};
+
 // A basic branch-based decoder, uses 32-bit values to get good performance
 // on 32-bit architectures (but performs well on 64-bits also).
 // This scheme comes from the original Google Protobuf implementation (proto2).

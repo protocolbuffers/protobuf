@@ -453,14 +453,14 @@ local function dump_defs_c(symtab, basename, namespace, append)
       intfmt = "0"
     end
     -- UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, is_extension, lazy,
-    --                   name, num, msgdef, subdef, selector_base, index,
-    --                   default_value)
-    append('  UPB_FIELDDEF_INIT(%s, %s, %s, %s, %s, %s, "%s", %d, %s, %s, ' ..
-           '%d, %d, {0},' .. -- TODO: support default value
+    --                   packed, name, num, msgdef, subdef, selector_base,
+    --                   index, --                   default_value)
+    append('  UPB_FIELDDEF_INIT(%s, %s, %s, %s, %s, %s, %s, "%s", %d, %s, ' ..
+           '%s, %d, %d, {0},' .. -- TODO: support default value
            '&reftables[%d], &reftables[%d]),\n',
            const(f, "label"), const(f, "type"), intfmt,
            boolstr(f:istagdelim()), boolstr(f:is_extension()),
-           boolstr(f:lazy()), f:name(), f:number(),
+           boolstr(f:lazy()), boolstr(f:packed()), f:name(), f:number(),
            linktab:addr(f:containing_type()), subdef,
            f:_selector_base(), f:index(),
            reftable, reftable + 1

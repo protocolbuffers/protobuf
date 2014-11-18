@@ -42,14 +42,36 @@ char *upb_strdup(const char *s) {
   return p;
 }
 
-static upb_tabkey strkey(const char *str) {
-  upb_tabkey k;
-  k.str = (char*)str;
+// A type to represent the lookup key of either a strtable or an inttable.
+// This is like upb_tabkey, but can carry a size also to allow lookups of
+// non-NULL-terminated strings (we don't store string lengths in the table).
+typedef struct {
+  upb_tabkey key;
+  uint32_t len;  // For string keys only.
+} lookupkey_t;
+
+static lookupkey_t strkey(const char *str) {
+  lookupkey_t k;
+  k.key.str = (char*)str;
+  k.len = strlen(str);
   return k;
 }
 
-typedef const upb_tabent *hashfunc_t(const upb_table *t, upb_tabkey key);
-typedef bool eqlfunc_t(upb_tabkey k1, upb_tabkey k2);
+static lookupkey_t strkey2(const char *str, size_t len) {
+  lookupkey_t k;
+  k.key.str = (char*)str;
+  k.len = len;
+  return k;
+}
+
+static lookupkey_t intkey(uintptr_t key) {
+  lookupkey_t k;
+  k.key = upb_intkey(key);
+  return k;
+}
+
+typedef uint32_t hashfunc_t(upb_tabkey key);
+typedef bool eqlfunc_t(upb_tabkey k1, lookupkey_t k2);
 
 /* Base table (shared code) ***************************************************/
 
@@ -85,10 +107,14 @@ static upb_tabent *emptyent(upb_table *t) {
   while (1) { if (upb_tabent_isempty(--e)) return e; assert(e > t->entries); }
 }
 
-static const upb_tabent *findentry(const upb_table *t, upb_tabkey key,
-                                   hashfunc_t *hash, eqlfunc_t *eql) {
+static upb_tabent *getentry_mutable(upb_table *t, uint32_t hash) {
+  return (upb_tabent*)upb_getentry(t, hash);
+}
+
+static const upb_tabent *findentry(const upb_table *t, lookupkey_t key,
+                                   uint32_t hash, eqlfunc_t *eql) {
   if (t->size_lg2 == 0) return NULL;
-  const upb_tabent *e = hash(t, key);
+  const upb_tabent *e = upb_getentry(t, hash);
   if (upb_tabent_isempty(e)) return NULL;
   while (1) {
     if (eql(e->key, key)) return e;
@@ -96,8 +122,13 @@ static const upb_tabent *findentry(const upb_table *t, upb_tabkey key,
   }
 }
 
-static bool lookup(const upb_table *t, upb_tabkey key, upb_value *v,
-                   hashfunc_t *hash, eqlfunc_t *eql) {
+static upb_tabent *findentry_mutable(upb_table *t, lookupkey_t key,
+                                     uint32_t hash, eqlfunc_t *eql) {
+  return (upb_tabent*)findentry(t, key, hash, eql);
+}
+
+static bool lookup(const upb_table *t, lookupkey_t key, upb_value *v,
+                   uint32_t hash, eqlfunc_t *eql) {
   const upb_tabent *e = findentry(t, key, hash, eql);
   if (e) {
     if (v) {
@@ -110,13 +141,13 @@ static bool lookup(const upb_table *t, upb_tabkey key, upb_value *v,
 }
 
 // The given key must not already exist in the table.
-static void insert(upb_table *t, upb_tabkey key, upb_value val,
-                   hashfunc_t *hash, eqlfunc_t *eql) {
+static void insert(upb_table *t, lookupkey_t key, upb_value val,
+                   uint32_t hash, hashfunc_t *hashfunc, eqlfunc_t *eql) {
   UPB_UNUSED(eql);
   assert(findentry(t, key, hash, eql) == NULL);
   assert(val.ctype == t->ctype);
   t->count++;
-  upb_tabent *mainpos_e = (upb_tabent*)hash(t, key);
+  upb_tabent *mainpos_e = getentry_mutable(t, hash);
   upb_tabent *our_e = mainpos_e;
   if (upb_tabent_isempty(mainpos_e)) {
     // Our main position is empty; use it.
@@ -125,7 +156,7 @@ static void insert(upb_table *t, upb_tabkey key, upb_value val,
     // Collision.
     upb_tabent *new_e = emptyent(t);
     // Head of collider's chain.
-    upb_tabent *chain = (upb_tabent*)hash(t, mainpos_e->key);
+    upb_tabent *chain = getentry_mutable(t, hashfunc(mainpos_e->key));
     if (chain == mainpos_e) {
       // Existing ent is in its main posisiton (it has the same hash as us, and
       // is the head of our chain).  Insert to new ent and append to this chain.
@@ -146,14 +177,14 @@ static void insert(upb_table *t, upb_tabkey key, upb_value val,
       our_e->next = NULL;
     }
   }
-  our_e->key = key;
+  our_e->key = key.key;
   our_e->val = val.val;
   assert(findentry(t, key, hash, eql) == our_e);
 }
 
-static bool rm(upb_table *t, upb_tabkey key, upb_value *val,
-               upb_tabkey *removed, hashfunc_t *hash, eqlfunc_t *eql) {
-  upb_tabent *chain = (upb_tabent*)hash(t, key);
+static bool rm(upb_table *t, lookupkey_t key, upb_value *val,
+               upb_tabkey *removed, uint32_t hash, eqlfunc_t *eql) {
+  upb_tabent *chain = getentry_mutable(t, hash);
   if (upb_tabent_isempty(chain)) return false;
   if (eql(chain->key, key)) {
     // Element to remove is at the head of its chain.
@@ -210,13 +241,12 @@ static size_t begin(const upb_table *t) {
 
 // A simple "subclass" of upb_table that only adds a hash function for strings.
 
-static const upb_tabent *strhash(const upb_table *t, upb_tabkey key) {
-  // Could avoid the strlen() by using a hash function that terminates on NULL.
-  return t->entries + (MurmurHash2(key.str, strlen(key.str), 0) & t->mask);
+static uint32_t strhash(upb_tabkey key) {
+  return MurmurHash2(key.str, strlen(key.str), 0);
 }
 
-static bool streql(upb_tabkey k1, upb_tabkey k2) {
-  return strcmp(k1.str, k2.str) == 0;
+static bool streql(upb_tabkey k1, lookupkey_t k2) {
+  return strncmp(k1.str, k2.key.str, k2.len) == 0 && k1.str[k2.len] == '\0';
 }
 
 bool upb_strtable_init(upb_strtable *t, upb_ctype_t ctype) {
@@ -252,17 +282,23 @@ bool upb_strtable_insert(upb_strtable *t, const char *k, upb_value v) {
     }
   }
   if ((k = upb_strdup(k)) == NULL) return false;
-  insert(&t->t, strkey(k), v, &strhash, &streql);
+
+  lookupkey_t key = strkey(k);
+  uint32_t hash = MurmurHash2(key.key.str, key.len, 0);
+  insert(&t->t, strkey(k), v, hash, &strhash, &streql);
   return true;
 }
 
-bool upb_strtable_lookup(const upb_strtable *t, const char *key, upb_value *v) {
-  return lookup(&t->t, strkey(key), v, &strhash, &streql);
+bool upb_strtable_lookup2(const upb_strtable *t, const char *key, size_t len,
+                          upb_value *v) {
+  uint32_t hash = MurmurHash2(key, len, 0);
+  return lookup(&t->t, strkey2(key, len), v, hash, &streql);
 }
 
 bool upb_strtable_remove(upb_strtable *t, const char *key, upb_value *val) {
+  uint32_t hash = MurmurHash2(key, strlen(key), 0);
   upb_tabkey tabkey;
-  if (rm(&t->t, strkey(key), val, &tabkey, &strhash, &streql)) {
+  if (rm(&t->t, strkey(key), val, &tabkey, hash, &streql)) {
     free((void*)tabkey.str);
     return true;
   } else {
@@ -317,8 +353,10 @@ bool upb_strtable_iter_isequal(const upb_strtable_iter *i1,
 // For inttables we use a hybrid structure where small keys are kept in an
 // array and large keys are put in the hash table.
 
-static bool inteql(upb_tabkey k1, upb_tabkey k2) {
-  return k1.num == k2.num;
+static uint32_t inthash(upb_tabkey key) { return upb_inthash(key.num); }
+
+static bool inteql(upb_tabkey k1, lookupkey_t k2) {
+  return k1.num == k2.key.num;
 }
 
 static _upb_value *mutable_array(upb_inttable *t) {
@@ -330,7 +368,7 @@ static _upb_value *inttable_val(upb_inttable *t, uintptr_t key) {
     return upb_arrhas(t->array[key]) ? &(mutable_array(t)[key]) : NULL;
   } else {
     upb_tabent *e =
-        (upb_tabent*)findentry(&t->t, upb_intkey(key), &upb_inthash, &inteql);
+        findentry_mutable(&t->t, intkey(key), upb_inthash(key), &inteql);
     return e ? &e->val : NULL;
   }
 }
@@ -402,7 +440,8 @@ bool upb_inttable_insert(upb_inttable *t, uintptr_t key, upb_value val) {
         const upb_tabent *e = &t->t.entries[i];
         upb_value v;
         _upb_value_setval(&v, e->val, t->t.ctype);
-        insert(&new_table, e->key, v, &upb_inthash, &inteql);
+        uint32_t hash = upb_inthash(e->key.num);
+        insert(&new_table, intkey(e->key.num), v, hash, &inthash, &inteql);
       }
 
       assert(t->t.count == new_table.count);
@@ -410,7 +449,7 @@ bool upb_inttable_insert(upb_inttable *t, uintptr_t key, upb_value val) {
       uninit(&t->t);
       t->t = new_table;
     }
-    insert(&t->t, upb_intkey(key), val, &upb_inthash, &inteql);
+    insert(&t->t, intkey(key), val, upb_inthash(key), &inthash, &inteql);
   }
   check(t);
   return true;
@@ -446,7 +485,8 @@ bool upb_inttable_remove(upb_inttable *t, uintptr_t key, upb_value *val) {
     }
   } else {
     upb_tabkey removed;
-    success = rm(&t->t, upb_intkey(key), val, &removed, &upb_inthash, &inteql);
+    uint32_t hash = upb_inthash(key);
+    success = rm(&t->t, intkey(key), val, &removed, hash, &inteql);
   }
   check(t);
   return success;

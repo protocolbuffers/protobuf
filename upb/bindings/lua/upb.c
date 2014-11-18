@@ -640,6 +640,12 @@ static int lupb_fielddef_number(lua_State *L) {
   return 1;
 }
 
+static int lupb_fielddef_packed(lua_State *L) {
+  const upb_fielddef *f = lupb_fielddef_check(L, 1);
+  lua_pushboolean(L, upb_fielddef_packed(f));
+  return 1;
+}
+
 static int lupb_fielddef_subdef(lua_State *L) {
   const upb_fielddef *f = lupb_fielddef_check(L, 1);
   if (!upb_fielddef_hassubdef(f))
@@ -753,6 +759,12 @@ static int lupb_fielddef_setnumber(lua_State *L) {
   return 0;
 }
 
+static int lupb_fielddef_setpacked(lua_State *L) {
+  upb_fielddef *f = lupb_fielddef_checkmutable(L, 1);
+  upb_fielddef_setpacked(f, lupb_checkbool(L, 2));
+  return 0;
+}
+
 static int lupb_fielddef_setsubdef(lua_State *L) {
   upb_fielddef *f = lupb_fielddef_checkmutable(L, 1);
   const upb_def *def = NULL;
@@ -817,6 +829,7 @@ static const struct luaL_Reg lupb_fielddef_m[] = {
   {"lazy", lupb_fielddef_lazy},
   {"name", lupb_fielddef_name},
   {"number", lupb_fielddef_number},
+  {"packed", lupb_fielddef_packed},
   {"subdef", lupb_fielddef_subdef},
   {"subdef_name", lupb_fielddef_subdefname},
   {"type", lupb_fielddef_type},
@@ -828,6 +841,7 @@ static const struct luaL_Reg lupb_fielddef_m[] = {
   {"set_lazy", lupb_fielddef_setlazy},
   {"set_name", lupb_fielddef_setname},
   {"set_number", lupb_fielddef_setnumber},
+  {"set_packed", lupb_fielddef_setpacked},
   {"set_subdef", lupb_fielddef_setsubdef},
   {"set_subdef_name", lupb_fielddef_setsubdefname},
   {"set_type", lupb_fielddef_settype},
@@ -926,7 +940,7 @@ static int lupb_msgdef_field(lua_State *L) {
   if (type == LUA_TNUMBER) {
     f = upb_msgdef_itof(m, lua_tointeger(L, 2));
   } else if (type == LUA_TSTRING) {
-    f = upb_msgdef_ntof(m, lua_tostring(L, 2));
+    f = upb_msgdef_ntofz(m, lua_tostring(L, 2));
   } else {
     const char *msg = lua_pushfstring(L, "number or string expected, got %s",
                                       luaL_typename(L, 2));
@@ -1358,8 +1372,9 @@ const upb_msgdef *lupb_msg_checkdef(lua_State *L, int narg) {
 static const upb_fielddef *lupb_msg_checkfield(lua_State *L,
                                                const lupb_msgdef *lmd,
                                                int fieldarg) {
-  const char *fieldname = luaL_checkstring(L, fieldarg);
-  const upb_fielddef *f = upb_msgdef_ntof(lmd->md, fieldname);
+  size_t len;
+  const char *fieldname = luaL_checklstring(L, fieldarg, &len);
+  const upb_fielddef *f = upb_msgdef_ntof(lmd->md, fieldname, len);
 
   if (!f) {
     const char *msg = lua_pushfstring(L, "no such field: %s", fieldname);

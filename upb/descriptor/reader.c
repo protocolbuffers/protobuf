@@ -272,6 +272,9 @@ static bool field_startmsg(void *closure, const void *hd) {
   r->f = upb_fielddef_new(&r->defs);
   free(r->default_string);
   r->default_string = NULL;
+
+  // fielddefs default to packed, but descriptors default to non-packed.
+  upb_fielddef_setpacked(r->f, false);
   return true;
 }
 
@@ -375,6 +378,13 @@ static bool field_onlazy(void *closure, const void *hd, bool val) {
   UPB_UNUSED(hd);
   upb_descreader *r = closure;
   upb_fielddef_setlazy(r->f, val);
+  return true;
+}
+
+static bool field_onpacked(void *closure, const void *hd, bool val) {
+  UPB_UNUSED(hd);
+  upb_descreader *r = closure;
+  upb_fielddef_setpacked(r->f, val);
   return true;
 }
 
@@ -552,6 +562,7 @@ static void reghandlers(const void *closure, upb_handlers *h) {
                            &field_ondefaultval, NULL);
   } else if (m == D(FieldOptions)) {
     upb_handlers_setbool(h, D(FieldOptions_lazy), &field_onlazy, NULL);
+    upb_handlers_setbool(h, D(FieldOptions_packed), &field_onpacked, NULL);
   }
 }
 

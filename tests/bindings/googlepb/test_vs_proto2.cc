@@ -27,8 +27,14 @@
 #include "upb/pb/glue.h"
 #include "upb/pb/varint.int.h"
 
-static const char message_data[] = {
-#include MESSAGE_DATA_HFILE
+// Pull in string data from benchmarks/google_message{1,2}.dat
+// (the .h files are generated with xxd).
+const char message1_data[] = {
+#include "benchmarks/google_message1.h"
+};
+
+const char message2_data[] = {
+#include "benchmarks/google_message2.h"
 };
 
 void compare_metadata(const google::protobuf::Descriptor* d,
@@ -117,8 +123,8 @@ extern "C" {
 int run_tests(int argc, char *argv[]) {
   UPB_UNUSED(argc);
   UPB_UNUSED(argv);
-  size_t len = sizeof(message_data);
-  const char *str = message_data;
+  size_t len = sizeof(MESSAGE_DATA_IDENT);
+  const char *str = MESSAGE_DATA_IDENT;
 
   MESSAGE_CIDENT msg1;
   MESSAGE_CIDENT msg2;

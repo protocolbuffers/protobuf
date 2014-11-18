@@ -324,6 +324,13 @@ UPB_DEFINE_DEF(upb::FieldDef, fielddef, FIELD,
   // contain both regular FieldOptions like "lazy" *and* custom options).
   bool lazy() const;
 
+  // For non-string, non-submessage fields, this indicates whether binary
+  // protobufs are encoded in packed or non-packed format.
+  //
+  // TODO(haberman): see note above about putting options like this into a
+  // FieldOptions container.
+  bool packed() const;
+
   // An integer that can be used as an index into an array of fields for
   // whatever message this field belongs to.  Guaranteed to be less than
   // f->containing_type()->field_count().  May only be accessed once the def has
@@ -430,10 +437,13 @@ UPB_DEFINE_DEF(upb::FieldDef, fielddef, FIELD,
   bool set_containing_type_name(const char *name, Status* status);
   bool set_containing_type_name(const std::string& name, Status* status);
 
-  // When we freeze, we ensure that this can only be true for length-delimited
-  // message fields.  Prior to freezing this can be true or false with no
-  // restrictions.
+  // Defaults to false.  When we freeze, we ensure that this can only be true
+  // for length-delimited message fields.  Prior to freezing this can be true or
+  // false with no restrictions.
   void set_lazy(bool lazy);
+
+  // Defaults to true.  Sets whether this field is encoded in packed format.
+  void set_packed(bool packed);
 
   // "type" or "descriptor_type" MUST be set explicitly before the fielddef is
   // finalized.  These setters require that the enum value is valid; if the
@@ -515,6 +525,7 @@ UPB_DEFINE_STRUCT(upb_fielddef, upb_def,
   bool type_is_set_;     // False until type is explicitly set.
   bool is_extension_;
   bool lazy_;
+  bool packed_;
   upb_intfmt_t intfmt;
   bool tagdelim;
   upb_fieldtype_t type_;
@@ -525,13 +536,13 @@ UPB_DEFINE_STRUCT(upb_fielddef, upb_def,
 ));
 
 #define UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, is_extension, lazy,   \
-                          name, num, msgdef, subdef, selector_base, index,     \
-                          defaultval, refs, ref2s)                             \
+                          packed, name, num, msgdef, subdef, selector_base,     \
+                          index, defaultval, refs, ref2s)                      \
   {                                                                            \
     UPB_DEF_INIT(name, UPB_DEF_FIELD, refs, ref2s), defaultval, {msgdef},      \
         {subdef}, false, false,                                                \
         type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES, true, is_extension, \
-        lazy, intfmt, tagdelim, type, label, num, selector_base, index         \
+        lazy, packed, intfmt, tagdelim, type, label, num, selector_base, index \
   }
 
 UPB_BEGIN_EXTERN_C  // {
@@ -561,6 +572,7 @@ uint32_t upb_fielddef_number(const upb_fielddef *f);
 const char *upb_fielddef_name(const upb_fielddef *f);
 bool upb_fielddef_isextension(const upb_fielddef *f);
 bool upb_fielddef_lazy(const upb_fielddef *f);
+bool upb_fielddef_packed(const upb_fielddef *f);
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f);
 upb_msgdef *upb_fielddef_containingtype_mutable(upb_fielddef *f);
 const char *upb_fielddef_containingtypename(upb_fielddef *f);
@@ -596,6 +608,7 @@ bool upb_fielddef_setcontainingtypename(upb_fielddef *f, const char *name,
                                         upb_status *s);
 void upb_fielddef_setisextension(upb_fielddef *f, bool is_extension);
 void upb_fielddef_setlazy(upb_fielddef *f, bool lazy);
+void upb_fielddef_setpacked(upb_fielddef *f, bool packed);
 void upb_fielddef_setintfmt(upb_fielddef *f, upb_intfmt_t fmt);
 void upb_fielddef_settagdelim(upb_fielddef *f, bool tag_delim);
 void upb_fielddef_setdefaultint64(upb_fielddef *f, int64_t val);
@@ -668,9 +681,26 @@ UPB_DEFINE_DEF(upb::MessageDef, msgdef, MSG, UPB_QUOTE(
 
   // These return NULL if the field is not found.
   FieldDef* FindFieldByNumber(uint32_t number);
-  FieldDef* FindFieldByName(const char *name);
+  FieldDef* FindFieldByName(const char *name, size_t len);
   const FieldDef* FindFieldByNumber(uint32_t number) const;
-  const FieldDef* FindFieldByName(const char* name) const;
+  const FieldDef* FindFieldByName(const char* name, size_t len) const;
+
+
+  FieldDef* FindFieldByName(const char *name) {
+    return FindFieldByName(name, strlen(name));
+  }
+  const FieldDef* FindFieldByName(const char *name) const {
+    return FindFieldByName(name, strlen(name));
+  }
+
+  template <class T>
+  FieldDef* FindFieldByName(const T& str) {
+    return FindFieldByName(str.c_str(), str.size());
+  }
+  template <class T>
+  const FieldDef* FindFieldByName(const T& str) const {
+    return FindFieldByName(str.c_str(), str.size());
+  }
 
   // Returns a new msgdef that is a copy of the given msgdef (and a copy of all
   // the fields) but with any references to submessages broken and replaced
@@ -759,11 +789,29 @@ bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname, upb_status *s);
 upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner);
 bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f, const void *ref_donor,
                          upb_status *s);
+
+// Field lookup in a couple of different variations:
+//   - itof = int to field
+//   - ntof = name to field
+//   - ntofz = name to field, null-terminated string.
 const upb_fielddef *upb_msgdef_itof(const upb_msgdef *m, uint32_t i);
-const upb_fielddef *upb_msgdef_ntof(const upb_msgdef *m, const char *name);
-upb_fielddef *upb_msgdef_itof_mutable(upb_msgdef *m, uint32_t i);
-upb_fielddef *upb_msgdef_ntof_mutable(upb_msgdef *m, const char *name);
+const upb_fielddef *upb_msgdef_ntof(const upb_msgdef *m, const char *name,
+                                    size_t len);
 int upb_msgdef_numfields(const upb_msgdef *m);
+
+UPB_INLINE const upb_fielddef *upb_msgdef_ntofz(const upb_msgdef *m,
+                                                const char *name) {
+  return upb_msgdef_ntof(m, name, strlen(name));
+}
+
+UPB_INLINE upb_fielddef *upb_msgdef_itof_mutable(upb_msgdef *m, uint32_t i) {
+  return (upb_fielddef*)upb_msgdef_itof(m, i);
+}
+
+UPB_INLINE upb_fielddef *upb_msgdef_ntof_mutable(upb_msgdef *m,
+                                                 const char *name, size_t len) {
+  return (upb_fielddef *)upb_msgdef_ntof(m, name, len);
+}
 
 // upb_msg_iter i;
 // for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
@@ -1027,6 +1075,12 @@ inline bool FieldDef::lazy() const {
 inline void FieldDef::set_lazy(bool lazy) {
   upb_fielddef_setlazy(this, lazy);
 }
+inline bool FieldDef::packed() const {
+  return upb_fielddef_packed(this);
+}
+inline void FieldDef::set_packed(bool packed) {
+  upb_fielddef_setpacked(this, packed);
+}
 inline const MessageDef* FieldDef::containing_type() const {
   return upb_fielddef_containingtype(this);
 }
@@ -1189,14 +1243,15 @@ inline bool MessageDef::AddField(const reffed_ptr<FieldDef>& f, Status* s) {
 inline FieldDef* MessageDef::FindFieldByNumber(uint32_t number) {
   return upb_msgdef_itof_mutable(this, number);
 }
-inline FieldDef* MessageDef::FindFieldByName(const char* name) {
-  return upb_msgdef_ntof_mutable(this, name);
+inline FieldDef* MessageDef::FindFieldByName(const char* name, size_t len) {
+  return upb_msgdef_ntof_mutable(this, name, len);
 }
 inline const FieldDef* MessageDef::FindFieldByNumber(uint32_t number) const {
   return upb_msgdef_itof(this, number);
 }
-inline const FieldDef* MessageDef::FindFieldByName(const char* name) const {
-  return upb_msgdef_ntof(this, name);
+inline const FieldDef *MessageDef::FindFieldByName(const char *name,
+                                                   size_t len) const {
+  return upb_msgdef_ntof(this, name, len);
 }
 inline MessageDef* MessageDef::Dup(const void *owner) const {
   return upb_msgdef_dup(this, owner);

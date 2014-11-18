@@ -628,6 +628,7 @@ upb_fielddef *upb_fielddef_new(const void *owner) {
   f->tagdelim = false;
   f->is_extension_ = false;
   f->lazy_ = false;
+  f->packed_ = true;
 
   // For the moment we default this to UPB_INTFMT_VARIABLE, since it will work
   // with all integer types and is in some since more "default" since the most
@@ -733,6 +734,10 @@ bool upb_fielddef_isextension(const upb_fielddef *f) {
 
 bool upb_fielddef_lazy(const upb_fielddef *f) {
   return f->lazy_;
+}
+
+bool upb_fielddef_packed(const upb_fielddef *f) {
+  return f->packed_;
 }
 
 const char *upb_fielddef_name(const upb_fielddef *f) {
@@ -1028,6 +1033,11 @@ void upb_fielddef_setisextension(upb_fielddef *f, bool is_extension) {
 void upb_fielddef_setlazy(upb_fielddef *f, bool lazy) {
   assert(!upb_fielddef_isfrozen(f));
   f->lazy_ = lazy;
+}
+
+void upb_fielddef_setpacked(upb_fielddef *f, bool packed) {
+  assert(!upb_fielddef_isfrozen(f));
+  f->packed_ = packed;
 }
 
 void upb_fielddef_setlabel(upb_fielddef *f, upb_label_t label) {
@@ -1341,7 +1351,7 @@ bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f, const void *ref_donor,
     upb_status_seterrmsg(s, "field name or number were not set");
     return false;
   } else if(upb_msgdef_itof(m, upb_fielddef_number(f)) ||
-            upb_msgdef_ntof(m, upb_fielddef_name(f))) {
+            upb_msgdef_ntofz(m, upb_fielddef_name(f))) {
     upb_status_seterrmsg(s, "duplicate field name or number");
     return false;
   }
@@ -1365,18 +1375,11 @@ const upb_fielddef *upb_msgdef_itof(const upb_msgdef *m, uint32_t i) {
       upb_value_getptr(val) : NULL;
 }
 
-const upb_fielddef *upb_msgdef_ntof(const upb_msgdef *m, const char *name) {
+const upb_fielddef *upb_msgdef_ntof(const upb_msgdef *m, const char *name,
+                                    size_t len) {
   upb_value val;
-  return upb_strtable_lookup(&m->ntof, name, &val) ?
+  return upb_strtable_lookup2(&m->ntof, name, len, &val) ?
       upb_value_getptr(val) : NULL;
-}
-
-upb_fielddef *upb_msgdef_itof_mutable(upb_msgdef *m, uint32_t i) {
-  return (upb_fielddef*)upb_msgdef_itof(m, i);
-}
-
-upb_fielddef *upb_msgdef_ntof_mutable(upb_msgdef *m, const char *name) {
-  return (upb_fielddef*)upb_msgdef_ntof(m, name);
 }
 
 int upb_msgdef_numfields(const upb_msgdef *m) {

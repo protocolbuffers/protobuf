@@ -25,6 +25,7 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <string.h>
 #include "upb.h"
 
 #ifdef __cplusplus
@@ -219,19 +220,26 @@ UPB_INLINE bool upb_tabent_isempty(const upb_tabent *e) {
   return e->key.num == 0;
 }
 
+// Used by some of the unit tests for generic hashing functionality.
+uint32_t MurmurHash2(const void * key, size_t len, uint32_t seed);
+
 UPB_INLINE upb_tabkey upb_intkey(uintptr_t key) {
-  upb_tabkey k = {key}; return k;
+  upb_tabkey k;
+  k.num = key;
+  return k;
 }
 
-UPB_INLINE const upb_tabent *upb_inthash(const upb_table *t, upb_tabkey key) {
-  return t->entries + ((uint32_t)key.num & t->mask);
+UPB_INLINE uint32_t upb_inthash(uintptr_t key) {
+  return (uint32_t)key;
+}
+
+static const upb_tabent *upb_getentry(const upb_table *t, uint32_t hash) {
+  return t->entries + (hash & t->mask);
 }
 
 UPB_INLINE bool upb_arrhas(_upb_value v) {
   return v.uint64 != (uint64_t)UPB_ARRAY_EMPTYVAL;
 }
-
-uint32_t MurmurHash2(const void *key, size_t len, uint32_t seed);
 
 // Initialize and uninitialize a table, respectively.  If memory allocation
 // failed, false is returned that the table is uninitialized.
@@ -259,7 +267,14 @@ bool upb_strtable_insert(upb_strtable *t, const char *key, upb_value val);
 // Looks up key in this table, returning "true" if the key was found.
 // If v is non-NULL, copies the value for this key into *v.
 bool upb_inttable_lookup(const upb_inttable *t, uintptr_t key, upb_value *v);
-bool upb_strtable_lookup(const upb_strtable *t, const char *key, upb_value *v);
+bool upb_strtable_lookup2(const upb_strtable *t, const char *key, size_t len,
+                          upb_value *v);
+
+// For NULL-terminated strings.
+UPB_INLINE bool upb_strtable_lookup(const upb_strtable *t, const char *key,
+                                    upb_value *v) {
+  return upb_strtable_lookup2(t, key, strlen(key), v);
+}
 
 // Removes an item from the table.  Returns true if the remove was successful,
 // and stores the removed item in *val if non-NULL.
@@ -302,7 +317,7 @@ UPB_INLINE bool upb_inttable_lookup32(const upb_inttable *t, uint32_t key,
   } else {
     const upb_tabent *e;
     if (t->t.entries == NULL) return false;
-    for (e = upb_inthash(&t->t, upb_intkey(key)); true; e = e->next) {
+    for (e = upb_getentry(&t->t, upb_inthash(key)); true; e = e->next) {
       if ((uint32_t)e->key.num == key) {
         _upb_value_setval(v, e->val, t->t.ctype);
         return true;

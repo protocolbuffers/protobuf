@@ -149,7 +149,7 @@ const upb_pbdecodermethod *upb_pbdecodermethod_new(
 }
 
 
-/* compiler *******************************************************************/
+/* bytecode compiler **********************************************************/
 
 // Data used only at compilation time.
 typedef struct {
@@ -575,8 +575,8 @@ static void putsel(compiler *c, opcode op, upb_selector_t sel,
 
 // Puts an opcode to call a callback, but only if a callback actually exists for
 // this field and handler type.
-static void putcb(compiler *c, opcode op, const upb_handlers *h,
-                  const upb_fielddef *f, upb_handlertype_t type) {
+static void maybeput(compiler *c, opcode op, const upb_handlers *h,
+                     const upb_fielddef *f, upb_handlertype_t type) {
   putsel(c, op, getsel(f, type), h);
 }
 
@@ -589,39 +589,164 @@ static bool haslazyhandlers(const upb_handlers *h, const upb_fielddef *f) {
          upb_handlers_gethandler(h, getsel(f, UPB_HANDLER_ENDSTR));
 }
 
+
+/* bytecode compiler code generation ******************************************/
+
+// Symbolic names for our local labels.
+#define LABEL_LOOPSTART 1  // Top of a repeated field loop.
+#define LABEL_LOOPBREAK 2  // To jump out of a repeated loop
+#define LABEL_FIELD     3  // Jump backward to find the most recent field.
+#define LABEL_ENDMSG    4  // To reach the OP_ENDMSG instr for this msg.
+
+// Generates bytecode to parse a single non-lazy message field.
+static void generate_msgfield(compiler *c, const upb_fielddef *f,
+                              upb_pbdecodermethod *method) {
+  const upb_handlers *h = upb_pbdecodermethod_desthandlers(method);
+  const upb_pbdecodermethod *sub_m = find_submethod(c, method, f);
+
+  if (!sub_m) {
+    // Don't emit any code for this field at all; it will be parsed as an
+    // unknown field.
+    return;
+  }
+
+  label(c, LABEL_FIELD);
+
+  int wire_type =
+      (upb_fielddef_descriptortype(f) == UPB_DESCRIPTOR_TYPE_MESSAGE)
+          ? UPB_WIRE_TYPE_DELIMITED
+          : UPB_WIRE_TYPE_START_GROUP;
+
+  if (upb_fielddef_isseq(f)) {
+    putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
+    putchecktag(c, f, wire_type, LABEL_DISPATCH);
+   dispatchtarget(c, method, f, wire_type);
+    putop(c, OP_PUSHTAGDELIM, 0);
+    putop(c, OP_STARTSEQ, getsel(f, UPB_HANDLER_STARTSEQ));
+   label(c, LABEL_LOOPSTART);
+    putpush(c, f);
+    putop(c, OP_STARTSUBMSG, getsel(f, UPB_HANDLER_STARTSUBMSG));
+    putop(c, OP_CALL, sub_m);
+    putop(c, OP_POP);
+    maybeput(c, OP_ENDSUBMSG, h, f, UPB_HANDLER_ENDSUBMSG);
+    if (wire_type == UPB_WIRE_TYPE_DELIMITED) {
+      putop(c, OP_SETDELIM);
+    }
+    putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
+    putchecktag(c, f, wire_type, LABEL_LOOPBREAK);
+    putop(c, OP_BRANCH, -LABEL_LOOPSTART);
+   label(c, LABEL_LOOPBREAK);
+    putop(c, OP_POP);
+    maybeput(c, OP_ENDSEQ, h, f, UPB_HANDLER_ENDSEQ);
+  } else {
+    putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
+    putchecktag(c, f, wire_type, LABEL_DISPATCH);
+   dispatchtarget(c, method, f, wire_type);
+    putpush(c, f);
+    putop(c, OP_STARTSUBMSG, getsel(f, UPB_HANDLER_STARTSUBMSG));
+    putop(c, OP_CALL, sub_m);
+    putop(c, OP_POP);
+    maybeput(c, OP_ENDSUBMSG, h, f, UPB_HANDLER_ENDSUBMSG);
+    if (wire_type == UPB_WIRE_TYPE_DELIMITED) {
+      putop(c, OP_SETDELIM);
+    }
+  }
+}
+
+// Generates bytecode to parse a single string or lazy submessage field.
+static void generate_delimfield(compiler *c, const upb_fielddef *f,
+                                upb_pbdecodermethod *method) {
+  const upb_handlers *h = upb_pbdecodermethod_desthandlers(method);
+
+  label(c, LABEL_FIELD);
+  if (upb_fielddef_isseq(f)) {
+    putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
+    putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_DISPATCH);
+   dispatchtarget(c, method, f, UPB_WIRE_TYPE_DELIMITED);
+    putop(c, OP_PUSHTAGDELIM, 0);
+    putop(c, OP_STARTSEQ, getsel(f, UPB_HANDLER_STARTSEQ));
+   label(c, LABEL_LOOPSTART);
+    putop(c, OP_PUSHLENDELIM);
+    putop(c, OP_STARTSTR, getsel(f, UPB_HANDLER_STARTSTR));
+    // Need to emit even if no handler to skip past the string.
+    putop(c, OP_STRING, getsel(f, UPB_HANDLER_STRING));
+    putop(c, OP_POP);
+    maybeput(c, OP_ENDSTR, h, f, UPB_HANDLER_ENDSTR);
+    putop(c, OP_SETDELIM);
+    putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
+    putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_LOOPBREAK);
+    putop(c, OP_BRANCH, -LABEL_LOOPSTART);
+   label(c, LABEL_LOOPBREAK);
+    putop(c, OP_POP);
+    maybeput(c, OP_ENDSEQ, h, f, UPB_HANDLER_ENDSEQ);
+  } else {
+    putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
+    putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_DISPATCH);
+   dispatchtarget(c, method, f, UPB_WIRE_TYPE_DELIMITED);
+    putop(c, OP_PUSHLENDELIM);
+    putop(c, OP_STARTSTR, getsel(f, UPB_HANDLER_STARTSTR));
+    putop(c, OP_STRING, getsel(f, UPB_HANDLER_STRING));
+    putop(c, OP_POP);
+    maybeput(c, OP_ENDSTR, h, f, UPB_HANDLER_ENDSTR);
+    putop(c, OP_SETDELIM);
+  }
+}
+
+// Generates bytecode to parse a single primitive field.
+static void generate_primitivefield(compiler *c, const upb_fielddef *f,
+                                    upb_pbdecodermethod *method) {
+  label(c, LABEL_FIELD);
+
+  const upb_handlers *h = upb_pbdecodermethod_desthandlers(method);
+  upb_descriptortype_t descriptor_type = upb_fielddef_descriptortype(f);
+
+  // From a decoding perspective, ENUM is the same as INT32.
+  if (descriptor_type == UPB_DESCRIPTOR_TYPE_ENUM)
+    descriptor_type = UPB_DESCRIPTOR_TYPE_INT32;
+
+  opcode parse_type = (opcode)descriptor_type;
+
+  // TODO(haberman): generate packed or non-packed first depending on "packed"
+  // setting in the fielddef.  This will favor (in speed) whichever was
+  // specified.
+
+  assert((int)parse_type >= 0 && parse_type <= OP_MAX);
+  upb_selector_t sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
+  int wire_type = upb_pb_native_wire_types[upb_fielddef_descriptortype(f)];
+  if (upb_fielddef_isseq(f)) {
+    putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
+    putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_DISPATCH);
+   dispatchtarget(c, method, f, UPB_WIRE_TYPE_DELIMITED);
+    putop(c, OP_PUSHLENDELIM);
+    putop(c, OP_STARTSEQ, getsel(f, UPB_HANDLER_STARTSEQ));  // Packed
+   label(c, LABEL_LOOPSTART);
+    putop(c, parse_type, sel);
+    putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
+    putop(c, OP_BRANCH, -LABEL_LOOPSTART);
+   dispatchtarget(c, method, f, wire_type);
+    putop(c, OP_PUSHTAGDELIM, 0);
+    putop(c, OP_STARTSEQ, getsel(f, UPB_HANDLER_STARTSEQ));  // Non-packed
+   label(c, LABEL_LOOPSTART);
+    putop(c, parse_type, sel);
+    putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
+    putchecktag(c, f, wire_type, LABEL_LOOPBREAK);
+    putop(c, OP_BRANCH, -LABEL_LOOPSTART);
+   label(c, LABEL_LOOPBREAK);
+    putop(c, OP_POP);  // Packed and non-packed join.
+    maybeput(c, OP_ENDSEQ, h, f, UPB_HANDLER_ENDSEQ);
+    putop(c, OP_SETDELIM);  // Could remove for non-packed by dup ENDSEQ.
+  } else {
+    putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
+    putchecktag(c, f, wire_type, LABEL_DISPATCH);
+   dispatchtarget(c, method, f, wire_type);
+    putop(c, parse_type, sel);
+  }
+}
+
 // Adds bytecode for parsing the given message to the given decoderplan,
 // while adding all dispatch targets to this message's dispatch table.
 static void compile_method(compiler *c, upb_pbdecodermethod *method) {
   assert(method);
-
-  // Symbolic names for our local labels.
-  const int LABEL_LOOPSTART = 1;  // Top of a repeated field loop.
-  const int LABEL_LOOPBREAK = 2;  // To jump out of a repeated loop
-  const int LABEL_FIELD = 3;   // Jump backward to find the most recent field.
-  const int LABEL_ENDMSG = 4;  // To reach the OP_ENDMSG instr for this msg.
-
-  // Index is descriptor type.
-  static const uint8_t native_wire_types[] = {
-    UPB_WIRE_TYPE_END_GROUP,     // ENDGROUP
-    UPB_WIRE_TYPE_64BIT,         // DOUBLE
-    UPB_WIRE_TYPE_32BIT,         // FLOAT
-    UPB_WIRE_TYPE_VARINT,        // INT64
-    UPB_WIRE_TYPE_VARINT,        // UINT64
-    UPB_WIRE_TYPE_VARINT,        // INT32
-    UPB_WIRE_TYPE_64BIT,         // FIXED64
-    UPB_WIRE_TYPE_32BIT,         // FIXED32
-    UPB_WIRE_TYPE_VARINT,        // BOOL
-    UPB_WIRE_TYPE_DELIMITED,     // STRING
-    UPB_WIRE_TYPE_START_GROUP,   // GROUP
-    UPB_WIRE_TYPE_DELIMITED,     // MESSAGE
-    UPB_WIRE_TYPE_DELIMITED,     // BYTES
-    UPB_WIRE_TYPE_VARINT,        // UINT32
-    UPB_WIRE_TYPE_VARINT,        // ENUM
-    UPB_WIRE_TYPE_32BIT,         // SFIXED32
-    UPB_WIRE_TYPE_64BIT,         // SFIXED64
-    UPB_WIRE_TYPE_VARINT,        // SINT32
-    UPB_WIRE_TYPE_VARINT,        // SINT64
-  };
 
   // Clear all entries in the dispatch table.
   upb_inttable_uninit(&method->dispatch);
@@ -637,128 +762,15 @@ static void compile_method(compiler *c, upb_pbdecodermethod *method) {
   upb_msg_iter i;
   for(upb_msg_begin(&i, md); !upb_msg_done(&i); upb_msg_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
-    upb_descriptortype_t descriptor_type = upb_fielddef_descriptortype(f);
     upb_fieldtype_t type = upb_fielddef_type(f);
 
-    // From a decoding perspective, ENUM is the same as INT32.
-    if (descriptor_type == UPB_DESCRIPTOR_TYPE_ENUM)
-      descriptor_type = UPB_DESCRIPTOR_TYPE_INT32;
-
     if (type == UPB_TYPE_MESSAGE && !(haslazyhandlers(h, f) && c->lazy)) {
-      const upb_pbdecodermethod *sub_m = find_submethod(c, method, f);
-      if (!sub_m) {
-        // Don't emit any code for this field at all; it will be parsed as an
-        // unknown field.
-        continue;
-      }
-
-      label(c, LABEL_FIELD);
-
-      int wire_type = (descriptor_type == UPB_DESCRIPTOR_TYPE_MESSAGE)
-                          ? UPB_WIRE_TYPE_DELIMITED
-                          : UPB_WIRE_TYPE_START_GROUP;
-      if (upb_fielddef_isseq(f)) {
-        putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
-        putchecktag(c, f, wire_type, LABEL_DISPATCH);
-       dispatchtarget(c, method, f, wire_type);
-        putop(c, OP_PUSHTAGDELIM, 0);
-        putop(c, OP_STARTSEQ, getsel(f, UPB_HANDLER_STARTSEQ));
-       label(c, LABEL_LOOPSTART);
-        putpush(c, f);
-        putop(c, OP_STARTSUBMSG, getsel(f, UPB_HANDLER_STARTSUBMSG));
-        putop(c, OP_CALL, sub_m);
-        putop(c, OP_POP);
-        putcb(c, OP_ENDSUBMSG, h, f, UPB_HANDLER_ENDSUBMSG);
-        if (wire_type == UPB_WIRE_TYPE_DELIMITED) {
-          putop(c, OP_SETDELIM);
-        }
-        putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
-        putchecktag(c, f, wire_type, LABEL_LOOPBREAK);
-        putop(c, OP_BRANCH, -LABEL_LOOPSTART);
-       label(c, LABEL_LOOPBREAK);
-        putop(c, OP_POP);
-        putcb(c, OP_ENDSEQ, h, f, UPB_HANDLER_ENDSEQ);
-      } else {
-        putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
-        putchecktag(c, f, wire_type, LABEL_DISPATCH);
-       dispatchtarget(c, method, f, wire_type);
-        putpush(c, f);
-        putop(c, OP_STARTSUBMSG, getsel(f, UPB_HANDLER_STARTSUBMSG));
-        putop(c, OP_CALL, sub_m);
-        putop(c, OP_POP);
-        putcb(c, OP_ENDSUBMSG, h, f, UPB_HANDLER_ENDSUBMSG);
-        if (wire_type == UPB_WIRE_TYPE_DELIMITED) {
-          putop(c, OP_SETDELIM);
-        }
-      }
+      generate_msgfield(c, f, method);
     } else if (type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES ||
                type == UPB_TYPE_MESSAGE) {
-      label(c, LABEL_FIELD);
-      if (upb_fielddef_isseq(f)) {
-        putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
-        putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_DISPATCH);
-       dispatchtarget(c, method, f, UPB_WIRE_TYPE_DELIMITED);
-        putop(c, OP_PUSHTAGDELIM, 0);
-        putop(c, OP_STARTSEQ, getsel(f, UPB_HANDLER_STARTSEQ));
-       label(c, LABEL_LOOPSTART);
-        putop(c, OP_PUSHLENDELIM);
-        putop(c, OP_STARTSTR, getsel(f, UPB_HANDLER_STARTSTR));
-        // Need to emit even if no handler to skip past the string.
-        putop(c, OP_STRING, getsel(f, UPB_HANDLER_STRING));
-        putop(c, OP_POP);
-        putcb(c, OP_ENDSTR, h, f, UPB_HANDLER_ENDSTR);
-        putop(c, OP_SETDELIM);
-        putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
-        putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_LOOPBREAK);
-        putop(c, OP_BRANCH, -LABEL_LOOPSTART);
-       label(c, LABEL_LOOPBREAK);
-        putop(c, OP_POP);
-        putcb(c, OP_ENDSEQ, h, f, UPB_HANDLER_ENDSEQ);
-      } else {
-        putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
-        putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_DISPATCH);
-       dispatchtarget(c, method, f, UPB_WIRE_TYPE_DELIMITED);
-        putop(c, OP_PUSHLENDELIM);
-        putop(c, OP_STARTSTR, getsel(f, UPB_HANDLER_STARTSTR));
-        putop(c, OP_STRING, getsel(f, UPB_HANDLER_STRING));
-        putop(c, OP_POP);
-        putcb(c, OP_ENDSTR, h, f, UPB_HANDLER_ENDSTR);
-        putop(c, OP_SETDELIM);
-      }
+      generate_delimfield(c, f, method);
     } else {
-      label(c, LABEL_FIELD);
-      opcode parse_type = (opcode)descriptor_type;
-      assert((int)parse_type >= 0 && parse_type <= OP_MAX);
-      upb_selector_t sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
-      int wire_type = native_wire_types[upb_fielddef_descriptortype(f)];
-      if (upb_fielddef_isseq(f)) {
-        putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
-        putchecktag(c, f, UPB_WIRE_TYPE_DELIMITED, LABEL_DISPATCH);
-       dispatchtarget(c, method, f, UPB_WIRE_TYPE_DELIMITED);
-        putop(c, OP_PUSHLENDELIM);
-        putop(c, OP_STARTSEQ, getsel(f, UPB_HANDLER_STARTSEQ));  // Packed
-       label(c, LABEL_LOOPSTART);
-        putop(c, parse_type, sel);
-        putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
-        putop(c, OP_BRANCH, -LABEL_LOOPSTART);
-       dispatchtarget(c, method, f, wire_type);
-        putop(c, OP_PUSHTAGDELIM, 0);
-        putop(c, OP_STARTSEQ, getsel(f, UPB_HANDLER_STARTSEQ));  // Non-packed
-       label(c, LABEL_LOOPSTART);
-        putop(c, parse_type, sel);
-        putop(c, OP_CHECKDELIM, LABEL_LOOPBREAK);
-        putchecktag(c, f, wire_type, LABEL_LOOPBREAK);
-        putop(c, OP_BRANCH, -LABEL_LOOPSTART);
-       label(c, LABEL_LOOPBREAK);
-        putop(c, OP_POP);  // Packed and non-packed join.
-        putcb(c, OP_ENDSEQ, h, f, UPB_HANDLER_ENDSEQ);
-        putop(c, OP_SETDELIM);  // Could remove for non-packed by dup ENDSEQ.
-      } else {
-        putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
-        putchecktag(c, f, wire_type, LABEL_DISPATCH);
-       dispatchtarget(c, method, f, wire_type);
-        putop(c, parse_type, sel);
-      }
+      generate_primitivefield(c, f, method);
     }
   }
 

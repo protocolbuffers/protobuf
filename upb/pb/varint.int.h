@@ -37,6 +37,10 @@ typedef enum {
 // wiki document about this).
 #define UPB_PB_VARINT_MAX_LEN 10
 
+// Array of the "native" (ie. non-packed-repeated) wire type for the given a
+// descriptor type (upb_descriptortype_t).
+extern const uint8_t upb_pb_native_wire_types[];
+
 /* Zig-zag encoding/decoding **************************************************/
 
 UPB_INLINE int32_t upb_zzdec_32(uint32_t n) {
@@ -127,6 +131,11 @@ UPB_INLINE size_t upb_vencode64(uint64_t val, char *buf) {
     buf[i++] = byte;
   }
   return i;
+}
+
+UPB_INLINE size_t upb_varint_size(uint64_t val) {
+  char buf[UPB_PB_VARINT_MAX_LEN];
+  return upb_vencode64(val, buf);
 }
 
 // Encodes a 32-bit varint, *not* sign-extended.

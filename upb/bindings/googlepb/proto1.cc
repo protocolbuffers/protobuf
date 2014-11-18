@@ -30,6 +30,10 @@
 #undef private
 #undef protected
 
+#ifdef GOOGLE_PROTOBUF_HAS_ARENAS
+namespace proto2 { class Arena; }
+#endif
+
 #include "upb/def.h"
 #include "upb/handlers.h"
 #include "upb/shim/shim.h"
@@ -448,12 +452,35 @@ class P2R_Handlers {
   class RepeatedMessageTypeHandler {
    public:
     typedef proto2::Message Type;
+#ifndef GOOGLE_PROTOBUF_HAS_ARENAS
     // AddAllocated() calls this, but only if other objects are sitting
     // around waiting for reuse, which we will not do.
     static void Delete(Type* t) {
       UPB_UNUSED(t);
       assert(false);
     }
+#else
+    static ::proto2::Arena* GetArena(Type* t) {
+      return t->GetArena();
+    }
+    static void* GetMaybeArenaPointer(Type* t) {
+      return t->GetMaybeArenaPointer();
+    }
+    static inline Type* NewFromPrototype(
+        const Type* prototype, ::proto2::Arena* arena = NULL) {
+      return prototype->New(arena);
+    }
+    // AddAllocated() calls this, but only if other objects are sitting
+    // around waiting for reuse, which we will not do.
+    static void Delete(Type* t, ::proto2::Arena* arena) {
+      UPB_UNUSED(t);
+      UPB_UNUSED(arena);
+      assert(false);
+    }
+    static void Merge(const Type& from, Type* to) {
+      to->MergeFrom(from);
+    }
+#endif
   };
 
   // Closure is a RepeatedPtrField<SubMessageType>*, but we access it through

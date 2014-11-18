@@ -1,421 +1,496 @@
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
- * Copyright (c) 2009 Google Inc.  See LICENSE for details.
+ * Copyright (c) 2014 Google Inc.  See LICENSE for details.
  * Author: Josh Haberman <jhaberman@gmail.com>
+ *
+ * Since we are implementing pure handlers (ie. without any out-of-band access
+ * to pre-computed lengths), we have to buffer all submessages before we can
+ * emit even their first byte.
+ *
+ * Not knowing the size of submessages also means we can't write a perfect
+ * zero-copy implementation, even with buffering.  Lengths are stored as
+ * varints, which means that we don't know how many bytes to reserve for the
+ * length until we know what the length is.
+ *
+ * This leaves us with three main choices:
+ *
+ * 1. buffer all submessage data in a temporary buffer, then copy it exactly
+ *    once into the output buffer.
+ *
+ * 2. attempt to buffer data directly into the output buffer, estimating how
+ *    many bytes each length will take.  When our guesses are wrong, use
+ *    memmove() to grow or shrink the allotted space.
+ *
+ * 3. buffer directly into the output buffer, allocating a max length
+ *    ahead-of-time for each submessage length.  If we overallocated, we waste
+ *    space, but no memcpy() or memmove() is required.  This approach requires
+ *    defining a maximum size for submessages and rejecting submessages that
+ *    exceed that size.
+ *
+ * (2) and (3) have the potential to have better performance, but they are more
+ * complicated and subtle to implement:
+ *
+ *   (3) requires making an arbitrary choice of the maximum message size; it
+ *       wastes space when submessages are shorter than this and fails
+ *       completely when they are longer.  This makes it more finicky and
+ *       requires configuration based on the input.  It also makes it impossible
+ *       to perfectly match the output of reference encoders that always use the
+ *       optimal amount of space for each length.
+ *
+ *   (2) requires guessing the the size upfront, and if multiple lengths are
+ *       guessed wrong the minimum required number of memmove() operations may
+ *       be complicated to compute correctly.  Implemented properly, it may have
+ *       a useful amortized or average cost, but more investigation is required
+ *       to determine this and what the optimal algorithm is to achieve it.
+ *
+ *   (1) makes you always pay for exactly one copy, but its implementation is
+ *       the simplest and its performance is predictable.
+ *
+ * So for now, we implement (1) only.  If we wish to optimize later, we should
+ * be able to do it without affecting users.
+ *
+ * The strategy is to buffer the segments of data that do *not* depend on
+ * unknown lengths in one buffer, and keep a separate buffer of segment pointers
+ * and lengths.  When the top-level submessage ends, we can go beginning to end,
+ * alternating the writing of lengths with memcpy() of the rest of the data.
+ * At the top level though, no buffering is required.
  */
 
 #include "upb/pb/encoder.h"
+#include "upb/pb/varint.int.h"
 
 #include <stdlib.h>
-#include "upb/descriptor.h"
 
-/* Functions for calculating sizes of wire values. ****************************/
+/* low-level buffering ********************************************************/
 
-static size_t upb_v_uint64_t_size(uint64_t val) {
-#ifdef __GNUC__
-  int high_bit = 63 - __builtin_clzll(val);  // 0-based, undef if val == 0.
-#else
-  int high_bit = 0;
-  uint64_t tmp = val;
-  while(tmp >>= 1) high_bit++;
-#endif
-  return val == 0 ? 1 : high_bit / 7 + 1;
+// Low-level functions for interacting with the output buffer.
+
+// TODO(haberman): handle pushback
+static void putbuf(upb_pb_encoder *e, const char *buf, size_t len) {
+  size_t n = upb_bytessink_putbuf(e->output_, e->subc, buf, len, NULL);
+  UPB_ASSERT_VAR(n, n == len);
 }
 
-static size_t upb_v_int32_t_size(int32_t val) {
-  // v_uint32's are sign-extended to maintain wire compatibility with int64s.
-  return upb_v_uint64_t_size((int64_t)val);
-}
-static size_t upb_v_uint32_t_size(uint32_t val) {
-  return upb_v_uint64_t_size(val);
-}
-static size_t upb_f_uint64_t_size(uint64_t val) {
-  (void)val;  // Length is independent of value.
-  return sizeof(uint64_t);
-}
-static size_t upb_f_uint32_t_size(uint32_t val) {
-  (void)val;  // Length is independent of value.
-  return sizeof(uint32_t);
+static upb_pb_encoder_segment *top(upb_pb_encoder *e) {
+  return &e->segbuf[*e->top];
 }
 
+// Call to ensure that at least "bytes" bytes are available for writing at
+// e->ptr.  Returns false if the bytes could not be allocated.
+static bool reserve(upb_pb_encoder *e, size_t bytes) {
+  if ((e->limit - e->ptr) < bytes) {
+    size_t needed = bytes + (e->ptr - e->buf);
+    size_t old_size = e->limit - e->buf;
+    size_t new_size = old_size;
+    while (new_size < needed) {
+      new_size *= 2;
+    }
 
-/* Functions to write wire values. ********************************************/
+    char *realloc_from = (e->buf == e->initbuf) ? NULL : e->buf;
+    char *new_buf = realloc(realloc_from, new_size);
 
-// Since we know in advance the longest that the value could be, we always make
-// sure that our buffer is long enough.  This saves us from having to perform
-// bounds checks.
+    if (new_buf == NULL) {
+      return false;
+    }
 
-// Puts a varint (wire type: UPB_WIRE_TYPE_VARINT).
-static uint8_t *upb_put_v_uint64_t(uint8_t *buf, uint64_t val)
-{
-  do {
-    uint8_t byte = val & 0x7f;
-    val >>= 7;
-    if(val) byte |= 0x80;
-    *buf++ = byte;
-  } while(val);
-  return buf;
-}
+    if (realloc_from == NULL) {
+      memcpy(new_buf, e->initbuf, old_size);
+    }
 
-// Puts an unsigned 32-bit varint, verbatim.  Never uses the high 64 bits.
-static uint8_t *upb_put_v_uint32_t(uint8_t *buf, uint32_t val)
-{
-  return upb_put_v_uint64_t(buf, val);
-}
-
-// Puts a signed 32-bit varint, first sign-extending to 64-bits.  We do this to
-// maintain wire-compatibility with 64-bit signed integers.
-static uint8_t *upb_put_v_int32_t(uint8_t *buf, int32_t val)
-{
-  return upb_put_v_uint64_t(buf, (int64_t)val);
-}
-
-static void upb_put32(uint8_t *buf, uint32_t val) {
-  buf[0] = val & 0xff;
-  buf[1] = (val >> 8) & 0xff;
-  buf[2] = (val >> 16) & 0xff;
-  buf[3] = (val >> 24);
-}
-
-// Puts a fixed-length 32-bit integer (wire type: UPB_WIRE_TYPE_32BIT).
-static uint8_t *upb_put_f_uint32_t(uint8_t *buf, uint32_t val)
-{
-  uint8_t *uint32_end = buf + sizeof(uint32_t);
-#if UPB_UNALIGNED_READS_OK
-  *(uint32_t*)buf = val;
-#else
-  upb_put32(buf, val);
-#endif
-  return uint32_end;
-}
-
-// Puts a fixed-length 64-bit integer (wire type: UPB_WIRE_TYPE_64BIT).
-static uint8_t *upb_put_f_uint64_t(uint8_t *buf, uint64_t val)
-{
-  uint8_t *uint64_end = buf + sizeof(uint64_t);
-#if UPB_UNALIGNED_READS_OK
-  *(uint64_t*)buf = val;
-#else
-  upb_put32(buf, (uint32_t)val);
-  upb_put32(buf, (uint32_t)(val >> 32));
-#endif
-  return uint64_end;
-}
-
-/* Functions to write and calculate sizes for .proto values. ******************/
-
-// Performs zig-zag encoding, which is used by sint32 and sint64.
-static uint32_t upb_zzenc_32(int32_t n) { return (n << 1) ^ (n >> 31); }
-static uint64_t upb_zzenc_64(int64_t n) { return (n << 1) ^ (n >> 63); }
-
-/* Use macros to define a set of two functions for each .proto type:
- *
- *  // Converts and writes a .proto value into buf.  "end" indicates the end
- *  // of the current available buffer (if the buffer does not contain enough
- *  // space UPB_STATUS_NEED_MORE_DATA is returned).  On success, *outbuf will
- *  // point one past the data that was written.
- *  uint8_t *upb_put_INT32(uint8_t *buf, int32_t val);
- *
- *  // Returns the number of bytes required to encode val.
- *  size_t upb_get_INT32_size(int32_t val);
- *
- *  // Given a .proto value s (source) convert it to a wire value.
- *  uint32_t upb_vtowv_INT32(int32_t s);
- */
-
-#define VTOWV(type, wire_t, val_t) \
-  static wire_t upb_vtowv_ ## type(val_t s)
-
-#define PUT(type, v_or_f, wire_t, val_t, member_name) \
-  static uint8_t *upb_put_ ## type(uint8_t *buf, val_t val) { \
-    wire_t tmp = upb_vtowv_ ## type(val); \
-    return upb_put_ ## v_or_f ## _ ## wire_t(buf, tmp); \
+    e->ptr = new_buf + (e->ptr - e->buf);
+    e->runbegin = new_buf + (e->runbegin - e->buf);
+    e->limit = new_buf + new_size;
+    e->buf = new_buf;
   }
 
-#define T(type, v_or_f, wire_t, val_t, member_name) \
-  static size_t upb_get_ ## type ## _size(val_t val) { \
-    return upb_ ## v_or_f ## _ ## wire_t ## _size(val); \
-  } \
-  VTOWV(type, wire_t, val_t);  /* prototype for PUT below */ \
-  PUT(type, v_or_f, wire_t, val_t, member_name) \
-  VTOWV(type, wire_t, val_t)
+  return true;
+}
 
-T(INT32,    v,  int32_t, int32_t,  int32)   { return (uint32_t)s;     }
-T(INT64,    v, uint64_t, int64_t,  int64)   { return (uint64_t)s;     }
-T(UINT32,   v, uint32_t, uint32_t, uint32)  { return s;               }
-T(UINT64,   v, uint64_t, uint64_t, uint64)  { return s;               }
-T(SINT32,   v, uint32_t, int32_t,  int32)   { return upb_zzenc_32(s); }
-T(SINT64,   v, uint64_t, int64_t,  int64)   { return upb_zzenc_64(s); }
-T(FIXED32,  f, uint32_t, uint32_t, uint32)  { return s;               }
-T(FIXED64,  f, uint64_t, uint64_t, uint64)  { return s;               }
-T(SFIXED32, f, uint32_t, int32_t,  int32)   { return (uint32_t)s;     }
-T(SFIXED64, f, uint64_t, int64_t,  int64)   { return (uint64_t)s;     }
-T(BOOL,     v, uint32_t, bool,     _bool)   { return (uint32_t)s;     }
-T(ENUM,     v, uint32_t, int32_t,  int32)   { return (uint32_t)s;     }
-T(DOUBLE,   f, uint64_t, double,   _double) {
-  upb_value v;
-  v._double = s;
-  return v.uint64;
+// Call when "bytes" bytes have been writte at e->ptr.  The caller *must* have
+// previously called reserve() with at least this many bytes.
+static void advance(upb_pb_encoder *e, size_t bytes) {
+  assert((e->limit - e->ptr) >= bytes);
+  e->ptr += bytes;
 }
-T(FLOAT,    f, uint32_t, float,    _float)  {
-  upb_value v;
-  v._float = s;
-  return v.uint32;
+
+// Call when all of the bytes for a handler have been written.  Flushes the
+// bytes if possible and necessary, returning false if this failed.
+static bool commit(upb_pb_encoder *e) {
+  if (!e->top) {
+    // We aren't inside a delimited region.  Flush our accumulated bytes to
+    // the output.
+    //
+    // TODO(haberman): in the future we may want to delay flushing for
+    // efficiency reasons.
+    putbuf(e, e->buf, e->ptr - e->buf);
+    e->ptr = e->buf;
+  }
+
+  return true;
 }
-#undef VTOWV
-#undef PUT
+
+// Writes the given bytes to the buffer, handling reserve/advance.
+static bool encode_bytes(upb_pb_encoder *e, const void *data, size_t len) {
+  if (!reserve(e, len)) {
+    return false;
+  }
+
+  memcpy(e->ptr, data, len);
+  advance(e, len);
+  return true;
+}
+
+// Finish the current run by adding the run totals to the segment and message
+// length.
+static void accumulate(upb_pb_encoder *e) {
+  assert(e->ptr >= e->runbegin);
+  size_t run_len = e->ptr - e->runbegin;
+  e->segptr->seglen += run_len;
+  top(e)->msglen += run_len;
+  e->runbegin = e->ptr;
+}
+
+// Call to indicate the start of delimited region for which the full length is
+// not yet known.  All data will be buffered until the length is known.
+// Delimited regions may be nested; their lengths will all be tracked properly.
+static bool start_delim(upb_pb_encoder *e) {
+  if (e->top) {
+    // We are already buffering, advance to the next segment and push it on the
+    // stack.
+    accumulate(e);
+
+    if (++e->top == e->stacklimit) {
+      // TODO(haberman): grow stack?
+      return false;
+    }
+
+    if (++e->segptr == e->seglimit) {
+      upb_pb_encoder_segment *realloc_from =
+          (e->segbuf == e->seginitbuf) ? NULL : e->segbuf;
+      size_t old_size =
+          (e->seglimit - e->segbuf) * sizeof(upb_pb_encoder_segment);
+      size_t new_size = old_size * 2;
+      upb_pb_encoder_segment *new_buf = realloc(realloc_from, new_size);
+
+      if (new_buf == NULL) {
+        return false;
+      }
+
+      if (realloc_from == NULL) {
+        memcpy(new_buf, e->seginitbuf, old_size);
+      }
+
+      e->segptr = new_buf + (e->segptr - e->segbuf);
+      e->seglimit = new_buf + (new_size / sizeof(upb_pb_encoder_segment));
+      e->segbuf = new_buf;
+    }
+  } else {
+    // We were previously at the top level, start buffering.
+    e->segptr = e->segbuf;
+    e->top = e->stack;
+    e->runbegin = e->ptr;
+  }
+
+  *e->top = e->segptr - e->segbuf;
+  e->segptr->seglen = 0;
+  e->segptr->msglen = 0;
+
+  return true;
+}
+
+// Call to indicate the end of a delimited region.  We now know the length of
+// the delimited region.  If we are not nested inside any other delimited
+// regions, we can now emit all of the buffered data we accumulated.
+static bool end_delim(upb_pb_encoder *e) {
+  accumulate(e);
+  size_t msglen = top(e)->msglen;
+
+  if (e->top == e->stack) {
+    // All lengths are now available, emit all buffered data.
+    char buf[UPB_PB_VARINT_MAX_LEN];
+    upb_pb_encoder_segment *s;
+    const char *ptr = e->buf;
+    for (s = e->segbuf; s <= e->segptr; s++) {
+      size_t lenbytes = upb_vencode64(s->msglen, buf);
+      putbuf(e, buf, lenbytes);
+      putbuf(e, ptr, s->seglen);
+      ptr += s->seglen;
+    }
+
+    e->ptr = e->buf;
+    e->top = NULL;
+  } else {
+    // Need to keep buffering; propagate length info into enclosing submessages.
+    --e->top;
+    top(e)->msglen += msglen + upb_varint_size(msglen);
+  }
+
+  return true;
+}
+
+
+/* tag_t **********************************************************************/
+
+// A precomputed (pre-encoded) tag and length.
+
+typedef struct {
+  uint8_t bytes;
+  char tag[7];
+} tag_t;
+
+// Allocates a new tag for this field, and sets it in these handlerattr.
+static void new_tag(upb_handlers *h, const upb_fielddef *f, upb_wiretype_t wt,
+                    upb_handlerattr *attr) {
+  uint32_t n = upb_fielddef_number(f);
+
+  tag_t *tag = malloc(sizeof(tag_t));
+  tag->bytes = upb_vencode64((n << 3) | wt, tag->tag);
+
+  upb_handlerattr_init(attr);
+  upb_handlerattr_sethandlerdata(attr, tag);
+  upb_handlers_addcleanup(h, tag, free);
+}
+
+static bool encode_tag(upb_pb_encoder *e, const tag_t *tag) {
+  return encode_bytes(e, tag->tag, tag->bytes);
+}
+
+
+/* encoding of wire types *****************************************************/
+
+static bool encode_fixed64(upb_pb_encoder *e, uint64_t val) {
+  // TODO(haberman): byte-swap for big endian.
+  return encode_bytes(e, &val, sizeof(uint64_t));
+}
+
+static bool encode_fixed32(upb_pb_encoder *e, uint32_t val) {
+  // TODO(haberman): byte-swap for big endian.
+  return encode_bytes(e, &val, sizeof(uint32_t));
+}
+
+static bool encode_varint(upb_pb_encoder *e, uint64_t val) {
+  if (!reserve(e, UPB_PB_VARINT_MAX_LEN)) {
+    return false;
+  }
+
+  advance(e, upb_vencode64(val, e->ptr));
+  return true;
+}
+
+static uint64_t dbl2uint64(double d) {
+  uint64_t ret;
+  memcpy(&ret, &d, sizeof(uint64_t));
+  return ret;
+}
+
+static uint32_t flt2uint32(float d) {
+  uint32_t ret;
+  memcpy(&ret, &d, sizeof(uint32_t));
+  return ret;
+}
+
+
+/* encoding of proto types ****************************************************/
+
+static bool startmsg(void *c, const void *hd) {
+  upb_pb_encoder *e = c;
+  UPB_UNUSED(hd);
+  if (e->depth++ == 0) {
+    upb_bytessink_start(e->output_, 0, &e->subc);
+  }
+  return true;
+}
+
+static bool endmsg(void *c, const void *hd, upb_status *status) {
+  upb_pb_encoder *e = c;
+  UPB_UNUSED(hd);
+  UPB_UNUSED(status);
+  if (--e->depth == 0) {
+    upb_bytessink_end(e->output_);
+  }
+  return true;
+}
+
+static void *encode_startdelimfield(void *c, const void *hd) {
+  bool ok = encode_tag(c, hd) && commit(c) && start_delim(c);
+  return ok ? c : UPB_BREAK;
+}
+
+static bool encode_enddelimfield(void *c, const void *hd) {
+  UPB_UNUSED(hd);
+  return end_delim(c);
+}
+
+static void *encode_startgroup(void *c, const void *hd) {
+  return (encode_tag(c, hd) && commit(c)) ? c : UPB_BREAK;
+}
+
+static bool encode_endgroup(void *c, const void *hd) {
+  return encode_tag(c, hd) && commit(c);
+}
+
+static void *encode_startstr(void *c, const void *hd, size_t size_hint) {
+  UPB_UNUSED(size_hint);
+  return encode_startdelimfield(c, hd);
+}
+
+static size_t encode_strbuf(void *c, const void *hd, const char *buf,
+                            size_t len, const upb_bufhandle *h) {
+  UPB_UNUSED(hd);
+  UPB_UNUSED(h);
+  return encode_bytes(c, buf, len) ? len : 0;
+}
+
+#define T(type, ctype, convert, encode)                                  \
+  static bool encode_scalar_##type(void *e, const void *hd, ctype val) { \
+    return encode_tag(e, hd) && encode(e, (convert)(val)) && commit(e);  \
+  }                                                                      \
+  static bool encode_packed_##type(void *e, const void *hd, ctype val) { \
+    UPB_UNUSED(hd);                                                      \
+    return encode(e, (convert)(val));                                    \
+  }
+
+T(double,   double,   dbl2uint64,   encode_fixed64)
+T(float,    float,    flt2uint32,   encode_fixed32);
+T(int64,    int64_t,  uint64_t,     encode_varint);
+T(int32,    int32_t,  uint32_t,     encode_varint);
+T(fixed64,  uint64_t, uint64_t,     encode_fixed64);
+T(fixed32,  uint32_t, uint32_t,     encode_fixed32);
+T(bool,     bool,     bool,         encode_varint);
+T(uint32,   uint32_t, uint32_t,     encode_varint);
+T(uint64,   uint64_t, uint64_t,     encode_varint);
+T(enum,     int32_t,  uint32_t,     encode_varint);
+T(sfixed32, int32_t,  uint32_t,     encode_fixed32);
+T(sfixed64, int64_t,  uint64_t,     encode_fixed64);
+T(sint32,   int32_t,  upb_zzenc_32, encode_varint);
+T(sint64,   int64_t,  upb_zzenc_64, encode_varint);
+
 #undef T
 
-static uint8_t *upb_encode_value(uint8_t *buf, upb_field_type_t ft, upb_value v)
-{
-#define CASE(t, member_name) \
-  case UPB_TYPE(t): return upb_put_ ## t(buf, v.member_name);
-  switch(ft) {
-    CASE(DOUBLE,   _double)
-    CASE(FLOAT,    _float)
-    CASE(INT32,    int32)
-    CASE(INT64,    int64)
-    CASE(UINT32,   uint32)
-    CASE(UINT64,   uint64)
-    CASE(SINT32,   int32)
-    CASE(SINT64,   int64)
-    CASE(FIXED32,  uint32)
-    CASE(FIXED64,  uint64)
-    CASE(SFIXED32, int32)
-    CASE(SFIXED64, int64)
-    CASE(BOOL,     _bool)
-    CASE(ENUM,     int32)
-    default: assert(false); return buf;
-  }
-#undef CASE
-}
 
-static uint32_t _upb_get_value_size(upb_field_type_t ft, upb_value v)
-{
-#define CASE(t, member_name) \
-  case UPB_TYPE(t): return upb_get_ ## t ## _size(v.member_name);
-  switch(ft) {
-    CASE(DOUBLE,   _double)
-    CASE(FLOAT,    _float)
-    CASE(INT32,    int32)
-    CASE(INT64,    int64)
-    CASE(UINT32,   uint32)
-    CASE(UINT64,   uint64)
-    CASE(SINT32,   int32)
-    CASE(SINT64,   int64)
-    CASE(FIXED32,  uint32)
-    CASE(FIXED64,  uint64)
-    CASE(SFIXED32, int32)
-    CASE(SFIXED64, int64)
-    CASE(BOOL,     _bool)
-    CASE(ENUM,     int32)
-    default: assert(false); return 0;
-  }
-#undef CASE
-}
+/* code to build the handlers *************************************************/
 
-static uint8_t *_upb_put_tag(uint8_t *buf, upb_field_number_t num,
-                             upb_wire_type_t wt)
-{
-  return upb_put_UINT32(buf, wt | (num << 3));
-}
+static void newhandlers_callback(const void *closure, upb_handlers *h) {
+  UPB_UNUSED(closure);
 
-static uint32_t _upb_get_tag_size(upb_field_number_t num)
-{
-  return upb_get_UINT32_size(num << 3);
-}
+  upb_handlers_setstartmsg(h, startmsg, NULL);
+  upb_handlers_setendmsg(h, endmsg, NULL);
 
+  const upb_msgdef *m = upb_handlers_msgdef(h);
+  upb_msg_iter i;
+  for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
+    const upb_fielddef *f = upb_msg_iter_field(&i);
+    bool packed = upb_fielddef_isseq(f) && upb_fielddef_isprimitive(f) &&
+                  upb_fielddef_packed(f);
+    upb_handlerattr attr;
+    upb_wiretype_t wt =
+        packed ? UPB_WIRE_TYPE_DELIMITED
+               : upb_pb_native_wire_types[upb_fielddef_descriptortype(f)];
 
-/* upb_sizebuilder ************************************************************/
+    // Pre-encode the tag for this field.
+    new_tag(h, f, wt, &attr);
 
-struct upb_sizebuilder {
-  // Accumulating size for the current level.
-  uint32_t size;
-
-  // Stack of sizes for our current nesting.
-  uint32_t stack[UPB_MAX_NESTING], *top;
-
-  // Vector of sizes.
-  uint32_t *sizes;
-  int sizes_len;
-  int sizes_size;
-
-  upb_status status;
-};
-
-// upb_sink callbacks.
-static upb_sink_status _upb_sizebuilder_valuecb(upb_sink *sink, upb_fielddef *f,
-                                                upb_value val,
-                                                upb_status *status)
-{
-  (void)status;
-  upb_sizebuilder *sb = (upb_sizebuilder*)sink;
-  uint32_t size = 0;
-  size += _upb_get_tag_size(f->number);
-  size += _upb_get_value_size(f->type, val);
-  sb->size += size;
-  return UPB_SINK_CONTINUE;
-}
-
-static upb_sink_status _upb_sizebuilder_strcb(upb_sink *sink, upb_fielddef *f,
-                                              upb_strptr str,
-                                              int32_t start, uint32_t end,
-                                              upb_status *status)
-{
-  (void)status;
-  (void)str;   // String data itself is not used.
-  upb_sizebuilder *sb = (upb_sizebuilder*)sink;
-  if(start >= 0) {
-    uint32_t size = 0;
-    size += _upb_get_tag_size(f->number);
-    size += upb_get_UINT32_size(end - start);
-    sb->size += size;
-  }
-  return UPB_SINK_CONTINUE;
-}
-
-static upb_sink_status _upb_sizebuilder_startcb(upb_sink *sink, upb_fielddef *f,
-                                                upb_status *status)
-{
-  (void)status;
-  (void)f;  // Unused (we calculate tag size and delimiter in endcb).
-  upb_sizebuilder *sb = (upb_sizebuilder*)sink;
-  if(f->type == UPB_TYPE(MESSAGE)) {
-    *sb->top = sb->size;
-    sb->top++;
-    sb->size = 0;
-  } else {
-    assert(f->type == UPB_TYPE(GROUP));
-    sb->size += _upb_get_tag_size(f->number);
-  }
-  return UPB_SINK_CONTINUE;
-}
-
-static upb_sink_status _upb_sizebuilder_endcb(upb_sink *sink, upb_fielddef *f,
-                                              upb_status *status)
-{
-  (void)status;
-  upb_sizebuilder *sb = (upb_sizebuilder*)sink;
-  if(f->type == UPB_TYPE(MESSAGE)) {
-    sb->top--;
-    if(sb->sizes_len == sb->sizes_size) {
-      sb->sizes_size *= 2;
-      sb->sizes = realloc(sb->sizes, sb->sizes_size * sizeof(*sb->sizes));
+    if (packed) {
+      upb_handlers_setstartseq(h, f, encode_startdelimfield, &attr);
+      upb_handlers_setendseq(h, f, encode_enddelimfield, &attr);
     }
-    uint32_t child_size = sb->size;
-    uint32_t parent_size = *sb->top;
-    sb->sizes[sb->sizes_len++] = child_size;
-    // The size according to the parent includes the tag size and delimiter of
-    // the submessage.
-    parent_size += upb_get_UINT32_size(child_size);
-    parent_size += _upb_get_tag_size(f->number);
-    // Include size accumulated in parent before child began.
-    sb->size = child_size + parent_size;
-  } else {
-    assert(f->type == UPB_TYPE(GROUP));
-    // As an optimization, we could just add this number twice in startcb, to
-    // avoid having to recalculate it.
-    sb->size += _upb_get_tag_size(f->number);
-  }
-  return UPB_SINK_CONTINUE;
-}
 
-upb_sink_callbacks _upb_sizebuilder_sink_vtbl = {
-  _upb_sizebuilder_valuecb,
-  _upb_sizebuilder_strcb,
-  _upb_sizebuilder_startcb,
-  _upb_sizebuilder_endcb
-};
+#define T(upper, lower, upbtype)                                     \
+  case UPB_DESCRIPTOR_TYPE_##upper:                                  \
+    if (packed) {                                                    \
+      upb_handlers_set##upbtype(h, f, encode_packed_##lower, &attr); \
+    } else {                                                         \
+      upb_handlers_set##upbtype(h, f, encode_scalar_##lower, &attr); \
+    }                                                                \
+    break;
 
+    switch (upb_fielddef_descriptortype(f)) {
+      T(DOUBLE,   double,   double);
+      T(FLOAT,    float,    float);
+      T(INT64,    int64,    int64);
+      T(INT32,    int32,    int32);
+      T(FIXED64,  fixed64,  uint64);
+      T(FIXED32,  fixed32,  uint32);
+      T(BOOL,     bool,     bool);
+      T(UINT32,   uint32,   uint32);
+      T(UINT64,   uint64,   uint64);
+      T(ENUM,     enum,     int32);
+      T(SFIXED32, sfixed32, int32);
+      T(SFIXED64, sfixed64, int64);
+      T(SINT32,   sint32,   int32);
+      T(SINT64,   sint64,   int64);
+      case UPB_DESCRIPTOR_TYPE_STRING:
+      case UPB_DESCRIPTOR_TYPE_BYTES:
+        upb_handlers_setstartstr(h, f, encode_startstr, &attr);
+        upb_handlers_setendstr(h, f, encode_enddelimfield, &attr);
+        upb_handlers_setstring(h, f, encode_strbuf, &attr);
+        break;
+      case UPB_DESCRIPTOR_TYPE_MESSAGE:
+        upb_handlers_setstartsubmsg(h, f, encode_startdelimfield, &attr);
+        upb_handlers_setendsubmsg(h, f, encode_enddelimfield, &attr);
+        break;
+      case UPB_DESCRIPTOR_TYPE_GROUP: {
+        // Endgroup takes a different tag (wire_type = END_GROUP).
+        upb_handlerattr attr2;
+        new_tag(h, f, UPB_WIRE_TYPE_END_GROUP, &attr2);
 
-/* upb_sink callbacks *********************************************************/
+        upb_handlers_setstartsubmsg(h, f, encode_startgroup, &attr);
+        upb_handlers_setendsubmsg(h, f, encode_endgroup, &attr2);
 
-struct upb_encoder {
-  upb_sink base;
-  //upb_bytesink *bytesink;
-  uint32_t *sizes;
-  int size_offset;
-};
+        upb_handlerattr_uninit(&attr2);
+        break;
+      }
+    }
 
+#undef T
 
-// Within one callback we may need to encode up to two separate values.
-#define UPB_ENCODER_BUFSIZE (UPB_MAX_ENCODED_SIZE * 2)
-
-static upb_sink_status _upb_encoder_push_buf(upb_encoder *s, const uint8_t *buf,
-                                             size_t len, upb_status *status)
-{
-  // TODO: conjure a upb_strptr that points to buf.
-  //upb_strptr ptr;
-  (void)s;
-  (void)buf;
-  (void)status;
-  size_t written = 5;// = upb_bytesink_onbytes(s->bytesink, ptr);
-  if(written < len) {
-    // TODO: mark to skip "written" bytes next time.
-    return UPB_SINK_STOP;
-  } else {
-    return UPB_SINK_CONTINUE;
+    upb_handlerattr_uninit(&attr);
   }
 }
 
-static upb_sink_status _upb_encoder_valuecb(upb_sink *sink, upb_fielddef *f,
-                                            upb_value val, upb_status *status)
-{
-  upb_encoder *s = (upb_encoder*)sink;
-  uint8_t buf[UPB_ENCODER_BUFSIZE], *ptr = buf;
-  upb_wire_type_t wt = upb_types[f->type].expected_wire_type;
-  // TODO: handle packed encoding.
-  ptr = _upb_put_tag(ptr, f->number, wt);
-  ptr = upb_encode_value(ptr, f->type, val);
-  return _upb_encoder_push_buf(s, buf, ptr - buf, status);
+
+/* public API *****************************************************************/
+
+const upb_handlers *upb_pb_encoder_newhandlers(const upb_msgdef *m,
+                                               const void *owner) {
+  return upb_handlers_newfrozen(m, owner, newhandlers_callback, NULL);
 }
 
-static upb_sink_status _upb_encoder_strcb(upb_sink *sink, upb_fielddef *f,
-                                          upb_strptr str,
-                                          int32_t start, uint32_t end,
-                                          upb_status *status)
-{
-  upb_encoder *s = (upb_encoder*)sink;
-  uint8_t buf[UPB_ENCODER_BUFSIZE], *ptr = buf;
-  if(start >= 0) {
-    ptr = _upb_put_tag(ptr, f->number, UPB_WIRE_TYPE_DELIMITED);
-    ptr = upb_put_UINT32(ptr, end - start);
+#define ARRAYSIZE(x) (sizeof(x) / sizeof(x[0]))
+
+void upb_pb_encoder_init(upb_pb_encoder *e, const upb_handlers *h) {
+  e->output_ = NULL;
+  e->subc = NULL;
+  e->buf = e->initbuf;
+  e->ptr = e->buf;
+  e->limit = e->buf + ARRAYSIZE(e->initbuf);
+  e->segbuf = e->seginitbuf;
+  e->seglimit = e->segbuf + ARRAYSIZE(e->seginitbuf);
+  e->stacklimit = e->stack + ARRAYSIZE(e->stack);
+  upb_sink_reset(&e->input_, h, e);
+}
+
+void upb_pb_encoder_uninit(upb_pb_encoder *e) {
+  if (e->buf != e->initbuf) {
+    free(e->buf);
   }
-  // TODO: properly handle partially consumed strings and partially supplied
-  // strings.
-  _upb_encoder_push_buf(s, buf, ptr - buf, status);
-  return _upb_encoder_push_buf(s, (uint8_t*)upb_string_getrobuf(str), end - start, status);
-}
 
-static upb_sink_status _upb_encoder_startcb(upb_sink *sink, upb_fielddef *f,
-                                            upb_status *status)
-{
-  upb_encoder *s = (upb_encoder*)sink;
-  uint8_t buf[UPB_ENCODER_BUFSIZE], *ptr = buf;
-  if(f->type == UPB_TYPE(GROUP)) {
-    ptr = _upb_put_tag(ptr, f->number, UPB_WIRE_TYPE_START_GROUP);
-  } else {
-    ptr = _upb_put_tag(ptr, f->number, UPB_WIRE_TYPE_DELIMITED);
-    ptr = upb_put_UINT32(ptr, s->sizes[--s->size_offset]);
+  if (e->segbuf != e->seginitbuf) {
+    free(e->segbuf);
   }
-  return _upb_encoder_push_buf(s, buf, ptr - buf, status);
 }
 
-static upb_sink_status _upb_encoder_endcb(upb_sink *sink, upb_fielddef *f,
-                                          upb_status *status)
-{
-  upb_encoder *s = (upb_encoder*)sink;
-  uint8_t buf[UPB_ENCODER_BUFSIZE], *ptr = buf;
-  if(f->type != UPB_TYPE(GROUP)) return UPB_SINK_CONTINUE;
-  ptr = _upb_put_tag(ptr, f->number, UPB_WIRE_TYPE_END_GROUP);
-  return _upb_encoder_push_buf(s, buf, ptr - buf, status);
+void upb_pb_encoder_resetoutput(upb_pb_encoder *e, upb_bytessink *output) {
+  upb_pb_encoder_reset(e);
+  e->output_ = output;
+  e->subc = output->closure;
 }
 
-upb_sink_callbacks _upb_encoder_sink_vtbl = {
-  _upb_encoder_valuecb,
-  _upb_encoder_strcb,
-  _upb_encoder_startcb,
-  _upb_encoder_endcb
-};
+void upb_pb_encoder_reset(upb_pb_encoder *e) {
+  e->segptr = NULL;
+  e->top = NULL;
+  e->depth = 0;
+}
 
+upb_sink *upb_pb_encoder_input(upb_pb_encoder *e) { return &e->input_; }

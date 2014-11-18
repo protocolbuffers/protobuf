@@ -115,6 +115,7 @@ reffed_ptr<FieldDef> DefBuilder::NewFieldDef(const goog::FieldDescriptor* f,
   upb_f->set_number(f->number(), &status);
   upb_f->set_label(FieldDef::ConvertLabel(f->label()));
   upb_f->set_descriptor_type(FieldDef::ConvertDescriptorType(f->type()));
+  upb_f->set_packed(f->options().packed());
 #ifdef UPB_GOOGLE3
   upb_f->set_lazy(f->options().lazy());
 #endif

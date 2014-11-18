@@ -23,7 +23,7 @@
 //
 // Note: this mode requires that we can shell out to gcc.
 //
-// 2. Run the test once locally.  This will load the JIT code by building a
+// 2. Run the test locally.  This will load the JIT code by building a
 //    .so (/tmp/upb-jit-code.so) and using dlopen, so more of the tooling will
 //    work properly (like GDB).
 //
