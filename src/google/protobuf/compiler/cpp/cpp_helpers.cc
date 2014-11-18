@@ -453,6 +453,25 @@ void PrintHandlingOptionalStaticInitializers(
 }
 
 
+static bool HasMapFields(const Descriptor* descriptor) {
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    if (descriptor->field(i)->is_map()) {
+      return true;
+    }
+  }
+  for (int i = 0; i < descriptor->nested_type_count(); ++i) {
+    if (HasMapFields(descriptor->nested_type(i))) return true;
+  }
+  return false;
+}
+
+bool HasMapFields(const FileDescriptor* file) {
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    if (HasMapFields(file->message_type(i))) return true;
+  }
+  return false;
+}
+
 static bool HasEnumDefinitions(const Descriptor* message_type) {
   if (message_type->enum_type_count() > 0) return true;
   for (int i = 0; i < message_type->nested_type_count(); ++i) {

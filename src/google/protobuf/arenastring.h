@@ -214,6 +214,8 @@ struct ArenaStringPtr {
     }
   }
 
+  void AssignWithDefault(const ::std::string* default_value, ArenaStringPtr value);
+
   inline const ::std::string& GetNoArena(const ::std::string* default_value) const {
     return *ptr_;
   }

@@ -182,7 +182,7 @@ class FieldGeneratorMap {
 
  private:
   const Descriptor* descriptor_;
-  scoped_array<scoped_ptr<FieldGenerator> > field_generators_;
+  google::protobuf::scoped_array<google::protobuf::scoped_ptr<FieldGenerator> > field_generators_;
 
   static FieldGenerator* MakeGenerator(const FieldDescriptor* field,
                                        const Options& options);

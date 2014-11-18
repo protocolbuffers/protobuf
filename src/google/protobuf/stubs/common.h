@@ -267,6 +267,8 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 #endif
 
 #define GOOGLE_GUARDED_BY(x)
+#define GOOGLE_FALLTHROUGH_INTENDED
+#define GOOGLE_ATTRIBUTE_COLD
 
 // x86 and x86-64 can perform unaligned loads/stores directly.
 #if defined(_M_X64) || defined(__x86_64__) || \

@@ -51,6 +51,11 @@ message TestMap {
   map<int32, EnumValue>     int32_to_enum_field = 4;
   map<int32, MessageValue>  int32_to_message_field = 5;
   map<string, int32>        string_to_int32_field = 6;
+
+  message MessageWithRequiredFields {
+    required int32 value = 1;
+  }
+  map<int32, MessageWithRequiredFields> required_message_map = 11;
 }
 
 message TestUnknownEnumValue {

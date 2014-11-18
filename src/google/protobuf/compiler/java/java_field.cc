@@ -159,7 +159,7 @@ template <>
 FieldGeneratorMap<ImmutableFieldGenerator>::FieldGeneratorMap(
     const Descriptor* descriptor, Context* context)
     : descriptor_(descriptor),
-      field_generators_(new scoped_ptr<
+      field_generators_(new google::protobuf::scoped_ptr<
           ImmutableFieldGenerator>[descriptor->field_count()]) {
 
   // Construct all the FieldGenerators and assign them bit indices for their

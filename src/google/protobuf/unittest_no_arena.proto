@@ -43,6 +43,7 @@ syntax = "proto2";
 option cc_generic_services = true;     // auto-added
 option java_generic_services = true;   // auto-added
 option py_generic_services = true;     // auto-added
+option cc_enable_arenas = false;
 
 import "google/protobuf/unittest_import.proto";
 import "google/protobuf/unittest_arena.proto";

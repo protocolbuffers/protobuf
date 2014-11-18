@@ -34,19 +34,28 @@
 
 #include <algorithm>
 #include <set>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/generated_message_reflection.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/repeated_field.h>
-#include <google/protobuf/extension_set.h>
-#include <google/protobuf/generated_message_util.h>
+
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/extension_set.h>
+#include <google/protobuf/generated_message_reflection.h>
+#include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/map_field.h>
+#include <google/protobuf/repeated_field.h>
+
 
 #define GOOGLE_PROTOBUF_HAS_ONEOF
 
 namespace google {
 namespace protobuf {
 namespace internal {
+
+namespace {
+bool IsMapFieldInApi(const FieldDescriptor* field) {
+  return field->is_map();
+}
+}  // anonymous namespace
 
 int StringSpaceUsedExcludingSelf(const string& str) {
   const void* start = &str;
@@ -76,14 +85,7 @@ const string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
 
 namespace {
 inline bool SupportsArenas(const Descriptor* descriptor) {
-  // In open-source release we enable arena support by default but as we also
-  // down-integrate descriptor.pb.(h|cc) from our internal code base which
-  // hasn't enabled arena support yet, here we need to be able to handle both
-  // cases for descriptor protos.
-  if (!Arena::is_arena_constructable<FileDescriptorProto>::type::value) {
-    return descriptor->name() != "google/protobuf/descriptor.proto";
-  }
-  return true;
+  return descriptor->file()->options().cc_enable_arenas();
 }
 }  // anonymous namespace
 
@@ -318,11 +320,17 @@ int GeneratedMessageReflection::SpaceUsed(const Message& message) const {
           break;
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
-          // We don't know which subclass of RepeatedPtrFieldBase the type is,
-          // so we use RepeatedPtrFieldBase directly.
-          total_size +=
-              GetRaw<RepeatedPtrFieldBase>(message, field)
-                .SpaceUsedExcludingSelf<GenericTypeHandler<Message> >();
+          if (IsMapFieldInApi(field)) {
+            total_size +=
+                GetRaw<MapFieldBase>(message, field).SpaceUsedExcludingSelf();
+          } else {
+            // We don't know which subclass of RepeatedPtrFieldBase the type is,
+            // so we use RepeatedPtrFieldBase directly.
+            total_size +=
+                GetRaw<RepeatedPtrFieldBase>(message, field)
+                  .SpaceUsedExcludingSelf<GenericTypeHandler<Message> >();
+          }
+
           break;
       }
     } else {
@@ -406,9 +414,17 @@ void GeneratedMessageReflection::SwapField(
 
       case FieldDescriptor::CPPTYPE_STRING:
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        MutableRaw<RepeatedPtrFieldBase>(message1, field)->
+        if (IsMapFieldInApi(field)) {
+          MutableRaw<MapFieldBase>(message1, field)->
+            MutableRepeatedField()->
+              Swap<GenericTypeHandler<google::protobuf::Message> >(
+                MutableRaw<MapFieldBase>(message2, field)->
+                  MutableRepeatedField());
+        } else {
+          MutableRaw<RepeatedPtrFieldBase>(message1, field)->
             Swap<GenericTypeHandler<google::protobuf::Message> >(
               MutableRaw<RepeatedPtrFieldBase>(message2, field));
+        }
         break;
 
       default:
@@ -728,7 +744,11 @@ int GeneratedMessageReflection::FieldSize(const Message& message,
 
       case FieldDescriptor::CPPTYPE_STRING:
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        return GetRaw<RepeatedPtrFieldBase>(message, field).size();
+        if (IsMapFieldInApi(field)) {
+          return GetRaw<MapFieldBase>(message, field).GetRepeatedField().size();
+        } else {
+          return GetRaw<RepeatedPtrFieldBase>(message, field).size();
+        }
     }
 
     GOOGLE_LOG(FATAL) << "Can't get here.";
@@ -820,10 +840,16 @@ void GeneratedMessageReflection::ClearField(
       }
 
       case FieldDescriptor::CPPTYPE_MESSAGE: {
-        // We don't know which subclass of RepeatedPtrFieldBase the type is,
-        // so we use RepeatedPtrFieldBase directly.
-        MutableRaw<RepeatedPtrFieldBase>(message, field)
-            ->Clear<GenericTypeHandler<Message> >();
+        if (IsMapFieldInApi(field)) {
+          MutableRaw<MapFieldBase>(message, field)
+              ->MutableRepeatedField()
+              ->Clear<GenericTypeHandler<Message> >();
+        } else {
+          // We don't know which subclass of RepeatedPtrFieldBase the type is,
+          // so we use RepeatedPtrFieldBase directly.
+          MutableRaw<RepeatedPtrFieldBase>(message, field)
+              ->Clear<GenericTypeHandler<Message> >();
+        }
         break;
       }
     }
@@ -865,8 +891,14 @@ void GeneratedMessageReflection::RemoveLast(
         break;
 
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        MutableRaw<RepeatedPtrFieldBase>(message, field)
+        if (IsMapFieldInApi(field)) {
+          MutableRaw<MapFieldBase>(message, field)
+              ->MutableRepeatedField()
+              ->RemoveLast<GenericTypeHandler<Message> >();
+        } else {
+          MutableRaw<RepeatedPtrFieldBase>(message, field)
             ->RemoveLast<GenericTypeHandler<Message> >();
+        }
         break;
     }
   }
@@ -881,8 +913,14 @@ Message* GeneratedMessageReflection::ReleaseLast(
     return static_cast<Message*>(
         MutableExtensionSet(message)->ReleaseLast(field->number()));
   } else {
-    return MutableRaw<RepeatedPtrFieldBase>(message, field)
+    if (IsMapFieldInApi(field)) {
+      return MutableRaw<MapFieldBase>(message, field)
+          ->MutableRepeatedField()
+          ->ReleaseLast<GenericTypeHandler<Message> >();
+    } else {
+      return MutableRaw<RepeatedPtrFieldBase>(message, field)
         ->ReleaseLast<GenericTypeHandler<Message> >();
+    }
   }
 }
 
@@ -916,8 +954,14 @@ void GeneratedMessageReflection::SwapElements(
 
       case FieldDescriptor::CPPTYPE_STRING:
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        MutableRaw<RepeatedPtrFieldBase>(message, field)
+        if (IsMapFieldInApi(field)) {
+          MutableRaw<MapFieldBase>(message, field)
+              ->MutableRepeatedField()
+              ->SwapElements(index1, index2);
+        } else {
+          MutableRaw<RepeatedPtrFieldBase>(message, field)
             ->SwapElements(index1, index2);
+        }
         break;
     }
   }
@@ -1519,8 +1563,14 @@ const Message& GeneratedMessageReflection::GetRepeatedMessage(
     return static_cast<const Message&>(
         GetExtensionSet(message).GetRepeatedMessage(field->number(), index));
   } else {
-    return GetRaw<RepeatedPtrFieldBase>(message, field)
-        .Get<GenericTypeHandler<Message> >(index);
+    if (IsMapFieldInApi(field)) {
+      return GetRaw<MapFieldBase>(message, field)
+          .GetRepeatedField()
+          .Get<GenericTypeHandler<Message> >(index);
+    } else {
+      return GetRaw<RepeatedPtrFieldBase>(message, field)
+          .Get<GenericTypeHandler<Message> >(index);
+    }
   }
 }
 
@@ -1533,8 +1583,14 @@ Message* GeneratedMessageReflection::MutableRepeatedMessage(
         MutableExtensionSet(message)->MutableRepeatedMessage(
           field->number(), index));
   } else {
-    return MutableRaw<RepeatedPtrFieldBase>(message, field)
+    if (IsMapFieldInApi(field)) {
+      return MutableRaw<MapFieldBase>(message, field)
+          ->MutableRepeatedField()
+          ->Mutable<GenericTypeHandler<Message> >(index);
+    } else {
+      return MutableRaw<RepeatedPtrFieldBase>(message, field)
         ->Mutable<GenericTypeHandler<Message> >(index);
+    }
   }
 }
 
@@ -1549,11 +1605,18 @@ Message* GeneratedMessageReflection::AddMessage(
     return static_cast<Message*>(
         MutableExtensionSet(message)->AddMessage(field, factory));
   } else {
+    Message* result = NULL;
+
     // We can't use AddField<Message>() because RepeatedPtrFieldBase doesn't
     // know how to allocate one.
-    RepeatedPtrFieldBase* repeated =
-        MutableRaw<RepeatedPtrFieldBase>(message, field);
-    Message* result = repeated->AddFromCleared<GenericTypeHandler<Message> >();
+    RepeatedPtrFieldBase* repeated = NULL;
+    if (IsMapFieldInApi(field)) {
+      repeated =
+          MutableRaw<MapFieldBase>(message, field)->MutableRepeatedField();
+    } else {
+      repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
+    }
+    result = repeated->AddFromCleared<GenericTypeHandler<Message> >();
     if (result == NULL) {
       // We must allocate a new object.
       const Message* prototype;
@@ -1568,6 +1631,7 @@ Message* GeneratedMessageReflection::AddMessage(
       // of AddAllocated.
       repeated->UnsafeArenaAddAllocated<GenericTypeHandler<Message> >(result);
     }
+
     return result;
   }
 }
@@ -1584,11 +1648,18 @@ void* GeneratedMessageReflection::MutableRawRepeatedField(
     GOOGLE_CHECK_EQ(field->options().ctype(), ctype) << "subtype mismatch";
   if (desc != NULL)
     GOOGLE_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
-  if (field->is_extension())
+  if (field->is_extension()) {
     return MutableExtensionSet(message)->MutableRawRepeatedField(
         field->number(), field->type(), field->is_packed(), field);
-  else
+  } else {
+    // Trigger transform for MapField
+    if (IsMapFieldInApi(field)) {
+      return reinterpret_cast<MapFieldBase*>(reinterpret_cast<uint8*>(message) +
+                                             offsets_[field->index()])
+          ->MutableRepeatedField();
+    }
     return reinterpret_cast<uint8*>(message) + offsets_[field->index()];
+  }
 }
 
 const FieldDescriptor* GeneratedMessageReflection::GetOneofFieldDescriptor(
@@ -1998,6 +2069,54 @@ void* GeneratedMessageReflection::RepeatedFieldData(
   } else {
     return reinterpret_cast<uint8*>(message) + offsets_[field->index()];
   }
+}
+
+GeneratedMessageReflection*
+GeneratedMessageReflection::NewGeneratedMessageReflection(
+    const Descriptor* descriptor,
+    const Message* default_instance,
+    const int offsets[],
+    int has_bits_offset,
+    int unknown_fields_offset,
+    int extensions_offset,
+    const void* default_oneof_instance,
+    int oneof_case_offset,
+    int object_size,
+    int arena_offset) {
+  return new GeneratedMessageReflection(descriptor,
+                                        default_instance,
+                                        offsets,
+                                        has_bits_offset,
+                                        unknown_fields_offset,
+                                        extensions_offset,
+                                        default_oneof_instance,
+                                        oneof_case_offset,
+                                        DescriptorPool::generated_pool(),
+                                        MessageFactory::generated_factory(),
+                                        object_size,
+                                        arena_offset);
+}
+
+GeneratedMessageReflection*
+GeneratedMessageReflection::NewGeneratedMessageReflection(
+    const Descriptor* descriptor,
+    const Message* default_instance,
+    const int offsets[],
+    int has_bits_offset,
+    int unknown_fields_offset,
+    int extensions_offset,
+    int object_size,
+    int arena_offset) {
+  return new GeneratedMessageReflection(descriptor,
+                                        default_instance,
+                                        offsets,
+                                        has_bits_offset,
+                                        unknown_fields_offset,
+                                        extensions_offset,
+                                        DescriptorPool::generated_pool(),
+                                        MessageFactory::generated_factory(),
+                                        object_size,
+                                        arena_offset);
 }
 
 }  // namespace internal

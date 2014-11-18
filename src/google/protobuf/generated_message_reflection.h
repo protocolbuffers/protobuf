@@ -176,6 +176,32 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
                              int arena_offset);
   ~GeneratedMessageReflection();
 
+  // Shorter-to-call helpers for the above two constructions that work if the
+  // pool and factory are the usual, namely, DescriptorPool::generated_pool()
+  // and MessageFactory::generated_factory().
+
+  static GeneratedMessageReflection* NewGeneratedMessageReflection(
+      const Descriptor* descriptor,
+      const Message* default_instance,
+      const int offsets[],
+      int has_bits_offset,
+      int unknown_fields_offset,
+      int extensions_offset,
+      const void* default_oneof_instance,
+      int oneof_case_offset,
+      int object_size,
+      int arena_offset);
+
+  static GeneratedMessageReflection* NewGeneratedMessageReflection(
+      const Descriptor* descriptor,
+      const Message* default_instance,
+      const int offsets[],
+      int has_bits_offset,
+      int unknown_fields_offset,
+      int extensions_offset,
+      int object_size,
+      int arena_offset);
+
   // implements Reflection -------------------------------------------
 
   const UnknownFieldSet& GetUnknownFields(const Message& message) const;

@@ -80,7 +80,7 @@ class SharedCodeGenerator {
   // improve compatibility with version 1 of protocol buffers.
   bool ShouldIncludeDependency(const FileDescriptor* descriptor);
 
-  scoped_ptr<ClassNameResolver> name_resolver_;
+  google::protobuf::scoped_ptr<ClassNameResolver> name_resolver_;
   const FileDescriptor* file_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SharedCodeGenerator);
 };

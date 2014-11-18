@@ -91,7 +91,7 @@ public class MapField<K, V> {
     }
     
     public Message convertKeyAndValueToMessage(K key, V value) {
-      return defaultEntry.newBuilderForType().setKey(key).setValue(value).build();
+      return defaultEntry.newBuilderForType().setKey(key).setValue(value).buildPartial();
     }
     
     public void convertMessageToKeyAndValue(Message message, Map<K, V> map) {

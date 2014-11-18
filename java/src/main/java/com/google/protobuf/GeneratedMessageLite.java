@@ -81,22 +81,18 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
     return unknownFields.mergeFieldFrom(tag, input);
   }
 
-  /**
-   * Used by parsing constructors in generated classes.
-   */
-  protected void makeExtensionsImmutable() {
-    // Noop for messages without extensions.
-  }
-
   @SuppressWarnings("unchecked")
   public abstract static class Builder<MessageType extends GeneratedMessageLite,
                                        BuilderType extends Builder>
       extends AbstractMessageLite.Builder<BuilderType> {
 
+    private final MessageType defaultInstance;
     private UnknownFieldSetLite unknownFields =
         UnknownFieldSetLite.getDefaultInstance();
 
-    protected Builder() {}
+    protected Builder(MessageType defaultInstance) {
+      this.defaultInstance = defaultInstance;
+    }
 
     //@Override (Java 1.6 override semantics, but we must support 1.5)
     public BuilderType clear() {
@@ -111,15 +107,25 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
       builder.mergeFrom(buildPartial());
       return builder;
     }
-    
+
     /** All subclasses implement this. */
     public abstract MessageType buildPartial();
 
+    //@Override (Java 1.6 override semantics, but we must support 1.5)
+    public final MessageType build() {
+      MessageType result = buildPartial();
+      if (!result.isInitialized()) {
+        throw newUninitializedMessageException(result);
+      }
+      return result;
+    }
+
     /** All subclasses implement this. */
     public abstract BuilderType mergeFrom(MessageType message);
-
-    // Defined here for return type covariance.
-    public abstract MessageType getDefaultInstanceForType();
+    
+    public MessageType getDefaultInstanceForType() {
+      return defaultInstance;
+    }
 
     /**
      * Called by subclasses to parse an unknown field.
@@ -288,8 +294,8 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
     /**
      * Used by parsing constructors in generated classes.
      */
-    @Override
-    protected void makeExtensionsImmutable() {
+    protected static void makeExtensionsImmutable(
+        FieldSet<ExtensionDescriptor> extensions) {
       extensions.makeImmutable();
     }
 
@@ -361,7 +367,9 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
         BuilderType extends ExtendableBuilder<MessageType, BuilderType>>
       extends Builder<MessageType, BuilderType>
       implements ExtendableMessageOrBuilder<MessageType> {
-    protected ExtendableBuilder() {}
+    protected ExtendableBuilder(MessageType defaultInstance) {
+      super(defaultInstance);
+    }
 
     private FieldSet<ExtensionDescriptor> extensions = FieldSet.emptySet();
     private boolean extensionsIsMutable;

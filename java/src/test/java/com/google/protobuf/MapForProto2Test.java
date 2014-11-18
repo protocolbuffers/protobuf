@@ -33,6 +33,7 @@ package com.google.protobuf;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import map_test.MapForProto2TestProto.TestMap;
 import map_test.MapForProto2TestProto.TestMap.MessageValue;
+import map_test.MapForProto2TestProto.TestMap.MessageWithRequiredFields;
 import map_test.MapForProto2TestProto.TestUnknownEnumValue;
 
 import junit.framework.TestCase;
@@ -485,4 +486,17 @@ public class MapForProto2Test extends TestCase {
     assertEquals(54321, messageWithUnknownEnums.getInt32ToInt32Field().get(2).intValue());
   }
 
+
+  public void testRequiredMessage() throws Exception {
+    TestMap.Builder builder = TestMap.newBuilder();
+    builder.getMutableRequiredMessageMap().put(0,
+        MessageWithRequiredFields.newBuilder().buildPartial());
+    TestMap message = builder.buildPartial();
+    assertFalse(message.isInitialized());
+
+    builder.getMutableRequiredMessageMap().put(0,
+        MessageWithRequiredFields.newBuilder().setValue(1).build());
+    message = builder.build();
+    assertTrue(message.isInitialized());
+  }
 }

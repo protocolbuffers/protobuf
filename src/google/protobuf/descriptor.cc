@@ -1617,6 +1617,10 @@ bool DescriptorPool::TryFindExtensionInFallbackDatabase(
 
 // ===================================================================
 
+bool FieldDescriptor::is_map() const {
+  return type() == TYPE_MESSAGE && message_type()->options().map_entry();
+}
+
 string FieldDescriptor::DefaultValueAsString(bool quote_string_type) const {
   GOOGLE_CHECK(has_default_value()) << "No default value";
   switch (cpp_type()) {
@@ -2184,9 +2188,7 @@ void FieldDescriptor::DebugString(int depth,
   string field_type;
 
   // Special case map fields.
-  bool is_map = false;
-  if (type() == TYPE_MESSAGE && message_type()->options().map_entry()) {
-    is_map = true;
+  if (is_map()) {
     strings::SubstituteAndAppend(
         &field_type, "map<$0, $1>",
         message_type()->field(0)->FieldTypeNameDebugString(),
@@ -2196,7 +2198,7 @@ void FieldDescriptor::DebugString(int depth,
   }
 
   string label;
-  if (print_label_flag == PRINT_LABEL && !is_map) {
+  if (print_label_flag == PRINT_LABEL && !is_map()) {
     label = kLabelToName[this->label()];
     label.push_back(' ');
   }
@@ -4964,8 +4966,7 @@ void DescriptorBuilder::ValidateFieldOptions(FieldDescriptor* field,
   }
 
   // Validate map types.
-  if (field->type() == FieldDescriptor::TYPE_MESSAGE &&
-      field->message_type()->options().map_entry()) {
+  if (field->is_map()) {
     if (!ValidateMapEntry(field, proto)) {
       AddError(field->full_name(), proto,
                DescriptorPool::ErrorCollector::OTHER,

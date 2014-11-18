@@ -73,8 +73,10 @@
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/arenastring.h>
+#include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/repeated_field.h>
+#include <google/protobuf/map_type_handler.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/wire_format.h>
 
@@ -84,6 +86,8 @@ namespace protobuf {
 using internal::WireFormat;
 using internal::ExtensionSet;
 using internal::GeneratedMessageReflection;
+using internal::MapField;
+using internal::MapFieldBase;
 
 
 using internal::ArenaStringPtr;
@@ -92,6 +96,10 @@ using internal::ArenaStringPtr;
 // Some helper tables and functions...
 
 namespace {
+
+bool IsMapFieldInApi(const FieldDescriptor* field) {
+  return field->is_map();
+}
 
 // Compute the byte size of the in-memory representation of the field.
 int FieldSpaceUsed(const FieldDescriptor* field) {
@@ -106,7 +114,12 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
       case FD::CPPTYPE_FLOAT  : return sizeof(RepeatedField<float   >);
       case FD::CPPTYPE_BOOL   : return sizeof(RepeatedField<bool    >);
       case FD::CPPTYPE_ENUM   : return sizeof(RepeatedField<int     >);
-      case FD::CPPTYPE_MESSAGE: return sizeof(RepeatedPtrField<Message>);
+      case FD::CPPTYPE_MESSAGE:
+        if (IsMapFieldInApi(field)) {
+          return sizeof(MapFieldBase);
+        } else {
+          return sizeof(RepeatedPtrField<Message>);
+        }
 
       case FD::CPPTYPE_STRING:
         switch (field->options().ctype()) {
@@ -369,7 +382,11 @@ void DynamicMessage::SharedCtor() {
         if (!field->is_repeated()) {
           new(field_ptr) Message*(NULL);
         } else {
-          new(field_ptr) RepeatedPtrField<Message>();
+          if (IsMapFieldInApi(field)) {
+            new (field_ptr) MapFieldBase();
+          } else {
+            new (field_ptr) RepeatedPtrField<Message>();
+          }
         }
         break;
       }
@@ -456,8 +473,12 @@ DynamicMessage::~DynamicMessage() {
           break;
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
-          reinterpret_cast<RepeatedPtrField<Message>*>(field_ptr)
-              ->~RepeatedPtrField<Message>();
+          if (IsMapFieldInApi(field)) {
+            reinterpret_cast<MapFieldBase*>(field_ptr)->~MapFieldBase();
+          } else {
+            reinterpret_cast<RepeatedPtrField<Message>*>(field_ptr)
+                ->~RepeatedPtrField<Message>();
+          }
           break;
       }
 

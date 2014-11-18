@@ -72,7 +72,7 @@ TEST(DropUnknownFieldsTest, DynamicMessage) {
   foo_with_extra_fields.set_extra_int32_value(2);
 
   google::protobuf::DynamicMessageFactory factory;
-  scoped_ptr<google::protobuf::Message> foo(
+  google::protobuf::scoped_ptr<google::protobuf::Message> foo(
       factory.GetPrototype(Foo::descriptor())->New());
   ASSERT_TRUE(foo->ParseFromString(foo_with_extra_fields.SerializeAsString()));
   EXPECT_TRUE(foo->GetReflection()->GetUnknownFields(*foo).empty());

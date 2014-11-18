@@ -70,6 +70,13 @@ bool GenerateHasBits(const Descriptor* descriptor) {
   return SupportFieldPresence(descriptor->file()) ||
       HasRepeatedFields(descriptor);
 }
+
+string MapValueImmutableClassdName(const Descriptor* descriptor,
+                                   ClassNameResolver* name_resolver) {
+  const FieldDescriptor* value_field = descriptor->FindFieldByName("value");
+  GOOGLE_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
+  return name_resolver->GetImmutableClassName(value_field->message_type());
+}
 }  // namespace
 
 // ===================================================================
@@ -323,18 +330,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   printer->Outdent();
   printer->Print(
     "}\n"
-    "\n"
-    "private static final $classname$ defaultInstance;\n"
-    "public static $classname$ getDefaultInstance() {\n"
-    "  return defaultInstance;\n"
-    "}\n"
-    "\n"
-    "public $classname$ getDefaultInstanceForType() {\n"
-    "  return defaultInstance;\n"
-    "}\n"
-    "\n",
-    "classname", descriptor_->name(),
-    "lite", variables["lite"]);
+    "\n");
 
   if (HasDescriptorMethods(descriptor_)) {
     printer->Print(
@@ -479,17 +475,24 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   GenerateParseFromMethods(printer);
   GenerateBuilder(printer);
 
-  // Carefully initialize the default instance in such a way that it doesn't
-  // conflict with other initialization.
   printer->Print(
     "\n"
-    "static {\n"
-    "  defaultInstance = new $classname$();\n"
-    "}\n"
-    "\n"
     "// @@protoc_insertion_point(class_scope:$full_name$)\n",
-    "classname", descriptor_->name(),
     "full_name", descriptor_->full_name());
+
+  // Carefully initialize the default instance in such a way that it doesn't
+  // conflict with other initialization.
+  printer->Print("private static final $classname$ defaultInstance =\n"
+      "    new $classname$();\n"
+      "public static $classname$ getDefaultInstance() {\n"
+      "  return defaultInstance;\n"
+      "}\n"
+      "\n"
+      "public $classname$ getDefaultInstanceForType() {\n"
+      "  return defaultInstance;\n"
+      "}\n"
+      "\n",
+      "classname", descriptor_->name());
 
   // Extensions must be declared after the defaultInstance is initialized
   // because the defaultInstance is used by the extension to lazily retrieve
@@ -508,7 +511,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
 
 void ImmutableMessageGenerator::
 GenerateMessageSerializationMethods(io::Printer* printer) {
-  scoped_array<const FieldDescriptor*> sorted_fields(
+  google::protobuf::scoped_array<const FieldDescriptor * > sorted_fields(
       SortFieldsByNumber(descriptor_));
 
   vector<const Descriptor::ExtensionRange*> sorted_extensions;
@@ -913,15 +916,15 @@ GenerateDescriptorMethods(io::Printer* printer) {
 
 void ImmutableMessageGenerator::
 GenerateCommonBuilderMethods(io::Printer* printer) {
-  printer->Print(
-    "// Construct using $classname$.newBuilder()\n"
-    "private Builder() {\n"
-    "  maybeForceBuilderInitialization();\n"
-    "}\n"
-    "\n",
-    "classname", name_resolver_->GetImmutableClassName(descriptor_));
-
   if (HasDescriptorMethods(descriptor_)) {
+    printer->Print(
+        "// Construct using $classname$.newBuilder()\n"
+        "private Builder() {\n"
+        "  maybeForceBuilderInitialization();\n"
+        "}\n"
+        "\n",
+        "classname", name_resolver_->GetImmutableClassName(descriptor_));
+
     printer->Print(
       "private Builder(\n"
       "    com.google.protobuf.GeneratedMessage.BuilderParent parent) {\n"
@@ -929,6 +932,17 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
       "  maybeForceBuilderInitialization();\n"
       "}\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
+  } else {
+    // LITE runtime passes along the default instance to implement
+    // getDefaultInstanceForType() at the GneratedMessageLite level.
+    printer->Print(
+        "// Construct using $classname$.newBuilder()\n"
+        "private Builder() {\n"
+        "  super(defaultInstance);\n"
+        "  maybeForceBuilderInitialization();\n"
+        "}\n"
+        "\n",
+        "classname", name_resolver_->GetImmutableClassName(descriptor_));
   }
 
 
@@ -994,25 +1008,33 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
       "\n",
       "fileclass", name_resolver_->GetImmutableClassName(descriptor_->file()),
       "identifier", UniqueFileScopeIdentifier(descriptor_));
+
+    // LITE runtime implements this in GeneratedMessageLite.
+    printer->Print(
+      "public $classname$ getDefaultInstanceForType() {\n"
+      "  return $classname$.getDefaultInstance();\n"
+      "}\n"
+      "\n",
+      "classname", name_resolver_->GetImmutableClassName(descriptor_));
   }
-  printer->Print(
-    "public $classname$ getDefaultInstanceForType() {\n"
-    "  return $classname$.getDefaultInstance();\n"
-    "}\n"
-    "\n",
-    "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
   // -----------------------------------------------------------------
 
+  if (HasDescriptorMethods(descriptor_)) {
+    // LITE implements build in GeneratedMessageLite to save methods.
+    printer->Print(
+      "public $classname$ build() {\n"
+      "  $classname$ result = buildPartial();\n"
+      "  if (!result.isInitialized()) {\n"
+      "    throw newUninitializedMessageException(result);\n"
+      "  }\n"
+      "  return result;\n"
+      "}\n"
+      "\n",
+      "classname", name_resolver_->GetImmutableClassName(descriptor_));
+  }
+
   printer->Print(
-    "public $classname$ build() {\n"
-    "  $classname$ result = buildPartial();\n"
-    "  if (!result.isInitialized()) {\n"
-    "    throw newUninitializedMessageException(result);\n"
-    "  }\n"
-    "  return result;\n"
-    "}\n"
-    "\n"
     "public $classname$ buildPartial() {\n"
     "  $classname$ result = new $classname$(this);\n",
     "classname", name_resolver_->GetImmutableClassName(descriptor_));
@@ -1255,17 +1277,31 @@ void ImmutableMessageGenerator::GenerateIsInitialized(
             "memoize", memoization ? "memoizedIsInitialized = 0;" : "");
           break;
         case FieldDescriptor::LABEL_REPEATED:
-          printer->Print(
-            "for (int i = 0; i < get$name$Count(); i++) {\n"
-            "  if (!get$name$(i).isInitialized()) {\n"
-            "    $memoize$\n"
-            "    return false;\n"
-            "  }\n"
-            "}\n",
-            "type", name_resolver_->GetImmutableClassName(
-                field->message_type()),
-            "name", info->capitalized_name,
-            "memoize", memoization ? "memoizedIsInitialized = 0;" : "");
+          if (IsMapEntry(field->message_type())) {
+            printer->Print(
+              "for ($type$ item : get$name$().values()) {\n"
+              "  if (!item.isInitialized()) {\n"
+              "    $memoize$\n"
+              "    return false;\n"
+              "  }\n"
+              "}\n",
+              "type", MapValueImmutableClassdName(field->message_type(),
+                                                  name_resolver_),
+              "name", info->capitalized_name,
+              "memoize", memoization ? "memoizedIsInitialized = 0;" : "");
+          } else {
+            printer->Print(
+              "for (int i = 0; i < get$name$Count(); i++) {\n"
+              "  if (!get$name$(i).isInitialized()) {\n"
+              "    $memoize$\n"
+              "    return false;\n"
+              "  }\n"
+              "}\n",
+              "type", name_resolver_->GetImmutableClassName(
+                  field->message_type()),
+              "name", info->capitalized_name,
+              "memoize", memoization ? "memoizedIsInitialized = 0;" : "");
+          }
           break;
       }
     }
@@ -1440,7 +1476,7 @@ GenerateExtensionRegistrationCode(io::Printer* printer) {
 // ===================================================================
 void ImmutableMessageGenerator::
 GenerateParsingConstructor(io::Printer* printer) {
-  scoped_array<const FieldDescriptor*> sorted_fields(
+  google::protobuf::scoped_array<const FieldDescriptor * > sorted_fields(
       SortFieldsByNumber(descriptor_));
 
   printer->Print(
@@ -1596,9 +1632,18 @@ GenerateParsingConstructor(io::Printer* printer) {
     printer->Print("this.unknownFields = unknownFields.build();\n");
   }
 
-  // Make extensions immutable.
-  printer->Print(
-      "makeExtensionsImmutable();\n");
+  if (!HasDescriptorMethods(descriptor_)) {
+    // LITE runtime uses a static method to reduce method count.
+    if (descriptor_->extension_range_count() > 0) {
+      // Make extensions immutable.
+      printer->Print(
+          "makeExtensionsImmutable(extensions);\n");
+    }
+  } else {
+    // Make extensions immutable.
+    printer->Print(
+        "makeExtensionsImmutable();\n");
+  }
 
   printer->Outdent();
   printer->Outdent();

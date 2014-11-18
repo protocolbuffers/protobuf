@@ -43,6 +43,7 @@ syntax = "proto2";
 package protobuf_unittest_import;
 
 option optimize_for = SPEED;
+option cc_enable_arenas = true;
 
 // Exercise the java_package option.
 option java_package = "com.google.protobuf.test";

@@ -138,7 +138,7 @@ void* Arena::AllocateAligned(size_t n) {
     // for this thread.
     if (!owns_first_block_ && b->next == NULL) {
       MutexLock l(&blocks_lock_);
-      if (b->owner == &b->owner) {
+      if (b->owner == &b->owner && b->avail() >= n) {
         b->owner = me;
         SetThreadCacheBlock(b);
         return AllocFromBlock(b, n);

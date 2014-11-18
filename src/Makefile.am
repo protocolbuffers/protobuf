@@ -40,6 +40,7 @@ MAINTAINERCLEANFILES =   \
 nobase_include_HEADERS =                                        \
   google/protobuf/stubs/atomic_sequence_num.h                   \
   google/protobuf/stubs/atomicops.h                             \
+  google/protobuf/stubs/atomicops_internals_aix.h               \
   google/protobuf/stubs/atomicops_internals_arm64_gcc.h         \
   google/protobuf/stubs/atomicops_internals_arm_gcc.h           \
   google/protobuf/stubs/atomicops_internals_arm_qnx.h           \
@@ -71,6 +72,11 @@ nobase_include_HEADERS =                                        \
   google/protobuf/generated_enum_reflection.h                   \
   google/protobuf/generated_message_reflection.h                \
   google/protobuf/generated_message_util.h                      \
+  google/protobuf/map_entry.h                                   \
+  google/protobuf/map_field.h                                   \
+  google/protobuf/map_field_inl.h                               \
+  google/protobuf/map.h                                         \
+  google/protobuf/map_type_handler.h                            \
   google/protobuf/message.h                                     \
   google/protobuf/message_lite.h                                \
   google/protobuf/metadata.h                                    \
@@ -120,6 +126,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/arenastring.cc                               \
   google/protobuf/extension_set.cc                             \
   google/protobuf/generated_message_util.cc                    \
+  google/protobuf/map_field.cc                                 \
   google/protobuf/message_lite.cc                              \
   google/protobuf/repeated_field.cc                            \
   google/protobuf/wire_format_lite.cc                          \
@@ -182,6 +189,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/cpp/cpp_generator.cc                \
   google/protobuf/compiler/cpp/cpp_helpers.cc                  \
   google/protobuf/compiler/cpp/cpp_helpers.h                   \
+  google/protobuf/compiler/cpp/cpp_map_field.cc                \
+  google/protobuf/compiler/cpp/cpp_map_field.h                 \
   google/protobuf/compiler/cpp/cpp_message.cc                  \
   google/protobuf/compiler/cpp/cpp_message.h                   \
   google/protobuf/compiler/cpp/cpp_message_field.cc            \
@@ -239,6 +248,9 @@ protoc_SOURCES = google/protobuf/compiler/main.cc
 # Tests ==============================================================
 
 protoc_inputs =                                                \
+  google/protobuf/map_lite_unittest.proto                      \
+  google/protobuf/map_proto2_unittest.proto                    \
+  google/protobuf/map_unittest.proto                           \
   google/protobuf/unittest.proto                               \
   google/protobuf/unittest_arena.proto                         \
   google/protobuf/unittest_custom_options.proto                \
@@ -292,6 +304,12 @@ protoc_lite_outputs =                                          \
 
 protoc_outputs =                                               \
   $(protoc_lite_outputs)                                       \
+  google/protobuf/map_lite_unittest.pb.cc                      \
+  google/protobuf/map_lite_unittest.pb.h                       \
+  google/protobuf/map_proto2_unittest.pb.cc                    \
+  google/protobuf/map_proto2_unittest.pb.h                     \
+  google/protobuf/map_unittest.pb.cc                           \
+  google/protobuf/map_unittest.pb.h                            \
   google/protobuf/unittest.pb.cc                               \
   google/protobuf/unittest.pb.h                                \
   google/protobuf/unittest_arena.pb.cc                         \
@@ -351,6 +369,8 @@ endif
 $(protoc_outputs): unittest_proto_middleman
 
 COMMON_TEST_SOURCES =                                          \
+  google/protobuf/map_test_util.cc                             \
+  google/protobuf/map_test_util.h                              \
   google/protobuf/test_util.cc                                 \
   google/protobuf/test_util.h                                  \
   google/protobuf/testing/googletest.cc                        \
@@ -385,6 +405,8 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/dynamic_message_unittest.cc                  \
   google/protobuf/extension_set_unittest.cc                    \
   google/protobuf/generated_message_reflection_unittest.cc     \
+  google/protobuf/map_field_test.cc                            \
+  google/protobuf/map_test.cc                                  \
   google/protobuf/message_unittest.cc                          \
   google/protobuf/no_field_presence_test.cc                    \
   google/protobuf/preserve_unknown_enum_test.cc                \

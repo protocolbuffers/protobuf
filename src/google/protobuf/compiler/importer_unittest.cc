@@ -242,7 +242,7 @@ class DiskSourceTreeTest : public testing::Test {
 
   virtual void TearDown() {
     for (int i = 0; i < dirnames_.size(); i++) {
-      if (File::Exists(dirnames_[i])) {
+      if (FileExists(dirnames_[i])) {
         File::DeleteRecursively(dirnames_[i], NULL, NULL);
       }
     }
@@ -258,7 +258,7 @@ class DiskSourceTreeTest : public testing::Test {
 
   void ExpectFileContents(const string& filename,
                           const char* expected_contents) {
-    scoped_ptr<io::ZeroCopyInputStream> input(source_tree_.Open(filename));
+    google::protobuf::scoped_ptr<io::ZeroCopyInputStream> input(source_tree_.Open(filename));
 
     ASSERT_FALSE(input == NULL);
 
@@ -275,7 +275,7 @@ class DiskSourceTreeTest : public testing::Test {
 
   void ExpectCannotOpenFile(const string& filename,
                             const string& error_message) {
-    scoped_ptr<io::ZeroCopyInputStream> input(source_tree_.Open(filename));
+    google::protobuf::scoped_ptr<io::ZeroCopyInputStream> input(source_tree_.Open(filename));
     EXPECT_TRUE(input == NULL);
     EXPECT_EQ(error_message, source_tree_.GetLastErrorMessage());
   }

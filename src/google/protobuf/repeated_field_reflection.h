@@ -231,7 +231,7 @@ class RepeatedFieldRefIterator
   const void* data_;
   const RepeatedFieldAccessor* accessor_;
   void* iterator_;
-  scoped_ptr<AccessorValueType> scratch_space_;
+  google::protobuf::scoped_ptr<AccessorValueType> scratch_space_;
 };
 
 // TypeTraits that maps the type parameter T of RepeatedFieldRef or

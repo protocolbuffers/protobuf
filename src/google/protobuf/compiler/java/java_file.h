@@ -99,10 +99,10 @@ class FileGenerator {
   string java_package_;
   string classname_;
 
-  scoped_array<scoped_ptr<MessageGenerator> > message_generators_;
-  scoped_array<scoped_ptr<ExtensionGenerator> > extension_generators_;
-  scoped_ptr<GeneratorFactory> generator_factory_;
-  scoped_ptr<Context> context_;
+  google::protobuf::scoped_array<google::protobuf::scoped_ptr<MessageGenerator> > message_generators_;
+  google::protobuf::scoped_array<google::protobuf::scoped_ptr<ExtensionGenerator> > extension_generators_;
+  google::protobuf::scoped_ptr<GeneratorFactory> generator_factory_;
+  google::protobuf::scoped_ptr<Context> context_;
   ClassNameResolver* name_resolver_;
   bool immutable_api_;
 
