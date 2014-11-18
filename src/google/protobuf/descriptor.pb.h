@@ -5,7 +5,6 @@
 #define PROTOBUF_google_2fprotobuf_2fdescriptor_2eproto__INCLUDED
 
 #include <string>
-#include <stdint.h>
 
 #include <google/protobuf/stubs/common.h>
 
