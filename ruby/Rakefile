@@ -1,0 +1,37 @@
+require "rake/extensiontask"
+require "rake/testtask"
+
+spec = Gem::Specification.new do |s|
+  s.name        = "protobuf"
+  s.version     = "2.6.2"
+  s.licenses    = ["BSD"]
+  s.summary     = "Protocol Buffers"
+  s.description = "Protocol Buffers are Google's data interchange format."
+  s.authors     = ["Protobuf Authors"]
+  s.email       = "protobuf@googlegroups.com"
+
+  s.files       = ["lib/protobuf_c.so", "lib/protobuf.rb"]
+end
+
+Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
+  ext.lib_dir = "lib"
+  ext.config_script = "extconf.rb"
+end
+
+Rake::TestTask.new(:test => :build) do |t|
+  t.test_files = FileList["tests/*.rb"]
+end
+
+task :chmod do
+  File.chmod(0755, "lib/protobuf_c.so")
+end
+
+Gem::PackageTask.new(spec) do |pkg|
+end
+task :package => :chmod
+task :gem => :chmod
+
+task :build => [:clean, :compile]
+task :default => [:build]
+
+# vim:sw=2:et
