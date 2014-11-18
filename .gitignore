@@ -30,20 +30,32 @@ config.status
 libtool
 protobuf-lite.pc
 protobuf.pc
-**/.deps
+.deps
 stamp-h1
 
 # in-tree build products
-**/*.o
-**/*.lo
-**/*.la
+*.o
+*.lo
+*.la
 src/.libs
 
-**/.dirstamp
+.dirstamp
 
-**/unittest*.pb.*
-**/cpp_test*.pb.*
+unittest*.pb.*
+cpp_test*.pb.*
+
+*.pyc
+*.egg-info
+*_pb2.py
+python/.eggs/
+python/build/
+python/google/protobuf/compiler/
 
 src/protoc
 src/unittest_proto_middleman
 
+# Generated test scaffolding
+src/protobuf*-test
+src/test_plugin
+src/testzip.*
+src/zcg*zip
