@@ -119,7 +119,7 @@ class MapIterator {
  private:
   typename hash_map<Key, value_type*>::iterator it_;
 
-  friend Map<Key, T>;
+  friend class Map<Key, T>;
 };
 
 // google::protobuf::Map is an associative container type used to store protobuf map
