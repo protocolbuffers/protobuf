@@ -85,7 +85,7 @@ dep:
 
 clean_leave_profile:
 	@rm -rf obj lib
-	@rm -f benchmark/google_messages.proto.pb benchmark/google_messages.pb.* benchmarks/b.* benchmarks/*.pb*
+	@rm -f benchmarks/*.pb* benchmarks/google_message?.h
 	@rm -f $(TESTS) tests/testmain.o tests/t.*
 	@rm -f upb/descriptor.pb
 	@rm -rf tools/upbc deps
@@ -319,13 +319,13 @@ benchmarks/google_messages.proto.pb: benchmarks/google_messages.proto
 benchmarks/google_messages.pb.cc: benchmarks/google_messages.proto
 	protoc benchmarks/google_messages.proto --cpp_out=.
 
-benchmarks/googlemessage1.h:
+benchmarks/google_message1.h:
 	$(E) XXD benchmarks/google_message1.dat
-	$(Q) xxd -i < benchmarks/google_message1.dat > benchmarks/googlemessage1.h
+	$(Q) xxd -i < benchmarks/google_message1.dat > benchmarks/google_message1.h
 
-benchmarks/googlemessage2.h:
+benchmarks/google_message2.h:
 	$(E) XXD benchmarks/google_message2.dat
-	$(Q) xxd -i < benchmarks/google_message2.dat > benchmarks/googlemessage2.h
+	$(Q) xxd -i < benchmarks/google_message2.dat > benchmarks/google_message2.h
 
 GOOGLEPB_TEST_LIBS = \
   lib/libupb.bindings.googlepb.a \
@@ -341,20 +341,22 @@ GOOGLEPB_TEST_DEPS = \
   $(GOOGLEPB_TEST_LIBS)
 
 tests/bindings/googlepb/test_vs_proto2.googlemessage1: $(GOOGLEPB_TEST_DEPS) \
-    benchmarks/googlemessage1.h
+    benchmarks/google_message1.h \
+    benchmarks/google_message2.h
 	$(E) CXX $< '(benchmarks::SpeedMessage1)'
 	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
-	  -DMESSAGE_DATA_HFILE=\"benchmarks/googlemessage1.h\" \
+	  -DMESSAGE_DATA_IDENT=message1_data \
 	  benchmarks/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread \
 	  $(GOOGLEPB_TEST_LIBS)
 
 tests/bindings/googlepb/test_vs_proto2.googlemessage2: $(GOOGLEPB_TEST_DEPS) \
-    benchmarks/googlemessage2.h
+    benchmarks/google_message1.h \
+    benchmarks/google_message2.h
 	$(E) CXX $< '(benchmarks::SpeedMessage2)'
 	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage2" \
-	  -DMESSAGE_DATA_HFILE=\"benchmarks/googlemessage2.h\" \
+	  -DMESSAGE_DATA_IDENT=message2_data \
 	  benchmarks/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread \
 	  $(GOOGLEPB_TEST_LIBS)
 

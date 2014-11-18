@@ -29,11 +29,11 @@
 
 // Pull in string data from benchmarks/google_message{1,2}.dat
 // (the .h files are generated with xxd).
-const char message1_data[] = {
+const unsigned char message1_data[] = {
 #include "benchmarks/google_message1.h"
 };
 
-const char message2_data[] = {
+const unsigned char message2_data[] = {
 #include "benchmarks/google_message2.h"
 };
 
@@ -124,7 +124,7 @@ int run_tests(int argc, char *argv[]) {
   UPB_UNUSED(argc);
   UPB_UNUSED(argv);
   size_t len = sizeof(MESSAGE_DATA_IDENT);
-  const char *str = MESSAGE_DATA_IDENT;
+  const char *str = (const char*)MESSAGE_DATA_IDENT;
 
   MESSAGE_CIDENT msg1;
   MESSAGE_CIDENT msg2;
