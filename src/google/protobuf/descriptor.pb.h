@@ -5,12 +5,6 @@
 #define PROTOBUF_google_2fprotobuf_2fdescriptor_2eproto__INCLUDED
 
 #include <string>
-#ifndef PROTOBUF_ENUM_MIN
-#define PROTOBUF_ENUM_MIN		(int32_t)0x80000000
-#endif
-#ifndef PROTOBUF_ENUM_MAX
-#define PROTOBUF_ENUM_MAX		(int32_t)0x7fffffff
-#endif
 
 #include <google/protobuf/stubs/common.h>
 
