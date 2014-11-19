@@ -34,8 +34,8 @@
 //
 // Generates Java nano code for a given .proto file.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_NANO_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_NANO_GENERATOR_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVANANO_NANO_GENERATOR_H__
+#define GOOGLE_PROTOBUF_COMPILER_JAVANANO_NANO_GENERATOR_H__
 
 #include <string>
 #include <google/protobuf/compiler/code_generator.h>
@@ -57,7 +57,7 @@ class LIBPROTOC_EXPORT JavaNanoGenerator : public CodeGenerator {
   // implements CodeGenerator ----------------------------------------
   bool Generate(const FileDescriptor* file,
                 const string& parameter,
-                OutputDirectory* output_directory,
+                GeneratorContext* output_directory,
                 string* error) const;
 
  private:
@@ -69,4 +69,4 @@ class LIBPROTOC_EXPORT JavaNanoGenerator : public CodeGenerator {
 }  // namespace protobuf
 
 }  // namespace google
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_NANO_GENERATOR_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVANANO_NANO_GENERATOR_H__

@@ -28,20 +28,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: maxtroy@google.com (Max Cai)
+// Author: kenton@google.com (Kenton Varda)
+//
+// This is like unittest_import.proto but with optimize_for = NANO_RUNTIME.
 
-package protobuf_unittest;
+package protobuf_unittest_import;
 
-import "google/protobuf/unittest_nano.proto";
+option java_package = "com.google.protobuf.nano.testimport";
+option java_outer_classname = "UnittestImportNano";
 
-option java_package = "com.google.protobuf.nano";
-option java_multiple_files = true;
+message ImportMessageNano {
+  optional int32 d = 1;
+}
 
-// A container message for testing the merging of repeated fields at a
-// nested level. Other tests will be done using the repeated fields in
-// TestAllTypesNano.
-message TestRepeatedMergeNano {
-
-  optional TestAllTypesNano contained = 1;
-
+enum ImportEnumNano {
+  IMPORT_NANO_FOO = 7;
+  IMPORT_NANO_BAR = 8;
+  IMPORT_NANO_BAZ = 9;
 }

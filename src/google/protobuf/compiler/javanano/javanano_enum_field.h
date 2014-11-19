@@ -32,8 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_ENUM_FIELD_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_ENUM_FIELD_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVANANO_ENUM_FIELD_H__
+#define GOOGLE_PROTOBUF_COMPILER_JAVANANO_ENUM_FIELD_H__
 
 #include <map>
 #include <string>
@@ -122,4 +122,4 @@ class RepeatedEnumFieldGenerator : public FieldGenerator {
 }  // namespace protobuf
 
 }  // namespace google
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_ENUM_FIELD_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVANANO_ENUM_FIELD_H__

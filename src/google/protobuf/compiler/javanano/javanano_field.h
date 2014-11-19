@@ -32,8 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_FIELD_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_FIELD_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVANANO_FIELD_H__
+#define GOOGLE_PROTOBUF_COMPILER_JAVANANO_FIELD_H__
 
 #include <string>
 #include <google/protobuf/stubs/common.h>
@@ -116,4 +116,4 @@ class FieldGeneratorMap {
 }  // namespace protobuf
 
 }  // namespace google
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_FIELD_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVANANO_FIELD_H__

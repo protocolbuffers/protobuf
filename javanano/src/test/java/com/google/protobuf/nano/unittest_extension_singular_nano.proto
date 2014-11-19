@@ -3,7 +3,7 @@ syntax = "proto2";
 option java_multiple_files = true;
 option java_package = "com.google.protobuf.nano";
 
-import "google/protobuf/unittest_extension_nano.proto";
+import "google/protobuf/nano/unittest_extension_nano.proto";
 
 // Must be compiled separately due to extension number reuse.
 // The reuse is deliberate, for testing wire compatibility.

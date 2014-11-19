@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package com.google.protobuf;
+package com.google.protobuf.nano;
 
 import com.google.protobuf.nano.CodedInputByteBufferNano;
 import com.google.protobuf.nano.EnumClassNanoMultiple;
@@ -3123,11 +3123,12 @@ public class NanoTest extends TestCase {
     message.value = false;
 
     byte[] bytes = MessageNano.toByteArray(message);
-    int extraFieldSize = CodedOutputStream.computeStringSize(1001, "This is an unknown field");
+    int extraFieldSize = CodedOutputByteBufferNano.computeStringSize(
+        1001, "This is an unknown field");
     byte[] newBytes = new byte[bytes.length + extraFieldSize];
     System.arraycopy(bytes, 0, newBytes, 0, bytes.length);
-    CodedOutputStream.newInstance(newBytes, bytes.length, extraFieldSize).writeString(1001,
-        "This is an unknown field");
+    CodedOutputByteBufferNano.newInstance(newBytes, bytes.length, extraFieldSize)
+        .writeString(1001, "This is an unknown field");
 
     // Deserialize with an unknown field.
     AnotherMessage deserialized = AnotherMessage.parseFrom(newBytes);

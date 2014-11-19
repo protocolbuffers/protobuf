@@ -32,8 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_EXTENSION_H_
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_EXTENSION_H_
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVANANO_EXTENSION_H_
+#define GOOGLE_PROTOBUF_COMPILER_JAVANANO_EXTENSION_H_
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/javanano/javanano_params.h>
@@ -71,4 +71,4 @@ class ExtensionGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_EXTENSION_H_
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVANANO_EXTENSION_H_

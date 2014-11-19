@@ -87,7 +87,7 @@ JavaNanoGenerator::~JavaNanoGenerator() {}
 
 bool JavaNanoGenerator::Generate(const FileDescriptor* file,
                              const string& parameter,
-                             OutputDirectory* output_directory,
+                             GeneratorContext* output_directory,
                              string* error) const {
   vector<pair<string, string> > options;
 
