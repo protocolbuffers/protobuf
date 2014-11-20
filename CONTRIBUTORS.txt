@@ -17,6 +17,12 @@ Proto2 Python primary authors:
   Will Robinson <robinson@google.com>
   Petar Petrov <petar@google.com>
 
+Java Nano primary authors:
+  Brian Duff <bduff@google.com>
+  Tom Chao <chaot@google.com>
+  Max Cai <maxtroy@google.com>
+  Ulas Kirazci <ulas@google.com>
+
 Large code contributions:
   Jason Hsueh <jasonh@google.com>
   Joseph Schorr <jschorr@google.com>
