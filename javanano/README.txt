@@ -351,4 +351,4 @@ Usage
 The complete documentation for Protocol Buffers is available via the
 web at:
 
-  http://code.google.com/apis/protocolbuffers://developers.google.com/protocol-buffers/
+    https://developers.google.com/protocol-buffers/
