@@ -1,0 +1,33 @@
+syntax = "proto2";
+
+option java_outer_classname = "Extensions";
+option java_package = "com.google.protobuf.nano.testext";
+
+message ExtendableMessage {
+  optional int32 field = 1;
+  extensions 10 to max;
+}
+
+enum AnEnum {
+  FIRST_VALUE = 1;
+  SECOND_VALUE = 2;
+}
+
+message AnotherMessage {
+  optional string string = 1;
+  optional bool value = 2;
+}
+
+message ContainerMessage {
+  extend ExtendableMessage {
+    optional bool another_thing = 100;
+  }
+}
+
+// For testNanoOptionalGroupWithUnknownFieldsEnabled;
+// not part of the extensions tests.
+message MessageWithGroup {
+  optional group Group = 1 {
+    optional int32 a = 2;
+  }
+}
