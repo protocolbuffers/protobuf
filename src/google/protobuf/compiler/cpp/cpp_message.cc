@@ -614,7 +614,7 @@ GenerateFieldAccessorDefinitions(io::Printer* printer) {
     vars["classname"] = classname_;
     printer->Print(
       vars,
-      "inline bool $classname$::has_$oneof_name$() {\n"
+      "inline bool $classname$::has_$oneof_name$() const {\n"
       "  return $oneof_name$_case() != $cap_oneof_name$_NOT_SET;\n"
       "}\n"
       "inline void $classname$::clear_has_$oneof_name$() {\n"
@@ -975,7 +975,7 @@ GenerateClassDefinition(io::Printer* printer) {
   // Generate oneof function declarations
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     printer->Print(
-        "inline bool has_$oneof_name$();\n"
+        "inline bool has_$oneof_name$() const;\n"
         "void clear_$oneof_name$();\n"
         "inline void clear_has_$oneof_name$();\n\n",
         "oneof_name", descriptor_->oneof_decl(i)->name());

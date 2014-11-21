@@ -145,4 +145,17 @@ public class LiteTest extends TestCase {
     assertEquals(expected.getOptionalNestedMessage().getBb(),
         actual.getOptionalNestedMessage().getBb());
   }
+  
+  public void testClone() {
+    TestAllTypesLite.Builder expected = TestAllTypesLite.newBuilder()
+        .setOptionalInt32(123);
+   assertEquals(
+       expected.getOptionalInt32(), expected.clone().getOptionalInt32());
+   
+   TestAllExtensionsLite.Builder expected2 = TestAllExtensionsLite.newBuilder()
+       .setExtension(UnittestLite.optionalInt32ExtensionLite, 123);
+   assertEquals(
+       expected2.getExtension(UnittestLite.optionalInt32ExtensionLite),
+       expected2.clone().getExtension(UnittestLite.optionalInt32ExtensionLite));
+  }
 }

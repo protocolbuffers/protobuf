@@ -699,7 +699,7 @@ class _Tokenizer(object):
     """
     text = self.token
     if len(text) < 1 or text[0] not in ('\'', '"'):
-      raise self._ParseError('Expected string.')
+      raise self._ParseError('Expected string but found: "%r"' % text)
 
     if len(text) < 2 or text[-1] != text[0]:
       raise self._ParseError('String missing ending quote.')

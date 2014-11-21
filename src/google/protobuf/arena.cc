@@ -30,6 +30,10 @@
 
 #include <google/protobuf/arena.h>
 
+#ifdef ADDRESS_SANITIZER
+#include <sanitizer/asan_interface.h>
+#endif
+
 namespace google {
 namespace protobuf {
 
@@ -91,6 +95,12 @@ Arena::Block* Arena::NewBlock(void* me, Block* my_last_block, size_t n,
   } else {
     b->owner = me;
   }
+#ifdef ADDRESS_SANITIZER
+  // Poison the rest of the block for ASAN. It was unpoisoned by the underlying
+  // malloc but it's not yet usable until we return it as part of an allocation.
+  ASAN_POISON_MEMORY_REGION(
+      reinterpret_cast<char*>(b) + b->pos, b->size - b->pos);
+#endif
   return b;
 }
 
@@ -152,6 +162,9 @@ void* Arena::AllocateAligned(size_t n) {
 void* Arena::AllocFromBlock(Block* b, size_t n) {
   size_t p = b->pos;
   b->pos = p + n;
+#ifdef ADDRESS_SANITIZER
+  ASAN_UNPOISON_MEMORY_REGION(reinterpret_cast<char*>(b) + p, n);
+#endif
   return reinterpret_cast<char*>(b) + p;
 }
 

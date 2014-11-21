@@ -990,6 +990,11 @@ class LIBPROTOBUF_EXPORT MethodDescriptor {
   // Gets the type of protocol message which this message produces as output.
   const Descriptor* output_type() const;
 
+  // Gets whether the client streams multiple requests.
+  bool client_streaming() const;
+  // Gets whether the server streams multiple responses.
+  bool server_streaming() const;
+
   // Get options for this method.  These are specified in the .proto file by
   // placing lines like "option foo = 1234;" in curly-braces after a method
   // declaration.  Allowed options are defined by MethodOptions in
@@ -1031,6 +1036,8 @@ class LIBPROTOBUF_EXPORT MethodDescriptor {
   const Descriptor* input_type_;
   const Descriptor* output_type_;
   const MethodOptions* options_;
+  bool client_streaming_;
+  bool server_streaming_;
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<MethodDescriptor>() and AllocateArray<MethodDescriptor>() in
   // descriptor.cc and update them to initialize the field.
@@ -1623,6 +1630,9 @@ PROTOBUF_DEFINE_ACCESSOR(MethodDescriptor, service, const ServiceDescriptor*)
 PROTOBUF_DEFINE_ACCESSOR(MethodDescriptor, input_type, const Descriptor*)
 PROTOBUF_DEFINE_ACCESSOR(MethodDescriptor, output_type, const Descriptor*)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(MethodDescriptor, MethodOptions);
+PROTOBUF_DEFINE_ACCESSOR(MethodDescriptor, client_streaming, bool)
+PROTOBUF_DEFINE_ACCESSOR(MethodDescriptor, server_streaming, bool)
+
 PROTOBUF_DEFINE_STRING_ACCESSOR(FileDescriptor, name)
 PROTOBUF_DEFINE_STRING_ACCESSOR(FileDescriptor, package)
 PROTOBUF_DEFINE_ACCESSOR(FileDescriptor, pool, const DescriptorPool*)

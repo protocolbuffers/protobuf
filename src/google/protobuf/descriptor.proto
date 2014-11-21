@@ -220,6 +220,11 @@ message MethodDescriptorProto {
   optional string output_type = 3;
 
   optional MethodOptions options = 4;
+
+  // Identifies if client streams multiple client messages
+  optional bool client_streaming = 5 [default=false];
+  // Identifies if server streams multiple server messages
+  optional bool server_streaming = 6 [default=false];
 }
 
 

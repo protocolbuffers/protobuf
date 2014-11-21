@@ -1632,6 +1632,9 @@ bool Parser::ParseServiceMethod(MethodDescriptorProto* method,
   // Parse input type.
   DO(Consume("("));
   {
+    if (TryConsume("stream")) {
+      method->set_client_streaming(true);
+    }
     LocationRecorder location(method_location,
                               MethodDescriptorProto::kInputTypeFieldNumber);
     location.RecordLegacyLocation(
@@ -1644,6 +1647,9 @@ bool Parser::ParseServiceMethod(MethodDescriptorProto* method,
   DO(Consume("returns"));
   DO(Consume("("));
   {
+    if (TryConsume("stream")) {
+      method->set_server_streaming(true);
+    }
     LocationRecorder location(method_location,
                               MethodDescriptorProto::kOutputTypeFieldNumber);
     location.RecordLegacyLocation(

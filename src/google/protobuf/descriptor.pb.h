@@ -1590,6 +1590,20 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   inline ::google::protobuf::MethodOptions* release_options();
   inline void set_allocated_options(::google::protobuf::MethodOptions* options);
 
+  // optional bool client_streaming = 5 [default = false];
+  inline bool has_client_streaming() const;
+  inline void clear_client_streaming();
+  static const int kClientStreamingFieldNumber = 5;
+  inline bool client_streaming() const;
+  inline void set_client_streaming(bool value);
+
+  // optional bool server_streaming = 6 [default = false];
+  inline bool has_server_streaming() const;
+  inline void clear_server_streaming();
+  static const int kServerStreamingFieldNumber = 6;
+  inline bool server_streaming() const;
+  inline void set_server_streaming(bool value);
+
   // @@protoc_insertion_point(class_scope:google.protobuf.MethodDescriptorProto)
  private:
   inline void set_has_name();
@@ -1600,6 +1614,10 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   inline void clear_has_output_type();
   inline void set_has_options();
   inline void clear_has_options();
+  inline void set_has_client_streaming();
+  inline void clear_has_client_streaming();
+  inline void set_has_server_streaming();
+  inline void clear_has_server_streaming();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::uint32 _has_bits_[1];
@@ -1608,6 +1626,8 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   ::google::protobuf::internal::ArenaStringPtr input_type_;
   ::google::protobuf::internal::ArenaStringPtr output_type_;
   ::google::protobuf::MethodOptions* options_;
+  bool client_streaming_;
+  bool server_streaming_;
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
@@ -4966,6 +4986,54 @@ inline void MethodDescriptorProto::set_allocated_options(::google::protobuf::Met
     clear_has_options();
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodDescriptorProto.options)
+}
+
+// optional bool client_streaming = 5 [default = false];
+inline bool MethodDescriptorProto::has_client_streaming() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void MethodDescriptorProto::set_has_client_streaming() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void MethodDescriptorProto::clear_has_client_streaming() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void MethodDescriptorProto::clear_client_streaming() {
+  client_streaming_ = false;
+  clear_has_client_streaming();
+}
+inline bool MethodDescriptorProto::client_streaming() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.MethodDescriptorProto.client_streaming)
+  return client_streaming_;
+}
+inline void MethodDescriptorProto::set_client_streaming(bool value) {
+  set_has_client_streaming();
+  client_streaming_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.client_streaming)
+}
+
+// optional bool server_streaming = 6 [default = false];
+inline bool MethodDescriptorProto::has_server_streaming() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void MethodDescriptorProto::set_has_server_streaming() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void MethodDescriptorProto::clear_has_server_streaming() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void MethodDescriptorProto::clear_server_streaming() {
+  server_streaming_ = false;
+  clear_has_server_streaming();
+}
+inline bool MethodDescriptorProto::server_streaming() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.MethodDescriptorProto.server_streaming)
+  return server_streaming_;
+}
+inline void MethodDescriptorProto::set_server_streaming(bool value) {
+  set_has_server_streaming();
+  server_streaming_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.server_streaming)
 }
 
 // -------------------------------------------------------------------

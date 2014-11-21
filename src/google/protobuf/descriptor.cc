@@ -1843,6 +1843,13 @@ void MethodDescriptor::CopyTo(MethodDescriptorProto* proto) const {
   if (&options() != &MethodOptions::default_instance()) {
     proto->mutable_options()->CopyFrom(options());
   }
+
+  if (client_streaming_) {
+    proto->set_client_streaming(true);
+  }
+  if (server_streaming_) {
+    proto->set_server_streaming(true);
+  }
 }
 
 // DebugString methods ===============================================
@@ -2395,10 +2402,12 @@ void MethodDescriptor::DebugString(int depth, string *contents,
       comment_printer(this, prefix, debug_string_options);
   comment_printer.AddPreComment(contents);
 
-  strings::SubstituteAndAppend(contents, "$0rpc $1(.$2) returns (.$3)",
+  strings::SubstituteAndAppend(contents, "$0rpc $1($4.$2) returns ($5.$3)",
                                prefix, name(),
                                input_type()->full_name(),
-                               output_type()->full_name());
+                               output_type()->full_name(),
+                               client_streaming() ? "stream " : "",
+                               server_streaming() ? "stream " : "");
 
   string formatted_options;
   if (FormatLineOptions(depth, options(), &formatted_options)) {
@@ -4392,6 +4401,9 @@ void DescriptorBuilder::BuildMethod(const MethodDescriptorProto& proto,
   } else {
     AllocateOptions(proto.options(), result);
   }
+
+  result->client_streaming_ = proto.client_streaming();
+  result->server_streaming_ = proto.server_streaming();
 
   AddSymbol(result->full_name(), parent, result->name(),
             proto, Symbol(result));

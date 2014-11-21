@@ -260,11 +260,13 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       sizeof(ServiceDescriptorProto),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceDescriptorProto, _internal_metadata_));
   MethodDescriptorProto_descriptor_ = file->message_type(8);
-  static const int MethodDescriptorProto_offsets_[4] = {
+  static const int MethodDescriptorProto_offsets_[6] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, input_type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, output_type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, options_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, client_streaming_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, server_streaming_),
   };
   MethodDescriptorProto_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
@@ -633,64 +635,65 @@ void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     "riptorProto\022\014\n\004name\030\001 \001(\t\0226\n\006method\030\002 \003("
     "\0132&.google.protobuf.MethodDescriptorProt"
     "o\0220\n\007options\030\003 \001(\0132\037.google.protobuf.Ser"
-    "viceOptions\"\177\n\025MethodDescriptorProto\022\014\n\004"
-    "name\030\001 \001(\t\022\022\n\ninput_type\030\002 \001(\t\022\023\n\013output"
-    "_type\030\003 \001(\t\022/\n\007options\030\004 \001(\0132\036.google.pr"
-    "otobuf.MethodOptions\"\314\004\n\013FileOptions\022\024\n\014"
-    "java_package\030\001 \001(\t\022\034\n\024java_outer_classna"
-    "me\030\010 \001(\t\022\"\n\023java_multiple_files\030\n \001(\010:\005f"
-    "alse\022,\n\035java_generate_equals_and_hash\030\024 "
-    "\001(\010:\005false\022%\n\026java_string_check_utf8\030\033 \001"
-    "(\010:\005false\022F\n\014optimize_for\030\t \001(\0162).google"
-    ".protobuf.FileOptions.OptimizeMode:\005SPEE"
-    "D\022\022\n\ngo_package\030\013 \001(\t\022\"\n\023cc_generic_serv"
-    "ices\030\020 \001(\010:\005false\022$\n\025java_generic_servic"
-    "es\030\021 \001(\010:\005false\022\"\n\023py_generic_services\030\022"
-    " \001(\010:\005false\022\031\n\ndeprecated\030\027 \001(\010:\005false\022\037"
-    "\n\020cc_enable_arenas\030\037 \001(\010:\005false\022C\n\024unint"
+    "viceOptions\"\301\001\n\025MethodDescriptorProto\022\014\n"
+    "\004name\030\001 \001(\t\022\022\n\ninput_type\030\002 \001(\t\022\023\n\013outpu"
+    "t_type\030\003 \001(\t\022/\n\007options\030\004 \001(\0132\036.google.p"
+    "rotobuf.MethodOptions\022\037\n\020client_streamin"
+    "g\030\005 \001(\010:\005false\022\037\n\020server_streaming\030\006 \001(\010"
+    ":\005false\"\314\004\n\013FileOptions\022\024\n\014java_package\030"
+    "\001 \001(\t\022\034\n\024java_outer_classname\030\010 \001(\t\022\"\n\023j"
+    "ava_multiple_files\030\n \001(\010:\005false\022,\n\035java_"
+    "generate_equals_and_hash\030\024 \001(\010:\005false\022%\n"
+    "\026java_string_check_utf8\030\033 \001(\010:\005false\022F\n\014"
+    "optimize_for\030\t \001(\0162).google.protobuf.Fil"
+    "eOptions.OptimizeMode:\005SPEED\022\022\n\ngo_packa"
+    "ge\030\013 \001(\t\022\"\n\023cc_generic_services\030\020 \001(\010:\005f"
+    "alse\022$\n\025java_generic_services\030\021 \001(\010:\005fal"
+    "se\022\"\n\023py_generic_services\030\022 \001(\010:\005false\022\031"
+    "\n\ndeprecated\030\027 \001(\010:\005false\022\037\n\020cc_enable_a"
+    "renas\030\037 \001(\010:\005false\022C\n\024uninterpreted_opti"
+    "on\030\347\007 \003(\0132$.google.protobuf.Uninterprete"
+    "dOption\":\n\014OptimizeMode\022\t\n\005SPEED\020\001\022\r\n\tCO"
+    "DE_SIZE\020\002\022\020\n\014LITE_RUNTIME\020\003*\t\010\350\007\020\200\200\200\200\002\"\346"
+    "\001\n\016MessageOptions\022&\n\027message_set_wire_fo"
+    "rmat\030\001 \001(\010:\005false\022.\n\037no_standard_descrip"
+    "tor_accessor\030\002 \001(\010:\005false\022\031\n\ndeprecated\030"
+    "\003 \001(\010:\005false\022\021\n\tmap_entry\030\007 \001(\010\022C\n\024unint"
     "erpreted_option\030\347\007 \003(\0132$.google.protobuf"
-    ".UninterpretedOption\":\n\014OptimizeMode\022\t\n\005"
-    "SPEED\020\001\022\r\n\tCODE_SIZE\020\002\022\020\n\014LITE_RUNTIME\020\003"
-    "*\t\010\350\007\020\200\200\200\200\002\"\346\001\n\016MessageOptions\022&\n\027messag"
-    "e_set_wire_format\030\001 \001(\010:\005false\022.\n\037no_sta"
-    "ndard_descriptor_accessor\030\002 \001(\010:\005false\022\031"
-    "\n\ndeprecated\030\003 \001(\010:\005false\022\021\n\tmap_entry\030\007"
-    " \001(\010\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.go"
-    "ogle.protobuf.UninterpretedOption*\t\010\350\007\020\200"
-    "\200\200\200\002\"\240\002\n\014FieldOptions\022:\n\005ctype\030\001 \001(\0162#.g"
-    "oogle.protobuf.FieldOptions.CType:\006STRIN"
-    "G\022\016\n\006packed\030\002 \001(\010\022\023\n\004lazy\030\005 \001(\010:\005false\022\031"
-    "\n\ndeprecated\030\003 \001(\010:\005false\022\023\n\004weak\030\n \001(\010:"
-    "\005false\022C\n\024uninterpreted_option\030\347\007 \003(\0132$."
-    "google.protobuf.UninterpretedOption\"/\n\005C"
-    "Type\022\n\n\006STRING\020\000\022\010\n\004CORD\020\001\022\020\n\014STRING_PIE"
-    "CE\020\002*\t\010\350\007\020\200\200\200\200\002\"\215\001\n\013EnumOptions\022\023\n\013allow"
-    "_alias\030\002 \001(\010\022\031\n\ndeprecated\030\003 \001(\010:\005false\022"
-    "C\n\024uninterpreted_option\030\347\007 \003(\0132$.google."
-    "protobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\""
-    "}\n\020EnumValueOptions\022\031\n\ndeprecated\030\001 \001(\010:"
-    "\005false\022C\n\024uninterpreted_option\030\347\007 \003(\0132$."
-    "google.protobuf.UninterpretedOption*\t\010\350\007"
-    "\020\200\200\200\200\002\"{\n\016ServiceOptions\022\031\n\ndeprecated\030!"
-    " \001(\010:\005false\022C\n\024uninterpreted_option\030\347\007 \003"
-    "(\0132$.google.protobuf.UninterpretedOption"
-    "*\t\010\350\007\020\200\200\200\200\002\"z\n\rMethodOptions\022\031\n\ndeprecat"
-    "ed\030! \001(\010:\005false\022C\n\024uninterpreted_option\030"
-    "\347\007 \003(\0132$.google.protobuf.UninterpretedOp"
-    "tion*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023UninterpretedOption\022"
-    ";\n\004name\030\002 \003(\0132-.google.protobuf.Uninterp"
-    "retedOption.NamePart\022\030\n\020identifier_value"
-    "\030\003 \001(\t\022\032\n\022positive_int_value\030\004 \001(\004\022\032\n\022ne"
-    "gative_int_value\030\005 \001(\003\022\024\n\014double_value\030\006"
-    " \001(\001\022\024\n\014string_value\030\007 \001(\014\022\027\n\017aggregate_"
-    "value\030\010 \001(\t\0323\n\010NamePart\022\021\n\tname_part\030\001 \002"
-    "(\t\022\024\n\014is_extension\030\002 \002(\010\"\261\001\n\016SourceCodeI"
-    "nfo\022:\n\010location\030\001 \003(\0132(.google.protobuf."
-    "SourceCodeInfo.Location\032c\n\010Location\022\020\n\004p"
-    "ath\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020leadi"
-    "ng_comments\030\003 \001(\t\022\031\n\021trailing_comments\030\004"
-    " \001(\tB)\n\023com.google.protobufB\020DescriptorP"
-    "rotosH\001", 4487);
+    ".UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"\240\002\n\014Fiel"
+    "dOptions\022:\n\005ctype\030\001 \001(\0162#.google.protobu"
+    "f.FieldOptions.CType:\006STRING\022\016\n\006packed\030\002"
+    " \001(\010\022\023\n\004lazy\030\005 \001(\010:\005false\022\031\n\ndeprecated\030"
+    "\003 \001(\010:\005false\022\023\n\004weak\030\n \001(\010:\005false\022C\n\024uni"
+    "nterpreted_option\030\347\007 \003(\0132$.google.protob"
+    "uf.UninterpretedOption\"/\n\005CType\022\n\n\006STRIN"
+    "G\020\000\022\010\n\004CORD\020\001\022\020\n\014STRING_PIECE\020\002*\t\010\350\007\020\200\200\200"
+    "\200\002\"\215\001\n\013EnumOptions\022\023\n\013allow_alias\030\002 \001(\010\022"
+    "\031\n\ndeprecated\030\003 \001(\010:\005false\022C\n\024uninterpre"
+    "ted_option\030\347\007 \003(\0132$.google.protobuf.Unin"
+    "terpretedOption*\t\010\350\007\020\200\200\200\200\002\"}\n\020EnumValueO"
+    "ptions\022\031\n\ndeprecated\030\001 \001(\010:\005false\022C\n\024uni"
+    "nterpreted_option\030\347\007 \003(\0132$.google.protob"
+    "uf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"{\n\016Ser"
+    "viceOptions\022\031\n\ndeprecated\030! \001(\010:\005false\022C"
+    "\n\024uninterpreted_option\030\347\007 \003(\0132$.google.p"
+    "rotobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"z"
+    "\n\rMethodOptions\022\031\n\ndeprecated\030! \001(\010:\005fal"
+    "se\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.goog"
+    "le.protobuf.UninterpretedOption*\t\010\350\007\020\200\200\200"
+    "\200\002\"\236\002\n\023UninterpretedOption\022;\n\004name\030\002 \003(\013"
+    "2-.google.protobuf.UninterpretedOption.N"
+    "amePart\022\030\n\020identifier_value\030\003 \001(\t\022\032\n\022pos"
+    "itive_int_value\030\004 \001(\004\022\032\n\022negative_int_va"
+    "lue\030\005 \001(\003\022\024\n\014double_value\030\006 \001(\001\022\024\n\014strin"
+    "g_value\030\007 \001(\014\022\027\n\017aggregate_value\030\010 \001(\t\0323"
+    "\n\010NamePart\022\021\n\tname_part\030\001 \002(\t\022\024\n\014is_exte"
+    "nsion\030\002 \002(\010\"\261\001\n\016SourceCodeInfo\022:\n\010locati"
+    "on\030\001 \003(\0132(.google.protobuf.SourceCodeInf"
+    "o.Location\032c\n\010Location\022\020\n\004path\030\001 \003(\005B\002\020\001"
+    "\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020leading_comments\030\003"
+    " \001(\t\022\031\n\021trailing_comments\030\004 \001(\tB)\n\023com.g"
+    "oogle.protobufB\020DescriptorProtosH\001", 4554);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/descriptor.proto", &protobuf_RegisterTypes);
   FileDescriptorSet::default_instance_ = new FileDescriptorSet();
@@ -4560,6 +4563,8 @@ const int MethodDescriptorProto::kNameFieldNumber;
 const int MethodDescriptorProto::kInputTypeFieldNumber;
 const int MethodDescriptorProto::kOutputTypeFieldNumber;
 const int MethodDescriptorProto::kOptionsFieldNumber;
+const int MethodDescriptorProto::kClientStreamingFieldNumber;
+const int MethodDescriptorProto::kServerStreamingFieldNumber;
 #endif  // !_MSC_VER
 
 MethodDescriptorProto::MethodDescriptorProto()
@@ -4587,6 +4592,8 @@ void MethodDescriptorProto::SharedCtor() {
   input_type_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   output_type_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   options_ = NULL;
+  client_streaming_ = false;
+  server_streaming_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -4630,7 +4637,18 @@ MethodDescriptorProto* MethodDescriptorProto::New(::google::protobuf::Arena* are
 }
 
 void MethodDescriptorProto::Clear() {
-  if (_has_bits_[0 / 32] & 15) {
+#define OFFSET_OF_FIELD_(f) (reinterpret_cast<char*>(      \
+  &reinterpret_cast<MethodDescriptorProto*>(16)->f) - \
+   reinterpret_cast<char*>(16))
+
+#define ZR_(first, last) do {                              \
+    size_t f = OFFSET_OF_FIELD_(first);                    \
+    size_t n = OFFSET_OF_FIELD_(last) - f + sizeof(last);  \
+    ::memset(&first, 0, n);                                \
+  } while (0)
+
+  if (_has_bits_[0 / 32] & 63) {
+    ZR_(client_streaming_, server_streaming_);
     if (has_name()) {
       name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
@@ -4644,6 +4662,10 @@ void MethodDescriptorProto::Clear() {
       if (options_ != NULL) options_->::google::protobuf::MethodOptions::Clear();
     }
   }
+
+#undef OFFSET_OF_FIELD_
+#undef ZR_
+
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (_internal_metadata_.have_unknown_fields()) {
     mutable_unknown_fields()->Clear();
@@ -4719,6 +4741,36 @@ bool MethodDescriptorProto::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(40)) goto parse_client_streaming;
+        break;
+      }
+
+      // optional bool client_streaming = 5 [default = false];
+      case 5: {
+        if (tag == 40) {
+         parse_client_streaming:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &client_streaming_)));
+          set_has_client_streaming();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(48)) goto parse_server_streaming;
+        break;
+      }
+
+      // optional bool server_streaming = 6 [default = false];
+      case 6: {
+        if (tag == 48) {
+         parse_server_streaming:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &server_streaming_)));
+          set_has_server_streaming();
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -4784,6 +4836,16 @@ void MethodDescriptorProto::SerializeWithCachedSizes(
       4, *this->options_, output);
   }
 
+  // optional bool client_streaming = 5 [default = false];
+  if (has_client_streaming()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(5, this->client_streaming(), output);
+  }
+
+  // optional bool server_streaming = 6 [default = false];
+  if (has_server_streaming()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(6, this->server_streaming(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -4834,6 +4896,16 @@ void MethodDescriptorProto::SerializeWithCachedSizes(
         4, *this->options_, target);
   }
 
+  // optional bool client_streaming = 5 [default = false];
+  if (has_client_streaming()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(5, this->client_streaming(), target);
+  }
+
+  // optional bool server_streaming = 6 [default = false];
+  if (has_server_streaming()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(6, this->server_streaming(), target);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -4845,7 +4917,7 @@ void MethodDescriptorProto::SerializeWithCachedSizes(
 int MethodDescriptorProto::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[0 / 32] & 15) {
+  if (_has_bits_[0 / 32] & 63) {
     // optional string name = 1;
     if (has_name()) {
       total_size += 1 +
@@ -4872,6 +4944,16 @@ int MethodDescriptorProto::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           *this->options_);
+    }
+
+    // optional bool client_streaming = 5 [default = false];
+    if (has_client_streaming()) {
+      total_size += 1 + 1;
+    }
+
+    // optional bool server_streaming = 6 [default = false];
+    if (has_server_streaming()) {
+      total_size += 1 + 1;
     }
 
   }
@@ -4916,6 +4998,12 @@ void MethodDescriptorProto::MergeFrom(const MethodDescriptorProto& from) {
     if (from.has_options()) {
       mutable_options()->::google::protobuf::MethodOptions::MergeFrom(from.options());
     }
+    if (from.has_client_streaming()) {
+      set_client_streaming(from.client_streaming());
+    }
+    if (from.has_server_streaming()) {
+      set_server_streaming(from.server_streaming());
+    }
   }
   if (from._internal_metadata_.have_unknown_fields()) {
     mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -4951,6 +5039,8 @@ void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* other) {
   input_type_.Swap(&other->input_type_);
   output_type_.Swap(&other->output_type_);
   std::swap(options_, other->options_);
+  std::swap(client_streaming_, other->client_streaming_);
+  std::swap(server_streaming_, other->server_streaming_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);

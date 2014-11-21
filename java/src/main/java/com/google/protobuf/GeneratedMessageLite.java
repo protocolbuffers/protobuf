@@ -55,14 +55,6 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
   /** For use by generated code only.  */
   protected UnknownFieldSetLite unknownFields;
   
-  protected GeneratedMessageLite() {
-    unknownFields = UnknownFieldSetLite.getDefaultInstance();
-  }
-
-  protected GeneratedMessageLite(Builder builder) {
-    unknownFields = builder.unknownFields;
-  }
-
   public Parser<? extends MessageLite> getParserForType() {
     throw new UnsupportedOperationException(
         "This is supposed to be overridden by subclasses.");
@@ -87,7 +79,9 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
       extends AbstractMessageLite.Builder<BuilderType> {
 
     private final MessageType defaultInstance;
-    private UnknownFieldSetLite unknownFields =
+
+    /** For use by generated code only. */
+    protected UnknownFieldSetLite unknownFields =
         UnknownFieldSetLite.getDefaultInstance();
 
     protected Builder(MessageType defaultInstance) {
@@ -211,16 +205,8 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
      * Represents the set of extensions on this message. For use by generated
      * code only.
      */
-    protected final FieldSet<ExtensionDescriptor> extensions;
-
-    protected ExtendableMessage() {
-      this.extensions = FieldSet.newFieldSet();
-    }
-
-    protected ExtendableMessage(ExtendableBuilder<MessageType, ?> builder) {
-      this.extensions = builder.buildExtensions();
-    }
-
+    protected FieldSet<ExtensionDescriptor> extensions = FieldSet.newFieldSet();
+    
     private void verifyExtensionContainingType(
         final GeneratedExtension<MessageType, ?> extension) {
       if (extension.getContainingTypeDefaultInstance() !=
@@ -396,8 +382,10 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
     /**
      * Called by the build code path to create a copy of the extensions for
      * building the message.
+     * <p>
+     * For use by generated code only.
      */
-    private FieldSet<ExtensionDescriptor> buildExtensions() {
+    protected final FieldSet<ExtensionDescriptor> buildExtensions() {
       extensions.makeImmutable();
       extensionsIsMutable = false;
       return extensions;
@@ -472,8 +460,7 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
     // of this dummy clone() implementation makes it go away.
     @Override
     public BuilderType clone() {
-      throw new UnsupportedOperationException(
-          "This is supposed to be overridden by subclasses.");
+      return super.clone();
     }
     
     /** Set the value of an extension. */

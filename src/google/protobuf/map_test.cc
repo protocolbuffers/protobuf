@@ -237,6 +237,57 @@ TEST_F(MapImplTest, GetReferenceFromIterator) {
   }
 }
 
+TEST_F(MapImplTest, IteratorBasic) {
+  map_[0] = 0;
+
+  // Default constructible (per forward iterator requirements).
+  Map<int, int>::const_iterator cit;
+  Map<int, int>::iterator it;
+
+  it = map_.begin();
+  cit = it;  // Converts to const_iterator
+
+  // Can compare between them.
+  EXPECT_TRUE(it == cit);
+  EXPECT_FALSE(cit != it);
+
+  // Pre increment.
+  EXPECT_FALSE(it == ++cit);
+
+  // Post increment.
+  EXPECT_FALSE(it++ == cit);
+  EXPECT_TRUE(it == cit);
+}
+
+template <typename T>
+bool IsConstHelper(T& /*t*/) {  // NOLINT. We want to catch non-const refs here.
+  return false;
+}
+template <typename T>
+bool IsConstHelper(const T& /*t*/) {
+  return true;
+}
+
+TEST_F(MapImplTest, IteratorConstness) {
+  map_[0] = 0;
+  EXPECT_TRUE(IsConstHelper(*map_.cbegin()));
+  EXPECT_TRUE(IsConstHelper(*const_map_.begin()));
+  EXPECT_FALSE(IsConstHelper(*map_.begin()));
+}
+
+bool IsForwardIteratorHelper(std::forward_iterator_tag /*tag*/) { return true; }
+template <typename T>
+bool IsForwardIteratorHelper(T /*t*/) {
+  return false;
+}
+
+TEST_F(MapImplTest, IteratorCategory) {
+  EXPECT_TRUE(IsForwardIteratorHelper(
+      std::iterator_traits<Map<int, int>::iterator>::iterator_category()));
+  EXPECT_TRUE(IsForwardIteratorHelper(std::iterator_traits<
+      Map<int, int>::const_iterator>::iterator_category()));
+}
+
 TEST_F(MapImplTest, InsertSingle) {
   int32 key = 0;
   int32 value1 = 100;
@@ -433,8 +484,20 @@ TEST_F(MapImplTest, Assigner) {
   map_.insert(map.begin(), map.end());
 
   Map<int32, int32> other;
+  int32 key_other = 123;
+  int32 value_other = 321;
+  other[key_other] = value_other;
+  EXPECT_EQ(1, other.size());
+
   other = map_;
 
+  EXPECT_EQ(2, other.size());
+  EXPECT_EQ(value1, other.at(key1));
+  EXPECT_EQ(value2, other.at(key2));
+  EXPECT_TRUE(other.find(key_other) == other.end());
+
+  // Self assign
+  other = other;
   EXPECT_EQ(2, other.size());
   EXPECT_EQ(value1, other.at(key1));
   EXPECT_EQ(value2, other.at(key2));
@@ -455,6 +518,30 @@ TEST_F(MapImplTest, Rehash) {
     EXPECT_TRUE(map_.end() == map_.find(i));
   }
   EXPECT_TRUE(map_.empty());
+}
+
+TEST_F(MapImplTest, EqualRange) {
+  int key = 100, key_missing = 101;
+  map_[key] = 100;
+
+  std::pair<google::protobuf::Map<int32, int32>::iterator,
+            google::protobuf::Map<int32, int32>::iterator> range = map_.equal_range(key);
+  EXPECT_TRUE(map_.find(key) == range.first);
+  EXPECT_TRUE(++map_.find(key) == range.second);
+
+  range = map_.equal_range(key_missing);
+  EXPECT_TRUE(map_.end() == range.first);
+  EXPECT_TRUE(map_.end() == range.second);
+
+  std::pair<google::protobuf::Map<int32, int32>::const_iterator,
+            google::protobuf::Map<int32, int32>::const_iterator> const_range =
+      const_map_.equal_range(key);
+  EXPECT_TRUE(const_map_.find(key) == const_range.first);
+  EXPECT_TRUE(++const_map_.find(key) == const_range.second);
+
+  const_range = const_map_.equal_range(key_missing);
+  EXPECT_TRUE(const_map_.end() == const_range.first);
+  EXPECT_TRUE(const_map_.end() == const_range.second);
 }
 
 // Map Field Reflection Test ========================================
@@ -879,15 +966,14 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
         entry_int32_double.get(), fd_map_int32_double->message_type()->field(1),
         Func(key, -2));
     entry_string_string->GetReflection()->SetString(
-        entry_string_string.get(), fd_map_string_string->message_type()->field(0),
-        StrFunc(key, 1));
+        entry_string_string.get(),
+        fd_map_string_string->message_type()->field(0), StrFunc(key, 1));
     entry_string_string->GetReflection()->SetString(
-        entry_string_string.get(), fd_map_string_string->message_type()->field(1),
-        StrFunc(key, -5));
+        entry_string_string.get(),
+        fd_map_string_string->message_type()->field(1), StrFunc(key, -5));
     entry_int32_foreign_message->GetReflection()->SetInt32(
         entry_int32_foreign_message.get(),
-        fd_map_int32_foreign_message->message_type()->field(0),
-        key);
+        fd_map_int32_foreign_message->message_type()->field(0), key);
     Message* value_message =
         entry_int32_foreign_message->GetReflection()->MutableMessage(
             entry_int32_foreign_message.get(),
@@ -896,10 +982,10 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
         value_message, value_message->GetDescriptor()->FindFieldByName("c"),
         Func(key, -6));
 
-    mmf_int32_int32.Set(i, *entry_int32_int32.get());
-    mmf_int32_double.Set(i, *entry_int32_double.get());
-    mmf_string_string.Set(i, *entry_string_string.get());
-    mmf_int32_foreign_message.Set(i, *entry_int32_foreign_message.get());
+    mmf_int32_int32.Set(i, *entry_int32_int32);
+    mmf_int32_double.Set(i, *entry_int32_double);
+    mmf_string_string.Set(i, *entry_string_string);
+    mmf_int32_foreign_message.Set(i, *entry_int32_foreign_message);
   }
 
   for (int i = 0; i < 10; i++) {

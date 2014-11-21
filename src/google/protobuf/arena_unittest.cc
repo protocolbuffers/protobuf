@@ -144,7 +144,7 @@ TEST(ArenaTest, InitialBlockTooSmall) {
   // Write to the memory we allocated; this should (but is not guaranteed to)
   // trigger a check for heap corruption if the object was allocated from the
   // initially-provided block.
-  memset(p, '\0', 128);
+  memset(p, '\0', 96);
 }
 
 TEST(ArenaTest, Parsing) {

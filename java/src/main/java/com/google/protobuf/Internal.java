@@ -393,6 +393,10 @@ public class Internal {
    */
   public static final ByteBuffer EMPTY_BYTE_BUFFER =
       ByteBuffer.wrap(EMPTY_BYTE_ARRAY);
+  
+  /** An empty coded input stream constant used in generated code. */
+  public static final CodedInputStream EMPTY_CODED_INPUT_STREAM =
+      CodedInputStream.newInstance(EMPTY_BYTE_ARRAY);
 
 
   /**

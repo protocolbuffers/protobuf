@@ -31,10 +31,10 @@
 #ifndef GOOGLE_PROTOBUF_MAP_H__
 #define GOOGLE_PROTOBUF_MAP_H__
 
-#include <vector>
+#include <iterator>
+#include <google/protobuf/stubs/hash.h>
 
 #include <google/protobuf/map_type_handler.h>
-#include <google/protobuf/stubs/hash.h>
 
 namespace google {
 namespace protobuf {
@@ -48,7 +48,7 @@ namespace internal {
 template <typename K, typename V, FieldDescriptor::Type KeyProto,
           FieldDescriptor::Type ValueProto, int default_enum_value>
 class MapField;
-}
+}  // namespace internal
 
 // This is the class for google::protobuf::Map's internal value_type. Instead of using
 // std::pair as value_type, we use this class which provides us more control of
@@ -62,7 +62,7 @@ class MapPair {
   MapPair(const Key& other_first, const T& other_second)
       : first(other_first), second(other_second) {}
 
-  MapPair(const Key& other_first) : first(other_first), second() {}
+  explicit MapPair(const Key& other_first) : first(other_first), second() {}
 
   MapPair(const MapPair& other)
       : first(other.first), second(other.second) {}
@@ -82,52 +82,13 @@ class MapPair {
   friend class Map<Key, T>;
 };
 
-// STL-like iterator implementation for google::protobuf::Map. Users should not refer to
-// this class directly; use google::protobuf::Map<Key, T>::iterator instead.
-template <typename Key, typename T>
-class MapIterator {
- public:
-  typedef MapPair<Key, T> value_type;
-  typedef value_type* pointer;
-  typedef value_type& reference;
-  typedef MapIterator iterator;
-
-  // constructor
-  MapIterator(const typename hash_map<Key, value_type*>::iterator& it)
-      : it_(it) {}
-  MapIterator(const MapIterator& other) : it_(other.it_) {}
-  MapIterator& operator=(const MapIterator& other) {
-    it_ = other.it_;
-    return *this;
-  }
-
-  // deferenceable
-  reference operator*() const { return *it_->second; }
-  pointer operator->() const { return it_->second; }
-
-  // incrementable
-  iterator& operator++() {
-    ++it_;
-    return *this;
-  }
-  iterator operator++(int) { return iterator(it_++); }
-
-  // equality_comparable
-  bool operator==(const iterator& x) const { return it_ == x.it_; }
-  bool operator!=(const iterator& x) const { return it_ != x.it_; }
-
- private:
-  typename hash_map<Key, value_type*>::iterator it_;
-
-  friend class Map<Key, T>;
-};
-
 // google::protobuf::Map is an associative container type used to store protobuf map
 // fields. Its interface is similar to std::unordered_map. Users should use this
 // interface directly to visit or change map fields.
 template <typename Key, typename T>
 class Map {
   typedef internal::MapCppTypeHandler<T> ValueTypeHandler;
+
  public:
   typedef Key key_type;
   typedef T mapped_type;
@@ -137,9 +98,6 @@ class Map {
   typedef const value_type* const_pointer;
   typedef value_type& reference;
   typedef const value_type& const_reference;
-
-  typedef MapIterator<Key, T> iterator;
-  typedef MapIterator<Key, T> const_iterator;
 
   typedef size_t size_type;
   typedef hash<Key> hasher;
@@ -153,16 +111,70 @@ class Map {
   ~Map() { clear(); }
 
   // Iterators
+  class LIBPROTOBUF_EXPORT const_iterator
+      : public std::iterator<std::forward_iterator_tag, value_type, ptrdiff_t,
+                             const value_type*, const value_type&> {
+    typedef typename hash_map<Key, value_type*>::const_iterator InnerIt;
+
+   public:
+    const_iterator() {}
+    explicit const_iterator(const InnerIt& it) : it_(it) {}
+
+    const_reference operator*() const { return *it_->second; }
+    const_pointer operator->() const { return it_->second; }
+
+    const_iterator& operator++() {
+      ++it_;
+      return *this;
+    }
+    const_iterator operator++(int) { return const_iterator(it_++); }
+
+    friend bool operator==(const const_iterator& a, const const_iterator& b) {
+      return a.it_ == b.it_;
+    }
+    friend bool operator!=(const const_iterator& a, const const_iterator& b) {
+      return a.it_ != b.it_;
+    }
+
+   private:
+    InnerIt it_;
+  };
+
+  class LIBPROTOBUF_EXPORT iterator : public std::iterator<std::forward_iterator_tag, value_type> {
+    typedef typename hash_map<Key, value_type*>::iterator InnerIt;
+
+   public:
+    iterator() {}
+    explicit iterator(const InnerIt& it) : it_(it) {}
+
+    reference operator*() const { return *it_->second; }
+    pointer operator->() const { return it_->second; }
+
+    iterator& operator++() {
+      ++it_;
+      return *this;
+    }
+    iterator operator++(int) { return iterator(it_++); }
+
+    // Implicitly convertible to const_iterator.
+    operator const_iterator() const { return const_iterator(it_); }
+
+    friend bool operator==(const iterator& a, const iterator& b) {
+      return a.it_ == b.it_;
+    }
+    friend bool operator!=(const iterator& a, const iterator& b) {
+      return a.it_ != b.it_;
+    }
+
+   private:
+    friend class Map;
+    InnerIt it_;
+  };
+
   iterator begin() { return iterator(elements_.begin()); }
   iterator end() { return iterator(elements_.end()); }
-  const_iterator begin() const {
-    return const_iterator(
-        const_cast<hash_map<Key, value_type*>&>(elements_).begin());
-  }
-  const_iterator end() const {
-    return const_iterator(
-        const_cast<hash_map<Key, value_type*>&>(elements_).end());
-  }
+  const_iterator begin() const { return const_iterator(elements_.begin()); }
+  const_iterator end() const { return const_iterator(elements_.end()); }
   const_iterator cbegin() const { return begin(); }
   const_iterator cend() const { return end(); }
 
@@ -197,15 +209,29 @@ class Map {
     return elements_.count(key);
   }
   const_iterator find(const key_type& key) const {
-    // When elements_ is a const instance, find(key) returns a const iterator.
-    // However, to reduce code complexity, we use MapIterator for Map's both
-    // const and non-const iterator, which only takes non-const iterator to
-    // construct.
-    return const_iterator(
-        const_cast<hash_map<Key, value_type*>&>(elements_).find(key));
+    return const_iterator(elements_.find(key));
   }
   iterator find(const key_type& key) {
     return iterator(elements_.find(key));
+  }
+  std::pair<const_iterator, const_iterator> equal_range(
+      const key_type& key) const {
+    const_iterator it = find(key);
+    if (it == end()) {
+      return std::pair<const_iterator, const_iterator>(it, it);
+    } else {
+      const_iterator begin = it++;
+      return std::pair<const_iterator, const_iterator>(begin, it);
+    }
+  }
+  std::pair<iterator, iterator> equal_range(const key_type& key) {
+    iterator it = find(key);
+    if (it == end()) {
+      return std::pair<iterator, iterator>(it, it);
+    } else {
+      iterator begin = it++;
+      return std::pair<iterator, iterator>(begin, it);
+    }
   }
 
   // insert
@@ -214,8 +240,9 @@ class Map {
     if (it != end()) {
       return std::pair<iterator, bool>(it, false);
     } else {
-      return elements_.insert(
-          std::pair<Key, value_type*>(value.first, new value_type(value)));
+      return std::pair<iterator, bool>(
+          iterator(elements_.insert(std::pair<Key, value_type*>(
+              value.first, new value_type(value))).first), true);
     }
   }
   template <class InputIt>
@@ -258,7 +285,10 @@ class Map {
 
   // Assign
   Map& operator=(const Map& other) {
-    insert(other.begin(), other.end());
+    if (this != &other) {
+      clear();
+      insert(other.begin(), other.end());
+    }
     return *this;
   }
 

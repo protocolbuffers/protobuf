@@ -306,31 +306,28 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
         variables["lite"]);
   }
   printer->Indent();
-  // Using builder_type, instead of Builder, prevents the Builder class from
-  // being loaded into PermGen space when the default instance is created.
-  // This optimizes the PermGen space usage for clients that do not modify
-  // messages.
-  printer->Print(
-    "// Use $classname$.newBuilder() to construct.\n"
-    "private $classname$($buildertype$ builder) {\n"
-    "  super(builder);\n"
-    "}\n",
-    "classname", descriptor_->name(),
-    "buildertype", builder_type);
-  printer->Print(
-    "private $classname$() {\n",
-    "classname", descriptor_->name());
-  printer->Indent();
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    if (!descriptor_->field(i)->containing_oneof()) {
-      field_generators_.get(descriptor_->field(i))
-          .GenerateInitializationCode(printer);
-    }
+  if (HasDescriptorMethods(descriptor_)) {
+    // Using builder_type, instead of Builder, prevents the Builder class from
+    // being loaded into PermGen space when the default instance is created.
+    // This optimizes the PermGen space usage for clients that do not modify
+    // messages.
+    printer->Print(
+      "// Use $classname$.newBuilder() to construct.\n"
+      "private $classname$($buildertype$ builder) {\n"
+      "  super(builder);\n"
+      "}\n",
+      "classname", descriptor_->name(),
+      "buildertype", builder_type);
+    printer->Print(
+      "private $classname$() {\n",
+      "classname", descriptor_->name());
+    printer->Indent();
+    GenerateInitializers(printer);
+    printer->Outdent();
+    printer->Print(
+      "}\n"
+      "\n");
   }
-  printer->Outdent();
-  printer->Print(
-    "}\n"
-    "\n");
 
   if (HasDescriptorMethods(descriptor_)) {
     printer->Print(
@@ -480,10 +477,37 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     "// @@protoc_insertion_point(class_scope:$full_name$)\n",
     "full_name", descriptor_->full_name());
 
+
   // Carefully initialize the default instance in such a way that it doesn't
   // conflict with other initialization.
-  printer->Print("private static final $classname$ defaultInstance =\n"
-      "    new $classname$();\n"
+  printer->Print(
+    "private static final $classname$ defaultInstance;",
+    "classname", name_resolver_->GetImmutableClassName(descriptor_));
+  if (HasDescriptorMethods(descriptor_)) {
+    printer->Print(
+      "static {\n"
+      "  defaultInstance = new $classname$();\n"
+      "}\n"
+      "\n",
+      "classname", name_resolver_->GetImmutableClassName(descriptor_));
+  } else {
+    // LITE_RUNTIME only has one constructor.
+    printer->Print(
+      "static {\n"
+      "  try {\n"
+      "    defaultInstance = new $classname$(\n"
+      "        com.google.protobuf.Internal\n"
+      "            .EMPTY_CODED_INPUT_STREAM,\n"
+      "        com.google.protobuf.ExtensionRegistryLite\n"
+      "            .getEmptyRegistry());\n"
+      "  } catch (com.google.protobuf.InvalidProtocolBufferException e) {\n"
+      "    throw new ExceptionInInitializerError(e);\n"
+      "  }\n"
+      "}\n"
+      "\n",
+      "classname", descriptor_->name());
+  }
+  printer->Print(
       "public static $classname$ getDefaultInstance() {\n"
       "  return defaultInstance;\n"
       "}\n"
@@ -492,7 +516,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
       "  return defaultInstance;\n"
       "}\n"
       "\n",
-      "classname", descriptor_->name());
+      "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
   // Extensions must be declared after the defaultInstance is initialized
   // because the defaultInstance is used by the extension to lazily retrieve
@@ -773,6 +797,7 @@ void ImmutableMessageGenerator::GenerateBuilder(io::Printer* printer) {
 
   if (HasGeneratedMethods(descriptor_)) {
     GenerateIsInitialized(printer, DONT_MEMOIZE);
+    GenerateBuilderParsingMethods(printer);
   }
 
   // oneof
@@ -1034,10 +1059,33 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
   }
 
-  printer->Print(
-    "public $classname$ buildPartial() {\n"
-    "  $classname$ result = new $classname$(this);\n",
-    "classname", name_resolver_->GetImmutableClassName(descriptor_));
+  if (HasDescriptorMethods(descriptor_)) {
+    printer->Print(
+        "public $classname$ buildPartial() {\n"
+            "  $classname$ result = new $classname$(this);\n",
+         "classname", name_resolver_->GetImmutableClassName(descriptor_));
+  } else {
+    // LITE_RUNTIME only provides a single message constructor.
+    printer->Print(
+        "public $classname$ buildPartial() {\n"
+        "  $classname$ result = null;\n"
+        "  try {\n"
+        "    result = new $classname$(\n"
+        "        com.google.protobuf.Internal\n"
+        "            .EMPTY_CODED_INPUT_STREAM,\n"
+        "        com.google.protobuf.ExtensionRegistryLite\n"
+        "            .getEmptyRegistry());\n"
+        "  } catch (com.google.protobuf.InvalidProtocolBufferException e) {\n"
+        "    throw new RuntimeException(e);\n"
+        "  }\n"
+        "  result.unknownFields = this.unknownFields;\n",
+        "classname", name_resolver_->GetImmutableClassName(descriptor_));
+
+    if (descriptor_->extension_range_count() > 0) {
+      printer->Print(
+        "  result.extensions = this.buildExtensions();\n");
+    }
+  }
 
   printer->Indent();
 
@@ -1188,6 +1236,34 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
       "  return this;\n"
       "}\n"
       "\n");
+  }
+}
+
+// ===================================================================
+
+void ImmutableMessageGenerator::
+GenerateBuilderParsingMethods(io::Printer* printer) {
+  if (HasDescriptorMethods(descriptor_)) {
+    // LITE_RUNTIME implements this at the GeneratedMessageLite level.
+    printer->Print(
+      "public Builder mergeFrom(\n"
+      "    com.google.protobuf.CodedInputStream input,\n"
+      "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
+      "    throws java.io.IOException {\n"
+      "  $classname$ parsedMessage = null;\n"
+      "  try {\n"
+      "    parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);\n"
+      "  } catch (com.google.protobuf.InvalidProtocolBufferException e) {\n"
+      "    parsedMessage = ($classname$) e.getUnfinishedMessage();\n"
+      "    throw e;\n"
+      "  } finally {\n"
+      "    if (parsedMessage != null) {\n"
+      "      mergeFrom(parsedMessage);\n"
+      "    }\n"
+      "  }\n"
+      "  return this;\n"
+      "}\n",
+      "classname", name_resolver_->GetImmutableClassName(descriptor_));
   }
 }
 
@@ -1488,8 +1564,13 @@ GenerateParsingConstructor(io::Printer* printer) {
   printer->Indent();
 
   // Initialize all fields to default.
-  printer->Print(
-      "this();\n");
+  if (HasDescriptorMethods(descriptor_)) {
+    printer->Print(
+        "this();\n");
+  } else {
+    // LITE_RUNTIME only has one constructor.
+    GenerateInitializers(printer);
+  }
 
   // Use builder bits to track mutable repeated fields.
   int totalBuilderBits = 0;
@@ -1701,6 +1782,16 @@ void ImmutableMessageGenerator::GenerateParser(io::Printer* printer) {
       "}\n"
       "\n",
       "classname", descriptor_->name());
+}
+
+// ===================================================================
+void ImmutableMessageGenerator::GenerateInitializers(io::Printer* printer) {
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    if (!descriptor_->field(i)->containing_oneof()) {
+      field_generators_.get(descriptor_->field(i))
+          .GenerateInitializationCode(printer);
+    }
+  }
 }
 
 
