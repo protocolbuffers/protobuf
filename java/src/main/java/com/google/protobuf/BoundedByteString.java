@@ -30,6 +30,9 @@
 
 package com.google.protobuf;
 
+import java.io.InvalidObjectException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.NoSuchElementException;
 
 /**
@@ -120,6 +123,20 @@ class BoundedByteString extends LiteralByteString {
       int targetOffset, int numberToCopy) {
     System.arraycopy(bytes, getOffsetIntoBytes() + sourceOffset, target,
         targetOffset, numberToCopy);
+  }
+
+  // =================================================================
+  // Serializable
+
+  private static final long serialVersionUID = 1L;
+
+  Object writeReplace() {
+    return new LiteralByteString(toByteArray());
+  }
+
+  private void readObject(ObjectInputStream in) throws IOException {
+    throw new InvalidObjectException(
+        "BoundedByteStream instances are not to be serialized directly");
   }
 
   // =================================================================

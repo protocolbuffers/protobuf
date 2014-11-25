@@ -30,8 +30,10 @@
 
 package com.google.protobuf;
 
+import java.io.InvalidObjectException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.ByteArrayInputStream;
@@ -769,6 +771,20 @@ class RopeByteString extends ByteString {
     public void remove() {
       throw new UnsupportedOperationException();
     }
+  }
+
+  // =================================================================
+  // Serializable
+
+  private static final long serialVersionUID = 1L;
+
+  Object writeReplace() {
+    return new LiteralByteString(toByteArray());
+  }
+
+  private void readObject(ObjectInputStream in) throws IOException {
+    throw new InvalidObjectException(
+        "RopeByteStream instances are not to be serialized directly");
   }
 
   // =================================================================

@@ -32,9 +32,12 @@ package com.google.protobuf;
 
 import junit.framework.TestCase;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -392,5 +395,18 @@ public class LiteralByteStringTest extends TestCase {
         stringUnderTest.concat(ByteString.EMPTY), stringUnderTest);
     assertSame("empty concatenated with " + classUnderTest + " must give " + classUnderTest,
         ByteString.EMPTY.concat(stringUnderTest), stringUnderTest);
+  }
+
+  public void testJavaSerialization() throws Exception {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    ObjectOutputStream oos = new ObjectOutputStream(out);
+    oos.writeObject(stringUnderTest);
+    oos.close();
+    byte[] pickled = out.toByteArray();
+    InputStream in = new ByteArrayInputStream(pickled);
+    ObjectInputStream ois = new ObjectInputStream(in);
+    Object o = ois.readObject();
+    assertTrue("Didn't get a ByteString back", o instanceof ByteString);
+    assertEquals("Should get an equal ByteString back", stringUnderTest, o);
   }
 }
