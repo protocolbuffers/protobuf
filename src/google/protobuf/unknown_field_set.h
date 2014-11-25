@@ -224,13 +224,16 @@ class LIBPROTOBUF_EXPORT UnknownField {
 
   uint32 number_;
   uint32 type_;
+
+  union LengthDelimited {
+    string* string_value_;
+  };
+
   union {
     uint64 varint_;
     uint32 fixed32_;
     uint64 fixed64_;
-    mutable union {
-      string* string_value_;
-    } length_delimited_;
+    mutable union LengthDelimited length_delimited_;
     UnknownFieldSet* group_;
   };
 };
