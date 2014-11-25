@@ -67,8 +67,8 @@ class ExtensionGenerator {
   virtual ~ExtensionGenerator() {}
 
   virtual void Generate(io::Printer* printer) = 0;
-  virtual void GenerateNonNestedInitializationCode(io::Printer* printer) = 0;
-  virtual void GenerateRegistrationCode(io::Printer* printer) = 0;
+  virtual int GenerateNonNestedInitializationCode(io::Printer* printer) = 0;
+  virtual int GenerateRegistrationCode(io::Printer* printer) = 0;
 
  protected:
   static void InitTemplateVars(const FieldDescriptor* descriptor,
@@ -88,8 +88,8 @@ class ImmutableExtensionGenerator : public ExtensionGenerator {
   virtual ~ImmutableExtensionGenerator();
 
   virtual void Generate(io::Printer* printer);
-  virtual void GenerateNonNestedInitializationCode(io::Printer* printer);
-  virtual void GenerateRegistrationCode(io::Printer* printer);
+  virtual int GenerateNonNestedInitializationCode(io::Printer* printer);
+  virtual int GenerateRegistrationCode(io::Printer* printer);
 
  protected:
   const FieldDescriptor* descriptor_;
