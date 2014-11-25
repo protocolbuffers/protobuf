@@ -54,7 +54,7 @@ syn keyword pbTodo       contained TODO FIXME XXX
 syn cluster pbCommentGrp contains=pbTodo
 
 syn keyword pbSyntax     syntax import option
-syn keyword pbStructure  package message group
+syn keyword pbStructure  package message group oneof
 syn keyword pbRepeat     optional required repeated
 syn keyword pbDefault    default
 syn keyword pbExtend     extend extensions to max
