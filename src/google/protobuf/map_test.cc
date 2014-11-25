@@ -544,6 +544,13 @@ TEST_F(MapImplTest, EqualRange) {
   EXPECT_TRUE(const_map_.end() == const_range.second);
 }
 
+TEST_F(MapImplTest, ConvertToStdMap) {
+  map_[100] = 101;
+  std::map<int32, int32> std_map(map_.begin(), map_.end());
+  EXPECT_EQ(1, std_map.size());
+  EXPECT_EQ(101, std_map[100]);
+}
+
 // Map Field Reflection Test ========================================
 
 static int Func(int i, int j) {
@@ -1738,6 +1745,20 @@ TEST(GeneratedMapFieldTest, MessageLiteMap) {
 
   EXPECT_EQ(1, to.map_field().size());
   EXPECT_EQ(1, to.map_field().at(1));
+}
+
+TEST(GeneratedMapFieldTest, IsInitialized) {
+  unittest::TestRequiredMessageMap map_message;
+
+  // Add an uninitialized message.
+  (*map_message.mutable_map_field())[0];
+  EXPECT_FALSE(map_message.IsInitialized());
+
+  // Initialize uninitialized message
+  (*map_message.mutable_map_field())[0].set_a(0);
+  (*map_message.mutable_map_field())[0].set_b(0);
+  (*map_message.mutable_map_field())[0].set_c(0);
+  EXPECT_TRUE(map_message.IsInitialized());
 }
 
 // Generated Message Reflection Test ================================

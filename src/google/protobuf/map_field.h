@@ -213,6 +213,13 @@ class LIBPROTOBUF_EXPORT MapField : public MapFieldBase {
   mutable const EntryType* default_entry_;
 };
 
+// True if IsInitialized() is true for value field in all elements of t. T is
+// expected to be message.  It's useful to have this helper here to keep the
+// protobuf compiler from ever having to emit loops in IsInitialized() methods.
+// We want the C++ compiler to inline this or not as it sees fit.
+template <typename Key, typename T>
+bool AllAreInitialized(const Map<Key, T>& t);
+
 }  // namespace internal
 }  // namespace protobuf
 

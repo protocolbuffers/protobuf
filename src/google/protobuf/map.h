@@ -56,7 +56,7 @@ class MapField;
 template <typename Key, typename T>
 class MapPair {
  public:
-  typedef Key first_type;
+  typedef const Key first_type;
   typedef T second_type;
 
   MapPair(const Key& other_first, const T& other_second)
@@ -67,13 +67,12 @@ class MapPair {
   MapPair(const MapPair& other)
       : first(other.first), second(other.second) {}
 
-  MapPair& operator=(const MapPair& other) {
-    first = other.first;
-    second = other.second;
-    return *this;
-  }
-
   ~MapPair() {}
+
+  // Implicitly convertible to std::pair.
+  operator std::pair<const Key, T>() const {
+    return std::pair<const Key, T>(first, second);
+  }
 
   const Key first;
   T second;

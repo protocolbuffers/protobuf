@@ -262,6 +262,15 @@ void MapField<Key, T, KeyProto, ValueProto,
   }
 }
 
+template <typename Key, typename T>
+bool AllAreInitialized(const Map<Key, T>& t) {
+  for (typename Map<Key, T>::const_iterator it = t.begin(); it != t.end();
+       ++it) {
+    if (!it->second.IsInitialized()) return false;
+  }
+  return true;
+}
+
 }  // namespace internal
 }  // namespace protobuf
 

@@ -75,3 +75,8 @@ enum MapEnum {
   MAP_ENUM_BAR = 1;
   MAP_ENUM_BAZ = 2;
 }
+
+// Test embeded message with required fields
+message TestRequiredMessageMap {
+  map<int32, TestRequired> map_field = 1;
+}
