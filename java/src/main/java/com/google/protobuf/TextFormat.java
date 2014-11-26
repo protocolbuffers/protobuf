@@ -411,7 +411,8 @@ public final class TextFormat {
           generator.print("\"");
           generator.print(escapeNonAscii ?
               escapeText((String) value) :
-              escapeDoubleQuotesAndBackslashes((String) value));
+              escapeDoubleQuotesAndBackslashes((String) value)
+                  .replace("\n", "\\n"));
           generator.print("\"");
           break;
 
