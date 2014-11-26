@@ -502,9 +502,9 @@ public abstract class ByteString implements Iterable<Byte> {
 
   /**
    * Internal (package private) implementation of
-   * @link{#copyTo(byte[],int,int,int}.
+   * {@link #copyTo(byte[],int,int,int)}.
    * It assumes that all error checking has already been performed and that 
-   * @code{numberToCopy > 0}.
+   * {@code numberToCopy > 0}.
    */
   protected abstract void copyToInternal(byte[] target, int sourceOffset,
       int targetOffset, int numberToCopy);
@@ -699,7 +699,7 @@ public abstract class ByteString implements Iterable<Byte> {
    * The {@link InputStream} returned by this method is guaranteed to be
    * completely non-blocking.  The method {@link InputStream#available()}
    * returns the number of bytes remaining in the stream. The methods
-   * {@link InputStream#read(byte[]), {@link InputStream#read(byte[],int,int)}
+   * {@link InputStream#read(byte[])}, {@link InputStream#read(byte[],int,int)}
    * and {@link InputStream#skip(long)} will read/skip as many bytes as are
    * available.
    * <p>

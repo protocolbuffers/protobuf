@@ -236,7 +236,7 @@ public class Internal {
   }
 
   /**
-   * Helper method for implementing {@link MessageLite#hashCode()} for longs.
+   * Helper method for implementing {@link Message#hashCode()} for longs.
    * @see Long#hashCode()
    */
   public static int hashLong(long n) {
@@ -244,7 +244,7 @@ public class Internal {
   }
 
   /**
-   * Helper method for implementing {@link MessageLite#hashCode()} for
+   * Helper method for implementing {@link Message#hashCode()} for
    * booleans.
    * @see Boolean#hashCode()
    */
@@ -253,7 +253,7 @@ public class Internal {
   }
 
   /**
-   * Helper method for implementing {@link MessageLite#hashCode()} for enums.
+   * Helper method for implementing {@link Message#hashCode()} for enums.
    * <p>
    * This is needed because {@link java.lang.Enum#hashCode()} is final, but we
    * need to use the field number as the hash code to ensure compatibility
@@ -264,7 +264,7 @@ public class Internal {
   }
 
   /**
-   * Helper method for implementing {@link MessageLite#hashCode()} for
+   * Helper method for implementing {@link Message#hashCode()} for
    * enum lists.
    */
   public static int hashEnumList(List<? extends EnumLite> list) {
@@ -276,7 +276,7 @@ public class Internal {
   }
   
   /**
-   * Helper method for implementing {@link MessageLite#equals()} for bytes field.
+   * Helper method for implementing {@link Message#equals(Object)} for bytes field.
    */
   public static boolean equals(List<byte[]> a, List<byte[]> b) {
     if (a.size() != b.size()) return false;
@@ -289,7 +289,7 @@ public class Internal {
   }
 
   /**
-   * Helper method for implementing {@link MessageLite#hashCode()} for bytes field.
+   * Helper method for implementing {@link Message#hashCode()} for bytes field.
    */
   public static int hashCode(List<byte[]> list) {
     int hash = 1;
@@ -300,7 +300,7 @@ public class Internal {
   }
   
   /**
-   * Helper method for implementing {@link MessageLite#hashCode()} for bytes field.
+   * Helper method for implementing {@link Message#hashCode()} for bytes field.
    */
   public static int hashCode(byte[] bytes) {
     // The hash code for a byte array should be the same as the hash code for a
@@ -311,7 +311,7 @@ public class Internal {
   }
   
   /**
-   * Helper method for implementing {@link MessageLite#equals()} for bytes
+   * Helper method for implementing {@link Message#equals(Object)} for bytes
    * field.
    */
   public static boolean equalsByteBuffer(ByteBuffer a, ByteBuffer b) {
@@ -324,7 +324,7 @@ public class Internal {
   }
   
   /**
-   * Helper method for implementing {@link MessageLite#equals()} for bytes
+   * Helper method for implementing {@link Message#equals(Object)} for bytes
    * field.
    */
   public static boolean equalsByteBuffer(
@@ -341,7 +341,7 @@ public class Internal {
   }
 
   /**
-   * Helper method for implementing {@link MessageLite#hashCode()} for bytes
+   * Helper method for implementing {@link Message#hashCode()} for bytes
    * field.
    */
   public static int hashCodeByteBuffer(List<ByteBuffer> list) {
@@ -355,7 +355,7 @@ public class Internal {
   private static final int DEFAULT_BUFFER_SIZE = 4096;
   
   /**
-   * Helper method for implementing {@link MessageLite#hashCode()} for bytes
+   * Helper method for implementing {@link Message#hashCode()} for bytes
    * field.
    */
   public static int hashCodeByteBuffer(ByteBuffer bytes) {
