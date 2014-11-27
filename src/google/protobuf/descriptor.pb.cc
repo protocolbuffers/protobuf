@@ -111,7 +111,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       -1,
       sizeof(FileDescriptorSet),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorSet, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorSet, _internal_metadata_),
+      -1);
   FileDescriptorProto_descriptor_ = file->message_type(1);
   static const int FileDescriptorProto_offsets_[12] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorProto, name_),
@@ -136,7 +137,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       -1,
       sizeof(FileDescriptorProto),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorProto, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorProto, _internal_metadata_),
+      -1);
   DescriptorProto_descriptor_ = file->message_type(2);
   static const int DescriptorProto_offsets_[8] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, name_),
@@ -157,7 +159,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       -1,
       sizeof(DescriptorProto),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, _internal_metadata_),
+      -1);
   DescriptorProto_ExtensionRange_descriptor_ = DescriptorProto_descriptor_->nested_type(0);
   static const int DescriptorProto_ExtensionRange_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ExtensionRange, start_),
@@ -172,7 +175,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       -1,
       sizeof(DescriptorProto_ExtensionRange),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ExtensionRange, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ExtensionRange, _internal_metadata_),
+      -1);
   FieldDescriptorProto_descriptor_ = file->message_type(3);
   static const int FieldDescriptorProto_offsets_[9] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldDescriptorProto, name_),
@@ -194,7 +198,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       -1,
       sizeof(FieldDescriptorProto),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldDescriptorProto, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldDescriptorProto, _internal_metadata_),
+      -1);
   FieldDescriptorProto_Type_descriptor_ = FieldDescriptorProto_descriptor_->enum_type(0);
   FieldDescriptorProto_Label_descriptor_ = FieldDescriptorProto_descriptor_->enum_type(1);
   OneofDescriptorProto_descriptor_ = file->message_type(4);
@@ -210,7 +215,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       -1,
       sizeof(OneofDescriptorProto),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofDescriptorProto, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofDescriptorProto, _internal_metadata_),
+      -1);
   EnumDescriptorProto_descriptor_ = file->message_type(5);
   static const int EnumDescriptorProto_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumDescriptorProto, name_),
@@ -226,7 +232,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       -1,
       sizeof(EnumDescriptorProto),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumDescriptorProto, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumDescriptorProto, _internal_metadata_),
+      -1);
   EnumValueDescriptorProto_descriptor_ = file->message_type(6);
   static const int EnumValueDescriptorProto_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueDescriptorProto, name_),
@@ -242,7 +249,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       -1,
       sizeof(EnumValueDescriptorProto),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueDescriptorProto, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueDescriptorProto, _internal_metadata_),
+      -1);
   ServiceDescriptorProto_descriptor_ = file->message_type(7);
   static const int ServiceDescriptorProto_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceDescriptorProto, name_),
@@ -258,7 +266,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       -1,
       sizeof(ServiceDescriptorProto),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceDescriptorProto, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceDescriptorProto, _internal_metadata_),
+      -1);
   MethodDescriptorProto_descriptor_ = file->message_type(8);
   static const int MethodDescriptorProto_offsets_[6] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, name_),
@@ -277,7 +286,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       -1,
       sizeof(MethodDescriptorProto),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, _internal_metadata_),
+      -1);
   FileOptions_descriptor_ = file->message_type(9);
   static const int FileOptions_offsets_[13] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_package_),
@@ -303,7 +313,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, _extensions_),
       sizeof(FileOptions),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, _internal_metadata_),
+      -1);
   FileOptions_OptimizeMode_descriptor_ = FileOptions_descriptor_->enum_type(0);
   MessageOptions_descriptor_ = file->message_type(10);
   static const int MessageOptions_offsets_[5] = {
@@ -322,7 +333,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageOptions, _extensions_),
       sizeof(MessageOptions),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageOptions, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageOptions, _internal_metadata_),
+      -1);
   FieldOptions_descriptor_ = file->message_type(11);
   static const int FieldOptions_offsets_[6] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, ctype_),
@@ -341,7 +353,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, _extensions_),
       sizeof(FieldOptions),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, _internal_metadata_),
+      -1);
   FieldOptions_CType_descriptor_ = FieldOptions_descriptor_->enum_type(0);
   EnumOptions_descriptor_ = file->message_type(12);
   static const int EnumOptions_offsets_[3] = {
@@ -358,7 +371,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, _extensions_),
       sizeof(EnumOptions),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, _internal_metadata_),
+      -1);
   EnumValueOptions_descriptor_ = file->message_type(13);
   static const int EnumValueOptions_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueOptions, deprecated_),
@@ -373,7 +387,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueOptions, _extensions_),
       sizeof(EnumValueOptions),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueOptions, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueOptions, _internal_metadata_),
+      -1);
   ServiceOptions_descriptor_ = file->message_type(14);
   static const int ServiceOptions_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceOptions, deprecated_),
@@ -388,7 +403,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceOptions, _extensions_),
       sizeof(ServiceOptions),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceOptions, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceOptions, _internal_metadata_),
+      -1);
   MethodOptions_descriptor_ = file->message_type(15);
   static const int MethodOptions_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodOptions, deprecated_),
@@ -403,7 +419,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodOptions, _extensions_),
       sizeof(MethodOptions),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodOptions, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodOptions, _internal_metadata_),
+      -1);
   UninterpretedOption_descriptor_ = file->message_type(16);
   static const int UninterpretedOption_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption, name_),
@@ -423,7 +440,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       -1,
       sizeof(UninterpretedOption),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption, _internal_metadata_),
+      -1);
   UninterpretedOption_NamePart_descriptor_ = UninterpretedOption_descriptor_->nested_type(0);
   static const int UninterpretedOption_NamePart_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption_NamePart, name_part_),
@@ -438,7 +456,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       -1,
       sizeof(UninterpretedOption_NamePart),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption_NamePart, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption_NamePart, _internal_metadata_),
+      -1);
   SourceCodeInfo_descriptor_ = file->message_type(17);
   static const int SourceCodeInfo_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo, location_),
@@ -452,7 +471,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       -1,
       sizeof(SourceCodeInfo),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo, _internal_metadata_),
+      -1);
   SourceCodeInfo_Location_descriptor_ = SourceCodeInfo_descriptor_->nested_type(0);
   static const int SourceCodeInfo_Location_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo_Location, path_),
@@ -469,7 +489,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       -1,
       -1,
       sizeof(SourceCodeInfo_Location),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo_Location, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo_Location, _internal_metadata_),
+      -1);
 }
 
 namespace {

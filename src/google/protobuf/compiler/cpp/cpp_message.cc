@@ -561,7 +561,7 @@ GenerateFieldAccessorDefinitions(io::Printer* printer) {
           } else {
             printer->Print(vars,
               "inline bool $classname$::has_$name$() const {\n"
-              "  return $name$_ != NULL;\n"
+              "  return !_is_default_instance_ && $name$_ != NULL;\n"
               "}\n");
           }
         }
@@ -1051,6 +1051,22 @@ GenerateClassDefinition(io::Printer* printer) {
       printer->Print(cached_size_decl.c_str());
       need_to_emit_cached_size = false;
     }
+  } else {
+    // Without field presence, we need another way to disambiguate the default
+    // instance, because the default instance's submessage fields (if any) store
+    // pointers to the default instances of the submessages even when they
+    // aren't present. Alternatives to this approach might be to (i) use a
+    // tagged pointer on all message fields, setting a tag bit for "not really
+    // present, just default instance"; or (ii) comparing |this| against the
+    // return value from GeneratedMessageFactory::GetPrototype() in all
+    // has_$field$() calls. However, both of these options are much more
+    // expensive (in code size and CPU overhead) than just checking a field in
+    // the message. Long-term, the best solution would be to rearchitect the
+    // default instance design not to store pointers to submessage default
+    // instances, and have reflection get those some other way; but that change
+    // would have too much impact on proto2.
+    printer->Print(
+      "bool _is_default_instance_;\n");
   }
 
   // Field members:
@@ -1323,11 +1339,21 @@ GenerateDescriptorInitializer(io::Printer* printer, int index) {
   if (UseUnknownFieldSet(descriptor_->file())) {
     printer->Print(vars,
     "    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET("
-    "$classname$, _internal_metadata_));\n");
+    "$classname$, _internal_metadata_),\n");
   } else {
     printer->Print(vars,
     "    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET("
-    "$classname$, _arena_));\n");
+    "$classname$, _arena_),\n");
+  }
+
+  // is_default_instance_ offset.
+  if (HasFieldPresence(descriptor_->file())) {
+    printer->Print(vars,
+    "    -1);\n");
+  } else {
+    printer->Print(vars,
+    "    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET("
+    "$classname$, _is_default_instance_));\n");
   }
 
   // Handle nested types.
@@ -1612,6 +1638,11 @@ GenerateSharedConstructorCode(io::Printer* printer) {
     "classname", classname_);
   printer->Indent();
 
+  if (!HasFieldPresence(descriptor_->file())) {
+    printer->Print(
+      "  _is_default_instance_ = false;\n");
+  }
+
   printer->Print(StrCat(
       uses_string_ ? "::google::protobuf::internal::GetEmptyString();\n" : "",
       "_cached_size_ = 0;\n").c_str());
@@ -1808,6 +1839,11 @@ GenerateStructors(io::Printer* printer) {
     "\n"
     "void $classname$::InitAsDefaultInstance() {\n",
     "classname", classname_);
+
+  if (!HasFieldPresence(descriptor_->file())) {
+    printer->Print(
+      "  _is_default_instance_ = true;\n");
+  }
 
   // The default instance needs all of its embedded message pointers
   // cross-linked to other default instances.  We can't do this initialization

@@ -56,7 +56,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
       -1,
       -1,
       sizeof(CodeGeneratorRequest),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorRequest, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorRequest, _internal_metadata_),
+      -1);
   CodeGeneratorResponse_descriptor_ = file->message_type(1);
   static const int CodeGeneratorResponse_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorResponse, error_),
@@ -71,7 +72,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
       -1,
       -1,
       sizeof(CodeGeneratorResponse),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorResponse, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorResponse, _internal_metadata_),
+      -1);
   CodeGeneratorResponse_File_descriptor_ = CodeGeneratorResponse_descriptor_->nested_type(0);
   static const int CodeGeneratorResponse_File_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorResponse_File, name_),
@@ -87,7 +89,8 @@ void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
       -1,
       -1,
       sizeof(CodeGeneratorResponse_File),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorResponse_File, _internal_metadata_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorResponse_File, _internal_metadata_),
+      -1);
 }
 
 namespace {

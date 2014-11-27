@@ -136,7 +136,8 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
                              const DescriptorPool* pool,
                              MessageFactory* factory,
                              int object_size,
-                             int arena_offset);
+                             int arena_offset,
+                             int is_default_instance_offset = -1);
 
   // Similar with the construction above. Call this construction if the
   // message has oneof definition.
@@ -173,7 +174,8 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
                              const DescriptorPool* pool,
                              MessageFactory* factory,
                              int object_size,
-                             int arena_offset);
+                             int arena_offset,
+                             int is_default_instance_offset = -1);
   ~GeneratedMessageReflection();
 
   // Shorter-to-call helpers for the above two constructions that work if the
@@ -190,7 +192,8 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
       const void* default_oneof_instance,
       int oneof_case_offset,
       int object_size,
-      int arena_offset);
+      int arena_offset,
+      int is_default_instance_offset = -1);
 
   static GeneratedMessageReflection* NewGeneratedMessageReflection(
       const Descriptor* descriptor,
@@ -200,7 +203,8 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
       int unknown_fields_offset,
       int extensions_offset,
       int object_size,
-      int arena_offset);
+      int arena_offset,
+      int is_default_instance_offset = -1);
 
   // implements Reflection -------------------------------------------
 
@@ -414,7 +418,10 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
   int unknown_fields_offset_;
   int extensions_offset_;
   int arena_offset_;
+  int is_default_instance_offset_;
   int object_size_;
+
+  static const int kHasNoDefaultInstanceField = -1;
 
   const DescriptorPool* descriptor_pool_;
   MessageFactory* message_factory_;
@@ -445,6 +452,8 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
       GetInternalMetadataWithArena(const Message& message) const;
   inline internal::InternalMetadataWithArena*
       MutableInternalMetadataWithArena(Message* message) const;
+
+  inline bool GetIsDefaultInstance(const Message& message) const;
 
   inline bool HasBit(const Message& message,
                      const FieldDescriptor* field) const;

@@ -218,6 +218,7 @@ class DynamicMessage : public Message {
     int oneof_case_offset;
     int unknown_fields_offset;
     int extensions_offset;
+    int is_default_instance_offset;
 
     // Not owned by the TypeInfo.
     DynamicMessageFactory* factory;  // The factory that created this object.
@@ -314,6 +315,11 @@ void DynamicMessage::SharedCtor() {
   for (int i = 0 ; i < descriptor->oneof_decl_count(); ++i) {
     new(OffsetToPointer(type_info_->oneof_case_offset + sizeof(uint32) * i))
         uint32(0);
+  }
+
+  if (type_info_->is_default_instance_offset != -1) {
+    *reinterpret_cast<bool*>(
+        OffsetToPointer(type_info_->is_default_instance_offset)) = false;
   }
 
   new(OffsetToPointer(type_info_->unknown_fields_offset)) UnknownFieldSet;
@@ -532,6 +538,14 @@ void DynamicMessage::CrossLinkPrototypes() {
         factory->GetPrototypeNoLock(field->message_type());
     }
   }
+
+  // Set as the default instance -- this affects field-presence semantics for
+  // proto3.
+  if (type_info_->is_default_instance_offset != -1) {
+    void* is_default_instance_ptr =
+        OffsetToPointer(type_info_->is_default_instance_offset);
+    *reinterpret_cast<bool*>(is_default_instance_ptr) = true;
+  }
 }
 
 Message* DynamicMessage::New() const {
@@ -641,11 +655,24 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   size = AlignOffset(size);
 
   // Next the has_bits, which is an array of uint32s.
-  type_info->has_bits_offset = size;
-  int has_bits_array_size =
-    DivideRoundingUp(type->field_count(), bitsizeof(uint32));
-  size += has_bits_array_size * sizeof(uint32);
-  size = AlignOffset(size);
+  if (type->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+    type_info->has_bits_offset = -1;
+  } else {
+    type_info->has_bits_offset = size;
+    int has_bits_array_size =
+      DivideRoundingUp(type->field_count(), bitsizeof(uint32));
+    size += has_bits_array_size * sizeof(uint32);
+    size = AlignOffset(size);
+  }
+
+  // The is_default_instance member, if any.
+  if (type->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+    type_info->is_default_instance_offset = size;
+    size += sizeof(bool);
+    size = AlignOffset(size);
+  } else {
+    type_info->is_default_instance_offset = -1;
+  }
 
   // The oneof_case, if any. It is an array of uint32s.
   if (type->oneof_decl_count() > 0) {
@@ -731,7 +758,8 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
             type_info->pool,
             this,
             type_info->size,
-            -1 /* arena_offset */));
+            -1 /* arena_offset */,
+            type_info->is_default_instance_offset));
   } else {
     type_info->reflection.reset(
         new GeneratedMessageReflection(
@@ -744,7 +772,8 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
             type_info->pool,
             this,
             type_info->size,
-            -1 /* arena_offset */));
+            -1 /* arena_offset */,
+            type_info->is_default_instance_offset));
   }
   // Cross link prototypes.
   prototype->CrossLinkPrototypes();

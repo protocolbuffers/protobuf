@@ -193,7 +193,8 @@ GeneratedMessageReflection::GeneratedMessageReflection(
     const DescriptorPool* descriptor_pool,
     MessageFactory* factory,
     int object_size,
-    int arena_offset)
+    int arena_offset,
+    int is_default_instance_offset)
   : descriptor_       (descriptor),
     default_instance_ (default_instance),
     offsets_          (offsets),
@@ -201,6 +202,7 @@ GeneratedMessageReflection::GeneratedMessageReflection(
     unknown_fields_offset_(unknown_fields_offset),
     extensions_offset_(extensions_offset),
     arena_offset_     (arena_offset),
+    is_default_instance_offset_(is_default_instance_offset),
     object_size_      (object_size),
     descriptor_pool_  ((descriptor_pool == NULL) ?
                          DescriptorPool::generated_pool() :
@@ -220,7 +222,8 @@ GeneratedMessageReflection::GeneratedMessageReflection(
     const DescriptorPool* descriptor_pool,
     MessageFactory* factory,
     int object_size,
-    int arena_offset)
+    int arena_offset,
+    int is_default_instance_offset)
   : descriptor_       (descriptor),
     default_instance_ (default_instance),
     default_oneof_instance_ (default_oneof_instance),
@@ -230,6 +233,7 @@ GeneratedMessageReflection::GeneratedMessageReflection(
     unknown_fields_offset_(unknown_fields_offset),
     extensions_offset_(extensions_offset),
     arena_offset_     (arena_offset),
+    is_default_instance_offset_(is_default_instance_offset),
     object_size_      (object_size),
     descriptor_pool_  ((descriptor_pool == NULL) ?
                          DescriptorPool::generated_pool() :
@@ -1829,6 +1833,17 @@ GeneratedMessageReflection::MutableInternalMetadataWithArena(
   return reinterpret_cast<InternalMetadataWithArena*>(ptr);
 }
 
+inline bool
+GeneratedMessageReflection::GetIsDefaultInstance(
+    const Message& message) const {
+  if (is_default_instance_offset_ == kHasNoDefaultInstanceField) {
+    return false;
+  }
+  const void* ptr = reinterpret_cast<const uint8*>(&message) +
+      is_default_instance_offset_;
+  return *reinterpret_cast<const bool*>(ptr);
+}
+
 // Simple accessors for manipulating has_bits_.
 inline bool GeneratedMessageReflection::HasBit(
     const Message& message, const FieldDescriptor* field) const {
@@ -1836,7 +1851,8 @@ inline bool GeneratedMessageReflection::HasBit(
     // proto3: no has-bits. All fields present except messages, which are
     // present only if their message-field pointer is non-NULL.
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      return GetRaw<const Message*>(message, field) != NULL;
+      return !GetIsDefaultInstance(message) &&
+          GetRaw<const Message*>(message, field) != NULL;
     } else {
       // Non-message field (and non-oneof, since that was handled in HasField()
       // before calling us), and singular (again, checked in HasField). So, this
@@ -2082,7 +2098,8 @@ GeneratedMessageReflection::NewGeneratedMessageReflection(
     const void* default_oneof_instance,
     int oneof_case_offset,
     int object_size,
-    int arena_offset) {
+    int arena_offset,
+    int is_default_instance_offset) {
   return new GeneratedMessageReflection(descriptor,
                                         default_instance,
                                         offsets,
@@ -2094,7 +2111,8 @@ GeneratedMessageReflection::NewGeneratedMessageReflection(
                                         DescriptorPool::generated_pool(),
                                         MessageFactory::generated_factory(),
                                         object_size,
-                                        arena_offset);
+                                        arena_offset,
+                                        is_default_instance_offset);
 }
 
 GeneratedMessageReflection*
@@ -2106,7 +2124,8 @@ GeneratedMessageReflection::NewGeneratedMessageReflection(
     int unknown_fields_offset,
     int extensions_offset,
     int object_size,
-    int arena_offset) {
+    int arena_offset,
+    int is_default_instance_offset) {
   return new GeneratedMessageReflection(descriptor,
                                         default_instance,
                                         offsets,
@@ -2116,7 +2135,8 @@ GeneratedMessageReflection::NewGeneratedMessageReflection(
                                         DescriptorPool::generated_pool(),
                                         MessageFactory::generated_factory(),
                                         object_size,
-                                        arena_offset);
+                                        arena_offset,
+                                        is_default_instance_offset);
 }
 
 }  // namespace internal
