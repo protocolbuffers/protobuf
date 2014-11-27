@@ -30,6 +30,11 @@
 
 package com.google.protobuf;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -111,5 +116,18 @@ public class RopeByteStringTest extends LiteralByteStringTest {
     assertEquals(classUnderTest + " string must equal the flat string", flatString, unicode);
     assertEquals(classUnderTest + " string must must have same hashCode as the flat string",
         flatString.hashCode(), unicode.hashCode());
+  }
+
+  public void testJavaSerialization() throws Exception {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    ObjectOutputStream oos = new ObjectOutputStream(out);
+    oos.writeObject(stringUnderTest);
+    oos.close();
+    byte[] pickled = out.toByteArray();
+    InputStream in = new ByteArrayInputStream(pickled);
+    ObjectInputStream ois = new ObjectInputStream(in);
+    Object o = ois.readObject();
+    assertTrue("Didn't get a ByteString back", o instanceof ByteString);
+    assertEquals("Should get an equal ByteString back", stringUnderTest, o);
   }
 }
