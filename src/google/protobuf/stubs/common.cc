@@ -255,7 +255,11 @@ struct Mutex::Internal {
 
 Mutex::Mutex()
   : mInternal(new Internal) {
+#ifndef _M_ARM
   InitializeCriticalSection(&mInternal->mutex);
+#else
+	InitializeCriticalSectionEx(&mInternal->mutex, 0, CRITICAL_SECTION_NO_DEBUG_INFO);
+#endif
 }
 
 Mutex::~Mutex() {

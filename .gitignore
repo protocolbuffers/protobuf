@@ -60,3 +60,8 @@ src/protobuf*-test
 src/test_plugin
 src/testzip.*
 src/zcg*zip
+vsprojects/Debug/
+*.opensdf
+*.suo
+*.sdf
+vsprojects/Release/

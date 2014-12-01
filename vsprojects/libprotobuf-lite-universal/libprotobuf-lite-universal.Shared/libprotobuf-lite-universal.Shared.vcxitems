@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{4b4859cd-a1f9-4a60-aa1d-8220732894dc}</ItemsProjectGuid>
+    <ItemsRootNamespace>libprotobuf_lite_universal</ItemsRootNamespace>
+    <ItemsProjectName>libprotobuf-lite-universal.Shared</ItemsProjectName>
+    <CodeSharingProject>248F659F-DAC5-46E8-AC09-60EC9FC95053</CodeSharingProject>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\arena.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\arenastring.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\extension_set.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\generated_message_util.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\io\coded_stream.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\io\zero_copy_stream.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\io\zero_copy_stream_impl.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\message_lite.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\repeated_field.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\stubs\atomicops_internals_x86_msvc.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\stubs\common.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\stubs\once.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\stubs\stringprintf.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\wire_format_lite.cc" />
+  </ItemGroup>
+</Project>

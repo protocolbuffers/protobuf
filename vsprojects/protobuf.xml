@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ProjectSchemaDefinitions xmlns="http://schemas.microsoft.com/build/2009/properties" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <ItemType Name="ProtobufItem" DisplayName="Protobuf Item Display" />
+  <ContentType Name="ProtobufContent" ItemType="ProtobufItem" DisplayName="Protobuf Content Display" />
+  <FileExtension Name="*.proto" ContentType="ProtobufContent" />
+</ProjectSchemaDefinitions>
