@@ -247,8 +247,10 @@ PyDescriptorPool* NewDescriptorPool() {
 }
 
 static void Dealloc(PyDescriptorPool* self) {
-  for (auto it : (*self->classes_by_descriptor)) {
-    Py_DECREF(it.second);
+  typedef PyDescriptorPool::ClassesByMessageMap::iterator iterator;
+  for (iterator it = self->classes_by_descriptor->begin();
+       it != self->classes_by_descriptor->end(); ++it) {
+    Py_DECREF(it->second);
   }
   delete self->classes_by_descriptor;
   Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
@@ -300,7 +302,8 @@ const google::protobuf::Descriptor* RegisterMessageClass(
     return NULL;
   }
   Py_INCREF(message_class);
-  auto ret = self->classes_by_descriptor->insert(
+  typedef PyDescriptorPool::ClassesByMessageMap::iterator iterator;
+  std::pair<iterator, bool> ret = self->classes_by_descriptor->insert(
       make_pair(message_descriptor, message_class));
   if (!ret.second) {
     // Update case: DECREF the previous value.
@@ -323,7 +326,8 @@ const google::protobuf::Descriptor* RegisterMessageClass(
 // Retrieve the message class added to our database.
 PyObject *GetMessageClass(PyDescriptorPool* self,
                           const Descriptor *message_descriptor) {
-  auto ret = self->classes_by_descriptor->find(message_descriptor);
+  typedef PyDescriptorPool::ClassesByMessageMap::iterator iterator;
+  iterator ret = self->classes_by_descriptor->find(message_descriptor);
   if (ret == self->classes_by_descriptor->end()) {
     PyErr_Format(PyExc_TypeError, "No message class registered for '%s'",
                  message_descriptor->full_name().c_str());
