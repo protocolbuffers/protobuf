@@ -71,6 +71,8 @@ inline bool is_packable(WireFormatLite::WireType type) {
     // Do not add a default statement. Let the compiler complain when someone
     // adds a new wire type.
   }
+  GOOGLE_LOG(FATAL) << "can't reach here.";
+  return false;
 }
 
 // Registry stuff.

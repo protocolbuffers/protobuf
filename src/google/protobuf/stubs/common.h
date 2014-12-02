@@ -381,8 +381,9 @@ struct CompileAssert {
 
 #undef GOOGLE_COMPILE_ASSERT
 #define GOOGLE_COMPILE_ASSERT(expr, msg) \
-  typedef ::google::protobuf::internal::CompileAssert<(bool(expr))> \
-          msg[bool(expr) ? 1 : -1]
+  ::google::protobuf::internal::CompileAssert<(bool(expr))> \
+          msg[bool(expr) ? 1 : -1]; \
+  (void)msg
 
 
 // Implementation details of COMPILE_ASSERT:

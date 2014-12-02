@@ -144,6 +144,8 @@ const char* FileDescriptor::SyntaxName(FileDescriptor::Syntax syntax) {
     case SYNTAX_UNKNOWN:
       return "unknown";
   }
+  GOOGLE_LOG(FATAL) << "can't reach here.";
+  return NULL;
 }
 
 static const char * const kNonLinkedWeakMessageReplacementName = "google.protobuf.Empty";
