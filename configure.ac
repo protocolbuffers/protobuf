@@ -20,6 +20,14 @@ AC_CONFIG_SRCDIR(src/google/protobuf/message.cc)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
+AC_ARG_VAR(DIST_LANG, [language to include in the distribution package (i.e., make dist)])
+case "$DIST_LANG" in
+  "") DIST_LANG=cpp ;;
+  all | cpp | java | python | javanano) ;;
+  *) AC_MSG_FAILURE([unknown language: $DIST_LANG]) ;;
+esac
+AC_SUBST(DIST_LANG)
+
 # autoconf's default CXXFLAGS are usually "-g -O2".  These aren't necessarily
 # the best choice for libprotobuf.
 AS_IF([test "x${ac_cv_env_CFLAGS_set}" = "x"],
