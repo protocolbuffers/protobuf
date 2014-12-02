@@ -35,38 +35,7 @@ clean-local:
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = protobuf.pc protobuf-lite.pc
 
-EXTRA_DIST =                                                                 \
-  autogen.sh                                                                 \
-  generate_descriptor_proto.sh                                               \
-  README.md                                                                  \
-  INSTALL.txt                                                                \
-  LICENSE                                                                    \
-  CONTRIBUTORS.txt                                                           \
-  CHANGES.txt                                                                \
-  editors/README.txt                                                         \
-  editors/proto.vim                                                          \
-  editors/protobuf-mode.el                                                   \
-  vsprojects/config.h                                                        \
-  vsprojects/extract_includes.bat                                            \
-  vsprojects/libprotobuf.vcproj                                              \
-  vsprojects/libprotobuf-lite.vcproj                                         \
-  vsprojects/libprotoc.vcproj                                                \
-  vsprojects/protobuf.sln                                                    \
-  vsprojects/protoc.vcproj                                                   \
-  vsprojects/readme.txt                                                      \
-  vsprojects/test_plugin.vcproj                                              \
-  vsprojects/tests.vcproj                                                    \
-  vsprojects/lite-test.vcproj                                                \
-  vsprojects/convert2008to2005.sh                                            \
-  examples/README.txt                                                        \
-  examples/Makefile                                                          \
-  examples/addressbook.proto                                                 \
-  examples/add_person.cc                                                     \
-  examples/list_people.cc                                                    \
-  examples/AddPerson.java                                                    \
-  examples/ListPeople.java                                                   \
-  examples/add_person.py                                                     \
-  examples/list_people.py                                                    \
+java_EXTRA_DIST=                                                             \
   java/src/main/java/com/google/protobuf/AbstractMessage.java                \
   java/src/main/java/com/google/protobuf/AbstractMessageLite.java            \
   java/src/main/java/com/google/protobuf/AbstractParser.java                 \
@@ -182,7 +151,9 @@ EXTRA_DIST =                                                                 \
   java/src/test/java/com/google/protobuf/test_check_utf8_size.proto          \
   java/src/test/java/com/google/protobuf/test_custom_options.proto           \
   java/pom.xml                                                               \
-  java/README.txt                                                            \
+  java/README.txt
+
+python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/api_implementation.cc                      \
   python/google/protobuf/internal/api_implementation.py                      \
   python/google/protobuf/internal/api_implementation_default_test.py         \
@@ -266,6 +237,41 @@ EXTRA_DIST =                                                                 \
   python/mox.py                                                              \
   python/stubout.py                                                          \
   python/README.txt
+
+all_EXTRA_DIST=$(java_EXTRA_DIST) $(python_EXTRA_DIST)
+
+EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)                                       \
+  autogen.sh                                                                 \
+  generate_descriptor_proto.sh                                               \
+  README.md                                                                  \
+  INSTALL.txt                                                                \
+  LICENSE                                                                    \
+  CONTRIBUTORS.txt                                                           \
+  CHANGES.txt                                                                \
+  editors/README.txt                                                         \
+  editors/proto.vim                                                          \
+  editors/protobuf-mode.el                                                   \
+  vsprojects/config.h                                                        \
+  vsprojects/extract_includes.bat                                            \
+  vsprojects/libprotobuf.vcproj                                              \
+  vsprojects/libprotobuf-lite.vcproj                                         \
+  vsprojects/libprotoc.vcproj                                                \
+  vsprojects/protobuf.sln                                                    \
+  vsprojects/protoc.vcproj                                                   \
+  vsprojects/readme.txt                                                      \
+  vsprojects/test_plugin.vcproj                                              \
+  vsprojects/tests.vcproj                                                    \
+  vsprojects/lite-test.vcproj                                                \
+  vsprojects/convert2008to2005.sh                                            \
+  examples/README.txt                                                        \
+  examples/Makefile                                                          \
+  examples/addressbook.proto                                                 \
+  examples/add_person.cc                                                     \
+  examples/list_people.cc                                                    \
+  examples/AddPerson.java                                                    \
+  examples/ListPeople.java                                                   \
+  examples/add_person.py                                                     \
+  examples/list_people.py
 
 # Deletes all the files generated by autogen.sh.
 MAINTAINERCLEANFILES =   \
