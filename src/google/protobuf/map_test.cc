@@ -190,6 +190,7 @@ TEST_F(MapImplTest, MutableAt) {
   ExpectSingleElement(key, value2);
 }
 
+#ifdef PROTOBUF_HAS_DEATH_TEST
 TEST_F(MapImplTest, MutableAtNonExistDeathTest) {
   EXPECT_DEATH(map_.at(0), "");
 }
@@ -197,6 +198,7 @@ TEST_F(MapImplTest, MutableAtNonExistDeathTest) {
 TEST_F(MapImplTest, ImmutableAtNonExistDeathTest) {
   EXPECT_DEATH(const_map_.at(0), "");
 }
+#endif  // PROTOBUF_HAS_DEATH_TEST
 
 TEST_F(MapImplTest, CountNonExist) {
   EXPECT_EQ(0, map_.count(0));
