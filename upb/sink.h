@@ -236,7 +236,7 @@ UPB_INLINE void upb_bytessink_reset(upb_bytessink *s, const upb_byteshandler *h,
 
 UPB_INLINE bool upb_bytessink_start(upb_bytessink *s, size_t size_hint,
                                     void **subc) {
-  *subc = NULL;
+  *subc = s->closure;
   if (!s->handler) return true;
   upb_startstr_handlerfunc *start =
       (upb_startstr_handlerfunc *)s->handler->table[UPB_STARTSTR_SELECTOR].func;

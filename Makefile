@@ -21,7 +21,7 @@
 # Prevents the deletion of intermediate files.
 .SECONDARY:
 
-UPB_MODULES = upb upb.pb upb.descriptor
+UPB_MODULES = upb upb.pb upb.json upb.descriptor
 UPB_LIBS = $(patsubst %,lib/lib%.a,$(UPB_MODULES))
 UPB_PICLIBS = $(patsubst %,lib/lib%_pic.a,$(UPB_MODULES))
 
@@ -155,7 +155,14 @@ upb/pb/compile_decoder_x64.h: upb/pb/compile_decoder_x64.dasc
 endif
 
 upb_json_SRCS = \
-  upb/json/typed_printer.c
+  upb/json/parser.c \
+
+  # disabled until we move off YAJL (which should be soon).
+  #upb/json/printer.c \
+
+upb/json/parser.c: upb/json/parser.rl
+	$(E) RAGEL $<
+	$(Q) ragel -C -o upb/json/parser.c upb/json/parser.rl
 
 # If the user doesn't specify an -O setting, we use -O3 for critical-path
 # code and -Os for the rest.

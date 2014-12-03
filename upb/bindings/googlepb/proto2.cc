@@ -978,31 +978,31 @@ case goog::FieldDescriptor::cpptype:                                           \
     }
   };
 
+  // Closure is a RepeatedPtrField<SubMessageType>*, but we access it through
+  // its base class RepeatedPtrFieldBase*.
+  static goog::Message* StartRepeatedSubMessage(
+      goog::internal::RepeatedPtrFieldBase* r,
+      const SubMessageHandlerData* data) {
 #ifdef GOOGLE_PROTOBUF_HAS_ARENAS
-  // Closure is a RepeatedPtrField<SubMessageType>*, but we access it through
-  // its base class RepeatedPtrFieldBase*.
-  static goog::Message* StartRepeatedSubMessage(
-      goog::internal::RepeatedPtrFieldBase* r,
-      const SubMessageHandlerData* data) {
-    goog::Message* submsg = data->prototype()->New(r->GetArenaNoVirtual());
-    r->AddAllocated<RepeatedMessageTypeHandler>(submsg);
-    return submsg;
-  }
-#else  // ifdef GOOGLE_PROTOBUF_HAS_ARENAS
-  // Closure is a RepeatedPtrField<SubMessageType>*, but we access it through
-  // its base class RepeatedPtrFieldBase*.
-  static goog::Message* StartRepeatedSubMessage(
-      goog::internal::RepeatedPtrFieldBase* r,
-      const SubMessageHandlerData* data) {
+    return r->Add<RepeatedMessageTypeHandler>(
+        const_cast<goog::Message*>(data->prototype()));
+#else
+    // This code path is required not because of arena-related API changes but
+    // because the variant of Add<>() that takes a prototype object was added
+    // only recently. Without the prototype, there's no way for Add<>() to
+    // create a new submessage with out typehandler implementation because we
+    // don't have New() (because we don't template-specialize our typehandler
+    // class on concrete message types). So we have to implement the runtime
+    // polymorphism externally (in this function) and then use AddAllocated to
+    // insert the pointer.
     goog::Message* submsg = r->AddFromCleared<RepeatedMessageTypeHandler>();
     if (!submsg) {
       submsg = data->prototype()->New();
       r->AddAllocated<RepeatedMessageTypeHandler>(submsg);
     }
     return submsg;
+#endif
   }
-
-#endif  // ifdef GOOGLE_PROTOBUF_HAS_ARENAS
 
 #ifdef GOOGLE_PROTOBUF_HAS_ONEOF
   static goog::Message* StartOneofSubMessage(

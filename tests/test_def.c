@@ -73,6 +73,8 @@ static void test_cycles() {
   const upb_fielddef *f = upb_msgdef_itof(m, 1);
   ASSERT(f);
   ASSERT(upb_fielddef_hassubdef(f));
+  ASSERT(upb_msgdef_ntofz(m, "b") == f);
+  ASSERT(upb_msgdef_ntof(m, "b", 1) == f);
   const upb_def *def2 = upb_fielddef_subdef(f);
   ASSERT(upb_downcast_msgdef(def2));
   ASSERT(strcmp(upb_def_fullname(def2), "B") == 0);
@@ -83,6 +85,57 @@ static void test_cycles() {
   // We know "def" is still alive because it's reachable from def2.
   ASSERT(strcmp(upb_def_fullname(def), "A") == 0);
   upb_def_unref(def2, &def2);
+}
+
+static void test_symbol_resolution() {
+  upb_status s = UPB_STATUS_INIT;
+
+  upb_symtab *symtab = upb_symtab_new(&symtab);
+  ASSERT(symtab);
+
+  // m1 has name "A.B.C" and no fields. We'll add it to the symtab now.
+  upb_msgdef *m1 = upb_msgdef_new(&m1);
+  ASSERT(m1);
+  ASSERT_STATUS(upb_msgdef_setfullname(m1, "A.B.C", &s), &s);
+  ASSERT_STATUS(upb_symtab_add(symtab, (upb_def**)&m1, 1,
+                               NULL, &s), &s);
+
+  // m2 has name "D.E" and no fields. We'll add it in the same batch as m3
+  // below.
+  upb_msgdef *m2 = upb_msgdef_new(&m2);
+  ASSERT(m2);
+  ASSERT_STATUS(upb_msgdef_setfullname(m2, "D.E", &s), &s);
+
+  // m3 has name "F.G" and two fields, of type A.B.C and D.E respectively. We'll
+  // add it in the same batch as m2 above.
+  upb_msgdef *m3 = upb_msgdef_new(&m3);
+  ASSERT(m3);
+  ASSERT_STATUS(upb_msgdef_setfullname(m3, "F.G", &s), &s);
+  upb_fielddef *m3_field1 = upb_fielddef_new(&m3_field1);
+  ASSERT_STATUS(upb_fielddef_setname(m3_field1, "field1", &s), &s);
+  ASSERT_STATUS(upb_fielddef_setnumber(m3_field1, 1, &s), &s);
+  upb_fielddef_setlabel(m3_field1, UPB_LABEL_OPTIONAL);
+  upb_fielddef_settype(m3_field1, UPB_TYPE_MESSAGE);
+  ASSERT_STATUS(upb_fielddef_setsubdefname(m3_field1, ".A.B.C", &s), &s);
+  ASSERT_STATUS(upb_msgdef_addfield(m3, m3_field1, NULL, &s), &s);
+
+  upb_fielddef *m3_field2 = upb_fielddef_new(&m3_field2);
+  ASSERT_STATUS(upb_fielddef_setname(m3_field2, "field2", &s), &s);
+  ASSERT_STATUS(upb_fielddef_setnumber(m3_field2, 2, &s), &s);
+  upb_fielddef_setlabel(m3_field2, UPB_LABEL_OPTIONAL);
+  upb_fielddef_settype(m3_field2, UPB_TYPE_MESSAGE);
+  ASSERT_STATUS(upb_fielddef_setsubdefname(m3_field2, ".D.E", &s), &s);
+  ASSERT_STATUS(upb_msgdef_addfield(m3, m3_field2, NULL, &s), &s);
+
+  upb_def *defs[2] = { (upb_def*)m2, (upb_def*)m3 };
+  ASSERT_STATUS(upb_symtab_add(symtab, defs, 2, NULL, &s), &s);
+
+  upb_fielddef_unref(m3_field2, &m3_field2);
+  upb_fielddef_unref(m3_field1, &m3_field1);
+  upb_msgdef_unref(m3, &m3);
+  upb_msgdef_unref(m2, &m2);
+  upb_msgdef_unref(m1, &m1);
+  upb_symtab_unref(symtab, &symtab);
 }
 
 static void test_fielddef_unref() {
@@ -283,6 +336,7 @@ int run_tests(int argc, char *argv[]) {
   descriptor_file = argv[1];
   test_empty_symtab();
   test_cycles();
+  test_symbol_resolution();
   test_fielddef_accessors();
   test_fielddef_unref();
   test_replacement();

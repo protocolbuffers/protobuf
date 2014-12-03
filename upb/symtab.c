@@ -298,7 +298,12 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
       upb_fielddef *f = upb_msg_iter_field(&j);
       const char *name = upb_fielddef_subdefname(f);
       if (name && !upb_fielddef_subdef(f)) {
+        // Try the lookup in the current set of to-be-added defs first. If not
+        // there, try existing defs.
         upb_def *subdef = upb_resolvename(&addtab, base, name);
+        if (subdef == NULL) {
+          subdef = upb_resolvename(&s->symtab, base, name);
+        }
         if (subdef == NULL) {
           upb_status_seterrf(
               status, "couldn't resolve name '%s' in message '%s'", name, base);

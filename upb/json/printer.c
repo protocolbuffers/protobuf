@@ -9,7 +9,7 @@
  *
  */
 
-#include "upb/json/typed_printer.h"
+#include "upb/json/printer.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -18,7 +18,7 @@
 #include <yajl/yajl_gen.h>
 
 static void doprint(void *_p, const char *buf, unsigned int len) {
-  upb_json_typedprinter *p = _p;
+  upb_json_printer *p = _p;
   // YAJL doesn't support returning an error status here, so we can't properly
   // support clients who return a value other than "len" here.
   size_t n = upb_bytessink_putbuf(p->output_, p->subc_, buf, len, NULL);
@@ -77,7 +77,7 @@ static yajl_gen_status upbyajl_gen_uint64(yajl_gen yajl,
 }
 
 static bool putkey(void *closure, const void *handler_data) {
-  upb_json_typedprinter *p = closure;
+  upb_json_printer *p = closure;
   const strpc *key = handler_data;
   CHKYAJL(yajl_gen_string2(p->yajl_gen_, key->ptr, key->len));
   return true;
@@ -85,7 +85,7 @@ static bool putkey(void *closure, const void *handler_data) {
 
 #define TYPE_HANDLERS(type, yajlfunc)                                        \
   static bool put##type(void *closure, const void *handler_data, type val) { \
-    upb_json_typedprinter *p = closure;                                      \
+    upb_json_printer *p = closure;                                           \
     UPB_UNUSED(handler_data);                                                \
     CHKYAJL(yajlfunc(p->yajl_gen_, val));                                    \
     return true;                                                             \
@@ -113,7 +113,7 @@ static void *startsubmsg(void *closure, const void *handler_data) {
 
 static bool startmap(void *closure, const void *handler_data) {
   UPB_UNUSED(handler_data);
-  upb_json_typedprinter *p = closure;
+  upb_json_printer *p = closure;
   if (p->depth_++ == 0) {
     upb_bytessink_start(p->output_, 0, &p->subc_);
   }
@@ -124,7 +124,7 @@ static bool startmap(void *closure, const void *handler_data) {
 static bool endmap(void *closure, const void *handler_data, upb_status *s) {
   UPB_UNUSED(handler_data);
   UPB_UNUSED(s);
-  upb_json_typedprinter *p = closure;
+  upb_json_printer *p = closure;
   if (--p->depth_ == 0) {
     upb_bytessink_end(p->output_);
   }
@@ -133,7 +133,7 @@ static bool endmap(void *closure, const void *handler_data, upb_status *s) {
 }
 
 static void *startseq(void *closure, const void *handler_data) {
-  upb_json_typedprinter *p = closure;
+  upb_json_printer *p = closure;
   CHK(putkey(closure, handler_data));
   CHKYAJL(yajl_gen_array_open(p->yajl_gen_));
   return closure;
@@ -141,7 +141,7 @@ static void *startseq(void *closure, const void *handler_data) {
 
 static bool endseq(void *closure, const void *handler_data) {
   UPB_UNUSED(handler_data);
-  upb_json_typedprinter *p = closure;
+  upb_json_printer *p = closure;
   CHKYAJL(yajl_gen_array_close(p->yajl_gen_));
   return true;
 }
@@ -149,7 +149,7 @@ static bool endseq(void *closure, const void *handler_data) {
 static size_t putstr(void *closure, const void *handler_data, const char *str,
                      size_t len, const upb_bufhandle *handle) {
   UPB_UNUSED(handle);
-  upb_json_typedprinter *p = closure;
+  upb_json_printer *p = closure;
   CHKYAJL(yajl_gen_string2(p->yajl_gen_, str, len));
   return len;
 }
@@ -158,7 +158,7 @@ static size_t putstr(void *closure, const void *handler_data, const char *str,
 static size_t putbytes(void *closure, const void *handler_data, const char *str,
                        size_t len, const upb_bufhandle *handle) {
   UPB_UNUSED(handle);
-  upb_json_typedprinter *p = closure;
+  upb_json_printer *p = closure;
 
   // This is the regular base64, not the "web-safe" version.
   static const char base64[] =
@@ -175,13 +175,32 @@ static size_t putbytes(void *closure, const void *handler_data, const char *str,
     UPB_ASSERT_VAR(limit, (limit - to) >= 4);
 
     to[0] = base64[from[0] >> 2];
-    to[1] = base64[((from[0] & 0x3) << 4) + (from[1] >> 4)];
-    to[2] = base64[((from[1] & 0xf) << 2) + (from[2] >> 6)];
+    to[1] = base64[((from[0] & 0x3) << 4) | (from[1] >> 4)];
+    to[2] = base64[((from[1] & 0xf) << 2) | (from[2] >> 6)];
     to[3] = base64[from[2] & 0x3f];
 
     remaining -= 3;
     to += 4;
     from += 3;
+  }
+
+  switch (remaining) {
+    case 2:
+      to[0] = base64[from[0] >> 2];
+      to[1] = base64[((from[0] & 0x3) << 4) | (from[1] >> 4)];
+      to[2] = base64[(from[1] & 0xf) << 2];
+      to[3] = '=';
+      to += 4;
+      from += 2;
+      break;
+    case 1:
+      to[0] = base64[from[0] >> 2];
+      to[1] = base64[((from[0] & 0x3) << 4)];
+      to[2] = '=';
+      to[3] = '=';
+      to += 4;
+      from += 1;
+      break;
   }
 
   size_t bytes = to - data;
@@ -278,7 +297,7 @@ void sethandlers(const void *closure, upb_handlers *h) {
 // YAJL unfortunately does not support stack allocation, nor resetting an
 // allocated object, so we have to allocate on the heap and reallocate whenever
 // there is a reset.
-static void reset(upb_json_typedprinter *p, bool free) {
+static void reset(upb_json_printer *p, bool free) {
   if (free) {
     yajl_gen_free(p->yajl_gen_);
   }
@@ -289,34 +308,32 @@ static void reset(upb_json_typedprinter *p, bool free) {
 
 /* Public API *****************************************************************/
 
-void upb_json_typedprinter_init(upb_json_typedprinter *p,
-                                const upb_handlers *h) {
+void upb_json_printer_init(upb_json_printer *p, const upb_handlers *h) {
   p->output_ = NULL;
   p->depth_ = 0;
   reset(p, false);
   upb_sink_reset(&p->input_, h, p);
 }
 
-void upb_json_typedprinter_uninit(upb_json_typedprinter *p) {
+void upb_json_printer_uninit(upb_json_printer *p) {
   yajl_gen_free(p->yajl_gen_);
 }
 
-void upb_json_typedprinter_reset(upb_json_typedprinter *p) {
+void upb_json_printer_reset(upb_json_printer *p) {
   p->depth_ = 0;
   reset(p, true);
 }
 
-void upb_json_typedprinter_resetoutput(upb_json_typedprinter *p,
-                                       upb_bytessink *output) {
-  upb_json_typedprinter_reset(p);
+void upb_json_printer_resetoutput(upb_json_printer *p, upb_bytessink *output) {
+  upb_json_printer_reset(p);
   p->output_ = output;
 }
 
-upb_sink *upb_json_typedprinter_input(upb_json_typedprinter *p) {
+upb_sink *upb_json_printer_input(upb_json_printer *p) {
   return &p->input_;
 }
 
-const upb_handlers *upb_json_typedprinter_newhandlers(const upb_msgdef *md,
-                                                      const void *owner) {
+const upb_handlers *upb_json_printer_newhandlers(const upb_msgdef *md,
+                                                 const void *owner) {
   return upb_handlers_newfrozen(md, owner, sethandlers, NULL);
 }
