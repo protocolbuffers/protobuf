@@ -198,8 +198,10 @@
                 <include>**/WireFormat.java</include>
               </includes>
               <testIncludes>
-                <testInclude>**/**LiteTest.java</testInclude>
                 <testInclude>**/*Lite.java</testInclude>
+                <testInclude>**/LazyMessageLiteTest.java</testInclude>
+                <testInclude>**/LiteTest.java</testInclude>
+                <testInclude>**/UnknownFieldSetLiteTest.java</testInclude>
               </testIncludes>
             </configuration>
           </plugin>
@@ -207,7 +209,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <includes>
-                <include>**/**LiteTest.java</include>
+                <include>**/*Test.java</include>
               </includes>
             </configuration>
           </plugin>
