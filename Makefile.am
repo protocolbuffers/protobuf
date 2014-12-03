@@ -135,6 +135,7 @@ java_EXTRA_DIST=                                                             \
   java/src/test/java/com/google/protobuf/field_presence_test.proto           \
   java/src/test/java/com/google/protobuf/lazy_fields_lite.proto              \
   java/src/test/java/com/google/protobuf/lite_equals_and_hash.proto          \
+  java/src/test/java/com/google/protobuf/map_for_proto2_lite_test.proto      \
   java/src/test/java/com/google/protobuf/map_for_proto2_test.proto           \
   java/src/test/java/com/google/protobuf/map_test.proto                      \
   java/src/test/java/com/google/protobuf/multiple_files_test.proto           \

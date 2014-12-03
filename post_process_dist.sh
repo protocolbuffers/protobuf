@@ -15,8 +15,8 @@
 #    non-testdata .txt files are converted to Windows-style line endings.
 # 5) Cleans up after itself.
 
-if [ "$1" == "" ]; then
-  echo "USAGE:  $1 DISTFILE" >&2
+if [ "$1" == "" -o "$2" == "" ]; then
+  echo "USAGE:  $0 DISTFILE LANGUAGE" >&2
   exit 1
 fi
 
@@ -28,6 +28,7 @@ fi
 set -ex
 
 BASENAME=`basename $1 .tar.gz`
+LANGUAGE=$2
 
 # Create a directory called "dist", copy the tarball there and unpack it.
 mkdir dist
@@ -45,7 +46,7 @@ cd $BASENAME/vsprojects
 cd ..
 
 # Build the dist again in .tar.gz and .tar.bz2 formats.
-./configure
+./configure DIST_LANG=$LANGUAGE
 make dist-gzip
 make dist-bzip2
 
