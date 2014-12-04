@@ -166,6 +166,8 @@ directory for more information on how to compile and install them.
 Note that both of them require you to first install the Protocol
 Buffer compiler (protoc), which is part of the C++ package.
 
+For Mac: You need to install protobuf modules for python. Installation using easy install: sudo easy_install --upgrade protobuf
+
 Usage
 -----
 
