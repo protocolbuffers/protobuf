@@ -156,9 +156,7 @@ endif
 
 upb_json_SRCS = \
   upb/json/parser.c \
-
-  # disabled until we move off YAJL (which should be soon).
-  #upb/json/printer.c \
+  upb/json/printer.c \
 
 upb/json/parser.c: upb/json/parser.rl
 	$(E) RAGEL $<

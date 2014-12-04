@@ -48,13 +48,22 @@ UPB_DEFINE_CLASS0(upb::json::Printer,
 ,
 UPB_DEFINE_STRUCT0(upb_json_printer,
   upb_sink input_;
-  // Pointer to yajl_gen; void* here so we don't have to include YAJL headers.
-  void *yajl_gen_;
+  // BytesSink closure.
   void *subc_;
   upb_bytessink *output_;
+
   // We track the depth so that we know when to emit startstr/endstr on the
   // output.
   int depth_;
+  // Have we emitted the first element? This state is necessary to emit commas
+  // without leaving a trailing comma in arrays/maps. We keep this state per
+  // frame depth.
+  //
+  // Why max_depth * 2? UPB_MAX_HANDLER_DEPTH counts depth as nested messages.
+  // We count frames (contexts in which we separate elements by commas) as both
+  // repeated fields and messages (maps), and the worst case is a
+  // message->repeated field->submessage->repeated field->... nesting.
+  bool first_elem_[UPB_MAX_HANDLER_DEPTH * 2];
 ));
 
 UPB_BEGIN_EXTERN_C  // {
