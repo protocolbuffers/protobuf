@@ -438,17 +438,37 @@ static void start_hex(upb_json_parser *p, const char *ptr) {
 }
 
 static void hex(upb_json_parser *p, const char *end) {
-  UPB_UNUSED(end);
   const char *start = p->text_begin;
-  assert(end - start == 4);
+  UPB_ASSERT_VAR(end, end - start == 4);
   uint16_t codepoint =
       (hexdigit(start[0]) << 12) |
       (hexdigit(start[1]) << 8) |
       (hexdigit(start[2]) << 4) |
       hexdigit(start[3]);
-  // TODO(haberman): convert to UTF-8 and emit (though if it is a high surrogate
+  // emit the codepoint as UTF-8.
+  char utf8[3]; // support \u0000 -- \uFFFF -- need only three bytes.
+  int length = 0;
+  if (codepoint < 0x7F) {
+    utf8[0] = codepoint;
+    length = 1;
+  } else if (codepoint < 0x07FF) {
+    utf8[1] = (codepoint & 0x3F) | 0x80;
+    codepoint >>= 6;
+    utf8[0] = (codepoint & 0x1F) | 0xC0;
+    length = 2;
+  } else /* codepoint < 0xFFFF */ {
+    utf8[2] = (codepoint & 0x3F) | 0x80;
+    codepoint >>= 6;
+    utf8[1] = (codepoint & 0x3F) | 0x80;
+    codepoint >>= 6;
+    utf8[0] = (codepoint & 0x0F) | 0xE0;
+    length = 3;
+  }
+  // TODO(haberman): Handle high surrogates: if codepoint is a high surrogate
   // we have to wait for the next escape to get the full code point).
-  UPB_UNUSED(codepoint);
+
+  upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_STRING);
+  upb_sink_putstring(&p->top->sink, sel, utf8, length, NULL);
 }
 
 #define CHECK_RETURN_TOP(x) if (!(x)) goto error
