@@ -48,13 +48,13 @@ static upb_selector_t getsel(upb_json_parser *p) {
       p, upb_handlers_getprimitivehandlertype(p->top->f));
 }
 
-static void start_member(upb_json_parser *p, const char *ptr) {
+static void start_member(upb_json_parser *p) {
   assert(!p->top->f);
   assert(!p->accumulated);
   p->accumulated_len = 0;
 }
 
-static bool end_member(upb_json_parser *p, const char *ptr) {
+static bool end_member(upb_json_parser *p) {
   // TODO(haberman): support keys that span buffers or have escape sequences.
   assert(!p->top->f);
   assert(p->accumulated);
@@ -307,7 +307,7 @@ static bool end_text(upb_json_parser *p, const char *ptr) {
   return true;
 }
 
-static bool start_stringval(upb_json_parser *p, const char *ptr) {
+static bool start_stringval(upb_json_parser *p) {
   assert(p->top->f);
 
   if (!upb_fielddef_isstring(p->top->f)) {
@@ -329,7 +329,7 @@ static bool start_stringval(upb_json_parser *p, const char *ptr) {
   return true;
 }
 
-static void end_stringval(upb_json_parser *p, const char *ptr) {
+static void end_stringval(upb_json_parser *p) {
   p->top--;
   upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
   upb_sink_endstr(&p->top->sink, sel);
@@ -441,7 +441,7 @@ static void start_hex(upb_json_parser *p, const char *ptr) {
 
 static void hex(upb_json_parser *p, const char *end) {
   const char *start = p->text_begin;
-  assert(end - start == 4);
+  UPB_ASSERT_VAR(end, end - start == 4);
   uint16_t codepoint =
       (hexdigit(start[0]) << 12) |
       (hexdigit(start[1]) << 8) |
@@ -639,6 +639,8 @@ static const int json_en_main = 1;
 
 size_t parse(void *closure, const void *hd, const char *buf, size_t size,
              const upb_bufhandle *handle) {
+  UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
   upb_json_parser *parser = closure;
 
   // Variables used by Ragel's generated code.
@@ -650,7 +652,7 @@ size_t parse(void *closure, const void *hd, const char *buf, size_t size,
   const char *pe = buf + size;
 
   
-#line 654 "upb/json/parser.c"
+#line 656 "upb/json/parser.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -766,11 +768,11 @@ _match:
 	break;
 	case 10:
 #line 519 "upb/json/parser.rl"
-	{ start_member(parser, p); }
+	{ start_member(parser); }
 	break;
 	case 11:
 #line 520 "upb/json/parser.rl"
-	{ CHECK_RETURN_TOP(end_member(parser, p)); }
+	{ CHECK_RETURN_TOP(end_member(parser)); }
 	break;
 	case 12:
 #line 523 "upb/json/parser.rl"
@@ -802,11 +804,11 @@ _match:
 	break;
 	case 19:
 #line 550 "upb/json/parser.rl"
-	{ CHECK_RETURN_TOP(start_stringval(parser, p)); }
+	{ CHECK_RETURN_TOP(start_stringval(parser)); }
 	break;
 	case 20:
 #line 551 "upb/json/parser.rl"
-	{ end_stringval(parser, p); }
+	{ end_stringval(parser); }
 	break;
 	case 21:
 #line 553 "upb/json/parser.rl"
@@ -832,7 +834,7 @@ _match:
 #line 565 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
-#line 836 "upb/json/parser.c"
+#line 838 "upb/json/parser.c"
 		}
 	}
 
@@ -845,7 +847,7 @@ _again:
 	_out: {}
 	}
 
-#line 585 "upb/json/parser.rl"
+#line 587 "upb/json/parser.rl"
 
   if (p != pe) {
     upb_status_seterrf(parser->status, "Parse error at %s\n", p);
@@ -860,6 +862,8 @@ error:
 }
 
 bool end(void *closure, const void *hd) {
+  UPB_UNUSED(closure);
+  UPB_UNUSED(hd);
   return true;
 }
 
@@ -884,13 +888,13 @@ void upb_json_parser_reset(upb_json_parser *p) {
   int top;
   // Emit Ragel initialization of the parser.
   
-#line 888 "upb/json/parser.c"
+#line 892 "upb/json/parser.c"
 	{
 	cs = json_start;
 	top = 0;
 	}
 
-#line 623 "upb/json/parser.rl"
+#line 627 "upb/json/parser.rl"
   p->current_state = cs;
   p->parser_top = top;
   p->text_begin = NULL;
