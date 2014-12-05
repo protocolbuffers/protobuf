@@ -3,10 +3,6 @@
  *
  * Copyright (c) 2014 Google Inc.  See LICENSE for details.
  * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * Uses YAJL at the moment; this is not exposed publicly and will likely change
- * in the future.
- *
  */
 
 #include "upb/json/printer.h"
@@ -15,15 +11,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include <yajl/yajl_gen.h>
-
-static void doprint(void *_p, const char *buf, unsigned int len) {
-  upb_json_printer *p = _p;
-  // YAJL doesn't support returning an error status here, so we can't properly
-  // support clients who return a value other than "len" here.
-  size_t n = upb_bytessink_putbuf(p->output_, p->subc_, buf, len, NULL);
-  UPB_ASSERT_VAR(n, n == len);
-}
 
 // StringPiece; a pointer plus a length.
 typedef struct {
@@ -39,55 +26,135 @@ strpc *newstrpc(upb_handlers *h, const upb_fielddef *f) {
   return ret;
 }
 
-#define CHKYAJL(x) if ((x) != yajl_gen_status_ok) return false;
-#define CHK(x) if (!(x)) return false;
+// ------------ JSON string printing: values, maps, arrays --------------------
 
-// Wrapper for yajl_gen_string that takes "const char*" instead of "const
-// unsigned char*".
-static yajl_gen_status yajl_gen_string2(yajl_gen yajl, const char *ptr,
-                                        size_t len) {
-  return yajl_gen_string(yajl, (const unsigned char *)ptr, len);
+static void print_data(
+    upb_json_printer *p, const char *buf, unsigned int len) {
+  size_t n = upb_bytessink_putbuf(p->output_, p->subc_, buf, len, NULL);
+  UPB_ASSERT_VAR(n, n == len);
 }
 
-// Wrappers for yajl_gen_number() that formats floating point values
-// according to our custom formats.  Right now we use %.8g and %.17g
-// for float/double, respectively, to match proto2::util::JsonFormat's
-// defaults.  May want to change this later.
-
-static yajl_gen_status upbyajl_gen_double(yajl_gen yajl, double val) {
-  char data[64];
-  int n = snprintf(data, sizeof(data), "%.17g", val);
-  CHK(n > 0 && n < sizeof(data));
-  return yajl_gen_number(yajl, data, n);
-}
-
-static yajl_gen_status upbyajl_gen_float(yajl_gen yajl, float val) {
-  char data[64];
-  int n = snprintf(data, sizeof(data), "%.8g", val);
-  CHK(n > 0 && n < sizeof(data));
-  return yajl_gen_number(yajl, data, n);
-}
-
-static yajl_gen_status upbyajl_gen_uint64(yajl_gen yajl,
-                                          unsigned long long val) {
-  char data[64];
-  int n = snprintf(data, sizeof(data), "%llu", val);
-  CHK(n > 0 && n < sizeof(data));
-  return yajl_gen_number(yajl, data, n);
-}
-
-static bool putkey(void *closure, const void *handler_data) {
-  upb_json_printer *p = closure;
-  const strpc *key = handler_data;
-  CHKYAJL(yajl_gen_string2(p->yajl_gen_, key->ptr, key->len));
+static bool print_comma(upb_json_printer *p) {
+  if (!p->first_elem_[p->depth_]) {
+    print_data(p, ",", 1);
+  }
+  p->first_elem_[p->depth_] = false;
   return true;
 }
 
-#define TYPE_HANDLERS(type, yajlfunc)                                        \
+// Helpers that print properly formatted elements to the JSON output stream.
+
+// Write a properly quoted and escaped string.
+static void putstring(upb_json_printer *p, const char *buf, unsigned int len) {
+  print_data(p, "\"", 1);
+
+  const char* unescaped_run = NULL;
+  for (unsigned int i = 0; i < len; i++) {
+    char c = buf[i];
+    // Handle escaping.
+    const char* escape = NULL;
+    char escape_buf[8];
+    switch (c) {
+      // See RFC 4627, page 5.
+      case '"':  escape = "\\\""; break;
+      case '\\': escape = "\\\\"; break;
+      case '\b': escape = "\\b";  break;
+      case '\f': escape = "\\f";  break;
+      case '\n': escape = "\\n";  break;
+      case '\r': escape = "\\r";  break;
+      case '\t': escape = "\\t";  break;
+    }
+    if (c < 0x20 && !escape) {
+      snprintf(escape_buf, sizeof(escape_buf), "\\u%04x", (int)c);
+      escape = escape_buf;
+    }
+
+    // N.B. that we assume that the input encoding is equal to the output
+    // encoding (both UTF-8 for  now), so for chars >= 0x20 and != \, ", we can
+    // simply pass the bytes through.
+
+    if (escape) {
+      // If there's a current run of unescaped chars, print that run first.
+      if (unescaped_run) {
+        print_data(p, unescaped_run, &buf[i] - unescaped_run);
+        unescaped_run = NULL;
+      }
+      // Then print the escape code.
+      print_data(p, escape, strlen(escape));
+    } else {
+      // Add to the current unescaped run of characters.
+      if (unescaped_run == NULL) {
+        unescaped_run = &buf[i];
+      }
+    }
+  }
+
+  // If the string ended in a run of unescaped characters, print that last run.
+  if (unescaped_run) {
+    print_data(p, unescaped_run, &buf[len] - unescaped_run);
+  }
+
+  print_data(p, "\"", 1);
+}
+
+#define CHKLENGTH(x) if (!(x)) return -1;
+
+// Helpers that format floating point values according to our custom formats.
+// Right now we use %.8g and %.17g for float/double, respectively, to match
+// proto2::util::JsonFormat's defaults.  May want to change this later.
+
+static size_t fmt_double(double val, char* buf, size_t length) {
+  size_t n = snprintf(buf, length, "%.17g", val);
+  CHKLENGTH(n > 0 && n < length);
+  return n;
+}
+
+static size_t fmt_float(float val, char* buf, size_t length) {
+  size_t n = snprintf(buf, length, "%.8g", val);
+  CHKLENGTH(n > 0 && n < length);
+  return n;
+}
+
+static size_t fmt_bool(bool val, char* buf, size_t length) {
+  size_t n = snprintf(buf, length, "%s", (val ? "true" : "false"));
+  CHKLENGTH(n > 0 && n < length);
+  return n;
+}
+
+static size_t fmt_int64(long val, char* buf, size_t length) {
+  size_t n = snprintf(buf, length, "%ld", val);
+  CHKLENGTH(n > 0 && n < length);
+  return n;
+}
+
+static size_t fmt_uint64(unsigned long long val, char* buf, size_t length) {
+  size_t n = snprintf(buf, length, "%llu", val);
+  CHKLENGTH(n > 0 && n < length);
+  return n;
+}
+
+// Print a map key given a field name. Called by scalar field handlers and by
+// startseq for repeated fields.
+static bool putkey(void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  const strpc *key = handler_data;
+  print_comma(p);
+  putstring(p, key->ptr, key->len);
+  print_data(p, ":", 1);
+  return true;
+}
+
+#define CHKFMT(val) if ((val) == -1) return false;
+#define CHK(val)    if (!(val)) return false;
+
+#define TYPE_HANDLERS(type, fmt_func)                                        \
   static bool put##type(void *closure, const void *handler_data, type val) { \
     upb_json_printer *p = closure;                                           \
     UPB_UNUSED(handler_data);                                                \
-    CHKYAJL(yajlfunc(p->yajl_gen_, val));                                    \
+    char data[64];                                                           \
+    size_t length = fmt_func(val, data, sizeof(data));                       \
+    CHKFMT(length);                                                          \
+    print_data(p, data, length);                                             \
     return true;                                                             \
   }                                                                          \
   static bool scalar_##type(void *closure, const void *handler_data,         \
@@ -95,20 +162,34 @@ static bool putkey(void *closure, const void *handler_data) {
     CHK(putkey(closure, handler_data));                                      \
     CHK(put##type(closure, handler_data, val));                              \
     return true;                                                             \
+  }                                                                          \
+  static bool repeated_##type(void *closure, const void *handler_data,       \
+                            type val) {                                      \
+    upb_json_printer *p = closure;                                           \
+    print_comma(p);                                                          \
+    CHK(put##type(closure, handler_data, val));                              \
+    return true;                                                             \
   }
 
-TYPE_HANDLERS(double,   upbyajl_gen_double);
-TYPE_HANDLERS(float,    upbyajl_gen_float);
-TYPE_HANDLERS(bool,     yajl_gen_bool);
-TYPE_HANDLERS(int32_t,  yajl_gen_integer);
-TYPE_HANDLERS(uint32_t, yajl_gen_integer);
-TYPE_HANDLERS(int64_t,  yajl_gen_integer);
-TYPE_HANDLERS(uint64_t, upbyajl_gen_uint64);
+TYPE_HANDLERS(double,   fmt_double);
+TYPE_HANDLERS(float,    fmt_float);
+TYPE_HANDLERS(bool,     fmt_bool);
+TYPE_HANDLERS(int32_t,  fmt_int64);
+TYPE_HANDLERS(uint32_t, fmt_int64);
+TYPE_HANDLERS(int64_t,  fmt_int64);
+TYPE_HANDLERS(uint64_t, fmt_uint64);
 
 #undef TYPE_HANDLERS
 
-static void *startsubmsg(void *closure, const void *handler_data) {
+static void *scalar_submsg(void *closure, const void *handler_data) {
   return putkey(closure, handler_data) ? closure : UPB_BREAK;
+}
+
+static void *repeated_submsg(void *closure, const void *handler_data) {
+  UPB_UNUSED(handler_data);
+  upb_json_printer *p = closure;
+  print_comma(p);
+  return closure;
 }
 
 static bool startmap(void *closure, const void *handler_data) {
@@ -117,7 +198,8 @@ static bool startmap(void *closure, const void *handler_data) {
   if (p->depth_++ == 0) {
     upb_bytessink_start(p->output_, 0, &p->subc_);
   }
-  CHKYAJL(yajl_gen_map_open(p->yajl_gen_));
+  p->first_elem_[p->depth_] = true;
+  print_data(p, "{", 1);
   return true;
 }
 
@@ -128,35 +210,40 @@ static bool endmap(void *closure, const void *handler_data, upb_status *s) {
   if (--p->depth_ == 0) {
     upb_bytessink_end(p->output_);
   }
-  CHKYAJL(yajl_gen_map_close(p->yajl_gen_));
+  print_data(p, "}", 1);
   return true;
 }
 
 static void *startseq(void *closure, const void *handler_data) {
   upb_json_printer *p = closure;
   CHK(putkey(closure, handler_data));
-  CHKYAJL(yajl_gen_array_open(p->yajl_gen_));
+  p->depth_++;
+  p->first_elem_[p->depth_] = true;
+  print_data(p, "[", 1);
   return closure;
 }
 
 static bool endseq(void *closure, const void *handler_data) {
   UPB_UNUSED(handler_data);
   upb_json_printer *p = closure;
-  CHKYAJL(yajl_gen_array_close(p->yajl_gen_));
+  print_data(p, "]", 1);
+  p->depth_--;
   return true;
 }
 
 static size_t putstr(void *closure, const void *handler_data, const char *str,
                      size_t len, const upb_bufhandle *handle) {
+  UPB_UNUSED(handler_data);
   UPB_UNUSED(handle);
   upb_json_printer *p = closure;
-  CHKYAJL(yajl_gen_string2(p->yajl_gen_, str, len));
+  putstring(p, str, len);
   return len;
 }
 
 // This has to Base64 encode the bytes, because JSON has no "bytes" type.
 static size_t putbytes(void *closure, const void *handler_data, const char *str,
                        size_t len, const upb_bufhandle *handle) {
+  UPB_UNUSED(handler_data);
   UPB_UNUSED(handle);
   upb_json_printer *p = closure;
 
@@ -204,9 +291,7 @@ static size_t putbytes(void *closure, const void *handler_data, const char *str,
   }
 
   size_t bytes = to - data;
-  if (yajl_gen_string2(p->yajl_gen_, data, bytes) != yajl_gen_status_ok) {
-    return 0;
-  }
+  putstring(p, data, bytes);
   return len;
 }
 
@@ -214,6 +299,15 @@ static size_t scalar_str(void *closure, const void *handler_data,
                          const char *str, size_t len,
                          const upb_bufhandle *handle) {
   CHK(putkey(closure, handler_data));
+  CHK(putstr(closure, handler_data, str, len, handle));
+  return len;
+}
+
+static size_t repeated_str(void *closure, const void *handler_data,
+                           const char *str, size_t len,
+                           const upb_bufhandle *handle) {
+  upb_json_printer *p = closure;
+  print_comma(p);
   CHK(putstr(closure, handler_data, str, len, handle));
   return len;
 }
@@ -226,6 +320,15 @@ static size_t scalar_bytes(void *closure, const void *handler_data,
   return len;
 }
 
+static size_t repeated_bytes(void *closure, const void *handler_data,
+                             const char *str, size_t len,
+                             const upb_bufhandle *handle) {
+  upb_json_printer *p = closure;
+  print_comma(p);
+  CHK(putbytes(closure, handler_data, str, len, handle));
+  return len;
+}
+
 void sethandlers(const void *closure, upb_handlers *h) {
   UPB_UNUSED(closure);
 
@@ -233,13 +336,13 @@ void sethandlers(const void *closure, upb_handlers *h) {
   upb_handlers_setstartmsg(h, startmap, &empty_attr);
   upb_handlers_setendmsg(h, endmap, &empty_attr);
 
-#define TYPE(type, name, ctype)                                 \
-  case type:                                                    \
-    if (upb_fielddef_isseq(f)) {                                \
-      upb_handlers_set##name(h, f, put##ctype, &empty_attr);    \
-    } else {                                                    \
-      upb_handlers_set##name(h, f, scalar_##ctype, &name_attr); \
-    }                                                           \
+#define TYPE(type, name, ctype)                                    \
+  case type:                                                       \
+    if (upb_fielddef_isseq(f)) {                                   \
+      upb_handlers_set##name(h, f, repeated_##ctype, &empty_attr); \
+    } else {                                                       \
+      upb_handlers_set##name(h, f, scalar_##ctype, &name_attr);    \
+    }                                                              \
     break;
 
   upb_msg_iter i;
@@ -267,7 +370,7 @@ void sethandlers(const void *closure, upb_handlers *h) {
       case UPB_TYPE_STRING:
         // XXX: this doesn't support strings that span buffers yet.
         if (upb_fielddef_isseq(f)) {
-          upb_handlers_setstring(h, f, putstr, &empty_attr);
+          upb_handlers_setstring(h, f, repeated_str, &empty_attr);
         } else {
           upb_handlers_setstring(h, f, scalar_str, &name_attr);
         }
@@ -275,14 +378,16 @@ void sethandlers(const void *closure, upb_handlers *h) {
       case UPB_TYPE_BYTES:
         // XXX: this doesn't support strings that span buffers yet.
         if (upb_fielddef_isseq(f)) {
-          upb_handlers_setstring(h, f, putbytes, &empty_attr);
+          upb_handlers_setstring(h, f, repeated_bytes, &empty_attr);
         } else {
           upb_handlers_setstring(h, f, scalar_bytes, &name_attr);
         }
         break;
       case UPB_TYPE_MESSAGE:
-        if (!upb_fielddef_isseq(f)) {
-          upb_handlers_setstartsubmsg(h, f, startsubmsg, &name_attr);
+        if (upb_fielddef_isseq(f)) {
+          upb_handlers_setstartsubmsg(h, f, repeated_submsg, &name_attr);
+        } else {
+          upb_handlers_setstartsubmsg(h, f, scalar_submsg, &name_attr);
         }
         break;
     }
@@ -294,34 +399,20 @@ void sethandlers(const void *closure, upb_handlers *h) {
 #undef TYPE
 }
 
-// YAJL unfortunately does not support stack allocation, nor resetting an
-// allocated object, so we have to allocate on the heap and reallocate whenever
-// there is a reset.
-static void reset(upb_json_printer *p, bool free) {
-  if (free) {
-    yajl_gen_free(p->yajl_gen_);
-  }
-  p->yajl_gen_ = yajl_gen_alloc(NULL);
-  yajl_gen_config(p->yajl_gen_, yajl_gen_validate_utf8, 0);
-  yajl_gen_config(p->yajl_gen_, yajl_gen_print_callback, &doprint, p);
-}
-
 /* Public API *****************************************************************/
 
 void upb_json_printer_init(upb_json_printer *p, const upb_handlers *h) {
   p->output_ = NULL;
   p->depth_ = 0;
-  reset(p, false);
   upb_sink_reset(&p->input_, h, p);
 }
 
 void upb_json_printer_uninit(upb_json_printer *p) {
-  yajl_gen_free(p->yajl_gen_);
+  UPB_UNUSED(p);
 }
 
 void upb_json_printer_reset(upb_json_printer *p) {
   p->depth_ = 0;
-  reset(p, true);
 }
 
 void upb_json_printer_resetoutput(upb_json_printer *p, upb_bytessink *output) {
