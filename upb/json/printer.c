@@ -3,6 +3,9 @@
  *
  * Copyright (c) 2014 Google Inc.  See LICENSE for details.
  * Author: Josh Haberman <jhaberman@gmail.com>
+ *
+ * This currently uses snprintf() to format primitives, and could be optimized
+ * further.
  */
 
 #include "upb/json/printer.h"
@@ -30,19 +33,40 @@ strpc *newstrpc(upb_handlers *h, const upb_fielddef *f) {
 
 static void print_data(
     upb_json_printer *p, const char *buf, unsigned int len) {
+  // TODO: Will need to change if we support pushback from the sink.
   size_t n = upb_bytessink_putbuf(p->output_, p->subc_, buf, len, NULL);
   UPB_ASSERT_VAR(n, n == len);
 }
 
-static bool print_comma(upb_json_printer *p) {
+static void print_comma(upb_json_printer *p) {
   if (!p->first_elem_[p->depth_]) {
     print_data(p, ",", 1);
   }
   p->first_elem_[p->depth_] = false;
-  return true;
 }
 
 // Helpers that print properly formatted elements to the JSON output stream.
+
+// Used for escaping control chars in strings.
+static const char kControlCharLimit = 0x20;
+
+static inline bool is_json_escaped(char c) {
+  // See RFC 4627.
+  return c < kControlCharLimit || c == '"' || c == '\\';
+}
+
+static inline char* json_nice_escape(char c) {
+  switch (c) {
+    case '"':  return "\\\"";
+    case '\\': return "\\\\";
+    case '\b': return "\\b";
+    case '\f': return "\\f";
+    case '\n': return "\\n";
+    case '\r': return "\\r";
+    case '\t': return "\\t";
+    default:   return NULL;
+  }
+}
 
 // Write a properly quoted and escaped string.
 static void putstring(upb_json_printer *p, const char *buf, unsigned int len) {
@@ -52,28 +76,21 @@ static void putstring(upb_json_printer *p, const char *buf, unsigned int len) {
   for (unsigned int i = 0; i < len; i++) {
     char c = buf[i];
     // Handle escaping.
-    const char* escape = NULL;
-    char escape_buf[8];
-    switch (c) {
-      // See RFC 4627, page 5.
-      case '"':  escape = "\\\""; break;
-      case '\\': escape = "\\\\"; break;
-      case '\b': escape = "\\b";  break;
-      case '\f': escape = "\\f";  break;
-      case '\n': escape = "\\n";  break;
-      case '\r': escape = "\\r";  break;
-      case '\t': escape = "\\t";  break;
-    }
-    if (c < 0x20 && !escape) {
-      snprintf(escape_buf, sizeof(escape_buf), "\\u%04x", (int)c);
-      escape = escape_buf;
-    }
+    if (is_json_escaped(c)) {
+      // Use a "nice" escape, like \n, if one exists for this character.
+      const char* escape = json_nice_escape(c);
+      // If we don't have a specific 'nice' escape code, use a \uXXXX-style
+      // escape.
+      char escape_buf[8];
+      if (!escape) {
+        snprintf(escape_buf, sizeof(escape_buf), "\\u%04x", (int)c);
+        escape = escape_buf;
+      }
 
-    // N.B. that we assume that the input encoding is equal to the output
-    // encoding (both UTF-8 for  now), so for chars >= 0x20 and != \, ", we can
-    // simply pass the bytes through.
+      // N.B. that we assume that the input encoding is equal to the output
+      // encoding (both UTF-8 for  now), so for chars >= 0x20 and != \, ", we
+      // can simply pass the bytes through.
 
-    if (escape) {
       // If there's a current run of unescaped chars, print that run first.
       if (unescaped_run) {
         print_data(p, unescaped_run, &buf[i] - unescaped_run);
@@ -181,11 +198,11 @@ TYPE_HANDLERS(uint64_t, fmt_uint64);
 
 #undef TYPE_HANDLERS
 
-static void *scalar_submsg(void *closure, const void *handler_data) {
+static void *scalar_startsubmsg(void *closure, const void *handler_data) {
   return putkey(closure, handler_data) ? closure : UPB_BREAK;
 }
 
-static void *repeated_submsg(void *closure, const void *handler_data) {
+static void *repeated_startsubmsg(void *closure, const void *handler_data) {
   UPB_UNUSED(handler_data);
   upb_json_printer *p = closure;
   print_comma(p);
@@ -385,9 +402,9 @@ void sethandlers(const void *closure, upb_handlers *h) {
         break;
       case UPB_TYPE_MESSAGE:
         if (upb_fielddef_isseq(f)) {
-          upb_handlers_setstartsubmsg(h, f, repeated_submsg, &name_attr);
+          upb_handlers_setstartsubmsg(h, f, repeated_startsubmsg, &name_attr);
         } else {
-          upb_handlers_setstartsubmsg(h, f, scalar_submsg, &name_attr);
+          upb_handlers_setstartsubmsg(h, f, scalar_startsubmsg, &name_attr);
         }
         break;
     }
