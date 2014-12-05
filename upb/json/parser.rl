@@ -46,13 +46,13 @@ static upb_selector_t getsel(upb_json_parser *p) {
       p, upb_handlers_getprimitivehandlertype(p->top->f));
 }
 
-static void start_member(upb_json_parser *p) {
+static void start_member(upb_json_parser *p, const char *ptr) {
   assert(!p->top->f);
   assert(!p->accumulated);
   p->accumulated_len = 0;
 }
 
-static bool end_member(upb_json_parser *p) {
+static bool end_member(upb_json_parser *p, const char *ptr) {
   // TODO(haberman): support keys that span buffers or have escape sequences.
   assert(!p->top->f);
   assert(p->accumulated);
@@ -305,7 +305,7 @@ static bool end_text(upb_json_parser *p, const char *ptr) {
   return true;
 }
 
-static bool start_stringval(upb_json_parser *p) {
+static bool start_stringval(upb_json_parser *p, const char *ptr) {
   assert(p->top->f);
 
   if (!upb_fielddef_isstring(p->top->f)) {
@@ -327,7 +327,7 @@ static bool start_stringval(upb_json_parser *p) {
   return true;
 }
 
-static void end_stringval(upb_json_parser *p) {
+static void end_stringval(upb_json_parser *p, const char *ptr) {
   p->top--;
   upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
   upb_sink_endstr(&p->top->sink, sel);
@@ -438,7 +438,6 @@ static void start_hex(upb_json_parser *p, const char *ptr) {
 }
 
 static void hex(upb_json_parser *p, const char *end) {
-  UPB_UNUSED(end);
   const char *start = p->text_begin;
   assert(end - start == 4);
   uint16_t codepoint =
@@ -446,9 +445,30 @@ static void hex(upb_json_parser *p, const char *end) {
       (hexdigit(start[1]) << 8) |
       (hexdigit(start[2]) << 4) |
       hexdigit(start[3]);
-  // TODO(haberman): convert to UTF-8 and emit (though if it is a high surrogate
+  // emit the codepoint as UTF-8.
+  char utf8[3]; // support \u0000 -- \uFFFF -- need only three bytes.
+  int length = 0;
+  if (codepoint < 0x7F) {
+    utf8[0] = codepoint;
+    length = 1;
+  } else if (codepoint < 0x07FF) {
+    utf8[1] = (codepoint & 0x3F) | 0x80;
+    codepoint >>= 6;
+    utf8[0] = (codepoint & 0x1F) | 0xC0;
+    length = 2;
+  } else /* codepoint < 0xFFFF */ {
+    utf8[2] = (codepoint & 0x3F) | 0x80;
+    codepoint >>= 6;
+    utf8[1] = (codepoint & 0x3F) | 0x80;
+    codepoint >>= 6;
+    utf8[0] = (codepoint & 0x0F) | 0xE0;
+    length = 3;
+  }
+  // TODO(haberman): Handle high surrogates: if codepoint is a high surrogate
   // we have to wait for the next escape to get the full code point).
-  UPB_UNUSED(codepoint);
+
+  upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_STRING);
+  upb_sink_putstring(&p->top->sink, sel, utf8, length, NULL);
 }
 
 #define CHECK_RETURN_TOP(x) if (!(x)) goto error
@@ -496,8 +516,8 @@ static void hex(upb_json_parser *p, const char *end) {
   member =
     ws
     string
-      >{ start_member(parser); }
-      %{ CHECK_RETURN_TOP(end_member(parser)); }
+      >{ start_member(parser, p); }
+      %{ CHECK_RETURN_TOP(end_member(parser, p)); }
     ws ":" ws
     value2
       %{ clear_member(parser); }
@@ -527,8 +547,8 @@ static void hex(upb_json_parser *p, const char *end) {
       >{ start_number(parser, p); }
       %{ end_number(parser, p); }
     | string
-      >{ CHECK_RETURN_TOP(start_stringval(parser)); }
-      %{ end_stringval(parser); }
+      >{ CHECK_RETURN_TOP(start_stringval(parser, p)); }
+      %{ end_stringval(parser, p); }
     | "true"
       %{ CHECK_RETURN_TOP(putbool(parser, true)); }
     | "false"
@@ -551,8 +571,6 @@ static void hex(upb_json_parser *p, const char *end) {
 
 size_t parse(void *closure, const void *hd, const char *buf, size_t size,
              const upb_bufhandle *handle) {
-  UPB_UNUSED(hd);
-  UPB_UNUSED(handle);
   upb_json_parser *parser = closure;
 
   // Variables used by Ragel's generated code.
@@ -578,8 +596,6 @@ error:
 }
 
 bool end(void *closure, const void *hd) {
-  UPB_UNUSED(closure);
-  UPB_UNUSED(hd);
   return true;
 }
 

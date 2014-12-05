@@ -52,7 +52,8 @@ static const char kControlCharLimit = 0x20;
 
 static inline bool is_json_escaped(char c) {
   // See RFC 4627.
-  return c < kControlCharLimit || c == '"' || c == '\\';
+  unsigned char uc = (unsigned char)c;
+  return uc < kControlCharLimit || uc == '"' || uc == '\\';
 }
 
 static inline char* json_nice_escape(char c) {
@@ -83,7 +84,8 @@ static void putstring(upb_json_printer *p, const char *buf, unsigned int len) {
       // escape.
       char escape_buf[8];
       if (!escape) {
-        snprintf(escape_buf, sizeof(escape_buf), "\\u%04x", (int)c);
+        unsigned char byte = (unsigned char)c;
+        snprintf(escape_buf, sizeof(escape_buf), "\\u%04x", (int)byte);
         escape = escape_buf;
       }
 
