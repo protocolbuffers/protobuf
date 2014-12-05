@@ -314,6 +314,12 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
 }
 #endif
 
+#if defined(_MSC_VER)
+#define GOOGLE_THREAD_LOCAL __declspec(thread)
+#else
+#define GOOGLE_THREAD_LOCAL __thread
+#endif
+
 // ===================================================================
 // from google3/base/basictypes.h
 

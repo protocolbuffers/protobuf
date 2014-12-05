@@ -312,7 +312,7 @@ class LIBPROTOBUF_EXPORT Arena {
 
   static const size_t kHeaderSize = sizeof(Block);
   static google::protobuf::internal::SequenceNumber lifecycle_id_generator_;
-  static __thread ThreadCache thread_cache_;
+  static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_;
 
   // SFINAE for skipping addition to delete list for a Type. This is mainly to
   // skip proto2/proto1 message objects with cc_enable_arenas=true from being
