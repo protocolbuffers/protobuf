@@ -38,7 +38,7 @@ namespace google {
 namespace protobuf {
 
 google::protobuf::internal::SequenceNumber Arena::lifecycle_id_generator_;
-__thread Arena::ThreadCache Arena::thread_cache_ = { -1, NULL };
+GOOGLE_THREAD_LOCAL Arena::ThreadCache Arena::thread_cache_ = { -1, NULL };
 
 void Arena::Init(const ArenaOptions& options) {
   lifecycle_id_ = lifecycle_id_generator_.GetNext();

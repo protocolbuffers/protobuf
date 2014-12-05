@@ -339,6 +339,9 @@ struct ConvertHelper {
   static small_ Test(To);
   static big_ Test(...);
   static From Create();
+  enum {
+    value = sizeof(Test(Create())) == sizeof(small_)
+  };
 };
 }  // namespace type_traits_internal
 
@@ -346,9 +349,7 @@ struct ConvertHelper {
 template <typename From, typename To>
 struct is_convertible
     : integral_constant<bool,
-                        sizeof(type_traits_internal::ConvertHelper<From, To>::Test(
-                                  type_traits_internal::ConvertHelper<From, To>::Create()))
-                        == sizeof(small_)> {
+                        type_traits_internal::ConvertHelper<From, To>::value> {
 };
 #endif
 

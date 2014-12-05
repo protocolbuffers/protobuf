@@ -196,8 +196,7 @@ void TestRepeatedFieldRefIterator(
   int index = 0;
   for (typename Ref::const_iterator it = handle.begin();
        it != handle.end(); ++it) {
-    ValueType value = static_cast<ValueType>(*it);
-    EXPECT_EQ((message.*GetFunc)(index), value);
+    EXPECT_EQ((message.*GetFunc)(index), *it);
     ++index;
   }
   EXPECT_EQ(handle.size(), index);

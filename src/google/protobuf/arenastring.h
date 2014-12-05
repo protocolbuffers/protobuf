@@ -31,7 +31,6 @@
 #ifndef GOOGLE_PROTOBUF_ARENASTRING_H__
 #define GOOGLE_PROTOBUF_ARENASTRING_H__
 
-#include <stdint.h>
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
