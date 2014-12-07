@@ -159,29 +159,37 @@ const int FieldDescriptor::kLastReservedNumber;
 namespace {
 
 string ToCamelCase(const string& input, bool lower_first) {
-  bool capitalize_next = !lower_first;
   string result;
   result.reserve(input.size());
 
-  for (int i = 0; i < input.size(); i++) {
-    if (input[i] == '_') {
-      capitalize_next = true;
-    } else if (capitalize_next) {
-      // Note:  I distrust ctype.h due to locales.
-      if ('a' <= input[i] && input[i] <= 'z') {
-        result.push_back(input[i] - 'a' + 'A');
-      } else {
-        result.push_back(input[i]);
-      }
-      capitalize_next = false;
-    } else {
-      result.push_back(input[i]);
-    }
+  string::const_iterator it = input.begin();
+  // Upper-case the first letter.
+  if (!lower_first && !input.empty() && 'a' <= input[0] && input[0] <= 'z')
+  {
+    result.push_back(input[0] - 'a' + 'A');
+    ++it;
   }
-
   // Lower-case the first letter.
-  if (lower_first && !result.empty() && 'A' <= result[0] && result[0] <= 'Z') {
-      result[0] = result[0] - 'A' + 'a';
+  else if (lower_first && !input.empty() && 'A' <= input[0] && input[0] <= 'Z')
+  {
+    result.push_back(input[0] - 'A' + 'a');
+    ++it;
+  }
+  
+  for (; it != input.end(); ++it) {
+    if ((*it) == '_') {
+      ++it;
+      if (it == input.end())
+        break ;
+      // Note:  I distrust ctype.h due to locales.
+      if ('a' <= (*it) && (*it) <= 'z') {
+        result.push_back((*it) - 'a' + 'A');
+      } else {
+        result.push_back((*it));
+      }
+    } else {
+      result.push_back((*it));
+    }
   }
 
   return result;
