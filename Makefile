@@ -235,6 +235,7 @@ C_TESTS = \
 
 CC_TESTS = \
   tests/pb/test_decoder \
+  tests/json/test_json \
   tests/test_cpp \
   tests/test_table \
 
@@ -264,6 +265,7 @@ tests/test_handlers: LIBS = lib/libupb.descriptor.a lib/libupb.a
 tests/pb/test_decoder: LIBS = lib/libupb.pb.a lib/libupb.a
 tests/test_cpp: LIBS = $(LOAD_DESCRIPTOR_LIBS) lib/libupb.a
 tests/test_table: LIBS = lib/libupb.a
+tests/json/test_json: LIBS = lib/libupb.a lib/libupb.json.a
 
 tests/test_def: tests/test.proto.pb
 

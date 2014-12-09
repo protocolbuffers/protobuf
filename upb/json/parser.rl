@@ -286,7 +286,7 @@ badpadding:
   return false;
 }
 
-static bool end_text(upb_json_parser *p, const char *ptr) {
+static bool end_text(upb_json_parser *p, const char *ptr, bool is_num) {
   assert(!p->accumulated);  // TODO: handle this case.
   p->accumulated = p->text_begin;
   p->accumulated_len = ptr - p->text_begin;
@@ -300,6 +300,24 @@ static bool end_text(upb_json_parser *p, const char *ptr) {
       upb_sink_putstring(&p->top->sink, sel, p->accumulated, p->accumulated_len, NULL);
     }
     p->accumulated = NULL;
+  } else if (p->top->f &&
+             upb_fielddef_type(p->top->f) == UPB_TYPE_ENUM &&
+             !is_num) {
+
+    // Enum case: resolve enum symbolic name to integer value.
+    const upb_enumdef *enumdef =
+        (const upb_enumdef*)upb_fielddef_subdef(p->top->f);
+
+    int32_t int_val = 0;
+    if (upb_enumdef_ntoi(enumdef, p->accumulated, p->accumulated_len,
+                         &int_val)) {
+      upb_selector_t sel = getsel(p);
+      upb_sink_putint32(&p->top->sink, sel, int_val);
+    } else {
+      upb_status_seterrmsg(p->status, "Enum value name unknown");
+      return false;
+    }
+    p->accumulated = NULL;
   }
 
   return true;
@@ -308,29 +326,38 @@ static bool end_text(upb_json_parser *p, const char *ptr) {
 static bool start_stringval(upb_json_parser *p) {
   assert(p->top->f);
 
-  if (!upb_fielddef_isstring(p->top->f)) {
+  if (upb_fielddef_isstring(p->top->f)) {
+    if (!check_stack(p)) return false;
+
+    // Start a new parser frame: parser frames correspond one-to-one with
+    // handler frames, and string events occur in a sub-frame.
+    upb_jsonparser_frame *inner = p->top + 1;
+    upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSTR);
+    upb_sink_startstr(&p->top->sink, sel, 0, &inner->sink);
+    inner->m = p->top->m;
+    inner->f = p->top->f;
+    p->top = inner;
+
+    return true;
+  } else if (upb_fielddef_type(p->top->f) == UPB_TYPE_ENUM) {
+    // Do nothing -- symbolic enum names in quotes remain in the
+    // current parser frame.
+    return true;
+  } else {
     upb_status_seterrf(p->status,
-                       "String specified for non-string field: %s",
+                       "String specified for non-string/non-enum field: %s",
                        upb_fielddef_name(p->top->f));
     return false;
   }
 
-  if (!check_stack(p)) return false;
-
-  upb_jsonparser_frame *inner = p->top + 1;  // TODO: check for overflow.
-  upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSTR);
-  upb_sink_startstr(&p->top->sink, sel, 0, &inner->sink);
-  inner->m = p->top->m;
-  inner->f = p->top->f;
-  p->top = inner;
-
-  return true;
 }
 
 static void end_stringval(upb_json_parser *p) {
-  p->top--;
-  upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
-  upb_sink_endstr(&p->top->sink, sel);
+  if (upb_fielddef_isstring(p->top->f)) {
+    upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
+    upb_sink_endstr(&p->top->sink, sel);
+    p->top--;
+  }
 }
 
 static void start_number(upb_json_parser *p, const char *ptr) {
@@ -339,7 +366,7 @@ static void start_number(upb_json_parser *p, const char *ptr) {
 }
 
 static void end_number(upb_json_parser *p, const char *ptr) {
-  end_text(p, ptr);
+  end_text(p, ptr, true);
   const char *myend = p->accumulated + p->accumulated_len;
   char *end;
 
@@ -448,15 +475,15 @@ static void hex(upb_json_parser *p, const char *end) {
   // emit the codepoint as UTF-8.
   char utf8[3]; // support \u0000 -- \uFFFF -- need only three bytes.
   int length = 0;
-  if (codepoint < 0x7F) {
+  if (codepoint <= 0x7F) {
     utf8[0] = codepoint;
     length = 1;
-  } else if (codepoint < 0x07FF) {
+  } else if (codepoint <= 0x07FF) {
     utf8[1] = (codepoint & 0x3F) | 0x80;
     codepoint >>= 6;
     utf8[0] = (codepoint & 0x1F) | 0xC0;
     length = 2;
-  } else /* codepoint < 0xFFFF */ {
+  } else /* codepoint <= 0xFFFF */ {
     utf8[2] = (codepoint & 0x3F) | 0x80;
     codepoint >>= 6;
     utf8[1] = (codepoint & 0x3F) | 0x80;
@@ -492,7 +519,7 @@ static void hex(upb_json_parser *p, const char *end) {
   text =
     /[^\\"]/+
       >{ start_text(parser, p); }
-      %{ CHECK_RETURN_TOP(end_text(parser, p)); }
+      %{ CHECK_RETURN_TOP(end_text(parser, p, false)); }
     ;
 
   unicode_char =

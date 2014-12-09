@@ -69,10 +69,10 @@ static inline char* json_nice_escape(char c) {
   }
 }
 
-// Write a properly quoted and escaped string.
+// Write a properly escaped string chunk. The surrounding quotes are *not*
+// printed; this is so that the caller has the option of emitting the string
+// content in chunks.
 static void putstring(upb_json_printer *p, const char *buf, unsigned int len) {
-  print_data(p, "\"", 1);
-
   const char* unescaped_run = NULL;
   for (unsigned int i = 0; i < len; i++) {
     char c = buf[i];
@@ -112,8 +112,6 @@ static void putstring(upb_json_printer *p, const char *buf, unsigned int len) {
   if (unescaped_run) {
     print_data(p, unescaped_run, &buf[len] - unescaped_run);
   }
-
-  print_data(p, "\"", 1);
 }
 
 #define CHKLENGTH(x) if (!(x)) return -1;
@@ -158,8 +156,9 @@ static bool putkey(void *closure, const void *handler_data) {
   upb_json_printer *p = closure;
   const strpc *key = handler_data;
   print_comma(p);
+  print_data(p, "\"", 1);
   putstring(p, key->ptr, key->len);
-  print_data(p, ":", 1);
+  print_data(p, "\":", 2);
   return true;
 }
 
@@ -199,6 +198,47 @@ TYPE_HANDLERS(int64_t,  fmt_int64);
 TYPE_HANDLERS(uint64_t, fmt_uint64);
 
 #undef TYPE_HANDLERS
+
+typedef struct {
+  void *keyname;
+  const upb_enumdef *enumdef;
+} EnumHandlerData;
+
+static bool scalar_enum(void *closure, const void *handler_data,
+                        int32_t val) {
+  const EnumHandlerData *hd = handler_data;
+  upb_json_printer *p = closure;
+  CHK(putkey(closure, hd->keyname));
+
+  const char *symbolic_name = upb_enumdef_iton(hd->enumdef, val);
+  if (symbolic_name) {
+    print_data(p, "\"", 1);
+    putstring(p, symbolic_name, strlen(symbolic_name));
+    print_data(p, "\"", 1);
+  } else {
+    putint32_t(closure, NULL, val);
+  }
+
+  return true;
+}
+
+static bool repeated_enum(void *closure, const void *handler_data,
+                          int32_t val) {
+  const EnumHandlerData *hd = handler_data;
+  upb_json_printer *p = closure;
+  print_comma(p);
+
+  const char *symbolic_name = upb_enumdef_iton(hd->enumdef, val);
+  if (symbolic_name) {
+    print_data(p, "\"", 1);
+    putstring(p, symbolic_name, strlen(symbolic_name));
+    print_data(p, "\"", 1);
+  } else {
+    putint32_t(closure, NULL, val);
+  }
+
+  return true;
+}
 
 static void *scalar_startsubmsg(void *closure, const void *handler_data) {
   return putkey(closure, handler_data) ? closure : UPB_BREAK;
@@ -310,25 +350,58 @@ static size_t putbytes(void *closure, const void *handler_data, const char *str,
   }
 
   size_t bytes = to - data;
+  print_data(p, "\"", 1);
   putstring(p, data, bytes);
+  print_data(p, "\"", 1);
   return len;
+}
+
+static void *scalar_startstr(void *closure, const void *handler_data,
+                             size_t size_hint) {
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(size_hint);
+  upb_json_printer *p = closure;
+  CHK(putkey(closure, handler_data));
+  print_data(p, "\"", 1);
+  return p;
 }
 
 static size_t scalar_str(void *closure, const void *handler_data,
                          const char *str, size_t len,
                          const upb_bufhandle *handle) {
-  CHK(putkey(closure, handler_data));
   CHK(putstr(closure, handler_data, str, len, handle));
   return len;
+}
+
+static bool scalar_endstr(void *closure, const void *handler_data) {
+  UPB_UNUSED(handler_data);
+  upb_json_printer *p = closure;
+  print_data(p, "\"", 1);
+  return true;
+}
+
+static void *repeated_startstr(void *closure, const void *handler_data,
+                               size_t size_hint) {
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(size_hint);
+  upb_json_printer *p = closure;
+  print_comma(p);
+  print_data(p, "\"", 1);
+  return p;
 }
 
 static size_t repeated_str(void *closure, const void *handler_data,
                            const char *str, size_t len,
                            const upb_bufhandle *handle) {
-  upb_json_printer *p = closure;
-  print_comma(p);
   CHK(putstr(closure, handler_data, str, len, handle));
   return len;
+}
+
+static bool repeated_endstr(void *closure, const void *handler_data) {
+  UPB_UNUSED(handler_data);
+  upb_json_printer *p = closure;
+  print_data(p, "\"", 1);
+  return true;
 }
 
 static size_t scalar_bytes(void *closure, const void *handler_data,
@@ -381,21 +454,44 @@ void sethandlers(const void *closure, upb_handlers *h) {
       TYPE(UPB_TYPE_FLOAT,  float,  float);
       TYPE(UPB_TYPE_DOUBLE, double, double);
       TYPE(UPB_TYPE_BOOL,   bool,   bool);
-      TYPE(UPB_TYPE_ENUM,   int32,  int32_t);
       TYPE(UPB_TYPE_INT32,  int32,  int32_t);
       TYPE(UPB_TYPE_UINT32, uint32, uint32_t);
       TYPE(UPB_TYPE_INT64,  int64,  int64_t);
       TYPE(UPB_TYPE_UINT64, uint64, uint64_t);
-      case UPB_TYPE_STRING:
-        // XXX: this doesn't support strings that span buffers yet.
+      case UPB_TYPE_ENUM: {
+        // For now, we always emit symbolic names for enums. We may want an
+        // option later to control this behavior, but we will wait for a real
+        // need first.
+        EnumHandlerData *hd = malloc(sizeof(EnumHandlerData));
+        hd->enumdef = (const upb_enumdef *)upb_fielddef_subdef(f);
+        hd->keyname = newstrpc(h, f);
+        upb_handlers_addcleanup(h, hd, free);
+        upb_handlerattr enum_attr = UPB_HANDLERATTR_INITIALIZER;
+        upb_handlerattr_sethandlerdata(&enum_attr, hd);
+
         if (upb_fielddef_isseq(f)) {
-          upb_handlers_setstring(h, f, repeated_str, &empty_attr);
+          upb_handlers_setint32(h, f, repeated_enum, &enum_attr);
         } else {
-          upb_handlers_setstring(h, f, scalar_str, &name_attr);
+          upb_handlers_setint32(h, f, scalar_enum, &enum_attr);
+        }
+
+        upb_handlerattr_uninit(&enum_attr);
+        break;
+      }
+      case UPB_TYPE_STRING:
+        if (upb_fielddef_isseq(f)) {
+          upb_handlers_setstartstr(h, f, repeated_startstr, &empty_attr);
+          upb_handlers_setstring(h, f, repeated_str, &empty_attr);
+          upb_handlers_setendstr(h, f, repeated_endstr, &empty_attr);
+        } else {
+          upb_handlers_setstartstr(h, f, scalar_startstr, &name_attr);
+          upb_handlers_setstring(h, f, scalar_str, &empty_attr);
+          upb_handlers_setendstr(h, f, scalar_endstr, &empty_attr);
         }
         break;
       case UPB_TYPE_BYTES:
-        // XXX: this doesn't support strings that span buffers yet.
+        // XXX: this doesn't support strings that span buffers yet. The base64
+        // encoder will need to be made resumable for this to work properly.
         if (upb_fielddef_isseq(f)) {
           upb_handlers_setstring(h, f, repeated_bytes, &empty_attr);
         } else {

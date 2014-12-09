@@ -943,7 +943,17 @@ bool upb_enumdef_setdefault(upb_enumdef *e, int32_t val, upb_status *s);
 int upb_enumdef_numvals(const upb_enumdef *e);
 bool upb_enumdef_addval(upb_enumdef *e, const char *name, int32_t num,
                         upb_status *status);
-bool upb_enumdef_ntoi(const upb_enumdef *e, const char *name, int32_t *num);
+
+// Enum lookups:
+// - ntoi:  look up a name with specified length.
+// - ntoiz: look up a name provided as a null-terminated string.
+// - iton:  look up an integer, returning the name as a null-terminated string.
+bool upb_enumdef_ntoi(const upb_enumdef *e, const char *name, size_t len,
+                      int32_t *num);
+UPB_INLINE bool upb_enumdef_ntoiz(const upb_enumdef *e,
+                                  const char *name, int32_t *num) {
+  return upb_enumdef_ntoi(e, name, strlen(name), num);
+}
 const char *upb_enumdef_iton(const upb_enumdef *e, int32_t num);
 
 //  upb_enum_iter i;
@@ -1352,7 +1362,7 @@ inline bool EnumDef::AddValue(const std::string& name, int32_t num,
   return upb_enumdef_addval(this, upb_safecstr(name), num, status);
 }
 inline bool EnumDef::FindValueByName(const char* name, int32_t *num) const {
-  return upb_enumdef_ntoi(this, name, num);
+  return upb_enumdef_ntoiz(this, name, num);
 }
 inline const char* EnumDef::FindValueByNumber(int32_t num) const {
   return upb_enumdef_iton(this, num);
