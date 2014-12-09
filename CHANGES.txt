@@ -1,3 +1,107 @@
+2014-12-01 version 3.0.0-alpha-1 (C++/Java):
+
+  General
+  * Introduced Protocol Buffers language version 3 (aka proto3).
+
+    When protobuf was initially opensourced it implemented Protocol Buffers
+    language version 2 (aka proto2), which is why the version number
+    started from v2.0.0. From v3.0.0, a new language version (proto3) is
+    introduced while the old version (proto2) will continue to be supported.
+
+    The main intent of introducing proto3 is to clean up protobuf before
+    pushing the language as the foundation of Google's new API platform.
+    In proto3, the language is simplified, both for ease of use and  to
+    make it available in a wider range of programming languages. At the
+    same time a few features are added to better support common idioms
+    found in APIs.
+
+    The following are the main new features in language version 3:
+
+      1. Removal of field presence logic for primitive value fields, removal
+         of required fields, and removal of default values. This makes proto3
+         significantly easier to implement with open struct representations,
+         as in languages like Android Java, Objective C, or Go.
+      2. Removal of unknown fields.
+      3. Removal of extensions, which are instead replaced by a new standard
+         type called Any.
+      4. Fix semantics for unknown enum values.
+      5. Addition of maps.
+      6. Addition of a small set of standard types for representation of time,
+         dynamic data, etc.
+      7. A well-defined encoding in JSON as an alternative to binary proto
+         encoding.
+
+    This release (v3.0.0-alpha-1) includes partial proto3 support for C++ and
+    Java. Items 6 (well-known types) and 7 (JSON format) in the above feature
+    list are not impelmented.
+
+    A new notion "syntax" is introduced to specify whether a .proto file
+    uses proto2 or proto3:
+
+      // foo.proto
+      syntax = "proto3";
+      message Bar {...}
+
+    If omitted, the protocol compiler will generate a warning and "proto2" will
+    be used as the default. This warning will be turned into an error in a
+    future release.
+
+    We recommend that new Protocol Buffers users use proto3. However, we do not
+    generally recommend that existing users migrate from proto2 from proto3 due
+    to API incompatibility, and we will continue to support proto2 for a long
+    time.
+
+  * Added support for map fields (implemented in C++/Java for both proto2 and
+    proto3).
+
+    Map fields can be declared using the following syntax:
+
+      message Foo {
+        map<string, string> values = 1;
+      }
+
+    Data of a map field will be stored in memory as an unordered map and it
+    can be accessed through generated accessors.
+
+  C++
+  * Added arena allocation support (for both proto2 and proto3).
+
+    Profiling shows memory allocation and deallocation constitutes a significant
+    fraction of CPU-time spent in protobuf code and arena allocation is a
+    technique introduced to reduce this cost. With arena allocation, new
+    objects will be allocated from a large piece of preallocated memory and
+    deallocation of these objects is almost free. Early adoption shows 20% to
+    50% improvement in some Google binaries.
+
+    To enable arena support, add the following option to your .proto file:
+
+      option cc_enable_arenas = true;
+
+    Protocol compiler will generate additional code to make the generated
+    message classes work with arenas. This does not change the existing API
+    of protobuf messages and does not affect wire format. Your existing code
+    should continue to work after adding this option. In the future we will
+    make this option enabled by default.
+
+    To actually take advantage of arena allocation, you need to use the arena
+    APIs when creating messages. A quick example of using the arena API:
+
+      {
+        google::protobuf::Arena arena;
+        // Allocate a protobuf message in the arena.
+        MyMessage* message = Arena::CreateMessage<MyMessage>(&arena);
+        // All submessages will be allocated in the same arena.
+        if (!message->ParseFromString(data)) {
+          // Deal with malformed input data.
+        }
+        // Must not delete the message here. It will be deleted automatically
+        // when the arena is destroyed.
+      }
+
+    Currently arena does not work with map fields. Enabling arena in a .proto
+    file containing map fields will result in compile errors in the generated
+    code. This will be addressed in a future release.
+
 2014-10-20 version 2.6.1:
 
   C++
