@@ -420,13 +420,14 @@ static void emit_static_asm(jitcompiler *jc) {
   |  lea      rcx, [PTR + 10]
   |  mov      rax, PTR    // Preserve PTR in case of fallback to slow path.
   |  cmp      rcx, DATAEND
-  |  cmova    rcx, DATAEND    // rax = MIN(DATAEND, PTR + 10)
+  |  cmova    rcx, DATAEND    // rcx = MIN(DATAEND, PTR + 10)
   |2:
-  |  add      rax, 1
   |  cmp      rax, rcx
   |  je       ->decode_varint_slow
   |  test     byte [rax], 0x80
-  |  jnz      <2
+  |  jz       >3
+  |  add      rax, 1
+  |  jmp      <2
   |3:
   |  mov      PTR, rax  // PTR = varint_end - 1, as desired
   |  ret

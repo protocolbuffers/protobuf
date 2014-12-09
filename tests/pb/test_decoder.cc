@@ -62,8 +62,13 @@ uint32_t filter_hash = 0;
 double completed;
 double total;
 double *count;
-bool count_only;
 upb::BufferHandle global_handle;
+
+enum TestMode {
+  COUNT_ONLY = 1,
+  NO_HANDLERS = 2,
+  ALL_HANDLERS = 3
+} test_mode;
 
 // Copied from decoder.c, since this is not a public interface.
 typedef struct {
@@ -449,40 +454,42 @@ upb::reffed_ptr<const upb::MessageDef> NewMessageDef() {
   return md;
 }
 
-upb::reffed_ptr<const upb::Handlers> NewHandlers() {
+upb::reffed_ptr<const upb::Handlers> NewHandlers(TestMode mode) {
   upb::reffed_ptr<upb::Handlers> h(upb::Handlers::New(NewMessageDef().get()));
 
-  h->SetStartMessageHandler(UpbMakeHandler(startmsg));
-  h->SetEndMessageHandler(UpbMakeHandler(endmsg));
+  if (mode == ALL_HANDLERS) {
+    h->SetStartMessageHandler(UpbMakeHandler(startmsg));
+    h->SetEndMessageHandler(UpbMakeHandler(endmsg));
 
-  // Register handlers for each type.
-  reg<double,   value_double>(h.get(), UPB_DESCRIPTOR_TYPE_DOUBLE);
-  reg<float,    value_float> (h.get(), UPB_DESCRIPTOR_TYPE_FLOAT);
-  reg<int64_t,  value_int64> (h.get(), UPB_DESCRIPTOR_TYPE_INT64);
-  reg<uint64_t, value_uint64>(h.get(), UPB_DESCRIPTOR_TYPE_UINT64);
-  reg<int32_t,  value_int32> (h.get(), UPB_DESCRIPTOR_TYPE_INT32);
-  reg<uint64_t, value_uint64>(h.get(), UPB_DESCRIPTOR_TYPE_FIXED64);
-  reg<uint32_t, value_uint32>(h.get(), UPB_DESCRIPTOR_TYPE_FIXED32);
-  reg<bool,     value_bool>  (h.get(), UPB_DESCRIPTOR_TYPE_BOOL);
-  reg<uint32_t, value_uint32>(h.get(), UPB_DESCRIPTOR_TYPE_UINT32);
-  reg<int32_t,  value_int32> (h.get(), UPB_DESCRIPTOR_TYPE_ENUM);
-  reg<int32_t,  value_int32> (h.get(), UPB_DESCRIPTOR_TYPE_SFIXED32);
-  reg<int64_t,  value_int64> (h.get(), UPB_DESCRIPTOR_TYPE_SFIXED64);
-  reg<int32_t,  value_int32> (h.get(), UPB_DESCRIPTOR_TYPE_SINT32);
-  reg<int64_t,  value_int64> (h.get(), UPB_DESCRIPTOR_TYPE_SINT64);
+    // Register handlers for each type.
+    reg<double,   value_double>(h.get(), UPB_DESCRIPTOR_TYPE_DOUBLE);
+    reg<float,    value_float> (h.get(), UPB_DESCRIPTOR_TYPE_FLOAT);
+    reg<int64_t,  value_int64> (h.get(), UPB_DESCRIPTOR_TYPE_INT64);
+    reg<uint64_t, value_uint64>(h.get(), UPB_DESCRIPTOR_TYPE_UINT64);
+    reg<int32_t,  value_int32> (h.get(), UPB_DESCRIPTOR_TYPE_INT32);
+    reg<uint64_t, value_uint64>(h.get(), UPB_DESCRIPTOR_TYPE_FIXED64);
+    reg<uint32_t, value_uint32>(h.get(), UPB_DESCRIPTOR_TYPE_FIXED32);
+    reg<bool,     value_bool>  (h.get(), UPB_DESCRIPTOR_TYPE_BOOL);
+    reg<uint32_t, value_uint32>(h.get(), UPB_DESCRIPTOR_TYPE_UINT32);
+    reg<int32_t,  value_int32> (h.get(), UPB_DESCRIPTOR_TYPE_ENUM);
+    reg<int32_t,  value_int32> (h.get(), UPB_DESCRIPTOR_TYPE_SFIXED32);
+    reg<int64_t,  value_int64> (h.get(), UPB_DESCRIPTOR_TYPE_SFIXED64);
+    reg<int32_t,  value_int32> (h.get(), UPB_DESCRIPTOR_TYPE_SINT32);
+    reg<int64_t,  value_int64> (h.get(), UPB_DESCRIPTOR_TYPE_SINT64);
 
-  reg_str(h.get(), UPB_DESCRIPTOR_TYPE_STRING);
-  reg_str(h.get(), UPB_DESCRIPTOR_TYPE_BYTES);
-  reg_str(h.get(), rep_fn(UPB_DESCRIPTOR_TYPE_STRING));
-  reg_str(h.get(), rep_fn(UPB_DESCRIPTOR_TYPE_BYTES));
+    reg_str(h.get(), UPB_DESCRIPTOR_TYPE_STRING);
+    reg_str(h.get(), UPB_DESCRIPTOR_TYPE_BYTES);
+    reg_str(h.get(), rep_fn(UPB_DESCRIPTOR_TYPE_STRING));
+    reg_str(h.get(), rep_fn(UPB_DESCRIPTOR_TYPE_BYTES));
 
-  // Register submessage/group handlers that are self-recursive
-  // to this type, eg: message M { optional M m = 1; }
-  reg_subm(h.get(), UPB_DESCRIPTOR_TYPE_MESSAGE);
-  reg_subm(h.get(), rep_fn(UPB_DESCRIPTOR_TYPE_MESSAGE));
+    // Register submessage/group handlers that are self-recursive
+    // to this type, eg: message M { optional M m = 1; }
+    reg_subm(h.get(), UPB_DESCRIPTOR_TYPE_MESSAGE);
+    reg_subm(h.get(), rep_fn(UPB_DESCRIPTOR_TYPE_MESSAGE));
 
-  // For NOP_FIELD we register no handlers, so we can pad a proto freely without
-  // changing the output.
+    // For NOP_FIELD we register no handlers, so we can pad a proto freely without
+    // changing the output.
+  }
 
   bool ok = h->Freeze(NULL);
   ASSERT(ok);
@@ -579,7 +586,7 @@ void run_decoder(const string& proto, const string* expected_output) {
     for (size_t j = i; j < UPB_MIN(proto.size(), i + 5); j++) {
       testhash = Hash(proto, expected_output, i, j);
       if (filter_hash && testhash != filter_hash) continue;
-      if (!count_only) {
+      if (test_mode != COUNT_ONLY) {
         decoder.Reset();
         output.clear();
         status.Clear();
@@ -616,25 +623,27 @@ void run_decoder(const string& proto, const string* expected_output) {
           ok = input->End();
         }
 
-        if (expected_output) {
-          if (output != *expected_output) {
-            fprintf(stderr, "Text mismatch: '%s' vs '%s'\n",
-                    output.c_str(), expected_output->c_str());
+        if (test_mode == ALL_HANDLERS) {
+          if (expected_output) {
+            if (output != *expected_output) {
+              fprintf(stderr, "Text mismatch: '%s' vs '%s'\n",
+                      output.c_str(), expected_output->c_str());
+            }
+            if (!ok) {
+              fprintf(stderr, "Failed: %s\n", status.error_message());
+            }
+            ASSERT(ok);
+            ASSERT(output == *expected_output);
+          } else {
+            if (ok) {
+              fprintf(stderr, "Didn't expect ok result, but got output: '%s'\n",
+                      output.c_str());
+            } else if (filter_hash) {
+              fprintf(stderr, "Failed as we expected, with message: %s\n",
+                      status.error_message());
+            }
+            ASSERT(!ok);
           }
-          if (!ok) {
-            fprintf(stderr, "Failed: %s\n", status.error_message());
-          }
-          ASSERT(ok);
-          ASSERT(output == *expected_output);
-        } else {
-          if (ok) {
-            fprintf(stderr, "Didn't expect ok result, but got output: '%s'\n",
-                    output.c_str());
-          } else if (filter_hash) {
-            fprintf(stderr, "Failed as we expected, with message: %s\n",
-                    status.error_message());
-          }
-          ASSERT(!ok);
         }
       }
       (*count)++;
@@ -903,7 +912,9 @@ void test_valid() {
     bool ok = upb::BufferSource::PutBuffer("", 0, decoder.input());
     ASSERT(ok);
     ASSERT(status.ok());
-    ASSERT(output == string("<\n>\n"));
+    if (test_mode == ALL_HANDLERS) {
+      ASSERT(output == string("<\n>\n"));
+    }
   }
 
   test_valid_data_for_signed_type(UPB_DESCRIPTOR_TYPE_DOUBLE,
@@ -1120,11 +1131,6 @@ void test_valid() {
   assert_successful_parse(buf, "%s", textbuf.c_str());
 }
 
-void run_tests() {
-  test_invalid();
-  test_valid();
-}
-
 upb::reffed_ptr<const upb::pb::DecoderMethod> NewMethod(
     const upb::Handlers* dest_handlers, bool allow_jit) {
   upb::pb::CodeCache cache;
@@ -1145,6 +1151,32 @@ void test_emptyhandlers(bool allowjit) {
   NewMethod(h.get(), allowjit);
 }
 
+void run_tests(bool use_jit) {
+  upb::reffed_ptr<const upb::pb::DecoderMethod> method;
+  upb::reffed_ptr<const upb::Handlers> handlers;
+
+  handlers = NewHandlers(test_mode);
+  global_handlers = handlers.get();
+
+  method = NewMethod(handlers.get(), use_jit);
+  global_method = method.get();
+  ASSERT(use_jit == global_method->is_native());
+  completed = 0;
+
+  test_invalid();
+  test_valid();
+
+  test_emptyhandlers(false);
+}
+
+void run_test_suite() {
+  // Test without/with JIT.
+  run_tests(false);
+#ifdef UPB_USE_JIT_X64
+  run_tests(true);
+#endif
+}
+
 extern "C" {
 
 int run_tests(int argc, char *argv[]) {
@@ -1157,39 +1189,20 @@ int run_tests(int argc, char *argv[]) {
   upb::reffed_ptr<const upb::pb::DecoderMethod> method;
   upb::reffed_ptr<const upb::Handlers> handlers;
 
-  // Construct decoder plan.
-  handlers = NewHandlers();
-  global_handlers = handlers.get();
-
   // Count tests.
-  method = NewMethod(handlers.get(), false);
-  global_method = method.get();
-  count_only = true;
   count = &total;
   total = 0;
-  run_tests();
-  count_only = false;
+  test_mode = COUNT_ONLY;
+  run_test_suite();
   count = &completed;
 
-  // Test without JIT.
-  method = NewMethod(handlers.get(), false);
-  global_method = method.get();
-  ASSERT(!global_method->is_native());
-  completed = 0;
-  run_tests();
+  total *= 2;  // NO_HANDLERS, ALL_HANDLERS.
 
-  test_emptyhandlers(false);
+  test_mode = NO_HANDLERS;
+  run_test_suite();
 
-#ifdef UPB_USE_JIT_X64
-  // Test JIT.
-  method = NewMethod(handlers.get(), true);
-  global_method = method.get();
-  ASSERT(global_method->is_native());
-  completed = 0;
-  run_tests();
-
-  test_emptyhandlers(true);
-#endif
+  test_mode = ALL_HANDLERS;
+  run_test_suite();
 
   printf("All tests passed, %d assertions.\n", num_assertions);
   return 0;
