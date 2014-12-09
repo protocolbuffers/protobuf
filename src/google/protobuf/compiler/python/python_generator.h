@@ -127,7 +127,7 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
   void PrintServiceDescriptor(const ServiceDescriptor& descriptor) const;
   void PrintServiceClass(const ServiceDescriptor& descriptor) const;
   void PrintServiceStub(const ServiceDescriptor& descriptor) const;
-
+  void printService(const ServiceDescriptor& descriptor, bool stub,	bool cls) const;
   void PrintEnumValueDescriptor(const EnumValueDescriptor& descriptor) const;
   string OptionsValue(const string& class_name,
                       const string& serialized_options) const;

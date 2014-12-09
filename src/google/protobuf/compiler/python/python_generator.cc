@@ -581,14 +581,13 @@ void Generator::PrintServiceDescriptor(
 }
 
 
-void printService(const ServiceDescriptor& descriptor, bool stub,
-		bool class) {
+void Generator::printService(const ServiceDescriptor& descriptor, bool stub,bool cls) const{
 	if (stub)
 		printer_->Print(
 				"$class_name$_Stub = service_reflection.GeneratedServiceStubType('$class_name$_Stub', ($class_name$,), dict(\n",
 				"class_name", descriptor.name());
 
-	if (class)
+	if (cls)
 		printer_->Print(
 				"$class_name$ = service_reflection.GeneratedServiceType('$class_name$', (_service.Service,), dict(\n",
 				"class_name", descriptor.name());
@@ -604,11 +603,11 @@ void printService(const ServiceDescriptor& descriptor, bool stub,
 }
 
 void Generator::PrintServiceClass(const ServiceDescriptor& descriptor) const {
-	printService(descriptor, false, true);
+	Generator::printService(descriptor, false, true);
 }
 
 void Generator::PrintServiceStub(const ServiceDescriptor& descriptor) const {
-	printService(descriptor, true, false);
+	Generator::printService(descriptor, true, false);
 }
 
 // Prints statement assigning ModuleLevelDescriptorName(message_descriptor)
