@@ -580,39 +580,35 @@ void Generator::PrintServiceDescriptor(
   printer_->Print("])\n\n");
 }
 
+
+void printService(const ServiceDescriptor& descriptor, bool stub,
+		bool class) {
+	if (stub)
+		printer_->Print(
+				"$class_name$_Stub = service_reflection.GeneratedServiceStubType('$class_name$_Stub', ($class_name$,), dict(\n",
+				"class_name", descriptor.name());
+
+	if (class)
+		printer_->Print(
+				"$class_name$ = service_reflection.GeneratedServiceType('$class_name$', (_service.Service,), dict(\n",
+				"class_name", descriptor.name());
+
+	printer_->Indent();
+	printer_->Print("$descriptor_key$ = $descriptor_name$,\n", "descriptor_key",
+			kDescriptorKey, "descriptor_name",
+			ModuleLevelServiceDescriptorName(descriptor));
+	printer_->Print("__module__ = '$module_name$'\n", "module_name",
+			ModuleName(file_->name()));
+	printer_->Print("))\n\n");
+	printer_->Outdent();
+}
+
 void Generator::PrintServiceClass(const ServiceDescriptor& descriptor) const {
-  // Print the service.
-  printer_->Print("$class_name$ = service_reflection.GeneratedServiceType("
-                  "'$class_name$', (_service.Service,), dict(\n",
-                  "class_name", descriptor.name());
-  printer_->Indent();
-  printer_->Print(
-      "$descriptor_key$ = $descriptor_name$,\n",
-      "descriptor_key", kDescriptorKey,
-      "descriptor_name", ModuleLevelServiceDescriptorName(descriptor));
-  printer_->Print(
-      "__module__ = '$module_name$'\n",
-      "module_name", ModuleName(file_->name()));
-  printer_->Print("))\n\n");
-  printer_->Outdent();
+	printService(descriptor, false, true);
 }
 
 void Generator::PrintServiceStub(const ServiceDescriptor& descriptor) const {
-  // Print the service stub.
-  printer_->Print("$class_name$_Stub = "
-                  "service_reflection.GeneratedServiceStubType("
-                  "'$class_name$_Stub', ($class_name$,), dict(\n",
-                  "class_name", descriptor.name());
-  printer_->Indent();
-  printer_->Print(
-      "$descriptor_key$ = $descriptor_name$,\n",
-      "descriptor_key", kDescriptorKey,
-      "descriptor_name", ModuleLevelServiceDescriptorName(descriptor));
-  printer_->Print(
-      "__module__ = '$module_name$'\n",
-      "module_name", ModuleName(file_->name()));
-  printer_->Print("))\n\n");
-  printer_->Outdent();
+	printService(descriptor, true, false);
 }
 
 // Prints statement assigning ModuleLevelDescriptorName(message_descriptor)
