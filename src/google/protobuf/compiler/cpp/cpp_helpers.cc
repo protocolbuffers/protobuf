@@ -362,17 +362,17 @@ string FilenameIdentifier(const string& filename) {
 
 // Return the name of the AddDescriptors() function for a given file.
 string GlobalAddDescriptorsName(const string& filename) {
-  return  GlobalXName("protobuf_AddDesc_");
+  return  GlobalXName(filename,"protobuf_AddDesc_");
 }
 
 // Return the name of the AssignDescriptors() function for a given file.
 string GlobalAssignDescriptorsName(const string& filename) {
-  return GlobalXName("protobuf_AssignDesc_");
+  return GlobalXName(filename,"protobuf_AssignDesc_");
 }
 
 // Return the name of the ShutdownFile() function for a given file.
 string GlobalShutdownFileName(const string& filename) {
-  return GlobalXName("protobuf_ShutdownFile_");
+  return GlobalXName(filename,"protobuf_ShutdownFile_");
 }
 
 string GlobalXName(const string& filename, string X)
