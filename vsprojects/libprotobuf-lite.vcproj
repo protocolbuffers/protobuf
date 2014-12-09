@@ -284,10 +284,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\google\protobuf\map_field.cc"
-				>
-			</File>
-			<File
 				RelativePath="..\src\google\protobuf\message_lite.cc"
 				>
 			</File>
