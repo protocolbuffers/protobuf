@@ -457,7 +457,7 @@ bool upb_enumdef_addval(upb_enumdef *e, const char *name, int32_t num,
   if (!upb_isident(name, strlen(name), false, status)) {
     return false;
   }
-  if (upb_enumdef_ntoi(e, name, NULL)) {
+  if (upb_enumdef_ntoiz(e, name, NULL)) {
     upb_status_seterrf(status, "name '%s' is already defined", name);
     return false;
   }
@@ -505,9 +505,10 @@ void upb_enum_begin(upb_enum_iter *i, const upb_enumdef *e) {
 void upb_enum_next(upb_enum_iter *iter) { upb_strtable_next(iter); }
 bool upb_enum_done(upb_enum_iter *iter) { return upb_strtable_done(iter); }
 
-bool upb_enumdef_ntoi(const upb_enumdef *def, const char *name, int32_t *num) {
+bool upb_enumdef_ntoi(const upb_enumdef *def, const char *name,
+                      size_t len, int32_t *num) {
   upb_value v;
-  if (!upb_strtable_lookup(&def->ntoi, name, &v)) {
+  if (!upb_strtable_lookup2(&def->ntoi, name, len, &v)) {
     return false;
   }
   if (num) *num = upb_value_getint32(v);
@@ -595,7 +596,7 @@ static bool enumdefaultint32(const upb_fielddef *f, int32_t *val) {
     if (f->defaultval.bytes) {
       // Default was explicitly set as a str; try to lookup corresponding int.
       str_t *s = f->defaultval.bytes;
-      if (upb_enumdef_ntoi(e, s->str, val)) {
+      if (upb_enumdef_ntoiz(e, s->str, val)) {
         return true;
       }
     } else {

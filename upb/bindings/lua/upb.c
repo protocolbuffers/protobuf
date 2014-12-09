@@ -1032,7 +1032,7 @@ static int lupb_enumdef_value(lua_State *L) {
   } else if (type == LUA_TSTRING) {
     const char *key = lua_tostring(L, 2);
     int32_t num;
-    if (upb_enumdef_ntoi(e, key, &num)) {
+    if (upb_enumdef_ntoiz(e, key, &num)) {
       lua_pushinteger(L, num);
     } else {
       lua_pushnil(L);
