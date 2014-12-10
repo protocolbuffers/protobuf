@@ -360,6 +360,12 @@ string FilenameIdentifier(const string& filename) {
   return result;
 }
 
+
+string GlobalSymbolName(const string& filename, string prefix)
+{
+  return prefix + FilenameIdentifier(filename);
+}
+
 // Return the name of the AddDescriptors() function for a given file.
 string GlobalAddDescriptorsName(const string& filename) 
 {
@@ -378,10 +384,6 @@ string GlobalShutdownFileName(const string& filename)
   return GlobalSymbolName(filename,"protobuf_ShutdownFile_");
 }
 
-string GlobalSymbolName(const string& filename, string prefix)
-{
-  return prefix + FilenameIdentifier(filename);
-}
 
 // Return the qualified C++ name for a file level symbol.
 string QualifiedFileLevelSymbol(const string& package, const string& name) {

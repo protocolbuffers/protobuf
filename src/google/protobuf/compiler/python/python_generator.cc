@@ -581,7 +581,7 @@ void Generator::PrintServiceDescriptor(
 }
 
 
-void Generator::PrintDescriptorKeyAndModuleName(const ServiceDescriptor& descriptor, string keyandmodule) {	
+void Generator::PrintDescriptorKeyAndModuleName(const ServiceDescriptor& descriptor, const char* keyandmodule) const {	
   printer_->Print(keyandmodule,"class_name", descriptor.name());
   printer_->Indent();
   printer_->Print(
