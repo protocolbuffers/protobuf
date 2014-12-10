@@ -260,7 +260,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/javanano/javanano_message_field.cc  \
   google/protobuf/compiler/javanano/javanano_message.h         \
   google/protobuf/compiler/javanano/javanano_primitive_field.cc \
-  google/protobuf/compiler/python/python_generator.cc
+  google/protobuf/compiler/python/python_generator.cc          \
+  google/protobuf/compiler/ruby/ruby_generator.cc
 
 bin_PROGRAMS = protoc
 protoc_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
