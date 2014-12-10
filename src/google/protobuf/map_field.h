@@ -137,7 +137,7 @@ class LIBPROTOBUF_EXPORT MapFieldBase {
 template<typename Key, typename T,
          FieldDescriptor::Type KeyProto,
          FieldDescriptor::Type ValueProto, int default_enum_value = 0>
-class LIBPROTOBUF_EXPORT MapField : public MapFieldBase {
+class MapField : public MapFieldBase {
   // Handlers for key/value's proto field type.
   typedef MapProtoTypeHandler<KeyProto> KeyProtoHandler;
   typedef MapProtoTypeHandler<ValueProto> ValueProtoHandler;

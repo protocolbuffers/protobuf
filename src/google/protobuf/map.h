@@ -110,7 +110,7 @@ class Map {
   ~Map() { clear(); }
 
   // Iterators
-  class LIBPROTOBUF_EXPORT const_iterator
+  class const_iterator
       : public std::iterator<std::forward_iterator_tag, value_type, ptrdiff_t,
                              const value_type*, const value_type&> {
     typedef typename hash_map<Key, value_type*>::const_iterator InnerIt;
@@ -139,7 +139,7 @@ class Map {
     InnerIt it_;
   };
 
-  class LIBPROTOBUF_EXPORT iterator : public std::iterator<std::forward_iterator_tag, value_type> {
+  class iterator : public std::iterator<std::forward_iterator_tag, value_type> {
     typedef typename hash_map<Key, value_type*>::iterator InnerIt;
 
    public:
@@ -302,7 +302,7 @@ class Map {
 
   template <typename K, typename V, FieldDescriptor::Type KeyProto,
             FieldDescriptor::Type ValueProto, int default_enum>
-  friend class LIBPROTOBUF_EXPORT internal::MapField;
+  friend class internal::MapField;
 };
 
 }  // namespace protobuf

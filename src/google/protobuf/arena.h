@@ -312,7 +312,12 @@ class LIBPROTOBUF_EXPORT Arena {
 
   static const size_t kHeaderSize = sizeof(Block);
   static google::protobuf::internal::SequenceNumber lifecycle_id_generator_;
+#ifdef PROTOBUF_USE_DLLS
+  static ThreadCache& thread_cache();
+#else
   static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_;
+  static ThreadCache& thread_cache() { return thread_cache_; }
+#endif
 
   // SFINAE for skipping addition to delete list for a Type. This is mainly to
   // skip proto2/proto1 message objects with cc_enable_arenas=true from being
@@ -434,8 +439,8 @@ class LIBPROTOBUF_EXPORT Arena {
   void CleanupList();
 
   inline void SetThreadCacheBlock(Block* block) {
-    thread_cache_.last_block_used_ = block;
-    thread_cache_.last_lifecycle_id_seen = lifecycle_id_;
+    thread_cache().last_block_used_ = block;
+    thread_cache().last_lifecycle_id_seen = lifecycle_id_;
   }
 
   int64 lifecycle_id_;  // Unique for each arena. Changes on Reset().

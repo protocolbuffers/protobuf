@@ -38,7 +38,14 @@ namespace google {
 namespace protobuf {
 
 google::protobuf::internal::SequenceNumber Arena::lifecycle_id_generator_;
+#ifdef PROTOBUF_USE_DLLS
+Arena::ThreadCache& Arena::thread_cache() {
+  static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_ = { -1, NULL };
+  return thread_cache_;
+}
+#else
 GOOGLE_THREAD_LOCAL Arena::ThreadCache Arena::thread_cache_ = { -1, NULL };
+#endif
 
 void Arena::Init(const ArenaOptions& options) {
   lifecycle_id_ = lifecycle_id_generator_.GetNext();
@@ -130,18 +137,18 @@ void* Arena::AllocateAligned(size_t n) {
   // If this thread already owns a block in this arena then try to use that.
   // This fast path optimizes the case where multiple threads allocate from the
   // same arena.
-  if (thread_cache_.last_lifecycle_id_seen == lifecycle_id_ &&
-      thread_cache_.last_block_used_ != NULL) {
-    if (thread_cache_.last_block_used_->avail() < n) {
+  if (thread_cache().last_lifecycle_id_seen == lifecycle_id_ &&
+      thread_cache().last_block_used_ != NULL) {
+    if (thread_cache().last_block_used_->avail() < n) {
       return SlowAlloc(n);
     }
-    return AllocFromBlock(thread_cache_.last_block_used_, n);
+    return AllocFromBlock(thread_cache().last_block_used_, n);
   }
 
   // Check whether we own the last accessed block on this arena.
   // This fast path optimizes the case where a single thread uses multiple
   // arenas.
-  void* me = &thread_cache_;
+  void* me = &thread_cache();
   Block* b = reinterpret_cast<Block*>(google::protobuf::internal::Acquire_Load(&hint_));
   if (!b || b->owner != me || b->avail() < n) {
     // If the next block to allocate from is the first block, try to claim it
@@ -169,7 +176,7 @@ void* Arena::AllocFromBlock(Block* b, size_t n) {
 }
 
 void* Arena::SlowAlloc(size_t n) {
-  void* me = &thread_cache_;
+  void* me = &thread_cache();
   Block* b = FindBlock(me);  // Find block owned by me.
   // See if allocation fits in my latest block.
   if (b != NULL && b->avail() >= n) {

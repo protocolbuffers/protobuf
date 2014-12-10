@@ -45,7 +45,7 @@ namespace internal {
 
 // Register all MapEntry default instances so we can delete them in
 // ShutdownProtobufLibrary().
-void RegisterMapEntryDefaultInstance(MessageLite* default_instance);
+void LIBPROTOBUF_EXPORT RegisterMapEntryDefaultInstance(MessageLite* default_instance);
 
 // This is the common base class for MapEntry. It is used by MapFieldBase in
 // reflection api, in which the static type of key and value is unknown.
@@ -84,7 +84,7 @@ class LIBPROTOBUF_EXPORT MapEntryBase : public Message {
 // Moreover, default_enum_value is used to initialize enum field in proto2.
 template <typename Key, typename Value, FieldDescriptor::Type KeyProtoType,
           FieldDescriptor::Type ValueProtoType, int default_enum_value>
-class LIBPROTOBUF_EXPORT MapEntry : public MapEntryBase {
+class MapEntry : public MapEntryBase {
   // Handlers for key/value's proto field type. Used to infer internal layout
   // and provide parsing/serialization support.
   typedef MapProtoTypeHandler<KeyProtoType> KeyProtoHandler;
@@ -363,7 +363,7 @@ class LIBPROTOBUF_EXPORT MapEntry : public MapEntryBase {
   template <typename KeyNested, typename ValueNested,
             FieldDescriptor::Type KeyProtoNested,
             FieldDescriptor::Type ValueProtoNested, int default_enum>
-  class LIBPROTOBUF_EXPORT MapEntryWrapper
+  class MapEntryWrapper
       : public MapEntry<KeyNested, ValueNested, KeyProtoNested,
                         ValueProtoNested, default_enum> {
     typedef MapEntry<KeyNested, ValueNested, KeyProtoNested, ValueProtoNested,
@@ -394,7 +394,7 @@ class LIBPROTOBUF_EXPORT MapEntry : public MapEntryBase {
   template <typename KeyNested, typename ValueNested,
             FieldDescriptor::Type KeyProtoNested,
             FieldDescriptor::Type ValueProtoNested, int default_enum>
-  class LIBPROTOBUF_EXPORT MapEnumEntryWrapper
+  class MapEnumEntryWrapper
       : public MapEntry<KeyNested, ValueNested, KeyProtoNested,
                         ValueProtoNested, default_enum> {
     typedef MapEntry<KeyNested, ValueNested, KeyProtoNested, ValueProtoNested,
@@ -433,7 +433,7 @@ class LIBPROTOBUF_EXPORT MapEntry : public MapEntryBase {
   template <typename K, typename V,
             FieldDescriptor::Type KType,
             FieldDescriptor::Type VType, int default_enum>
-  friend class LIBPROTOBUF_EXPORT internal::MapField;
+  friend class internal::MapField;
   friend class LIBPROTOBUF_EXPORT internal::GeneratedMessageReflection;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapEntry);
