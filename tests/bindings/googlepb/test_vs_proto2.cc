@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "benchmarks/google_messages.pb.h"
+#include "tests/google_messages.pb.h"
 #include "tests/upb_test.h"
 #include "upb/bindings/googlepb/bridge.h"
 #include "upb/def.h"
@@ -27,14 +27,14 @@
 #include "upb/pb/glue.h"
 #include "upb/pb/varint.int.h"
 
-// Pull in string data from benchmarks/google_message{1,2}.dat
+// Pull in string data from tests/google_message{1,2}.dat
 // (the .h files are generated with xxd).
 const unsigned char message1_data[] = {
-#include "benchmarks/google_message1.h"
+#include "tests/google_message1.h"
 };
 
 const unsigned char message2_data[] = {
-#include "benchmarks/google_message2.h"
+#include "tests/google_message2.h"
 };
 
 void compare_metadata(const google::protobuf::Descriptor* d,

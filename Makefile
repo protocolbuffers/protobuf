@@ -15,7 +15,7 @@
 # Threading:
 # * -DUPB_THREAD_UNSAFE: remove all thread-safety.
 
-.PHONY: all lib clean tests test benchmarks benchmark descriptorgen
+.PHONY: all lib clean tests test benchmark descriptorgen
 .PHONY: clean_leave_profile
 
 # Prevents the deletion of intermediate files.
@@ -29,7 +29,7 @@ UPB_PICLIBS = $(patsubst %,lib/lib%_pic.a,$(UPB_MODULES))
 default: $(UPB_LIBS)
 
 # All: build absolutely everything
-all: lib tests benchmarks tools/upbc lua python
+all: lib tests tools/upbc lua python
 testall: test pythontest
 
 # Set this to have user-specific flags (especially things like -O0 and -g).
@@ -85,7 +85,7 @@ dep:
 
 clean_leave_profile:
 	@rm -rf obj lib
-	@rm -f benchmarks/*.pb* benchmarks/google_message?.h
+	@rm -f tests/*.pb* tests/google_message?.h
 	@rm -f $(TESTS) tests/testmain.o tests/t.*
 	@rm -f upb/descriptor.pb
 	@rm -rf tools/upbc deps
@@ -309,7 +309,7 @@ GOOGLEPB_LIB=lib/libupb.bindings.googlepb.a
 clean: clean_googlepb
 clean_googlepb:
 	@rm -f tests/bindings/googlepb/test_vs_proto2.googlemessage*
-	@rm -f benchmarks/googlemessage?.h
+	@rm -f tests/googlemessage?.h
 	@rm -f $(GOOGLEPB_LIB)
 
 googlepb: default $(GOOGLEPB_LIB)
@@ -320,19 +320,19 @@ lib/libupb.bindings.googlepb.a: $(upb_bindings_googlepb_SRCS:upb/%.cc=obj/%.o)
 	$(Q) mkdir -p lib && ar rcs $@ $^
 
 # Generate C++ with Google's protobuf compiler, to test and benchmark against.
-benchmarks/google_messages.proto.pb: benchmarks/google_messages.proto
+tests/google_messages.proto.pb: tests/google_messages.proto
 	@# TODO: replace with upbc.
-	protoc benchmarks/google_messages.proto -obenchmarks/google_messages.proto.pb
-benchmarks/google_messages.pb.cc: benchmarks/google_messages.proto
-	protoc benchmarks/google_messages.proto --cpp_out=.
+	protoc tests/google_messages.proto -otests/google_messages.proto.pb
+tests/google_messages.pb.cc: tests/google_messages.proto
+	protoc tests/google_messages.proto --cpp_out=.
 
-benchmarks/google_message1.h:
-	$(E) XXD benchmarks/google_message1.dat
-	$(Q) xxd -i < benchmarks/google_message1.dat > benchmarks/google_message1.h
+tests/google_message1.h:
+	$(E) XXD tests/google_message1.dat
+	$(Q) xxd -i < tests/google_message1.dat > tests/google_message1.h
 
-benchmarks/google_message2.h:
-	$(E) XXD benchmarks/google_message2.dat
-	$(Q) xxd -i < benchmarks/google_message2.dat > benchmarks/google_message2.h
+tests/google_message2.h:
+	$(E) XXD tests/google_message2.dat
+	$(Q) xxd -i < tests/google_message2.dat > tests/google_message2.h
 
 GOOGLEPB_TEST_LIBS = \
   lib/libupb.bindings.googlepb.a \
@@ -342,29 +342,29 @@ GOOGLEPB_TEST_LIBS = \
 
 GOOGLEPB_TEST_DEPS = \
   tests/bindings/googlepb/test_vs_proto2.cc \
-  benchmarks/google_messages.proto.pb \
-  benchmarks/google_messages.pb.cc \
+  tests/google_messages.proto.pb \
+  tests/google_messages.pb.cc \
   tests/testmain.o \
   $(GOOGLEPB_TEST_LIBS)
 
 tests/bindings/googlepb/test_vs_proto2.googlemessage1: $(GOOGLEPB_TEST_DEPS) \
-    benchmarks/google_message1.h \
-    benchmarks/google_message2.h
+    tests/google_message1.h \
+    tests/google_message2.h
 	$(E) CXX $< '(benchmarks::SpeedMessage1)'
 	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
 	  -DMESSAGE_DATA_IDENT=message1_data \
-	  benchmarks/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread \
+	  tests/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread \
 	  $(GOOGLEPB_TEST_LIBS)
 
 tests/bindings/googlepb/test_vs_proto2.googlemessage2: $(GOOGLEPB_TEST_DEPS) \
-    benchmarks/google_message1.h \
-    benchmarks/google_message2.h
+    tests/google_message1.h \
+    tests/google_message2.h
 	$(E) CXX $< '(benchmarks::SpeedMessage2)'
 	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage2" \
 	  -DMESSAGE_DATA_IDENT=message2_data \
-	  benchmarks/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread \
+	  tests/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread \
 	  $(GOOGLEPB_TEST_LIBS)
 
 
