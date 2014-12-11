@@ -81,7 +81,7 @@ struct is_base_of {
   };
 };
 
-#if !(defined(_MSC_VER) && _MSC_VER < 1800 ) && !(defined(__GNUC__) && __GNUC__ <= 3)
+#if (defined(_MSC_VER) && _MSC_VER < 1900 ) || (defined(__GNUC__) && __GNUC__ <= 3)
 #define OUTDATED_COMPILER 1
 #endif
 
