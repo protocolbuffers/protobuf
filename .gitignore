@@ -65,3 +65,5 @@ vsprojects/Debug/
 *.suo
 *.sdf
 vsprojects/Release/
+vsprojects-2013/Debug/
+vsprojects-2013/google/

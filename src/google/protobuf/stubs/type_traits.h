@@ -81,7 +81,7 @@ struct is_base_of {
   };
 };
 
-#if (defined(_MSC_VER) && _MSC_VER < 1900 ) || (defined(__GNUC__) && __GNUC__ <= 3)
+#if (defined(_MSC_VER) && _MSC_VER < 1800 ) || (defined(__GNUC__) && __GNUC__ <= 3)
 #define OUTDATED_COMPILER 1
 #endif
 
@@ -90,7 +90,7 @@ template <class T> struct is_integral;
 template <class T> struct is_floating_point;
 template <class T> struct is_pointer;
 // MSVC can't compile this correctly, and neither can gcc 3.3.5 (at least)
-#if OUTDATED_COMPILER
+#if !OUTDATED_COMPILER
 // is_enum uses is_convertible, which is not available on MSVC.
 template <class T> struct is_enum;
 #endif
@@ -108,7 +108,7 @@ template <class T> struct add_reference;
 template <class T> struct remove_pointer;
 template <class T, class U> struct is_same;
 
-#if OUTDATED_COMPILER
+#if !OUTDATED_COMPILER
 template <class From, class To> struct is_convertible;
 #endif
 
@@ -170,7 +170,7 @@ template <class T> struct is_pointer<const T> : is_pointer<T> { };
 template <class T> struct is_pointer<volatile T> : is_pointer<T> { };
 template <class T> struct is_pointer<const volatile T> : is_pointer<T> { };
 
-#if OUTDATED_COMPILER
+#if !OUTDATED_COMPILER
 
 namespace type_traits_internal {
 
@@ -231,7 +231,7 @@ template<typename T> struct is_reference<T&> : true_type {};
 template <class T> struct is_pod
  : integral_constant<bool, (is_integral<T>::value ||
                             is_floating_point<T>::value ||
-#if OUTDATED_COMPILER
+#if !OUTDATED_COMPILER
                             // is_enum is not available on MSVC.
                             is_enum<T>::value ||
 #endif
@@ -327,7 +327,7 @@ template<typename T, typename U> struct is_same : public false_type { };
 template<typename T> struct is_same<T, T> : public true_type { };
 
 // Specified by TR1 [4.6] Relationships between types
-#if OUTDATED_COMPILER
+#if !OUTDATED_COMPILER
 namespace type_traits_internal {
 
 // This class is an implementation detail for is_convertible, and you
