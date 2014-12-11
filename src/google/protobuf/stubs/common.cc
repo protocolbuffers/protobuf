@@ -255,7 +255,11 @@ struct Mutex::Internal {
 
 Mutex::Mutex()
   : mInternal(new Internal) {
+#if !defined(WINAPI_FAMILY_PARTITION) || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
   InitializeCriticalSection(&mInternal->mutex);
+#else
+	InitializeCriticalSectionEx(&mInternal->mutex, 0, CRITICAL_SECTION_NO_DEBUG_INFO);
+#endif
 }
 
 Mutex::~Mutex() {
