@@ -360,30 +360,20 @@ string FilenameIdentifier(const string& filename) {
   return result;
 }
 
-
-string GlobalSymbolName(const string& filename, string prefix)
-{
-  return prefix + FilenameIdentifier(filename);
-}
-
 // Return the name of the AddDescriptors() function for a given file.
-string GlobalAddDescriptorsName(const string& filename) 
-{
-  return  GlobalSymbolName(filename,"protobuf_AddDesc_");
+string GlobalAddDescriptorsName(const string& filename) {
+  return "protobuf_AddDesc_" + FilenameIdentifier(filename);
 }
 
 // Return the name of the AssignDescriptors() function for a given file.
-string GlobalAssignDescriptorsName(const string& filename) 
-{
-  return GlobalSymbolName(filename,"protobuf_AssignDesc_");
+string GlobalAssignDescriptorsName(const string& filename) {
+  return "protobuf_AssignDesc_" + FilenameIdentifier(filename);
 }
 
 // Return the name of the ShutdownFile() function for a given file.
-string GlobalShutdownFileName(const string& filename) 
-{
-  return GlobalSymbolName(filename,"protobuf_ShutdownFile_");
+string GlobalShutdownFileName(const string& filename) {
+  return "protobuf_ShutdownFile_" + FilenameIdentifier(filename);
 }
-
 
 // Return the qualified C++ name for a file level symbol.
 string QualifiedFileLevelSymbol(const string& package, const string& name) {

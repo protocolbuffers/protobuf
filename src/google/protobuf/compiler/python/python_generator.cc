@@ -581,8 +581,7 @@ void Generator::PrintServiceDescriptor(
 }
 
 
-void Generator::PrintDescriptorKeyAndModuleName(const ServiceDescriptor& descriptor, const char* keyandmodule) const {	
-  printer_->Print(keyandmodule,"class_name", descriptor.name());
+void Generator::PrintDescriptorKeyAndModuleName(const ServiceDescriptor& descriptor) const {	
   printer_->Indent();
   printer_->Print(
       "$descriptor_key$ = $descriptor_name$,\n",
@@ -596,11 +595,20 @@ void Generator::PrintDescriptorKeyAndModuleName(const ServiceDescriptor& descrip
 }
 
 void Generator::PrintServiceClass(const ServiceDescriptor& descriptor) const {
-  Generator::PrintDescriptorKeyAndModuleName(descriptor, "$class_name$_Stub = service_reflection.GeneratedServiceStubType('$class_name$_Stub', ($class_name$,), dict(\n");
+  // Print the service.
+  printer_->Print("$class_name$ = service_reflection.GeneratedServiceType("
+                  "'$class_name$', (_service.Service,), dict(\n",
+                  "class_name", descriptor.name());
+  Generator::PrintDescriptorKeyAndModuleName(descriptor);
 }
 
 void Generator::PrintServiceStub(const ServiceDescriptor& descriptor) const {
-  Generator::PrintDescriptorKeyAndModuleName(descriptor, "$class_name$ = service_reflection.GeneratedServiceType('$class_name$', (_service.Service,), dict(\n");
+  // Print the service stub.
+  printer_->Print("$class_name$_Stub = "
+                  "service_reflection.GeneratedServiceStubType("
+                  "'$class_name$_Stub', ($class_name$,), dict(\n",
+                  "class_name", descriptor.name());
+  Generator::PrintDescriptorKeyAndModuleName(descriptor);
 }
 
 // Prints statement assigning ModuleLevelDescriptorName(message_descriptor)
