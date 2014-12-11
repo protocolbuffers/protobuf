@@ -10,7 +10,7 @@
   </parent>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java</artifactId>
-  <version>2.6.2-pre</version>
+  <version>3.0.0-pre</version>
   <packaging>bundle</packaging>
   <name>Protocol Buffer Java API</name>
   <description>
@@ -152,7 +152,7 @@
           <instructions>
             <Bundle-DocURL>https://developers.google.com/protocol-buffers/</Bundle-DocURL>
             <Bundle-SymbolicName>com.google.protobuf</Bundle-SymbolicName>
-            <Export-Package>com.google.protobuf;version=2.6.2-pre</Export-Package>
+            <Export-Package>com.google.protobuf;version=3.0.0-pre</Export-Package>
           </instructions>
         </configuration>
       </plugin>
@@ -198,8 +198,10 @@
                 <include>**/WireFormat.java</include>
               </includes>
               <testIncludes>
-                <testInclude>**/**LiteTest.java</testInclude>
                 <testInclude>**/*Lite.java</testInclude>
+                <testInclude>**/LazyMessageLiteTest.java</testInclude>
+                <testInclude>**/LiteTest.java</testInclude>
+                <testInclude>**/UnknownFieldSetLiteTest.java</testInclude>
               </testIncludes>
             </configuration>
           </plugin>
@@ -207,7 +209,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <includes>
-                <include>**/**LiteTest.java</include>
+                <include>**/*Test.java</include>
               </includes>
             </configuration>
           </plugin>

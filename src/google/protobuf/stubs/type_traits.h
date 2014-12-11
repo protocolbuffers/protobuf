@@ -107,6 +107,7 @@ template <class T> struct remove_reference;
 template <class T> struct add_reference;
 template <class T> struct remove_pointer;
 template <class T, class U> struct is_same;
+
 #if OUTDATED_COMPILER
 template <class From, class To> struct is_convertible;
 #endif
@@ -343,6 +344,9 @@ struct ConvertHelper {
   static small_ Test(To);
   static big_ Test(...);
   static From Create();
+  enum {
+    value = sizeof(Test(Create())) == sizeof(small_)
+  };
 };
 }  // namespace type_traits_internal
 
@@ -350,9 +354,7 @@ struct ConvertHelper {
 template <typename From, typename To>
 struct is_convertible
     : integral_constant<bool,
-                        sizeof(type_traits_internal::ConvertHelper<From, To>::Test(
-                                  type_traits_internal::ConvertHelper<From, To>::Create()))
-                        == sizeof(small_)> {
+                        type_traits_internal::ConvertHelper<From, To>::value> {
 };
 #endif
 

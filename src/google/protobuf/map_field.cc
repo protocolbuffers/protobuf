@@ -30,9 +30,36 @@
 
 #include <google/protobuf/map_field.h>
 
+#include <vector>
+
 namespace google {
 namespace protobuf {
 namespace internal {
+
+ProtobufOnceType map_entry_default_instances_once_;
+Mutex* map_entry_default_instances_mutex_;
+vector<MessageLite*>* map_entry_default_instances_;
+
+void DeleteMapEntryDefaultInstances() {
+  for (int i = 0; i < map_entry_default_instances_->size(); ++i) {
+    delete map_entry_default_instances_->at(i);
+  }
+  delete map_entry_default_instances_mutex_;
+  delete map_entry_default_instances_;
+}
+
+void InitMapEntryDefaultInstances() {
+  map_entry_default_instances_mutex_ = new Mutex();
+  map_entry_default_instances_ = new vector<MessageLite*>();
+  OnShutdown(&DeleteMapEntryDefaultInstances);
+}
+
+void RegisterMapEntryDefaultInstance(MessageLite* default_instance) {
+  GoogleOnceInit(&map_entry_default_instances_once_,
+                 &InitMapEntryDefaultInstances);
+  MutexLock lock(map_entry_default_instances_mutex_);
+  map_entry_default_instances_->push_back(default_instance);
+}
 
 MapFieldBase::~MapFieldBase() {
   if (repeated_field_ != NULL) delete repeated_field_;

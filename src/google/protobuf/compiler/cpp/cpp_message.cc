@@ -1226,7 +1226,7 @@ GenerateDescriptorDeclarations(io::Printer* printer) {
       for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
         const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
         printer->Print("  ");
-        if (IsStringOrMessage(field)) {
+        if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
           printer->Print("const ");
         }
         field_generators_.get(field).GeneratePrivateMembers(printer);

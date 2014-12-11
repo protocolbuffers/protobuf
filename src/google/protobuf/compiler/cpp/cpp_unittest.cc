@@ -153,6 +153,7 @@ TEST(GeneratedMessageTest, Defaults) {
             &message.optional_import_message());
 }
 
+#ifndef PROTOBUF_USE_DLLS
 TEST(GeneratedMessageTest, Int32StringConversion) {
   EXPECT_EQ("971", Int32ToString(971));
   EXPECT_EQ("(~0x7fffffff)", Int32ToString(kint32min));
@@ -165,6 +166,7 @@ TEST(GeneratedMessageTest, Int64StringConversion) {
   EXPECT_EQ("GOOGLE_LONGLONG(~0x7fffffffffffffff)", Int64ToString(kint64min));
   EXPECT_EQ("GOOGLE_LONGLONG(9223372036854775807)", Int64ToString(kint64max));
 }
+#endif  // !PROTOBUF_USE_DLLS
 
 TEST(GeneratedMessageTest, FloatingPointDefaults) {
   const unittest::TestExtremeDefaultValues& extreme_default =

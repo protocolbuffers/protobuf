@@ -128,7 +128,7 @@ TEST(ArenaTest, InitialBlockTooSmall) {
   // initial block.
   std::vector<char> arena_block(64);
   ArenaOptions options;
-  options.initial_block = arena_block.data();
+  options.initial_block = &arena_block[0];
   options.initial_block_size = arena_block.size();
   Arena arena(options);
 
@@ -137,7 +137,7 @@ TEST(ArenaTest, InitialBlockTooSmall) {
 
   // Ensure that the arena allocator did not return memory pointing into the
   // initial block of memory.
-  uintptr_t arena_start = reinterpret_cast<uintptr_t>(arena_block.data());
+  uintptr_t arena_start = reinterpret_cast<uintptr_t>(&arena_block[0]);
   uintptr_t arena_end = arena_start + arena_block.size();
   EXPECT_FALSE(allocation >= arena_start && allocation < arena_end);
 
@@ -771,7 +771,7 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
   // Preallocate an initial arena block to avoid mallocs during hooked region.
   std::vector<char> arena_block(1024 * 1024);
   ArenaOptions options;
-  options.initial_block = arena_block.data();
+  options.initial_block = &arena_block[0];
   options.initial_block_size = arena_block.size();
   Arena arena(options);
 
@@ -898,7 +898,7 @@ TEST(ArenaTest, NoHeapAllocationsTest) {
   // Allocate a large initial block to avoid mallocs during hooked test.
   std::vector<char> arena_block(128 * 1024);
   ArenaOptions options;
-  options.initial_block = arena_block.data();
+  options.initial_block = &arena_block[0];
   options.initial_block_size = arena_block.size();
   Arena arena(options);
 
@@ -918,7 +918,7 @@ TEST(ArenaTest, NoHeapAllocationsTest) {
 TEST(ArenaTest, MessageLiteOnArena) {
   std::vector<char> arena_block(128 * 1024);
   ArenaOptions options;
-  options.initial_block = arena_block.data();
+  options.initial_block = &arena_block[0];
   options.initial_block_size = arena_block.size();
   Arena arena(options);
   const google::protobuf::MessageLite* prototype = dynamic_cast<
@@ -977,7 +977,7 @@ TEST(ArenaTest, SpaceUsed) {
 
   // Test with initial block.
   std::vector<char> arena_block(1024);
-  options.initial_block = arena_block.data();
+  options.initial_block = &arena_block[0];
   options.initial_block_size = arena_block.size();
   Arena arena_2(options);
   EXPECT_EQ(1024, arena_2.SpaceUsed());

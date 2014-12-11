@@ -92,8 +92,8 @@ TEST(RepeatedField, Small) {
 
   EXPECT_TRUE(field.empty());
   EXPECT_EQ(field.size(), 0);
-  // Additional 8 bytes are for 'struct Rep' header.
-  int expected_usage = 4 * sizeof(int) + 8;
+  // Additional bytes are for 'struct Rep' header.
+  int expected_usage = 4 * sizeof(int) + sizeof(Arena*);
   EXPECT_EQ(field.SpaceUsedExcludingSelf(), expected_usage);
 }
 
