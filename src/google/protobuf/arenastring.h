@@ -31,7 +31,6 @@
 #ifndef GOOGLE_PROTOBUF_ARENASTRING_H__
 #define GOOGLE_PROTOBUF_ARENASTRING_H__
 
-#include <stdint.h>
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
@@ -54,7 +53,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-struct ArenaStringPtr {
+struct LIBPROTOBUF_EXPORT ArenaStringPtr {
   inline void Set(const ::std::string* default_value,
                   const ::std::string& value, ::google::protobuf::Arena* arena) {
     if (ptr_ == default_value) {

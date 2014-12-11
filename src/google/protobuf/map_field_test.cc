@@ -430,41 +430,6 @@ TEST_P(MapFieldStateTest, MutableMapField) {
   }
 }
 
-class MapFieldBaseStateStub : public MapFieldBaseStub {
- public:
-  MapFieldBaseStateStub(Mutex* mutex, int* clean_counter,
-                        int* completed_counter)
-      : mutex_(mutex),
-        clean_counter_(clean_counter),
-        completed_counter_(completed_counter) {}
-  ~MapFieldBaseStateStub() {}
-
- protected:
-  void SyncRepeatedFieldWithMapNoLock() const { Clean(); }
-  void SyncMapWithRepeatedFieldNoLock() const { Clean(); }
-
- private:
-  void Clean() const {
-    {
-      MutexLock lock(mutex_);
-      ++(*clean_counter_);
-    }
-    struct timespec tm;
-    tm.tv_sec = 0;
-    tm.tv_nsec = 100000000;  // 100ms
-    nanosleep(&tm, NULL);
-    {
-      MutexLock lock(mutex_);
-      // No other thread should have completed while this one was initializing.
-      EXPECT_EQ(0, *completed_counter_);
-    }
-  }
-  Mutex* mutex_;
-  int* clean_counter_;
-  int* completed_counter_;
-};
-
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

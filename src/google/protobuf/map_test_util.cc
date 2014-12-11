@@ -1020,7 +1020,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_int32_int32_key_);
       int32 val = sub_message->GetReflection()->GetInt32(
           *sub_message, map_int32_int32_val_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
   {
@@ -1034,7 +1034,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_int64_int64_key_);
       int64 val = sub_message->GetReflection()->GetInt64(
           *sub_message, map_int64_int64_val_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
   {
@@ -1048,7 +1048,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_uint32_uint32_key_);
       uint32 val = sub_message->GetReflection()->GetUInt32(
           *sub_message, map_uint32_uint32_val_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
   {
@@ -1062,7 +1062,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_uint64_uint64_key_);
       uint64 val = sub_message->GetReflection()->GetUInt64(
           *sub_message, map_uint64_uint64_val_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
   {
@@ -1076,7 +1076,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_sint32_sint32_key_);
       int32 val = sub_message->GetReflection()->GetInt32(
           *sub_message, map_sint32_sint32_val_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
   {
@@ -1090,7 +1090,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_sint64_sint64_key_);
       int64 val = sub_message->GetReflection()->GetInt64(
           *sub_message, map_sint64_sint64_val_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
   {
@@ -1104,7 +1104,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_fixed32_fixed32_key_);
       uint32 val = sub_message->GetReflection()->GetUInt32(
           *sub_message, map_fixed32_fixed32_val_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
   {
@@ -1118,7 +1118,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_fixed64_fixed64_key_);
       uint64 val = sub_message->GetReflection()->GetUInt64(
           *sub_message, map_fixed64_fixed64_val_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
   {
@@ -1132,7 +1132,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_sfixed32_sfixed32_key_);
       int32 val = sub_message->GetReflection()->GetInt32(
           *sub_message, map_sfixed32_sfixed32_val_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
   {
@@ -1146,7 +1146,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_sfixed64_sfixed64_key_);
       int64 val = sub_message->GetReflection()->GetInt64(
           *sub_message, map_sfixed64_sfixed64_val_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
   {
@@ -1160,7 +1160,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_int32_float_key_);
       float val = sub_message->GetReflection()->GetFloat(
           *sub_message, map_int32_float_val_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
   {
@@ -1174,7 +1174,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_int32_double_key_);
       double val = sub_message->GetReflection()->GetDouble(
           *sub_message, map_int32_double_val_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
   {
@@ -1188,7 +1188,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_bool_bool_key_);
       bool val = sub_message->GetReflection()->GetBool(
           *sub_message, map_bool_bool_val_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
   {
@@ -1202,7 +1202,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_string_string_key_);
       string val = sub_message->GetReflection()->GetString(
           *sub_message, map_string_string_val_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
   {
@@ -1216,7 +1216,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_int32_bytes_key_);
       string val = sub_message->GetReflection()->GetString(
           *sub_message, map_int32_bytes_val_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
   {
@@ -1230,7 +1230,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_int32_enum_key_);
       const EnumValueDescriptor* val = sub_message->GetReflection()->GetEnum(
           *sub_message, map_int32_enum_val_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
   {
@@ -1246,7 +1246,7 @@ void MapTestUtil::MapReflectionTester::ExpectMapFieldsSetViaReflection(
           *sub_message, map_int32_foreign_message_val_);
       int32 val = foreign_message.GetReflection()->GetInt32(
           foreign_message, foreign_c_);
-      EXPECT_EQ(map.at(key), val);
+      EXPECT_EQ(map[key], val);
     }
   }
 }

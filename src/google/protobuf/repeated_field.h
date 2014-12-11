@@ -236,10 +236,11 @@ class RepeatedField {
     Arena* arena;
     Element  elements[1];
   };
-  // Why not sizeof(Rep) - sizeof(Element)? Because this is not accurate w.r.t.
-  // trailing padding on the struct -- e.g. if Element is int, this would yield
-  // 12 on x86-64, not 8 as we want.
-  static const size_t kRepHeaderSize = sizeof(Arena*);
+  // We can not use sizeof(Rep) - sizeof(Element) due to the trailing padding on
+  // the struct. We can not use sizeof(Arena*) as well because there might be
+  // a "gap" after the field arena and before the field elements (e.g., when
+  // Element is double and pointer is 32bit).
+  static const size_t kRepHeaderSize;
   // Contains arena ptr and the elements array. We also keep the invariant that
   // if rep_ is NULL, then arena is NULL.
   Rep* rep_;
@@ -262,6 +263,10 @@ class RepeatedField {
     return (rep_ == NULL) ? NULL : rep_->arena;
   }
 };
+
+template<typename Element>
+const size_t RepeatedField<Element>::kRepHeaderSize =
+    reinterpret_cast<size_t>(&reinterpret_cast<Rep*>(16)->elements[0]) - 16;
 
 namespace internal {
 template <typename It> class RepeatedPtrIterator;

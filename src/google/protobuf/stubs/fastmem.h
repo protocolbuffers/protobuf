@@ -46,7 +46,6 @@
 #define GOOGLE_PROTOBUF_STUBS_FASTMEM_H_
 
 #include <stddef.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 

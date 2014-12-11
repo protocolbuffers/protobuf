@@ -97,7 +97,7 @@ public class MapFieldLite<K, V> {
     if (a == b) {
       return true;
     }
-    if (a.size() != a.size()) {
+    if (a.size() != b.size()) {
       return false;
     }
     for (Map.Entry<K, V> entry : a.entrySet()) {

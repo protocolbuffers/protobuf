@@ -200,6 +200,7 @@ TEST(PreserveUnknownEnumTest, Proto2CatchesUnknownValues) {
   EXPECT_TRUE(enum_value != NULL);
   r->AddEnum(&message, repeated_field, enum_value);
 
+#ifdef PROTOBUF_HAS_DEATH_TEST
   // Enum-field integer-based setters GOOGLE_DCHECK-fail on invalid values, in order to
   // remain consistent with proto2 generated code.
   EXPECT_DEBUG_DEATH({
@@ -214,6 +215,7 @@ TEST(PreserveUnknownEnumTest, Proto2CatchesUnknownValues) {
     r->AddEnumValue(&message, repeated_field, 4242);
     r->GetRepeatedEnum(message, repeated_field, 1);
   }, "AddEnumValue accepts only valid integer values");
+#endif  // PROTOBUF_HAS_DEATH_TEST
 }
 
 TEST(PreserveUnknownEnumTest, SupportsUnknownEnumValuesAPI) {

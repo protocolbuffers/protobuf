@@ -260,6 +260,13 @@ public class MapTest extends TestCase {
     assertFalse(m1.equals(m2));
     // Don't check m1.hashCode() != m2.hashCode() because it's not guaranteed
     // to be different.
+    
+    // Regression test for b/18549190: if a map is a subset of the other map,
+    // equals() should return false.
+    b2.getMutableInt32ToInt32Field().remove(1);
+    m2 = b2.build();
+    assertFalse(m1.equals(m2));
+    assertFalse(m2.equals(m1));
   }
   
   

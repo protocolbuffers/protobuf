@@ -16,7 +16,7 @@
 # 5) Cleans up after itself.
 
 if [ "$1" == "" ]; then
-  echo "USAGE:  $1 DISTFILE" >&2
+  echo "USAGE:  $0 DISTFILE" >&2
   exit 1
 fi
 
@@ -27,7 +27,9 @@ fi
 
 set -ex
 
+LANGUAGES="cpp java python"
 BASENAME=`basename $1 .tar.gz`
+VERSION=${BASENAME:9}
 
 # Create a directory called "dist", copy the tarball there and unpack it.
 mkdir dist
@@ -44,17 +46,23 @@ cd $BASENAME/vsprojects
 ./convert2008to2005.sh
 cd ..
 
-# Build the dist again in .tar.gz and .tar.bz2 formats.
-./configure
-make dist-gzip
-make dist-bzip2
+for LANG in $LANGUAGES; do
+  # Build the dist again in .tar.gz
+  ./configure DIST_LANG=$LANG
+  make dist-gzip
+  mv $BASENAME.tar.gz ../protobuf-$LANG-$VERSION.tar.gz
+done
 
 # Convert all text files to use DOS-style line endings, then build a .zip
 # distribution.
 todos *.txt */*.txt
-make dist-zip
 
-# Clean up.
-mv $BASENAME.tar.gz $BASENAME.tar.bz2 $BASENAME.zip ..
+for LANG in $LANGUAGES; do
+  # Build the dist again in .zip
+  ./configure DIST_LANG=$LANG
+  make dist-zip
+  mv $BASENAME.zip ../protobuf-$LANG-$VERSION.zip
+done
+
 cd ..
 rm -rf $BASENAME

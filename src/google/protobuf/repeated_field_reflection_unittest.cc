@@ -196,8 +196,7 @@ void TestRepeatedFieldRefIterator(
   int index = 0;
   for (typename Ref::const_iterator it = handle.begin();
        it != handle.end(); ++it) {
-    ValueType value = static_cast<ValueType>(*it);
-    EXPECT_EQ((message.*GetFunc)(index), value);
+    EXPECT_EQ((message.*GetFunc)(index), *it);
     ++index;
   }
   EXPECT_EQ(handle.size(), index);
@@ -410,6 +409,7 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForRegularFields) {
   EXPECT_TRUE(rf_message.empty());
   EXPECT_TRUE(mrf_message.empty());
 
+#ifdef PROTOBUF_HAS_DEATH_TEST
   // Make sure types are checked correctly at runtime.
   const FieldDescriptor* fd_optional_int32 =
       desc->FindFieldByName("optional_int32");
@@ -419,6 +419,7 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForRegularFields) {
       message, fd_repeated_int32), "");
   EXPECT_DEATH(refl->GetRepeatedFieldRef<TestAllTypes>(
       message, fd_repeated_foreign_message), "");
+#endif  // PROTOBUF_HAS_DEATH_TEST
 }
 
 TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForEnums) {

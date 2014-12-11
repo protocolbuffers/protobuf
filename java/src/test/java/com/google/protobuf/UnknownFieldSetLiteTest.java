@@ -38,7 +38,6 @@ import junit.framework.TestCase;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Tests for {@link UnknownFieldSetLite}.
@@ -228,9 +227,9 @@ public class UnknownFieldSetLiteTest extends TestCase {
     assertEquals(foo, copyOfCopy);
   }
 
-  public void testMalformedBytes() {
+  public void testMalformedBytes() throws Exception {
     try {
-      Foo.parseFrom("this is a malformed protocol buffer".getBytes(StandardCharsets.UTF_8));
+      Foo.parseFrom("this is a malformed protocol buffer".getBytes("UTF-8"));
       fail();
     } catch (InvalidProtocolBufferException e) {
       // Expected.

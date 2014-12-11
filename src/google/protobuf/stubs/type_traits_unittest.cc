@@ -610,7 +610,7 @@ TEST(TypeTraitsTest, TestIsSame) {
 }
 
 TEST(TypeTraitsTest, TestConvertible) {
-#if !defined(_MSC_VER) && !(defined(__GNUC__) && __GNUC__ <= 3)
+#if !(defined(__GNUC__) && __GNUC__ <= 3)
   EXPECT_TRUE((is_convertible<int, int>::value));
   EXPECT_TRUE((is_convertible<int, long>::value));
   EXPECT_TRUE((is_convertible<long, int>::value));

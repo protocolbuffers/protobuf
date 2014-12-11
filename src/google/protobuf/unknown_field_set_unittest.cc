@@ -485,7 +485,7 @@ TEST_F(UnknownFieldSetTest, UnknownEnumValue) {
 TEST_F(UnknownFieldSetTest, SpaceUsedExcludingSelf) {
   UnknownFieldSet empty;
   empty.AddVarint(1, 0);
-  EXPECT_EQ(/* vector<UnknownField> */ 24 + /* sizeof(UnknownField) */ 16,
+  EXPECT_EQ(sizeof(vector<UnknownField>) + sizeof(UnknownField),
             empty.SpaceUsedExcludingSelf());
 }
 

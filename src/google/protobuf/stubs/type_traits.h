@@ -103,7 +103,7 @@ template <class T> struct remove_reference;
 template <class T> struct add_reference;
 template <class T> struct remove_pointer;
 template <class T, class U> struct is_same;
-#if !defined(_MSC_VER) && !(defined(__GNUC__) && __GNUC__ <= 3)
+#if !(defined(__GNUC__) && __GNUC__ <= 3)
 template <class From, class To> struct is_convertible;
 #endif
 
@@ -322,7 +322,7 @@ template<typename T, typename U> struct is_same : public false_type { };
 template<typename T> struct is_same<T, T> : public true_type { };
 
 // Specified by TR1 [4.6] Relationships between types
-#if !defined(_MSC_VER) && !(defined(__GNUC__) && __GNUC__ <= 3)
+#if !(defined(__GNUC__) && __GNUC__ <= 3)
 namespace type_traits_internal {
 
 // This class is an implementation detail for is_convertible, and you
@@ -339,6 +339,9 @@ struct ConvertHelper {
   static small_ Test(To);
   static big_ Test(...);
   static From Create();
+  enum {
+    value = sizeof(Test(Create())) == sizeof(small_)
+  };
 };
 }  // namespace type_traits_internal
 
@@ -346,9 +349,7 @@ struct ConvertHelper {
 template <typename From, typename To>
 struct is_convertible
     : integral_constant<bool,
-                        sizeof(type_traits_internal::ConvertHelper<From, To>::Test(
-                                  type_traits_internal::ConvertHelper<From, To>::Create()))
-                        == sizeof(small_)> {
+                        type_traits_internal::ConvertHelper<From, To>::value> {
 };
 #endif
 
