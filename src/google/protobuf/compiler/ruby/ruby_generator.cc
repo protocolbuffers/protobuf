@@ -261,7 +261,7 @@ void GenerateFile(const google::protobuf::FileDescriptor* file,
     "filename", file->name());
 
   printer->Print(
-    "require 'protobuf'\n\n");
+    "require 'google/protobuf'\n\n");
 
   for (int i = 0; i < file->dependency_count(); i++) {
     const std::string& name = file->dependency(i)->name();

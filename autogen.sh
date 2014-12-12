@@ -39,9 +39,5 @@ sed -i -e 's/RuntimeLibrary="5"/RuntimeLibrary="3"/g;
 # TODO(kenton):  Remove the ",no-obsolete" part and fix the resulting warnings.
 autoreconf -f -i -Wall,no-obsolete
 
-# pull down git submodules.
-git submodule init
-git submodule update
-
 rm -rf autom4te.cache config.h.in~
 exit 0

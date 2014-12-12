@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 
-require 'protobuf'
+require 'google/protobuf'
 require 'test/unit'
 
 # ------------- generated code --------------
