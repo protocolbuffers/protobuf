@@ -23,6 +23,7 @@
 #define UPB_HANDLERS_H
 
 #include "upb/def.h"
+#include "upb/table.int.h"
 
 #ifdef __cplusplus
 namespace upb {

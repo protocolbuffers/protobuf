@@ -109,7 +109,7 @@ static bool reserve(upb_pb_encoder *e, size_t bytes) {
 
 // Call when "bytes" bytes have been writte at e->ptr.  The caller *must* have
 // previously called reserve() with at least this many bytes.
-static void advance(upb_pb_encoder *e, size_t bytes) {
+static void encoder_advance(upb_pb_encoder *e, size_t bytes) {
   assert((e->limit - e->ptr) >= bytes);
   e->ptr += bytes;
 }
@@ -137,7 +137,7 @@ static bool encode_bytes(upb_pb_encoder *e, const void *data, size_t len) {
   }
 
   memcpy(e->ptr, data, len);
-  advance(e, len);
+  encoder_advance(e, len);
   return true;
 }
 
@@ -274,7 +274,7 @@ static bool encode_varint(upb_pb_encoder *e, uint64_t val) {
     return false;
   }
 
-  advance(e, upb_vencode64(val, e->ptr));
+  encoder_advance(e, upb_vencode64(val, e->ptr));
   return true;
 }
 

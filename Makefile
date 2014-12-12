@@ -15,7 +15,7 @@
 # Threading:
 # * -DUPB_THREAD_UNSAFE: remove all thread-safety.
 
-.PHONY: all lib clean tests test benchmark descriptorgen
+.PHONY: all lib clean tests test benchmark descriptorgen amalgamate
 .PHONY: clean_leave_profile
 
 # Prevents the deletion of intermediate files.
@@ -462,3 +462,13 @@ $(RUBYEXT): upb/bindings/ruby/upb.c upb/bindings/ruby/Makefile
 
 rubytest: $(RUBYEXT) upb/descriptor/descriptor.pb
 	RUBYLIB="upb/bindings/ruby" ruby tests/bindings/ruby/upb.rb
+
+# Amalgamated source (upb.c/upb.h) ############################################
+
+AMALGAMATE_SRCS=$(upb_SRCS) $(upb_descriptor_SRCS) $(upb_pb_SRCS) $(upb_json_SRCS)
+
+amalgamate: upb.c upb.h
+
+upb.c upb.h: $(AMALGAMATE_SRCS)
+	$(E) AMALGAMATE $@
+	$(Q) ./tools/amalgamate.py "" "" $^

@@ -402,7 +402,7 @@ static double as_double(uint64_t n) { double d; memcpy(&d, &n, 8); return d; }
 static float  as_float(uint32_t n)  { float  f; memcpy(&f, &n, 4); return f; }
 
 // Pushes a frame onto the decoder stack.
-static bool push(upb_pbdecoder *d, uint64_t end) {
+static bool decoder_push(upb_pbdecoder *d, uint64_t end) {
   upb_pbdecoder_frame *fr = d->top;
 
   if (end > fr->end_ofs) {
@@ -426,14 +426,14 @@ static bool pushtagdelim(upb_pbdecoder *d, uint32_t arg) {
   // field number) prior to hitting any enclosing submessage end, pushing our
   // existing delim end prevents us from continuing to parse values from a
   // corrupt proto that doesn't give us an END tag in time.
-  if (!push(d, d->top->end_ofs))
+  if (!decoder_push(d, d->top->end_ofs))
     return false;
   d->top->groupnum = arg;
   return true;
 }
 
 // Pops a frame from the decoder stack.
-static void pop(upb_pbdecoder *d) { d->top--; }
+static void decoder_pop(upb_pbdecoder *d) { d->top--; }
 
 NOINLINE int32_t upb_pbdecoder_checktag_slow(upb_pbdecoder *d,
                                              uint64_t expected) {
@@ -493,7 +493,7 @@ have_tag:
         break;
       case UPB_WIRE_TYPE_END_GROUP:
         if (fieldnum == -d->top->groupnum) {
-          pop(d);
+          decoder_pop(d);
         } else if (fieldnum == d->top->groupnum) {
           return DECODE_ENDGROUP;
         } else {
@@ -730,12 +730,12 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
       )
       VMCASE(OP_POP,
         assert(d->top > d->stack);
-        pop(d);
+        decoder_pop(d);
       )
       VMCASE(OP_PUSHLENDELIM,
         uint32_t len;
         CHECK_RETURN(decode_v32(d, &len));
-        CHECK_SUSPEND(push(d, offset(d) + len));
+        CHECK_SUSPEND(decoder_push(d, offset(d) + len));
         set_delim_end(d);
       )
       VMCASE(OP_SETDELIM,

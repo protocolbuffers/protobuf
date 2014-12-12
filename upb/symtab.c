@@ -43,9 +43,9 @@ static void upb_symtab_free(upb_refcounted *r) {
   free(s);
 }
 
-static const struct upb_refcounted_vtbl vtbl = {NULL, &upb_symtab_free};
 
 upb_symtab *upb_symtab_new(const void *owner) {
+  static const struct upb_refcounted_vtbl vtbl = {NULL, &upb_symtab_free};
   upb_symtab *s = malloc(sizeof(*s));
   upb_refcounted_init(UPB_UPCAST(s), &vtbl, owner);
   upb_strtable_init(&s->symtab, UPB_CTYPE_PTR);
