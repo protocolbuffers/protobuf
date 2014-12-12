@@ -613,8 +613,7 @@ GenerateSwappingCode(io::Printer* printer) const {
 void StringOneofFieldGenerator::
 GenerateConstructorCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "  const_cast< ::google::protobuf::internal::ArenaStringPtr*>("
-    "&$classname$_default_oneof_instance_->$name$_)->UnsafeSetDefault("
+    "  $classname$_default_oneof_instance_->$name$_.UnsafeSetDefault("
     "$default_variable$);\n");
 }
 

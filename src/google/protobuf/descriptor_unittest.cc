@@ -5883,8 +5883,8 @@ class AbortingErrorCollector : public DescriptorPool::ErrorCollector {
       const Message *message,
       ErrorLocation location,
       const string &error_message) {
-    GOOGLE_LOG(FATAL) << "AddError() called unexpectedly: " << filename << ": "
-               << error_message;
+    GOOGLE_LOG(FATAL) << "AddError() called unexpectedly: " << filename << " ["
+               << element_name << "]: " << error_message;
   }
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(AbortingErrorCollector);

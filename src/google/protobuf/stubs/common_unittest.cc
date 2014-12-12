@@ -95,9 +95,9 @@ TEST(LoggingTest, DefaultLogging) {
 
   string text = GetCapturedTestStderr();
   EXPECT_EQ(
-    "[libprotobuf INFO "__FILE__":" + SimpleItoa(line + 1) + "] A message.\n"
-    "[libprotobuf WARNING "__FILE__":" + SimpleItoa(line + 2) + "] A warning.\n"
-    "[libprotobuf ERROR "__FILE__":" + SimpleItoa(line + 3) + "] An error.\n",
+    "[libprotobuf INFO " __FILE__ ":" + SimpleItoa(line + 1) + "] A message.\n"
+    "[libprotobuf WARNING " __FILE__ ":" + SimpleItoa(line + 2) + "] A warning.\n"
+    "[libprotobuf ERROR " __FILE__ ":" + SimpleItoa(line + 3) + "] An error.\n",
     text);
 }
 
@@ -128,10 +128,10 @@ TEST(LoggingTest, CaptureLogging) {
 
   ASSERT_EQ(2, captured_messages_.size());
   EXPECT_EQ(
-    "2 "__FILE__":" + SimpleItoa(start_line + 1) + ": An error.",
+    "2 " __FILE__ ":" + SimpleItoa(start_line + 1) + ": An error.",
     captured_messages_[0]);
   EXPECT_EQ(
-    "1 "__FILE__":" + SimpleItoa(start_line + 2) + ": A warning.",
+    "1 " __FILE__ ":" + SimpleItoa(start_line + 2) + ": A warning.",
     captured_messages_[1]);
 }
 
@@ -154,10 +154,10 @@ TEST(LoggingTest, SilenceLogging) {
 
   ASSERT_EQ(2, captured_messages_.size());
   EXPECT_EQ(
-    "0 "__FILE__":" + SimpleItoa(line1) + ": Visible1",
+    "0 " __FILE__ ":" + SimpleItoa(line1) + ": Visible1",
     captured_messages_[0]);
   EXPECT_EQ(
-    "0 "__FILE__":" + SimpleItoa(line2) + ": Visible2",
+    "0 " __FILE__ ":" + SimpleItoa(line2) + ": Visible2",
     captured_messages_[1]);
 }
 
