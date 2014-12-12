@@ -421,7 +421,7 @@ static size_t repeated_bytes(void *closure, const void *handler_data,
   return len;
 }
 
-void sethandlers(const void *closure, upb_handlers *h) {
+void printer_sethandlers(const void *closure, upb_handlers *h) {
   UPB_UNUSED(closure);
 
   upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
@@ -541,5 +541,5 @@ upb_sink *upb_json_printer_input(upb_json_printer *p) {
 
 const upb_handlers *upb_json_printer_newhandlers(const upb_msgdef *md,
                                                  const void *owner) {
-  return upb_handlers_newfrozen(md, owner, sethandlers, NULL);
+  return upb_handlers_newfrozen(md, owner, printer_sethandlers, NULL);
 }

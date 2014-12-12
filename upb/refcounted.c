@@ -399,7 +399,7 @@ static upb_refcounted *pop(tarjan *t) {
   return r;
 }
 
-static void newgroup(tarjan *t) {
+static void tarjan_newgroup(tarjan *t) {
   uint32_t *group = malloc(sizeof(*group));
   if (!group) oom(t);
   // Push group and empty group leader (we'll fill in leader later).
@@ -493,7 +493,7 @@ static void do_tarjan(const upb_refcounted *obj, tarjan *t) {
   push(t, obj);
   visit(obj, tarjan_visit, t);
   if (lowlink(t, obj) == idx(t, obj)) {
-    newgroup(t);
+    tarjan_newgroup(t);
     while (pop(t) != obj)
       ;
   }

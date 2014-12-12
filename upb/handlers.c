@@ -120,7 +120,7 @@ static int32_t trygetsel(upb_handlers *h, const upb_fielddef *f,
   return sel;
 }
 
-static upb_selector_t getsel(upb_handlers *h, const upb_fielddef *f,
+static upb_selector_t handlers_getsel(upb_handlers *h, const upb_fielddef *f,
                              upb_handlertype_t type) {
   int32_t sel = trygetsel(h, f, type);
   assert(sel >= 0);
@@ -129,7 +129,7 @@ static upb_selector_t getsel(upb_handlers *h, const upb_fielddef *f,
 
 static const void **returntype(upb_handlers *h, const upb_fielddef *f,
                                upb_handlertype_t type) {
-  return &h->table[getsel(h, f, type)].attr.return_closure_type_;
+  return &h->table[handlers_getsel(h, f, type)].attr.return_closure_type_;
 }
 
 static bool doset(upb_handlers *h, int32_t sel, const upb_fielddef *f,
@@ -213,18 +213,18 @@ const void *effective_closure_type(upb_handlers *h, const upb_fielddef *f,
   if (upb_fielddef_isseq(f) &&
       type != UPB_HANDLER_STARTSEQ &&
       type != UPB_HANDLER_ENDSEQ &&
-      h->table[sel = getsel(h, f, UPB_HANDLER_STARTSEQ)].func) {
+      h->table[sel = handlers_getsel(h, f, UPB_HANDLER_STARTSEQ)].func) {
     ret = upb_handlerattr_returnclosuretype(&h->table[sel].attr);
   }
 
   if (type == UPB_HANDLER_STRING &&
-      h->table[sel = getsel(h, f, UPB_HANDLER_STARTSTR)].func) {
+      h->table[sel = handlers_getsel(h, f, UPB_HANDLER_STARTSTR)].func) {
     ret = upb_handlerattr_returnclosuretype(&h->table[sel].attr);
   }
 
   // The effective type of the submessage; not used yet.
   // if (type == SUBMESSAGE &&
-  //     h->table[sel = getsel(h, f, UPB_HANDLER_STARTSUBMSG)].func) {
+  //     h->table[sel = handlers_getsel(h, f, UPB_HANDLER_STARTSUBMSG)].func) {
   //   ret = upb_handlerattr_returnclosuretype(&h->table[sel].attr);
   // }
 
@@ -237,7 +237,7 @@ const void *effective_closure_type(upb_handlers *h, const upb_fielddef *f,
 // the return closure type of this handler's attr.
 bool checkstart(upb_handlers *h, const upb_fielddef *f, upb_handlertype_t type,
                 upb_status *status) {
-  upb_selector_t sel = getsel(h, f, type);
+  upb_selector_t sel = handlers_getsel(h, f, type);
   if (h->table[sel].func) return true;
   const void *closure_type = effective_closure_type(h, f, type);
   const upb_handlerattr *attr = &h->table[sel].attr;
@@ -444,14 +444,18 @@ bool upb_handlers_freeze(upb_handlers *const*handlers, int n, upb_status *s) {
 
       if (upb_fielddef_issubmsg(f)) {
         bool hashandler = false;
-        if (upb_handlers_gethandler(h, getsel(h, f, UPB_HANDLER_STARTSUBMSG)) ||
-            upb_handlers_gethandler(h, getsel(h, f, UPB_HANDLER_ENDSUBMSG))) {
+        if (upb_handlers_gethandler(
+                h, handlers_getsel(h, f, UPB_HANDLER_STARTSUBMSG)) ||
+            upb_handlers_gethandler(
+                h, handlers_getsel(h, f, UPB_HANDLER_ENDSUBMSG))) {
           hashandler = true;
         }
 
         if (upb_fielddef_isseq(f) &&
-            (upb_handlers_gethandler(h, getsel(h, f, UPB_HANDLER_STARTSEQ)) ||
-             upb_handlers_gethandler(h, getsel(h, f, UPB_HANDLER_ENDSEQ)))) {
+            (upb_handlers_gethandler(
+                 h, handlers_getsel(h, f, UPB_HANDLER_STARTSEQ)) ||
+             upb_handlers_gethandler(
+                 h, handlers_getsel(h, f, UPB_HANDLER_ENDSEQ)))) {
           hashandler = true;
         }
 

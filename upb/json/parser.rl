@@ -31,7 +31,7 @@
 
 #include "upb/json/parser.h"
 
-#define CHECK_RETURN(x) if (!(x)) return false
+#define PARSER_CHECK_RETURN(x) if (!(x)) return false
 
 static upb_selector_t getsel_for_handlertype(upb_json_parser *p,
                                              upb_handlertype_t type) {
@@ -41,7 +41,7 @@ static upb_selector_t getsel_for_handlertype(upb_json_parser *p,
   return sel;
 }
 
-static upb_selector_t getsel(upb_json_parser *p) {
+static upb_selector_t parser_getsel(upb_json_parser *p) {
   return getsel_for_handlertype(
       p, upb_handlers_getprimitivehandlertype(p->top->f));
 }
@@ -151,7 +151,7 @@ static void end_array(upb_json_parser *p) {
 
 static void clear_member(upb_json_parser *p) { p->top->f = NULL; }
 
-static bool putbool(upb_json_parser *p, bool val) {
+static bool parser_putbool(upb_json_parser *p, bool val) {
   if (upb_fielddef_type(p->top->f) != UPB_TYPE_BOOL) {
     upb_status_seterrf(p->status,
                        "Boolean value specified for non-bool field: %s",
@@ -159,7 +159,7 @@ static bool putbool(upb_json_parser *p, bool val) {
     return false;
   }
 
-  bool ok = upb_sink_putbool(&p->top->sink, getsel(p), val);
+  bool ok = upb_sink_putbool(&p->top->sink, parser_getsel(p), val);
   UPB_ASSERT_VAR(ok, ok);
   return true;
 }
@@ -295,7 +295,8 @@ static bool end_text(upb_json_parser *p, const char *ptr, bool is_num) {
     // This is a string field (as opposed to a member name).
     upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_STRING);
     if (upb_fielddef_type(p->top->f) == UPB_TYPE_BYTES) {
-      CHECK_RETURN(base64_push(p, sel, p->accumulated, p->accumulated_len));
+      PARSER_CHECK_RETURN(base64_push(p, sel, p->accumulated,
+                                      p->accumulated_len));
     } else {
       upb_sink_putstring(&p->top->sink, sel, p->accumulated, p->accumulated_len, NULL);
     }
@@ -311,7 +312,7 @@ static bool end_text(upb_json_parser *p, const char *ptr, bool is_num) {
     int32_t int_val = 0;
     if (upb_enumdef_ntoi(enumdef, p->accumulated, p->accumulated_len,
                          &int_val)) {
-      upb_selector_t sel = getsel(p);
+      upb_selector_t sel = parser_getsel(p);
       upb_sink_putint32(&p->top->sink, sel, int_val);
     } else {
       upb_status_seterrmsg(p->status, "Enum value name unknown");
@@ -377,7 +378,7 @@ static void end_number(upb_json_parser *p, const char *ptr) {
       if (val > INT32_MAX || val < INT32_MIN || errno == ERANGE || end != myend)
         assert(false);
       else
-        upb_sink_putint32(&p->top->sink, getsel(p), val);
+        upb_sink_putint32(&p->top->sink, parser_getsel(p), val);
       break;
     }
     case UPB_TYPE_INT64: {
@@ -385,7 +386,7 @@ static void end_number(upb_json_parser *p, const char *ptr) {
       if (val > INT64_MAX || val < INT64_MIN || errno == ERANGE || end != myend)
         assert(false);
       else
-        upb_sink_putint64(&p->top->sink, getsel(p), val);
+        upb_sink_putint64(&p->top->sink, parser_getsel(p), val);
       break;
     }
     case UPB_TYPE_UINT32: {
@@ -393,7 +394,7 @@ static void end_number(upb_json_parser *p, const char *ptr) {
       if (val > UINT32_MAX || errno == ERANGE || end != myend)
         assert(false);
       else
-        upb_sink_putuint32(&p->top->sink, getsel(p), val);
+        upb_sink_putuint32(&p->top->sink, parser_getsel(p), val);
       break;
     }
     case UPB_TYPE_UINT64: {
@@ -401,7 +402,7 @@ static void end_number(upb_json_parser *p, const char *ptr) {
       if (val > UINT64_MAX || errno == ERANGE || end != myend)
         assert(false);
       else
-        upb_sink_putuint64(&p->top->sink, getsel(p), val);
+        upb_sink_putuint64(&p->top->sink, parser_getsel(p), val);
       break;
     }
     case UPB_TYPE_DOUBLE: {
@@ -409,7 +410,7 @@ static void end_number(upb_json_parser *p, const char *ptr) {
       if (errno == ERANGE || end != myend)
         assert(false);
       else
-        upb_sink_putdouble(&p->top->sink, getsel(p), val);
+        upb_sink_putdouble(&p->top->sink, parser_getsel(p), val);
       break;
     }
     case UPB_TYPE_FLOAT: {
@@ -417,7 +418,7 @@ static void end_number(upb_json_parser *p, const char *ptr) {
       if (errno == ERANGE || end != myend)
         assert(false);
       else
-        upb_sink_putfloat(&p->top->sink, getsel(p), val);
+        upb_sink_putfloat(&p->top->sink, parser_getsel(p), val);
       break;
     }
     default:
@@ -577,9 +578,9 @@ static void hex(upb_json_parser *p, const char *end) {
       >{ CHECK_RETURN_TOP(start_stringval(parser)); }
       %{ end_stringval(parser); }
     | "true"
-      %{ CHECK_RETURN_TOP(putbool(parser, true)); }
+      %{ CHECK_RETURN_TOP(parser_putbool(parser, true)); }
     | "false"
-      %{ CHECK_RETURN_TOP(putbool(parser, false)); }
+      %{ CHECK_RETURN_TOP(parser_putbool(parser, false)); }
     | "null"
       %{ /* null value */ }
     | object

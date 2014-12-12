@@ -110,7 +110,7 @@ bool putf(upb_textprinter *p, const char *fmt, ...) {
 
 /* handlers *******************************************************************/
 
-static bool startmsg(void *c, const void *hd) {
+static bool textprinter_startmsg(void *c, const void *hd) {
   UPB_UNUSED(hd);
   upb_textprinter *p = c;
   if (p->indent_depth_ == 0) {
@@ -119,7 +119,7 @@ static bool startmsg(void *c, const void *hd) {
   return true;
 }
 
-static bool endmsg(void *c, const void *hd, upb_status *s) {
+static bool textprinter_endmsg(void *c, const void *hd, upb_status *s) {
   UPB_UNUSED(hd);
   UPB_UNUSED(s);
   upb_textprinter *p = c;
@@ -130,7 +130,8 @@ static bool endmsg(void *c, const void *hd, upb_status *s) {
 }
 
 #define TYPE(name, ctype, fmt) \
-  static bool put ## name(void *closure, const void *handler_data, ctype val) {\
+  static bool textprinter_put ## name(void *closure, const void *handler_data, \
+                                      ctype val) {                             \
     upb_textprinter *p = closure;                                              \
     const upb_fielddef *f = handler_data;                                      \
     CHECK(indent(p));                                                          \
@@ -141,7 +142,8 @@ static bool endmsg(void *c, const void *hd, upb_status *s) {
     return false;                                                              \
 }
 
-static bool putbool(void *closure, const void *handler_data, bool val) {
+static bool textprinter_putbool(void *closure, const void *handler_data,
+                                bool val) {
   upb_textprinter *p = closure;
   const upb_fielddef *f = handler_data;
   CHECK(indent(p));
@@ -162,8 +164,11 @@ TYPE(uint64, uint64_t, "%" PRIu64)
 TYPE(float,  float,    "%." STRINGIFY_MACROVAL(FLT_DIG) "g")
 TYPE(double, double,   "%." STRINGIFY_MACROVAL(DBL_DIG) "g")
 
+#undef TYPE
+
 // Output a symbolic value from the enum if found, else just print as int32.
-static bool putenum(void *closure, const void *handler_data, int32_t val) {
+static bool textprinter_putenum(void *closure, const void *handler_data,
+                                int32_t val) {
   upb_textprinter *p = closure;
   const upb_fielddef *f = handler_data;
   const upb_enumdef *enum_def = upb_downcast_enumdef(upb_fielddef_subdef(f));
@@ -173,13 +178,13 @@ static bool putenum(void *closure, const void *handler_data, int32_t val) {
     putf(p, "%s: %s", upb_fielddef_name(f), label);
     endfield(p);
   } else {
-    if (!putint32(closure, handler_data, val))
+    if (!textprinter_putint32(closure, handler_data, val))
       return false;
   }
   return true;
 }
 
-static void *startstr(void *closure, const void *handler_data,
+static void *textprinter_startstr(void *closure, const void *handler_data,
                       size_t size_hint) {
   const upb_fielddef *f = handler_data;
   UPB_UNUSED(size_hint);
@@ -189,7 +194,7 @@ static void *startstr(void *closure, const void *handler_data,
   return p;
 }
 
-static bool endstr(void *closure, const void *handler_data) {
+static bool textprinter_endstr(void *closure, const void *handler_data) {
   UPB_UNUSED(handler_data);
   upb_textprinter *p = closure;
   putf(p, "\"");
@@ -197,8 +202,8 @@ static bool endstr(void *closure, const void *handler_data) {
   return true;
 }
 
-static size_t putstr(void *closure, const void *hd, const char *buf,
-                     size_t len, const upb_bufhandle *handle) {
+static size_t textprinter_putstr(void *closure, const void *hd, const char *buf,
+                                 size_t len, const upb_bufhandle *handle) {
   UPB_UNUSED(handle);
   upb_textprinter *p = closure;
   const upb_fielddef *f = hd;
@@ -208,7 +213,7 @@ err:
   return 0;
 }
 
-static void *startsubmsg(void *closure, const void *handler_data) {
+static void *textprinter_startsubmsg(void *closure, const void *handler_data) {
   upb_textprinter *p = closure;
   const char *name = handler_data;
   CHECK(indent(p));
@@ -219,7 +224,7 @@ err:
   return UPB_BREAK;
 }
 
-static bool endsubmsg(void *closure, const void *handler_data) {
+static bool textprinter_endsubmsg(void *closure, const void *handler_data) {
   UPB_UNUSED(handler_data);
   upb_textprinter *p = closure;
   p->indent_depth_--;
@@ -253,8 +258,8 @@ static void onmreg(const void *c, upb_handlers *h) {
   UPB_UNUSED(c);
   const upb_msgdef *m = upb_handlers_msgdef(h);
 
-  upb_handlers_setstartmsg(h, startmsg, NULL);
-  upb_handlers_setendmsg(h, endmsg, NULL);
+  upb_handlers_setstartmsg(h, textprinter_startmsg, NULL);
+  upb_handlers_setendmsg(h, textprinter_endmsg, NULL);
 
   upb_msg_iter i;
   for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
@@ -263,31 +268,31 @@ static void onmreg(const void *c, upb_handlers *h) {
     upb_handlerattr_sethandlerdata(&attr, f);
     switch (upb_fielddef_type(f)) {
       case UPB_TYPE_INT32:
-        upb_handlers_setint32(h, f, putint32, &attr);
+        upb_handlers_setint32(h, f, textprinter_putint32, &attr);
         break;
       case UPB_TYPE_INT64:
-        upb_handlers_setint64(h, f, putint64, &attr);
+        upb_handlers_setint64(h, f, textprinter_putint64, &attr);
         break;
       case UPB_TYPE_UINT32:
-        upb_handlers_setuint32(h, f, putuint32, &attr);
+        upb_handlers_setuint32(h, f, textprinter_putuint32, &attr);
         break;
       case UPB_TYPE_UINT64:
-        upb_handlers_setuint64(h, f, putuint64, &attr);
+        upb_handlers_setuint64(h, f, textprinter_putuint64, &attr);
         break;
       case UPB_TYPE_FLOAT:
-        upb_handlers_setfloat(h, f, putfloat, &attr);
+        upb_handlers_setfloat(h, f, textprinter_putfloat, &attr);
         break;
       case UPB_TYPE_DOUBLE:
-        upb_handlers_setdouble(h, f, putdouble, &attr);
+        upb_handlers_setdouble(h, f, textprinter_putdouble, &attr);
         break;
       case UPB_TYPE_BOOL:
-        upb_handlers_setbool(h, f, putbool, &attr);
+        upb_handlers_setbool(h, f, textprinter_putbool, &attr);
         break;
       case UPB_TYPE_STRING:
       case UPB_TYPE_BYTES:
-        upb_handlers_setstartstr(h, f, startstr, &attr);
-        upb_handlers_setstring(h, f, putstr, &attr);
-        upb_handlers_setendstr(h, f, endstr, &attr);
+        upb_handlers_setstartstr(h, f, textprinter_startstr, &attr);
+        upb_handlers_setstring(h, f, textprinter_putstr, &attr);
+        upb_handlers_setendstr(h, f, textprinter_endstr, &attr);
         break;
       case UPB_TYPE_MESSAGE: {
         const char *name =
@@ -295,12 +300,12 @@ static void onmreg(const void *c, upb_handlers *h) {
                 ? shortname(upb_msgdef_fullname(upb_fielddef_msgsubdef(f)))
                 : upb_fielddef_name(f);
         upb_handlerattr_sethandlerdata(&attr, name);
-        upb_handlers_setstartsubmsg(h, f, startsubmsg, &attr);
-        upb_handlers_setendsubmsg(h, f, endsubmsg, &attr);
+        upb_handlers_setstartsubmsg(h, f, textprinter_startsubmsg, &attr);
+        upb_handlers_setendsubmsg(h, f, textprinter_endsubmsg, &attr);
         break;
       }
       case UPB_TYPE_ENUM:
-        upb_handlers_setint32(h, f, putenum, &attr);
+        upb_handlers_setint32(h, f, textprinter_putenum, &attr);
         break;
     }
   }
