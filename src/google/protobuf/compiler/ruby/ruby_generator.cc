@@ -297,6 +297,14 @@ bool Generator::Generate(
     const string& parameter,
     GeneratorContext* generator_context,
     string* error) const {
+
+  if (file->syntax() != FileDescriptor::SYNTAX_PROTO3) {
+    *error =
+        "Can only generate Ruby code for proto3 .proto files.\n"
+        "Please add 'syntax = \"proto3\";' to the top of your .proto file.\n";
+    return false;
+  }
+
   std::string filename =
       StripDotProto(file->name()) + ".rb";
   scoped_ptr<io::ZeroCopyOutputStream> output(generator_context->Open(filename));
