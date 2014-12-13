@@ -1,6 +1,8 @@
 Protocol Buffers - Google's data interchange format
 ===================================================
 
+[![Build Status](https://travis-ci.org/google/protobuf.svg?branch=master)](https://travis-ci.org/google/protobuf)
+
 Copyright 2008 Google Inc.
 
 https://developers.google.com/protocol-buffers/
