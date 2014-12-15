@@ -328,6 +328,20 @@ static void test_partial_freeze() {
   upb_msgdef_unref(m3, &m3);
 }
 
+static void test_descriptor_flags() {
+  upb_msgdef *m = upb_msgdef_new(&m);
+  ASSERT(upb_msgdef_mapentry(m) == false);
+  upb_status s = UPB_STATUS_INIT;
+  upb_msgdef_setfullname(m, "TestMessage", &s);
+  ASSERT(upb_ok(&s));
+  upb_msgdef_setmapentry(m, true);
+  ASSERT(upb_msgdef_mapentry(m) == true);
+  upb_msgdef *m2 = upb_msgdef_dup(m, &m2);
+  ASSERT(upb_msgdef_mapentry(m2) == true);
+  upb_msgdef_unref(m, &m);
+  upb_msgdef_unref(m2, &m2);
+}
+
 int run_tests(int argc, char *argv[]) {
   if (argc < 2) {
     fprintf(stderr, "Usage: test_def <test.proto.pb>\n");
@@ -343,5 +357,6 @@ int run_tests(int argc, char *argv[]) {
   test_freeze_free();
   test_partial_freeze();
   test_noreftracking();
+  test_descriptor_flags();
   return 0;
 }
