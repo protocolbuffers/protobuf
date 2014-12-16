@@ -1270,6 +1270,7 @@ upb_msgdef *upb_msgdef_new(const void *owner) {
   if (!upb_def_init(UPB_UPCAST(m), UPB_DEF_MSG, &vtbl, owner)) goto err2;
   if (!upb_inttable_init(&m->itof, UPB_CTYPE_PTR)) goto err2;
   if (!upb_strtable_init(&m->ntof, UPB_CTYPE_PTR)) goto err1;
+  m->map_entry = false;
   return m;
 
 err1:
@@ -1284,6 +1285,7 @@ upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner) {
   if (!newm) return NULL;
   bool ok = upb_def_setfullname(UPB_UPCAST(newm),
                                 upb_def_fullname(UPB_UPCAST(m)), NULL);
+  newm->map_entry = m->map_entry;
   UPB_ASSERT_VAR(ok, ok);
   upb_msg_iter i;
   for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
@@ -1385,6 +1387,15 @@ const upb_fielddef *upb_msgdef_ntof(const upb_msgdef *m, const char *name,
 
 int upb_msgdef_numfields(const upb_msgdef *m) {
   return upb_strtable_count(&m->ntof);
+}
+
+void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry) {
+  assert(!upb_msgdef_isfrozen(m));
+  m->map_entry = map_entry;
+}
+
+bool upb_msgdef_mapentry(const upb_msgdef *m) {
+  return m->map_entry;
 }
 
 void upb_msg_begin(upb_msg_iter *iter, const upb_msgdef *m) {

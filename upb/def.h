@@ -712,6 +712,10 @@ UPB_DEFINE_DEF(upb::MessageDef, msgdef, MSG, UPB_QUOTE(
   // just be moved into symtab.c?
   MessageDef* Dup(const void* owner) const;
 
+  // Is this message a map entry?
+  void setmapentry(bool map_entry);
+  bool mapentry() const;
+
   // Iteration over fields.  The order is undefined.
   class iterator : public std::iterator<std::forward_iterator_tag, FieldDef*> {
    public:
@@ -758,6 +762,11 @@ UPB_DEFINE_STRUCT(upb_msgdef, upb_def,
   upb_inttable itof;  // int to field
   upb_strtable ntof;  // name to field
 
+  // Is this a map-entry message?
+  // TODO: set this flag properly for static descriptors; regenerate
+  // descriptor.upb.c.
+  bool map_entry;
+
   // TODO(haberman): proper extension ranges (there can be multiple).
 ));
 
@@ -765,7 +774,7 @@ UPB_DEFINE_STRUCT(upb_msgdef, upb_def,
                         refs, ref2s)                                          \
   {                                                                           \
     UPB_DEF_INIT(name, UPB_DEF_MSG, refs, ref2s), selector_count,             \
-        submsg_field_count, itof, ntof                                        \
+        submsg_field_count, itof, ntof, false                                 \
   }
 
 UPB_BEGIN_EXTERN_C  // {
@@ -812,6 +821,9 @@ UPB_INLINE upb_fielddef *upb_msgdef_ntof_mutable(upb_msgdef *m,
                                                  const char *name, size_t len) {
   return (upb_fielddef *)upb_msgdef_ntof(m, name, len);
 }
+
+void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry);
+bool upb_msgdef_mapentry(const upb_msgdef *m);
 
 // upb_msg_iter i;
 // for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
@@ -1265,6 +1277,12 @@ inline const FieldDef *MessageDef::FindFieldByName(const char *name,
 }
 inline MessageDef* MessageDef::Dup(const void *owner) const {
   return upb_msgdef_dup(this, owner);
+}
+inline void MessageDef::setmapentry(bool map_entry) {
+  upb_msgdef_setmapentry(this, map_entry);
+}
+inline bool MessageDef::mapentry() const {
+  return upb_msgdef_mapentry(this);
 }
 inline MessageDef::iterator MessageDef::begin() { return iterator(this); }
 inline MessageDef::iterator MessageDef::end() { return iterator::end(this); }
