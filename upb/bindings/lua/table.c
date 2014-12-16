@@ -68,7 +68,7 @@ static void lupbtable_pushent(lua_State *L, const upb_tabent *e,
     if (inttab) {
       lua_pushnumber(L, e->key.num);
     } else {
-      lua_pushstring(L, e->key.str);
+      lua_pushlstring(L, e->key.s.str, e->key.s.length);
     }
     lua_setfield(L, -2, "key");
     lupbtable_pushval(L, e->val, ctype);
