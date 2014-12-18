@@ -33,6 +33,38 @@ C++ Installation - Unix
 If you get the source from github, you need to generate the configure script
 first:
 
+Protocol Buffers - Google's data interchange format
+===================================================
+
+Copyright 2008 Google Inc.
+
+https://developers.google.com/protocol-buffers/
+
+C++ Installation - Unix
+-----------------------
+
+If you get the source from github, you need to generate the configure script
+first:
+
+    $ ./autogen.sh
+
+This will download gtest source (which is used for C++ Protocol Buffer
+unit-tests) to the current directory and run automake, autoconf, etc.
+to generate the configure script and various template makefiles.
+
+
+Protocol Buffers - Google's data interchange format
+===================================================
+
+Copyright 2008 Google Inc.
+
+https://developers.google.com/protocol-buffers/
+
+C++ Installation - Unix
+-----------------------
+
+If you get the source from github, you need to generate the configure script
+first:
 
 
 
