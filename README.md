@@ -1,3 +1,149 @@
+
+
+Protocol Buffers - Google's data interchange format
+===================================================
+
+Copyright 2008 Google Inc.
+
+https://developers.google.com/protocol-buffers/
+
+C++ Installation - Unix
+-----------------------
+
+If you get the source from github, you need to generate the configure script
+first:
+
+    $ ./autogen.sh
+
+This will download gtest source (which is used for C++ Protocol Buffer
+unit-tests) to the current directory and run automake, autoconf, etc.
+to generate the configure script and various template makefiles.
+
+
+Protocol Buffers - Google's data interchange format
+===================================================
+
+Copyright 2008 Google Inc.
+
+https://developers.google.com/protocol-buffers/
+
+C++ Installation - Unix
+-----------------------
+
+If you get the source from github, you need to generate the configure script
+first:
+
+Protocol Buffers - Google's data interchange format
+===================================================
+
+Copyright 2008 Google Inc.
+
+https://developers.google.com/protocol-buffers/
+
+C++ Installation - Unix
+-----------------------
+
+If you get the source from github, you need to generate the configure script
+first:
+
+    $ ./autogen.sh
+
+This will download gtest source (which is used for C++ Protocol Buffer
+unit-tests) to the current directory and run automake, autoconf, etc.
+to generate the configure script and various template makefiles.
+
+
+Protocol Buffers - Google's data interchange format
+===================================================
+
+Copyright 2008 Google Inc.
+
+https://developers.google.com/protocol-buffers/
+
+C++ Installation - Unix
+-----------------------
+
+If you get the source from github, you need to generate the configure script
+first:
+
+
+
+Protocol Buffers - Google's data interchange format
+===================================================
+
+Copyright 2008 Google Inc.
+
+https://developers.google.com/protocol-buffers/
+
+C++ Installation - Unix
+-----------------------
+
+If you get the source from github, you need to generate the configure script
+first:
+
+    $ ./autogen.sh
+
+This will download gtest source (which is used for C++ Protocol Buffer
+unit-tests) to the current directory and run automake, autoconf, etc.
+to generate the configure script and various template makefiles.
+
+
+Protocol Buffers - Google's data interchange format
+===================================================
+
+Copyright 2008 Google Inc.
+
+https://developers.google.com/protocol-buffers/
+
+C++ Installation - Unix
+-----------------------
+
+If you get the source from github, you need to generate the configure script
+first:
+
+
+Protocol Buffers - Google's data interchange format
+===================================================
+
+Copyright 2008 Google Inc.
+
+https://developers.google.com/protocol-buffers/
+
+C++ Installation - Unix
+-----------------------
+
+If you get the source from github, you need to generate the configure script
+first:
+
+    $ ./autogen.sh
+
+This will download gtest source (which is used for C++ Protocol Buffer
+unit-tests) to the current directory and run automake, autoconf, etc.
+to generate the configure script and various template makefiles.
+
+
+Protocol Buffers - Google's data interchange format
+===================================================
+
+Copyright 2008 Google Inc.
+
+https://developers.google.com/protocol-buffers/
+
+C++ Installation - Unix
+-----------------------
+
+If you get the source from github, you need to generate the configure script
+first:
+
+    $ ./autogen.sh
+
+This will download gtest source (which is used for C++ Protocol Buffer
+unit-tests) to the current directory and run automake, autoconf, etc.
+to generate the configure script and various template makefiles.
+
+
+
+
 Protocol Buffers - Google's data interchange format
 ===================================================
 
@@ -44,7 +190,43 @@ For advanced usage information on configure and make, see INSTALL.txt.
   on many platforms, /usr/local/lib is not part of LD_LIBRARY_PATH.
   You can add it, but it may be easier to just install to /usr
   instead.  To do this, invoke configure as follows:
+Protocol Buffers - Google's data interchange format
+===================================================
 
+Copyright 2008 Google Inc.
+
+https://developers.google.com/protocol-buffers/
+
+C++ Installation - Unix
+-----------------------
+
+If you get the source from github, you need to generate the configure script
+first:
+
+    $ ./autogen.sh
+
+This will download gtest source (which is used for C++ Protocol Buffer
+unit-tests) to the current directory and run automake, autoconf, etc.
+to generate the configure script and various template makefiles.
+
+You can skip this step if you are using a release package (which already
+contains gtest and the configure script).
+
+To build and install the C++ Protocol Buffer runtime and the Protocol
+Buffer compiler (protoc) execute the following:
+
+    $ ./configure
+    $ make
+    $ make check
+    $ make install
+
+If "make check" fails, you can still install, but it is likely that
+some features of this library will not work correctly on your system.
+Proceed at your own risk.
+
+"make install" may require superuser privileges.
+
+For advanced usage information on configure and make, see INSTALL.txt.
     ./configure --prefix=/usr
 
   If you already built the package with a different prefix, make sure
