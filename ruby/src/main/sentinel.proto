@@ -1,0 +1,15 @@
+syntax = "proto3";
+package com.google.protobuf.jruby;
+option optimize_for = CODE_SIZE;
+
+message Sentinel {
+  optional int32 default_int32 = 1;
+  optional int64 default_int64 = 2;
+  optional uint32 default_unit32 = 3;
+  optional uint64 default_uint64 = 4;
+  optional string default_string = 5;
+  optional bool default_bool = 6;
+  optional float default_float = 7;
+  optional double default_double = 8;
+  optional bytes default_bytes = 9;
+}
