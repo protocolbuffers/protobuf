@@ -71,3 +71,6 @@ vsprojects-2013/libprotobuf-universal/libprotobuf-universal.WindowsPhone/ARM/
 vsprojects-2013/libprotobuf-universal/libprotobuf-universal.Windows/ARM/
 vsprojects-2013/libprotobuf-universal/libprotobuf-universal.Windows/x64/
 vsprojects-2013/Release/
+vsprojects-2013/lite-test-universal/lite-test-universal.WindowsPhone/Generated Files/
+vsprojects-2013/lite-test-universal/lite-test-universal.Windows/Generated Files/
+*.ipch

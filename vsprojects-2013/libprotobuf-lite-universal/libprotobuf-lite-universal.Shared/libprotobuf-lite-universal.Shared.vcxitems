@@ -23,7 +23,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\generated_message_util.cc" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\io\coded_stream.cc" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\io\zero_copy_stream.cc" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\io\zero_copy_stream_impl.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\io\zero_copy_stream_impl_lite.cc" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\message_lite.cc" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\repeated_field.cc" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\stubs\atomicops_internals_x86_msvc.cc" />

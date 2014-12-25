@@ -14,6 +14,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\wire_format_lite.cc" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\stubs\stringprintf.cc" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\io\zero_copy_stream.cc" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\io\zero_copy_stream_impl.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\io\zero_copy_stream_impl_lite.cc" />
   </ItemGroup>
 </Project>

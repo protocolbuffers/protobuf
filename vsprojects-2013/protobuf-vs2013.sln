@@ -33,13 +33,24 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libprotobuf-universal.Windo
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libprotobuf-universal.WindowsPhone", "libprotobuf-universal\libprotobuf-universal.WindowsPhone\libprotobuf-universal.WindowsPhone.vcxproj", "{7F3CF21B-6742-4938-9BD5-6740A9B81E6F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lite-test-universal", "lite-test-universal", "{0F77C8A1-2DCB-4440-A4DC-38A05004B3B1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lite-test-universal.Shared", "lite-test-universal\lite-test-universal.Shared\lite-test-universal.Shared.vcxitems", "{E22E2CA8-2A8E-47FD-A2AC-AC88478D9C1A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lite-test-universal.Windows", "lite-test-universal\lite-test-universal.Windows\lite-test-universal.Windows.vcxproj", "{9CF5C4FD-3345-48A4-85A6-FBB813498B37}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lite-test-universal.WindowsPhone", "lite-test-universal\lite-test-universal.WindowsPhone\lite-test-universal.WindowsPhone.vcxproj", "{E8E8D272-3EBA-457C-A83F-A1FCF9ACE8B5}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		libprotobuf-lite-universal\libprotobuf-lite-universal.Shared\libprotobuf-lite-universal.Shared.vcxitems*{af8e232d-aa84-4d0b-94cf-98c7c247642d}*SharedItemsImports = 4
 		libprotobuf-universal\libprotobuf-universal.Shared\libprotobuf-universal.Shared.vcxitems*{8921b666-0597-41da-902c-3d586a828edf}*SharedItemsImports = 9
 		libprotobuf-universal\libprotobuf-universal.Shared\libprotobuf-universal.Shared.vcxitems*{07e046fa-cb0d-4178-9d99-0c55faebf9c1}*SharedItemsImports = 4
+		lite-test-universal\lite-test-universal.Shared\lite-test-universal.Shared.vcxitems*{9cf5c4fd-3345-48a4-85a6-fbb813498b37}*SharedItemsImports = 4
 		libprotobuf-lite-universal\libprotobuf-lite-universal.Shared\libprotobuf-lite-universal.Shared.vcxitems*{398cdbaa-6c76-4a26-8409-34e67fd5fffb}*SharedItemsImports = 4
+		lite-test-universal\lite-test-universal.Shared\lite-test-universal.Shared.vcxitems*{e22e2ca8-2a8e-47fd-a2ac-ac88478d9c1a}*SharedItemsImports = 9
 		libprotobuf-lite-universal\libprotobuf-lite-universal.Shared\libprotobuf-lite-universal.Shared.vcxitems*{4b4859cd-a1f9-4a60-aa1d-8220732894dc}*SharedItemsImports = 9
+		lite-test-universal\lite-test-universal.Shared\lite-test-universal.Shared.vcxitems*{e8e8d272-3eba-457c-a83f-a1fcf9ace8b5}*SharedItemsImports = 4
 		libprotobuf-universal\libprotobuf-universal.Shared\libprotobuf-universal.Shared.vcxitems*{7f3cf21b-6742-4938-9bd5-6740a9b81e6f}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -128,6 +139,7 @@ Global
 		{AF8E232D-AA84-4D0B-94CF-98C7C247642D}.Debug|ARM.ActiveCfg = Debug|ARM
 		{AF8E232D-AA84-4D0B-94CF-98C7C247642D}.Debug|ARM.Build.0 = Debug|ARM
 		{AF8E232D-AA84-4D0B-94CF-98C7C247642D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AF8E232D-AA84-4D0B-94CF-98C7C247642D}.Debug|Win32.Build.0 = Debug|Win32
 		{AF8E232D-AA84-4D0B-94CF-98C7C247642D}.Debug|x64.ActiveCfg = Debug|Win32
 		{AF8E232D-AA84-4D0B-94CF-98C7C247642D}.Release|ARM.ActiveCfg = Release|ARM
 		{AF8E232D-AA84-4D0B-94CF-98C7C247642D}.Release|ARM.Build.0 = Release|ARM
@@ -155,6 +167,38 @@ Global
 		{7F3CF21B-6742-4938-9BD5-6740A9B81E6F}.Release|Win32.ActiveCfg = Release|Win32
 		{7F3CF21B-6742-4938-9BD5-6740A9B81E6F}.Release|Win32.Build.0 = Release|Win32
 		{7F3CF21B-6742-4938-9BD5-6740A9B81E6F}.Release|x64.ActiveCfg = Release|Win32
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Debug|ARM.ActiveCfg = Debug|ARM
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Debug|ARM.Build.0 = Debug|ARM
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Debug|ARM.Deploy.0 = Debug|ARM
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Debug|Win32.Build.0 = Debug|Win32
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Debug|Win32.Deploy.0 = Debug|Win32
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Debug|x64.ActiveCfg = Debug|x64
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Debug|x64.Build.0 = Debug|x64
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Debug|x64.Deploy.0 = Debug|x64
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Release|ARM.ActiveCfg = Release|ARM
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Release|ARM.Build.0 = Release|ARM
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Release|ARM.Deploy.0 = Release|ARM
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Release|Win32.ActiveCfg = Release|Win32
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Release|Win32.Build.0 = Release|Win32
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Release|Win32.Deploy.0 = Release|Win32
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Release|x64.ActiveCfg = Release|x64
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Release|x64.Build.0 = Release|x64
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37}.Release|x64.Deploy.0 = Release|x64
+		{E8E8D272-3EBA-457C-A83F-A1FCF9ACE8B5}.Debug|ARM.ActiveCfg = Debug|ARM
+		{E8E8D272-3EBA-457C-A83F-A1FCF9ACE8B5}.Debug|ARM.Build.0 = Debug|ARM
+		{E8E8D272-3EBA-457C-A83F-A1FCF9ACE8B5}.Debug|ARM.Deploy.0 = Debug|ARM
+		{E8E8D272-3EBA-457C-A83F-A1FCF9ACE8B5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E8E8D272-3EBA-457C-A83F-A1FCF9ACE8B5}.Debug|Win32.Build.0 = Debug|Win32
+		{E8E8D272-3EBA-457C-A83F-A1FCF9ACE8B5}.Debug|Win32.Deploy.0 = Debug|Win32
+		{E8E8D272-3EBA-457C-A83F-A1FCF9ACE8B5}.Debug|x64.ActiveCfg = Debug|Win32
+		{E8E8D272-3EBA-457C-A83F-A1FCF9ACE8B5}.Release|ARM.ActiveCfg = Release|ARM
+		{E8E8D272-3EBA-457C-A83F-A1FCF9ACE8B5}.Release|ARM.Build.0 = Release|ARM
+		{E8E8D272-3EBA-457C-A83F-A1FCF9ACE8B5}.Release|ARM.Deploy.0 = Release|ARM
+		{E8E8D272-3EBA-457C-A83F-A1FCF9ACE8B5}.Release|Win32.ActiveCfg = Release|Win32
+		{E8E8D272-3EBA-457C-A83F-A1FCF9ACE8B5}.Release|Win32.Build.0 = Release|Win32
+		{E8E8D272-3EBA-457C-A83F-A1FCF9ACE8B5}.Release|Win32.Deploy.0 = Release|Win32
+		{E8E8D272-3EBA-457C-A83F-A1FCF9ACE8B5}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -166,5 +210,8 @@ Global
 		{8921B666-0597-41DA-902C-3D586A828EDF} = {A4214370-83C8-415C-AB61-5ACC37ECC9A5}
 		{07E046FA-CB0D-4178-9D99-0C55FAEBF9C1} = {A4214370-83C8-415C-AB61-5ACC37ECC9A5}
 		{7F3CF21B-6742-4938-9BD5-6740A9B81E6F} = {A4214370-83C8-415C-AB61-5ACC37ECC9A5}
+		{E22E2CA8-2A8E-47FD-A2AC-AC88478D9C1A} = {0F77C8A1-2DCB-4440-A4DC-38A05004B3B1}
+		{9CF5C4FD-3345-48A4-85A6-FBB813498B37} = {0F77C8A1-2DCB-4440-A4DC-38A05004B3B1}
+		{E8E8D272-3EBA-457C-A83F-A1FCF9ACE8B5} = {0F77C8A1-2DCB-4440-A4DC-38A05004B3B1}
 	EndGlobalSection
 EndGlobal
