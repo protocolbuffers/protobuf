@@ -67,3 +67,7 @@ vsprojects/Debug/
 vsprojects/Release/
 vsprojects-2013/Debug/
 vsprojects-2013/google/
+vsprojects-2013/libprotobuf-universal/libprotobuf-universal.WindowsPhone/ARM/
+vsprojects-2013/libprotobuf-universal/libprotobuf-universal.Windows/ARM/
+vsprojects-2013/libprotobuf-universal/libprotobuf-universal.Windows/x64/
+vsprojects-2013/Release/
