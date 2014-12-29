@@ -2300,6 +2300,42 @@ public class NanoTest extends TestCase {
     }
   }
 
+  public void testDifferentStringLengthsNano() throws Exception {
+    // Test string serialization roundtrip using strings of the following lengths,
+    // with ASCII and Unicode characters requiring different UTF-8 byte counts per
+    // char, hence causing the length delimiter varint to sometimes require more
+    // bytes for the Unicode strings than the ASCII string of the same length.
+    int[] lengths = new int[] {
+            0,
+            1,
+            (1 << 4) - 1,  // 1 byte for ASCII and Unicode
+            (1 << 7) - 1,  // 1 byte for ASCII, 2 bytes for Unicode
+            (1 << 11) - 1, // 2 bytes for ASCII and Unicode
+            (1 << 14) - 1, // 2 bytes for ASCII, 3 bytes for Unicode
+            (1 << 17) - 1, // 3 bytes for ASCII and Unicode
+    };
+    for (int i : lengths) {
+      testEncodingOfString('q', i);      // 1 byte per char
+      testEncodingOfString('\u07FF', i); // 2 bytes per char
+      testEncodingOfString('\u0981', i); // 3 bytes per char
+    }
+  }
+
+  private void testEncodingOfString(char c, int length) throws InvalidProtocolBufferNanoException {
+    TestAllTypesNano testAllTypesNano = new TestAllTypesNano();
+    final String fullString = fullString(c, length);
+    testAllTypesNano.optionalString = fullString;
+    final TestAllTypesNano resultNano = new TestAllTypesNano();
+    MessageNano.mergeFrom(resultNano, MessageNano.toByteArray(testAllTypesNano));
+    assertEquals(fullString, resultNano.optionalString);
+  }
+
+  private String fullString(char c, int length) {
+    char[] result = new char[length];
+    Arrays.fill(result, c);
+    return new String(result);
+  }
+
   public void testNanoWithHasParseFrom() throws Exception {
     TestAllTypesNanoHas msg = null;
     // Test false on creation, after clear and upon empty parse.
