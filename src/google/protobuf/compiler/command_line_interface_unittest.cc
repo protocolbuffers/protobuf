@@ -725,7 +725,7 @@ TEST_F(CommandLineInterfaceTest, ColonDelimitedPath) {
 #endif
 
   Run("protocol_compiler --test_out=$tmpdir "
-      "--proto_path=$tmpdir/a"PATH_SEPARATOR"$tmpdir/b foo.proto");
+      "--proto_path=$tmpdir/a" PATH_SEPARATOR "$tmpdir/b foo.proto");
 
 #undef PATH_SEPARATOR
 

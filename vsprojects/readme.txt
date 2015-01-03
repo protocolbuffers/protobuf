@@ -6,6 +6,13 @@ accessible to those who primarily work with MSVC.
 Compiling and Installing
 ========================
 
+0) Check whether a gtest directory exists in the upper level directory. If
+   you checkout the code from github via "git clone", this gtest directory
+   won't exist and you won't be able to build the tests described below. To
+   avoid this problem consider downloading one of the release tar balls which
+   contains gtest already and copying the gest directory from there to your
+   protobuf directory:
+       https://github.com/google/protobuf/releases
 1) Open protobuf.sln in Microsoft Visual Studio.
 2) Choose "Debug" or "Release" configuration as desired.*
 3) From the Build menu, choose "Build Solution".  Wait for compiling to finish.

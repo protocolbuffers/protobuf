@@ -35,15 +35,7 @@
 #include <ruby/vm.h>
 #include <ruby/encoding.h>
 
-#include "upb/def.h"
-#include "upb/handlers.h"
-#include "upb/pb/decoder.h"
-#include "upb/pb/encoder.h"
-#include "upb/pb/glue.h"
-#include "upb/json/parser.h"
-#include "upb/json/printer.h"
-#include "upb/shim/shim.h"
-#include "upb/symtab.h"
+#include "upb.h"
 
 // Forward decls.
 struct DescriptorPool;
