@@ -14,7 +14,7 @@ Compiling and Installing
    protobuf directory:
        https://github.com/google/protobuf/releases
 1) Open protobuf.sln in Microsoft Visual Studio.
-2) Choose "Debug" or "Release" configuration as desired.*
+2) Choose "Debug" or "Release" and "Win32" or "x64" configurations as desired.*
 3) From the Build menu, choose "Build Solution".  Wait for compiling to finish.
 4) From a command shell, run tests.exe and lite-test.exe and check that all
    tests pass.
