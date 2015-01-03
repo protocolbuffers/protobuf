@@ -94,7 +94,7 @@ class MockGeneratorContext : public GeneratorContext {
 
     string actual_contents;
     GOOGLE_CHECK_OK(
-        File::GetContents(TestSourceDir() + "/" + physical_filename,
+        File::GetTextContents(TestSourceDir() + "/" + physical_filename,
                           &actual_contents, true));
     EXPECT_TRUE(actual_contents == *expected_contents)
       << physical_filename << " needs to be regenerated.  Please run "
