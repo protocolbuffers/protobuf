@@ -72,3 +72,12 @@ src/**/*.trs
 # JavaBuild output.
 java/target
 javanano/target
+
+# Windows
+*.suo
+*.sdf
+*.opensdf
+*.user
+ipch/
+Win32/
+x64/
