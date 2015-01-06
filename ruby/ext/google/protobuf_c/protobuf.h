@@ -123,6 +123,7 @@ struct EnumDescriptor {
 
 struct MessageBuilderContext {
   VALUE descriptor;
+  VALUE builder;
 };
 
 struct EnumBuilderContext {
@@ -213,10 +214,13 @@ void MessageBuilderContext_free(void* _self);
 VALUE MessageBuilderContext_alloc(VALUE klass);
 void MessageBuilderContext_register(VALUE module);
 MessageBuilderContext* ruby_to_MessageBuilderContext(VALUE value);
-VALUE MessageBuilderContext_initialize(VALUE _self, VALUE descriptor);
+VALUE MessageBuilderContext_initialize(VALUE _self,
+                                       VALUE descriptor,
+                                       VALUE builder);
 VALUE MessageBuilderContext_optional(int argc, VALUE* argv, VALUE _self);
 VALUE MessageBuilderContext_required(int argc, VALUE* argv, VALUE _self);
 VALUE MessageBuilderContext_repeated(int argc, VALUE* argv, VALUE _self);
+VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self);
 
 void EnumBuilderContext_mark(void* _self);
 void EnumBuilderContext_free(void* _self);
@@ -239,6 +243,8 @@ VALUE Builder_finalize_to_pool(VALUE _self, VALUE pool_rb);
 // Native slot storage abstraction.
 // -----------------------------------------------------------------------------
 
+#define NATIVE_SLOT_MAX_SIZE sizeof(void*)
+
 size_t native_slot_size(upb_fieldtype_t type);
 void native_slot_set(upb_fieldtype_t type,
                      VALUE type_class,
@@ -254,10 +260,17 @@ void native_slot_deep_copy(upb_fieldtype_t type, void* to, void* from);
 bool native_slot_eq(upb_fieldtype_t type, void* mem1, void* mem2);
 
 void native_slot_validate_string_encoding(upb_fieldtype_t type, VALUE value);
+void native_slot_check_int_range_precision(upb_fieldtype_t type, VALUE value);
 
 extern rb_encoding* kRubyStringUtf8Encoding;
 extern rb_encoding* kRubyStringASCIIEncoding;
 extern rb_encoding* kRubyString8bitEncoding;
+
+VALUE field_type_class(const upb_fielddef* field);
+
+bool is_map_field(const upb_fielddef* field);
+const upb_fielddef* map_field_key(const upb_fielddef* field);
+const upb_fielddef* map_field_value(const upb_fielddef* field);
 
 // -----------------------------------------------------------------------------
 // Repeated field container type.
@@ -282,7 +295,6 @@ extern VALUE cRepeatedField;
 
 RepeatedField* ruby_to_RepeatedField(VALUE value);
 
-void RepeatedField_register(VALUE module);
 VALUE RepeatedField_each(VALUE _self);
 VALUE RepeatedField_index(VALUE _self, VALUE _index);
 void* RepeatedField_index_native(VALUE _self, int index);
@@ -301,6 +313,59 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other);
 VALUE RepeatedField_hash(VALUE _self);
 VALUE RepeatedField_inspect(VALUE _self);
 VALUE RepeatedField_plus(VALUE _self, VALUE list);
+
+// Defined in repeated_field.c; also used by Map.
+void validate_type_class(upb_fieldtype_t type, VALUE klass);
+
+// -----------------------------------------------------------------------------
+// Map container type.
+// -----------------------------------------------------------------------------
+
+typedef struct {
+  upb_fieldtype_t key_type;
+  upb_fieldtype_t value_type;
+  VALUE value_type_class;
+  upb_strtable table;
+} Map;
+
+void Map_mark(void* self);
+void Map_free(void* self);
+VALUE Map_alloc(VALUE klass);
+VALUE Map_init(int argc, VALUE* argv, VALUE self);
+void Map_register(VALUE module);
+
+extern const rb_data_type_t Map_type;
+extern VALUE cMap;
+
+Map* ruby_to_Map(VALUE value);
+
+VALUE Map_each(VALUE _self);
+VALUE Map_keys(VALUE _self);
+VALUE Map_values(VALUE _self);
+VALUE Map_index(VALUE _self, VALUE key);
+VALUE Map_index_set(VALUE _self, VALUE key, VALUE value);
+VALUE Map_has_key(VALUE _self, VALUE key);
+VALUE Map_delete(VALUE _self, VALUE key);
+VALUE Map_clear(VALUE _self);
+VALUE Map_length(VALUE _self);
+VALUE Map_dup(VALUE _self);
+VALUE Map_deep_copy(VALUE _self);
+VALUE Map_eq(VALUE _self, VALUE _other);
+VALUE Map_hash(VALUE _self);
+VALUE Map_inspect(VALUE _self);
+VALUE Map_merge(VALUE _self, VALUE hashmap);
+VALUE Map_merge_into_self(VALUE _self, VALUE hashmap);
+
+typedef struct {
+  Map* self;
+  upb_strtable_iter it;
+} Map_iter;
+
+void Map_begin(VALUE _self, Map_iter* iter);
+void Map_next(Map_iter* iter);
+bool Map_done(Map_iter* iter);
+VALUE Map_iter_key(Map_iter* iter);
+VALUE Map_iter_value(Map_iter* iter);
 
 // -----------------------------------------------------------------------------
 // Message layout / storage.

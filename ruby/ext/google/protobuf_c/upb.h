@@ -600,6 +600,9 @@ typedef struct {
 
 // Like strdup(), which isn't always available since it's not ANSI C.
 char *upb_strdup(const char *s);
+// Variant that works with a length-delimited rather than NULL-delimited string,
+// as supported by strtable.
+char *upb_strdup2(const char *s, size_t len);
 
 UPB_INLINE void _upb_value_setval(upb_value *v, _upb_value val,
                                   upb_ctype_t ctype) {
@@ -654,12 +657,24 @@ FUNCS(fptr,     fptr,         upb_func*,    UPB_CTYPE_FPTR);
 
 typedef union {
   uintptr_t num;
-  const char *str;  // We own, nullz.
+  struct {
+    // We own this. NULL-terminated but may also contain binary data; see
+    // explicit length below.
+    // TODO: move the length to the start of the string in order to reduce
+    // tabkey's size (to one machine word) in a way that supports static
+    // initialization.
+    const char *str;
+    size_t length;
+  } s;
 } upb_tabkey;
 
 #define UPB_TABKEY_NUM(n) {n}
 #ifdef UPB_C99
-#define UPB_TABKEY_STR(s) {.str = s}
+// Given that |s| is a string literal, sizeof(s) gives us a
+// compile-time-constant strlen(). We must ensure that this works for static
+// data initializers.
+#define UPB_TABKEY_STR(strval) { .s = { .str = strval,                    \
+                                        .length = sizeof(strval) - 1 } }
 #endif
 // TODO(haberman): C++
 #define UPB_TABKEY_NONE {0}
@@ -765,7 +780,14 @@ UPB_INLINE size_t upb_strtable_count(const upb_strtable *t) {
 // If a table resize was required but memory allocation failed, false is
 // returned and the table is unchanged.
 bool upb_inttable_insert(upb_inttable *t, uintptr_t key, upb_value val);
-bool upb_strtable_insert(upb_strtable *t, const char *key, upb_value val);
+bool upb_strtable_insert2(upb_strtable *t, const char *key, size_t len,
+                          upb_value val);
+
+// For NULL-terminated strings.
+UPB_INLINE bool upb_strtable_insert(upb_strtable *t, const char *key,
+                                    upb_value val) {
+  return upb_strtable_insert2(t, key, strlen(key), val);
+}
 
 // Looks up key in this table, returning "true" if the key was found.
 // If v is non-NULL, copies the value for this key into *v.
@@ -782,7 +804,14 @@ UPB_INLINE bool upb_strtable_lookup(const upb_strtable *t, const char *key,
 // Removes an item from the table.  Returns true if the remove was successful,
 // and stores the removed item in *val if non-NULL.
 bool upb_inttable_remove(upb_inttable *t, uintptr_t key, upb_value *val);
-bool upb_strtable_remove(upb_strtable *t, const char *key, upb_value *val);
+bool upb_strtable_remove2(upb_strtable *t, const char *key, size_t len,
+                          upb_value *val);
+
+// For NULL-terminated strings.
+UPB_INLINE bool upb_strtable_remove(upb_strtable *t, const char *key,
+                                    upb_value *v) {
+  return upb_strtable_remove2(t, key, strlen(key), v);
+}
 
 // Updates an existing entry in an inttable.  If the entry does not exist,
 // returns false and does nothing.  Unlike insert/remove, this does not
@@ -876,6 +905,7 @@ void upb_strtable_begin(upb_strtable_iter *i, const upb_strtable *t);
 void upb_strtable_next(upb_strtable_iter *i);
 bool upb_strtable_done(const upb_strtable_iter *i);
 const char *upb_strtable_iter_key(upb_strtable_iter *i);
+size_t upb_strtable_iter_keylength(upb_strtable_iter *i);
 upb_value upb_strtable_iter_value(const upb_strtable_iter *i);
 void upb_strtable_iter_setdone(upb_strtable_iter *i);
 bool upb_strtable_iter_isequal(const upb_strtable_iter *i1,
@@ -1777,6 +1807,10 @@ UPB_DEFINE_DEF(upb::MessageDef, msgdef, MSG, UPB_QUOTE(
   // just be moved into symtab.c?
   MessageDef* Dup(const void* owner) const;
 
+  // Is this message a map entry?
+  void setmapentry(bool map_entry);
+  bool mapentry() const;
+
   // Iteration over fields.  The order is undefined.
   class iterator : public std::iterator<std::forward_iterator_tag, FieldDef*> {
    public:
@@ -1823,6 +1857,11 @@ UPB_DEFINE_STRUCT(upb_msgdef, upb_def,
   upb_inttable itof;  // int to field
   upb_strtable ntof;  // name to field
 
+  // Is this a map-entry message?
+  // TODO: set this flag properly for static descriptors; regenerate
+  // descriptor.upb.c.
+  bool map_entry;
+
   // TODO(haberman): proper extension ranges (there can be multiple).
 ));
 
@@ -1830,7 +1869,7 @@ UPB_DEFINE_STRUCT(upb_msgdef, upb_def,
                         refs, ref2s)                                          \
   {                                                                           \
     UPB_DEF_INIT(name, UPB_DEF_MSG, refs, ref2s), selector_count,             \
-        submsg_field_count, itof, ntof                                        \
+        submsg_field_count, itof, ntof, false                                 \
   }
 
 UPB_BEGIN_EXTERN_C  // {
@@ -1877,6 +1916,9 @@ UPB_INLINE upb_fielddef *upb_msgdef_ntof_mutable(upb_msgdef *m,
                                                  const char *name, size_t len) {
   return (upb_fielddef *)upb_msgdef_ntof(m, name, len);
 }
+
+void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry);
+bool upb_msgdef_mapentry(const upb_msgdef *m);
 
 // upb_msg_iter i;
 // for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
@@ -2330,6 +2372,12 @@ inline const FieldDef *MessageDef::FindFieldByName(const char *name,
 }
 inline MessageDef* MessageDef::Dup(const void *owner) const {
   return upb_msgdef_dup(this, owner);
+}
+inline void MessageDef::setmapentry(bool map_entry) {
+  upb_msgdef_setmapentry(this, map_entry);
+}
+inline bool MessageDef::mapentry() const {
+  return upb_msgdef_mapentry(this);
 }
 inline MessageDef::iterator MessageDef::begin() { return iterator(this); }
 inline MessageDef::iterator MessageDef::end() { return iterator::end(this); }

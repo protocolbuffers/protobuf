@@ -1269,6 +1269,7 @@ upb_msgdef *upb_msgdef_new(const void *owner) {
   if (!upb_def_init(UPB_UPCAST(m), UPB_DEF_MSG, &vtbl, owner)) goto err2;
   if (!upb_inttable_init(&m->itof, UPB_CTYPE_PTR)) goto err2;
   if (!upb_strtable_init(&m->ntof, UPB_CTYPE_PTR)) goto err1;
+  m->map_entry = false;
   return m;
 
 err1:
@@ -1283,6 +1284,7 @@ upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner) {
   if (!newm) return NULL;
   bool ok = upb_def_setfullname(UPB_UPCAST(newm),
                                 upb_def_fullname(UPB_UPCAST(m)), NULL);
+  newm->map_entry = m->map_entry;
   UPB_ASSERT_VAR(ok, ok);
   upb_msg_iter i;
   for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
@@ -1384,6 +1386,15 @@ const upb_fielddef *upb_msgdef_ntof(const upb_msgdef *m, const char *name,
 
 int upb_msgdef_numfields(const upb_msgdef *m) {
   return upb_strtable_count(&m->ntof);
+}
+
+void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry) {
+  assert(!upb_msgdef_isfrozen(m));
+  m->map_entry = map_entry;
+}
+
+bool upb_msgdef_mapentry(const upb_msgdef *m) {
+  return m->map_entry;
 }
 
 void upb_msg_begin(upb_msg_iter *iter, const upb_msgdef *m) {
@@ -3401,31 +3412,28 @@ int log2ceil(uint64_t v) {
 }
 
 char *upb_strdup(const char *s) {
-  size_t n = strlen(s) + 1;
+  return upb_strdup2(s, strlen(s));
+}
+
+char *upb_strdup2(const char *s, size_t len) {
+  // Always null-terminate, even if binary data; but don't rely on the input to
+  // have a null-terminating byte since it may be a raw binary buffer.
+  size_t n = len + 1;
   char *p = malloc(n);
-  if (p) memcpy(p, s, n);
+  if (p) memcpy(p, s, len);
+  p[len] = 0;
   return p;
 }
 
 // A type to represent the lookup key of either a strtable or an inttable.
-// This is like upb_tabkey, but can carry a size also to allow lookups of
-// non-NULL-terminated strings (we don't store string lengths in the table).
 typedef struct {
   upb_tabkey key;
-  uint32_t len;  // For string keys only.
 } lookupkey_t;
-
-static lookupkey_t strkey(const char *str) {
-  lookupkey_t k;
-  k.key.str = (char*)str;
-  k.len = strlen(str);
-  return k;
-}
 
 static lookupkey_t strkey2(const char *str, size_t len) {
   lookupkey_t k;
-  k.key.str = (char*)str;
-  k.len = len;
+  k.key.s.str = (char*)str;
+  k.key.s.length = len;
   return k;
 }
 
@@ -3607,11 +3615,12 @@ static size_t begin(const upb_table *t) {
 // A simple "subclass" of upb_table that only adds a hash function for strings.
 
 static uint32_t strhash(upb_tabkey key) {
-  return MurmurHash2(key.str, strlen(key.str), 0);
+  return MurmurHash2(key.s.str, key.s.length, 0);
 }
 
 static bool streql(upb_tabkey k1, lookupkey_t k2) {
-  return strncmp(k1.str, k2.key.str, k2.len) == 0 && k1.str[k2.len] == '\0';
+  return k1.s.length == k2.key.s.length &&
+         memcmp(k1.s.str, k2.key.s.str, k1.s.length) == 0;
 }
 
 bool upb_strtable_init(upb_strtable *t, upb_ctype_t ctype) {
@@ -3620,7 +3629,7 @@ bool upb_strtable_init(upb_strtable *t, upb_ctype_t ctype) {
 
 void upb_strtable_uninit(upb_strtable *t) {
   for (size_t i = 0; i < upb_table_size(&t->t); i++)
-    free((void*)t->t.entries[i].key.str);
+    free((void*)t->t.entries[i].key.s.str);
   uninit(&t->t);
 }
 
@@ -3631,26 +3640,30 @@ bool upb_strtable_resize(upb_strtable *t, size_t size_lg2) {
   upb_strtable_iter i;
   upb_strtable_begin(&i, t);
   for ( ; !upb_strtable_done(&i); upb_strtable_next(&i)) {
-    upb_strtable_insert(
-        &new_table, upb_strtable_iter_key(&i), upb_strtable_iter_value(&i));
+    upb_strtable_insert2(
+        &new_table,
+        upb_strtable_iter_key(&i),
+        upb_strtable_iter_keylength(&i),
+        upb_strtable_iter_value(&i));
   }
   upb_strtable_uninit(t);
   *t = new_table;
   return true;
 }
 
-bool upb_strtable_insert(upb_strtable *t, const char *k, upb_value v) {
+bool upb_strtable_insert2(upb_strtable *t, const char *k, size_t len,
+                          upb_value v) {
   if (isfull(&t->t)) {
     // Need to resize.  New table of double the size, add old elements to it.
     if (!upb_strtable_resize(t, t->t.size_lg2 + 1)) {
       return false;
     }
   }
-  if ((k = upb_strdup(k)) == NULL) return false;
+  if ((k = upb_strdup2(k, len)) == NULL) return false;
 
-  lookupkey_t key = strkey(k);
-  uint32_t hash = MurmurHash2(key.key.str, key.len, 0);
-  insert(&t->t, strkey(k), v, hash, &strhash, &streql);
+  lookupkey_t key = strkey2(k, len);
+  uint32_t hash = MurmurHash2(key.key.s.str, key.key.s.length, 0);
+  insert(&t->t, key, v, hash, &strhash, &streql);
   return true;
 }
 
@@ -3660,11 +3673,12 @@ bool upb_strtable_lookup2(const upb_strtable *t, const char *key, size_t len,
   return lookup(&t->t, strkey2(key, len), v, hash, &streql);
 }
 
-bool upb_strtable_remove(upb_strtable *t, const char *key, upb_value *val) {
+bool upb_strtable_remove2(upb_strtable *t, const char *key, size_t len,
+                         upb_value *val) {
   uint32_t hash = MurmurHash2(key, strlen(key), 0);
   upb_tabkey tabkey;
-  if (rm(&t->t, strkey(key), val, &tabkey, hash, &streql)) {
-    free((void*)tabkey.str);
+  if (rm(&t->t, strkey2(key, len), val, &tabkey, hash, &streql)) {
+    free((void*)tabkey.s.str);
     return true;
   } else {
     return false;
@@ -3693,7 +3707,12 @@ bool upb_strtable_done(const upb_strtable_iter *i) {
 
 const char *upb_strtable_iter_key(upb_strtable_iter *i) {
   assert(!upb_strtable_done(i));
-  return str_tabent(i)->key.str;
+  return str_tabent(i)->key.s.str;
+}
+
+size_t upb_strtable_iter_keylength(upb_strtable_iter *i) {
+  assert(!upb_strtable_done(i));
+  return str_tabent(i)->key.s.length;
 }
 
 upb_value upb_strtable_iter_value(const upb_strtable_iter *i) {
