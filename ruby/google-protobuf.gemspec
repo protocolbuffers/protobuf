@@ -7,7 +7,7 @@ end
 
 Gem::Specification.new do |s|
   s.name        = "google-protobuf"
-  s.version     = "3.0.0.alpha.2"
+  s.version     = "3.0.0.alpha.1.0"
   s.licenses    = ["BSD"]
   s.summary     = "Protocol Buffers"
   s.description = "Protocol Buffers are Google's data interchange format."
