@@ -32,6 +32,17 @@
 
 // -----------------------------------------------------------------------------
 // Basic map operations on top of upb's strtable.
+//
+// Note that we roll our own `Map` container here because, as for
+// `RepeatedField`, we want a strongly-typed container. This is so that any user
+// errors due to incorrect map key or value types are raised as close as
+// possible to the error site, rather than at some deferred point (e.g.,
+// serialization).
+//
+// We build our `Map` on top of upb_strtable so that we're able to take
+// advantage of the native_slot storage abstraction, as RepeatedField does.
+// (This is not quite a perfect mapping -- see the key conversions below -- but
+// gives us full support and error-checking for all value types for free.)
 // -----------------------------------------------------------------------------
 
 // Map values are stored using the native_slot abstraction (as with repeated

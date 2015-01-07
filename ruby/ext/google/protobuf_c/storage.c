@@ -339,15 +339,23 @@ bool is_map_field(const upb_fielddef* field) {
 const upb_fielddef* map_field_key(const upb_fielddef* field) {
   assert(is_map_field(field));
   const upb_msgdef* subdef = (const upb_msgdef*)upb_fielddef_subdef(field);
-  const upb_fielddef* key_field = upb_msgdef_itof(subdef, 1);
-  assert(key_field != NULL);
-  return key_field;
+  return map_entry_key(subdef);
 }
 
 const upb_fielddef* map_field_value(const upb_fielddef* field) {
   assert(is_map_field(field));
   const upb_msgdef* subdef = (const upb_msgdef*)upb_fielddef_subdef(field);
-  const upb_fielddef* value_field = upb_msgdef_itof(subdef, 2);
+  return map_entry_value(subdef);
+}
+
+const upb_fielddef* map_entry_key(const upb_msgdef* msgdef) {
+  const upb_fielddef* key_field = upb_msgdef_itof(msgdef, MAP_KEY_FIELD);
+  assert(key_field != NULL);
+  return key_field;
+}
+
+const upb_fielddef* map_entry_value(const upb_msgdef* msgdef) {
+  const upb_fielddef* value_field = upb_msgdef_itof(msgdef, MAP_VALUE_FIELD);
   assert(value_field != NULL);
   return value_field;
 }

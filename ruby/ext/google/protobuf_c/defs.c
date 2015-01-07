@@ -1077,11 +1077,12 @@ VALUE MessageBuilderContext_repeated(int argc, VALUE* argv, VALUE _self) {
  *     MessageBuilderContext.map(name, key_type, value_type, number,
  *                               value_type_class = nil)
  *
- * Defines a new map field on this message type with the given key and value types, tag
- * number, and type class (for message and enum value types). The key type must
- * be :int32/:uint32/:int64/:uint64, :bool, or :string. The value type type must
- * be a Ruby symbol (as accepted by FieldDescriptor#type=) and the type_class
- * must be a string, if present (as accepted by FieldDescriptor#submsg_name=).
+ * Defines a new map field on this message type with the given key and value
+ * types, tag number, and type class (for message and enum value types). The key
+ * type must be :int32/:uint32/:int64/:uint64, :bool, or :string. The value type
+ * type must be a Ruby symbol (as accepted by FieldDescriptor#type=) and the
+ * type_class must be a string, if present (as accepted by
+ * FieldDescriptor#submsg_name=).
  */
 VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
   DEFINE_SELF(MessageBuilderContext, self, _self);

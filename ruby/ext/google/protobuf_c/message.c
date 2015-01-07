@@ -142,7 +142,7 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
   if (is_map_field(f)) {
     if (TYPE(val) != T_HASH) {
       rb_raise(rb_eArgError,
-               "Expected hashmap as initializer value for map field.");
+               "Expected Hash object as initializer value for map field.");
     }
     VALUE map = layout_get(self->descriptor->layout, Message_data(self), f);
     Map_merge_into_self(map, val);

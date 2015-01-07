@@ -177,8 +177,8 @@ static void *submsg_handler(void *closure, const void *hd) {
 // Handler data for startmap/endmap handlers.
 typedef struct {
   size_t ofs;
-  const upb_fielddef* key_field;
-  const upb_fielddef* value_field;
+  upb_fieldtype_t key_field_type;
+  upb_fieldtype_t value_field_type;
   VALUE value_field_typeclass;
 } map_handlerdata_t;
 
@@ -194,12 +194,6 @@ typedef struct {
   char value_storage[NATIVE_SLOT_MAX_SIZE];
 } map_parse_frame_t;
 
-// Handler to begin a sequence of map entries: simple no-op that exists only to
-// set context for the map entry handlers.
-static void *startmap_handler(void *closure, const void *hd) {
-  return closure;
-}
-
 // Handler to begin a map entry: allocates a temporary frame. This is the
 // 'startsubmsg' handler on the msgdef that contains the map field.
 static void *startmapentry_handler(void *closure, const void *hd) {
@@ -210,10 +204,8 @@ static void *startmapentry_handler(void *closure, const void *hd) {
   map_parse_frame_t* frame = ALLOC(map_parse_frame_t);
   frame->map = map_rb;
 
-  native_slot_init(upb_fielddef_type(mapdata->key_field),
-                   &frame->key_storage);
-  native_slot_init(upb_fielddef_type(mapdata->value_field),
-                   &frame->value_storage);
+  native_slot_init(mapdata->key_field_type, &frame->key_storage);
+  native_slot_init(mapdata->value_field_type, &frame->value_storage);
 
   return frame;
 }
@@ -225,10 +217,10 @@ static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
   const map_handlerdata_t* mapdata = hd;
 
   VALUE key = native_slot_get(
-      upb_fielddef_type(mapdata->key_field), Qnil,
+      mapdata->key_field_type, Qnil,
       &frame->key_storage);
   VALUE value = native_slot_get(
-      upb_fielddef_type(mapdata->value_field), mapdata->value_field_typeclass,
+      mapdata->value_field_type, mapdata->value_field_typeclass,
       &frame->value_storage);
 
   Map_index_set(frame->map, key, value);
@@ -250,11 +242,15 @@ static map_handlerdata_t* new_map_handlerdata(
 
   map_handlerdata_t* hd = ALLOC(map_handlerdata_t);
   hd->ofs = ofs;
-  hd->key_field = upb_msgdef_itof(mapentry_def, 1);
-  assert(hd->key_field != NULL);
-  hd->value_field = upb_msgdef_itof(mapentry_def, 2);
-  assert(hd->value_field != NULL);
-  hd->value_field_typeclass = field_type_class(hd->value_field);
+  const upb_fielddef* key_field = upb_msgdef_itof(mapentry_def,
+                                                  MAP_KEY_FIELD);
+  assert(key_field != NULL);
+  hd->key_field_type = upb_fielddef_type(key_field);
+  const upb_fielddef* value_field = upb_msgdef_itof(mapentry_def,
+                                                    MAP_VALUE_FIELD);
+  assert(value_field != NULL);
+  hd->value_field_type = upb_fielddef_type(value_field);
+  hd->value_field_typeclass = field_type_class(value_field);
 
   return hd;
 }
@@ -293,6 +289,7 @@ static void add_handlers_for_repeated_field(upb_handlers *h,
                                appendbytes_handler : appendstr_handler,
                                NULL);
       upb_handlers_setstring(h, f, stringdata_handler, NULL);
+      break;
     }
     case UPB_TYPE_MESSAGE: {
       upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
@@ -352,7 +349,6 @@ static void add_handlers_for_mapfield(upb_handlers* h,
   upb_handlers_addcleanup(h, hd, free);
   upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
   upb_handlerattr_sethandlerdata(&attr, hd);
-  upb_handlers_setstartseq(h, fielddef, startmap_handler, &attr);
   upb_handlers_setstartsubmsg(h, fielddef, startmapentry_handler, &attr);
   upb_handlerattr_uninit(&attr);
 }
@@ -360,6 +356,8 @@ static void add_handlers_for_mapfield(upb_handlers* h,
 // Adds handlers to a map-entry msgdef.
 static void add_handlers_for_mapentry(const upb_msgdef* msgdef,
                                       upb_handlers* h) {
+  const upb_fielddef* key_field = map_entry_key(msgdef);
+  const upb_fielddef* value_field = map_entry_value(msgdef);
   map_handlerdata_t* hd = new_map_handlerdata(0, msgdef);
   upb_handlers_addcleanup(h, hd, free);
   upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
@@ -367,7 +365,7 @@ static void add_handlers_for_mapentry(const upb_msgdef* msgdef,
   upb_handlers_setendmsg(h, endmap_handler, &attr);
 
   add_handlers_for_singular_field(
-      h, hd->key_field,
+      h, key_field,
       // Convert the offset into map_parse_frame_t to an offset understood by the
       // singular field handlers, so that we don't have to use special
       // map-key/value-specific handlers. The ordinary singular field handlers expect
@@ -375,7 +373,7 @@ static void add_handlers_for_mapentry(const upb_msgdef* msgdef,
       // we compensate for that addition.
       offsetof(map_parse_frame_t, key_storage) - sizeof(MessageHeader));
   add_handlers_for_singular_field(
-      h, hd->value_field,
+      h, value_field,
       offsetof(map_parse_frame_t, value_storage) - sizeof(MessageHeader));
 }
 

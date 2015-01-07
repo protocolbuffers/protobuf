@@ -268,9 +268,18 @@ extern rb_encoding* kRubyString8bitEncoding;
 
 VALUE field_type_class(const upb_fielddef* field);
 
+#define MAP_KEY_FIELD 1
+#define MAP_VALUE_FIELD 2
+
+// These operate on a map field (i.e., a repeated field of submessages whose
+// submessage type is a map-entry msgdef).
 bool is_map_field(const upb_fielddef* field);
 const upb_fielddef* map_field_key(const upb_fielddef* field);
 const upb_fielddef* map_field_value(const upb_fielddef* field);
+
+// These operate on a map-entry msgdef.
+const upb_fielddef* map_entry_key(const upb_msgdef* msgdef);
+const upb_fielddef* map_entry_value(const upb_msgdef* msgdef);
 
 // -----------------------------------------------------------------------------
 // Repeated field container type.
