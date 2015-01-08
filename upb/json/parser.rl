@@ -260,16 +260,14 @@ static bool accumulate_append(upb_json_parser *p, const char *buf, size_t len,
     return true;
   }
 
-  if (p->accumulate_buf_size - p->accumulated_len < len) {
-    size_t need;
-    if (!checked_add(p->accumulated_len, len, &need)) {
-      upb_status_seterrmsg(p->status, "Integer overflow.");
-      return false;
-    }
+  size_t need;
+  if (!checked_add(p->accumulated_len, len, &need)) {
+    upb_status_seterrmsg(p->status, "Integer overflow.");
+    return false;
+  }
 
-    if (!accumulate_realloc(p, need)) {
-      return false;
-    }
+  if (need > p->accumulate_buf_size && !accumulate_realloc(p, need)) {
+    return false;
   }
 
   if (p->accumulated != p->accumulate_buf) {
@@ -513,9 +511,15 @@ static bool end_number(upb_json_parser *p, const char *ptr) {
     return false;
   }
 
+  // strtol() and friends unfortunately do not support specifying the length of
+  // the input string, so we need to force a copy into a NULL-terminated buffer.
+  if (!multipart_text(p, "\0", 1, false)) {
+    return false;
+  }
+
   size_t len;
   const char *buf = accumulate_getptr(p, &len);
-  const char *myend = buf + len;
+  const char *myend = buf + len - 1;  // One for NULL.
   char *end;
 
   switch (upb_fielddef_type(p->top->f)) {
@@ -576,7 +580,7 @@ static bool end_number(upb_json_parser *p, const char *ptr) {
   return true;
 
 err:
-  upb_status_seterrf(p->status, "error parsing number: %.*s", buf, len);
+  upb_status_seterrf(p->status, "error parsing number: %s", buf);
   multipart_end(p);
   return false;
 }
