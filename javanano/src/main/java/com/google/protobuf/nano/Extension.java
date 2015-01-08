@@ -75,7 +75,7 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
     public static final int TYPE_SINT64   = InternalNano.TYPE_SINT64;
 
     // Note: these create...() methods take a long for the tag parameter,
-    // because tags are represented as unsigned longs, and these values exist
+    // because tags are represented as unsigned ints, and these values exist
     // in generated code as long values. However, they can fit in 32-bits, so
     // it's safe to cast them to int without loss of precision.
 
@@ -142,7 +142,7 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
     protected final Class<T> clazz;
 
     /**
-     * Tag number of this extension.
+     * Tag number of this extension. The data should be viewed as an unsigned 32-bit value.
      */
     public final int tag;
 
