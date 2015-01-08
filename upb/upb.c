@@ -32,8 +32,10 @@ static void nullz(upb_status *status) {
 }
 
 void upb_status_clear(upb_status *status) {
-  upb_status blank = UPB_STATUS_INIT;
-  upb_status_copy(status, &blank);
+  if (!status) return;
+  status->ok_ = true;
+  status->code_ = 0;
+  status->msg[0] = '\0';
 }
 
 bool upb_ok(const upb_status *status) { return status->ok_; }

@@ -15,7 +15,7 @@
 # Threading:
 # * -DUPB_THREAD_UNSAFE: remove all thread-safety.
 
-.PHONY: all lib clean tests test benchmark descriptorgen amalgamate
+.PHONY: all lib clean tests test descriptorgen amalgamate
 .PHONY: clean_leave_profile
 
 # Prevents the deletion of intermediate files.

@@ -66,7 +66,9 @@ typedef enum {
                            //   | unused (24)         | opc |
                            //   | upb_inttable* (32 or 64)  |
 
-  OP_HALT           = 36,  // No arg.
+  OP_DISPATCH       = 36,  // No arg.
+
+  OP_HALT           = 37,  // No arg.
 } opcode;
 
 #define OP_MAX OP_HALT

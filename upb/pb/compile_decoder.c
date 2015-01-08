@@ -302,6 +302,7 @@ static void putop(compiler *c, opcode op, ...) {
     case OP_SETDELIM:
     case OP_HALT:
     case OP_RET:
+    case OP_DISPATCH:
       put32(c, op);
       break;
     case OP_PARSE_DOUBLE:
@@ -382,7 +383,7 @@ const char *upb_pbdecoder_getopname(unsigned int op) {
     OP(ENDSUBMSG), OP(STARTSTR), OP(STRING), OP(ENDSTR), OP(CALL), OP(RET),
     OP(PUSHLENDELIM), OP(PUSHTAGDELIM), OP(SETDELIM), OP(CHECKDELIM),
     OP(BRANCH), OP(TAG1), OP(TAG2), OP(TAGN), OP(SETDISPATCH), OP(POP),
-    OP(SETBIGGROUPNUM), OP(HALT),
+    OP(SETBIGGROUPNUM), OP(DISPATCH), OP(HALT),
   };
   return op > OP_HALT ? names[0] : names[op];
 #undef OP
@@ -414,6 +415,7 @@ static void dumpbc(uint32_t *p, uint32_t *end, FILE *f) {
                               upb_handlers_msgdef(method->dest_handlers_)));
         break;
       }
+      case OP_DISPATCH:
       case OP_STARTMSG:
       case OP_ENDMSG:
       case OP_PUSHLENDELIM:
@@ -759,6 +761,7 @@ static void compile_method(compiler *c, upb_pbdecodermethod *method) {
   putop(c, OP_SETDISPATCH, &method->dispatch);
   putsel(c, OP_STARTMSG, UPB_STARTMSG_SELECTOR, h);
  label(c, LABEL_FIELD);
+  uint32_t* start_pc = c->pc;
   upb_msg_iter i;
   for(upb_msg_begin(&i, md); !upb_msg_done(&i); upb_msg_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
@@ -774,8 +777,18 @@ static void compile_method(compiler *c, upb_pbdecodermethod *method) {
     }
   }
 
+  // If there were no fields, or if no handlers were defined, we need to
+  // generate a non-empty loop body so that we can at least dispatch for unknown
+  // fields and check for the end of the message.
+  if (c->pc == start_pc) {
+    // Check for end-of-message.
+    putop(c, OP_CHECKDELIM, LABEL_ENDMSG);
+    // Unconditionally dispatch.
+    putop(c, OP_DISPATCH, 0);
+  }
+
   // For now we just loop back to the last field of the message (or if none,
-  // the DISPATCH opcode for the message.
+  // the DISPATCH opcode for the message).
   putop(c, OP_BRANCH, -LABEL_FIELD);
 
   // Insert both a label and a dispatch table entry for this end-of-msg.

@@ -801,6 +801,9 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
         if (result == DECODE_MISMATCH) goto badtag;
         if (result >= 0) return result;
       })
+      VMCASE(OP_DISPATCH, {
+        CHECK_RETURN(dispatch(d));
+      })
       VMCASE(OP_HALT, {
         return size;
       })
@@ -859,7 +862,8 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
       // Rewind from OP_TAG* to OP_CHECKDELIM.
       assert(getop(*d->pc) == OP_TAG1 ||
              getop(*d->pc) == OP_TAG2 ||
-             getop(*d->pc) == OP_TAGN);
+             getop(*d->pc) == OP_TAGN ||
+             getop(*d->pc == OP_DISPATCH));
       d->pc = p;
     }
     upb_pbdecoder_decode(closure, handler_data, &dummy, 0, NULL);

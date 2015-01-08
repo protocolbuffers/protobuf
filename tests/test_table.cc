@@ -15,7 +15,6 @@
 #include <set>
 #include <string>
 #include <vector>
-#include "tests/test_util.h"
 #include "tests/upb_test.h"
 #include "upb/table.int.h"
 
@@ -214,7 +213,8 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
     x += (uintptr_t)ok;
   }
   double total = get_usertime() - before;
-  printf("%s/s\n", eng(i/total, 3, false));
+  printf("%ld/s\n", (long)(i/total));
+  double upb_seq_i = i / 100;  // For later percentage calcuation.
 
   printf("upb_inttable(rand): ");
   fflush(stdout);
@@ -227,7 +227,8 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
     x += (uintptr_t)ok;
   }
   total = get_usertime() - before;
-  printf("%s/s\n", eng(i/total, 3, false));
+  printf("%ld/s\n", (long)(i/total));
+  double upb_rand_i = i / 100;  // For later percentage calculation.
 
   printf("std::map<int32_t, int32_t>(seq): ");
   fflush(stdout);
@@ -238,7 +239,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
     x += m[key];
   }
   total = get_usertime() - before;
-  printf("%s/s\n", eng(i/total, 3, false));
+  printf("%ld/s (%0.1f%% of upb)\n", (long)(i/total), i / upb_seq_i);
 
   printf("std::map<int32_t, int32_t>(rand): ");
   fflush(stdout);
@@ -249,7 +250,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
     x += m[key];
   }
   total = get_usertime() - before;
-  printf("%s/s\n", eng(i/total, 3, false));
+  printf("%ld/s (%0.1f%% of upb)\n", (long)(i/total), i / upb_rand_i);
 
   printf("__gnu_cxx::hash_map<uint32_t, uint32_t>(seq): ");
   fflush(stdout);
@@ -260,7 +261,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
     x += hm[key];
   }
   total = get_usertime() - before;
-  printf("%s/s\n", eng(i/total, 3, false));
+  printf("%ld/s (%0.1f%% of upb)\n", (long)(i/total), i / upb_seq_i);
 
   printf("__gnu_cxx::hash_map<uint32_t, uint32_t>(rand): ");
   fflush(stdout);
@@ -272,7 +273,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
   }
   total = get_usertime() - before;
   if (x == INT_MAX) abort();
-  printf("%s/s\n\n", eng(i/total, 3, false));
+  printf("%ld/s (%0.1f%% of upb)\n\n", (long)(i/total), i / upb_rand_i);
   upb_inttable_uninit(&table);
   delete rand_order;
 }
@@ -308,7 +309,7 @@ extern "C" {
 
 int run_tests(int argc, char *argv[]) {
   for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "--benchmark") == 0) benchmark = true;
+    if (strcmp(argv[i], "benchmark") == 0) benchmark = true;
   }
 
   vector<std::string> keys;

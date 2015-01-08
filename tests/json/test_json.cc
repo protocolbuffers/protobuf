@@ -6,6 +6,7 @@
  * A set of tests for JSON parsing and serialization.
  */
 
+#include "tests/test_util.h"
 #include "tests/upb_test.h"
 #include "upb/handlers.h"
 #include "upb/symtab.h"
@@ -26,6 +27,8 @@ struct TestCase {
   const char* input;
   const char* expected;
 };
+
+bool verbose = false;
 
 static TestCase kTestRoundtripMessages[] = {
   // Test most fields here.
@@ -190,6 +193,51 @@ class StringSink {
   std::string s_;
 };
 
+void test_json_roundtrip_message(const char* json_src,
+                                 const char* json_expected,
+                                 const upb::Handlers* serialize_handlers,
+                                 int seam) {
+  upb::Status st;
+  upb::json::Parser parser(&st);
+  upb::json::Printer printer(serialize_handlers);
+  StringSink data_sink;
+
+  parser.ResetOutput(printer.input());
+  printer.ResetOutput(data_sink.Sink());
+
+  upb::BytesSink* input = parser.input();
+  void *sub;
+  size_t len = strlen(json_src);
+  size_t ofs = 0;
+
+  bool ok = input->Start(0, &sub) &&
+            parse_buffer(input, sub, json_src, 0, seam, &ofs, &st, verbose) &&
+            parse_buffer(input, sub, json_src, seam, len, &ofs, &st, verbose) &&
+            ofs == len;
+
+  if (ok) {
+    if (verbose) {
+      fprintf(stderr, "calling end()\n");
+    }
+    ok = input->End();
+  }
+
+  if (!ok) {
+    fprintf(stderr, "upb parse error: %s\n", st.error_message());
+  }
+  ASSERT(ok);
+
+  if (memcmp(json_expected,
+             data_sink.Data().data(),
+             data_sink.Data().size())) {
+    fprintf(stderr,
+            "JSON parse/serialize roundtrip result differs:\n"
+            "Original:\n%s\nParsed/Serialized:\n%s\n",
+            json_src, data_sink.Data().c_str());
+    abort();
+  }
+}
+
 // Starts with a message in JSON format, parses and directly serializes again,
 // and compares the result.
 void test_json_roundtrip() {
@@ -200,36 +248,14 @@ void test_json_roundtrip() {
 
   for (const TestCase* test_case = kTestRoundtripMessages;
        test_case->input != NULL; test_case++) {
+    const char *expected =
+        (test_case->expected == EXPECT_SAME) ?
+        test_case->input :
+        test_case->expected;
 
-    const char *json_src = test_case->input;
-    const char *json_expected = test_case->expected;
-    if (json_expected == EXPECT_SAME) {
-      json_expected = json_src;
-    }
-
-    upb::Status st;
-    upb::json::Parser parser(&st);
-    upb::json::Printer printer(serialize_handlers.get());
-    StringSink data_sink;
-
-    parser.ResetOutput(printer.input());
-    printer.ResetOutput(data_sink.Sink());
-
-    bool ok = upb::BufferSource::PutBuffer(json_src, strlen(json_src),
-                                           parser.input());
-    if (!ok) {
-      fprintf(stderr, "upb parse error: %s\n", st.error_message());
-    }
-    ASSERT(ok);
-
-    if (memcmp(json_expected,
-               data_sink.Data().data(),
-               data_sink.Data().size())) {
-      fprintf(stderr,
-              "JSON parse/serialize roundtrip result differs:\n"
-              "Original:\n%s\nParsed/Serialized:\n%s\n",
-              json_src, data_sink.Data().c_str());
-      abort();
+    for (int i = 0; i < strlen(test_case->input); i++) {
+      test_json_roundtrip_message(test_case->input, expected,
+                                  serialize_handlers.get(), i);
     }
   }
 }

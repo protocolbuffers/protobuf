@@ -36,11 +36,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "tests/test_util.h"
 #include "tests/upb_test.h"
+
+#ifdef AMALGAMATED
+#include "upb.h"
+#else  // AMALGAMATED
 #include "upb/handlers.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/varint.int.h"
 #include "upb/upb.h"
+#endif  // !AMALGAMATED
 
 #undef PRINT_FAILURE
 #define PRINT_FAILURE(expr)                                           \
@@ -62,7 +68,6 @@ uint32_t filter_hash = 0;
 double completed;
 double total;
 double *count;
-upb::BufferHandle global_handle;
 
 enum TestMode {
   COUNT_ONLY = 1,
@@ -525,55 +530,16 @@ void CheckBytesParsed(const upb::pb::Decoder& decoder, size_t ofs) {
   ASSERT(ofs <= (decoder.BytesParsed() + MAX_BUFFERED));
 }
 
-bool parse(upb::pb::Decoder* decoder, void* subc, const char* buf,
-           size_t start, size_t end, size_t* ofs, upb::Status* status) {
+static bool parse(upb::pb::Decoder* decoder, void* subc, const char* buf,
+                  size_t start, size_t end, size_t* ofs, upb::Status* status) {
   CheckBytesParsed(*decoder, *ofs);
-  upb::BytesSink* s = decoder->input();
-  start = UPB_MAX(start, *ofs);
-  if (start <= end) {
-    size_t len = end - start;
-    if (filter_hash) {
-      fprintf(stderr, "Calling parse(%zu) for bytes %zu-%zu of the input\n",
-              len, start, end);
-    }
-    size_t parsed = s->PutBuffer(subc, buf + start, len, &global_handle);
-    if (filter_hash) {
-      if (parsed == len) {
-        fprintf(stderr,
-                "parse(%zu) = %zu, complete byte count indicates success\n",
-                len, len);
-      } else if (parsed > len) {
-        fprintf(stderr,
-                "parse(%zu) = %zu, long byte count indicates success and skip"
-                "of the next %zu bytes\n",
-                len, parsed, parsed - len);
-      } else {
-        fprintf(stderr,
-                "parse(%zu) = %zu, short byte count indicates failure; "
-                "last %zu bytes were not consumed\n",
-                len, parsed, len - parsed);
-      }
-    }
-    if (status->ok() != (parsed >= len)) {
-      if (status->ok()) {
-        fprintf(stderr,
-                "Error: decode function returned short byte count but set no "
-                "error status\n");
-      } else {
-        fprintf(stderr,
-                "Error: decode function returned complete byte count but set "
-                "error status\n");
-      }
-      fprintf(stderr, "Status: %s, parsed=%zu, len=%zu\n",
-              status->error_message(), parsed, len);
-      ASSERT(false);
-    }
-    if (!status->ok())
-      return false;
-    *ofs += parsed;
+  bool ret = parse_buffer(decoder->input(), subc, buf, start, end, ofs, status,
+                          filter_hash != 0);
+  if (ret) {
     CheckBytesParsed(*decoder, *ofs);
   }
-  return true;
+
+  return ret;
 }
 
 #define LINE(x) x "\n"
@@ -1148,7 +1114,41 @@ void test_emptyhandlers(bool allowjit) {
   upb::reffed_ptr<upb::Handlers> h(upb::Handlers::New(md.get()));
   bool ok = h->Freeze(NULL);
   ASSERT(ok);
-  NewMethod(h.get(), allowjit);
+upb::reffed_ptr<const upb::pb::DecoderMethod> method =
+      NewMethod(h.get(), allowjit);
+  ASSERT(method.get());
+
+  // TODO: also test the case where a message has fields, but the fields are
+  // submessage fields and have no handlers. This also results in a decoder
+  // method with no field-handling code.
+
+  // Ensure that the method can run with empty and non-empty input.
+  string test_unknown_field_msg =
+    cat(tag(1, UPB_WIRE_TYPE_VARINT), varint(42),
+        tag(2, UPB_WIRE_TYPE_DELIMITED), delim("My test data"));
+  const struct {
+    const char* data;
+    size_t length;
+  } testdata[] = {
+    { "", 0 },
+    { test_unknown_field_msg.data(), test_unknown_field_msg.size() },
+    { NULL, 0 },
+  };
+  for (int i = 0; testdata[i].data; i++) {
+    upb::Status status;
+    upb::pb::Decoder decoder(method.get(), &status);
+    upb::Sink sink(global_handlers, &closures[0]);
+    decoder.ResetOutput(&sink);
+    upb::BytesSink* input = decoder.input();
+    void* subc;
+    ASSERT(input->Start(0, &subc));
+    size_t ofs = 0;
+    ASSERT(parse_buffer(input, subc,
+                        testdata[i].data, 0, testdata[i].length,
+                        &ofs, &status, false));
+    ASSERT(ofs == testdata[i].length);
+    ASSERT(input->End());
+  }
 }
 
 void run_tests(bool use_jit) {
@@ -1166,7 +1166,7 @@ void run_tests(bool use_jit) {
   test_invalid();
   test_valid();
 
-  test_emptyhandlers(false);
+  test_emptyhandlers(use_jit);
 }
 
 void run_test_suite() {

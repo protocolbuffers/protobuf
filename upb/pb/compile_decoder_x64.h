@@ -1680,6 +1680,11 @@ static void jitbytecode(jitcompiler *jc) {
       jittag(jc, tag, arg >> 8, (int8_t)arg, method);
       break;
     }
+    case OP_DISPATCH:
+      //|  call   =>jmptarget(jc, &method->dispatch)
+      dasm_put(Dst, 2151, jmptarget(jc, &method->dispatch));
+# 1129 "upb/pb/compile_decoder_x64.dasc"
+      break;
     case OP_HALT:
       assert(false);
     }
@@ -1688,5 +1693,5 @@ static void jitbytecode(jitcompiler *jc) {
   asmlabel(jc, "eof");
   //|  nop
   dasm_put(Dst, 1909);
-# 1134 "upb/pb/compile_decoder_x64.dasc"
+# 1137 "upb/pb/compile_decoder_x64.dasc"
 }

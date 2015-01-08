@@ -1,53 +1,89 @@
-/* Function for printing numbers using si prefixes (k, M, G, etc.).
- * From http://www.cs.tut.fi/~jkorpela/c/eng.html */
+/*
+ * upb - a minimalist implementation of protocol buffers.
+ *
+ * Copyright (c) 2014 Google Inc.  See LICENSE for details.
+ *
+ * Common functionality for tests.
+ */
 
-#define PREFIX_START (-24)
-/* Smallest power of then for which there is a prefix defined.
-   If the set of prefixes will be extended, change this constant
-   and update the table "prefix". */
+#ifndef UPB_TEST_UTIL_H_
+#define UPB_TEST_UTIL_H_
 
 #include <stdio.h>
 #include <math.h>
+#include "tests/upb_test.h"
+#include "upb/sink.h"
 
-static char *eng(double value, int digits, int numeric)
-{
-  static const char *prefix[] = {
-  "y", "z", "a", "f", "p", "n", "u", "m", "",
-  "k", "M", "G", "T", "P", "E", "Z", "Y"
-  };
-#define PREFIX_END (PREFIX_START+\
-(int)((sizeof(prefix)/sizeof(char *)-1)*3))
+upb::BufferHandle global_handle;
 
-      int expof10;
-      static char result[100];
-      char *res = result;
+// Puts a region of the given buffer [start, end) into the given sink (which
+// probably represents a parser.  Can gracefully handle the case where the
+// parser returns a "parsed" length that is less or greater than the input
+// buffer length, and tracks the overall parse offset in *ofs.
+//
+// Pass verbose=true to print detailed diagnostics to stderr.
+bool parse_buffer(upb::BytesSink* sink, void* subc, const char* buf,
+                  size_t start, size_t end, size_t* ofs,
+                  upb::Status* status, bool verbose) {
+  start = UPB_MAX(start, *ofs);
 
-      if (value < 0.)
-        {
-            *res++ = '-';
-            value = -value;
-        }
+  if (start <= end) {
+    size_t len = end - start;
 
-      expof10 = (int) log10(value);
-      if(expof10 > 0)
-        expof10 = (expof10/3)*3;
-      else
-        expof10 = (-expof10+3)/3*(-3); 
+    // Copy buffer into a separate, temporary buffer.
+    // This is necessary to verify that the parser is not erroneously
+    // reading outside the specified bounds.
+    char *buf2 = (char*)malloc(len);
+    assert(buf2);
+    memcpy(buf2, buf + start, len);
 
-      value *= pow(10,-expof10);
+    if (verbose) {
+      fprintf(stderr, "Calling parse(%zu) for bytes %zu-%zu of the input\n",
+              len, start, end);
+    }
 
-      if (value >= 1000.)
-         { value /= 1000.0; expof10 += 3; }
-      else if(value >= 100.0)
-         digits -= 2;
-      else if(value >= 10.0)
-         digits -= 1;
+    size_t parsed = sink->PutBuffer(subc, buf2, len, &global_handle);
+    free(buf2);
 
-      if(numeric || (expof10 < PREFIX_START) ||    
-                    (expof10 > PREFIX_END))
-        sprintf(res, "%.*fe%d", digits-1, value, expof10); 
-      else
-        sprintf(res, "%.*f %s", digits-1, value, 
-          prefix[(expof10-PREFIX_START)/3]);
-      return result;
+    if (verbose) {
+      if (parsed == len) {
+        fprintf(stderr,
+                "parse(%zu) = %zu, complete byte count indicates success\n",
+                len, len);
+      } else if (parsed > len) {
+        fprintf(stderr,
+                "parse(%zu) = %zu, long byte count indicates success and skip"
+                "of the next %zu bytes\n",
+                len, parsed, parsed - len);
+      } else {
+        fprintf(stderr,
+                "parse(%zu) = %zu, short byte count indicates failure; "
+                "last %zu bytes were not consumed\n",
+                len, parsed, len - parsed);
+      }
+    }
+
+    if (status->ok() != (parsed >= len)) {
+      if (status->ok()) {
+        fprintf(stderr,
+                "Error: decode function returned short byte count but set no "
+                "error status\n");
+      } else {
+        fprintf(stderr,
+                "Error: decode function returned complete byte count but set "
+                "error status\n");
+      }
+      fprintf(stderr, "Status: %s, parsed=%zu, len=%zu\n",
+              status->error_message(), parsed, len);
+      ASSERT(false);
+    }
+
+    if (!status->ok())
+      return false;
+
+    *ofs += parsed;
+  }
+  return true;
 }
+
+#endif

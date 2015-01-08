@@ -1124,6 +1124,9 @@ static void jitbytecode(jitcompiler *jc) {
       jittag(jc, tag, arg >> 8, (int8_t)arg, method);
       break;
     }
+    case OP_DISPATCH:
+      |  call   =>jmptarget(jc, &method->dispatch)
+      break;
     case OP_HALT:
       assert(false);
     }
