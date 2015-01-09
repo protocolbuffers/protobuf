@@ -64,7 +64,7 @@ static const void *newsubmsghandlerdata(upb_handlers* h, uint32_t ofs,
 static void *startseq_handler(void* closure, const void* hd) {
   MessageHeader* msg = closure;
   const size_t *ofs = hd;
-  return (void*)DEREF(Message_data(msg), *ofs, VALUE);
+  return (void*)DEREF(msg, *ofs, VALUE);
 }
 
 // Handlers that append primitive values to a repeated field (a regular Ruby
@@ -115,7 +115,7 @@ static void* str_handler(void *closure,
   const size_t *ofs = hd;
   VALUE str = rb_str_new2("");
   rb_enc_associate(str, kRubyStringUtf8Encoding);
-  DEREF(Message_data(msg), *ofs, VALUE) = str;
+  DEREF(msg, *ofs, VALUE) = str;
   return (void*)str;
 }
 
@@ -127,7 +127,7 @@ static void* bytes_handler(void *closure,
   const size_t *ofs = hd;
   VALUE str = rb_str_new2("");
   rb_enc_associate(str, kRubyString8bitEncoding);
-  DEREF(Message_data(msg), *ofs, VALUE) = str;
+  DEREF(msg, *ofs, VALUE) = str;
   return (void*)str;
 }
 
@@ -163,12 +163,12 @@ static void *submsg_handler(void *closure, const void *hd) {
       get_def_obj((void*)submsgdata->md);
   VALUE subklass = Descriptor_msgclass(subdesc);
 
-  if (DEREF(Message_data(msg), submsgdata->ofs, VALUE) == Qnil) {
-    DEREF(Message_data(msg), submsgdata->ofs, VALUE) =
+  if (DEREF(msg, submsgdata->ofs, VALUE) == Qnil) {
+    DEREF(msg, submsgdata->ofs, VALUE) =
         rb_class_new_instance(0, NULL, subklass);
   }
 
-  VALUE submsg_rb = DEREF(Message_data(msg), submsgdata->ofs, VALUE);
+  VALUE submsg_rb = DEREF(msg, submsgdata->ofs, VALUE);
   MessageHeader* submsg;
   TypedData_Get_Struct(submsg_rb, MessageHeader, &Message_type, submsg);
   return submsg;
@@ -199,7 +199,7 @@ typedef struct {
 static void *startmapentry_handler(void *closure, const void *hd) {
   MessageHeader* msg = closure;
   const map_handlerdata_t* mapdata = hd;
-  VALUE map_rb = DEREF(Message_data(msg), mapdata->ofs, VALUE);
+  VALUE map_rb = DEREF(msg, mapdata->ofs, VALUE);
 
   map_parse_frame_t* frame = ALLOC(map_parse_frame_t);
   frame->map = map_rb;
@@ -238,7 +238,8 @@ static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
 // pass the handlerdata down to the sub-message handler setup.
 static map_handlerdata_t* new_map_handlerdata(
     size_t ofs,
-    const upb_msgdef* mapentry_def) {
+    const upb_msgdef* mapentry_def,
+    Descriptor* desc) {
 
   map_handlerdata_t* hd = ALLOC(map_handlerdata_t);
   hd->ofs = ofs;
@@ -251,6 +252,11 @@ static map_handlerdata_t* new_map_handlerdata(
   assert(value_field != NULL);
   hd->value_field_type = upb_fielddef_type(value_field);
   hd->value_field_typeclass = field_type_class(value_field);
+
+  // Ensure that value_field_typeclass is properly GC-rooted.
+  if (hd->value_field_typeclass != Qnil) {
+    rb_ary_push(desc->typeclass_references, hd->value_field_typeclass);
+  }
 
   return hd;
 }
@@ -314,9 +320,7 @@ static void add_handlers_for_singular_field(upb_handlers *h,
     case UPB_TYPE_INT64:
     case UPB_TYPE_UINT64:
     case UPB_TYPE_DOUBLE:
-      // The shim writes directly at the given offset (instead of using
-      // DEREF()) so we need to add the msg overhead.
-      upb_shim_set(h, f, offset + sizeof(MessageHeader), -1);
+      upb_shim_set(h, f, offset, -1);
       break;
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
@@ -343,9 +347,10 @@ static void add_handlers_for_singular_field(upb_handlers *h,
 // Adds handlers to a map field.
 static void add_handlers_for_mapfield(upb_handlers* h,
                                       const upb_fielddef* fielddef,
-                                      size_t offset) {
+                                      size_t offset,
+                                      Descriptor* desc) {
   const upb_msgdef* map_msgdef = upb_fielddef_msgsubdef(fielddef);
-  map_handlerdata_t* hd = new_map_handlerdata(offset, map_msgdef);
+  map_handlerdata_t* hd = new_map_handlerdata(offset, map_msgdef, desc);
   upb_handlers_addcleanup(h, hd, free);
   upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
   upb_handlerattr_sethandlerdata(&attr, hd);
@@ -355,10 +360,11 @@ static void add_handlers_for_mapfield(upb_handlers* h,
 
 // Adds handlers to a map-entry msgdef.
 static void add_handlers_for_mapentry(const upb_msgdef* msgdef,
-                                      upb_handlers* h) {
+                                      upb_handlers* h,
+                                      Descriptor* desc) {
   const upb_fielddef* key_field = map_entry_key(msgdef);
   const upb_fielddef* value_field = map_entry_value(msgdef);
-  map_handlerdata_t* hd = new_map_handlerdata(0, msgdef);
+  map_handlerdata_t* hd = new_map_handlerdata(0, msgdef, desc);
   upb_handlers_addcleanup(h, hd, free);
   upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
   upb_handlerattr_sethandlerdata(&attr, hd);
@@ -366,15 +372,10 @@ static void add_handlers_for_mapentry(const upb_msgdef* msgdef,
 
   add_handlers_for_singular_field(
       h, key_field,
-      // Convert the offset into map_parse_frame_t to an offset understood by the
-      // singular field handlers, so that we don't have to use special
-      // map-key/value-specific handlers. The ordinary singular field handlers expect
-      // a Message* and assume offset is relative to the data section at the end, so
-      // we compensate for that addition.
-      offsetof(map_parse_frame_t, key_storage) - sizeof(MessageHeader));
+      offsetof(map_parse_frame_t, key_storage));
   add_handlers_for_singular_field(
       h, value_field,
-      offsetof(map_parse_frame_t, value_storage) - sizeof(MessageHeader));
+      offsetof(map_parse_frame_t, value_storage));
 }
 
 static void add_handlers_for_message(const void *closure, upb_handlers *h) {
@@ -384,7 +385,7 @@ static void add_handlers_for_message(const void *closure, upb_handlers *h) {
   // If this is a mapentry message type, set up a special set of handlers and
   // bail out of the normal (user-defined) message type handling.
   if (upb_msgdef_mapentry(msgdef)) {
-    add_handlers_for_mapentry(msgdef, h);
+    add_handlers_for_mapentry(msgdef, h, desc);
     return;
   }
 
@@ -402,10 +403,11 @@ static void add_handlers_for_message(const void *closure, upb_handlers *h) {
        !upb_msg_done(&i);
        upb_msg_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
-    size_t offset = desc->layout->offsets[upb_fielddef_index(f)];
+    size_t offset = desc->layout->offsets[upb_fielddef_index(f)] +
+        sizeof(MessageHeader);
 
     if (is_map_field(f)) {
-      add_handlers_for_mapfield(h, f, offset);
+      add_handlers_for_mapfield(h, f, offset, desc);
     } else if (upb_fielddef_isseq(f)) {
       add_handlers_for_repeated_field(h, f, offset);
     } else {
@@ -796,38 +798,38 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
 
   MessageHeader* msg;
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
-  void* msg_data = Message_data(msg);
 
   upb_msg_iter i;
   for (upb_msg_begin(&i, desc->msgdef);
        !upb_msg_done(&i);
        upb_msg_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
-    uint32_t offset = desc->layout->offsets[upb_fielddef_index(f)];
+    uint32_t offset =
+        desc->layout->offsets[upb_fielddef_index(f)] + sizeof(MessageHeader);
 
     if (is_map_field(f)) {
-      VALUE map = DEREF(msg_data, offset, VALUE);
+      VALUE map = DEREF(msg, offset, VALUE);
       if (map != Qnil) {
         putmap(map, f, sink, depth);
       }
     } else if (upb_fielddef_isseq(f)) {
-      VALUE ary = DEREF(msg_data, offset, VALUE);
+      VALUE ary = DEREF(msg, offset, VALUE);
       if (ary != Qnil) {
         putary(ary, f, sink, depth);
       }
     } else if (upb_fielddef_isstring(f)) {
-      VALUE str = DEREF(msg_data, offset, VALUE);
+      VALUE str = DEREF(msg, offset, VALUE);
       if (RSTRING_LEN(str) > 0) {
         putstr(str, f, sink);
       }
     } else if (upb_fielddef_issubmsg(f)) {
-      putsubmsg(DEREF(msg_data, offset, VALUE), f, sink, depth);
+      putsubmsg(DEREF(msg, offset, VALUE), f, sink, depth);
     } else {
       upb_selector_t sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
 
 #define T(upbtypeconst, upbtype, ctype, default_value)                \
   case upbtypeconst: {                                                \
-      ctype value = DEREF(msg_data, offset, ctype);                   \
+      ctype value = DEREF(msg, offset, ctype);                        \
       if (value != default_value) {                                   \
         upb_sink_put##upbtype(sink, sel, value);                      \
       }                                                               \

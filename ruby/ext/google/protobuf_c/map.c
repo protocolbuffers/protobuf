@@ -49,8 +49,14 @@
 // field values), but keys are a bit special. Since we use a strtable, we need
 // to store keys as sequences of bytes such that equality of those bytes maps
 // one-to-one to equality of keys. We store strings directly (i.e., they map to
-// their own bytes) and integers as sequences of either 4 or 8 bytes in
-// host-byte-order as either a uint32_t or a uint64_t.
+// their own bytes) and integers as native integers (using the native_slot
+// abstraction).
+
+// Note that there is another tradeoff here in keeping string keys as native
+// strings rather than Ruby strings: traversing the Map requires conversion to
+// Ruby string values on every traversal, potentially creating more garbage. We
+// should consider ways to cache a Ruby version of the key if this becomes an
+// issue later.
 
 // Forms a key to use with the underlying strtable from a Ruby key value. |buf|
 // must point to TABLE_KEY_BUF_LENGTH bytes of temporary space, used to
@@ -73,61 +79,13 @@ static void table_key(Map* self, VALUE key,
 
     case UPB_TYPE_BOOL:
     case UPB_TYPE_INT32:
-    case UPB_TYPE_INT64: {
-      // Signed numeric types: use an int64 in host-native byte order.
-      int64_t key_val = 0;
-
-      // Do a range/value check.
-      switch (self->key_type) {
-        case UPB_TYPE_BOOL:
-          if (key != Qtrue && key != Qfalse) {
-            rb_raise(rb_eTypeError, "Key must be true or false");
-          }
-          key_val = (key == Qtrue) ? 1 : 0;
-          break;
-        case UPB_TYPE_INT32:
-          native_slot_check_int_range_precision(self->key_type, key);
-          key_val = NUM2INT(key);
-          break;
-        case UPB_TYPE_INT64:
-          native_slot_check_int_range_precision(self->key_type, key);
-          key_val = NUM2LL(key);
-          break;
-        default:
-          break;
-      }
-
-      int64_t* int64_key = (int64_t*)buf;
-      *int64_key = key_val;
-      *out_key = buf;
-      *out_length = sizeof(int64_t);
-      break;
-    }
-
+    case UPB_TYPE_INT64:
     case UPB_TYPE_UINT32:
-    case UPB_TYPE_UINT64: {
-      // Unsigned numeric types: use a uint64 in host-native byte order.
-      uint64_t key_val = 0;
-
-      // Do a range/value check.
-      native_slot_check_int_range_precision(self->key_type, key);
-      switch (self->key_type) {
-        case UPB_TYPE_UINT32:
-          key_val = NUM2UINT(key);
-          break;
-        case UPB_TYPE_UINT64:
-          key_val = NUM2ULL(key);
-          break;
-        default:
-          break;
-      }
-
-      uint64_t* uint64_key = (uint64_t*)buf;
-      *uint64_key = key_val;
+    case UPB_TYPE_UINT64:
+      native_slot_set(self->key_type, Qnil, buf, key);
       *out_key = buf;
-      *out_length = sizeof(uint64_t);
+      *out_length = native_slot_size(self->key_type);
       break;
-    }
 
     default:
       // Map constructor should not allow a Map with another key type to be
@@ -150,48 +108,14 @@ static VALUE table_key_to_ruby(Map* self, const char* buf, size_t length) {
 
     case UPB_TYPE_BOOL:
     case UPB_TYPE_INT32:
-    case UPB_TYPE_INT64: {
-      assert(length == sizeof(int64_t));
-      int64_t* int64_key = (int64_t*)buf;
-
-      if (self->key_type == UPB_TYPE_BOOL) {
-        return *int64_key ? Qtrue : Qfalse;
-      } else {
-        return LL2NUM(*int64_key);
-      }
-    }
-
+    case UPB_TYPE_INT64:
     case UPB_TYPE_UINT32:
-    case UPB_TYPE_UINT64: {
-      assert(length == sizeof(uint64_t));
-      uint64_t* uint64_key = (uint64_t*)buf;
-      return ULL2NUM(*uint64_key);
-    }
+    case UPB_TYPE_UINT64:
+      return native_slot_get(self->key_type, Qnil, buf);
 
     default:
       assert(false);
       return Qnil;
-  }
-}
-
-static upb_ctype_t upb_table_value_type(upb_fieldtype_t value_type) {
-  switch (value_type) {
-    case UPB_TYPE_BOOL:
-    case UPB_TYPE_INT32:
-    case UPB_TYPE_INT64:
-    case UPB_TYPE_UINT32:
-    case UPB_TYPE_UINT64:
-    case UPB_TYPE_ENUM:
-    case UPB_TYPE_FLOAT:
-    case UPB_TYPE_DOUBLE:
-    case UPB_TYPE_STRING:
-    case UPB_TYPE_BYTES:
-    case UPB_TYPE_MESSAGE:
-      return UPB_CTYPE_UINT64;
-
-    default:
-      assert(false);
-      return 0;
   }
 }
 
@@ -321,7 +245,9 @@ VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
     init_value_arg = 3;
   }
 
-  if (!upb_strtable_init(&self->table, upb_table_value_type(self->value_type))) {
+  // Table value type is always UINT64: this ensures enough space to store the
+  // native_slot value.
+  if (!upb_strtable_init(&self->table, UPB_CTYPE_UINT64)) {
     rb_raise(rb_eRuntimeError, "Could not allocate table.");
   }
 
@@ -528,8 +454,7 @@ VALUE Map_clear(VALUE _self) {
   // Uninit and reinit the table -- this is faster than iterating and doing a
   // delete-lookup on each key.
   upb_strtable_uninit(&self->table);
-  if (!upb_strtable_init(&self->table,
-                         upb_table_value_type(self->value_type))) {
+  if (!upb_strtable_init(&self->table, UPB_CTYPE_INT64)) {
     rb_raise(rb_eRuntimeError, "Unable to re-initialize table");
   }
   return Qnil;

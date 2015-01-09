@@ -3420,8 +3420,10 @@ char *upb_strdup2(const char *s, size_t len) {
   // have a null-terminating byte since it may be a raw binary buffer.
   size_t n = len + 1;
   char *p = malloc(n);
-  if (p) memcpy(p, s, len);
-  p[len] = 0;
+  if (p) {
+    memcpy(p, s, len);
+    p[len] = 0;
+  }
   return p;
 }
 

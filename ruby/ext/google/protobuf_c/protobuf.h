@@ -110,6 +110,10 @@ struct Descriptor {
   const upb_pbdecodermethod* fill_method;
   const upb_handlers* pb_serialize_handlers;
   const upb_handlers* json_serialize_handlers;
+  // Handlers hold type class references for sub-message fields directly in some
+  // cases. We need to keep these rooted because they might otherwise be
+  // collected.
+  VALUE typeclass_references;
 };
 
 struct FieldDescriptor {
@@ -252,7 +256,7 @@ void native_slot_set(upb_fieldtype_t type,
                      VALUE value);
 VALUE native_slot_get(upb_fieldtype_t type,
                       VALUE type_class,
-                      void* memory);
+                      const void* memory);
 void native_slot_init(upb_fieldtype_t type, void* memory);
 void native_slot_mark(upb_fieldtype_t type, void* memory);
 void native_slot_dup(upb_fieldtype_t type, void* to, void* from);
@@ -389,7 +393,7 @@ struct MessageLayout {
 MessageLayout* create_layout(const upb_msgdef* msgdef);
 void free_layout(MessageLayout* layout);
 VALUE layout_get(MessageLayout* layout,
-                 void* storage,
+                 const void* storage,
                  const upb_fielddef* field);
 void layout_set(MessageLayout* layout,
                 void* storage,

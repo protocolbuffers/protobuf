@@ -200,7 +200,9 @@ void native_slot_set(upb_fieldtype_t type, VALUE type_class,
   }
 }
 
-VALUE native_slot_get(upb_fieldtype_t type, VALUE type_class, void* memory) {
+VALUE native_slot_get(upb_fieldtype_t type,
+                      VALUE type_class,
+                      const void* memory) {
   switch (type) {
     case UPB_TYPE_FLOAT:
       return DBL2NUM(DEREF(memory, float));
@@ -211,7 +213,7 @@ VALUE native_slot_get(upb_fieldtype_t type, VALUE type_class, void* memory) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
     case UPB_TYPE_MESSAGE:
-      return *((VALUE *)memory);
+      return DEREF(memory, VALUE);
     case UPB_TYPE_ENUM: {
       int32_t val = DEREF(memory, int32_t);
       VALUE symbol = enum_lookup(type_class, INT2NUM(val));
@@ -332,19 +334,19 @@ bool is_map_field(const upb_fielddef* field) {
       upb_fielddef_type(field) != UPB_TYPE_MESSAGE) {
     return false;
   }
-  const upb_msgdef* subdef = (const upb_msgdef*)upb_fielddef_subdef(field);
+  const upb_msgdef* subdef = upb_fielddef_msgsubdef(field);
   return upb_msgdef_mapentry(subdef);
 }
 
 const upb_fielddef* map_field_key(const upb_fielddef* field) {
   assert(is_map_field(field));
-  const upb_msgdef* subdef = (const upb_msgdef*)upb_fielddef_subdef(field);
+  const upb_msgdef* subdef = upb_fielddef_msgsubdef(field);
   return map_entry_key(subdef);
 }
 
 const upb_fielddef* map_field_value(const upb_fielddef* field) {
   assert(is_map_field(field));
-  const upb_msgdef* subdef = (const upb_msgdef*)upb_fielddef_subdef(field);
+  const upb_msgdef* subdef = upb_fielddef_msgsubdef(field);
   return map_entry_value(subdef);
 }
 
@@ -414,7 +416,7 @@ VALUE field_type_class(const upb_fielddef* field) {
 }
 
 VALUE layout_get(MessageLayout* layout,
-                 void* storage,
+                 const void* storage,
                  const upb_fielddef* field) {
   void* memory = ((uint8_t *)storage) +
       layout->offsets[upb_fielddef_index(field)];

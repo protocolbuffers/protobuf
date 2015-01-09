@@ -226,6 +226,7 @@ DEFINE_CLASS(Descriptor, "Google::Protobuf::Descriptor");
 void Descriptor_mark(void* _self) {
   Descriptor* self = _self;
   rb_gc_mark(self->klass);
+  rb_gc_mark(self->typeclass_references);
 }
 
 void Descriptor_free(void* _self) {
@@ -270,6 +271,7 @@ VALUE Descriptor_alloc(VALUE klass) {
   self->fill_method = NULL;
   self->pb_serialize_handlers = NULL;
   self->json_serialize_handlers = NULL;
+  self->typeclass_references = rb_ary_new();
   return ret;
 }
 
