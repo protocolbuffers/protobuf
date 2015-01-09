@@ -288,14 +288,18 @@ void MessageGenerator::Generate(io::Printer* printer) {
     }
     printer->Print("}\n");
   } else {
+    printer->Print(
+      "\n"
+      "public $classname$() {\n",
+      "classname", descriptor_->name());
     if (params_.generate_clear()) {
-      printer->Print(
-        "\n"
-        "public $classname$() {\n"
-        "  clear();\n"
-        "}\n",
-        "classname", descriptor_->name());
+      printer->Print("  clear();\n");
+    } else {
+      printer->Indent();
+      GenerateFieldInitializers(printer);
+      printer->Outdent();
     }
+    printer->Print("}\n");
   }
 
   // Other methods in this class
@@ -495,6 +499,15 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
     "classname", descriptor_->name());
   printer->Indent();
 
+  GenerateFieldInitializers(printer);
+
+  printer->Outdent();
+  printer->Print(
+    "  return this;\n"
+    "}\n");
+}
+
+void MessageGenerator::GenerateFieldInitializers(io::Printer* printer) {
   // Clear bit fields.
   int totalInts = (field_generators_.total_bits() + 31) / 32;
   for (int i = 0; i < totalInts; i++) {
@@ -520,12 +533,7 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
   if (params_.store_unknown_fields()) {
     printer->Print("unknownFieldData = null;\n");
   }
-
-  printer->Outdent();
-  printer->Print(
-    "  cachedSize = -1;\n"
-    "  return this;\n"
-    "}\n");
+  printer->Print("cachedSize = -1;\n");
 }
 
 void MessageGenerator::GenerateEquals(io::Printer* printer) {

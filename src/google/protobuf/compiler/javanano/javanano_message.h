@@ -77,6 +77,7 @@ class MessageGenerator {
                                  const FieldDescriptor* field);
 
   void GenerateClear(io::Printer* printer);
+  void GenerateFieldInitializers(io::Printer* printer);
   void GenerateEquals(io::Printer* printer);
   void GenerateHashCode(io::Printer* printer);
 

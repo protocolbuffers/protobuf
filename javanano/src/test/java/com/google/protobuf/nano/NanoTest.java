@@ -36,6 +36,7 @@ import com.google.protobuf.nano.NanoAccessorsOuterClass.TestNanoAccessors;
 import com.google.protobuf.nano.NanoHasOuterClass.TestAllTypesNanoHas;
 import com.google.protobuf.nano.NanoOuterClass.TestAllTypesNano;
 import com.google.protobuf.nano.UnittestRecursiveNano.RecursiveMessageNano;
+import com.google.protobuf.nano.NanoReferenceTypesCompat;
 import com.google.protobuf.nano.UnittestSimpleNano.SimpleMessageNano;
 import com.google.protobuf.nano.UnittestSingleNano.SingleMessageNano;
 import com.google.protobuf.nano.testext.Extensions;
@@ -4379,6 +4380,11 @@ public class NanoTest extends TestCase {
     assertMapSet(testMap.sint64ToSint64Field, int64Values, int64Values);
     assertMapSet(testMap.fixed64ToFixed64Field, int64Values, int64Values);
     assertMapSet(testMap.sfixed64ToSfixed64Field, int64Values, int64Values);
+  }
+
+  public void testRepeatedFieldInitializedInReftypesCompatMode() {
+    NanoReferenceTypesCompat.TestAllTypesNano proto = new NanoReferenceTypesCompat.TestAllTypesNano();
+    assertNotNull(proto.repeatedString);
   }
 
   private void assertRepeatedPackablesEqual(
