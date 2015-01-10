@@ -49,7 +49,26 @@ lua_script() {
   make -j12 testlua USER_CPPFLAGS=`pkg-config lua5.2 --cflags`
 }
 
+# A run that executes with coverage support and uploads to coveralls.io
+coverage_install() {
+  sudo apt-get update -qq
+  sudo apt-get install protobuf-compiler libprotobuf-dev lua5.2 liblua5.2-dev
+  sudo pip install cpp-coveralls
+}
+coverage_script() {
+  make -j12 tests googlepbtests testlua WITH_JIT=yes \
+      USER_CPPFLAGS="--coverage `pkg-config lua5.2 --cflags`"
+  make test
+}
+coverage_after_success() {
+  coveralls --exclude dynasm --exclude tests --exclude upb/bindings/linux --gcov-options '\-lp'
+}
+
+if [ "$1" == "after_success" ] && [ "$UPB_TRAVIS_BUILD" != "coverage" ]; then
+  # after_success is only used for coverage.
+  exit
+fi
+
 set -e
 set -x
 eval ${UPB_TRAVIS_BUILD}_${1}
-

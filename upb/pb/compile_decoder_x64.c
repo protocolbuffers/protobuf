@@ -7,6 +7,9 @@
  * Driver code for the x64 JIT compiler.
  */
 
+// Needed to ensure we get defines like MAP_ANON.
+#define _GNU_SOURCE
+
 #include <dlfcn.h>
 #include <stdio.h>
 #include <sys/mman.h>

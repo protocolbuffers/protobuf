@@ -1,8 +1,12 @@
+language: cpp
+compiler: gcc
 install: ./travis.sh install
 script: ./travis.sh script
+after_success: ./travis.sh after_success
 env:
   - UPB_TRAVIS_BUILD=bare
   - UPB_TRAVIS_BUILD=barejit
   - UPB_TRAVIS_BUILD=core32
   - UPB_TRAVIS_BUILD=withprotobuf
   - UPB_TRAVIS_BUILD=lua
+  - UPB_TRAVIS_BUILD=coverage
