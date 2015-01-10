@@ -6662,7 +6662,9 @@ typedef enum {
                            //   | unused (24)         | opc |
                            //   | upb_inttable* (32 or 64)  |
 
-  OP_HALT           = 36,  // No arg.
+  OP_DISPATCH       = 36,  // No arg.
+
+  OP_HALT           = 37,  // No arg.
 } opcode;
 
 #define OP_MAX OP_HALT
@@ -7339,15 +7341,24 @@ UPB_DEFINE_STRUCT0(upb_json_parser,
   int parser_stack[UPB_JSON_MAX_DEPTH];
   int parser_top;
 
-  // A pointer to the beginning of whatever text we are currently parsing.
-  const char *text_begin;
+  // The handle for the current buffer.
+  const upb_bufhandle *handle;
 
-  // We have to accumulate text for member names, integers, unicode escapes, and
-  // base64 partial results.
+  // Accumulate buffer.  See details in parser.rl.
   const char *accumulated;
   size_t accumulated_len;
-  // TODO: add members and code for allocating a buffer when necessary (when the
-  // member spans input buffers or contains escapes).
+  char *accumulate_buf;
+  size_t accumulate_buf_size;
+
+  // Multi-part text data.  See details in parser.rl.
+  int multipart_state;
+  upb_selector_t string_selector;
+
+  // Input capture.  See details in parser.rl.
+  const char *capture;
+
+  // Intermediate result of parsing a unicode escape sequence.
+  uint32_t digit;
 ));
 
 UPB_BEGIN_EXTERN_C
