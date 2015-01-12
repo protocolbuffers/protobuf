@@ -106,7 +106,7 @@ nobase_include_HEADERS =                                        \
   google/protobuf/compiler/plugin.pb.h                          \
   google/protobuf/compiler/cpp/cpp_generator.h                  \
   google/protobuf/compiler/java/java_generator.h                \
-  google/protobuf/compiler/java/java_names.h                \
+  google/protobuf/compiler/java/java_names.h                    \
   google/protobuf/compiler/javanano/javanano_generator.h        \
   google/protobuf/compiler/python/python_generator.h            \
   google/protobuf/compiler/ruby/ruby_generator.h
