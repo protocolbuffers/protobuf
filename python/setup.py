@@ -196,7 +196,7 @@ if __name__ == '__main__':
           'google.protobuf.text_encoding',
           'google.protobuf.text_format'],
         cmdclass = { 'clean': clean, 'build_py': build_py },
-        install_requires = ['setuptools'],
+        install_requires = ['setuptools', 'six'],
         # TODO: Restore dependency once a Python 3 compatible google-apputils
         # is released.
         setup_requires = (['google-apputils']
