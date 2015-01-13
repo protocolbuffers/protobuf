@@ -46,9 +46,11 @@ unittest*.pb.*
 cpp_test*.pb.*
 
 *.pyc
+*.so
 *.egg-info
 *_pb2.py
 python/.eggs/
+python/.tox
 python/build/
 python/google/protobuf/compiler/
 
@@ -61,4 +63,3 @@ src/test_plugin
 src/testzip.*
 src/zcg*zip
 ar-lib
-*.so
