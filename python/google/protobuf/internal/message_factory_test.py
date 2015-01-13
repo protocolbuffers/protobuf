@@ -94,11 +94,11 @@ class MessageFactoryTest(unittest.TestCase):
     factory = message_factory.MessageFactory()
     cls = factory.GetPrototype(pool.FindMessageTypeByName(
         'google.protobuf.python.internal.Factory2Message'))
-    self.assertIsNot(cls, factory_test2_pb2.Factory2Message)
+    self.assertFalse(cls is factory_test2_pb2.Factory2Message)
     self._ExerciseDynamicClass(cls)
     cls2 = factory.GetPrototype(pool.FindMessageTypeByName(
         'google.protobuf.python.internal.Factory2Message'))
-    self.assertIs(cls, cls2)
+    self.assertTrue(cls is cls2)
 
   def testGetMessages(self):
     # performed twice because multiple calls with the same input must be allowed

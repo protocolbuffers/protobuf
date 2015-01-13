@@ -36,6 +36,17 @@
 __author__ = 'bohdank@google.com (Bohdan Koval)'
 
 import unittest
+try:
+    from unittest import skipIf
+except ImportError:
+    def skipIf(predicate, message):
+        def decorator(wrapped):
+            if predicate:
+                def _noop(*args, **kw):
+                    pass
+                return _noop
+            return wrapped
+        return decorator
 
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
@@ -46,7 +57,7 @@ from google.protobuf.internal import test_util
 from google.protobuf.internal import type_checkers
 
 
-@unittest.skipIf(
+@skipIf(
     api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
     'C++ implementation does not expose unknown fields to Python')
 class UnknownFieldsTest(unittest.TestCase):
@@ -180,7 +191,7 @@ class UnknownFieldsTest(unittest.TestCase):
     self.assertNotEqual(self.empty_message, message)
 
 
-@unittest.skipIf(
+@skipIf(
     api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
     'C++ implementation does not expose unknown fields to Python')
 class UnknownEnumValuesTest(unittest.TestCase):

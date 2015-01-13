@@ -135,13 +135,6 @@ class build_py(_build_py):
         pass
     # _build_py is an old-style class, so super() doesn't work.
     _build_py.run(self)
-  # TODO(mrovner): Subclass to run 2to3 on some files only.
-  # Tracing what https://wiki.python.org/moin/PortingPythonToPy3k's "Approach 2"
-  # section on how to get 2to3 to run on source files during install under
-  # Python 3.  This class seems like a good place to put logic that calls
-  # python3's distutils.util.run_2to3 on the subset of the files we have in our
-  # release that are subject to conversion.
-  # See code reference in previous code review.
 
 if __name__ == '__main__':
   ext_module_list = []

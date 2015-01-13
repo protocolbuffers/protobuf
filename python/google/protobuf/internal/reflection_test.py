@@ -40,6 +40,17 @@ import gc
 import operator
 import struct
 import unittest
+try:
+    from unittest import skipIf
+except ImportError:
+    def skipIf(predicate, message):
+        def decorator(wrapped):
+            if predicate:
+                def _noop(*args, **kw):
+                    pass
+                return _noop
+            return wrapped
+        return decorator
 
 import six
 
@@ -1623,7 +1634,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertFalse(proto.IsInitialized(errors))
     self.assertEqual(errors, ['a', 'b', 'c'])
 
-  @unittest.skipIf(
+  @skipIf(
       api_implementation.Type() != 'cpp' or api_implementation.Version() != 2,
       'Errors are only available from the most recent C++ implementation.')
   def testFileDescriptorErrors(self):
@@ -1644,18 +1655,17 @@ class ReflectionTest(unittest.TestCase):
     file_descriptor_proto.name = another_file_name
     m2 = file_descriptor_proto.message_type.add()
     m2.name = 'msg2'
-    with self.assertRaises(TypeError) as cm:
+    try:
       descriptor.FileDescriptor(
           another_file_name,
           package_name,
           serialized_pb=file_descriptor_proto.SerializeToString())
-      self.assertTrue(hasattr(cm, 'exception'), '%s not raised' %
-                      getattr(cm.expected, '__name__', cm.expected))
-      self.assertIn('test_file_descriptor_errors.proto', str(cm.exception))
-      # Error message will say something about this definition being a
-      # duplicate, though we don't check the message exactly to avoid a
-      # dependency on the C++ logging code.
-      self.assertIn('test_file_descriptor_errors.msg1', str(cm.exception))
+    except TypeError as e:
+      message = str(e)
+    else:
+      self.fail("Did not raise TypeError")
+
+    self.assertTrue('test_file_descriptor_errors.proto' in message)
 
   def testStringUTF8Encoding(self):
     proto = unittest_pb2.TestAllTypes()
@@ -2824,7 +2834,7 @@ class OptionsTest(unittest.TestCase):
 
 class ClassAPITest(unittest.TestCase):
 
-  @unittest.skipIf(
+  @skipIf(
       api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
       'C++ implementation requires a call to MakeDescriptor()')
   def testMakeClassWithNestedDescriptor(self):
