@@ -82,9 +82,9 @@ class MessageFactoryTest(unittest.TestCase):
     serialized = msg.SerializeToString()
     converted = factory_test2_pb2.Factory2Message.FromString(serialized)
     reserialized = converted.SerializeToString()
-    self.assertEquals(serialized, reserialized)
+    self.assertEqual(serialized, reserialized)
     result = cls.FromString(reserialized)
-    self.assertEquals(msg, result)
+    self.assertEqual(msg, result)
 
   def testGetPrototype(self):
     db = descriptor_database.DescriptorDatabase()
@@ -125,8 +125,8 @@ class MessageFactoryTest(unittest.TestCase):
           'google.protobuf.python.internal.another_field']
       msg1.Extensions[ext1] = 'test1'
       msg1.Extensions[ext2] = 'test2'
-      self.assertEquals('test1', msg1.Extensions[ext1])
-      self.assertEquals('test2', msg1.Extensions[ext2])
+      self.assertEqual('test1', msg1.Extensions[ext1])
+      self.assertEqual('test2', msg1.Extensions[ext2])
 
 
 if __name__ == '__main__':

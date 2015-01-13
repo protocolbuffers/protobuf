@@ -49,17 +49,17 @@ class DescriptorDatabaseTest(unittest.TestCase):
         factory_test2_pb2.DESCRIPTOR.serialized_pb)
     db.Add(file_desc_proto)
 
-    self.assertEquals(file_desc_proto, db.FindFileByName(
+    self.assertEqual(file_desc_proto, db.FindFileByName(
         'google/protobuf/internal/factory_test2.proto'))
-    self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.Factory2Message'))
-    self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.Factory2Message.NestedFactory2Message'))
-    self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.Factory2Enum'))
-    self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.Factory2Message.NestedFactory2Enum'))
-    self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.MessageWithNestedEnumOnly.NestedEnum'))
 
 if __name__ == '__main__':

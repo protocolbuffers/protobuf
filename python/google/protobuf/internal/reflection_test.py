@@ -141,10 +141,10 @@ class ReflectionTest(unittest.TestCase):
         repeated_bool=[True, False, False],
         repeated_string=["optional_string"])
 
-    self.assertEquals([1, 2, 3, 4], list(proto.repeated_int32))
-    self.assertEquals([1.23, 54.321], list(proto.repeated_double))
-    self.assertEquals([True, False, False], list(proto.repeated_bool))
-    self.assertEquals(["optional_string"], list(proto.repeated_string))
+    self.assertEqual([1, 2, 3, 4], list(proto.repeated_int32))
+    self.assertEqual([1.23, 54.321], list(proto.repeated_double))
+    self.assertEqual([True, False, False], list(proto.repeated_bool))
+    self.assertEqual(["optional_string"], list(proto.repeated_string))
 
   def testRepeatedCompositeConstructor(self):
     # Constructor with only repeated composite types should succeed.
@@ -163,18 +163,18 @@ class ReflectionTest(unittest.TestCase):
             unittest_pb2.TestAllTypes.RepeatedGroup(a=1),
             unittest_pb2.TestAllTypes.RepeatedGroup(a=2)])
 
-    self.assertEquals(
+    self.assertEqual(
         [unittest_pb2.TestAllTypes.NestedMessage(
             bb=unittest_pb2.TestAllTypes.FOO),
          unittest_pb2.TestAllTypes.NestedMessage(
              bb=unittest_pb2.TestAllTypes.BAR)],
         list(proto.repeated_nested_message))
-    self.assertEquals(
+    self.assertEqual(
         [unittest_pb2.ForeignMessage(c=-43),
          unittest_pb2.ForeignMessage(c=45324),
          unittest_pb2.ForeignMessage(c=12)],
         list(proto.repeated_foreign_message))
-    self.assertEquals(
+    self.assertEqual(
         [unittest_pb2.TestAllTypes.RepeatedGroup(),
          unittest_pb2.TestAllTypes.RepeatedGroup(a=1),
          unittest_pb2.TestAllTypes.RepeatedGroup(a=2)],
@@ -199,15 +199,15 @@ class ReflectionTest(unittest.TestCase):
 
     self.assertEqual(24, proto.optional_int32)
     self.assertEqual('optional_string', proto.optional_string)
-    self.assertEquals([1.23, 54.321], list(proto.repeated_double))
-    self.assertEquals([True, False, False], list(proto.repeated_bool))
-    self.assertEquals(
+    self.assertEqual([1.23, 54.321], list(proto.repeated_double))
+    self.assertEqual([True, False, False], list(proto.repeated_bool))
+    self.assertEqual(
         [unittest_pb2.TestAllTypes.NestedMessage(
             bb=unittest_pb2.TestAllTypes.FOO),
          unittest_pb2.TestAllTypes.NestedMessage(
              bb=unittest_pb2.TestAllTypes.BAR)],
         list(proto.repeated_nested_message))
-    self.assertEquals(
+    self.assertEqual(
         [unittest_pb2.ForeignMessage(c=-43),
          unittest_pb2.ForeignMessage(c=45324),
          unittest_pb2.ForeignMessage(c=12)],
@@ -235,18 +235,18 @@ class ReflectionTest(unittest.TestCase):
 
   def testConstructorInvalidatesCachedByteSize(self):
     message = unittest_pb2.TestAllTypes(optional_int32 = 12)
-    self.assertEquals(2, message.ByteSize())
+    self.assertEqual(2, message.ByteSize())
 
     message = unittest_pb2.TestAllTypes(
         optional_nested_message = unittest_pb2.TestAllTypes.NestedMessage())
-    self.assertEquals(3, message.ByteSize())
+    self.assertEqual(3, message.ByteSize())
 
     message = unittest_pb2.TestAllTypes(repeated_int32 = [12])
-    self.assertEquals(3, message.ByteSize())
+    self.assertEqual(3, message.ByteSize())
 
     message = unittest_pb2.TestAllTypes(
         repeated_nested_message = [unittest_pb2.TestAllTypes.NestedMessage()])
-    self.assertEquals(3, message.ByteSize())
+    self.assertEqual(3, message.ByteSize())
 
   def testSimpleHasBits(self):
     # Test a scalar.
@@ -1188,7 +1188,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertTrue(1 in unittest_pb2.TestAllExtensions._extensions_by_number)
     # Make sure extensions haven't been registered into types that shouldn't
     # have any.
-    self.assertEquals(0, len(unittest_pb2.TestAllTypes._extensions_by_name))
+    self.assertEqual(0, len(unittest_pb2.TestAllTypes._extensions_by_name))
 
   # If message A directly contains message B, and
   # a.HasField('b') is currently False, then mutating any
@@ -1512,18 +1512,18 @@ class ReflectionTest(unittest.TestCase):
       test_util.SetAllNonLazyFields(proto)
     # Clear the message.
     proto.Clear()
-    self.assertEquals(proto.ByteSize(), 0)
+    self.assertEqual(proto.ByteSize(), 0)
     empty_proto = unittest_pb2.TestAllTypes()
-    self.assertEquals(proto, empty_proto)
+    self.assertEqual(proto, empty_proto)
 
     # Test if extensions which were set are cleared.
     proto = unittest_pb2.TestAllExtensions()
     test_util.SetAllExtensions(proto)
     # Clear the message.
     proto.Clear()
-    self.assertEquals(proto.ByteSize(), 0)
+    self.assertEqual(proto.ByteSize(), 0)
     empty_proto = unittest_pb2.TestAllExtensions()
-    self.assertEquals(proto, empty_proto)
+    self.assertEqual(proto, empty_proto)
 
   def testDisconnectingBeforeClear(self):
     proto = unittest_pb2.TestAllTypes()
@@ -2481,7 +2481,7 @@ class SerializationTest(unittest.TestCase):
     # Check that the message parsed well.
     extension_message1 = unittest_mset_pb2.TestMessageSetExtension1
     extension1 = extension_message1.message_set_extension
-    self.assertEquals(12345, proto.Extensions[extension1].i)
+    self.assertEqual(12345, proto.Extensions[extension1].i)
 
   def testUnknownFields(self):
     proto = unittest_pb2.TestAllTypes()
