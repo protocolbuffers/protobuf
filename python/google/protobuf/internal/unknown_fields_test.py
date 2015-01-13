@@ -35,7 +35,8 @@
 
 __author__ = 'bohdank@google.com (Bohdan Koval)'
 
-from google.apputils import basetest
+import unittest
+
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
@@ -46,7 +47,7 @@ from google.protobuf.internal import test_util
 from google.protobuf.internal import type_checkers
 
 
-class UnknownFieldsTest(basetest.TestCase):
+class UnknownFieldsTest(unittest.TestCase):
 
   def setUp(self):
     self.descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
@@ -104,7 +105,7 @@ class UnknownFieldsTest(basetest.TestCase):
   # fields when checking equality.
   #
   # TODO(haberman): fix this.
-  @basetest.unittest.skipIf(
+  @unittest.skipIf(
       api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
       'C++ implementation does not expose unknown fields to Python')
   def testEquals(self):
@@ -117,10 +118,10 @@ class UnknownFieldsTest(basetest.TestCase):
     self.assertNotEqual(self.empty_message, message)
 
 
-@basetest.unittest.skipIf(
+@unittest.skipIf(
     api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
     'C++ implementation does not expose unknown fields to Python')
-class UnknownFieldsAccessorsTest(basetest.TestCase):
+class UnknownFieldsAccessorsTest(unittest.TestCase):
 
   def setUp(self):
     self.descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
@@ -205,10 +206,10 @@ class UnknownFieldsAccessorsTest(basetest.TestCase):
 
 
 
-@basetest.unittest.skipIf(
+@unittest.skipIf(
     api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
     'C++ implementation does not expose unknown fields to Python')
-class UnknownEnumValuesTest(basetest.TestCase):
+class UnknownEnumValuesTest(unittest.TestCase):
 
   def setUp(self):
     self.descriptor = missing_enum_values_pb2.TestEnumValues.DESCRIPTOR
@@ -261,4 +262,4 @@ class UnknownEnumValuesTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-  basetest.main()
+  unittest.main()

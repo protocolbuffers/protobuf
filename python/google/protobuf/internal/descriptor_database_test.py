@@ -34,13 +34,14 @@
 
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
-from google.apputils import basetest
+import unittest
+
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import factory_test2_pb2
 from google.protobuf import descriptor_database
 
 
-class DescriptorDatabaseTest(basetest.TestCase):
+class DescriptorDatabaseTest(unittest.TestCase):
 
   def testAdd(self):
     db = descriptor_database.DescriptorDatabase()
@@ -62,4 +63,4 @@ class DescriptorDatabaseTest(basetest.TestCase):
         'google.protobuf.python.internal.MessageWithNestedEnumOnly.NestedEnum'))
 
 if __name__ == '__main__':
-  basetest.main()
+  unittest.main()

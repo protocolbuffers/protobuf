@@ -50,7 +50,7 @@ Installation
 4) Build and run the tests:
 
      $ python setup.py build
-     $ python setup.py google_test
+     $ python setup.py test
 
      To build, test, and use the C++ implementation, you must first compile
      libprotobuf.so:
@@ -82,7 +82,7 @@ Installation
      $ python setup.py build --cpp_implementation
 
      Then run the tests like so:
-     $ python setup.py google_test --cpp_implementation
+     $ python setup.py test --cpp_implementation
 
    If some tests fail, this library may not work correctly on your
    system.  Continue at your own risk.

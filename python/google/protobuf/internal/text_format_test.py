@@ -35,8 +35,8 @@
 __author__ = 'kenton@google.com (Kenton Varda)'
 
 import re
+import unittest
 
-from google.apputils import basetest
 from google.protobuf.internal import _parameterized
 
 from google.protobuf import unittest_mset_pb2
@@ -47,7 +47,7 @@ from google.protobuf.internal import test_util
 from google.protobuf import text_format
 
 # Base class with some common functionality.
-class TextFormatBase(basetest.TestCase):
+class TextFormatBase(unittest.TestCase):
 
   def ReadGolden(self, golden_filename):
     with test_util.GoldenFile(golden_filename) as f:
@@ -312,12 +312,12 @@ class TextFormatTest(TextFormatBase):
   def testParseGroupNotClosed(self, message_module):
     message = message_module.TestAllTypes()
     text = 'RepeatedGroup: <'
-    self.assertRaisesWithLiteralMatch(
+    self.assertRaisesRegexp(
         text_format.ParseError, '1:16 : Expected ">".',
         text_format.Parse, text, message)
 
     text = 'RepeatedGroup: {'
-    self.assertRaisesWithLiteralMatch(
+    self.assertRaisesRegexp(
         text_format.ParseError, '1:16 : Expected "}".',
         text_format.Parse, text, message)
 
@@ -354,7 +354,7 @@ class TextFormatTest(TextFormatBase):
   def testParseBadIntValue(self, message_module):
     message = message_module.TestAllTypes()
     text = 'optional_int32: bork'
-    self.assertRaisesWithLiteralMatch(
+    self.assertRaisesRegexp(
         text_format.ParseError,
         ('1:17 : Couldn\'t parse integer: bork'),
         text_format.Parse, text, message)
@@ -569,12 +569,12 @@ class Proto2Tests(TextFormatBase):
   def testParseBadExtension(self):
     message = unittest_pb2.TestAllExtensions()
     text = '[unknown_extension]: 8\n'
-    self.assertRaisesWithLiteralMatch(
+    self.assertRaisesRegexp(
         text_format.ParseError,
         '1:2 : Extension "unknown_extension" not registered.',
         text_format.Parse, text, message)
     message = unittest_pb2.TestAllTypes()
-    self.assertRaisesWithLiteralMatch(
+    self.assertRaisesRegexp(
         text_format.ParseError,
         ('1:2 : Message type "protobuf_unittest.TestAllTypes" does not have '
          'extensions.'),
@@ -593,7 +593,7 @@ class Proto2Tests(TextFormatBase):
     message = unittest_pb2.TestAllExtensions()
     text = ('[protobuf_unittest.optional_int32_extension]: 42 '
             '[protobuf_unittest.optional_int32_extension]: 67')
-    self.assertRaisesWithLiteralMatch(
+    self.assertRaisesRegexp(
         text_format.ParseError,
         ('1:96 : Message type "protobuf_unittest.TestAllExtensions" '
          'should not have multiple '
@@ -604,7 +604,7 @@ class Proto2Tests(TextFormatBase):
     message = unittest_pb2.TestAllTypes()
     text = ('optional_nested_message { bb: 1 } '
             'optional_nested_message { bb: 2 }')
-    self.assertRaisesWithLiteralMatch(
+    self.assertRaisesRegexp(
         text_format.ParseError,
         ('1:65 : Message type "protobuf_unittest.TestAllTypes.NestedMessage" '
          'should not have multiple "bb" fields.'),
@@ -614,14 +614,14 @@ class Proto2Tests(TextFormatBase):
     message = unittest_pb2.TestAllTypes()
     text = ('optional_int32: 42 '
             'optional_int32: 67')
-    self.assertRaisesWithLiteralMatch(
+    self.assertRaisesRegexp(
         text_format.ParseError,
         ('1:36 : Message type "protobuf_unittest.TestAllTypes" should not '
          'have multiple "optional_int32" fields.'),
         text_format.Parse, text, message)
 
 
-class TokenizerTest(basetest.TestCase):
+class TokenizerTest(unittest.TestCase):
 
   def testSimpleTokenCases(self):
     text = ('identifier1:"string1"\n     \n\n'
@@ -766,4 +766,4 @@ class TokenizerTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-  basetest.main()
+  unittest.main()
