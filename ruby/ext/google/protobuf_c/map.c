@@ -205,10 +205,13 @@ static bool needs_typeclass(upb_fieldtype_t type) {
  *
  * The last argument, if present, provides initial content for map. Note that
  * this may be an ordinary Ruby hashmap or another Map instance with identical
- * key and value types. Also note that this argument may be rpesent whether or
+ * key and value types. Also note that this argument may be present whether or
  * not value_typeclass is present (and it is unambiguously separate from
  * value_typeclass because value_typeclass's presence is strictly determined by
- * value_type).
+ * value_type). The contents of this initial hashmap or Map instance are
+ * shallow-copied into the new Map: the original map is unmodified, but
+ * references to underlying objects will be shared if the value type is a
+ * message type.
  */
 VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
   Map* self = ruby_to_Map(_self);
@@ -385,8 +388,7 @@ VALUE Map_index_set(VALUE _self, VALUE key, VALUE value) {
   native_slot_set(self->value_type, self->value_type_class, mem, value);
 
   // Replace any existing value by issuing a 'remove' operation first.
-  upb_value oldv;
-  upb_strtable_remove2(&self->table, keyval, length, &oldv);
+  upb_strtable_remove2(&self->table, keyval, length, NULL);
   if (!upb_strtable_insert2(&self->table, keyval, length, v)) {
     rb_raise(rb_eRuntimeError, "Could not insert into table");
   }
@@ -410,8 +412,7 @@ VALUE Map_has_key(VALUE _self, VALUE key) {
   size_t length = 0;
   table_key(self, key, keybuf, &keyval, &length);
 
-  upb_value v;
-  if (upb_strtable_lookup2(&self->table, keyval, length, &v)) {
+  if (upb_strtable_lookup2(&self->table, keyval, length, NULL)) {
     return Qtrue;
   } else {
     return Qfalse;
@@ -468,7 +469,7 @@ VALUE Map_clear(VALUE _self) {
  */
 VALUE Map_length(VALUE _self) {
   Map* self = ruby_to_Map(_self);
-  return INT2NUM(upb_strtable_count(&self->table));
+  return ULL2NUM(upb_strtable_count(&self->table));
 }
 
 static VALUE Map_new_this_type(VALUE _self) {
@@ -608,21 +609,6 @@ VALUE Map_eq(VALUE _self, VALUE _other) {
 
     if (!native_slot_eq(self->value_type, mem, other_mem)) {
       // Present, but value not equal.
-      return Qfalse;
-    }
-  }
-
-  // For each member of other, check that a member exists at the same key in
-  // self. We don't need to compare values here -- if the key exists in both, we
-  // compared values above; if not, we already know that the maps are not equal.
-  for (upb_strtable_begin(&it, &other->table);
-       !upb_strtable_done(&it);
-       upb_strtable_next(&it)) {
-    upb_value v;
-    if (!upb_strtable_lookup2(&self->table,
-                              upb_strtable_iter_key(&it),
-                              upb_strtable_iter_keylength(&it),
-                              &v)) {
       return Qfalse;
     }
   }

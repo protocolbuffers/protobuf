@@ -253,7 +253,12 @@ static map_handlerdata_t* new_map_handlerdata(
   hd->value_field_type = upb_fielddef_type(value_field);
   hd->value_field_typeclass = field_type_class(value_field);
 
-  // Ensure that value_field_typeclass is properly GC-rooted.
+  // Ensure that value_field_typeclass is properly GC-rooted. We must do this
+  // because we hold a reference to the Ruby class in the handlerdata, which is
+  // owned by the handlers. The handlers are owned by *this* message's Ruby
+  // object, but each Ruby object is rooted independently at the def -> Ruby
+  // object map. So we have to ensure that the Ruby objects we depend on will
+  // stick around as long as we're around.
   if (hd->value_field_typeclass != Qnil) {
     rb_ary_push(desc->typeclass_references, hd->value_field_typeclass);
   }
