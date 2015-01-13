@@ -196,7 +196,7 @@ if __name__ == '__main__':
           'google.protobuf.text_encoding',
           'google.protobuf.text_format'],
         cmdclass = { 'clean': clean, 'build_py': build_py },
-        install_requires = ['setuptools'],
+        install_requires = ['setuptools', 'six'],
         ext_modules = ext_module_list,
         url = 'https://developers.google.com/protocol-buffers/',
         maintainer = maintainer_email,
