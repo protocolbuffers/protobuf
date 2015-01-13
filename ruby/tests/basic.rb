@@ -479,9 +479,10 @@ module BasicTest
         m["jkl;"] = TestMessage2.new
       end
 
-      m = Google::Protobuf::Map.new(:string, :message, TestMessage,
-                                    { "a" => TestMessage.new(:optional_int32 => 42),
-                                      "b" => TestMessage.new(:optional_int32 => 84) })
+      m = Google::Protobuf::Map.new(
+        :string, :message, TestMessage,
+        { "a" => TestMessage.new(:optional_int32 => 42),
+          "b" => TestMessage.new(:optional_int32 => 84) })
       assert m.length == 2
       assert m.values.map{|msg| msg.optional_int32}.sort == [42, 84]
 
@@ -502,9 +503,10 @@ module BasicTest
     end
 
     def test_map_dup_deep_copy
-      m = Google::Protobuf::Map.new(:string, :message, TestMessage,
-                                    { "a" => TestMessage.new(:optional_int32 => 42),
-                                      "b" => TestMessage.new(:optional_int32 => 84) })
+      m = Google::Protobuf::Map.new(
+        :string, :message, TestMessage,
+        { "a" => TestMessage.new(:optional_int32 => 42),
+          "b" => TestMessage.new(:optional_int32 => 84) })
 
       m2 = m.dup
       assert m == m2
@@ -524,9 +526,10 @@ module BasicTest
       assert m.map_string_int32 == {}
       assert m.map_string_msg == {}
 
-      m = MapMessage.new(:map_string_int32 => {"a" => 1, "b" => 2},
-                         :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
-                                             "b" => TestMessage2.new(:foo => 2)})
+      m = MapMessage.new(
+        :map_string_int32 => {"a" => 1, "b" => 2},
+        :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
+                            "b" => TestMessage2.new(:foo => 2)})
       assert m.map_string_int32.keys.sort == ["a", "b"]
       assert m.map_string_int32["a"] == 1
       assert m.map_string_msg["b"].foo == 2
@@ -559,9 +562,10 @@ module BasicTest
     end
 
     def test_map_encode_decode
-      m = MapMessage.new(:map_string_int32 => {"a" => 1, "b" => 2},
-                         :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
-                                             "b" => TestMessage2.new(:foo => 2)})
+      m = MapMessage.new(
+        :map_string_int32 => {"a" => 1, "b" => 2},
+        :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
+                            "b" => TestMessage2.new(:foo => 2)})
       m2 = MapMessage.decode(MapMessage.encode(m))
       assert m == m2
 
@@ -638,7 +642,8 @@ module BasicTest
                           :repeated_string => ["a", "b", "c"],
                           :repeated_int32 => [42, 43, 44],
                           :repeated_enum => [:A, :B, :C, 100],
-                          :repeated_msg => [TestMessage2.new(:foo => 1), TestMessage2.new(:foo => 2)])
+                          :repeated_msg => [TestMessage2.new(:foo => 1),
+                                            TestMessage2.new(:foo => 2)])
       data = TestMessage.encode m
       m2 = TestMessage.decode data
       assert m == m2
