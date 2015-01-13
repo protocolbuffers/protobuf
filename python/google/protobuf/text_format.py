@@ -34,7 +34,7 @@
 
 __author__ = 'kenton@google.com (Kenton Varda)'
 
-import cStringIO
+import io
 import re
 
 import six
@@ -89,7 +89,7 @@ def MessageToString(message, as_utf8=False, as_one_line=False,
   Returns:
     A string of the text formatted protocol buffer message.
   """
-  out = cStringIO.StringIO()
+  out = io.BytesIO()
   PrintMessage(message, out, as_utf8=as_utf8, as_one_line=as_one_line,
                pointy_brackets=pointy_brackets,
                use_index_order=use_index_order,

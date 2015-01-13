@@ -43,7 +43,7 @@ FieldDescriptor) we construct two functions:  a "sizer" and an "encoder".  The
 sizer takes a value of this field's type and computes its byte size.  The
 encoder takes a writer function and a value.  It encodes the value into byte
 strings and invokes the writer function to write those strings.  Typically the
-writer function is the write() method of a cStringIO.
+writer function is the write() method of a BytesIO.
 
 We try to do as much work as possible when constructing the writer and the
 sizer rather than when calling them.  In particular:
