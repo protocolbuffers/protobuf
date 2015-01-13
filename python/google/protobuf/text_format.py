@@ -28,8 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#PY25 compatible for GAE.
-#
 # Copyright 2007 Google Inc. All Rights Reserved.
 
 """Contains routines for printing protocol messages in text format."""
@@ -38,6 +36,8 @@ __author__ = 'kenton@google.com (Kenton Varda)'
 
 import cStringIO
 import re
+
+import six
 
 from google.protobuf.internal import type_checkers
 from google.protobuf import descriptor
@@ -195,7 +195,7 @@ def PrintFieldValue(field, value, out, indent=0, as_utf8=False,
       out.write(str(value))
   elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_STRING:
     out.write('\"')
-    if isinstance(value, unicode):
+    if isinstance(value, six.text_type):
       out_value = value.encode('utf-8')
     else:
       out_value = value
@@ -505,7 +505,7 @@ class _Tokenizer(object):
   def _PopLine(self):
     while len(self._current_line) <= self._column:
       try:
-        self._current_line = self._lines.next()
+        self._current_line = next(self._lines)
       except StopIteration:
         self._current_line = ''
         self._more_lines = False
@@ -575,7 +575,7 @@ class _Tokenizer(object):
     """
     try:
       result = ParseInteger(self.token, is_signed=True, is_long=False)
-    except ValueError, e:
+    except ValueError as e:
       raise self._ParseError(str(e))
     self.NextToken()
     return result
@@ -591,7 +591,7 @@ class _Tokenizer(object):
     """
     try:
       result = ParseInteger(self.token, is_signed=False, is_long=False)
-    except ValueError, e:
+    except ValueError as e:
       raise self._ParseError(str(e))
     self.NextToken()
     return result
@@ -607,7 +607,7 @@ class _Tokenizer(object):
     """
     try:
       result = ParseInteger(self.token, is_signed=True, is_long=True)
-    except ValueError, e:
+    except ValueError as e:
       raise self._ParseError(str(e))
     self.NextToken()
     return result
@@ -623,7 +623,7 @@ class _Tokenizer(object):
     """
     try:
       result = ParseInteger(self.token, is_signed=False, is_long=True)
-    except ValueError, e:
+    except ValueError as e:
       raise self._ParseError(str(e))
     self.NextToken()
     return result
@@ -639,7 +639,7 @@ class _Tokenizer(object):
     """
     try:
       result = ParseFloat(self.token)
-    except ValueError, e:
+    except ValueError as e:
       raise self._ParseError(str(e))
     self.NextToken()
     return result
@@ -655,7 +655,7 @@ class _Tokenizer(object):
     """
     try:
       result = ParseBool(self.token)
-    except ValueError, e:
+    except ValueError as e:
       raise self._ParseError(str(e))
     self.NextToken()
     return result
@@ -671,8 +671,8 @@ class _Tokenizer(object):
     """
     the_bytes = self.ConsumeByteString()
     try:
-      return unicode(the_bytes, 'utf-8')
-    except UnicodeDecodeError, e:
+      return six.text_type(the_bytes, 'utf-8')
+    except UnicodeDecodeError as e:
       raise self._StringParseError(e)
 
   def ConsumeByteString(self):
@@ -687,8 +687,7 @@ class _Tokenizer(object):
     the_list = [self._ConsumeSingleByteString()]
     while self.token and self.token[0] in ('\'', '"'):
       the_list.append(self._ConsumeSingleByteString())
-    return ''.encode('latin1').join(the_list)  ##PY25
-##!PY25    return b''.join(the_list)
+    return b''.join(the_list)
 
   def _ConsumeSingleByteString(self):
     """Consume one token of a string literal.
@@ -706,7 +705,7 @@ class _Tokenizer(object):
 
     try:
       result = text_encoding.CUnescape(text[1:-1])
-    except ValueError, e:
+    except ValueError as e:
       raise self._ParseError(str(e))
     self.NextToken()
     return result
@@ -714,7 +713,7 @@ class _Tokenizer(object):
   def ConsumeEnum(self, field):
     try:
       result = ParseEnum(field, self.token)
-    except ValueError, e:
+    except ValueError as e:
       raise self._ParseError(str(e))
     self.NextToken()
     return result
@@ -779,7 +778,7 @@ def ParseInteger(text, is_signed=False, is_long=False):
     # alternate implementations where the distinction is more significant
     # (e.g. the C++ implementation) simpler.
     if is_long:
-      result = long(text, 0)
+      result = int(text, 0)
     else:
       result = int(text, 0)
   except ValueError:

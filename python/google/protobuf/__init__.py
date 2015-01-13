@@ -28,8 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Needs to stay compatible with Python 2.5 due to GAE.
-#
 # Copyright 2007 Google Inc. All Rights Reserved.
 
 __version__ = '3.0.0-pre'

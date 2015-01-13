@@ -107,14 +107,14 @@ class MessageFactoryTest(basetest.TestCase):
       self.assertContainsSubset(
           ['google.protobuf.python.internal.Factory2Message',
            'google.protobuf.python.internal.Factory1Message'],
-          messages.keys())
+          list(messages.keys()))
       self._ExerciseDynamicClass(
           messages['google.protobuf.python.internal.Factory2Message'])
       self.assertContainsSubset(
           ['google.protobuf.python.internal.Factory2Message.one_more_field',
            'google.protobuf.python.internal.another_field'],
-          (messages['google.protobuf.python.internal.Factory1Message']
-           ._extensions_by_name.keys()))
+          (list(messages['google.protobuf.python.internal.Factory1Message']
+           ._extensions_by_name.keys())))
       factory_msg1 = messages['google.protobuf.python.internal.Factory1Message']
       msg1 = messages['google.protobuf.python.internal.Factory1Message']()
       ext1 = factory_msg1._extensions_by_name[

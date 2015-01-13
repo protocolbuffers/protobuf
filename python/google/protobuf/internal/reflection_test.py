@@ -40,6 +40,8 @@ import gc
 import operator
 import struct
 
+import six
+
 from google.apputils import basetest
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_mset_pb2
@@ -467,7 +469,7 @@ class ReflectionTest(basetest.TestCase):
     proto.repeated_string.extend(['foo', 'bar'])
     proto.repeated_string.extend([])
     proto.repeated_string.append('baz')
-    proto.repeated_string.extend(str(x) for x in xrange(2))
+    proto.repeated_string.extend(str(x) for x in range(2))
     proto.optional_int32 = 21
     proto.repeated_bool  # Access but don't set anything; should not be listed.
     self.assertEqual(
@@ -620,14 +622,18 @@ class ReflectionTest(basetest.TestCase):
     if struct.calcsize('L') == 4:
       # Python only has signed ints, so 32-bit python can't fit an uint32
       # in an int.
-      TestGetAndDeserialize('optional_uint32', 1 << 31, long)
+      TestGetAndDeserialize('optional_uint32', 1 << 31, int)
     else:
       # 64-bit python can fit uint32 inside an int
       TestGetAndDeserialize('optional_uint32', 1 << 31, int)
-    TestGetAndDeserialize('optional_int64', 1 << 30, long)
-    TestGetAndDeserialize('optional_int64', 1 << 60, long)
-    TestGetAndDeserialize('optional_uint64', 1 << 30, long)
-    TestGetAndDeserialize('optional_uint64', 1 << 60, long)
+    try:
+      integer_64 = long
+    except NameError: # Python3
+      integer_64 = int
+    TestGetAndDeserialize('optional_int64', 1 << 30, integer_64)
+    TestGetAndDeserialize('optional_int64', 1 << 60, integer_64)
+    TestGetAndDeserialize('optional_uint64', 1 << 30, integer_64)
+    TestGetAndDeserialize('optional_uint64', 1 << 60, integer_64)
 
   def testSingleScalarBoundsChecking(self):
     def TestMinAndMaxIntegers(field_name, expected_min, expected_max):
@@ -753,18 +759,18 @@ class ReflectionTest(basetest.TestCase):
 
   def testEnum_KeysAndValues(self):
     self.assertEqual(['FOREIGN_FOO', 'FOREIGN_BAR', 'FOREIGN_BAZ'],
-                     unittest_pb2.ForeignEnum.keys())
+                     list(unittest_pb2.ForeignEnum.keys()))
     self.assertEqual([4, 5, 6],
-                     unittest_pb2.ForeignEnum.values())
+                     list(unittest_pb2.ForeignEnum.values()))
     self.assertEqual([('FOREIGN_FOO', 4), ('FOREIGN_BAR', 5),
                       ('FOREIGN_BAZ', 6)],
-                     unittest_pb2.ForeignEnum.items())
+                     list(unittest_pb2.ForeignEnum.items()))
 
     proto = unittest_pb2.TestAllTypes()
-    self.assertEqual(['FOO', 'BAR', 'BAZ', 'NEG'], proto.NestedEnum.keys())
-    self.assertEqual([1, 2, 3, -1], proto.NestedEnum.values())
+    self.assertEqual(['FOO', 'BAR', 'BAZ', 'NEG'], list(proto.NestedEnum.keys()))
+    self.assertEqual([1, 2, 3, -1], list(proto.NestedEnum.values()))
     self.assertEqual([('FOO', 1), ('BAR', 2), ('BAZ', 3), ('NEG', -1)],
-                     proto.NestedEnum.items())
+                     list(proto.NestedEnum.items()))
 
   def testRepeatedScalars(self):
     proto = unittest_pb2.TestAllTypes()
@@ -803,7 +809,7 @@ class ReflectionTest(basetest.TestCase):
     self.assertEqual([5, 25, 20, 15, 30], proto.repeated_int32[:])
 
     # Test slice assignment with an iterator
-    proto.repeated_int32[1:4] = (i for i in xrange(3))
+    proto.repeated_int32[1:4] = (i for i in range(3))
     self.assertEqual([5, 0, 1, 2, 30], proto.repeated_int32)
 
     # Test slice assignment.
@@ -1006,9 +1012,8 @@ class ReflectionTest(basetest.TestCase):
         containing_type=None, nested_types=[], enum_types=[],
         fields=[foo_field_descriptor], extensions=[],
         options=descriptor_pb2.MessageOptions())
-    class MyProtoClass(message.Message):
+    class MyProtoClass(six.with_metaclass(reflection.GeneratedProtocolMessageType, message.Message)):
       DESCRIPTOR = mydescriptor
-      __metaclass__ = reflection.GeneratedProtocolMessageType
     myproto_instance = MyProtoClass()
     self.assertEqual(0, myproto_instance.foo_field)
     self.assertTrue(not myproto_instance.HasField('foo_field'))
@@ -1048,14 +1053,13 @@ class ReflectionTest(basetest.TestCase):
     new_field.label = descriptor_pb2.FieldDescriptorProto.LABEL_REPEATED
 
     desc = descriptor.MakeDescriptor(desc_proto)
-    self.assertTrue(desc.fields_by_name.has_key('name'))
-    self.assertTrue(desc.fields_by_name.has_key('year'))
-    self.assertTrue(desc.fields_by_name.has_key('automatic'))
-    self.assertTrue(desc.fields_by_name.has_key('price'))
-    self.assertTrue(desc.fields_by_name.has_key('owners'))
+    self.assertTrue('name' in desc.fields_by_name)
+    self.assertTrue('year' in desc.fields_by_name)
+    self.assertTrue('automatic' in desc.fields_by_name)
+    self.assertTrue('price' in desc.fields_by_name)
+    self.assertTrue('owners' in desc.fields_by_name)
 
-    class CarMessage(message.Message):
-      __metaclass__ = reflection.GeneratedProtocolMessageType
+    class CarMessage(six.with_metaclass(reflection.GeneratedProtocolMessageType, message.Message)):
       DESCRIPTOR = desc
 
     prius = CarMessage()
@@ -1661,14 +1665,14 @@ class ReflectionTest(basetest.TestCase):
                       setattr, proto, 'optional_bytes', u'unicode object')
 
     # Check that the default value is of python's 'unicode' type.
-    self.assertEqual(type(proto.optional_string), unicode)
+    self.assertEqual(type(proto.optional_string), six.text_type)
 
-    proto.optional_string = unicode('Testing')
+    proto.optional_string = six.text_type('Testing')
     self.assertEqual(proto.optional_string, str('Testing'))
 
     # Assign a value of type 'str' which can be encoded in UTF-8.
     proto.optional_string = str('Testing')
-    self.assertEqual(proto.optional_string, unicode('Testing'))
+    self.assertEqual(proto.optional_string, six.text_type('Testing'))
 
     # Try to assign a 'bytes' object which contains non-UTF-8.
     self.assertRaises(ValueError,
@@ -1715,7 +1719,7 @@ class ReflectionTest(basetest.TestCase):
     bytes_read = message2.MergeFromString(raw.item[0].message)
     self.assertEqual(len(raw.item[0].message), bytes_read)
 
-    self.assertEqual(type(message2.str), unicode)
+    self.assertEqual(type(message2.str), six.text_type)
     self.assertEqual(message2.str, test_utf8)
 
     # The pure Python API throws an exception on MergeFromString(),
@@ -1739,7 +1743,7 @@ class ReflectionTest(basetest.TestCase):
   def testBytesInTextFormat(self):
     proto = unittest_pb2.TestAllTypes(optional_bytes=b'\x00\x7f\x80\xff')
     self.assertEqual(u'optional_bytes: "\\000\\177\\200\\377"\n',
-                     unicode(proto))
+                     six.text_type(proto))
 
   def testEmptyNestedMessage(self):
     proto = unittest_pb2.TestAllTypes()
@@ -2307,7 +2311,7 @@ class SerializationTest(basetest.TestCase):
     test_util.SetAllFields(first_proto)
     serialized = first_proto.SerializeToString()
 
-    for truncation_point in xrange(len(serialized) + 1):
+    for truncation_point in range(len(serialized) + 1):
       try:
         second_proto = unittest_pb2.TestAllTypes()
         unknown_fields = unittest_pb2.TestEmptyMessage()
@@ -2908,8 +2912,7 @@ class ClassAPITest(basetest.TestCase):
     msg_descriptor = descriptor.MakeDescriptor(
         file_descriptor.message_type[0])
 
-    class MessageClass(message.Message):
-      __metaclass__ = reflection.GeneratedProtocolMessageType
+    class MessageClass(six.with_metaclass(reflection.GeneratedProtocolMessageType, message.Message)):
       DESCRIPTOR = msg_descriptor
     msg = MessageClass()
     msg_str = (
