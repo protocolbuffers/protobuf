@@ -404,7 +404,7 @@ def _AddDescriptors(message_descriptor, dictionary):
     dictionary['__descriptors'][field.name] = GetFieldDescriptor(
         field.full_name)
 
-  dictionary['__slots__'] = list(dictionary['__descriptors'].keys())) + [
+  dictionary['__slots__'] = list(dictionary['__descriptors'].keys()) + [
       '_cmsg', '_owner', '_composite_fields', 'Extensions', '_HACK_REFCOUNTS']
 
 
