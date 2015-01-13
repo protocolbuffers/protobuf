@@ -165,9 +165,13 @@ if __name__ == '__main__':
         maintainer_email = 'protobuf@googlegroups.com',
         license = 'New BSD License',
         classifiers=[
+          "Programming Language :: Python",
           "Programming Language :: Python :: 2",
           "Programming Language :: Python :: 2.6",
           "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.3",
+          "Programming Language :: Python :: 3.4",
           ],
         namespace_packages = [ 'google' ],
         packages = find_packages(
