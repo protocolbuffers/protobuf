@@ -57,7 +57,17 @@ size_t native_slot_size(upb_fieldtype_t type) {
   }
 }
 
-static void check_int_range_precision(upb_fieldtype_t type, VALUE val) {
+static bool is_ruby_num(VALUE value) {
+  return (TYPE(value) == T_FLOAT ||
+          TYPE(value) == T_FIXNUM ||
+          TYPE(value) == T_BIGNUM);
+}
+
+void native_slot_check_int_range_precision(upb_fieldtype_t type, VALUE val) {
+  if (!is_ruby_num(val)) {
+    rb_raise(rb_eTypeError, "Expected number type for integral field.");
+  }
+
   // NUM2{INT,UINT,LL,ULL} macros do the appropriate range checks on upper
   // bound; we just need to do precision checks (i.e., disallow rounding) and
   // check for < 0 on unsigned types.
@@ -74,12 +84,6 @@ static void check_int_range_precision(upb_fieldtype_t type, VALUE val) {
                "Assigning negative value to unsigned integer field.");
     }
   }
-}
-
-static bool is_ruby_num(VALUE value) {
-  return (TYPE(value) == T_FLOAT ||
-          TYPE(value) == T_FIXNUM ||
-          TYPE(value) == T_BIGNUM);
 }
 
 void native_slot_validate_string_encoding(upb_fieldtype_t type, VALUE value) {
@@ -156,14 +160,14 @@ void native_slot_set(upb_fieldtype_t type, VALUE type_class,
       int32_t int_val = 0;
       if (TYPE(value) == T_SYMBOL) {
         // Ensure that the given symbol exists in the enum module.
-        VALUE lookup = rb_const_get(type_class, SYM2ID(value));
+        VALUE lookup = rb_funcall(type_class, rb_intern("resolve"), 1, value);
         if (lookup == Qnil) {
           rb_raise(rb_eRangeError, "Unknown symbol value for enum field.");
         } else {
           int_val = NUM2INT(lookup);
         }
       } else {
-        check_int_range_precision(UPB_TYPE_INT32, value);
+        native_slot_check_int_range_precision(UPB_TYPE_INT32, value);
         int_val = NUM2INT(value);
       }
       DEREF(memory, int32_t) = int_val;
@@ -173,10 +177,7 @@ void native_slot_set(upb_fieldtype_t type, VALUE type_class,
     case UPB_TYPE_INT64:
     case UPB_TYPE_UINT32:
     case UPB_TYPE_UINT64:
-      if (!is_ruby_num(value)) {
-        rb_raise(rb_eTypeError, "Expected number type for integral field.");
-      }
-      check_int_range_precision(type, value);
+      native_slot_check_int_range_precision(type, value);
       switch (type) {
       case UPB_TYPE_INT32:
         DEREF(memory, int32_t) = NUM2INT(value);
@@ -199,7 +200,9 @@ void native_slot_set(upb_fieldtype_t type, VALUE type_class,
   }
 }
 
-VALUE native_slot_get(upb_fieldtype_t type, VALUE type_class, void* memory) {
+VALUE native_slot_get(upb_fieldtype_t type,
+                      VALUE type_class,
+                      const void* memory) {
   switch (type) {
     case UPB_TYPE_FLOAT:
       return DBL2NUM(DEREF(memory, float));
@@ -210,7 +213,7 @@ VALUE native_slot_get(upb_fieldtype_t type, VALUE type_class, void* memory) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
     case UPB_TYPE_MESSAGE:
-      return *((VALUE *)memory);
+      return DEREF(memory, VALUE);
     case UPB_TYPE_ENUM: {
       int32_t val = DEREF(memory, int32_t);
       VALUE symbol = enum_lookup(type_class, INT2NUM(val));
@@ -246,8 +249,9 @@ void native_slot_init(upb_fieldtype_t type, void* memory) {
       break;
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
-      // TODO(cfallin): set encoding appropriately
       DEREF(memory, VALUE) = rb_str_new2("");
+      rb_enc_associate(DEREF(memory, VALUE), (type == UPB_TYPE_BYTES) ?
+                       kRubyString8bitEncoding : kRubyStringUtf8Encoding);
       break;
     case UPB_TYPE_MESSAGE:
       DEREF(memory, VALUE) = Qnil;
@@ -322,6 +326,43 @@ bool native_slot_eq(upb_fieldtype_t type, void* mem1, void* mem2) {
 }
 
 // -----------------------------------------------------------------------------
+// Map field utilities.
+// -----------------------------------------------------------------------------
+
+bool is_map_field(const upb_fielddef* field) {
+  if (upb_fielddef_label(field) != UPB_LABEL_REPEATED ||
+      upb_fielddef_type(field) != UPB_TYPE_MESSAGE) {
+    return false;
+  }
+  const upb_msgdef* subdef = upb_fielddef_msgsubdef(field);
+  return upb_msgdef_mapentry(subdef);
+}
+
+const upb_fielddef* map_field_key(const upb_fielddef* field) {
+  assert(is_map_field(field));
+  const upb_msgdef* subdef = upb_fielddef_msgsubdef(field);
+  return map_entry_key(subdef);
+}
+
+const upb_fielddef* map_field_value(const upb_fielddef* field) {
+  assert(is_map_field(field));
+  const upb_msgdef* subdef = upb_fielddef_msgsubdef(field);
+  return map_entry_value(subdef);
+}
+
+const upb_fielddef* map_entry_key(const upb_msgdef* msgdef) {
+  const upb_fielddef* key_field = upb_msgdef_itof(msgdef, MAP_KEY_FIELD);
+  assert(key_field != NULL);
+  return key_field;
+}
+
+const upb_fielddef* map_entry_value(const upb_msgdef* msgdef) {
+  const upb_fielddef* value_field = upb_msgdef_itof(msgdef, MAP_VALUE_FIELD);
+  assert(value_field != NULL);
+  return value_field;
+}
+
+// -----------------------------------------------------------------------------
 // Memory layout management.
 // -----------------------------------------------------------------------------
 
@@ -334,9 +375,12 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
   size_t off = 0;
   for (upb_msg_begin(&it, msgdef); !upb_msg_done(&it); upb_msg_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    size_t field_size =
-        (upb_fielddef_label(field) == UPB_LABEL_REPEATED) ?
-        sizeof(VALUE) : native_slot_size(upb_fielddef_type(field));
+    size_t field_size = 0;
+    if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
+      field_size = sizeof(VALUE);
+    } else {
+      field_size = native_slot_size(upb_fielddef_type(field));
+    }
     // align current offset
     off = (off + field_size - 1) & ~(field_size - 1);
     layout->offsets[upb_fielddef_index(field)] = off;
@@ -357,7 +401,7 @@ void free_layout(MessageLayout* layout) {
   xfree(layout);
 }
 
-static VALUE get_type_class(const upb_fielddef* field) {
+VALUE field_type_class(const upb_fielddef* field) {
   VALUE type_class = Qnil;
   if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
     VALUE submsgdesc =
@@ -372,7 +416,7 @@ static VALUE get_type_class(const upb_fielddef* field) {
 }
 
 VALUE layout_get(MessageLayout* layout,
-                 void* storage,
+                 const void* storage,
                  const upb_fielddef* field) {
   void* memory = ((uint8_t *)storage) +
       layout->offsets[upb_fielddef_index(field)];
@@ -380,7 +424,7 @@ VALUE layout_get(MessageLayout* layout,
     return *((VALUE *)memory);
   } else {
     return native_slot_get(upb_fielddef_type(field),
-                           get_type_class(field),
+                           field_type_class(field),
                            memory);
   }
 }
@@ -398,9 +442,8 @@ static void check_repeated_field_type(VALUE val, const upb_fielddef* field) {
     rb_raise(rb_eTypeError, "Repeated field array has wrong element type");
   }
 
-  if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE ||
-      upb_fielddef_type(field) == UPB_TYPE_ENUM) {
-    RepeatedField* self = ruby_to_RepeatedField(val);
+  if (self->field_type == UPB_TYPE_MESSAGE ||
+      self->field_type == UPB_TYPE_ENUM) {
     if (self->field_type_class !=
         get_def_obj(upb_fielddef_subdef(field))) {
       rb_raise(rb_eTypeError,
@@ -409,17 +452,48 @@ static void check_repeated_field_type(VALUE val, const upb_fielddef* field) {
   }
 }
 
+static void check_map_field_type(VALUE val, const upb_fielddef* field) {
+  assert(is_map_field(field));
+  const upb_fielddef* key_field = map_field_key(field);
+  const upb_fielddef* value_field = map_field_value(field);
+
+  if (!RB_TYPE_P(val, T_DATA) || !RTYPEDDATA_P(val) ||
+      RTYPEDDATA_TYPE(val) != &Map_type) {
+    rb_raise(rb_eTypeError, "Expected Map instance");
+  }
+
+  Map* self = ruby_to_Map(val);
+  if (self->key_type != upb_fielddef_type(key_field)) {
+    rb_raise(rb_eTypeError, "Map key type does not match field's key type");
+  }
+  if (self->value_type != upb_fielddef_type(value_field)) {
+    rb_raise(rb_eTypeError, "Map value type does not match field's value type");
+  }
+  if (upb_fielddef_type(value_field) == UPB_TYPE_MESSAGE ||
+      upb_fielddef_type(value_field) == UPB_TYPE_ENUM) {
+    if (self->value_type_class !=
+        get_def_obj(upb_fielddef_subdef(value_field))) {
+      rb_raise(rb_eTypeError,
+               "Map value type has wrong message/enum class");
+    }
+  }
+}
+
+
 void layout_set(MessageLayout* layout,
                 void* storage,
                 const upb_fielddef* field,
                 VALUE val) {
   void* memory = ((uint8_t *)storage) +
       layout->offsets[upb_fielddef_index(field)];
-  if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
+  if (is_map_field(field)) {
+    check_map_field_type(val, field);
+    DEREF(memory, VALUE) = val;
+  } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
     check_repeated_field_type(val, field);
-    *((VALUE *)memory) = val;
+    DEREF(memory, VALUE) = val;
   } else {
-    native_slot_set(upb_fielddef_type(field), get_type_class(field),
+    native_slot_set(upb_fielddef_type(field), field_type_class(field),
                     memory, val);
   }
 }
@@ -434,9 +508,34 @@ void layout_init(MessageLayout* layout,
     void* memory = ((uint8_t *)storage) +
         layout->offsets[upb_fielddef_index(field)];
 
-    if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
+    if (is_map_field(field)) {
+      VALUE map = Qnil;
+
+      const upb_fielddef* key_field = map_field_key(field);
+      const upb_fielddef* value_field = map_field_value(field);
+      VALUE type_class = field_type_class(value_field);
+
+      if (type_class != Qnil) {
+        VALUE args[3] = {
+          fieldtype_to_ruby(upb_fielddef_type(key_field)),
+          fieldtype_to_ruby(upb_fielddef_type(value_field)),
+          type_class,
+        };
+        map = rb_class_new_instance(3, args, cMap);
+      } else {
+        VALUE args[2] = {
+          fieldtype_to_ruby(upb_fielddef_type(key_field)),
+          fieldtype_to_ruby(upb_fielddef_type(value_field)),
+        };
+        map = rb_class_new_instance(2, args, cMap);
+      }
+
+      DEREF(memory, VALUE) = map;
+    } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
       VALUE ary = Qnil;
-      VALUE type_class = get_type_class(field);
+
+      VALUE type_class = field_type_class(field);
+
       if (type_class != Qnil) {
         VALUE args[2] = {
           fieldtype_to_ruby(upb_fielddef_type(field)),
@@ -447,7 +546,8 @@ void layout_init(MessageLayout* layout,
         VALUE args[1] = { fieldtype_to_ruby(upb_fielddef_type(field)) };
         ary = rb_class_new_instance(1, args, cRepeatedField);
       }
-      *((VALUE *)memory) = ary;
+
+      DEREF(memory, VALUE) = ary;
     } else {
       native_slot_init(upb_fielddef_type(field), memory);
     }
@@ -464,7 +564,7 @@ void layout_mark(MessageLayout* layout, void* storage) {
         layout->offsets[upb_fielddef_index(field)];
 
     if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-      rb_gc_mark(*((VALUE *)memory));
+      rb_gc_mark(DEREF(memory, VALUE));
     } else {
       native_slot_mark(upb_fielddef_type(field), memory);
     }
@@ -482,8 +582,10 @@ void layout_dup(MessageLayout* layout, void* to, void* from) {
     void* from_memory = ((uint8_t *)from) +
         layout->offsets[upb_fielddef_index(field)];
 
-    if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-      *((VALUE *)to_memory) = RepeatedField_dup(*((VALUE *)from_memory));
+    if (is_map_field(field)) {
+      DEREF(to_memory, VALUE) = Map_dup(DEREF(from_memory, VALUE));
+    } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
+      DEREF(to_memory, VALUE) = RepeatedField_dup(DEREF(from_memory, VALUE));
     } else {
       native_slot_dup(upb_fielddef_type(field), to_memory, from_memory);
     }
@@ -501,8 +603,12 @@ void layout_deep_copy(MessageLayout* layout, void* to, void* from) {
     void* from_memory = ((uint8_t *)from) +
         layout->offsets[upb_fielddef_index(field)];
 
-    if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-      *((VALUE *)to_memory) = RepeatedField_deep_copy(*((VALUE *)from_memory));
+    if (is_map_field(field)) {
+      DEREF(to_memory, VALUE) =
+          Map_deep_copy(DEREF(from_memory, VALUE));
+    } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
+      DEREF(to_memory, VALUE) =
+          RepeatedField_deep_copy(DEREF(from_memory, VALUE));
     } else {
       native_slot_deep_copy(upb_fielddef_type(field), to_memory, from_memory);
     }
@@ -520,11 +626,12 @@ VALUE layout_eq(MessageLayout* layout, void* msg1, void* msg2) {
     void* msg2_memory = ((uint8_t *)msg2) +
         layout->offsets[upb_fielddef_index(field)];
 
-    if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-      if (RepeatedField_eq(*((VALUE *)msg1_memory),
-                           *((VALUE *)msg2_memory)) == Qfalse) {
-        return Qfalse;
-      }
+    if (is_map_field(field)) {
+      return Map_eq(DEREF(msg1_memory, VALUE),
+                    DEREF(msg2_memory, VALUE));
+    } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
+      return RepeatedField_eq(DEREF(msg1_memory, VALUE),
+                              DEREF(msg2_memory, VALUE));
     } else {
       if (!native_slot_eq(upb_fielddef_type(field),
                           msg1_memory, msg2_memory)) {

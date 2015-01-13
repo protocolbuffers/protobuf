@@ -82,6 +82,7 @@ void Init_protobuf_c() {
   EnumBuilderContext_register(internal);
   Builder_register(internal);
   RepeatedField_register(protobuf);
+  Map_register(protobuf);
 
   rb_define_singleton_method(protobuf, "encode", Google_Protobuf_encode, 1);
   rb_define_singleton_method(protobuf, "decode", Google_Protobuf_decode, 2);

@@ -139,7 +139,14 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
              "Unknown field name in initialization map entry.");
   }
 
-  if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
+  if (is_map_field(f)) {
+    if (TYPE(val) != T_HASH) {
+      rb_raise(rb_eArgError,
+               "Expected Hash object as initializer value for map field.");
+    }
+    VALUE map = layout_get(self->descriptor->layout, Message_data(self), f);
+    Map_merge_into_self(map, val);
+  } else if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
     if (TYPE(val) != T_ARRAY) {
       rb_raise(rb_eArgError,
                "Expected array as initializer value for repeated field.");
@@ -450,13 +457,15 @@ VALUE build_module_from_enumdesc(EnumDescriptor* enumdesc) {
  * call-seq:
  *     Google::Protobuf.deep_copy(obj) => copy_of_obj
  *
- * Performs a deep copy of either a RepeatedField instance or a message object,
- * recursively copying its members.
+ * Performs a deep copy of a RepeatedField instance, a Map instance, or a
+ * message object, recursively copying its members.
  */
 VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj) {
   VALUE klass = CLASS_OF(obj);
   if (klass == cRepeatedField) {
     return RepeatedField_deep_copy(obj);
+  } else if (klass == cMap) {
+    return Map_deep_copy(obj);
   } else {
     return Message_deep_copy(obj);
   }
