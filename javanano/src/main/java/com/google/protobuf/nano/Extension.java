@@ -74,6 +74,19 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
     public static final int TYPE_SINT32   = InternalNano.TYPE_SINT32;
     public static final int TYPE_SINT64   = InternalNano.TYPE_SINT64;
 
+    /**
+     * Creates an {@code Extension} of the given message type and tag number.
+     * Should be used by the generated code only.
+     *
+     * @param type {@link #TYPE_MESSAGE} or {@link #TYPE_GROUP}
+     * @deprecated use {@link #createMessageTyped(int, Class, long)} instead.
+     */
+    @Deprecated
+    public static <M extends ExtendableMessageNano<M>, T extends MessageNano>
+            Extension<M, T> createMessageTyped(int type, Class<T> clazz, int tag) {
+        return new Extension<M, T>(type, clazz, tag, false);
+    }
+
     // Note: these create...() methods take a long for the tag parameter,
     // because tags are represented as unsigned ints, and these values exist
     // in generated code as long values. However, they can fit in 32-bits, so
