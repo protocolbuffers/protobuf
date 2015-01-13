@@ -35,16 +35,16 @@
 __author__ = 'kenton@google.com (Kenton Varda)'
 
 import re
+import unittest
 
 import six
 
-from google.apputils import basetest
 from google.protobuf import text_format
 from google.protobuf.internal import test_util
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_mset_pb2
 
-class TextFormatTest(basetest.TestCase):
+class TextFormatTest(unittest.TestCase):
 
   def ReadGolden(self, golden_filename):
     with test_util.GoldenFile(golden_filename) as f:
@@ -601,7 +601,7 @@ class TextFormatTest(basetest.TestCase):
     self.assertEqual('oneof_uint32', m2.WhichOneof('oneof_field'))
 
 
-class TokenizerTest(basetest.TestCase):
+class TokenizerTest(unittest.TestCase):
 
   def testSimpleTokenCases(self):
     text = ('identifier1:"string1"\n     \n\n'
@@ -746,4 +746,4 @@ class TokenizerTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-  basetest.main()
+  unittest.main()

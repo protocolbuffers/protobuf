@@ -35,19 +35,19 @@
 __author__ = 'anuraag@google.com (Anuraag Agrawal)'
 
 import os
+import unittest
 os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
 os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION'] = '2'
 
 # We must set the implementation version above before the google3 imports.
 # pylint: disable=g-import-not-at-top
-from google.apputils import basetest
 from google.protobuf.internal import api_implementation
 # Run all tests from the original module by putting them in our namespace.
 # pylint: disable=wildcard-import
 from google.protobuf.internal.descriptor_test import *
 
 
-class ConfirmCppApi2Test(basetest.TestCase):
+class ConfirmCppApi2Test(unittest.TestCase):
 
   def testImplementationSetting(self):
     self.assertEqual('cpp', api_implementation.Type())
@@ -55,4 +55,4 @@ class ConfirmCppApi2Test(basetest.TestCase):
 
 
 if __name__ == '__main__':
-  basetest.main()
+  unittest.main()

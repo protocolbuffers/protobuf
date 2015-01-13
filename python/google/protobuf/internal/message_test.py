@@ -48,8 +48,8 @@ import math
 import operator
 import pickle
 import sys
+import unittest
 
-from google.apputils import basetest
 from google.protobuf import unittest_pb2
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import test_util
@@ -69,7 +69,7 @@ def IsNegInf(val):
   return isinf(val) and (val < 0)
 
 
-class MessageTest(basetest.TestCase):
+class MessageTest(unittest.TestCase):
 
   def testBadUtf8String(self):
     if api_implementation.Type() != 'python':
@@ -695,7 +695,7 @@ class MessageTest(basetest.TestCase):
       m.HasField('repeated_int32')
 
 
-class ValidTypeNamesTest(basetest.TestCase):
+class ValidTypeNamesTest(unittest.TestCase):
 
   def assertImportFromName(self, msg, base_name):
     # Parse <type 'module.class_name'> to extra 'some.name' as a string.
@@ -718,4 +718,4 @@ class ValidTypeNamesTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-  basetest.main()
+  unittest.main()

@@ -36,17 +36,17 @@
 __author__ = 'jasonh@google.com (Jason Hsueh)'
 
 import os
+import unittest
 os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
 os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION'] = '2'
 
-from google.apputils import basetest
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import more_extensions_dynamic_pb2
 from google.protobuf.internal import more_extensions_pb2
 from google.protobuf.internal.reflection_test import *
 
 
-class ReflectionCppTest(basetest.TestCase):
+class ReflectionCppTest(unittest.TestCase):
   def testImplementationSetting(self):
     self.assertEqual('cpp', api_implementation.Type())
     self.assertEqual(2, api_implementation.Version())
@@ -91,4 +91,4 @@ class ReflectionCppTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-  basetest.main()
+  unittest.main()

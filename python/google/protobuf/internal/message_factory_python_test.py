@@ -33,22 +33,22 @@
 """Tests for ..public.message_factory for the pure Python implementation."""
 
 import os
+import unittest
 os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'python'
 
 # We must set the implementation version above before the google3 imports.
 # pylint: disable=g-import-not-at-top
-from google.apputils import basetest
 from google.protobuf.internal import api_implementation
 # Run all tests from the original module by putting them in our namespace.
 # pylint: disable=wildcard-import
 from google.protobuf.internal.message_factory_test import *
 
 
-class ConfirmPurePythonTest(basetest.TestCase):
+class ConfirmPurePythonTest(unittest.TestCase):
 
   def testImplementationSetting(self):
     self.assertEqual('python', api_implementation.Type())
 
 
 if __name__ == '__main__':
-  basetest.main()
+  unittest.main()
