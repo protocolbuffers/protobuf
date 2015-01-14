@@ -139,7 +139,8 @@ bool lupb_openlib(lua_State *L, void *ptr, const char *name,
 
 // Pushes a new userdata with the given metatable and ensures that it has a
 // uservalue.
-static void *newudata_with_userval(lua_State *L, size_t size, const char *type) {
+static void *newudata_with_userval(lua_State *L, size_t size,
+                                   const char *type) {
   void *ret = lua_newuserdata(L, size);
 
   // Set metatable.
@@ -952,17 +953,17 @@ static int lupb_msgdef_field(lua_State *L) {
 }
 
 static int lupb_msgiter_next(lua_State *L) {
-  upb_msg_iter *i = lua_touserdata(L, lua_upvalueindex(1));
-  if (upb_msg_done(i)) return 0;
+  upb_msg_field_iter *i = lua_touserdata(L, lua_upvalueindex(1));
+  if (upb_msg_field_done(i)) return 0;
   lupb_def_pushwrapper(L, UPB_UPCAST(upb_msg_iter_field(i)), NULL);
-  upb_msg_next(i);
+  upb_msg_field_next(i);
   return 1;
 }
 
 static int lupb_msgdef_fields(lua_State *L) {
   const upb_msgdef *m = lupb_msgdef_check(L, 1);
-  upb_msg_iter *i = lua_newuserdata(L, sizeof(upb_msg_iter));
-  upb_msg_begin(i, m);
+  upb_msg_field_iter *i = lua_newuserdata(L, sizeof(upb_msg_field_iter));
+  upb_msg_field_begin(i, m);
   // Need to guarantee that the msgdef outlives the iter.
   lua_pushvalue(L, 1);
   lua_pushcclosure(L, &lupb_msgiter_next, 2);
@@ -1416,8 +1417,10 @@ static lupb_msgdef *lupb_msg_assignoffsets(lua_State *L, int narg) {
   size_t userval_idx = 1;
 
   // Assign offsets.
-  upb_msg_iter i;
-  for (upb_msg_begin(&i, lmd->md); !upb_msg_done(&i); upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  for (upb_msg_field_begin(&i, lmd->md);
+       !upb_msg_field_done(&i);
+       upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
     if (in_userval(f)) {
       offsets[upb_fielddef_index(f)] = userval_idx++;
@@ -1442,7 +1445,9 @@ static lupb_msgdef *lupb_msg_assignoffsets(lua_State *L, int narg) {
   lua_newtable(L);  // This will be our userval.
 
   int idx = 1;
-  for (upb_msg_begin(&i, lmd->md); !upb_msg_done(&i); upb_msg_next(&i)) {
+  for (upb_msg_field_begin(&i, lmd->md);
+       !upb_msg_field_done(&i);
+       upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
     if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE) {
       bool created = lupb_def_pushwrapper(L, upb_fielddef_subdef(f), NULL);
@@ -1660,9 +1665,9 @@ void callback(const void *closure, upb_handlers *h) {
   lua_State *L = (lua_State*)closure;
   lupb_def_pushwrapper(L, UPB_UPCAST(upb_handlers_msgdef(h)), NULL);
   lupb_msgdef *lmd = lupb_msg_assignoffsets(L, -1);
-  upb_msg_iter i;
-  upb_msg_begin(&i, upb_handlers_msgdef(h));
-  for (; !upb_msg_done(&i); upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  upb_msg_field_begin(&i, upb_handlers_msgdef(h));
+  for (; !upb_msg_field_done(&i); upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
     int hasbit = upb_fielddef_index(f);
     uint16_t ofs = lmd->field_offsets[upb_fielddef_index(f)];

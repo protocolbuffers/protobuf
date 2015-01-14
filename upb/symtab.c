@@ -139,8 +139,10 @@ static bool upb_resolve_dfs(const upb_def *def, upb_strtable *addtab,
     // For messages, continue the recursion by visiting all subdefs.
     const upb_msgdef *m = upb_dyncast_msgdef(def);
     if (m) {
-      upb_msg_iter i;
-      for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
+      upb_msg_field_iter i;
+      for(upb_msg_field_begin(&i, m);
+          !upb_msg_field_done(&i);
+          upb_msg_field_next(&i)) {
         upb_fielddef *f = upb_msg_iter_field(&i);
         if (!upb_fielddef_hassubdef(f)) continue;
         // |= to avoid short-circuit; we need its side-effects.
@@ -293,8 +295,10 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
     // Type names are resolved relative to the message in which they appear.
     const char *base = upb_msgdef_fullname(m);
 
-    upb_msg_iter j;
-    for(upb_msg_begin(&j, m); !upb_msg_done(&j); upb_msg_next(&j)) {
+    upb_msg_field_iter j;
+    for(upb_msg_field_begin(&j, m);
+        !upb_msg_field_done(&j);
+        upb_msg_field_next(&j)) {
       upb_fielddef *f = upb_msg_iter_field(&j);
       const char *name = upb_fielddef_subdefname(f);
       if (name && !upb_fielddef_subdef(f)) {

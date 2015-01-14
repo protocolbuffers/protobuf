@@ -261,8 +261,10 @@ static void onmreg(const void *c, upb_handlers *h) {
   upb_handlers_setstartmsg(h, textprinter_startmsg, NULL);
   upb_handlers_setendmsg(h, textprinter_endmsg, NULL);
 
-  upb_msg_iter i;
-  for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  for(upb_msg_field_begin(&i, m);
+      !upb_msg_field_done(&i);
+      upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
     upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
     upb_handlerattr_sethandlerdata(&attr, f);

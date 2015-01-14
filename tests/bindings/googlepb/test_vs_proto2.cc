@@ -40,8 +40,8 @@ const unsigned char message2_data[] = {
 void compare_metadata(const google::protobuf::Descriptor* d,
                       const upb::MessageDef *upb_md) {
   ASSERT(d->field_count() == upb_md->field_count());
-  for (upb::MessageDef::const_iterator i = upb_md->begin(); i != upb_md->end();
-       ++i) {
+  for (upb::MessageDef::const_field_iterator i = upb_md->field_begin();
+       i != upb_md->field_end(); ++i) {
     const upb::FieldDef* upb_f = *i;
     const google::protobuf::FieldDescriptor *proto2_f =
         d->FindFieldByNumber(upb_f->number());
