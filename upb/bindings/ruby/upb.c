@@ -273,9 +273,11 @@ static size_t rupb_sizeof(const upb_fielddef *f) {
 static void assign_offsets(rb_msglayout *layout, const upb_msgdef *md) {
   layout->field_offsets = ALLOC_N(uint32_t, upb_msgdef_numfields(md));
   size_t ofs = 0;
-  upb_msg_iter i;
+  upb_msg_field_iter i;
 
-  for (upb_msg_begin(&i, md); !upb_msg_done(&i); upb_msg_next(&i)) {
+  for (upb_msg_field_begin(&i, md);
+       !upb_msg_field_done(&i);
+       upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
     size_t field_size = rupb_sizeof(f);
 
@@ -301,8 +303,10 @@ static void make_prototype(rb_msglayout *layout, const upb_msgdef *md) {
   // more specific initialization.
   memset(prototype, 0, layout->size);
 
-  upb_msg_iter i;
-  for (upb_msg_begin(&i, md); !upb_msg_done(&i); upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  for (upb_msg_field_begin(&i, md);
+       !upb_msg_field_done(&i);
+       upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
     if (is_ruby_value(f)) {
       size_t ofs = layout->field_offsets[upb_fielddef_index(f)];
@@ -373,8 +377,10 @@ static void msgdef_mark(void *_rmd) {
   rb_gc_mark(rmd->klass);
 
   // Mark all submessage types.
-  upb_msg_iter i;
-  for (upb_msg_begin(&i, rmd->md); !upb_msg_done(&i); upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  for (upb_msg_field_begin(&i, rmd->md);
+       !upb_msg_field_done(&i);
+       upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
     if (upb_fielddef_issubmsg(f)) {
       // If we were trying to be more aggressively lazy, the submessage might
@@ -495,8 +501,10 @@ static void msg_mark(void *p) {
 
   // We need to mark all references to other Ruby values: strings, arrays, and
   // submessages that we point to.
-  upb_msg_iter i;
-  for (upb_msg_begin(&i, rmd->md); !upb_msg_done(&i); upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  for (upb_msg_field_begin(&i, rmd->md);
+       !upb_msg_field_done(&i);
+       upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
     if (is_ruby_value(f)) {
       size_t ofs = rmd->layout.field_offsets[upb_fielddef_index(f)];
@@ -903,7 +911,8 @@ static void *submsg_handler(void *closure, const void *hd) {
   const submsg_handlerdata_t *submsgdata = hd;
 
   if (DEREF(msg, submsgdata->ofs, VALUE) == Qnil) {
-    DEREF(msg, submsgdata->ofs, VALUE) = msg_new(msgdef_getwrapper(submsgdata->md));
+    DEREF(msg, submsgdata->ofs, VALUE) =
+        msg_new(msgdef_getwrapper(submsgdata->md));
   }
 
   VALUE submsg = DEREF(msg, submsgdata->ofs, VALUE);
@@ -912,9 +921,11 @@ static void *submsg_handler(void *closure, const void *hd) {
 
 static void add_handlers_for_message(const void *closure, upb_handlers *h) {
   const rupb_MessageDef *rmd = get_rbmsgdef(upb_handlers_msgdef(h));
-  upb_msg_iter i;
+  upb_msg_field_iter i;
 
-  for (upb_msg_begin(&i, rmd->md); !upb_msg_done(&i); upb_msg_next(&i)) {
+  for (upb_msg_field_begin(&i, rmd->md);
+       !upb_msg_field_done(&i);
+       upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
     size_t ofs = rmd->layout.field_offsets[upb_fielddef_index(f)];
 
@@ -1085,8 +1096,10 @@ static void putmsg(rupb_Message *msg, const rupb_MessageDef *rmd,
                    upb_sink *sink) {
   upb_sink_startmsg(sink);
 
-  upb_msg_iter i;
-  for (upb_msg_begin(&i, rmd->md); !upb_msg_done(&i); upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  for (upb_msg_field_begin(&i, rmd->md);
+       !upb_msg_field_done(&i);
+       upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
     uint32_t ofs = rmd->layout.field_offsets[upb_fielddef_index(f)];
 

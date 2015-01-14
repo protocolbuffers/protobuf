@@ -378,8 +378,10 @@ static void newhandlers_callback(const void *closure, upb_handlers *h) {
   upb_handlers_setendmsg(h, endmsg, NULL);
 
   const upb_msgdef *m = upb_handlers_msgdef(h);
-  upb_msg_iter i;
-  for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  for(upb_msg_field_begin(&i, m);
+      !upb_msg_field_done(&i);
+      upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
     bool packed = upb_fielddef_isseq(f) && upb_fielddef_isprimitive(f) &&
                   upb_fielddef_packed(f);

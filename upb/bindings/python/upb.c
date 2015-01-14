@@ -298,7 +298,8 @@ static PyObject *PyUpb_MessageDef_new(PyTypeObject *subtype,
 
 static PyObject *PyUpb_MessageDef_add_fields(PyObject *o, PyObject *args);
 
-static int PyUpb_MessageDef_init(PyObject *self, PyObject *args, PyObject *kwds) {
+static int PyUpb_MessageDef_init(
+    PyObject *self, PyObject *args, PyObject *kwds) {
   if (!kwds) return 0;
   PyObject *key, *value;
   Py_ssize_t pos = 0;
@@ -323,7 +324,8 @@ static PyObject *PyUpb_MessageDef_getattro(PyObject *obj, PyObject *attr_name) {
   return PyObject_GenericGetAttr(obj, attr_name);
 }
 
-static int PyUpb_MessageDef_setattro(PyObject *o, PyObject *key, PyObject *val) {
+static int PyUpb_MessageDef_setattro(
+    PyObject *o, PyObject *key, PyObject *val) {
   upb_msgdef *m = Check_MessageDef(o, -1);
   if (!upb_def_ismutable(UPB_UPCAST(m))) {
     PyErr_SetString(PyExc_TypeError, "MessageDef is not mutable.");
@@ -343,9 +345,11 @@ static int PyUpb_MessageDef_setattro(PyObject *o, PyObject *key, PyObject *val) 
 static PyObject *PyUpb_MessageDef_fields(PyObject *obj, PyObject *args) {
   upb_msgdef *m = Check_MessageDef(obj, NULL);
   PyObject *ret = PyList_New(0);
-  upb_msg_iter i;
-  for(i = upb_msg_begin(m); !upb_msg_done(i); i = upb_msg_next(m, i)) {
-    upb_fielddef *f = upb_msg_iter_field(i);
+  upb_msg_field_iter i;
+  for(upb_msg_field_begin(&i, m);
+      !upb_msg_field_done(&i);
+      upb_msg_field_next(&ii)) {
+    upb_fielddef *f = upb_msg_iter_field(&i);
     PyList_Append(ret, PyUpb_FieldDef_GetOrCreate(f));
   }
   return ret;
@@ -374,9 +378,12 @@ static PyObject *PyUpb_MessageDef_add_field(PyObject *o, PyObject *field) {
 }
 
 static PyMethodDef PyUpb_MessageDef_methods[] = {
-  {"add_field", &PyUpb_MessageDef_add_field, METH_O, "Adds a list of fields."},
-  {"add_fields", &PyUpb_MessageDef_add_fields, METH_O, "Adds a list of fields."},
-  {"fields", &PyUpb_MessageDef_fields, METH_NOARGS, "Returns list of fields."},
+  {"add_field", &PyUpb_MessageDef_add_field, METH_O,
+    "Adds a list of fields."},
+  {"add_fields", &PyUpb_MessageDef_add_fields, METH_O,
+    "Adds a list of fields."},
+  {"fields", &PyUpb_MessageDef_fields, METH_NOARGS,
+    "Returns list of fields."},
   {NULL, NULL}
 };
 
@@ -448,7 +455,8 @@ static PyObject *PyUpb_SymbolTable_new(PyTypeObject *subtype,
   return PyUpb_ObjCacheGet(upb_symtab_new(), subtype);
 }
 
-static int PyUpb_SymbolTable_init(PyObject *self, PyObject *args, PyObject *kwds) {
+static int PyUpb_SymbolTable_init(
+    PyObject *self, PyObject *args, PyObject *kwds) {
   return 0;
 }
 
@@ -475,8 +483,10 @@ static PyObject *PyUpb_SymbolTable_add_defs(PyObject *o, PyObject *defs) {
     cdefs[i++] = def;
     upb_msgdef *md = upb_dyncast_msgdef(def);
     if (!md) continue;
-    upb_msg_iter j;
-    for(j = upb_msg_begin(md); !upb_msg_done(j); j = upb_msg_next(md, j)) {
+    upb_msg_field_iter j;
+    for(upb_msg_field_begin(&j, md);
+        !upb_msg_field_done(&j);
+        upb_msg_field_next(&j)) {
       upb_fielddef *f = upb_msg_iter_field(j);
       upb_fielddef_setaccessor(f, PyUpb_AccessorForField(f));
     }
@@ -601,7 +611,8 @@ static upb_sflow_t PyUpb_Message_StartSubmessage(void *m, upb_value fval) {
   return UPB_CONTINUE_WITH(*submsg);
 }
 
-static upb_sflow_t PyUpb_Message_StartRepeatedSubmessage(void *a, upb_value fval) {
+static upb_sflow_t PyUpb_Message_StartRepeatedSubmessage(
+    void *a, upb_value fval) {
   (void)fval;
   PyObject **elem = upb_stdarray_append(a, sizeof(void*));
   PyTypeObject *type = ((PyUpb_MessageType*)Py_TYPE(a))->alt_type;
@@ -609,7 +620,8 @@ static upb_sflow_t PyUpb_Message_StartRepeatedSubmessage(void *a, upb_value fval
   return UPB_CONTINUE_WITH(*elem);
 }
 
-static upb_flow_t PyUpb_Message_StringValue(void *m, upb_value fval, upb_value val) {
+static upb_flow_t PyUpb_Message_StringValue(
+    void *m, upb_value fval, upb_value val) {
   PyObject **str = PyUpb_Accessor_GetPtr(m, fval);
   if (*str) { Py_DECREF(*str); }
   *str = PyString_FromStringAndSize(NULL, upb_value_getstrref(val)->len);
@@ -618,7 +630,8 @@ static upb_flow_t PyUpb_Message_StringValue(void *m, upb_value fval, upb_value v
   return UPB_CONTINUE;
 }
 
-static upb_flow_t PyUpb_Message_AppendStringValue(void *a, upb_value fval, upb_value val) {
+static upb_flow_t PyUpb_Message_AppendStringValue(
+    void *a, upb_value fval, upb_value val) {
   (void)fval;
   PyObject **elem = upb_stdarray_append(a, sizeof(void*));
   *elem = PyString_FromStringAndSize(NULL, upb_value_getstrref(val)->len);

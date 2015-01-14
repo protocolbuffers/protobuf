@@ -246,7 +246,8 @@ const Handlers* CodeCache::GetMaybeUnfrozenWriteHandlers(
   to_freeze_.push_back(h);
   const goog::Descriptor* d = m.GetDescriptor();
 
-  for (upb::MessageDef::const_iterator i = md->begin(); i != md->end(); ++i) {
+  for (upb::MessageDef::const_field_iterator i = md->field_begin();
+       i != md->field_end(); ++i) {
     const FieldDef* upb_f = *i;
 
     const goog::FieldDescriptor* proto2_f =

@@ -40,8 +40,10 @@ static void freehandlers(upb_refcounted *r) {
 static void visithandlers(const upb_refcounted *r, upb_refcounted_visit *visit,
                           void *closure) {
   const upb_handlers *h = (const upb_handlers*)r;
-  upb_msg_iter i;
-  for(upb_msg_begin(&i, h->msg); !upb_msg_done(&i); upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  for(upb_msg_field_begin(&i, h->msg);
+      !upb_msg_field_done(&i);
+      upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
     if (!upb_fielddef_issubmsg(f)) continue;
     const upb_handlers *sub = upb_handlers_getsubhandlers(h, f);
@@ -70,8 +72,10 @@ static upb_handlers *newformsg(const upb_msgdef *m, const void *owner,
 
   // For each submessage field, get or create a handlers object and set it as
   // the subhandlers.
-  upb_msg_iter i;
-  for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  for(upb_msg_field_begin(&i, m);
+      !upb_msg_field_done(&i);
+      upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
     if (!upb_fielddef_issubmsg(f)) continue;
 
@@ -428,8 +432,10 @@ bool upb_handlers_freeze(upb_handlers *const*handlers, int n, upb_status *s) {
 
     // Check that there are no closure mismatches due to missing Start* handlers
     // or subhandlers with different type-level types.
-    upb_msg_iter j;
-    for(upb_msg_begin(&j, h->msg); !upb_msg_done(&j); upb_msg_next(&j)) {
+    upb_msg_field_iter j;
+    for(upb_msg_field_begin(&j, h->msg);
+        !upb_msg_field_done(&j);
+        upb_msg_field_next(&j)) {
 
       const upb_fielddef *f = upb_msg_iter_field(&j);
       if (upb_fielddef_isseq(f)) {

@@ -437,9 +437,9 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
     }                                                              \
     break;
 
-  upb_msg_iter i;
-  upb_msg_begin(&i, upb_handlers_msgdef(h));
-  for(; !upb_msg_done(&i); upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  upb_msg_field_begin(&i, upb_handlers_msgdef(h));
+  for(; !upb_msg_field_done(&i); upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
 
     upb_handlerattr name_attr = UPB_HANDLERATTR_INITIALIZER;

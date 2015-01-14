@@ -207,6 +207,9 @@ typedef struct {
 #define UPB_STRTABLE_INIT(count, mask, ctype, size_lg2, entries) \
   {{count, mask, ctype, size_lg2, entries}}
 
+#define UPB_EMPTY_STRTABLE_INIT(ctype)                           \
+  UPB_STRTABLE_INIT(0, 0, ctype, 0, NULL)
+
 typedef struct {
   upb_table t;              // For entries that don't fit in the array part.
   const _upb_value *array;  // Array part of the table.  See const note above.
