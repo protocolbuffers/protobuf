@@ -73,6 +73,15 @@ module BasicTest
       optional :key, :string, 1
       optional :value, :message, 2, "TestMessage2"
     end
+
+    add_message "OneofMessage" do
+      oneof :my_oneof do
+        optional :a, :string, 1
+        optional :b, :int32, 2
+        optional :c, :message, 3, "TestMessage2"
+        optional :d, :enum, 4, "TestEnum"
+      end
+    end
   end
 
   TestMessage = pool.lookup("TestMessage").msgclass
@@ -87,6 +96,7 @@ module BasicTest
     pool.lookup("MapMessageWireEquiv_entry1").msgclass
   MapMessageWireEquiv_entry2 =
     pool.lookup("MapMessageWireEquiv_entry2").msgclass
+  OneofMessage = pool.lookup("OneofMessage").msgclass
 
 # ------------ test cases ---------------
 
@@ -582,6 +592,80 @@ module BasicTest
                     "b" => TestMessage2.new(:foo => 2)}
     end
 
+    def test_oneof_descriptors
+      d = OneofMessage.descriptor
+      o = d.lookup_oneof("my_oneof")
+      assert o != nil
+      assert o.class == Google::Protobuf::OneofDescriptor
+      assert o.name == "my_oneof"
+      assert d.oneofs == [o]
+      assert o.count == 4
+      field_names = o.map{|f| f.name}.sort
+      assert field_names == ["a", "b", "c", "d"]
+    end
+
+    def test_oneof
+      d = OneofMessage.new
+      assert d.a == nil
+      assert d.b == nil
+      assert d.c == nil
+      assert d.d == nil
+
+      d.a = "hi"
+      assert d.a == "hi"
+      assert d.b == nil
+      assert d.c == nil
+      assert d.d == nil
+
+      d.b = 42
+      assert d.a == nil
+      assert d.b == 42
+      assert d.c == nil
+      assert d.d == nil
+
+      d.c = TestMessage2.new(:foo => 100)
+      assert d.a == nil
+      assert d.b == nil
+      assert d.c.foo == 100
+      assert d.d == nil
+
+      d.d = :C
+      assert d.a == nil
+      assert d.b == nil
+      assert d.c == nil
+      assert d.d == :C
+
+      d2 = OneofMessage.decode(OneofMessage.encode(d))
+      assert d2 == d
+
+      encoded_field_a = OneofMessage.encode(OneofMessage.new(:a => "string"))
+      encoded_field_b = OneofMessage.encode(OneofMessage.new(:b => 1000))
+      encoded_field_c = OneofMessage.encode(
+        OneofMessage.new(:c => TestMessage2.new(:foo => 1)))
+      encoded_field_d = OneofMessage.encode(OneofMessage.new(:d => :B))
+
+      d3 = OneofMessage.decode(
+        encoded_field_c + encoded_field_a + encoded_field_d)
+      assert d3.a == nil
+      assert d3.b == nil
+      assert d3.c == nil
+      assert d3.d == :B
+
+      d4 = OneofMessage.decode(
+        encoded_field_c + encoded_field_a + encoded_field_d +
+        encoded_field_c)
+      assert d4.a == nil
+      assert d4.b == nil
+      assert d4.c.foo == 1
+      assert d4.d == nil
+
+      d5 = OneofMessage.new(:a => "hello")
+      assert d5.a != nil
+      d5.a = nil
+      assert d5.a == nil
+      assert OneofMessage.encode(d5) == ''
+    end
+
     def test_enum_field
       m = TestMessage.new
       assert m.optional_enum == :Default
@@ -619,6 +703,14 @@ module BasicTest
       assert m.repeated_msg == m2.repeated_msg
       assert m.repeated_msg.object_id != m2.repeated_msg.object_id
       assert m.repeated_msg[0].object_id != m2.repeated_msg[0].object_id
+    end
+
+    def test_eq
+      m = TestMessage.new(:optional_int32 => 42,
+                          :repeated_int32 => [1, 2, 3])
+      m2 = TestMessage.new(:optional_int32 => 43,
+                           :repeated_int32 => [1, 2, 3])
+      assert m != m2
     end
 
     def test_enum_lookup
