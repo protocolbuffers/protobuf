@@ -615,30 +615,35 @@ module BasicTest
       assert d.b == nil
       assert d.c == nil
       assert d.d == nil
+      assert d.my_oneof == nil
 
       d.a = "hi"
       assert d.a == "hi"
       assert d.b == nil
       assert d.c == nil
       assert d.d == nil
+      assert d.my_oneof == :a
 
       d.b = 42
       assert d.a == nil
       assert d.b == 42
       assert d.c == nil
       assert d.d == nil
+      assert d.my_oneof == :b
 
       d.c = TestMessage2.new(:foo => 100)
       assert d.a == nil
       assert d.b == nil
       assert d.c.foo == 100
       assert d.d == nil
+      assert d.my_oneof == :c
 
       d.d = :C
       assert d.a == nil
       assert d.b == nil
       assert d.c == nil
       assert d.d == :C
+      assert d.my_oneof == :d
 
       d2 = OneofMessage.decode(OneofMessage.encode(d))
       assert d2 == d
@@ -669,6 +674,7 @@ module BasicTest
       d5.a = nil
       assert d5.a == nil
       assert OneofMessage.encode(d5) == ''
+      assert d5.my_oneof == nil
     end
 
     def test_enum_field

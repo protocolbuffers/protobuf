@@ -77,7 +77,8 @@ static const void *newoneofhandlerdata(upb_handlers *h,
   // we don't expose these numbers to the user, so the only requirement is that
   // we have some unique ID for each union case/possibility. The field tag
   // numbers are already present and are easy to use so there's no reason to
-  // create a separate ID space.
+  // create a separate ID space. In addition, using the field tag number here
+  // lets us easily look up the field in the oneof accessor.
   hd->oneof_case_num = upb_fielddef_number(f);
   if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE) {
     hd->md = upb_fielddef_msgsubdef(f);
