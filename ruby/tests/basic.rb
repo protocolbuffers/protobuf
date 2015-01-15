@@ -598,7 +598,12 @@ module BasicTest
       assert o != nil
       assert o.class == Google::Protobuf::OneofDescriptor
       assert o.name == "my_oneof"
-      assert d.oneofs == [o]
+      oneof_count = 0
+      d.each_oneof{ |oneof|
+        oneof_count += 1
+        assert oneof == o
+      }
+      assert oneof_count == 1
       assert o.count == 4
       field_names = o.map{|f| f.name}.sort
       assert field_names == ["a", "b", "c", "d"]

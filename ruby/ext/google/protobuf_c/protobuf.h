@@ -190,7 +190,7 @@ VALUE Descriptor_each(VALUE _self);
 VALUE Descriptor_lookup(VALUE _self, VALUE name);
 VALUE Descriptor_add_field(VALUE _self, VALUE obj);
 VALUE Descriptor_add_oneof(VALUE _self, VALUE obj);
-VALUE Descriptor_oneofs(VALUE _self);
+VALUE Descriptor_each_oneof(VALUE _self);
 VALUE Descriptor_lookup_oneof(VALUE _self, VALUE name);
 VALUE Descriptor_msgclass(VALUE _self);
 extern const rb_data_type_t _Descriptor_type;

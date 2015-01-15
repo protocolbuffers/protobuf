@@ -473,13 +473,26 @@ VALUE field_type_class(const upb_fielddef* field) {
   return type_class;
 }
 
+static void* slot_memory(MessageLayout* layout,
+                         const void* storage,
+                         const upb_fielddef* field) {
+  return ((uint8_t *)storage) +
+      layout->fields[upb_fielddef_index(field)].offset;
+}
+
+static uint32_t* slot_oneof_case(MessageLayout* layout,
+                                 const void* storage,
+                                 const upb_fielddef* field) {
+  return (uint32_t *)(((uint8_t *)storage) +
+      layout->fields[upb_fielddef_index(field)].case_offset);
+}
+
+
 VALUE layout_get(MessageLayout* layout,
                  const void* storage,
                  const upb_fielddef* field) {
-  void* memory = ((uint8_t *)storage) +
-      layout->fields[upb_fielddef_index(field)].offset;
-  uint32_t* oneof_case = (uint32_t *)(((uint8_t *)storage) +
-      layout->fields[upb_fielddef_index(field)].case_offset);
+  void* memory = slot_memory(layout, storage, field);
+  uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
 
   if (upb_fielddef_containingoneof(field)) {
     if (*oneof_case != upb_fielddef_number(field)) {
@@ -552,10 +565,8 @@ void layout_set(MessageLayout* layout,
                 void* storage,
                 const upb_fielddef* field,
                 VALUE val) {
-  void* memory = ((uint8_t *)storage) +
-      layout->fields[upb_fielddef_index(field)].offset;
-  uint32_t* oneof_case = (uint32_t *)(((uint8_t *)storage) +
-      layout->fields[upb_fielddef_index(field)].case_offset);
+  void* memory = slot_memory(layout, storage, field);
+  uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
 
   if (upb_fielddef_containingoneof(field)) {
     if (val == Qnil) {
@@ -592,10 +603,8 @@ void layout_init(MessageLayout* layout,
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    void* memory = ((uint8_t *)storage) +
-        layout->fields[upb_fielddef_index(field)].offset;
-    uint32_t* oneof_case = (uint32_t *)(((uint8_t *)storage) +
-        layout->fields[upb_fielddef_index(field)].case_offset);
+    void* memory = slot_memory(layout, storage, field);
+    uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
 
     if (upb_fielddef_containingoneof(field)) {
       memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
@@ -652,10 +661,8 @@ void layout_mark(MessageLayout* layout, void* storage) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    void* memory = ((uint8_t *)storage) +
-        layout->fields[upb_fielddef_index(field)].offset;
-    uint32_t* oneof_case = (uint32_t *)(((uint8_t *)storage) +
-        layout->fields[upb_fielddef_index(field)].case_offset);
+    void* memory = slot_memory(layout, storage, field);
+    uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
 
     if (upb_fielddef_containingoneof(field)) {
       if (*oneof_case == upb_fielddef_number(field)) {
@@ -675,14 +682,11 @@ void layout_dup(MessageLayout* layout, void* to, void* from) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    void* to_memory = ((uint8_t *)to) +
-        layout->fields[upb_fielddef_index(field)].offset;
-    uint32_t* to_oneof_case = (uint32_t *)(((uint8_t *)to) +
-        layout->fields[upb_fielddef_index(field)].case_offset);
-    void* from_memory = ((uint8_t *)from) +
-        layout->fields[upb_fielddef_index(field)].offset;
-    uint32_t* from_oneof_case = (uint32_t *)(((uint8_t *)from) +
-        layout->fields[upb_fielddef_index(field)].case_offset);
+
+    void* to_memory = slot_memory(layout, to, field);
+    uint32_t* to_oneof_case = slot_oneof_case(layout, to, field);
+    void* from_memory = slot_memory(layout, from, field);
+    uint32_t* from_oneof_case = slot_oneof_case(layout, from, field);
 
     if (upb_fielddef_containingoneof(field)) {
       if (*from_oneof_case == upb_fielddef_number(field)) {
@@ -705,14 +709,11 @@ void layout_deep_copy(MessageLayout* layout, void* to, void* from) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    void* to_memory = ((uint8_t *)to) +
-        layout->fields[upb_fielddef_index(field)].offset;
-    uint32_t* to_oneof_case = (uint32_t *)(((uint8_t *)to) +
-        layout->fields[upb_fielddef_index(field)].case_offset);
-    void* from_memory = ((uint8_t *)from) +
-        layout->fields[upb_fielddef_index(field)].offset;
-    uint32_t* from_oneof_case = (uint32_t *)(((uint8_t *)from) +
-        layout->fields[upb_fielddef_index(field)].case_offset);
+
+    void* to_memory = slot_memory(layout, to, field);
+    uint32_t* to_oneof_case = slot_oneof_case(layout, to, field);
+    void* from_memory = slot_memory(layout, from, field);
+    uint32_t* from_oneof_case = slot_oneof_case(layout, from, field);
 
     if (upb_fielddef_containingoneof(field)) {
       if (*from_oneof_case == upb_fielddef_number(field)) {
@@ -737,14 +738,11 @@ VALUE layout_eq(MessageLayout* layout, void* msg1, void* msg2) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    void* msg1_memory = ((uint8_t *)msg1) +
-        layout->fields[upb_fielddef_index(field)].offset;
-    uint32_t* msg1_oneof_case = (uint32_t *)(((uint8_t *)msg1) +
-        layout->fields[upb_fielddef_index(field)].case_offset);
-    void* msg2_memory = ((uint8_t *)msg2) +
-        layout->fields[upb_fielddef_index(field)].offset;
-    uint32_t* msg2_oneof_case = (uint32_t *)(((uint8_t *)msg2) +
-        layout->fields[upb_fielddef_index(field)].case_offset);
+
+    void* msg1_memory = slot_memory(layout, msg1, field);
+    uint32_t* msg1_oneof_case = slot_oneof_case(layout, msg1, field);
+    void* msg2_memory = slot_memory(layout, msg2, field);
+    uint32_t* msg2_oneof_case = slot_oneof_case(layout, msg2, field);
 
     if (upb_fielddef_containingoneof(field)) {
       if (*msg1_oneof_case != *msg2_oneof_case ||

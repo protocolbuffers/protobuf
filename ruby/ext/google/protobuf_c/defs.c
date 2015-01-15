@@ -287,7 +287,7 @@ void Descriptor_register(VALUE module) {
   rb_define_method(klass, "lookup", Descriptor_lookup, 1);
   rb_define_method(klass, "add_field", Descriptor_add_field, 1);
   rb_define_method(klass, "add_oneof", Descriptor_add_oneof, 1);
-  rb_define_method(klass, "oneofs", Descriptor_oneofs, 0);
+  rb_define_method(klass, "each_oneof", Descriptor_each_oneof, 0);
   rb_define_method(klass, "lookup_oneof", Descriptor_lookup_oneof, 1);
   rb_define_method(klass, "msgclass", Descriptor_msgclass, 0);
   rb_define_method(klass, "name", Descriptor_name, 0);
@@ -409,23 +409,23 @@ VALUE Descriptor_add_oneof(VALUE _self, VALUE obj) {
 
 /*
  * call-seq:
- *     Descriptor.oneofs => list of OneofDescriptors
+ *     Descriptor.each_oneof(&block) => nil
  *
- * Returns a list of OneofDescriptors that are part of this message type.
+ * Invokes the given block for each oneof in this message type, passing the
+ * corresponding OneofDescriptor.
  */
-VALUE Descriptor_oneofs(VALUE _self) {
+VALUE Descriptor_each_oneof(VALUE _self) {
   DEFINE_SELF(Descriptor, self, _self);
 
-  VALUE ret = rb_ary_new();
   upb_msg_oneof_iter it;
   for (upb_msg_oneof_begin(&it, self->msgdef);
        !upb_msg_oneof_done(&it);
        upb_msg_oneof_next(&it)) {
     const upb_oneofdef* oneof = upb_msg_iter_oneof(&it);
     VALUE obj = get_def_obj(oneof);
-    rb_ary_push(ret, obj);
+    rb_yield(obj);
   }
-  return ret;
+  return Qnil;
 }
 
 /*

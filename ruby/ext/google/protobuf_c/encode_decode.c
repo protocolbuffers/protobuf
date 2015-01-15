@@ -60,10 +60,10 @@ static const void *newsubmsghandlerdata(upb_handlers* h, uint32_t ofs,
 }
 
 typedef struct {
-  size_t ofs;      // union data slot
-  size_t case_ofs; // oneof_case field
-  uint32_t tag;    // tag number to place in data slot
-  const upb_msgdef *md; // msgdef, for oneof submessage handler
+  size_t ofs;              // union data slot
+  size_t case_ofs;         // oneof_case field
+  uint32_t oneof_case_num; // oneof-case number to place in oneof_case field
+  const upb_msgdef *md;    // msgdef, for oneof submessage handler
 } oneof_handlerdata_t;
 
 static const void *newoneofhandlerdata(upb_handlers *h,
@@ -73,7 +73,12 @@ static const void *newoneofhandlerdata(upb_handlers *h,
   oneof_handlerdata_t *hd = ALLOC(oneof_handlerdata_t);
   hd->ofs = ofs;
   hd->case_ofs = case_ofs;
-  hd->tag = upb_fielddef_number(f);
+  // We reuse the field tag number as a oneof union discriminant tag. Note that
+  // we don't expose these numbers to the user, so the only requirement is that
+  // we have some unique ID for each union case/possibility. The field tag
+  // numbers are already present and are easy to use so there's no reason to
+  // create a separate ID space.
+  hd->oneof_case_num = upb_fielddef_number(f);
   if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE) {
     hd->md = upb_fielddef_msgsubdef(f);
   } else {
@@ -294,7 +299,8 @@ static map_handlerdata_t* new_map_handlerdata(
   static bool oneof##type##_handler(void *closure, const void *hd,  \
                                      ctype val) {                   \
     const oneof_handlerdata_t *oneofdata = hd;                      \
-    DEREF(closure, oneofdata->case_ofs, uint32_t) = oneofdata->tag; \
+    DEREF(closure, oneofdata->case_ofs, uint32_t) =                 \
+        oneofdata->oneof_case_num;                                  \
     DEREF(closure, oneofdata->ofs, ctype) = val;                    \
     return true;                                                    \
   }
@@ -317,7 +323,8 @@ static void *oneofstr_handler(void *closure,
   const oneof_handlerdata_t *oneofdata = hd;
   VALUE str = rb_str_new2("");
   rb_enc_associate(str, kRubyStringUtf8Encoding);
-  DEREF(msg, oneofdata->case_ofs, uint32_t) = oneofdata->tag;
+  DEREF(msg, oneofdata->case_ofs, uint32_t) =
+      oneofdata->oneof_case_num;
   DEREF(msg, oneofdata->ofs, VALUE) = str;
   return (void*)str;
 }
@@ -329,7 +336,8 @@ static void *oneofbytes_handler(void *closure,
   const oneof_handlerdata_t *oneofdata = hd;
   VALUE str = rb_str_new2("");
   rb_enc_associate(str, kRubyString8bitEncoding);
-  DEREF(msg, oneofdata->case_ofs, uint32_t) = oneofdata->tag;
+  DEREF(msg, oneofdata->case_ofs, uint32_t) =
+      oneofdata->oneof_case_num;
   DEREF(msg, oneofdata->ofs, VALUE) = str;
   return (void*)str;
 }
@@ -340,13 +348,14 @@ static void *oneofsubmsg_handler(void *closure,
   MessageHeader* msg = closure;
   const oneof_handlerdata_t *oneofdata = hd;
   uint32_t oldcase = DEREF(msg, oneofdata->case_ofs, uint32_t);
-  DEREF(msg, oneofdata->case_ofs, uint32_t) = oneofdata->tag;
+  DEREF(msg, oneofdata->case_ofs, uint32_t) =
+      oneofdata->oneof_case_num;
 
   VALUE subdesc =
       get_def_obj((void*)oneofdata->md);
   VALUE subklass = Descriptor_msgclass(subdesc);
 
-  if (oldcase != oneofdata->tag ||
+  if (oldcase != oneofdata->oneof_case_num ||
       DEREF(msg, oneofdata->ofs, VALUE) == Qnil) {
     DEREF(msg, oneofdata->ofs, VALUE) =
         rb_class_new_instance(0, NULL, subklass);
