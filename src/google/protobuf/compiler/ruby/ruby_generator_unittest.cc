@@ -42,33 +42,22 @@
 namespace google {
 namespace protobuf {
 namespace compiler {
-namespace python {
+namespace ruby {
 namespace {
 
-class TestGenerator : public CodeGenerator {
- public:
-  TestGenerator() {}
-  ~TestGenerator() {}
-
-  virtual bool Generate(const FileDescriptor* file,
-                        const string& parameter,
-                        GeneratorContext* context,
-                        string* error) const {
-    TryInsert("test_pb2.py", "imports", context);
-    TryInsert("test_pb2.py", "module_scope", context);
-    TryInsert("test_pb2.py", "class_scope:foo.Bar", context);
-    TryInsert("test_pb2.py", "class_scope:foo.Bar.Baz", context);
-    return true;
+string FindRubyTestDir() {
+  // Inspired by TestSourceDir() in src/google/protobuf/testing/googletest.cc.
+  string prefix = ".";
+  while (!File::Exists(prefix + "/ruby/tests")) {
+    if (!File::Exists(prefix)) {
+      GOOGLE_LOG(FATAL)
+          << "Could not find Ruby test directory. Please run tests from "
+             "somewhere within the protobuf source package.";
+    }
+    prefix += "/..";
   }
-
-  void TryInsert(const string& filename, const string& insertion_point,
-                 GeneratorContext* context) const {
-    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
-        context->OpenForInsert(filename, insertion_point));
-    io::Printer printer(output.get(), '$');
-    printer.Print("// inserted $name$\n", "name", insertion_point);
-  }
-};
+  return prefix + "/ruby/tests";
+}
 
 // This test is a simple golden-file test over the output of the Ruby code
 // generator. When we make changes to the Ruby extension and alter the Ruby code
@@ -78,39 +67,53 @@ class TestGenerator : public CodeGenerator {
 // extensions to the point where we can do this test in a more automated way.
 
 TEST(RubyGeneratorTest, GeneratorTest) {
+  string ruby_tests = FindRubyTestDir();
+
   google::protobuf::compiler::CommandLineInterface cli;
   cli.SetInputsAreProtoPathRelative(true);
 
   ruby::Generator ruby_generator;
   cli.RegisterGenerator("--ruby_out", &ruby_generator, "");
 
-  string path_arg = "-I" + TestSourceDir() + "/ruby/tests";
+  // Copy generated_code.proto to the temporary test directory.
+  string test_input;
+  GOOGLE_CHECK_OK(File::GetContents(
+      ruby_tests + "/generated_code.proto",
+      &test_input,
+      true));
+  GOOGLE_CHECK_OK(File::SetContents(
+      TestTempDir() + "/generated_code.proto",
+      test_input,
+      true));
+
+  // Invoke the proto compiler (we will be inside TestTempDir() at this point).
   string ruby_out = "--ruby_out=" + TestTempDir();
+  string proto_path = "--proto_path=" + TestTempDir();
   const char* argv[] = {
     "protoc",
-    path_arg.c_str(),
     ruby_out.c_str(),
+    proto_path.c_str(),
     "generated_code.proto",
   };
 
   EXPECT_EQ(0, cli.Run(4, argv));
 
+  // Load the generated output and compare to the expected result.
   string output;
-  GOOGLE_CHECK_OK(File::GetContents(TestTempDir() + "/generated_code.rb",
-                                    &output,
-                                    true));
-
+  GOOGLE_CHECK_OK(File::GetContents(
+      TestTempDir() + "/generated_code.rb",
+      &output,
+      true));
   string expected_output;
   GOOGLE_CHECK_OK(File::GetContents(
-      TestSourceDir() + "/ruby/tests/generated_code.rb",
+      ruby_tests + "/generated_code.rb",
       &expected_output,
       true));
-
   EXPECT_EQ(expected_output, output);
 }
 
 }  // namespace
-}  // namespace python
+}  // namespace ruby
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
