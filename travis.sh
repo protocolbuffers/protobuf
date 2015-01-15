@@ -57,7 +57,7 @@ coverage_install() {
 }
 coverage_script() {
   make -j12 tests googlepbtests testlua WITH_JIT=yes \
-      USER_CPPFLAGS="--coverage `pkg-config lua5.2 --cflags`"
+      USER_CPPFLAGS="--coverage -O0 `pkg-config lua5.2 --cflags`"
   make test
 }
 coverage_after_success() {
