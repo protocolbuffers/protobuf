@@ -43,6 +43,7 @@
 #include <errno.h>
 #include <iostream>
 #include <algorithm>
+#include <limits>
 
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/common.h>
@@ -389,7 +390,8 @@ bool ConcatenatingInputStream::Skip(int count) {
     // to skip.
     int64 final_byte_count = streams_[0]->ByteCount();
     GOOGLE_DCHECK_LT(final_byte_count, target_byte_count);
-    count = target_byte_count - final_byte_count;
+	GOOGLE_DCHECK_LT(target_byte_count - final_byte_count, std::numeric_limits<int>::max());
+    count = (int)(target_byte_count - final_byte_count);
 
     // That stream is done.  Advance to the next one.
     bytes_retired_ += final_byte_count;

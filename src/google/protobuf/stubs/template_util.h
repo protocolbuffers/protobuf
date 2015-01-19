@@ -50,6 +50,14 @@
 #ifndef GOOGLE_PROTOBUF_TEMPLATE_UTIL_H_
 #define GOOGLE_PROTOBUF_TEMPLATE_UTIL_H_
 
+#if defined _MSC_VER
+#include <type_traits>
+#define __thread __declspec(thread)
+#endif
+#if defined IOS
+#define __thread // not supported on IOS devices
+#endif
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -73,14 +81,20 @@ struct identity_ {
 // with hardcoding the integer type to bool. We use the fully
 // general integer_constant for compatibility with tr1.
 
-template<class T, T v>
-struct integral_constant {
-  static const T value = v;
-  typedef T value_type;
-  typedef integral_constant<T, v> type;
-};
+#ifdef _MSC_VER
+  using std::tr1::integral_constant;
+  using std::tr1::is_convertible;
+  using std::tr1::is_enum;
+#else
+  template<class T, T v>
+  struct integral_constant {
+    static const T value = v;
+    typedef T value_type;
+    typedef integral_constant<T, v> type;
+  };
 
-template <class T, T v> const T integral_constant<T, v>::value;
+  template <class T, T v> const T integral_constant<T, v>::value;
+#endif
 
 
 // Abbreviations: true_type and false_type are structs that represent boolean

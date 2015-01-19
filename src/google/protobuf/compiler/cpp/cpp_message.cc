@@ -1217,6 +1217,11 @@ GenerateDescriptorDeclarations(io::Printer* printer) {
       }
     }
 
+    printer->Print("#ifdef _MSC_VER" "\n"
+                   "  $name$OneofInstance() {}" "\n"
+                   "#endif" "\n",
+      "name", classname_);
+
     printer->Print("}* $name$_default_oneof_instance_ = NULL;\n",
                    "name", classname_);
   }
