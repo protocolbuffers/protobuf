@@ -32,7 +32,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-#include "conformance.pb.h"
+#include "google/protobuf/conformance.pb.h"
 
 using std::string;
 using conformance::ConformanceRequest;

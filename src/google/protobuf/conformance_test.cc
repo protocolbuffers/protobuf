@@ -33,7 +33,7 @@
 #include <unistd.h>
 #include <string>
 
-#include "conformance.pb.h"
+#include "google/protobuf/conformance.pb.h"
 #include <google/protobuf/wire_format_lite.h>
 
 using conformance::ConformanceRequest;
