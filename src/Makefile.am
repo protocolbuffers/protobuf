@@ -42,6 +42,7 @@ nobase_include_HEADERS =                                        \
   google/protobuf/stubs/atomicops.h                             \
   google/protobuf/stubs/atomicops_internals_aix.h               \
   google/protobuf/stubs/atomicops_internals_arm64_gcc.h         \
+  google/protobuf/stubs/atomicops_internals_tile_gcc.h          \
   google/protobuf/stubs/atomicops_internals_arm_gcc.h           \
   google/protobuf/stubs/atomicops_internals_arm_qnx.h           \
   google/protobuf/stubs/atomicops_internals_atomicword_compat.h \
