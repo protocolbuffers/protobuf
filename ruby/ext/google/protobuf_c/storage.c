@@ -366,6 +366,11 @@ const upb_fielddef* map_entry_value(const upb_msgdef* msgdef) {
 // Memory layout management.
 // -----------------------------------------------------------------------------
 
+static size_t align_up_to(size_t offset, size_t granularity) {
+  // Granularity must be a power of two.
+  return (offset + granularity - 1) & ~(granularity - 1);
+}
+
 MessageLayout* create_layout(const upb_msgdef* msgdef) {
   MessageLayout* layout = ALLOC(MessageLayout);
   int nfields = upb_msgdef_numfields(msgdef);
@@ -391,7 +396,7 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
       field_size = native_slot_size(upb_fielddef_type(field));
     }
     // Align current offset up to |size| granularity.
-    off = (off + field_size - 1) & ~(field_size - 1);
+    off = align_up_to(off, field_size);
     layout->fields[upb_fielddef_index(field)].offset = off;
     layout->fields[upb_fielddef_index(field)].case_offset = MESSAGE_FIELD_NO_CASE;
     off += field_size;
@@ -413,7 +418,7 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
     // all fields.
     size_t field_size = NATIVE_SLOT_MAX_SIZE;
     // Align the offset.
-    off = (off + field_size - 1) & ~(field_size - 1);
+    off = align_up_to(off, field_size);
     // Assign all fields in the oneof this same offset.
     upb_oneof_iter fit;
     for (upb_oneof_begin(&fit, oneof);

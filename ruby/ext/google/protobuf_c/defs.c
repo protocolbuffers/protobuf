@@ -58,11 +58,11 @@ static upb_def* check_notfrozen(const upb_def* def) {
 }
 
 static upb_msgdef* check_msg_notfrozen(const upb_msgdef* def) {
-  return (upb_msgdef*)check_notfrozen((const upb_def*)def);
+  return upb_downcast_msgdef_mutable(check_notfrozen((const upb_def*)def));
 }
 
 static upb_fielddef* check_field_notfrozen(const upb_fielddef* def) {
-  return (upb_fielddef*)check_notfrozen((const upb_def*)def);
+  return upb_downcast_fielddef_mutable(check_notfrozen((const upb_def*)def));
 }
 
 static upb_oneofdef* check_oneof_notfrozen(const upb_oneofdef* def) {

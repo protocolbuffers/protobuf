@@ -558,11 +558,11 @@ static void add_handlers_for_message(const void *closure, upb_handlers *h) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
     size_t offset = desc->layout->fields[upb_fielddef_index(f)].offset +
         sizeof(MessageHeader);
-    size_t oneof_case_offset =
-        desc->layout->fields[upb_fielddef_index(f)].case_offset +
-        sizeof(MessageHeader);
 
     if (upb_fielddef_containingoneof(f)) {
+      size_t oneof_case_offset =
+          desc->layout->fields[upb_fielddef_index(f)].case_offset +
+          sizeof(MessageHeader);
       add_handlers_for_oneof_field(h, f, offset, oneof_case_offset);
     } else if (is_map_field(f)) {
       add_handlers_for_mapfield(h, f, offset, desc);
