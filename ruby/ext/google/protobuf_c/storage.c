@@ -579,15 +579,26 @@ void layout_set(MessageLayout* layout,
       *oneof_case = 0;
       memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
     } else {
-      // Set the oneof case *first* in case a GC is triggered during
-      // native_slot_set(): layout_mark() depends on oneof_case to know whether
-      // the slot may be a Ruby VALUE and so we need that lifetime to start
-      // before we could possibly stick a VALUE in it.
-      *oneof_case = upb_fielddef_number(field);
-      // We just overwrite the value directly if we changed oneof cases:
-      // native_slot_set() does not depend on the old value in memory.
+      // The transition between field types for a single oneof (union) slot is
+      // somewhat complex because we need to ensure that a GC triggered at any
+      // point by a call into the Ruby VM sees a valid state for this field and
+      // does not either go off into the weeds (following what it thinks is a
+      // VALUE but is actually a different field type) or miss an object (seeing
+      // what it thinks is a primitive field but is actually a VALUE for the new
+      // field type).
+      //
+      // native_slot_set() has two parts: (i) conversion of some sort, and (ii)
+      // setting the in-memory content to the new value. It guarantees that all
+      // calls to the Ruby VM are completed before the memory slot is altered.
+      //
+      // In order for the transition to be safe, the oneof case slot must be in
+      // sync with the value slot whenever the Ruby VM has been called. Because
+      // we are guaranteed that no Ruby VM calls occur after native_slot_set()
+      // alters the memory slot and before it returns, we set the oneof case
+      // immediately after native_slot_set() returns.
       native_slot_set(upb_fielddef_type(field), field_type_class(field),
                       memory, val);
+      *oneof_case = upb_fielddef_number(field);
     }
   } else if (is_map_field(field)) {
     check_map_field_type(val, field);

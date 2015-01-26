@@ -349,8 +349,6 @@ static void *oneofsubmsg_handler(void *closure,
   MessageHeader* msg = closure;
   const oneof_handlerdata_t *oneofdata = hd;
   uint32_t oldcase = DEREF(msg, oneofdata->case_ofs, uint32_t);
-  DEREF(msg, oneofdata->case_ofs, uint32_t) =
-      oneofdata->oneof_case_num;
 
   VALUE subdesc =
       get_def_obj((void*)oneofdata->md);
@@ -361,6 +359,11 @@ static void *oneofsubmsg_handler(void *closure,
     DEREF(msg, oneofdata->ofs, VALUE) =
         rb_class_new_instance(0, NULL, subklass);
   }
+  // Set the oneof case *after* allocating the new class instance -- see comment
+  // in layout_set() as to why. There are subtle interactions with possible GC
+  // points and oneof field type transitions.
+  DEREF(msg, oneofdata->case_ofs, uint32_t) =
+      oneofdata->oneof_case_num;
 
   VALUE submsg_rb = DEREF(msg, oneofdata->ofs, VALUE);
   MessageHeader* submsg;
@@ -965,11 +968,11 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
     uint32_t offset =
         desc->layout->fields[upb_fielddef_index(f)].offset +
         sizeof(MessageHeader);
-    uint32_t oneof_case_offset =
-        desc->layout->fields[upb_fielddef_index(f)].case_offset +
-        sizeof(MessageHeader);
 
     if (upb_fielddef_containingoneof(f)) {
+      uint32_t oneof_case_offset =
+          desc->layout->fields[upb_fielddef_index(f)].case_offset +
+          sizeof(MessageHeader);
       // For a oneof, check that this field is actually present -- skip all the
       // below if not.
       if (DEREF(msg, oneof_case_offset, uint32_t) !=
