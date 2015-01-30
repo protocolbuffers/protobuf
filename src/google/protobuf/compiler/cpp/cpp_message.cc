@@ -280,10 +280,6 @@ void OptimizePadding(vector<const FieldDescriptor*>* fields) {
   }
 }
 
-string MessageTypeProtoName(const FieldDescriptor* field) {
-  return field->message_type()->full_name();
-}
-
 // Emits an if-statement with a condition that evaluates to true if |field| is
 // considered non-default (will be sent over the wire), for message types
 // without true field presence. Should only be called if
