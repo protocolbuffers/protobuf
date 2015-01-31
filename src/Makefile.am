@@ -243,26 +243,28 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_doc_comment.cc            \
   google/protobuf/compiler/java/java_doc_comment.h             \
   google/protobuf/compiler/javanano/javanano_enum.cc           \
+  google/protobuf/compiler/javanano/javanano_enum.h            \
+  google/protobuf/compiler/javanano/javanano_enum_field.cc     \
   google/protobuf/compiler/javanano/javanano_enum_field.h      \
   google/protobuf/compiler/javanano/javanano_extension.cc      \
+  google/protobuf/compiler/javanano/javanano_extension.h       \
   google/protobuf/compiler/javanano/javanano_field.cc          \
+  google/protobuf/compiler/javanano/javanano_field.h           \
   google/protobuf/compiler/javanano/javanano_file.cc           \
+  google/protobuf/compiler/javanano/javanano_file.h            \
   google/protobuf/compiler/javanano/javanano_generator.cc      \
+  google/protobuf/compiler/javanano/javanano_generator.h       \
   google/protobuf/compiler/javanano/javanano_helpers.cc        \
+  google/protobuf/compiler/javanano/javanano_helpers.h         \
+  google/protobuf/compiler/javanano/javanano_map_field.cc      \
+  google/protobuf/compiler/javanano/javanano_map_field.h       \
   google/protobuf/compiler/javanano/javanano_message.cc        \
+  google/protobuf/compiler/javanano/javanano_message.h         \
+  google/protobuf/compiler/javanano/javanano_message_field.cc  \
   google/protobuf/compiler/javanano/javanano_message_field.h   \
   google/protobuf/compiler/javanano/javanano_params.h          \
-  google/protobuf/compiler/javanano/javanano_primitive_field.h \
-  google/protobuf/compiler/javanano/javanano_enum_field.cc     \
-  google/protobuf/compiler/javanano/javanano_enum.h            \
-  google/protobuf/compiler/javanano/javanano_extension.h       \
-  google/protobuf/compiler/javanano/javanano_field.h           \
-  google/protobuf/compiler/javanano/javanano_file.h            \
-  google/protobuf/compiler/javanano/javanano_generator.h       \
-  google/protobuf/compiler/javanano/javanano_helpers.h         \
-  google/protobuf/compiler/javanano/javanano_message_field.cc  \
-  google/protobuf/compiler/javanano/javanano_message.h         \
   google/protobuf/compiler/javanano/javanano_primitive_field.cc \
+  google/protobuf/compiler/javanano/javanano_primitive_field.h \
   google/protobuf/compiler/python/python_generator.cc          \
   google/protobuf/compiler/ruby/ruby_generator.cc
 
