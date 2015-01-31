@@ -474,7 +474,7 @@ namespace Google.ProtocolBuffers
 
         /// <summary>
         /// Reads an enum field value from the stream. If the enum is valid for type T,
-        /// then the ref value is set and it returns true.  Otherwise the unkown output
+        /// then the ref value is set and it returns true.  Otherwise the unknown output
         /// value is set and this method returns false.
         /// </summary>   
         [CLSCompliant(false)]
@@ -482,10 +482,9 @@ namespace Google.ProtocolBuffers
             where T : struct, IComparable, IFormattable
         {
             int number = (int) ReadRawVarint32();
-            if (Enum.IsDefined(typeof(T), number))
+            if (EnumHelper<T>.TryConvert(number, ref value))
             {
                 unknown = null;
-                value = (T) (object) number;
                 return true;
             }
             unknown = number;
@@ -1861,5 +1860,84 @@ namespace Google.ProtocolBuffers
         }
 
         #endregion
+
+        /// <summary>
+        /// Helper class to make parsing enums faster.
+        /// </summary>
+        private static class EnumHelper<T> where T : struct
+        {
+            /// <summary>
+            /// We use the array form if all values are in the range [0, LimitForArray),
+            /// otherwise we build a dictionary.
+            /// </summary>
+            private const int LimitForArray = 32;
+            // Only one of these will be populated.
+            private static readonly Dictionary<int, T> dictionary;
+            private static readonly T?[] values;
+
+            static EnumHelper()
+            {
+                // It will actually be a T[], but the CLR will let us convert.
+                int[] array = (int[]) Enum.GetValues(typeof (T));
+                if (array.Length == 0)
+                {
+                    // Empty enum; model with an empty values array.
+                    values = new T?[0];
+                    return;
+                }
+                int min = int.MaxValue;
+                int max = int.MinValue;
+                foreach (int number in array)
+                {
+                    min = Math.Min(number, min);
+                    max = Math.Max(number, max);
+                }
+                if (min >= 0 && max < LimitForArray)
+                {
+                    values = new T?[max + 1];
+                    foreach (int number in array)
+                    {
+                        values[number] = (T)(object)number;
+                    }
+                }
+                else
+                {
+                    dictionary = new Dictionary<int, T>();
+                    foreach (int number in array)
+                    {
+                        dictionary[number] = (T)(object)number;
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Tries to convert an integer to its enum representation. This would take an out parameter,
+            /// but the caller uses ref, so this approach is simpler.
+            /// </summary>
+            internal static bool TryConvert(int number, ref T value)
+            {
+                if (values != null)
+                {
+                    if (number < 0 || number >= values.Length)
+                    {
+                        return false;
+                    }
+                    T? maybeValue = values[number];
+                    if (maybeValue != null)
+                    {
+                        value = maybeValue.Value;
+                        return true;
+                    }
+                    return false;
+                }
+                T converted;
+                if (dictionary.TryGetValue(number, out converted))
+                {
+                    value = converted;
+                    return true;
+                }
+                return false;
+            }
+        }
     }
 }
