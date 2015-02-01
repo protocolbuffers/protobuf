@@ -46,6 +46,12 @@ namespace protobuf {
 namespace compiler {
 namespace ruby {
 
+#if _MSC_VER >= 1400 // VS 2005 and above
+  // <stdint.h> is not part of the standard, so we need to map
+  // to MSVC's custom sized integer types instead.	
+  typedef unsigned __int32 uint32_t;
+#endif
+	
 // Forward decls.
 std::string IntToString(uint32_t value);
 std::string StripDotProto(const std::string& proto_file);
