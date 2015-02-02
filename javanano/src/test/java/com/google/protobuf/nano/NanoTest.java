@@ -2430,6 +2430,14 @@ public class NanoTest extends TestCase {
     assertFalse(msg.hasOptionalNestedMessage());
     assertFalse(msg.getOptionalNestedMessage().hasBb());
 
+    // Test getMutableMessage()
+    msg.setOptionalNestedMessage(null);
+    assertNull(msg.getOptionalNestedMessage());
+    assertFalse(msg.hasOptionalNestedMessage());
+    TestNanoAccessors.NestedMessage ref1 = msg.getMutableOptionalNestedMessage();
+    assertTrue(msg.getOptionalNestedMessage() == ref1);
+    assertTrue(msg.hasOptionalNestedMessage());
+
     // Test accessors
     assertEquals(0, msg.getOptionalInt32());
     assertFalse(msg.hasOptionalInt32());
