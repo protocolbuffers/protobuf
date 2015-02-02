@@ -187,7 +187,9 @@ static bool putkey(void *closure, const void *handler_data) {
     print_comma(p);                                                          \
     CHK(put##type(closure, handler_data, val));                              \
     return true;                                                             \
-  }                                                                          \
+  }
+
+#define TYPE_HANDLERS_MAPKEY(type, fmt_func)                                 \
   static bool putmapkey_##type(void *closure, const void *handler_data,      \
                             type val) {                                      \
     upb_json_printer *p = closure;                                           \
@@ -205,7 +207,15 @@ TYPE_HANDLERS(uint32_t, fmt_int64);
 TYPE_HANDLERS(int64_t,  fmt_int64);
 TYPE_HANDLERS(uint64_t, fmt_uint64);
 
+// double and float are not allowed to be map keys.
+TYPE_HANDLERS_MAPKEY(bool,     fmt_bool);
+TYPE_HANDLERS_MAPKEY(int32_t,  fmt_int64);
+TYPE_HANDLERS_MAPKEY(uint32_t, fmt_int64);
+TYPE_HANDLERS_MAPKEY(int64_t,  fmt_int64);
+TYPE_HANDLERS_MAPKEY(uint64_t, fmt_uint64);
+
 #undef TYPE_HANDLERS
+#undef TYPE_HANDLERS_MAPKEY
 
 typedef struct {
   void *keyname;

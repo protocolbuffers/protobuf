@@ -221,6 +221,7 @@ badpadding:
 //      the true value in a contiguous buffer.
 
 static void assert_accumulate_empty(upb_json_parser *p) {
+  UPB_UNUSED(p);
   assert(p->accumulated == NULL);
   assert(p->accumulated_len == 0);
 }
@@ -505,13 +506,17 @@ static void start_number(upb_json_parser *p, const char *ptr) {
   capture_begin(p, ptr);
 }
 
-static bool parse_number(upb_json_parser *p, const char *buf, const char *end);
+static bool parse_number(upb_json_parser *p);
 
 static bool end_number(upb_json_parser *p, const char *ptr) {
   if (!capture_end(p, ptr)) {
     return false;
   }
 
+  return parse_number(p);
+}
+
+static bool parse_number(upb_json_parser *p) {
   // strtol() and friends unfortunately do not support specifying the length of
   // the input string, so we need to force a copy into a NULL-terminated buffer.
   if (!multipart_text(p, "\0", 1, false)) {
@@ -521,11 +526,7 @@ static bool end_number(upb_json_parser *p, const char *ptr) {
   size_t len;
   const char *buf = accumulate_getptr(p, &len);
   const char *myend = buf + len - 1;  // One for NULL.
-  return parse_number(p, buf, myend);
-}
 
-static bool parse_number(upb_json_parser *p, const char *buf,
-                         const char *myend) {
   char *end;
   switch (upb_fielddef_type(p->top->f)) {
     case UPB_TYPE_ENUM:
@@ -730,7 +731,7 @@ static bool parse_mapentry_key(upb_json_parser *p) {
     case UPB_TYPE_UINT32:
     case UPB_TYPE_UINT64:
       // Invoke end_number. The accum buffer has the number's text already.
-      if (!parse_number(p, buf, buf + len)) {
+      if (!parse_number(p)) {
         return false;
       }
       break;
