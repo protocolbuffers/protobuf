@@ -36,6 +36,7 @@
 #include <google/protobuf/compiler/javanano/javanano_helpers.h>
 #include <google/protobuf/compiler/javanano/javanano_primitive_field.h>
 #include <google/protobuf/compiler/javanano/javanano_enum_field.h>
+#include <google/protobuf/compiler/javanano/javanano_map_field.h>
 #include <google/protobuf/compiler/javanano/javanano_message_field.h>
 #include <google/protobuf/stubs/common.h>
 
@@ -97,7 +98,11 @@ FieldGenerator* FieldGeneratorMap::MakeGenerator(const FieldDescriptor* field,
   if (field->is_repeated()) {
     switch (java_type) {
       case JAVATYPE_MESSAGE:
-        return new RepeatedMessageFieldGenerator(field, params);
+        if (IsMapEntry(field->message_type())) {
+          return new MapFieldGenerator(field, params);
+        } else {
+          return new RepeatedMessageFieldGenerator(field, params);
+        }
       case JAVATYPE_ENUM:
         return new RepeatedEnumFieldGenerator(field, params);
       default:

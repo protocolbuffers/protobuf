@@ -90,6 +90,7 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
   // Generate static members for all nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     // TODO(kenton):  Reuse MessageGenerator objects?
+    if (IsMapEntry(descriptor_->nested_type(i))) continue;
     MessageGenerator(descriptor_->nested_type(i), params_)
       .GenerateStaticVariables(printer);
   }
@@ -100,6 +101,7 @@ void MessageGenerator::GenerateStaticVariableInitializers(
   // Generate static member initializers for all nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
    // TODO(kenton):  Reuse MessageGenerator objects?
+    if (IsMapEntry(descriptor_->nested_type(i))) continue;
     MessageGenerator(descriptor_->nested_type(i), params_)
       .GenerateStaticVariableInitializers(printer);
   }
@@ -159,6 +161,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   }
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    if (IsMapEntry(descriptor_->nested_type(i))) continue;
     MessageGenerator(descriptor_->nested_type(i), params_).Generate(printer);
   }
 
