@@ -77,8 +77,10 @@ void Init_protobuf_c() {
   DescriptorPool_register(protobuf);
   Descriptor_register(protobuf);
   FieldDescriptor_register(protobuf);
+  OneofDescriptor_register(protobuf);
   EnumDescriptor_register(protobuf);
   MessageBuilderContext_register(internal);
+  OneofBuilderContext_register(internal);
   EnumBuilderContext_register(internal);
   Builder_register(internal);
   RepeatedField_register(protobuf);

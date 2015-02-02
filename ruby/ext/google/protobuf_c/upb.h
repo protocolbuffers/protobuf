@@ -710,6 +710,9 @@ typedef struct {
 #define UPB_STRTABLE_INIT(count, mask, ctype, size_lg2, entries) \
   {{count, mask, ctype, size_lg2, entries}}
 
+#define UPB_EMPTY_STRTABLE_INIT(ctype)                           \
+  UPB_STRTABLE_INIT(0, 0, ctype, 0, NULL)
+
 typedef struct {
   upb_table t;              // For entries that don't fit in the array part.
   const _upb_value *array;  // Array part of the table.  See const note above.
@@ -1129,6 +1132,7 @@ class Def;
 class EnumDef;
 class FieldDef;
 class MessageDef;
+class OneofDef;
 }
 #endif
 
@@ -1136,6 +1140,7 @@ UPB_DECLARE_TYPE(upb::Def, upb_def);
 UPB_DECLARE_TYPE(upb::EnumDef, upb_enumdef);
 UPB_DECLARE_TYPE(upb::FieldDef, upb_fielddef);
 UPB_DECLARE_TYPE(upb::MessageDef, upb_msgdef);
+UPB_DECLARE_TYPE(upb::OneofDef, upb_oneofdef);
 
 // Maximum field number allowed for FieldDefs.  This is an inherent limit of the
 // protobuf wire format.
@@ -1159,6 +1164,7 @@ typedef enum {
   UPB_DEF_MSG,
   UPB_DEF_FIELD,
   UPB_DEF_ENUM,
+  UPB_DEF_ONEOF,
   UPB_DEF_SERVICE,   // Not yet implemented.
   UPB_DEF_ANY = -1,  // Wildcard for upb_symtab_get*()
 } upb_deftype_t;
@@ -1443,6 +1449,10 @@ UPB_DEFINE_DEF(upb::FieldDef, fielddef, FIELD,
   const MessageDef* containing_type() const;
   const char* containing_type_name();
 
+  // The OneofDef to which this field belongs, or NULL if this field is not part
+  // of a oneof.
+  const OneofDef* containing_oneof() const;
+
   // The field's type according to the enum in descriptor.proto.  This is not
   // the same as UPB_TYPE_*, because it distinguishes between (for example)
   // INT32 and SINT32, whereas our "type" enum does not.  This return of
@@ -1616,6 +1626,7 @@ UPB_DEFINE_STRUCT(upb_fielddef, upb_def,
   } sub;  // The msgdef or enumdef for this field, if upb_hassubdef(f).
   bool subdef_is_symbolic;
   bool msg_is_symbolic;
+  const upb_oneofdef *oneof;
   bool default_is_string;
   bool type_is_set_;     // False until type is explicitly set.
   bool is_extension_;
@@ -1631,11 +1642,11 @@ UPB_DEFINE_STRUCT(upb_fielddef, upb_def,
 ));
 
 #define UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, is_extension, lazy,   \
-                          packed, name, num, msgdef, subdef, selector_base,     \
+                          packed, name, num, msgdef, subdef, selector_base,    \
                           index, defaultval, refs, ref2s)                      \
   {                                                                            \
     UPB_DEF_INIT(name, UPB_DEF_FIELD, refs, ref2s), defaultval, {msgdef},      \
-        {subdef}, false, false,                                                \
+        {subdef}, NULL, false, false,                                          \
         type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES, true, is_extension, \
         lazy, packed, intfmt, tagdelim, type, label, num, selector_base, index \
   }
@@ -1669,6 +1680,7 @@ bool upb_fielddef_isextension(const upb_fielddef *f);
 bool upb_fielddef_lazy(const upb_fielddef *f);
 bool upb_fielddef_packed(const upb_fielddef *f);
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f);
+const upb_oneofdef *upb_fielddef_containingoneof(const upb_fielddef *f);
 upb_msgdef *upb_fielddef_containingtype_mutable(upb_fielddef *f);
 const char *upb_fielddef_containingtypename(upb_fielddef *f);
 upb_intfmt_t upb_fielddef_intfmt(const upb_fielddef *f);
@@ -1736,7 +1748,8 @@ UPB_END_EXTERN_C  // }
 
 /* upb::MessageDef ************************************************************/
 
-typedef upb_inttable_iter upb_msg_iter;
+typedef upb_inttable_iter upb_msg_field_iter;
+typedef upb_strtable_iter upb_msg_oneof_iter;
 
 // Structure that describes a single .proto message type.
 //
@@ -1766,13 +1779,36 @@ UPB_DEFINE_DEF(upb::MessageDef, msgdef, MSG, UPB_QUOTE(
   // The number of fields that belong to the MessageDef.
   int field_count() const;
 
+  // The number of oneofs that belong to the MessageDef.
+  int oneof_count() const;
+
   // Adds a field (upb_fielddef object) to a msgdef.  Requires that the msgdef
   // and the fielddefs are mutable.  The fielddef's name and number must be
   // set, and the message may not already contain any field with this name or
   // number, and this fielddef may not be part of another message.  In error
   // cases false is returned and the msgdef is unchanged.
+  //
+  // If the given field is part of a oneof, this call succeeds if and only if
+  // that oneof is already part of this msgdef. (Note that adding a oneof to a
+  // msgdef automatically adds all of its fields to the msgdef at the time that
+  // the oneof is added, so it is usually more idiomatic to add the oneof's
+  // fields first then add the oneof to the msgdef. This case is supported for
+  // convenience.)
+  //
+  // If |f| is already part of this MessageDef, this method performs no action
+  // and returns true (success). Thus, this method is idempotent.
   bool AddField(FieldDef* f, Status* s);
   bool AddField(const reffed_ptr<FieldDef>& f, Status* s);
+
+  // Adds a oneof (upb_oneofdef object) to a msgdef. Requires that the msgdef,
+  // oneof, and any fielddefs are mutable, that the fielddefs contained in the
+  // oneof do not have any name or number conflicts with existing fields in the
+  // msgdef, and that the oneof's name is unique among all oneofs in the msgdef.
+  // If the oneof is added successfully, all of its fields will be added
+  // directly to the msgdef as well. In error cases, false is returned and the
+  // msgdef is unchanged.
+  bool AddOneof(OneofDef* o, Status* s);
+  bool AddOneof(const reffed_ptr<OneofDef>& o, Status* s);
 
   // These return NULL if the field is not found.
   FieldDef* FindFieldByNumber(uint32_t number);
@@ -1797,6 +1833,25 @@ UPB_DEFINE_DEF(upb::MessageDef, msgdef, MSG, UPB_QUOTE(
     return FindFieldByName(str.c_str(), str.size());
   }
 
+  OneofDef* FindOneofByName(const char* name, size_t len);
+  const OneofDef* FindOneofByName(const char* name, size_t len) const;
+
+  OneofDef* FindOneofByName(const char* name) {
+    return FindOneofByName(name, strlen(name));
+  }
+  const OneofDef* FindOneofByName(const char* name) const {
+    return FindOneofByName(name, strlen(name));
+  }
+
+  template<class T>
+  OneofDef* FindOneofByName(const T& str) {
+    return FindOneofByName(str.c_str(), str.size());
+  }
+  template<class T>
+  const OneofDef* FindOneofByName(const T& str) const {
+    return FindOneofByName(str.c_str(), str.size());
+  }
+
   // Returns a new msgdef that is a copy of the given msgdef (and a copy of all
   // the fields) but with any references to submessages broken and replaced
   // with just the name of the submessage.  Returns NULL if memory allocation
@@ -1812,39 +1867,117 @@ UPB_DEFINE_DEF(upb::MessageDef, msgdef, MSG, UPB_QUOTE(
   bool mapentry() const;
 
   // Iteration over fields.  The order is undefined.
-  class iterator : public std::iterator<std::forward_iterator_tag, FieldDef*> {
+  class field_iterator
+      : public std::iterator<std::forward_iterator_tag, FieldDef*> {
    public:
-    explicit iterator(MessageDef* md);
-    static iterator end(MessageDef* md);
+    explicit field_iterator(MessageDef* md);
+    static field_iterator end(MessageDef* md);
 
     void operator++();
     FieldDef* operator*() const;
-    bool operator!=(const iterator& other) const;
-    bool operator==(const iterator& other) const;
+    bool operator!=(const field_iterator& other) const;
+    bool operator==(const field_iterator& other) const;
 
    private:
-    upb_msg_iter iter_;
+    upb_msg_field_iter iter_;
   };
 
-  class const_iterator
+  class const_field_iterator
       : public std::iterator<std::forward_iterator_tag, const FieldDef*> {
    public:
-    explicit const_iterator(const MessageDef* md);
-    static const_iterator end(const MessageDef* md);
+    explicit const_field_iterator(const MessageDef* md);
+    static const_field_iterator end(const MessageDef* md);
 
     void operator++();
     const FieldDef* operator*() const;
-    bool operator!=(const const_iterator& other) const;
-    bool operator==(const const_iterator& other) const;
+    bool operator!=(const const_field_iterator& other) const;
+    bool operator==(const const_field_iterator& other) const;
 
    private:
-    upb_msg_iter iter_;
+    upb_msg_field_iter iter_;
   };
 
-  iterator begin();
-  iterator end();
-  const_iterator begin() const;
-  const_iterator end() const;
+  // Iteration over oneofs. The order is undefined.
+  class oneof_iterator
+      : public std::iterator<std::forward_iterator_tag, FieldDef*> {
+   public:
+    explicit oneof_iterator(MessageDef* md);
+    static oneof_iterator end(MessageDef* md);
+
+    void operator++();
+    OneofDef* operator*() const;
+    bool operator!=(const oneof_iterator& other) const;
+    bool operator==(const oneof_iterator& other) const;
+
+   private:
+    upb_msg_oneof_iter iter_;
+  };
+
+  class const_oneof_iterator
+      : public std::iterator<std::forward_iterator_tag, const FieldDef*> {
+   public:
+    explicit const_oneof_iterator(const MessageDef* md);
+    static const_oneof_iterator end(const MessageDef* md);
+
+    void operator++();
+    const OneofDef* operator*() const;
+    bool operator!=(const const_oneof_iterator& other) const;
+    bool operator==(const const_oneof_iterator& other) const;
+
+   private:
+    upb_msg_oneof_iter iter_;
+  };
+
+  class FieldAccessor {
+   public:
+    explicit FieldAccessor(MessageDef* msg) : msg_(msg) {}
+    field_iterator begin() { return msg_->field_begin(); }
+    field_iterator end() { return msg_->field_end(); }
+   private:
+    MessageDef* msg_;
+  };
+
+  class ConstFieldAccessor {
+   public:
+    explicit ConstFieldAccessor(const MessageDef* msg) : msg_(msg) {}
+    const_field_iterator begin() { return msg_->field_begin(); }
+    const_field_iterator end() { return msg_->field_end(); }
+   private:
+    const MessageDef* msg_;
+  };
+
+  class OneofAccessor {
+   public:
+    explicit OneofAccessor(MessageDef* msg) : msg_(msg) {}
+    oneof_iterator begin() { return msg_->oneof_begin(); }
+    oneof_iterator end() { return msg_->oneof_end(); }
+   private:
+    MessageDef* msg_;
+  };
+
+  class ConstOneofAccessor {
+   public:
+    explicit ConstOneofAccessor(const MessageDef* msg) : msg_(msg) {}
+    const_oneof_iterator begin() { return msg_->oneof_begin(); }
+    const_oneof_iterator end() { return msg_->oneof_end(); }
+   private:
+    const MessageDef* msg_;
+  };
+
+  field_iterator field_begin();
+  field_iterator field_end();
+  const_field_iterator field_begin() const;
+  const_field_iterator field_end() const;
+
+  oneof_iterator oneof_begin();
+  oneof_iterator oneof_end();
+  const_oneof_iterator oneof_begin() const;
+  const_oneof_iterator oneof_end() const;
+
+  FieldAccessor fields() { return FieldAccessor(this); }
+  ConstFieldAccessor fields() const { return ConstFieldAccessor(this); }
+  OneofAccessor oneofs() { return OneofAccessor(this); }
+  ConstOneofAccessor oneofs() const { return ConstOneofAccessor(this); }
 
  private:
   UPB_DISALLOW_POD_OPS(MessageDef, upb::MessageDef);
@@ -1857,6 +1990,9 @@ UPB_DEFINE_STRUCT(upb_msgdef, upb_def,
   upb_inttable itof;  // int to field
   upb_strtable ntof;  // name to field
 
+  // Tables for looking up oneofs by name.
+  upb_strtable ntoo;  // name to oneof
+
   // Is this a map-entry message?
   // TODO: set this flag properly for static descriptors; regenerate
   // descriptor.upb.c.
@@ -1865,11 +2001,14 @@ UPB_DEFINE_STRUCT(upb_msgdef, upb_def,
   // TODO(haberman): proper extension ranges (there can be multiple).
 ));
 
+// TODO: also support static initialization of the oneofs table. This will be
+// needed if we compile in descriptors that contain oneofs.
 #define UPB_MSGDEF_INIT(name, selector_count, submsg_field_count, itof, ntof, \
                         refs, ref2s)                                          \
   {                                                                           \
     UPB_DEF_INIT(name, UPB_DEF_MSG, refs, ref2s), selector_count,             \
-        submsg_field_count, itof, ntof, false                                 \
+        submsg_field_count, itof, ntof,                                       \
+        UPB_EMPTY_STRTABLE_INIT(UPB_CTYPE_PTR), false                         \
   }
 
 UPB_BEGIN_EXTERN_C  // {
@@ -1892,6 +2031,8 @@ bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname, upb_status *s);
 
 upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner);
 bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f, const void *ref_donor,
+                         upb_status *s);
+bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
                          upb_status *s);
 
 // Field lookup in a couple of different variations:
@@ -1917,11 +2058,34 @@ UPB_INLINE upb_fielddef *upb_msgdef_ntof_mutable(upb_msgdef *m,
   return (upb_fielddef *)upb_msgdef_ntof(m, name, len);
 }
 
+// Oneof lookup:
+//   - ntoo = name to oneof
+//   - ntooz = name to oneof, null-terminated string.
+const upb_oneofdef *upb_msgdef_ntoo(const upb_msgdef *m, const char *name,
+                                    size_t len);
+int upb_msgdef_numoneofs(const upb_msgdef *m);
+
+UPB_INLINE const upb_oneofdef *upb_msgdef_ntooz(const upb_msgdef *m,
+                                               const char *name) {
+  return upb_msgdef_ntoo(m, name, strlen(name));
+}
+
+UPB_INLINE upb_oneofdef *upb_msgdef_ntoo_mutable(upb_msgdef *m,
+                                                 const char *name, size_t len) {
+  return (upb_oneofdef *)upb_msgdef_ntoo(m, name, len);
+}
+
 void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry);
 bool upb_msgdef_mapentry(const upb_msgdef *m);
 
-// upb_msg_iter i;
-// for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
+const upb_oneofdef *upb_msgdef_findoneof(const upb_msgdef *m,
+                                          const char *name);
+int upb_msgdef_numoneofs(const upb_msgdef *m);
+
+// upb_msg_field_iter i;
+// for(upb_msg_field_begin(&i, m);
+//     !upb_msg_field_done(&i);
+//     upb_msg_field_next(&i)) {
 //   upb_fielddef *f = upb_msg_iter_field(&i);
 //   // ...
 // }
@@ -1929,11 +2093,18 @@ bool upb_msgdef_mapentry(const upb_msgdef *m);
 // For C we don't have separate iterators for const and non-const.
 // It is the caller's responsibility to cast the upb_fielddef* to
 // const if the upb_msgdef* is const.
-void upb_msg_begin(upb_msg_iter *iter, const upb_msgdef *m);
-void upb_msg_next(upb_msg_iter *iter);
-bool upb_msg_done(const upb_msg_iter *iter);
-upb_fielddef *upb_msg_iter_field(const upb_msg_iter *iter);
-void upb_msg_iter_setdone(upb_msg_iter *iter);
+void upb_msg_field_begin(upb_msg_field_iter *iter, const upb_msgdef *m);
+void upb_msg_field_next(upb_msg_field_iter *iter);
+bool upb_msg_field_done(const upb_msg_field_iter *iter);
+upb_fielddef *upb_msg_iter_field(const upb_msg_field_iter *iter);
+void upb_msg_field_iter_setdone(upb_msg_field_iter *iter);
+
+// Similar to above, we also support iterating through the oneofs in a msgdef.
+void upb_msg_oneof_begin(upb_msg_oneof_iter *iter, const upb_msgdef *m);
+void upb_msg_oneof_next(upb_msg_oneof_iter *iter);
+bool upb_msg_oneof_done(const upb_msg_oneof_iter *iter);
+upb_oneofdef *upb_msg_iter_oneof(const upb_msg_oneof_iter *iter);
+void upb_msg_oneof_iter_setdone(upb_msg_oneof_iter *iter);
 
 UPB_END_EXTERN_C  // }
 
@@ -2075,6 +2246,172 @@ int32_t upb_enum_iter_number(upb_enum_iter *iter);
 
 UPB_END_EXTERN_C  // }
 
+/* upb::OneofDef **************************************************************/
+
+typedef upb_inttable_iter upb_oneof_iter;
+
+// Class that represents a oneof.  Its base class is upb::Def (convert with
+// upb::upcast()).
+UPB_DEFINE_DEF(upb::OneofDef, oneofdef, ONEOF, UPB_QUOTE(
+ public:
+  // Returns NULL if memory allocation failed.
+  static reffed_ptr<OneofDef> New();
+
+  // Functionality from upb::RefCounted.
+  bool IsFrozen() const;
+  void Ref(const void* owner) const;
+  void Unref(const void* owner) const;
+  void DonateRef(const void* from, const void* to) const;
+  void CheckRef(const void* owner) const;
+
+  // Functionality from upb::Def.
+  const char* full_name() const;
+
+  // Returns the MessageDef that owns this OneofDef.
+  const MessageDef* containing_type() const;
+
+  // Returns the name of this oneof. This is the name used to look up the oneof
+  // by name once added to a message def.
+  const char* name() const;
+  bool set_name(const char* name, Status* s);
+
+  // Returns the number of fields currently defined in the oneof.
+  int field_count() const;
+
+  // Adds a field to the oneof. The field must not have been added to any other
+  // oneof or msgdef. If the oneof is not yet part of a msgdef, then when the
+  // oneof is eventually added to a msgdef, all fields added to the oneof will
+  // also be added to the msgdef at that time. If the oneof is already part of a
+  // msgdef, the field must either be a part of that msgdef already, or must not
+  // be a part of any msgdef; in the latter case, the field is added to the
+  // msgdef as a part of this operation.
+  //
+  // The field may only have an OPTIONAL label, never REQUIRED or REPEATED.
+  //
+  // If |f| is already part of this MessageDef, this method performs no action
+  // and returns true (success). Thus, this method is idempotent.
+  bool AddField(FieldDef* field, Status* s);
+  bool AddField(const reffed_ptr<FieldDef>& field, Status* s);
+
+  // Looks up by name.
+  const FieldDef* FindFieldByName(const char* name, size_t len) const;
+  FieldDef* FindFieldByName(const char* name, size_t len);
+  const FieldDef* FindFieldByName(const char* name) const {
+    return FindFieldByName(name, strlen(name));
+  }
+  FieldDef* FindFieldByName(const char* name) {
+    return FindFieldByName(name, strlen(name));
+  }
+
+  template <class T>
+  FieldDef* FindFieldByName(const T& str) {
+    return FindFieldByName(str.c_str(), str.size());
+  }
+  template <class T>
+  const FieldDef* FindFieldByName(const T& str) const {
+    return FindFieldByName(str.c_str(), str.size());
+  }
+
+  // Looks up by tag number.
+  const FieldDef* FindFieldByNumber(uint32_t num) const;
+
+  // Returns a new OneofDef with all the same fields. The OneofDef will be owned
+  // by the given owner.
+  OneofDef* Dup(const void* owner) const;
+
+  // Iteration over fields.  The order is undefined.
+  class iterator : public std::iterator<std::forward_iterator_tag, FieldDef*> {
+   public:
+    explicit iterator(OneofDef* md);
+    static iterator end(OneofDef* md);
+
+    void operator++();
+    FieldDef* operator*() const;
+    bool operator!=(const iterator& other) const;
+    bool operator==(const iterator& other) const;
+
+   private:
+    upb_oneof_iter iter_;
+  };
+
+  class const_iterator
+      : public std::iterator<std::forward_iterator_tag, const FieldDef*> {
+   public:
+    explicit const_iterator(const OneofDef* md);
+    static const_iterator end(const OneofDef* md);
+
+    void operator++();
+    const FieldDef* operator*() const;
+    bool operator!=(const const_iterator& other) const;
+    bool operator==(const const_iterator& other) const;
+
+   private:
+    upb_oneof_iter iter_;
+  };
+
+  iterator begin();
+  iterator end();
+  const_iterator begin() const;
+  const_iterator end() const;
+
+ private:
+  UPB_DISALLOW_POD_OPS(OneofDef, upb::OneofDef);
+),
+UPB_DEFINE_STRUCT(upb_oneofdef, upb_def,
+  upb_strtable ntof;
+  upb_inttable itof;
+  const upb_msgdef *parent;
+));
+
+#define UPB_ONEOFDEF_INIT(name, ntof, itof, refs, ref2s) \
+  { UPB_DEF_INIT(name, UPB_DEF_ENUM, refs, ref2s), ntof, itof }
+
+UPB_BEGIN_EXTERN_C  // {
+
+// Native C API.
+upb_oneofdef *upb_oneofdef_new(const void *owner);
+upb_oneofdef *upb_oneofdef_dup(const upb_oneofdef *o, const void *owner);
+
+// From upb_refcounted.
+void upb_oneofdef_unref(const upb_oneofdef *o, const void *owner);
+bool upb_oneofdef_isfrozen(const upb_oneofdef *e);
+void upb_oneofdef_ref(const upb_oneofdef *o, const void *owner);
+void upb_oneofdef_donateref(const upb_oneofdef *m, const void *from,
+                           const void *to);
+void upb_oneofdef_checkref(const upb_oneofdef *o, const void *owner);
+
+const char *upb_oneofdef_name(const upb_oneofdef *o);
+bool upb_oneofdef_setname(upb_oneofdef *o, const char *name, upb_status *s);
+
+const upb_msgdef *upb_oneofdef_containingtype(const upb_oneofdef *o);
+int upb_oneofdef_numfields(const upb_oneofdef *o);
+bool upb_oneofdef_addfield(upb_oneofdef *o, upb_fielddef *f,
+                           const void *ref_donor,
+                           upb_status *s);
+
+// Oneof lookups:
+// - ntof:  look up a field by name.
+// - ntofz: look up a field by name (as a null-terminated string).
+// - itof:  look up a field by number.
+const upb_fielddef *upb_oneofdef_ntof(const upb_oneofdef *o,
+                                      const char *name, size_t length);
+UPB_INLINE const upb_fielddef *upb_oneofdef_ntofz(const upb_oneofdef *o,
+                                                  const char *name) {
+  return upb_oneofdef_ntof(o, name, strlen(name));
+}
+const upb_fielddef *upb_oneofdef_itof(const upb_oneofdef *o, uint32_t num);
+
+//  upb_oneof_iter i;
+//  for(upb_oneof_begin(&i, e); !upb_oneof_done(&i); upb_oneof_next(&i)) {
+//    // ...
+//  }
+void upb_oneof_begin(upb_oneof_iter *iter, const upb_oneofdef *o);
+void upb_oneof_next(upb_oneof_iter *iter);
+bool upb_oneof_done(upb_oneof_iter *iter);
+upb_fielddef *upb_oneof_iter_field(const upb_oneof_iter *iter);
+void upb_oneof_iter_setdone(upb_oneof_iter *iter);
+
+UPB_END_EXTERN_C  // }
 
 #ifdef __cplusplus
 
@@ -2200,6 +2537,9 @@ inline void FieldDef::set_packed(bool packed) {
 }
 inline const MessageDef* FieldDef::containing_type() const {
   return upb_fielddef_containingtype(this);
+}
+inline const OneofDef* FieldDef::containing_oneof() const {
+  return upb_fielddef_containingoneof(this);
 }
 inline const char* FieldDef::containing_type_name() {
   return upb_fielddef_containingtypename(this);
@@ -2351,11 +2691,20 @@ inline bool MessageDef::Freeze(Status* status) {
 inline int MessageDef::field_count() const {
   return upb_msgdef_numfields(this);
 }
+inline int MessageDef::oneof_count() const {
+  return upb_msgdef_numoneofs(this);
+}
 inline bool MessageDef::AddField(upb_fielddef* f, Status* s) {
   return upb_msgdef_addfield(this, f, NULL, s);
 }
 inline bool MessageDef::AddField(const reffed_ptr<FieldDef>& f, Status* s) {
   return upb_msgdef_addfield(this, f.get(), NULL, s);
+}
+inline bool MessageDef::AddOneof(upb_oneofdef* o, Status* s) {
+  return upb_msgdef_addoneof(this, o, NULL, s);
+}
+inline bool MessageDef::AddOneof(const reffed_ptr<OneofDef>& o, Status* s) {
+  return upb_msgdef_addoneof(this, o.get(), NULL, s);
 }
 inline FieldDef* MessageDef::FindFieldByNumber(uint32_t number) {
   return upb_msgdef_itof_mutable(this, number);
@@ -2370,6 +2719,13 @@ inline const FieldDef *MessageDef::FindFieldByName(const char *name,
                                                    size_t len) const {
   return upb_msgdef_ntof(this, name, len);
 }
+inline OneofDef* MessageDef::FindOneofByName(const char* name, size_t len) {
+  return upb_msgdef_ntoo_mutable(this, name, len);
+}
+inline const OneofDef* MessageDef::FindOneofByName(const char* name,
+                                                   size_t len) const {
+  return upb_msgdef_ntoo(this, name, len);
+}
 inline MessageDef* MessageDef::Dup(const void *owner) const {
   return upb_msgdef_dup(this, owner);
 }
@@ -2379,55 +2735,127 @@ inline void MessageDef::setmapentry(bool map_entry) {
 inline bool MessageDef::mapentry() const {
   return upb_msgdef_mapentry(this);
 }
-inline MessageDef::iterator MessageDef::begin() { return iterator(this); }
-inline MessageDef::iterator MessageDef::end() { return iterator::end(this); }
-inline MessageDef::const_iterator MessageDef::begin() const {
-  return const_iterator(this);
+inline MessageDef::field_iterator MessageDef::field_begin() {
+  return field_iterator(this);
 }
-inline MessageDef::const_iterator MessageDef::end() const {
-  return const_iterator::end(this);
+inline MessageDef::field_iterator MessageDef::field_end() {
+  return field_iterator::end(this);
+}
+inline MessageDef::const_field_iterator MessageDef::field_begin() const {
+  return const_field_iterator(this);
+}
+inline MessageDef::const_field_iterator MessageDef::field_end() const {
+  return const_field_iterator::end(this);
 }
 
-inline MessageDef::iterator::iterator(MessageDef* md) {
-  upb_msg_begin(&iter_, md);
+inline MessageDef::oneof_iterator MessageDef::oneof_begin() {
+  return oneof_iterator(this);
 }
-inline MessageDef::iterator MessageDef::iterator::end(MessageDef* md) {
-  MessageDef::iterator iter(md);
-  upb_msg_iter_setdone(&iter.iter_);
+inline MessageDef::oneof_iterator MessageDef::oneof_end() {
+  return oneof_iterator::end(this);
+}
+inline MessageDef::const_oneof_iterator MessageDef::oneof_begin() const {
+  return const_oneof_iterator(this);
+}
+inline MessageDef::const_oneof_iterator MessageDef::oneof_end() const {
+  return const_oneof_iterator::end(this);
+}
+
+inline MessageDef::field_iterator::field_iterator(MessageDef* md) {
+  upb_msg_field_begin(&iter_, md);
+}
+inline MessageDef::field_iterator MessageDef::field_iterator::end(
+    MessageDef* md) {
+  MessageDef::field_iterator iter(md);
+  upb_msg_field_iter_setdone(&iter.iter_);
   return iter;
 }
-inline FieldDef* MessageDef::iterator::operator*() const {
+inline FieldDef* MessageDef::field_iterator::operator*() const {
   return upb_msg_iter_field(&iter_);
 }
-inline void MessageDef::iterator::operator++() { return upb_msg_next(&iter_); }
-inline bool MessageDef::iterator::operator==(const iterator &other) const {
+inline void MessageDef::field_iterator::operator++() {
+  return upb_msg_field_next(&iter_);
+}
+inline bool MessageDef::field_iterator::operator==(
+    const field_iterator &other) const {
   return upb_inttable_iter_isequal(&iter_, &other.iter_);
 }
-inline bool MessageDef::iterator::operator!=(const iterator &other) const {
+inline bool MessageDef::field_iterator::operator!=(
+    const field_iterator &other) const {
   return !(*this == other);
 }
 
-inline MessageDef::const_iterator::const_iterator(const MessageDef* md) {
-  upb_msg_begin(&iter_, md);
+inline MessageDef::const_field_iterator::const_field_iterator(
+    const MessageDef* md) {
+  upb_msg_field_begin(&iter_, md);
 }
-inline MessageDef::const_iterator MessageDef::const_iterator::end(
+inline MessageDef::const_field_iterator MessageDef::const_field_iterator::end(
     const MessageDef *md) {
-  MessageDef::const_iterator iter(md);
-  upb_msg_iter_setdone(&iter.iter_);
+  MessageDef::const_field_iterator iter(md);
+  upb_msg_field_iter_setdone(&iter.iter_);
   return iter;
 }
-inline const FieldDef* MessageDef::const_iterator::operator*() const {
+inline const FieldDef* MessageDef::const_field_iterator::operator*() const {
   return upb_msg_iter_field(&iter_);
 }
-inline void MessageDef::const_iterator::operator++() {
-  return upb_msg_next(&iter_);
+inline void MessageDef::const_field_iterator::operator++() {
+  return upb_msg_field_next(&iter_);
 }
-inline bool MessageDef::const_iterator::operator==(
-    const const_iterator &other) const {
+inline bool MessageDef::const_field_iterator::operator==(
+    const const_field_iterator &other) const {
   return upb_inttable_iter_isequal(&iter_, &other.iter_);
 }
-inline bool MessageDef::const_iterator::operator!=(
-    const const_iterator &other) const {
+inline bool MessageDef::const_field_iterator::operator!=(
+    const const_field_iterator &other) const {
+  return !(*this == other);
+}
+
+inline MessageDef::oneof_iterator::oneof_iterator(MessageDef* md) {
+  upb_msg_oneof_begin(&iter_, md);
+}
+inline MessageDef::oneof_iterator MessageDef::oneof_iterator::end(
+    MessageDef* md) {
+  MessageDef::oneof_iterator iter(md);
+  upb_msg_oneof_iter_setdone(&iter.iter_);
+  return iter;
+}
+inline OneofDef* MessageDef::oneof_iterator::operator*() const {
+  return upb_msg_iter_oneof(&iter_);
+}
+inline void MessageDef::oneof_iterator::operator++() {
+  return upb_msg_oneof_next(&iter_);
+}
+inline bool MessageDef::oneof_iterator::operator==(
+    const oneof_iterator &other) const {
+  return upb_strtable_iter_isequal(&iter_, &other.iter_);
+}
+inline bool MessageDef::oneof_iterator::operator!=(
+    const oneof_iterator &other) const {
+  return !(*this == other);
+}
+
+inline MessageDef::const_oneof_iterator::const_oneof_iterator(
+    const MessageDef* md) {
+  upb_msg_oneof_begin(&iter_, md);
+}
+inline MessageDef::const_oneof_iterator MessageDef::const_oneof_iterator::end(
+    const MessageDef *md) {
+  MessageDef::const_oneof_iterator iter(md);
+  upb_msg_oneof_iter_setdone(&iter.iter_);
+  return iter;
+}
+inline const OneofDef* MessageDef::const_oneof_iterator::operator*() const {
+  return upb_msg_iter_oneof(&iter_);
+}
+inline void MessageDef::const_oneof_iterator::operator++() {
+  return upb_msg_oneof_next(&iter_);
+}
+inline bool MessageDef::const_oneof_iterator::operator==(
+    const const_oneof_iterator &other) const {
+  return upb_strtable_iter_isequal(&iter_, &other.iter_);
+}
+inline bool MessageDef::const_oneof_iterator::operator!=(
+    const const_oneof_iterator &other) const {
   return !(*this == other);
 }
 
@@ -2495,6 +2923,105 @@ inline const char* EnumDef::Iterator::name() {
 }
 inline bool EnumDef::Iterator::Done() { return upb_enum_done(&iter_); }
 inline void EnumDef::Iterator::Next() { return upb_enum_next(&iter_); }
+
+inline reffed_ptr<OneofDef> OneofDef::New() {
+  upb_oneofdef *o = upb_oneofdef_new(&o);
+  return reffed_ptr<OneofDef>(o, &o);
+}
+inline bool OneofDef::IsFrozen() const { return upb_oneofdef_isfrozen(this); }
+inline void OneofDef::Ref(const void* owner) const {
+  return upb_oneofdef_ref(this, owner);
+}
+inline void OneofDef::Unref(const void* owner) const {
+  return upb_oneofdef_unref(this, owner);
+}
+inline void OneofDef::DonateRef(const void* from, const void* to) const {
+  return upb_oneofdef_donateref(this, from, to);
+}
+inline void OneofDef::CheckRef(const void* owner) const {
+  return upb_oneofdef_checkref(this, owner);
+}
+inline const char* OneofDef::full_name() const {
+  return upb_oneofdef_name(this);
+}
+
+inline const MessageDef* OneofDef::containing_type() const {
+  return upb_oneofdef_containingtype(this);
+}
+inline const char* OneofDef::name() const {
+  return upb_oneofdef_name(this);
+}
+inline bool OneofDef::set_name(const char* name, Status* s) {
+  return upb_oneofdef_setname(this, name, s);
+}
+inline int OneofDef::field_count() const {
+  return upb_oneofdef_numfields(this);
+}
+inline bool OneofDef::AddField(FieldDef* field, Status* s) {
+  return upb_oneofdef_addfield(this, field, NULL, s);
+}
+inline bool OneofDef::AddField(const reffed_ptr<FieldDef>& field, Status* s) {
+  return upb_oneofdef_addfield(this, field.get(), NULL, s);
+}
+inline const FieldDef* OneofDef::FindFieldByName(const char* name,
+                                                 size_t len) const {
+  return upb_oneofdef_ntof(this, name, len);
+}
+inline const FieldDef* OneofDef::FindFieldByNumber(uint32_t num) const {
+  return upb_oneofdef_itof(this, num);
+}
+inline OneofDef::iterator OneofDef::begin() { return iterator(this); }
+inline OneofDef::iterator OneofDef::end() { return iterator::end(this); }
+inline OneofDef::const_iterator OneofDef::begin() const {
+  return const_iterator(this);
+}
+inline OneofDef::const_iterator OneofDef::end() const {
+  return const_iterator::end(this);
+}
+
+inline OneofDef::iterator::iterator(OneofDef* o) {
+  upb_oneof_begin(&iter_, o);
+}
+inline OneofDef::iterator OneofDef::iterator::end(OneofDef* o) {
+  OneofDef::iterator iter(o);
+  upb_oneof_iter_setdone(&iter.iter_);
+  return iter;
+}
+inline FieldDef* OneofDef::iterator::operator*() const {
+  return upb_oneof_iter_field(&iter_);
+}
+inline void OneofDef::iterator::operator++() { return upb_oneof_next(&iter_); }
+inline bool OneofDef::iterator::operator==(const iterator &other) const {
+  return upb_inttable_iter_isequal(&iter_, &other.iter_);
+}
+inline bool OneofDef::iterator::operator!=(const iterator &other) const {
+  return !(*this == other);
+}
+
+inline OneofDef::const_iterator::const_iterator(const OneofDef* md) {
+  upb_oneof_begin(&iter_, md);
+}
+inline OneofDef::const_iterator OneofDef::const_iterator::end(
+    const OneofDef *md) {
+  OneofDef::const_iterator iter(md);
+  upb_oneof_iter_setdone(&iter.iter_);
+  return iter;
+}
+inline const FieldDef* OneofDef::const_iterator::operator*() const {
+  return upb_msg_iter_field(&iter_);
+}
+inline void OneofDef::const_iterator::operator++() {
+  return upb_oneof_next(&iter_);
+}
+inline bool OneofDef::const_iterator::operator==(
+    const const_iterator &other) const {
+  return upb_inttable_iter_isequal(&iter_, &other.iter_);
+}
+inline bool OneofDef::const_iterator::operator!=(
+    const const_iterator &other) const {
+  return !(*this == other);
+}
+
 }  // namespace upb
 #endif
 

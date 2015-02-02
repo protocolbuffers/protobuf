@@ -58,11 +58,15 @@ static upb_def* check_notfrozen(const upb_def* def) {
 }
 
 static upb_msgdef* check_msg_notfrozen(const upb_msgdef* def) {
-  return (upb_msgdef*)check_notfrozen((const upb_def*)def);
+  return upb_downcast_msgdef_mutable(check_notfrozen((const upb_def*)def));
 }
 
 static upb_fielddef* check_field_notfrozen(const upb_fielddef* def) {
-  return (upb_fielddef*)check_notfrozen((const upb_def*)def);
+  return upb_downcast_fielddef_mutable(check_notfrozen((const upb_def*)def));
+}
+
+static upb_oneofdef* check_oneof_notfrozen(const upb_oneofdef* def) {
+  return (upb_oneofdef*)check_notfrozen((const upb_def*)def);
 }
 
 static upb_enumdef* check_enum_notfrozen(const upb_enumdef* def) {
@@ -282,6 +286,9 @@ void Descriptor_register(VALUE module) {
   rb_define_method(klass, "each", Descriptor_each, 0);
   rb_define_method(klass, "lookup", Descriptor_lookup, 1);
   rb_define_method(klass, "add_field", Descriptor_add_field, 1);
+  rb_define_method(klass, "add_oneof", Descriptor_add_oneof, 1);
+  rb_define_method(klass, "each_oneof", Descriptor_each_oneof, 0);
+  rb_define_method(klass, "lookup_oneof", Descriptor_lookup_oneof, 1);
   rb_define_method(klass, "msgclass", Descriptor_msgclass, 0);
   rb_define_method(klass, "name", Descriptor_name, 0);
   rb_define_method(klass, "name=", Descriptor_name_set, 1);
@@ -328,10 +335,10 @@ VALUE Descriptor_name_set(VALUE _self, VALUE str) {
 VALUE Descriptor_each(VALUE _self) {
   DEFINE_SELF(Descriptor, self, _self);
 
-  upb_msg_iter it;
-  for (upb_msg_begin(&it, self->msgdef);
-       !upb_msg_done(&it);
-       upb_msg_next(&it)) {
+  upb_msg_field_iter it;
+  for (upb_msg_field_begin(&it, self->msgdef);
+       !upb_msg_field_done(&it);
+       upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
     VALUE obj = get_def_obj(field);
     rb_yield(obj);
@@ -360,7 +367,7 @@ VALUE Descriptor_lookup(VALUE _self, VALUE name) {
  * call-seq:
  *     Descriptor.add_field(field) => nil
  *
- * Adds the given FieldDescriptor to this message type. The descriptor must not
+ * Adds the given FieldDescriptor to this message type. This descriptor must not
  * have been added to a pool yet. Raises an exception if a field with the same
  * name or number already exists. Sub-type references (e.g. for fields of type
  * message) are not resolved at this point.
@@ -375,6 +382,67 @@ VALUE Descriptor_add_field(VALUE _self, VALUE obj) {
       "Adding field to Descriptor failed");
   add_def_obj(def->fielddef, obj);
   return Qnil;
+}
+
+/*
+ * call-seq:
+ *     Descriptor.add_oneof(oneof) => nil
+ *
+ * Adds the given OneofDescriptor to this message type. This descriptor must not
+ * have been added to a pool yet. Raises an exception if a oneof with the same
+ * name already exists, or if any of the oneof's fields' names or numbers
+ * conflict with an existing field in this message type. All fields in the oneof
+ * are added to the message descriptor. Sub-type references (e.g. for fields of
+ * type message) are not resolved at this point.
+ */
+VALUE Descriptor_add_oneof(VALUE _self, VALUE obj) {
+  DEFINE_SELF(Descriptor, self, _self);
+  upb_msgdef* mut_def = check_msg_notfrozen(self->msgdef);
+  OneofDescriptor* def = ruby_to_OneofDescriptor(obj);
+  upb_oneofdef* mut_oneof_def = check_oneof_notfrozen(def->oneofdef);
+  CHECK_UPB(
+      upb_msgdef_addoneof(mut_def, mut_oneof_def, NULL, &status),
+      "Adding oneof to Descriptor failed");
+  add_def_obj(def->oneofdef, obj);
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     Descriptor.each_oneof(&block) => nil
+ *
+ * Invokes the given block for each oneof in this message type, passing the
+ * corresponding OneofDescriptor.
+ */
+VALUE Descriptor_each_oneof(VALUE _self) {
+  DEFINE_SELF(Descriptor, self, _self);
+
+  upb_msg_oneof_iter it;
+  for (upb_msg_oneof_begin(&it, self->msgdef);
+       !upb_msg_oneof_done(&it);
+       upb_msg_oneof_next(&it)) {
+    const upb_oneofdef* oneof = upb_msg_iter_oneof(&it);
+    VALUE obj = get_def_obj(oneof);
+    rb_yield(obj);
+  }
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     Descriptor.lookup_oneof(name) => OneofDescriptor
+ *
+ * Returns the oneof descriptor for the oneof with the given name, if present,
+ * or nil if none.
+ */
+VALUE Descriptor_lookup_oneof(VALUE _self, VALUE name) {
+  DEFINE_SELF(Descriptor, self, _self);
+  const char* s = get_str(name);
+  const upb_oneofdef* oneof = upb_msgdef_ntooz(self->msgdef, s);
+  if (oneof == NULL) {
+    return Qnil;
+  }
+  return get_def_obj(oneof);
 }
 
 /*
@@ -744,6 +812,120 @@ VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
 }
 
 // -----------------------------------------------------------------------------
+// OneofDescriptor.
+// -----------------------------------------------------------------------------
+
+DEFINE_CLASS(OneofDescriptor, "Google::Protobuf::OneofDescriptor");
+
+void OneofDescriptor_mark(void* _self) {
+}
+
+void OneofDescriptor_free(void* _self) {
+  OneofDescriptor* self = _self;
+  upb_oneofdef_unref(self->oneofdef, &self->oneofdef);
+  xfree(self);
+}
+
+/*
+ * call-seq:
+ *     OneofDescriptor.new => oneof_descriptor
+ *
+ * Creates a new, empty, oneof descriptor. The oneof may only be modified prior
+ * to being added to a message descriptor which is subsequently added to a pool.
+ */
+VALUE OneofDescriptor_alloc(VALUE klass) {
+  OneofDescriptor* self = ALLOC(OneofDescriptor);
+  VALUE ret = TypedData_Wrap_Struct(klass, &_OneofDescriptor_type, self);
+  self->oneofdef = upb_oneofdef_new(&self->oneofdef);
+  return ret;
+}
+
+void OneofDescriptor_register(VALUE module) {
+  VALUE klass = rb_define_class_under(
+      module, "OneofDescriptor", rb_cObject);
+  rb_define_alloc_func(klass, OneofDescriptor_alloc);
+  rb_define_method(klass, "name", OneofDescriptor_name, 0);
+  rb_define_method(klass, "name=", OneofDescriptor_name_set, 1);
+  rb_define_method(klass, "add_field", OneofDescriptor_add_field, 1);
+  rb_define_method(klass, "each", OneofDescriptor_each, 0);
+  rb_include_module(klass, rb_mEnumerable);
+  cOneofDescriptor = klass;
+  rb_gc_register_address(&cOneofDescriptor);
+}
+
+/*
+ * call-seq:
+ *     OneofDescriptor.name => name
+ *
+ * Returns the name of this oneof.
+ */
+VALUE OneofDescriptor_name(VALUE _self) {
+  DEFINE_SELF(OneofDescriptor, self, _self);
+  return rb_str_maybe_null(upb_oneofdef_name(self->oneofdef));
+}
+
+/*
+ * call-seq:
+ *     OneofDescriptor.name = name
+ *
+ * Sets a new name for this oneof. The oneof must not have been added to a
+ * message descriptor yet.
+ */
+VALUE OneofDescriptor_name_set(VALUE _self, VALUE value) {
+  DEFINE_SELF(OneofDescriptor, self, _self);
+  upb_oneofdef* mut_def = check_oneof_notfrozen(self->oneofdef);
+  const char* str = get_str(value);
+  CHECK_UPB(upb_oneofdef_setname(mut_def, str, &status),
+            "Error setting oneof name");
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     OneofDescriptor.add_field(field) => nil
+ *
+ * Adds a field to this oneof. The field may have been added to this oneof in
+ * the past, or the message to which this oneof belongs (if any), but may not
+ * have already been added to any other oneof or message. Otherwise, an
+ * exception is raised.
+ *
+ * All fields added to the oneof via this method will be automatically added to
+ * the message to which this oneof belongs, if it belongs to one currently, or
+ * else will be added to any message to which the oneof is later added at the
+ * time that it is added.
+ */
+VALUE OneofDescriptor_add_field(VALUE _self, VALUE obj) {
+  DEFINE_SELF(OneofDescriptor, self, _self);
+  upb_oneofdef* mut_def = check_oneof_notfrozen(self->oneofdef);
+  FieldDescriptor* def = ruby_to_FieldDescriptor(obj);
+  upb_fielddef* mut_field_def = check_field_notfrozen(def->fielddef);
+  CHECK_UPB(
+      upb_oneofdef_addfield(mut_def, mut_field_def, NULL, &status),
+      "Adding field to OneofDescriptor failed");
+  add_def_obj(def->fielddef, obj);
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     OneofDescriptor.each(&block) => nil
+ *
+ * Iterates through fields in this oneof, yielding to the block on each one.
+ */
+VALUE OneofDescriptor_each(VALUE _self, VALUE field) {
+  DEFINE_SELF(OneofDescriptor, self, _self);
+  upb_oneof_iter it;
+  for (upb_oneof_begin(&it, self->oneofdef);
+       !upb_oneof_done(&it);
+       upb_oneof_next(&it)) {
+    const upb_fielddef* f = upb_oneof_iter_field(&it);
+    VALUE obj = get_def_obj(f);
+    rb_yield(obj);
+  }
+  return Qnil;
+}
+
+// -----------------------------------------------------------------------------
 // EnumDescriptor.
 // -----------------------------------------------------------------------------
 
@@ -952,6 +1134,7 @@ void MessageBuilderContext_register(VALUE module) {
   rb_define_method(klass, "required", MessageBuilderContext_required, -1);
   rb_define_method(klass, "repeated", MessageBuilderContext_repeated, -1);
   rb_define_method(klass, "map", MessageBuilderContext_map, -1);
+  rb_define_method(klass, "oneof", MessageBuilderContext_oneof, 1);
   cMessageBuilderContext = klass;
   rb_gc_register_address(&cMessageBuilderContext);
 }
@@ -1165,6 +1348,110 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
   return Qnil;
 }
 
+/*
+ * call-seq:
+ *     MessageBuilderContext.oneof(name, &block) => nil
+ *
+ * Creates a new OneofDescriptor with the given name, creates a
+ * OneofBuilderContext attached to that OneofDescriptor, evaluates the given
+ * block in the context of that OneofBuilderContext with #instance_eval, and
+ * then adds the oneof to the message.
+ *
+ * This is the recommended, idiomatic way to build oneof definitions.
+ */
+VALUE MessageBuilderContext_oneof(VALUE _self, VALUE name) {
+  DEFINE_SELF(MessageBuilderContext, self, _self);
+  VALUE oneofdef = rb_class_new_instance(0, NULL, cOneofDescriptor);
+  VALUE args[2] = { oneofdef, self->builder };
+  VALUE ctx = rb_class_new_instance(2, args, cOneofBuilderContext);
+  VALUE block = rb_block_proc();
+  VALUE name_str = rb_str_new2(rb_id2name(SYM2ID(name)));
+  rb_funcall(oneofdef, rb_intern("name="), 1, name_str);
+  rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
+  Descriptor_add_oneof(self->descriptor, oneofdef);
+
+  return Qnil;
+}
+
+// -----------------------------------------------------------------------------
+// OneofBuilderContext.
+// -----------------------------------------------------------------------------
+
+DEFINE_CLASS(OneofBuilderContext,
+    "Google::Protobuf::Internal::OneofBuilderContext");
+
+void OneofBuilderContext_mark(void* _self) {
+  OneofBuilderContext* self = _self;
+  rb_gc_mark(self->descriptor);
+  rb_gc_mark(self->builder);
+}
+
+void OneofBuilderContext_free(void* _self) {
+  OneofBuilderContext* self = _self;
+  xfree(self);
+}
+
+VALUE OneofBuilderContext_alloc(VALUE klass) {
+  OneofBuilderContext* self = ALLOC(OneofBuilderContext);
+  VALUE ret = TypedData_Wrap_Struct(
+      klass, &_OneofBuilderContext_type, self);
+  self->descriptor = Qnil;
+  self->builder = Qnil;
+  return ret;
+}
+
+void OneofBuilderContext_register(VALUE module) {
+  VALUE klass = rb_define_class_under(
+      module, "OneofBuilderContext", rb_cObject);
+  rb_define_alloc_func(klass, OneofBuilderContext_alloc);
+  rb_define_method(klass, "initialize",
+                   OneofBuilderContext_initialize, 2);
+  rb_define_method(klass, "optional", OneofBuilderContext_optional, -1);
+  cOneofBuilderContext = klass;
+  rb_gc_register_address(&cOneofBuilderContext);
+}
+
+/*
+ * call-seq:
+ *     OneofBuilderContext.new(desc, builder) => context
+ *
+ * Create a new oneof builder context around the given oneof descriptor and
+ * builder context. This class is intended to serve as a DSL context to be used
+ * with #instance_eval.
+ */
+VALUE OneofBuilderContext_initialize(VALUE _self,
+                                     VALUE oneofdef,
+                                     VALUE builder) {
+  DEFINE_SELF(OneofBuilderContext, self, _self);
+  self->descriptor = oneofdef;
+  self->builder = builder;
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     OneofBuilderContext.optional(name, type, number, type_class = nil)
+ *
+ * Defines a new optional field in this oneof with the given type, tag number,
+ * and type class (for message and enum fields). The type must be a Ruby symbol
+ * (as accepted by FieldDescriptor#type=) and the type_class must be a string,
+ * if present (as accepted by FieldDescriptor#submsg_name=).
+ */
+VALUE OneofBuilderContext_optional(int argc, VALUE* argv, VALUE _self) {
+  DEFINE_SELF(OneofBuilderContext, self, _self);
+
+  if (argc < 3) {
+    rb_raise(rb_eArgError, "Expected at least 3 arguments.");
+  }
+  VALUE name = argv[0];
+  VALUE type = argv[1];
+  VALUE number = argv[2];
+  VALUE type_class = (argc > 3) ? argv[3] : Qnil;
+
+  return msgdef_add_field(self->descriptor, "optional",
+                          name, type, number, type_class);
+}
+
 // -----------------------------------------------------------------------------
 // EnumBuilderContext.
 // -----------------------------------------------------------------------------
@@ -1322,8 +1609,10 @@ VALUE Builder_add_enum(VALUE _self, VALUE name) {
 
 static void validate_msgdef(const upb_msgdef* msgdef) {
   // Verify that no required fields exist. proto3 does not support these.
-  upb_msg_iter it;
-  for (upb_msg_begin(&it, msgdef); !upb_msg_done(&it); upb_msg_next(&it)) {
+  upb_msg_field_iter it;
+  for (upb_msg_field_begin(&it, msgdef);
+       !upb_msg_field_done(&it);
+       upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
     if (upb_fielddef_label(field) == UPB_LABEL_REQUIRED) {
       rb_raise(rb_eTypeError, "Required fields are unsupported in proto3.");

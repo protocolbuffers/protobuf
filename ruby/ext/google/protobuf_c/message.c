@@ -70,6 +70,35 @@ VALUE Message_alloc(VALUE klass) {
   return ret;
 }
 
+static VALUE which_oneof_field(MessageHeader* self, const upb_oneofdef* o) {
+  // If no fields in the oneof, always nil.
+  if (upb_oneofdef_numfields(o) == 0) {
+    return Qnil;
+  }
+  // Grab the first field in the oneof so we can get its layout info to find the
+  // oneof_case field.
+  upb_oneof_iter it;
+  upb_oneof_begin(&it, o);
+  assert(!upb_oneof_done(&it));
+  const upb_fielddef* first_field = upb_oneof_iter_field(&it);
+  assert(upb_fielddef_containingoneof(first_field) != NULL);
+
+  size_t case_ofs =
+      self->descriptor->layout->
+      fields[upb_fielddef_index(first_field)].case_offset;
+  uint32_t oneof_case = *((uint32_t*)(Message_data(self) + case_ofs));
+
+  if (oneof_case == ONEOF_CASE_NONE) {
+    return Qnil;
+  }
+
+  // oneof_case is a field index, so find that field.
+  const upb_fielddef* f = upb_oneofdef_itof(o, oneof_case);
+  assert(f != NULL);
+
+  return ID2SYM(rb_intern(upb_fielddef_name(f)));
+}
+
 /*
  * call-seq:
  *     Message.method_missing(*args)
@@ -82,6 +111,10 @@ VALUE Message_alloc(VALUE klass) {
  *
  *     msg.foo = 42
  *     puts msg.foo
+ *
+ * This method also provides read-only accessors for oneofs. If a oneof exists
+ * with name 'my_oneof', then msg.my_oneof will return a Ruby symbol equal to
+ * the name of the field in that oneof that is currently set, or nil if none.
  */
 VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
   MessageHeader* self;
@@ -104,6 +137,17 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
     name_len--;
   }
 
+  // Check for a oneof name first.
+  const upb_oneofdef* o = upb_msgdef_ntoo(self->descriptor->msgdef,
+                                          name, name_len);
+  if (o != NULL) {
+    if (setter) {
+      rb_raise(rb_eRuntimeError, "Oneof accessors are read-only.");
+    }
+    return which_oneof_field(self, o);
+  }
+
+  // Otherwise, check for a field with that name.
   const upb_fielddef* f = upb_msgdef_ntof(self->descriptor->msgdef,
                                           name, name_len);
 

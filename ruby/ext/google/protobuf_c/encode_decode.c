@@ -59,6 +59,36 @@ static const void *newsubmsghandlerdata(upb_handlers* h, uint32_t ofs,
   return hd;
 }
 
+typedef struct {
+  size_t ofs;              // union data slot
+  size_t case_ofs;         // oneof_case field
+  uint32_t oneof_case_num; // oneof-case number to place in oneof_case field
+  const upb_msgdef *md;    // msgdef, for oneof submessage handler
+} oneof_handlerdata_t;
+
+static const void *newoneofhandlerdata(upb_handlers *h,
+                                       uint32_t ofs,
+                                       uint32_t case_ofs,
+                                       const upb_fielddef *f) {
+  oneof_handlerdata_t *hd = ALLOC(oneof_handlerdata_t);
+  hd->ofs = ofs;
+  hd->case_ofs = case_ofs;
+  // We reuse the field tag number as a oneof union discriminant tag. Note that
+  // we don't expose these numbers to the user, so the only requirement is that
+  // we have some unique ID for each union case/possibility. The field tag
+  // numbers are already present and are easy to use so there's no reason to
+  // create a separate ID space. In addition, using the field tag number here
+  // lets us easily look up the field in the oneof accessor.
+  hd->oneof_case_num = upb_fielddef_number(f);
+  if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE) {
+    hd->md = upb_fielddef_msgsubdef(f);
+  } else {
+    hd->md = NULL;
+  }
+  upb_handlers_addcleanup(h, hd, free);
+  return hd;
+}
+
 // A handler that starts a repeated field.  Gets the Repeated*Field instance for
 // this field (such an instance always exists even in an empty message).
 static void *startseq_handler(void* closure, const void* hd) {
@@ -67,8 +97,7 @@ static void *startseq_handler(void* closure, const void* hd) {
   return (void*)DEREF(msg, *ofs, VALUE);
 }
 
-// Handlers that append primitive values to a repeated field (a regular Ruby
-// array for now).
+// Handlers that append primitive values to a repeated field.
 #define DEFINE_APPEND_HANDLER(type, ctype)                 \
   static bool append##type##_handler(void *closure, const void *hd, \
                                      ctype val) {                   \
@@ -85,7 +114,7 @@ DEFINE_APPEND_HANDLER(int64,  int64_t)
 DEFINE_APPEND_HANDLER(uint64, uint64_t)
 DEFINE_APPEND_HANDLER(double, double)
 
-// Appends a string to a repeated field (a regular Ruby array for now).
+// Appends a string to a repeated field.
 static void* appendstr_handler(void *closure,
                                const void *hd,
                                size_t size_hint) {
@@ -96,7 +125,7 @@ static void* appendstr_handler(void *closure,
   return (void*)str;
 }
 
-// Appends a 'bytes' string to a repeated field (a regular Ruby array for now).
+// Appends a 'bytes' string to a repeated field.
 static void* appendbytes_handler(void *closure,
                                  const void *hd,
                                  size_t size_hint) {
@@ -266,6 +295,85 @@ static map_handlerdata_t* new_map_handlerdata(
   return hd;
 }
 
+// Handlers that set primitive values in oneofs.
+#define DEFINE_ONEOF_HANDLER(type, ctype)                           \
+  static bool oneof##type##_handler(void *closure, const void *hd,  \
+                                     ctype val) {                   \
+    const oneof_handlerdata_t *oneofdata = hd;                      \
+    DEREF(closure, oneofdata->case_ofs, uint32_t) =                 \
+        oneofdata->oneof_case_num;                                  \
+    DEREF(closure, oneofdata->ofs, ctype) = val;                    \
+    return true;                                                    \
+  }
+
+DEFINE_ONEOF_HANDLER(bool,   bool)
+DEFINE_ONEOF_HANDLER(int32,  int32_t)
+DEFINE_ONEOF_HANDLER(uint32, uint32_t)
+DEFINE_ONEOF_HANDLER(float,  float)
+DEFINE_ONEOF_HANDLER(int64,  int64_t)
+DEFINE_ONEOF_HANDLER(uint64, uint64_t)
+DEFINE_ONEOF_HANDLER(double, double)
+
+#undef DEFINE_ONEOF_HANDLER
+
+// Handlers for strings in a oneof.
+static void *oneofstr_handler(void *closure,
+                              const void *hd,
+                              size_t size_hint) {
+  MessageHeader* msg = closure;
+  const oneof_handlerdata_t *oneofdata = hd;
+  VALUE str = rb_str_new2("");
+  rb_enc_associate(str, kRubyStringUtf8Encoding);
+  DEREF(msg, oneofdata->case_ofs, uint32_t) =
+      oneofdata->oneof_case_num;
+  DEREF(msg, oneofdata->ofs, VALUE) = str;
+  return (void*)str;
+}
+
+static void *oneofbytes_handler(void *closure,
+                                const void *hd,
+                                size_t size_hint) {
+  MessageHeader* msg = closure;
+  const oneof_handlerdata_t *oneofdata = hd;
+  VALUE str = rb_str_new2("");
+  rb_enc_associate(str, kRubyString8bitEncoding);
+  DEREF(msg, oneofdata->case_ofs, uint32_t) =
+      oneofdata->oneof_case_num;
+  DEREF(msg, oneofdata->ofs, VALUE) = str;
+  return (void*)str;
+}
+
+// Handler for a submessage field in a oneof.
+static void *oneofsubmsg_handler(void *closure,
+                                 const void *hd) {
+  MessageHeader* msg = closure;
+  const oneof_handlerdata_t *oneofdata = hd;
+  uint32_t oldcase = DEREF(msg, oneofdata->case_ofs, uint32_t);
+
+  VALUE subdesc =
+      get_def_obj((void*)oneofdata->md);
+  VALUE subklass = Descriptor_msgclass(subdesc);
+
+  if (oldcase != oneofdata->oneof_case_num ||
+      DEREF(msg, oneofdata->ofs, VALUE) == Qnil) {
+    DEREF(msg, oneofdata->ofs, VALUE) =
+        rb_class_new_instance(0, NULL, subklass);
+  }
+  // Set the oneof case *after* allocating the new class instance -- otherwise,
+  // if the Ruby GC is invoked as part of a call into the VM, it might invoke
+  // our mark routines, and our mark routines might see the case value
+  // indicating a VALUE is present and expect a valid VALUE. See comment in
+  // layout_set() for more detail: basically, the change to the value and the
+  // case must be atomic w.r.t. the Ruby VM.
+  DEREF(msg, oneofdata->case_ofs, uint32_t) =
+      oneofdata->oneof_case_num;
+
+  VALUE submsg_rb = DEREF(msg, oneofdata->ofs, VALUE);
+  MessageHeader* submsg;
+  TypedData_Get_Struct(submsg_rb, MessageHeader, &Message_type, submsg);
+  return submsg;
+}
+
 // Set up handlers for a repeated field.
 static void add_handlers_for_repeated_field(upb_handlers *h,
                                             const upb_fielddef *f,
@@ -383,6 +491,53 @@ static void add_handlers_for_mapentry(const upb_msgdef* msgdef,
       offsetof(map_parse_frame_t, value_storage));
 }
 
+// Set up handlers for a oneof field.
+static void add_handlers_for_oneof_field(upb_handlers *h,
+                                         const upb_fielddef *f,
+                                         size_t offset,
+                                         size_t oneof_case_offset) {
+
+  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr_sethandlerdata(
+      &attr, newoneofhandlerdata(h, offset, oneof_case_offset, f));
+
+  switch (upb_fielddef_type(f)) {
+
+#define SET_HANDLER(utype, ltype)                                 \
+  case utype:                                                     \
+    upb_handlers_set##ltype(h, f, oneof##ltype##_handler, &attr); \
+    break;
+
+    SET_HANDLER(UPB_TYPE_BOOL,   bool);
+    SET_HANDLER(UPB_TYPE_INT32,  int32);
+    SET_HANDLER(UPB_TYPE_UINT32, uint32);
+    SET_HANDLER(UPB_TYPE_ENUM,   int32);
+    SET_HANDLER(UPB_TYPE_FLOAT,  float);
+    SET_HANDLER(UPB_TYPE_INT64,  int64);
+    SET_HANDLER(UPB_TYPE_UINT64, uint64);
+    SET_HANDLER(UPB_TYPE_DOUBLE, double);
+
+#undef SET_HANDLER
+
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      bool is_bytes = upb_fielddef_type(f) == UPB_TYPE_BYTES;
+      upb_handlers_setstartstr(h, f, is_bytes ?
+                               oneofbytes_handler : oneofstr_handler,
+                               &attr);
+      upb_handlers_setstring(h, f, stringdata_handler, NULL);
+      break;
+    }
+    case UPB_TYPE_MESSAGE: {
+      upb_handlers_setstartsubmsg(h, f, oneofsubmsg_handler, &attr);
+      break;
+    }
+  }
+
+  upb_handlerattr_uninit(&attr);
+}
+
+
 static void add_handlers_for_message(const void *closure, upb_handlers *h) {
   const upb_msgdef* msgdef = upb_handlers_msgdef(h);
   Descriptor* desc = ruby_to_Descriptor(get_def_obj((void*)msgdef));
@@ -402,16 +557,20 @@ static void add_handlers_for_message(const void *closure, upb_handlers *h) {
     desc->layout = create_layout(desc->msgdef);
   }
 
-  upb_msg_iter i;
-
-  for (upb_msg_begin(&i, desc->msgdef);
-       !upb_msg_done(&i);
-       upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  for (upb_msg_field_begin(&i, desc->msgdef);
+       !upb_msg_field_done(&i);
+       upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
-    size_t offset = desc->layout->offsets[upb_fielddef_index(f)] +
+    size_t offset = desc->layout->fields[upb_fielddef_index(f)].offset +
         sizeof(MessageHeader);
 
-    if (is_map_field(f)) {
+    if (upb_fielddef_containingoneof(f)) {
+      size_t oneof_case_offset =
+          desc->layout->fields[upb_fielddef_index(f)].case_offset +
+          sizeof(MessageHeader);
+      add_handlers_for_oneof_field(h, f, offset, oneof_case_offset);
+    } else if (is_map_field(f)) {
       add_handlers_for_mapfield(h, f, offset, desc);
     } else if (upb_fielddef_isseq(f)) {
       add_handlers_for_repeated_field(h, f, offset);
@@ -804,13 +963,28 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
   MessageHeader* msg;
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
 
-  upb_msg_iter i;
-  for (upb_msg_begin(&i, desc->msgdef);
-       !upb_msg_done(&i);
-       upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  for (upb_msg_field_begin(&i, desc->msgdef);
+       !upb_msg_field_done(&i);
+       upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
     uint32_t offset =
-        desc->layout->offsets[upb_fielddef_index(f)] + sizeof(MessageHeader);
+        desc->layout->fields[upb_fielddef_index(f)].offset +
+        sizeof(MessageHeader);
+
+    if (upb_fielddef_containingoneof(f)) {
+      uint32_t oneof_case_offset =
+          desc->layout->fields[upb_fielddef_index(f)].case_offset +
+          sizeof(MessageHeader);
+      // For a oneof, check that this field is actually present -- skip all the
+      // below if not.
+      if (DEREF(msg, oneof_case_offset, uint32_t) !=
+          upb_fielddef_number(f)) {
+        continue;
+      }
+      // Otherwise, fall through to the appropriate singular-field handler
+      // below.
+    }
 
     if (is_map_field(f)) {
       VALUE map = DEREF(msg, offset, VALUE);

@@ -43,6 +43,7 @@ struct Descriptor;
 struct FieldDescriptor;
 struct EnumDescriptor;
 struct MessageLayout;
+struct MessageField;
 struct MessageHeader;
 struct MessageBuilderContext;
 struct EnumBuilderContext;
@@ -51,10 +52,13 @@ struct Builder;
 typedef struct DescriptorPool DescriptorPool;
 typedef struct Descriptor Descriptor;
 typedef struct FieldDescriptor FieldDescriptor;
+typedef struct OneofDescriptor OneofDescriptor;
 typedef struct EnumDescriptor EnumDescriptor;
 typedef struct MessageLayout MessageLayout;
+typedef struct MessageField MessageField;
 typedef struct MessageHeader MessageHeader;
 typedef struct MessageBuilderContext MessageBuilderContext;
+typedef struct OneofBuilderContext OneofBuilderContext;
 typedef struct EnumBuilderContext EnumBuilderContext;
 typedef struct Builder Builder;
 
@@ -120,12 +124,21 @@ struct FieldDescriptor {
   const upb_fielddef* fielddef;
 };
 
+struct OneofDescriptor {
+  const upb_oneofdef* oneofdef;
+};
+
 struct EnumDescriptor {
   const upb_enumdef* enumdef;
   VALUE module;  // begins as nil
 };
 
 struct MessageBuilderContext {
+  VALUE descriptor;
+  VALUE builder;
+};
+
+struct OneofBuilderContext {
   VALUE descriptor;
   VALUE builder;
 };
@@ -144,6 +157,7 @@ extern VALUE cDescriptor;
 extern VALUE cFieldDescriptor;
 extern VALUE cEnumDescriptor;
 extern VALUE cMessageBuilderContext;
+extern VALUE cOneofBuilderContext;
 extern VALUE cEnumBuilderContext;
 extern VALUE cBuilder;
 
@@ -175,6 +189,9 @@ VALUE Descriptor_name_set(VALUE _self, VALUE str);
 VALUE Descriptor_each(VALUE _self);
 VALUE Descriptor_lookup(VALUE _self, VALUE name);
 VALUE Descriptor_add_field(VALUE _self, VALUE obj);
+VALUE Descriptor_add_oneof(VALUE _self, VALUE obj);
+VALUE Descriptor_each_oneof(VALUE _self);
+VALUE Descriptor_lookup_oneof(VALUE _self, VALUE name);
 VALUE Descriptor_msgclass(VALUE _self);
 extern const rb_data_type_t _Descriptor_type;
 
@@ -198,6 +215,16 @@ VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb);
 VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value);
 upb_fieldtype_t ruby_to_fieldtype(VALUE type);
 VALUE fieldtype_to_ruby(upb_fieldtype_t type);
+
+void OneofDescriptor_mark(void* _self);
+void OneofDescriptor_free(void* _self);
+VALUE OneofDescriptor_alloc(VALUE klass);
+void OneofDescriptor_register(VALUE module);
+OneofDescriptor* ruby_to_OneofDescriptor(VALUE value);
+VALUE OneofDescriptor_name(VALUE _self);
+VALUE OneofDescriptor_name_set(VALUE _self, VALUE value);
+VALUE OneofDescriptor_add_field(VALUE _self, VALUE field);
+VALUE OneofDescriptor_each(VALUE _self, VALUE field);
 
 void EnumDescriptor_mark(void* _self);
 void EnumDescriptor_free(void* _self);
@@ -225,6 +252,17 @@ VALUE MessageBuilderContext_optional(int argc, VALUE* argv, VALUE _self);
 VALUE MessageBuilderContext_required(int argc, VALUE* argv, VALUE _self);
 VALUE MessageBuilderContext_repeated(int argc, VALUE* argv, VALUE _self);
 VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self);
+VALUE MessageBuilderContext_oneof(VALUE _self, VALUE name);
+
+void OneofBuilderContext_mark(void* _self);
+void OneofBuilderContext_free(void* _self);
+VALUE OneofBuilderContext_alloc(VALUE klass);
+void OneofBuilderContext_register(VALUE module);
+OneofBuilderContext* ruby_to_OneofBuilderContext(VALUE value);
+VALUE OneofBuilderContext_initialize(VALUE _self,
+                                     VALUE descriptor,
+                                     VALUE builder);
+VALUE OneofBuilderContext_optional(int argc, VALUE* argv, VALUE _self);
 
 void EnumBuilderContext_mark(void* _self);
 void EnumBuilderContext_free(void* _self);
@@ -247,13 +285,22 @@ VALUE Builder_finalize_to_pool(VALUE _self, VALUE pool_rb);
 // Native slot storage abstraction.
 // -----------------------------------------------------------------------------
 
-#define NATIVE_SLOT_MAX_SIZE sizeof(void*)
+#define NATIVE_SLOT_MAX_SIZE sizeof(uint64_t)
 
 size_t native_slot_size(upb_fieldtype_t type);
 void native_slot_set(upb_fieldtype_t type,
                      VALUE type_class,
                      void* memory,
                      VALUE value);
+// Atomically (with respect to Ruby VM calls) either update the value and set a
+// oneof case, or do neither. If |case_memory| is null, then no case value is
+// set.
+void native_slot_set_value_and_case(upb_fieldtype_t type,
+                                    VALUE type_class,
+                                    void* memory,
+                                    VALUE value,
+                                    uint32_t* case_memory,
+                                    uint32_t case_number);
 VALUE native_slot_get(upb_fieldtype_t type,
                       VALUE type_class,
                       const void* memory);
@@ -274,6 +321,11 @@ VALUE field_type_class(const upb_fielddef* field);
 
 #define MAP_KEY_FIELD 1
 #define MAP_VALUE_FIELD 2
+
+// Oneof case slot value to indicate that no oneof case is set. The value `0` is
+// safe because field numbers are used as case identifiers, and no field can
+// have a number of 0.
+#define ONEOF_CASE_NONE 0
 
 // These operate on a map field (i.e., a repeated field of submessages whose
 // submessage type is a map-entry msgdef).
@@ -384,9 +436,16 @@ VALUE Map_iter_value(Map_iter* iter);
 // Message layout / storage.
 // -----------------------------------------------------------------------------
 
+#define MESSAGE_FIELD_NO_CASE ((size_t)-1)
+
+struct MessageField {
+  size_t offset;
+  size_t case_offset;  // for oneofs, a uint32. Else, MESSAGE_FIELD_NO_CASE.
+};
+
 struct MessageLayout {
   const upb_msgdef* msgdef;
-  size_t* offsets;
+  MessageField* fields;
   size_t size;
 };
 
