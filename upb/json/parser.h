@@ -23,12 +23,30 @@ class Parser;
 
 UPB_DECLARE_TYPE(upb::json::Parser, upb_json_parser);
 
-// Internal-only struct used by the parser.
+// Internal-only struct used by the parser. A parser frame corresponds
+// one-to-one with a handler (sink) frame.
 typedef struct {
  UPB_PRIVATE_FOR_CPP
   upb_sink sink;
+  // The current message in which we're parsing, and the field whose value we're
+  // expecting next.
   const upb_msgdef *m;
   const upb_fielddef *f;
+
+  // We are in a repeated-field context, ready to emit mapentries as
+  // submessages. This flag alters the start-of-object (open-brace) behavior to
+  // begin a sequence of mapentry messages rather than a single submessage.
+  bool is_map;
+  // We are in a map-entry message context. This flag is set when parsing the
+  // value field of a single map entry and indicates to all value-field parsers
+  // (subobjects, strings, numbers, and bools) that the map-entry submessage
+  // should end as soon as the value is parsed.
+  bool is_mapentry;
+  // If |is_map| or |is_mapentry| is true, |mapfield| refers to the parent
+  // message's map field that we're currently parsing. This differs from |f|
+  // because |f| is the field in the *current* message (i.e., the map-entry
+  // message itself), not the parent's field that leads to this map.
+  const upb_fielddef *mapfield;
 } upb_jsonparser_frame;
 
 

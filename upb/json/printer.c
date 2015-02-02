@@ -182,10 +182,18 @@ static bool putkey(void *closure, const void *handler_data) {
     return true;                                                             \
   }                                                                          \
   static bool repeated_##type(void *closure, const void *handler_data,       \
-                            type val) {                                      \
+                              type val) {                                    \
     upb_json_printer *p = closure;                                           \
     print_comma(p);                                                          \
     CHK(put##type(closure, handler_data, val));                              \
+    return true;                                                             \
+  }                                                                          \
+  static bool putmapkey_##type(void *closure, const void *handler_data,      \
+                            type val) {                                      \
+    upb_json_printer *p = closure;                                           \
+    print_data(p, "\"", 1);                                                  \
+    CHK(put##type(closure, handler_data, val));                              \
+    print_data(p, "\":", 2);                                                 \
     return true;                                                             \
   }
 
@@ -222,20 +230,36 @@ static bool scalar_enum(void *closure, const void *handler_data,
   return true;
 }
 
+static void print_enum_symbolic_name(upb_json_printer *p,
+                                     const upb_enumdef *def,
+                                     int32_t val) {
+  const char *symbolic_name = upb_enumdef_iton(def, val);
+  if (symbolic_name) {
+    print_data(p, "\"", 1);
+    putstring(p, symbolic_name, strlen(symbolic_name));
+    print_data(p, "\"", 1);
+  } else {
+    putint32_t(p, NULL, val);
+  }
+}
+
 static bool repeated_enum(void *closure, const void *handler_data,
                           int32_t val) {
   const EnumHandlerData *hd = handler_data;
   upb_json_printer *p = closure;
   print_comma(p);
 
-  const char *symbolic_name = upb_enumdef_iton(hd->enumdef, val);
-  if (symbolic_name) {
-    print_data(p, "\"", 1);
-    putstring(p, symbolic_name, strlen(symbolic_name));
-    print_data(p, "\"", 1);
-  } else {
-    putint32_t(closure, NULL, val);
-  }
+  print_enum_symbolic_name(p, hd->enumdef, val);
+
+  return true;
+}
+
+static bool mapvalue_enum(void *closure, const void *handler_data,
+                          int32_t val) {
+  const EnumHandlerData *hd = handler_data;
+  upb_json_printer *p = closure;
+
+  print_enum_symbolic_name(p, hd->enumdef, val);
 
   return true;
 }
@@ -251,25 +275,35 @@ static void *repeated_startsubmsg(void *closure, const void *handler_data) {
   return closure;
 }
 
-static bool startmap(void *closure, const void *handler_data) {
-  UPB_UNUSED(handler_data);
-  upb_json_printer *p = closure;
-  if (p->depth_++ == 0) {
-    upb_bytessink_start(p->output_, 0, &p->subc_);
-  }
+static void start_frame(upb_json_printer *p) {
+  p->depth_++;
   p->first_elem_[p->depth_] = true;
   print_data(p, "{", 1);
+}
+
+static void end_frame(upb_json_printer *p) {
+  print_data(p, "}", 1);
+  p->depth_--;
+}
+
+static bool printer_startmsg(void *closure, const void *handler_data) {
+  UPB_UNUSED(handler_data);
+  upb_json_printer *p = closure;
+  if (p->depth_ == 0) {
+    upb_bytessink_start(p->output_, 0, &p->subc_);
+  }
+  start_frame(p);
   return true;
 }
 
-static bool endmap(void *closure, const void *handler_data, upb_status *s) {
+static bool printer_endmsg(void *closure, const void *handler_data, upb_status *s) {
   UPB_UNUSED(handler_data);
   UPB_UNUSED(s);
   upb_json_printer *p = closure;
-  if (--p->depth_ == 0) {
+  end_frame(p);
+  if (p->depth_ == 0) {
     upb_bytessink_end(p->output_);
   }
-  print_data(p, "}", 1);
   return true;
 }
 
@@ -286,6 +320,23 @@ static bool endseq(void *closure, const void *handler_data) {
   UPB_UNUSED(handler_data);
   upb_json_printer *p = closure;
   print_data(p, "]", 1);
+  p->depth_--;
+  return true;
+}
+
+static void *startmap(void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  CHK(putkey(closure, handler_data));
+  p->depth_++;
+  p->first_elem_[p->depth_] = true;
+  print_data(p, "{", 1);
+  return closure;
+}
+
+static bool endmap(void *closure, const void *handler_data) {
+  UPB_UNUSED(handler_data);
+  upb_json_printer *p = closure;
+  print_data(p, "}", 1);
   p->depth_--;
   return true;
 }
@@ -404,6 +455,36 @@ static bool repeated_endstr(void *closure, const void *handler_data) {
   return true;
 }
 
+static void *mapkeyval_startstr(void *closure, const void *handler_data,
+                                size_t size_hint) {
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(size_hint);
+  upb_json_printer *p = closure;
+  print_data(p, "\"", 1);
+  return p;
+}
+
+static size_t mapkey_str(void *closure, const void *handler_data,
+                         const char *str, size_t len,
+                         const upb_bufhandle *handle) {
+  CHK(putstr(closure, handler_data, str, len, handle));
+  return len;
+}
+
+static bool mapkey_endstr(void *closure, const void *handler_data) {
+  UPB_UNUSED(handler_data);
+  upb_json_printer *p = closure;
+  print_data(p, "\":", 2);
+  return true;
+}
+
+static bool mapvalue_endstr(void *closure, const void *handler_data) {
+  UPB_UNUSED(handler_data);
+  upb_json_printer *p = closure;
+  print_data(p, "\"", 1);
+  return true;
+}
+
 static size_t scalar_bytes(void *closure, const void *handler_data,
                            const char *str, size_t len,
                            const upb_bufhandle *handle) {
@@ -421,31 +502,161 @@ static size_t repeated_bytes(void *closure, const void *handler_data,
   return len;
 }
 
-void printer_sethandlers(const void *closure, upb_handlers *h) {
+static size_t mapkey_bytes(void *closure, const void *handler_data,
+                           const char *str, size_t len,
+                           const upb_bufhandle *handle) {
+  upb_json_printer *p = closure;
+  CHK(putbytes(closure, handler_data, str, len, handle));
+  print_data(p, ":", 1);
+  return len;
+}
+
+static void set_enum_hd(upb_handlers *h,
+                        const upb_fielddef *f,
+                        upb_handlerattr *attr) {
+  EnumHandlerData *hd = malloc(sizeof(EnumHandlerData));
+  hd->enumdef = (const upb_enumdef *)upb_fielddef_subdef(f);
+  hd->keyname = newstrpc(h, f);
+  upb_handlers_addcleanup(h, hd, free);
+  upb_handlerattr_sethandlerdata(attr, hd);
+}
+
+// Set up handlers for a mapentry submessage (i.e., an individual key/value pair
+// in a map).
+//
+// TODO: Handle missing key, missing value, out-of-order key/value, or repeated
+// key or value cases properly. The right way to do this is to allocate a
+// temporary structure at the start of a mapentry submessage, store key and
+// value data in it as key and value handlers are called, and then print the
+// key/value pair once at the end of the submessage. If we don't do this, we
+// should at least detect the case and throw an error. However, so far all of
+// our sources that emit mapentry messages do so canonically (with one key
+// field, and then one value field), so this is not a pressing concern at the
+// moment.
+void printer_sethandlers_mapentry(const void *closure, upb_handlers *h) {
   UPB_UNUSED(closure);
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+
+  // A mapentry message is printed simply as '"key": value'. Rather than
+  // special-case key and value for every type below, we just handle both
+  // fields explicitly here.
+  const upb_fielddef* key_field = upb_msgdef_itof(md, UPB_MAPENTRY_KEY);
+  const upb_fielddef* value_field = upb_msgdef_itof(md, UPB_MAPENTRY_VALUE);
 
   upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
-  upb_handlers_setstartmsg(h, startmap, &empty_attr);
-  upb_handlers_setendmsg(h, endmap, &empty_attr);
 
-#define TYPE(type, name, ctype)                                    \
-  case type:                                                       \
-    if (upb_fielddef_isseq(f)) {                                   \
-      upb_handlers_set##name(h, f, repeated_##ctype, &empty_attr); \
-    } else {                                                       \
-      upb_handlers_set##name(h, f, scalar_##ctype, &name_attr);    \
-    }                                                              \
+  switch (upb_fielddef_type(key_field)) {
+    case UPB_TYPE_INT32:
+      upb_handlers_setint32(h, key_field, putmapkey_int32_t, &empty_attr);
+      break;
+    case UPB_TYPE_INT64:
+      upb_handlers_setint64(h, key_field, putmapkey_int64_t, &empty_attr);
+      break;
+    case UPB_TYPE_UINT32:
+      upb_handlers_setuint32(h, key_field, putmapkey_uint32_t, &empty_attr);
+      break;
+    case UPB_TYPE_UINT64:
+      upb_handlers_setuint64(h, key_field, putmapkey_uint64_t, &empty_attr);
+      break;
+    case UPB_TYPE_BOOL:
+      upb_handlers_setbool(h, key_field, putmapkey_bool, &empty_attr);
+      break;
+    case UPB_TYPE_STRING:
+      upb_handlers_setstartstr(h, key_field, mapkeyval_startstr, &empty_attr);
+      upb_handlers_setstring(h, key_field, mapkey_str, &empty_attr);
+      upb_handlers_setendstr(h, key_field, mapkey_endstr, &empty_attr);
+      break;
+    case UPB_TYPE_BYTES:
+      upb_handlers_setstring(h, key_field, mapkey_bytes, &empty_attr);
+      break;
+    default:
+      assert(false);
+      break;
+  }
+
+  switch (upb_fielddef_type(value_field)) {
+    case UPB_TYPE_INT32:
+      upb_handlers_setint32(h, value_field, putint32_t, &empty_attr);
+      break;
+    case UPB_TYPE_INT64:
+      upb_handlers_setint64(h, value_field, putint64_t, &empty_attr);
+      break;
+    case UPB_TYPE_UINT32:
+      upb_handlers_setuint32(h, value_field, putuint32_t, &empty_attr);
+      break;
+    case UPB_TYPE_UINT64:
+      upb_handlers_setuint64(h, value_field, putuint64_t, &empty_attr);
+      break;
+    case UPB_TYPE_BOOL:
+      upb_handlers_setbool(h, value_field, putbool, &empty_attr);
+      break;
+    case UPB_TYPE_FLOAT:
+      upb_handlers_setfloat(h, value_field, putfloat, &empty_attr);
+      break;
+    case UPB_TYPE_DOUBLE:
+      upb_handlers_setdouble(h, value_field, putdouble, &empty_attr);
+      break;
+    case UPB_TYPE_STRING:
+      upb_handlers_setstartstr(h, value_field, mapkeyval_startstr, &empty_attr);
+      upb_handlers_setstring(h, value_field, putstr, &empty_attr);
+      upb_handlers_setendstr(h, value_field, mapvalue_endstr, &empty_attr);
+      break;
+    case UPB_TYPE_BYTES:
+      upb_handlers_setstring(h, value_field, putbytes, &empty_attr);
+      break;
+    case UPB_TYPE_ENUM: {
+      upb_handlerattr enum_attr = UPB_HANDLERATTR_INITIALIZER;
+      set_enum_hd(h, value_field, &enum_attr);
+      upb_handlers_setint32(h, value_field, mapvalue_enum, &enum_attr);
+      upb_handlerattr_uninit(&enum_attr);
+      break;
+    }
+    case UPB_TYPE_MESSAGE:
+      // No handler necessary -- the submsg handlers will print the message
+      // as appropriate.
+      break;
+  }
+
+  upb_handlerattr_uninit(&empty_attr);
+}
+
+void printer_sethandlers(const void *closure, upb_handlers *h) {
+  UPB_UNUSED(closure);
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+  bool is_mapentry = upb_msgdef_mapentry(md);
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+
+  if (is_mapentry) {
+    // mapentry messages are sufficiently different that we handle them
+    // separately.
+    printer_sethandlers_mapentry(closure, h);
+    return;
+  }
+
+  upb_handlers_setstartmsg(h, printer_startmsg, &empty_attr);
+  upb_handlers_setendmsg(h, printer_endmsg, &empty_attr);
+
+#define TYPE(type, name, ctype)                                               \
+  case type:                                                                  \
+    if (upb_fielddef_isseq(f)) {                                              \
+      upb_handlers_set##name(h, f, repeated_##ctype, &empty_attr);            \
+    } else {                                                                  \
+      upb_handlers_set##name(h, f, scalar_##ctype, &name_attr);               \
+    }                                                                         \
     break;
 
   upb_msg_field_iter i;
-  upb_msg_field_begin(&i, upb_handlers_msgdef(h));
+  upb_msg_field_begin(&i, md);
   for(; !upb_msg_field_done(&i); upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
 
     upb_handlerattr name_attr = UPB_HANDLERATTR_INITIALIZER;
     upb_handlerattr_sethandlerdata(&name_attr, newstrpc(h, f));
 
-    if (upb_fielddef_isseq(f)) {
+    if (upb_fielddef_ismap(f)) {
+      upb_handlers_setstartseq(h, f, startmap, &name_attr);
+      upb_handlers_setendseq(h, f, endmap, &name_attr);
+    } else if (upb_fielddef_isseq(f)) {
       upb_handlers_setstartseq(h, f, startseq, &name_attr);
       upb_handlers_setendseq(h, f, endseq, &empty_attr);
     }
@@ -462,12 +673,8 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
         // For now, we always emit symbolic names for enums. We may want an
         // option later to control this behavior, but we will wait for a real
         // need first.
-        EnumHandlerData *hd = malloc(sizeof(EnumHandlerData));
-        hd->enumdef = (const upb_enumdef *)upb_fielddef_subdef(f);
-        hd->keyname = newstrpc(h, f);
-        upb_handlers_addcleanup(h, hd, free);
         upb_handlerattr enum_attr = UPB_HANDLERATTR_INITIALIZER;
-        upb_handlerattr_sethandlerdata(&enum_attr, hd);
+        set_enum_hd(h, f, &enum_attr);
 
         if (upb_fielddef_isseq(f)) {
           upb_handlers_setint32(h, f, repeated_enum, &enum_attr);

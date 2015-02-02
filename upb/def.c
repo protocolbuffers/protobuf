@@ -211,6 +211,21 @@ static bool upb_validate_field(upb_fielddef *f, upb_status *s) {
     upb_fielddef_setdefaultint32(f, upb_fielddef_defaultint32(f));
   }
 
+  // Ensure that MapEntry submessages only appear as repeated fields, not
+  // optional/required (singular) fields.
+  if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE &&
+      upb_fielddef_msgsubdef(f) != NULL) {
+    const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
+    if (upb_msgdef_mapentry(subdef) && !upb_fielddef_isseq(f)) {
+      upb_status_seterrf(s,
+                         "Field %s refers to mapentry message but is not "
+                         "a repeated field",
+                         upb_fielddef_name(f) ? upb_fielddef_name(f) :
+                         "(unnamed)");
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -1241,6 +1256,11 @@ bool upb_fielddef_isseq(const upb_fielddef *f) {
 
 bool upb_fielddef_isprimitive(const upb_fielddef *f) {
   return !upb_fielddef_isstring(f) && !upb_fielddef_issubmsg(f);
+}
+
+bool upb_fielddef_ismap(const upb_fielddef *f) {
+  return upb_fielddef_isseq(f) && upb_fielddef_issubmsg(f) &&
+         upb_msgdef_mapentry(upb_fielddef_msgsubdef(f));
 }
 
 bool upb_fielddef_hassubdef(const upb_fielddef *f) {
