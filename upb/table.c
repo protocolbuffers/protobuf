@@ -40,12 +40,16 @@ char *upb_strdup(const char *s) {
 }
 
 char *upb_strdup2(const char *s, size_t len) {
+  // Prevent overflow errors.
+  if (len == SIZE_MAX) return NULL;
   // Always null-terminate, even if binary data; but don't rely on the input to
   // have a null-terminating byte since it may be a raw binary buffer.
   size_t n = len + 1;
   char *p = malloc(n);
-  if (p) memcpy(p, s, len);
-  p[len] = 0;
+  if (p) {
+    memcpy(p, s, len);
+    p[len] = 0;
+  }
   return p;
 }
 

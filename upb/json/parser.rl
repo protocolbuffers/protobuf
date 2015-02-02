@@ -221,7 +221,6 @@ badpadding:
 //      the true value in a contiguous buffer.
 
 static void assert_accumulate_empty(upb_json_parser *p) {
-  UPB_UNUSED(p);
   assert(p->accumulated == NULL);
   assert(p->accumulated_len == 0);
 }
@@ -506,6 +505,8 @@ static void start_number(upb_json_parser *p, const char *ptr) {
   capture_begin(p, ptr);
 }
 
+static bool parse_number(upb_json_parser *p, const char *buf, const char *end);
+
 static bool end_number(upb_json_parser *p, const char *ptr) {
   if (!capture_end(p, ptr)) {
     return false;
@@ -520,8 +521,12 @@ static bool end_number(upb_json_parser *p, const char *ptr) {
   size_t len;
   const char *buf = accumulate_getptr(p, &len);
   const char *myend = buf + len - 1;  // One for NULL.
-  char *end;
+  return parse_number(p, buf, myend);
+}
 
+static bool parse_number(upb_json_parser *p, const char *buf,
+                         const char *myend) {
+  char *end;
   switch (upb_fielddef_type(p->top->f)) {
     case UPB_TYPE_ENUM:
     case UPB_TYPE_INT32: {
@@ -577,6 +582,7 @@ static bool end_number(upb_json_parser *p, const char *ptr) {
   }
 
   multipart_end(p);
+
   return true;
 
 err:
@@ -595,6 +601,7 @@ static bool parser_putbool(upb_json_parser *p, bool val) {
 
   bool ok = upb_sink_putbool(&p->top->sink, parser_getsel(p), val);
   UPB_ASSERT_VAR(ok, ok);
+
   return true;
 }
 
@@ -611,6 +618,8 @@ static bool start_stringval(upb_json_parser *p) {
     upb_sink_startstr(&p->top->sink, sel, 0, &inner->sink);
     inner->m = p->top->m;
     inner->f = p->top->f;
+    inner->is_map = false;
+    inner->is_mapentry = false;
     p->top = inner;
 
     if (upb_fielddef_type(p->top->f) == UPB_TYPE_STRING) {
@@ -688,6 +697,7 @@ static bool end_stringval(upb_json_parser *p) {
   }
 
   multipart_end(p);
+
   return ok;
 }
 
@@ -696,54 +706,217 @@ static void start_member(upb_json_parser *p) {
   multipart_startaccum(p);
 }
 
-static bool end_member(upb_json_parser *p) {
-  assert(!p->top->f);
+// Helper: invoked during parse_mapentry() to emit the mapentry message's key
+// field based on the current contents of the accumulate buffer.
+static bool parse_mapentry_key(upb_json_parser *p) {
+
   size_t len;
   const char *buf = accumulate_getptr(p, &len);
 
-  const upb_fielddef *f = upb_msgdef_ntof(p->top->m, buf, len);
+  // Emit the key field. We do a bit of ad-hoc parsing here because the
+  // parser state machine has already decided that this is a string field
+  // name, and we are reinterpreting it as some arbitrary key type. In
+  // particular, integer and bool keys are quoted, so we need to parse the
+  // quoted string contents here.
 
-  if (!f) {
-    // TODO(haberman): Ignore unknown fields if requested/configured to do so.
-    upb_status_seterrf(p->status, "No such field: %.*s\n", (int)len, buf);
+  p->top->f = upb_msgdef_itof(p->top->m, UPB_MAPENTRY_KEY);
+  if (p->top->f == NULL) {
+    upb_status_seterrmsg(p->status, "mapentry message has no key");
     return false;
   }
-
-  p->top->f = f;
-  multipart_end(p);
+  switch (upb_fielddef_type(p->top->f)) {
+    case UPB_TYPE_INT32:
+    case UPB_TYPE_INT64:
+    case UPB_TYPE_UINT32:
+    case UPB_TYPE_UINT64:
+      // Invoke end_number. The accum buffer has the number's text already.
+      if (!parse_number(p, buf, buf + len)) {
+        return false;
+      }
+      break;
+    case UPB_TYPE_BOOL:
+      if (len == 4 && !strncmp(buf, "true", 4)) {
+        if (!parser_putbool(p, true)) {
+          return false;
+        }
+      } else if (len == 5 && !strncmp(buf, "false", 5)) {
+        if (!parser_putbool(p, false)) {
+          return false;
+        }
+      } else {
+        upb_status_seterrmsg(p->status,
+                             "Map bool key not 'true' or 'false'");
+        return false;
+      }
+      multipart_end(p);
+      break;
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      upb_sink subsink;
+      upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSTR);
+      upb_sink_startstr(&p->top->sink, sel, len, &subsink);
+      sel = getsel_for_handlertype(p, UPB_HANDLER_STRING);
+      upb_sink_putstring(&subsink, sel, buf, len, NULL);
+      sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
+      upb_sink_endstr(&subsink, sel);
+      multipart_end(p);
+      break;
+    }
+    default:
+      upb_status_seterrmsg(p->status, "Invalid field type for map key");
+      return false;
+  }
 
   return true;
 }
 
-static void clear_member(upb_json_parser *p) { p->top->f = NULL; }
+// Helper: emit one map entry (as a submessage in the map field sequence). This
+// is invoked from end_membername(), at the end of the map entry's key string,
+// with the map key in the accumulate buffer. It parses the key from that
+// buffer, emits the handler calls to start the mapentry submessage (setting up
+// its subframe in the process), and sets up state in the subframe so that the
+// value parser (invoked next) will emit the mapentry's value field and then
+// end the mapentry message.
+
+static bool handle_mapentry(upb_json_parser *p) {
+  // Map entry: p->top->sink is the seq frame, so we need to start a frame
+  // for the mapentry itself, and then set |f| in that frame so that the map
+  // value field is parsed, and also set a flag to end the frame after the
+  // map-entry value is parsed.
+  if (!check_stack(p)) return false;
+
+  const upb_fielddef *mapfield = p->top->mapfield;
+  const upb_msgdef *mapentrymsg = upb_fielddef_msgsubdef(mapfield);
+
+  upb_jsonparser_frame *inner = p->top + 1;
+  p->top->f = mapfield;
+  upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSUBMSG);
+  upb_sink_startsubmsg(&p->top->sink, sel, &inner->sink);
+  inner->m = mapentrymsg;
+  inner->mapfield = mapfield;
+  inner->is_map = false;
+
+  // Don't set this to true *yet* -- we reuse parsing handlers below to push
+  // the key field value to the sink, and these handlers will pop the frame
+  // if they see is_mapentry (when invoked by the parser state machine, they
+  // would have just seen the map-entry value, not key).
+  inner->is_mapentry = false;
+  p->top = inner;
+
+  // send STARTMSG in submsg frame.
+  upb_sink_startmsg(&p->top->sink);
+
+  parse_mapentry_key(p);
+
+  // Set up the value field to receive the map-entry value.
+  p->top->f = upb_msgdef_itof(p->top->m, UPB_MAPENTRY_VALUE);
+  p->top->is_mapentry = true;  // set up to pop frame after value is parsed.
+  p->top->mapfield = mapfield;
+  if (p->top->f == NULL) {
+    upb_status_seterrmsg(p->status, "mapentry message has no value");
+    return false;
+  }
+
+  return true;
+}
+
+static bool end_membername(upb_json_parser *p) {
+  assert(!p->top->f);
+
+  if (p->top->is_map) {
+    return handle_mapentry(p);
+  } else {
+    size_t len;
+    const char *buf = accumulate_getptr(p, &len);
+    const upb_fielddef *f = upb_msgdef_ntof(p->top->m, buf, len);
+
+    if (!f) {
+      // TODO(haberman): Ignore unknown fields if requested/configured to do so.
+      upb_status_seterrf(p->status, "No such field: %.*s\n", (int)len, buf);
+      return false;
+    }
+
+    p->top->f = f;
+    multipart_end(p);
+
+    return true;
+  }
+}
+
+static void end_member(upb_json_parser *p) {
+  // If we just parsed a map-entry value, end that frame too.
+  if (p->top->is_mapentry) {
+    assert(p->top > p->stack);
+    // send ENDMSG on submsg.
+    upb_status s = UPB_STATUS_INIT;
+    upb_sink_endmsg(&p->top->sink, &s);
+    const upb_fielddef* mapfield = p->top->mapfield;
+
+    // send ENDSUBMSG in repeated-field-of-mapentries frame.
+    p->top--;
+    upb_selector_t sel;
+    bool ok = upb_handlers_getselector(mapfield,
+                                       UPB_HANDLER_ENDSUBMSG, &sel);
+    UPB_ASSERT_VAR(ok, ok);
+    upb_sink_endsubmsg(&p->top->sink, sel);
+  }
+
+  p->top->f = NULL;
+}
 
 static bool start_subobject(upb_json_parser *p) {
   assert(p->top->f);
 
-  if (!upb_fielddef_issubmsg(p->top->f)) {
+  if (upb_fielddef_ismap(p->top->f)) {
+    // Beginning of a map. Start a new parser frame in a repeated-field
+    // context.
+    if (!check_stack(p)) return false;
+
+    upb_jsonparser_frame *inner = p->top + 1;
+    upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSEQ);
+    upb_sink_startseq(&p->top->sink, sel, &inner->sink);
+    inner->m = upb_fielddef_msgsubdef(p->top->f);
+    inner->mapfield = p->top->f;
+    inner->f = NULL;
+    inner->is_map = true;
+    inner->is_mapentry = false;
+    p->top = inner;
+
+    return true;
+  } else if (upb_fielddef_issubmsg(p->top->f)) {
+    // Beginning of a subobject. Start a new parser frame in the submsg
+    // context.
+    if (!check_stack(p)) return false;
+
+    upb_jsonparser_frame *inner = p->top + 1;
+
+    upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSUBMSG);
+    upb_sink_startsubmsg(&p->top->sink, sel, &inner->sink);
+    inner->m = upb_fielddef_msgsubdef(p->top->f);
+    inner->f = NULL;
+    inner->is_map = false;
+    inner->is_mapentry = false;
+    p->top = inner;
+
+    return true;
+  } else {
     upb_status_seterrf(p->status,
                        "Object specified for non-message/group field: %s",
                        upb_fielddef_name(p->top->f));
     return false;
   }
-
-  if (!check_stack(p)) return false;
-
-  upb_jsonparser_frame *inner = p->top + 1;
-
-  upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSUBMSG);
-  upb_sink_startsubmsg(&p->top->sink, sel, &inner->sink);
-  inner->m = upb_fielddef_msgsubdef(p->top->f);
-  inner->f = NULL;
-  p->top = inner;
-
-  return true;
 }
 
 static void end_subobject(upb_json_parser *p) {
-  p->top--;
-  upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSUBMSG);
-  upb_sink_endsubmsg(&p->top->sink, sel);
+  if (p->top->is_map) {
+    p->top--;
+    upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSEQ);
+    upb_sink_endseq(&p->top->sink, sel);
+  } else {
+    p->top--;
+    upb_selector_t sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSUBMSG);
+    upb_sink_endsubmsg(&p->top->sink, sel);
+  }
 }
 
 static bool start_array(upb_json_parser *p) {
@@ -763,6 +936,8 @@ static bool start_array(upb_json_parser *p) {
   upb_sink_startseq(&p->top->sink, sel, &inner->sink);
   inner->m = p->top->m;
   inner->f = p->top->f;
+  inner->is_map = false;
+  inner->is_mapentry = false;
   p->top = inner;
 
   return true;
@@ -777,12 +952,16 @@ static void end_array(upb_json_parser *p) {
 }
 
 static void start_object(upb_json_parser *p) {
-  upb_sink_startmsg(&p->top->sink);
+  if (!p->top->is_map) {
+    upb_sink_startmsg(&p->top->sink);
+  }
 }
 
 static void end_object(upb_json_parser *p) {
-  upb_status status;
-  upb_sink_endmsg(&p->top->sink, &status);
+  if (!p->top->is_map) {
+    upb_status status;
+    upb_sink_endmsg(&p->top->sink, &status);
+  }
 }
 
 
@@ -854,10 +1033,10 @@ static void end_object(upb_json_parser *p) {
     ws
     string
       >{ start_member(parser); }
-      @{ CHECK_RETURN_TOP(end_member(parser)); }
+      @{ CHECK_RETURN_TOP(end_membername(parser)); }
     ws ":" ws
     value2
-      %{ clear_member(parser); }
+      %{ end_member(parser); }
     ws;
 
   object =
@@ -967,6 +1146,8 @@ void upb_json_parser_uninit(upb_json_parser *p) {
 void upb_json_parser_reset(upb_json_parser *p) {
   p->top = p->stack;
   p->top->f = NULL;
+  p->top->is_map = false;
+  p->top->is_mapentry = false;
 
   int cs;
   int top;

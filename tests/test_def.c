@@ -344,6 +344,39 @@ static void test_descriptor_flags() {
   upb_msgdef_unref(m2, &m2);
 }
 
+static void test_mapentry_check() {
+  upb_status s = UPB_STATUS_INIT;
+
+  upb_msgdef *m = upb_msgdef_new(&m);
+  upb_msgdef_setfullname(m, "TestMessage", &s);
+  upb_fielddef *f = upb_fielddef_new(&f);
+  upb_fielddef_setname(f, "field1", &s);
+  upb_fielddef_setnumber(f, 1, &s);
+  upb_fielddef_setlabel(f, UPB_LABEL_OPTIONAL);
+  upb_fielddef_settype(f, UPB_TYPE_MESSAGE);
+  upb_fielddef_setsubdefname(f, ".MapEntry", &s);
+  upb_msgdef_addfield(m, f, &f, &s);
+  ASSERT(upb_ok(&s));
+
+  upb_msgdef *subm = upb_msgdef_new(&subm);
+  upb_msgdef_setfullname(subm, "MapEntry", &s);
+  upb_msgdef_setmapentry(subm, true);
+
+  upb_symtab *symtab = upb_symtab_new(&symtab);
+  upb_def *defs[] = {UPB_UPCAST(m), UPB_UPCAST(subm)};
+  upb_symtab_add(symtab, defs, 2, NULL, &s);
+  // Should not have succeeded: non-repeated field pointing to a MapEntry.
+  ASSERT(!upb_ok(&s));
+
+  upb_fielddef_setlabel(f, UPB_LABEL_REPEATED);
+  upb_symtab_add(symtab, defs, 2, NULL, &s);
+  ASSERT(upb_ok(&s));
+
+  upb_symtab_unref(symtab, &symtab);
+  upb_msgdef_unref(subm, &subm);
+  upb_msgdef_unref(m, &m);
+}
+
 static void test_oneofs() {
   upb_status s = UPB_STATUS_INIT;
   bool ok = true;
@@ -412,6 +445,7 @@ int run_tests(int argc, char *argv[]) {
   test_partial_freeze();
   test_noreftracking();
   test_descriptor_flags();
+  test_mapentry_check();
   test_oneofs();
   return 0;
 }

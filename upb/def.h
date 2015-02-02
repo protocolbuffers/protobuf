@@ -368,6 +368,7 @@ UPB_DEFINE_DEF(upb::FieldDef, fielddef, FIELD,
   bool IsString() const;
   bool IsSequence() const;
   bool IsPrimitive() const;
+  bool IsMap() const;
 
   // How integers are encoded.  Only meaningful for integer types.
   // Defaults to UPB_INTFMT_VARIABLE, and is reset when "type" changes.
@@ -592,6 +593,7 @@ bool upb_fielddef_issubmsg(const upb_fielddef *f);
 bool upb_fielddef_isstring(const upb_fielddef *f);
 bool upb_fielddef_isseq(const upb_fielddef *f);
 bool upb_fielddef_isprimitive(const upb_fielddef *f);
+bool upb_fielddef_ismap(const upb_fielddef *f);
 int64_t upb_fielddef_defaultint64(const upb_fielddef *f);
 int32_t upb_fielddef_defaultint32(const upb_fielddef *f);
 uint64_t upb_fielddef_defaultuint64(const upb_fielddef *f);
@@ -979,6 +981,10 @@ UPB_INLINE upb_oneofdef *upb_msgdef_ntoo_mutable(upb_msgdef *m,
 
 void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry);
 bool upb_msgdef_mapentry(const upb_msgdef *m);
+
+// Well-known field tag numbers for map-entry messages.
+#define UPB_MAPENTRY_KEY   1
+#define UPB_MAPENTRY_VALUE 2
 
 const upb_oneofdef *upb_msgdef_findoneof(const upb_msgdef *m,
                                           const char *name);
@@ -1479,6 +1485,7 @@ inline bool FieldDef::IsSubMessage() const {
 }
 inline bool FieldDef::IsString() const { return upb_fielddef_isstring(this); }
 inline bool FieldDef::IsSequence() const { return upb_fielddef_isseq(this); }
+inline bool FieldDef::IsMap() const { return upb_fielddef_ismap(this); }
 inline int64_t FieldDef::default_int64() const {
   return upb_fielddef_defaultint64(this);
 }
