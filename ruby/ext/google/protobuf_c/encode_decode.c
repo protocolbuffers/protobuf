@@ -359,9 +359,12 @@ static void *oneofsubmsg_handler(void *closure,
     DEREF(msg, oneofdata->ofs, VALUE) =
         rb_class_new_instance(0, NULL, subklass);
   }
-  // Set the oneof case *after* allocating the new class instance -- see comment
-  // in layout_set() as to why. There are subtle interactions with possible GC
-  // points and oneof field type transitions.
+  // Set the oneof case *after* allocating the new class instance -- otherwise,
+  // if the Ruby GC is invoked as part of a call into the VM, it might invoke
+  // our mark routines, and our mark routines might see the case value
+  // indicating a VALUE is present and expect a valid VALUE. See comment in
+  // layout_set() for more detail: basically, the change to the value and the
+  // case must be atomic w.r.t. the Ruby VM.
   DEREF(msg, oneofdata->case_ofs, uint32_t) =
       oneofdata->oneof_case_num;
 

@@ -109,6 +109,17 @@ void native_slot_validate_string_encoding(upb_fieldtype_t type, VALUE value) {
 
 void native_slot_set(upb_fieldtype_t type, VALUE type_class,
                      void* memory, VALUE value) {
+  native_slot_set_value_and_case(type, type_class, memory, value, NULL, 0);
+}
+
+void native_slot_set_value_and_case(upb_fieldtype_t type, VALUE type_class,
+                                    void* memory, VALUE value,
+                                    uint32_t* case_memory,
+                                    uint32_t case_number) {
+  // Note that in order to atomically change the value in memory and the case
+  // value (w.r.t. Ruby VM calls), we must set the value at |memory| only after
+  // all Ruby VM calls are complete. The case is then set at the bottom of this
+  // function.
   switch (type) {
     case UPB_TYPE_FLOAT:
       if (!is_ruby_num(value)) {
@@ -197,6 +208,10 @@ void native_slot_set(upb_fieldtype_t type, VALUE type_class,
       break;
     default:
       break;
+  }
+
+  if (case_memory != NULL) {
+    *case_memory = case_number;
   }
 }
 
@@ -408,6 +423,13 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
   // We assign all value slots first, then pack the 'case' fields at the end,
   // since in the common case (modern 64-bit platform) these are 8 bytes and 4
   // bytes respectively and we want to avoid alignment overhead.
+  //
+  // Note that we reserve 4 bytes (a uint32) per 'case' slot because the value
+  // space for oneof cases is conceptually as wide as field tag numbers. In
+  // practice, it's unlikely that a oneof would have more than e.g. 256 or 64K
+  // members (8 or 16 bits respectively), so conceivably we could assign
+  // consecutive case numbers and then pick a smaller oneof case slot size, but
+  // the complexity to implement this indirection is probably not worthwhile.
   upb_msg_oneof_iter oit;
   for (upb_msg_oneof_begin(&oit, msgdef);
        !upb_msg_oneof_done(&oit);
@@ -576,7 +598,7 @@ void layout_set(MessageLayout* layout,
   if (upb_fielddef_containingoneof(field)) {
     if (val == Qnil) {
       // Assigning nil to a oneof field clears the oneof completely.
-      *oneof_case = 0;
+      *oneof_case = ONEOF_CASE_NONE;
       memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
     } else {
       // The transition between field types for a single oneof (union) slot is
@@ -587,18 +609,14 @@ void layout_set(MessageLayout* layout,
       // what it thinks is a primitive field but is actually a VALUE for the new
       // field type).
       //
-      // native_slot_set() has two parts: (i) conversion of some sort, and (ii)
-      // setting the in-memory content to the new value. It guarantees that all
-      // calls to the Ruby VM are completed before the memory slot is altered.
-      //
       // In order for the transition to be safe, the oneof case slot must be in
-      // sync with the value slot whenever the Ruby VM has been called. Because
-      // we are guaranteed that no Ruby VM calls occur after native_slot_set()
-      // alters the memory slot and before it returns, we set the oneof case
-      // immediately after native_slot_set() returns.
-      native_slot_set(upb_fielddef_type(field), field_type_class(field),
-                      memory, val);
-      *oneof_case = upb_fielddef_number(field);
+      // sync with the value slot whenever the Ruby VM has been called. Thus, we
+      // use native_slot_set_value_and_case(), which ensures that both the value
+      // and case number are altered atomically (w.r.t. the Ruby VM).
+      native_slot_set_value_and_case(
+          upb_fielddef_type(field), field_type_class(field),
+          memory, val,
+          oneof_case, upb_fielddef_number(field));
     }
   } else if (is_map_field(field)) {
     check_map_field_type(val, field);
@@ -624,7 +642,7 @@ void layout_init(MessageLayout* layout,
 
     if (upb_fielddef_containingoneof(field)) {
       memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
-      *oneof_case = 0;
+      *oneof_case = ONEOF_CASE_NONE;
     } else if (is_map_field(field)) {
       VALUE map = Qnil;
 

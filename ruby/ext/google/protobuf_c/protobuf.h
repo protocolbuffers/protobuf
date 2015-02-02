@@ -292,6 +292,15 @@ void native_slot_set(upb_fieldtype_t type,
                      VALUE type_class,
                      void* memory,
                      VALUE value);
+// Atomically (with respect to Ruby VM calls) either update the value and set a
+// oneof case, or do neither. If |case_memory| is null, then no case value is
+// set.
+void native_slot_set_value_and_case(upb_fieldtype_t type,
+                                    VALUE type_class,
+                                    void* memory,
+                                    VALUE value,
+                                    uint32_t* case_memory,
+                                    uint32_t case_number);
 VALUE native_slot_get(upb_fieldtype_t type,
                       VALUE type_class,
                       const void* memory);
@@ -312,6 +321,11 @@ VALUE field_type_class(const upb_fielddef* field);
 
 #define MAP_KEY_FIELD 1
 #define MAP_VALUE_FIELD 2
+
+// Oneof case slot value to indicate that no oneof case is set. The value `0` is
+// safe because field numbers are used as case identifiers, and no field can
+// have a number of 0.
+#define ONEOF_CASE_NONE 0
 
 // These operate on a map field (i.e., a repeated field of submessages whose
 // submessage type is a map-entry msgdef).
