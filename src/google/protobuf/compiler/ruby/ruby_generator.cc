@@ -45,7 +45,7 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace ruby {
-	
+
 // Forward decls.
 std::string IntToString(uint32 value);
 std::string StripDotProto(const std::string& proto_file);
