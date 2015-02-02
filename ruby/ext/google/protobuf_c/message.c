@@ -88,8 +88,7 @@ static VALUE which_oneof_field(MessageHeader* self, const upb_oneofdef* o) {
       fields[upb_fielddef_index(first_field)].case_offset;
   uint32_t oneof_case = *((uint32_t*)(Message_data(self) + case_ofs));
 
-  // oneof_case == 0 indicates no field set.
-  if (oneof_case == 0) {
+  if (oneof_case == ONEOF_CASE_NONE) {
     return Qnil;
   }
 
