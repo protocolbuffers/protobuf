@@ -1466,6 +1466,7 @@ UPB_DEFINE_DEF(upb::FieldDef, fielddef, FIELD,
   bool IsString() const;
   bool IsSequence() const;
   bool IsPrimitive() const;
+  bool IsMap() const;
 
   // How integers are encoded.  Only meaningful for integer types.
   // Defaults to UPB_INTFMT_VARIABLE, and is reset when "type" changes.
@@ -1690,6 +1691,7 @@ bool upb_fielddef_issubmsg(const upb_fielddef *f);
 bool upb_fielddef_isstring(const upb_fielddef *f);
 bool upb_fielddef_isseq(const upb_fielddef *f);
 bool upb_fielddef_isprimitive(const upb_fielddef *f);
+bool upb_fielddef_ismap(const upb_fielddef *f);
 int64_t upb_fielddef_defaultint64(const upb_fielddef *f);
 int32_t upb_fielddef_defaultint32(const upb_fielddef *f);
 uint64_t upb_fielddef_defaultuint64(const upb_fielddef *f);
@@ -2077,6 +2079,10 @@ UPB_INLINE upb_oneofdef *upb_msgdef_ntoo_mutable(upb_msgdef *m,
 
 void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry);
 bool upb_msgdef_mapentry(const upb_msgdef *m);
+
+// Well-known field tag numbers for map-entry messages.
+#define UPB_MAPENTRY_KEY   1
+#define UPB_MAPENTRY_VALUE 2
 
 const upb_oneofdef *upb_msgdef_findoneof(const upb_msgdef *m,
                                           const char *name);
@@ -2577,6 +2583,7 @@ inline bool FieldDef::IsSubMessage() const {
 }
 inline bool FieldDef::IsString() const { return upb_fielddef_isstring(this); }
 inline bool FieldDef::IsSequence() const { return upb_fielddef_isseq(this); }
+inline bool FieldDef::IsMap() const { return upb_fielddef_ismap(this); }
 inline int64_t FieldDef::default_int64() const {
   return upb_fielddef_defaultint64(this);
 }
@@ -7822,12 +7829,30 @@ class Parser;
 
 UPB_DECLARE_TYPE(upb::json::Parser, upb_json_parser);
 
-// Internal-only struct used by the parser.
+// Internal-only struct used by the parser. A parser frame corresponds
+// one-to-one with a handler (sink) frame.
 typedef struct {
  UPB_PRIVATE_FOR_CPP
   upb_sink sink;
+  // The current message in which we're parsing, and the field whose value we're
+  // expecting next.
   const upb_msgdef *m;
   const upb_fielddef *f;
+
+  // We are in a repeated-field context, ready to emit mapentries as
+  // submessages. This flag alters the start-of-object (open-brace) behavior to
+  // begin a sequence of mapentry messages rather than a single submessage.
+  bool is_map;
+  // We are in a map-entry message context. This flag is set when parsing the
+  // value field of a single map entry and indicates to all value-field parsers
+  // (subobjects, strings, numbers, and bools) that the map-entry submessage
+  // should end as soon as the value is parsed.
+  bool is_mapentry;
+  // If |is_map| or |is_mapentry| is true, |mapfield| refers to the parent
+  // message's map field that we're currently parsing. This differs from |f|
+  // because |f| is the field in the *current* message (i.e., the map-entry
+  // message itself), not the parent's field that leads to this map.
+  const upb_fielddef *mapfield;
 } upb_jsonparser_frame;
 
 
