@@ -42,19 +42,69 @@ namespace javanano {
 
 namespace {
 
+string TypeName(const Params& params, const FieldDescriptor* field,
+                bool boxed) {
+  JavaType java_type = GetJavaType(field);
+  switch (java_type) {
+    case JAVATYPE_MESSAGE:
+      return ClassName(params, field->message_type());
+    case JAVATYPE_INT:
+    case JAVATYPE_LONG:
+    case JAVATYPE_FLOAT:
+    case JAVATYPE_DOUBLE:
+    case JAVATYPE_BOOLEAN:
+    case JAVATYPE_STRING:
+    case JAVATYPE_BYTES:
+    case JAVATYPE_ENUM:
+      if (boxed) {
+        return BoxedPrimitiveTypeName(java_type);
+      } else {
+        return PrimitiveTypeName(java_type);
+      }
+    // No default because we want the compiler to complain if any new JavaTypes
+    // are added..
+  }
+
+  GOOGLE_LOG(FATAL) << "should not reach here.";
+  return "";
+}
+
+const FieldDescriptor* KeyField(const FieldDescriptor* descriptor) {
+  GOOGLE_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
+  const Descriptor* message = descriptor->message_type();
+  GOOGLE_CHECK(message->options().map_entry());
+  return message->FindFieldByName("key");
+}
+
+const FieldDescriptor* ValueField(const FieldDescriptor* descriptor) {
+  GOOGLE_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
+  const Descriptor* message = descriptor->message_type();
+  GOOGLE_CHECK(message->options().map_entry());
+  return message->FindFieldByName("value");
+}
+
 void SetMapVariables(const Params& params,
     const FieldDescriptor* descriptor, map<string, string>* variables) {
+  const FieldDescriptor* key = KeyField(descriptor);
+  const FieldDescriptor* value = ValueField(descriptor);
   (*variables)["name"] =
     RenameJavaKeywords(UnderscoresToCamelCase(descriptor));
-  (*variables)["capitalized_name"] =
-    RenameJavaKeywords(UnderscoresToCapitalizedCamelCase(descriptor));
-  (*variables)["number"] = SimpleItoa(descriptor->number());
-  (*variables)["type"] = "java.lang.Integer";
-  (*variables)["default"] = "null";
-  (*variables)["tag"] = SimpleItoa(internal::WireFormat::MakeTag(descriptor));
-  (*variables)["tag_size"] = SimpleItoa(
-      internal::WireFormat::TagSize(descriptor->number(), descriptor->type()));
-  (*variables)["message_name"] = descriptor->containing_type()->name();
+  (*variables)["key_type"] = TypeName(params, key, false);
+  (*variables)["boxed_key_type"] = TypeName(params,key, true);
+  (*variables)["key_desc_type"] =
+      "TYPE_" + ToUpper(FieldDescriptor::TypeName(key->type()));
+  (*variables)["key_tag"] = SimpleItoa(internal::WireFormat::MakeTag(key));
+  (*variables)["value_type"] = TypeName(params, value, false);
+  (*variables)["boxed_value_type"] = TypeName(params, value, true);
+  (*variables)["value_desc_type"] =
+      "TYPE_" + ToUpper(FieldDescriptor::TypeName(value->type()));
+  (*variables)["value_tag"] = SimpleItoa(internal::WireFormat::MakeTag(value));
+  (*variables)["type_parameters"] =
+      (*variables)["boxed_key_type"] + ", " + (*variables)["boxed_value_type"];
+  (*variables)["value_default"] =
+      value->type() == FieldDescriptor::TYPE_MESSAGE
+          ? "new " + (*variables)["value_type"] + "()"
+          : "null";
 }
 }  // namespace
 
@@ -70,13 +120,41 @@ MapFieldGenerator::~MapFieldGenerator() {}
 void MapFieldGenerator::
 GenerateMembers(io::Printer* printer, bool /* unused lazy_init */) const {
   printer->Print(variables_,
-    "public $type$ $name$;\n");
+    "public java.util.Map<$type_parameters$> $name$;\n");
 }
 
 void MapFieldGenerator::
 GenerateClearCode(io::Printer* printer) const {
   printer->Print(variables_,
     "$name$ = null;\n");
+}
+
+void MapFieldGenerator::
+GenerateMergingCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "$name$ = com.google.protobuf.nano.MapUtil.mergeEntry(\n"
+    "  $name$, input,\n"
+    "  com.google.protobuf.nano.InternalNano.$key_desc_type$,\n"
+    "  com.google.protobuf.nano.InternalNano.$value_desc_type$,\n"
+    "  $value_default$,\n"
+    "  $key_tag$, $value_tag$);\n"
+    "\n");
+}
+
+void MapFieldGenerator::
+GenerateSerializationCode(io::Printer* printer) const {
+}
+
+void MapFieldGenerator::
+GenerateSerializedSizeCode(io::Printer* printer) const {
+}
+
+void MapFieldGenerator::
+GenerateEqualsCode(io::Printer* printer) const {
+}
+
+void MapFieldGenerator::
+GenerateHashCodeCode(io::Printer* printer) const {
 }
 
 }  // namespace javanano
