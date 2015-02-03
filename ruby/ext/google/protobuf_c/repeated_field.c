@@ -318,6 +318,29 @@ VALUE RepeatedField_deep_copy(VALUE _self) {
 
 /*
  * call-seq:
+ *     RepeatedField.to_ary => array
+ *
+ * Used when converted implicitly into array, e.g. compared to an Array.
+ * Also called as a fallback of Object#to_a
+ */
+VALUE RepeatedField_to_ary(VALUE _self) {
+  RepeatedField* self = ruby_to_RepeatedField(_self);
+  upb_fieldtype_t field_type = self->field_type;
+
+  size_t elem_size = native_slot_size(field_type);
+  size_t off = 0;
+  VALUE ary = rb_ary_new2(self->size);
+  for (int i = 0; i < self->size; i++, off += elem_size) {
+    void* mem = ((uint8_t *)self->elements) + off;
+    VALUE elem = native_slot_get(field_type, self->field_type_class, mem);
+
+    rb_ary_push(ary, elem);
+  }
+  return ary;
+}
+
+/*
+ * call-seq:
  *     RepeatedField.==(other) => boolean
  *
  * Compares this repeated field to another. Repeated fields are equal if their
@@ -335,15 +358,9 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
   }
   RepeatedField* self = ruby_to_RepeatedField(_self);
 
-  // Inefficient but workable: to support comparison to a generic array, we
-  // build a temporary RepeatedField of our type.
   if (TYPE(_other) == T_ARRAY) {
-    VALUE new_rptfield = RepeatedField_new_this_type(_self);
-    for (int i = 0; i < RARRAY_LEN(_other); i++) {
-      VALUE elem = rb_ary_entry(_other, i);
-      RepeatedField_push(new_rptfield, elem);
-    }
-    _other = new_rptfield;
+    VALUE self_ary = RepeatedField_to_ary(_self);
+    return rb_equal(self_ary, _other);
   }
 
   RepeatedField* other = ruby_to_RepeatedField(_other);
@@ -401,29 +418,8 @@ VALUE RepeatedField_hash(VALUE _self) {
  * representation computed by its own #inspect method.
  */
 VALUE RepeatedField_inspect(VALUE _self) {
-  RepeatedField* self = ruby_to_RepeatedField(_self);
-
-  VALUE str = rb_str_new2("[");
-
-  bool first = true;
-
-  upb_fieldtype_t field_type = self->field_type;
-  VALUE field_type_class = self->field_type_class;
-  size_t elem_size = native_slot_size(field_type);
-  size_t off = 0;
-  for (int i = 0; i < self->size; i++, off += elem_size) {
-    void* mem = ((uint8_t *)self->elements) + off;
-    VALUE elem = native_slot_get(field_type, field_type_class, mem);
-    if (!first) {
-      str = rb_str_cat2(str, ", ");
-    } else {
-      first = false;
-    }
-    str = rb_str_append(str, rb_funcall(elem, rb_intern("inspect"), 0));
-  }
-
-  str = rb_str_cat2(str, "]");
-  return str;
+  VALUE self_ary = RepeatedField_to_ary(_self);
+  return rb_funcall(self_ary, rb_intern("inspect"), 0);
 }
 
 /*
@@ -594,6 +590,7 @@ void RepeatedField_register(VALUE module) {
   // Also define #clone so that we don't inherit Object#clone.
   rb_define_method(klass, "clone", RepeatedField_dup, 0);
   rb_define_method(klass, "==", RepeatedField_eq, 1);
+  rb_define_method(klass, "to_ary", RepeatedField_to_ary, 0);
   rb_define_method(klass, "hash", RepeatedField_hash, 0);
   rb_define_method(klass, "inspect", RepeatedField_inspect, 0);
   rb_define_method(klass, "+", RepeatedField_plus, 1);

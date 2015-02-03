@@ -226,7 +226,8 @@ module BasicTest
       assert l.count == 0
       l = Google::Protobuf::RepeatedField.new(:int32, [1, 2, 3])
       assert l.count == 3
-      assert l == [1, 2, 3]
+      assert_equal [1, 2, 3], l
+      assert_equal l, [1, 2, 3]
       l.push 4
       assert l == [1, 2, 3, 4]
       dst_list = []
