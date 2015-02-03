@@ -43,6 +43,26 @@ import java.util.Arrays;
  */
 public final class InternalNano {
 
+  public static final int TYPE_DOUBLE   = 1;
+  public static final int TYPE_FLOAT    = 2;
+  public static final int TYPE_INT64    = 3;
+  public static final int TYPE_UINT64   = 4;
+  public static final int TYPE_INT32    = 5;
+  public static final int TYPE_FIXED64  = 6;
+  public static final int TYPE_FIXED32  = 7;
+  public static final int TYPE_BOOL     = 8;
+  public static final int TYPE_STRING   = 9;
+  public static final int TYPE_GROUP    = 10;
+  public static final int TYPE_MESSAGE  = 11;
+  public static final int TYPE_BYTES    = 12;
+  public static final int TYPE_UINT32   = 13;
+  public static final int TYPE_ENUM     = 14;
+  public static final int TYPE_SFIXED32 = 15;
+  public static final int TYPE_SFIXED64 = 16;
+  public static final int TYPE_SINT32   = 17;
+  public static final int TYPE_SINT64   = 18;
+
+
   private InternalNano() {}
 
   /**
