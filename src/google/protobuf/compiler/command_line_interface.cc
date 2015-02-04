@@ -726,7 +726,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     }
   }
 
-  if (!manifest_name_.empty()) {
+  if (!dependency_manifest_name_.empty()) {
     if (!GenerateDependencyManifestFile(parsed_files, &source_tree)) {
       return 1;
     }
@@ -782,7 +782,7 @@ void CommandLineInterface::Clear() {
   output_directives_.clear();
   codec_type_.clear();
   descriptor_set_name_.clear();
-  manifest_name_.clear();
+  dependency_manifest_name_.clear();
 
   mode_ = MODE_COMPILE;
   print_mode_ = PRINT_NONE;
@@ -1020,8 +1020,8 @@ CommandLineInterface::InterpretArgument(const string& name,
     }
     descriptor_set_name_ = value;
 
-  } else if (name == "--manifest-file") {
-    if (!manifest_name_.empty()) {
+  } else if (name == "--dependency_manifest_out") {
+    if (!dependency_manifest_name_.empty()) {
       cerr << name << " may only be passed once." << endl;
       return PARSE_ARGUMENT_FAIL;
     }
@@ -1034,7 +1034,7 @@ CommandLineInterface::InterpretArgument(const string& name,
               "same time." << endl;
       return PARSE_ARGUMENT_FAIL;
     }
-    manifest_name_ = value;
+    dependency_manifest_name_ = value;
 
   } else if (name == "--include_imports") {
     if (imports_in_descriptor_set_) {
@@ -1323,47 +1323,44 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
 
   int fd;
   do {
-    fd = open(manifest_name_.c_str(),
+    fd = open(dependency_manifest_name_.c_str(),
               O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
   } while (fd < 0 && errno == EINTR);
 
   if (fd < 0) {
-    perror(manifest_name_.c_str());
+    perror(dependency_manifest_name_.c_str());
     return false;
   }
 
-  stringstream ss;
-  string output_filename = manifest_name_;
-  if (output_filename.compare(0, 2, "./") == 0) {
-    output_filename = output_filename.substr(2);
+  io::FileOutputStream out(fd);
+  io::Printer printer(&out, '$');
+
+  string output_filename = dependency_manifest_name_;
+  if (output_filename.compare(0, 1, "/") != 0) {
+    // Convert relative path to absolute path before print.
+    printer.Print("$working_directory$/$output_filename$:",
+                  "working_directory", get_current_dir_name(),
+                  "output_filename",output_filename);
+  } else {
+    printer.Print("$output_filename$:",
+                  "output_filename",output_filename);
   }
-  ss << output_filename << ": ";
-  for (set<const FileDescriptor*>::const_iterator it = already_seen.begin(); it != already_seen.end(); ++it ) {
-    string virtual_file = (*it)->name();
+  for (int i = 0; i < file_set.file_size(); i++) {
+    const FileDescriptorProto& file = file_set.file(i);
+    string virtual_file = file.name();
     string disk_file;
-    if (source_tree && source_tree->VirtualFileToDiskFile(virtual_file, &disk_file) ) {
-      ss << " " << disk_file << " \\" << endl;
+    if (source_tree &&
+        source_tree->VirtualFileToDiskFile(virtual_file, &disk_file)) {
+      printer.Print(" $disk_file$", "disk_file", disk_file);
+      if (i < file_set.file_size() - 1) printer.Print("\\\n");
     } else {
       cerr << "Unable to identify path for file " << virtual_file << endl;
       return false;
     }
   }
-  
-  string manifest_contents = ss.str();
-  if ( write(fd, manifest_contents.c_str(), manifest_contents.size()) != manifest_contents.size() ) {
-    cerr << "Error when writing to " << manifest_name_ << endl;
-    return false;
-  }
-
-  int rv = ::close(fd);
-  if ( rv != 0 ) {
-    cerr << manifest_name_ << ": " << strerror(rv) << endl;
-    return false;
-  }
 
   return true;
 }
-
 
 bool CommandLineInterface::GeneratePluginOutput(
     const vector<const FileDescriptor*>& parsed_files,

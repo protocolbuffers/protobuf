@@ -360,7 +360,7 @@ class LIBPROTOC_EXPORT CommandLineInterface {
 
   // If --manifest_file was given, this is the filename to which the input
   // file should be written.  Otherwise, empty.
-  string manifest_name_;
+  string dependency_manifest_name_;
 
   // True if --include_imports was given, meaning that we should
   // write all transitive dependencies to the DescriptorSet.  Otherwise, only
