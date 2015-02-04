@@ -30,8 +30,11 @@
 
 package com.google.protobuf.nano;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * The classes contained within are used internally by the Protocol Buffer
@@ -349,5 +352,169 @@ public final class InternalNano {
     }
     return result;
   }
+  private static final byte[] emptyBytes = new byte[0];
+  private static Object primitiveDefaultValue(int type) {
+    switch (type) {
+      case TYPE_BOOL:
+        return Boolean.FALSE;
+      case TYPE_BYTES:
+        return emptyBytes;
+      case TYPE_STRING:
+        return "";
+      case TYPE_FLOAT:
+        return Float.valueOf(0);
+      case TYPE_DOUBLE:
+        return Double.valueOf(0);
+      case TYPE_ENUM:
+      case TYPE_FIXED32:
+      case TYPE_INT32:
+      case TYPE_UINT32:
+      case TYPE_SINT32:
+      case TYPE_SFIXED32:
+        return Integer.valueOf(0);
+      case TYPE_INT64:
+      case TYPE_UINT64:
+      case TYPE_SINT64:
+      case TYPE_FIXED64:
+      case TYPE_SFIXED64:
+        return Long.valueOf(0L);
+      case TYPE_MESSAGE:
+      case TYPE_GROUP:
+      default:
+        throw new IllegalArgumentException(
+            "Type: " + type + " is not a primitive type.");
+    }
+  }
 
+  /**
+   * Merges the map entry into the map field. Note this is only supposed to
+   * be called by generated messages.
+   *
+   * @param map the map field; may be null, in which case a map will be
+   *        instantiated using the {@link MapUtil.MapFactory}
+   * @param input the input byte buffer
+   * @param keyType key type, as defined in InternalNano.TYPE_*
+   * @param valueType value type, as defined in InternalNano.TYPE_*
+   * @param valueClazz class of the value field if the valueType is
+   *        TYPE_MESSAGE; otherwise the parameter is ignored and can be null.
+   * @param keyTag wire tag for the key
+   * @param valueTag wire tag for the value
+   * @return the map field
+   * @throws IOException
+   */
+  @SuppressWarnings("unchecked")
+  public static final <K, V> Map<K, V> mergeMapEntry(
+      CodedInputByteBufferNano input,
+      Map<K, V> map,
+      int keyType,
+      int valueType,
+      Class<V> valueClazz,
+      int keyTag,
+      int valueTag) throws IOException {
+    map = MapFactories.getMapFactory().forMap(map);
+    final int length = input.readRawVarint32();
+    final int oldLimit = input.pushLimit(length);
+    byte[] payload = null;
+    K key = null;
+    V value = null;
+    while (true) {
+      int tag = input.readTag();
+      if (tag == 0) {
+        break;
+      }
+      if (tag == keyTag) {
+        key = (K) input.readData(keyType);
+      } else if (tag == valueTag) {
+        if (valueType == TYPE_MESSAGE) {
+          payload = input.readBytes();
+        } else {
+          value = (V) input.readData(valueType);
+        }
+      } else {
+        if (!input.skipField(tag)) {
+          break;
+        }
+      }
+    }
+    input.checkLastTagWas(0);
+    input.popLimit(oldLimit);
+
+    if (key == null) {
+      key = (K) primitiveDefaultValue(keyType);
+    }
+
+    // Special case: merge the value when the value is a message.
+    if (valueType == TYPE_MESSAGE) {
+      MessageNano oldMessageValue = (MessageNano) map.get(key);
+      if (oldMessageValue != null) {
+        if (payload != null) {
+          MessageNano.mergeFrom(oldMessageValue, payload);
+        }
+        return map;
+      }
+      // Otherwise, create a new value message.
+      try {
+        value = valueClazz.newInstance();
+      } catch (InstantiationException e) {
+        throw new IOException(
+            "Unable to create value message " + valueClazz.getName()
+            + " in maps.");
+      } catch (IllegalAccessException e) {
+        throw new IOException(
+            "Unable to create value message " + valueClazz.getName()
+            + " in maps.");
+      }
+      if (payload != null) {
+        MessageNano.mergeFrom((MessageNano) value, payload);
+      }
+    }
+
+    if (value == null) {
+      value = (V) primitiveDefaultValue(valueType);
+    }
+
+    map.put(key, value);
+    return map;
+  }
+
+  public static <K, V> void serializeMapField(
+      CodedOutputByteBufferNano output,
+      Map<K, V> map, int number, int keyType, int valueType)
+          throws IOException {
+    for (Entry<K, V> entry: map.entrySet()) {
+      K key = entry.getKey();
+      V value = entry.getValue();
+      if (key == null || value == null) {
+        throw new IllegalStateException(
+            "keys and values in maps cannot be null");
+      }
+      int entrySize =
+          CodedOutputByteBufferNano.computeFieldSize(1, keyType, key) +
+          CodedOutputByteBufferNano.computeFieldSize(2, valueType, value);
+      output.writeTag(number, WireFormatNano.WIRETYPE_LENGTH_DELIMITED);
+      output.writeRawVarint32(entrySize);
+      output.writeField(1, keyType, key);
+      output.writeField(2, valueType, value);
+    }
+  }
+
+  public static <K, V> int computeMapFieldSize(
+      Map<K, V> map, int number, int keyType, int valueType) {
+    int size = 0;
+    int tagSize = CodedOutputByteBufferNano.computeTagSize(number);
+    for (Entry<K, V> entry: map.entrySet()) {
+      K key = entry.getKey();
+      V value = entry.getValue();
+      if (key == null || value == null) {
+        throw new IllegalStateException(
+            "keys and values in maps cannot be null");
+      }
+      int entrySize =
+          CodedOutputByteBufferNano.computeFieldSize(1, keyType, key) +
+          CodedOutputByteBufferNano.computeFieldSize(2, valueType, value);
+      size += tagSize + entrySize
+          + CodedOutputByteBufferNano.computeRawVarint32Size(entrySize);
+    }
+    return size;
+  }
 }

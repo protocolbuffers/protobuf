@@ -133,7 +133,7 @@ GenerateClearCode(io::Printer* printer) const {
 void MapFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "this.$name$ = com.google.protobuf.nano.MapUtil.Internal.mergeEntry(\n"
+    "this.$name$ = com.google.protobuf.nano.InternalNano.mergeMapEntry(\n"
     "  input, this.$name$,\n"
     "  com.google.protobuf.nano.InternalNano.$key_desc_type$,\n"
     "  com.google.protobuf.nano.InternalNano.$value_desc_type$,\n"
@@ -146,7 +146,7 @@ void MapFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if (this.$name$ != null) {\n"
-    "  com.google.protobuf.nano.MapUtil.Internal.serializeMapField(\n"
+    "  com.google.protobuf.nano.InternalNano.serializeMapField(\n"
     "    output, this.$name$, $number$,\n"
     "  com.google.protobuf.nano.InternalNano.$key_desc_type$,\n"
     "  com.google.protobuf.nano.InternalNano.$value_desc_type$);\n"
@@ -157,7 +157,7 @@ void MapFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if (this.$name$ != null) {\n"
-    "  size += com.google.protobuf.nano.MapUtil.Internal.computeMapFieldSize(\n"
+    "  size += com.google.protobuf.nano.InternalNano.computeMapFieldSize(\n"
     "    this.$name$, $number$,\n"
     "  com.google.protobuf.nano.InternalNano.$key_desc_type$,\n"
     "  com.google.protobuf.nano.InternalNano.$value_desc_type$);\n"
