@@ -725,7 +725,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     }
   }
 
-  if (!dependency_manifest_name_.empty()) {
+  if (!dependency_out_name_.empty()) {
     if (!GenerateDependencyManifestFile(parsed_files, &source_tree)) {
       return 1;
     }
@@ -781,7 +781,7 @@ void CommandLineInterface::Clear() {
   output_directives_.clear();
   codec_type_.clear();
   descriptor_set_name_.clear();
-  dependency_manifest_name_.clear();
+  dependency_out_name_.clear();
 
   mode_ = MODE_COMPILE;
   print_mode_ = PRINT_NONE;
@@ -1020,7 +1020,7 @@ CommandLineInterface::InterpretArgument(const string& name,
     descriptor_set_name_ = value;
 
   } else if (name == "--dependency_out") {
-    if (!dependency_manifest_name_.empty()) {
+    if (!dependency_out_name_.empty()) {
       cerr << name << " may only be passed once." << endl;
       return PARSE_ARGUMENT_FAIL;
     }
@@ -1029,11 +1029,11 @@ CommandLineInterface::InterpretArgument(const string& name,
       return PARSE_ARGUMENT_FAIL;
     }
     if (mode_ != MODE_COMPILE) {
-      cerr << "Cannot use --encode or --decode and generate a manifest at the "
-              "same time." << endl;
+      cerr << "Cannot use --encode or --decode and --dependency_out=FILE at "
+              "the same time." << endl;
       return PARSE_ARGUMENT_FAIL;
     }
-    dependency_manifest_name_ = value;
+    dependency_out_name_ = value;
 
   } else if (name == "--include_imports") {
     if (imports_in_descriptor_set_) {
@@ -1309,44 +1309,44 @@ bool CommandLineInterface::GenerateOutput(
 }
 
 bool CommandLineInterface::GenerateDependencyManifestFile(
-    const vector<const FileDescriptor*> parsed_files,
-    DiskSourceTree * source_tree) {
+    const vector<const FileDescriptor*>& parsed_files,
+    DiskSourceTree* source_tree) {
   FileDescriptorSet file_set;
 
   set<const FileDescriptor*> already_seen;
   for (int i = 0; i < parsed_files.size(); i++) {
     GetTransitiveDependencies(parsed_files[i],
                               false,
-                              &already_seen, file_set.mutable_file());
+                              &already_seen,
+                              file_set.mutable_file());
   }
 
   int fd;
   do {
-    fd = open(dependency_manifest_name_.c_str(),
+    fd = open(dependency_out_name_.c_str(),
               O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
   } while (fd < 0 && errno == EINTR);
 
   if (fd < 0) {
-    perror(dependency_manifest_name_.c_str());
+    perror(dependency_out_name_.c_str());
     return false;
   }
 
   io::FileOutputStream out(fd);
   io::Printer printer(&out, '$');
 
-  string output_filename = dependency_manifest_name_;
-  if (output_filename.compare(0, 1, "/") != 0) {
+  if (dependency_out_name_.compare(0, 1, "/") != 0) {
     // Convert relative path to absolute path before print.
     printer.Print("$working_directory$/$output_filename$:",
                   "working_directory", get_current_dir_name(),
-                  "output_filename",output_filename);
+                  "output_filename", dependency_out_name_);
   } else {
     printer.Print("$output_filename$:",
-                  "output_filename",output_filename);
+                  "output_filename", dependency_out_name_);
   }
   for (int i = 0; i < file_set.file_size(); i++) {
     const FileDescriptorProto& file = file_set.file(i);
-    string virtual_file = file.name();
+    const string& virtual_file = file.name();
     string disk_file;
     if (source_tree &&
         source_tree->VirtualFileToDiskFile(virtual_file, &disk_file)) {
