@@ -358,8 +358,8 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // FileDescriptorSet should be written.  Otherwise, empty.
   string descriptor_set_name_;
 
-  // If --manifest_file was given, this is the filename to which the input
-  // file should be written.  Otherwise, empty.
+  // If --dependency_manifest_out was given, this is the filename to which the
+  // input file should be written.  Otherwise, empty.
   string dependency_manifest_name_;
 
   // True if --include_imports was given, meaning that we should
