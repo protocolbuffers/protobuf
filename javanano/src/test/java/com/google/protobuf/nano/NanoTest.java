@@ -30,31 +30,9 @@
 
 package com.google.protobuf.nano;
 
-import com.google.protobuf.nano.CodedInputByteBufferNano;
-import com.google.protobuf.nano.EnumClassNanoMultiple;
-import com.google.protobuf.nano.EnumClassNanos;
-import com.google.protobuf.nano.EnumValidity;
-import com.google.protobuf.nano.EnumValidityAccessors;
-import com.google.protobuf.nano.FileScopeEnumMultiple;
-import com.google.protobuf.nano.FileScopeEnumRefNano;
-import com.google.protobuf.nano.InternalNano;
-import com.google.protobuf.nano.InvalidProtocolBufferNanoException;
-import com.google.protobuf.nano.MessageNano;
-import com.google.protobuf.nano.MessageScopeEnumRefNano;
-import com.google.protobuf.nano.MultipleImportingNonMultipleNano1;
-import com.google.protobuf.nano.MultipleImportingNonMultipleNano2;
-import com.google.protobuf.nano.MultipleNameClashNano;
 import com.google.protobuf.nano.NanoAccessorsOuterClass.TestNanoAccessors;
 import com.google.protobuf.nano.NanoHasOuterClass.TestAllTypesNanoHas;
-import com.google.protobuf.nano.NanoOuterClass;
 import com.google.protobuf.nano.NanoOuterClass.TestAllTypesNano;
-import com.google.protobuf.nano.NanoReferenceTypes;
-import com.google.protobuf.nano.NanoRepeatedPackables;
-import com.google.protobuf.nano.PackedExtensions;
-import com.google.protobuf.nano.RepeatedExtensions;
-import com.google.protobuf.nano.SingularExtensions;
-import com.google.protobuf.nano.TestRepeatedMergeNano;
-import com.google.protobuf.nano.UnittestMultipleNano;
 import com.google.protobuf.nano.UnittestRecursiveNano.RecursiveMessageNano;
 import com.google.protobuf.nano.UnittestSimpleNano.SimpleMessageNano;
 import com.google.protobuf.nano.UnittestSingleNano.SingleMessageNano;
@@ -3752,6 +3730,13 @@ public class NanoTest extends TestCase {
     assertTrue(Arrays.equals(new int[] {13000, 14, 15, 13000, 14, 15}, nonPacked.sint32S));
     assertTrue(Arrays.equals(new int[] {25, 26, 27, 25, 26, 27}, nonPacked.sfixed32S));
     assertTrue(Arrays.equals(new boolean[] {false, true, false, true}, nonPacked.bools));
+  }
+
+  public void testMapsSerializeAndParse() throws Exception {
+    // TODO(liujisi): Test basic serialization/parsing roundtrip.
+    // TODO(liujisi): Test null values in serialization.
+    // TODO(liujisi): Test merging message type values.
+    // TODO(liujisi): Test missing key/value in parsing.
   }
 
   private void assertRepeatedPackablesEqual(

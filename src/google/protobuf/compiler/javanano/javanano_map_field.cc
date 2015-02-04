@@ -89,6 +89,7 @@ void SetMapVariables(const Params& params,
   const FieldDescriptor* value = ValueField(descriptor);
   (*variables)["name"] =
     RenameJavaKeywords(UnderscoresToCamelCase(descriptor));
+  (*variables)["number"] = SimpleItoa(descriptor->number());
   (*variables)["key_type"] = TypeName(params, key, false);
   (*variables)["boxed_key_type"] = TypeName(params,key, true);
   (*variables)["key_desc_type"] =
@@ -101,9 +102,9 @@ void SetMapVariables(const Params& params,
   (*variables)["value_tag"] = SimpleItoa(internal::WireFormat::MakeTag(value));
   (*variables)["type_parameters"] =
       (*variables)["boxed_key_type"] + ", " + (*variables)["boxed_value_type"];
-  (*variables)["value_default"] =
+  (*variables)["value_class"] =
       value->type() == FieldDescriptor::TYPE_MESSAGE
-          ? "new " + (*variables)["value_type"] + "()"
+          ? (*variables)["value_type"] + ".class"
           : "null";
 }
 }  // namespace
@@ -132,21 +133,35 @@ GenerateClearCode(io::Printer* printer) const {
 void MapFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "$name$ = com.google.protobuf.nano.MapUtil.mergeEntry(\n"
-    "  $name$, input,\n"
+    "this.$name$ = com.google.protobuf.nano.MapUtil.Internal.mergeEntry(\n"
+    "  input, this.$name$,\n"
     "  com.google.protobuf.nano.InternalNano.$key_desc_type$,\n"
     "  com.google.protobuf.nano.InternalNano.$value_desc_type$,\n"
-    "  $value_default$,\n"
+    "  $value_class$,\n"
     "  $key_tag$, $value_tag$);\n"
     "\n");
 }
 
 void MapFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (this.$name$ != null) {\n"
+    "  com.google.protobuf.nano.MapUtil.Internal.serializeMapField(\n"
+    "    output, this.$name$, $number$,\n"
+    "  com.google.protobuf.nano.InternalNano.$key_desc_type$,\n"
+    "  com.google.protobuf.nano.InternalNano.$value_desc_type$);\n"
+    "}\n");
 }
 
 void MapFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (this.$name$ != null) {\n"
+    "  size += com.google.protobuf.nano.MapUtil.Internal.computeMapFieldSize(\n"
+    "    this.$name$, $number$,\n"
+    "  com.google.protobuf.nano.InternalNano.$key_desc_type$,\n"
+    "  com.google.protobuf.nano.InternalNano.$value_desc_type$);\n"
+    "}\n");
 }
 
 void MapFieldGenerator::
