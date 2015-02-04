@@ -112,12 +112,13 @@ class CommandLineInterfaceTest : public testing::Test {
   // Create a subdirectory within temp_directory_.
   void CreateTempDir(const string& name);
 
-  void SetInputsAreProtoPathRelative(bool enable) {
-    cli_.SetInputsAreProtoPathRelative(enable);
+  // Change working directory to temp directory.
+  void SwitchToTempDirectory() {
+    File::ChangeWorkingDirectory(temp_directory_);
   }
 
-  string GetTempDirectory() {
-    return temp_directory_;
+  void SetInputsAreProtoPathRelative(bool enable) {
+    cli_.SetInputsAreProtoPathRelative(enable);
   }
 
   // -----------------------------------------------------------------
@@ -969,7 +970,7 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
     "  optional Foo foo = 1;\n"
     "}\n");
 
-  Run("protocol_compiler --dependency_manifest_out=$tmpdir/manifest "
+  Run("protocol_compiler --dependency_out=$tmpdir/manifest "
       "--test_out=$tmpdir --proto_path=$tmpdir bar.proto");
 
   ExpectNoErrors();
@@ -991,9 +992,9 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForRelativePath) {
     "}\n");
 
   string current_working_directory = get_current_dir_name();
-  File::ChangeWorkingDirectory(GetTempDirectory());
+  SwitchToTempDirectory();
 
-  Run("protocol_compiler --dependency_manifest_out=manifest "
+  Run("protocol_compiler --dependency_out=manifest "
       "--test_out=$tmpdir --proto_path=$tmpdir bar.proto");
 
   ExpectNoErrors();

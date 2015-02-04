@@ -1020,7 +1020,7 @@ CommandLineInterface::InterpretArgument(const string& name,
     }
     descriptor_set_name_ = value;
 
-  } else if (name == "--dependency_manifest_out") {
+  } else if (name == "--dependency_out") {
     if (!dependency_manifest_name_.empty()) {
       cerr << name << " may only be passed once." << endl;
       return PARSE_ARGUMENT_FAIL;
@@ -1230,7 +1230,7 @@ void CommandLineInterface::PrintHelpText() {
 "                              include information about the original\n"
 "                              location of each decl in the source file as\n"
 "                              well as surrounding comments.\n"
-"  --manifest_file=FILE        Write a dependency output file in the format\n"
+"  --dependency_out=FILE       Write a dependency output file in the format\n"
 "                              expected by make. This writes the transitive\n"
 "                              set of input file paths to FILE\n"
 "  --error_format=FORMAT       Set the format in which to print errors.\n"
