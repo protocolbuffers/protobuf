@@ -3742,7 +3742,6 @@ public class NanoTest extends TestCase {
     byte[] output = MessageNano.toByteArray(origin);
     TestMap parsed = new TestMap();
     MessageNano.mergeFrom(parsed, output);
-    // TODO(liujisi): Test merging message type values.
     // TODO(liujisi): Test missing key/value in parsing.
   }
 
@@ -3767,6 +3766,33 @@ public class NanoTest extends TestCase {
     } catch (IllegalStateException e) {
       // pass.
     }
+  }
+
+  /**
+   * Tests that merging bytes containing conflicting keys with override the
+   * message value instead of merging the message value into the existing entry.
+   */
+  public void testMapMergeOverrideMessageValues() throws Exception {
+    TestMap.MessageValue origValue = new TestMap.MessageValue();
+    origValue.value = 1;
+    origValue.value2 = 2;
+    TestMap.MessageValue newValue = new TestMap.MessageValue();
+    newValue.value = 3;
+
+    TestMap origMessage = new TestMap();
+    origMessage.int32ToMessageField =
+        new HashMap<Integer, MapTestProto.TestMap.MessageValue>();
+    origMessage.int32ToMessageField.put(1, origValue);
+
+    TestMap newMessage = new TestMap();
+    newMessage.int32ToMessageField =
+        new HashMap<Integer, MapTestProto.TestMap.MessageValue>();
+    newMessage.int32ToMessageField.put(1, newValue);
+    MessageNano.mergeFrom(origMessage,
+        MessageNano.toByteArray(newMessage));
+    TestMap.MessageValue mergedValue = origMessage.int32ToMessageField.get(1);
+    assertEquals(3, mergedValue.value);
+    assertEquals(0, mergedValue.value2);
   }
 
   private static final Integer[] int32Values = new Integer[] {

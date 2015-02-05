@@ -391,12 +391,12 @@ public final class InternalNano {
    * be called by generated messages.
    *
    * @param map the map field; may be null, in which case a map will be
-   *        instantiated using the {@link MapUtil.MapFactory}
+   *        instantiated using the {@link MapFactories.MapFactory}
    * @param input the input byte buffer
    * @param keyType key type, as defined in InternalNano.TYPE_*
    * @param valueType value type, as defined in InternalNano.TYPE_*
-   * @param valueClazz class of the value field if the valueType is
-   *        TYPE_MESSAGE; otherwise the parameter is ignored and can be null.
+   * @param value an new instance of the value, if the value is a TYPE_MESSAGE;
+   *        otherwise this parameter can be null and will be ignored.
    * @param keyTag wire tag for the key
    * @param valueTag wire tag for the value
    * @return the map field
@@ -408,15 +408,13 @@ public final class InternalNano {
       Map<K, V> map,
       int keyType,
       int valueType,
-      Class<V> valueClazz,
+      V value,
       int keyTag,
       int valueTag) throws IOException {
     map = MapFactories.getMapFactory().forMap(map);
     final int length = input.readRawVarint32();
     final int oldLimit = input.pushLimit(length);
-    byte[] payload = null;
     K key = null;
-    V value = null;
     while (true) {
       int tag = input.readTag();
       if (tag == 0) {
@@ -426,7 +424,7 @@ public final class InternalNano {
         key = (K) input.readData(keyType);
       } else if (tag == valueTag) {
         if (valueType == TYPE_MESSAGE) {
-          payload = input.readBytes();
+          input.readMessage((MessageNano) value);
         } else {
           value = (V) input.readData(valueType);
         }
@@ -440,36 +438,12 @@ public final class InternalNano {
     input.popLimit(oldLimit);
 
     if (key == null) {
+      // key can only be primitive types.
       key = (K) primitiveDefaultValue(keyType);
     }
 
-    // Special case: merge the value when the value is a message.
-    if (valueType == TYPE_MESSAGE) {
-      MessageNano oldMessageValue = (MessageNano) map.get(key);
-      if (oldMessageValue != null) {
-        if (payload != null) {
-          MessageNano.mergeFrom(oldMessageValue, payload);
-        }
-        return map;
-      }
-      // Otherwise, create a new value message.
-      try {
-        value = valueClazz.newInstance();
-      } catch (InstantiationException e) {
-        throw new IOException(
-            "Unable to create value message " + valueClazz.getName()
-            + " in maps.");
-      } catch (IllegalAccessException e) {
-        throw new IOException(
-            "Unable to create value message " + valueClazz.getName()
-            + " in maps.");
-      }
-      if (payload != null) {
-        MessageNano.mergeFrom((MessageNano) value, payload);
-      }
-    }
-
     if (value == null) {
+      // message type
       value = (V) primitiveDefaultValue(valueType);
     }
 

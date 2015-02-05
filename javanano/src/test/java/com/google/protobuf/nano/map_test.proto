@@ -38,6 +38,7 @@ option java_outer_classname = "MapTestProto";
 message TestMap {
   message MessageValue {
     int32 value = 1;
+    int32 value2 = 2;
   }
   enum EnumValue {
     FOO = 0;

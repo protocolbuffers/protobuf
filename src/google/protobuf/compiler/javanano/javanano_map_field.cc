@@ -102,9 +102,9 @@ void SetMapVariables(const Params& params,
   (*variables)["value_tag"] = SimpleItoa(internal::WireFormat::MakeTag(value));
   (*variables)["type_parameters"] =
       (*variables)["boxed_key_type"] + ", " + (*variables)["boxed_value_type"];
-  (*variables)["value_class"] =
+  (*variables)["value_default"] =
       value->type() == FieldDescriptor::TYPE_MESSAGE
-          ? (*variables)["value_type"] + ".class"
+          ? "new " + (*variables)["value_type"] + "()"
           : "null";
 }
 }  // namespace
@@ -137,7 +137,7 @@ GenerateMergingCode(io::Printer* printer) const {
     "  input, this.$name$,\n"
     "  com.google.protobuf.nano.InternalNano.$key_desc_type$,\n"
     "  com.google.protobuf.nano.InternalNano.$value_desc_type$,\n"
-    "  $value_class$,\n"
+    "  $value_default$,\n"
     "  $key_tag$, $value_tag$);\n"
     "\n");
 }
