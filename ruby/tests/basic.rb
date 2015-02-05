@@ -992,5 +992,13 @@ module BasicTest
       m2 = TestMessage.decode_json(json_text)
       assert m == m2
     end
+
+    def test_json_maps
+      m = MapMessage.new(:map_string_int32 => {"a" => 1})
+      expected = '{"map_string_int32":{"a":1},"map_string_msg":{}}'
+      assert MapMessage.encode_json(m) == expected
+      m2 = MapMessage.decode_json(MapMessage.encode_json(m))
+      assert m == m2
+    end
   end
 end
