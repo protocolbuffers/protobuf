@@ -3742,9 +3742,31 @@ public class NanoTest extends TestCase {
     byte[] output = MessageNano.toByteArray(origin);
     TestMap parsed = new TestMap();
     MessageNano.mergeFrom(parsed, output);
-    // TODO(liujisi): Test null values in serialization.
     // TODO(liujisi): Test merging message type values.
     // TODO(liujisi): Test missing key/value in parsing.
+  }
+
+  public void testMapSerializeRejectNull() throws Exception {
+    TestMap primitiveMap = new TestMap();
+    primitiveMap.int32ToInt32Field = new HashMap<Integer, Integer>();
+    primitiveMap.int32ToInt32Field.put(null, 1);
+    try {
+      MessageNano.toByteArray(primitiveMap);
+      fail("should reject null keys");
+    } catch (IllegalStateException e) {
+      // pass.
+    }
+
+    TestMap messageMap = new TestMap();
+    messageMap.int32ToMessageField =
+        new HashMap<Integer, MapTestProto.TestMap.MessageValue>();
+    messageMap.int32ToMessageField.put(0, null);
+    try {
+      MessageNano.toByteArray(messageMap);
+      fail("should reject null values");
+    } catch (IllegalStateException e) {
+      // pass.
+    }
   }
 
   private static final Integer[] int32Values = new Integer[] {
