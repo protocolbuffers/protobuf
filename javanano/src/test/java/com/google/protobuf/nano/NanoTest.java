@@ -3795,6 +3795,36 @@ public class NanoTest extends TestCase {
     assertEquals(0, mergedValue.value2);
   }
 
+  /**
+   * Tests that when merging with empty entries,
+   * we will use default for the key and value, instead of null.
+   */
+  public void testMapMergeEmptyEntry() throws Exception {
+    TestMap testMap = new TestMap();
+    byte[] buffer = new byte[1024];
+    CodedOutputByteBufferNano output =
+        CodedOutputByteBufferNano.newInstance(buffer);
+    // An empty entry for int32_to_int32 map.
+    output.writeTag(1, WireFormatNano.WIRETYPE_LENGTH_DELIMITED);
+    output.writeRawVarint32(0);
+    // An empty entry for int32_to_message map.
+    output.writeTag(5, WireFormatNano.WIRETYPE_LENGTH_DELIMITED);
+    output.writeRawVarint32(0);
+
+    CodedInputByteBufferNano input = CodedInputByteBufferNano.newInstance(
+        buffer, 0, buffer.length - output.spaceLeft());
+    testMap.mergeFrom(input);
+    assertNotNull(testMap.int32ToInt32Field);;
+    assertEquals(1, testMap.int32ToInt32Field.size());
+    assertEquals(Integer.valueOf(0), testMap.int32ToInt32Field.get(0));
+    assertNotNull(testMap.int32ToMessageField);
+    assertEquals(1, testMap.int32ToMessageField.size());
+    TestMap.MessageValue messageValue = testMap.int32ToMessageField.get(0);
+    assertNotNull(messageValue);
+    assertEquals(0, messageValue.value);
+    assertEquals(0, messageValue.value2);
+  }
+
   private static final Integer[] int32Values = new Integer[] {
     0, 1, -1, Integer.MAX_VALUE, Integer.MIN_VALUE,
   };
