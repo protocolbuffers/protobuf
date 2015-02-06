@@ -3742,7 +3742,6 @@ public class NanoTest extends TestCase {
     byte[] output = MessageNano.toByteArray(origin);
     TestMap parsed = new TestMap();
     MessageNano.mergeFrom(parsed, output);
-    // TODO(liujisi): Test missing key/value in parsing.
   }
 
   public void testMapSerializeRejectNull() throws Exception {

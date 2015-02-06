@@ -352,13 +352,13 @@ public final class InternalNano {
     }
     return result;
   }
-  private static final byte[] emptyBytes = new byte[0];
+  private static final byte[] EMPTY_BYTES = new byte[0];
   private static Object primitiveDefaultValue(int type) {
     switch (type) {
       case TYPE_BOOL:
         return Boolean.FALSE;
       case TYPE_BYTES:
-        return emptyBytes;
+        return EMPTY_BYTES;
       case TYPE_STRING:
         return "";
       case TYPE_FLOAT:
@@ -443,7 +443,7 @@ public final class InternalNano {
     }
 
     if (value == null) {
-      // message type
+      // message type value will be initialized by code-gen.
       value = (V) primitiveDefaultValue(valueType);
     }
 
