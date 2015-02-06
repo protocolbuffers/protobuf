@@ -203,7 +203,7 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // Return status for ParseArguments() and InterpretArgument().
   enum ParseArgumentStatus {
     PARSE_ARGUMENT_DONE_AND_CONTINUE,
-		PARSE_ARGUMENT_DONE_AND_CONTINUE_STDOUT,
+    PARSE_ARGUMENT_DONE_AND_CONTINUE_STDOUT,
     PARSE_ARGUMENT_DONE_AND_EXIT,
     PARSE_ARGUMENT_FAIL
   };
@@ -346,8 +346,8 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   };
   vector<OutputDirective> output_directives_;
 
-	// False by default
-	bool write_to_stdout;
+  // False by default
+  bool write_to_stdout;
 
   // When using --encode or --decode, this names the type we are encoding or
   // decoding.  (Empty string indicates --decode_raw.)
