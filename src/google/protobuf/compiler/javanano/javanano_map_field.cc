@@ -166,6 +166,11 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
 
 void MapFieldGenerator::
 GenerateEqualsCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (!com.google.protobuf.nano.InternalNano.equals(\n"
+    "  this.$name$, other.$name$)) {\n"
+    "  return false;\n"
+    "}\n");
 }
 
 void MapFieldGenerator::

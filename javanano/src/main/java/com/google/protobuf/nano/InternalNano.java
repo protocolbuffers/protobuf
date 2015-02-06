@@ -491,4 +491,44 @@ public final class InternalNano {
     }
     return size;
   }
+
+  /**
+   * Checks whether two {@link Map} are equal. We don't use the default equals
+   * method of {@link Map} because it compares by identity not by content for
+   * byte arrays.
+   */
+  public static <K, V> boolean equals(Map<K, V> a, Map<K, V> b) {
+    if (a == b) {
+      return true;
+    }
+    if (a == null) {
+      return b.size() == 0;
+    }
+    if (b == null) {
+      return a.size() == 0;
+    }
+    if (a.size() != b.size()) {
+      return false;
+    }
+    for (Entry<K, V> entry : a.entrySet()) {
+      if (!b.containsKey(entry.getKey())) {
+        return false;
+      }
+      if (!equalsMapValue(entry.getValue(), b.get(entry.getKey()))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean equalsMapValue(Object a, Object b) {
+    if (a == null || b == null) {
+      throw new IllegalStateException(
+          "keys and values in maps cannot be null");
+    }
+    if (a instanceof byte[] && b instanceof byte[]) {
+      return Arrays.equals((byte[]) a, (byte[]) b);
+    }
+    return a.equals(b);
+  }
 }
