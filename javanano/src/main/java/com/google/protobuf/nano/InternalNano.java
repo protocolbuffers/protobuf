@@ -531,4 +531,23 @@ public final class InternalNano {
     }
     return a.equals(b);
   }
+
+  public static <K, V> int hashCode(Map<K, V> map) {
+    if (map == null) {
+      return 0;
+    }
+    int result = 0;
+    for (Entry<K, V> entry : map.entrySet()) {
+      result += hashCodeForMap(entry.getKey())
+          ^ hashCodeForMap(entry.getValue());
+    }
+    return result;
+  }
+
+  private static int hashCodeForMap(Object o) {
+    if (o instanceof byte[]) {
+      return Arrays.hashCode((byte[]) o);
+    }
+    return o.hashCode();
+  }
 }

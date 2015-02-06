@@ -175,6 +175,9 @@ GenerateEqualsCode(io::Printer* printer) const {
 
 void MapFieldGenerator::
 GenerateHashCodeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "result = 31 * result +\n"
+    "    com.google.protobuf.nano.InternalNano.hashCode(this.$name$);\n");
 }
 
 }  // namespace javanano
