@@ -203,7 +203,6 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // Return status for ParseArguments() and InterpretArgument().
   enum ParseArgumentStatus {
     PARSE_ARGUMENT_DONE_AND_CONTINUE,
-    PARSE_ARGUMENT_DONE_AND_CONTINUE_STDOUT,
     PARSE_ARGUMENT_DONE_AND_EXIT,
     PARSE_ARGUMENT_FAIL
   };
