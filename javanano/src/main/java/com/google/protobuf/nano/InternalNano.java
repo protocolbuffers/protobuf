@@ -421,12 +421,12 @@ public final class InternalNano {
         break;
       }
       if (tag == keyTag) {
-        key = (K) input.readData(keyType);
+        key = (K) input.readPrimitiveField(keyType);
       } else if (tag == valueTag) {
         if (valueType == TYPE_MESSAGE) {
           input.readMessage((MessageNano) value);
         } else {
-          value = (V) input.readData(valueType);
+          value = (V) input.readPrimitiveField(valueType);
         }
       } else {
         if (!input.skipField(tag)) {

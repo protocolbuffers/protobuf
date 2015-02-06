@@ -640,7 +640,7 @@ public final class CodedInputByteBufferNano {
   }
 
   // Read a primitive type.
-  Object readData(int type) throws IOException {
+  Object readPrimitiveField(int type) throws IOException {
     switch (type) {
       case InternalNano.TYPE_DOUBLE:
           return readDouble();

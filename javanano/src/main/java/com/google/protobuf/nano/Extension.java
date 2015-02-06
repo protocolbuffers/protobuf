@@ -338,7 +338,7 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
         @Override
         protected Object readData(CodedInputByteBufferNano input) {
             try {
-              return input.readData(type);
+              return input.readPrimitiveField(type);
             } catch (IOException e) {
                 throw new IllegalArgumentException("Error reading extension field", e);
             }
