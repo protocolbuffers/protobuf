@@ -314,7 +314,7 @@ def _ReraiseTypeErrorWithFieldName(message_name, field_name):
     exc = TypeError('%s for field %s.%s' % (str(exc), message_name, field_name))
 
   # re-raise possibly-amended exception with original traceback:
-  raise type(exc), exc, sys.exc_info()[2]
+  raise type(exc)(exc, sys.exc_info()[2])
 
 
 def _AddInitMethod(message_descriptor, cls):
@@ -863,7 +863,7 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
     except (IndexError, TypeError):
       # Now ord(buf[p:p+1]) == ord('') gets TypeError.
       raise message_mod.DecodeError('Truncated message.')
-    except struct.error, e:
+    except struct.error as e:
       raise message_mod.DecodeError(e)
     return length   # Return this for legacy reasons.
   cls.MergeFromString = MergeFromString
