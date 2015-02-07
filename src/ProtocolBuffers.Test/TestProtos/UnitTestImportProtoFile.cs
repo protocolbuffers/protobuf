@@ -107,7 +107,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _importMessageFieldNames;
       if (hasD) {
         output.WriteInt32(1, field_names[0], D);
@@ -120,17 +120,22 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasD) {
-          size += pb::CodedOutputStream.ComputeInt32Size(1, D);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasD) {
+        size += pb::CodedOutputStream.ComputeInt32Size(1, D);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static ImportMessage ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }

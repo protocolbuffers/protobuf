@@ -190,7 +190,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _testUnpackedExtensionsFieldNames;
       pb::ExtendableMessage<TestUnpackedExtensions, TestUnpackedExtensions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       extensionWriter.WriteUntil(536870912, output);
@@ -202,15 +202,20 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        size += ExtensionsSerializedSize;
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      size += ExtensionsSerializedSize;
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static TestUnpackedExtensions ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }

@@ -63,7 +63,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _searchRequestFieldNames;
       if (criteria_.Count > 0) {
         output.WriteStringArray(1, field_names[0], criteria_);
@@ -75,21 +75,26 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        {
-          int dataSize = 0;
-          foreach (string element in CriteriaList) {
-            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
-          }
-          size += dataSize;
-          size += 1 * criteria_.Count;
-        }
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      {
+        int dataSize = 0;
+        foreach (string element in CriteriaList) {
+          dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+        }
+        size += dataSize;
+        size += 1 * criteria_.Count;
+      }
+      memoizedSerializedSize = size;
+      return size;
+    }
     #region Lite runtime methods
     public override int GetHashCode() {
       int hash = GetType().GetHashCode();
@@ -377,7 +382,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         public override void WriteTo(pb::ICodedOutputStream output) {
-          int size = SerializedSize;
+          CalcSerializedSize();
           string[] field_names = _resultItemFieldNames;
           if (hasUrl) {
             output.WriteString(1, field_names[1], Url);
@@ -392,19 +397,24 @@ namespace Google.ProtocolBuffers.TestProtos {
           get {
             int size = memoizedSerializedSize;
             if (size != -1) return size;
-            
-            size = 0;
-            if (hasUrl) {
-              size += pb::CodedOutputStream.ComputeStringSize(1, Url);
-            }
-            if (hasName) {
-              size += pb::CodedOutputStream.ComputeStringSize(2, Name);
-            }
-            memoizedSerializedSize = size;
-            return size;
+            return CalcSerializedSize();
           }
         }
         
+        private int CalcSerializedSize() {
+          int size = memoizedSerializedSize;
+          if (size != -1) return size;
+          
+          size = 0;
+          if (hasUrl) {
+            size += pb::CodedOutputStream.ComputeStringSize(1, Url);
+          }
+          if (hasName) {
+            size += pb::CodedOutputStream.ComputeStringSize(2, Name);
+          }
+          memoizedSerializedSize = size;
+          return size;
+        }
         #region Lite runtime methods
         public override int GetHashCode() {
           int hash = GetType().GetHashCode();
@@ -666,7 +676,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _searchResponseFieldNames;
       if (results_.Count > 0) {
         output.WriteMessageArray(1, field_names[0], results_);
@@ -678,16 +688,21 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        foreach (global::Google.ProtocolBuffers.TestProtos.SearchResponse.Types.ResultItem element in ResultsList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(1, element);
-        }
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      foreach (global::Google.ProtocolBuffers.TestProtos.SearchResponse.Types.ResultItem element in ResultsList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(1, element);
+      }
+      memoizedSerializedSize = size;
+      return size;
+    }
     #region Lite runtime methods
     public override int GetHashCode() {
       int hash = GetType().GetHashCode();
@@ -969,7 +984,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _refineSearchRequestFieldNames;
       if (criteria_.Count > 0) {
         output.WriteStringArray(1, field_names[0], criteria_);
@@ -984,24 +999,29 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        {
-          int dataSize = 0;
-          foreach (string element in CriteriaList) {
-            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
-          }
-          size += dataSize;
-          size += 1 * criteria_.Count;
-        }
-        if (hasPreviousResults) {
-          size += pb::CodedOutputStream.ComputeMessageSize(2, PreviousResults);
-        }
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      {
+        int dataSize = 0;
+        foreach (string element in CriteriaList) {
+          dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+        }
+        size += dataSize;
+        size += 1 * criteria_.Count;
+      }
+      if (hasPreviousResults) {
+        size += pb::CodedOutputStream.ComputeMessageSize(2, PreviousResults);
+      }
+      memoizedSerializedSize = size;
+      return size;
+    }
     #region Lite runtime methods
     public override int GetHashCode() {
       int hash = GetType().GetHashCode();

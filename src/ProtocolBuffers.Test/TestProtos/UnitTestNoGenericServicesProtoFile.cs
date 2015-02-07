@@ -118,7 +118,7 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _testMessageFieldNames;
       pb::ExtendableMessage<TestMessage, TestMessage.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (hasA) {
@@ -133,18 +133,23 @@ namespace Google.ProtocolBuffers.TestProtos.NoGenericService {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasA) {
-          size += pb::CodedOutputStream.ComputeInt32Size(1, A);
-        }
-        size += ExtensionsSerializedSize;
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasA) {
+        size += pb::CodedOutputStream.ComputeInt32Size(1, A);
+      }
+      size += ExtensionsSerializedSize;
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static TestMessage ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }

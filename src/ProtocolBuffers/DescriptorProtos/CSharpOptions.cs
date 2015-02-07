@@ -313,7 +313,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _cSharpFileOptionsFieldNames;
       if (hasNamespace) {
         output.WriteString(1, field_names[9], Namespace);
@@ -371,62 +371,67 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasNamespace) {
-          size += pb::CodedOutputStream.ComputeStringSize(1, Namespace);
-        }
-        if (hasUmbrellaClassname) {
-          size += pb::CodedOutputStream.ComputeStringSize(2, UmbrellaClassname);
-        }
-        if (hasPublicClasses) {
-          size += pb::CodedOutputStream.ComputeBoolSize(3, PublicClasses);
-        }
-        if (hasMultipleFiles) {
-          size += pb::CodedOutputStream.ComputeBoolSize(4, MultipleFiles);
-        }
-        if (hasNestClasses) {
-          size += pb::CodedOutputStream.ComputeBoolSize(5, NestClasses);
-        }
-        if (hasCodeContracts) {
-          size += pb::CodedOutputStream.ComputeBoolSize(6, CodeContracts);
-        }
-        if (hasExpandNamespaceDirectories) {
-          size += pb::CodedOutputStream.ComputeBoolSize(7, ExpandNamespaceDirectories);
-        }
-        if (hasClsCompliance) {
-          size += pb::CodedOutputStream.ComputeBoolSize(8, ClsCompliance);
-        }
-        if (hasAddSerializable) {
-          size += pb::CodedOutputStream.ComputeBoolSize(9, AddSerializable);
-        }
-        if (hasGeneratePrivateCtor) {
-          size += pb::CodedOutputStream.ComputeBoolSize(10, GeneratePrivateCtor);
-        }
-        if (hasFileExtension) {
-          size += pb::CodedOutputStream.ComputeStringSize(221, FileExtension);
-        }
-        if (hasUmbrellaNamespace) {
-          size += pb::CodedOutputStream.ComputeStringSize(222, UmbrellaNamespace);
-        }
-        if (hasOutputDirectory) {
-          size += pb::CodedOutputStream.ComputeStringSize(223, OutputDirectory);
-        }
-        if (hasIgnoreGoogleProtobuf) {
-          size += pb::CodedOutputStream.ComputeBoolSize(224, IgnoreGoogleProtobuf);
-        }
-        if (hasServiceGeneratorType) {
-          size += pb::CodedOutputStream.ComputeEnumSize(225, (int) ServiceGeneratorType);
-        }
-        if (hasGeneratedCodeAttributes) {
-          size += pb::CodedOutputStream.ComputeBoolSize(226, GeneratedCodeAttributes);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasNamespace) {
+        size += pb::CodedOutputStream.ComputeStringSize(1, Namespace);
+      }
+      if (hasUmbrellaClassname) {
+        size += pb::CodedOutputStream.ComputeStringSize(2, UmbrellaClassname);
+      }
+      if (hasPublicClasses) {
+        size += pb::CodedOutputStream.ComputeBoolSize(3, PublicClasses);
+      }
+      if (hasMultipleFiles) {
+        size += pb::CodedOutputStream.ComputeBoolSize(4, MultipleFiles);
+      }
+      if (hasNestClasses) {
+        size += pb::CodedOutputStream.ComputeBoolSize(5, NestClasses);
+      }
+      if (hasCodeContracts) {
+        size += pb::CodedOutputStream.ComputeBoolSize(6, CodeContracts);
+      }
+      if (hasExpandNamespaceDirectories) {
+        size += pb::CodedOutputStream.ComputeBoolSize(7, ExpandNamespaceDirectories);
+      }
+      if (hasClsCompliance) {
+        size += pb::CodedOutputStream.ComputeBoolSize(8, ClsCompliance);
+      }
+      if (hasAddSerializable) {
+        size += pb::CodedOutputStream.ComputeBoolSize(9, AddSerializable);
+      }
+      if (hasGeneratePrivateCtor) {
+        size += pb::CodedOutputStream.ComputeBoolSize(10, GeneratePrivateCtor);
+      }
+      if (hasFileExtension) {
+        size += pb::CodedOutputStream.ComputeStringSize(221, FileExtension);
+      }
+      if (hasUmbrellaNamespace) {
+        size += pb::CodedOutputStream.ComputeStringSize(222, UmbrellaNamespace);
+      }
+      if (hasOutputDirectory) {
+        size += pb::CodedOutputStream.ComputeStringSize(223, OutputDirectory);
+      }
+      if (hasIgnoreGoogleProtobuf) {
+        size += pb::CodedOutputStream.ComputeBoolSize(224, IgnoreGoogleProtobuf);
+      }
+      if (hasServiceGeneratorType) {
+        size += pb::CodedOutputStream.ComputeEnumSize(225, (int) ServiceGeneratorType);
+      }
+      if (hasGeneratedCodeAttributes) {
+        size += pb::CodedOutputStream.ComputeBoolSize(226, GeneratedCodeAttributes);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static CSharpFileOptions ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -1091,7 +1096,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _cSharpFieldOptionsFieldNames;
       if (hasPropertyName) {
         output.WriteString(1, field_names[0], PropertyName);
@@ -1104,17 +1109,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasPropertyName) {
-          size += pb::CodedOutputStream.ComputeStringSize(1, PropertyName);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasPropertyName) {
+        size += pb::CodedOutputStream.ComputeStringSize(1, PropertyName);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static CSharpFieldOptions ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -1362,7 +1372,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _cSharpServiceOptionsFieldNames;
       if (hasInterfaceId) {
         output.WriteString(1, field_names[0], InterfaceId);
@@ -1375,17 +1385,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasInterfaceId) {
-          size += pb::CodedOutputStream.ComputeStringSize(1, InterfaceId);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasInterfaceId) {
+        size += pb::CodedOutputStream.ComputeStringSize(1, InterfaceId);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static CSharpServiceOptions ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -1633,7 +1648,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _cSharpMethodOptionsFieldNames;
       if (hasDispatchId) {
         output.WriteInt32(1, field_names[0], DispatchId);
@@ -1646,17 +1661,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasDispatchId) {
-          size += pb::CodedOutputStream.ComputeInt32Size(1, DispatchId);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasDispatchId) {
+        size += pb::CodedOutputStream.ComputeInt32Size(1, DispatchId);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static CSharpMethodOptions ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }

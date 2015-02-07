@@ -118,7 +118,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _optionsMessageFieldNames;
       if (hasNormal) {
         output.WriteString(1, field_names[1], Normal);
@@ -137,23 +137,28 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasNormal) {
-          size += pb::CodedOutputStream.ComputeStringSize(1, Normal);
-        }
-        if (hasOptionsMessage_) {
-          size += pb::CodedOutputStream.ComputeStringSize(2, OptionsMessage_);
-        }
-        if (hasCustomName) {
-          size += pb::CodedOutputStream.ComputeStringSize(3, CustomName);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasNormal) {
+        size += pb::CodedOutputStream.ComputeStringSize(1, Normal);
+      }
+      if (hasOptionsMessage_) {
+        size += pb::CodedOutputStream.ComputeStringSize(2, OptionsMessage_);
+      }
+      if (hasCustomName) {
+        size += pb::CodedOutputStream.ComputeStringSize(3, CustomName);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static OptionsMessage ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }

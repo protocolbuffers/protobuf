@@ -583,7 +583,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _speedMessage1FieldNames;
       if (hasField1) {
         output.WriteString(1, field_names[0], Field1);
@@ -716,140 +716,145 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasField1) {
-          size += pb::CodedOutputStream.ComputeStringSize(1, Field1);
-        }
-        if (hasField9) {
-          size += pb::CodedOutputStream.ComputeStringSize(9, Field9);
-        }
-        if (hasField18) {
-          size += pb::CodedOutputStream.ComputeStringSize(18, Field18);
-        }
-        if (hasField80) {
-          size += pb::CodedOutputStream.ComputeBoolSize(80, Field80);
-        }
-        if (hasField81) {
-          size += pb::CodedOutputStream.ComputeBoolSize(81, Field81);
-        }
-        if (hasField2) {
-          size += pb::CodedOutputStream.ComputeInt32Size(2, Field2);
-        }
-        if (hasField3) {
-          size += pb::CodedOutputStream.ComputeInt32Size(3, Field3);
-        }
-        if (hasField280) {
-          size += pb::CodedOutputStream.ComputeInt32Size(280, Field280);
-        }
-        if (hasField6) {
-          size += pb::CodedOutputStream.ComputeInt32Size(6, Field6);
-        }
-        if (hasField22) {
-          size += pb::CodedOutputStream.ComputeInt64Size(22, Field22);
-        }
-        if (hasField4) {
-          size += pb::CodedOutputStream.ComputeStringSize(4, Field4);
-        }
-        {
-          int dataSize = 0;
-          dataSize = 8 * field5_.Count;
-          size += dataSize;
-          size += 1 * field5_.Count;
-        }
-        if (hasField59) {
-          size += pb::CodedOutputStream.ComputeBoolSize(59, Field59);
-        }
-        if (hasField7) {
-          size += pb::CodedOutputStream.ComputeStringSize(7, Field7);
-        }
-        if (hasField16) {
-          size += pb::CodedOutputStream.ComputeInt32Size(16, Field16);
-        }
-        if (hasField130) {
-          size += pb::CodedOutputStream.ComputeInt32Size(130, Field130);
-        }
-        if (hasField12) {
-          size += pb::CodedOutputStream.ComputeBoolSize(12, Field12);
-        }
-        if (hasField17) {
-          size += pb::CodedOutputStream.ComputeBoolSize(17, Field17);
-        }
-        if (hasField13) {
-          size += pb::CodedOutputStream.ComputeBoolSize(13, Field13);
-        }
-        if (hasField14) {
-          size += pb::CodedOutputStream.ComputeBoolSize(14, Field14);
-        }
-        if (hasField104) {
-          size += pb::CodedOutputStream.ComputeInt32Size(104, Field104);
-        }
-        if (hasField100) {
-          size += pb::CodedOutputStream.ComputeInt32Size(100, Field100);
-        }
-        if (hasField101) {
-          size += pb::CodedOutputStream.ComputeInt32Size(101, Field101);
-        }
-        if (hasField102) {
-          size += pb::CodedOutputStream.ComputeStringSize(102, Field102);
-        }
-        if (hasField103) {
-          size += pb::CodedOutputStream.ComputeStringSize(103, Field103);
-        }
-        if (hasField29) {
-          size += pb::CodedOutputStream.ComputeInt32Size(29, Field29);
-        }
-        if (hasField30) {
-          size += pb::CodedOutputStream.ComputeBoolSize(30, Field30);
-        }
-        if (hasField60) {
-          size += pb::CodedOutputStream.ComputeInt32Size(60, Field60);
-        }
-        if (hasField271) {
-          size += pb::CodedOutputStream.ComputeInt32Size(271, Field271);
-        }
-        if (hasField272) {
-          size += pb::CodedOutputStream.ComputeInt32Size(272, Field272);
-        }
-        if (hasField150) {
-          size += pb::CodedOutputStream.ComputeInt32Size(150, Field150);
-        }
-        if (hasField23) {
-          size += pb::CodedOutputStream.ComputeInt32Size(23, Field23);
-        }
-        if (hasField24) {
-          size += pb::CodedOutputStream.ComputeBoolSize(24, Field24);
-        }
-        if (hasField25) {
-          size += pb::CodedOutputStream.ComputeInt32Size(25, Field25);
-        }
-        if (hasField15) {
-          size += pb::CodedOutputStream.ComputeMessageSize(15, Field15);
-        }
-        if (hasField78) {
-          size += pb::CodedOutputStream.ComputeBoolSize(78, Field78);
-        }
-        if (hasField67) {
-          size += pb::CodedOutputStream.ComputeInt32Size(67, Field67);
-        }
-        if (hasField68) {
-          size += pb::CodedOutputStream.ComputeInt32Size(68, Field68);
-        }
-        if (hasField128) {
-          size += pb::CodedOutputStream.ComputeInt32Size(128, Field128);
-        }
-        if (hasField129) {
-          size += pb::CodedOutputStream.ComputeStringSize(129, Field129);
-        }
-        if (hasField131) {
-          size += pb::CodedOutputStream.ComputeInt32Size(131, Field131);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasField1) {
+        size += pb::CodedOutputStream.ComputeStringSize(1, Field1);
+      }
+      if (hasField9) {
+        size += pb::CodedOutputStream.ComputeStringSize(9, Field9);
+      }
+      if (hasField18) {
+        size += pb::CodedOutputStream.ComputeStringSize(18, Field18);
+      }
+      if (hasField80) {
+        size += pb::CodedOutputStream.ComputeBoolSize(80, Field80);
+      }
+      if (hasField81) {
+        size += pb::CodedOutputStream.ComputeBoolSize(81, Field81);
+      }
+      if (hasField2) {
+        size += pb::CodedOutputStream.ComputeInt32Size(2, Field2);
+      }
+      if (hasField3) {
+        size += pb::CodedOutputStream.ComputeInt32Size(3, Field3);
+      }
+      if (hasField280) {
+        size += pb::CodedOutputStream.ComputeInt32Size(280, Field280);
+      }
+      if (hasField6) {
+        size += pb::CodedOutputStream.ComputeInt32Size(6, Field6);
+      }
+      if (hasField22) {
+        size += pb::CodedOutputStream.ComputeInt64Size(22, Field22);
+      }
+      if (hasField4) {
+        size += pb::CodedOutputStream.ComputeStringSize(4, Field4);
+      }
+      {
+        int dataSize = 0;
+        dataSize = 8 * field5_.Count;
+        size += dataSize;
+        size += 1 * field5_.Count;
+      }
+      if (hasField59) {
+        size += pb::CodedOutputStream.ComputeBoolSize(59, Field59);
+      }
+      if (hasField7) {
+        size += pb::CodedOutputStream.ComputeStringSize(7, Field7);
+      }
+      if (hasField16) {
+        size += pb::CodedOutputStream.ComputeInt32Size(16, Field16);
+      }
+      if (hasField130) {
+        size += pb::CodedOutputStream.ComputeInt32Size(130, Field130);
+      }
+      if (hasField12) {
+        size += pb::CodedOutputStream.ComputeBoolSize(12, Field12);
+      }
+      if (hasField17) {
+        size += pb::CodedOutputStream.ComputeBoolSize(17, Field17);
+      }
+      if (hasField13) {
+        size += pb::CodedOutputStream.ComputeBoolSize(13, Field13);
+      }
+      if (hasField14) {
+        size += pb::CodedOutputStream.ComputeBoolSize(14, Field14);
+      }
+      if (hasField104) {
+        size += pb::CodedOutputStream.ComputeInt32Size(104, Field104);
+      }
+      if (hasField100) {
+        size += pb::CodedOutputStream.ComputeInt32Size(100, Field100);
+      }
+      if (hasField101) {
+        size += pb::CodedOutputStream.ComputeInt32Size(101, Field101);
+      }
+      if (hasField102) {
+        size += pb::CodedOutputStream.ComputeStringSize(102, Field102);
+      }
+      if (hasField103) {
+        size += pb::CodedOutputStream.ComputeStringSize(103, Field103);
+      }
+      if (hasField29) {
+        size += pb::CodedOutputStream.ComputeInt32Size(29, Field29);
+      }
+      if (hasField30) {
+        size += pb::CodedOutputStream.ComputeBoolSize(30, Field30);
+      }
+      if (hasField60) {
+        size += pb::CodedOutputStream.ComputeInt32Size(60, Field60);
+      }
+      if (hasField271) {
+        size += pb::CodedOutputStream.ComputeInt32Size(271, Field271);
+      }
+      if (hasField272) {
+        size += pb::CodedOutputStream.ComputeInt32Size(272, Field272);
+      }
+      if (hasField150) {
+        size += pb::CodedOutputStream.ComputeInt32Size(150, Field150);
+      }
+      if (hasField23) {
+        size += pb::CodedOutputStream.ComputeInt32Size(23, Field23);
+      }
+      if (hasField24) {
+        size += pb::CodedOutputStream.ComputeBoolSize(24, Field24);
+      }
+      if (hasField25) {
+        size += pb::CodedOutputStream.ComputeInt32Size(25, Field25);
+      }
+      if (hasField15) {
+        size += pb::CodedOutputStream.ComputeMessageSize(15, Field15);
+      }
+      if (hasField78) {
+        size += pb::CodedOutputStream.ComputeBoolSize(78, Field78);
+      }
+      if (hasField67) {
+        size += pb::CodedOutputStream.ComputeInt32Size(67, Field67);
+      }
+      if (hasField68) {
+        size += pb::CodedOutputStream.ComputeInt32Size(68, Field68);
+      }
+      if (hasField128) {
+        size += pb::CodedOutputStream.ComputeInt32Size(128, Field128);
+      }
+      if (hasField129) {
+        size += pb::CodedOutputStream.ComputeStringSize(129, Field129);
+      }
+      if (hasField131) {
+        size += pb::CodedOutputStream.ComputeInt32Size(131, Field131);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static SpeedMessage1 ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -2420,7 +2425,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _speedMessage1SubMessageFieldNames;
       if (hasField1) {
         output.WriteInt32(1, field_names[0], Field1);
@@ -2490,74 +2495,79 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasField1) {
-          size += pb::CodedOutputStream.ComputeInt32Size(1, Field1);
-        }
-        if (hasField2) {
-          size += pb::CodedOutputStream.ComputeInt32Size(2, Field2);
-        }
-        if (hasField3) {
-          size += pb::CodedOutputStream.ComputeInt32Size(3, Field3);
-        }
-        if (hasField15) {
-          size += pb::CodedOutputStream.ComputeStringSize(15, Field15);
-        }
-        if (hasField12) {
-          size += pb::CodedOutputStream.ComputeBoolSize(12, Field12);
-        }
-        if (hasField13) {
-          size += pb::CodedOutputStream.ComputeInt64Size(13, Field13);
-        }
-        if (hasField14) {
-          size += pb::CodedOutputStream.ComputeInt64Size(14, Field14);
-        }
-        if (hasField16) {
-          size += pb::CodedOutputStream.ComputeInt32Size(16, Field16);
-        }
-        if (hasField19) {
-          size += pb::CodedOutputStream.ComputeInt32Size(19, Field19);
-        }
-        if (hasField20) {
-          size += pb::CodedOutputStream.ComputeBoolSize(20, Field20);
-        }
-        if (hasField28) {
-          size += pb::CodedOutputStream.ComputeBoolSize(28, Field28);
-        }
-        if (hasField21) {
-          size += pb::CodedOutputStream.ComputeFixed64Size(21, Field21);
-        }
-        if (hasField22) {
-          size += pb::CodedOutputStream.ComputeInt32Size(22, Field22);
-        }
-        if (hasField23) {
-          size += pb::CodedOutputStream.ComputeBoolSize(23, Field23);
-        }
-        if (hasField206) {
-          size += pb::CodedOutputStream.ComputeBoolSize(206, Field206);
-        }
-        if (hasField203) {
-          size += pb::CodedOutputStream.ComputeFixed32Size(203, Field203);
-        }
-        if (hasField204) {
-          size += pb::CodedOutputStream.ComputeInt32Size(204, Field204);
-        }
-        if (hasField205) {
-          size += pb::CodedOutputStream.ComputeStringSize(205, Field205);
-        }
-        if (hasField207) {
-          size += pb::CodedOutputStream.ComputeUInt64Size(207, Field207);
-        }
-        if (hasField300) {
-          size += pb::CodedOutputStream.ComputeUInt64Size(300, Field300);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasField1) {
+        size += pb::CodedOutputStream.ComputeInt32Size(1, Field1);
+      }
+      if (hasField2) {
+        size += pb::CodedOutputStream.ComputeInt32Size(2, Field2);
+      }
+      if (hasField3) {
+        size += pb::CodedOutputStream.ComputeInt32Size(3, Field3);
+      }
+      if (hasField15) {
+        size += pb::CodedOutputStream.ComputeStringSize(15, Field15);
+      }
+      if (hasField12) {
+        size += pb::CodedOutputStream.ComputeBoolSize(12, Field12);
+      }
+      if (hasField13) {
+        size += pb::CodedOutputStream.ComputeInt64Size(13, Field13);
+      }
+      if (hasField14) {
+        size += pb::CodedOutputStream.ComputeInt64Size(14, Field14);
+      }
+      if (hasField16) {
+        size += pb::CodedOutputStream.ComputeInt32Size(16, Field16);
+      }
+      if (hasField19) {
+        size += pb::CodedOutputStream.ComputeInt32Size(19, Field19);
+      }
+      if (hasField20) {
+        size += pb::CodedOutputStream.ComputeBoolSize(20, Field20);
+      }
+      if (hasField28) {
+        size += pb::CodedOutputStream.ComputeBoolSize(28, Field28);
+      }
+      if (hasField21) {
+        size += pb::CodedOutputStream.ComputeFixed64Size(21, Field21);
+      }
+      if (hasField22) {
+        size += pb::CodedOutputStream.ComputeInt32Size(22, Field22);
+      }
+      if (hasField23) {
+        size += pb::CodedOutputStream.ComputeBoolSize(23, Field23);
+      }
+      if (hasField206) {
+        size += pb::CodedOutputStream.ComputeBoolSize(206, Field206);
+      }
+      if (hasField203) {
+        size += pb::CodedOutputStream.ComputeFixed32Size(203, Field203);
+      }
+      if (hasField204) {
+        size += pb::CodedOutputStream.ComputeInt32Size(204, Field204);
+      }
+      if (hasField205) {
+        size += pb::CodedOutputStream.ComputeStringSize(205, Field205);
+      }
+      if (hasField207) {
+        size += pb::CodedOutputStream.ComputeUInt64Size(207, Field207);
+      }
+      if (hasField300) {
+        size += pb::CodedOutputStream.ComputeUInt64Size(300, Field300);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static SpeedMessage1SubMessage ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -3515,7 +3525,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         public override void WriteTo(pb::ICodedOutputStream output) {
-          int size = SerializedSize;
+          CalcSerializedSize();
           string[] field_names = _group1FieldNames;
           if (hasField5) {
             output.WriteInt32(5, field_names[14], Field5);
@@ -3573,77 +3583,82 @@ namespace Google.ProtocolBuffers.TestProtos {
           get {
             int size = memoizedSerializedSize;
             if (size != -1) return size;
-            
-            size = 0;
-            if (hasField11) {
-              size += pb::CodedOutputStream.ComputeFloatSize(11, Field11);
-            }
-            if (hasField26) {
-              size += pb::CodedOutputStream.ComputeFloatSize(26, Field26);
-            }
-            if (hasField12) {
-              size += pb::CodedOutputStream.ComputeStringSize(12, Field12);
-            }
-            if (hasField13) {
-              size += pb::CodedOutputStream.ComputeStringSize(13, Field13);
-            }
-            {
-              int dataSize = 0;
-              foreach (string element in Field14List) {
-                dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
-              }
-              size += dataSize;
-              size += 1 * field14_.Count;
-            }
-            if (hasField15) {
-              size += pb::CodedOutputStream.ComputeUInt64Size(15, Field15);
-            }
-            if (hasField5) {
-              size += pb::CodedOutputStream.ComputeInt32Size(5, Field5);
-            }
-            if (hasField27) {
-              size += pb::CodedOutputStream.ComputeStringSize(27, Field27);
-            }
-            if (hasField28) {
-              size += pb::CodedOutputStream.ComputeInt32Size(28, Field28);
-            }
-            if (hasField29) {
-              size += pb::CodedOutputStream.ComputeStringSize(29, Field29);
-            }
-            if (hasField16) {
-              size += pb::CodedOutputStream.ComputeStringSize(16, Field16);
-            }
-            {
-              int dataSize = 0;
-              foreach (string element in Field22List) {
-                dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
-              }
-              size += dataSize;
-              size += 2 * field22_.Count;
-            }
-            {
-              int dataSize = 0;
-              foreach (int element in Field73List) {
-                dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
-              }
-              size += dataSize;
-              size += 2 * field73_.Count;
-            }
-            if (hasField20) {
-              size += pb::CodedOutputStream.ComputeInt32Size(20, Field20);
-            }
-            if (hasField24) {
-              size += pb::CodedOutputStream.ComputeStringSize(24, Field24);
-            }
-            if (hasField31) {
-              size += pb::CodedOutputStream.ComputeMessageSize(31, Field31);
-            }
-            size += UnknownFields.SerializedSize;
-            memoizedSerializedSize = size;
-            return size;
+            return CalcSerializedSize();
           }
         }
         
+        private int CalcSerializedSize() {
+          int size = memoizedSerializedSize;
+          if (size != -1) return size;
+          
+          size = 0;
+          if (hasField11) {
+            size += pb::CodedOutputStream.ComputeFloatSize(11, Field11);
+          }
+          if (hasField26) {
+            size += pb::CodedOutputStream.ComputeFloatSize(26, Field26);
+          }
+          if (hasField12) {
+            size += pb::CodedOutputStream.ComputeStringSize(12, Field12);
+          }
+          if (hasField13) {
+            size += pb::CodedOutputStream.ComputeStringSize(13, Field13);
+          }
+          {
+            int dataSize = 0;
+            foreach (string element in Field14List) {
+              dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+            }
+            size += dataSize;
+            size += 1 * field14_.Count;
+          }
+          if (hasField15) {
+            size += pb::CodedOutputStream.ComputeUInt64Size(15, Field15);
+          }
+          if (hasField5) {
+            size += pb::CodedOutputStream.ComputeInt32Size(5, Field5);
+          }
+          if (hasField27) {
+            size += pb::CodedOutputStream.ComputeStringSize(27, Field27);
+          }
+          if (hasField28) {
+            size += pb::CodedOutputStream.ComputeInt32Size(28, Field28);
+          }
+          if (hasField29) {
+            size += pb::CodedOutputStream.ComputeStringSize(29, Field29);
+          }
+          if (hasField16) {
+            size += pb::CodedOutputStream.ComputeStringSize(16, Field16);
+          }
+          {
+            int dataSize = 0;
+            foreach (string element in Field22List) {
+              dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+            }
+            size += dataSize;
+            size += 2 * field22_.Count;
+          }
+          {
+            int dataSize = 0;
+            foreach (int element in Field73List) {
+              dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+            }
+            size += dataSize;
+            size += 2 * field73_.Count;
+          }
+          if (hasField20) {
+            size += pb::CodedOutputStream.ComputeInt32Size(20, Field20);
+          }
+          if (hasField24) {
+            size += pb::CodedOutputStream.ComputeStringSize(24, Field24);
+          }
+          if (hasField31) {
+            size += pb::CodedOutputStream.ComputeMessageSize(31, Field31);
+          }
+          size += UnknownFields.SerializedSize;
+          memoizedSerializedSize = size;
+          return size;
+        }
         public static Group1 ParseFrom(pb::ByteString data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
@@ -4641,7 +4656,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _speedMessage2FieldNames;
       if (hasField1) {
         output.WriteString(1, field_names[0], Field1);
@@ -4741,119 +4756,124 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasField1) {
-          size += pb::CodedOutputStream.ComputeStringSize(1, Field1);
-        }
-        if (hasField3) {
-          size += pb::CodedOutputStream.ComputeInt64Size(3, Field3);
-        }
-        if (hasField4) {
-          size += pb::CodedOutputStream.ComputeInt64Size(4, Field4);
-        }
-        if (hasField30) {
-          size += pb::CodedOutputStream.ComputeInt64Size(30, Field30);
-        }
-        if (hasField75) {
-          size += pb::CodedOutputStream.ComputeBoolSize(75, Field75);
-        }
-        if (hasField6) {
-          size += pb::CodedOutputStream.ComputeStringSize(6, Field6);
-        }
-        if (hasField2) {
-          size += pb::CodedOutputStream.ComputeBytesSize(2, Field2);
-        }
-        if (hasField21) {
-          size += pb::CodedOutputStream.ComputeInt32Size(21, Field21);
-        }
-        if (hasField71) {
-          size += pb::CodedOutputStream.ComputeInt32Size(71, Field71);
-        }
-        if (hasField25) {
-          size += pb::CodedOutputStream.ComputeFloatSize(25, Field25);
-        }
-        if (hasField109) {
-          size += pb::CodedOutputStream.ComputeInt32Size(109, Field109);
-        }
-        if (hasField210) {
-          size += pb::CodedOutputStream.ComputeInt32Size(210, Field210);
-        }
-        if (hasField211) {
-          size += pb::CodedOutputStream.ComputeInt32Size(211, Field211);
-        }
-        if (hasField212) {
-          size += pb::CodedOutputStream.ComputeInt32Size(212, Field212);
-        }
-        if (hasField213) {
-          size += pb::CodedOutputStream.ComputeInt32Size(213, Field213);
-        }
-        if (hasField216) {
-          size += pb::CodedOutputStream.ComputeInt32Size(216, Field216);
-        }
-        if (hasField217) {
-          size += pb::CodedOutputStream.ComputeInt32Size(217, Field217);
-        }
-        if (hasField218) {
-          size += pb::CodedOutputStream.ComputeInt32Size(218, Field218);
-        }
-        if (hasField220) {
-          size += pb::CodedOutputStream.ComputeInt32Size(220, Field220);
-        }
-        if (hasField221) {
-          size += pb::CodedOutputStream.ComputeInt32Size(221, Field221);
-        }
-        if (hasField222) {
-          size += pb::CodedOutputStream.ComputeFloatSize(222, Field222);
-        }
-        if (hasField63) {
-          size += pb::CodedOutputStream.ComputeInt32Size(63, Field63);
-        }
-        foreach (global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Types.Group1 element in Group1List) {
-          size += pb::CodedOutputStream.ComputeGroupSize(10, element);
-        }
-        {
-          int dataSize = 0;
-          foreach (string element in Field128List) {
-            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
-          }
-          size += dataSize;
-          size += 2 * field128_.Count;
-        }
-        if (hasField131) {
-          size += pb::CodedOutputStream.ComputeInt64Size(131, Field131);
-        }
-        {
-          int dataSize = 0;
-          foreach (string element in Field127List) {
-            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
-          }
-          size += dataSize;
-          size += 2 * field127_.Count;
-        }
-        if (hasField129) {
-          size += pb::CodedOutputStream.ComputeInt32Size(129, Field129);
-        }
-        {
-          int dataSize = 0;
-          foreach (long element in Field130List) {
-            dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
-          }
-          size += dataSize;
-          size += 2 * field130_.Count;
-        }
-        if (hasField205) {
-          size += pb::CodedOutputStream.ComputeBoolSize(205, Field205);
-        }
-        if (hasField206) {
-          size += pb::CodedOutputStream.ComputeBoolSize(206, Field206);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasField1) {
+        size += pb::CodedOutputStream.ComputeStringSize(1, Field1);
+      }
+      if (hasField3) {
+        size += pb::CodedOutputStream.ComputeInt64Size(3, Field3);
+      }
+      if (hasField4) {
+        size += pb::CodedOutputStream.ComputeInt64Size(4, Field4);
+      }
+      if (hasField30) {
+        size += pb::CodedOutputStream.ComputeInt64Size(30, Field30);
+      }
+      if (hasField75) {
+        size += pb::CodedOutputStream.ComputeBoolSize(75, Field75);
+      }
+      if (hasField6) {
+        size += pb::CodedOutputStream.ComputeStringSize(6, Field6);
+      }
+      if (hasField2) {
+        size += pb::CodedOutputStream.ComputeBytesSize(2, Field2);
+      }
+      if (hasField21) {
+        size += pb::CodedOutputStream.ComputeInt32Size(21, Field21);
+      }
+      if (hasField71) {
+        size += pb::CodedOutputStream.ComputeInt32Size(71, Field71);
+      }
+      if (hasField25) {
+        size += pb::CodedOutputStream.ComputeFloatSize(25, Field25);
+      }
+      if (hasField109) {
+        size += pb::CodedOutputStream.ComputeInt32Size(109, Field109);
+      }
+      if (hasField210) {
+        size += pb::CodedOutputStream.ComputeInt32Size(210, Field210);
+      }
+      if (hasField211) {
+        size += pb::CodedOutputStream.ComputeInt32Size(211, Field211);
+      }
+      if (hasField212) {
+        size += pb::CodedOutputStream.ComputeInt32Size(212, Field212);
+      }
+      if (hasField213) {
+        size += pb::CodedOutputStream.ComputeInt32Size(213, Field213);
+      }
+      if (hasField216) {
+        size += pb::CodedOutputStream.ComputeInt32Size(216, Field216);
+      }
+      if (hasField217) {
+        size += pb::CodedOutputStream.ComputeInt32Size(217, Field217);
+      }
+      if (hasField218) {
+        size += pb::CodedOutputStream.ComputeInt32Size(218, Field218);
+      }
+      if (hasField220) {
+        size += pb::CodedOutputStream.ComputeInt32Size(220, Field220);
+      }
+      if (hasField221) {
+        size += pb::CodedOutputStream.ComputeInt32Size(221, Field221);
+      }
+      if (hasField222) {
+        size += pb::CodedOutputStream.ComputeFloatSize(222, Field222);
+      }
+      if (hasField63) {
+        size += pb::CodedOutputStream.ComputeInt32Size(63, Field63);
+      }
+      foreach (global::Google.ProtocolBuffers.TestProtos.SpeedMessage2.Types.Group1 element in Group1List) {
+        size += pb::CodedOutputStream.ComputeGroupSize(10, element);
+      }
+      {
+        int dataSize = 0;
+        foreach (string element in Field128List) {
+          dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+        }
+        size += dataSize;
+        size += 2 * field128_.Count;
+      }
+      if (hasField131) {
+        size += pb::CodedOutputStream.ComputeInt64Size(131, Field131);
+      }
+      {
+        int dataSize = 0;
+        foreach (string element in Field127List) {
+          dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+        }
+        size += dataSize;
+        size += 2 * field127_.Count;
+      }
+      if (hasField129) {
+        size += pb::CodedOutputStream.ComputeInt32Size(129, Field129);
+      }
+      {
+        int dataSize = 0;
+        foreach (long element in Field130List) {
+          dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
+        }
+        size += dataSize;
+        size += 2 * field130_.Count;
+      }
+      if (hasField205) {
+        size += pb::CodedOutputStream.ComputeBoolSize(205, Field205);
+      }
+      if (hasField206) {
+        size += pb::CodedOutputStream.ComputeBoolSize(206, Field206);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static SpeedMessage2 ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -6049,7 +6069,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _speedMessage2GroupedMessageFieldNames;
       if (hasField1) {
         output.WriteFloat(1, field_names[0], Field1);
@@ -6092,47 +6112,52 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasField1) {
-          size += pb::CodedOutputStream.ComputeFloatSize(1, Field1);
-        }
-        if (hasField2) {
-          size += pb::CodedOutputStream.ComputeFloatSize(2, Field2);
-        }
-        if (hasField3) {
-          size += pb::CodedOutputStream.ComputeFloatSize(3, Field3);
-        }
-        if (hasField4) {
-          size += pb::CodedOutputStream.ComputeBoolSize(4, Field4);
-        }
-        if (hasField5) {
-          size += pb::CodedOutputStream.ComputeBoolSize(5, Field5);
-        }
-        if (hasField6) {
-          size += pb::CodedOutputStream.ComputeBoolSize(6, Field6);
-        }
-        if (hasField7) {
-          size += pb::CodedOutputStream.ComputeBoolSize(7, Field7);
-        }
-        if (hasField8) {
-          size += pb::CodedOutputStream.ComputeFloatSize(8, Field8);
-        }
-        if (hasField9) {
-          size += pb::CodedOutputStream.ComputeBoolSize(9, Field9);
-        }
-        if (hasField10) {
-          size += pb::CodedOutputStream.ComputeFloatSize(10, Field10);
-        }
-        if (hasField11) {
-          size += pb::CodedOutputStream.ComputeInt64Size(11, Field11);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasField1) {
+        size += pb::CodedOutputStream.ComputeFloatSize(1, Field1);
+      }
+      if (hasField2) {
+        size += pb::CodedOutputStream.ComputeFloatSize(2, Field2);
+      }
+      if (hasField3) {
+        size += pb::CodedOutputStream.ComputeFloatSize(3, Field3);
+      }
+      if (hasField4) {
+        size += pb::CodedOutputStream.ComputeBoolSize(4, Field4);
+      }
+      if (hasField5) {
+        size += pb::CodedOutputStream.ComputeBoolSize(5, Field5);
+      }
+      if (hasField6) {
+        size += pb::CodedOutputStream.ComputeBoolSize(6, Field6);
+      }
+      if (hasField7) {
+        size += pb::CodedOutputStream.ComputeBoolSize(7, Field7);
+      }
+      if (hasField8) {
+        size += pb::CodedOutputStream.ComputeFloatSize(8, Field8);
+      }
+      if (hasField9) {
+        size += pb::CodedOutputStream.ComputeBoolSize(9, Field9);
+      }
+      if (hasField10) {
+        size += pb::CodedOutputStream.ComputeFloatSize(10, Field10);
+      }
+      if (hasField11) {
+        size += pb::CodedOutputStream.ComputeInt64Size(11, Field11);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static SpeedMessage2GroupedMessage ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }

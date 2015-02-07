@@ -132,7 +132,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _testMessageSetFieldNames;
       pb::ExtendableMessage<TestMessageSet, TestMessageSet.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       extensionWriter.WriteUntil(536870912, output);
@@ -144,15 +144,20 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        size += ExtensionsSerializedSize;
-        size += UnknownFields.SerializedSizeAsMessageSet;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      size += ExtensionsSerializedSize;
+      size += UnknownFields.SerializedSizeAsMessageSet;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static TestMessageSet ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -373,7 +378,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _testMessageSetContainerFieldNames;
       if (hasMessageSet) {
         output.WriteMessage(1, field_names[0], MessageSet);
@@ -386,17 +391,22 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasMessageSet) {
-          size += pb::CodedOutputStream.ComputeMessageSize(1, MessageSet);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasMessageSet) {
+        size += pb::CodedOutputStream.ComputeMessageSize(1, MessageSet);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static TestMessageSetContainer ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -670,7 +680,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _testMessageSetExtension1FieldNames;
       if (hasI) {
         output.WriteInt32(15, field_names[0], I);
@@ -683,17 +693,22 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasI) {
-          size += pb::CodedOutputStream.ComputeInt32Size(15, I);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasI) {
+        size += pb::CodedOutputStream.ComputeInt32Size(15, I);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static TestMessageSetExtension1 ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -942,7 +957,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _testMessageSetExtension2FieldNames;
       if (hasStr) {
         output.WriteString(25, field_names[0], Str);
@@ -955,17 +970,22 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasStr) {
-          size += pb::CodedOutputStream.ComputeStringSize(25, Str);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasStr) {
+        size += pb::CodedOutputStream.ComputeStringSize(25, Str);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static TestMessageSetExtension2 ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -1254,7 +1274,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         public override void WriteTo(pb::ICodedOutputStream output) {
-          int size = SerializedSize;
+          CalcSerializedSize();
           string[] field_names = _itemFieldNames;
           if (hasTypeId) {
             output.WriteInt32(2, field_names[1], TypeId);
@@ -1270,20 +1290,25 @@ namespace Google.ProtocolBuffers.TestProtos {
           get {
             int size = memoizedSerializedSize;
             if (size != -1) return size;
-            
-            size = 0;
-            if (hasTypeId) {
-              size += pb::CodedOutputStream.ComputeInt32Size(2, TypeId);
-            }
-            if (hasMessage) {
-              size += pb::CodedOutputStream.ComputeBytesSize(3, Message);
-            }
-            size += UnknownFields.SerializedSize;
-            memoizedSerializedSize = size;
-            return size;
+            return CalcSerializedSize();
           }
         }
         
+        private int CalcSerializedSize() {
+          int size = memoizedSerializedSize;
+          if (size != -1) return size;
+          
+          size = 0;
+          if (hasTypeId) {
+            size += pb::CodedOutputStream.ComputeInt32Size(2, TypeId);
+          }
+          if (hasMessage) {
+            size += pb::CodedOutputStream.ComputeBytesSize(3, Message);
+          }
+          size += UnknownFields.SerializedSize;
+          memoizedSerializedSize = size;
+          return size;
+        }
         public static Item ParseFrom(pb::ByteString data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
@@ -1537,7 +1562,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _rawMessageSetFieldNames;
       if (item_.Count > 0) {
         output.WriteGroupArray(1, field_names[0], item_);
@@ -1550,17 +1575,22 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        foreach (global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item element in ItemList) {
-          size += pb::CodedOutputStream.ComputeGroupSize(1, element);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      foreach (global::Google.ProtocolBuffers.TestProtos.RawMessageSet.Types.Item element in ItemList) {
+        size += pb::CodedOutputStream.ComputeGroupSize(1, element);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static RawMessageSet ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }

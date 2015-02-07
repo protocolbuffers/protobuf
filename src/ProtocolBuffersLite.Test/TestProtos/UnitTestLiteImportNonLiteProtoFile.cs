@@ -61,7 +61,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _testLiteImportsNonliteFieldNames;
       if (hasMessage) {
         output.WriteMessage(1, field_names[0], Message);
@@ -73,16 +73,21 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasMessage) {
-          size += pb::CodedOutputStream.ComputeMessageSize(1, Message);
-        }
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasMessage) {
+        size += pb::CodedOutputStream.ComputeMessageSize(1, Message);
+      }
+      memoizedSerializedSize = size;
+      return size;
+    }
     #region Lite runtime methods
     public override int GetHashCode() {
       int hash = GetType().GetHashCode();

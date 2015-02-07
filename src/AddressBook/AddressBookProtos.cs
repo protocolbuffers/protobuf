@@ -159,7 +159,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         }
         
         public override void WriteTo(pb::ICodedOutputStream output) {
-          int size = SerializedSize;
+          CalcSerializedSize();
           string[] field_names = _phoneNumberFieldNames;
           if (hasNumber) {
             output.WriteString(1, field_names[0], Number);
@@ -175,20 +175,25 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           get {
             int size = memoizedSerializedSize;
             if (size != -1) return size;
-            
-            size = 0;
-            if (hasNumber) {
-              size += pb::CodedOutputStream.ComputeStringSize(1, Number);
-            }
-            if (hasType) {
-              size += pb::CodedOutputStream.ComputeEnumSize(2, (int) Type);
-            }
-            size += UnknownFields.SerializedSize;
-            memoizedSerializedSize = size;
-            return size;
+            return CalcSerializedSize();
           }
         }
         
+        private int CalcSerializedSize() {
+          int size = memoizedSerializedSize;
+          if (size != -1) return size;
+          
+          size = 0;
+          if (hasNumber) {
+            size += pb::CodedOutputStream.ComputeStringSize(1, Number);
+          }
+          if (hasType) {
+            size += pb::CodedOutputStream.ComputeEnumSize(2, (int) Type);
+          }
+          size += UnknownFields.SerializedSize;
+          memoizedSerializedSize = size;
+          return size;
+        }
         public static PhoneNumber ParseFrom(pb::ByteString data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
@@ -485,7 +490,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _personFieldNames;
       if (hasName) {
         output.WriteString(1, field_names[2], Name);
@@ -507,26 +512,31 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasName) {
-          size += pb::CodedOutputStream.ComputeStringSize(1, Name);
-        }
-        if (hasId) {
-          size += pb::CodedOutputStream.ComputeInt32Size(2, Id);
-        }
-        if (hasEmail) {
-          size += pb::CodedOutputStream.ComputeStringSize(3, Email);
-        }
-        foreach (global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber element in PhoneList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(4, element);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasName) {
+        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+      }
+      if (hasId) {
+        size += pb::CodedOutputStream.ComputeInt32Size(2, Id);
+      }
+      if (hasEmail) {
+        size += pb::CodedOutputStream.ComputeStringSize(3, Email);
+      }
+      foreach (global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber element in PhoneList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(4, element);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static Person ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -886,7 +896,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _addressBookFieldNames;
       if (person_.Count > 0) {
         output.WriteMessageArray(1, field_names[0], person_);
@@ -899,17 +909,22 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        foreach (global::Google.ProtocolBuffers.Examples.AddressBook.Person element in PersonList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(1, element);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      foreach (global::Google.ProtocolBuffers.Examples.AddressBook.Person element in PersonList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(1, element);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static AddressBook ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }

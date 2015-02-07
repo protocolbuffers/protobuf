@@ -294,7 +294,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _fileDescriptorSetFieldNames;
       if (file_.Count > 0) {
         output.WriteMessageArray(1, field_names[0], file_);
@@ -307,17 +307,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto element in FileList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(1, element);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.FileDescriptorProto element in FileList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(1, element);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static FileDescriptorSet ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -694,7 +699,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _fileDescriptorProtoFieldNames;
       if (hasName) {
         output.WriteString(1, field_names[4], Name);
@@ -731,46 +736,51 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasName) {
-          size += pb::CodedOutputStream.ComputeStringSize(1, Name);
-        }
-        if (hasPackage) {
-          size += pb::CodedOutputStream.ComputeStringSize(2, Package);
-        }
-        {
-          int dataSize = 0;
-          foreach (string element in DependencyList) {
-            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
-          }
-          size += dataSize;
-          size += 1 * dependency_.Count;
-        }
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto element in MessageTypeList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(4, element);
-        }
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto element in EnumTypeList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(5, element);
-        }
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto element in ServiceList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(6, element);
-        }
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto element in ExtensionList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(7, element);
-        }
-        if (hasOptions) {
-          size += pb::CodedOutputStream.ComputeMessageSize(8, Options);
-        }
-        if (hasSourceCodeInfo) {
-          size += pb::CodedOutputStream.ComputeMessageSize(9, SourceCodeInfo);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasName) {
+        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+      }
+      if (hasPackage) {
+        size += pb::CodedOutputStream.ComputeStringSize(2, Package);
+      }
+      {
+        int dataSize = 0;
+        foreach (string element in DependencyList) {
+          dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+        }
+        size += dataSize;
+        size += 1 * dependency_.Count;
+      }
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto element in MessageTypeList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(4, element);
+      }
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto element in EnumTypeList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(5, element);
+      }
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.ServiceDescriptorProto element in ServiceList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(6, element);
+      }
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto element in ExtensionList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(7, element);
+      }
+      if (hasOptions) {
+        size += pb::CodedOutputStream.ComputeMessageSize(8, Options);
+      }
+      if (hasSourceCodeInfo) {
+        size += pb::CodedOutputStream.ComputeMessageSize(9, SourceCodeInfo);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static FileDescriptorProto ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -1437,7 +1447,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         
         public override void WriteTo(pb::ICodedOutputStream output) {
-          int size = SerializedSize;
+          CalcSerializedSize();
           string[] field_names = _extensionRangeFieldNames;
           if (hasStart) {
             output.WriteInt32(1, field_names[1], Start);
@@ -1453,20 +1463,25 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           get {
             int size = memoizedSerializedSize;
             if (size != -1) return size;
-            
-            size = 0;
-            if (hasStart) {
-              size += pb::CodedOutputStream.ComputeInt32Size(1, Start);
-            }
-            if (hasEnd) {
-              size += pb::CodedOutputStream.ComputeInt32Size(2, End);
-            }
-            size += UnknownFields.SerializedSize;
-            memoizedSerializedSize = size;
-            return size;
+            return CalcSerializedSize();
           }
         }
         
+        private int CalcSerializedSize() {
+          int size = memoizedSerializedSize;
+          if (size != -1) return size;
+          
+          size = 0;
+          if (hasStart) {
+            size += pb::CodedOutputStream.ComputeInt32Size(1, Start);
+          }
+          if (hasEnd) {
+            size += pb::CodedOutputStream.ComputeInt32Size(2, End);
+          }
+          size += UnknownFields.SerializedSize;
+          memoizedSerializedSize = size;
+          return size;
+        }
         public static ExtensionRange ParseFrom(pb::ByteString data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
@@ -1802,7 +1817,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _descriptorProtoFieldNames;
       if (hasName) {
         output.WriteString(1, field_names[4], Name);
@@ -1833,35 +1848,40 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasName) {
-          size += pb::CodedOutputStream.ComputeStringSize(1, Name);
-        }
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto element in FieldList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(2, element);
-        }
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto element in ExtensionList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(6, element);
-        }
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto element in NestedTypeList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(3, element);
-        }
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto element in EnumTypeList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(4, element);
-        }
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange element in ExtensionRangeList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(5, element);
-        }
-        if (hasOptions) {
-          size += pb::CodedOutputStream.ComputeMessageSize(7, Options);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasName) {
+        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+      }
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto element in FieldList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+      }
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.FieldDescriptorProto element in ExtensionList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(6, element);
+      }
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto element in NestedTypeList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(3, element);
+      }
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.EnumDescriptorProto element in EnumTypeList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(4, element);
+      }
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.DescriptorProto.Types.ExtensionRange element in ExtensionRangeList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(5, element);
+      }
+      if (hasOptions) {
+        size += pb::CodedOutputStream.ComputeMessageSize(7, Options);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static DescriptorProto ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -2527,7 +2547,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _fieldDescriptorProtoFieldNames;
       if (hasName) {
         output.WriteString(1, field_names[3], Name);
@@ -2561,38 +2581,43 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasName) {
-          size += pb::CodedOutputStream.ComputeStringSize(1, Name);
-        }
-        if (hasNumber) {
-          size += pb::CodedOutputStream.ComputeInt32Size(3, Number);
-        }
-        if (hasLabel) {
-          size += pb::CodedOutputStream.ComputeEnumSize(4, (int) Label);
-        }
-        if (hasType) {
-          size += pb::CodedOutputStream.ComputeEnumSize(5, (int) Type);
-        }
-        if (hasTypeName) {
-          size += pb::CodedOutputStream.ComputeStringSize(6, TypeName);
-        }
-        if (hasExtendee) {
-          size += pb::CodedOutputStream.ComputeStringSize(2, Extendee);
-        }
-        if (hasDefaultValue) {
-          size += pb::CodedOutputStream.ComputeStringSize(7, DefaultValue);
-        }
-        if (hasOptions) {
-          size += pb::CodedOutputStream.ComputeMessageSize(8, Options);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasName) {
+        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+      }
+      if (hasNumber) {
+        size += pb::CodedOutputStream.ComputeInt32Size(3, Number);
+      }
+      if (hasLabel) {
+        size += pb::CodedOutputStream.ComputeEnumSize(4, (int) Label);
+      }
+      if (hasType) {
+        size += pb::CodedOutputStream.ComputeEnumSize(5, (int) Type);
+      }
+      if (hasTypeName) {
+        size += pb::CodedOutputStream.ComputeStringSize(6, TypeName);
+      }
+      if (hasExtendee) {
+        size += pb::CodedOutputStream.ComputeStringSize(2, Extendee);
+      }
+      if (hasDefaultValue) {
+        size += pb::CodedOutputStream.ComputeStringSize(7, DefaultValue);
+      }
+      if (hasOptions) {
+        size += pb::CodedOutputStream.ComputeMessageSize(8, Options);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static FieldDescriptorProto ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -3101,7 +3126,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _enumDescriptorProtoFieldNames;
       if (hasName) {
         output.WriteString(1, field_names[0], Name);
@@ -3120,23 +3145,28 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasName) {
-          size += pb::CodedOutputStream.ComputeStringSize(1, Name);
-        }
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto element in ValueList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(2, element);
-        }
-        if (hasOptions) {
-          size += pb::CodedOutputStream.ComputeMessageSize(3, Options);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasName) {
+        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+      }
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.EnumValueDescriptorProto element in ValueList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+      }
+      if (hasOptions) {
+        size += pb::CodedOutputStream.ComputeMessageSize(3, Options);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static EnumDescriptorProto ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -3511,7 +3541,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _enumValueDescriptorProtoFieldNames;
       if (hasName) {
         output.WriteString(1, field_names[0], Name);
@@ -3530,23 +3560,28 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasName) {
-          size += pb::CodedOutputStream.ComputeStringSize(1, Name);
-        }
-        if (hasNumber) {
-          size += pb::CodedOutputStream.ComputeInt32Size(2, Number);
-        }
-        if (hasOptions) {
-          size += pb::CodedOutputStream.ComputeMessageSize(3, Options);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasName) {
+        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+      }
+      if (hasNumber) {
+        size += pb::CodedOutputStream.ComputeInt32Size(2, Number);
+      }
+      if (hasOptions) {
+        size += pb::CodedOutputStream.ComputeMessageSize(3, Options);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static EnumValueDescriptorProto ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -3901,7 +3936,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _serviceDescriptorProtoFieldNames;
       if (hasName) {
         output.WriteString(1, field_names[1], Name);
@@ -3920,23 +3955,28 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasName) {
-          size += pb::CodedOutputStream.ComputeStringSize(1, Name);
-        }
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto element in MethodList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(2, element);
-        }
-        if (hasOptions) {
-          size += pb::CodedOutputStream.ComputeMessageSize(3, Options);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasName) {
+        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+      }
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.MethodDescriptorProto element in MethodList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+      }
+      if (hasOptions) {
+        size += pb::CodedOutputStream.ComputeMessageSize(3, Options);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static ServiceDescriptorProto ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -4321,7 +4361,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _methodDescriptorProtoFieldNames;
       if (hasName) {
         output.WriteString(1, field_names[1], Name);
@@ -4343,26 +4383,31 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasName) {
-          size += pb::CodedOutputStream.ComputeStringSize(1, Name);
-        }
-        if (hasInputType) {
-          size += pb::CodedOutputStream.ComputeStringSize(2, InputType);
-        }
-        if (hasOutputType) {
-          size += pb::CodedOutputStream.ComputeStringSize(3, OutputType);
-        }
-        if (hasOptions) {
-          size += pb::CodedOutputStream.ComputeMessageSize(4, Options);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasName) {
+        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+      }
+      if (hasInputType) {
+        size += pb::CodedOutputStream.ComputeStringSize(2, InputType);
+      }
+      if (hasOutputType) {
+        size += pb::CodedOutputStream.ComputeStringSize(3, OutputType);
+      }
+      if (hasOptions) {
+        size += pb::CodedOutputStream.ComputeMessageSize(4, Options);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static MethodDescriptorProto ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -4816,7 +4861,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _fileOptionsFieldNames;
       pb::ExtendableMessage<FileOptions, FileOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (hasJavaPackage) {
@@ -4855,42 +4900,47 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasJavaPackage) {
-          size += pb::CodedOutputStream.ComputeStringSize(1, JavaPackage);
-        }
-        if (hasJavaOuterClassname) {
-          size += pb::CodedOutputStream.ComputeStringSize(8, JavaOuterClassname);
-        }
-        if (hasJavaMultipleFiles) {
-          size += pb::CodedOutputStream.ComputeBoolSize(10, JavaMultipleFiles);
-        }
-        if (hasJavaGenerateEqualsAndHash) {
-          size += pb::CodedOutputStream.ComputeBoolSize(20, JavaGenerateEqualsAndHash);
-        }
-        if (hasOptimizeFor) {
-          size += pb::CodedOutputStream.ComputeEnumSize(9, (int) OptimizeFor);
-        }
-        if (hasCcGenericServices) {
-          size += pb::CodedOutputStream.ComputeBoolSize(16, CcGenericServices);
-        }
-        if (hasJavaGenericServices) {
-          size += pb::CodedOutputStream.ComputeBoolSize(17, JavaGenericServices);
-        }
-        if (hasPyGenericServices) {
-          size += pb::CodedOutputStream.ComputeBoolSize(18, PyGenericServices);
-        }
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
-        }
-        size += ExtensionsSerializedSize;
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasJavaPackage) {
+        size += pb::CodedOutputStream.ComputeStringSize(1, JavaPackage);
+      }
+      if (hasJavaOuterClassname) {
+        size += pb::CodedOutputStream.ComputeStringSize(8, JavaOuterClassname);
+      }
+      if (hasJavaMultipleFiles) {
+        size += pb::CodedOutputStream.ComputeBoolSize(10, JavaMultipleFiles);
+      }
+      if (hasJavaGenerateEqualsAndHash) {
+        size += pb::CodedOutputStream.ComputeBoolSize(20, JavaGenerateEqualsAndHash);
+      }
+      if (hasOptimizeFor) {
+        size += pb::CodedOutputStream.ComputeEnumSize(9, (int) OptimizeFor);
+      }
+      if (hasCcGenericServices) {
+        size += pb::CodedOutputStream.ComputeBoolSize(16, CcGenericServices);
+      }
+      if (hasJavaGenericServices) {
+        size += pb::CodedOutputStream.ComputeBoolSize(17, JavaGenericServices);
+      }
+      if (hasPyGenericServices) {
+        size += pb::CodedOutputStream.ComputeBoolSize(18, PyGenericServices);
+      }
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+      }
+      size += ExtensionsSerializedSize;
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static FileOptions ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -5415,7 +5465,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _messageOptionsFieldNames;
       pb::ExtendableMessage<MessageOptions, MessageOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (hasMessageSetWireFormat) {
@@ -5436,24 +5486,29 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasMessageSetWireFormat) {
-          size += pb::CodedOutputStream.ComputeBoolSize(1, MessageSetWireFormat);
-        }
-        if (hasNoStandardDescriptorAccessor) {
-          size += pb::CodedOutputStream.ComputeBoolSize(2, NoStandardDescriptorAccessor);
-        }
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
-        }
-        size += ExtensionsSerializedSize;
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasMessageSetWireFormat) {
+        size += pb::CodedOutputStream.ComputeBoolSize(1, MessageSetWireFormat);
+      }
+      if (hasNoStandardDescriptorAccessor) {
+        size += pb::CodedOutputStream.ComputeBoolSize(2, NoStandardDescriptorAccessor);
+      }
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+      }
+      size += ExtensionsSerializedSize;
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static MessageOptions ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -5838,7 +5893,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _fieldOptionsFieldNames;
       pb::ExtendableMessage<FieldOptions, FieldOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (hasCtype) {
@@ -5865,30 +5920,35 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasCtype) {
-          size += pb::CodedOutputStream.ComputeEnumSize(1, (int) Ctype);
-        }
-        if (hasPacked) {
-          size += pb::CodedOutputStream.ComputeBoolSize(2, Packed);
-        }
-        if (hasDeprecated) {
-          size += pb::CodedOutputStream.ComputeBoolSize(3, Deprecated);
-        }
-        if (hasExperimentalMapKey) {
-          size += pb::CodedOutputStream.ComputeStringSize(9, ExperimentalMapKey);
-        }
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
-        }
-        size += ExtensionsSerializedSize;
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasCtype) {
+        size += pb::CodedOutputStream.ComputeEnumSize(1, (int) Ctype);
+      }
+      if (hasPacked) {
+        size += pb::CodedOutputStream.ComputeBoolSize(2, Packed);
+      }
+      if (hasDeprecated) {
+        size += pb::CodedOutputStream.ComputeBoolSize(3, Deprecated);
+      }
+      if (hasExperimentalMapKey) {
+        size += pb::CodedOutputStream.ComputeStringSize(9, ExperimentalMapKey);
+      }
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+      }
+      size += ExtensionsSerializedSize;
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static FieldOptions ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -6284,7 +6344,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _enumOptionsFieldNames;
       pb::ExtendableMessage<EnumOptions, EnumOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (uninterpretedOption_.Count > 0) {
@@ -6299,18 +6359,23 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
-        }
-        size += ExtensionsSerializedSize;
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+      }
+      size += ExtensionsSerializedSize;
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static EnumOptions ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -6589,7 +6654,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _enumValueOptionsFieldNames;
       pb::ExtendableMessage<EnumValueOptions, EnumValueOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (uninterpretedOption_.Count > 0) {
@@ -6604,18 +6669,23 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
-        }
-        size += ExtensionsSerializedSize;
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+      }
+      size += ExtensionsSerializedSize;
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static EnumValueOptions ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -6894,7 +6964,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _serviceOptionsFieldNames;
       pb::ExtendableMessage<ServiceOptions, ServiceOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (uninterpretedOption_.Count > 0) {
@@ -6909,18 +6979,23 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
-        }
-        size += ExtensionsSerializedSize;
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+      }
+      size += ExtensionsSerializedSize;
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static ServiceOptions ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -7199,7 +7274,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _methodOptionsFieldNames;
       pb::ExtendableMessage<MethodOptions, MethodOptions.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       if (uninterpretedOption_.Count > 0) {
@@ -7214,18 +7289,23 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
-        }
-        size += ExtensionsSerializedSize;
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption element in UninterpretedOptionList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+      }
+      size += ExtensionsSerializedSize;
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static MethodOptions ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -7539,7 +7619,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         
         public override void WriteTo(pb::ICodedOutputStream output) {
-          int size = SerializedSize;
+          CalcSerializedSize();
           string[] field_names = _namePartFieldNames;
           if (hasNamePart_) {
             output.WriteString(1, field_names[1], NamePart_);
@@ -7555,20 +7635,25 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           get {
             int size = memoizedSerializedSize;
             if (size != -1) return size;
-            
-            size = 0;
-            if (hasNamePart_) {
-              size += pb::CodedOutputStream.ComputeStringSize(1, NamePart_);
-            }
-            if (hasIsExtension) {
-              size += pb::CodedOutputStream.ComputeBoolSize(2, IsExtension);
-            }
-            size += UnknownFields.SerializedSize;
-            memoizedSerializedSize = size;
-            return size;
+            return CalcSerializedSize();
           }
         }
         
+        private int CalcSerializedSize() {
+          int size = memoizedSerializedSize;
+          if (size != -1) return size;
+          
+          size = 0;
+          if (hasNamePart_) {
+            size += pb::CodedOutputStream.ComputeStringSize(1, NamePart_);
+          }
+          if (hasIsExtension) {
+            size += pb::CodedOutputStream.ComputeBoolSize(2, IsExtension);
+          }
+          size += UnknownFields.SerializedSize;
+          memoizedSerializedSize = size;
+          return size;
+        }
         public static NamePart ParseFrom(pb::ByteString data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
@@ -7886,7 +7971,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _uninterpretedOptionFieldNames;
       if (name_.Count > 0) {
         output.WriteMessageArray(2, field_names[3], name_);
@@ -7917,35 +8002,40 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart element in NameList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(2, element);
-        }
-        if (hasIdentifierValue) {
-          size += pb::CodedOutputStream.ComputeStringSize(3, IdentifierValue);
-        }
-        if (hasPositiveIntValue) {
-          size += pb::CodedOutputStream.ComputeUInt64Size(4, PositiveIntValue);
-        }
-        if (hasNegativeIntValue) {
-          size += pb::CodedOutputStream.ComputeInt64Size(5, NegativeIntValue);
-        }
-        if (hasDoubleValue) {
-          size += pb::CodedOutputStream.ComputeDoubleSize(6, DoubleValue);
-        }
-        if (hasStringValue) {
-          size += pb::CodedOutputStream.ComputeBytesSize(7, StringValue);
-        }
-        if (hasAggregateValue) {
-          size += pb::CodedOutputStream.ComputeStringSize(8, AggregateValue);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.UninterpretedOption.Types.NamePart element in NameList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+      }
+      if (hasIdentifierValue) {
+        size += pb::CodedOutputStream.ComputeStringSize(3, IdentifierValue);
+      }
+      if (hasPositiveIntValue) {
+        size += pb::CodedOutputStream.ComputeUInt64Size(4, PositiveIntValue);
+      }
+      if (hasNegativeIntValue) {
+        size += pb::CodedOutputStream.ComputeInt64Size(5, NegativeIntValue);
+      }
+      if (hasDoubleValue) {
+        size += pb::CodedOutputStream.ComputeDoubleSize(6, DoubleValue);
+      }
+      if (hasStringValue) {
+        size += pb::CodedOutputStream.ComputeBytesSize(7, StringValue);
+      }
+      if (hasAggregateValue) {
+        size += pb::CodedOutputStream.ComputeStringSize(8, AggregateValue);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static UninterpretedOption ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -8429,7 +8519,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
         }
         
         public override void WriteTo(pb::ICodedOutputStream output) {
-          int size = SerializedSize;
+          CalcSerializedSize();
           string[] field_names = _locationFieldNames;
           if (path_.Count > 0) {
             output.WritePackedInt32Array(1, field_names[0], pathMemoizedSerializedSize, path_);
@@ -8445,36 +8535,41 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
           get {
             int size = memoizedSerializedSize;
             if (size != -1) return size;
-            
-            size = 0;
-            {
-              int dataSize = 0;
-              foreach (int element in PathList) {
-                dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
-              }
-              size += dataSize;
-              if (path_.Count != 0) {
-                size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-              }
-              pathMemoizedSerializedSize = dataSize;
-            }
-            {
-              int dataSize = 0;
-              foreach (int element in SpanList) {
-                dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
-              }
-              size += dataSize;
-              if (span_.Count != 0) {
-                size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-              }
-              spanMemoizedSerializedSize = dataSize;
-            }
-            size += UnknownFields.SerializedSize;
-            memoizedSerializedSize = size;
-            return size;
+            return CalcSerializedSize();
           }
         }
         
+        private int CalcSerializedSize() {
+          int size = memoizedSerializedSize;
+          if (size != -1) return size;
+          
+          size = 0;
+          {
+            int dataSize = 0;
+            foreach (int element in PathList) {
+              dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+            }
+            size += dataSize;
+            if (path_.Count != 0) {
+              size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+            }
+            pathMemoizedSerializedSize = dataSize;
+          }
+          {
+            int dataSize = 0;
+            foreach (int element in SpanList) {
+              dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+            }
+            size += dataSize;
+            if (span_.Count != 0) {
+              size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+            }
+            spanMemoizedSerializedSize = dataSize;
+          }
+          size += UnknownFields.SerializedSize;
+          memoizedSerializedSize = size;
+          return size;
+        }
         public static Location ParseFrom(pb::ByteString data) {
           return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
         }
@@ -8751,7 +8846,7 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _sourceCodeInfoFieldNames;
       if (location_.Count > 0) {
         output.WriteMessageArray(1, field_names[0], location_);
@@ -8764,17 +8859,22 @@ namespace Google.ProtocolBuffers.DescriptorProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        foreach (global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location element in LocationList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(1, element);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      foreach (global::Google.ProtocolBuffers.DescriptorProtos.SourceCodeInfo.Types.Location element in LocationList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(1, element);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static SourceCodeInfo ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }

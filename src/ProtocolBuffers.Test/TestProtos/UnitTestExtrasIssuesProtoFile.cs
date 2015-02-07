@@ -181,7 +181,7 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _aFieldNames;
       if (hasA_) {
         output.WriteInt32(1, field_names[0], A_);
@@ -194,17 +194,22 @@ namespace UnitTest.Issues.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasA_) {
-          size += pb::CodedOutputStream.ComputeInt32Size(1, A_);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasA_) {
+        size += pb::CodedOutputStream.ComputeInt32Size(1, A_);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static A ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -451,7 +456,7 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _bFieldNames;
       if (hasB_) {
         output.WriteInt32(1, field_names[0], B_);
@@ -464,17 +469,22 @@ namespace UnitTest.Issues.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasB_) {
-          size += pb::CodedOutputStream.ComputeInt32Size(1, B_);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasB_) {
+        size += pb::CodedOutputStream.ComputeInt32Size(1, B_);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static B ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -721,7 +731,7 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _aBFieldNames;
       if (hasAB_) {
         output.WriteInt32(1, field_names[0], AB_);
@@ -734,17 +744,22 @@ namespace UnitTest.Issues.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasAB_) {
-          size += pb::CodedOutputStream.ComputeInt32Size(1, AB_);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasAB_) {
+        size += pb::CodedOutputStream.ComputeInt32Size(1, AB_);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static AB ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -993,7 +1008,7 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _numberFieldFieldNames;
       if (has_01) {
         output.WriteInt32(1, field_names[0], _01);
@@ -1006,17 +1021,22 @@ namespace UnitTest.Issues.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (has_01) {
-          size += pb::CodedOutputStream.ComputeInt32Size(1, _01);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (has_01) {
+        size += pb::CodedOutputStream.ComputeInt32Size(1, _01);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static NumberField ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -1267,7 +1287,7 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _myMessageAReferenceBFieldNames;
       if (hasValue) {
         output.WriteMessage(1, field_names[0], Value);
@@ -1280,17 +1300,22 @@ namespace UnitTest.Issues.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasValue) {
-          size += pb::CodedOutputStream.ComputeMessageSize(1, Value);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasValue) {
+        size += pb::CodedOutputStream.ComputeMessageSize(1, Value);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static MyMessageAReferenceB ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -1564,7 +1589,7 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _myMessageBReferenceAFieldNames;
       if (hasValue) {
         output.WriteMessage(1, field_names[0], Value);
@@ -1577,17 +1602,22 @@ namespace UnitTest.Issues.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasValue) {
-          size += pb::CodedOutputStream.ComputeMessageSize(1, Value);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasValue) {
+        size += pb::CodedOutputStream.ComputeMessageSize(1, Value);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static MyMessageBReferenceA ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -1884,7 +1914,7 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _negativeEnumMessageFieldNames;
       if (hasValue) {
         output.WriteEnum(1, field_names[1], (int) Value, Value);
@@ -1903,39 +1933,44 @@ namespace UnitTest.Issues.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasValue) {
-          size += pb::CodedOutputStream.ComputeEnumSize(1, (int) Value);
-        }
-        {
-          int dataSize = 0;
-          if (values_.Count > 0) {
-            foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in values_) {
-              dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
-            }
-            size += dataSize;
-            size += 1 * values_.Count;
-          }
-        }
-        {
-          int dataSize = 0;
-          if (packedValues_.Count > 0) {
-            foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in packedValues_) {
-              dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
-            }
-            size += dataSize;
-            size += 1;
-            size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
-          }
-          packedValuesMemoizedSerializedSize = dataSize;
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasValue) {
+        size += pb::CodedOutputStream.ComputeEnumSize(1, (int) Value);
+      }
+      {
+        int dataSize = 0;
+        if (values_.Count > 0) {
+          foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in values_) {
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+          }
+          size += dataSize;
+          size += 1 * values_.Count;
+        }
+      }
+      {
+        int dataSize = 0;
+        if (packedValues_.Count > 0) {
+          foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in packedValues_) {
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+          }
+          size += dataSize;
+          size += 1;
+          size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
+        }
+        packedValuesMemoizedSerializedSize = dataSize;
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static NegativeEnumMessage ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -2276,7 +2311,7 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _deprecatedChildFieldNames;
       UnknownFields.WriteTo(output);
     }
@@ -2286,14 +2321,19 @@ namespace UnitTest.Issues.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static DeprecatedChild ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -2584,7 +2624,7 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _deprecatedFieldsMessageFieldNames;
       if (hasPrimitiveValue) {
         output.WriteInt32(1, field_names[5], PrimitiveValue);
@@ -2612,44 +2652,49 @@ namespace UnitTest.Issues.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasPrimitiveValue) {
-          size += pb::CodedOutputStream.ComputeInt32Size(1, PrimitiveValue);
-        }
-        {
-          int dataSize = 0;
-          foreach (int element in PrimitiveArrayList) {
-            dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
-          }
-          size += dataSize;
-          size += 1 * primitiveArray_.Count;
-        }
-        if (hasMessageValue) {
-          size += pb::CodedOutputStream.ComputeMessageSize(3, MessageValue);
-        }
-        foreach (global::UnitTest.Issues.TestProtos.DeprecatedChild element in MessageArrayList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(4, element);
-        }
-        if (hasEnumValue) {
-          size += pb::CodedOutputStream.ComputeEnumSize(5, (int) EnumValue);
-        }
-        {
-          int dataSize = 0;
-          if (enumArray_.Count > 0) {
-            foreach (global::UnitTest.Issues.TestProtos.DeprecatedEnum element in enumArray_) {
-              dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
-            }
-            size += dataSize;
-            size += 1 * enumArray_.Count;
-          }
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasPrimitiveValue) {
+        size += pb::CodedOutputStream.ComputeInt32Size(1, PrimitiveValue);
+      }
+      {
+        int dataSize = 0;
+        foreach (int element in PrimitiveArrayList) {
+          dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+        }
+        size += dataSize;
+        size += 1 * primitiveArray_.Count;
+      }
+      if (hasMessageValue) {
+        size += pb::CodedOutputStream.ComputeMessageSize(3, MessageValue);
+      }
+      foreach (global::UnitTest.Issues.TestProtos.DeprecatedChild element in MessageArrayList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(4, element);
+      }
+      if (hasEnumValue) {
+        size += pb::CodedOutputStream.ComputeEnumSize(5, (int) EnumValue);
+      }
+      {
+        int dataSize = 0;
+        if (enumArray_.Count > 0) {
+          foreach (global::UnitTest.Issues.TestProtos.DeprecatedEnum element in enumArray_) {
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+          }
+          size += dataSize;
+          size += 1 * enumArray_.Count;
+        }
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static DeprecatedFieldsMessage ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
@@ -3159,7 +3204,7 @@ namespace UnitTest.Issues.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _itemFieldFieldNames;
       if (hasItem) {
         output.WriteInt32(1, field_names[0], Item);
@@ -3172,17 +3217,22 @@ namespace UnitTest.Issues.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasItem) {
-          size += pb::CodedOutputStream.ComputeInt32Size(1, Item);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasItem) {
+        size += pb::CodedOutputStream.ComputeInt32Size(1, Item);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static ItemField ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }

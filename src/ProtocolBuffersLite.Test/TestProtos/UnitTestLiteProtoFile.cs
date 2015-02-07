@@ -1110,7 +1110,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         public override void WriteTo(pb::ICodedOutputStream output) {
-          int size = SerializedSize;
+          CalcSerializedSize();
           string[] field_names = _nestedMessageFieldNames;
           if (hasBb) {
             output.WriteInt32(1, field_names[0], Bb);
@@ -1122,16 +1122,21 @@ namespace Google.ProtocolBuffers.TestProtos {
           get {
             int size = memoizedSerializedSize;
             if (size != -1) return size;
-            
-            size = 0;
-            if (hasBb) {
-              size += pb::CodedOutputStream.ComputeInt32Size(1, Bb);
-            }
-            memoizedSerializedSize = size;
-            return size;
+            return CalcSerializedSize();
           }
         }
         
+        private int CalcSerializedSize() {
+          int size = memoizedSerializedSize;
+          if (size != -1) return size;
+          
+          size = 0;
+          if (hasBb) {
+            size += pb::CodedOutputStream.ComputeInt32Size(1, Bb);
+          }
+          memoizedSerializedSize = size;
+          return size;
+        }
         #region Lite runtime methods
         public override int GetHashCode() {
           int hash = GetType().GetHashCode();
@@ -1371,7 +1376,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         public override void WriteTo(pb::ICodedOutputStream output) {
-          int size = SerializedSize;
+          CalcSerializedSize();
           string[] field_names = _optionalGroupFieldNames;
           if (hasA) {
             output.WriteInt32(17, field_names[0], A);
@@ -1383,16 +1388,21 @@ namespace Google.ProtocolBuffers.TestProtos {
           get {
             int size = memoizedSerializedSize;
             if (size != -1) return size;
-            
-            size = 0;
-            if (hasA) {
-              size += pb::CodedOutputStream.ComputeInt32Size(17, A);
-            }
-            memoizedSerializedSize = size;
-            return size;
+            return CalcSerializedSize();
           }
         }
         
+        private int CalcSerializedSize() {
+          int size = memoizedSerializedSize;
+          if (size != -1) return size;
+          
+          size = 0;
+          if (hasA) {
+            size += pb::CodedOutputStream.ComputeInt32Size(17, A);
+          }
+          memoizedSerializedSize = size;
+          return size;
+        }
         #region Lite runtime methods
         public override int GetHashCode() {
           int hash = GetType().GetHashCode();
@@ -1632,7 +1642,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
         
         public override void WriteTo(pb::ICodedOutputStream output) {
-          int size = SerializedSize;
+          CalcSerializedSize();
           string[] field_names = _repeatedGroupFieldNames;
           if (hasA) {
             output.WriteInt32(47, field_names[0], A);
@@ -1644,16 +1654,21 @@ namespace Google.ProtocolBuffers.TestProtos {
           get {
             int size = memoizedSerializedSize;
             if (size != -1) return size;
-            
-            size = 0;
-            if (hasA) {
-              size += pb::CodedOutputStream.ComputeInt32Size(47, A);
-            }
-            memoizedSerializedSize = size;
-            return size;
+            return CalcSerializedSize();
           }
         }
         
+        private int CalcSerializedSize() {
+          int size = memoizedSerializedSize;
+          if (size != -1) return size;
+          
+          size = 0;
+          if (hasA) {
+            size += pb::CodedOutputStream.ComputeInt32Size(47, A);
+          }
+          memoizedSerializedSize = size;
+          return size;
+        }
         #region Lite runtime methods
         public override int GetHashCode() {
           int hash = GetType().GetHashCode();
@@ -2612,7 +2627,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _testAllTypesLiteFieldNames;
       if (hasOptionalInt32) {
         output.WriteInt32(1, field_names[31], OptionalInt32);
@@ -2825,309 +2840,314 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasOptionalInt32) {
-          size += pb::CodedOutputStream.ComputeInt32Size(1, OptionalInt32);
-        }
-        if (hasOptionalInt64) {
-          size += pb::CodedOutputStream.ComputeInt64Size(2, OptionalInt64);
-        }
-        if (hasOptionalUint32) {
-          size += pb::CodedOutputStream.ComputeUInt32Size(3, OptionalUint32);
-        }
-        if (hasOptionalUint64) {
-          size += pb::CodedOutputStream.ComputeUInt64Size(4, OptionalUint64);
-        }
-        if (hasOptionalSint32) {
-          size += pb::CodedOutputStream.ComputeSInt32Size(5, OptionalSint32);
-        }
-        if (hasOptionalSint64) {
-          size += pb::CodedOutputStream.ComputeSInt64Size(6, OptionalSint64);
-        }
-        if (hasOptionalFixed32) {
-          size += pb::CodedOutputStream.ComputeFixed32Size(7, OptionalFixed32);
-        }
-        if (hasOptionalFixed64) {
-          size += pb::CodedOutputStream.ComputeFixed64Size(8, OptionalFixed64);
-        }
-        if (hasOptionalSfixed32) {
-          size += pb::CodedOutputStream.ComputeSFixed32Size(9, OptionalSfixed32);
-        }
-        if (hasOptionalSfixed64) {
-          size += pb::CodedOutputStream.ComputeSFixed64Size(10, OptionalSfixed64);
-        }
-        if (hasOptionalFloat) {
-          size += pb::CodedOutputStream.ComputeFloatSize(11, OptionalFloat);
-        }
-        if (hasOptionalDouble) {
-          size += pb::CodedOutputStream.ComputeDoubleSize(12, OptionalDouble);
-        }
-        if (hasOptionalBool) {
-          size += pb::CodedOutputStream.ComputeBoolSize(13, OptionalBool);
-        }
-        if (hasOptionalString) {
-          size += pb::CodedOutputStream.ComputeStringSize(14, OptionalString);
-        }
-        if (hasOptionalBytes) {
-          size += pb::CodedOutputStream.ComputeBytesSize(15, OptionalBytes);
-        }
-        if (hasOptionalGroup) {
-          size += pb::CodedOutputStream.ComputeGroupSize(16, OptionalGroup);
-        }
-        if (hasOptionalNestedMessage) {
-          size += pb::CodedOutputStream.ComputeMessageSize(18, OptionalNestedMessage);
-        }
-        if (hasOptionalForeignMessage) {
-          size += pb::CodedOutputStream.ComputeMessageSize(19, OptionalForeignMessage);
-        }
-        if (hasOptionalImportMessage) {
-          size += pb::CodedOutputStream.ComputeMessageSize(20, OptionalImportMessage);
-        }
-        if (hasOptionalNestedEnum) {
-          size += pb::CodedOutputStream.ComputeEnumSize(21, (int) OptionalNestedEnum);
-        }
-        if (hasOptionalForeignEnum) {
-          size += pb::CodedOutputStream.ComputeEnumSize(22, (int) OptionalForeignEnum);
-        }
-        if (hasOptionalImportEnum) {
-          size += pb::CodedOutputStream.ComputeEnumSize(23, (int) OptionalImportEnum);
-        }
-        if (hasOptionalStringPiece) {
-          size += pb::CodedOutputStream.ComputeStringSize(24, OptionalStringPiece);
-        }
-        if (hasOptionalCord) {
-          size += pb::CodedOutputStream.ComputeStringSize(25, OptionalCord);
-        }
-        {
-          int dataSize = 0;
-          foreach (int element in RepeatedInt32List) {
-            dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
-          }
-          size += dataSize;
-          size += 2 * repeatedInt32_.Count;
-        }
-        {
-          int dataSize = 0;
-          foreach (long element in RepeatedInt64List) {
-            dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
-          }
-          size += dataSize;
-          size += 2 * repeatedInt64_.Count;
-        }
-        {
-          int dataSize = 0;
-          foreach (uint element in RepeatedUint32List) {
-            dataSize += pb::CodedOutputStream.ComputeUInt32SizeNoTag(element);
-          }
-          size += dataSize;
-          size += 2 * repeatedUint32_.Count;
-        }
-        {
-          int dataSize = 0;
-          foreach (ulong element in RepeatedUint64List) {
-            dataSize += pb::CodedOutputStream.ComputeUInt64SizeNoTag(element);
-          }
-          size += dataSize;
-          size += 2 * repeatedUint64_.Count;
-        }
-        {
-          int dataSize = 0;
-          foreach (int element in RepeatedSint32List) {
-            dataSize += pb::CodedOutputStream.ComputeSInt32SizeNoTag(element);
-          }
-          size += dataSize;
-          size += 2 * repeatedSint32_.Count;
-        }
-        {
-          int dataSize = 0;
-          foreach (long element in RepeatedSint64List) {
-            dataSize += pb::CodedOutputStream.ComputeSInt64SizeNoTag(element);
-          }
-          size += dataSize;
-          size += 2 * repeatedSint64_.Count;
-        }
-        {
-          int dataSize = 0;
-          dataSize = 4 * repeatedFixed32_.Count;
-          size += dataSize;
-          size += 2 * repeatedFixed32_.Count;
-        }
-        {
-          int dataSize = 0;
-          dataSize = 8 * repeatedFixed64_.Count;
-          size += dataSize;
-          size += 2 * repeatedFixed64_.Count;
-        }
-        {
-          int dataSize = 0;
-          dataSize = 4 * repeatedSfixed32_.Count;
-          size += dataSize;
-          size += 2 * repeatedSfixed32_.Count;
-        }
-        {
-          int dataSize = 0;
-          dataSize = 8 * repeatedSfixed64_.Count;
-          size += dataSize;
-          size += 2 * repeatedSfixed64_.Count;
-        }
-        {
-          int dataSize = 0;
-          dataSize = 4 * repeatedFloat_.Count;
-          size += dataSize;
-          size += 2 * repeatedFloat_.Count;
-        }
-        {
-          int dataSize = 0;
-          dataSize = 8 * repeatedDouble_.Count;
-          size += dataSize;
-          size += 2 * repeatedDouble_.Count;
-        }
-        {
-          int dataSize = 0;
-          dataSize = 1 * repeatedBool_.Count;
-          size += dataSize;
-          size += 2 * repeatedBool_.Count;
-        }
-        {
-          int dataSize = 0;
-          foreach (string element in RepeatedStringList) {
-            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
-          }
-          size += dataSize;
-          size += 2 * repeatedString_.Count;
-        }
-        {
-          int dataSize = 0;
-          foreach (pb::ByteString element in RepeatedBytesList) {
-            dataSize += pb::CodedOutputStream.ComputeBytesSizeNoTag(element);
-          }
-          size += dataSize;
-          size += 2 * repeatedBytes_.Count;
-        }
-        foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.RepeatedGroup element in RepeatedGroupList) {
-          size += pb::CodedOutputStream.ComputeGroupSize(46, element);
-        }
-        foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage element in RepeatedNestedMessageList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(48, element);
-        }
-        foreach (global::Google.ProtocolBuffers.TestProtos.ForeignMessageLite element in RepeatedForeignMessageList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(49, element);
-        }
-        foreach (global::Google.ProtocolBuffers.TestProtos.ImportMessageLite element in RepeatedImportMessageList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(50, element);
-        }
-        {
-          int dataSize = 0;
-          if (repeatedNestedEnum_.Count > 0) {
-            foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum element in repeatedNestedEnum_) {
-              dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
-            }
-            size += dataSize;
-            size += 2 * repeatedNestedEnum_.Count;
-          }
-        }
-        {
-          int dataSize = 0;
-          if (repeatedForeignEnum_.Count > 0) {
-            foreach (global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite element in repeatedForeignEnum_) {
-              dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
-            }
-            size += dataSize;
-            size += 2 * repeatedForeignEnum_.Count;
-          }
-        }
-        {
-          int dataSize = 0;
-          if (repeatedImportEnum_.Count > 0) {
-            foreach (global::Google.ProtocolBuffers.TestProtos.ImportEnumLite element in repeatedImportEnum_) {
-              dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
-            }
-            size += dataSize;
-            size += 2 * repeatedImportEnum_.Count;
-          }
-        }
-        {
-          int dataSize = 0;
-          foreach (string element in RepeatedStringPieceList) {
-            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
-          }
-          size += dataSize;
-          size += 2 * repeatedStringPiece_.Count;
-        }
-        {
-          int dataSize = 0;
-          foreach (string element in RepeatedCordList) {
-            dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
-          }
-          size += dataSize;
-          size += 2 * repeatedCord_.Count;
-        }
-        if (hasDefaultInt32) {
-          size += pb::CodedOutputStream.ComputeInt32Size(61, DefaultInt32);
-        }
-        if (hasDefaultInt64) {
-          size += pb::CodedOutputStream.ComputeInt64Size(62, DefaultInt64);
-        }
-        if (hasDefaultUint32) {
-          size += pb::CodedOutputStream.ComputeUInt32Size(63, DefaultUint32);
-        }
-        if (hasDefaultUint64) {
-          size += pb::CodedOutputStream.ComputeUInt64Size(64, DefaultUint64);
-        }
-        if (hasDefaultSint32) {
-          size += pb::CodedOutputStream.ComputeSInt32Size(65, DefaultSint32);
-        }
-        if (hasDefaultSint64) {
-          size += pb::CodedOutputStream.ComputeSInt64Size(66, DefaultSint64);
-        }
-        if (hasDefaultFixed32) {
-          size += pb::CodedOutputStream.ComputeFixed32Size(67, DefaultFixed32);
-        }
-        if (hasDefaultFixed64) {
-          size += pb::CodedOutputStream.ComputeFixed64Size(68, DefaultFixed64);
-        }
-        if (hasDefaultSfixed32) {
-          size += pb::CodedOutputStream.ComputeSFixed32Size(69, DefaultSfixed32);
-        }
-        if (hasDefaultSfixed64) {
-          size += pb::CodedOutputStream.ComputeSFixed64Size(70, DefaultSfixed64);
-        }
-        if (hasDefaultFloat) {
-          size += pb::CodedOutputStream.ComputeFloatSize(71, DefaultFloat);
-        }
-        if (hasDefaultDouble) {
-          size += pb::CodedOutputStream.ComputeDoubleSize(72, DefaultDouble);
-        }
-        if (hasDefaultBool) {
-          size += pb::CodedOutputStream.ComputeBoolSize(73, DefaultBool);
-        }
-        if (hasDefaultString) {
-          size += pb::CodedOutputStream.ComputeStringSize(74, DefaultString);
-        }
-        if (hasDefaultBytes) {
-          size += pb::CodedOutputStream.ComputeBytesSize(75, DefaultBytes);
-        }
-        if (hasDefaultNestedEnum) {
-          size += pb::CodedOutputStream.ComputeEnumSize(81, (int) DefaultNestedEnum);
-        }
-        if (hasDefaultForeignEnum) {
-          size += pb::CodedOutputStream.ComputeEnumSize(82, (int) DefaultForeignEnum);
-        }
-        if (hasDefaultImportEnum) {
-          size += pb::CodedOutputStream.ComputeEnumSize(83, (int) DefaultImportEnum);
-        }
-        if (hasDefaultStringPiece) {
-          size += pb::CodedOutputStream.ComputeStringSize(84, DefaultStringPiece);
-        }
-        if (hasDefaultCord) {
-          size += pb::CodedOutputStream.ComputeStringSize(85, DefaultCord);
-        }
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasOptionalInt32) {
+        size += pb::CodedOutputStream.ComputeInt32Size(1, OptionalInt32);
+      }
+      if (hasOptionalInt64) {
+        size += pb::CodedOutputStream.ComputeInt64Size(2, OptionalInt64);
+      }
+      if (hasOptionalUint32) {
+        size += pb::CodedOutputStream.ComputeUInt32Size(3, OptionalUint32);
+      }
+      if (hasOptionalUint64) {
+        size += pb::CodedOutputStream.ComputeUInt64Size(4, OptionalUint64);
+      }
+      if (hasOptionalSint32) {
+        size += pb::CodedOutputStream.ComputeSInt32Size(5, OptionalSint32);
+      }
+      if (hasOptionalSint64) {
+        size += pb::CodedOutputStream.ComputeSInt64Size(6, OptionalSint64);
+      }
+      if (hasOptionalFixed32) {
+        size += pb::CodedOutputStream.ComputeFixed32Size(7, OptionalFixed32);
+      }
+      if (hasOptionalFixed64) {
+        size += pb::CodedOutputStream.ComputeFixed64Size(8, OptionalFixed64);
+      }
+      if (hasOptionalSfixed32) {
+        size += pb::CodedOutputStream.ComputeSFixed32Size(9, OptionalSfixed32);
+      }
+      if (hasOptionalSfixed64) {
+        size += pb::CodedOutputStream.ComputeSFixed64Size(10, OptionalSfixed64);
+      }
+      if (hasOptionalFloat) {
+        size += pb::CodedOutputStream.ComputeFloatSize(11, OptionalFloat);
+      }
+      if (hasOptionalDouble) {
+        size += pb::CodedOutputStream.ComputeDoubleSize(12, OptionalDouble);
+      }
+      if (hasOptionalBool) {
+        size += pb::CodedOutputStream.ComputeBoolSize(13, OptionalBool);
+      }
+      if (hasOptionalString) {
+        size += pb::CodedOutputStream.ComputeStringSize(14, OptionalString);
+      }
+      if (hasOptionalBytes) {
+        size += pb::CodedOutputStream.ComputeBytesSize(15, OptionalBytes);
+      }
+      if (hasOptionalGroup) {
+        size += pb::CodedOutputStream.ComputeGroupSize(16, OptionalGroup);
+      }
+      if (hasOptionalNestedMessage) {
+        size += pb::CodedOutputStream.ComputeMessageSize(18, OptionalNestedMessage);
+      }
+      if (hasOptionalForeignMessage) {
+        size += pb::CodedOutputStream.ComputeMessageSize(19, OptionalForeignMessage);
+      }
+      if (hasOptionalImportMessage) {
+        size += pb::CodedOutputStream.ComputeMessageSize(20, OptionalImportMessage);
+      }
+      if (hasOptionalNestedEnum) {
+        size += pb::CodedOutputStream.ComputeEnumSize(21, (int) OptionalNestedEnum);
+      }
+      if (hasOptionalForeignEnum) {
+        size += pb::CodedOutputStream.ComputeEnumSize(22, (int) OptionalForeignEnum);
+      }
+      if (hasOptionalImportEnum) {
+        size += pb::CodedOutputStream.ComputeEnumSize(23, (int) OptionalImportEnum);
+      }
+      if (hasOptionalStringPiece) {
+        size += pb::CodedOutputStream.ComputeStringSize(24, OptionalStringPiece);
+      }
+      if (hasOptionalCord) {
+        size += pb::CodedOutputStream.ComputeStringSize(25, OptionalCord);
+      }
+      {
+        int dataSize = 0;
+        foreach (int element in RepeatedInt32List) {
+          dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+        }
+        size += dataSize;
+        size += 2 * repeatedInt32_.Count;
+      }
+      {
+        int dataSize = 0;
+        foreach (long element in RepeatedInt64List) {
+          dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
+        }
+        size += dataSize;
+        size += 2 * repeatedInt64_.Count;
+      }
+      {
+        int dataSize = 0;
+        foreach (uint element in RepeatedUint32List) {
+          dataSize += pb::CodedOutputStream.ComputeUInt32SizeNoTag(element);
+        }
+        size += dataSize;
+        size += 2 * repeatedUint32_.Count;
+      }
+      {
+        int dataSize = 0;
+        foreach (ulong element in RepeatedUint64List) {
+          dataSize += pb::CodedOutputStream.ComputeUInt64SizeNoTag(element);
+        }
+        size += dataSize;
+        size += 2 * repeatedUint64_.Count;
+      }
+      {
+        int dataSize = 0;
+        foreach (int element in RepeatedSint32List) {
+          dataSize += pb::CodedOutputStream.ComputeSInt32SizeNoTag(element);
+        }
+        size += dataSize;
+        size += 2 * repeatedSint32_.Count;
+      }
+      {
+        int dataSize = 0;
+        foreach (long element in RepeatedSint64List) {
+          dataSize += pb::CodedOutputStream.ComputeSInt64SizeNoTag(element);
+        }
+        size += dataSize;
+        size += 2 * repeatedSint64_.Count;
+      }
+      {
+        int dataSize = 0;
+        dataSize = 4 * repeatedFixed32_.Count;
+        size += dataSize;
+        size += 2 * repeatedFixed32_.Count;
+      }
+      {
+        int dataSize = 0;
+        dataSize = 8 * repeatedFixed64_.Count;
+        size += dataSize;
+        size += 2 * repeatedFixed64_.Count;
+      }
+      {
+        int dataSize = 0;
+        dataSize = 4 * repeatedSfixed32_.Count;
+        size += dataSize;
+        size += 2 * repeatedSfixed32_.Count;
+      }
+      {
+        int dataSize = 0;
+        dataSize = 8 * repeatedSfixed64_.Count;
+        size += dataSize;
+        size += 2 * repeatedSfixed64_.Count;
+      }
+      {
+        int dataSize = 0;
+        dataSize = 4 * repeatedFloat_.Count;
+        size += dataSize;
+        size += 2 * repeatedFloat_.Count;
+      }
+      {
+        int dataSize = 0;
+        dataSize = 8 * repeatedDouble_.Count;
+        size += dataSize;
+        size += 2 * repeatedDouble_.Count;
+      }
+      {
+        int dataSize = 0;
+        dataSize = 1 * repeatedBool_.Count;
+        size += dataSize;
+        size += 2 * repeatedBool_.Count;
+      }
+      {
+        int dataSize = 0;
+        foreach (string element in RepeatedStringList) {
+          dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+        }
+        size += dataSize;
+        size += 2 * repeatedString_.Count;
+      }
+      {
+        int dataSize = 0;
+        foreach (pb::ByteString element in RepeatedBytesList) {
+          dataSize += pb::CodedOutputStream.ComputeBytesSizeNoTag(element);
+        }
+        size += dataSize;
+        size += 2 * repeatedBytes_.Count;
+      }
+      foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.RepeatedGroup element in RepeatedGroupList) {
+        size += pb::CodedOutputStream.ComputeGroupSize(46, element);
+      }
+      foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage element in RepeatedNestedMessageList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(48, element);
+      }
+      foreach (global::Google.ProtocolBuffers.TestProtos.ForeignMessageLite element in RepeatedForeignMessageList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(49, element);
+      }
+      foreach (global::Google.ProtocolBuffers.TestProtos.ImportMessageLite element in RepeatedImportMessageList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(50, element);
+      }
+      {
+        int dataSize = 0;
+        if (repeatedNestedEnum_.Count > 0) {
+          foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum element in repeatedNestedEnum_) {
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+          }
+          size += dataSize;
+          size += 2 * repeatedNestedEnum_.Count;
+        }
+      }
+      {
+        int dataSize = 0;
+        if (repeatedForeignEnum_.Count > 0) {
+          foreach (global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite element in repeatedForeignEnum_) {
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+          }
+          size += dataSize;
+          size += 2 * repeatedForeignEnum_.Count;
+        }
+      }
+      {
+        int dataSize = 0;
+        if (repeatedImportEnum_.Count > 0) {
+          foreach (global::Google.ProtocolBuffers.TestProtos.ImportEnumLite element in repeatedImportEnum_) {
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+          }
+          size += dataSize;
+          size += 2 * repeatedImportEnum_.Count;
+        }
+      }
+      {
+        int dataSize = 0;
+        foreach (string element in RepeatedStringPieceList) {
+          dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+        }
+        size += dataSize;
+        size += 2 * repeatedStringPiece_.Count;
+      }
+      {
+        int dataSize = 0;
+        foreach (string element in RepeatedCordList) {
+          dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+        }
+        size += dataSize;
+        size += 2 * repeatedCord_.Count;
+      }
+      if (hasDefaultInt32) {
+        size += pb::CodedOutputStream.ComputeInt32Size(61, DefaultInt32);
+      }
+      if (hasDefaultInt64) {
+        size += pb::CodedOutputStream.ComputeInt64Size(62, DefaultInt64);
+      }
+      if (hasDefaultUint32) {
+        size += pb::CodedOutputStream.ComputeUInt32Size(63, DefaultUint32);
+      }
+      if (hasDefaultUint64) {
+        size += pb::CodedOutputStream.ComputeUInt64Size(64, DefaultUint64);
+      }
+      if (hasDefaultSint32) {
+        size += pb::CodedOutputStream.ComputeSInt32Size(65, DefaultSint32);
+      }
+      if (hasDefaultSint64) {
+        size += pb::CodedOutputStream.ComputeSInt64Size(66, DefaultSint64);
+      }
+      if (hasDefaultFixed32) {
+        size += pb::CodedOutputStream.ComputeFixed32Size(67, DefaultFixed32);
+      }
+      if (hasDefaultFixed64) {
+        size += pb::CodedOutputStream.ComputeFixed64Size(68, DefaultFixed64);
+      }
+      if (hasDefaultSfixed32) {
+        size += pb::CodedOutputStream.ComputeSFixed32Size(69, DefaultSfixed32);
+      }
+      if (hasDefaultSfixed64) {
+        size += pb::CodedOutputStream.ComputeSFixed64Size(70, DefaultSfixed64);
+      }
+      if (hasDefaultFloat) {
+        size += pb::CodedOutputStream.ComputeFloatSize(71, DefaultFloat);
+      }
+      if (hasDefaultDouble) {
+        size += pb::CodedOutputStream.ComputeDoubleSize(72, DefaultDouble);
+      }
+      if (hasDefaultBool) {
+        size += pb::CodedOutputStream.ComputeBoolSize(73, DefaultBool);
+      }
+      if (hasDefaultString) {
+        size += pb::CodedOutputStream.ComputeStringSize(74, DefaultString);
+      }
+      if (hasDefaultBytes) {
+        size += pb::CodedOutputStream.ComputeBytesSize(75, DefaultBytes);
+      }
+      if (hasDefaultNestedEnum) {
+        size += pb::CodedOutputStream.ComputeEnumSize(81, (int) DefaultNestedEnum);
+      }
+      if (hasDefaultForeignEnum) {
+        size += pb::CodedOutputStream.ComputeEnumSize(82, (int) DefaultForeignEnum);
+      }
+      if (hasDefaultImportEnum) {
+        size += pb::CodedOutputStream.ComputeEnumSize(83, (int) DefaultImportEnum);
+      }
+      if (hasDefaultStringPiece) {
+        size += pb::CodedOutputStream.ComputeStringSize(84, DefaultStringPiece);
+      }
+      if (hasDefaultCord) {
+        size += pb::CodedOutputStream.ComputeStringSize(85, DefaultCord);
+      }
+      memoizedSerializedSize = size;
+      return size;
+    }
     #region Lite runtime methods
     public override int GetHashCode() {
       int hash = GetType().GetHashCode();
@@ -5964,7 +5984,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _foreignMessageLiteFieldNames;
       if (hasC) {
         output.WriteInt32(1, field_names[0], C);
@@ -5976,16 +5996,21 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasC) {
-          size += pb::CodedOutputStream.ComputeInt32Size(1, C);
-        }
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasC) {
+        size += pb::CodedOutputStream.ComputeInt32Size(1, C);
+      }
+      memoizedSerializedSize = size;
+      return size;
+    }
     #region Lite runtime methods
     public override int GetHashCode() {
       int hash = GetType().GetHashCode();
@@ -6405,7 +6430,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _testPackedTypesLiteFieldNames;
       if (packedInt32_.Count > 0) {
         output.WritePackedInt32Array(90, field_names[6], packedInt32MemoizedSerializedSize, packedInt32_);
@@ -6456,154 +6481,159 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        {
-          int dataSize = 0;
-          foreach (int element in PackedInt32List) {
-            dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
-          }
-          size += dataSize;
-          if (packedInt32_.Count != 0) {
-            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-          }
-          packedInt32MemoizedSerializedSize = dataSize;
-        }
-        {
-          int dataSize = 0;
-          foreach (long element in PackedInt64List) {
-            dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
-          }
-          size += dataSize;
-          if (packedInt64_.Count != 0) {
-            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-          }
-          packedInt64MemoizedSerializedSize = dataSize;
-        }
-        {
-          int dataSize = 0;
-          foreach (uint element in PackedUint32List) {
-            dataSize += pb::CodedOutputStream.ComputeUInt32SizeNoTag(element);
-          }
-          size += dataSize;
-          if (packedUint32_.Count != 0) {
-            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-          }
-          packedUint32MemoizedSerializedSize = dataSize;
-        }
-        {
-          int dataSize = 0;
-          foreach (ulong element in PackedUint64List) {
-            dataSize += pb::CodedOutputStream.ComputeUInt64SizeNoTag(element);
-          }
-          size += dataSize;
-          if (packedUint64_.Count != 0) {
-            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-          }
-          packedUint64MemoizedSerializedSize = dataSize;
-        }
-        {
-          int dataSize = 0;
-          foreach (int element in PackedSint32List) {
-            dataSize += pb::CodedOutputStream.ComputeSInt32SizeNoTag(element);
-          }
-          size += dataSize;
-          if (packedSint32_.Count != 0) {
-            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-          }
-          packedSint32MemoizedSerializedSize = dataSize;
-        }
-        {
-          int dataSize = 0;
-          foreach (long element in PackedSint64List) {
-            dataSize += pb::CodedOutputStream.ComputeSInt64SizeNoTag(element);
-          }
-          size += dataSize;
-          if (packedSint64_.Count != 0) {
-            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-          }
-          packedSint64MemoizedSerializedSize = dataSize;
-        }
-        {
-          int dataSize = 0;
-          dataSize = 4 * packedFixed32_.Count;
-          size += dataSize;
-          if (packedFixed32_.Count != 0) {
-            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-          }
-          packedFixed32MemoizedSerializedSize = dataSize;
-        }
-        {
-          int dataSize = 0;
-          dataSize = 8 * packedFixed64_.Count;
-          size += dataSize;
-          if (packedFixed64_.Count != 0) {
-            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-          }
-          packedFixed64MemoizedSerializedSize = dataSize;
-        }
-        {
-          int dataSize = 0;
-          dataSize = 4 * packedSfixed32_.Count;
-          size += dataSize;
-          if (packedSfixed32_.Count != 0) {
-            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-          }
-          packedSfixed32MemoizedSerializedSize = dataSize;
-        }
-        {
-          int dataSize = 0;
-          dataSize = 8 * packedSfixed64_.Count;
-          size += dataSize;
-          if (packedSfixed64_.Count != 0) {
-            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-          }
-          packedSfixed64MemoizedSerializedSize = dataSize;
-        }
-        {
-          int dataSize = 0;
-          dataSize = 4 * packedFloat_.Count;
-          size += dataSize;
-          if (packedFloat_.Count != 0) {
-            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-          }
-          packedFloatMemoizedSerializedSize = dataSize;
-        }
-        {
-          int dataSize = 0;
-          dataSize = 8 * packedDouble_.Count;
-          size += dataSize;
-          if (packedDouble_.Count != 0) {
-            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-          }
-          packedDoubleMemoizedSerializedSize = dataSize;
-        }
-        {
-          int dataSize = 0;
-          dataSize = 1 * packedBool_.Count;
-          size += dataSize;
-          if (packedBool_.Count != 0) {
-            size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-          }
-          packedBoolMemoizedSerializedSize = dataSize;
-        }
-        {
-          int dataSize = 0;
-          if (packedEnum_.Count > 0) {
-            foreach (global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite element in packedEnum_) {
-              dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
-            }
-            size += dataSize;
-            size += 2;
-            size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
-          }
-          packedEnumMemoizedSerializedSize = dataSize;
-        }
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      {
+        int dataSize = 0;
+        foreach (int element in PackedInt32List) {
+          dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+        }
+        size += dataSize;
+        if (packedInt32_.Count != 0) {
+          size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        }
+        packedInt32MemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        foreach (long element in PackedInt64List) {
+          dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
+        }
+        size += dataSize;
+        if (packedInt64_.Count != 0) {
+          size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        }
+        packedInt64MemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        foreach (uint element in PackedUint32List) {
+          dataSize += pb::CodedOutputStream.ComputeUInt32SizeNoTag(element);
+        }
+        size += dataSize;
+        if (packedUint32_.Count != 0) {
+          size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        }
+        packedUint32MemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        foreach (ulong element in PackedUint64List) {
+          dataSize += pb::CodedOutputStream.ComputeUInt64SizeNoTag(element);
+        }
+        size += dataSize;
+        if (packedUint64_.Count != 0) {
+          size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        }
+        packedUint64MemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        foreach (int element in PackedSint32List) {
+          dataSize += pb::CodedOutputStream.ComputeSInt32SizeNoTag(element);
+        }
+        size += dataSize;
+        if (packedSint32_.Count != 0) {
+          size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        }
+        packedSint32MemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        foreach (long element in PackedSint64List) {
+          dataSize += pb::CodedOutputStream.ComputeSInt64SizeNoTag(element);
+        }
+        size += dataSize;
+        if (packedSint64_.Count != 0) {
+          size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        }
+        packedSint64MemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        dataSize = 4 * packedFixed32_.Count;
+        size += dataSize;
+        if (packedFixed32_.Count != 0) {
+          size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        }
+        packedFixed32MemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        dataSize = 8 * packedFixed64_.Count;
+        size += dataSize;
+        if (packedFixed64_.Count != 0) {
+          size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        }
+        packedFixed64MemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        dataSize = 4 * packedSfixed32_.Count;
+        size += dataSize;
+        if (packedSfixed32_.Count != 0) {
+          size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        }
+        packedSfixed32MemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        dataSize = 8 * packedSfixed64_.Count;
+        size += dataSize;
+        if (packedSfixed64_.Count != 0) {
+          size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        }
+        packedSfixed64MemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        dataSize = 4 * packedFloat_.Count;
+        size += dataSize;
+        if (packedFloat_.Count != 0) {
+          size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        }
+        packedFloatMemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        dataSize = 8 * packedDouble_.Count;
+        size += dataSize;
+        if (packedDouble_.Count != 0) {
+          size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        }
+        packedDoubleMemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        dataSize = 1 * packedBool_.Count;
+        size += dataSize;
+        if (packedBool_.Count != 0) {
+          size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        }
+        packedBoolMemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        if (packedEnum_.Count > 0) {
+          foreach (global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite element in packedEnum_) {
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+          }
+          size += dataSize;
+          size += 2;
+          size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
+        }
+        packedEnumMemoizedSerializedSize = dataSize;
+      }
+      memoizedSerializedSize = size;
+      return size;
+    }
     #region Lite runtime methods
     public override int GetHashCode() {
       int hash = GetType().GetHashCode();
@@ -7455,7 +7485,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _testAllExtensionsLiteFieldNames;
       pb::ExtendableMessageLite<TestAllExtensionsLite, TestAllExtensionsLite.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       extensionWriter.WriteUntil(536870912, output);
@@ -7466,14 +7496,19 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        size += ExtensionsSerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      size += ExtensionsSerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     #region Lite runtime methods
     public override int GetHashCode() {
       int hash = GetType().GetHashCode();
@@ -7687,7 +7722,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _optionalGroupExtensionLiteFieldNames;
       if (hasA) {
         output.WriteInt32(17, field_names[0], A);
@@ -7699,16 +7734,21 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasA) {
-          size += pb::CodedOutputStream.ComputeInt32Size(17, A);
-        }
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasA) {
+        size += pb::CodedOutputStream.ComputeInt32Size(17, A);
+      }
+      memoizedSerializedSize = size;
+      return size;
+    }
     #region Lite runtime methods
     public override int GetHashCode() {
       int hash = GetType().GetHashCode();
@@ -7948,7 +7988,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _repeatedGroupExtensionLiteFieldNames;
       if (hasA) {
         output.WriteInt32(47, field_names[0], A);
@@ -7960,16 +8000,21 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasA) {
-          size += pb::CodedOutputStream.ComputeInt32Size(47, A);
-        }
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasA) {
+        size += pb::CodedOutputStream.ComputeInt32Size(47, A);
+      }
+      memoizedSerializedSize = size;
+      return size;
+    }
     #region Lite runtime methods
     public override int GetHashCode() {
       int hash = GetType().GetHashCode();
@@ -8200,7 +8245,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _testPackedExtensionsLiteFieldNames;
       pb::ExtendableMessageLite<TestPackedExtensionsLite, TestPackedExtensionsLite.Builder>.ExtensionWriter extensionWriter = CreateExtensionWriter(this);
       extensionWriter.WriteUntil(536870912, output);
@@ -8211,14 +8256,19 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        size += ExtensionsSerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      size += ExtensionsSerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     #region Lite runtime methods
     public override int GetHashCode() {
       int hash = GetType().GetHashCode();
@@ -8424,7 +8474,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _testNestedExtensionLiteFieldNames;
     }
     
@@ -8433,13 +8483,18 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      memoizedSerializedSize = size;
+      return size;
+    }
     #region Lite runtime methods
     public override int GetHashCode() {
       int hash = GetType().GetHashCode();
@@ -8651,7 +8706,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _testDeprecatedLiteFieldNames;
       if (hasDeprecatedField) {
         output.WriteInt32(1, field_names[0], DeprecatedField);
@@ -8663,16 +8718,21 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasDeprecatedField) {
-          size += pb::CodedOutputStream.ComputeInt32Size(1, DeprecatedField);
-        }
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasDeprecatedField) {
+        size += pb::CodedOutputStream.ComputeInt32Size(1, DeprecatedField);
+      }
+      memoizedSerializedSize = size;
+      return size;
+    }
     #region Lite runtime methods
     public override int GetHashCode() {
       int hash = GetType().GetHashCode();

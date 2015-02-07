@@ -120,7 +120,7 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     
     public override void WriteTo(pb::ICodedOutputStream output) {
-      int size = SerializedSize;
+      CalcSerializedSize();
       string[] field_names = _testEmbedOptimizedForSizeFieldNames;
       if (hasOptionalMessage) {
         output.WriteMessage(1, field_names[0], OptionalMessage);
@@ -136,20 +136,25 @@ namespace Google.ProtocolBuffers.TestProtos {
       get {
         int size = memoizedSerializedSize;
         if (size != -1) return size;
-        
-        size = 0;
-        if (hasOptionalMessage) {
-          size += pb::CodedOutputStream.ComputeMessageSize(1, OptionalMessage);
-        }
-        foreach (global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize element in RepeatedMessageList) {
-          size += pb::CodedOutputStream.ComputeMessageSize(2, element);
-        }
-        size += UnknownFields.SerializedSize;
-        memoizedSerializedSize = size;
-        return size;
+        return CalcSerializedSize();
       }
     }
     
+    private int CalcSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+      
+      size = 0;
+      if (hasOptionalMessage) {
+        size += pb::CodedOutputStream.ComputeMessageSize(1, OptionalMessage);
+      }
+      foreach (global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize element in RepeatedMessageList) {
+        size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+      }
+      size += UnknownFields.SerializedSize;
+      memoizedSerializedSize = size;
+      return size;
+    }
     public static TestEmbedOptimizedForSize ParseFrom(pb::ByteString data) {
       return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
     }
