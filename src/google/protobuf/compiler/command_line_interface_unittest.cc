@@ -959,6 +959,24 @@ TEST_F(CommandLineInterfaceTest, WriteTransitiveDescriptorSetWithSourceInfo) {
   EXPECT_TRUE(descriptor_set.file(1).has_source_code_info());
 }
 
+TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileGivenTwoInputs) {
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n"
+    "message Foo {}\n");
+  CreateTempFile("bar.proto",
+    "syntax = \"proto2\";\n"
+    "import \"foo.proto\";\n"
+    "message Bar {\n"
+    "  optional Foo foo = 1;\n"
+    "}\n");
+
+  Run("protocol_compiler --dependency_out=$tmpdir/manifest "
+      "--test_out=$tmpdir --proto_path=$tmpdir bar.proto foo.proto");
+
+  ExpectErrorText(
+      "Can only process one input file when using --dependency_out=FILE.\n");
+}
+
 TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
   CreateTempFile("foo.proto",
     "syntax = \"proto2\";\n"
@@ -976,8 +994,8 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
   ExpectNoErrors();
 
   ExpectFileContent("manifest",
-                    "$tmpdir/manifest: $tmpdir/foo.proto\\\n"
-                    " $tmpdir/bar.proto");
+                    "$tmpdir/bar.proto.MockCodeGenerator.test_generator: "
+                    "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
 }
 
 TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForRelativePath) {
@@ -1000,8 +1018,8 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForRelativePath) {
   ExpectNoErrors();
 
   ExpectFileContent("manifest",
-                    "$tmpdir/manifest: $tmpdir/foo.proto\\\n"
-                    " $tmpdir/bar.proto");
+                    "$tmpdir/bar.proto.MockCodeGenerator.test_generator: "
+                    "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
 
   File::ChangeWorkingDirectory(current_working_directory);
 }

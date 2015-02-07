@@ -48,7 +48,6 @@
 #include <iostream>
 #include <ctype.h>
 
-#include <google/protobuf/stubs/hash.h>
 #include <memory>
 #ifndef _SHARED_PTR_H
 #include <google/protobuf/stubs/shared_ptr.h>
@@ -254,6 +253,9 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
   // format, unless one has already been written.
   void AddJarManifest();
 
+  // Get name of all output files.
+  void GetOutputFilenames(vector<string>* output_filenames);
+
   // implements GeneratorContext --------------------------------------
   io::ZeroCopyOutputStream* Open(const string& filename);
   io::ZeroCopyOutputStream* OpenForAppend(const string& filename);
@@ -438,6 +440,14 @@ void CommandLineInterface::GeneratorContextImpl::AddJarManifest() {
         "Manifest-Version: 1.0\n"
         "Created-By: 1.6.0 (protoc)\n"
         "\n");
+  }
+}
+
+void CommandLineInterface::GeneratorContextImpl::GetOutputFilenames(
+    vector<string>* output_filenames) {
+  for (map<string, string*>::iterator iter = files_.begin();
+       iter != files_.end(); ++iter) {
+    output_filenames->push_back(iter->first);
   }
 }
 
@@ -670,7 +680,6 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   // We construct a separate GeneratorContext for each output location.  Note
   // that two code generators may output to the same location, in which case
   // they should share a single GeneratorContext so that OpenForInsert() works.
-  typedef hash_map<string, GeneratorContextImpl*> GeneratorContextMap;
   GeneratorContextMap output_directories;
 
   // Generate output.
@@ -717,16 +726,17 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     }
   }
 
-  STLDeleteValues(&output_directories);
-
-  if (!descriptor_set_name_.empty()) {
-    if (!WriteDescriptorSet(parsed_files)) {
+  if (!dependency_out_name_.empty()) {
+    if (!GenerateDependencyManifestFile(parsed_files, output_directories,
+                                        &source_tree)) {
       return 1;
     }
   }
 
-  if (!dependency_out_name_.empty()) {
-    if (!GenerateDependencyManifestFile(parsed_files, &source_tree)) {
+  STLDeleteValues(&output_directories);
+
+  if (!descriptor_set_name_.empty()) {
+    if (!WriteDescriptorSet(parsed_files)) {
       return 1;
     }
   }
@@ -878,6 +888,15 @@ CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
     cerr << "Missing output directives." << endl;
     return PARSE_ARGUMENT_FAIL;
   }
+  if (mode_ != MODE_COMPILE && !dependency_out_name_.empty()) {
+    cerr << "Can only use --dependency_out=FILE when generating code." << endl;
+    return PARSE_ARGUMENT_FAIL;
+  }
+  if (!dependency_out_name_.empty() && input_files_.size() > 1) {
+    cerr << "Can only process one input file when using --dependency_out=FILE."
+         << endl;
+    return PARSE_ARGUMENT_FAIL;
+  }
   if (imports_in_descriptor_set_ && descriptor_set_name_.empty()) {
     cerr << "--include_imports only makes sense when combined with "
             "--descriptor_set_out." << endl;
@@ -1026,11 +1045,6 @@ CommandLineInterface::InterpretArgument(const string& name,
     }
     if (value.empty()) {
       cerr << name << " requires a non-empty value." << endl;
-      return PARSE_ARGUMENT_FAIL;
-    }
-    if (mode_ != MODE_COMPILE) {
-      cerr << "Cannot use --encode or --decode and --dependency_out=FILE at "
-              "the same time." << endl;
       return PARSE_ARGUMENT_FAIL;
     }
     dependency_out_name_ = value;
@@ -1310,6 +1324,7 @@ bool CommandLineInterface::GenerateOutput(
 
 bool CommandLineInterface::GenerateDependencyManifestFile(
     const vector<const FileDescriptor*>& parsed_files,
+    const GeneratorContextMap& output_directories,
     DiskSourceTree* source_tree) {
   FileDescriptorSet file_set;
 
@@ -1319,6 +1334,18 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
                               false,
                               &already_seen,
                               file_set.mutable_file());
+  }
+
+  vector<string> output_filenames;
+  for (GeneratorContextMap::const_iterator iter = output_directories.begin();
+       iter != output_directories.end(); ++iter) {
+    const string& location = iter->first;
+    GeneratorContextImpl* directory = iter->second;
+    vector<string> relative_output_filenames;
+    directory->GetOutputFilenames(&relative_output_filenames);
+    for (int i = 0; i < relative_output_filenames.size(); i++) {
+      output_filenames.push_back(location + relative_output_filenames[i]);
+    }
   }
 
   int fd;
@@ -1335,15 +1362,15 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
   io::FileOutputStream out(fd);
   io::Printer printer(&out, '$');
 
-  if (dependency_out_name_.compare(0, 1, "/") != 0) {
-    // Convert relative path to absolute path before print.
-    printer.Print("$working_directory$/$output_filename$:",
-                  "working_directory", get_current_dir_name(),
-                  "output_filename", dependency_out_name_);
-  } else {
-    printer.Print("$output_filename$:",
-                  "output_filename", dependency_out_name_);
+  for (int i = 0; i < output_filenames.size(); i++) {
+    printer.Print(output_filenames[i].c_str());
+    if (i == output_filenames.size() - 1) {
+      printer.Print(":");
+    } else {
+      printer.Print(" \\\n");
+    }
   }
+
   for (int i = 0; i < file_set.file_size(); i++) {
     const FileDescriptorProto& file = file_set.file(i);
     const string& virtual_file = file.name();
