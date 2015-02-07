@@ -40,7 +40,8 @@ namespace protobuf {
 namespace compiler {
 namespace ruby {
 
-class Generator : public google::protobuf::compiler::CodeGenerator {
+class LIBPROTOC_EXPORT Generator
+    : public google::protobuf::compiler::CodeGenerator {
   virtual bool Generate(
       const FileDescriptor* file,
       const string& parameter,
