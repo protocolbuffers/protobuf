@@ -427,7 +427,7 @@ namespace Google.ProtocolBuffers
         public bool ReadBytes(ref ByteString value)
         {
             int size = (int) ReadRawVarint32();
-            if (size < bufferSize - bufferPos && size > 0)
+            if (size <= bufferSize - bufferPos && size > 0)
             {
                 // Fast path:  We already have the bytes in a contiguous buffer, so
                 //   just copy directly from it.

@@ -37,6 +37,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
@@ -605,5 +606,34 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(4, unk.Count);
         }
 
+        //Issue 71:	CodedInputStream.ReadBytes go to slow path unnecessarily
+        [TestMethod]
+        public void TestSlowPathAvoidance()
+        {
+            using (var ms = new MemoryStream())
+            {
+                CodedOutputStream output = CodedOutputStream.CreateInstance(ms);
+                output.WriteField(FieldType.Bytes, 1, "bytes", ByteString.CopyFrom(new byte[100]));
+                output.WriteField(FieldType.Bytes, 2, "bytes", ByteString.CopyFrom(new byte[100]));
+                output.Flush();
+
+                ms.Position = 0;
+                CodedInputStream input = CodedInputStream.CreateInstance(ms, new byte[ms.Length / 2]);
+
+                uint tag;
+                string ignore;
+                ByteString value;
+
+                Assert.IsTrue(input.ReadTag(out tag, out ignore));
+                Assert.AreEqual(1, WireFormat.GetTagFieldNumber(tag));
+                value = ByteString.Empty;
+                Assert.IsTrue(input.ReadBytes(ref value) && value.Length == 100);
+
+                Assert.IsTrue(input.ReadTag(out tag, out ignore));
+                Assert.AreEqual(2, WireFormat.GetTagFieldNumber(tag));
+                value = ByteString.Empty;
+                Assert.IsTrue(input.ReadBytes(ref value) && value.Length == 100);
+            }
+        }
     }
 }
