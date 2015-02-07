@@ -95,26 +95,140 @@ namespace Google.ProtocolBuffers
 
         public IEnumLite FindValueByNumber(int number)
         {
-            if (Enum.IsDefined(typeof(TEnum), number))
+            TEnum val = default(TEnum);
+            if (EnumParser<TEnum>.TryConvert(number, ref val))
             {
-                return new EnumValue((TEnum)(object)number);
+                return new EnumValue(val);
             }
             return null;
         }
 
         public IEnumLite FindValueByName(string name)
         {
-            if (Enum.IsDefined(typeof(TEnum), name))
+            TEnum val = default(TEnum);
+            if (EnumParser<TEnum>.TryConvert(name, ref val))
             {
-                object evalue = Enum.Parse(typeof(TEnum), name, false);
-                return new EnumValue((TEnum)evalue);
+                return new EnumValue(val);
             }
             return null;
         }
 
         public bool IsValidValue(IEnumLite value)
         {
-            return Enum.IsDefined(typeof(TEnum), value.Number);
+            TEnum val = default(TEnum);
+            return EnumParser<TEnum>.TryConvert(value.Number, ref val);
+        }
+    }
+
+    public static class EnumParser<T> where T : struct, IComparable, IFormattable
+    {
+        private static readonly Dictionary<int, T> _byNumber;
+        private static Dictionary<string, T> _byName;
+
+        static EnumParser()
+        {
+            int[] array;
+            try
+            {
+#if CLIENTPROFILE
+                // It will actually be a T[], but the CLR will let us convert.
+                array = (int[])Enum.GetValues(typeof(T));
+#else
+                var temp = new List<T>();
+                foreach (var fld in typeof (T).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static))
+                {
+                    if (fld.IsLiteral && fld.FieldType == typeof(T))
+                    {
+                        temp.Add((T)fld.GetValue(null));
+                    }
+                }
+                array = (int[])(object)temp.ToArray();
+#endif
+            }
+            catch
+            {
+                _byNumber = null;
+                return;
+            }
+
+            _byNumber = new Dictionary<int, T>(array.Length);
+            foreach (int i in array)
+            {
+                _byNumber[i] = (T)(object)i;
+            }
+        }
+
+        public static bool TryConvert(object input, ref T value)
+        {
+            if (input is int || input is T)
+            {
+                return TryConvert((int)input, ref value);
+            }
+            if (input is string)
+            {
+                return TryConvert((string)input, ref value);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to convert an integer to its enum representation. This would take an out parameter,
+        /// but the caller uses ref, so this approach is simpler.
+        /// </summary>
+        public static bool TryConvert(int number, ref T value)
+        {
+            // null indicates an exception at construction, use native IsDefined.
+            if (_byNumber == null)
+            {
+                return Enum.IsDefined(typeof(T), number);
+            }
+            T converted;
+            if (_byNumber != null && _byNumber.TryGetValue(number, out converted))
+            {
+                value = converted;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to convert a string to its enum representation. This would take an out parameter,
+        /// but the caller uses ref, so this approach is simpler.
+        /// </summary>
+        public static bool TryConvert(string name, ref T value)
+        {
+            // null indicates an exception at construction, use native IsDefined/Parse.
+            if (_byNumber == null)
+            {
+                if (Enum.IsDefined(typeof(T), name))
+                {
+                    value = (T)Enum.Parse(typeof(T), name, false);
+                    return true;
+                }
+                return false;
+            }
+
+            // known race, possible multiple threads each build their own copy; however, last writer will win
+            var map = _byName;
+            if (map == null)
+            {
+                map = new Dictionary<string, T>(StringComparer.Ordinal);
+                foreach (var possible in _byNumber.Values)
+                {
+                    map[possible.ToString()] = possible;
+                }
+                _byName = map;
+            }
+
+            T converted;
+            if (map.TryGetValue(name, out converted))
+            {
+                value = converted;
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -469,23 +469,12 @@ namespace Google.ProtocolBuffers.Serialization
             rawValue = null;
             if (ReadEnum(ref rawValue))
             {
-                if (Enum.IsDefined(typeof(T), rawValue))
+                if (!EnumParser<T>.TryConvert(rawValue, ref value))
                 {
-                    if (rawValue is int)
-                    {
-                        value = (T) rawValue;
-                    }
-                    else if (rawValue is string)
-                    {
-                        value = (T) Enum.Parse(typeof(T), (string) rawValue, false);
-                    }
-                    else
-                    {
-                        value = default(T);
-                        return false;
-                    }
-                    return true;
+                    value = default(T);
+                    return false;
                 }
+                return true;
             }
             return false;
         }
@@ -560,13 +549,10 @@ namespace Google.ProtocolBuffers.Serialization
             {
                 foreach (object rawValue in array)
                 {
-                    if (rawValue is int)
+                    T val = default(T);
+                    if (EnumParser<T>.TryConvert(rawValue, ref val))
                     {
-                        list.Add((T) rawValue);
-                    }
-                    else if (rawValue is string)
-                    {
-                        list.Add((T) Enum.Parse(typeof(T), (string) rawValue, false));
+                        list.Add(val);
                     }
                     else
                     {
