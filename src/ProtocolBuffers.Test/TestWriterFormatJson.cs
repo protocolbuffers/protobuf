@@ -492,7 +492,7 @@ namespace Google.ProtocolBuffers
                .SetPackage("package")
                .BuildPartial();
 
-            Assert.IsNotNull(opts.ToJson());
+            Assert.IsNotNull(Extensions.ToJson(opts));
         }
     }
 }
