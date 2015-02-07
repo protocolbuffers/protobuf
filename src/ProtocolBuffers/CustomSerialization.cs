@@ -36,6 +36,7 @@
 /*
  * This entire source file is not supported on some platform
  */
+using System.Security.Permissions;
 #if !NOSERIALIZABLE
 using System;
 using System.Runtime.Serialization;
@@ -52,6 +53,7 @@ namespace Google.ProtocolBuffers
     partial class AbstractMessageLite<TMessage, TBuilder> : ISerializable
     {
         [SecurityCritical]
+        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.SerializationFormatter)]
         void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
         {
             info.SetType(typeof(SerializationSurrogate));
@@ -72,6 +74,8 @@ namespace Google.ProtocolBuffers
                 _initialized = info.GetBoolean("initialized");
             }
 
+            [SecurityCritical]
+            [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.SerializationFormatter)]
             object IObjectReference.GetRealObject(StreamingContext context)
             {
                 ExtensionRegistry registry = context.Context as ExtensionRegistry;
@@ -95,6 +99,7 @@ namespace Google.ProtocolBuffers
             }
 
             [SecurityCritical]
+            [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.SerializationFormatter)]
             void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
             {
                 info.AddValue("message", _message);
@@ -106,6 +111,7 @@ namespace Google.ProtocolBuffers
     partial class AbstractBuilderLite<TMessage, TBuilder> : ISerializable
     {
         [SecurityCritical]
+        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.SerializationFormatter)]
         void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
         {
             info.SetType(typeof(SerializationSurrogate));
@@ -123,6 +129,8 @@ namespace Google.ProtocolBuffers
                 _message = (byte[])info.GetValue("message", typeof(byte[]));
             }
 
+            [SecurityCritical]
+            [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.SerializationFormatter)]
             object IObjectReference.GetRealObject(StreamingContext context)
             {
                 ExtensionRegistry registry = context.Context as ExtensionRegistry;
@@ -139,6 +147,7 @@ namespace Google.ProtocolBuffers
             }
 
             [SecurityCritical]
+            [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.SerializationFormatter)]
             void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
             {
                 info.AddValue("message", _message);
