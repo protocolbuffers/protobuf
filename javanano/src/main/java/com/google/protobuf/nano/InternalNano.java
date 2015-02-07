@@ -30,6 +30,8 @@
 
 package com.google.protobuf.nano;
 
+import com.google.protobuf.nano.MapFactories.MapFactory;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
@@ -406,12 +408,13 @@ public final class InternalNano {
   public static final <K, V> Map<K, V> mergeMapEntry(
       CodedInputByteBufferNano input,
       Map<K, V> map,
+      MapFactory mapFactory,
       int keyType,
       int valueType,
       V value,
       int keyTag,
       int valueTag) throws IOException {
-    map = MapFactories.getMapFactory().forMap(map);
+    map = mapFactory.forMap(map);
     final int length = input.readRawVarint32();
     final int oldLimit = input.pushLimit(length);
     K key = null;

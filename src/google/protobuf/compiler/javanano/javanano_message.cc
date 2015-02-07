@@ -345,6 +345,11 @@ void MessageGenerator::GenerateMergeFromMethods(io::Printer* printer) {
     "classname", descriptor_->name());
 
   printer->Indent();
+  if (HasMapField(descriptor_)) {
+    printer->Print(
+      "com.google.protobuf.nano.MapFactories.MapFactory mapFactory =\n"
+      "  com.google.protobuf.nano.MapFactories.getMapFactory();\n");
+  }
 
   printer->Print(
     "while (true) {\n");

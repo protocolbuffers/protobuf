@@ -134,7 +134,7 @@ void MapFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
     "this.$name$ = com.google.protobuf.nano.InternalNano.mergeMapEntry(\n"
-    "  input, this.$name$,\n"
+    "  input, this.$name$, mapFactory,\n"
     "  com.google.protobuf.nano.InternalNano.$key_desc_type$,\n"
     "  com.google.protobuf.nano.InternalNano.$value_desc_type$,\n"
     "  $value_default$,\n"

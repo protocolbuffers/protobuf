@@ -187,6 +187,8 @@ inline bool IsMapEntry(const Descriptor* descriptor) {
       descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }
 
+bool HasMapField(const Descriptor* descriptor);
+
 }  // namespace javanano
 }  // namespace compiler
 }  // namespace protobuf
