@@ -89,7 +89,12 @@ namespace Google.ProtocolBuffers.ProtoGen
                 names.Add(file, true);
             }
 
-            var filesToGenerate = new HashSet<string>(request.FileToGenerateList);
+            //ROK - Changed to dictionary from HashSet to allow 2.0 compile
+            var filesToGenerate = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var item in request.FileToGenerateList)
+            {
+                filesToGenerate[item] = null;
+            }
             foreach (FileDescriptor descriptor in descriptors)
             {
                 // Optionally exclude descriptors in google.protobuf
@@ -97,7 +102,7 @@ namespace Google.ProtocolBuffers.ProtoGen
                 {
                     continue;
                 }
-                if (filesToGenerate.Contains(descriptor.Name))
+                if (filesToGenerate.ContainsKey(descriptor.Name))
                 {
                     Generate(descriptor, duplicates, response);
                 }
