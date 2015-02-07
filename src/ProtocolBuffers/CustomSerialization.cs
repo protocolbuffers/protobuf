@@ -36,9 +36,9 @@
 /*
  * This entire source file is not supported on some platform
  */
-using System.Security.Permissions;
 #if !NOSERIALIZABLE
 using System;
+using System.Security.Permissions;
 using System.Runtime.Serialization;
 using System.Security;
 
