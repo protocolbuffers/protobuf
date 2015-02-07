@@ -1,4 +1,4 @@
-// Protocol Buffers - Google's data interchange format
+﻿// Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
 // Original C++/Java/Python code:
@@ -66,4 +66,7 @@ using System.Security;
 #endif
 
 [assembly: CLSCompliant(true)]
+
+#if CLIENTPROFILE // ROK - not defined in SL, CF, or PL
 [assembly: AllowPartiallyTrustedCallers]
+#endif
