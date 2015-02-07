@@ -48,11 +48,11 @@ Language Guide  - http://code.google.com/apis/protocolbuffers/docs/proto.html
     <file src="..\build_output\Release\**\Google.ProtocolBuffersLite.Serialization.???" target="lib\" />
     <!-- Tools -->
     <file src="..\build_output\tools\**\*" target="tools\" />
-    <file src="..\build_output\protos\**\*" target="content\protos\" />
+    <file src="..\build_output\protos\**\*" target="tools\" />
     <!-- Content -->
-    <file src="..\build_output\CHANGES.txt" target="content"/>
-    <file src="..\build_output\license.txt" target="content\licenses"/>
-    <file src="..\build_output\tools\protoc-license.txt" target="content\licenses"/>
+    <file src="..\build_output\CHANGES.txt" target="tools\"/>
+    <file src="..\build_output\license.txt" target="tools\"/>
+    <file src="..\build_output\tools\protoc-license.txt" target="tools\"/>
     <!-- Source -->
     <file src="..\src\ProtocolBuffers\**\*.cs" target="src\ProtocolBuffers\"/>
     <file src="..\src\ProtocolBuffers.Serialization\**\*.cs" target="src\ProtocolBuffers.Serialization\"/>
