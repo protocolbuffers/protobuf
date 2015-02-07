@@ -360,7 +360,7 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("public override void WriteTo(pb::ICodedOutputStream output) {");
             writer.Indent();
             // Make sure we've computed the serialized length, so that packed fields are generated correctly.
-            writer.WriteLine("int size = SerializedSize;");
+            writer.WriteLine("CalcSerializedSize();");
             writer.WriteLine("string[] field_names = _{0}FieldNames;", NameHelpers.UnderscoresToCamelCase(ClassName));
             if (Descriptor.Proto.ExtensionRangeList.Count > 0)
             {
@@ -412,6 +412,17 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.Indent();
             writer.WriteLine("int size = memoizedSerializedSize;");
             writer.WriteLine("if (size != -1) return size;");
+            writer.WriteLine("return CalcSerializedSize();");
+            writer.Outdent();
+            writer.WriteLine("}");
+            writer.Outdent();
+            writer.WriteLine("}");
+            writer.WriteLine();
+
+            writer.WriteLine("private int CalcSerializedSize() {");
+            writer.Indent();
+            writer.WriteLine("int size = memoizedSerializedSize;");
+            writer.WriteLine("if (size != -1) return size;");
             writer.WriteLine();
             writer.WriteLine("size = 0;");
             foreach (FieldDescriptor field in Descriptor.Fields)
@@ -438,9 +449,6 @@ namespace Google.ProtocolBuffers.ProtoGen
             writer.WriteLine("return size;");
             writer.Outdent();
             writer.WriteLine("}");
-            writer.Outdent();
-            writer.WriteLine("}");
-            writer.WriteLine();
         }
 
         private void GenerateSerializeOneField(TextGenerator writer, FieldDescriptor fieldDescriptor)
