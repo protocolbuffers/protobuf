@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>b780bc1f-0a93-4cf3-ab68-26dc48857431</SharedGUID>
+    <ItemsProjectGuid>{e22e2ca8-2a8e-47fd-a2ac-ac88478d9c1a}</ItemsProjectGuid>
+    <ItemsRootNamespace>lite_test_universal</ItemsRootNamespace>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="$(MSBuildThisFileDirectory)App.xaml">
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\lite_unittest.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\google\protobuf\test_util_lite.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\google\protobuf\unittest_import_lite.pb.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\google\protobuf\unittest_import_public_lite.pb.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\google\protobuf\unittest_lite.pb.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)App.xaml.cpp">
+      <DependentUpon>$(MSBuildThisFileDirectory)App.xaml</DependentUpon>
+    </ClCompile>
+    <ClInclude Include="$(MSBuildThisFileDirectory)App.xaml.h">
+      <DependentUpon>$(MSBuildThisFileDirectory)App.xaml</DependentUpon>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+</Project>
