@@ -1344,7 +1344,11 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     vector<string> relative_output_filenames;
     directory->GetOutputFilenames(&relative_output_filenames);
     for (int i = 0; i < relative_output_filenames.size(); i++) {
-      output_filenames.push_back(location + relative_output_filenames[i]);
+      string output_filename = location + relative_output_filenames[i];
+      if (output_filename.compare(0, 2, "./") == 0) {
+        output_filename = output_filename.substr(2);
+      }
+      output_filenames.push_back(output_filename);
     }
   }
 

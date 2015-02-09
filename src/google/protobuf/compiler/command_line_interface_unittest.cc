@@ -988,17 +988,22 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
     "  optional Foo foo = 1;\n"
     "}\n");
 
-  Run("protocol_compiler --dependency_out=$tmpdir/manifest "
-      "--test_out=$tmpdir --proto_path=$tmpdir bar.proto");
+  string current_working_directory = get_current_dir_name();
+  SwitchToTempDirectory();
+
+  Run("protocol_compiler --dependency_out=manifest --test_out=. "
+      "bar.proto");
 
   ExpectNoErrors();
 
   ExpectFileContent("manifest",
-                    "$tmpdir/bar.proto.MockCodeGenerator.test_generator: "
-                    "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
+                    "bar.proto.MockCodeGenerator.test_generator: "
+                    "foo.proto\\\n bar.proto");
+
+  File::ChangeWorkingDirectory(current_working_directory);
 }
 
-TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForRelativePath) {
+TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForAbsolutePath) {
   CreateTempFile("foo.proto",
     "syntax = \"proto2\";\n"
     "message Foo {}\n");
@@ -1009,10 +1014,7 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForRelativePath) {
     "  optional Foo foo = 1;\n"
     "}\n");
 
-  string current_working_directory = get_current_dir_name();
-  SwitchToTempDirectory();
-
-  Run("protocol_compiler --dependency_out=manifest "
+  Run("protocol_compiler --dependency_out=$tmpdir/manifest "
       "--test_out=$tmpdir --proto_path=$tmpdir bar.proto");
 
   ExpectNoErrors();
@@ -1020,8 +1022,6 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForRelativePath) {
   ExpectFileContent("manifest",
                     "$tmpdir/bar.proto.MockCodeGenerator.test_generator: "
                     "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
-
-  File::ChangeWorkingDirectory(current_working_directory);
 }
 
 // -------------------------------------------------------------------
