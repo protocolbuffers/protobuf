@@ -76,6 +76,10 @@ void SetEnumVariables(const Params& params,
       internal::WireFormatLite::MakeTag(descriptor->number(),
           internal::WireFormat::WireTypeForFieldType(descriptor->type())));
   (*variables)["message_name"] = descriptor->containing_type()->name();
+  const EnumDescriptor* enum_type = descriptor->enum_type();
+  (*variables)["message_type_intdef"] = "@"
+      + ToJavaName(params, enum_type->name(), true,
+          enum_type->containing_type(), enum_type->file());
 }
 
 void LoadEnumValues(const Params& params,
@@ -116,8 +120,10 @@ EnumFieldGenerator::~EnumFieldGenerator() {}
 
 void EnumFieldGenerator::
 GenerateMembers(io::Printer* printer, bool /* unused lazy_init */) const {
-  printer->Print(variables_,
-    "public $type$ $name$;\n");
+  if (params_.generate_intdefs()) {
+    printer->Print(variables_, "$message_type_intdef$\n");
+  }
+  printer->Print(variables_, "public $type$ $name$;\n");
 
   if (params_.generate_has()) {
     printer->Print(variables_,
@@ -256,12 +262,22 @@ AccessorEnumFieldGenerator::~AccessorEnumFieldGenerator() {}
 
 void AccessorEnumFieldGenerator::
 GenerateMembers(io::Printer* printer, bool /* unused lazy_init */) const {
+  printer->Print(variables_, "private int $name$_;\n");
+  if (params_.generate_intdefs()) {
+    printer->Print(variables_, "$message_type_intdef$\n");
+  }
   printer->Print(variables_,
-    "private int $name$_;\n"
     "public int get$capitalized_name$() {\n"
     "  return $name$_;\n"
     "}\n"
-    "public $message_name$ set$capitalized_name$(int value) {\n"
+    "public $message_name$ set$capitalized_name$(");
+  if (params_.generate_intdefs()) {
+    printer->Print(variables_,
+      "\n"
+      "    $message_type_intdef$ ");
+  }
+  printer->Print(variables_,
+    "int value) {\n"
     "  $name$_ = value;\n"
     "  $set_has$;\n"
     "  return this;\n"

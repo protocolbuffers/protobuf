@@ -67,6 +67,7 @@ class Params {
   bool reftypes_primitive_enums_;
   bool generate_clear_;
   bool generate_clone_;
+  bool generate_intdefs_;
 
  public:
   Params(const string & base_name) :
@@ -83,7 +84,8 @@ class Params {
     parcelable_messages_(false),
     reftypes_primitive_enums_(false),
     generate_clear_(true),
-    generate_clone_(false) {
+    generate_clone_(false),
+    generate_intdefs_(false) {
   }
 
   const string& base_name() const {
@@ -239,6 +241,13 @@ class Params {
   }
   bool generate_clone() const {
     return generate_clone_;
+  }
+
+  void set_generate_intdefs(bool value) {
+    generate_intdefs_ = value;
+  }
+  bool generate_intdefs() const {
+    return generate_intdefs_;
   }
 };
 
