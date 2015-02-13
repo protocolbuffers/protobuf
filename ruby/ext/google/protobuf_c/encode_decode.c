@@ -208,6 +208,10 @@ typedef struct {
   size_t ofs;
   upb_fieldtype_t key_field_type;
   upb_fieldtype_t value_field_type;
+
+  // We know that we can hold this reference because the handlerdata has the
+  // same lifetime as the upb_handlers struct, and the upb_handlers struct holds
+  // a reference to the upb_msgdef, which in turn has references to its subdefs.
   const upb_def* value_field_subdef;
 } map_handlerdata_t;
 
