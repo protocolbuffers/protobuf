@@ -208,7 +208,11 @@ typedef struct {
   size_t ofs;
   upb_fieldtype_t key_field_type;
   upb_fieldtype_t value_field_type;
-  VALUE value_field_typeclass;
+
+  // We know that we can hold this reference because the handlerdata has the
+  // same lifetime as the upb_handlers struct, and the upb_handlers struct holds
+  // a reference to the upb_msgdef, which in turn has references to its subdefs.
+  const upb_def* value_field_subdef;
 } map_handlerdata_t;
 
 // Temporary frame for map parsing: at the beginning of a map entry message, a
@@ -248,8 +252,15 @@ static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
   VALUE key = native_slot_get(
       mapdata->key_field_type, Qnil,
       &frame->key_storage);
+
+  VALUE value_field_typeclass = Qnil;
+  if (mapdata->value_field_type == UPB_TYPE_MESSAGE ||
+      mapdata->value_field_type == UPB_TYPE_ENUM) {
+    value_field_typeclass = get_def_obj(mapdata->value_field_subdef);
+  }
+
   VALUE value = native_slot_get(
-      mapdata->value_field_type, mapdata->value_field_typeclass,
+      mapdata->value_field_type, value_field_typeclass,
       &frame->value_storage);
 
   Map_index_set(frame->map, key, value);
@@ -280,17 +291,7 @@ static map_handlerdata_t* new_map_handlerdata(
                                                     MAP_VALUE_FIELD);
   assert(value_field != NULL);
   hd->value_field_type = upb_fielddef_type(value_field);
-  hd->value_field_typeclass = field_type_class(value_field);
-
-  // Ensure that value_field_typeclass is properly GC-rooted. We must do this
-  // because we hold a reference to the Ruby class in the handlerdata, which is
-  // owned by the handlers. The handlers are owned by *this* message's Ruby
-  // object, but each Ruby object is rooted independently at the def -> Ruby
-  // object map. So we have to ensure that the Ruby objects we depend on will
-  // stick around as long as we're around.
-  if (hd->value_field_typeclass != Qnil) {
-    rb_ary_push(desc->typeclass_references, hd->value_field_typeclass);
-  }
+  hd->value_field_subdef = upb_fielddef_subdef(value_field);
 
   return hd;
 }

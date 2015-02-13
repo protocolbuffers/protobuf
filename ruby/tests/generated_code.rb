@@ -27,16 +27,16 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     repeated :repeated_bytes, :string, 29
     repeated :repeated_enum, :enum, 30, "A.B.C.TestEnum"
     repeated :repeated_msg, :message, 31, "A.B.C.TestMessage"
-    repeated :map_int32_string, :message, 61, "A.B.C.TestMessage.MapInt32StringEntry"
-    repeated :map_int64_string, :message, 62, "A.B.C.TestMessage.MapInt64StringEntry"
-    repeated :map_uint32_string, :message, 63, "A.B.C.TestMessage.MapUint32StringEntry"
-    repeated :map_uint64_string, :message, 64, "A.B.C.TestMessage.MapUint64StringEntry"
-    repeated :map_bool_string, :message, 65, "A.B.C.TestMessage.MapBoolStringEntry"
-    repeated :map_string_string, :message, 66, "A.B.C.TestMessage.MapStringStringEntry"
-    repeated :map_string_msg, :message, 67, "A.B.C.TestMessage.MapStringMsgEntry"
-    repeated :map_string_enum, :message, 68, "A.B.C.TestMessage.MapStringEnumEntry"
-    repeated :map_string_int32, :message, 69, "A.B.C.TestMessage.MapStringInt32Entry"
-    repeated :map_string_bool, :message, 70, "A.B.C.TestMessage.MapStringBoolEntry"
+    map :map_int32_string, :int32, :string, 61
+    map :map_int64_string, :int64, :string, 62
+    map :map_uint32_string, :uint32, :string, 63
+    map :map_uint64_string, :uint64, :string, 64
+    map :map_bool_string, :bool, :string, 65
+    map :map_string_string, :string, :string, 66
+    map :map_string_msg, :string, :message, 67, "A.B.C.TestMessage"
+    map :map_string_enum, :string, :enum, 68, "A.B.C.TestEnum"
+    map :map_string_int32, :string, :int32, 69
+    map :map_string_bool, :string, :bool, 70
     optional :nested_message, :message, 80, "A.B.C.TestMessage.NestedMessage"
     oneof :my_oneof do
       optional :oneof_int32, :int32, 41
@@ -51,46 +51,6 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :oneof_enum, :enum, 50, "A.B.C.TestEnum"
       optional :oneof_msg, :message, 51, "A.B.C.TestMessage"
     end
-  end
-  add_message "A.B.C.TestMessage.MapInt32StringEntry" do
-    optional :key, :int32, 1
-    optional :value, :string, 2
-  end
-  add_message "A.B.C.TestMessage.MapInt64StringEntry" do
-    optional :key, :int64, 1
-    optional :value, :string, 2
-  end
-  add_message "A.B.C.TestMessage.MapUint32StringEntry" do
-    optional :key, :uint32, 1
-    optional :value, :string, 2
-  end
-  add_message "A.B.C.TestMessage.MapUint64StringEntry" do
-    optional :key, :uint64, 1
-    optional :value, :string, 2
-  end
-  add_message "A.B.C.TestMessage.MapBoolStringEntry" do
-    optional :key, :bool, 1
-    optional :value, :string, 2
-  end
-  add_message "A.B.C.TestMessage.MapStringStringEntry" do
-    optional :key, :string, 1
-    optional :value, :string, 2
-  end
-  add_message "A.B.C.TestMessage.MapStringMsgEntry" do
-    optional :key, :string, 1
-    optional :value, :message, 2, "A.B.C.TestMessage"
-  end
-  add_message "A.B.C.TestMessage.MapStringEnumEntry" do
-    optional :key, :string, 1
-    optional :value, :enum, 2, "A.B.C.TestEnum"
-  end
-  add_message "A.B.C.TestMessage.MapStringInt32Entry" do
-    optional :key, :string, 1
-    optional :value, :int32, 2
-  end
-  add_message "A.B.C.TestMessage.MapStringBoolEntry" do
-    optional :key, :string, 1
-    optional :value, :bool, 2
   end
   add_message "A.B.C.TestMessage.NestedMessage" do
     optional :foo, :int32, 1
@@ -107,16 +67,6 @@ module A
   module B
     module C
       TestMessage = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage").msgclass
-      TestMessage::MapInt32StringEntry = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage.MapInt32StringEntry").msgclass
-      TestMessage::MapInt64StringEntry = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage.MapInt64StringEntry").msgclass
-      TestMessage::MapUint32StringEntry = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage.MapUint32StringEntry").msgclass
-      TestMessage::MapUint64StringEntry = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage.MapUint64StringEntry").msgclass
-      TestMessage::MapBoolStringEntry = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage.MapBoolStringEntry").msgclass
-      TestMessage::MapStringStringEntry = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage.MapStringStringEntry").msgclass
-      TestMessage::MapStringMsgEntry = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage.MapStringMsgEntry").msgclass
-      TestMessage::MapStringEnumEntry = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage.MapStringEnumEntry").msgclass
-      TestMessage::MapStringInt32Entry = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage.MapStringInt32Entry").msgclass
-      TestMessage::MapStringBoolEntry = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage.MapStringBoolEntry").msgclass
       TestMessage::NestedMessage = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestMessage.NestedMessage").msgclass
       TestEnum = Google::Protobuf::DescriptorPool.generated_pool.lookup("A.B.C.TestEnum").enummodule
     end

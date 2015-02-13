@@ -102,24 +102,53 @@ std::string TypeName(const google::protobuf::FieldDescriptor* field) {
 
 void GenerateField(const google::protobuf::FieldDescriptor* field,
                    google::protobuf::io::Printer* printer) {
-  printer->Print(
-    "$label$ :$name$, ",
-    "label", LabelForField(field),
-    "name", field->name());
-  printer->Print(
-    ":$type$, $number$",
-    "type", TypeName(field),
-    "number", IntToString(field->number()));
-  if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+
+  if (field->is_map()) {
+    const FieldDescriptor* key_field =
+        field->message_type()->FindFieldByNumber(1);
+    const FieldDescriptor* value_field =
+        field->message_type()->FindFieldByNumber(2);
+
     printer->Print(
-      ", \"$subtype$\"\n",
-     "subtype", field->message_type()->full_name());
-  } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
-    printer->Print(
-      ", \"$subtype$\"\n",
-      "subtype", field->enum_type()->full_name());
+      "map :$name$, :$key_type$, :$value_type$, $number$",
+      "name", field->name(),
+      "key_type", TypeName(key_field),
+      "value_type", TypeName(value_field),
+      "number", IntToString(field->number()));
+
+    if (value_field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      printer->Print(
+        ", \"$subtype$\"\n",
+        "subtype", value_field->message_type()->full_name());
+    } else if (value_field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
+      printer->Print(
+        ", \"$subtype$\"\n",
+        "subtype", value_field->enum_type()->full_name());
+    } else {
+      printer->Print("\n");
+    }
   } else {
-    printer->Print("\n");
+
+    printer->Print(
+      "$label$ :$name$, ",
+      "label", LabelForField(field),
+      "name", field->name());
+    printer->Print(
+      ":$type$, $number$",
+      "type", TypeName(field),
+      "number", IntToString(field->number()));
+
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      printer->Print(
+        ", \"$subtype$\"\n",
+       "subtype", field->message_type()->full_name());
+    } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
+      printer->Print(
+        ", \"$subtype$\"\n",
+        "subtype", field->enum_type()->full_name());
+    } else {
+      printer->Print("\n");
+    }
   }
 }
 
@@ -141,6 +170,13 @@ void GenerateOneof(const google::protobuf::OneofDescriptor* oneof,
 
 void GenerateMessage(const google::protobuf::Descriptor* message,
                      google::protobuf::io::Printer* printer) {
+
+  // Don't generate MapEntry messages -- we use the Ruby extension's native
+  // support for map fields instead.
+  if (message->options().map_entry()) {
+    return;
+  }
+
   printer->Print(
     "add_message \"$name$\" do\n",
     "name", message->full_name());
@@ -213,6 +249,13 @@ void GenerateMessageAssignment(
     const std::string& prefix,
     const google::protobuf::Descriptor* message,
     google::protobuf::io::Printer* printer) {
+
+  // Don't generate MapEntry messages -- we use the Ruby extension's native
+  // support for map fields instead.
+  if (message->options().map_entry()) {
+    return;
+  }
+
   printer->Print(
     "$prefix$$name$ = ",
     "prefix", prefix,
