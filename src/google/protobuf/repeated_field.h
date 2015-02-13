@@ -1255,10 +1255,12 @@ void RepeatedField<Element>::Reserve(int new_size) {
   }
   // Likewise, we need to invoke destructors on the old array. If Element has no
   // destructor, this loop will disappear.
-  e = &old_rep->elements[0];
-  limit = &old_rep->elements[current_size_];
-  for (; e < limit; e++) {
-    e->Element::~Element();
+  if (current_size_ > 0) {
+    e = &old_rep->elements[0];
+    limit = &old_rep->elements[current_size_];
+    for (; e < limit; e++) {
+      e->Element::~Element();
+    }
   }
   if (arena == NULL) {
     delete[] reinterpret_cast<char*>(old_rep);
