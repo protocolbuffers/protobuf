@@ -149,6 +149,112 @@ GenerateHashCodeCode(io::Printer* printer) const {
 
 // ===================================================================
 
+AccessorMessageFieldGenerator::
+AccessorMessageFieldGenerator(const FieldDescriptor* descriptor,
+     const Params& params, int has_bit_index)
+  : FieldGenerator(params), descriptor_(descriptor) {
+  SetMessageVariables(params, descriptor, &variables_);
+  SetBitOperationVariables("has", has_bit_index, &variables_);
+}
+
+AccessorMessageFieldGenerator::~AccessorMessageFieldGenerator() {}
+
+void AccessorMessageFieldGenerator::
+GenerateMembers(io::Printer* printer, bool /* unused lazy_init */) const {
+  printer->Print(variables_,
+    "private $type$ $name$;\n"
+    "public $type$ get$capitalized_name$() {\n"
+    "  return $name$;\n"
+    "}\n"
+    "public $type$ getMutable$capitalized_name$() {\n"
+    "  if ($name$ == null) {\n"
+    "    $name$ = new $type$();\n"
+    "  }\n"
+    "  $set_has$;\n"
+    "  return $name$;\n"
+    "}\n"
+    "public $message_name$ set$capitalized_name$($type$ value) {\n"
+    "  $name$ = value;\n"
+    "  if (value == null) {\n"
+    "    $clear_has$;\n"
+    "  } else {\n"
+    "    $set_has$;\n"
+    "  }\n"
+    "  return this;\n"
+    "}\n"
+    "public boolean has$capitalized_name$() {\n"
+    "  return $get_has$;\n"
+    "}\n"
+    "public $message_name$ clear$capitalized_name$() {\n"
+    "  if ($name$ != null) {\n"
+    "    $name$.clear();\n"
+    "  }\n"
+    "  $clear_has$;\n"
+    "  return this;\n"
+    "}\n");
+}
+
+void AccessorMessageFieldGenerator::
+GenerateClearCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($name$ != null) {\n"
+    "  $name$.clear();\n"
+    "}\n");
+}
+
+void AccessorMessageFieldGenerator::
+GenerateMergingCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (this.$name$ == null) {\n"
+    "  this.$name$ = new $type$();\n"
+    "}\n");
+  if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
+    printer->Print(variables_,
+      "input.readGroup(this.$name$, $number$);\n");
+  } else {
+    printer->Print(variables_,
+      "input.readMessage(this.$name$);\n");
+  }
+  printer->Print(variables_,
+      "$set_has$;\n");
+}
+
+void AccessorMessageFieldGenerator::
+GenerateSerializationCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($get_has$) {\n"
+    "  output.write$group_or_message$($number$, this.$name$);\n"
+    "}\n");
+}
+
+void AccessorMessageFieldGenerator::
+GenerateSerializedSizeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($get_has$) {\n"
+    "  size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
+    "    .compute$group_or_message$Size($number$, this.$name$);\n"
+    "}\n");
+}
+
+void AccessorMessageFieldGenerator::
+GenerateEqualsCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($different_has$\n"
+    "    || ($get_has$\n"
+    "        && !this.$name$.equals(other.$name$))) {\n"
+    "  return false;\n"
+    "}\n");
+}
+
+void AccessorMessageFieldGenerator::
+GenerateHashCodeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "result = 31 * result +\n"
+    "    (!$get_has$ ? 0 : this.$name$.hashCode());\n");
+}
+
+// ===================================================================
+
 RepeatedMessageFieldGenerator::
 RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor, const Params& params)
   : FieldGenerator(params), descriptor_(descriptor) {
