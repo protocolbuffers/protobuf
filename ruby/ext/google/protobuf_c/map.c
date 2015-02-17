@@ -683,7 +683,7 @@ VALUE Map_inspect(VALUE _self) {
       first = false;
     }
     str = rb_str_append(str, rb_funcall(key, inspect_sym, 0));
-    str = rb_str_cat2(str, " => ");
+    str = rb_str_cat2(str, "=>");
     str = rb_str_append(str, rb_funcall(value, inspect_sym, 0));
   }
 

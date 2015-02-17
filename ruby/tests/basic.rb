@@ -391,7 +391,7 @@ module BasicTest
       # We only assert on inspect value when there is one map entry because the
       # order in which elements appear is unspecified (depends on the internal
       # hash function). We don't want a brittle test.
-      assert m.inspect == "{\"jkl;\" => 42}"
+      assert m.inspect == "{\"jkl;\"=>42}"
 
       assert m.keys == ["jkl;"]
       assert m.values == [42]
