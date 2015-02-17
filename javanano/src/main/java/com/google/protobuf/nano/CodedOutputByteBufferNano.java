@@ -899,6 +899,23 @@ public final class CodedOutputByteBufferNano {
   }
 
   /**
+   * Returns the position within the internal buffer.
+   */
+  public int position() {
+    return buffer.position();
+  }
+
+  /**
+   * Resets the position within the internal buffer to zero.
+   *
+   * @see #position
+   * @see #spaceLeft
+   */
+  public void reset() {
+    buffer.clear();
+  }
+
+  /**
    * If you create a CodedOutputStream around a simple flat array, you must
    * not attempt to write more bytes than the array has space.  Otherwise,
    * this exception will be thrown.
