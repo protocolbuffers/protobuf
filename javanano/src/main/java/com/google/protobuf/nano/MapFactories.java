@@ -41,7 +41,11 @@ public final class MapFactories {
     <K, V> Map<K, V> forMap(Map<K, V> oldMap);
   }
 
-  public static void setMapFactory(MapFactory newMapFactory) {
+  // NOTE(liujisi): The factory setter is temporarily marked as package private.
+  // The way to provide customized implementations of maps for different
+  // platforms are still under discussion.  Mark it as private to avoid exposing
+  // the API in proto3 alpha release.
+  /* public */ static void setMapFactory(MapFactory newMapFactory) {
     mapFactory = newMapFactory;
   }
 
