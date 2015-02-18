@@ -111,6 +111,7 @@ FieldGenerator* FieldGeneratorMap::MakeGenerator(const FieldDescriptor* field,
   } else if (field->containing_oneof()) {
     switch (java_type) {
       case JAVATYPE_MESSAGE:
+        return new MessageOneofFieldGenerator(field, params);
       case JAVATYPE_ENUM:
       default:
         return new PrimitiveOneofFieldGenerator(field, params);

@@ -66,6 +66,20 @@ class MessageFieldGenerator : public FieldGenerator {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageFieldGenerator);
 };
 
+class MessageOneofFieldGenerator : public FieldGenerator {
+ public:
+  explicit MessageOneofFieldGenerator(const FieldDescriptor* descriptor,
+                                      const Params& params);
+  ~MessageOneofFieldGenerator();
+
+  // implements FieldGenerator ---------------------------------------
+ private:
+  const FieldDescriptor* descriptor_;
+  map<string, string> variables_;
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageOneofFieldGenerator);
+};
+
 class RepeatedMessageFieldGenerator : public FieldGenerator {
  public:
   explicit RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor,
