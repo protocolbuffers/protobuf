@@ -108,6 +108,13 @@ FieldGenerator* FieldGeneratorMap::MakeGenerator(const FieldDescriptor* field,
       default:
         return new RepeatedPrimitiveFieldGenerator(field, params);
     }
+  } else if (field->containing_oneof()) {
+    switch (java_type) {
+      case JAVATYPE_MESSAGE:
+      case JAVATYPE_ENUM:
+      default:
+        return new PrimitiveOneofFieldGenerator(field, params);
+    }
   } else if (params.optional_field_accessors() && field->is_optional()
       && java_type != JAVATYPE_MESSAGE) {
     // We need a has-bit for each primitive/enum field because their default
@@ -140,6 +147,22 @@ const FieldGenerator& FieldGeneratorMap::get(
     const FieldDescriptor* field) const {
   GOOGLE_CHECK_EQ(field->containing_type(), descriptor_);
   return *field_generators_[field->index()];
+}
+
+void SetCommonOneofVariables(const FieldDescriptor* descriptor,
+                             map<string, string>* variables) {
+  (*variables)["oneof_name"] =
+      UnderscoresToCamelCase(descriptor->containing_oneof());
+  (*variables)["oneof_capitalized_name"] =
+      UnderscoresToCapitalizedCamelCase(descriptor->containing_oneof());
+  (*variables)["oneof_index"] =
+      SimpleItoa(descriptor->containing_oneof()->index());
+  (*variables)["set_oneof_case"] =
+      (*variables)["oneof_name"] + "Case_ = " + SimpleItoa(descriptor->number());
+  (*variables)["clear_oneof_case"] =
+      (*variables)["oneof_name"] + "Case_ = 0";
+  (*variables)["has_oneof_case"] =
+      (*variables)["oneof_name"] + "Case_ == " + SimpleItoa(descriptor->number());
 }
 
 }  // namespace javanano

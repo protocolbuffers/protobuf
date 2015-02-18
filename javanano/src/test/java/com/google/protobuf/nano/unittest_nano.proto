@@ -167,6 +167,14 @@ message TestAllTypesNano {
 
   // Try to fail with java reserved keywords
   optional int32 synchronized = 96;
+
+  oneof oneof_field {
+    uint32 oneof_uint32 = 111;
+    // NestedMessage oneof_nested_message = 112;
+    // string oneof_string = 123;
+    // bytes oneof_bytes = 124;
+    fixed64 oneof_fixed64 = 115;
+  }
 }
 
 message ForeignMessageNano {
