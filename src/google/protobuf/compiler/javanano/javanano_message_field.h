@@ -73,6 +73,14 @@ class MessageOneofFieldGenerator : public FieldGenerator {
   ~MessageOneofFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
+  void GenerateMembers(io::Printer* printer, bool lazy_init) const;
+  void GenerateClearCode(io::Printer* printer) const;
+  void GenerateMergingCode(io::Printer* printer) const;
+  void GenerateSerializationCode(io::Printer* printer) const;
+  void GenerateSerializedSizeCode(io::Printer* printer) const;
+  void GenerateEqualsCode(io::Printer* printer) const;
+  void GenerateHashCodeCode(io::Printer* printer) const;
+
  private:
   const FieldDescriptor* descriptor_;
   map<string, string> variables_;
