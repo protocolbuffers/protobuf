@@ -28,31 +28,43 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
+syntax = "proto3";
 
-#include <string>
+package map_test;
 
-#include <google/protobuf/compiler/code_generator.h>
+option java_package = "com.google.protobuf.nano";
+option java_outer_classname = "MapTestProto";
 
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace ruby {
+message TestMap {
+  message MessageValue {
+    int32 value = 1;
+    int32 value2 = 2;
+  }
+  enum EnumValue {
+    FOO = 0;
+    BAR = 1;
+    BAZ = 2;
+    QUX = 3;
+  }
 
-class LIBPROTOC_EXPORT Generator
-    : public google::protobuf::compiler::CodeGenerator {
-  virtual bool Generate(
-      const FileDescriptor* file,
-      const string& parameter,
-      GeneratorContext* generator_context,
-      string* error) const;
-};
+  map<int32, int32>        int32_to_int32_field = 1;
+  map<int32, string>       int32_to_string_field = 2;
+  map<int32, bytes>        int32_to_bytes_field = 3;
+  map<int32, EnumValue>    int32_to_enum_field = 4;
+  map<int32, MessageValue> int32_to_message_field = 5;
+  map<string, int32>       string_to_int32_field = 6;
+  map<bool, bool>          bool_to_bool_field = 7;
 
-}  // namespace ruby
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
-
+  // Test all the other primitive types. As the key and value are not coupled in
+  // the implementation, we do not test all the combinations of key/value pairs,
+  // so that we can keep the number of test cases manageable
+  map<uint32, uint32>      uint32_to_uint32_field = 11;
+  map<sint32, sint32>      sint32_to_sint32_field = 12;
+  map<fixed32, fixed32>    fixed32_to_fixed32_field = 13;
+  map<sfixed32, sfixed32>  sfixed32_to_sfixed32_field = 14;
+  map<int64, int64>        int64_to_int64_field = 15;
+  map<uint64, uint64>      uint64_to_uint64_field = 16;
+  map<sint64, sint64>      sint64_to_sint64_field = 17;
+  map<fixed64, fixed64>    fixed64_to_fixed64_field = 18;
+  map<sfixed64, sfixed64>  sfixed64_to_sfixed64_field = 19;
+}

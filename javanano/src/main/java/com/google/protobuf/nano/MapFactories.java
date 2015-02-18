@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2013 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,31 +28,40 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
+package com.google.protobuf.nano;
 
-#include <string>
+import java.util.HashMap;
+import java.util.Map;
 
-#include <google/protobuf/compiler/code_generator.h>
+/**
+ * Utility class for maps support.
+ */
+public final class MapFactories {
+  public static interface MapFactory {
+    <K, V> Map<K, V> forMap(Map<K, V> oldMap);
+  }
 
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace ruby {
+  // NOTE(liujisi): The factory setter is temporarily marked as package private.
+  // The way to provide customized implementations of maps for different
+  // platforms are still under discussion.  Mark it as private to avoid exposing
+  // the API in proto3 alpha release.
+  /* public */ static void setMapFactory(MapFactory newMapFactory) {
+    mapFactory = newMapFactory;
+  }
 
-class LIBPROTOC_EXPORT Generator
-    : public google::protobuf::compiler::CodeGenerator {
-  virtual bool Generate(
-      const FileDescriptor* file,
-      const string& parameter,
-      GeneratorContext* generator_context,
-      string* error) const;
-};
+  public static MapFactory getMapFactory() {
+    return mapFactory;
+  }
 
-}  // namespace ruby
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+  private static class DefaultMapFactory implements MapFactory {
+    public <K, V> Map<K, V> forMap(Map<K, V> oldMap) {
+      if (oldMap == null) {
+        return new HashMap<K, V>();
+      }
+      return oldMap;
+    }
+  }
+  private static volatile MapFactory mapFactory = new DefaultMapFactory();
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
-
+  private MapFactories() {}
+}

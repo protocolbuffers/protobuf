@@ -181,6 +181,14 @@ string GenerateDifferentBit(int bit_index);
 void SetBitOperationVariables(const string name,
     int bitIndex, map<string, string>* variables);
 
+inline bool IsMapEntry(const Descriptor* descriptor) {
+  // TODO(liujisi): Add an option to turn on maps for proto2 syntax as well.
+  return descriptor->options().map_entry() &&
+      descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
+}
+
+bool HasMapField(const Descriptor* descriptor);
+
 }  // namespace javanano
 }  // namespace compiler
 }  // namespace protobuf

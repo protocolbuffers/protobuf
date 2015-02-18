@@ -55,24 +55,24 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
      *       PrimitiveExtension      // for primitive/enum typed extensions
      */
 
-    public static final int TYPE_DOUBLE   = 1;
-    public static final int TYPE_FLOAT    = 2;
-    public static final int TYPE_INT64    = 3;
-    public static final int TYPE_UINT64   = 4;
-    public static final int TYPE_INT32    = 5;
-    public static final int TYPE_FIXED64  = 6;
-    public static final int TYPE_FIXED32  = 7;
-    public static final int TYPE_BOOL     = 8;
-    public static final int TYPE_STRING   = 9;
-    public static final int TYPE_GROUP    = 10;
-    public static final int TYPE_MESSAGE  = 11;
-    public static final int TYPE_BYTES    = 12;
-    public static final int TYPE_UINT32   = 13;
-    public static final int TYPE_ENUM     = 14;
-    public static final int TYPE_SFIXED32 = 15;
-    public static final int TYPE_SFIXED64 = 16;
-    public static final int TYPE_SINT32   = 17;
-    public static final int TYPE_SINT64   = 18;
+    public static final int TYPE_DOUBLE   = InternalNano.TYPE_DOUBLE;
+    public static final int TYPE_FLOAT    = InternalNano.TYPE_FLOAT;
+    public static final int TYPE_INT64    = InternalNano.TYPE_INT64;
+    public static final int TYPE_UINT64   = InternalNano.TYPE_UINT64;
+    public static final int TYPE_INT32    = InternalNano.TYPE_INT32;
+    public static final int TYPE_FIXED64  = InternalNano.TYPE_FIXED64;
+    public static final int TYPE_FIXED32  = InternalNano.TYPE_FIXED32;
+    public static final int TYPE_BOOL     = InternalNano.TYPE_BOOL;
+    public static final int TYPE_STRING   = InternalNano.TYPE_STRING;
+    public static final int TYPE_GROUP    = InternalNano.TYPE_GROUP;
+    public static final int TYPE_MESSAGE  = InternalNano.TYPE_MESSAGE;
+    public static final int TYPE_BYTES    = InternalNano.TYPE_BYTES;
+    public static final int TYPE_UINT32   = InternalNano.TYPE_UINT32;
+    public static final int TYPE_ENUM     = InternalNano.TYPE_ENUM;
+    public static final int TYPE_SFIXED32 = InternalNano.TYPE_SFIXED32;
+    public static final int TYPE_SFIXED64 = InternalNano.TYPE_SFIXED64;
+    public static final int TYPE_SINT32   = InternalNano.TYPE_SINT32;
+    public static final int TYPE_SINT64   = InternalNano.TYPE_SINT64;
 
     /**
      * Creates an {@code Extension} of the given message type and tag number.
@@ -338,42 +338,7 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
         @Override
         protected Object readData(CodedInputByteBufferNano input) {
             try {
-                switch (type) {
-                    case TYPE_DOUBLE:
-                        return input.readDouble();
-                    case TYPE_FLOAT:
-                        return input.readFloat();
-                    case TYPE_INT64:
-                        return input.readInt64();
-                    case TYPE_UINT64:
-                        return input.readUInt64();
-                    case TYPE_INT32:
-                        return input.readInt32();
-                    case TYPE_FIXED64:
-                        return input.readFixed64();
-                    case TYPE_FIXED32:
-                        return input.readFixed32();
-                    case TYPE_BOOL:
-                        return input.readBool();
-                    case TYPE_STRING:
-                        return input.readString();
-                    case TYPE_BYTES:
-                        return input.readBytes();
-                    case TYPE_UINT32:
-                        return input.readUInt32();
-                    case TYPE_ENUM:
-                        return input.readEnum();
-                    case TYPE_SFIXED32:
-                        return input.readSFixed32();
-                    case TYPE_SFIXED64:
-                        return input.readSFixed64();
-                    case TYPE_SINT32:
-                        return input.readSInt32();
-                    case TYPE_SINT64:
-                        return input.readSInt64();
-                    default:
-                        throw new IllegalArgumentException("Unknown type " + type);
-                }
+              return input.readPrimitiveField(type);
             } catch (IOException e) {
                 throw new IllegalArgumentException("Error reading extension field", e);
             }

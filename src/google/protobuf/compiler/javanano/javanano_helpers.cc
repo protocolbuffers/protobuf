@@ -560,6 +560,17 @@ void SetBitOperationVariables(const string name,
   (*variables)["different_" + name] = GenerateDifferentBit(bitIndex);
 }
 
+bool HasMapField(const Descriptor* descriptor) {
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    const FieldDescriptor* field = descriptor->field(i);
+    if (field->type() == FieldDescriptor::TYPE_MESSAGE &&
+        IsMapEntry(field->message_type())) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace javanano
 }  // namespace compiler
 }  // namespace protobuf

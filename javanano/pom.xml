@@ -94,6 +94,7 @@
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_multiple_nameclash_nano.proto" />
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_enum_class_nano.proto" />
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_repeated_merge_nano.proto" />
+                  <arg value="src/test/java/com/google/protobuf/nano/map_test.proto" />
                 </exec>
                 <exec executable="../src/protoc">
                   <arg value="--javanano_out=store_unknown_fields=true,generate_equals=true:target/generated-test-sources" />

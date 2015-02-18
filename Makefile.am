@@ -195,7 +195,6 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/wire_format.py                             \
   python/google/protobuf/internal/wire_format_test.py                        \
   python/google/protobuf/internal/__init__.py                                \
-  python/google/protobuf/internal/import_test_package/BUILD                  \
   python/google/protobuf/internal/import_test_package/__init__.py            \
   python/google/protobuf/internal/import_test_package/inner.proto            \
   python/google/protobuf/internal/import_test_package/outer.proto            \
@@ -240,15 +239,26 @@ python_EXTRA_DIST=                                                           \
   python/README.txt
 
 ruby_EXTRA_DIST=                                                             \
-  ruby/ext/defs.c                                                            \
-  ruby/ext/encode_decode.c                                                   \
-  ruby/ext/extconf.rb                                                        \
-  ruby/ext/message.c                                                         \
-  ruby/ext/protobuf.c                                                        \
-  ruby/ext/protobuf.h                                                        \
-  ruby/ext/repeated_field.c                                                  \
-  ruby/ext/storage.c                                                         \
-  ruby/ext/test.rb
+  ruby/README.md                                                             \
+  ruby/Rakefile                                                              \
+  ruby/ext/google/protobuf_c/defs.c                                          \
+  ruby/ext/google/protobuf_c/encode_decode.c                                 \
+  ruby/ext/google/protobuf_c/extconf.rb                                      \
+  ruby/ext/google/protobuf_c/map.c                                           \
+  ruby/ext/google/protobuf_c/message.c                                       \
+  ruby/ext/google/protobuf_c/protobuf.c                                      \
+  ruby/ext/google/protobuf_c/protobuf.h                                      \
+  ruby/ext/google/protobuf_c/repeated_field.c                                \
+  ruby/ext/google/protobuf_c/storage.c                                       \
+  ruby/ext/google/protobuf_c/upb.c                                           \
+  ruby/ext/google/protobuf_c/upb.h                                           \
+  ruby/google-protobuf.gemspec                                               \
+  ruby/lib/google/protobuf.rb                                                \
+  ruby/tests/basic.rb                                                        \
+  ruby/tests/stress.rb                                                       \
+  ruby/tests/generated_code.proto                                            \
+  ruby/tests/generated_code.rb                                               \
+  ruby/tests/generated_code_test.rb
 
 all_EXTRA_DIST=$(java_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST)
 

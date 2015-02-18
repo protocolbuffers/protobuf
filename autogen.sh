@@ -15,12 +15,6 @@ __EOF__
   exit 1
 fi
 
-if test -e .git; then
-  # pull down git submodules.
-  git submodule init
-  git submodule update
-fi
-
 # Check that gtest is present.  Usually it is already there since the
 # directory is set up as an SVN external.
 if test ! -e gtest; then

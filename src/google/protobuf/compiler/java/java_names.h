@@ -28,31 +28,60 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
+// Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// Provides a mechanism for mapping a descriptor to the
+// fully-qualified name of the corresponding Java class.
+
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_NAMES_H__
+#define GOOGLE_PROTOBUF_COMPILER_JAVA_NAMES_H__
 
 #include <string>
 
-#include <google/protobuf/compiler/code_generator.h>
-
 namespace google {
 namespace protobuf {
+
+class Descriptor;
+class EnumDescriptor;
+class FileDescriptor;
+class ServiceDescriptor;
+
 namespace compiler {
-namespace ruby {
+namespace java {
 
-class LIBPROTOC_EXPORT Generator
-    : public google::protobuf::compiler::CodeGenerator {
-  virtual bool Generate(
-      const FileDescriptor* file,
-      const string& parameter,
-      GeneratorContext* generator_context,
-      string* error) const;
-};
+// Requires:
+//   descriptor != NULL
+//
+// Returns:
+//   The fully-qualified Java class name.
+string ClassName(const Descriptor* descriptor);
 
-}  // namespace ruby
+// Requires:
+//   descriptor != NULL
+//
+// Returns:
+//   The fully-qualified Java class name.
+string ClassName(const EnumDescriptor* descriptor);
+
+// Requires:
+//   descriptor != NULL
+//
+// Returns:
+//   The fully-qualified Java class name.
+string ClassName(const FileDescriptor* descriptor);
+
+// Requires:
+//   descriptor != NULL
+//
+// Returns:
+//   The fully-qualified Java class name.
+string ClassName(const ServiceDescriptor* descriptor);
+
+}  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
-
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_NAMES_H__
