@@ -214,20 +214,12 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
 
 void MessageOneofFieldGenerator::
 GenerateEqualsCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if (this.has$capitalized_name$()) {\n"
-    "  if (!this.$oneof_name$_.equals(other.$oneof_name$_)) {\n"
-    "    return false;\n"
-    "  }\n"
-    "} else {\n"
-    "  if (other.has$capitalized_name$()) {\n"
-    "    return false;\n"
-    "  }\n"
-    "}\n");
+  GenerateOneofFieldEquals(variables_, printer);
 }
 
 void MessageOneofFieldGenerator::
 GenerateHashCodeCode(io::Printer* printer) const {
+  GenerateOneofFieldHashCode(variables_, printer);
 }
 
 // ===================================================================

@@ -765,10 +765,14 @@ void PrimitiveOneofFieldGenerator::GenerateSerializedSizeCode(
     "}\n");
 }
 
-void PrimitiveOneofFieldGenerator::GenerateEqualsCode(io::Printer* printer) const {
+void PrimitiveOneofFieldGenerator::GenerateEqualsCode(
+    io::Printer* printer) const {
+  GenerateOneofFieldEquals(variables_, printer);
 }
 
-void PrimitiveOneofFieldGenerator::GenerateHashCodeCode(io::Printer* printer) const {
+void PrimitiveOneofFieldGenerator::GenerateHashCodeCode(
+    io::Printer* printer) const {
+  GenerateOneofFieldHashCode(variables_, printer);
 }
 
 // ===================================================================

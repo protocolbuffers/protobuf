@@ -168,6 +168,28 @@ void SetCommonOneofVariables(const FieldDescriptor* descriptor,
       SimpleItoa(descriptor->number());
 }
 
+void GenerateOneofFieldEquals(const map<string, string>& variables,
+                              io::Printer* printer) {
+  printer->Print(variables,
+    "if (this.has$capitalized_name$()) {\n"
+    "  if (!this.$oneof_name$_.equals(other.$oneof_name$_)) {\n"
+    "    return false;\n"
+    "  }\n"
+    "} else {\n"
+    "  if (other.has$capitalized_name$()) {\n"
+    "    return false;\n"
+    "  }\n"
+    "}\n");
+
+}
+
+void GenerateOneofFieldHashCode(const map<string, string>& variables,
+                                io::Printer* printer) {
+  printer->Print(variables,
+    "result = 31 * result +\n"
+    "  ($has_oneof_case$ ? this.$oneof_name$_.hashCode() : 0);\n");
+}
+
 }  // namespace javanano
 }  // namespace compiler
 }  // namespace protobuf
