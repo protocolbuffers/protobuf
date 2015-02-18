@@ -146,12 +146,22 @@ GenerateHashCodeCode(io::Printer* printer) const {
     "result = 31 * result +\n"
     "    (this.$name$ == null ? 0 : this.$name$.hashCode());\n");
 }
+// ===================================================================
+
+MessageOneofFieldGenerator::MessageOneofFieldGenerator(
+    const FieldDescriptor* descriptor, const Params& params)
+    : FieldGenerator(params), descriptor_(descriptor) {
+    SetMessageVariables(params, descriptor, &variables_);
+    SetCommonOneofVariables(descriptor, &variables_);
+}
+
+MessageOneofFieldGenerator::~MessageOneofFieldGenerator() {}
 
 // ===================================================================
 
-RepeatedMessageFieldGenerator::
-RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor, const Params& params)
-  : FieldGenerator(params), descriptor_(descriptor) {
+RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
+    const FieldDescriptor* descriptor, const Params& params)
+    : FieldGenerator(params), descriptor_(descriptor) {
   SetMessageVariables(params, descriptor, &variables_);
 }
 
