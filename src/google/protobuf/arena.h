@@ -313,6 +313,8 @@ class LIBPROTOBUF_EXPORT Arena {
   static const size_t kHeaderSize = sizeof(Block);
   static google::protobuf::internal::SequenceNumber lifecycle_id_generator_;
 #ifdef PROTOBUF_USE_DLLS
+  // Thread local variables cannot be exposed through DLL interface but we can
+  // wrap them in static functions.
   static ThreadCache& thread_cache();
 #else
   static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_;

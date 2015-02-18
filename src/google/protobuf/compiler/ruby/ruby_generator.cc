@@ -47,7 +47,7 @@ namespace compiler {
 namespace ruby {
 
 // Forward decls.
-std::string IntToString(uint32_t value);
+std::string IntToString(uint32 value);
 std::string StripDotProto(const std::string& proto_file);
 std::string LabelForField(google::protobuf::FieldDescriptor* field);
 std::string TypeName(google::protobuf::FieldDescriptor* field);
@@ -64,7 +64,7 @@ void GenerateEnumAssignment(
     const google::protobuf::EnumDescriptor* en,
     google::protobuf::io::Printer* printer);
 
-std::string IntToString(uint32_t value) {
+std::string IntToString(uint32 value) {
   std::ostringstream os;
   os << value;
   return os.str();
@@ -299,7 +299,8 @@ bool Generator::Generate(
     string* error) const {
   std::string filename =
       StripDotProto(file->name()) + ".rb";
-  scoped_ptr<io::ZeroCopyOutputStream> output(generator_context->Open(filename));
+  scoped_ptr<io::ZeroCopyOutputStream> output(
+      generator_context->Open(filename));
   io::Printer printer(output.get(), '$');
 
   GenerateFile(file, &printer);

@@ -15,6 +15,12 @@ __EOF__
   exit 1
 fi
 
+if test -e .git; then
+  # pull down git submodules.
+  git submodule init
+  git submodule update
+fi
+
 # Check that gtest is present.  Usually it is already there since the
 # directory is set up as an SVN external.
 if test ! -e gtest; then
@@ -38,10 +44,6 @@ sed -i -e 's/RuntimeLibrary="5"/RuntimeLibrary="3"/g;
 
 # TODO(kenton):  Remove the ",no-obsolete" part and fix the resulting warnings.
 autoreconf -f -i -Wall,no-obsolete
-
-# pull down git submodules.
-git submodule init
-git submodule update
 
 rm -rf autom4te.cache config.h.in~
 exit 0
