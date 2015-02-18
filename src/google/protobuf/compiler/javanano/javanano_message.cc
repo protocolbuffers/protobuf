@@ -508,6 +508,14 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
     field_generators_.get(field).GenerateClearCode(printer);
   }
 
+  // Clear oneofs.
+  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+    printer->Print(
+      "clear$oneof_capitalized_name$();\n",
+      "oneof_capitalized_name", UnderscoresToCapitalizedCamelCase(
+          descriptor_->oneof_decl(i)));
+  }
+
   // Clear unknown fields.
   if (params_.store_unknown_fields()) {
     printer->Print("unknownFieldData = null;\n");
