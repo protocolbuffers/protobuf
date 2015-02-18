@@ -401,13 +401,27 @@ TEST_F(ParseMessageTest, FieldDefaults) {
     "  field { type:TYPE_BOOL    default_value:\"true\"      " ETC " }"
     "  field { type_name:\"Foo\" default_value:\"FOO\"       " ETC " }"
 
-    "  field { type:TYPE_INT32   default_value:\"2147483647\"           " ETC " }"
-    "  field { type:TYPE_INT32   default_value:\"-2147483648\"          " ETC " }"
-    "  field { type:TYPE_UINT32  default_value:\"4294967295\"           " ETC " }"
-    "  field { type:TYPE_INT64   default_value:\"9223372036854775807\"  " ETC " }"
-    "  field { type:TYPE_INT64   default_value:\"-9223372036854775808\" " ETC " }"
-    "  field { type:TYPE_UINT64  default_value:\"18446744073709551615\" " ETC " }"
-    "  field { type:TYPE_DOUBLE  default_value:\"43981\"                " ETC " }"
+    "  field {"
+    "    type:TYPE_INT32   default_value:\"2147483647\"           " ETC
+    "  }"
+    "  field {"
+    "    type:TYPE_INT32   default_value:\"-2147483648\"          " ETC
+    "  }"
+    "  field {"
+    "    type:TYPE_UINT32  default_value:\"4294967295\"           " ETC
+    "  }"
+    "  field {"
+    "    type:TYPE_INT64   default_value:\"9223372036854775807\"  " ETC
+    "  }"
+    "  field {"
+    "    type:TYPE_INT64   default_value:\"-9223372036854775808\" " ETC
+    "  }"
+    "  field {"
+    "    type:TYPE_UINT64  default_value:\"18446744073709551615\" " ETC
+    "  }"
+    "  field {"
+    "    type:TYPE_DOUBLE  default_value:\"43981\"                " ETC
+    "  }"
     "}");
 #undef ETC
 }

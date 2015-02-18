@@ -378,7 +378,8 @@ bool Generator::Generate(
 
   std::string filename =
       StripDotProto(file->name()) + ".rb";
-  scoped_ptr<io::ZeroCopyOutputStream> output(generator_context->Open(filename));
+  scoped_ptr<io::ZeroCopyOutputStream> output(
+      generator_context->Open(filename));
   io::Printer printer(output.get(), '$');
 
   GenerateFile(file, &printer);

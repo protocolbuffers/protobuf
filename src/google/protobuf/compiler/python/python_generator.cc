@@ -581,14 +581,15 @@ void Generator::PrintServiceDescriptor(
 }
 
 
-void Generator::PrintDescriptorKeyAndModuleName(const ServiceDescriptor& descriptor) const {	  
+void Generator::PrintDescriptorKeyAndModuleName(
+    const ServiceDescriptor& descriptor) const {
   printer_->Print(
       "$descriptor_key$ = $descriptor_name$,\n",
       "descriptor_key", kDescriptorKey,
       "descriptor_name", ModuleLevelServiceDescriptorName(descriptor));
   printer_->Print(
       "__module__ = '$module_name$'\n",
-      "module_name", ModuleName(file_->name())); 
+      "module_name", ModuleName(file_->name()));
 }
 
 void Generator::PrintServiceClass(const ServiceDescriptor& descriptor) const {
