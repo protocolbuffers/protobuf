@@ -114,6 +114,10 @@ class FieldGeneratorMap {
 
 void SetCommonOneofVariables(const FieldDescriptor* descriptor,
                              map<string, string>* variables);
+void GenerateOneofFieldEquals(const map<string, string>& variables,
+                              io::Printer* printer);
+void GenerateOneofFieldHashCode(const map<string, string>& variables,
+                                io::Printer* printer);
 
 }  // namespace javanano
 }  // namespace compiler
