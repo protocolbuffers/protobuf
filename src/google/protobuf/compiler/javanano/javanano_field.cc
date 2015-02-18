@@ -159,11 +159,13 @@ void SetCommonOneofVariables(const FieldDescriptor* descriptor,
   (*variables)["oneof_index"] =
       SimpleItoa(descriptor->containing_oneof()->index());
   (*variables)["set_oneof_case"] =
-      (*variables)["oneof_name"] + "Case_ = " + SimpleItoa(descriptor->number());
+      "this." + (*variables)["oneof_name"] +
+      "Case_ = " + SimpleItoa(descriptor->number());
   (*variables)["clear_oneof_case"] =
-      (*variables)["oneof_name"] + "Case_ = 0";
+      "this." + (*variables)["oneof_name"] + "Case_ = 0";
   (*variables)["has_oneof_case"] =
-      (*variables)["oneof_name"] + "Case_ == " + SimpleItoa(descriptor->number());
+      "this." + (*variables)["oneof_name"] + "Case_ == " +
+      SimpleItoa(descriptor->number());
 }
 
 }  // namespace javanano

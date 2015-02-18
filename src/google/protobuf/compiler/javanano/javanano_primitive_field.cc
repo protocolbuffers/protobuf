@@ -723,18 +723,13 @@ void PrimitiveOneofFieldGenerator::GenerateMembers(
     "}\n"
     "public $type$ get$capitalized_name$() {\n"
     "  if ($has_oneof_case$) {\n"
-    "    return ($type$) ($boxed_type$) $oneof_name$_;\n"
+    "    return ($type$) ($boxed_type$) this.$oneof_name$_;\n"
     "  }\n"
     "  return $default$;\n"
     "}\n"
     "public $message_name$ set$capitalized_name$($type$ value) {\n"
     "  $set_oneof_case$;\n"
-    "  $oneof_name$_ = value;\n"
-    "  return this;\n"
-    "}\n"
-    "public $message_name$ clear$capitalized_name$() {\n"
-    "  $clear_oneof_case$;\n"
-    "  $oneof_name$_ = null;\n"
+    "  this.$oneof_name$_ = value;\n"
     "  return this;\n"
     "}\n");
 }
@@ -747,7 +742,7 @@ void PrimitiveOneofFieldGenerator::GenerateClearCode(
 void PrimitiveOneofFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-    "$oneof_name$_ = input.read$capitalized_type$();\n"
+    "this.$oneof_name$_ = input.read$capitalized_type$();\n"
     "$set_oneof_case$;\n");
 }
 
@@ -756,7 +751,7 @@ void PrimitiveOneofFieldGenerator::GenerateSerializationCode(
   printer->Print(variables_,
     "if ($has_oneof_case$) {\n"
     "  output.write$capitalized_type$(\n"
-    "      $number$, ($boxed_type$) $oneof_name$_);\n"
+    "      $number$, ($boxed_type$) this.$oneof_name$_);\n"
     "}\n");
 }
 
@@ -766,7 +761,7 @@ void PrimitiveOneofFieldGenerator::GenerateSerializedSizeCode(
     "if ($has_oneof_case$) {\n"
     "  size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
     "      .compute$capitalized_type$Size(\n"
-    "          $number$, ($boxed_type$) $oneof_name$_);\n"
+    "          $number$, ($boxed_type$) this.$oneof_name$_);\n"
     "}\n");
 }
 

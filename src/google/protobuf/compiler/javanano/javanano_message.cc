@@ -167,16 +167,36 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   // oneof
   map<string, string> vars;
+  vars["message_name"] = descriptor_->name();
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-    vars["oneof_name"] = UnderscoresToCamelCase(descriptor_->oneof_decl(i));
+    const OneofDescriptor* oneof_desc = descriptor_->oneof_decl(i);
+    vars["oneof_name"] = UnderscoresToCamelCase(oneof_desc);
     vars["oneof_capitalized_name"] =
-        UnderscoresToCapitalizedCamelCase(descriptor_->oneof_decl(i));
-    vars["oneof_index"] = SimpleItoa(descriptor_->oneof_decl(i)->index());
+        UnderscoresToCapitalizedCamelCase(oneof_desc);
+    vars["oneof_index"] = SimpleItoa(oneof_desc->index());
+    // Oneof Constants
+    for (int j = 0; j < oneof_desc->field_count(); j++) {
+      const FieldDescriptor* field = oneof_desc->field(j);
+      vars["number"] = SimpleItoa(field->number());
+      vars["cap_field_name"] = ToUpper(field->name());
+      printer->Print(vars,
+        "public static final int $cap_field_name$_FIELD_NUMBER = $number$;\n");
+    }
     // oneofCase_ and oneof_
     printer->Print(vars,
       "private int $oneof_name$Case_ = 0;\n"
       "private java.lang.Object $oneof_name$_;\n");
-    // OneofCase enum
+    printer->Print(vars,
+      "public int get$oneof_capitalized_name$Case() {\n"
+      "  return this.$oneof_name$Case_;\n"
+      "}\n");
+    // Oneof clear
+    printer->Print(vars,
+      "public $message_name$ clear$oneof_capitalized_name$() {\n"
+      "  this.$oneof_name$Case_ = 0;\n"
+      "  this.$oneof_name$_ = null;\n"
+      "  return this;\n"
+      "}\n");
   }
 
   // Lazy initialization of otherwise static final fields can help prevent the

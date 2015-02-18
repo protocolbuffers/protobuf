@@ -157,6 +157,69 @@ MessageOneofFieldGenerator::MessageOneofFieldGenerator(
 
 MessageOneofFieldGenerator::~MessageOneofFieldGenerator() {}
 
+void MessageOneofFieldGenerator::
+GenerateMembers(io::Printer* printer, bool /* unused lazy_init */) const {
+  printer->Print(variables_,
+    "public boolean has$capitalized_name$() {\n"
+    "  return $has_oneof_case$;\n"
+    "}\n"
+    "public $type$ get$capitalized_name$() {\n"
+    "  if ($has_oneof_case$) {\n"
+    "    return ($type$) this.$oneof_name$_;\n"
+    "  }\n"
+    "  return null;\n"
+    "}\n"
+    "public $message_name$ set$capitalized_name$($type$ value) {\n"
+    "  if (value == null) { throw new java.lang.NullPointerException(); }\n"
+    "  $set_oneof_case$;\n"
+    "  this.$oneof_name$_ = value;\n"
+    "  return this;\n"
+    "}\n");
+}
+
+void MessageOneofFieldGenerator::
+GenerateClearCode(io::Printer* printer) const {
+  // No clear method for oneof fields.
+}
+
+void MessageOneofFieldGenerator::
+GenerateMergingCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (!($has_oneof_case$)) {\n"
+    "  this.$oneof_name$_ = new $type$();\n"
+    "}\n"
+    "input.readMessage(\n"
+    "    (com.google.protobuf.nano.MessageNano) this.$oneof_name$_);\n"
+    "$set_oneof_case$;\n");
+}
+
+void MessageOneofFieldGenerator::
+GenerateSerializationCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($has_oneof_case$) {\n"
+    "  output.writeMessage($number$,\n"
+    "      (com.google.protobuf.nano.MessageNano) this.$oneof_name$_);\n"
+    "}\n");
+}
+
+void MessageOneofFieldGenerator::
+GenerateSerializedSizeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($has_oneof_case$) {\n"
+    "  size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
+    "    .computeMessageSize($number$,\n"
+    "        (com.google.protobuf.nano.MessageNano) this.$oneof_name$_);\n"
+    "}\n");
+}
+
+void MessageOneofFieldGenerator::
+GenerateEqualsCode(io::Printer* printer) const {
+}
+
+void MessageOneofFieldGenerator::
+GenerateHashCodeCode(io::Printer* printer) const {
+}
+
 // ===================================================================
 
 RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
