@@ -3361,6 +3361,7 @@ public class NanoTest extends TestCase {
       TestAllTypesNano.BAR,
       TestAllTypesNano.BAZ
     };
+    message.setOneofUint32(3);
     return message;
   }
 
@@ -3557,6 +3558,85 @@ public class NanoTest extends TestCase {
     assertFalse(m7.equals(new NanoReferenceTypes.TestAllTypesNano()));
     assertTrue(m7.equals(MessageNano.mergeFrom(
         new NanoReferenceTypes.TestAllTypesNano(), MessageNano.toByteArray(m7))));
+  }
+
+  private static TestAllTypesNano generateMessageForOneof(int caseNumber) {
+    TestAllTypesNano result = new TestAllTypesNano();
+    TestAllTypesNano.NestedMessage nested =
+        new TestAllTypesNano.NestedMessage();
+    nested.bb = 2;
+    switch (caseNumber) {
+      case TestAllTypesNano.ONEOF_UINT32_FIELD_NUMBER:
+        result.setOneofUint32(1);
+        break;
+      case TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER:
+        result.setOneofEnum(TestAllTypesNano.BAR);
+        break;
+      case TestAllTypesNano.ONEOF_NESTED_MESSAGE_FIELD_NUMBER:
+        result.setOneofNestedMessage(nested);
+        break;
+      case TestAllTypesNano.ONEOF_BYTES_FIELD_NUMBER:
+        result.setOneofBytes(new byte[] {1, 2});
+        break;
+      case TestAllTypesNano.ONEOF_STRING_FIELD_NUMBER:
+        result.setOneofString("hello");
+        break;
+      case TestAllTypesNano.ONEOF_FIXED64_FIELD_NUMBER:
+        result.setOneofFixed64(-1L);
+        break;
+      default:
+        throw new RuntimeException("unexpected case number: " + caseNumber);
+    }
+    return result;
+  }
+
+  public void testOneofHashCodeEquals() throws Exception {
+    TestAllTypesNano m1 = generateMessageForOneof(
+        TestAllTypesNano.ONEOF_UINT32_FIELD_NUMBER);
+    assertEquals(m1, generateMessageForOneof(
+        TestAllTypesNano.ONEOF_UINT32_FIELD_NUMBER));
+    assertFalse(m1.equals(new TestAllTypesNano()));
+
+    TestAllTypesNano m2 = generateMessageForOneof(
+        TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER);
+    assertEquals(m2, generateMessageForOneof(
+        TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER));
+    assertFalse(m2.equals(new TestAllTypesNano()));
+
+    TestAllTypesNano m3 = generateMessageForOneof(
+        TestAllTypesNano.ONEOF_NESTED_MESSAGE_FIELD_NUMBER);
+    assertEquals(m3, generateMessageForOneof(
+        TestAllTypesNano.ONEOF_NESTED_MESSAGE_FIELD_NUMBER));
+    assertFalse(m3.equals(new TestAllTypesNano()));
+
+    TestAllTypesNano m4 = generateMessageForOneof(
+        TestAllTypesNano.ONEOF_BYTES_FIELD_NUMBER);
+    assertEquals(m4, generateMessageForOneof(
+        TestAllTypesNano.ONEOF_BYTES_FIELD_NUMBER));
+    assertFalse(m4.equals(new TestAllTypesNano()));
+
+    TestAllTypesNano m5 = generateMessageForOneof(
+        TestAllTypesNano.ONEOF_STRING_FIELD_NUMBER);
+    assertEquals(m5, generateMessageForOneof(
+        TestAllTypesNano.ONEOF_STRING_FIELD_NUMBER));
+    assertFalse(m5.equals(new TestAllTypesNano()));
+
+    TestAllTypesNano m6 = generateMessageForOneof(
+        TestAllTypesNano.ONEOF_FIXED64_FIELD_NUMBER);
+    assertEquals(m6, generateMessageForOneof(
+        TestAllTypesNano.ONEOF_FIXED64_FIELD_NUMBER));
+    assertFalse(m6.equals(new TestAllTypesNano()));
+
+    Map<TestAllTypesNano, Integer> map =
+        new HashMap<TestAllTypesNano, Integer>();
+    map.put(m1, 1);
+    map.put(m2, 2);
+    map.put(m3, 3);
+    map.put(m4, 4);
+    map.put(m5, 5);
+    map.put(m6, 6);
+
+    assertEquals(6, map.size());
   }
 
   public void testNullRepeatedFields() throws Exception {
