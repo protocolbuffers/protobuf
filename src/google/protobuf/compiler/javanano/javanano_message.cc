@@ -165,6 +165,20 @@ void MessageGenerator::Generate(io::Printer* printer) {
     MessageGenerator(descriptor_->nested_type(i), params_).Generate(printer);
   }
 
+  // oneof
+  map<string, string> vars;
+  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+    vars["oneof_name"] = UnderscoresToCamelCase(descriptor_->oneof_decl(i));
+    vars["oneof_capitalized_name"] =
+        UnderscoresToCapitalizedCamelCase(descriptor_->oneof_decl(i));
+    vars["oneof_index"] = SimpleItoa(descriptor_->oneof_decl(i)->index());
+    // oneofCase_ and oneof_
+    printer->Print(vars,
+      "private int $oneof_name$Case_ = 0;\n"
+      "private java.lang.Object $oneof_name$_;\n");
+    // OneofCase enum
+  }
+
   // Lazy initialization of otherwise static final fields can help prevent the
   // class initializer from being generated. We want to prevent it because it
   // stops ProGuard from inlining any methods in this class into call sites and

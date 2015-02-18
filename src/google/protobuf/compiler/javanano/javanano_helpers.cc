@@ -154,6 +154,14 @@ string UnderscoresToCamelCase(const MethodDescriptor* method) {
   return UnderscoresToCamelCaseImpl(method->name(), false);
 }
 
+string UnderscoresToCamelCase(const OneofDescriptor* oneof) {
+  return UnderscoresToCamelCaseImpl(oneof->name(), false);
+}
+
+string UnderscoresToCapitalizedCamelCase(const OneofDescriptor* oneof) {
+  return UnderscoresToCamelCaseImpl(oneof->name(), true);
+}
+
 string RenameJavaKeywords(const string& input) {
   return sRenameKeywords.RenameJavaKeywordsImpl(input);
 }

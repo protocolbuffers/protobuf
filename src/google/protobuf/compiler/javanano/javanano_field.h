@@ -35,6 +35,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVANANO_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVANANO_FIELD_H__
 
+#include <map>
 #include <string>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
@@ -110,6 +111,9 @@ class FieldGeneratorMap {
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGeneratorMap);
 };
+
+void SetCommonOneofVariables(const FieldDescriptor* descriptor,
+                             map<string, string>* variables);
 
 }  // namespace javanano
 }  // namespace compiler

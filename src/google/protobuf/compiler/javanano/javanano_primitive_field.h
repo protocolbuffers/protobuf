@@ -47,7 +47,7 @@ namespace javanano {
 class PrimitiveFieldGenerator : public FieldGenerator {
  public:
   explicit PrimitiveFieldGenerator(
-      const FieldDescriptor* descriptor, const Params &params);
+      const FieldDescriptor* descriptor, const Params& params);
   ~PrimitiveFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
@@ -94,9 +94,32 @@ class AccessorPrimitiveFieldGenerator : public FieldGenerator {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(AccessorPrimitiveFieldGenerator);
 };
 
+class PrimitiveOneofFieldGenerator : public FieldGenerator {
+ public:
+  explicit PrimitiveOneofFieldGenerator(
+      const FieldDescriptor* descriptor, const Params& params);
+  ~PrimitiveOneofFieldGenerator();
+
+  // implements FieldGenerator ---------------------------------------
+  void GenerateMembers(io::Printer* printer, bool lazy_init) const;
+  void GenerateClearCode(io::Printer* printer) const;
+  void GenerateMergingCode(io::Printer* printer) const;
+  void GenerateSerializationCode(io::Printer* printer) const;
+  void GenerateSerializedSizeCode(io::Printer* printer) const;
+  void GenerateEqualsCode(io::Printer* printer) const;
+  void GenerateHashCodeCode(io::Printer* printer) const;
+
+ private:
+  const FieldDescriptor* descriptor_;
+  map<string, string> variables_;
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(PrimitiveOneofFieldGenerator);
+};
+
 class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
  public:
-  explicit RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor, const Params& params);
+  explicit RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
+                                           const Params& params);
   ~RepeatedPrimitiveFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
