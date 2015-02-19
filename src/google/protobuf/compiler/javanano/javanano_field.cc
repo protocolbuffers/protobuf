@@ -168,26 +168,48 @@ void SetCommonOneofVariables(const FieldDescriptor* descriptor,
       SimpleItoa(descriptor->number());
 }
 
-void GenerateOneofFieldEquals(const map<string, string>& variables,
+void GenerateOneofFieldEquals(const FieldDescriptor* descriptor,
+                              const map<string, string>& variables,
                               io::Printer* printer) {
-  printer->Print(variables,
-    "if (this.has$capitalized_name$()) {\n"
-    "  if (!this.$oneof_name$_.equals(other.$oneof_name$_)) {\n"
-    "    return false;\n"
-    "  }\n"
-    "} else {\n"
-    "  if (other.has$capitalized_name$()) {\n"
-    "    return false;\n"
-    "  }\n"
-    "}\n");
-
+  if (GetJavaType(descriptor) == JAVATYPE_BYTES) {
+    printer->Print(variables,
+      "if (this.has$capitalized_name$()) {\n"
+      "  if (!other.has$capitalized_name$() ||\n"
+      "      !java.util.Arrays.equals((byte[]) this.$oneof_name$_,\n"
+      "                               (byte[]) other.$oneof_name$_)) {\n"
+      "    return false;\n"
+      "  }\n"
+      "} else {\n"
+      "  if (other.has$capitalized_name$()) {\n"
+      "    return false;\n"
+      "  }\n"
+      "}\n");
+  } else {
+    printer->Print(variables,
+      "if (this.has$capitalized_name$()) {\n"
+      "  if (!this.$oneof_name$_.equals(other.$oneof_name$_)) {\n"
+      "    return false;\n"
+      "  }\n"
+      "} else {\n"
+      "  if (other.has$capitalized_name$()) {\n"
+      "    return false;\n"
+      "  }\n"
+      "}\n");
+  }
 }
 
-void GenerateOneofFieldHashCode(const map<string, string>& variables,
+void GenerateOneofFieldHashCode(const FieldDescriptor* descriptor,
+                                const map<string, string>& variables,
                                 io::Printer* printer) {
-  printer->Print(variables,
-    "result = 31 * result +\n"
-    "  ($has_oneof_case$ ? this.$oneof_name$_.hashCode() : 0);\n");
+  if (GetJavaType(descriptor) == JAVATYPE_BYTES) {
+    printer->Print(variables,
+      "result = 31 * result + ($has_oneof_case$\n"
+      "   ? java.util.Arrays.hashCode((byte[]) this.$oneof_name$_) : 0);\n");
+  } else {
+    printer->Print(variables,
+      "result = 31 * result +\n"
+      "  ($has_oneof_case$ ? this.$oneof_name$_.hashCode() : 0);\n");
+  }
 }
 
 }  // namespace javanano

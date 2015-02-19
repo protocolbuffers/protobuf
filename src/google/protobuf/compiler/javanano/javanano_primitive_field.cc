@@ -767,12 +767,12 @@ void PrimitiveOneofFieldGenerator::GenerateSerializedSizeCode(
 
 void PrimitiveOneofFieldGenerator::GenerateEqualsCode(
     io::Printer* printer) const {
-  GenerateOneofFieldEquals(variables_, printer);
+  GenerateOneofFieldEquals(descriptor_, variables_, printer);
 }
 
 void PrimitiveOneofFieldGenerator::GenerateHashCodeCode(
     io::Printer* printer) const {
-  GenerateOneofFieldHashCode(variables_, printer);
+  GenerateOneofFieldHashCode(descriptor_, variables_, printer);
 }
 
 // ===================================================================
