@@ -191,9 +191,6 @@ inline bool IsMapEntry(const Descriptor* descriptor) {
 
 bool HasMapField(const Descriptor* descriptor);
 
-void SetCommonOneofVariables(const FieldDescriptor* field,
-                             map<string, string>* variables);
-
 }  // namespace javanano
 }  // namespace compiler
 }  // namespace protobuf
