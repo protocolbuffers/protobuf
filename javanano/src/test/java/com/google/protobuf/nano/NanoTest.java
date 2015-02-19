@@ -3663,18 +3663,154 @@ public class NanoTest extends TestCase {
 
   }
 
-  public void testOneofBasic() throws Exception {
+  public void testOneofDefault() throws Exception {
     TestAllTypesNano m1 = new TestAllTypesNano();
     checkOneofCase(m1, 0);
+    assertEquals(WireFormatNano.EMPTY_BYTES, m1.getOneofBytes());
+    assertEquals(TestAllTypesNano.FOO, m1.getOneofEnum());
+    assertEquals(0L, m1.getOneofFixed64());
+    assertEquals(null, m1.getOneofNestedMessage());
+    assertEquals("", m1.getOneofString());
+    assertEquals(0, m1.getOneofUint32());
+  }
 
-    m1.setOneofString("hello");
-    checkOneofCase(m1, TestAllTypesNano.ONEOF_STRING_FIELD_NUMBER);
+  public void testOneofExclusiveness() throws Exception {
+    TestAllTypesNano m = new TestAllTypesNano();
+    checkOneofCase(m, 0);
 
+    m.setOneofBytes(new byte[]{0, 1});
+    checkOneofCase(m, TestAllTypesNano.ONEOF_BYTES_FIELD_NUMBER);
+    assertTrue(Arrays.equals(new byte[]{0,  1}, m.getOneofBytes()));
+
+    m.setOneofEnum(TestAllTypesNano.BAZ);
+    checkOneofCase(m, TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER);
+    assertEquals(TestAllTypesNano.BAZ, m.getOneofEnum());
+    assertEquals(WireFormatNano.EMPTY_BYTES, m.getOneofBytes());
+
+    m.setOneofFixed64(-1L);
+    checkOneofCase(m, TestAllTypesNano.ONEOF_FIXED64_FIELD_NUMBER);
+    assertEquals(-1L, m.getOneofFixed64());
+    assertEquals(TestAllTypesNano.FOO, m.getOneofEnum());
+
+    m.setOneofNestedMessage(new TestAllTypesNano.NestedMessage());
+    checkOneofCase(m, TestAllTypesNano.ONEOF_NESTED_MESSAGE_FIELD_NUMBER);
+    assertEquals(
+        new TestAllTypesNano.NestedMessage(), m.getOneofNestedMessage());
+    assertEquals(0L, m.getOneofFixed64());
+
+    m.setOneofString("hello");
+    checkOneofCase(m, TestAllTypesNano.ONEOF_STRING_FIELD_NUMBER);
+    assertEquals("hello", m.getOneofString());
+    assertNull(m.getOneofNestedMessage());
+
+    m.setOneofUint32(10);
+    checkOneofCase(m, TestAllTypesNano.ONEOF_UINT32_FIELD_NUMBER);
+    assertEquals(10, m.getOneofUint32());
+    assertEquals("", m.getOneofString());
+
+    m.setOneofBytes(new byte[]{0, 1});
+    checkOneofCase(m, TestAllTypesNano.ONEOF_BYTES_FIELD_NUMBER);
+    assertTrue(Arrays.equals(new byte[]{0,  1}, m.getOneofBytes()));
+    assertEquals(0, m.getOneofUint32());
+  }
+
+  public void testOneofClear() throws Exception {
+    TestAllTypesNano m = new TestAllTypesNano();
+    m.setOneofBytes(new byte[]{0, 1});
+    m.clearOneofField();
+    checkOneofCase(m, 0);
+
+    m.setOneofEnum(TestAllTypesNano.BAZ);
+    m.clearOneofField();
+    checkOneofCase(m, 0);
+
+    m.setOneofFixed64(-1L);
+    m.clearOneofField();
+    checkOneofCase(m, 0);
+
+    m.setOneofNestedMessage(new TestAllTypesNano.NestedMessage());
+    m.clearOneofField();
+    checkOneofCase(m, 0);
+
+    m.setOneofString("hello");
+    m.clearOneofField();
+    checkOneofCase(m, 0);
+
+    m.setOneofUint32(10);
+    m.clearOneofField();
+    checkOneofCase(m, 0);
+  }
+
+  public void testOneofMarshling() throws Exception {
+    TestAllTypesNano m = new TestAllTypesNano();
+    TestAllTypesNano parsed = new TestAllTypesNano();
+    {
+      m.setOneofBytes(new byte[]{0, 1});
+      byte[] serialized = MessageNano.toByteArray(m);
+      MessageNano.mergeFrom(parsed, serialized);
+      checkOneofCase(parsed, TestAllTypesNano.ONEOF_BYTES_FIELD_NUMBER);
+      assertTrue(Arrays.equals(new byte[]{0, 1}, parsed.getOneofBytes()));
+    }
+    {
+      m.setOneofEnum(TestAllTypesNano.BAZ);
+      byte[] serialized = MessageNano.toByteArray(m);
+      MessageNano.mergeFrom(parsed, serialized);
+      checkOneofCase(m, TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER);
+      assertEquals(TestAllTypesNano.BAZ, m.getOneofEnum());
+    }
+    {
+      m.setOneofEnum(TestAllTypesNano.BAZ);
+      byte[] serialized = MessageNano.toByteArray(m);
+      MessageNano.mergeFrom(parsed, serialized);
+      checkOneofCase(m, TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER);
+      assertEquals(TestAllTypesNano.BAZ, m.getOneofEnum());
+    }
+    {
+      m.setOneofFixed64(-1L);
+      byte[] serialized = MessageNano.toByteArray(m);
+      MessageNano.mergeFrom(parsed, serialized);
+      checkOneofCase(m, TestAllTypesNano.ONEOF_FIXED64_FIELD_NUMBER);
+      assertEquals(-1L, m.getOneofFixed64());
+    }
+    {
+      m.setOneofNestedMessage(new TestAllTypesNano.NestedMessage());
+      byte[] serialized = MessageNano.toByteArray(m);
+      MessageNano.mergeFrom(parsed, serialized);
+      checkOneofCase(m, TestAllTypesNano.ONEOF_NESTED_MESSAGE_FIELD_NUMBER);
+      assertEquals(
+          new TestAllTypesNano.NestedMessage(), m.getOneofNestedMessage());
+    }
+    {
+      m.setOneofString("hello");
+      byte[] serialized = MessageNano.toByteArray(m);
+      MessageNano.mergeFrom(parsed, serialized);
+      assertEquals("hello", m.getOneofString());
+      assertNull(m.getOneofNestedMessage());
+    }
+    {
+      m.setOneofUint32(10);
+      byte[] serialized = MessageNano.toByteArray(m);
+      MessageNano.mergeFrom(parsed, serialized);
+      checkOneofCase(m, TestAllTypesNano.ONEOF_UINT32_FIELD_NUMBER);
+      assertEquals(10, m.getOneofUint32());
+    }
+  }
+
+  public void testOneofSerializedConcat() throws Exception {
+    TestAllTypesNano m1 = new TestAllTypesNano();
+    m1.setOneofBytes(new byte[] {0, 1});
+    byte[] b1 = MessageNano.toByteArray(m1);
     TestAllTypesNano m2 = new TestAllTypesNano();
     m2.setOneofEnum(TestAllTypesNano.BAZ);
-    assertTrue(m2.hasOneofEnum());
-    assertEquals(
-        TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER, m2.getOneofFieldCase());
+    byte[] b2 = MessageNano.toByteArray(m2);
+    byte[] b3 = new byte[b1.length + b2.length];
+    System.arraycopy(b1, 0, b3, 0, b1.length);
+    System.arraycopy(b2, 0, b3, b1.length, b2.length);
+    TestAllTypesNano parsed = new TestAllTypesNano();
+    MessageNano.mergeFrom(parsed, b3);
+    // the last on the wire wins.
+    checkOneofCase(parsed, TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER);
+    assertEquals(TestAllTypesNano.BAZ, parsed.getOneofEnum());
   }
 
   public void testNullRepeatedFields() throws Exception {
