@@ -354,13 +354,12 @@ public final class InternalNano {
     }
     return result;
   }
-  private static final byte[] EMPTY_BYTES = new byte[0];
   private static Object primitiveDefaultValue(int type) {
     switch (type) {
       case TYPE_BOOL:
         return Boolean.FALSE;
       case TYPE_BYTES:
-        return EMPTY_BYTES;
+        return WireFormatNano.EMPTY_BYTES;
       case TYPE_STRING:
         return "";
       case TYPE_FLOAT:
