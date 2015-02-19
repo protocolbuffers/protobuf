@@ -214,12 +214,12 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
 
 void MessageOneofFieldGenerator::
 GenerateEqualsCode(io::Printer* printer) const {
-  GenerateOneofFieldEquals(variables_, printer);
+  GenerateOneofFieldEquals(descriptor_, variables_, printer);
 }
 
 void MessageOneofFieldGenerator::
 GenerateHashCodeCode(io::Printer* printer) const {
-  GenerateOneofFieldHashCode(variables_, printer);
+  GenerateOneofFieldHashCode(descriptor_, variables_, printer);
 }
 
 // ===================================================================
