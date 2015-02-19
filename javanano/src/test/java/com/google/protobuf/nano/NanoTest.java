@@ -2731,6 +2731,45 @@ public class NanoTest extends TestCase {
     assertTrue(protoPrint.contains("id: 33"));
   }
 
+  public void testMessageNanoPrinterForMaps() throws Exception {
+    TestMap msg = new TestMap();
+    MessageValue msgValues[] = new MessageValue[] {
+      new MessageValue(), new MessageValue()
+    };
+    msgValues[0].value = 1;
+    msgValues[1].value = 2;
+    msg.int32ToBytesField = new HashMap<Integer, byte[]>();
+    msg.int32ToBytesField.put(1, new byte[] {'"', '\0'});
+    msg.int32ToBytesField.put(2, new byte[] {1, 8});
+    msg.stringToInt32Field = new HashMap<String, Integer>();
+    msg.stringToInt32Field.put("hello", 1);
+    msg.stringToInt32Field.put("world", 2);
+    msg.int32ToMessageField = new HashMap<Integer, MapTestProto.TestMap.MessageValue>();
+    msg.int32ToMessageField.put(0, msgValues[0]);
+    msg.int32ToMessageField.put(1, msgValues[1]);
+    msg.int32ToEnumField = new HashMap<Integer, Integer>();
+    msg.int32ToEnumField.put(1, 2);
+    msg.int32ToEnumField.put(2, 3);
+    String protoPrint = msg.toString();
+
+    assertTrue(protoPrint.contains(
+        "int32_to_bytes_field <\n  key: 1\n  value: \"\\\"\\000\"\n>"));
+    assertTrue(protoPrint.contains(
+        "int32_to_bytes_field <\n  key: 2\n  value: \"\\001\\010\"\n>"));
+    assertTrue(protoPrint.contains(
+        "string_to_int32_field <\n  key: \"hello\"\n  value: 1\n>"));
+    assertTrue(protoPrint.contains(
+        "string_to_int32_field <\n  key: \"world\"\n  value: 2\n>"));
+    assertTrue(protoPrint.contains(
+        "int32_to_message_field <\n  key: 0\n  value <\n    value: 1\n"));
+    assertTrue(protoPrint.contains(
+        "int32_to_message_field <\n  key: 1\n  value <\n    value: 2\n"));
+    assertTrue(protoPrint.contains(
+        "int32_to_enum_field <\n  key: 1\n  value: 2\n>"));
+    assertTrue(protoPrint.contains(
+        "int32_to_enum_field <\n  key: 2\n  value: 3\n>"));
+  }
+
   public void testExtensions() throws Exception {
     Extensions.ExtendableMessage message = new Extensions.ExtendableMessage();
     message.field = 5;
