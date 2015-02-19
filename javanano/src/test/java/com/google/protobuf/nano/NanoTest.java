@@ -3639,6 +3639,44 @@ public class NanoTest extends TestCase {
     assertEquals(6, map.size());
   }
 
+  private void checkOneofCase(TestAllTypesNano nano, int field)
+      throws Exception {
+    assertEquals(field, nano.getOneofFieldCase());
+    assertEquals(
+        field == TestAllTypesNano.ONEOF_BYTES_FIELD_NUMBER,
+        nano.hasOneofBytes());
+    assertEquals(
+        field == TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER,
+        nano.hasOneofEnum());
+    assertEquals(
+        field == TestAllTypesNano.ONEOF_FIXED64_FIELD_NUMBER,
+        nano.hasOneofFixed64());
+    assertEquals(
+        field == TestAllTypesNano.ONEOF_NESTED_MESSAGE_FIELD_NUMBER,
+        nano.hasOneofNestedMessage());
+    assertEquals(
+        field == TestAllTypesNano.ONEOF_STRING_FIELD_NUMBER,
+        nano.hasOneofString());
+    assertEquals(
+        field == TestAllTypesNano.ONEOF_UINT32_FIELD_NUMBER,
+        nano.hasOneofUint32());
+
+  }
+
+  public void testOneofBasic() throws Exception {
+    TestAllTypesNano m1 = new TestAllTypesNano();
+    checkOneofCase(m1, 0);
+
+    m1.setOneofString("hello");
+    checkOneofCase(m1, TestAllTypesNano.ONEOF_STRING_FIELD_NUMBER);
+
+    TestAllTypesNano m2 = new TestAllTypesNano();
+    m2.setOneofEnum(TestAllTypesNano.BAZ);
+    assertTrue(m2.hasOneofEnum());
+    assertEquals(
+        TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER, m2.getOneofFieldCase());
+  }
+
   public void testNullRepeatedFields() throws Exception {
     // Check that serialization after explicitly setting a repeated field
     // to null doesn't NPE.
