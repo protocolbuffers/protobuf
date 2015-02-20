@@ -68,9 +68,10 @@ running unit tests.
 Nano version
 ============================
 
-Nano is a special code generator and runtime library designed specially
-for Android, and is very resource-friendly in both the amount of code
-and the runtime overhead. An overview of Nano features:
+JavaNano is a special code generator and runtime library designed specially for
+resource-restricted systems, like Android. It is very resource-friendly in both
+the amount of code and the runtime overhead. An overview of JavaNano features
+compared with the official Java protobuf:
 
 - No descriptors or message builders.
 - All messages are mutable; fields are public Java fields.
@@ -200,7 +201,7 @@ optional_field_style={default,accessors,reftypes} (default: default)
 
   In the default style, optional fields translate into public mutable
   Java fields, and the serialization process is as discussed in the
-  "IMPORTANT" section above. 
+  "IMPORTANT" section above.
 
   * accessors *
 
