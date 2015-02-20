@@ -1,8 +1,7 @@
 submit_rule(submit(CR)) :-
   base(CR),
-  gerrit:current_user(Reviewer),
-  gerrit:commit_author(Author),
   CR = label(_, ok(Reviewer)),
+  gerrit:commit_author(Author),
   Author \= Reviewer,
   !.
 submit_rule(submit(CR, N)) :-
