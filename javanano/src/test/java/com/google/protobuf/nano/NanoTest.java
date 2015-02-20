@@ -2670,6 +2670,7 @@ public class NanoTest extends TestCase {
     msg.repeatedNestedEnum[0] = TestAllTypesNano.BAR;
     msg.repeatedNestedEnum[1] = TestAllTypesNano.FOO;
     msg.repeatedStringPiece = new String[] {null, "world"};
+    msg.setOneofString("hello");
 
     String protoPrint = msg.toString();
     assertTrue(protoPrint.contains("optional_int32: 14"));
@@ -2693,6 +2694,7 @@ public class NanoTest extends TestCase {
     assertTrue(protoPrint.contains("default_string: \"hello\""));
     assertFalse(protoPrint.contains("repeated_string_piece: \"\""));  // null should be dropped
     assertTrue(protoPrint.contains("repeated_string_piece: \"world\""));
+    assertTrue(protoPrint.contains("oneof_string: \"hello\""));
   }
 
   public void testMessageNanoPrinterAccessors() throws Exception {
