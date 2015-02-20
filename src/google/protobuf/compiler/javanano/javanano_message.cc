@@ -551,6 +551,16 @@ void MessageGenerator::GenerateEquals(io::Printer* printer) {
     "$classname$ other = ($classname$) o;\n",
     "classname", descriptor_->name());
 
+  // Checking oneof case before checking each oneof field.
+  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+    const OneofDescriptor* oneof_desc = descriptor_->oneof_decl(i);
+    printer->Print(
+      "if (this.$oneof_name$Case_ != other.$oneof_name$Case_) {\n"
+      "  return false;\n"
+      "}\n",
+      "oneof_name", UnderscoresToCamelCase(oneof_desc));
+  }
+
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     field_generators_.get(field).GenerateEqualsCode(printer);

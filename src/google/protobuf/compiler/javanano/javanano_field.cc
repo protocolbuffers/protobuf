@@ -174,13 +174,8 @@ void GenerateOneofFieldEquals(const FieldDescriptor* descriptor,
   if (GetJavaType(descriptor) == JAVATYPE_BYTES) {
     printer->Print(variables,
       "if (this.has$capitalized_name$()) {\n"
-      "  if (!other.has$capitalized_name$() ||\n"
-      "      !java.util.Arrays.equals((byte[]) this.$oneof_name$_,\n"
+      "  if (!java.util.Arrays.equals((byte[]) this.$oneof_name$_,\n"
       "                               (byte[]) other.$oneof_name$_)) {\n"
-      "    return false;\n"
-      "  }\n"
-      "} else {\n"
-      "  if (other.has$capitalized_name$()) {\n"
       "    return false;\n"
       "  }\n"
       "}\n");
@@ -188,10 +183,6 @@ void GenerateOneofFieldEquals(const FieldDescriptor* descriptor,
     printer->Print(variables,
       "if (this.has$capitalized_name$()) {\n"
       "  if (!this.$oneof_name$_.equals(other.$oneof_name$_)) {\n"
-      "    return false;\n"
-      "  }\n"
-      "} else {\n"
-      "  if (other.has$capitalized_name$()) {\n"
       "    return false;\n"
       "  }\n"
       "}\n");

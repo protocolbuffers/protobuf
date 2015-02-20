@@ -3741,7 +3741,7 @@ public class NanoTest extends TestCase {
     checkOneofCase(m, 0);
   }
 
-  public void testOneofMarshling() throws Exception {
+  public void testOneofMarshaling() throws Exception {
     TestAllTypesNano m = new TestAllTypesNano();
     TestAllTypesNano parsed = new TestAllTypesNano();
     {
