@@ -154,6 +154,46 @@ java_EXTRA_DIST=                                                             \
   java/pom.xml                                                               \
   java/README.txt
 
+javanano_EXTRA_DIST=                                                                      \
+  javanano/src/main/java/com/google/protobuf/nano/CodedOutputByteBufferNano.java          \
+  javanano/src/main/java/com/google/protobuf/nano/FieldData.java                          \
+  javanano/src/main/java/com/google/protobuf/nano/FieldArray.java                         \
+  javanano/src/main/java/com/google/protobuf/nano/WireFormatNano.java                     \
+  javanano/src/main/java/com/google/protobuf/nano/Extension.java                          \
+  javanano/src/main/java/com/google/protobuf/nano/CodedInputByteBufferNano.java           \
+  javanano/src/main/java/com/google/protobuf/nano/UnknownFieldData.java                   \
+  javanano/src/main/java/com/google/protobuf/nano/MessageNano.java                        \
+  javanano/src/main/java/com/google/protobuf/nano/InternalNano.java                       \
+  javanano/src/main/java/com/google/protobuf/nano/InvalidProtocolBufferNanoException.java \
+  javanano/src/main/java/com/google/protobuf/nano/MapFactories.java                       \
+  javanano/src/main/java/com/google/protobuf/nano/ExtendableMessageNano.java              \
+  javanano/src/main/java/com/google/protobuf/nano/MessageNanoPrinter.java                 \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_accessors_nano.proto           \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_enum_class_nano.proto          \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_reference_types_nano.proto     \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_extension_repeated_nano.proto  \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_has_nano.proto                 \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_nano.proto                     \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_multiple_nameclash_nano.proto  \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_single_nano.proto              \
+  javanano/src/test/java/com/google/protobuf/nano/NanoTest.java                           \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_simple_nano.proto              \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_import_nano.proto              \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_repeated_merge_nano.proto      \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_extension_nano.proto           \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_repeated_packables_nano.proto  \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_extension_singular_nano.proto  \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_recursive_nano.proto           \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_extension_packed_nano.proto    \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_enum_validity_nano.proto       \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_stringutf8_nano.proto          \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_multiple_nano.proto            \
+  javanano/src/test/java/com/google/protobuf/nano/unittest_enum_class_multiple_nano.proto \
+  javanano/src/test/java/com/google/protobuf/nano/map_test.proto                          \
+  javanano/README.txt                                                                     \
+  javanano/pom.xml
+
+
 python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/api_implementation.cc                      \
   python/google/protobuf/internal/api_implementation.py                      \
@@ -260,7 +300,7 @@ ruby_EXTRA_DIST=                                                             \
   ruby/tests/generated_code.rb                                               \
   ruby/tests/generated_code_test.rb
 
-all_EXTRA_DIST=$(java_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST)
+all_EXTRA_DIST=$(java_EXTRA_DIST) $(javanano_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST)
 
 EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)                                       \
   autogen.sh                                                                 \
