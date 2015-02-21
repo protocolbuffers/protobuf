@@ -390,7 +390,7 @@ TEST(ArenaTest, ReleaseFromArenaMessageUsingReflectionMakesCopy) {
     const Reflection* r = arena_message->GetReflection();
     const FieldDescriptor* f = arena_message->GetDescriptor()->FindFieldByName(
         "optional_nested_message");
-    nested_msg = dynamic_cast<TestAllTypes::NestedMessage*>(
+    nested_msg = static_cast<TestAllTypes::NestedMessage*>(
         r->ReleaseMessage(arena_message, f));
   }
   EXPECT_EQ(42, nested_msg->bb());
@@ -853,7 +853,7 @@ TEST(ArenaTest, MutableMessageReflection) {
   const Descriptor* d = message->GetDescriptor();
   const FieldDescriptor* field = d->FindFieldByName("optional_nested_message");
   TestAllTypes::NestedMessage* submessage =
-      dynamic_cast<TestAllTypes::NestedMessage*>(
+      static_cast<TestAllTypes::NestedMessage*>(
           r->MutableMessage(message, field));
   TestAllTypes::NestedMessage* submessage_expected =
       message->mutable_optional_nested_message();
@@ -862,7 +862,7 @@ TEST(ArenaTest, MutableMessageReflection) {
   EXPECT_EQ(&arena, submessage->GetArena());
 
   const FieldDescriptor* oneof_field = d->FindFieldByName("oneof_nested_message");
-  submessage = dynamic_cast<TestAllTypes::NestedMessage*>(
+  submessage = static_cast<TestAllTypes::NestedMessage*>(
       r->MutableMessage(message, oneof_field));
   submessage_expected = message->mutable_oneof_nested_message();
 
@@ -921,8 +921,8 @@ TEST(ArenaTest, MessageLiteOnArena) {
   options.initial_block = &arena_block[0];
   options.initial_block_size = arena_block.size();
   Arena arena(options);
-  const google::protobuf::MessageLite* prototype = dynamic_cast<
-      const google::protobuf::MessageLite*>(&TestAllTypes::default_instance());
+  const google::protobuf::MessageLite* prototype =
+      &TestAllTypes::default_instance();
 
   TestAllTypes initial_message;
   FillArenaAwareFields(&initial_message);
@@ -935,8 +935,7 @@ TEST(ArenaTest, MessageLiteOnArena) {
     EXPECT_TRUE(generic_message != NULL);
     EXPECT_EQ(&arena, generic_message->GetArena());
     EXPECT_TRUE(generic_message->ParseFromString(serialized));
-    TestAllTypes* deserialized = dynamic_cast<TestAllTypes*>(generic_message);
-    EXPECT_TRUE(deserialized != NULL);
+    TestAllTypes* deserialized = static_cast<TestAllTypes*>(generic_message);
     EXPECT_EQ(42, deserialized->optional_int32());
   }
 
