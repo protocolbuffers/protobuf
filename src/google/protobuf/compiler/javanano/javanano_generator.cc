@@ -156,6 +156,8 @@ bool JavaNanoGenerator::Generate(const FileDescriptor* file,
       params.set_generate_clone(option_value == "true");
     } else if (option_name == "generate_intdefs") {
       params.set_generate_intdefs(option_value == "true");
+    } else if (option_name == "generate_clear") {
+      params.set_generate_clear(option_value == "true");
     } else {
       *error = "Ignore unknown javanano generator option: " + option_name;
     }
