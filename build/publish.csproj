@@ -82,7 +82,7 @@
     <!-- Require Win7.0A SDK to verify strong-name -->
     <Error Text="Unable to locate Win7SDK Tools: $(SnTool)" Condition="!Exists($(SnTool))" />
     <!-- Require Python 2.5 installed -->
-    <Error Text="Unable to locate Python 2.5: $(Python)" Condition="!Exists($(Python))" />
+    <!-- Error Text="Unable to locate Python 2.5: $(Python)" Condition="!Exists($(Python))" / -->
     <!-- Require production signing key -->
     <Exec Command="$(HgTool) clone https://bitbucket.org/rknapp/protobuf-csharp-port-keyfile $(ProjectDirectory)\release-key" Condition="!Exists('$(SigningKey)')" />
     <Error Text="Unable to locate release signing key: $(SigningKey)" Condition="!Exists($(SigningKey))" />

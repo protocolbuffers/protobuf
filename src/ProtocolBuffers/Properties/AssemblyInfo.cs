@@ -1,4 +1,4 @@
-﻿// Protocol Buffers - Google's data interchange format
+// Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // http://github.com/jskeet/dotnet-protobufs/
 // Original C++/Java/Python code:
@@ -57,12 +57,12 @@ using System.Security;
 //
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
-// [assembly: AssemblyVersion("2.4.1.521")]
+// [assembly: AssemblyVersion("2.4.1.555")]
 
-[assembly: AssemblyVersion("2.4.1.521")]
+[assembly: AssemblyVersion("2.4.1.555")]
 
 #if !NOFILEVERSION
-[assembly: AssemblyFileVersion("2.4.1.521")]
+[assembly: AssemblyFileVersion("2.4.1.555")]
 #endif
 
 [assembly: CLSCompliant(true)]
