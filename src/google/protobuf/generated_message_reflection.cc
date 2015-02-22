@@ -247,8 +247,14 @@ namespace {
 UnknownFieldSet* empty_unknown_field_set_ = NULL;
 GOOGLE_PROTOBUF_DECLARE_ONCE(empty_unknown_field_set_once_);
 
+void DeleteEmptyUnknownFieldSet() {
+  delete empty_unknown_field_set_;
+  empty_unknown_field_set_ = NULL;
+}
+
 void InitEmptyUnknownFieldSet() {
   empty_unknown_field_set_ = new UnknownFieldSet;
+  internal::OnShutdown(&DeleteEmptyUnknownFieldSet);
 }
 
 const UnknownFieldSet& GetEmptyUnknownFieldSet() {
