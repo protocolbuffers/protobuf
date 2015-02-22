@@ -9,6 +9,51 @@ For more information about Protocol Buffers in general, visit the project page
 for the C++, Java and Python project:
 http://protobuf.googlecode.com
 ===============================================================================
+RELEASE NOTES - Version 2.4.1.554
+===============================================================================
+
+Changes:
+- Upgrade solution format to Visual Studio 2012.
+- Add the ability to print a builder (not just a message)
+- TextGenerator introduces a new overload of PrintTo
+- Munge protoc's error format into a VS-C#-compatible output format.
+- Work to make ProtoGen clone that acts as a protoc.exe plugin.
+- Added the AllowPartiallyTrustedCallers attribute
+- Optimized enum parsing.
+
+Fixes:
+- Fix for bug in limited input stream's Position, Introduced Position on 
+  output stream
+- Fix for writing a character to a JSON output overflows allocated buffer
+- Optimize FromBase64String to return Empty when presented with empty string.
+- Use string.Concat instead of operator to avoid potential import problems
+- Issue 81: quoting for NUnit parameters.
+- Issue 56: NuGet package is noisy
+- Issue 70: Portable library project has some invalid Nunit-based code.
+- Issue 71: CodedInputStream.ReadBytes go to slow path unnecessarily
+- Issue 84: warning CS0219: The variable `size' is assigned but never used
+
+===============================================================================
+RELEASE NOTES - Version 2.4.1.521
+===============================================================================
+
+Changes:
+- Add generated_code_attributes option, defaulted to false
+- Added support for Portable library
+- Added 'Unsafe' static type in ByteString to allow direct buffer access
+
+Fixes:
+- Issue 50: The XML serializer will fail to deserialize a message with empty 
+  child message
+- Issue 45: Use of 'item' as a field name causes AmbiguousMatchException
+- Issue 49: Generated nested static Types class should be partial
+- Issue 38: Disable CLSCompliant warnings (3021)
+- Issue 40: proto_path does not work for command-line file names
+- Issue 54: should retire all bytes in buffer (bufferSize)
+- Issue 43: Fix to correct identical 'umbrella_classname' options from trying 
+  to write to the same filename.
+
+===============================================================================
 RELEASE NOTES - Version 2.4.1.473
 ===============================================================================
 
