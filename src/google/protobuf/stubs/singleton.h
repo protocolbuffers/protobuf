@@ -44,6 +44,12 @@ class Singleton {
     GoogleOnceInit(&once_, &Singleton<T>::Init);
     return instance_;
   }
+  // Delibrately choose a different name than the Google internal one to prevent
+  // shut-down code being up-integrated unexpectedly.
+  static void ShutDown() {
+    delete instance_;
+    instance_ = NULL;
+  }
  private:
   static void Init() {
     instance_ = new T();
@@ -56,7 +62,7 @@ template<typename T>
 ProtobufOnceType Singleton<T>::once_;
 
 template<typename T>
-T* Singleton<T>::instance_;
+T* Singleton<T>::instance_ = NULL;
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
