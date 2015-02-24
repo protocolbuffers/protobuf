@@ -56,9 +56,10 @@ import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.ForeignEnum;
 import protobuf_unittest.UnittestProto.ForeignMessage;
 import protobuf_unittest.UnittestProto.ForeignMessageOrBuilder;
+import protobuf_unittest.UnittestProto.NestedTestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
-import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
+import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypesOrBuilder;
 import protobuf_unittest.UnittestProto.TestExtremeDefaultValues;
 import protobuf_unittest.UnittestProto.TestOneof2;
@@ -1508,6 +1509,17 @@ public class GeneratedMessageTest extends TestCase {
       assertTrue(message2.hasFooMessage());
       assertEquals(message2.getFooMessage().getQuxInt(), 234);
     }
+  }
+
+  public void testOneofNestedBuilderOnChangePropagation() {
+    NestedTestAllTypes.Builder parentBuilder = NestedTestAllTypes.newBuilder();
+    TestAllTypes.Builder builder = parentBuilder.getPayloadBuilder();
+    builder.getOneofNestedMessageBuilder();
+    assertTrue(builder.hasOneofNestedMessage());
+    assertTrue(parentBuilder.hasPayload());
+    NestedTestAllTypes message = parentBuilder.build();
+    assertTrue(message.hasPayload());
+    assertTrue(message.getPayload().hasOneofNestedMessage());
   }
 
   public void testGetRepeatedFieldBuilder() {
