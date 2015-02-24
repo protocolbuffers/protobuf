@@ -300,7 +300,37 @@ ruby_EXTRA_DIST=                                                             \
   ruby/tests/generated_code.rb                                               \
   ruby/tests/generated_code_test.rb
 
-all_EXTRA_DIST=$(java_EXTRA_DIST) $(javanano_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST)
+nodejs_EXTRA_DIST=                                                           \
+  nodejs/README.md                                                           \
+  nodejs/package.json                                                        \
+  nodejs/binding.gyp                                                         \
+  nodejs/src/defs.cc                                                         \
+  nodejs/src/defs.h                                                          \
+  nodejs/src/encode_decode.cc                                                \
+  nodejs/src/encode_decode.h                                                 \
+  nodejs/src/enum.cc                                                         \
+  nodejs/src/enum.h                                                          \
+  nodejs/src/int64.cc                                                        \
+  nodejs/src/int64.h                                                         \
+  nodejs/src/jsobject.h                                                      \
+  nodejs/src/message.cc                                                      \
+  nodejs/src/message.h                                                       \
+  nodejs/src/protobuf.cc                                                     \
+  nodejs/src/readonlyarray.cc                                                \
+  nodejs/src/readonlyarray.h                                                 \
+  nodejs/src/repeatedfield.cc                                                \
+  nodejs/src/repeatedfield.h                                                 \
+  nodejs/src/upb.c                                                           \
+  nodejs/src/upb.h                                                           \
+  nodejs/src/util.h                                                          \
+  nodejs/test/test.js                                                        \
+  nodejs/test/defs.test.js                                                   \
+  nodejs/test/int64.test.js                                                  \
+  nodejs/test/message.test.js                                                \
+  nodejs/test/rptfield.test.js
+
+all_EXTRA_DIST=$(java_EXTRA_DIST) $(javanano_EXTRA_DIST) $(python_EXTRA_DIST) \
+	       $(ruby_EXTRA_DIST) $(nodejs_EXTRA_DIST)
 
 EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)                                       \
   autogen.sh                                                                 \

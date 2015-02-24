@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# If we allow stdin to remain the terminal, node waits at a prompt.
+exec </dev/null
+
+# Debian and its derivatives (including Ubuntu) name the binary `nodejs`, not
+# `node`, when installed via apt. Other systems, and binary distributions, name
+# the binary `node`. We try each in turn.
+
+if `which node 2>/dev/null`; then
+    exec `which node` "$@"
+fi
+if `which nodejs 2>/dev/null`; then
+    exec `which nodejs` "$@"
+fi

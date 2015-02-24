@@ -36,6 +36,7 @@
 #include <google/protobuf/compiler/java/java_generator.h>
 #include <google/protobuf/compiler/javanano/javanano_generator.h>
 #include <google/protobuf/compiler/ruby/ruby_generator.h>
+#include <google/protobuf/compiler/nodejs/nodejs_generator.h>
 
 int main(int argc, char* argv[]) {
 
@@ -67,6 +68,11 @@ int main(int argc, char* argv[]) {
   google::protobuf::compiler::ruby::Generator rb_generator;
   cli.RegisterGenerator("--ruby_out", &rb_generator,
                         "Generate Ruby source file.");
+
+  // Node.js (JavaScript)
+  google::protobuf::compiler::nodejs::Generator nodejs_generator;
+  cli.RegisterGenerator("--nodejs_out", &nodejs_generator,
+                        "Generate Node.js source file.");
 
   return cli.Run(argc, argv);
 }

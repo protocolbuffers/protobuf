@@ -1,0 +1,13 @@
+{
+  "name": "google_protobuf",
+  "version": "3.0.0",
+  "description": "Google Protobuf library",
+  "scripts": {
+    "test": "NODE_PATH=build/Release/:lib/ ./node-wrapper test/test.js"
+  },
+  "gypfile": true,
+  "dependencies": {
+    "nan": "~1.3.0"
+  },
+  "main": "lib/google_protobuf.js"
+}
