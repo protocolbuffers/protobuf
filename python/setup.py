@@ -163,7 +163,7 @@ if __name__ == '__main__':
         ))
 
   setup(name = 'protobuf',
-        version = '3.0.0-pre',
+        version = '3.0.0-alpha-2',
         packages = [ 'google' ],
         namespace_packages = [ 'google' ],
         test_suite = 'setup.MakeTestSuite',

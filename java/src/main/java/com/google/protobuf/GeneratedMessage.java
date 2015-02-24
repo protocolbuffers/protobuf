@@ -73,7 +73,7 @@ public abstract class GeneratedMessage extends AbstractMessage
 
   /** For use by generated code only.  */
   protected UnknownFieldSet unknownFields;
-  
+
   protected GeneratedMessage() {
     unknownFields = UnknownFieldSet.getDefaultInstance();
   }
@@ -549,12 +549,12 @@ public abstract class GeneratedMessage extends AbstractMessage
      * Gets the map field with the given field number. This method should be
      * overridden in the generated message class if the message contains map
      * fields.
-     * 
+     *
      * Unlike other field types, reflection support for map fields can't be
      * implemented based on generated public API because we need to access a
      * map field as a list in reflection API but the generated API only allows
      * us to access it as a map. This method returns the underlying map field
-     * directly and thus enables us to access the map field as a list. 
+     * directly and thus enables us to access the map field as a list.
      */
     @SuppressWarnings({"unused", "rawtypes"})
     protected MapField internalGetMapField(int fieldNumber) {
@@ -683,7 +683,7 @@ public abstract class GeneratedMessage extends AbstractMessage
     public final <Type> Type getExtension(
         final ExtensionLite<MessageType, Type> extensionLite) {
       Extension<MessageType, Type> extension = checkNotLite(extensionLite);
-      
+
       verifyExtensionContainingType(extension);
       FieldDescriptor descriptor = extension.getDescriptor();
       final Object value = extensions.getField(descriptor);
@@ -1313,7 +1313,7 @@ public abstract class GeneratedMessage extends AbstractMessage
       implements ExtensionDescriptorRetriever {
     private volatile FieldDescriptor descriptor;
     protected abstract FieldDescriptor loadDescriptor();
-    
+
     public FieldDescriptor getDescriptor() {
       if (descriptor == null) {
         synchronized (this) {
@@ -1651,17 +1651,17 @@ public abstract class GeneratedMessage extends AbstractMessage
       }
     }
   }
-  
+
   /**
    * Gets the map field with the given field number. This method should be
    * overridden in the generated message class if the message contains map
    * fields.
-   * 
+   *
    * Unlike other field types, reflection support for map fields can't be
    * implemented based on generated public API because we need to access a
    * map field as a list in reflection API but the generated API only allows
    * us to access it as a map. This method returns the underlying map field
-   * directly and thus enables us to access the map field as a list. 
+   * directly and thus enables us to access the map field as a list.
    */
   @SuppressWarnings({"rawtypes", "unused"})
   protected MapField internalGetMapField(int fieldNumber) {
@@ -1709,7 +1709,7 @@ public abstract class GeneratedMessage extends AbstractMessage
       oneofs = new OneofAccessor[descriptor.getOneofs().size()];
       initialized = false;
     }
-    
+
     private boolean isMapFieldEnabled(FieldDescriptor field) {
       boolean result = true;
       return result;
@@ -1934,11 +1934,11 @@ public abstract class GeneratedMessage extends AbstractMessage
       protected final FieldDescriptor field;
       protected final boolean isOneofField;
       protected final boolean hasHasMethod;
-      
+
       private int getOneofFieldNumber(final GeneratedMessage message) {
         return ((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber();
       }
-      
+
       private int getOneofFieldNumber(final GeneratedMessage.Builder builder) {
         return ((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber();
       }
@@ -2130,15 +2130,15 @@ public abstract class GeneratedMessage extends AbstractMessage
 
       private final FieldDescriptor field;
       private final Message mapEntryMessageDefaultInstance;
-      
+
       private MapField<?, ?> getMapField(GeneratedMessage message) {
         return (MapField<?, ?>) message.internalGetMapField(field.getNumber());
       }
-      
+
       private MapField<?, ?> getMapField(GeneratedMessage.Builder builder) {
         return (MapField<?, ?>) builder.internalGetMapField(field.getNumber());
       }
-      
+
       public Object get(GeneratedMessage message) {
         List result = new ArrayList();
         for (int i = 0; i < getRepeatedCount(message); i++) {
@@ -2171,10 +2171,12 @@ public abstract class GeneratedMessage extends AbstractMessage
       }
 
       public void setRepeated(Builder builder, int index, Object value) {
+        builder.onChanged();
         getMapField(builder).getMutableList().set(index, (Message) value);
       }
 
       public void addRepeated(Builder builder, Object value) {
+        builder.onChanged();
         getMapField(builder).getMutableList().add((Message) value);
       }
 
@@ -2197,6 +2199,7 @@ public abstract class GeneratedMessage extends AbstractMessage
       }
 
       public void clear(Builder builder) {
+        builder.onChanged();
         getMapField(builder).getMutableList().clear();
       }
 
@@ -2208,7 +2211,7 @@ public abstract class GeneratedMessage extends AbstractMessage
         throw new UnsupportedOperationException(
             "Nested builder not supported for map fields.");
       }
-      
+
       public com.google.protobuf.Message.Builder getRepeatedBuilder(
           Builder builder, int index) {
         throw new UnsupportedOperationException(
@@ -2226,7 +2229,7 @@ public abstract class GeneratedMessage extends AbstractMessage
           final Class<? extends Builder> builderClass,
           final String containingOneofCamelCaseName) {
         super(descriptor, camelCaseName, messageClass, builderClass, containingOneofCamelCaseName);
-        
+
         enumDescriptor = descriptor.getEnumType();
 
         valueOfMethod = getMethodOrDie(type, "valueOf",
@@ -2244,12 +2247,12 @@ public abstract class GeneratedMessage extends AbstractMessage
               getMethodOrDie(builderClass, "set" + camelCaseName + "Value", int.class);
         }
       }
-      
+
       private EnumDescriptor enumDescriptor;
 
       private Method valueOfMethod;
       private Method getValueDescriptorMethod;
-      
+
       private boolean supportUnknownEnumValue;
       private Method getValueMethod;
       private Method getValueMethodBuilder;
@@ -2291,7 +2294,7 @@ public abstract class GeneratedMessage extends AbstractMessage
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder> builderClass) {
         super(descriptor, camelCaseName, messageClass, builderClass);
-        
+
         enumDescriptor = descriptor.getEnumType();
 
         valueOfMethod = getMethodOrDie(type, "valueOf",
@@ -2315,7 +2318,7 @@ public abstract class GeneratedMessage extends AbstractMessage
 
       private final Method valueOfMethod;
       private final Method getValueDescriptorMethod;
-      
+
       private boolean supportUnknownEnumValue;
       private Method getRepeatedValueMethod;
       private Method getRepeatedValueMethodBuilder;
@@ -2395,7 +2398,8 @@ public abstract class GeneratedMessage extends AbstractMessage
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder> builderClass,
           final String containingOneofCamelCaseName) {
-        super(descriptor, camelCaseName, messageClass, builderClass, containingOneofCamelCaseName);
+        super(descriptor, camelCaseName, messageClass, builderClass,
+            containingOneofCamelCaseName);
 
         newBuilderMethod = getMethodOrDie(type, "newBuilder");
         getBuilderMethodBuilder =
@@ -2492,7 +2496,7 @@ public abstract class GeneratedMessage extends AbstractMessage
   protected Object writeReplace() throws ObjectStreamException {
     return new GeneratedMessageLite.SerializedForm(this);
   }
-  
+
   /**
    * Checks that the {@link Extension} is non-Lite and returns it as a
    * {@link GeneratedExtension}.
@@ -2503,7 +2507,7 @@ public abstract class GeneratedMessage extends AbstractMessage
     if (extension.isLite()) {
       throw new IllegalArgumentException("Expected non-lite extension.");
     }
-    
+
     return (Extension<MessageType, T>) extension;
   }
 }

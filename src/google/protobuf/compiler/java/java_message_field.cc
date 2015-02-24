@@ -718,6 +718,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
       "    $oneof_name$_ = null;\n"
       "  }\n"
       "  $set_oneof_case_message$;\n"
+      "  $on_changed$;\n"
       "  return $name$Builder_;\n"
       "}\n");
   }

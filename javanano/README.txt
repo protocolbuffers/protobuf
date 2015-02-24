@@ -68,18 +68,20 @@ running unit tests.
 Nano version
 ============================
 
-Nano is a special code generator and runtime library designed specially
-for Android, and is very resource-friendly in both the amount of code
-and the runtime overhead. An overview of Nano features:
+JavaNano is a special code generator and runtime library designed specially for
+resource-restricted systems, like Android. It is very resource-friendly in both
+the amount of code and the runtime overhead. Here is an overview of JavaNano
+features compared with the official Java protobuf:
 
 - No descriptors or message builders.
 - All messages are mutable; fields are public Java fields.
 - For optional fields only, encapsulation behind setter/getter/hazzer/
   clearer functions is opt-in, which provide proper 'has' state support.
-- If not opted in, has state is not available. Serialization outputs
-  all fields not equal to their defaults (see important implications
-  below).
-- Required fields are always serialized.
+- For proto2, if not opted in, has state (field presence) is not available.
+  Serialization outputs all fields not equal to their defaults
+  (see important implications below).
+  The behavior is consistent with proto3 semantics.
+- Required fields (proto2 only) are always serialized.
 - Enum constants are integers; protection against invalid values only
   when parsing from the wire.
 - Enum constants can be generated into container interfaces bearing
@@ -88,8 +90,8 @@ and the runtime overhead. An overview of Nano features:
 - Similarly CodedOutputByteBufferNano can only write to byte[].
 - Repeated fields are in arrays, not ArrayList or Vector. Null array
   elements are allowed and silently ignored.
-- Full support of serializing/deserializing repeated packed fields.
-- Support of extensions.
+- Full support for serializing/deserializing repeated packed fields.
+- Support  extensions (in proto2).
 - Unset messages/groups are null, not an immutable empty default
   instance.
 - toByteArray(...) and mergeFrom(...) are now static functions of
@@ -200,7 +202,7 @@ optional_field_style={default,accessors,reftypes} (default: default)
 
   In the default style, optional fields translate into public mutable
   Java fields, and the serialization process is as discussed in the
-  "IMPORTANT" section above. 
+  "IMPORTANT" section above.
 
   * accessors *
 

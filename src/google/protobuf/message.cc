@@ -441,6 +441,30 @@ const internal::RepeatedFieldAccessor* Reflection::RepeatedFieldAccessor(
 }
 
 namespace internal {
+namespace {
+void ShutdownRepeatedFieldAccessor() {
+  Singleton<internal::RepeatedFieldPrimitiveAccessor<int32> >::ShutDown();
+  Singleton<internal::RepeatedFieldPrimitiveAccessor<uint32> >::ShutDown();
+  Singleton<internal::RepeatedFieldPrimitiveAccessor<int64> >::ShutDown();
+  Singleton<internal::RepeatedFieldPrimitiveAccessor<uint64> >::ShutDown();
+  Singleton<internal::RepeatedFieldPrimitiveAccessor<float> >::ShutDown();
+  Singleton<internal::RepeatedFieldPrimitiveAccessor<double> >::ShutDown();
+  Singleton<internal::RepeatedFieldPrimitiveAccessor<bool> >::ShutDown();
+  Singleton<internal::RepeatedPtrFieldStringAccessor>::ShutDown();
+  Singleton<internal::RepeatedPtrFieldMessageAccessor>::ShutDown();
+  Singleton<internal::MapFieldAccessor>::ShutDown();
+};
+
+struct ShutdownRepeatedFieldRegister {
+  ShutdownRepeatedFieldRegister() {
+    OnShutdown(&ShutdownRepeatedFieldAccessor);
+  }
+} shutdown_;
+
+}  // namesapce
+}  // namespace internal
+
+namespace internal {
 // Macro defined in repeated_field.h. We can only define the Message-specific
 // GenericTypeHandler specializations here because we depend on Message, which
 // is not part of proto2-lite hence is not available in repeated_field.h.
