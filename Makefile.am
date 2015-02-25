@@ -310,10 +310,12 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)                                       \
   LICENSE                                                                    \
   CONTRIBUTORS.txt                                                           \
   CHANGES.txt                                                                \
+  config.h.include                                                           \
   editors/README.txt                                                         \
   editors/proto.vim                                                          \
   editors/protobuf-mode.el                                                   \
   vsprojects/config.h                                                        \
+  vsprojects/google/protobuf/stubs/pbconfig.h                                \
   vsprojects/extract_includes.bat                                            \
   vsprojects/libprotobuf.vcproj                                              \
   vsprojects/libprotobuf-lite.vcproj                                         \
