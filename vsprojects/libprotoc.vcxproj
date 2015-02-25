@@ -130,6 +130,18 @@
   <ItemGroup>
     <ClInclude Include="..\src\google\protobuf\compiler\code_generator.h" />
     <ClInclude Include="..\src\google\protobuf\compiler\command_line_interface.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_enum.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_enum_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_extension.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_file.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_generator.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_helpers.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_map_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_message.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_message_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_params.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_primitive_field.h" />
     <ClInclude Include="..\src\google\protobuf\compiler\ruby\ruby_generator.h" />
     <ClInclude Include="..\src\google\protobuf\compiler\subprocess.h" />
     <ClInclude Include="..\src\google\protobuf\compiler\zip_writer.h" />
@@ -169,6 +181,7 @@
     <ClInclude Include="..\src\google\protobuf\compiler\python\python_generator.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\google\protobuf\compiler\javanano\javanano_map_field.cc" />
     <ClCompile Include="..\src\google\protobuf\compiler\java\java_doc_comment.cc" />
     <ClCompile Include="..\src\google\protobuf\compiler\code_generator.cc" />
     <ClCompile Include="..\src\google\protobuf\compiler\command_line_interface.cc" />

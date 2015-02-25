@@ -132,6 +132,42 @@
     <ClInclude Include="..\src\google\protobuf\compiler\ruby\ruby_generator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_enum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_enum_field.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_extension.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_field.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_file.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_map_field.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_message.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_message_field.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_params.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_primitive_field.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\google\protobuf\compiler\java\java_doc_comment.cc">
@@ -282,6 +318,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\google\protobuf\compiler\ruby\ruby_generator.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\google\protobuf\compiler\javanano\javanano_map_field.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
