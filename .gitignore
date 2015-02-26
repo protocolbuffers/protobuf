@@ -24,7 +24,7 @@ gtest
 # in-tree configure-generated files
 Makefile
 src/Makefile
-config.h
+/config.h
 config.log
 config.status
 
