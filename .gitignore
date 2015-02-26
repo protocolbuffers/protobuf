@@ -38,8 +38,8 @@ stamp-h1
 *.o
 *.lo
 *.la
+*.so
 src/.libs
-
 .dirstamp
 
 map*unittest.pb.*
