@@ -394,7 +394,7 @@ protoc_outputs =                                               \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.cc  \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h
 
-BUILT_SOURCES = $(protoc_outputs) $(public_config)
+BUILT_SOURCES = $(public_config) $(protoc_outputs) 
 
 if USE_EXTERNAL_PROTOC
 
