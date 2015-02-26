@@ -1792,6 +1792,17 @@ class ReflectionTest(basetest.TestCase):
     # Just check the default value.
     self.assertEqual(57, msg.inner.value)
 
+  @basetest.unittest.skipIf(
+      api_implementation.Type() != 'cpp' or api_implementation.Version() != 2,
+      'CPPv2-specific test')
+  def testBadArguments(self):
+    # Some of these assertions used to segfault.
+    from google.protobuf.pyext import _message
+    self.assertRaises(TypeError, _message.Message._GetFieldDescriptor, 3)
+    self.assertRaises(TypeError, _message.Message._GetExtensionDescriptor, 42)
+    self.assertRaises(TypeError,
+                      unittest_pb2.TestAllTypes().__getattribute__, 42)
+
 
 #  Since we had so many tests for protocol buffer equality, we broke these out
 #  into separate TestCase classes.

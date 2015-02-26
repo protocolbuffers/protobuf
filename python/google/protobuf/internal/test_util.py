@@ -40,13 +40,19 @@ import os.path
 
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
+from google.protobuf import descriptor_pb2
 
+# Tests whether the given TestAllTypes message is proto2 or not.
+# This is used to gate several fields/features that only exist
+# for the proto2 version of the message.
+def IsProto2(message):
+  return message.DESCRIPTOR.syntax == "proto2"
 
 def SetAllNonLazyFields(message):
   """Sets every non-lazy field in the message to a unique value.
 
   Args:
-    message: A unittest_pb2.TestAllTypes instance.
+    message: A TestAllTypes instance.
   """
 
   #
@@ -77,7 +83,8 @@ def SetAllNonLazyFields(message):
 
   message.optional_nested_enum = unittest_pb2.TestAllTypes.BAZ
   message.optional_foreign_enum = unittest_pb2.FOREIGN_BAZ
-  message.optional_import_enum = unittest_import_pb2.IMPORT_BAZ
+  if IsProto2(message):
+    message.optional_import_enum = unittest_import_pb2.IMPORT_BAZ
 
   message.optional_string_piece = u'124'
   message.optional_cord = u'125'
@@ -110,7 +117,8 @@ def SetAllNonLazyFields(message):
 
   message.repeated_nested_enum.append(unittest_pb2.TestAllTypes.BAR)
   message.repeated_foreign_enum.append(unittest_pb2.FOREIGN_BAR)
-  message.repeated_import_enum.append(unittest_import_pb2.IMPORT_BAR)
+  if IsProto2(message):
+    message.repeated_import_enum.append(unittest_import_pb2.IMPORT_BAR)
 
   message.repeated_string_piece.append(u'224')
   message.repeated_cord.append(u'225')
@@ -140,7 +148,8 @@ def SetAllNonLazyFields(message):
 
   message.repeated_nested_enum.append(unittest_pb2.TestAllTypes.BAZ)
   message.repeated_foreign_enum.append(unittest_pb2.FOREIGN_BAZ)
-  message.repeated_import_enum.append(unittest_import_pb2.IMPORT_BAZ)
+  if IsProto2(message):
+    message.repeated_import_enum.append(unittest_import_pb2.IMPORT_BAZ)
 
   message.repeated_string_piece.append(u'324')
   message.repeated_cord.append(u'325')
@@ -149,28 +158,29 @@ def SetAllNonLazyFields(message):
   # Fields that have defaults.
   #
 
-  message.default_int32 = 401
-  message.default_int64 = 402
-  message.default_uint32 = 403
-  message.default_uint64 = 404
-  message.default_sint32 = 405
-  message.default_sint64 = 406
-  message.default_fixed32 = 407
-  message.default_fixed64 = 408
-  message.default_sfixed32 = 409
-  message.default_sfixed64 = 410
-  message.default_float = 411
-  message.default_double = 412
-  message.default_bool = False
-  message.default_string = '415'
-  message.default_bytes = b'416'
+  if IsProto2(message):
+    message.default_int32 = 401
+    message.default_int64 = 402
+    message.default_uint32 = 403
+    message.default_uint64 = 404
+    message.default_sint32 = 405
+    message.default_sint64 = 406
+    message.default_fixed32 = 407
+    message.default_fixed64 = 408
+    message.default_sfixed32 = 409
+    message.default_sfixed64 = 410
+    message.default_float = 411
+    message.default_double = 412
+    message.default_bool = False
+    message.default_string = '415'
+    message.default_bytes = b'416'
 
-  message.default_nested_enum = unittest_pb2.TestAllTypes.FOO
-  message.default_foreign_enum = unittest_pb2.FOREIGN_FOO
-  message.default_import_enum = unittest_import_pb2.IMPORT_FOO
+    message.default_nested_enum = unittest_pb2.TestAllTypes.FOO
+    message.default_foreign_enum = unittest_pb2.FOREIGN_FOO
+    message.default_import_enum = unittest_import_pb2.IMPORT_FOO
 
-  message.default_string_piece = '424'
-  message.default_cord = '425'
+    message.default_string_piece = '424'
+    message.default_cord = '425'
 
   message.oneof_uint32 = 601
   message.oneof_nested_message.bb = 602
@@ -398,7 +408,8 @@ def ExpectAllFieldsSet(test_case, message):
 
   test_case.assertTrue(message.HasField('optional_nested_enum'))
   test_case.assertTrue(message.HasField('optional_foreign_enum'))
-  test_case.assertTrue(message.HasField('optional_import_enum'))
+  if IsProto2(message):
+    test_case.assertTrue(message.HasField('optional_import_enum'))
 
   test_case.assertTrue(message.HasField('optional_string_piece'))
   test_case.assertTrue(message.HasField('optional_cord'))
@@ -430,8 +441,9 @@ def ExpectAllFieldsSet(test_case, message):
                         message.optional_nested_enum)
   test_case.assertEqual(unittest_pb2.FOREIGN_BAZ,
                         message.optional_foreign_enum)
-  test_case.assertEqual(unittest_import_pb2.IMPORT_BAZ,
-                        message.optional_import_enum)
+  if IsProto2(message):
+    test_case.assertEqual(unittest_import_pb2.IMPORT_BAZ,
+                          message.optional_import_enum)
 
   # -----------------------------------------------------------------
 
@@ -457,7 +469,8 @@ def ExpectAllFieldsSet(test_case, message):
   test_case.assertEqual(2, len(message.repeated_import_message))
   test_case.assertEqual(2, len(message.repeated_nested_enum))
   test_case.assertEqual(2, len(message.repeated_foreign_enum))
-  test_case.assertEqual(2, len(message.repeated_import_enum))
+  if IsProto2(message):
+    test_case.assertEqual(2, len(message.repeated_import_enum))
 
   test_case.assertEqual(2, len(message.repeated_string_piece))
   test_case.assertEqual(2, len(message.repeated_cord))
@@ -488,8 +501,9 @@ def ExpectAllFieldsSet(test_case, message):
                         message.repeated_nested_enum[0])
   test_case.assertEqual(unittest_pb2.FOREIGN_BAR,
                         message.repeated_foreign_enum[0])
-  test_case.assertEqual(unittest_import_pb2.IMPORT_BAR,
-                        message.repeated_import_enum[0])
+  if IsProto2(message):
+    test_case.assertEqual(unittest_import_pb2.IMPORT_BAR,
+                          message.repeated_import_enum[0])
 
   test_case.assertEqual(301, message.repeated_int32[1])
   test_case.assertEqual(302, message.repeated_int64[1])
@@ -517,53 +531,55 @@ def ExpectAllFieldsSet(test_case, message):
                         message.repeated_nested_enum[1])
   test_case.assertEqual(unittest_pb2.FOREIGN_BAZ,
                         message.repeated_foreign_enum[1])
-  test_case.assertEqual(unittest_import_pb2.IMPORT_BAZ,
-                        message.repeated_import_enum[1])
+  if IsProto2(message):
+    test_case.assertEqual(unittest_import_pb2.IMPORT_BAZ,
+                          message.repeated_import_enum[1])
 
   # -----------------------------------------------------------------
 
-  test_case.assertTrue(message.HasField('default_int32'))
-  test_case.assertTrue(message.HasField('default_int64'))
-  test_case.assertTrue(message.HasField('default_uint32'))
-  test_case.assertTrue(message.HasField('default_uint64'))
-  test_case.assertTrue(message.HasField('default_sint32'))
-  test_case.assertTrue(message.HasField('default_sint64'))
-  test_case.assertTrue(message.HasField('default_fixed32'))
-  test_case.assertTrue(message.HasField('default_fixed64'))
-  test_case.assertTrue(message.HasField('default_sfixed32'))
-  test_case.assertTrue(message.HasField('default_sfixed64'))
-  test_case.assertTrue(message.HasField('default_float'))
-  test_case.assertTrue(message.HasField('default_double'))
-  test_case.assertTrue(message.HasField('default_bool'))
-  test_case.assertTrue(message.HasField('default_string'))
-  test_case.assertTrue(message.HasField('default_bytes'))
+  if IsProto2(message):
+    test_case.assertTrue(message.HasField('default_int32'))
+    test_case.assertTrue(message.HasField('default_int64'))
+    test_case.assertTrue(message.HasField('default_uint32'))
+    test_case.assertTrue(message.HasField('default_uint64'))
+    test_case.assertTrue(message.HasField('default_sint32'))
+    test_case.assertTrue(message.HasField('default_sint64'))
+    test_case.assertTrue(message.HasField('default_fixed32'))
+    test_case.assertTrue(message.HasField('default_fixed64'))
+    test_case.assertTrue(message.HasField('default_sfixed32'))
+    test_case.assertTrue(message.HasField('default_sfixed64'))
+    test_case.assertTrue(message.HasField('default_float'))
+    test_case.assertTrue(message.HasField('default_double'))
+    test_case.assertTrue(message.HasField('default_bool'))
+    test_case.assertTrue(message.HasField('default_string'))
+    test_case.assertTrue(message.HasField('default_bytes'))
 
-  test_case.assertTrue(message.HasField('default_nested_enum'))
-  test_case.assertTrue(message.HasField('default_foreign_enum'))
-  test_case.assertTrue(message.HasField('default_import_enum'))
+    test_case.assertTrue(message.HasField('default_nested_enum'))
+    test_case.assertTrue(message.HasField('default_foreign_enum'))
+    test_case.assertTrue(message.HasField('default_import_enum'))
 
-  test_case.assertEqual(401, message.default_int32)
-  test_case.assertEqual(402, message.default_int64)
-  test_case.assertEqual(403, message.default_uint32)
-  test_case.assertEqual(404, message.default_uint64)
-  test_case.assertEqual(405, message.default_sint32)
-  test_case.assertEqual(406, message.default_sint64)
-  test_case.assertEqual(407, message.default_fixed32)
-  test_case.assertEqual(408, message.default_fixed64)
-  test_case.assertEqual(409, message.default_sfixed32)
-  test_case.assertEqual(410, message.default_sfixed64)
-  test_case.assertEqual(411, message.default_float)
-  test_case.assertEqual(412, message.default_double)
-  test_case.assertEqual(False, message.default_bool)
-  test_case.assertEqual('415', message.default_string)
-  test_case.assertEqual(b'416', message.default_bytes)
+    test_case.assertEqual(401, message.default_int32)
+    test_case.assertEqual(402, message.default_int64)
+    test_case.assertEqual(403, message.default_uint32)
+    test_case.assertEqual(404, message.default_uint64)
+    test_case.assertEqual(405, message.default_sint32)
+    test_case.assertEqual(406, message.default_sint64)
+    test_case.assertEqual(407, message.default_fixed32)
+    test_case.assertEqual(408, message.default_fixed64)
+    test_case.assertEqual(409, message.default_sfixed32)
+    test_case.assertEqual(410, message.default_sfixed64)
+    test_case.assertEqual(411, message.default_float)
+    test_case.assertEqual(412, message.default_double)
+    test_case.assertEqual(False, message.default_bool)
+    test_case.assertEqual('415', message.default_string)
+    test_case.assertEqual(b'416', message.default_bytes)
 
-  test_case.assertEqual(unittest_pb2.TestAllTypes.FOO,
-                        message.default_nested_enum)
-  test_case.assertEqual(unittest_pb2.FOREIGN_FOO,
-                        message.default_foreign_enum)
-  test_case.assertEqual(unittest_import_pb2.IMPORT_FOO,
-                        message.default_import_enum)
+    test_case.assertEqual(unittest_pb2.TestAllTypes.FOO,
+                          message.default_nested_enum)
+    test_case.assertEqual(unittest_pb2.FOREIGN_FOO,
+                          message.default_foreign_enum)
+    test_case.assertEqual(unittest_import_pb2.IMPORT_FOO,
+                          message.default_import_enum)
 
 
 def GoldenFile(filename):
@@ -594,7 +610,7 @@ def SetAllPackedFields(message):
   """Sets every field in the message to a unique value.
 
   Args:
-    message: A unittest_pb2.TestPackedTypes instance.
+    message: A TestPackedTypes instance.
   """
   message.packed_int32.extend([601, 701])
   message.packed_int64.extend([602, 702])

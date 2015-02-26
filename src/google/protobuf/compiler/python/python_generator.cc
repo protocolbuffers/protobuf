@@ -273,6 +273,19 @@ string StringifyDefaultValue(const FieldDescriptor& field) {
   return "";
 }
 
+string StringifySyntax(FileDescriptor::Syntax syntax) {
+  switch (syntax) {
+    case FileDescriptor::SYNTAX_PROTO2:
+      return "proto2";
+    case FileDescriptor::SYNTAX_PROTO3:
+      return "proto3";
+    case FileDescriptor::SYNTAX_UNKNOWN:
+    default:
+      GOOGLE_LOG(FATAL) << "Unsupported syntax; this generator only supports proto2 "
+                    "and proto3 syntax.";
+      return "";
+  }
+}
 
 
 }  // namespace
@@ -367,10 +380,12 @@ void Generator::PrintFileDescriptor() const {
   m["descriptor_name"] = kDescriptorKey;
   m["name"] = file_->name();
   m["package"] = file_->package();
+  m["syntax"] = StringifySyntax(file_->syntax());
   const char file_descriptor_template[] =
       "$descriptor_name$ = _descriptor.FileDescriptor(\n"
       "  name='$name$',\n"
-      "  package='$package$',\n";
+      "  package='$package$',\n"
+      "  syntax='$syntax$',\n";
   printer_->Print(m, file_descriptor_template);
   printer_->Indent();
   printer_->Print(
@@ -414,7 +429,7 @@ void Generator::PrintTopLevelEnums() const {
     for (int j = 0; j < enum_descriptor.value_count(); ++j) {
       const EnumValueDescriptor& value_descriptor = *enum_descriptor.value(j);
       top_level_enum_values.push_back(
-          make_pair(value_descriptor.name(), value_descriptor.number()));
+          std::make_pair(value_descriptor.name(), value_descriptor.number()));
     }
   }
 
@@ -665,10 +680,12 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
   message_descriptor.options().SerializeToString(&options_string);
   printer_->Print(
       "options=$options_value$,\n"
-      "is_extendable=$extendable$",
+      "is_extendable=$extendable$,\n"
+      "syntax='$syntax$'",
       "options_value", OptionsValue("MessageOptions", options_string),
       "extendable", message_descriptor.extension_range_count() > 0 ?
-                      "True" : "False");
+                      "True" : "False",
+      "syntax", StringifySyntax(message_descriptor.file()->syntax()));
   printer_->Print(",\n");
 
   // Extension ranges

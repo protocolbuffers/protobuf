@@ -197,7 +197,6 @@ javanano_EXTRA_DIST=                                                            
 python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/api_implementation.cc                      \
   python/google/protobuf/internal/api_implementation.py                      \
-  python/google/protobuf/internal/api_implementation_default_test.py         \
   python/google/protobuf/internal/containers.py                              \
   python/google/protobuf/internal/cpp_message.py                             \
   python/google/protobuf/internal/decoder.py                                 \
@@ -221,6 +220,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/more_extensions.proto                      \
   python/google/protobuf/internal/more_extensions_dynamic.proto              \
   python/google/protobuf/internal/more_messages.proto                        \
+  python/google/protobuf/internal/_parameterized.py                          \
   python/google/protobuf/internal/proto_builder_test.py                      \
   python/google/protobuf/internal/python_message.py                          \
   python/google/protobuf/internal/reflection_test.py                         \
@@ -242,16 +242,17 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/pyext/cpp_message.py                                \
   python/google/protobuf/pyext/descriptor.h                                  \
   python/google/protobuf/pyext/descriptor.cc                                 \
-  python/google/protobuf/pyext/descriptor_cpp2_test.py                       \
+  python/google/protobuf/pyext/descriptor_pool.h                             \
+  python/google/protobuf/pyext/descriptor_pool.cc                            \
+  python/google/protobuf/pyext/descriptor_containers.h                       \
+  python/google/protobuf/pyext/descriptor_containers.cc                      \
   python/google/protobuf/pyext/extension_dict.h                              \
   python/google/protobuf/pyext/extension_dict.cc                             \
   python/google/protobuf/pyext/message.h                                     \
   python/google/protobuf/pyext/message.cc                                    \
-  python/google/protobuf/pyext/message_factory_cpp2_test.py                  \
   python/google/protobuf/pyext/proto2_api_test.proto                         \
   python/google/protobuf/pyext/python.proto                                  \
   python/google/protobuf/pyext/python_protobuf.h                             \
-  python/google/protobuf/pyext/reflection_cpp2_generated_test.py             \
   python/google/protobuf/pyext/repeated_composite_container.h                \
   python/google/protobuf/pyext/repeated_composite_container.cc               \
   python/google/protobuf/pyext/repeated_scalar_container.h                   \
@@ -310,10 +311,12 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)                                       \
   LICENSE                                                                    \
   CONTRIBUTORS.txt                                                           \
   CHANGES.txt                                                                \
+  config.h.include                                                           \
   editors/README.txt                                                         \
   editors/proto.vim                                                          \
   editors/protobuf-mode.el                                                   \
   vsprojects/config.h                                                        \
+  vsprojects/google/protobuf/stubs/pbconfig.h                                \
   vsprojects/extract_includes.bat                                            \
   vsprojects/libprotobuf.vcproj                                              \
   vsprojects/libprotobuf-lite.vcproj                                         \
