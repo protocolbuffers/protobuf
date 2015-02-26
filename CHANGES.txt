@@ -1,7 +1,7 @@
-2015-02-22 version 3.0.0-alpha-2 (Ruby/JavaNano):
+2015-02-26 version 3.0.0-alpha-2 (Python/Ruby/JavaNano):
   General
-  * Introduced two new language implementations (Ruby and JavaNano) to proto3.
-  * Added proto3 support for Python, and various other improvements.
+  * Introduced three new language implementations (Ruby, JavaNano, and
+    Python) to proto3.
   * Various bug fixes since 3.0.0-alpha-1
 
   Python:
