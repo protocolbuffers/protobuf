@@ -319,6 +319,11 @@ def _MergeField(tokenizer, message, allow_multiple_scalars):
     ParseError: In case of ASCII parsing problems.
   """
   message_descriptor = message.DESCRIPTOR
+  if (hasattr(message_descriptor, 'syntax') and
+      message_descriptor.syntax == 'proto3'):
+    # Proto3 doesn't represent presence so we can't test if multiple
+    # scalars have occurred.  We have to allow them.
+    allow_multiple_scalars = True
   if tokenizer.TryConsume('['):
     name = [tokenizer.ConsumeIdentifier()]
     while tokenizer.TryConsume('.'):

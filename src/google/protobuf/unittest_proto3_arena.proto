@@ -47,9 +47,10 @@ message TestAllTypes {
   }
 
   enum NestedEnum {
-    FOO = 0;
-    BAR = 1;
-    BAZ = 2;
+    ZERO = 0;
+    FOO = 1;
+    BAR = 2;
+    BAZ = 3;
     NEG = -1;  // Intentionally negative.
   }
 
@@ -80,6 +81,11 @@ message TestAllTypes {
 
   optional NestedEnum                           optional_nested_enum     = 21;
   optional ForeignEnum                          optional_foreign_enum    = 22;
+
+  // Omitted (compared to unittest.proto) because proto2 enums are not allowed
+  // inside proto2 messages.
+  //
+  // optional protobuf_unittest_import.ImportEnum    optional_import_enum  = 23;
 
   optional string optional_string_piece = 24 [ctype=STRING_PIECE];
   optional string optional_cord = 25 [ctype=CORD];
@@ -118,6 +124,11 @@ message TestAllTypes {
   repeated NestedEnum                           repeated_nested_enum     = 51;
   repeated ForeignEnum                          repeated_foreign_enum    = 52;
 
+  // Omitted (compared to unittest.proto) because proto2 enums are not allowed
+  // inside proto2 messages.
+  //
+  // repeated protobuf_unittest_import.ImportEnum    repeated_import_enum  = 53;
+
   repeated string repeated_string_piece = 54 [ctype=STRING_PIECE];
   repeated string repeated_cord = 55 [ctype=CORD];
 
@@ -131,6 +142,31 @@ message TestAllTypes {
   }
 }
 
+// Test messages for packed fields
+
+message TestPackedTypes {
+  repeated    int32 packed_int32    =  90 [packed = true];
+  repeated    int64 packed_int64    =  91 [packed = true];
+  repeated   uint32 packed_uint32   =  92 [packed = true];
+  repeated   uint64 packed_uint64   =  93 [packed = true];
+  repeated   sint32 packed_sint32   =  94 [packed = true];
+  repeated   sint64 packed_sint64   =  95 [packed = true];
+  repeated  fixed32 packed_fixed32  =  96 [packed = true];
+  repeated  fixed64 packed_fixed64  =  97 [packed = true];
+  repeated sfixed32 packed_sfixed32 =  98 [packed = true];
+  repeated sfixed64 packed_sfixed64 =  99 [packed = true];
+  repeated    float packed_float    = 100 [packed = true];
+  repeated   double packed_double   = 101 [packed = true];
+  repeated     bool packed_bool     = 102 [packed = true];
+  repeated ForeignEnum packed_enum  = 103 [packed = true];
+}
+
+// This proto includes a recusively nested message.
+message NestedTestAllTypes {
+  NestedTestAllTypes child = 1;
+  TestAllTypes payload = 2;
+}
+
 // Define these after TestAllTypes to make sure the compiler can handle
 // that.
 message ForeignMessage {
@@ -138,7 +174,13 @@ message ForeignMessage {
 }
 
 enum ForeignEnum {
-  FOREIGN_FOO = 0;
-  FOREIGN_BAR = 1;
-  FOREIGN_BAZ = 2;
+  FOREIGN_ZERO = 0;
+  FOREIGN_FOO = 4;
+  FOREIGN_BAR = 5;
+  FOREIGN_BAZ = 6;
 }
+
+// TestEmptyMessage is used to test behavior of unknown fields.
+message TestEmptyMessage {
+}
+

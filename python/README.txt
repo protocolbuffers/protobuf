@@ -48,8 +48,9 @@ Installation
      $ python setup.py build
      $ python setup.py google_test
 
-     If you want to test c++ implementation, run:
-     $ python setup.py test --cpp_implementation
+     If you want to build/test c++ implementation, run:
+     $ python setup.py build --cpp_implementation
+     $ python setup.py google_test --cpp_implementation
 
    If some tests fail, this library may not work correctly on your
    system.  Continue at your own risk.

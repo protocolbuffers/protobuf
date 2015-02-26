@@ -325,6 +325,7 @@ EXTRA_DIST =                                                   \
   google/protobuf/io/gzip_stream_unittest.sh                   \
   google/protobuf/testdata/golden_message                      \
   google/protobuf/testdata/golden_message_oneof_implemented    \
+  google/protobuf/testdata/golden_message_proto3               \
   google/protobuf/testdata/golden_packed_fields_message        \
   google/protobuf/testdata/bad_utf8_string                     \
   google/protobuf/testdata/text_format_unittest_data.txt       \
