@@ -71,6 +71,7 @@ nobase_include_HEADERS =                                        \
   google/protobuf/stubs/hash.h                                  \
   google/protobuf/stubs/once.h                                  \
   google/protobuf/stubs/platform_macros.h                       \
+  google/protobuf/stubs/shared_ptr.h                            \
   google/protobuf/stubs/singleton.h                             \
   google/protobuf/stubs/stl_util.h                              \
   google/protobuf/stubs/template_util.h                         \
