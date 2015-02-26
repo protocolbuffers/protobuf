@@ -1,7 +1,24 @@
 2015-02-22 version 3.0.0-alpha-2 (Ruby/JavaNano):
   General
   * Introduced two new language implementations (Ruby and JavaNano) to proto3.
+  * Added proto3 support for Python, and various other improvements.
   * Various bug fixes since 3.0.0-alpha-1
+
+  Python:
+    Python has received several updates, most notably support for proto3
+    semantics in any .proto file that declares syntax="proto3".
+    Messages declared in proto3 files no longer represent field presence
+    for scalar fields (number, enums, booleans, or strings).  You can
+    no longer call HasField() for such fields, and they are serialized
+    based on whether they have a non-zero/empty/false value.
+
+    One other notable change is in the C++-accelerated implementation.
+    Descriptor objects (which describe the protobuf schema and allow
+    reflection over it) are no longer duplicated between the Python
+    and C++ layers.  The Python descriptors are now simple wrappers
+    around the C++ descriptors.  This change should significantly
+    reduce the memory usage of programs that use a lot of message
+    types.
 
   Ruby:
     We have added proto3 support for Ruby via a native C extension.
