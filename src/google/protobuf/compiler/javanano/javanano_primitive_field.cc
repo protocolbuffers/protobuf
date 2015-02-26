@@ -155,28 +155,6 @@ int FixedSize(FieldDescriptor::Type type) {
   return -1;
 }
 
-// Return true if the type is a that has variable length
-// for instance String's.
-bool IsVariableLenType(JavaType type) {
-  switch (type) {
-    case JAVATYPE_INT    : return false;
-    case JAVATYPE_LONG   : return false;
-    case JAVATYPE_FLOAT  : return false;
-    case JAVATYPE_DOUBLE : return false;
-    case JAVATYPE_BOOLEAN: return false;
-    case JAVATYPE_STRING : return true;
-    case JAVATYPE_BYTES  : return true;
-    case JAVATYPE_ENUM   : return false;
-    case JAVATYPE_MESSAGE: return true;
-
-    // No default because we want the compiler to complain if any new
-    // JavaTypes are added.
-  }
-
-  GOOGLE_LOG(FATAL) << "Can't get here.";
-  return false;
-}
-
 bool AllAscii(const string& text) {
   for (int i = 0; i < text.size(); i++) {
     if ((text[i] & 0x80) != 0) {
@@ -185,6 +163,7 @@ bool AllAscii(const string& text) {
   }
   return true;
 }
+
 
 void SetPrimitiveVariables(const FieldDescriptor* descriptor, const Params params,
                            map<string, string>* variables) {
