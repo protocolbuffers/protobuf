@@ -1803,16 +1803,6 @@ class ReflectionTest(basetest.TestCase):
     self.assertRaises(TypeError,
                       unittest_pb2.TestAllTypes().__getattribute__, 42)
 
-  @basetest.unittest.skipIf(
-      api_implementation.Type() != 'cpp' or api_implementation.Version() != 2,
-      'CPPv2-specific test')
-  def testRosyHack(self):
-    from google.protobuf.pyext import _message
-    from google3.gdata.rosy.proto import core_api2_pb2
-    from google3.gdata.rosy.proto import core_pb2
-    self.assertEqual(_message.Message, core_pb2.PageSelection.__base__)
-    self.assertEqual(_message.Message, core_api2_pb2.PageSelection.__base__)
-
 
 #  Since we had so many tests for protocol buffer equality, we broke these out
 #  into separate TestCase classes.

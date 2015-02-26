@@ -37,12 +37,12 @@ __author__ = 'kenton@google.com (Kenton Varda)'
 import re
 
 from google.apputils import basetest
-from google.apputils.pybase import parameterized
 
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf.internal import api_implementation
+from google.protobuf.internal import _parameterized
 from google.protobuf.internal import test_util
 from google.protobuf import text_format
 
@@ -72,7 +72,7 @@ class TextFormatBase(basetest.TestCase):
     return text
 
 
-@parameterized.Parameters(
+@_parameterized.Parameters(
     (unittest_pb2),
     (unittest_proto3_arena_pb2))
 class TextFormatTest(TextFormatBase):

@@ -36,7 +36,6 @@
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
-
 class Error(Exception): pass
 class DecodeError(Error): pass
 class EncodeError(Error): pass

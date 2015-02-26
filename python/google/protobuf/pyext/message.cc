@@ -1264,7 +1264,27 @@ static PyObject* SerializeToString(CMessage* self, PyObject* args) {
     if (joined == NULL) {
       return NULL;
     }
-    PyErr_Format(EncodeError_class, "Message %s is missing required fields: %s",
+
+    // TODO(haberman): this is a (hopefully temporary) hack.  The unit testing
+    // infrastructure reloads all pure-Python modules for every test, but not
+    // C++ modules (because that's generally impossible:
+    // http://bugs.python.org/issue1144263).  But if we cache EncodeError, we'll
+    // return the EncodeError from a previous load of the module, which won't
+    // match a user's attempt to catch EncodeError.  So we have to look it up
+    // again every time.
+    ScopedPyObjectPtr message_module(PyImport_ImportModule(
+        "google.protobuf.message"));
+    if (message_module.get() == NULL) {
+      return NULL;
+    }
+
+    ScopedPyObjectPtr encode_error(
+        PyObject_GetAttrString(message_module, "EncodeError"));
+    if (encode_error.get() == NULL) {
+      return NULL;
+    }
+    PyErr_Format(encode_error.get(),
+                 "Message %s is missing required fields: %s",
                  GetMessageName(self).c_str(), PyString_AsString(joined));
     return NULL;
   }
@@ -2284,8 +2304,8 @@ int SetAttr(CMessage* self, PyObject* name, PyObject* value) {
 
 PyTypeObject CMessage_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  "google.protobuf.internal."
-  "cpp._message.CMessage",             // tp_name
+  "google.protobuf."
+  "pyext._message.CMessage",           // tp_name
   sizeof(CMessage),                    // tp_basicsize
   0,                                   //  tp_itemsize
   (destructor)cmessage::Dealloc,       //  tp_dealloc

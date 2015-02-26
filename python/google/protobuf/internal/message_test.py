@@ -51,10 +51,10 @@ import sys
 import unittest
 
 from google.apputils import basetest
-from google.apputils.pybase import parameterized
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf.internal import api_implementation
+from google.protobuf.internal import _parameterized
 from google.protobuf.internal import test_util
 from google.protobuf import message
 
@@ -72,7 +72,7 @@ def IsNegInf(val):
   return isinf(val) and (val < 0)
 
 
-@parameterized.Parameters(
+@_parameterized.Parameters(
     (unittest_pb2),
     (unittest_proto3_arena_pb2))
 class MessageTest(basetest.TestCase):
@@ -981,7 +981,6 @@ class Proto2Test(basetest.TestCase):
     self.assertEqual(unpickled_message.a, 1)
     # This is still an incomplete proto - so serializing should fail
     self.assertRaises(message.EncodeError, unpickled_message.SerializeToString)
-
 
   # TODO(haberman): this isn't really a proto2-specific test except that this
   # message has a required field in it.  Should probably be factored out so

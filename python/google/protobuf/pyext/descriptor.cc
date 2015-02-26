@@ -433,6 +433,20 @@ static PyObject* IsExtendable(PyBaseDescriptor *self, void *closure) {
   }
 }
 
+static PyObject* GetExtensionRanges(PyBaseDescriptor *self, void *closure) {
+  const Descriptor* descriptor = _GetDescriptor(self);
+  PyObject* range_list = PyList_New(descriptor->extension_range_count());
+
+  for (int i = 0; i < descriptor->extension_range_count(); i++) {
+    const Descriptor::ExtensionRange* range = descriptor->extension_range(i);
+    PyObject* start = PyInt_FromLong(range->start);
+    PyObject* end = PyInt_FromLong(range->end);
+    PyList_SetItem(range_list, i, PyTuple_Pack(2, start, end));
+  }
+
+  return range_list;
+}
+
 static PyObject* GetContainingType(PyBaseDescriptor *self, void *closure) {
   const Descriptor* containing_type =
       _GetDescriptor(self)->containing_type();
@@ -512,6 +526,7 @@ static PyGetSetDef Getters[] = {
   { C("nested_types_by_name"), (getter)GetNestedTypesByName, NULL, "Nested types by name", NULL},
   { C("extensions"), (getter)GetExtensions, NULL, "Extensions Sequence", NULL},
   { C("extensions_by_name"), (getter)GetExtensionsByName, NULL, "Extensions by name", NULL},
+  { C("extension_ranges"), (getter)GetExtensionRanges, NULL, "Extension ranges", NULL},
   { C("enum_types"), (getter)GetEnumsSeq, NULL, "Enum sequence", NULL},
   { C("enum_types_by_name"), (getter)GetEnumTypesByName, NULL, "Enum types by name", NULL},
   { C("enum_values_by_name"), (getter)GetEnumValuesByName, NULL, "Enum values by name", NULL},
