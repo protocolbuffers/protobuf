@@ -126,7 +126,7 @@ nobase_include_HEADERS =                                        \
   google/protobuf/compiler/ruby/ruby_generator.h
 
 nobase_nodist_include_HEADERS =                                 \
-	$(public_config)
+  $(public_config)
 
 lib_LTLIBRARIES = libprotobuf-lite.la libprotobuf.la libprotoc.la
 
@@ -152,8 +152,8 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/io/coded_stream.cc                           \
   google/protobuf/io/coded_stream_inl.h                        \
   google/protobuf/io/zero_copy_stream.cc                       \
-  google/protobuf/io/zero_copy_stream_impl_lite.cc             \
-	$(public_config)
+  google/protobuf/io/zero_copy_stream_impl_lite.cc
+nodist_libprotobuf_lite_la_SOURCES = $(public_config)
 
 libprotobuf_la_LIBADD = $(PTHREAD_LIBS)
 libprotobuf_la_LDFLAGS = -version-info 10:0:0 -export-dynamic -no-undefined
@@ -185,6 +185,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/io/zero_copy_stream_impl.cc                  \
   google/protobuf/compiler/importer.cc                         \
   google/protobuf/compiler/parser.cc
+nodist_libprotobuf_la_SOURCES = $(nodist_libprotobuf_lite_la_SOURCES)
 
 libprotoc_la_LIBADD = $(PTHREAD_LIBS) libprotobuf.la
 libprotoc_la_LDFLAGS = -version-info 10:0:0 -export-dynamic -no-undefined
