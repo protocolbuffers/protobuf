@@ -88,6 +88,22 @@ For advanced usage information on configure and make, see INSTALL.txt.
   If you only want protobuf-lite, substitute "protobuf-lite" in place
   of "protobuf" in these examples.
 
+**Note for Mac users**
+
+  For a Mac system, Unix tools are not available by default. You will first need
+  to install Xcode from the Mac AppStore and then run the following command from
+  a terminal:
+
+    $ sudo xcode-select --install
+
+  To install Unix tools, you can install "port" following the instructions at
+  https://www.macports.org . This will reside in /opt/local/bin/port for most
+  Mac installations.
+
+    $ sudo /opt/local/bin/port install autoconf automake libtool
+
+  Then follow the Unix instructions above.
+
 **Note for cross-compiling**
 
   The makefiles normally invoke the protoc executable that they just

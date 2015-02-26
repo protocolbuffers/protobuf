@@ -621,9 +621,6 @@ def MessageDecoder(field_number, is_repeated, is_packed, key, new_default):
       if value is None:
         value = field_dict.setdefault(key, new_default(message))
       while 1:
-        value = field_dict.get(key)
-        if value is None:
-          value = field_dict.setdefault(key, new_default(message))
         # Read length.
         (size, pos) = local_DecodeVarint(buffer, pos)
         new_pos = pos + size

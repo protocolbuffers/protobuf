@@ -72,6 +72,7 @@ copy ..\src\google\protobuf\stubs\fastmem.h include\google\protobuf\stubs\fastme
 copy ..\src\google\protobuf\stubs\once.h include\google\protobuf\stubs\once.h
 copy ..\src\google\protobuf\stubs\platform_macros.h include\google\protobuf\stubs\platform_macros.h
 copy ..\src\google\protobuf\stubs\singleton.h include\google\protobuf\stubs\singleton.h
+copy ..\src\google\protobuf\stubs\hash.h include\google\protobuf\stubs\hash.h
 copy ..\src\google\protobuf\stubs\stl_util.h include\google\protobuf\stubs\stl_util.h
 copy ..\src\google\protobuf\stubs\template_util.h include\google\protobuf\stubs\template_util.h
 copy ..\src\google\protobuf\stubs\type_traits.h include\google\protobuf\stubs\type_traits.h
@@ -80,3 +81,4 @@ copy ..\src\google\protobuf\unknown_field_set.h include\google\protobuf\unknown_
 copy ..\src\google\protobuf\wire_format.h include\google\protobuf\wire_format.h
 copy ..\src\google\protobuf\wire_format_lite.h include\google\protobuf\wire_format_lite.h
 copy ..\src\google\protobuf\wire_format_lite_inl.h include\google\protobuf\wire_format_lite_inl.h
+copy google\protobuf\stubs\pbconfig.h include\google\protobuf\stubs\pbconfig.h

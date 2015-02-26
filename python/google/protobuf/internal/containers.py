@@ -41,7 +41,6 @@ are:
 
 __author__ = 'petar@google.com (Petar Petrov)'
 
-
 class BaseContainer(object):
 
   """Base container class."""
@@ -119,15 +118,23 @@ class RepeatedScalarFieldContainer(BaseContainer):
       self._message_listener.Modified()
 
   def extend(self, elem_seq):
-    """Extends by appending the given sequence. Similar to list.extend()."""
-    if not elem_seq:
-      return
+    """Extends by appending the given iterable. Similar to list.extend()."""
 
-    new_values = []
-    for elem in elem_seq:
-      new_values.append(self._type_checker.CheckValue(elem))
-    self._values.extend(new_values)
-    self._message_listener.Modified()
+    if elem_seq is None:
+      return
+    try:
+      elem_seq_iter = iter(elem_seq)
+    except TypeError:
+      if not elem_seq:
+        # silently ignore falsy inputs :-/.
+        # TODO(ptucker): Deprecate this behavior. b/18413862
+        return
+      raise
+
+    new_values = [self._type_checker.CheckValue(elem) for elem in elem_seq_iter]
+    if new_values:
+      self._values.extend(new_values)
+      self._message_listener.Modified()
 
   def MergeFrom(self, other):
     """Appends the contents of another repeated field of the same type to this
@@ -140,6 +147,12 @@ class RepeatedScalarFieldContainer(BaseContainer):
     """Removes an item from the list. Similar to list.remove()."""
     self._values.remove(elem)
     self._message_listener.Modified()
+
+  def pop(self, key=-1):
+    """Removes and returns an item at a given index. Similar to list.pop()."""
+    value = self._values[key]
+    self.__delitem__(key)
+    return value
 
   def __setitem__(self, key, value):
     """Sets the item on the specified position."""
@@ -244,6 +257,12 @@ class RepeatedCompositeFieldContainer(BaseContainer):
     """Removes an item from the list. Similar to list.remove()."""
     self._values.remove(elem)
     self._message_listener.Modified()
+
+  def pop(self, key=-1):
+    """Removes and returns an item at a given index. Similar to list.pop()."""
+    value = self._values[key]
+    self.__delitem__(key)
+    return value
 
   def __getslice__(self, start, stop):
     """Retrieves the subset of items from between the specified indices."""
