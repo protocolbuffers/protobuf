@@ -78,6 +78,22 @@ bool File::ReadFileToString(const string& name, string* output) {
   return error == 0;
 }
 
+bool File::ReadTextFileToString(const string& name, string* output) {
+  char buffer[1024];
+  FILE* file = fopen(name.c_str(), "r");
+  if (file == NULL) return false;
+
+  while (true) {
+    size_t n = fread(buffer, 1, sizeof(buffer), file);
+    if (n <= 0) break;
+    output->append(buffer, n);
+  }
+
+  int error = ferror(file);
+  if (fclose(file) != 0) return false;
+  return error == 0;
+}
+
 void File::ReadFileToStringOrDie(const string& name, string* output) {
   GOOGLE_CHECK(ReadFileToString(name, output)) << "Could not read: " << name;
 }

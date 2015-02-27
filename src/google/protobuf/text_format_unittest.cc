@@ -74,7 +74,7 @@ const string kEscapeTestStringEscaped =
 class TextFormatTest : public testing::Test {
  public:
   static void SetUpTestCase() {
-    GOOGLE_CHECK_OK(File::GetContents(
+    GOOGLE_CHECK_OK(File::GetTextContents(
         TestSourceDir() +
             "/google/protobuf/"
             "testdata/text_format_unittest_data_oneof_implemented.txt",
@@ -96,7 +96,7 @@ string TextFormatTest::static_proto_debug_string_;
 class TextFormatExtensionsTest : public testing::Test {
  public:
   static void SetUpTestCase() {
-    GOOGLE_CHECK_OK(File::GetContents(TestSourceDir() +
+    GOOGLE_CHECK_OK(File::GetTextContents(TestSourceDir() +
                                    "/google/protobuf/testdata/"
                                    "text_format_unittest_extensions_data.txt",
                                &static_proto_debug_string_, true));

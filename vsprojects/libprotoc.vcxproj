@@ -1,0 +1,245 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B84FF31A-5F9A-46F8-AB22-DBFC9BECE3BE}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/wd4244 /wd4267 /wd4018 /wd4355 /wd4800 /wd4251 /wd4996 /wd4146 /wd4305 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../src;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBPROTOC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalOptions>/wd4244 /wd4267 /wd4018 /wd4355 /wd4800 /wd4251 /wd4996 /wd4146 /wd4305 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../src;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBPROTOC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/wd4244 /wd4267 /wd4018 /wd4355 /wd4800 /wd4251 /wd4996 /wd4146 /wd4305 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>../src;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBPROTOC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalOptions>/wd4244 /wd4267 /wd4018 /wd4355 /wd4800 /wd4251 /wd4996 /wd4146 /wd4305 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>../src;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBPROTOC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\google\protobuf\compiler\code_generator.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\command_line_interface.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_enum.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_enum_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_extension.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_file.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_generator.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_helpers.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_map_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_message.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_message_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_params.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\javanano\javanano_primitive_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\ruby\ruby_generator.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\subprocess.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\zip_writer.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\plugin.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\plugin.pb.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\cpp\cpp_enum.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\cpp\cpp_enum_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\cpp\cpp_extension.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\cpp\cpp_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\cpp\cpp_file.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\cpp\cpp_generator.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\cpp\cpp_helpers.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\cpp\cpp_message.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\cpp\cpp_message_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\cpp\cpp_options.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\cpp\cpp_primitive_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\cpp\cpp_service.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\cpp\cpp_string_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_context.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_enum.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_enum_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_extension.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_file.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_generator.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_generator_factory.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_helpers.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_lazy_message_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_message.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_message_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_name_resolver.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_primitive_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_service.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_shared_code_generator.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_string_field.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\java\java_doc_comment.h" />
+    <ClInclude Include="..\src\google\protobuf\compiler\python\python_generator.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\google\protobuf\compiler\javanano\javanano_map_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_doc_comment.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\code_generator.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\command_line_interface.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\cpp\cpp_enum.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\cpp\cpp_enum_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\cpp\cpp_extension.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\cpp\cpp_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\cpp\cpp_file.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\cpp\cpp_generator.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\cpp\cpp_helpers.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\cpp\cpp_map_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\cpp\cpp_message.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\cpp\cpp_message_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\cpp\cpp_primitive_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\cpp\cpp_service.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\cpp\cpp_string_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_context.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_enum.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_enum_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_extension.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_file.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_generator.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_generator_factory.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_helpers.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_lazy_message_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_map_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_message.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_message_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_name_resolver.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_primitive_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_service.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_shared_code_generator.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\java\java_string_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\javanano\javanano_enum.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\javanano\javanano_enum_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\javanano\javanano_extension.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\javanano\javanano_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\javanano\javanano_file.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\javanano\javanano_generator.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\javanano\javanano_helpers.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\javanano\javanano_message.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\javanano\javanano_message_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\javanano\javanano_primitive_field.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\plugin.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\plugin.pb.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\python\python_generator.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\ruby\ruby_generator.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\subprocess.cc" />
+    <ClCompile Include="..\src\google\protobuf\compiler\zip_writer.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="libprotobuf.vcxproj">
+      <Project>{3e283f37-a4ed-41b7-a3e6-a2d89d131a30}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
