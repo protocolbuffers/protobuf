@@ -30,6 +30,7 @@
 
 package com.google.protobuf;
 
+import protobuf_unittest.LazyFieldsLite.LazyExtension;
 import protobuf_unittest.LazyFieldsLite.LazyInnerMessageLite;
 import protobuf_unittest.LazyFieldsLite.LazyMessageLite;
 import protobuf_unittest.LazyFieldsLite.LazyNestedInnerMessageLite;
@@ -284,5 +285,23 @@ public class LazyMessageLiteTest extends TestCase {
     assertEquals(4,  deserialized.getOneofInner().getNested().getNumWithDefault());
 
     assertEquals(bytes, deserialized.toByteString());
+  }
+
+  public void testExtensions() throws Exception {
+    LazyInnerMessageLite.Builder innerBuilder = LazyInnerMessageLite.newBuilder();
+    innerBuilder.setExtension(
+        LazyExtension.extension, LazyExtension.newBuilder()
+        .setName("name").build());
+    assertTrue(innerBuilder.hasExtension(LazyExtension.extension));
+    assertEquals("name", innerBuilder.getExtension(LazyExtension.extension).getName());
+
+    LazyInnerMessageLite innerMessage = innerBuilder.build();
+    assertTrue(innerMessage.hasExtension(LazyExtension.extension));
+    assertEquals("name", innerMessage.getExtension(LazyExtension.extension).getName());
+
+    LazyMessageLite lite = LazyMessageLite.newBuilder()
+        .setInner(innerMessage).build();
+    assertTrue(lite.getInner().hasExtension(LazyExtension.extension));
+    assertEquals("name", lite.getInner().getExtension(LazyExtension.extension).getName());
   }
 }

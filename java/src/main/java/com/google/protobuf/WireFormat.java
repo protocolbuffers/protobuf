@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import java.io.IOException;
+
 /**
  * This class is used internally by the Protocol Buffer library and generated
  * message implementations.  It is public only because those generated messages
@@ -160,4 +162,84 @@ public final class WireFormat {
     makeTag(MESSAGE_SET_TYPE_ID, WIRETYPE_VARINT);
   static final int MESSAGE_SET_MESSAGE_TAG =
     makeTag(MESSAGE_SET_MESSAGE, WIRETYPE_LENGTH_DELIMITED);
+
+  /**
+   * Validation level for handling incoming string field data which potentially
+   * contain non-UTF8 bytes.
+   */
+  enum Utf8Validation {
+    /** Eagerly parses to String; silently accepts invalid UTF8 bytes. */
+    LOOSE {
+      Object readString(CodedInputStream input) throws IOException {
+        return input.readString();
+      }
+    },
+    /** Eagerly parses to String; throws an IOException on invalid bytes. */
+    STRICT {
+      Object readString(CodedInputStream input) throws IOException {
+        return input.readStringRequireUtf8();
+      }
+    },
+    /** Keep data as ByteString; validation/conversion to String is lazy. */
+    LAZY {
+      Object readString(CodedInputStream input) throws IOException {
+        return input.readBytes();
+      }
+    };
+
+    /** Read a string field from the input with the proper UTF8 validation. */
+    abstract Object readString(CodedInputStream input) throws IOException;
+  }
+
+  /**
+   * Read a field of any primitive type for immutable messages from a
+   * CodedInputStream. Enums, groups, and embedded messages are not handled by
+   * this method.
+   *
+   * @param input The stream from which to read.
+   * @param type Declared type of the field.
+   * @param utf8Validation Different string UTF8 validation level for handling
+   *                       string fields.
+   * @return An object representing the field's value, of the exact
+   *         type which would be returned by
+   *         {@link Message#getField(Descriptors.FieldDescriptor)} for
+   *         this field.
+   */
+  static Object readPrimitiveField(
+      CodedInputStream input,
+      FieldType type,
+      Utf8Validation utf8Validation) throws IOException {
+    switch (type) {
+      case DOUBLE  : return input.readDouble  ();
+      case FLOAT   : return input.readFloat   ();
+      case INT64   : return input.readInt64   ();
+      case UINT64  : return input.readUInt64  ();
+      case INT32   : return input.readInt32   ();
+      case FIXED64 : return input.readFixed64 ();
+      case FIXED32 : return input.readFixed32 ();
+      case BOOL    : return input.readBool    ();
+      case BYTES   : return input.readBytes   ();
+      case UINT32  : return input.readUInt32  ();
+      case SFIXED32: return input.readSFixed32();
+      case SFIXED64: return input.readSFixed64();
+      case SINT32  : return input.readSInt32  ();
+      case SINT64  : return input.readSInt64  ();
+
+      case STRING  : return utf8Validation.readString(input);
+      case GROUP:
+        throw new IllegalArgumentException(
+          "readPrimitiveField() cannot handle nested groups.");
+      case MESSAGE:
+        throw new IllegalArgumentException(
+          "readPrimitiveField() cannot handle embedded messages.");
+      case ENUM:
+        // We don't handle enums because we don't know what to do if the
+        // value is not recognized.
+        throw new IllegalArgumentException(
+          "readPrimitiveField() cannot handle enums.");
+    }
+
+    throw new RuntimeException(
+      "There is no way to get here, but the compiler thinks otherwise.");
+  }
 }

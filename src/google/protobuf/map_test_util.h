@@ -40,8 +40,11 @@ namespace unittest = ::protobuf_unittest;
 
 class MapTestUtil {
  public:
-  // Set every field in the message to a unique value.
+  // Set every field in the TestMap message to a unique value.
   static void SetMapFields(unittest::TestMap* message);
+
+  // Set every field in the TestArenaMap message to a unique value.
+  static void SetArenaMapFields(unittest::TestArenaMap* message);
 
   // Set every field in the message to a default value.
   static void SetMapFieldsInitialized(unittest::TestMap* message);
@@ -53,6 +56,10 @@ class MapTestUtil {
   // Check that all fields have the values that they should have after
   // SetMapFields() is called.
   static void ExpectMapFieldsSet(const unittest::TestMap& message);
+
+  // Check that all fields have the values that they should have after
+  // SetMapFields() is called for TestArenaMap.
+  static void ExpectArenaMapFieldsSet(const unittest::TestArenaMap& message);
 
   // Check that all fields have the values that they should have after
   // SetMapFieldsInitialized() is called.

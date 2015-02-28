@@ -153,10 +153,10 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddExtension(
   if (!field.extendee().empty() && field.extendee()[0] == '.') {
     // The extension is fully-qualified.  We can use it as a lookup key in
     // the by_symbol_ table.
-    if (!InsertIfNotPresent(&by_extension_,
-                            make_pair(field.extendee().substr(1),
-                                      field.number()),
-                            value)) {
+    if (!InsertIfNotPresent(
+            &by_extension_,
+            std::make_pair(field.extendee().substr(1), field.number()),
+            value)) {
       GOOGLE_LOG(ERROR) << "Extension conflicts with extension already in database: "
                     "extend " << field.extendee() << " { "
                  << field.name() << " = " << field.number() << " }";
@@ -189,17 +189,16 @@ template <typename Value>
 Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindExtension(
     const string& containing_type,
     int field_number) {
-  return FindWithDefault(by_extension_,
-                         make_pair(containing_type, field_number),
-                         Value());
+  return FindWithDefault(
+      by_extension_, std::make_pair(containing_type, field_number), Value());
 }
 
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::FindAllExtensionNumbers(
     const string& containing_type,
     vector<int>* output) {
-  typename map<pair<string, int>, Value >::const_iterator it =
-      by_extension_.lower_bound(make_pair(containing_type, 0));
+  typename map<pair<string, int>, Value>::const_iterator it =
+      by_extension_.lower_bound(std::make_pair(containing_type, 0));
   bool success = false;
 
   for (; it != by_extension_.end() && it->first.first == containing_type;
@@ -310,7 +309,7 @@ bool EncodedDescriptorDatabase::Add(
     const void* encoded_file_descriptor, int size) {
   FileDescriptorProto file;
   if (file.ParseFromArray(encoded_file_descriptor, size)) {
-    return index_.AddFile(file, make_pair(encoded_file_descriptor, size));
+    return index_.AddFile(file, std::make_pair(encoded_file_descriptor, size));
   } else {
     GOOGLE_LOG(ERROR) << "Invalid file descriptor data passed to "
                   "EncodedDescriptorDatabase::Add().";
@@ -525,15 +524,16 @@ bool MergedDescriptorDatabase::FindAllExtensionNumbers(
 
   for (int i = 0; i < sources_.size(); i++) {
     if (sources_[i]->FindAllExtensionNumbers(extendee_type, &results)) {
-      copy(results.begin(), results.end(),
-           insert_iterator<set<int> >(merged_results, merged_results.begin()));
+      std::copy(
+          results.begin(), results.end(),
+          insert_iterator<set<int> >(merged_results, merged_results.begin()));
       success = true;
     }
     results.clear();
   }
 
-  copy(merged_results.begin(), merged_results.end(),
-       insert_iterator<vector<int> >(*output, output->end()));
+  std::copy(merged_results.begin(), merged_results.end(),
+            insert_iterator<vector<int> >(*output, output->end()));
 
   return success;
 }

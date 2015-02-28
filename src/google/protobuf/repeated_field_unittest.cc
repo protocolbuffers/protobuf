@@ -1131,7 +1131,7 @@ TEST_F(RepeatedPtrFieldIteratorTest, STLAlgorithms_lower_bound) {
 
   string v = "f";
   RepeatedPtrField<string>::const_iterator it =
-      lower_bound(proto_array_.begin(), proto_array_.end(), v);
+      std::lower_bound(proto_array_.begin(), proto_array_.end(), v);
 
   EXPECT_EQ(*it, "n");
   EXPECT_TRUE(it == proto_array_.begin() + 3);
@@ -1292,8 +1292,8 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, PtrSTLAlgorithms_lower_bound) {
   {
     string v = "f";
     RepeatedPtrField<string>::pointer_iterator it =
-        lower_bound(proto_array_.pointer_begin(), proto_array_.pointer_end(),
-                    &v, StringLessThan());
+        std::lower_bound(proto_array_.pointer_begin(),
+                         proto_array_.pointer_end(), &v, StringLessThan());
 
     GOOGLE_CHECK(*it != NULL);
 
@@ -1302,10 +1302,9 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, PtrSTLAlgorithms_lower_bound) {
   }
   {
     string v = "f";
-    RepeatedPtrField<string>::const_pointer_iterator it =
-        lower_bound(const_proto_array_->pointer_begin(),
-                    const_proto_array_->pointer_end(),
-                    &v, StringLessThan());
+    RepeatedPtrField<string>::const_pointer_iterator it = std::lower_bound(
+        const_proto_array_->pointer_begin(), const_proto_array_->pointer_end(),
+        &v, StringLessThan());
 
     GOOGLE_CHECK(*it != NULL);
 
@@ -1343,9 +1342,8 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, Sort) {
   EXPECT_EQ("foo", proto_array_.Get(0));
   EXPECT_EQ("n", proto_array_.Get(5));
   EXPECT_EQ("x", proto_array_.Get(9));
-  sort(proto_array_.pointer_begin(),
-       proto_array_.pointer_end(),
-       StringLessThan());
+  std::sort(proto_array_.pointer_begin(), proto_array_.pointer_end(),
+            StringLessThan());
   EXPECT_EQ("a", proto_array_.Get(0));
   EXPECT_EQ("baz", proto_array_.Get(2));
   EXPECT_EQ("y", proto_array_.Get(9));
@@ -1478,9 +1476,9 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
     new_data->set_bb(i);
   }
   TestAllTypes testproto;
-  copy(data.begin(), data.end(),
-       AllocatedRepeatedPtrFieldBackInserter(
-           testproto.mutable_repeated_nested_message()));
+  std::copy(data.begin(), data.end(),
+            AllocatedRepeatedPtrFieldBackInserter(
+                testproto.mutable_repeated_nested_message()));
   EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
 }
 
@@ -1497,9 +1495,8 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
     *new_data = "name-" + SimpleItoa(i);
   }
   TestAllTypes testproto;
-  copy(data.begin(), data.end(),
-       AllocatedRepeatedPtrFieldBackInserter(
-           testproto.mutable_repeated_string()));
+  std::copy(data.begin(), data.end(), AllocatedRepeatedPtrFieldBackInserter(
+                                          testproto.mutable_repeated_string()));
   EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
 }
 

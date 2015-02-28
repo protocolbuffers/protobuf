@@ -47,7 +47,7 @@ namespace cpp {
 
 namespace {
 // The GOOGLE_ARRAYSIZE constant is the max enum value plus 1. If the max enum value
-// is kint32max, GOOGLE_ARRAYSIZE will overflow. In such cases we should omit the
+// is ::google::protobuf::kint32max, GOOGLE_ARRAYSIZE will overflow. In such cases we should omit the
 // generation of the GOOGLE_ARRAYSIZE constant.
 bool ShouldGenerateArraySize(const EnumDescriptor* descriptor) {
   int32 max_value = descriptor->value(0)->number();
@@ -56,7 +56,7 @@ bool ShouldGenerateArraySize(const EnumDescriptor* descriptor) {
       max_value = descriptor->value(i)->number();
     }
   }
-  return max_value != kint32max;
+  return max_value != ::google::protobuf::kint32max;
 }
 }  // namespace
 
@@ -153,9 +153,12 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
 
 void EnumGenerator::
 GenerateGetEnumDescriptorSpecializations(io::Printer* printer) {
+  printer->Print(
+      "template <> struct is_proto_enum< $classname$> : ::google::protobuf::internal::true_type "
+      "{};\n",
+      "classname", ClassName(descriptor_, true));
   if (HasDescriptorMethods(descriptor_->file())) {
     printer->Print(
-      "template <> struct is_proto_enum< $classname$> : ::google::protobuf::internal::true_type {};\n"
       "template <>\n"
       "inline const EnumDescriptor* GetEnumDescriptor< $classname$>() {\n"
       "  return $classname$_descriptor();\n"

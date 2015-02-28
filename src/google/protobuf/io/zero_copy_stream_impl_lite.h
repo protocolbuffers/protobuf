@@ -368,7 +368,7 @@ inline char* mutable_string_data(string* s) {
 inline std::pair<char*, bool> as_string_data(string* s) {
   char *p = mutable_string_data(s);
 #ifdef LANG_CXX11
-  return make_pair(p, true);
+  return std::make_pair(p, true);
 #else
   return make_pair(p, p != NULL);
 #endif

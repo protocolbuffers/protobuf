@@ -45,6 +45,7 @@ option java_package = "com.google.protobuf";
 option java_outer_classname = "TestBadIdentifiersProto";
 option java_generate_equals_and_hash = true;
 
+
 message TestMessage {
   optional string cached_size = 1;
   optional string serialized_size = 2;

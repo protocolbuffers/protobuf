@@ -99,6 +99,29 @@ bool GetRepeatedEnumUnknowns_Template(
 }
 
 // NOTE: You should not call these functions directly.  Instead use
+// CLEAR_UNKNOWN_ENUM(), defined in the public header.  The macro-versions
+// operate in a type-safe manner and behave appropriately for the proto
+// version of the message, whereas these versions assume a specific proto
+// version and allow the caller to pass in any arbitrary integer value as a
+// field number.
+//
+// Clears the unknown entries of the given field of the message.
+void ClearUnknownEnum(Message* message, int32 field_number);
+// In proto1, clears the field if the value is out of range.
+// TODO(karner): Delete this or make it proto2-only once the migration
+// to proto2 is complete.
+void ClearUnknownEnumProto1(Message* message, int32 field_number);
+template <typename T>
+void ClearUnknownEnum_Template(T* message, int32 field_number) {
+  if (internal::is_base_of<bridge::internal::Proto1CompatibleMessage, T>::value ||
+      !internal::is_base_of<ProtocolMessage, T>::value) {
+    ClearUnknownEnum(message, field_number);
+  } else {
+    ClearUnknownEnumProto1(message, field_number);
+  }
+}
+
+// NOTE: You should not call these functions directly.  Instead use
 // SET_UNKNOWN_ENUM(), defined in the public header.  The macro-versions
 // operate in a type-safe manner and behave appropriately for the proto
 // version of the message, whereas these versions assume a specific proto

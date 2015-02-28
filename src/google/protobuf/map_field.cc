@@ -55,14 +55,14 @@ void InitMapEntryDefaultInstances() {
 }
 
 void RegisterMapEntryDefaultInstance(MessageLite* default_instance) {
-  GoogleOnceInit(&map_entry_default_instances_once_,
+  ::google::protobuf::GoogleOnceInit(&map_entry_default_instances_once_,
                  &InitMapEntryDefaultInstances);
   MutexLock lock(map_entry_default_instances_mutex_);
   map_entry_default_instances_->push_back(default_instance);
 }
 
 MapFieldBase::~MapFieldBase() {
-  if (repeated_field_ != NULL) delete repeated_field_;
+  if (repeated_field_ != NULL && arena_ == NULL) delete repeated_field_;
 }
 
 const RepeatedPtrFieldBase& MapFieldBase::GetRepeatedField() const {
@@ -118,7 +118,9 @@ void MapFieldBase::SyncRepeatedFieldWithMap() const {
 }
 
 void MapFieldBase::SyncRepeatedFieldWithMapNoLock() const {
-  if (repeated_field_ == NULL) repeated_field_ = new RepeatedPtrField<Message>;
+  if (repeated_field_ == NULL) {
+    repeated_field_ = Arena::Create<RepeatedPtrField<Message> >(arena_, arena_);
+  }
 }
 
 void MapFieldBase::SyncMapWithRepeatedField() const {

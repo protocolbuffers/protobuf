@@ -647,6 +647,13 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // ZeroCopyOutputStream immediately after the last byte written.
   ~CodedOutputStream();
 
+  // Trims any unused space in the underlying buffer so that its size matches
+  // the number of bytes written by this stream. The underlying buffer will
+  // automatically be trimmed when this stream is destroyed; this call is only
+  // necessary if the underlying buffer is accessed *before* the stream is
+  // destroyed.
+  void Trim();
+
   // Skips a number of bytes, leaving the bytes unmodified in the underlying
   // buffer.  Returns false if an underlying write error occurs.  This is
   // mainly useful with GetDirectBufferPointer().
@@ -789,7 +796,9 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // ZeroCopyOutputStream supports it.
   void WriteAliasedRaw(const void* buffer, int size);
 
-  static uint8* WriteVarint32FallbackToArray(uint32 value, uint8* target);
+  // If this write might cross the end of the buffer, we compose the bytes first
+  // then use WriteRaw().
+  void WriteVarint32SlowPath(uint32 value);
 
   // Always-inlined versions of WriteVarint* functions so that code can be
   // reused, while still controlling size. For instance, WriteVarint32ToArray()
@@ -798,8 +807,6 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // WriteVarint32FallbackToArray.  Meanwhile, WriteVarint32() is already
   // out-of-line, so it should just invoke this directly to avoid any extra
   // function call overhead.
-  static uint8* WriteVarint32FallbackToArrayInline(
-      uint32 value, uint8* target) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
   static uint8* WriteVarint64ToArrayInline(
       uint64 value, uint8* target) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
 
@@ -919,7 +926,7 @@ inline std::pair<uint32, bool> CodedInputStream::ReadTagWithCutoff(
       const uint32 kMax1ByteVarint = 0x7f;
       uint32 tag = last_tag_ = buffer_[0];
       Advance(1);
-      return make_pair(tag, cutoff >= kMax1ByteVarint || tag <= cutoff);
+      return std::make_pair(tag, cutoff >= kMax1ByteVarint || tag <= cutoff);
     }
     // Other hot case: cutoff >= 0x80, buffer_ has at least two bytes available,
     // and tag is two bytes.  The latter is tested by bitwise-and-not of the
@@ -937,12 +944,12 @@ inline std::pair<uint32, bool> CodedInputStream::ReadTagWithCutoff(
       // so we don't have to check for tag == 0.  We may need to check whether
       // it exceeds cutoff.
       bool at_or_below_cutoff = cutoff >= kMax2ByteVarint || tag <= cutoff;
-      return make_pair(tag, at_or_below_cutoff);
+      return std::make_pair(tag, at_or_below_cutoff);
     }
   }
   // Slow path
   last_tag_ = ReadTagFallback();
-  return make_pair(last_tag_, static_cast<uint32>(last_tag_ - 1) < cutoff);
+  return std::make_pair(last_tag_, static_cast<uint32>(last_tag_ - 1) < cutoff);
 }
 
 inline bool CodedInputStream::LastTagWas(uint32 expected) {
@@ -1027,13 +1034,14 @@ inline uint8* CodedOutputStream::GetDirectBufferForNBytesAndAdvance(int size) {
 }
 
 inline uint8* CodedOutputStream::WriteVarint32ToArray(uint32 value,
-                                                        uint8* target) {
-  if (value < 0x80) {
-    *target = value;
-    return target + 1;
-  } else {
-    return WriteVarint32FallbackToArray(value, target);
+                                                      uint8* target) {
+  while (value >= 0x80) {
+    *target = static_cast<uint8>(value | 0x80);
+    value >>= 7;
+    ++target;
   }
+  *target = static_cast<uint8>(value);
+  return target + 1;
 }
 
 inline void CodedOutputStream::WriteVarint32SignExtended(int32 value) {
@@ -1086,22 +1094,26 @@ inline uint8* CodedOutputStream::WriteLittleEndian64ToArray(uint64 value,
   return target + sizeof(value);
 }
 
+inline void CodedOutputStream::WriteVarint32(uint32 value) {
+  if (buffer_size_ >= 5) {
+    // Fast path:  We have enough bytes left in the buffer to guarantee that
+    // this write won't cross the end, so we can skip the checks.
+    uint8* target = buffer_;
+    uint8* end = WriteVarint32ToArray(value, target);
+    int size = end - target;
+    Advance(size);
+  } else {
+    WriteVarint32SlowPath(value);
+  }
+}
+
 inline void CodedOutputStream::WriteTag(uint32 value) {
   WriteVarint32(value);
 }
 
 inline uint8* CodedOutputStream::WriteTagToArray(
     uint32 value, uint8* target) {
-  if (value < (1 << 7)) {
-    target[0] = value;
-    return target + 1;
-  } else if (value < (1 << 14)) {
-    target[0] = static_cast<uint8>(value | 0x80);
-    target[1] = static_cast<uint8>(value >> 7);
-    return target + 2;
-  } else {
-    return WriteVarint32FallbackToArray(value, target);
-  }
+  return WriteVarint32ToArray(value, target);
 }
 
 inline int CodedOutputStream::VarintSize32(uint32 value) {

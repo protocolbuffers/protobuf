@@ -138,6 +138,14 @@ class LIBPROTOBUF_EXPORT WireFormat {
   static bool SkipMessage(io::CodedInputStream* input,
                           UnknownFieldSet* unknown_fields);
 
+  // Read a packed enum field. If the is_valid function is not NULL, values for
+  // which is_valid(value) returns false are appended to unknown_fields_stream.
+  static bool ReadPackedEnumPreserveUnknowns(io::CodedInputStream* input,
+                                             uint32 field_number,
+                                             bool (*is_valid)(int),
+                                             UnknownFieldSet* unknown_fields,
+                                             RepeatedField<int>* values);
+
   // Write the contents of an UnknownFieldSet to the output.
   static void SerializeUnknownFields(const UnknownFieldSet& unknown_fields,
                                      io::CodedOutputStream* output);

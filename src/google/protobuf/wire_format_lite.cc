@@ -304,6 +304,34 @@ bool WireFormatLite::ReadPackedEnumNoInline(io::CodedInputStream* input,
   return true;
 }
 
+bool WireFormatLite::ReadPackedEnumPreserveUnknowns(
+    io::CodedInputStream* input,
+    int field_number,
+    bool (*is_valid)(int),
+    io::CodedOutputStream* unknown_fields_stream,
+    RepeatedField<int>* values) {
+  uint32 length;
+  if (!input->ReadVarint32(&length)) return false;
+  io::CodedInputStream::Limit limit = input->PushLimit(length);
+  while (input->BytesUntilLimit() > 0) {
+    int value;
+    if (!google::protobuf::internal::WireFormatLite::ReadPrimitive<
+        int, WireFormatLite::TYPE_ENUM>(input, &value)) {
+      return false;
+    }
+    if (is_valid == NULL || is_valid(value)) {
+      values->Add(value);
+    } else {
+      uint32 tag = WireFormatLite::MakeTag(field_number,
+                                           WireFormatLite::WIRETYPE_VARINT);
+      unknown_fields_stream->WriteVarint32(tag);
+      unknown_fields_stream->WriteVarint32(value);
+    }
+  }
+  input->PopLimit(limit);
+  return true;
+}
+
 void WireFormatLite::WriteInt32(int field_number, int32 value,
                                 io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_VARINT, output);

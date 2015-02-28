@@ -42,22 +42,58 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Lite version of {@link GeneratedMessage}.
  *
  * @author kenton@google.com Kenton Varda
  */
-public abstract class GeneratedMessageLite extends AbstractMessageLite
-    implements Serializable {
+public abstract class GeneratedMessageLite<
+    MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
+    BuilderType extends GeneratedMessageLite.Builder<MessageType, BuilderType>> 
+        extends AbstractMessageLite
+        implements Serializable {
+  
+  /**
+   * Holds all the {@link PrototypeHolder}s for loaded classes.
+   */
+  // TODO(dweis): Consider different concurrency values.
+  // TODO(dweis): This will prevent garbage collection of the class loader.
+  //     Ideally we'd use something like ClassValue but that's Java 7 only.
+  private static final Map<Class<?>, PrototypeHolder<?, ?>> PROTOTYPE_MAP =
+      new ConcurrentHashMap<Class<?>, PrototypeHolder<?, ?>>();
+  
+  // For use by generated code only.
+  protected static <
+      MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
+      BuilderType extends GeneratedMessageLite.Builder<
+          MessageType, BuilderType>> void onLoad(Class<MessageType> clazz,
+              PrototypeHolder<MessageType, BuilderType> protoTypeHolder) {
+    PROTOTYPE_MAP.put(clazz, protoTypeHolder);
+  }
+
   private static final long serialVersionUID = 1L;
 
   /** For use by generated code only.  */
   protected UnknownFieldSetLite unknownFields;
   
-  public Parser<? extends MessageLite> getParserForType() {
-    throw new UnsupportedOperationException(
-        "This is supposed to be overridden by subclasses.");
+  @SuppressWarnings("unchecked") // Guaranteed by runtime.
+  public final Parser<MessageType> getParserForType() {
+    return (Parser<MessageType>) PROTOTYPE_MAP
+        .get(getClass()).getParserForType();
+  }
+
+  @SuppressWarnings("unchecked") // Guaranteed by runtime.
+  public final MessageType getDefaultInstanceForType() {
+    return (MessageType) PROTOTYPE_MAP
+        .get(getClass()).getDefaultInstanceForType();
+  }
+
+  @SuppressWarnings("unchecked") // Guaranteed by runtime.
+  public final BuilderType newBuilderForType() {
+    return (BuilderType) PROTOTYPE_MAP
+        .get(getClass()).newBuilderForType();
   }
 
   /**
@@ -73,10 +109,17 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
     return unknownFields.mergeFieldFrom(tag, input);
   }
 
+  // The default behavior. If a message has required fields in its subtree, the
+  // generated code will override.
+  public boolean isInitialized() {
+    return true;
+  }
+
   @SuppressWarnings("unchecked")
-  public abstract static class Builder<MessageType extends GeneratedMessageLite,
-                                       BuilderType extends Builder>
-      extends AbstractMessageLite.Builder<BuilderType> {
+  public abstract static class Builder<
+      MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
+      BuilderType extends Builder<MessageType, BuilderType>>
+          extends AbstractMessageLite.Builder<BuilderType> {
 
     private final MessageType defaultInstance;
 
@@ -86,6 +129,12 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
 
     protected Builder(MessageType defaultInstance) {
       this.defaultInstance = defaultInstance;
+    }
+
+    // The default behavior. If a message has required fields in its subtree,
+    // the generated code will override.
+    public boolean isInitialized() {
+      return true;
     }
 
     //@Override (Java 1.6 override semantics, but we must support 1.5)
@@ -174,7 +223,9 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
    * Lite equivalent of {@link com.google.protobuf.GeneratedMessage.ExtendableMessageOrBuilder}.
    */
   public interface ExtendableMessageOrBuilder<
-      MessageType extends ExtendableMessage> extends MessageLiteOrBuilder {
+      MessageType extends ExtendableMessage<MessageType, BuilderType>,
+      BuilderType extends ExtendableBuilder<MessageType, BuilderType>>
+          extends MessageLiteOrBuilder {
 
     /** Check if a singular extension is present. */
     <Type> boolean hasExtension(
@@ -197,16 +248,30 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
    * Lite equivalent of {@link GeneratedMessage.ExtendableMessage}.
    */
   public abstract static class ExtendableMessage<
-        MessageType extends ExtendableMessage<MessageType>>
-      extends GeneratedMessageLite
-      implements ExtendableMessageOrBuilder<MessageType> {
+        MessageType extends ExtendableMessage<MessageType, BuilderType>,
+        BuilderType extends ExtendableBuilder<MessageType, BuilderType>>
+            extends GeneratedMessageLite<MessageType, BuilderType>
+            implements ExtendableMessageOrBuilder<MessageType, BuilderType> {
 
     /**
      * Represents the set of extensions on this message. For use by generated
      * code only.
      */
     protected FieldSet<ExtensionDescriptor> extensions = FieldSet.newFieldSet();
-    
+
+    // -1 => not memoized, 0 => false, 1 => true.
+    private byte memoizedIsInitialized = -1;
+
+    // The default behavior. If a message has required fields in its subtree,
+    // the generated code will override.
+    public boolean isInitialized() {
+      if (memoizedIsInitialized == -1) {
+        memoizedIsInitialized = (byte) (extensions.isInitialized() ? 1 : 0);
+      }
+
+      return memoizedIsInitialized == 1;
+    }
+
     private void verifyExtensionContainingType(
         final GeneratedExtension<MessageType, ?> extension) {
       if (extension.getContainingTypeDefaultInstance() !=
@@ -349,16 +414,22 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
    */
   @SuppressWarnings("unchecked")
   public abstract static class ExtendableBuilder<
-        MessageType extends ExtendableMessage<MessageType>,
+        MessageType extends ExtendableMessage<MessageType, BuilderType>,
         BuilderType extends ExtendableBuilder<MessageType, BuilderType>>
       extends Builder<MessageType, BuilderType>
-      implements ExtendableMessageOrBuilder<MessageType> {
+      implements ExtendableMessageOrBuilder<MessageType, BuilderType> {
     protected ExtendableBuilder(MessageType defaultInstance) {
       super(defaultInstance);
     }
 
     private FieldSet<ExtensionDescriptor> extensions = FieldSet.emptySet();
     private boolean extensionsIsMutable;
+
+    // The default behavior. If a message has required fields in its subtree,
+    // the generated code will override.
+    public boolean isInitialized() {
+      return extensions.isInitialized();
+    }
 
     // For immutable message conversion.
     void internalSetExtensionSet(FieldSet<ExtensionDescriptor> extensions) {
@@ -991,7 +1062,10 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
    * Checks that the {@link Extension} is Lite and returns it as a
    * {@link GeneratedExtension}.
    */
-  private static <MessageType extends ExtendableMessage<MessageType>, T>
+  private static <
+      MessageType extends ExtendableMessage<MessageType, BuilderType>,
+      BuilderType extends ExtendableBuilder<MessageType, BuilderType>,
+      T>
     GeneratedExtension<MessageType, T> checkIsLite(
         ExtensionLite<MessageType, T> extension) {
     if (!extension.isLite()) {
@@ -999,5 +1073,44 @@ public abstract class GeneratedMessageLite extends AbstractMessageLite
     }
     
     return (GeneratedExtension<MessageType, T>) extension;
+  }
+  
+  /**
+   * Represents the state needed to implement *ForType methods. Generated code
+   * must provide a static singleton instance by adding it with
+   * {@link GeneratedMessageLite#onLoad(Class, PrototypeHolder)} on class load.
+   * <ul>
+   * <li>{@link #getDefaultInstanceForType()}
+   * <li>{@link #getParserForType()}
+   * <li>{@link #newBuilderForType()}
+   * </ul>
+   * This allows us to trade three generated methods for a static Map.
+   */
+  protected static class PrototypeHolder<
+      MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
+      BuilderType extends GeneratedMessageLite.Builder<
+          MessageType, BuilderType>> {
+    
+    private final MessageType defaultInstance;
+    private final Parser<MessageType> parser;
+    
+    public PrototypeHolder(
+        MessageType defaultInstance, Parser<MessageType> parser) {
+      this.defaultInstance = defaultInstance;
+      this.parser = parser;
+    }
+    
+    public MessageType getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    public Parser<MessageType> getParserForType() {
+      return parser;
+    }
+
+    @SuppressWarnings("unchecked") // Guaranteed by runtime.
+    public BuilderType newBuilderForType() {
+      return (BuilderType) defaultInstance.toBuilder();
+    }
   }
 }

@@ -222,15 +222,15 @@ class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message 
   // accessors -------------------------------------------------------
 
   // repeated .google.protobuf.FileDescriptorProto file = 1;
-  inline int file_size() const;
-  inline void clear_file();
+  int file_size() const;
+  void clear_file();
   static const int kFileFieldNumber = 1;
-  inline const ::google::protobuf::FileDescriptorProto& file(int index) const;
-  inline ::google::protobuf::FileDescriptorProto* mutable_file(int index);
-  inline ::google::protobuf::FileDescriptorProto* add_file();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
+  const ::google::protobuf::FileDescriptorProto& file(int index) const;
+  ::google::protobuf::FileDescriptorProto* mutable_file(int index);
+  ::google::protobuf::FileDescriptorProto* add_file();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
       file() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
       mutable_file();
 
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorSet)
@@ -314,146 +314,146 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   // accessors -------------------------------------------------------
 
   // optional string name = 1;
-  inline bool has_name() const;
-  inline void clear_name();
+  bool has_name() const;
+  void clear_name();
   static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
 
   // optional string package = 2;
-  inline bool has_package() const;
-  inline void clear_package();
+  bool has_package() const;
+  void clear_package();
   static const int kPackageFieldNumber = 2;
-  inline const ::std::string& package() const;
-  inline void set_package(const ::std::string& value);
-  inline void set_package(const char* value);
-  inline void set_package(const char* value, size_t size);
-  inline ::std::string* mutable_package();
-  inline ::std::string* release_package();
-  inline void set_allocated_package(::std::string* package);
+  const ::std::string& package() const;
+  void set_package(const ::std::string& value);
+  void set_package(const char* value);
+  void set_package(const char* value, size_t size);
+  ::std::string* mutable_package();
+  ::std::string* release_package();
+  void set_allocated_package(::std::string* package);
 
   // repeated string dependency = 3;
-  inline int dependency_size() const;
-  inline void clear_dependency();
+  int dependency_size() const;
+  void clear_dependency();
   static const int kDependencyFieldNumber = 3;
-  inline const ::std::string& dependency(int index) const;
-  inline ::std::string* mutable_dependency(int index);
-  inline void set_dependency(int index, const ::std::string& value);
-  inline void set_dependency(int index, const char* value);
-  inline void set_dependency(int index, const char* value, size_t size);
-  inline ::std::string* add_dependency();
-  inline void add_dependency(const ::std::string& value);
-  inline void add_dependency(const char* value);
-  inline void add_dependency(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& dependency() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_dependency();
+  const ::std::string& dependency(int index) const;
+  ::std::string* mutable_dependency(int index);
+  void set_dependency(int index, const ::std::string& value);
+  void set_dependency(int index, const char* value);
+  void set_dependency(int index, const char* value, size_t size);
+  ::std::string* add_dependency();
+  void add_dependency(const ::std::string& value);
+  void add_dependency(const char* value);
+  void add_dependency(const char* value, size_t size);
+  const ::google::protobuf::RepeatedPtrField< ::std::string>& dependency() const;
+  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_dependency();
 
   // repeated int32 public_dependency = 10;
-  inline int public_dependency_size() const;
-  inline void clear_public_dependency();
+  int public_dependency_size() const;
+  void clear_public_dependency();
   static const int kPublicDependencyFieldNumber = 10;
-  inline ::google::protobuf::int32 public_dependency(int index) const;
-  inline void set_public_dependency(int index, ::google::protobuf::int32 value);
-  inline void add_public_dependency(::google::protobuf::int32 value);
-  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+  ::google::protobuf::int32 public_dependency(int index) const;
+  void set_public_dependency(int index, ::google::protobuf::int32 value);
+  void add_public_dependency(::google::protobuf::int32 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
       public_dependency() const;
-  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_public_dependency();
 
   // repeated int32 weak_dependency = 11;
-  inline int weak_dependency_size() const;
-  inline void clear_weak_dependency();
+  int weak_dependency_size() const;
+  void clear_weak_dependency();
   static const int kWeakDependencyFieldNumber = 11;
-  inline ::google::protobuf::int32 weak_dependency(int index) const;
-  inline void set_weak_dependency(int index, ::google::protobuf::int32 value);
-  inline void add_weak_dependency(::google::protobuf::int32 value);
-  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+  ::google::protobuf::int32 weak_dependency(int index) const;
+  void set_weak_dependency(int index, ::google::protobuf::int32 value);
+  void add_weak_dependency(::google::protobuf::int32 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
       weak_dependency() const;
-  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_weak_dependency();
 
   // repeated .google.protobuf.DescriptorProto message_type = 4;
-  inline int message_type_size() const;
-  inline void clear_message_type();
+  int message_type_size() const;
+  void clear_message_type();
   static const int kMessageTypeFieldNumber = 4;
-  inline const ::google::protobuf::DescriptorProto& message_type(int index) const;
-  inline ::google::protobuf::DescriptorProto* mutable_message_type(int index);
-  inline ::google::protobuf::DescriptorProto* add_message_type();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto >&
+  const ::google::protobuf::DescriptorProto& message_type(int index) const;
+  ::google::protobuf::DescriptorProto* mutable_message_type(int index);
+  ::google::protobuf::DescriptorProto* add_message_type();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto >&
       message_type() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto >*
       mutable_message_type();
 
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
-  inline int enum_type_size() const;
-  inline void clear_enum_type();
+  int enum_type_size() const;
+  void clear_enum_type();
   static const int kEnumTypeFieldNumber = 5;
-  inline const ::google::protobuf::EnumDescriptorProto& enum_type(int index) const;
-  inline ::google::protobuf::EnumDescriptorProto* mutable_enum_type(int index);
-  inline ::google::protobuf::EnumDescriptorProto* add_enum_type();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto >&
+  const ::google::protobuf::EnumDescriptorProto& enum_type(int index) const;
+  ::google::protobuf::EnumDescriptorProto* mutable_enum_type(int index);
+  ::google::protobuf::EnumDescriptorProto* add_enum_type();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto >&
       enum_type() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto >*
       mutable_enum_type();
 
   // repeated .google.protobuf.ServiceDescriptorProto service = 6;
-  inline int service_size() const;
-  inline void clear_service();
+  int service_size() const;
+  void clear_service();
   static const int kServiceFieldNumber = 6;
-  inline const ::google::protobuf::ServiceDescriptorProto& service(int index) const;
-  inline ::google::protobuf::ServiceDescriptorProto* mutable_service(int index);
-  inline ::google::protobuf::ServiceDescriptorProto* add_service();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::ServiceDescriptorProto >&
+  const ::google::protobuf::ServiceDescriptorProto& service(int index) const;
+  ::google::protobuf::ServiceDescriptorProto* mutable_service(int index);
+  ::google::protobuf::ServiceDescriptorProto* add_service();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::ServiceDescriptorProto >&
       service() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::ServiceDescriptorProto >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::ServiceDescriptorProto >*
       mutable_service();
 
   // repeated .google.protobuf.FieldDescriptorProto extension = 7;
-  inline int extension_size() const;
-  inline void clear_extension();
+  int extension_size() const;
+  void clear_extension();
   static const int kExtensionFieldNumber = 7;
-  inline const ::google::protobuf::FieldDescriptorProto& extension(int index) const;
-  inline ::google::protobuf::FieldDescriptorProto* mutable_extension(int index);
-  inline ::google::protobuf::FieldDescriptorProto* add_extension();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >&
+  const ::google::protobuf::FieldDescriptorProto& extension(int index) const;
+  ::google::protobuf::FieldDescriptorProto* mutable_extension(int index);
+  ::google::protobuf::FieldDescriptorProto* add_extension();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >&
       extension() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >*
       mutable_extension();
 
   // optional .google.protobuf.FileOptions options = 8;
-  inline bool has_options() const;
-  inline void clear_options();
+  bool has_options() const;
+  void clear_options();
   static const int kOptionsFieldNumber = 8;
-  inline const ::google::protobuf::FileOptions& options() const;
-  inline ::google::protobuf::FileOptions* mutable_options();
-  inline ::google::protobuf::FileOptions* release_options();
-  inline void set_allocated_options(::google::protobuf::FileOptions* options);
+  const ::google::protobuf::FileOptions& options() const;
+  ::google::protobuf::FileOptions* mutable_options();
+  ::google::protobuf::FileOptions* release_options();
+  void set_allocated_options(::google::protobuf::FileOptions* options);
 
   // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
-  inline bool has_source_code_info() const;
-  inline void clear_source_code_info();
+  bool has_source_code_info() const;
+  void clear_source_code_info();
   static const int kSourceCodeInfoFieldNumber = 9;
-  inline const ::google::protobuf::SourceCodeInfo& source_code_info() const;
-  inline ::google::protobuf::SourceCodeInfo* mutable_source_code_info();
-  inline ::google::protobuf::SourceCodeInfo* release_source_code_info();
-  inline void set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* source_code_info);
+  const ::google::protobuf::SourceCodeInfo& source_code_info() const;
+  ::google::protobuf::SourceCodeInfo* mutable_source_code_info();
+  ::google::protobuf::SourceCodeInfo* release_source_code_info();
+  void set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* source_code_info);
 
   // optional string syntax = 12;
-  inline bool has_syntax() const;
-  inline void clear_syntax();
+  bool has_syntax() const;
+  void clear_syntax();
   static const int kSyntaxFieldNumber = 12;
-  inline const ::std::string& syntax() const;
-  inline void set_syntax(const ::std::string& value);
-  inline void set_syntax(const char* value);
-  inline void set_syntax(const char* value, size_t size);
-  inline ::std::string* mutable_syntax();
-  inline ::std::string* release_syntax();
-  inline void set_allocated_syntax(::std::string* syntax);
+  const ::std::string& syntax() const;
+  void set_syntax(const ::std::string& value);
+  void set_syntax(const char* value);
+  void set_syntax(const char* value, size_t size);
+  ::std::string* mutable_syntax();
+  ::std::string* release_syntax();
+  void set_allocated_syntax(::std::string* syntax);
 
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorProto)
  private:
@@ -557,18 +557,18 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
   // accessors -------------------------------------------------------
 
   // optional int32 start = 1;
-  inline bool has_start() const;
-  inline void clear_start();
+  bool has_start() const;
+  void clear_start();
   static const int kStartFieldNumber = 1;
-  inline ::google::protobuf::int32 start() const;
-  inline void set_start(::google::protobuf::int32 value);
+  ::google::protobuf::int32 start() const;
+  void set_start(::google::protobuf::int32 value);
 
   // optional int32 end = 2;
-  inline bool has_end() const;
-  inline void clear_end();
+  bool has_end() const;
+  void clear_end();
   static const int kEndFieldNumber = 2;
-  inline ::google::protobuf::int32 end() const;
-  inline void set_end(::google::protobuf::int32 value);
+  ::google::protobuf::int32 end() const;
+  void set_end(::google::protobuf::int32 value);
 
   // @@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto.ExtensionRange)
  private:
@@ -658,97 +658,97 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message {
   // accessors -------------------------------------------------------
 
   // optional string name = 1;
-  inline bool has_name() const;
-  inline void clear_name();
+  bool has_name() const;
+  void clear_name();
   static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
 
   // repeated .google.protobuf.FieldDescriptorProto field = 2;
-  inline int field_size() const;
-  inline void clear_field();
+  int field_size() const;
+  void clear_field();
   static const int kFieldFieldNumber = 2;
-  inline const ::google::protobuf::FieldDescriptorProto& field(int index) const;
-  inline ::google::protobuf::FieldDescriptorProto* mutable_field(int index);
-  inline ::google::protobuf::FieldDescriptorProto* add_field();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >&
+  const ::google::protobuf::FieldDescriptorProto& field(int index) const;
+  ::google::protobuf::FieldDescriptorProto* mutable_field(int index);
+  ::google::protobuf::FieldDescriptorProto* add_field();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >&
       field() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >*
       mutable_field();
 
   // repeated .google.protobuf.FieldDescriptorProto extension = 6;
-  inline int extension_size() const;
-  inline void clear_extension();
+  int extension_size() const;
+  void clear_extension();
   static const int kExtensionFieldNumber = 6;
-  inline const ::google::protobuf::FieldDescriptorProto& extension(int index) const;
-  inline ::google::protobuf::FieldDescriptorProto* mutable_extension(int index);
-  inline ::google::protobuf::FieldDescriptorProto* add_extension();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >&
+  const ::google::protobuf::FieldDescriptorProto& extension(int index) const;
+  ::google::protobuf::FieldDescriptorProto* mutable_extension(int index);
+  ::google::protobuf::FieldDescriptorProto* add_extension();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >&
       extension() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >*
       mutable_extension();
 
   // repeated .google.protobuf.DescriptorProto nested_type = 3;
-  inline int nested_type_size() const;
-  inline void clear_nested_type();
+  int nested_type_size() const;
+  void clear_nested_type();
   static const int kNestedTypeFieldNumber = 3;
-  inline const ::google::protobuf::DescriptorProto& nested_type(int index) const;
-  inline ::google::protobuf::DescriptorProto* mutable_nested_type(int index);
-  inline ::google::protobuf::DescriptorProto* add_nested_type();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto >&
+  const ::google::protobuf::DescriptorProto& nested_type(int index) const;
+  ::google::protobuf::DescriptorProto* mutable_nested_type(int index);
+  ::google::protobuf::DescriptorProto* add_nested_type();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto >&
       nested_type() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto >*
       mutable_nested_type();
 
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
-  inline int enum_type_size() const;
-  inline void clear_enum_type();
+  int enum_type_size() const;
+  void clear_enum_type();
   static const int kEnumTypeFieldNumber = 4;
-  inline const ::google::protobuf::EnumDescriptorProto& enum_type(int index) const;
-  inline ::google::protobuf::EnumDescriptorProto* mutable_enum_type(int index);
-  inline ::google::protobuf::EnumDescriptorProto* add_enum_type();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto >&
+  const ::google::protobuf::EnumDescriptorProto& enum_type(int index) const;
+  ::google::protobuf::EnumDescriptorProto* mutable_enum_type(int index);
+  ::google::protobuf::EnumDescriptorProto* add_enum_type();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto >&
       enum_type() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto >*
       mutable_enum_type();
 
   // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
-  inline int extension_range_size() const;
-  inline void clear_extension_range();
+  int extension_range_size() const;
+  void clear_extension_range();
   static const int kExtensionRangeFieldNumber = 5;
-  inline const ::google::protobuf::DescriptorProto_ExtensionRange& extension_range(int index) const;
-  inline ::google::protobuf::DescriptorProto_ExtensionRange* mutable_extension_range(int index);
-  inline ::google::protobuf::DescriptorProto_ExtensionRange* add_extension_range();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ExtensionRange >&
+  const ::google::protobuf::DescriptorProto_ExtensionRange& extension_range(int index) const;
+  ::google::protobuf::DescriptorProto_ExtensionRange* mutable_extension_range(int index);
+  ::google::protobuf::DescriptorProto_ExtensionRange* add_extension_range();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ExtensionRange >&
       extension_range() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ExtensionRange >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ExtensionRange >*
       mutable_extension_range();
 
   // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
-  inline int oneof_decl_size() const;
-  inline void clear_oneof_decl();
+  int oneof_decl_size() const;
+  void clear_oneof_decl();
   static const int kOneofDeclFieldNumber = 8;
-  inline const ::google::protobuf::OneofDescriptorProto& oneof_decl(int index) const;
-  inline ::google::protobuf::OneofDescriptorProto* mutable_oneof_decl(int index);
-  inline ::google::protobuf::OneofDescriptorProto* add_oneof_decl();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::OneofDescriptorProto >&
+  const ::google::protobuf::OneofDescriptorProto& oneof_decl(int index) const;
+  ::google::protobuf::OneofDescriptorProto* mutable_oneof_decl(int index);
+  ::google::protobuf::OneofDescriptorProto* add_oneof_decl();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::OneofDescriptorProto >&
       oneof_decl() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::OneofDescriptorProto >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::OneofDescriptorProto >*
       mutable_oneof_decl();
 
   // optional .google.protobuf.MessageOptions options = 7;
-  inline bool has_options() const;
-  inline void clear_options();
+  bool has_options() const;
+  void clear_options();
   static const int kOptionsFieldNumber = 7;
-  inline const ::google::protobuf::MessageOptions& options() const;
-  inline ::google::protobuf::MessageOptions* mutable_options();
-  inline ::google::protobuf::MessageOptions* release_options();
-  inline void set_allocated_options(::google::protobuf::MessageOptions* options);
+  const ::google::protobuf::MessageOptions& options() const;
+  ::google::protobuf::MessageOptions* mutable_options();
+  ::google::protobuf::MessageOptions* release_options();
+  void set_allocated_options(::google::protobuf::MessageOptions* options);
 
   // @@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto)
  private:
@@ -907,89 +907,89 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   // accessors -------------------------------------------------------
 
   // optional string name = 1;
-  inline bool has_name() const;
-  inline void clear_name();
+  bool has_name() const;
+  void clear_name();
   static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
 
   // optional int32 number = 3;
-  inline bool has_number() const;
-  inline void clear_number();
+  bool has_number() const;
+  void clear_number();
   static const int kNumberFieldNumber = 3;
-  inline ::google::protobuf::int32 number() const;
-  inline void set_number(::google::protobuf::int32 value);
+  ::google::protobuf::int32 number() const;
+  void set_number(::google::protobuf::int32 value);
 
   // optional .google.protobuf.FieldDescriptorProto.Label label = 4;
-  inline bool has_label() const;
-  inline void clear_label();
+  bool has_label() const;
+  void clear_label();
   static const int kLabelFieldNumber = 4;
-  inline ::google::protobuf::FieldDescriptorProto_Label label() const;
-  inline void set_label(::google::protobuf::FieldDescriptorProto_Label value);
+  ::google::protobuf::FieldDescriptorProto_Label label() const;
+  void set_label(::google::protobuf::FieldDescriptorProto_Label value);
 
   // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
-  inline bool has_type() const;
-  inline void clear_type();
+  bool has_type() const;
+  void clear_type();
   static const int kTypeFieldNumber = 5;
-  inline ::google::protobuf::FieldDescriptorProto_Type type() const;
-  inline void set_type(::google::protobuf::FieldDescriptorProto_Type value);
+  ::google::protobuf::FieldDescriptorProto_Type type() const;
+  void set_type(::google::protobuf::FieldDescriptorProto_Type value);
 
   // optional string type_name = 6;
-  inline bool has_type_name() const;
-  inline void clear_type_name();
+  bool has_type_name() const;
+  void clear_type_name();
   static const int kTypeNameFieldNumber = 6;
-  inline const ::std::string& type_name() const;
-  inline void set_type_name(const ::std::string& value);
-  inline void set_type_name(const char* value);
-  inline void set_type_name(const char* value, size_t size);
-  inline ::std::string* mutable_type_name();
-  inline ::std::string* release_type_name();
-  inline void set_allocated_type_name(::std::string* type_name);
+  const ::std::string& type_name() const;
+  void set_type_name(const ::std::string& value);
+  void set_type_name(const char* value);
+  void set_type_name(const char* value, size_t size);
+  ::std::string* mutable_type_name();
+  ::std::string* release_type_name();
+  void set_allocated_type_name(::std::string* type_name);
 
   // optional string extendee = 2;
-  inline bool has_extendee() const;
-  inline void clear_extendee();
+  bool has_extendee() const;
+  void clear_extendee();
   static const int kExtendeeFieldNumber = 2;
-  inline const ::std::string& extendee() const;
-  inline void set_extendee(const ::std::string& value);
-  inline void set_extendee(const char* value);
-  inline void set_extendee(const char* value, size_t size);
-  inline ::std::string* mutable_extendee();
-  inline ::std::string* release_extendee();
-  inline void set_allocated_extendee(::std::string* extendee);
+  const ::std::string& extendee() const;
+  void set_extendee(const ::std::string& value);
+  void set_extendee(const char* value);
+  void set_extendee(const char* value, size_t size);
+  ::std::string* mutable_extendee();
+  ::std::string* release_extendee();
+  void set_allocated_extendee(::std::string* extendee);
 
   // optional string default_value = 7;
-  inline bool has_default_value() const;
-  inline void clear_default_value();
+  bool has_default_value() const;
+  void clear_default_value();
   static const int kDefaultValueFieldNumber = 7;
-  inline const ::std::string& default_value() const;
-  inline void set_default_value(const ::std::string& value);
-  inline void set_default_value(const char* value);
-  inline void set_default_value(const char* value, size_t size);
-  inline ::std::string* mutable_default_value();
-  inline ::std::string* release_default_value();
-  inline void set_allocated_default_value(::std::string* default_value);
+  const ::std::string& default_value() const;
+  void set_default_value(const ::std::string& value);
+  void set_default_value(const char* value);
+  void set_default_value(const char* value, size_t size);
+  ::std::string* mutable_default_value();
+  ::std::string* release_default_value();
+  void set_allocated_default_value(::std::string* default_value);
 
   // optional int32 oneof_index = 9;
-  inline bool has_oneof_index() const;
-  inline void clear_oneof_index();
+  bool has_oneof_index() const;
+  void clear_oneof_index();
   static const int kOneofIndexFieldNumber = 9;
-  inline ::google::protobuf::int32 oneof_index() const;
-  inline void set_oneof_index(::google::protobuf::int32 value);
+  ::google::protobuf::int32 oneof_index() const;
+  void set_oneof_index(::google::protobuf::int32 value);
 
   // optional .google.protobuf.FieldOptions options = 8;
-  inline bool has_options() const;
-  inline void clear_options();
+  bool has_options() const;
+  void clear_options();
   static const int kOptionsFieldNumber = 8;
-  inline const ::google::protobuf::FieldOptions& options() const;
-  inline ::google::protobuf::FieldOptions* mutable_options();
-  inline ::google::protobuf::FieldOptions* release_options();
-  inline void set_allocated_options(::google::protobuf::FieldOptions* options);
+  const ::google::protobuf::FieldOptions& options() const;
+  ::google::protobuf::FieldOptions* mutable_options();
+  ::google::protobuf::FieldOptions* release_options();
+  void set_allocated_options(::google::protobuf::FieldOptions* options);
 
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldDescriptorProto)
  private:
@@ -1098,16 +1098,16 @@ class LIBPROTOBUF_EXPORT OneofDescriptorProto : public ::google::protobuf::Messa
   // accessors -------------------------------------------------------
 
   // optional string name = 1;
-  inline bool has_name() const;
-  inline void clear_name();
+  bool has_name() const;
+  void clear_name();
   static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
 
   // @@protoc_insertion_point(class_scope:google.protobuf.OneofDescriptorProto)
  private:
@@ -1192,37 +1192,37 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
   // accessors -------------------------------------------------------
 
   // optional string name = 1;
-  inline bool has_name() const;
-  inline void clear_name();
+  bool has_name() const;
+  void clear_name();
   static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
 
   // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
-  inline int value_size() const;
-  inline void clear_value();
+  int value_size() const;
+  void clear_value();
   static const int kValueFieldNumber = 2;
-  inline const ::google::protobuf::EnumValueDescriptorProto& value(int index) const;
-  inline ::google::protobuf::EnumValueDescriptorProto* mutable_value(int index);
-  inline ::google::protobuf::EnumValueDescriptorProto* add_value();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto >&
+  const ::google::protobuf::EnumValueDescriptorProto& value(int index) const;
+  ::google::protobuf::EnumValueDescriptorProto* mutable_value(int index);
+  ::google::protobuf::EnumValueDescriptorProto* add_value();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto >&
       value() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto >*
       mutable_value();
 
   // optional .google.protobuf.EnumOptions options = 3;
-  inline bool has_options() const;
-  inline void clear_options();
+  bool has_options() const;
+  void clear_options();
   static const int kOptionsFieldNumber = 3;
-  inline const ::google::protobuf::EnumOptions& options() const;
-  inline ::google::protobuf::EnumOptions* mutable_options();
-  inline ::google::protobuf::EnumOptions* release_options();
-  inline void set_allocated_options(::google::protobuf::EnumOptions* options);
+  const ::google::protobuf::EnumOptions& options() const;
+  ::google::protobuf::EnumOptions* mutable_options();
+  ::google::protobuf::EnumOptions* release_options();
+  void set_allocated_options(::google::protobuf::EnumOptions* options);
 
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumDescriptorProto)
  private:
@@ -1311,32 +1311,32 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
   // accessors -------------------------------------------------------
 
   // optional string name = 1;
-  inline bool has_name() const;
-  inline void clear_name();
+  bool has_name() const;
+  void clear_name();
   static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
 
   // optional int32 number = 2;
-  inline bool has_number() const;
-  inline void clear_number();
+  bool has_number() const;
+  void clear_number();
   static const int kNumberFieldNumber = 2;
-  inline ::google::protobuf::int32 number() const;
-  inline void set_number(::google::protobuf::int32 value);
+  ::google::protobuf::int32 number() const;
+  void set_number(::google::protobuf::int32 value);
 
   // optional .google.protobuf.EnumValueOptions options = 3;
-  inline bool has_options() const;
-  inline void clear_options();
+  bool has_options() const;
+  void clear_options();
   static const int kOptionsFieldNumber = 3;
-  inline const ::google::protobuf::EnumValueOptions& options() const;
-  inline ::google::protobuf::EnumValueOptions* mutable_options();
-  inline ::google::protobuf::EnumValueOptions* release_options();
-  inline void set_allocated_options(::google::protobuf::EnumValueOptions* options);
+  const ::google::protobuf::EnumValueOptions& options() const;
+  ::google::protobuf::EnumValueOptions* mutable_options();
+  ::google::protobuf::EnumValueOptions* release_options();
+  void set_allocated_options(::google::protobuf::EnumValueOptions* options);
 
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumValueDescriptorProto)
  private:
@@ -1427,37 +1427,37 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
   // accessors -------------------------------------------------------
 
   // optional string name = 1;
-  inline bool has_name() const;
-  inline void clear_name();
+  bool has_name() const;
+  void clear_name();
   static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
 
   // repeated .google.protobuf.MethodDescriptorProto method = 2;
-  inline int method_size() const;
-  inline void clear_method();
+  int method_size() const;
+  void clear_method();
   static const int kMethodFieldNumber = 2;
-  inline const ::google::protobuf::MethodDescriptorProto& method(int index) const;
-  inline ::google::protobuf::MethodDescriptorProto* mutable_method(int index);
-  inline ::google::protobuf::MethodDescriptorProto* add_method();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto >&
+  const ::google::protobuf::MethodDescriptorProto& method(int index) const;
+  ::google::protobuf::MethodDescriptorProto* mutable_method(int index);
+  ::google::protobuf::MethodDescriptorProto* add_method();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto >&
       method() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto >*
       mutable_method();
 
   // optional .google.protobuf.ServiceOptions options = 3;
-  inline bool has_options() const;
-  inline void clear_options();
+  bool has_options() const;
+  void clear_options();
   static const int kOptionsFieldNumber = 3;
-  inline const ::google::protobuf::ServiceOptions& options() const;
-  inline ::google::protobuf::ServiceOptions* mutable_options();
-  inline ::google::protobuf::ServiceOptions* release_options();
-  inline void set_allocated_options(::google::protobuf::ServiceOptions* options);
+  const ::google::protobuf::ServiceOptions& options() const;
+  ::google::protobuf::ServiceOptions* mutable_options();
+  ::google::protobuf::ServiceOptions* release_options();
+  void set_allocated_options(::google::protobuf::ServiceOptions* options);
 
   // @@protoc_insertion_point(class_scope:google.protobuf.ServiceDescriptorProto)
  private:
@@ -1546,63 +1546,63 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   // accessors -------------------------------------------------------
 
   // optional string name = 1;
-  inline bool has_name() const;
-  inline void clear_name();
+  bool has_name() const;
+  void clear_name();
   static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
 
   // optional string input_type = 2;
-  inline bool has_input_type() const;
-  inline void clear_input_type();
+  bool has_input_type() const;
+  void clear_input_type();
   static const int kInputTypeFieldNumber = 2;
-  inline const ::std::string& input_type() const;
-  inline void set_input_type(const ::std::string& value);
-  inline void set_input_type(const char* value);
-  inline void set_input_type(const char* value, size_t size);
-  inline ::std::string* mutable_input_type();
-  inline ::std::string* release_input_type();
-  inline void set_allocated_input_type(::std::string* input_type);
+  const ::std::string& input_type() const;
+  void set_input_type(const ::std::string& value);
+  void set_input_type(const char* value);
+  void set_input_type(const char* value, size_t size);
+  ::std::string* mutable_input_type();
+  ::std::string* release_input_type();
+  void set_allocated_input_type(::std::string* input_type);
 
   // optional string output_type = 3;
-  inline bool has_output_type() const;
-  inline void clear_output_type();
+  bool has_output_type() const;
+  void clear_output_type();
   static const int kOutputTypeFieldNumber = 3;
-  inline const ::std::string& output_type() const;
-  inline void set_output_type(const ::std::string& value);
-  inline void set_output_type(const char* value);
-  inline void set_output_type(const char* value, size_t size);
-  inline ::std::string* mutable_output_type();
-  inline ::std::string* release_output_type();
-  inline void set_allocated_output_type(::std::string* output_type);
+  const ::std::string& output_type() const;
+  void set_output_type(const ::std::string& value);
+  void set_output_type(const char* value);
+  void set_output_type(const char* value, size_t size);
+  ::std::string* mutable_output_type();
+  ::std::string* release_output_type();
+  void set_allocated_output_type(::std::string* output_type);
 
   // optional .google.protobuf.MethodOptions options = 4;
-  inline bool has_options() const;
-  inline void clear_options();
+  bool has_options() const;
+  void clear_options();
   static const int kOptionsFieldNumber = 4;
-  inline const ::google::protobuf::MethodOptions& options() const;
-  inline ::google::protobuf::MethodOptions* mutable_options();
-  inline ::google::protobuf::MethodOptions* release_options();
-  inline void set_allocated_options(::google::protobuf::MethodOptions* options);
+  const ::google::protobuf::MethodOptions& options() const;
+  ::google::protobuf::MethodOptions* mutable_options();
+  ::google::protobuf::MethodOptions* release_options();
+  void set_allocated_options(::google::protobuf::MethodOptions* options);
 
   // optional bool client_streaming = 5 [default = false];
-  inline bool has_client_streaming() const;
-  inline void clear_client_streaming();
+  bool has_client_streaming() const;
+  void clear_client_streaming();
   static const int kClientStreamingFieldNumber = 5;
-  inline bool client_streaming() const;
-  inline void set_client_streaming(bool value);
+  bool client_streaming() const;
+  void set_client_streaming(bool value);
 
   // optional bool server_streaming = 6 [default = false];
-  inline bool has_server_streaming() const;
-  inline void clear_server_streaming();
+  bool has_server_streaming() const;
+  void clear_server_streaming();
   static const int kServerStreamingFieldNumber = 6;
-  inline bool server_streaming() const;
-  inline void set_server_streaming(bool value);
+  bool server_streaming() const;
+  void set_server_streaming(bool value);
 
   // @@protoc_insertion_point(class_scope:google.protobuf.MethodDescriptorProto)
  private:
@@ -1727,114 +1727,126 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   // accessors -------------------------------------------------------
 
   // optional string java_package = 1;
-  inline bool has_java_package() const;
-  inline void clear_java_package();
+  bool has_java_package() const;
+  void clear_java_package();
   static const int kJavaPackageFieldNumber = 1;
-  inline const ::std::string& java_package() const;
-  inline void set_java_package(const ::std::string& value);
-  inline void set_java_package(const char* value);
-  inline void set_java_package(const char* value, size_t size);
-  inline ::std::string* mutable_java_package();
-  inline ::std::string* release_java_package();
-  inline void set_allocated_java_package(::std::string* java_package);
+  const ::std::string& java_package() const;
+  void set_java_package(const ::std::string& value);
+  void set_java_package(const char* value);
+  void set_java_package(const char* value, size_t size);
+  ::std::string* mutable_java_package();
+  ::std::string* release_java_package();
+  void set_allocated_java_package(::std::string* java_package);
 
   // optional string java_outer_classname = 8;
-  inline bool has_java_outer_classname() const;
-  inline void clear_java_outer_classname();
+  bool has_java_outer_classname() const;
+  void clear_java_outer_classname();
   static const int kJavaOuterClassnameFieldNumber = 8;
-  inline const ::std::string& java_outer_classname() const;
-  inline void set_java_outer_classname(const ::std::string& value);
-  inline void set_java_outer_classname(const char* value);
-  inline void set_java_outer_classname(const char* value, size_t size);
-  inline ::std::string* mutable_java_outer_classname();
-  inline ::std::string* release_java_outer_classname();
-  inline void set_allocated_java_outer_classname(::std::string* java_outer_classname);
+  const ::std::string& java_outer_classname() const;
+  void set_java_outer_classname(const ::std::string& value);
+  void set_java_outer_classname(const char* value);
+  void set_java_outer_classname(const char* value, size_t size);
+  ::std::string* mutable_java_outer_classname();
+  ::std::string* release_java_outer_classname();
+  void set_allocated_java_outer_classname(::std::string* java_outer_classname);
 
   // optional bool java_multiple_files = 10 [default = false];
-  inline bool has_java_multiple_files() const;
-  inline void clear_java_multiple_files();
+  bool has_java_multiple_files() const;
+  void clear_java_multiple_files();
   static const int kJavaMultipleFilesFieldNumber = 10;
-  inline bool java_multiple_files() const;
-  inline void set_java_multiple_files(bool value);
+  bool java_multiple_files() const;
+  void set_java_multiple_files(bool value);
 
   // optional bool java_generate_equals_and_hash = 20 [default = false];
-  inline bool has_java_generate_equals_and_hash() const;
-  inline void clear_java_generate_equals_and_hash();
+  bool has_java_generate_equals_and_hash() const;
+  void clear_java_generate_equals_and_hash();
   static const int kJavaGenerateEqualsAndHashFieldNumber = 20;
-  inline bool java_generate_equals_and_hash() const;
-  inline void set_java_generate_equals_and_hash(bool value);
+  bool java_generate_equals_and_hash() const;
+  void set_java_generate_equals_and_hash(bool value);
 
   // optional bool java_string_check_utf8 = 27 [default = false];
-  inline bool has_java_string_check_utf8() const;
-  inline void clear_java_string_check_utf8();
+  bool has_java_string_check_utf8() const;
+  void clear_java_string_check_utf8();
   static const int kJavaStringCheckUtf8FieldNumber = 27;
-  inline bool java_string_check_utf8() const;
-  inline void set_java_string_check_utf8(bool value);
+  bool java_string_check_utf8() const;
+  void set_java_string_check_utf8(bool value);
 
   // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
-  inline bool has_optimize_for() const;
-  inline void clear_optimize_for();
+  bool has_optimize_for() const;
+  void clear_optimize_for();
   static const int kOptimizeForFieldNumber = 9;
-  inline ::google::protobuf::FileOptions_OptimizeMode optimize_for() const;
-  inline void set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value);
+  ::google::protobuf::FileOptions_OptimizeMode optimize_for() const;
+  void set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value);
 
   // optional string go_package = 11;
-  inline bool has_go_package() const;
-  inline void clear_go_package();
+  bool has_go_package() const;
+  void clear_go_package();
   static const int kGoPackageFieldNumber = 11;
-  inline const ::std::string& go_package() const;
-  inline void set_go_package(const ::std::string& value);
-  inline void set_go_package(const char* value);
-  inline void set_go_package(const char* value, size_t size);
-  inline ::std::string* mutable_go_package();
-  inline ::std::string* release_go_package();
-  inline void set_allocated_go_package(::std::string* go_package);
+  const ::std::string& go_package() const;
+  void set_go_package(const ::std::string& value);
+  void set_go_package(const char* value);
+  void set_go_package(const char* value, size_t size);
+  ::std::string* mutable_go_package();
+  ::std::string* release_go_package();
+  void set_allocated_go_package(::std::string* go_package);
 
   // optional bool cc_generic_services = 16 [default = false];
-  inline bool has_cc_generic_services() const;
-  inline void clear_cc_generic_services();
+  bool has_cc_generic_services() const;
+  void clear_cc_generic_services();
   static const int kCcGenericServicesFieldNumber = 16;
-  inline bool cc_generic_services() const;
-  inline void set_cc_generic_services(bool value);
+  bool cc_generic_services() const;
+  void set_cc_generic_services(bool value);
 
   // optional bool java_generic_services = 17 [default = false];
-  inline bool has_java_generic_services() const;
-  inline void clear_java_generic_services();
+  bool has_java_generic_services() const;
+  void clear_java_generic_services();
   static const int kJavaGenericServicesFieldNumber = 17;
-  inline bool java_generic_services() const;
-  inline void set_java_generic_services(bool value);
+  bool java_generic_services() const;
+  void set_java_generic_services(bool value);
 
   // optional bool py_generic_services = 18 [default = false];
-  inline bool has_py_generic_services() const;
-  inline void clear_py_generic_services();
+  bool has_py_generic_services() const;
+  void clear_py_generic_services();
   static const int kPyGenericServicesFieldNumber = 18;
-  inline bool py_generic_services() const;
-  inline void set_py_generic_services(bool value);
+  bool py_generic_services() const;
+  void set_py_generic_services(bool value);
 
   // optional bool deprecated = 23 [default = false];
-  inline bool has_deprecated() const;
-  inline void clear_deprecated();
+  bool has_deprecated() const;
+  void clear_deprecated();
   static const int kDeprecatedFieldNumber = 23;
-  inline bool deprecated() const;
-  inline void set_deprecated(bool value);
+  bool deprecated() const;
+  void set_deprecated(bool value);
 
   // optional bool cc_enable_arenas = 31 [default = false];
-  inline bool has_cc_enable_arenas() const;
-  inline void clear_cc_enable_arenas();
+  bool has_cc_enable_arenas() const;
+  void clear_cc_enable_arenas();
   static const int kCcEnableArenasFieldNumber = 31;
-  inline bool cc_enable_arenas() const;
-  inline void set_cc_enable_arenas(bool value);
+  bool cc_enable_arenas() const;
+  void set_cc_enable_arenas(bool value);
+
+  // optional string objc_class_prefix = 36;
+  bool has_objc_class_prefix() const;
+  void clear_objc_class_prefix();
+  static const int kObjcClassPrefixFieldNumber = 36;
+  const ::std::string& objc_class_prefix() const;
+  void set_objc_class_prefix(const ::std::string& value);
+  void set_objc_class_prefix(const char* value);
+  void set_objc_class_prefix(const char* value, size_t size);
+  ::std::string* mutable_objc_class_prefix();
+  ::std::string* release_objc_class_prefix();
+  void set_allocated_objc_class_prefix(::std::string* objc_class_prefix);
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  inline int uninterpreted_option_size() const;
-  inline void clear_uninterpreted_option();
+  int uninterpreted_option_size() const;
+  void clear_uninterpreted_option();
   static const int kUninterpretedOptionFieldNumber = 999;
-  inline const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
-  inline ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
-  inline ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
+  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
+  ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
       uninterpreted_option() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
       mutable_uninterpreted_option();
 
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(FileOptions)
@@ -1864,6 +1876,8 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   inline void clear_has_deprecated();
   inline void set_has_cc_enable_arenas();
   inline void clear_has_cc_enable_arenas();
+  inline void set_has_objc_class_prefix();
+  inline void clear_has_objc_class_prefix();
 
   ::google::protobuf::internal::ExtensionSet _extensions_;
 
@@ -1878,6 +1892,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   bool cc_generic_services_;
   int optimize_for_;
   ::google::protobuf::internal::ArenaStringPtr go_package_;
+  ::google::protobuf::internal::ArenaStringPtr objc_class_prefix_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
   bool java_generic_services_;
   bool py_generic_services_;
@@ -1957,43 +1972,43 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message {
   // accessors -------------------------------------------------------
 
   // optional bool message_set_wire_format = 1 [default = false];
-  inline bool has_message_set_wire_format() const;
-  inline void clear_message_set_wire_format();
+  bool has_message_set_wire_format() const;
+  void clear_message_set_wire_format();
   static const int kMessageSetWireFormatFieldNumber = 1;
-  inline bool message_set_wire_format() const;
-  inline void set_message_set_wire_format(bool value);
+  bool message_set_wire_format() const;
+  void set_message_set_wire_format(bool value);
 
   // optional bool no_standard_descriptor_accessor = 2 [default = false];
-  inline bool has_no_standard_descriptor_accessor() const;
-  inline void clear_no_standard_descriptor_accessor();
+  bool has_no_standard_descriptor_accessor() const;
+  void clear_no_standard_descriptor_accessor();
   static const int kNoStandardDescriptorAccessorFieldNumber = 2;
-  inline bool no_standard_descriptor_accessor() const;
-  inline void set_no_standard_descriptor_accessor(bool value);
+  bool no_standard_descriptor_accessor() const;
+  void set_no_standard_descriptor_accessor(bool value);
 
   // optional bool deprecated = 3 [default = false];
-  inline bool has_deprecated() const;
-  inline void clear_deprecated();
+  bool has_deprecated() const;
+  void clear_deprecated();
   static const int kDeprecatedFieldNumber = 3;
-  inline bool deprecated() const;
-  inline void set_deprecated(bool value);
+  bool deprecated() const;
+  void set_deprecated(bool value);
 
   // optional bool map_entry = 7;
-  inline bool has_map_entry() const;
-  inline void clear_map_entry();
+  bool has_map_entry() const;
+  void clear_map_entry();
   static const int kMapEntryFieldNumber = 7;
-  inline bool map_entry() const;
-  inline void set_map_entry(bool value);
+  bool map_entry() const;
+  void set_map_entry(bool value);
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  inline int uninterpreted_option_size() const;
-  inline void clear_uninterpreted_option();
+  int uninterpreted_option_size() const;
+  void clear_uninterpreted_option();
   static const int kUninterpretedOptionFieldNumber = 999;
-  inline const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
-  inline ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
-  inline ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
+  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
+  ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
       uninterpreted_option() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
       mutable_uninterpreted_option();
 
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(MessageOptions)
@@ -2117,50 +2132,50 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
   // accessors -------------------------------------------------------
 
   // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
-  inline bool has_ctype() const;
-  inline void clear_ctype();
+  bool has_ctype() const;
+  void clear_ctype();
   static const int kCtypeFieldNumber = 1;
-  inline ::google::protobuf::FieldOptions_CType ctype() const;
-  inline void set_ctype(::google::protobuf::FieldOptions_CType value);
+  ::google::protobuf::FieldOptions_CType ctype() const;
+  void set_ctype(::google::protobuf::FieldOptions_CType value);
 
   // optional bool packed = 2;
-  inline bool has_packed() const;
-  inline void clear_packed();
+  bool has_packed() const;
+  void clear_packed();
   static const int kPackedFieldNumber = 2;
-  inline bool packed() const;
-  inline void set_packed(bool value);
+  bool packed() const;
+  void set_packed(bool value);
 
   // optional bool lazy = 5 [default = false];
-  inline bool has_lazy() const;
-  inline void clear_lazy();
+  bool has_lazy() const;
+  void clear_lazy();
   static const int kLazyFieldNumber = 5;
-  inline bool lazy() const;
-  inline void set_lazy(bool value);
+  bool lazy() const;
+  void set_lazy(bool value);
 
   // optional bool deprecated = 3 [default = false];
-  inline bool has_deprecated() const;
-  inline void clear_deprecated();
+  bool has_deprecated() const;
+  void clear_deprecated();
   static const int kDeprecatedFieldNumber = 3;
-  inline bool deprecated() const;
-  inline void set_deprecated(bool value);
+  bool deprecated() const;
+  void set_deprecated(bool value);
 
   // optional bool weak = 10 [default = false];
-  inline bool has_weak() const;
-  inline void clear_weak();
+  bool has_weak() const;
+  void clear_weak();
   static const int kWeakFieldNumber = 10;
-  inline bool weak() const;
-  inline void set_weak(bool value);
+  bool weak() const;
+  void set_weak(bool value);
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  inline int uninterpreted_option_size() const;
-  inline void clear_uninterpreted_option();
+  int uninterpreted_option_size() const;
+  void clear_uninterpreted_option();
   static const int kUninterpretedOptionFieldNumber = 999;
-  inline const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
-  inline ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
-  inline ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
+  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
+  ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
       uninterpreted_option() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
       mutable_uninterpreted_option();
 
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(FieldOptions)
@@ -2262,29 +2277,29 @@ class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message {
   // accessors -------------------------------------------------------
 
   // optional bool allow_alias = 2;
-  inline bool has_allow_alias() const;
-  inline void clear_allow_alias();
+  bool has_allow_alias() const;
+  void clear_allow_alias();
   static const int kAllowAliasFieldNumber = 2;
-  inline bool allow_alias() const;
-  inline void set_allow_alias(bool value);
+  bool allow_alias() const;
+  void set_allow_alias(bool value);
 
   // optional bool deprecated = 3 [default = false];
-  inline bool has_deprecated() const;
-  inline void clear_deprecated();
+  bool has_deprecated() const;
+  void clear_deprecated();
   static const int kDeprecatedFieldNumber = 3;
-  inline bool deprecated() const;
-  inline void set_deprecated(bool value);
+  bool deprecated() const;
+  void set_deprecated(bool value);
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  inline int uninterpreted_option_size() const;
-  inline void clear_uninterpreted_option();
+  int uninterpreted_option_size() const;
+  void clear_uninterpreted_option();
   static const int kUninterpretedOptionFieldNumber = 999;
-  inline const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
-  inline ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
-  inline ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
+  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
+  ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
       uninterpreted_option() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
       mutable_uninterpreted_option();
 
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(EnumOptions)
@@ -2377,22 +2392,22 @@ class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message {
   // accessors -------------------------------------------------------
 
   // optional bool deprecated = 1 [default = false];
-  inline bool has_deprecated() const;
-  inline void clear_deprecated();
+  bool has_deprecated() const;
+  void clear_deprecated();
   static const int kDeprecatedFieldNumber = 1;
-  inline bool deprecated() const;
-  inline void set_deprecated(bool value);
+  bool deprecated() const;
+  void set_deprecated(bool value);
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  inline int uninterpreted_option_size() const;
-  inline void clear_uninterpreted_option();
+  int uninterpreted_option_size() const;
+  void clear_uninterpreted_option();
   static const int kUninterpretedOptionFieldNumber = 999;
-  inline const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
-  inline ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
-  inline ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
+  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
+  ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
       uninterpreted_option() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
       mutable_uninterpreted_option();
 
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(EnumValueOptions)
@@ -2482,22 +2497,22 @@ class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message {
   // accessors -------------------------------------------------------
 
   // optional bool deprecated = 33 [default = false];
-  inline bool has_deprecated() const;
-  inline void clear_deprecated();
+  bool has_deprecated() const;
+  void clear_deprecated();
   static const int kDeprecatedFieldNumber = 33;
-  inline bool deprecated() const;
-  inline void set_deprecated(bool value);
+  bool deprecated() const;
+  void set_deprecated(bool value);
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  inline int uninterpreted_option_size() const;
-  inline void clear_uninterpreted_option();
+  int uninterpreted_option_size() const;
+  void clear_uninterpreted_option();
   static const int kUninterpretedOptionFieldNumber = 999;
-  inline const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
-  inline ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
-  inline ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
+  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
+  ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
       uninterpreted_option() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
       mutable_uninterpreted_option();
 
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(ServiceOptions)
@@ -2587,22 +2602,22 @@ class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message {
   // accessors -------------------------------------------------------
 
   // optional bool deprecated = 33 [default = false];
-  inline bool has_deprecated() const;
-  inline void clear_deprecated();
+  bool has_deprecated() const;
+  void clear_deprecated();
   static const int kDeprecatedFieldNumber = 33;
-  inline bool deprecated() const;
-  inline void set_deprecated(bool value);
+  bool deprecated() const;
+  void set_deprecated(bool value);
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  inline int uninterpreted_option_size() const;
-  inline void clear_uninterpreted_option();
+  int uninterpreted_option_size() const;
+  void clear_uninterpreted_option();
   static const int kUninterpretedOptionFieldNumber = 999;
-  inline const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
-  inline ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
-  inline ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
+  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
+  ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
       uninterpreted_option() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
       mutable_uninterpreted_option();
 
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(MethodOptions)
@@ -2692,23 +2707,23 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
   // accessors -------------------------------------------------------
 
   // required string name_part = 1;
-  inline bool has_name_part() const;
-  inline void clear_name_part();
+  bool has_name_part() const;
+  void clear_name_part();
   static const int kNamePartFieldNumber = 1;
-  inline const ::std::string& name_part() const;
-  inline void set_name_part(const ::std::string& value);
-  inline void set_name_part(const char* value);
-  inline void set_name_part(const char* value, size_t size);
-  inline ::std::string* mutable_name_part();
-  inline ::std::string* release_name_part();
-  inline void set_allocated_name_part(::std::string* name_part);
+  const ::std::string& name_part() const;
+  void set_name_part(const ::std::string& value);
+  void set_name_part(const char* value);
+  void set_name_part(const char* value, size_t size);
+  ::std::string* mutable_name_part();
+  ::std::string* release_name_part();
+  void set_allocated_name_part(::std::string* name_part);
 
   // required bool is_extension = 2;
-  inline bool has_is_extension() const;
-  inline void clear_is_extension();
+  bool has_is_extension() const;
+  void clear_is_extension();
   static const int kIsExtensionFieldNumber = 2;
-  inline bool is_extension() const;
-  inline void set_is_extension(bool value);
+  bool is_extension() const;
+  void set_is_extension(bool value);
 
   // @@protoc_insertion_point(class_scope:google.protobuf.UninterpretedOption.NamePart)
  private:
@@ -2801,73 +2816,73 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
   // accessors -------------------------------------------------------
 
   // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
-  inline int name_size() const;
-  inline void clear_name();
+  int name_size() const;
+  void clear_name();
   static const int kNameFieldNumber = 2;
-  inline const ::google::protobuf::UninterpretedOption_NamePart& name(int index) const;
-  inline ::google::protobuf::UninterpretedOption_NamePart* mutable_name(int index);
-  inline ::google::protobuf::UninterpretedOption_NamePart* add_name();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption_NamePart >&
+  const ::google::protobuf::UninterpretedOption_NamePart& name(int index) const;
+  ::google::protobuf::UninterpretedOption_NamePart* mutable_name(int index);
+  ::google::protobuf::UninterpretedOption_NamePart* add_name();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption_NamePart >&
       name() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption_NamePart >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption_NamePart >*
       mutable_name();
 
   // optional string identifier_value = 3;
-  inline bool has_identifier_value() const;
-  inline void clear_identifier_value();
+  bool has_identifier_value() const;
+  void clear_identifier_value();
   static const int kIdentifierValueFieldNumber = 3;
-  inline const ::std::string& identifier_value() const;
-  inline void set_identifier_value(const ::std::string& value);
-  inline void set_identifier_value(const char* value);
-  inline void set_identifier_value(const char* value, size_t size);
-  inline ::std::string* mutable_identifier_value();
-  inline ::std::string* release_identifier_value();
-  inline void set_allocated_identifier_value(::std::string* identifier_value);
+  const ::std::string& identifier_value() const;
+  void set_identifier_value(const ::std::string& value);
+  void set_identifier_value(const char* value);
+  void set_identifier_value(const char* value, size_t size);
+  ::std::string* mutable_identifier_value();
+  ::std::string* release_identifier_value();
+  void set_allocated_identifier_value(::std::string* identifier_value);
 
   // optional uint64 positive_int_value = 4;
-  inline bool has_positive_int_value() const;
-  inline void clear_positive_int_value();
+  bool has_positive_int_value() const;
+  void clear_positive_int_value();
   static const int kPositiveIntValueFieldNumber = 4;
-  inline ::google::protobuf::uint64 positive_int_value() const;
-  inline void set_positive_int_value(::google::protobuf::uint64 value);
+  ::google::protobuf::uint64 positive_int_value() const;
+  void set_positive_int_value(::google::protobuf::uint64 value);
 
   // optional int64 negative_int_value = 5;
-  inline bool has_negative_int_value() const;
-  inline void clear_negative_int_value();
+  bool has_negative_int_value() const;
+  void clear_negative_int_value();
   static const int kNegativeIntValueFieldNumber = 5;
-  inline ::google::protobuf::int64 negative_int_value() const;
-  inline void set_negative_int_value(::google::protobuf::int64 value);
+  ::google::protobuf::int64 negative_int_value() const;
+  void set_negative_int_value(::google::protobuf::int64 value);
 
   // optional double double_value = 6;
-  inline bool has_double_value() const;
-  inline void clear_double_value();
+  bool has_double_value() const;
+  void clear_double_value();
   static const int kDoubleValueFieldNumber = 6;
-  inline double double_value() const;
-  inline void set_double_value(double value);
+  double double_value() const;
+  void set_double_value(double value);
 
   // optional bytes string_value = 7;
-  inline bool has_string_value() const;
-  inline void clear_string_value();
+  bool has_string_value() const;
+  void clear_string_value();
   static const int kStringValueFieldNumber = 7;
-  inline const ::std::string& string_value() const;
-  inline void set_string_value(const ::std::string& value);
-  inline void set_string_value(const char* value);
-  inline void set_string_value(const void* value, size_t size);
-  inline ::std::string* mutable_string_value();
-  inline ::std::string* release_string_value();
-  inline void set_allocated_string_value(::std::string* string_value);
+  const ::std::string& string_value() const;
+  void set_string_value(const ::std::string& value);
+  void set_string_value(const char* value);
+  void set_string_value(const void* value, size_t size);
+  ::std::string* mutable_string_value();
+  ::std::string* release_string_value();
+  void set_allocated_string_value(::std::string* string_value);
 
   // optional string aggregate_value = 8;
-  inline bool has_aggregate_value() const;
-  inline void clear_aggregate_value();
+  bool has_aggregate_value() const;
+  void clear_aggregate_value();
   static const int kAggregateValueFieldNumber = 8;
-  inline const ::std::string& aggregate_value() const;
-  inline void set_aggregate_value(const ::std::string& value);
-  inline void set_aggregate_value(const char* value);
-  inline void set_aggregate_value(const char* value, size_t size);
-  inline ::std::string* mutable_aggregate_value();
-  inline ::std::string* release_aggregate_value();
-  inline void set_allocated_aggregate_value(::std::string* aggregate_value);
+  const ::std::string& aggregate_value() const;
+  void set_aggregate_value(const ::std::string& value);
+  void set_aggregate_value(const char* value);
+  void set_aggregate_value(const char* value, size_t size);
+  ::std::string* mutable_aggregate_value();
+  ::std::string* release_aggregate_value();
+  void set_allocated_aggregate_value(::std::string* aggregate_value);
 
   // @@protoc_insertion_point(class_scope:google.protobuf.UninterpretedOption)
  private:
@@ -2968,52 +2983,68 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Me
   // accessors -------------------------------------------------------
 
   // repeated int32 path = 1 [packed = true];
-  inline int path_size() const;
-  inline void clear_path();
+  int path_size() const;
+  void clear_path();
   static const int kPathFieldNumber = 1;
-  inline ::google::protobuf::int32 path(int index) const;
-  inline void set_path(int index, ::google::protobuf::int32 value);
-  inline void add_path(::google::protobuf::int32 value);
-  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+  ::google::protobuf::int32 path(int index) const;
+  void set_path(int index, ::google::protobuf::int32 value);
+  void add_path(::google::protobuf::int32 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
       path() const;
-  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_path();
 
   // repeated int32 span = 2 [packed = true];
-  inline int span_size() const;
-  inline void clear_span();
+  int span_size() const;
+  void clear_span();
   static const int kSpanFieldNumber = 2;
-  inline ::google::protobuf::int32 span(int index) const;
-  inline void set_span(int index, ::google::protobuf::int32 value);
-  inline void add_span(::google::protobuf::int32 value);
-  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+  ::google::protobuf::int32 span(int index) const;
+  void set_span(int index, ::google::protobuf::int32 value);
+  void add_span(::google::protobuf::int32 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
       span() const;
-  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_span();
 
   // optional string leading_comments = 3;
-  inline bool has_leading_comments() const;
-  inline void clear_leading_comments();
+  bool has_leading_comments() const;
+  void clear_leading_comments();
   static const int kLeadingCommentsFieldNumber = 3;
-  inline const ::std::string& leading_comments() const;
-  inline void set_leading_comments(const ::std::string& value);
-  inline void set_leading_comments(const char* value);
-  inline void set_leading_comments(const char* value, size_t size);
-  inline ::std::string* mutable_leading_comments();
-  inline ::std::string* release_leading_comments();
-  inline void set_allocated_leading_comments(::std::string* leading_comments);
+  const ::std::string& leading_comments() const;
+  void set_leading_comments(const ::std::string& value);
+  void set_leading_comments(const char* value);
+  void set_leading_comments(const char* value, size_t size);
+  ::std::string* mutable_leading_comments();
+  ::std::string* release_leading_comments();
+  void set_allocated_leading_comments(::std::string* leading_comments);
 
   // optional string trailing_comments = 4;
-  inline bool has_trailing_comments() const;
-  inline void clear_trailing_comments();
+  bool has_trailing_comments() const;
+  void clear_trailing_comments();
   static const int kTrailingCommentsFieldNumber = 4;
-  inline const ::std::string& trailing_comments() const;
-  inline void set_trailing_comments(const ::std::string& value);
-  inline void set_trailing_comments(const char* value);
-  inline void set_trailing_comments(const char* value, size_t size);
-  inline ::std::string* mutable_trailing_comments();
-  inline ::std::string* release_trailing_comments();
-  inline void set_allocated_trailing_comments(::std::string* trailing_comments);
+  const ::std::string& trailing_comments() const;
+  void set_trailing_comments(const ::std::string& value);
+  void set_trailing_comments(const char* value);
+  void set_trailing_comments(const char* value, size_t size);
+  ::std::string* mutable_trailing_comments();
+  ::std::string* release_trailing_comments();
+  void set_allocated_trailing_comments(::std::string* trailing_comments);
+
+  // repeated string leading_detached_comments = 6;
+  int leading_detached_comments_size() const;
+  void clear_leading_detached_comments();
+  static const int kLeadingDetachedCommentsFieldNumber = 6;
+  const ::std::string& leading_detached_comments(int index) const;
+  ::std::string* mutable_leading_detached_comments(int index);
+  void set_leading_detached_comments(int index, const ::std::string& value);
+  void set_leading_detached_comments(int index, const char* value);
+  void set_leading_detached_comments(int index, const char* value, size_t size);
+  ::std::string* add_leading_detached_comments();
+  void add_leading_detached_comments(const ::std::string& value);
+  void add_leading_detached_comments(const char* value);
+  void add_leading_detached_comments(const char* value, size_t size);
+  const ::google::protobuf::RepeatedPtrField< ::std::string>& leading_detached_comments() const;
+  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_leading_detached_comments();
 
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo.Location)
  private:
@@ -3031,6 +3062,7 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Me
   mutable int _span_cached_byte_size_;
   ::google::protobuf::internal::ArenaStringPtr leading_comments_;
   ::google::protobuf::internal::ArenaStringPtr trailing_comments_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> leading_detached_comments_;
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
@@ -3107,15 +3139,15 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo : public ::google::protobuf::Message {
   // accessors -------------------------------------------------------
 
   // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
-  inline int location_size() const;
-  inline void clear_location();
+  int location_size() const;
+  void clear_location();
   static const int kLocationFieldNumber = 1;
-  inline const ::google::protobuf::SourceCodeInfo_Location& location(int index) const;
-  inline ::google::protobuf::SourceCodeInfo_Location* mutable_location(int index);
-  inline ::google::protobuf::SourceCodeInfo_Location* add_location();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location >&
+  const ::google::protobuf::SourceCodeInfo_Location& location(int index) const;
+  ::google::protobuf::SourceCodeInfo_Location* mutable_location(int index);
+  ::google::protobuf::SourceCodeInfo_Location* add_location();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location >&
       location() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location >*
       mutable_location();
 
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo)
@@ -3137,6 +3169,7 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo : public ::google::protobuf::Message {
 
 // ===================================================================
 
+#if !PROTOBUF_INLINE_NOT_IN_HEADERS
 // FileDescriptorSet
 
 // repeated .google.protobuf.FileDescriptorProto file = 1;
@@ -5416,6 +5449,59 @@ inline void FileOptions::set_cc_enable_arenas(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.cc_enable_arenas)
 }
 
+// optional string objc_class_prefix = 36;
+inline bool FileOptions::has_objc_class_prefix() const {
+  return (_has_bits_[0] & 0x00001000u) != 0;
+}
+inline void FileOptions::set_has_objc_class_prefix() {
+  _has_bits_[0] |= 0x00001000u;
+}
+inline void FileOptions::clear_has_objc_class_prefix() {
+  _has_bits_[0] &= ~0x00001000u;
+}
+inline void FileOptions::clear_objc_class_prefix() {
+  objc_class_prefix_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_objc_class_prefix();
+}
+inline const ::std::string& FileOptions::objc_class_prefix() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.objc_class_prefix)
+  return objc_class_prefix_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void FileOptions::set_objc_class_prefix(const ::std::string& value) {
+  set_has_objc_class_prefix();
+  objc_class_prefix_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.objc_class_prefix)
+}
+inline void FileOptions::set_objc_class_prefix(const char* value) {
+  set_has_objc_class_prefix();
+  objc_class_prefix_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.objc_class_prefix)
+}
+inline void FileOptions::set_objc_class_prefix(const char* value, size_t size) {
+  set_has_objc_class_prefix();
+  objc_class_prefix_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.objc_class_prefix)
+}
+inline ::std::string* FileOptions::mutable_objc_class_prefix() {
+  set_has_objc_class_prefix();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.objc_class_prefix)
+  return objc_class_prefix_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* FileOptions::release_objc_class_prefix() {
+  clear_has_objc_class_prefix();
+  return objc_class_prefix_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void FileOptions::set_allocated_objc_class_prefix(::std::string* objc_class_prefix) {
+  if (objc_class_prefix != NULL) {
+    set_has_objc_class_prefix();
+  } else {
+    clear_has_objc_class_prefix();
+  }
+  objc_class_prefix_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), objc_class_prefix);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.objc_class_prefix)
+}
+
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
 inline int FileOptions::uninterpreted_option_size() const {
   return uninterpreted_option_.size();
@@ -6503,6 +6589,60 @@ inline void SourceCodeInfo_Location::set_allocated_trailing_comments(::std::stri
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceCodeInfo.Location.trailing_comments)
 }
 
+// repeated string leading_detached_comments = 6;
+inline int SourceCodeInfo_Location::leading_detached_comments_size() const {
+  return leading_detached_comments_.size();
+}
+inline void SourceCodeInfo_Location::clear_leading_detached_comments() {
+  leading_detached_comments_.Clear();
+}
+inline const ::std::string& SourceCodeInfo_Location::leading_detached_comments(int index) const {
+  // @@protoc_insertion_point(field_get:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
+  return leading_detached_comments_.Get(index);
+}
+inline ::std::string* SourceCodeInfo_Location::mutable_leading_detached_comments(int index) {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
+  return leading_detached_comments_.Mutable(index);
+}
+inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
+  leading_detached_comments_.Mutable(index)->assign(value);
+}
+inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, const char* value) {
+  leading_detached_comments_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
+}
+inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, const char* value, size_t size) {
+  leading_detached_comments_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
+}
+inline ::std::string* SourceCodeInfo_Location::add_leading_detached_comments() {
+  return leading_detached_comments_.Add();
+}
+inline void SourceCodeInfo_Location::add_leading_detached_comments(const ::std::string& value) {
+  leading_detached_comments_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
+}
+inline void SourceCodeInfo_Location::add_leading_detached_comments(const char* value) {
+  leading_detached_comments_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
+}
+inline void SourceCodeInfo_Location::add_leading_detached_comments(const char* value, size_t size) {
+  leading_detached_comments_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+SourceCodeInfo_Location::leading_detached_comments() const {
+  // @@protoc_insertion_point(field_list:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
+  return leading_detached_comments_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+SourceCodeInfo_Location::mutable_leading_detached_comments() {
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
+  return &leading_detached_comments_;
+}
+
 // -------------------------------------------------------------------
 
 // SourceCodeInfo
@@ -6537,6 +6677,7 @@ SourceCodeInfo::mutable_location() {
   return &location_;
 }
 
+#endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)
 

@@ -30,6 +30,9 @@
 
 package com.google.protobuf;
 
+import static protobuf_unittest.UnittestProto.optionalInt32Extension;
+import static protobuf_unittest.UnittestProto.optionalInt64Extension;
+
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 
@@ -111,12 +114,146 @@ public class LazyFieldLiteTest extends TestCase {
     assertNotEqual(message.toByteString(), lazyField.toByteString());
   }
 
+  public void testMergeExtensions() throws Exception {
+    TestAllExtensions message = TestUtil.getAllExtensionsSet();
+    LazyFieldLite original = createLazyFieldLiteFromMessage(message);
+    LazyFieldLite merged = new LazyFieldLite();
+    merged.merge(original);
+    TestAllExtensions value = (TestAllExtensions) merged.getValue(
+        TestAllExtensions.getDefaultInstance());
+    assertEquals(message, value);
+  }
+
+  public void testEmptyLazyField() throws Exception {
+    LazyFieldLite field = new LazyFieldLite();
+    assertEquals(0, field.getSerializedSize());
+    assertEquals(ByteString.EMPTY, field.toByteString());
+  }
+
+  public void testInvalidProto() throws Exception {
+    // Silently fails and uses the default instance.
+    LazyFieldLite field = new LazyFieldLite(
+        TestUtil.getExtensionRegistry(), ByteString.copyFromUtf8("invalid"));
+    assertEquals(
+        TestAllTypes.getDefaultInstance(), field.getValue(TestAllTypes.getDefaultInstance()));
+    assertEquals(0, field.getSerializedSize());
+    assertEquals(ByteString.EMPTY, field.toByteString());
+  }
+
+  public void testMergeBeforeParsing() throws Exception {
+    TestAllTypes message1 = TestAllTypes.newBuilder().setOptionalInt32(1).build();
+    LazyFieldLite field1 = createLazyFieldLiteFromMessage(message1);
+    TestAllTypes message2 = TestAllTypes.newBuilder().setOptionalInt64(2).build();
+    LazyFieldLite field2 = createLazyFieldLiteFromMessage(message2);
+
+    field1.merge(field2);
+    TestAllTypes expected =
+        TestAllTypes.newBuilder().setOptionalInt32(1).setOptionalInt64(2).build();
+    assertEquals(expected, field1.getValue(TestAllTypes.getDefaultInstance()));
+  }
+
+  public void testMergeOneNotParsed() throws Exception {
+    // Test a few different paths that involve one message that was not parsed.
+    TestAllTypes message1 = TestAllTypes.newBuilder().setOptionalInt32(1).build();
+    TestAllTypes message2 = TestAllTypes.newBuilder().setOptionalInt64(2).build();
+    TestAllTypes expected =
+        TestAllTypes.newBuilder().setOptionalInt32(1).setOptionalInt64(2).build();
+
+    LazyFieldLite field1 = LazyFieldLite.fromValue(message1);
+    field1.getValue(TestAllTypes.getDefaultInstance());  // Force parsing.
+    LazyFieldLite field2 = createLazyFieldLiteFromMessage(message2);
+    field1.merge(field2);
+    assertEquals(expected, field1.getValue(TestAllTypes.getDefaultInstance()));
+
+    // Now reverse which one is parsed first.
+    field1 = LazyFieldLite.fromValue(message1);
+    field2 = createLazyFieldLiteFromMessage(message2);
+    field2.getValue(TestAllTypes.getDefaultInstance());  // Force parsing.
+    field1.merge(field2);
+    assertEquals(expected, field1.getValue(TestAllTypes.getDefaultInstance()));
+  }
+
+  public void testMergeInvalid() throws Exception {
+    // Test a few different paths that involve one message that was not parsed.
+    TestAllTypes message = TestAllTypes.newBuilder().setOptionalInt32(1).build();
+    LazyFieldLite valid = LazyFieldLite.fromValue(message);
+    LazyFieldLite invalid = new LazyFieldLite(
+        TestUtil.getExtensionRegistry(), ByteString.copyFromUtf8("invalid"));
+    invalid.merge(valid);
+
+    // We swallow the exception and just use the set field.
+    assertEquals(message, invalid.getValue(TestAllTypes.getDefaultInstance()));
+  }
+
+  public void testMergeKeepsExtensionsWhenPossible() throws Exception {
+    // In this test we attempt to only use the empty registry, which will strip out all extensions
+    // when serializing and then parsing. We verify that each code path will attempt to not
+    // serialize and parse a message that was set directly without going through the
+    // extensionRegistry.
+    TestAllExtensions messageWithExtensions =
+        TestAllExtensions.newBuilder().setExtension(optionalInt32Extension, 42).build();
+    TestAllExtensions emptyMessage = TestAllExtensions.newBuilder().build();
+
+    ExtensionRegistryLite emptyRegistry = ExtensionRegistryLite.getEmptyRegistry();
+
+    LazyFieldLite field = LazyFieldLite.fromValue(messageWithExtensions);
+    field.merge(createLazyFieldLiteFromMessage(emptyRegistry, emptyMessage));
+    assertEquals(messageWithExtensions, field.getValue(TestAllExtensions.getDefaultInstance()));
+
+    // Now reverse the order of the merging.
+    field = createLazyFieldLiteFromMessage(emptyRegistry, emptyMessage);
+    field.merge(LazyFieldLite.fromValue(messageWithExtensions));
+    assertEquals(messageWithExtensions, field.getValue(TestAllExtensions.getDefaultInstance()));
+
+    // Now try parsing the empty field first.
+    field = LazyFieldLite.fromValue(messageWithExtensions);
+    LazyFieldLite other = createLazyFieldLiteFromMessage(emptyRegistry, emptyMessage);
+    other.getValue(TestAllExtensions.getDefaultInstance());  // Force parsing.
+    field.merge(other);
+    assertEquals(messageWithExtensions, field.getValue(TestAllExtensions.getDefaultInstance()));
+
+    // And again reverse.
+    field = createLazyFieldLiteFromMessage(emptyRegistry, emptyMessage);
+    field.getValue(TestAllExtensions.getDefaultInstance());  // Force parsing.
+    other = LazyFieldLite.fromValue(messageWithExtensions);
+    field.merge(other);
+    assertEquals(messageWithExtensions, field.getValue(TestAllExtensions.getDefaultInstance()));
+  }
+
+  public void testMergeMightLoseExtensions() throws Exception {
+    // Test that we don't know about the extensions when parsing.
+    TestAllExtensions message1 =
+        TestAllExtensions.newBuilder().setExtension(optionalInt32Extension, 1).build();
+    TestAllExtensions message2 =
+        TestAllExtensions.newBuilder().setExtension(optionalInt64Extension, 2L).build();
+
+    LazyFieldLite field = LazyFieldLite.fromValue(message1);
+    field.merge(LazyFieldLite.fromValue(message2));
+
+    // We lose the extensions from message 2 because we have to serialize it and then parse it
+    // again, using the empty registry this time.
+    TestAllExtensions value =
+        (TestAllExtensions) field.getValue(TestAllExtensions.getDefaultInstance());
+    assertTrue(value.hasExtension(optionalInt32Extension));
+    assertEquals(Integer.valueOf(1), value.getExtension(optionalInt32Extension));
+    assertFalse(value.hasExtension(optionalInt64Extension));
+
+    // The field is still there, it is just unknown.
+    assertTrue(value.getUnknownFields()
+        .hasField(optionalInt64Extension.getDescriptor().getNumber()));
+  }
+
 
   // Help methods.
 
   private LazyFieldLite createLazyFieldLiteFromMessage(MessageLite message) {
+    return createLazyFieldLiteFromMessage(TestUtil.getExtensionRegistry(), message);
+  }
+
+  private LazyFieldLite createLazyFieldLiteFromMessage(
+      ExtensionRegistryLite extensionRegistry, MessageLite message) {
     ByteString bytes = message.toByteString();
-    return new LazyFieldLite(TestUtil.getExtensionRegistry(), bytes);
+    return new LazyFieldLite(extensionRegistry, bytes);
   }
 
   private void changeValue(LazyFieldLite lazyField) {

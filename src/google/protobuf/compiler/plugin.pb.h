@@ -110,43 +110,43 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   // accessors -------------------------------------------------------
 
   // repeated string file_to_generate = 1;
-  inline int file_to_generate_size() const;
-  inline void clear_file_to_generate();
+  int file_to_generate_size() const;
+  void clear_file_to_generate();
   static const int kFileToGenerateFieldNumber = 1;
-  inline const ::std::string& file_to_generate(int index) const;
-  inline ::std::string* mutable_file_to_generate(int index);
-  inline void set_file_to_generate(int index, const ::std::string& value);
-  inline void set_file_to_generate(int index, const char* value);
-  inline void set_file_to_generate(int index, const char* value, size_t size);
-  inline ::std::string* add_file_to_generate();
-  inline void add_file_to_generate(const ::std::string& value);
-  inline void add_file_to_generate(const char* value);
-  inline void add_file_to_generate(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& file_to_generate() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_file_to_generate();
+  const ::std::string& file_to_generate(int index) const;
+  ::std::string* mutable_file_to_generate(int index);
+  void set_file_to_generate(int index, const ::std::string& value);
+  void set_file_to_generate(int index, const char* value);
+  void set_file_to_generate(int index, const char* value, size_t size);
+  ::std::string* add_file_to_generate();
+  void add_file_to_generate(const ::std::string& value);
+  void add_file_to_generate(const char* value);
+  void add_file_to_generate(const char* value, size_t size);
+  const ::google::protobuf::RepeatedPtrField< ::std::string>& file_to_generate() const;
+  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_file_to_generate();
 
   // optional string parameter = 2;
-  inline bool has_parameter() const;
-  inline void clear_parameter();
+  bool has_parameter() const;
+  void clear_parameter();
   static const int kParameterFieldNumber = 2;
-  inline const ::std::string& parameter() const;
-  inline void set_parameter(const ::std::string& value);
-  inline void set_parameter(const char* value);
-  inline void set_parameter(const char* value, size_t size);
-  inline ::std::string* mutable_parameter();
-  inline ::std::string* release_parameter();
-  inline void set_allocated_parameter(::std::string* parameter);
+  const ::std::string& parameter() const;
+  void set_parameter(const ::std::string& value);
+  void set_parameter(const char* value);
+  void set_parameter(const char* value, size_t size);
+  ::std::string* mutable_parameter();
+  ::std::string* release_parameter();
+  void set_allocated_parameter(::std::string* parameter);
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-  inline int proto_file_size() const;
-  inline void clear_proto_file();
+  int proto_file_size() const;
+  void clear_proto_file();
   static const int kProtoFileFieldNumber = 15;
-  inline const ::google::protobuf::FileDescriptorProto& proto_file(int index) const;
-  inline ::google::protobuf::FileDescriptorProto* mutable_proto_file(int index);
-  inline ::google::protobuf::FileDescriptorProto* add_proto_file();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
+  const ::google::protobuf::FileDescriptorProto& proto_file(int index) const;
+  ::google::protobuf::FileDescriptorProto* mutable_proto_file(int index);
+  ::google::protobuf::FileDescriptorProto* add_proto_file();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
       proto_file() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
       mutable_proto_file();
 
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorRequest)
@@ -234,40 +234,40 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   // accessors -------------------------------------------------------
 
   // optional string name = 1;
-  inline bool has_name() const;
-  inline void clear_name();
+  bool has_name() const;
+  void clear_name();
   static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
 
   // optional string insertion_point = 2;
-  inline bool has_insertion_point() const;
-  inline void clear_insertion_point();
+  bool has_insertion_point() const;
+  void clear_insertion_point();
   static const int kInsertionPointFieldNumber = 2;
-  inline const ::std::string& insertion_point() const;
-  inline void set_insertion_point(const ::std::string& value);
-  inline void set_insertion_point(const char* value);
-  inline void set_insertion_point(const char* value, size_t size);
-  inline ::std::string* mutable_insertion_point();
-  inline ::std::string* release_insertion_point();
-  inline void set_allocated_insertion_point(::std::string* insertion_point);
+  const ::std::string& insertion_point() const;
+  void set_insertion_point(const ::std::string& value);
+  void set_insertion_point(const char* value);
+  void set_insertion_point(const char* value, size_t size);
+  ::std::string* mutable_insertion_point();
+  ::std::string* release_insertion_point();
+  void set_allocated_insertion_point(::std::string* insertion_point);
 
   // optional string content = 15;
-  inline bool has_content() const;
-  inline void clear_content();
+  bool has_content() const;
+  void clear_content();
   static const int kContentFieldNumber = 15;
-  inline const ::std::string& content() const;
-  inline void set_content(const ::std::string& value);
-  inline void set_content(const char* value);
-  inline void set_content(const char* value, size_t size);
-  inline ::std::string* mutable_content();
-  inline ::std::string* release_content();
-  inline void set_allocated_content(::std::string* content);
+  const ::std::string& content() const;
+  void set_content(const ::std::string& value);
+  void set_content(const char* value);
+  void set_content(const char* value, size_t size);
+  ::std::string* mutable_content();
+  ::std::string* release_content();
+  void set_allocated_content(::std::string* content);
 
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse.File)
  private:
@@ -360,27 +360,27 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   // accessors -------------------------------------------------------
 
   // optional string error = 1;
-  inline bool has_error() const;
-  inline void clear_error();
+  bool has_error() const;
+  void clear_error();
   static const int kErrorFieldNumber = 1;
-  inline const ::std::string& error() const;
-  inline void set_error(const ::std::string& value);
-  inline void set_error(const char* value);
-  inline void set_error(const char* value, size_t size);
-  inline ::std::string* mutable_error();
-  inline ::std::string* release_error();
-  inline void set_allocated_error(::std::string* error);
+  const ::std::string& error() const;
+  void set_error(const ::std::string& value);
+  void set_error(const char* value);
+  void set_error(const char* value, size_t size);
+  ::std::string* mutable_error();
+  ::std::string* release_error();
+  void set_allocated_error(::std::string* error);
 
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-  inline int file_size() const;
-  inline void clear_file();
+  int file_size() const;
+  void clear_file();
   static const int kFileFieldNumber = 15;
-  inline const ::google::protobuf::compiler::CodeGeneratorResponse_File& file(int index) const;
-  inline ::google::protobuf::compiler::CodeGeneratorResponse_File* mutable_file(int index);
-  inline ::google::protobuf::compiler::CodeGeneratorResponse_File* add_file();
-  inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >&
+  const ::google::protobuf::compiler::CodeGeneratorResponse_File& file(int index) const;
+  ::google::protobuf::compiler::CodeGeneratorResponse_File* mutable_file(int index);
+  ::google::protobuf::compiler::CodeGeneratorResponse_File* add_file();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >&
       file() const;
-  inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >*
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >*
       mutable_file();
 
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse)
@@ -405,6 +405,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
 
 // ===================================================================
 
+#if !PROTOBUF_INLINE_NOT_IN_HEADERS
 // CodeGeneratorRequest
 
 // repeated string file_to_generate = 1;
@@ -794,21 +795,13 @@ CodeGeneratorResponse::mutable_file() {
   return &file_;
 }
 
+#endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)
 
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
-#ifndef SWIG
-namespace google {
-namespace protobuf {
-
-
-}  // namespace protobuf
-}  // namespace google
-#endif  // SWIG
 
 // @@protoc_insertion_point(global_scope)
 
