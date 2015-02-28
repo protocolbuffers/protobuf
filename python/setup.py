@@ -150,7 +150,7 @@ if __name__ == '__main__':
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
 
   setup(name = 'protobuf',
-        version = '3.0.0-alpha-2',
+        version = '3.0.0-alpha-3-pre',
         packages = [ 'google' ],
         namespace_packages = [ 'google' ],
         google_test_dir = "google/protobuf/internal",
