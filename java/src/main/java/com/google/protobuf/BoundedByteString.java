@@ -30,8 +30,8 @@
 
 package com.google.protobuf;
 
-import java.io.InvalidObjectException;
 import java.io.IOException;
+import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.util.NoSuchElementException;
 

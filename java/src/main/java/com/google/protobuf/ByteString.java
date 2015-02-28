@@ -76,6 +76,9 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   static final int MIN_READ_FROM_CHUNK_SIZE = 0x100;  // 256b
   static final int MAX_READ_FROM_CHUNK_SIZE = 0x2000;  // 8k
 
+  // Defined by java.nio.charset.Charset
+  protected static final String UTF_8 = "UTF-8";
+
   /**
    * Empty {@code ByteString}.
    */
@@ -267,7 +270,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    */
   public static ByteString copyFromUtf8(String text) {
     try {
-      return new LiteralByteString(text.getBytes("UTF-8"));
+      return new LiteralByteString(text.getBytes(UTF_8));
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException("UTF-8 not supported?", e);
     }
@@ -622,7 +625,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    */
   public String toStringUtf8() {
     try {
-      return toString("UTF-8");
+      return toString(UTF_8);
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException("UTF-8 not supported?", e);
     }

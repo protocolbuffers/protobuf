@@ -84,10 +84,13 @@ nobase_include_HEADERS =                                        \
   google/protobuf/dynamic_message.h                             \
   google/protobuf/extension_set.h                               \
   google/protobuf/generated_enum_reflection.h                   \
+  google/protobuf/generated_enum_util.h                         \
   google/protobuf/generated_message_reflection.h                \
   google/protobuf/generated_message_util.h                      \
   google/protobuf/map_entry.h                                   \
+  google/protobuf/map_entry_lite.h                              \
   google/protobuf/map_field.h                                   \
+  google/protobuf/map_field_lite.h                              \
   google/protobuf/map_field_inl.h                               \
   google/protobuf/map.h                                         \
   google/protobuf/map_type_handler.h                            \
@@ -316,6 +319,7 @@ protoc_inputs =                                                \
   google/protobuf/unittest_no_generic_services.proto           \
   google/protobuf/unittest_optimize_for.proto                  \
   google/protobuf/unittest_preserve_unknown_enum.proto         \
+  google/protobuf/unittest_preserve_unknown_enum2.proto        \
   google/protobuf/unittest_proto3_arena.proto                  \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.proto
 
@@ -342,6 +346,8 @@ EXTRA_DIST =                                                   \
   google/protobuf/unittest_enormous_descriptor.proto
 
 protoc_lite_outputs =                                          \
+  google/protobuf/map_lite_unittest.pb.cc                      \
+  google/protobuf/map_lite_unittest.pb.h                       \
   google/protobuf/unittest_lite.pb.cc                          \
   google/protobuf/unittest_lite.pb.h                           \
   google/protobuf/unittest_import_lite.pb.cc                   \
@@ -351,8 +357,6 @@ protoc_lite_outputs =                                          \
 
 protoc_outputs =                                               \
   $(protoc_lite_outputs)                                       \
-  google/protobuf/map_lite_unittest.pb.cc                      \
-  google/protobuf/map_lite_unittest.pb.h                       \
   google/protobuf/map_proto2_unittest.pb.cc                    \
   google/protobuf/map_proto2_unittest.pb.h                     \
   google/protobuf/map_unittest.pb.cc                           \
@@ -389,12 +393,14 @@ protoc_outputs =                                               \
   google/protobuf/unittest_optimize_for.pb.h                   \
   google/protobuf/unittest_preserve_unknown_enum.pb.cc         \
   google/protobuf/unittest_preserve_unknown_enum.pb.h          \
+  google/protobuf/unittest_preserve_unknown_enum2.pb.cc        \
+  google/protobuf/unittest_preserve_unknown_enum2.pb.h         \
   google/protobuf/unittest_proto3_arena.pb.cc                  \
   google/protobuf/unittest_proto3_arena.pb.h                   \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.cc  \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h
 
-BUILT_SOURCES = $(public_config) $(protoc_outputs) 
+BUILT_SOURCES = $(public_config) $(protoc_outputs)
 
 if USE_EXTERNAL_PROTOC
 
@@ -416,8 +422,11 @@ endif
 $(protoc_outputs): unittest_proto_middleman
 
 COMMON_TEST_SOURCES =                                          \
+  google/protobuf/arena_test_util.cc                           \
+  google/protobuf/arena_test_util.h                            \
   google/protobuf/map_test_util.cc                             \
   google/protobuf/map_test_util.h                              \
+  google/protobuf/map_test_util_impl.h                         \
   google/protobuf/test_util.cc                                 \
   google/protobuf/test_util.h                                  \
   google/protobuf/testing/googletest.cc                        \
@@ -503,8 +512,12 @@ protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la
 protobuf_lite_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lite_test_SOURCES =                                           \
   google/protobuf/lite_unittest.cc                                     \
+  google/protobuf/map_lite_test_util.cc                                \
+  google/protobuf/map_lite_test_util.h                                 \
   google/protobuf/test_util_lite.cc                                    \
   google/protobuf/test_util_lite.h
+  # TODO(teboring) add the file back and make the test build.
+  # google/protobuf/map_lite_test.cc
 nodist_protobuf_lite_test_SOURCES = $(protoc_lite_outputs)
 
 # Test plugin binary.

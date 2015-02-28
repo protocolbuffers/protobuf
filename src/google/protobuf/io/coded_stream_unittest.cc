@@ -502,11 +502,11 @@ struct Fixed64Case {
 };
 
 inline std::ostream& operator<<(std::ostream& os, const Fixed32Case& c) {
-  return os << "0x" << hex << c.value << dec;
+  return os << "0x" << std::hex << c.value << std::dec;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const Fixed64Case& c) {
-  return os << "0x" << hex << c.value << dec;
+  return os << "0x" << std::hex << c.value << std::dec;
 }
 
 Fixed32Case kFixed32Cases[] = {

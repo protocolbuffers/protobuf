@@ -76,23 +76,26 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void EnumFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-    "inline $type$ $name$() const$deprecation$;\n"
-    "inline void set_$name$($type$ value)$deprecation$;\n");
+    "$type$ $name$() const$deprecation$;\n"
+    "void set_$name$($type$ value)$deprecation$;\n");
 }
 
 void EnumFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer) const {
-  printer->Print(variables_,
-    "inline $type$ $classname$::$name$() const {\n"
+GenerateInlineAccessorDefinitions(io::Printer* printer,
+                                  bool is_inline) const {
+  map<string, string> variables(variables_);
+  variables["inline"] = is_inline ? "inline" : "";
+  printer->Print(variables,
+    "$inline$ $type$ $classname$::$name$() const {\n"
     "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  return static_cast< $type$ >($name$_);\n"
     "}\n"
-    "inline void $classname$::set_$name$($type$ value) {\n");
+    "$inline$ void $classname$::set_$name$($type$ value) {\n");
   if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) {
-    printer->Print(variables_,
+    printer->Print(variables,
     "  assert($type$_IsValid(value));\n");
   }
-  printer->Print(variables_,
+  printer->Print(variables,
     "  $set_hasbit$\n"
     "  $name$_ = value;\n"
     "  // @@protoc_insertion_point(field_set:$full_name$)\n"
@@ -181,21 +184,24 @@ EnumOneofFieldGenerator(const FieldDescriptor* descriptor,
 EnumOneofFieldGenerator::~EnumOneofFieldGenerator() {}
 
 void EnumOneofFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer) const {
-  printer->Print(variables_,
-    "inline $type$ $classname$::$name$() const {\n"
+GenerateInlineAccessorDefinitions(io::Printer* printer,
+                                  bool is_inline) const {
+  map<string, string> variables(variables_);
+  variables["inline"] = is_inline ? "inline" : "";
+  printer->Print(variables,
+    "$inline$ $type$ $classname$::$name$() const {\n"
     "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  if (has_$name$()) {\n"
     "    return static_cast< $type$ >($oneof_prefix$$name$_);\n"
     "  }\n"
     "  return static_cast< $type$ >($default$);\n"
     "}\n"
-    "inline void $classname$::set_$name$($type$ value) {\n");
+    "$inline$ void $classname$::set_$name$($type$ value) {\n");
   if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) {
-    printer->Print(variables_,
+    printer->Print(variables,
     "  assert($type$_IsValid(value));\n");
   }
-  printer->Print(variables_,
+  printer->Print(variables,
     "  if (!has_$name$()) {\n"
     "    clear_$oneof_name$();\n"
     "    set_has_$name$();\n"
@@ -246,46 +252,49 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void RepeatedEnumFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-    "inline $type$ $name$(int index) const$deprecation$;\n"
-    "inline void set_$name$(int index, $type$ value)$deprecation$;\n"
-    "inline void add_$name$($type$ value)$deprecation$;\n");
+    "$type$ $name$(int index) const$deprecation$;\n"
+    "void set_$name$(int index, $type$ value)$deprecation$;\n"
+    "void add_$name$($type$ value)$deprecation$;\n");
   printer->Print(variables_,
-    "inline const ::google::protobuf::RepeatedField<int>& $name$() const$deprecation$;\n"
-    "inline ::google::protobuf::RepeatedField<int>* mutable_$name$()$deprecation$;\n");
+    "const ::google::protobuf::RepeatedField<int>& $name$() const$deprecation$;\n"
+    "::google::protobuf::RepeatedField<int>* mutable_$name$()$deprecation$;\n");
 }
 
 void RepeatedEnumFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer) const {
-  printer->Print(variables_,
-    "inline $type$ $classname$::$name$(int index) const {\n"
+GenerateInlineAccessorDefinitions(io::Printer* printer,
+                                  bool is_inline) const {
+  map<string, string> variables(variables_);
+  variables["inline"] = is_inline ? "inline" : "";
+  printer->Print(variables,
+    "$inline$ $type$ $classname$::$name$(int index) const {\n"
     "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  return static_cast< $type$ >($name$_.Get(index));\n"
     "}\n"
-    "inline void $classname$::set_$name$(int index, $type$ value) {\n");
+    "$inline$ void $classname$::set_$name$(int index, $type$ value) {\n");
   if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) {
-    printer->Print(variables_,
+    printer->Print(variables,
     "  assert($type$_IsValid(value));\n");
   }
-  printer->Print(variables_,
+  printer->Print(variables,
     "  $name$_.Set(index, value);\n"
     "  // @@protoc_insertion_point(field_set:$full_name$)\n"
     "}\n"
-    "inline void $classname$::add_$name$($type$ value) {\n");
+    "$inline$ void $classname$::add_$name$($type$ value) {\n");
   if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) {
-    printer->Print(variables_,
+    printer->Print(variables,
     "  assert($type$_IsValid(value));\n");
   }
-  printer->Print(variables_,
+  printer->Print(variables,
     "  $name$_.Add(value);\n"
     "  // @@protoc_insertion_point(field_add:$full_name$)\n"
     "}\n");
-  printer->Print(variables_,
-    "inline const ::google::protobuf::RepeatedField<int>&\n"
+  printer->Print(variables,
+    "$inline$ const ::google::protobuf::RepeatedField<int>&\n"
     "$classname$::$name$() const {\n"
     "  // @@protoc_insertion_point(field_list:$full_name$)\n"
     "  return $name$_;\n"
     "}\n"
-    "inline ::google::protobuf::RepeatedField<int>*\n"
+    "$inline$ ::google::protobuf::RepeatedField<int>*\n"
     "$classname$::mutable_$name$() {\n"
     "  // @@protoc_insertion_point(field_mutable_list:$full_name$)\n"
     "  return &$name$_;\n"
@@ -344,20 +353,34 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
 void RepeatedEnumFieldGenerator::
 GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
   if (!descriptor_->options().packed()) {
-    // We use a non-inlined implementation in this case, since this path will
-    // rarely be executed.
-    printer->Print(variables_,
-      "DO_((::google::protobuf::internal::WireFormatLite::ReadPackedEnumNoInline(\n"
-      "       input,\n");
+      // This path is rarely executed, so we use a non-inlined implementation.
     if (HasPreservingUnknownEnumSemantics(descriptor_->file())) {
       printer->Print(variables_,
-      "       NULL,\n");
+        "DO_((::google::protobuf::internal::"
+                    "WireFormatLite::ReadPackedEnumPreserveUnknowns(\n"
+        "       input,\n"
+        "       $number$,\n"
+        "       NULL,\n"
+        "       NULL,\n"
+        "       this->mutable_$name$())));\n");
+    } else if (UseUnknownFieldSet(descriptor_->file())) {
+      printer->Print(variables_,
+        "DO_((::google::protobuf::internal::WireFormat::ReadPackedEnumPreserveUnknowns(\n"
+        "       input,\n"
+        "       $number$,\n"
+        "       $type$_IsValid,\n"
+        "       mutable_unknown_fields(),\n"
+        "       this->mutable_$name$())));\n");
     } else {
       printer->Print(variables_,
-      "       &$type$_IsValid,\n");
+        "DO_((::google::protobuf::internal::"
+                     "WireFormatLite::ReadPackedEnumPreserveUnknowns(\n"
+        "       input,\n"
+        "       $number$,\n"
+        "       $type$_IsValid,\n"
+        "       &unknown_fields_stream,\n"
+        "       this->mutable_$name$())));\n");
     }
-    printer->Print(variables_,
-      "       this->mutable_$name$())));\n");
   } else {
     printer->Print(variables_,
       "::google::protobuf::uint32 length;\n"
@@ -376,6 +399,16 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
       printer->Print(variables_,
       "  if ($type$_IsValid(value)) {\n"
       "    add_$name$(static_cast< $type$ >(value));\n"
+      "  } else {\n");
+      if (UseUnknownFieldSet(descriptor_->file())) {
+        printer->Print(variables_,
+        "    mutable_unknown_fields()->AddVarint($number$, value);\n");
+      } else {
+        printer->Print(variables_,
+        "    unknown_fields_stream.WriteVarint32(tag);\n"
+        "    unknown_fields_stream.WriteVarint32(value);\n");
+      }
+      printer->Print(
       "  }\n");
     }
     printer->Print(variables_,

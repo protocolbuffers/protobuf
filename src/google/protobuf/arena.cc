@@ -44,38 +44,56 @@ Arena::ThreadCache& Arena::thread_cache() {
   return thread_cache_;
 }
 #else
-GOOGLE_THREAD_LOCAL Arena::ThreadCache Arena::thread_cache_ = { -1, NULL };
+__thread Arena::ThreadCache Arena::thread_cache_ = { -1, NULL };
 #endif
 
-void Arena::Init(const ArenaOptions& options) {
+void Arena::Init() {
   lifecycle_id_ = lifecycle_id_generator_.GetNext();
-  start_block_size_ = options.start_block_size;
-  max_block_size_ = options.max_block_size;
-  block_alloc = options.block_alloc;
-  block_dealloc = options.block_dealloc;
   blocks_ = 0;
   hint_ = 0;
   owns_first_block_ = true;
   cleanup_list_ = 0;
 
-  if (options.initial_block != NULL && options.initial_block_size > 0) {
+  if (options_.initial_block != NULL && options_.initial_block_size > 0) {
     // Add first unowned block to list.
-    Block* first_block = reinterpret_cast<Block*>(options.initial_block);
-    first_block->size = options.initial_block_size;
+    Block* first_block = reinterpret_cast<Block*>(options_.initial_block);
+    first_block->size = options_.initial_block_size;
     first_block->pos = kHeaderSize;
     first_block->next = NULL;
     first_block->owner = &first_block->owner;
     AddBlock(first_block);
     owns_first_block_ = false;
   }
+
+  // Call the initialization hook
+  if (options_.on_arena_init != NULL) {
+    hooks_cookie_ = options_.on_arena_init(this);
+  } else {
+    hooks_cookie_ = NULL;
+  }
+}
+
+Arena::~Arena() {
+  uint64 space_allocated = Reset();
+
+  // Call the destruction hook
+  if (options_.on_arena_destruction != NULL) {
+    options_.on_arena_destruction(this, hooks_cookie_, space_allocated);
+  }
 }
 
 uint64 Arena::Reset() {
   CleanupList();
-  uint64 space_used = FreeBlocks();
+  uint64 space_allocated = FreeBlocks();
   // Invalidate any ThreadCaches pointing to any blocks we just destroyed.
   lifecycle_id_ = lifecycle_id_generator_.GetNext();
-  return space_used;
+
+  // Call the reset hook
+  if (options_.on_arena_reset != NULL) {
+    options_.on_arena_reset(this, hooks_cookie_, space_allocated);
+  }
+
+  return space_allocated;
 }
 
 Arena::Block* Arena::NewBlock(void* me, Block* my_last_block, size_t n,
@@ -93,7 +111,7 @@ Arena::Block* Arena::NewBlock(void* me, Block* my_last_block, size_t n,
     size = kHeaderSize + n;
   }
 
-  Block* b = reinterpret_cast<Block*>(block_alloc(size));
+  Block* b = reinterpret_cast<Block*>(options_.block_alloc(size));
   b->pos = kHeaderSize + n;
   b->size = size;
   if (b->avail() == 0) {
@@ -184,7 +202,7 @@ void* Arena::SlowAlloc(size_t n) {
     google::protobuf::internal::NoBarrier_Store(&hint_, reinterpret_cast<google::protobuf::internal::AtomicWord>(b));
     return AllocFromBlock(b, n);
   }
-  b = NewBlock(me, b, n, start_block_size_, max_block_size_);
+  b = NewBlock(me, b, n, options_.start_block_size, options_.max_block_size);
   AddBlock(b);
   if (b->owner == me) {  // If this block can be reused (see NewBlock()).
     SetThreadCacheBlock(b);
@@ -192,29 +210,38 @@ void* Arena::SlowAlloc(size_t n) {
   return reinterpret_cast<char*>(b) + kHeaderSize;
 }
 
+uint64 Arena::SpaceAllocated() const {
+  uint64 space_allocated = 0;
+  Block* b = reinterpret_cast<Block*>(google::protobuf::internal::NoBarrier_Load(&blocks_));
+  while (b != NULL) {
+    space_allocated += (b->size);
+    b = b->next;
+  }
+  return space_allocated;
+}
+
 uint64 Arena::SpaceUsed() const {
   uint64 space_used = 0;
   Block* b = reinterpret_cast<Block*>(google::protobuf::internal::NoBarrier_Load(&blocks_));
   while (b != NULL) {
-    space_used += (b->size);
+    space_used += (b->pos - kHeaderSize);
     b = b->next;
   }
   return space_used;
 }
 
-
 uint64 Arena::FreeBlocks() {
-  uint64 space_used = 0;
+  uint64 space_allocated = 0;
   Block* b = reinterpret_cast<Block*>(google::protobuf::internal::NoBarrier_Load(&blocks_));
   Block* first_block = NULL;
   while (b != NULL) {
-    space_used += (b->size);
+    space_allocated += (b->size);
     Block* next = b->next;
     if (next != NULL) {
-      block_dealloc(b, b->size);
+      options_.block_dealloc(b, b->size);
     } else {
       if (owns_first_block_) {
-        block_dealloc(b, b->size);
+        options_.block_dealloc(b, b->size);
       } else {
         // User passed in the first block, skip free'ing the memory.
         first_block = b;
@@ -231,7 +258,7 @@ uint64 Arena::FreeBlocks() {
     first_block->owner = &first_block->owner;
     AddBlock(first_block);
   }
-  return space_used;
+  return space_allocated;
 }
 
 void Arena::CleanupList() {

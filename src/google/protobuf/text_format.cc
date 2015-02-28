@@ -1360,9 +1360,8 @@ void TextFormat::Printer::SetDefaultFieldValuePrinter(
 bool TextFormat::Printer::RegisterFieldValuePrinter(
     const FieldDescriptor* field,
     const FieldValuePrinter* printer) {
-  return field != NULL
-      && printer != NULL
-      && custom_printers_.insert(make_pair(field, printer)).second;
+  return field != NULL && printer != NULL &&
+         custom_printers_.insert(std::make_pair(field, printer)).second;
 }
 
 bool TextFormat::Printer::PrintToString(const Message& message,
@@ -1422,7 +1421,7 @@ void TextFormat::Printer::Print(const Message& message,
   vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
   if (print_message_fields_in_index_order_) {
-    sort(fields.begin(), fields.end(), FieldIndexSorter());
+    std::sort(fields.begin(), fields.end(), FieldIndexSorter());
   }
   for (int i = 0; i < fields.size(); i++) {
     PrintField(message, reflection, fields[i], generator);

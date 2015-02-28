@@ -1303,6 +1303,211 @@ string ToHex(uint64 num) {
   return string(bufptr, buf + 16 - bufptr);
 }
 
+namespace strings {
+
+AlphaNum::AlphaNum(strings::Hex hex) {
+  char *const end = &digits[kFastToBufferSize];
+  char *writer = end;
+  uint64 value = hex.value;
+  uint64 width = hex.spec;
+  // We accomplish minimum width by OR'ing in 0x10000 to the user's value,
+  // where 0x10000 is the smallest hex number that is as wide as the user
+  // asked for.
+  uint64 mask = ((static_cast<uint64>(1) << (width - 1) * 4)) | value;
+  static const char hexdigits[] = "0123456789abcdef";
+  do {
+    *--writer = hexdigits[value & 0xF];
+    value >>= 4;
+    mask >>= 4;
+  } while (mask != 0);
+  piece_data_ = writer;
+  piece_size_ = end - writer;
+}
+
+}  // namespace strings
+
+// ----------------------------------------------------------------------
+// StrCat()
+//    This merges the given strings or integers, with no delimiter.  This
+//    is designed to be the fastest possible way to construct a string out
+//    of a mix of raw C strings, C++ strings, and integer values.
+// ----------------------------------------------------------------------
+
+// Append is merely a version of memcpy that returns the address of the byte
+// after the area just overwritten.  It comes in multiple flavors to minimize
+// call overhead.
+static char *Append1(char *out, const AlphaNum &x) {
+  memcpy(out, x.data(), x.size());
+  return out + x.size();
+}
+
+static char *Append2(char *out, const AlphaNum &x1, const AlphaNum &x2) {
+  memcpy(out, x1.data(), x1.size());
+  out += x1.size();
+
+  memcpy(out, x2.data(), x2.size());
+  return out + x2.size();
+}
+
+static char *Append4(char *out,
+                     const AlphaNum &x1, const AlphaNum &x2,
+                     const AlphaNum &x3, const AlphaNum &x4) {
+  memcpy(out, x1.data(), x1.size());
+  out += x1.size();
+
+  memcpy(out, x2.data(), x2.size());
+  out += x2.size();
+
+  memcpy(out, x3.data(), x3.size());
+  out += x3.size();
+
+  memcpy(out, x4.data(), x4.size());
+  return out + x4.size();
+}
+
+string StrCat(const AlphaNum &a, const AlphaNum &b) {
+  string result;
+  result.resize(a.size() + b.size());
+  char *const begin = &*result.begin();
+  char *out = Append2(begin, a, b);
+  GOOGLE_DCHECK_EQ(out, begin + result.size());
+  return result;
+}
+
+string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c) {
+  string result;
+  result.resize(a.size() + b.size() + c.size());
+  char *const begin = &*result.begin();
+  char *out = Append2(begin, a, b);
+  out = Append1(out, c);
+  GOOGLE_DCHECK_EQ(out, begin + result.size());
+  return result;
+}
+
+string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
+              const AlphaNum &d) {
+  string result;
+  result.resize(a.size() + b.size() + c.size() + d.size());
+  char *const begin = &*result.begin();
+  char *out = Append4(begin, a, b, c, d);
+  GOOGLE_DCHECK_EQ(out, begin + result.size());
+  return result;
+}
+
+string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
+              const AlphaNum &d, const AlphaNum &e) {
+  string result;
+  result.resize(a.size() + b.size() + c.size() + d.size() + e.size());
+  char *const begin = &*result.begin();
+  char *out = Append4(begin, a, b, c, d);
+  out = Append1(out, e);
+  GOOGLE_DCHECK_EQ(out, begin + result.size());
+  return result;
+}
+
+string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
+              const AlphaNum &d, const AlphaNum &e, const AlphaNum &f) {
+  string result;
+  result.resize(a.size() + b.size() + c.size() + d.size() + e.size() +
+                f.size());
+  char *const begin = &*result.begin();
+  char *out = Append4(begin, a, b, c, d);
+  out = Append2(out, e, f);
+  GOOGLE_DCHECK_EQ(out, begin + result.size());
+  return result;
+}
+
+string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
+              const AlphaNum &d, const AlphaNum &e, const AlphaNum &f,
+              const AlphaNum &g) {
+  string result;
+  result.resize(a.size() + b.size() + c.size() + d.size() + e.size() +
+                f.size() + g.size());
+  char *const begin = &*result.begin();
+  char *out = Append4(begin, a, b, c, d);
+  out = Append2(out, e, f);
+  out = Append1(out, g);
+  GOOGLE_DCHECK_EQ(out, begin + result.size());
+  return result;
+}
+
+string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
+              const AlphaNum &d, const AlphaNum &e, const AlphaNum &f,
+              const AlphaNum &g, const AlphaNum &h) {
+  string result;
+  result.resize(a.size() + b.size() + c.size() + d.size() + e.size() +
+                f.size() + g.size() + h.size());
+  char *const begin = &*result.begin();
+  char *out = Append4(begin, a, b, c, d);
+  out = Append4(out, e, f, g, h);
+  GOOGLE_DCHECK_EQ(out, begin + result.size());
+  return result;
+}
+
+string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
+              const AlphaNum &d, const AlphaNum &e, const AlphaNum &f,
+              const AlphaNum &g, const AlphaNum &h, const AlphaNum &i) {
+  string result;
+  result.resize(a.size() + b.size() + c.size() + d.size() + e.size() +
+                f.size() + g.size() + h.size() + i.size());
+  char *const begin = &*result.begin();
+  char *out = Append4(begin, a, b, c, d);
+  out = Append4(out, e, f, g, h);
+  out = Append1(out, i);
+  GOOGLE_DCHECK_EQ(out, begin + result.size());
+  return result;
+}
+
+// It's possible to call StrAppend with a char * pointer that is partway into
+// the string we're appending to.  However the results of this are random.
+// Therefore, check for this in debug mode.  Use unsigned math so we only have
+// to do one comparison.
+#define GOOGLE_DCHECK_NO_OVERLAP(dest, src) \
+    GOOGLE_DCHECK_GT(uintptr_t((src).data() - (dest).data()), \
+                     uintptr_t((dest).size()))
+
+void StrAppend(string *result, const AlphaNum &a) {
+  GOOGLE_DCHECK_NO_OVERLAP(*result, a);
+  result->append(a.data(), a.size());
+}
+
+void StrAppend(string *result, const AlphaNum &a, const AlphaNum &b) {
+  GOOGLE_DCHECK_NO_OVERLAP(*result, a);
+  GOOGLE_DCHECK_NO_OVERLAP(*result, b);
+  string::size_type old_size = result->size();
+  result->resize(old_size + a.size() + b.size());
+  char *const begin = &*result->begin();
+  char *out = Append2(begin + old_size, a, b);
+  GOOGLE_DCHECK_EQ(out, begin + result->size());
+}
+
+void StrAppend(string *result,
+               const AlphaNum &a, const AlphaNum &b, const AlphaNum &c) {
+  GOOGLE_DCHECK_NO_OVERLAP(*result, a);
+  GOOGLE_DCHECK_NO_OVERLAP(*result, b);
+  GOOGLE_DCHECK_NO_OVERLAP(*result, c);
+  string::size_type old_size = result->size();
+  result->resize(old_size + a.size() + b.size() + c.size());
+  char *const begin = &*result->begin();
+  char *out = Append2(begin + old_size, a, b);
+  out = Append1(out, c);
+  GOOGLE_DCHECK_EQ(out, begin + result->size());
+}
+
+void StrAppend(string *result,
+               const AlphaNum &a, const AlphaNum &b,
+               const AlphaNum &c, const AlphaNum &d) {
+  GOOGLE_DCHECK_NO_OVERLAP(*result, a);
+  GOOGLE_DCHECK_NO_OVERLAP(*result, b);
+  GOOGLE_DCHECK_NO_OVERLAP(*result, c);
+  GOOGLE_DCHECK_NO_OVERLAP(*result, d);
+  string::size_type old_size = result->size();
+  result->resize(old_size + a.size() + b.size() + c.size() + d.size());
+  char *const begin = &*result->begin();
+  char *out = Append4(begin + old_size, a, b, c, d);
+  GOOGLE_DCHECK_EQ(out, begin + result->size());
+}
+
 int GlobalReplaceSubstring(const string& substring,
                            const string& replacement,
                            string* s) {

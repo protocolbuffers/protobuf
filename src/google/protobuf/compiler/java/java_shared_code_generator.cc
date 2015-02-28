@@ -171,7 +171,7 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
       string classname = FileJavaPackage(file_->dependency(i)) + "." +
                          name_resolver_->GetDescriptorClassName(
                              file_->dependency(i));
-      dependencies.push_back(make_pair(filename, classname));
+      dependencies.push_back(std::make_pair(filename, classname));
     }
   }
 

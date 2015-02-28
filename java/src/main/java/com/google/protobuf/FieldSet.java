@@ -553,42 +553,13 @@ final class FieldSet<FieldDescriptorType extends
       CodedInputStream input,
       final WireFormat.FieldType type,
       boolean checkUtf8) throws IOException {
-    switch (type) {
-      case DOUBLE  : return input.readDouble  ();
-      case FLOAT   : return input.readFloat   ();
-      case INT64   : return input.readInt64   ();
-      case UINT64  : return input.readUInt64  ();
-      case INT32   : return input.readInt32   ();
-      case FIXED64 : return input.readFixed64 ();
-      case FIXED32 : return input.readFixed32 ();
-      case BOOL    : return input.readBool    ();
-      case STRING  : if (checkUtf8) {
-                       return input.readStringRequireUtf8();
-                     } else {
-                       return input.readString();
-                     }
-      case BYTES   : return input.readBytes   ();
-      case UINT32  : return input.readUInt32  ();
-      case SFIXED32: return input.readSFixed32();
-      case SFIXED64: return input.readSFixed64();
-      case SINT32  : return input.readSInt32  ();
-      case SINT64  : return input.readSInt64  ();
-
-      case GROUP:
-        throw new IllegalArgumentException(
-          "readPrimitiveField() cannot handle nested groups.");
-      case MESSAGE:
-        throw new IllegalArgumentException(
-          "readPrimitiveField() cannot handle embedded messages.");
-      case ENUM:
-        // We don't handle enums because we don't know what to do if the
-        // value is not recognized.
-        throw new IllegalArgumentException(
-          "readPrimitiveField() cannot handle enums.");
+    if (checkUtf8) {
+      return WireFormat.readPrimitiveField(input, type,
+          WireFormat.Utf8Validation.STRICT);
+    } else {
+      return WireFormat.readPrimitiveField(input, type,
+          WireFormat.Utf8Validation.LOOSE);
     }
-
-    throw new RuntimeException(
-      "There is no way to get here, but the compiler thinks otherwise.");
   }
 
 
@@ -685,9 +656,15 @@ final class FieldSet<FieldDescriptorType extends
       case FIXED64 : output.writeFixed64NoTag ((Long       ) value); break;
       case FIXED32 : output.writeFixed32NoTag ((Integer    ) value); break;
       case BOOL    : output.writeBoolNoTag    ((Boolean    ) value); break;
-      case STRING  : output.writeStringNoTag  ((String     ) value); break;
       case GROUP   : output.writeGroupNoTag   ((MessageLite) value); break;
       case MESSAGE : output.writeMessageNoTag ((MessageLite) value); break;
+      case STRING:
+        if (value instanceof ByteString) {
+          output.writeBytesNoTag((ByteString) value);
+        } else {
+          output.writeStringNoTag((String) value);
+        }
+        break;
       case BYTES:
         if (value instanceof ByteString) {
           output.writeBytesNoTag((ByteString) value);
@@ -843,13 +820,18 @@ final class FieldSet<FieldDescriptorType extends
       case FIXED64 : return CodedOutputStream.computeFixed64SizeNoTag ((Long       )value);
       case FIXED32 : return CodedOutputStream.computeFixed32SizeNoTag ((Integer    )value);
       case BOOL    : return CodedOutputStream.computeBoolSizeNoTag    ((Boolean    )value);
-      case STRING  : return CodedOutputStream.computeStringSizeNoTag  ((String     )value);
       case GROUP   : return CodedOutputStream.computeGroupSizeNoTag   ((MessageLite)value);
       case BYTES   :
         if (value instanceof ByteString) {
           return CodedOutputStream.computeBytesSizeNoTag((ByteString) value);
         } else {
           return CodedOutputStream.computeByteArraySizeNoTag((byte[]) value);
+        }
+      case STRING  :
+        if (value instanceof ByteString) {
+          return CodedOutputStream.computeBytesSizeNoTag((ByteString) value);
+        } else {
+          return CodedOutputStream.computeStringSizeNoTag((String) value);
         }
       case UINT32  : return CodedOutputStream.computeUInt32SizeNoTag  ((Integer    )value);
       case SFIXED32: return CodedOutputStream.computeSFixed32SizeNoTag((Integer    )value);

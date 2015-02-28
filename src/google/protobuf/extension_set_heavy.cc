@@ -91,9 +91,10 @@ class DescriptorPoolExtensionFinder : public ExtensionFinder {
   const Descriptor* containing_type_;
 };
 
-void ExtensionSet::AppendToList(const Descriptor* containing_type,
-                                const DescriptorPool* pool,
-                                vector<const FieldDescriptor*>* output) const {
+void ExtensionSet::AppendToList(
+    const Descriptor* containing_type,
+    const DescriptorPool* pool,
+    std::vector<const FieldDescriptor*>* output) const {
   for (map<int, Extension>::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     bool has = false;

@@ -83,10 +83,10 @@ public abstract class AbstractMessage extends AbstractMessageLite
   }
 
   public void writeTo(final CodedOutputStream output) throws IOException {
-    MessageReflection.writeMessageTo(this, output, false);
+    MessageReflection.writeMessageTo(this, getAllFields(), output, false);
   }
 
-  private int memoizedSize = -1;
+  protected int memoizedSize = -1;
 
   public int getSerializedSize() {
     int size = memoizedSize;
@@ -94,7 +94,7 @@ public abstract class AbstractMessage extends AbstractMessageLite
       return size;
     }
 
-    memoizedSize = MessageReflection.getSerializedSize(this);
+    memoizedSize = MessageReflection.getSerializedSize(this, getAllFields());
     return memoizedSize;
   }
 

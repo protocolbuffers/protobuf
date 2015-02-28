@@ -30,7 +30,7 @@
 
 syntax = "proto3";
 
-package proto2_preserve_unknown_enum_unittest;
+package proto3_preserve_unknown_enum_unittest;
 
 enum MyEnum {
   FOO = 0;
@@ -49,9 +49,10 @@ message MyMessage {
   optional MyEnum e = 1;
   repeated MyEnum repeated_e = 2;
   repeated MyEnum repeated_packed_e = 3 [packed=true];
+  repeated MyEnumPlusExtra repeated_packed_unexpected_e = 4;  // not packed
   oneof o {
-    MyEnum oneof_e_1 = 4;
-    MyEnum oneof_e_2 = 5;
+    MyEnum oneof_e_1 = 5;
+    MyEnum oneof_e_2 = 6;
   }
 }
 
@@ -59,8 +60,9 @@ message MyMessagePlusExtra {
   optional MyEnumPlusExtra e = 1;
   repeated MyEnumPlusExtra repeated_e = 2;
   repeated MyEnumPlusExtra repeated_packed_e = 3 [packed=true];
+  repeated MyEnumPlusExtra repeated_packed_unexpected_e = 4 [packed=true];
   oneof o {
-    MyEnumPlusExtra oneof_e_1 = 4;
-    MyEnumPlusExtra oneof_e_2 = 5;
+    MyEnumPlusExtra oneof_e_1 = 5;
+    MyEnumPlusExtra oneof_e_2 = 6;
   }
 }

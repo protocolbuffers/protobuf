@@ -345,6 +345,6 @@ int main(int argc, char* argv[]) {
     GOOGLE_CHECK_EQ(0, empty_message.unknown_fields().size());
   }
 
-  cout << "PASS" << endl;
+  std::cout << "PASS" << std::endl;
   return 0;
 }

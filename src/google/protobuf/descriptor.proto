@@ -172,9 +172,7 @@ message FieldDescriptorProto {
   optional string default_value = 7;
 
   // If set, gives the index of a oneof in the containing type's oneof_decl
-  // list.  This field is a member of that oneof.  Extensions of a oneof should
-  // not set this since the oneof to which they belong will be inferred based
-  // on the extension range containing the extension's field number.
+  // list.  This field is a member of that oneof.
   optional int32 oneof_index = 9;
 
   optional FieldOptions options = 8;
@@ -344,11 +342,14 @@ message FileOptions {
   // least, this is a formalization for deprecating files.
   optional bool deprecated = 23 [default=false];
 
-
   // Enables the use of arenas for the proto messages in this file. This applies
   // only to generated classes for C++.
   optional bool cc_enable_arenas = 31 [default=false];
 
+
+  // Sets the objective c class prefix which is prepended to all objective c
+  // generated classes from this .proto. There is no default.
+  optional string objc_class_prefix = 36;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -681,6 +682,11 @@ message SourceCodeInfo {
     // A series of line comments appearing on consecutive lines, with no other
     // tokens appearing on those lines, will be treated as a single comment.
     //
+    // leading_detached_comments will keep paragraphs of comments that appear
+    // before (but not connected to) the current element. Each paragraph,
+    // separated by empty lines, will be one comment element in the repeated
+    // field.
+    //
     // Only the comment content is provided; comment markers (e.g. //) are
     // stripped out.  For block comments, leading whitespace and an asterisk
     // will be stripped from the beginning of each line other than the first.
@@ -701,6 +707,12 @@ message SourceCodeInfo {
     //   // Another line attached to qux.
     //   optional double qux = 4;
     //
+    //   // Detached comment for corge. This is not leading or trailing comments
+    //   // to qux or corge because there are blank lines separating it from
+    //   // both.
+    //
+    //   // Detached comment for corge paragraph 2.
+    //
     //   optional string corge = 5;
     //   /* Block comment attached
     //    * to corge.  Leading asterisks
@@ -708,7 +720,10 @@ message SourceCodeInfo {
     //   /* Block comment attached to
     //    * grault. */
     //   optional int32 grault = 6;
+    //
+    //   // ignored detached comments.
     optional string leading_comments = 3;
     optional string trailing_comments = 4;
+    repeated string leading_detached_comments = 6;
   }
 }

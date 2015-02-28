@@ -65,3 +65,10 @@ message TestUnknownEnumValue {
   // parsing behavior of TestMap regarding unknown enum values.
   map<int32, int32> int32_to_int32_field = 4;
 }
+
+// Test that the maps initialization code works correctly when the map field
+// references the containing message.
+message TestRecursiveMap {
+  optional int32 value = 1;
+  map<int32, TestRecursiveMap> recursive_map_field = 2;
+}

@@ -118,6 +118,34 @@ public class RopeByteStringTest extends LiteralByteStringTest {
         flatString.hashCode(), unicode.hashCode());
   }
 
+  @Override
+  public void testToString_returnsCanonicalEmptyString() throws UnsupportedEncodingException {
+    RopeByteString ropeByteString =
+        RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.EMPTY);
+    assertSame(classUnderTest + " must be the same string references",
+        ByteString.EMPTY.toString(UTF_8), ropeByteString.toString(UTF_8));
+  }
+
+  public void testToString_raisesException() throws UnsupportedEncodingException{
+    try {
+      ByteString byteString =
+          RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.EMPTY);
+      byteString.toString("invalid");
+      fail("Should have thrown an exception.");
+    } catch (UnsupportedEncodingException expected) {
+      // This is success
+    }
+
+    try {
+      ByteString byteString = RopeByteString.concatenate(ByteString.copyFromUtf8("foo"),
+          ByteString.copyFromUtf8("bar"));
+      byteString.toString("invalid");
+      fail("Should have thrown an exception.");
+    } catch (UnsupportedEncodingException expected) {
+      // This is success
+    }
+  }
+
   public void testJavaSerialization() throws Exception {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     ObjectOutputStream oos = new ObjectOutputStream(out);

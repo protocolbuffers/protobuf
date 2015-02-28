@@ -41,6 +41,7 @@
 
 #include <google/protobuf/stubs/common.h>
 
+
 namespace google {
 namespace protobuf {
   class Arena;
@@ -133,9 +134,10 @@ class LIBPROTOBUF_EXPORT MessageLite {
   // just simple wrappers around MergeFromCodedStream().  Clear() will be called
   // before merging the input.
 
-  // Fill the message with a protocol buffer parsed from the given input
-  // stream.  Returns false on a read error or if the input is in the
-  // wrong format.
+  // Fill the message with a protocol buffer parsed from the given input stream.
+  // Returns false on a read error or if the input is in the wrong format.  A
+  // successful return does not indicate the entire input is consumed, ensure
+  // you call ConsumedEntireMessage() to check that if applicable.
   bool ParseFromCodedStream(io::CodedInputStream* input);
   // Like ParseFromCodedStream(), but accepts messages that are missing
   // required fields.
@@ -154,7 +156,11 @@ class LIBPROTOBUF_EXPORT MessageLite {
   // missing required fields.
   bool ParsePartialFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input,
                                              int size);
-  // Parse a protocol buffer contained in a string.
+  // Parses a protocol buffer contained in a string. Returns true on success.
+  // This function takes a string in the (non-human-readable) binary wire
+  // format, matching the encoding output by MessageLite::SerializeToString().
+  // If you'd like to convert a human-readable string into a protocol buffer
+  // object, see google::protobuf::TextFormat::ParseFromString().
   bool ParseFromString(const string& data);
   // Like ParseFromString(), but accepts messages that are missing
   // required fields.

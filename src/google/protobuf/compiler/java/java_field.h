@@ -83,6 +83,7 @@ class ImmutableFieldGenerator {
   virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
   virtual void GenerateFieldBuilderInitializationCode(io::Printer* printer)
       const = 0;
+  virtual void GenerateStaticInitializationCode(io::Printer* printer) const {}
 
   virtual void GenerateEqualsCode(io::Printer* printer) const = 0;
   virtual void GenerateHashCode(io::Printer* printer) const = 0;

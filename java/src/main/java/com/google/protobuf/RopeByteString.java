@@ -30,9 +30,9 @@
 
 package com.google.protobuf;
 
-import java.io.InvalidObjectException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -420,7 +420,11 @@ class RopeByteString extends ByteString {
   @Override
   public String toString(String charsetName)
       throws UnsupportedEncodingException {
-    return new String(toByteArray(), charsetName);
+    // Optimize for empty strings, but ensure we don't silently ignore invalid
+    // encodings.
+    return size() == 0 && UTF_8.equals(charsetName)
+        ? ""
+        : new String(toByteArray(), charsetName);
   }
 
   // =================================================================
