@@ -39,6 +39,7 @@ stamp-h1
 *.lo
 *.la
 src/.libs
+*.so
 
 .dirstamp
 
