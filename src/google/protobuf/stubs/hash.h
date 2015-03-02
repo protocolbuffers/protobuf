@@ -89,8 +89,9 @@ struct hash<const char*> {
 
 template <typename Key, typename Data,
           typename HashFcn = hash<Key>,
-          typename EqualKey = int >
-class hash_map : public std::map<Key, Data, HashFcn> {
+          typename EqualKey = int,
+          typename Alloc = std::allocator< std::pair<const Key, Data> > >
+class hash_map : public std::map<Key, Data, HashFcn, Alloc> {
  public:
   hash_map(int = 0) {}
 };
@@ -125,9 +126,10 @@ struct hash<const char*>
 
 template <typename Key, typename Data,
           typename HashFcn = hash<Key>,
-          typename EqualKey = int >
+          typename EqualKey = int,
+          typename Alloc = std::allocator< std::pair<const Key, Data> > >
 class hash_map : public GOOGLE_PROTOBUF_HASH_NAMESPACE::hash_map<
-    Key, Data, HashFcn> {
+    Key, Data, HashFcn, Alloc> {
  public:
   hash_map(int = 0) {}
 };
