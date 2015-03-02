@@ -374,7 +374,7 @@ class LIBPROTOBUF_EXPORT Arena {
   // wrap them in static functions.
   static ThreadCache& thread_cache();
 #else
-  static __thread ThreadCache thread_cache_;
+  static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_;
   static ThreadCache& thread_cache() { return thread_cache_; }
 #endif
 

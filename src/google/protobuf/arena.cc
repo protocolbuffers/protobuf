@@ -44,7 +44,7 @@ Arena::ThreadCache& Arena::thread_cache() {
   return thread_cache_;
 }
 #else
-__thread Arena::ThreadCache Arena::thread_cache_ = { -1, NULL };
+GOOGLE_THREAD_LOCAL Arena::ThreadCache Arena::thread_cache_ = { -1, NULL };
 #endif
 
 void Arena::Init() {
