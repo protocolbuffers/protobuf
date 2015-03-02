@@ -28,6 +28,7 @@ copy ..\src\google\protobuf\descriptor.pb.h include\google\protobuf\descriptor.p
 copy ..\src\google\protobuf\dynamic_message.h include\google\protobuf\dynamic_message.h
 copy ..\src\google\protobuf\extension_set.h include\google\protobuf\extension_set.h
 copy ..\src\google\protobuf\generated_enum_reflection.h include\google\protobuf\generated_enum_reflection.h
+copy ..\src\google\protobuf\generated_enum_util.h include\google\protobuf\generated_enum_util.h
 copy ..\src\google\protobuf\generated_message_reflection.h include\google\protobuf\generated_message_reflection.h
 copy ..\src\google\protobuf\generated_message_util.h include\google\protobuf\generated_message_util.h
 copy ..\src\google\protobuf\io\coded_stream.h include\google\protobuf\io\coded_stream.h
@@ -39,7 +40,9 @@ copy ..\src\google\protobuf\io\zero_copy_stream.h include\google\protobuf\io\zer
 copy ..\src\google\protobuf\io\zero_copy_stream_impl.h include\google\protobuf\io\zero_copy_stream_impl.h
 copy ..\src\google\protobuf\io\zero_copy_stream_impl_lite.h include\google\protobuf\io\zero_copy_stream_impl_lite.h
 copy ..\src\google\protobuf\map_entry.h include\google\protobuf\map_entry.h
+copy ..\src\google\protobuf\map_entry_lite.h include\google\protobuf\map_entry_lite.h
 copy ..\src\google\protobuf\map_field.h include\google\protobuf\map_field.h
+copy ..\src\google\protobuf\map_field_lite.h include\google\protobuf\map_field_lite.h
 copy ..\src\google\protobuf\map_field_inl.h include\google\protobuf\map_field_inl.h
 copy ..\src\google\protobuf\map.h include\google\protobuf\map.h
 copy ..\src\google\protobuf\map_type_handler.h include\google\protobuf\map_type_handler.h

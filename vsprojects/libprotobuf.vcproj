@@ -223,6 +223,9 @@
 				RelativePath="..\src\google\protobuf\message_lite.h"
 				>
 			</File>
+			<File RelativePath="..\src\google\protobuf\generated_enum_util.h"></File>
+			<File RelativePath="..\src\google\protobuf\map_entry_lite.h"></File>
+			<File RelativePath="..\src\google\protobuf\map_field_lite.h"></File>
 			<File
 				RelativePath="..\src\google\protobuf\stubs\atomicops.h"
 			>
