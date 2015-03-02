@@ -36,7 +36,7 @@ do
   cp google/protobuf/compiler/plugin.pb.h google/protobuf/compiler/plugin.pb.h.tmp
   cp google/protobuf/compiler/plugin.pb.cc google/protobuf/compiler/plugin.pb.cc.tmp
 
-  make -j8 $@ protoc &&
+  make $@ protoc &&
     ./protoc --cpp_out=dllexport_decl=LIBPROTOBUF_EXPORT:. google/protobuf/descriptor.proto && \
     ./protoc --cpp_out=dllexport_decl=LIBPROTOC_EXPORT:. google/protobuf/compiler/plugin.proto
 
