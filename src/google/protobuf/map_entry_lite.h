@@ -359,7 +359,7 @@ class LIBPROTOBUF_EXPORT MapEntryLite : public MessageLite {
     typedef void DestructorSkippable_;
   };
 
-  MapEntryLite() : arena_(NULL) {
+  MapEntryLite() : default_instance_(NULL), arena_(NULL) {
     KeyCppHandler::Initialize(&key_, NULL);
     ValueCppHandler::InitializeMaybeByDefaultEnum(
         &value_, default_enum_value, NULL);
@@ -367,7 +367,7 @@ class LIBPROTOBUF_EXPORT MapEntryLite : public MessageLite {
   }
 
   explicit MapEntryLite(Arena* arena)
-      : arena_(arena) {
+      : default_instance_(NULL), arena_(arena) {
     KeyCppHandler::Initialize(&key_, arena);
     ValueCppHandler::InitializeMaybeByDefaultEnum(
         &value_, default_enum_value, arena);
@@ -382,7 +382,7 @@ class LIBPROTOBUF_EXPORT MapEntryLite : public MessageLite {
     default_instance_ = default_instance;
   }
 
-  MapEntryLite* default_instance_ = NULL;
+  MapEntryLite* default_instance_;
 
   KeyBase key_;
   ValueBase value_;
