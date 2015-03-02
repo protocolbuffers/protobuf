@@ -536,7 +536,7 @@ struct RefTypeTraits<
 
 template<typename T>
 struct RefTypeTraits<
-    T, typename internal::enable_if<internal::is_enum<T>::value>::type> {
+    T, typename internal::enable_if<is_proto_enum<T>::value>::type> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
   // We use int32 for repeated enums in RepeatedFieldAccessor.
