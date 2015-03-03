@@ -72,3 +72,27 @@ Then build the Gem:
 This gem includes the upb parsing and serialization library as a single-file
 amalgamation. It is up-to-date with upb git commit
 `535bc2fe2f2b467f59347ffc9449e11e47791257`.
+
+Version Number Scheme
+---------------------
+
+We are using a version number scheme that is a hybrid of Protocol Buffers'
+overall version number and some Ruby-specific rules. Gem does not allow
+re-uploads of a gem with the same version number, so we add a sequence number
+("upload version") to the version. We also format alphabetical tags (alpha,
+pre, ...) slightly differently, and we avoid hyphens. In more detail:
+
+* First, we determine the prefix: a Protocol Buffers version "3.0.0-alpha-2"
+  becomes "3.0.0.alpha.2". When we release 3.0.0, this prefix will be simply
+  "3.0.0".
+* We then append the upload version: "3.0.0.alpha.2.0" or "3.0.0.0". If we need
+  to upload a new version of the gem to fix an issue, the version becomes
+  "3.0.0.alpha.2.1" or "3.0.0.1".
+* If we are working on a prerelease version, we append a prerelease tag:
+  "3.0.0.alpha.3.0.pre". The prerelease tag comes at the end so that when
+  version numbers are sorted, any prerelease builds are ordered between the
+  prior version and current version.
+
+These rules are designed to work with the sorting rules for
+[Gem::Version](http://ruby-doc.org/stdlib-2.0/libdoc/rubygems/rdoc/Gem/Version.html):
+release numbers should sort in actual release order.
