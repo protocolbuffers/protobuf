@@ -434,8 +434,9 @@ COMMON_TEST_SOURCES =                                          \
   google/protobuf/testing/file.cc                              \
   google/protobuf/testing/file.h
 
-check_PROGRAMS = protoc protobuf-test protobuf-lazy-descriptor-test \
-                 protobuf-lite-test test_plugin $(GZCHECKPROGRAMS)
+check_PROGRAMS = protoc protobuf-test protobuf-lazy-descriptor-test    \
+                 protobuf-lite-test protobuf-map-lite-test test_plugin \
+                 $(GZCHECKPROGRAMS)
 protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
                       $(top_builddir)/gtest/lib/libgtest.la       \
                       $(top_builddir)/gtest/lib/libgtest_main.la
@@ -512,13 +513,22 @@ protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la
 protobuf_lite_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lite_test_SOURCES =                                           \
   google/protobuf/lite_unittest.cc                                     \
+  google/protobuf/test_util_lite.cc                                    \
+  google/protobuf/test_util_lite.h                                     \
+nodist_protobuf_lite_test_SOURCES = $(protoc_lite_outputs)
+
+# Build map_lite_unittest separately, since it doesn't use gtest.
+protobuf_map_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la
+protobuf_map_lite_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
+protobuf_map_lite_test_SOURCES =                                       \
+  google/protobuf/arena_test_util.cc                                   \
+  google/protobuf/arena_test_util.h                                    \
   google/protobuf/map_lite_test_util.cc                                \
   google/protobuf/map_lite_test_util.h                                 \
   google/protobuf/test_util_lite.cc                                    \
-  google/protobuf/test_util_lite.h
-  # TODO(teboring) add the file back and make the test build.
-  # google/protobuf/map_lite_test.cc
-nodist_protobuf_lite_test_SOURCES = $(protoc_lite_outputs)
+  google/protobuf/test_util_lite.h                                     \
+  google/protobuf/map_lite_test.cc
+nodist_protobuf_map_lite_test_SOURCES = $(protoc_lite_outputs)
 
 # Test plugin binary.
 test_plugin_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
@@ -540,4 +550,5 @@ zcgunzip_SOURCES = google/protobuf/testing/zcgunzip.cc
 endif
 
 TESTS = protobuf-test protobuf-lazy-descriptor-test protobuf-lite-test \
+        protobuf-map-lite-test \
         google/protobuf/compiler/zip_output_unittest.sh $(GZTESTS)
