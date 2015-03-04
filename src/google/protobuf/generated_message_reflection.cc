@@ -995,6 +995,7 @@ void GeneratedMessageReflection::ListFields(
   // Optimization:  The default instance never has any fields set.
   if (&message == default_instance_) return;
 
+  output->reserve(descriptor_->field_count());
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (field->is_repeated()) {
@@ -1018,7 +1019,7 @@ void GeneratedMessageReflection::ListFields(
   }
 
   // ListFields() must sort output by field number.
-  sort(output->begin(), output->end(), FieldNumberSorter());
+  std::sort(output->begin(), output->end(), FieldNumberSorter());
 }
 
 // -------------------------------------------------------------------
@@ -1434,6 +1435,8 @@ const Message& GeneratedMessageReflection::GetMessage(
 Message* GeneratedMessageReflection::MutableMessage(
     Message* message, const FieldDescriptor* field,
     MessageFactory* factory) const {
+  USAGE_CHECK_ALL(MutableMessage, SINGULAR, MESSAGE);
+
   if (factory == NULL) factory = message_factory_;
 
   if (field->is_extension()) {
@@ -1972,26 +1975,28 @@ inline void GeneratedMessageReflection::ClearOneof(
   uint32 oneof_case = GetOneofCase(*message, oneof_descriptor);
   if (oneof_case > 0) {
     const FieldDescriptor* field = descriptor_->FindFieldByNumber(oneof_case);
-    switch (field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_STRING: {
-        switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other string reps.
-          case FieldOptions::STRING: {
-            const string* default_ptr =
-                &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
-            MutableField<ArenaStringPtr>(message, field)->
-                Destroy(default_ptr, GetArena(message));
-            break;
+    if (GetArena(message) == NULL) {
+      switch (field->cpp_type()) {
+        case FieldDescriptor::CPPTYPE_STRING: {
+          switch (field->options().ctype()) {
+            default:  // TODO(kenton):  Support other string reps.
+            case FieldOptions::STRING: {
+              const string* default_ptr =
+                  &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
+              MutableField<ArenaStringPtr>(message, field)->
+                  Destroy(default_ptr, GetArena(message));
+              break;
+            }
           }
+          break;
         }
-        break;
-      }
 
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        delete *MutableRaw<Message*>(message, field);
-        break;
-      default:
-        break;
+        case FieldDescriptor::CPPTYPE_MESSAGE:
+          delete *MutableRaw<Message*>(message, field);
+          break;
+        default:
+          break;
+      }
     }
 
     *MutableOneofCase(message, oneof_descriptor) = 0;

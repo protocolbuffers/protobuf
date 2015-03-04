@@ -2264,7 +2264,7 @@ RepeatedPtrField<Element>::pointer_end() const {
 
 // Iterators and helper functions that follow the spirit of the STL
 // std::back_insert_iterator and std::back_inserter but are tailor-made
-// for RepeatedField and RepatedPtrField. Typical usage would be:
+// for RepeatedField and RepeatedPtrField. Typical usage would be:
 //
 //   std::copy(some_sequence.begin(), some_sequence.end(),
 //             google::protobuf::RepeatedFieldBackInserter(proto.mutable_sequence()));

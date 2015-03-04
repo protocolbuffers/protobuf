@@ -117,7 +117,7 @@ class ImmutableMessageGenerator : public MessageGenerator {
 
   void GenerateBuilder(io::Printer* printer);
   void GenerateCommonBuilderMethods(io::Printer* printer);
-  void GenerateDescriptorMethods(io::Printer* printer);
+  void GenerateDescriptorMethods(io::Printer* printer, bool is_builder);
   void GenerateBuilderParsingMethods(io::Printer* printer);
   void GenerateIsInitialized(io::Printer* printer,
       UseMemoization useMemoization);

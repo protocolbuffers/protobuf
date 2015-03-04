@@ -31,6 +31,7 @@
 #include <google/protobuf/compiler/cpp/cpp_map_field.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/io/printer.h>
+#include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
@@ -72,14 +73,21 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
       (*variables)["val_cpp"] = PrimitiveTypeName(val->cpp_type());
       (*variables)["wrapper"] = "EntryWrapper";
   }
-  (*variables)["key_type"] =
-      "::google::protobuf::FieldDescriptor::TYPE_" +
+  (*variables)["key_wire_type"] =
+      "::google::protobuf::internal::WireFormatLite::TYPE_" +
       ToUpper(DeclaredTypeMethodName(key->type()));
-  (*variables)["val_type"] =
-      "::google::protobuf::FieldDescriptor::TYPE_" +
+  (*variables)["val_wire_type"] =
+      "::google::protobuf::internal::WireFormatLite::TYPE_" +
       ToUpper(DeclaredTypeMethodName(val->type()));
   (*variables)["map_classname"] = ClassName(descriptor->message_type(), false);
-  (*variables)["number"] = Int32ToString(descriptor->number());
+  (*variables)["number"] = SimpleItoa(descriptor->number());
+  (*variables)["tag"] = SimpleItoa(internal::WireFormat::MakeTag(descriptor));
+
+  if (HasDescriptorMethods(descriptor->file())) {
+    (*variables)["lite"] = "";
+  } else {
+    (*variables)["lite"] = "Lite";
+  }
 
   if (!IsProto3Field(descriptor) &&
       val->type() == FieldDescriptor::TYPE_ENUM) {
@@ -102,33 +110,40 @@ MapFieldGenerator::~MapFieldGenerator() {}
 void MapFieldGenerator::
 GeneratePrivateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-      "typedef ::google::protobuf::internal::MapEntry<\n"
+      "typedef ::google::protobuf::internal::MapEntryLite<\n"
       "    $key_cpp$, $val_cpp$,\n"
-      "    $key_type$,\n"
-      "    $val_type$, $default_enum_value$>\n"
+      "    $key_wire_type$,\n"
+      "    $val_wire_type$,\n"
+      "    $default_enum_value$ >\n"
       "    $map_classname$;\n"
-      "::google::protobuf::internal::MapField< $key_cpp$, $val_cpp$,"
-      "$key_type$, $val_type$, $default_enum_value$ > $name$_;\n");
+      "::google::protobuf::internal::MapField$lite$<\n"
+      "    $key_cpp$, $val_cpp$,\n"
+      "    $key_wire_type$,\n"
+      "    $val_wire_type$,\n"
+      "    $default_enum_value$ > $name$_;\n");
 }
 
 void MapFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-      "inline const ::google::protobuf::Map< $key_cpp$, $val_cpp$ >&\n"
+      "const ::google::protobuf::Map< $key_cpp$, $val_cpp$ >&\n"
       "    $name$() const$deprecation$;\n"
-      "inline ::google::protobuf::Map< $key_cpp$, $val_cpp$ >*\n"
+      "::google::protobuf::Map< $key_cpp$, $val_cpp$ >*\n"
       "    mutable_$name$()$deprecation$;\n");
 }
 
 void MapFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer) const {
-  printer->Print(variables_,
-      "inline const ::google::protobuf::Map< $key_cpp$, $val_cpp$ >&\n"
+GenerateInlineAccessorDefinitions(io::Printer* printer,
+                                  bool is_inline) const {
+  map<string, string> variables(variables_);
+  variables["inline"] = is_inline ? "inline" : "";
+  printer->Print(variables,
+      "$inline$ const ::google::protobuf::Map< $key_cpp$, $val_cpp$ >&\n"
       "$classname$::$name$() const {\n"
       "  // @@protoc_insertion_point(field_map:$full_name$)\n"
       "  return $name$_.GetMap();\n"
       "}\n"
-      "inline ::google::protobuf::Map< $key_cpp$, $val_cpp$ >*\n"
+      "$inline$ ::google::protobuf::Map< $key_cpp$, $val_cpp$ >*\n"
       "$classname$::mutable_$name$() {\n"
       "  // @@protoc_insertion_point(field_mutable_map:$full_name$)\n"
       "  return $name$_.MutableMap();\n"
@@ -198,10 +213,28 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
         "  if ($val_cpp$_IsValid(*entry->mutable_value())) {\n"
         "    (*mutable_$name$())[entry->key()] =\n"
         "        static_cast<$val_cpp$>(*entry->mutable_value());\n"
-        "  } else {\n"
-        "    mutable_unknown_fields()->AddLengthDelimited($number$, data);\n"
+        "  } else {\n");
+    if (HasDescriptorMethods(descriptor_->file())) {
+      printer->Print(variables_,
+          "    mutable_unknown_fields()"
+          "->AddLengthDelimited($number$, data);\n");
+    } else {
+      printer->Print(variables_,
+          "    unknown_fields_stream.WriteVarint32($tag$);\n"
+          "    unknown_fields_stream.WriteVarint32(data.size());\n"
+          "    unknown_fields_stream.WriteString(data);\n");
+    }
+
+
+    printer->Print(variables_,
         "  }\n"
         "}\n");
+  }
+
+  // If entry is allocated by arena, its desctructor should be avoided.
+  if (SupportsArenas(descriptor_)) {
+    printer->Print(variables_,
+        "if (entry->GetArena() != NULL) entry.release();\n");
   }
 }
 
@@ -211,12 +244,31 @@ GenerateSerializeWithCachedSizes(io::Printer* printer) const {
       "{\n"
       "  ::google::protobuf::scoped_ptr<$map_classname$> entry;\n"
       "  for (::google::protobuf::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"
-      "      it = $name$().begin(); it != $name$().end(); ++it) {\n"
+      "      it = $name$().begin(); it != $name$().end(); ++it) {\n");
+
+  // If entry is allocated by arena, its desctructor should be avoided.
+  if (SupportsArenas(descriptor_)) {
+    printer->Print(variables_,
+        "    if (entry.get() != NULL && entry->GetArena() != NULL) {\n"
+        "      entry.release();\n"
+        "    }\n");
+  }
+
+  printer->Print(variables_,
       "    entry.reset($name$_.New$wrapper$(it->first, it->second));\n"
       "    ::google::protobuf::internal::WireFormatLite::Write$stream_writer$(\n"
       "        $number$, *entry, output);\n"
-      "  }\n"
-      "}\n");
+      "  }\n");
+
+  // If entry is allocated by arena, its desctructor should be avoided.
+  if (SupportsArenas(descriptor_)) {
+    printer->Print(variables_,
+        "  if (entry.get() != NULL && entry->GetArena() != NULL) {\n"
+        "    entry.release();\n"
+        "  }\n");
+  }
+
+  printer->Print("}\n");
 }
 
 void MapFieldGenerator::
@@ -225,13 +277,32 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
       "{\n"
       "  ::google::protobuf::scoped_ptr<$map_classname$> entry;\n"
       "  for (::google::protobuf::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"
-      "      it = $name$().begin(); it != $name$().end(); ++it) {\n"
+      "      it = $name$().begin(); it != $name$().end(); ++it) {\n");
+
+  // If entry is allocated by arena, its desctructor should be avoided.
+  if (SupportsArenas(descriptor_)) {
+    printer->Print(variables_,
+        "    if (entry.get() != NULL && entry->GetArena() != NULL) {\n"
+        "      entry.release();\n"
+        "    }\n");
+  }
+
+  printer->Print(variables_,
       "    entry.reset($name$_.New$wrapper$(it->first, it->second));\n"
       "    target = ::google::protobuf::internal::WireFormatLite::\n"
       "        Write$declared_type$NoVirtualToArray(\n"
       "            $number$, *entry, target);\n"
-      "  }\n"
-      "}\n");
+      "  }\n");
+
+  // If entry is allocated by arena, its desctructor should be avoided.
+  if (SupportsArenas(descriptor_)) {
+    printer->Print(variables_,
+        "  if (entry.get() != NULL && entry->GetArena() != NULL) {\n"
+        "    entry.release();\n"
+        "  }\n");
+  }
+
+  printer->Print("}\n");
 }
 
 void MapFieldGenerator::
@@ -241,12 +312,31 @@ GenerateByteSize(io::Printer* printer) const {
       "{\n"
       "  ::google::protobuf::scoped_ptr<$map_classname$> entry;\n"
       "  for (::google::protobuf::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"
-      "      it = $name$().begin(); it != $name$().end(); ++it) {\n"
+      "      it = $name$().begin(); it != $name$().end(); ++it) {\n");
+
+  // If entry is allocated by arena, its desctructor should be avoided.
+  if (SupportsArenas(descriptor_)) {
+    printer->Print(variables_,
+        "    if (entry.get() != NULL && entry->GetArena() != NULL) {\n"
+        "      entry.release();\n"
+        "    }\n");
+  }
+
+  printer->Print(variables_,
       "    entry.reset($name$_.New$wrapper$(it->first, it->second));\n"
       "    total_size += ::google::protobuf::internal::WireFormatLite::\n"
       "        $declared_type$SizeNoVirtual(*entry);\n"
-      "  }\n"
-      "}\n");
+      "  }\n");
+
+  // If entry is allocated by arena, its desctructor should be avoided.
+  if (SupportsArenas(descriptor_)) {
+    printer->Print(variables_,
+        "  if (entry.get() != NULL && entry->GetArena() != NULL) {\n"
+        "    entry.release();\n"
+        "  }\n");
+  }
+
+  printer->Print("}\n");
 }
 
 }  // namespace cpp

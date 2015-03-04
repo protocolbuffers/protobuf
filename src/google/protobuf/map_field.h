@@ -34,8 +34,10 @@
 #include <google/protobuf/stubs/atomicops.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/generated_message_reflection.h>
-#include <google/protobuf/map.h>
+#include <google/protobuf/arena.h>
 #include <google/protobuf/map_entry.h>
+#include <google/protobuf/map_field_lite.h>
+#include <google/protobuf/map_type_handler.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/unknown_field_set.h>
@@ -56,7 +58,13 @@ class MapFieldAccessor;
 class LIBPROTOBUF_EXPORT MapFieldBase {
  public:
   MapFieldBase()
-      : base_map_(NULL),
+      : arena_(NULL),
+        repeated_field_(NULL),
+        entry_descriptor_(NULL),
+        assign_descriptor_callback_(NULL),
+        state_(STATE_MODIFIED_MAP) {}
+  explicit MapFieldBase(Arena* arena)
+      : arena_(arena),
         repeated_field_(NULL),
         entry_descriptor_(NULL),
         assign_descriptor_callback_(NULL),
@@ -109,7 +117,7 @@ class LIBPROTOBUF_EXPORT MapFieldBase {
     CLEAN = 2,  // data in map and repeated field are same
   };
 
-  mutable void* base_map_;
+  Arena* arena_;
   mutable RepeatedPtrField<Message>* repeated_field_;
   // MapEntry can only be created from MapField. To create MapEntry, MapField
   // needs to know its descriptor, because MapEntry is not generated class which
@@ -134,41 +142,55 @@ class LIBPROTOBUF_EXPORT MapFieldBase {
 // This class provides accesss to map field using generated api. It is used for
 // internal generated message implentation only. Users should never use this
 // directly.
-template<typename Key, typename T,
-         FieldDescriptor::Type KeyProto,
-         FieldDescriptor::Type ValueProto, int default_enum_value = 0>
-class MapField : public MapFieldBase {
-  // Handlers for key/value's proto field type.
-  typedef MapProtoTypeHandler<KeyProto> KeyProtoHandler;
-  typedef MapProtoTypeHandler<ValueProto> ValueProtoHandler;
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value = 0>
+class LIBPROTOBUF_EXPORT MapField : public MapFieldBase,
+                 public MapFieldLite<Key, T, kKeyFieldType, kValueFieldType,
+                                     default_enum_value> {
+  // Handlers for key/value wire type. Provide utilities to parse/serialize
+  // key/value.
+  typedef MapWireFieldTypeHandler<kKeyFieldType> KeyWireHandler;
+  typedef MapWireFieldTypeHandler<kValueFieldType> ValueWireHandler;
 
   // Define key/value's internal stored type.
-  typedef typename KeyProtoHandler::CppType KeyHandlerCpp;
-  typedef typename ValueProtoHandler::CppType ValHandlerCpp;
-  static const bool kIsKeyMessage = KeyProtoHandler::kIsMessage;
-  static const bool kIsValMessage = ValueProtoHandler::kIsMessage;
-  typedef typename MapIf<kIsKeyMessage, Key, KeyHandlerCpp>::type KeyCpp;
-  typedef typename MapIf<kIsValMessage, T  , ValHandlerCpp>::type ValCpp;
+  static const bool kIsKeyMessage = KeyWireHandler::kIsMessage;
+  static const bool kIsValMessage = ValueWireHandler::kIsMessage;
+  typedef typename KeyWireHandler::CppType KeyInternalType;
+  typedef typename ValueWireHandler::CppType ValueInternalType;
+  typedef typename MapIf<kIsKeyMessage, Key, KeyInternalType>::type KeyCpp;
+  typedef typename MapIf<kIsValMessage, T  , ValueInternalType>::type ValCpp;
 
   // Handlers for key/value's internal stored type.
   typedef MapCppTypeHandler<KeyCpp> KeyHandler;
   typedef MapCppTypeHandler<ValCpp> ValHandler;
 
   // Define message type for internal repeated field.
-  typedef MapEntry<Key, T, KeyProto, ValueProto, default_enum_value> EntryType;
+  typedef MapEntry<Key, T, kKeyFieldType, kValueFieldType, default_enum_value>
+      EntryType;
+  typedef MapEntryLite<Key, T, kKeyFieldType, kValueFieldType,
+                       default_enum_value> EntryLiteType;
+
+  // Define abbreviation for parent MapFieldLite
+  typedef MapFieldLite<Key, T, kKeyFieldType, kValueFieldType,
+                       default_enum_value> MapFieldLiteType;
 
   // Enum needs to be handled differently from other types because it has
   // different exposed type in google::protobuf::Map's api and repeated field's api. For
   // details see the comment in the implementation of
   // SyncMapWithRepeatedFieldNoLocki.
-  static const bool kIsValueEnum = ValueProtoHandler::kIsEnum;
+  static const bool kIsValueEnum = ValueWireHandler::kIsEnum;
   typedef typename MapIf<kIsValueEnum, T, const T&>::type CastValueType;
 
  public:
   MapField();
+  explicit MapField(Arena* arena);
   // MapField doesn't own the default_entry, which means default_entry must
   // outlive the lifetime of MapField.
   MapField(const Message* default_entry);
+  // For tests only.
+  MapField(Arena* arena, const Message* default_entry);
   ~MapField();
 
   // Accessors
@@ -178,28 +200,21 @@ class MapField : public MapFieldBase {
   // Convenient methods for generated message implementation.
   int size() const;
   void Clear();
-  void MergeFrom(const MapField& other);
-  void Swap(MapField* other);
+  void MergeFrom(const MapFieldLiteType& other);
+  void Swap(MapFieldLiteType* other);
 
   // Allocates metadata only if this MapField is part of a generated message.
   void SetEntryDescriptor(const Descriptor** descriptor);
   void SetAssignDescriptorCallback(void (*callback)());
 
-  // Set default enum value only for proto2 map field whose value is enum type.
-  void SetDefaultEnumValue();
-
-  // Used in the implementation of parsing. Caller should take the ownership.
-  EntryType* NewEntry() const;
-  // Used in the implementation of serializing enum value type. Caller should
-  // take the ownership.
-  EntryType* NewEnumEntryWrapper(const Key& key, const T t) const;
-  // Used in the implementation of serializing other value types. Caller should
-  // take the ownership.
-  EntryType* NewEntryWrapper(const Key& key, const T& t) const;
-
  private:
+  typedef void DestructorSkippable_;
+
   // MapField needs MapEntry's default instance to create new MapEntry.
   void InitDefaultEntryOnce() const;
+
+  // Manually set default entry instance. For test only.
+  void SetDefaultEntryOnce(const EntryType* default_entry) const;
 
   // Convenient methods to get internal google::protobuf::Map
   const Map<Key, T>& GetInternalMap() const;
@@ -211,14 +226,9 @@ class MapField : public MapFieldBase {
   int SpaceUsedExcludingSelfNoLock() const;
 
   mutable const EntryType* default_entry_;
-};
 
-// True if IsInitialized() is true for value field in all elements of t. T is
-// expected to be message.  It's useful to have this helper here to keep the
-// protobuf compiler from ever having to emit loops in IsInitialized() methods.
-// We want the C++ compiler to inline this or not as it sees fit.
-template <typename Key, typename T>
-bool AllAreInitialized(const Map<Key, T>& t);
+  friend class ::google::protobuf::Arena;
+};
 
 }  // namespace internal
 }  // namespace protobuf

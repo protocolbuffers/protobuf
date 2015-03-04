@@ -277,27 +277,39 @@ bool Parser::ConsumeString(string* output, const char* error) {
   }
 }
 
-bool Parser::TryConsumeEndOfDeclaration(const char* text,
-                                        const LocationRecorder* location) {
+bool Parser::TryConsumeEndOfDeclaration(
+    const char* text, const LocationRecorder* location) {
   if (LookingAt(text)) {
     string leading, trailing;
-    input_->NextWithComments(&trailing, NULL, &leading);
+    vector<string> detached;
+    input_->NextWithComments(&trailing, &detached, &leading);
 
     // Save the leading comments for next time, and recall the leading comments
     // from last time.
     leading.swap(upcoming_doc_comments_);
 
     if (location != NULL) {
-      location->AttachComments(&leading, &trailing);
+      upcoming_detached_comments_.swap(detached);
+      location->AttachComments(&leading, &trailing, &detached);
+    } else if (strcmp(text, "}") == 0) {
+      // If the current location is null and we are finishing the current scope,
+      // drop pending upcoming detached comments.
+      upcoming_detached_comments_.swap(detached);
+    } else {
+      // Otherwise, append the new detached comments to the existing upcoming
+      // detached comments.
+      upcoming_detached_comments_.insert(upcoming_detached_comments_.end(),
+                                         detached.begin(), detached.end());
     }
+
     return true;
   } else {
     return false;
   }
 }
 
-bool Parser::ConsumeEndOfDeclaration(const char* text,
-                                     const LocationRecorder* location) {
+bool Parser::ConsumeEndOfDeclaration(
+    const char* text, const LocationRecorder* location) {
   if (TryConsumeEndOfDeclaration(text, location)) {
     return true;
   } else {
@@ -390,7 +402,8 @@ void Parser::LocationRecorder::RecordLegacyLocation(const Message* descriptor,
 }
 
 void Parser::LocationRecorder::AttachComments(
-    string* leading, string* trailing) const {
+    string* leading, string* trailing,
+    vector<string>* detached_comments) const {
   GOOGLE_CHECK(!location_->has_leading_comments());
   GOOGLE_CHECK(!location_->has_trailing_comments());
 
@@ -400,6 +413,11 @@ void Parser::LocationRecorder::AttachComments(
   if (!trailing->empty()) {
     location_->mutable_trailing_comments()->swap(*trailing);
   }
+  for (int i = 0; i < detached_comments->size(); ++i) {
+    location_->add_leading_detached_comments()->swap(
+        (*detached_comments)[i]);
+  }
+  detached_comments->clear();
 }
 
 // -------------------------------------------------------------------
@@ -451,16 +469,18 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
   SourceCodeInfo source_code_info;
   source_code_info_ = &source_code_info;
 
+  vector<string> top_doc_comments;
   if (LookingAtType(io::Tokenizer::TYPE_START)) {
     // Advance to first token.
-    input_->NextWithComments(NULL, NULL, &upcoming_doc_comments_);
+    input_->NextWithComments(NULL, &upcoming_detached_comments_,
+                             &upcoming_doc_comments_);
   }
 
   {
     LocationRecorder root_location(this);
 
     if (require_syntax_identifier_ || LookingAt("syntax")) {
-      if (!ParseSyntaxIdentifier()) {
+      if (!ParseSyntaxIdentifier(root_location)) {
         // Don't attempt to parse the file if we didn't recognize the syntax
         // identifier.
         return false;
@@ -469,9 +489,9 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
       if (file != NULL) file->set_syntax(syntax_identifier_);
     } else if (!stop_after_syntax_identifier_) {
       GOOGLE_LOG(WARNING) << "No syntax specified for the proto file. "
-                          << "Please use 'syntax = \"proto2\";' or "
-                          << "'syntax = \"proto3\";' to specify a syntax "
-                          << "version. (Defaulted to proto2 syntax.)";
+                   << "Please use 'syntax = \"proto2\";' or "
+                   << "'syntax = \"proto3\";' to specify a syntax "
+                   << "version. (Defaulted to proto2 syntax.)";
       syntax_identifier_ = "proto2";
     }
 
@@ -486,7 +506,8 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
 
         if (LookingAt("}")) {
           AddError("Unmatched \"}\".");
-          input_->NextWithComments(NULL, NULL, &upcoming_doc_comments_);
+          input_->NextWithComments(NULL, &upcoming_detached_comments_,
+                                   &upcoming_doc_comments_);
         }
       }
     }
@@ -498,7 +519,9 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
   return !had_errors_;
 }
 
-bool Parser::ParseSyntaxIdentifier() {
+bool Parser::ParseSyntaxIdentifier(const LocationRecorder& parent) {
+  LocationRecorder syntax_location(parent,
+                                   FileDescriptorProto::kSyntaxFieldNumber);
   DO(Consume(
       "syntax",
       "File must begin with a syntax statement, e.g. 'syntax = \"proto2\";'."));
@@ -506,7 +529,7 @@ bool Parser::ParseSyntaxIdentifier() {
   io::Tokenizer::Token syntax_token = input_->current();
   string syntax;
   DO(ConsumeString(&syntax, "Expected syntax identifier."));
-  DO(ConsumeEndOfDeclaration(";", NULL));
+  DO(ConsumeEndOfDeclaration(";", &syntax_location));
 
   syntax_identifier_ = syntax;
 
@@ -1271,7 +1294,6 @@ bool Parser::ParseOption(Message* options,
     DO(ConsumeEndOfDeclaration(";", &location));
   }
 
-
   return true;
 }
 
@@ -1636,8 +1658,14 @@ bool Parser::ParseServiceMethod(MethodDescriptorProto* method,
   // Parse input type.
   DO(Consume("("));
   {
-    if (TryConsume("stream")) {
+    if (LookingAt("stream")) {
+      LocationRecorder location(
+          method_location, MethodDescriptorProto::kClientStreamingFieldNumber);
+      location.RecordLegacyLocation(
+          method, DescriptorPool::ErrorCollector::OTHER);
       method->set_client_streaming(true);
+      DO(Consume("stream"));
+
     }
     LocationRecorder location(method_location,
                               MethodDescriptorProto::kInputTypeFieldNumber);
@@ -1651,8 +1679,14 @@ bool Parser::ParseServiceMethod(MethodDescriptorProto* method,
   DO(Consume("returns"));
   DO(Consume("("));
   {
-    if (TryConsume("stream")) {
+    if (LookingAt("stream")) {
+      LocationRecorder location(
+          method_location, MethodDescriptorProto::kServerStreamingFieldNumber);
+      location.RecordLegacyLocation(
+          method, DescriptorPool::ErrorCollector::OTHER);
+      DO(Consume("stream"));
       method->set_server_streaming(true);
+
     }
     LocationRecorder location(method_location,
                               MethodDescriptorProto::kOutputTypeFieldNumber);
@@ -1664,10 +1698,9 @@ bool Parser::ParseServiceMethod(MethodDescriptorProto* method,
 
   if (LookingAt("{")) {
     // Options!
-    DO(ParseOptions(method_location,
-                    containing_file,
-                    MethodDescriptorProto::kOptionsFieldNumber,
-                    method->mutable_options()));
+    DO(ParseMethodOptions(method_location, containing_file,
+                          MethodDescriptorProto::kOptionsFieldNumber,
+                          method->mutable_options()));
   } else {
     DO(ConsumeEndOfDeclaration(";", &method_location));
   }
@@ -1676,10 +1709,10 @@ bool Parser::ParseServiceMethod(MethodDescriptorProto* method,
 }
 
 
-bool Parser::ParseOptions(const LocationRecorder& parent_location,
-                          const FileDescriptorProto* containing_file,
-                          const int optionsFieldNumber,
-                          Message* mutable_options) {
+bool Parser::ParseMethodOptions(const LocationRecorder& parent_location,
+                                const FileDescriptorProto* containing_file,
+                                const int optionsFieldNumber,
+                                Message* mutable_options) {
   // Options!
   ConsumeEndOfDeclaration("{", &parent_location);
   while (!TryConsumeEndOfDeclaration("}", NULL)) {
@@ -1693,8 +1726,8 @@ bool Parser::ParseOptions(const LocationRecorder& parent_location,
     } else {
       LocationRecorder location(parent_location,
                                 optionsFieldNumber);
-      if (!ParseOption(mutable_options, location, containing_file,
-                       OPTION_STATEMENT)) {
+      if (!ParseOption(mutable_options, location,
+                       containing_file, OPTION_STATEMENT)) {
         // This statement failed to parse.  Skip it, but keep looping to
         // parse other statements.
         SkipStatement();
@@ -1847,7 +1880,7 @@ bool SourceLocationTable::Find(
     DescriptorPool::ErrorCollector::ErrorLocation location,
     int* line, int* column) const {
   const pair<int, int>* result =
-    FindOrNull(location_map_, make_pair(descriptor, location));
+      FindOrNull(location_map_, std::make_pair(descriptor, location));
   if (result == NULL) {
     *line   = -1;
     *column = 0;
@@ -1863,7 +1896,8 @@ void SourceLocationTable::Add(
     const Message* descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location,
     int line, int column) {
-  location_map_[make_pair(descriptor, location)] = make_pair(line, column);
+  location_map_[std::make_pair(descriptor, location)] =
+      std::make_pair(line, column);
 }
 
 void SourceLocationTable::Clear() {

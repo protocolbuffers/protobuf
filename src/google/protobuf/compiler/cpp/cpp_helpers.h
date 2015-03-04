@@ -211,6 +211,10 @@ inline bool IsMapEntryMessage(const Descriptor* descriptor) {
 // Returns true if the field's CPPTYPE is string or message.
 bool IsStringOrMessage(const FieldDescriptor* field);
 
+// For a string field, returns the effective ctype.  If the actual ctype is
+// not supported, returns the default of STRING.
+FieldOptions::CType EffectiveStringCType(const FieldDescriptor* field);
+
 string UnderscoresToCamelCase(const string& input, bool cap_next_letter);
 
 inline bool HasFieldPresence(const FileDescriptor* file) {

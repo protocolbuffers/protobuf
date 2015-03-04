@@ -60,6 +60,7 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
   void GenerateFieldBuilderInitializationCode(io::Printer* printer) const;
+  void GenerateStaticInitializationCode(io::Printer* printer) const;
   void GenerateEqualsCode(io::Printer* printer) const;
   void GenerateHashCode(io::Printer* printer) const;
 

@@ -34,9 +34,11 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_H__
 #define GOOGLE_PROTOBUF_ARENA_H__
 
-#include <google/protobuf/stubs/common.h>
+#include <typeinfo>
+
 #include <google/protobuf/stubs/atomic_sequence_num.h>
 #include <google/protobuf/stubs/atomicops.h>
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/type_traits.h>
 
 namespace google {
@@ -89,11 +91,32 @@ struct ArenaOptions {
 
   // A function pointer to an alloc method that returns memory blocks of size
   // requested. By default, it contains a ptr to the malloc function.
+  //
+  // NOTE: block_alloc and dealloc functions are expected to behave like
+  // malloc and free, including Asan poisoning.
   void* (*block_alloc)(size_t);
   // A function pointer to a dealloc method that takes ownership of the blocks
   // from the arena. By default, it contains a ptr to a wrapper function that
   // calls free.
   void (*block_dealloc)(void*, size_t);
+
+  // Hooks for adding external functionality such as user-specific metrics
+  // collection, specific debugging abilities, etc.
+  // Init hook may return a pointer to a cookie to be stored in the arena.
+  // reset and destruction hooks will then be called with the same cookie
+  // pointer. This allows us to save an external object per arena instance and
+  // use it on the other hooks (Note: It is just as legal for init to return
+  // NULL and not use the cookie feature).
+  // on_arena_reset and on_arena_destruction also receive the space used in
+  // the arena just before the reset.
+  void* (*on_arena_init)(Arena* arena);
+  void (*on_arena_reset)(Arena* arena, void* cookie, uint64 space_used);
+  void (*on_arena_destruction)(Arena* arena, void* cookie, uint64 space_used);
+
+  // type_name is promised to be a static string - its lifetime extends to
+  // match program's lifetime.
+  void (*on_arena_allocation)(const char* type_name, uint64 alloc_size,
+      Arena* arena, void* cookie);
 
   ArenaOptions()
       : start_block_size(kDefaultStartBlockSize),
@@ -101,7 +124,11 @@ struct ArenaOptions {
         initial_block(NULL),
         initial_block_size(0),
         block_alloc(&malloc),
-        block_dealloc(&internal::arena_free) {}
+        block_dealloc(&internal::arena_free),
+        on_arena_init(NULL),
+        on_arena_reset(NULL),
+        on_arena_destruction(NULL),
+        on_arena_allocation(NULL) {}
 
  private:
   // Constants define default starting block size and max block size for
@@ -123,23 +150,21 @@ class LIBPROTOBUF_EXPORT Arena {
  public:
   // Arena constructor taking custom options. See ArenaOptions below for
   // descriptions of the options available.
-  explicit Arena(const ArenaOptions& options) {
-    Init(options);
+  explicit Arena(const ArenaOptions& options) : options_(options) {
+    Init();
   }
 
   // Default constructor with sensible default options, tuned for average
   // use-cases.
   Arena() {
-    Init(ArenaOptions());
+    Init();
   }
 
   // Destructor deletes all owned heap allocated objects, and destructs objects
   // that have non-trivial destructors, except for proto2 message objects whose
   // destructors can be skipped. Also, frees all blocks except the initial block
   // if it was passed in.
-  ~Arena() {
-    Reset();
-  }
+  ~Arena();
 
   // API to create proto2 message objects on the arena. If the arena passed in
   // is NULL, then a heap allocated object is returned. Type T must be a message
@@ -195,6 +220,40 @@ class LIBPROTOBUF_EXPORT Arena {
     }
   }
 
+  // Version of the above with three constructor arguments for the created
+  // object.
+  template <typename T, typename Arg1, typename Arg2, typename Arg3>
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE static T* Create(::google::protobuf::Arena* arena,
+                                           const Arg1& arg1, const Arg2& arg2,
+                                           const Arg3& arg3) {
+    if (arena == NULL) {
+      return new T(arg1, arg2, arg3);
+    } else {
+      return arena->CreateInternal<T>(SkipDeleteList<T>(static_cast<T*>(0)),
+                                      arg1,
+                                      arg2,
+                                      arg3);
+    }
+  }
+
+  // Version of the above with four constructor arguments for the created
+  // object.
+  template <typename T, typename Arg1, typename Arg2, typename Arg3,
+            typename Arg4>
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE static T* Create(::google::protobuf::Arena* arena,
+                                           const Arg1& arg1, const Arg2& arg2,
+                                           const Arg3& arg3, const Arg4& arg4) {
+    if (arena == NULL) {
+      return new T(arg1, arg2, arg3, arg4);
+    } else {
+      return arena->CreateInternal<T>(SkipDeleteList<T>(static_cast<T*>(0)),
+                                      arg1,
+                                      arg2,
+                                      arg3,
+                                      arg4);
+    }
+  }
+
   // Create an array of object type T on the arena. Type T must have a trivial
   // constructor, as it will not be invoked when created on the arena.
   template <typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
@@ -202,8 +261,7 @@ class LIBPROTOBUF_EXPORT Arena {
     if (arena == NULL) {
       return new T[num_elements];
     } else {
-      return static_cast<T*>(
-          arena->AllocateAligned(num_elements * sizeof(T)));
+      return arena->CreateInternalRawArray<T>(num_elements);
     }
   }
 
@@ -211,6 +269,8 @@ class LIBPROTOBUF_EXPORT Arena {
   // of the underlying blocks. The total space used may not include the new
   // blocks that are allocated by this arena from other threads concurrently
   // with the call to this method.
+  uint64 SpaceAllocated() const GOOGLE_ATTRIBUTE_NOINLINE;
+  // As above, but does not include any free space in underlying blocks.
   uint64 SpaceUsed() const GOOGLE_ATTRIBUTE_NOINLINE;
 
   // Frees all storage allocated by this arena after calling destructors
@@ -253,7 +313,7 @@ class LIBPROTOBUF_EXPORT Arena {
   // latter is a virtual call, while this method is a templated call that
   // resolves at compile-time.
   template<typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-  static inline ::google::protobuf::Arena* GetArena(T* value) {
+  static inline ::google::protobuf::Arena* GetArena(const T* value) {
     return GetArenaInternal(value, static_cast<T*>(0));
   }
 
@@ -294,9 +354,6 @@ class LIBPROTOBUF_EXPORT Arena {
     size_t avail() const GOOGLE_ATTRIBUTE_ALWAYS_INLINE { return size - pos; }
     // data follows
   };
-
-  void* (*block_alloc)(size_t);  // Allocates a free block of a particular size.
-  void (*block_dealloc)(void*, size_t);  // Deallocates the given block.
 
   template<typename Type> friend class ::google::protobuf::internal::GenericTypeHandler;
   friend class MockArena;              // For unit-testing.
@@ -354,6 +411,13 @@ class LIBPROTOBUF_EXPORT Arena {
     return Create<T>(arena);
   }
 
+  // Just allocate the required size for the given type assuming the
+  // type has a trivial constructor.
+  template<typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
+  inline T* CreateInternalRawArray(uint32 num_elements) {
+    return static_cast<T*>(AllocateAligned(sizeof(T) * num_elements));
+  }
+
   template <typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
   inline T* CreateInternal(
       bool skip_explicit_ownership) {
@@ -384,10 +448,55 @@ class LIBPROTOBUF_EXPORT Arena {
     return t;
   }
 
+  template <typename T, typename Arg1, typename Arg2, typename Arg3>
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE inline T* CreateInternal(bool skip_explicit_ownership,
+                                                   const Arg1& arg1,
+                                                   const Arg2& arg2,
+                                                   const Arg3& arg3) {
+    T* t = new (AllocateAligned(sizeof(T))) T(arg1, arg2, arg3);
+    if (!skip_explicit_ownership) {
+      AddListNode(t, &internal::arena_destruct_object<T>);
+    }
+    return t;
+  }
+
+  template <typename T, typename Arg1, typename Arg2, typename Arg3,
+            typename Arg4>
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE inline T* CreateInternal(bool skip_explicit_ownership,
+                                                   const Arg1& arg1,
+                                                   const Arg2& arg2,
+                                                   const Arg3& arg3,
+                                                   const Arg4& arg4) {
+    T* t = new (AllocateAligned(sizeof(T))) T(arg1, arg2, arg3, arg4);
+    if (!skip_explicit_ownership) {
+      AddListNode(t, &internal::arena_destruct_object<T>);
+    }
+    return t;
+  }
+
   template <typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
   inline T* CreateMessageInternal(typename T::InternalArenaConstructable_*) {
     return CreateInternal<T, Arena*>(SkipDeleteList<T>(static_cast<T*>(0)),
                                      this);
+  }
+
+  // CreateInArenaStorage is used to implement map field. Without it,
+  // google::protobuf::Map need to call generated message's protected arena constructor,
+  // which needs to declare google::protobuf::Map as friend of generated message.
+  template <typename T>
+  static void CreateInArenaStorage(T* ptr, Arena* arena) {
+    CreateInArenaStorageInternal(ptr, arena, is_arena_constructable<T>::value);
+  }
+  template <typename T>
+  static void CreateInArenaStorageInternal(
+      T* ptr, Arena* arena, google::protobuf::internal::true_type) {
+    new (ptr) T(arena);
+  }
+
+  template <typename T>
+  static void CreateInArenaStorageInternal(
+      T* ptr, Arena* arena, google::protobuf::internal::false_type) {
+    new (ptr) T;
   }
 
   // These implement Own(), which registers an object for deletion (destructor
@@ -412,20 +521,20 @@ class LIBPROTOBUF_EXPORT Arena {
   // InternalArenaConstructable_ tags can be associated with an arena, and such
   // objects must implement a GetArenaNoVirtual() method.
   template<typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-  static inline ::google::protobuf::Arena* GetArenaInternal(T* value,
+  static inline ::google::protobuf::Arena* GetArenaInternal(const T* value,
       typename T::InternalArenaConstructable_*) {
     return value->GetArenaNoVirtual();
   }
 
   template<typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-  static inline ::google::protobuf::Arena* GetArenaInternal(T* value, ...) {
+  static inline ::google::protobuf::Arena* GetArenaInternal(const T* value, ...) {
     return NULL;
   }
 
 
   void* AllocateAligned(size_t size);
 
-  void Init(const ArenaOptions& options);
+  void Init();
 
   // Free all blocks and return the total space used which is the sums of sizes
   // of the all the allocated blocks.
@@ -446,8 +555,6 @@ class LIBPROTOBUF_EXPORT Arena {
   }
 
   int64 lifecycle_id_;  // Unique for each arena. Changes on Reset().
-  size_t start_block_size_;  // Starting block size of the arena.
-  size_t max_block_size_;    // Max block size of the arena.
 
   google::protobuf::internal::AtomicWord blocks_;  // Head of linked list of all allocated blocks
   google::protobuf::internal::AtomicWord hint_;    // Fast thread-local block access
@@ -472,6 +579,15 @@ class LIBPROTOBUF_EXPORT Arena {
   Block* NewBlock(void* me, Block* my_last_block, size_t n,
                   size_t start_block_size, size_t max_block_size);
   static void* AllocFromBlock(Block* b, size_t n);
+  template <typename Key, typename T>
+  friend class Map;
+
+  // The arena may save a cookie it receives from the external on_init hook
+  // and then use it when calling the on_reset and on_destruction hooks.
+  void* hooks_cookie_;
+
+  ArenaOptions options_;
+
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Arena);
 };
 

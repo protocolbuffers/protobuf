@@ -163,7 +163,7 @@ public interface Message extends MessageLite, MessageOrBuilder {
      * field builder, which will then be nested into its parent builder.
      * <p>
      * NOTE: implementations that do not support nested builders will throw
-     * <code>UnsupportedException</code>.
+     * <code>UnsupportedOperationException</code>.
      */
     Builder getFieldBuilder(Descriptors.FieldDescriptor field);
 
@@ -181,7 +181,7 @@ public interface Message extends MessageLite, MessageOrBuilder {
      * field builder, which will then be nested into its parent builder.
      * <p>
      * NOTE: implementations that do not support nested builders will throw
-     * <code>UnsupportedException</code>.
+     * <code>UnsupportedOperationException</code>.
      */
     Builder getRepeatedFieldBuilder(Descriptors.FieldDescriptor field,
                                     int index);

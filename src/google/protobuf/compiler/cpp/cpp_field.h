@@ -89,7 +89,7 @@ class FieldGenerator {
   // Generate inline definitions of accessor functions for this field.
   // These are placed inside the header after all class definitions.
   virtual void GenerateInlineAccessorDefinitions(
-    io::Printer* printer) const = 0;
+    io::Printer* printer, bool is_inline) const = 0;
 
   // Generate definitions of accessors that aren't inlined.  These are
   // placed somewhere in the .cc file.

@@ -667,7 +667,7 @@ GenerateParsingCode(io::Printer* printer) const {
     printer->Print(variables_,
       "String s = input.readStringRequireUtf8();\n"
       "$set_oneof_case_message$;\n"
-      "$oneof_name$_ = s;\n}\n");
+      "$oneof_name$_ = s;\n");
   } else if (!HasDescriptorMethods(descriptor_->file())) {
     // Lite runtime should attempt to reduce allocations by attempting to
     // construct the string directly from the input stream buffer. This avoids

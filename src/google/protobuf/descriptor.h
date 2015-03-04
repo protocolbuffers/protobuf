@@ -117,8 +117,10 @@ struct SourceLocation {
   int end_column;
 
   // Doc comments found at the source location.
+  // See the comments in SourceCodeInfo.Location (descriptor.proto) for details.
   string leading_comments;
   string trailing_comments;
+  vector<string> leading_detached_comments;
 };
 
 // Options when generating machine-parsable output from a descriptor with
@@ -312,7 +314,7 @@ class LIBPROTOBUF_EXPORT Descriptor {
 
   // Walks up the descriptor tree to generate the source location path
   // to this descriptor from the file root.
-  void GetLocationPath(vector<int>* output) const;
+  void GetLocationPath(std::vector<int>* output) const;
 
   const string* name_;
   const string* full_name_;
@@ -594,7 +596,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
 
   // Walks up the descriptor tree to generate the source location path
   // to this descriptor from the file root.
-  void GetLocationPath(vector<int>* output) const;
+  void GetLocationPath(std::vector<int>* output) const;
 
   const string* name_;
   const string* full_name_;
@@ -688,7 +690,7 @@ class LIBPROTOBUF_EXPORT OneofDescriptor {
 
   // Walks up the descriptor tree to generate the source location path
   // to this descriptor from the file root.
-  void GetLocationPath(vector<int>* output) const;
+  void GetLocationPath(std::vector<int>* output) const;
 
   const string* name_;
   const string* full_name_;
@@ -790,7 +792,7 @@ class LIBPROTOBUF_EXPORT EnumDescriptor {
 
   // Walks up the descriptor tree to generate the source location path
   // to this descriptor from the file root.
-  void GetLocationPath(vector<int>* output) const;
+  void GetLocationPath(std::vector<int>* output) const;
 
   const string* name_;
   const string* full_name_;
@@ -874,7 +876,7 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptor {
 
   // Walks up the descriptor tree to generate the source location path
   // to this descriptor from the file root.
-  void GetLocationPath(vector<int>* output) const;
+  void GetLocationPath(std::vector<int>* output) const;
 
   const string* name_;
   const string* full_name_;
@@ -949,7 +951,7 @@ class LIBPROTOBUF_EXPORT ServiceDescriptor {
 
   // Walks up the descriptor tree to generate the source location path
   // to this descriptor from the file root.
-  void GetLocationPath(vector<int>* output) const;
+  void GetLocationPath(std::vector<int>* output) const;
 
   const string* name_;
   const string* full_name_;
@@ -1028,7 +1030,7 @@ class LIBPROTOBUF_EXPORT MethodDescriptor {
 
   // Walks up the descriptor tree to generate the source location path
   // to this descriptor from the file root.
-  void GetLocationPath(vector<int>* output) const;
+  void GetLocationPath(std::vector<int>* output) const;
 
   const string* name_;
   const string* full_name_;
@@ -1173,17 +1175,15 @@ class LIBPROTOBUF_EXPORT FileDescriptor {
   // this file declaration (namely, the empty path).
   bool GetSourceLocation(SourceLocation* out_location) const;
 
- private:
-  // Source Location ---------------------------------------------------
-
   // Updates |*out_location| to the source location of the complete
   // extent of the declaration or declaration-part denoted by |path|.
   // Returns false and leaves |*out_location| unchanged iff location
   // information was not available.  (See SourceCodeInfo for
   // description of path encoding.)
-  bool GetSourceLocation(const vector<int>& path,
+  bool GetSourceLocation(const std::vector<int>& path,
                          SourceLocation* out_location) const;
 
+ private:
   typedef FileOptions OptionsType;
 
   const string* name_;
@@ -1326,7 +1326,7 @@ class LIBPROTOBUF_EXPORT DescriptorPool {
   // found: extensions defined in the fallback database might not be found
   // depending on the database implementation.
   void FindAllExtensions(const Descriptor* extendee,
-                         vector<const FieldDescriptor*>* out) const;
+                         std::vector<const FieldDescriptor*>* out) const;
 
   // Building descriptors --------------------------------------------
 

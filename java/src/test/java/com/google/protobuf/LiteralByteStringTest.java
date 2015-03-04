@@ -289,7 +289,6 @@ public class LiteralByteStringTest extends TestCase {
     assertEquals("Output.reset() resets the output", 0, output.size());
     assertEquals("Output.reset() resets the output",
         ByteString.EMPTY, output.toByteString());
-    
   }
 
   public void testToString() throws UnsupportedEncodingException {
@@ -297,6 +296,27 @@ public class LiteralByteStringTest extends TestCase {
     LiteralByteString unicode = new LiteralByteString(testString.getBytes(UTF_8));
     String roundTripString = unicode.toString(UTF_8);
     assertEquals(classUnderTest + " unicode must match", testString, roundTripString);
+  }
+
+  public void testToString_returnsCanonicalEmptyString() throws UnsupportedEncodingException{
+    assertSame(classUnderTest + " must be the same string references",
+        ByteString.EMPTY.toString(UTF_8), new LiteralByteString(new byte[]{}).toString(UTF_8));
+  }
+
+  public void testToString_raisesException() throws UnsupportedEncodingException{
+    try {
+      ByteString.EMPTY.toString("invalid");
+      fail("Should have thrown an exception.");
+    } catch (UnsupportedEncodingException expected) {
+      // This is success
+    }
+
+    try {
+      new LiteralByteString(referenceBytes).toString("invalid");
+      fail("Should have thrown an exception.");
+    } catch (UnsupportedEncodingException expected) {
+      // This is success
+    }
   }
 
   public void testEquals() {
@@ -311,7 +331,7 @@ public class LiteralByteStringTest extends TestCase {
 
     byte[] mungedBytes = new byte[referenceBytes.length];
     System.arraycopy(referenceBytes, 0, mungedBytes, 0, referenceBytes.length);
-    mungedBytes[mungedBytes.length - 5] ^= 0xFF;
+    mungedBytes[mungedBytes.length - 5] = (byte) (mungedBytes[mungedBytes.length - 5] ^ 0xFF);
     assertFalse(classUnderTest + " must not equal every string with the same length",
         stringUnderTest.equals(new LiteralByteString(mungedBytes)));
   }

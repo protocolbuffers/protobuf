@@ -495,57 +495,168 @@ LIBPROTOBUF_EXPORT char* FloatToBuffer(float i, char* buffer);
 static const int kDoubleToBufferSize = 32;
 static const int kFloatToBufferSize = 24;
 
-// ----------------------------------------------------------------------
-// ToString() are internal help methods used in StrCat() and Join()
-// ----------------------------------------------------------------------
-namespace internal {
-inline string ToString(int i) {
-  return SimpleItoa(i);
-}
+namespace strings {
 
-inline string ToString(string a) {
-  return a;
-}
-}  // namespace internal
+struct Hex {
+  uint64 value;
+  enum PadSpec {
+    NONE = 1,
+    ZERO_PAD_2,
+    ZERO_PAD_3,
+    ZERO_PAD_4,
+    ZERO_PAD_5,
+    ZERO_PAD_6,
+    ZERO_PAD_7,
+    ZERO_PAD_8,
+    ZERO_PAD_9,
+    ZERO_PAD_10,
+    ZERO_PAD_11,
+    ZERO_PAD_12,
+    ZERO_PAD_13,
+    ZERO_PAD_14,
+    ZERO_PAD_15,
+    ZERO_PAD_16,
+  } spec;
+  template <class Int>
+  explicit Hex(Int v, PadSpec s = NONE)
+      : spec(s) {
+    // Prevent sign-extension by casting integers to
+    // their unsigned counterparts.
+#ifdef LANG_CXX11
+    static_assert(
+        sizeof(v) == 1 || sizeof(v) == 2 || sizeof(v) == 4 || sizeof(v) == 8,
+        "Unknown integer type");
+#endif
+    value = sizeof(v) == 1 ? static_cast<uint8>(v)
+          : sizeof(v) == 2 ? static_cast<uint16>(v)
+          : sizeof(v) == 4 ? static_cast<uint32>(v)
+          : static_cast<uint64>(v);
+  }
+};
+
+struct AlphaNum {
+  const char *piece_data_;  // move these to string_ref eventually
+  size_t piece_size_;       // move these to string_ref eventually
+
+  char digits[kFastToBufferSize];
+
+  // No bool ctor -- bools convert to an integral type.
+  // A bool ctor would also convert incoming pointers (bletch).
+
+  AlphaNum(int32 i32)
+      : piece_data_(digits),
+        piece_size_(FastInt32ToBufferLeft(i32, digits) - &digits[0]) {}
+  AlphaNum(uint32 u32)
+      : piece_data_(digits),
+        piece_size_(FastUInt32ToBufferLeft(u32, digits) - &digits[0]) {}
+  AlphaNum(int64 i64)
+      : piece_data_(digits),
+        piece_size_(FastInt64ToBufferLeft(i64, digits) - &digits[0]) {}
+  AlphaNum(uint64 u64)
+      : piece_data_(digits),
+        piece_size_(FastUInt64ToBufferLeft(u64, digits) - &digits[0]) {}
+
+  AlphaNum(float f)
+    : piece_data_(digits), piece_size_(strlen(FloatToBuffer(f, digits))) {}
+  AlphaNum(double f)
+    : piece_data_(digits), piece_size_(strlen(DoubleToBuffer(f, digits))) {}
+
+  AlphaNum(Hex hex);
+
+  AlphaNum(const char* c_str)
+      : piece_data_(c_str), piece_size_(strlen(c_str)) {}
+  // TODO: Add a string_ref constructor, eventually
+  // AlphaNum(const StringPiece &pc) : piece(pc) {}
+
+  AlphaNum(const string& str)
+      : piece_data_(str.data()), piece_size_(str.size()) {}
+
+  size_t size() const { return piece_size_; }
+  const char *data() const { return piece_data_; }
+
+ private:
+  // Use ":" not ':'
+  AlphaNum(char c);  // NOLINT(runtime/explicit)
+
+  // Disallow copy and assign.
+  AlphaNum(const AlphaNum&);
+  void operator=(const AlphaNum&);
+};
+
+}  // namespace strings
+
+using strings::AlphaNum;
 
 // ----------------------------------------------------------------------
 // StrCat()
-//    These methods join some strings together.
+//    This merges the given strings or numbers, with no delimiter.  This
+//    is designed to be the fastest possible way to construct a string out
+//    of a mix of raw C strings, strings, bool values,
+//    and numeric values.
+//
+//    Don't use this for user-visible strings.  The localization process
+//    works poorly on strings built up out of fragments.
+//
+//    For clarity and performance, don't use StrCat when appending to a
+//    string.  In particular, avoid using any of these (anti-)patterns:
+//      str.append(StrCat(...)
+//      str += StrCat(...)
+//      str = StrCat(str, ...)
+//    where the last is the worse, with the potential to change a loop
+//    from a linear time operation with O(1) dynamic allocations into a
+//    quadratic time operation with O(n) dynamic allocations.  StrAppend
+//    is a better choice than any of the above, subject to the restriction
+//    of StrAppend(&str, a, b, c, ...) that none of the a, b, c, ... may
+//    be a reference into str.
 // ----------------------------------------------------------------------
-template <typename T1, typename T2, typename T3, typename T4, typename T5,
-          typename T6, typename T7>
-string StrCat(
-    const T1& a, const T2& b, const T3& c, const T4& d, const T5& e,
-    const T6& f, const T7& g) {
-  return internal::ToString(a) + internal::ToString(b) +
-      internal::ToString(c) + internal::ToString(d) + internal::ToString(e) +
-      internal::ToString(f) + internal::ToString(g);
-}
 
-template <typename T1, typename T2, typename T3, typename T4, typename T5>
-string StrCat(
-    const T1& a, const T2& b, const T3& c, const T4& d, const T5& e) {
-  return internal::ToString(a) + internal::ToString(b) +
-      internal::ToString(c) + internal::ToString(d) + internal::ToString(e);
-}
+string StrCat(const AlphaNum &a, const AlphaNum &b);
+string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c);
+string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
+              const AlphaNum &d);
+string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
+              const AlphaNum &d, const AlphaNum &e);
+string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
+              const AlphaNum &d, const AlphaNum &e, const AlphaNum &f);
+string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
+              const AlphaNum &d, const AlphaNum &e, const AlphaNum &f,
+              const AlphaNum &g);
+string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
+              const AlphaNum &d, const AlphaNum &e, const AlphaNum &f,
+              const AlphaNum &g, const AlphaNum &h);
+string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
+              const AlphaNum &d, const AlphaNum &e, const AlphaNum &f,
+              const AlphaNum &g, const AlphaNum &h, const AlphaNum &i);
 
-template <typename T1, typename T2, typename T3, typename T4>
-string StrCat(
-    const T1& a, const T2& b, const T3& c, const T4& d) {
-  return internal::ToString(a) + internal::ToString(b) +
-      internal::ToString(c) + internal::ToString(d);
-}
+inline string StrCat(const AlphaNum& a) { return string(a.data(), a.size()); }
 
-template <typename T1, typename T2, typename T3>
-string StrCat(const T1& a, const T2& b, const T3& c) {
-  return internal::ToString(a) + internal::ToString(b) +
-      internal::ToString(c);
-}
+// ----------------------------------------------------------------------
+// StrAppend()
+//    Same as above, but adds the output to the given string.
+//    WARNING: For speed, StrAppend does not try to check each of its input
+//    arguments to be sure that they are not a subset of the string being
+//    appended to.  That is, while this will work:
+//
+//    string s = "foo";
+//    s += s;
+//
+//    This will not (necessarily) work:
+//
+//    string s = "foo";
+//    StrAppend(&s, s);
+//
+//    Note: while StrCat supports appending up to 9 arguments, StrAppend
+//    is currently limited to 4.  That's rarely an issue except when
+//    automatically transforming StrCat to StrAppend, and can easily be
+//    worked around as consecutive calls to StrAppend are quite efficient.
+// ----------------------------------------------------------------------
 
-template <typename T1, typename T2>
-string StrCat(const T1& a, const T2& b) {
-  return internal::ToString(a) + internal::ToString(b);
-}
+void StrAppend(string* dest, const AlphaNum& a);
+void StrAppend(string* dest, const AlphaNum& a, const AlphaNum& b);
+void StrAppend(string* dest, const AlphaNum& a, const AlphaNum& b,
+               const AlphaNum& c);
+void StrAppend(string* dest, const AlphaNum& a, const AlphaNum& b,
+               const AlphaNum& c, const AlphaNum& d);
 
 // ----------------------------------------------------------------------
 // Join()
@@ -559,7 +670,7 @@ void Join(Iterator start, Iterator end,
     if (it != start) {
       result->append(delim);
     }
-    result->append(internal::ToString(*it));
+    StrAppend(result, *it);
   }
 }
 

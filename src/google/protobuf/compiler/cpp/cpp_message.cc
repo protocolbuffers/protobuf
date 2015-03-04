@@ -87,8 +87,8 @@ const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor) {
   for (int i = 0; i < descriptor->field_count(); i++) {
     fields[i] = descriptor->field(i);
   }
-  sort(fields, fields + descriptor->field_count(),
-       FieldOrderingByNumber());
+  std::sort(fields, fields + descriptor->field_count(),
+            FieldOrderingByNumber());
   return fields;
 }
 
@@ -253,7 +253,7 @@ void OptimizePadding(vector<const FieldDescriptor*>* fields) {
   // Sort by preferred location to keep fields as close to their original
   // location as possible.  Using stable_sort ensures that the output is
   // consistent across runs.
-  stable_sort(aligned_to_4.begin(), aligned_to_4.end());
+  std::stable_sort(aligned_to_4.begin(), aligned_to_4.end());
 
   // Now group fields aligned to 4 bytes (or the 4-field groups created above)
   // into pairs, and treat those like a single field aligned to 8 bytes.
@@ -269,7 +269,7 @@ void OptimizePadding(vector<const FieldDescriptor*>* fields) {
     aligned_to_8.push_back(field_group);
   }
   // Sort by preferred location.
-  stable_sort(aligned_to_8.begin(), aligned_to_8.end());
+  std::stable_sort(aligned_to_8.begin(), aligned_to_8.end());
 
   // Now pull out all the FieldDescriptors in order.
   fields->clear();
@@ -347,11 +347,11 @@ void CollectMapInfo(const Descriptor* descriptor,
     default:
       (*variables)["val"] = PrimitiveTypeName(val->cpp_type());
   }
-  (*variables)["key_type"] =
-      "::google::protobuf::FieldDescriptor::TYPE_" +
+  (*variables)["key_wire_type"] =
+      "::google::protobuf::internal::WireFormatLite::TYPE_" +
       ToUpper(DeclaredTypeMethodName(key->type()));
-  (*variables)["val_type"] =
-      "::google::protobuf::FieldDescriptor::TYPE_" +
+  (*variables)["val_wire_type"] =
+      "::google::protobuf::internal::WireFormatLite::TYPE_" +
       ToUpper(DeclaredTypeMethodName(val->type()));
 }
 
@@ -453,17 +453,17 @@ GenerateFieldAccessorDeclarations(io::Printer* printer) {
     vars["constant_name"] = FieldConstantName(field);
 
     if (field->is_repeated()) {
-      printer->Print(vars, "inline int $name$_size() const$deprecation$;\n");
+      printer->Print(vars, "int $name$_size() const$deprecation$;\n");
     } else if (HasHasMethod(field)) {
-      printer->Print(vars, "inline bool has_$name$() const$deprecation$;\n");
+      printer->Print(vars, "bool has_$name$() const$deprecation$;\n");
     } else if (HasPrivateHasMethod(field)) {
       printer->Print(vars,
           "private:\n"
-          "inline bool has_$name$() const$deprecation$;\n"
+          "bool has_$name$() const$deprecation$;\n"
           "public:\n");
     }
 
-    printer->Print(vars, "inline void clear_$name$()$deprecation$;\n");
+    printer->Print(vars, "void clear_$name$()$deprecation$;\n");
     printer->Print(vars, "static const int $constant_name$ = $number$;\n");
 
     // Generate type-specific accessor declarations.
@@ -482,7 +482,7 @@ GenerateFieldAccessorDeclarations(io::Printer* printer) {
 
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     printer->Print(
-        "inline $camel_oneof_name$Case $oneof_name$_case() const;\n",
+        "$camel_oneof_name$Case $oneof_name$_case() const;\n",
         "camel_oneof_name",
         UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), true),
         "oneof_name", descriptor_->oneof_decl(i)->name());
@@ -490,7 +490,7 @@ GenerateFieldAccessorDeclarations(io::Printer* printer) {
 }
 
 void MessageGenerator::
-GenerateFieldAccessorDefinitions(io::Printer* printer) {
+GenerateFieldAccessorDefinitions(io::Printer* printer, bool is_inline) {
   printer->Print("// $classname$\n\n", "classname", classname_);
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -500,11 +500,12 @@ GenerateFieldAccessorDefinitions(io::Printer* printer) {
 
     map<string, string> vars;
     SetCommonFieldVariables(field, &vars, options_);
+    vars["inline"] = is_inline ? "inline" : "";
 
     // Generate has_$name$() or $name$_size().
     if (field->is_repeated()) {
       printer->Print(vars,
-        "inline int $classname$::$name$_size() const {\n"
+        "$inline$ int $classname$::$name$_size() const {\n"
         "  return $name$_.size();\n"
         "}\n");
     } else if (field->containing_oneof()) {
@@ -518,11 +519,11 @@ GenerateFieldAccessorDefinitions(io::Printer* printer) {
       vars["oneof_name"] = field->containing_oneof()->name();
       vars["oneof_index"] = SimpleItoa(field->containing_oneof()->index());
       printer->Print(vars,
-        "inline bool $classname$::has_$name$() const {\n"
+        "$inline$ bool $classname$::has_$name$() const {\n"
         "  return $oneof_name$_case() == k$field_name$;\n"
         "}\n");
       printer->Print(vars,
-        "inline void $classname$::set_has_$name$() {\n"
+        "$inline$ void $classname$::set_has_$name$() {\n"
         "  _oneof_case_[$oneof_index$] = k$field_name$;\n"
         "}\n");
     } else {
@@ -535,13 +536,13 @@ GenerateFieldAccessorDefinitions(io::Printer* printer) {
         vars["has_mask"] = FastHex32ToBuffer(1u << (field->index() % 32),
                                              buffer);
         printer->Print(vars,
-          "inline bool $classname$::has_$name$() const {\n"
+          "$inline$ bool $classname$::has_$name$() const {\n"
           "  return (_has_bits_[$has_array_index$] & 0x$has_mask$u) != 0;\n"
           "}\n"
-          "inline void $classname$::set_has_$name$() {\n"
+          "$inline$ void $classname$::set_has_$name$() {\n"
           "  _has_bits_[$has_array_index$] |= 0x$has_mask$u;\n"
           "}\n"
-          "inline void $classname$::clear_has_$name$() {\n"
+          "$inline$ void $classname$::clear_has_$name$() {\n"
           "  _has_bits_[$has_array_index$] &= ~0x$has_mask$u;\n"
           "}\n"
           );
@@ -551,12 +552,12 @@ GenerateFieldAccessorDefinitions(io::Printer* printer) {
           bool is_lazy = false;
           if (is_lazy) {
             printer->Print(vars,
-              "inline bool $classname$::has_$name$() const {\n"
+              "$inline$ bool $classname$::has_$name$() const {\n"
               "  return !$name$_.IsCleared();\n"
               "}\n");
           } else {
             printer->Print(vars,
-              "inline bool $classname$::has_$name$() const {\n"
+              "$inline$ bool $classname$::has_$name$() const {\n"
               "  return !_is_default_instance_ && $name$_ != NULL;\n"
               "}\n");
           }
@@ -566,7 +567,7 @@ GenerateFieldAccessorDefinitions(io::Printer* printer) {
 
     // Generate clear_$name$()
     printer->Print(vars,
-      "inline void $classname$::clear_$name$() {\n");
+      "$inline$ void $classname$::clear_$name$() {\n");
 
     printer->Indent();
 
@@ -595,7 +596,8 @@ GenerateFieldAccessorDefinitions(io::Printer* printer) {
     printer->Print("}\n");
 
     // Generate type-specific accessors.
-    field_generators_.get(field).GenerateInlineAccessorDefinitions(printer);
+    field_generators_.get(field).GenerateInlineAccessorDefinitions(printer,
+                                                                   is_inline);
 
     printer->Print("\n");
   }
@@ -608,12 +610,13 @@ GenerateFieldAccessorDefinitions(io::Printer* printer) {
     vars["cap_oneof_name"] =
         ToUpper(descriptor_->oneof_decl(i)->name());
     vars["classname"] = classname_;
+    vars["inline"] = is_inline ? "inline" : "";
     printer->Print(
       vars,
-      "inline bool $classname$::has_$oneof_name$() const {\n"
+      "$inline$ bool $classname$::has_$oneof_name$() const {\n"
       "  return $oneof_name$_case() != $cap_oneof_name$_NOT_SET;\n"
       "}\n"
-      "inline void $classname$::clear_has_$oneof_name$() {\n"
+      "$inline$ void $classname$::clear_has_$oneof_name$() {\n"
       "  _oneof_case_[$oneof_index$] = $cap_oneof_name$_NOT_SET;\n"
       "}\n");
   }
@@ -1169,18 +1172,18 @@ GenerateClassDefinition(io::Printer* printer) {
 }
 
 void MessageGenerator::
-GenerateInlineMethods(io::Printer* printer) {
+GenerateInlineMethods(io::Printer* printer, bool is_inline) {
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     // map entry message doesn't need inline methods. Since map entry message
     // cannot be a top level class, we just need to avoid calling
     // GenerateInlineMethods here.
     if (IsMapEntryMessage(descriptor_->nested_type(i))) continue;
-    nested_generators_[i]->GenerateInlineMethods(printer);
+    nested_generators_[i]->GenerateInlineMethods(printer, is_inline);
     printer->Print(kThinSeparator);
     printer->Print("\n");
   }
 
-  GenerateFieldAccessorDefinitions(printer);
+  GenerateFieldAccessorDefinitions(printer, is_inline);
 
   // Generate oneof_case() functions.
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
@@ -1190,9 +1193,10 @@ GenerateInlineMethods(io::Printer* printer) {
         descriptor_->oneof_decl(i)->name(), true);
     vars["oneof_name"] = descriptor_->oneof_decl(i)->name();
     vars["oneof_index"] = SimpleItoa(descriptor_->oneof_decl(i)->index());
+    vars["inline"] = is_inline ? "inline " : "";
     printer->Print(
         vars,
-        "inline $class_name$::$camel_oneof_name$Case $class_name$::"
+        "$inline$$class_name$::$camel_oneof_name$Case $class_name$::"
         "$oneof_name$_case() const {\n"
         "  return $class_name$::$camel_oneof_name$Case("
         "_oneof_case_[$oneof_index$]);\n"
@@ -1222,7 +1226,9 @@ GenerateDescriptorDeclarations(io::Printer* printer) {
       for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
         const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
         printer->Print("  ");
-        if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+        if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
+            (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+             EffectiveStringCType(field) != FieldOptions::STRING)) {
           printer->Print("const ");
         }
         field_generators_.get(field).GeneratePrivateMembers(printer);
@@ -1391,8 +1397,8 @@ GenerateTypeRegistrations(io::Printer* printer) {
       "      ::google::protobuf::internal::MapEntry<\n"
       "          $key$,\n"
       "          $val$,\n"
-      "          $key_type$,\n"
-      "          $val_type$,\n"
+      "          $key_wire_type$,\n"
+      "          $val_wire_type$,\n"
       "          $default_enum_value$>::CreateDefaultInstance(\n"
       "              $classname$_descriptor_));\n");
   }
@@ -2034,17 +2040,16 @@ GenerateClear(io::Printer* printer) {
 
   // Step 2a: Greedily seek runs of fields that can be cleared by memset-to-0.
   // The generated code uses two macros to help it clear runs of fields:
-  // OFFSET_OF_FIELD_ computes the offset (in bytes) of a field in the Message.
+  // ZR_HELPER_(f1) - ZR_HELPER_(f0) computes the difference, in bytes, of the
+  // positions of two fields in the Message.
   // ZR_ zeroes a non-empty range of fields via memset.
   const char* macros =
-      "#define OFFSET_OF_FIELD_(f) (reinterpret_cast<char*>(      \\\n"
-      "  &reinterpret_cast<$classname$*>(16)->f) - \\\n"
-      "   reinterpret_cast<char*>(16))\n\n"
-      "#define ZR_(first, last) do {                              \\\n"
-      "    size_t f = OFFSET_OF_FIELD_(first);                    \\\n"
-      "    size_t n = OFFSET_OF_FIELD_(last) - f + sizeof(last);  \\\n"
-      "    ::memset(&first, 0, n);                                \\\n"
-      "  } while (0)\n\n";
+      "#define ZR_HELPER_(f) reinterpret_cast<char*>(\\\n"
+      "  &reinterpret_cast<$classname$*>(16)->f)\n\n"
+      "#define ZR_(first, last) do {\\\n"
+      "  ::memset(&first, 0,\\\n"
+      "           ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\\\n"
+      "} while (0)\n\n";
   for (int i = 0; i < runs_of_fields_.size(); i++) {
     const vector<string>& run = runs_of_fields_[i];
     if (run.size() < 2) continue;
@@ -2133,7 +2138,7 @@ GenerateClear(io::Printer* printer) {
   }
   if (macros_are_needed) {
     printer->Outdent();
-    printer->Print("\n#undef OFFSET_OF_FIELD_\n#undef ZR_\n\n");
+    printer->Print("\n#undef ZR_HELPER_\n#undef ZR_\n\n");
     printer->Indent();
   }
 
@@ -2919,8 +2924,8 @@ GenerateSerializeWithCachedSizesBody(io::Printer* printer, bool to_array) {
   for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
     sorted_extensions.push_back(descriptor_->extension_range(i));
   }
-  sort(sorted_extensions.begin(), sorted_extensions.end(),
-       ExtensionRangeSorter());
+  std::sort(sorted_extensions.begin(), sorted_extensions.end(),
+            ExtensionRangeSorter());
 
   // Merge the fields and the extension ranges, both sorted by field number.
   int i, j;

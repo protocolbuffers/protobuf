@@ -732,9 +732,10 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject RepeatedCompositeContainer_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  "google.protobuf.pyext."
-  "_message.RepeatedCompositeContainer",  // tp_name
-  sizeof(RepeatedCompositeContainer),     // tp_basicsize
+  // Keep the fully qualified _message symbol in a line for opensource.
+  "google.protobuf.pyext._message."
+  "RepeatedCompositeContainer",        // tp_name
+  sizeof(RepeatedCompositeContainer),  // tp_basicsize
   0,                                   //  tp_itemsize
   (destructor)repeated_composite_container::Dealloc,  //  tp_dealloc
   0,                                   //  tp_print

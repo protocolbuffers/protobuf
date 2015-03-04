@@ -772,6 +772,9 @@ GenerateParsingDoneCode(io::Printer* printer) const {
 void RepeatedImmutablePrimitiveFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   if (descriptor_->options().packed()) {
+    // We invoke getSerializedSize in writeTo for messages that have packed
+    // fields in ImmutableMessageGenerator::GenerateMessageSerializationMethods.
+    // That makes it safe to rely on the memoized size here.
     printer->Print(variables_,
       "if (get$capitalized_name$List().size() > 0) {\n"
       "  output.writeRawVarint32($tag$);\n"

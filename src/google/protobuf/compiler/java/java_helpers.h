@@ -297,6 +297,16 @@ struct ExtensionRangeOrdering {
 // and return it. The caller should delete the returned array.
 const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor);
 
+// Does this message class have any packed fields?
+inline bool HasPackedFields(const Descriptor* descriptor) {
+  for (int i = 0; i < descriptor->field_count(); i++) {
+    if (descriptor->field(i)->is_packed()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Check a message type and its sub-message types recursively to see if any of
 // them has a required field. Return true if a required field is found.
 bool HasRequiredFields(const Descriptor* descriptor);

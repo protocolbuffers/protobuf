@@ -34,6 +34,7 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import map_test.MapForProto2TestProto.TestMap;
 import map_test.MapForProto2TestProto.TestMap.MessageValue;
 import map_test.MapForProto2TestProto.TestMap.MessageWithRequiredFields;
+import map_test.MapForProto2TestProto.TestRecursiveMap;
 import map_test.MapForProto2TestProto.TestUnknownEnumValue;
 
 import junit.framework.TestCase;
@@ -498,5 +499,18 @@ public class MapForProto2Test extends TestCase {
         MessageWithRequiredFields.newBuilder().setValue(1).build());
     message = builder.build();
     assertTrue(message.isInitialized());
+  }
+
+  public void testRecursiveMap() throws Exception {
+    TestRecursiveMap.Builder builder = TestRecursiveMap.newBuilder();
+    builder.getMutableRecursiveMapField().put(
+        1, TestRecursiveMap.newBuilder().setValue(2).build());
+    builder.getMutableRecursiveMapField().put(
+        3, TestRecursiveMap.newBuilder().setValue(4).build());
+    ByteString data = builder.build().toByteString();
+
+    TestRecursiveMap message = TestRecursiveMap.parseFrom(data);
+    assertEquals(2, message.getRecursiveMapField().get(1).getValue());
+    assertEquals(4, message.getRecursiveMapField().get(3).getValue());
   }
 }

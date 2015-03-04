@@ -35,8 +35,8 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -600,9 +600,12 @@ public final class DynamicMessage extends AbstractMessage {
       }
       // TODO(xiaofeng): Re-enable this check after Orgstore is fixed to not
       // set incorrect EnumValueDescriptors.
-      // if (field.getEnumType() != ((EnumValueDescriptor) value).getType()) {
-      //   throw new IllegalArgumentException(
-      //     "EnumValueDescriptor doesn't match Enum Field.");
+      // EnumDescriptor fieldType = field.getEnumType();
+      // EnumDescriptor fieldValueType = ((EnumValueDescriptor) value).getType();
+      // if (fieldType != fieldValueType) {
+      //  throw new IllegalArgumentException(String.format(
+      //      "EnumDescriptor %s of field doesn't match EnumDescriptor %s of field value",
+      //      fieldType.getFullName(), fieldValueType.getFullName()));
       // }
     }
 

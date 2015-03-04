@@ -769,8 +769,9 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject RepeatedScalarContainer_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  "google.protobuf."
-  "pyext._message.RepeatedScalarContainer",  // tp_name
+  // Keep the fully qualified _message symbol in a line for opensource.
+  "google.protobuf.pyext._message."
+  "RepeatedScalarContainer",           // tp_name
   sizeof(RepeatedScalarContainer),     // tp_basicsize
   0,                                   //  tp_itemsize
   (destructor)repeated_scalar_container::Dealloc,  //  tp_dealloc

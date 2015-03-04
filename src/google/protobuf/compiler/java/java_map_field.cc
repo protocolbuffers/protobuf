@@ -198,25 +198,38 @@ GenerateInterfaceMembers(io::Printer* printer) const {
 }
 
 void ImmutableMapFieldGenerator::
+GenerateStaticInitializationCode(io::Printer* printer) const {
+  printer->Print(
+      variables_,
+      "$name$DefaultEntry =\n"
+      "    com.google.protobuf.MapEntry$lite$\n"
+      "    .<$type_parameters$>newDefaultInstance(\n"
+      "        $descriptor$\n"
+      "        $key_wire_type$,\n"
+      "        $key_default_value$,\n"
+      "        $value_wire_type$,\n"
+      "        $value_default_value$);\n"
+      "\n");
+}
+
+void ImmutableMapFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(
       variables_,
       "private static final com.google.protobuf.MapEntry$lite$<\n"
-      "    $type_parameters$> $name$DefaultEntry =\n"
-      "        com.google.protobuf.MapEntry$lite$\n"
-      "        .<$type_parameters$>newDefaultInstance(\n"
-      "            $descriptor$\n"
-      "            $key_wire_type$,\n"
-      "            $key_default_value$,\n"
-      "            $value_wire_type$,\n"
-      "            $value_default_value$);\n");
+      "    $type_parameters$> $name$DefaultEntry;\n");
   printer->Print(
       variables_,
       "private com.google.protobuf.MapField$lite$<\n"
-      "    $type_parameters$> $name$_ =\n"
-      "        com.google.protobuf.MapField$lite$.emptyMapField(\n"
-      "            $map_field_parameter$);\n"
-      "\n");
+      "    $type_parameters$> $name$_;\n"
+      "private com.google.protobuf.MapField$lite$<$type_parameters$>\n"
+      "internalGet$capitalized_name$() {\n"
+      "  if ($name$_ == null) {\n"
+      "    return com.google.protobuf.MapField$lite$.emptyMapField(\n"
+      "        $map_field_parameter$);\n"
+      " }\n"
+      "  return $name$_;\n"
+      "}\n");
   if (GetJavaType(ValueField(descriptor_)) == JAVATYPE_ENUM) {
     printer->Print(
         variables_,
@@ -233,7 +246,7 @@ GenerateMembers(io::Printer* printer) const {
           "$deprecation$\n"
           "public java.util.Map<$boxed_key_type$, $boxed_value_type$>\n"
           "get$capitalized_name$Value() {\n"
-          "  return $name$_.getMap();\n"
+          "  return internalGet$capitalized_name$().getMap();\n"
           "}\n");
     }
     WriteFieldDocComment(printer, descriptor_);
@@ -244,7 +257,8 @@ GenerateMembers(io::Printer* printer) const {
         "get$capitalized_name$() {\n"
         "  return new com.google.protobuf.Internal.MapAdapter<\n"
         "      $boxed_key_type$, $value_enum_type$, java.lang.Integer>(\n"
-        "          $name$_.getMap(), $name$ValueConverter);\n"
+        "          internalGet$capitalized_name$().getMap(),\n"
+        "          $name$ValueConverter);\n"
         "}\n");
   } else {
     WriteFieldDocComment(printer, descriptor_);
@@ -252,7 +266,7 @@ GenerateMembers(io::Printer* printer) const {
         variables_,
         "$deprecation$\n"
         "public java.util.Map<$type_parameters$> get$capitalized_name$() {\n"
-        "  return $name$_.getMap();\n"
+        "  return internalGet$capitalized_name$().getMap();\n"
         "}\n");
   }
 }
@@ -262,10 +276,24 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(
       variables_,
       "private com.google.protobuf.MapField$lite$<\n"
-      "    $type_parameters$> $name$_ =\n"
-      "        com.google.protobuf.MapField$lite$.newMapField(\n"
-      "            $map_field_parameter$);\n"
-      "\n");
+      "    $type_parameters$> $name$_;\n"
+      "private com.google.protobuf.MapField$lite$<$type_parameters$>\n"
+      "internalGet$capitalized_name$() {\n"
+      "  if ($name$_ == null) {\n"
+      "    return com.google.protobuf.MapField$lite$.emptyMapField(\n"
+      "        $map_field_parameter$);\n"
+      " }\n"
+      "  return $name$_;\n"
+      "}\n"
+      "private com.google.protobuf.MapField$lite$<$type_parameters$>\n"
+      "internalGetMutable$capitalized_name$() {\n"
+      "  $on_changed$;\n"
+      "  if ($name$_ == null) {\n"
+      "    $name$_ = com.google.protobuf.MapField$lite$.newMapField(\n"
+      "        $map_field_parameter$);\n"
+      " }\n"
+      "  return $name$_;\n"
+      "}\n");
   if (GetJavaType(ValueField(descriptor_)) == JAVATYPE_ENUM) {
     WriteFieldDocComment(printer, descriptor_);
     printer->Print(
@@ -275,7 +303,8 @@ GenerateBuilderMembers(io::Printer* printer) const {
         "get$capitalized_name$() {\n"
         "  return new com.google.protobuf.Internal.MapAdapter<\n"
         "      $boxed_key_type$, $value_enum_type$, java.lang.Integer>(\n"
-        "          $name$_.getMap(), $name$ValueConverter);\n"
+        "          internalGet$capitalized_name$().getMap(),\n"
+        "          $name$ValueConverter);\n"
         "}\n");
     WriteFieldDocComment(printer, descriptor_);
     printer->Print(
@@ -283,10 +312,10 @@ GenerateBuilderMembers(io::Printer* printer) const {
         "$deprecation$\n"
         "public java.util.Map<$boxed_key_type$, $value_enum_type$>\n"
         "getMutable$capitalized_name$() {\n"
-        "  $on_changed$\n"
         "  return new com.google.protobuf.Internal.MapAdapter<\n"
         "      $boxed_key_type$, $value_enum_type$, java.lang.Integer>(\n"
-        "          $name$_.getMutableMap(), $name$ValueConverter);\n"
+        "          internalGetMutable$capitalized_name$().getMutableMap(),\n"
+        "          $name$ValueConverter);\n"
         "}\n");
     if (SupportUnknownEnumValue(descriptor_->file())) {
       WriteFieldDocComment(printer, descriptor_);
@@ -295,7 +324,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
           "$deprecation$\n"
           "public java.util.Map<$boxed_key_type$, $boxed_value_type$>\n"
           "get$capitalized_name$Value() {\n"
-          "  return $name$_.getMap();\n"
+          "  return internalGet$capitalized_name$().getMap();\n"
           "}\n");
       WriteFieldDocComment(printer, descriptor_);
       printer->Print(
@@ -303,8 +332,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
           "$deprecation$\n"
           "public java.util.Map<$boxed_key_type$, $boxed_value_type$>\n"
           "getMutable$capitalized_name$Value() {\n"
-          "  $on_changed$\n"
-          "  return $name$_.getMutableMap();\n"
+          "  return internalGetMutable$capitalized_name$().getMutableMap();\n"
           "}\n");
     }
   } else {
@@ -312,15 +340,14 @@ GenerateBuilderMembers(io::Printer* printer) const {
     printer->Print(
         variables_,
         "public java.util.Map<$type_parameters$> get$capitalized_name$() {\n"
-        "  return $name$_.getMap();\n"
+        "  return internalGet$capitalized_name$().getMap();\n"
         "}\n");
     WriteFieldDocComment(printer, descriptor_);
     printer->Print(
         variables_,
         "public java.util.Map<$type_parameters$>\n"
         "getMutable$capitalized_name$() {\n"
-        "  $on_changed$\n"
-        "  return $name$_.getMutableMap();\n"
+        "  return internalGetMutable$capitalized_name$().getMutableMap();\n"
         "}\n");
   }
 }
@@ -339,14 +366,15 @@ void ImmutableMapFieldGenerator::
 GenerateBuilderClearCode(io::Printer* printer) const {
   printer->Print(
       variables_,
-      "$name$_.clear();\n");
+      "internalGetMutable$capitalized_name$().clear();\n");
 }
 
 void ImmutableMapFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(
       variables_,
-      "$name$_.mergeFrom(other.$name$_);\n");
+      "internalGetMutable$capitalized_name$().mergeFrom(\n"
+      "    other.internalGet$capitalized_name$());\n");
 }
 
 void ImmutableMapFieldGenerator::
@@ -356,7 +384,7 @@ GenerateBuildingCode(io::Printer* printer) const {
       // We do a copy of the map field to ensure that the built result is
       // immutable. Implementation of this copy() method can do copy-on-write
       // to defer this copy until further modifications are made on the field.
-      "result.$name$_ = $name$_.copy();\n");
+      "result.$name$_ = internalGet$capitalized_name$().copy();\n");
 }
 
 void ImmutableMapFieldGenerator::
@@ -402,7 +430,7 @@ GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(
       variables_,
       "for (java.util.Map.Entry<$type_parameters$> entry\n"
-      "     : $name$_.getMap().entrySet()) {\n"
+      "     : internalGet$capitalized_name$().getMap().entrySet()) {\n"
       "  com.google.protobuf.MapEntry$lite$<$type_parameters$>\n"
       "  $name$ = $name$DefaultEntry.newBuilderForType()\n"
       "      .setKey(entry.getKey())\n"
@@ -417,7 +445,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(
       variables_,
       "for (java.util.Map.Entry<$type_parameters$> entry\n"
-      "     : $name$_.getMap().entrySet()) {\n"
+      "     : internalGet$capitalized_name$().getMap().entrySet()) {\n"
       "  com.google.protobuf.MapEntry$lite$<$type_parameters$>\n"
       "  $name$ = $name$DefaultEntry.newBuilderForType()\n"
       "      .setKey(entry.getKey())\n"
@@ -432,16 +460,17 @@ void ImmutableMapFieldGenerator::
 GenerateEqualsCode(io::Printer* printer) const {
   printer->Print(
       variables_,
-      "result = result && $name$_.equals(other.$name$_);\n");
+      "result = result && internalGet$capitalized_name$().equals(\n"
+      "    other.internalGet$capitalized_name$());\n");
 }
 
 void ImmutableMapFieldGenerator::
 GenerateHashCode(io::Printer* printer) const {
   printer->Print(
       variables_,
-      "if (!$name$_.getMap().isEmpty()) {\n"
+      "if (!internalGet$capitalized_name$().getMap().isEmpty()) {\n"
       "  hash = (37 * hash) + $constant_name$;\n"
-      "  hash = (53 * hash) + $name$_.hashCode();\n"
+      "  hash = (53 * hash) + internalGet$capitalized_name$().hashCode();\n"
       "}\n");
 }
 
