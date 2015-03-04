@@ -32,4 +32,4 @@
 #
 # Copyright 2007 Google Inc. All Rights Reserved.
 
-__version__ = '3.0.0-pre'
+__version__ = '3.0.0-alpha-2'
