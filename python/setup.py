@@ -44,6 +44,18 @@ elif os.path.exists("../vsprojects/Release/protoc.exe"):
 else:
   protoc = find_executable("protoc")
 
+def GetVersion():
+  """Gets the version from google/protobuf/__init__.py
+
+  Do not import google.protobuf.__init__ directly, because an installed protobuf
+  library may be loaded instead.
+
+  """
+  with open(os.path.join('google', 'protobuf', '__init__.py')) as version_file:
+    exec(version_file.read())
+    return __version__
+
+
 def generate_proto(source):
   """Invokes the Protocol Compiler to generate a _pb2.py from the given
   .proto file.  Does nothing if the output already exists and is newer than
@@ -150,7 +162,7 @@ if __name__ == '__main__':
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
 
   setup(name = 'protobuf',
-        version = '3.0.0-alpha-3-pre',
+        version = GetVersion(),
         packages = [ 'google' ],
         namespace_packages = [ 'google' ],
         google_test_dir = "google/protobuf/internal",
