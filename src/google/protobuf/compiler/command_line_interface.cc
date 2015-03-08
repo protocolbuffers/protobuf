@@ -48,7 +48,6 @@
 #include <iostream>
 #include <ctype.h>
 
-#include <google/protobuf/stubs/hash.h>
 #include <memory>
 #ifndef _SHARED_PTR_H
 #include <google/protobuf/stubs/shared_ptr.h>
@@ -255,6 +254,9 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
   // format, unless one has already been written.
   void AddJarManifest();
 
+  // Get name of all output files.
+  void GetOutputFilenames(vector<string>* output_filenames);
+
   // implements GeneratorContext --------------------------------------
   io::ZeroCopyOutputStream* Open(const string& filename);
   io::ZeroCopyOutputStream* OpenForAppend(const string& filename);
@@ -439,6 +441,14 @@ void CommandLineInterface::GeneratorContextImpl::AddJarManifest() {
         "Manifest-Version: 1.0\n"
         "Created-By: 1.6.0 (protoc)\n"
         "\n");
+  }
+}
+
+void CommandLineInterface::GeneratorContextImpl::GetOutputFilenames(
+    vector<string>* output_filenames) {
+  for (map<string, string*>::iterator iter = files_.begin();
+       iter != files_.end(); ++iter) {
+    output_filenames->push_back(iter->first);
   }
 }
 
@@ -673,7 +683,6 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   // We construct a separate GeneratorContext for each output location.  Note
   // that two code generators may output to the same location, in which case
   // they should share a single GeneratorContext so that OpenForInsert() works.
-  typedef hash_map<string, GeneratorContextImpl*> GeneratorContextMap;
   GeneratorContextMap output_directories;
 
   // Generate output.
@@ -717,6 +726,13 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
         STLDeleteValues(&output_directories);
         return 1;
       }
+    }
+  }
+
+  if (!dependency_out_name_.empty()) {
+    if (!GenerateDependencyManifestFile(parsed_files, output_directories,
+                                        &source_tree)) {
+      return 1;
     }
   }
 
@@ -778,6 +794,7 @@ void CommandLineInterface::Clear() {
   output_directives_.clear();
   codec_type_.clear();
   descriptor_set_name_.clear();
+  dependency_out_name_.clear();
 
   mode_ = MODE_COMPILE;
   print_mode_ = PRINT_NONE;
@@ -878,6 +895,15 @@ CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
   if (mode_ == MODE_COMPILE && output_directives_.empty() &&
       descriptor_set_name_.empty()) {
     std::cerr << "Missing output directives." << std::endl;
+    return PARSE_ARGUMENT_FAIL;
+  }
+  if (mode_ != MODE_COMPILE && !dependency_out_name_.empty()) {
+    cerr << "Can only use --dependency_out=FILE when generating code." << endl;
+    return PARSE_ARGUMENT_FAIL;
+  }
+  if (!dependency_out_name_.empty() && input_files_.size() > 1) {
+    cerr << "Can only process one input file when using --dependency_out=FILE."
+         << endl;
     return PARSE_ARGUMENT_FAIL;
   }
   if (imports_in_descriptor_set_ && descriptor_set_name_.empty()) {
@@ -1025,6 +1051,17 @@ CommandLineInterface::InterpretArgument(const string& name,
       return PARSE_ARGUMENT_FAIL;
     }
     descriptor_set_name_ = value;
+
+  } else if (name == "--dependency_out") {
+    if (!dependency_out_name_.empty()) {
+      cerr << name << " may only be passed once." << endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    if (value.empty()) {
+      cerr << name << " requires a non-empty value." << endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    dependency_out_name_ = value;
 
   } else if (name == "--include_imports") {
     if (imports_in_descriptor_set_) {
@@ -1225,6 +1262,9 @@ void CommandLineInterface::PrintHelpText() {
 "                              include information about the original\n"
 "                              location of each decl in the source file as\n"
 "                              well as surrounding comments.\n"
+"  --dependency_out=FILE       Write a dependency output file in the format\n"
+"                              expected by make. This writes the transitive\n"
+"                              set of input file paths to FILE\n"
 "  --error_format=FORMAT       Set the format in which to print errors.\n"
 "                              FORMAT may be 'gcc' (the default) or 'msvs'\n"
 "                              (Microsoft Visual Studio format).\n"
@@ -1295,6 +1335,76 @@ bool CommandLineInterface::GenerateOutput(
                   << ": " << error << std::endl;
         return false;
       }
+    }
+  }
+
+  return true;
+}
+
+bool CommandLineInterface::GenerateDependencyManifestFile(
+    const vector<const FileDescriptor*>& parsed_files,
+    const GeneratorContextMap& output_directories,
+    DiskSourceTree* source_tree) {
+  FileDescriptorSet file_set;
+
+  set<const FileDescriptor*> already_seen;
+  for (int i = 0; i < parsed_files.size(); i++) {
+    GetTransitiveDependencies(parsed_files[i],
+                              false,
+                              &already_seen,
+                              file_set.mutable_file());
+  }
+
+  vector<string> output_filenames;
+  for (GeneratorContextMap::const_iterator iter = output_directories.begin();
+       iter != output_directories.end(); ++iter) {
+    const string& location = iter->first;
+    GeneratorContextImpl* directory = iter->second;
+    vector<string> relative_output_filenames;
+    directory->GetOutputFilenames(&relative_output_filenames);
+    for (int i = 0; i < relative_output_filenames.size(); i++) {
+      string output_filename = location + relative_output_filenames[i];
+      if (output_filename.compare(0, 2, "./") == 0) {
+        output_filename = output_filename.substr(2);
+      }
+      output_filenames.push_back(output_filename);
+    }
+  }
+
+  int fd;
+  do {
+    fd = open(dependency_out_name_.c_str(),
+              O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
+  } while (fd < 0 && errno == EINTR);
+
+  if (fd < 0) {
+    perror(dependency_out_name_.c_str());
+    return false;
+  }
+
+  io::FileOutputStream out(fd);
+  io::Printer printer(&out, '$');
+
+  for (int i = 0; i < output_filenames.size(); i++) {
+    printer.Print(output_filenames[i].c_str());
+    if (i == output_filenames.size() - 1) {
+      printer.Print(":");
+    } else {
+      printer.Print(" \\\n");
+    }
+  }
+
+  for (int i = 0; i < file_set.file_size(); i++) {
+    const FileDescriptorProto& file = file_set.file(i);
+    const string& virtual_file = file.name();
+    string disk_file;
+    if (source_tree &&
+        source_tree->VirtualFileToDiskFile(virtual_file, &disk_file)) {
+      printer.Print(" $disk_file$", "disk_file", disk_file);
+      if (i < file_set.file_size() - 1) printer.Print("\\\n");
+    } else {
+      cerr << "Unable to identify path for file " << virtual_file << endl;
+      return false;
     }
   }
 
