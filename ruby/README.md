@@ -60,14 +60,27 @@ To build this Ruby extension, you will need:
 * Ruby development headers
 * a C compiler
 
-First, install the required Ruby gems:
+To Build the JRuby extension, you will need:
 
-    $ sudo gem install bundler rake rake-compiler rspec rubygems-tasks
+* Maven
+* The latest version of the protobuf java library
+* Install JRuby via rbenv or RVM
+
+First switch to the desired platform with rbenv or RVM.
+
+Then install the required Ruby gems:
+
+    $ gem install bundler
+    $ bundle
 
 Then build the Gem:
 
     $ rake gem
     $ gem install pkg/protobuf-$VERSION.gem
+
+To run the specs:
+
+    $ rake test
 
 This gem includes the upb parsing and serialization library as a single-file
 amalgamation. It is up-to-date with upb git commit
