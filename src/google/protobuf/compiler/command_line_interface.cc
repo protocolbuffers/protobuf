@@ -745,6 +745,28 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   if (mode_ == MODE_ENCODE || mode_ == MODE_DECODE) {
+    bool success = false;
+    int in_fd = STDIN_FILENO;
+    int out_fd = STDOUT_FILENO;
+
+    if (!protobuf_in_path_.empty()) {
+      in_fd = open(protobuf_in_path_.c_str(), O_RDONLY);
+      if (in_fd == -1) {
+        cerr << protobuf_in_path_ << ": error: failed to open file." << endl;
+        return 1;
+      }
+    }
+    if (!protobuf_out_path_.empty()) {
+      out_fd = open(protobuf_out_path_.c_str(),
+                    O_WRONLY | O_CREAT | O_TRUNC,
+                    0644);
+      if (out_fd == -1) {
+        cerr << protobuf_out_path_ << ": error: failed to open file." << endl;
+        close(in_fd);
+        return 1;
+      }
+    }
+
     if (codec_type_.empty()) {
       // HACK:  Define an EmptyMessage type to use for decoding.
       DescriptorPool pool;
@@ -753,13 +775,20 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
       file.add_message_type()->set_name("EmptyMessage");
       GOOGLE_CHECK(pool.BuildFile(file) != NULL);
       codec_type_ = "EmptyMessage";
-      if (!EncodeOrDecode(&pool)) {
-        return 1;
-      }
+      success = EncodeOrDecode(&pool, in_fd, out_fd);
     } else {
-      if (!EncodeOrDecode(importer.pool())) {
-        return 1;
-      }
+      success = EncodeOrDecode(importer.pool(), in_fd, out_fd);
+    }
+
+    if (in_fd != STDIN_FILENO) {
+      close(in_fd);
+    }
+    if (out_fd != STDOUT_FILENO) {
+      close(out_fd);
+    }
+
+    if (!success) {
+      return 1;
     }
   }
 
@@ -872,6 +901,11 @@ CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
     ParseArgumentStatus status = InterpretArgument(name, value);
     if (status != PARSE_ARGUMENT_DONE_AND_CONTINUE)
       return status;
+  }
+  if (mode_ == MODE_COMPILE &&
+      (!protobuf_in_path_.empty() || !protobuf_out_path_.empty())) {
+    cerr << "--protobuf_in and --protobuf_out are only valid with "
+         << "decode operations. Ignoring.";
   }
 
   // If no --proto_path was given, use the current working directory.
@@ -1123,6 +1157,12 @@ CommandLineInterface::InterpretArgument(const string& name,
 
     codec_type_ = value;
 
+  } else if (name == "--protobuf_in") {
+    protobuf_in_path_ = value;
+
+  } else if (name == "--protobuf_out") {
+    protobuf_out_path_ = value;
+
   } else if (name == "--error_format") {
     if (value == "gcc") {
       error_format_ = ERROR_FORMAT_GCC;
@@ -1238,18 +1278,29 @@ void CommandLineInterface::PrintHelpText() {
 "  --version                   Show version info and exit.\n"
 "  -h, --help                  Show this text and exit.\n"
 "  --encode=MESSAGE_TYPE       Read a text-format message of the given type\n"
-"                              from standard input and write it in binary\n"
-"                              to standard output.  The message type must\n"
+"                              an write it in binary.  The message type must\n"
 "                              be defined in PROTO_FILES or their imports.\n"
-"  --decode=MESSAGE_TYPE       Read a binary message of the given type from\n"
-"                              standard input and write it in text format\n"
-"                              to standard output.  The message type must\n"
-"                              be defined in PROTO_FILES or their imports.\n"
-"  --decode_raw                Read an arbitrary protocol message from\n"
-"                              standard input and write the raw tag/value\n"
-"                              pairs in text format to standard output.  No\n"
+"                              The input/output protobuf files are specified\n"
+"                              using the --protobuf_in and --protobuf_out\n"
+"                              command line flags.\n"
+"  --decode=MESSAGE_TYPE       Read a binary message of the given type and\n"
+"                              write it in text format.  The message type\n"
+"                              must be defined in PROTO_FILES or their\n"
+"                              imports. The input/output protobuf files are\n"
+"                              specified using the --protobuf_in and \n"
+"                              --protobuf_out command line flags.\n"
+"  --decode_raw                Read an arbitrary protocol message and write\n"
+"                              the raw tag/value pairs in text format.  No\n"
 "                              PROTO_FILES should be given when using this\n"
-"                              flag.\n"
+"                              flag. The input/output protobuf files are\n"
+"                              specified using the --protobuf_in and \n"
+"                              --protobuf_out command line flags.\n"
+"  --protobuf_in               Absolute path to the protobuf file to read to\n"
+"                              encode/decode.  If omitted, file will be read\n"
+"                              from STDIN.\n"
+"  --protobuf_out              Absolute path to the protobuf file to write to\n"
+"                              after encode/decode operation.  If omitted,\n"
+"                              output is written to STDOUT.\n"
 "  -oFILE,                     Writes a FileDescriptorSet (a protocol buffer,\n"
 "    --descriptor_set_out=FILE defined in descriptor.proto) containing all of\n"
 "                              the input files to FILE.\n"
@@ -1490,7 +1541,9 @@ bool CommandLineInterface::GeneratePluginOutput(
   return true;
 }
 
-bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
+bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool,
+                                          int in_fd,
+                                          int out_fd) {
   // Look up the type.
   const Descriptor* type = pool->FindMessageTypeByName(codec_type_);
   if (type == NULL) {
@@ -1502,15 +1555,15 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
   google::protobuf::scoped_ptr<Message> message(dynamic_factory.GetPrototype(type)->New());
 
   if (mode_ == MODE_ENCODE) {
-    SetFdToTextMode(STDIN_FILENO);
-    SetFdToBinaryMode(STDOUT_FILENO);
+    SetFdToTextMode(in_fd);
+    SetFdToBinaryMode(out_fd);
   } else {
-    SetFdToBinaryMode(STDIN_FILENO);
-    SetFdToTextMode(STDOUT_FILENO);
+    SetFdToBinaryMode(in_fd);
+    SetFdToTextMode(out_fd);
   }
 
-  io::FileInputStream in(STDIN_FILENO);
-  io::FileOutputStream out(STDOUT_FILENO);
+  io::FileInputStream in(in_fd);
+  io::FileOutputStream out(out_fd);
 
   if (mode_ == MODE_ENCODE) {
     // Input is text.

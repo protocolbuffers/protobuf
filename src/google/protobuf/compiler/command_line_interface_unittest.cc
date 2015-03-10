@@ -94,7 +94,7 @@ class CommandLineInterfaceTest : public testing::Test {
   virtual void SetUp();
   virtual void TearDown();
 
-  // Runs the CommandLineInterface with the given command line.  The
+  // Run the CommandLineInterface with the given command line.  The
   // command is automatically split on spaces, and the string "$tmpdir"
   // is replaced with TestTempDir().
   void Run(const string& command);
@@ -1680,6 +1680,17 @@ class EncodeDecodeTest : public testing::Test {
     EXPECT_EQ(StripCR(expected_text), StripCR(captured_stderr_));
   }
 
+  void ExpectBinaryFilesMatch(const string &expected_file,
+                              const string &actual_file) {
+    string expected_output, actual_output;
+    ASSERT_TRUE(File::ReadFileToString(expected_file, &expected_output));
+    ASSERT_TRUE(File::ReadFileToString(actual_file, &actual_output));
+
+    // Don't use EXPECT_EQ because we don't want to print raw binary data to
+    // stdout on failure.
+    EXPECT_TRUE(expected_output == actual_output);
+  }
+
  private:
   int duped_stdin_;
   string captured_stdout_;
@@ -1743,6 +1754,22 @@ TEST_F(EncodeDecodeTest, ProtoParseError) {
   ExpectStdoutMatchesText("");
   ExpectStderrMatchesText(
     "google/protobuf/no_such_file.proto: File not found.\n");
+}
+
+TEST_F(EncodeDecodeTest, RedirectInputOutput) {
+  string out_file = TestTempDir() + "/golden_message_out.pbf";
+  string cmd = "";
+  cmd += "google/protobuf/unittest.proto ";
+  cmd += "--encode=protobuf_unittest.TestAllTypes ";
+  cmd += "--protobuf_in=" + TestSourceDir() +
+         "/google/protobuf/testdata/"
+         "text_format_unittest_data_oneof_implemented.txt ";
+  cmd += "--protobuf_out=" + out_file;
+  EXPECT_TRUE(Run(cmd));
+  ExpectBinaryFilesMatch(
+      out_file,
+      "google/protobuf/testdata/golden_message_oneof_implemented");
+  ExpectStderrMatchesText("");
 }
 
 }  // anonymous namespace
