@@ -1,5 +1,5 @@
-#ifndef GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_ARM64_GCC_H_
-#define GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_ARM64_GCC_H_
+#ifndef GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_TILE_GCC_H_
+#define GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_TILE_GCC_H_
 
 namespace google {
 namespace protobuf {
@@ -70,8 +70,8 @@ inline Atomic64 NoBarrier_AtomicIncrement(volatile Atomic64* ptr,
     return *ptr;
 }
 
-}
-}
-}
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
 
-#endif
+#endif  // GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_TILE_GCC_H_
