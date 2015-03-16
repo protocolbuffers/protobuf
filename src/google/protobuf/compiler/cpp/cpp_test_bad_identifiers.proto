@@ -131,6 +131,24 @@ message TestConflictingSymbolNamesExtension {                    // NO_PROTO3
   }                                                              // NO_PROTO3
 }                                                                // NO_PROTO3
 
+message TestConflictingEnumNames {
+  enum NestedConflictingEnum {
+    and = 1;
+    class = 2;
+    int = 3;
+    typedef = 4;
+    XOR = 5;
+  }
+
+  optional NestedConflictingEnum conflicting_enum = 1;
+}
+
+enum ConflictingEnum {
+  NOT_EQ = 1;
+  volatile = 2;
+  return = 3;
+}
+
 message DummyMessage {}
 
 service TestConflictingMethodNames {
