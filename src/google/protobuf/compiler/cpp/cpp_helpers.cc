@@ -70,7 +70,11 @@ const char* const kKeywordList[] = {
   "return", "short", "signed", "sizeof", "static", "static_assert",
   "static_cast", "struct", "switch", "template", "this", "thread_local",
   "throw", "true", "try", "typedef", "typeid", "typename", "union", "unsigned",
-  "using", "virtual", "void", "volatile", "wchar_t", "while", "xor", "xor_eq"
+  "using", "virtual", "void", "volatile", "wchar_t", "while", "xor", "xor_eq",
+  // OBJECTIVE C KEYWORDS AND MACROS
+  "__autoreleasing", "__strong", "__unsafe_unretained", "__weak", "id", "Class",
+  "_cmd", "BOOL", "BSD", "bycopy", "byref", "IMP", "In", "inout", "Nil", "nil",
+  "NO", "oneway", "out", "SEL", "self", "super", "YES"
 };
 
 hash_set<string> MakeKeywordsMap() {
