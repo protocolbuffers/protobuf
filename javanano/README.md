@@ -1,10 +1,14 @@
 Protocol Buffers - Google's data interchange format
+===================================================
+
+[![Build Status](https://travis-ci.org/google/protobuf.svg?branch=master)](https://travis-ci.org/google/protobuf)
+
 Copyright 2008 Google Inc.
 
 This directory contains the Java Protocol Buffers Nano runtime library.
 
 Installation - With Maven
-=========================
+-------------------------
 
 The Protocol Buffers build is managed using Maven.  If you would
 rather build without Maven, see below.
@@ -41,7 +45,7 @@ rather build without Maven, see below.
    The .jar will be placed in the "target" directory.
 
 Installation - Without Maven
-============================
+----------------------------
 
 If you would rather not install Maven to build the library, you may
 follow these instructions instead.  Note that these instructions skip
@@ -66,7 +70,7 @@ running unit tests.
 4) Install the classes wherever you prefer.
 
 Nano version
-============================
+------------
 
 JavaNano is a special code generator and runtime library designed specially for
 resource-restricted systems, like Android. It is very resource-friendly in both
@@ -130,7 +134,9 @@ penalty. This is not a problem if the field has no default or is an
 empty default.
 
 Nano Generator options
+----------------------
 
+```
 java_package           -> <file-name>|<package-name>
 java_outer_classname   -> <file-name>|<package-name>
 java_multiple_files    -> true or false
@@ -139,8 +145,10 @@ optional_field_style   -> default or accessors
 enum_style             -> c or java
 ignore_services        -> true or false
 parcelable_messages    -> true or false
+```
 
-java_package=<file-name>|<package-name> (no default)
+**java_package=\<file-name\>|\<package-name\>** (no default)
+
   This allows overriding the 'java_package' option value
   for the given file from the command line. Use multiple
   java_package options to override the option for multiple
@@ -149,7 +157,8 @@ java_package=<file-name>|<package-name> (no default)
   the same option defined in the file if present, or the
   proto package if present, or the default Java package.
 
-java_outer_classname=<file-name>|<outer-classname> (no default)
+**java_outer_classname=\<file-name\>|\<outer-classname\>** (no default)
+
   This allows overriding the 'java_outer_classname' option
   for the given file from the command line. Use multiple
   java_outer_classname options to override the option for
@@ -160,7 +169,8 @@ java_outer_classname=<file-name>|<outer-classname> (no default)
   outer class will nest all classes and integer constants
   generated from file-scope messages and enums.
 
-java_multiple_files={true,false} (no default)
+**java_multiple_files={true,false}** (no default)
+
   This allows overriding the 'java_multiple_files' option
   in all source files and their imported files from the
   command line. The final value of this option for each
@@ -178,10 +188,11 @@ java_multiple_files={true,false} (no default)
   incorrect references to the imported messages and enum
   constants.
 
-java_nano_generate_has={true,false} (default: false)
+**java_nano_generate_has={true,false}** (default: false)
+
   DEPRECATED. Use optional_field_style=accessors.
 
-  If true, generates a public boolean variable has<fieldname>
+  If true, generates a public boolean variable has\<fieldname\>
   accompanying each optional or required field (not present for
   repeated fields, groups or messages). It is set to false initially
   and upon clear(). If parseFrom(...) reads the field from the wire,
@@ -195,20 +206,21 @@ java_nano_generate_has={true,false} (default: false)
   many cases reading the default works and determining whether the
   field was received over the wire is irrelevant.
 
-optional_field_style={default,accessors,reftypes} (default: default)
+**optional_field_style={default,accessors,reftypes}** (default: default)
+
   Defines the style of the generated code for fields.
 
-  * default *
+  * default
 
   In the default style, optional fields translate into public mutable
   Java fields, and the serialization process is as discussed in the
   "IMPORTANT" section above.
 
-  * accessors *
+  * accessors
 
   When set to 'accessors', each optional field is encapsulated behind
-  4 accessors, namely get<fieldname>(), set<fieldname>(), has<fieldname>()
-  and clear<fieldname>() methods, with the standard semantics. The hazzer's
+  4 accessors, namely get\<fieldname\>(), set\<fieldname\>(), has\<fieldname\>()
+  and clear\<fieldname\>() methods, with the standard semantics. The hazzer's
   return value determines whether a field is serialized, so this style is
   useful when you need to serialize a field with the default value, or check
   if a field has been explicitly set to its default value from the wire.
@@ -224,7 +236,7 @@ optional_field_style={default,accessors,reftypes} (default: default)
   reducing the final code size.
   TODO(maxtroy): find ProGuard config that would work the best.
 
-  * reftypes *
+  * reftypes
 
   When set to 'reftypes', each proto field is generated as a public Java
   field. For primitive types, these fields use the Java reference types
@@ -254,10 +266,11 @@ optional_field_style={default,accessors,reftypes} (default: default)
   required field (you have no reason to), you can only use
   java_nano_generate_has=true.
 
-enum_style={c,java} (default: c)
+**enum_style={c,java}** (default: c)
+
   Defines where to put the int constants generated from enum members.
 
-  * c *
+  * c
 
   Use C-style, so the enum constants are available at the scope where
   the enum is defined. A file-scope enum's members are referenced like
@@ -265,7 +278,7 @@ enum_style={c,java} (default: c)
   referenced as 'Message.ENUM_VALUE'. The enum name is unavailable.
   This complies with the Micro code generator's behavior.
 
-  * java *
+  * java
 
   Use Java-style, so the enum constants are available under the enum
   name and referenced like 'EnumName.ENUM_VALUE' (they are still int
@@ -277,18 +290,21 @@ enum_style={c,java} (default: c)
   compiler inlines all referenced enum constants into the call sites,
   the interface remains unused and can be removed by ProGuard.
 
-ignore_services={true,false} (default: false)
+**ignore_services={true,false}** (default: false)
+
   Skips services definitions.
 
   Nano doesn't support services. By default, if a service is defined
   it will generate a compilation error. If this flag is set to true,
   services will be silently ignored, instead.
 
-parcelable_messages={true,false} (default: false)
+**parcelable_messages={true,false}** (default: false)
+
   Android-specific option to generate Parcelable messages.
 
 
 To use nano protobufs within the Android repo:
+----------------------------------------------
 
 - Set 'LOCAL_PROTOC_OPTIMIZE_TYPE := nano' in your local .mk file.
   When building a Java library or an app (package) target, the build
@@ -313,17 +329,20 @@ To use nano protobufs within the Android repo:
   the two above.
 
 To use nano protobufs outside of Android repo:
+----------------------------------------------
 
 - Link with the generated jar file
-  <protobuf-root>java/target/protobuf-java-2.3.0-nano.jar.
+  \<protobuf-root\>java/target/protobuf-java-2.3.0-nano.jar.
 - Invoke with --javanano_out, e.g.:
-
+```
 ./protoc '--javanano_out=\
     java_package=src/proto/simple-data.proto|my_package,\
     java_outer_classname=src/proto/simple-data.proto|OuterName\
   :.' src/proto/simple-data.proto
+```
 
 Contributing to nano:
+---------------------
 
 Please add/edit tests in NanoTest.java.
 
@@ -348,7 +367,7 @@ Please run the following steps to test:
 - "make -j12" and check for build errors
 
 Usage
-=====
+-----
 
 The complete documentation for Protocol Buffers is available via the
 web at:
