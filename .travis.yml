@@ -1,3 +1,4 @@
+sudo: false
 language: cpp
 os:
   - linux
