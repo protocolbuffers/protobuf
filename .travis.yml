@@ -1,4 +1,7 @@
 language: cpp
+os:
+  - linux
+  - osx
 script: ./autogen.sh && ./configure && make distcheck
 notifications:
   email: false
