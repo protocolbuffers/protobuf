@@ -152,7 +152,7 @@ java_EXTRA_DIST=                                                             \
   java/src/test/java/com/google/protobuf/test_check_utf8_size.proto          \
   java/src/test/java/com/google/protobuf/test_custom_options.proto           \
   java/pom.xml                                                               \
-  java/README.txt
+  java/README.md
 
 javanano_EXTRA_DIST=                                                                      \
   javanano/src/main/java/com/google/protobuf/nano/CodedOutputByteBufferNano.java          \
@@ -190,7 +190,7 @@ javanano_EXTRA_DIST=                                                            
   javanano/src/test/java/com/google/protobuf/nano/unittest_multiple_nano.proto            \
   javanano/src/test/java/com/google/protobuf/nano/unittest_enum_class_multiple_nano.proto \
   javanano/src/test/java/com/google/protobuf/nano/map_test.proto                          \
-  javanano/README.txt                                                                     \
+  javanano/README.md                                                                      \
   javanano/pom.xml
 
 
@@ -277,7 +277,7 @@ python_EXTRA_DIST=                                                           \
   python/setup.py                                                            \
   python/mox.py                                                              \
   python/stubout.py                                                          \
-  python/README.txt
+  python/README.md
 
 ruby_EXTRA_DIST=                                                             \
   ruby/README.md                                                             \
