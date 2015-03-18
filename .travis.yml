@@ -3,6 +3,6 @@ language: cpp
 os:
   - linux
   - osx
-script: ./autogen.sh && ./configure && make distcheck
+script: ./autogen.sh && ./configure && make distcheck -j2
 notifications:
   email: false
