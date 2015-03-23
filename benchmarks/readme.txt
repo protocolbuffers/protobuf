@@ -44,6 +44,21 @@ Running a benchmark (Java)
 Benchmarks available
 --------------------
 
+Running a benchmark (Cpp)
+--------------------------
+1) install google protobuf.
+
+2) Make sure that gcc has c++11 support.
+
+3) make test
+
+4) Wait! Each test runs for around 30 seconds, and there are 8 tests
+   per class/data combination. The above command would therefore take
+   about 19 minutes to run. You can modify TARGET\_TIME\_US to reduce
+   the waiting time.
+Benchmarks available
+--------------------
+
 From Google:
 google_size.proto and google_speed.proto, messages
 google_message1.dat and google_message2.dat. The proto files are
