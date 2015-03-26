@@ -289,7 +289,7 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, _internal_metadata_),
       -1);
   FileOptions_descriptor_ = file->message_type(9);
-  static const int FileOptions_offsets_[14] = {
+  static const int FileOptions_offsets_[27] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_package_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_outer_classname_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_multiple_files_),
@@ -303,6 +303,19 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, deprecated_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, cc_enable_arenas_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, objc_class_prefix_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_namespace_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_umbrella_classname_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_public_classes_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_multiple_files_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_nest_classes_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_code_contracts_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_expand_namespace_directories_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_cls_compliance_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_add_serializable_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_generate_private_ctor_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_file_extension_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_umbrella_namespace_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_generated_code_attributes_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, uninterpreted_option_),
   };
   FileOptions_reflection_ =
@@ -574,6 +587,7 @@ void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto() {
   delete MethodDescriptorProto_reflection_;
   delete FileOptions::default_instance_;
   delete FileOptions_reflection_;
+  delete FileOptions::_default_csharp_file_extension_;
   delete MessageOptions::default_instance_;
   delete MessageOptions_reflection_;
   delete FieldOptions::default_instance_;
@@ -663,7 +677,7 @@ void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     "t_type\030\003 \001(\t\022/\n\007options\030\004 \001(\0132\036.google.p"
     "rotobuf.MethodOptions\022\037\n\020client_streamin"
     "g\030\005 \001(\010:\005false\022\037\n\020server_streaming\030\006 \001(\010"
-    ":\005false\"\347\004\n\013FileOptions\022\024\n\014java_package\030"
+    ":\005false\"\302\010\n\013FileOptions\022\024\n\014java_package\030"
     "\001 \001(\t\022\034\n\024java_outer_classname\030\010 \001(\t\022\"\n\023j"
     "ava_multiple_files\030\n \001(\010:\005false\022,\n\035java_"
     "generate_equals_and_hash\030\024 \001(\010:\005false\022%\n"
@@ -675,50 +689,62 @@ void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     "se\022\"\n\023py_generic_services\030\022 \001(\010:\005false\022\031"
     "\n\ndeprecated\030\027 \001(\010:\005false\022\037\n\020cc_enable_a"
     "renas\030\037 \001(\010:\005false\022\031\n\021objc_class_prefix\030"
-    "$ \001(\t\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.g"
-    "oogle.protobuf.UninterpretedOption\":\n\014Op"
-    "timizeMode\022\t\n\005SPEED\020\001\022\r\n\tCODE_SIZE\020\002\022\020\n\014"
-    "LITE_RUNTIME\020\003*\t\010\350\007\020\200\200\200\200\002\"\346\001\n\016MessageOpt"
-    "ions\022&\n\027message_set_wire_format\030\001 \001(\010:\005f"
-    "alse\022.\n\037no_standard_descriptor_accessor\030"
-    "\002 \001(\010:\005false\022\031\n\ndeprecated\030\003 \001(\010:\005false\022"
-    "\021\n\tmap_entry\030\007 \001(\010\022C\n\024uninterpreted_opti"
-    "on\030\347\007 \003(\0132$.google.protobuf.Uninterprete"
-    "dOption*\t\010\350\007\020\200\200\200\200\002\"\240\002\n\014FieldOptions\022:\n\005c"
-    "type\030\001 \001(\0162#.google.protobuf.FieldOption"
-    "s.CType:\006STRING\022\016\n\006packed\030\002 \001(\010\022\023\n\004lazy\030"
-    "\005 \001(\010:\005false\022\031\n\ndeprecated\030\003 \001(\010:\005false\022"
-    "\023\n\004weak\030\n \001(\010:\005false\022C\n\024uninterpreted_op"
-    "tion\030\347\007 \003(\0132$.google.protobuf.Uninterpre"
-    "tedOption\"/\n\005CType\022\n\n\006STRING\020\000\022\010\n\004CORD\020\001"
-    "\022\020\n\014STRING_PIECE\020\002*\t\010\350\007\020\200\200\200\200\002\"\215\001\n\013EnumOp"
-    "tions\022\023\n\013allow_alias\030\002 \001(\010\022\031\n\ndeprecated"
-    "\030\003 \001(\010:\005false\022C\n\024uninterpreted_option\030\347\007"
+    "$ \001(\t\022\030\n\020csharp_namespace\030% \001(\t\022!\n\031cshar"
+    "p_umbrella_classname\030& \001(\t\022#\n\025csharp_pub"
+    "lic_classes\030\' \001(\010:\004true\022\035\n\025csharp_multip"
+    "le_files\030( \001(\010\022\033\n\023csharp_nest_classes\030) "
+    "\001(\010\022\035\n\025csharp_code_contracts\030* \001(\010\022+\n#cs"
+    "harp_expand_namespace_directories\030+ \001(\010\022"
+    "#\n\025csharp_cls_compliance\030, \001(\010:\004true\022&\n\027"
+    "csharp_add_serializable\030- \001(\010:\005false\022*\n\034"
+    "csharp_generate_private_ctor\030. \001(\010:\004true"
+    "\022\"\n\025csharp_file_extension\030/ \001(\t:\003.cs\022!\n\031"
+    "csharp_umbrella_namespace\0300 \001(\t\022/\n cshar"
+    "p_generated_code_attributes\0301 \001(\010:\005false"
+    "\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.google"
+    ".protobuf.UninterpretedOption\":\n\014Optimiz"
+    "eMode\022\t\n\005SPEED\020\001\022\r\n\tCODE_SIZE\020\002\022\020\n\014LITE_"
+    "RUNTIME\020\003*\t\010\350\007\020\200\200\200\200\002\"\346\001\n\016MessageOptions\022"
+    "&\n\027message_set_wire_format\030\001 \001(\010:\005false\022"
+    ".\n\037no_standard_descriptor_accessor\030\002 \001(\010"
+    ":\005false\022\031\n\ndeprecated\030\003 \001(\010:\005false\022\021\n\tma"
+    "p_entry\030\007 \001(\010\022C\n\024uninterpreted_option\030\347\007"
     " \003(\0132$.google.protobuf.UninterpretedOpti"
-    "on*\t\010\350\007\020\200\200\200\200\002\"}\n\020EnumValueOptions\022\031\n\ndep"
-    "recated\030\001 \001(\010:\005false\022C\n\024uninterpreted_op"
+    "on*\t\010\350\007\020\200\200\200\200\002\"\240\002\n\014FieldOptions\022:\n\005ctype\030"
+    "\001 \001(\0162#.google.protobuf.FieldOptions.CTy"
+    "pe:\006STRING\022\016\n\006packed\030\002 \001(\010\022\023\n\004lazy\030\005 \001(\010"
+    ":\005false\022\031\n\ndeprecated\030\003 \001(\010:\005false\022\023\n\004we"
+    "ak\030\n \001(\010:\005false\022C\n\024uninterpreted_option\030"
+    "\347\007 \003(\0132$.google.protobuf.UninterpretedOp"
+    "tion\"/\n\005CType\022\n\n\006STRING\020\000\022\010\n\004CORD\020\001\022\020\n\014S"
+    "TRING_PIECE\020\002*\t\010\350\007\020\200\200\200\200\002\"\215\001\n\013EnumOptions"
+    "\022\023\n\013allow_alias\030\002 \001(\010\022\031\n\ndeprecated\030\003 \001("
+    "\010:\005false\022C\n\024uninterpreted_option\030\347\007 \003(\0132"
+    "$.google.protobuf.UninterpretedOption*\t\010"
+    "\350\007\020\200\200\200\200\002\"}\n\020EnumValueOptions\022\031\n\ndeprecat"
+    "ed\030\001 \001(\010:\005false\022C\n\024uninterpreted_option\030"
+    "\347\007 \003(\0132$.google.protobuf.UninterpretedOp"
+    "tion*\t\010\350\007\020\200\200\200\200\002\"{\n\016ServiceOptions\022\031\n\ndep"
+    "recated\030! \001(\010:\005false\022C\n\024uninterpreted_op"
     "tion\030\347\007 \003(\0132$.google.protobuf.Uninterpre"
-    "tedOption*\t\010\350\007\020\200\200\200\200\002\"{\n\016ServiceOptions\022\031"
-    "\n\ndeprecated\030! \001(\010:\005false\022C\n\024uninterpret"
-    "ed_option\030\347\007 \003(\0132$.google.protobuf.Unint"
-    "erpretedOption*\t\010\350\007\020\200\200\200\200\002\"z\n\rMethodOptio"
-    "ns\022\031\n\ndeprecated\030! \001(\010:\005false\022C\n\024uninter"
-    "preted_option\030\347\007 \003(\0132$.google.protobuf.U"
-    "ninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023Uninte"
-    "rpretedOption\022;\n\004name\030\002 \003(\0132-.google.pro"
-    "tobuf.UninterpretedOption.NamePart\022\030\n\020id"
-    "entifier_value\030\003 \001(\t\022\032\n\022positive_int_val"
-    "ue\030\004 \001(\004\022\032\n\022negative_int_value\030\005 \001(\003\022\024\n\014"
-    "double_value\030\006 \001(\001\022\024\n\014string_value\030\007 \001(\014"
-    "\022\027\n\017aggregate_value\030\010 \001(\t\0323\n\010NamePart\022\021\n"
-    "\tname_part\030\001 \002(\t\022\024\n\014is_extension\030\002 \002(\010\"\325"
-    "\001\n\016SourceCodeInfo\022:\n\010location\030\001 \003(\0132(.go"
-    "ogle.protobuf.SourceCodeInfo.Location\032\206\001"
-    "\n\010Location\022\020\n\004path\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003"
-    "(\005B\002\020\001\022\030\n\020leading_comments\030\003 \001(\t\022\031\n\021trai"
-    "ling_comments\030\004 \001(\t\022!\n\031leading_detached_"
-    "comments\030\006 \003(\tB)\n\023com.google.protobufB\020D"
-    "escriptorProtosH\001", 4617);
+    "tedOption*\t\010\350\007\020\200\200\200\200\002\"z\n\rMethodOptions\022\031\n"
+    "\ndeprecated\030! \001(\010:\005false\022C\n\024uninterprete"
+    "d_option\030\347\007 \003(\0132$.google.protobuf.Uninte"
+    "rpretedOption*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023Uninterpret"
+    "edOption\022;\n\004name\030\002 \003(\0132-.google.protobuf"
+    ".UninterpretedOption.NamePart\022\030\n\020identif"
+    "ier_value\030\003 \001(\t\022\032\n\022positive_int_value\030\004 "
+    "\001(\004\022\032\n\022negative_int_value\030\005 \001(\003\022\024\n\014doubl"
+    "e_value\030\006 \001(\001\022\024\n\014string_value\030\007 \001(\014\022\027\n\017a"
+    "ggregate_value\030\010 \001(\t\0323\n\010NamePart\022\021\n\tname"
+    "_part\030\001 \002(\t\022\024\n\014is_extension\030\002 \002(\010\"\325\001\n\016So"
+    "urceCodeInfo\022:\n\010location\030\001 \003(\0132(.google."
+    "protobuf.SourceCodeInfo.Location\032\206\001\n\010Loc"
+    "ation\022\020\n\004path\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002\020"
+    "\001\022\030\n\020leading_comments\030\003 \001(\t\022\031\n\021trailing_"
+    "comments\030\004 \001(\t\022!\n\031leading_detached_comme"
+    "nts\030\006 \003(\tB)\n\023com.google.protobufB\020Descri"
+    "ptorProtosH\001", 5092);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/descriptor.proto", &protobuf_RegisterTypes);
   FileDescriptorSet::default_instance_ = new FileDescriptorSet();
@@ -731,6 +757,8 @@ void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto() {
   EnumValueDescriptorProto::default_instance_ = new EnumValueDescriptorProto();
   ServiceDescriptorProto::default_instance_ = new ServiceDescriptorProto();
   MethodDescriptorProto::default_instance_ = new MethodDescriptorProto();
+  FileOptions::_default_csharp_file_extension_ =
+      new ::std::string(".cs", 3);
   FileOptions::default_instance_ = new FileOptions();
   MessageOptions::default_instance_ = new MessageOptions();
   FieldOptions::default_instance_ = new FieldOptions();
@@ -7002,6 +7030,7 @@ const FileOptions_OptimizeMode FileOptions::OptimizeMode_MIN;
 const FileOptions_OptimizeMode FileOptions::OptimizeMode_MAX;
 const int FileOptions::OptimizeMode_ARRAYSIZE;
 #endif  // _MSC_VER
+::std::string* FileOptions::_default_csharp_file_extension_ = NULL;
 #ifndef _MSC_VER
 const int FileOptions::kJavaPackageFieldNumber;
 const int FileOptions::kJavaOuterClassnameFieldNumber;
@@ -7016,6 +7045,19 @@ const int FileOptions::kPyGenericServicesFieldNumber;
 const int FileOptions::kDeprecatedFieldNumber;
 const int FileOptions::kCcEnableArenasFieldNumber;
 const int FileOptions::kObjcClassPrefixFieldNumber;
+const int FileOptions::kCsharpNamespaceFieldNumber;
+const int FileOptions::kCsharpUmbrellaClassnameFieldNumber;
+const int FileOptions::kCsharpPublicClassesFieldNumber;
+const int FileOptions::kCsharpMultipleFilesFieldNumber;
+const int FileOptions::kCsharpNestClassesFieldNumber;
+const int FileOptions::kCsharpCodeContractsFieldNumber;
+const int FileOptions::kCsharpExpandNamespaceDirectoriesFieldNumber;
+const int FileOptions::kCsharpClsComplianceFieldNumber;
+const int FileOptions::kCsharpAddSerializableFieldNumber;
+const int FileOptions::kCsharpGeneratePrivateCtorFieldNumber;
+const int FileOptions::kCsharpFileExtensionFieldNumber;
+const int FileOptions::kCsharpUmbrellaNamespaceFieldNumber;
+const int FileOptions::kCsharpGeneratedCodeAttributesFieldNumber;
 const int FileOptions::kUninterpretedOptionFieldNumber;
 #endif  // !_MSC_VER
 
@@ -7052,6 +7094,19 @@ void FileOptions::SharedCtor() {
   deprecated_ = false;
   cc_enable_arenas_ = false;
   objc_class_prefix_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  csharp_namespace_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  csharp_umbrella_classname_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  csharp_public_classes_ = true;
+  csharp_multiple_files_ = false;
+  csharp_nest_classes_ = false;
+  csharp_code_contracts_ = false;
+  csharp_expand_namespace_directories_ = false;
+  csharp_cls_compliance_ = true;
+  csharp_add_serializable_ = false;
+  csharp_generate_private_ctor_ = true;
+  csharp_file_extension_.UnsafeSetDefault(_default_csharp_file_extension_);
+  csharp_umbrella_namespace_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  csharp_generated_code_attributes_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -7065,6 +7120,10 @@ void FileOptions::SharedDtor() {
   java_outer_classname_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   go_package_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   objc_class_prefix_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  csharp_namespace_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  csharp_umbrella_classname_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  csharp_file_extension_.DestroyNoArena(_default_csharp_file_extension_);
+  csharp_umbrella_namespace_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != default_instance_) {
   }
 }
@@ -7117,11 +7176,34 @@ void FileOptions::Clear() {
       go_package_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
   }
-  if (_has_bits_[8 / 32] & 7936) {
+  if (_has_bits_[8 / 32] & 65280) {
     ZR_(java_generic_services_, cc_enable_arenas_);
     if (has_objc_class_prefix()) {
       objc_class_prefix_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
+    if (has_csharp_namespace()) {
+      csharp_namespace_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    }
+    if (has_csharp_umbrella_classname()) {
+      csharp_umbrella_classname_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    }
+    csharp_public_classes_ = true;
+  }
+  if (_has_bits_[16 / 32] & 16711680) {
+    ZR_(csharp_multiple_files_, csharp_code_contracts_);
+    csharp_expand_namespace_directories_ = false;
+    csharp_cls_compliance_ = true;
+    csharp_add_serializable_ = false;
+    csharp_generate_private_ctor_ = true;
+    if (has_csharp_file_extension()) {
+      csharp_file_extension_.ClearToDefaultNoArena(_default_csharp_file_extension_);
+    }
+  }
+  if (_has_bits_[24 / 32] & 50331648) {
+    if (has_csharp_umbrella_namespace()) {
+      csharp_umbrella_namespace_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    }
+    csharp_generated_code_attributes_ = false;
   }
 
 #undef ZR_HELPER_
@@ -7347,6 +7429,209 @@ bool FileOptions::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(298)) goto parse_csharp_namespace;
+        break;
+      }
+
+      // optional string csharp_namespace = 37;
+      case 37: {
+        if (tag == 298) {
+         parse_csharp_namespace:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_csharp_namespace()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->csharp_namespace().data(), this->csharp_namespace().length(),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "google.protobuf.FileOptions.csharp_namespace");
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(306)) goto parse_csharp_umbrella_classname;
+        break;
+      }
+
+      // optional string csharp_umbrella_classname = 38;
+      case 38: {
+        if (tag == 306) {
+         parse_csharp_umbrella_classname:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_csharp_umbrella_classname()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->csharp_umbrella_classname().data(), this->csharp_umbrella_classname().length(),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "google.protobuf.FileOptions.csharp_umbrella_classname");
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(312)) goto parse_csharp_public_classes;
+        break;
+      }
+
+      // optional bool csharp_public_classes = 39 [default = true];
+      case 39: {
+        if (tag == 312) {
+         parse_csharp_public_classes:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &csharp_public_classes_)));
+          set_has_csharp_public_classes();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(320)) goto parse_csharp_multiple_files;
+        break;
+      }
+
+      // optional bool csharp_multiple_files = 40;
+      case 40: {
+        if (tag == 320) {
+         parse_csharp_multiple_files:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &csharp_multiple_files_)));
+          set_has_csharp_multiple_files();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(328)) goto parse_csharp_nest_classes;
+        break;
+      }
+
+      // optional bool csharp_nest_classes = 41;
+      case 41: {
+        if (tag == 328) {
+         parse_csharp_nest_classes:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &csharp_nest_classes_)));
+          set_has_csharp_nest_classes();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(336)) goto parse_csharp_code_contracts;
+        break;
+      }
+
+      // optional bool csharp_code_contracts = 42;
+      case 42: {
+        if (tag == 336) {
+         parse_csharp_code_contracts:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &csharp_code_contracts_)));
+          set_has_csharp_code_contracts();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(344)) goto parse_csharp_expand_namespace_directories;
+        break;
+      }
+
+      // optional bool csharp_expand_namespace_directories = 43;
+      case 43: {
+        if (tag == 344) {
+         parse_csharp_expand_namespace_directories:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &csharp_expand_namespace_directories_)));
+          set_has_csharp_expand_namespace_directories();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(352)) goto parse_csharp_cls_compliance;
+        break;
+      }
+
+      // optional bool csharp_cls_compliance = 44 [default = true];
+      case 44: {
+        if (tag == 352) {
+         parse_csharp_cls_compliance:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &csharp_cls_compliance_)));
+          set_has_csharp_cls_compliance();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(360)) goto parse_csharp_add_serializable;
+        break;
+      }
+
+      // optional bool csharp_add_serializable = 45 [default = false];
+      case 45: {
+        if (tag == 360) {
+         parse_csharp_add_serializable:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &csharp_add_serializable_)));
+          set_has_csharp_add_serializable();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(368)) goto parse_csharp_generate_private_ctor;
+        break;
+      }
+
+      // optional bool csharp_generate_private_ctor = 46 [default = true];
+      case 46: {
+        if (tag == 368) {
+         parse_csharp_generate_private_ctor:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &csharp_generate_private_ctor_)));
+          set_has_csharp_generate_private_ctor();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(378)) goto parse_csharp_file_extension;
+        break;
+      }
+
+      // optional string csharp_file_extension = 47 [default = ".cs"];
+      case 47: {
+        if (tag == 378) {
+         parse_csharp_file_extension:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_csharp_file_extension()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->csharp_file_extension().data(), this->csharp_file_extension().length(),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "google.protobuf.FileOptions.csharp_file_extension");
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(386)) goto parse_csharp_umbrella_namespace;
+        break;
+      }
+
+      // optional string csharp_umbrella_namespace = 48;
+      case 48: {
+        if (tag == 386) {
+         parse_csharp_umbrella_namespace:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_csharp_umbrella_namespace()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->csharp_umbrella_namespace().data(), this->csharp_umbrella_namespace().length(),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "google.protobuf.FileOptions.csharp_umbrella_namespace");
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(392)) goto parse_csharp_generated_code_attributes;
+        break;
+      }
+
+      // optional bool csharp_generated_code_attributes = 49 [default = false];
+      case 49: {
+        if (tag == 392) {
+         parse_csharp_generated_code_attributes:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &csharp_generated_code_attributes_)));
+          set_has_csharp_generated_code_attributes();
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectTag(7994)) goto parse_uninterpreted_option;
         break;
       }
@@ -7481,6 +7766,91 @@ void FileOptions::SerializeWithCachedSizes(
       36, this->objc_class_prefix(), output);
   }
 
+  // optional string csharp_namespace = 37;
+  if (has_csharp_namespace()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->csharp_namespace().data(), this->csharp_namespace().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.FileOptions.csharp_namespace");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      37, this->csharp_namespace(), output);
+  }
+
+  // optional string csharp_umbrella_classname = 38;
+  if (has_csharp_umbrella_classname()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->csharp_umbrella_classname().data(), this->csharp_umbrella_classname().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.FileOptions.csharp_umbrella_classname");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      38, this->csharp_umbrella_classname(), output);
+  }
+
+  // optional bool csharp_public_classes = 39 [default = true];
+  if (has_csharp_public_classes()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(39, this->csharp_public_classes(), output);
+  }
+
+  // optional bool csharp_multiple_files = 40;
+  if (has_csharp_multiple_files()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(40, this->csharp_multiple_files(), output);
+  }
+
+  // optional bool csharp_nest_classes = 41;
+  if (has_csharp_nest_classes()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(41, this->csharp_nest_classes(), output);
+  }
+
+  // optional bool csharp_code_contracts = 42;
+  if (has_csharp_code_contracts()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(42, this->csharp_code_contracts(), output);
+  }
+
+  // optional bool csharp_expand_namespace_directories = 43;
+  if (has_csharp_expand_namespace_directories()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(43, this->csharp_expand_namespace_directories(), output);
+  }
+
+  // optional bool csharp_cls_compliance = 44 [default = true];
+  if (has_csharp_cls_compliance()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(44, this->csharp_cls_compliance(), output);
+  }
+
+  // optional bool csharp_add_serializable = 45 [default = false];
+  if (has_csharp_add_serializable()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(45, this->csharp_add_serializable(), output);
+  }
+
+  // optional bool csharp_generate_private_ctor = 46 [default = true];
+  if (has_csharp_generate_private_ctor()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(46, this->csharp_generate_private_ctor(), output);
+  }
+
+  // optional string csharp_file_extension = 47 [default = ".cs"];
+  if (has_csharp_file_extension()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->csharp_file_extension().data(), this->csharp_file_extension().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.FileOptions.csharp_file_extension");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      47, this->csharp_file_extension(), output);
+  }
+
+  // optional string csharp_umbrella_namespace = 48;
+  if (has_csharp_umbrella_namespace()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->csharp_umbrella_namespace().data(), this->csharp_umbrella_namespace().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.FileOptions.csharp_umbrella_namespace");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      48, this->csharp_umbrella_namespace(), output);
+  }
+
+  // optional bool csharp_generated_code_attributes = 49 [default = false];
+  if (has_csharp_generated_code_attributes()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(49, this->csharp_generated_code_attributes(), output);
+  }
+
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned int i = 0, n = this->uninterpreted_option_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
@@ -7591,6 +7961,95 @@ void FileOptions::SerializeWithCachedSizes(
         36, this->objc_class_prefix(), target);
   }
 
+  // optional string csharp_namespace = 37;
+  if (has_csharp_namespace()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->csharp_namespace().data(), this->csharp_namespace().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.FileOptions.csharp_namespace");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        37, this->csharp_namespace(), target);
+  }
+
+  // optional string csharp_umbrella_classname = 38;
+  if (has_csharp_umbrella_classname()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->csharp_umbrella_classname().data(), this->csharp_umbrella_classname().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.FileOptions.csharp_umbrella_classname");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        38, this->csharp_umbrella_classname(), target);
+  }
+
+  // optional bool csharp_public_classes = 39 [default = true];
+  if (has_csharp_public_classes()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(39, this->csharp_public_classes(), target);
+  }
+
+  // optional bool csharp_multiple_files = 40;
+  if (has_csharp_multiple_files()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(40, this->csharp_multiple_files(), target);
+  }
+
+  // optional bool csharp_nest_classes = 41;
+  if (has_csharp_nest_classes()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(41, this->csharp_nest_classes(), target);
+  }
+
+  // optional bool csharp_code_contracts = 42;
+  if (has_csharp_code_contracts()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(42, this->csharp_code_contracts(), target);
+  }
+
+  // optional bool csharp_expand_namespace_directories = 43;
+  if (has_csharp_expand_namespace_directories()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(43, this->csharp_expand_namespace_directories(), target);
+  }
+
+  // optional bool csharp_cls_compliance = 44 [default = true];
+  if (has_csharp_cls_compliance()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(44, this->csharp_cls_compliance(), target);
+  }
+
+  // optional bool csharp_add_serializable = 45 [default = false];
+  if (has_csharp_add_serializable()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(45, this->csharp_add_serializable(), target);
+  }
+
+  // optional bool csharp_generate_private_ctor = 46 [default = true];
+  if (has_csharp_generate_private_ctor()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(46, this->csharp_generate_private_ctor(), target);
+  }
+
+  // optional string csharp_file_extension = 47 [default = ".cs"];
+  if (has_csharp_file_extension()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->csharp_file_extension().data(), this->csharp_file_extension().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.FileOptions.csharp_file_extension");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        47, this->csharp_file_extension(), target);
+  }
+
+  // optional string csharp_umbrella_namespace = 48;
+  if (has_csharp_umbrella_namespace()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->csharp_umbrella_namespace().data(), this->csharp_umbrella_namespace().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.FileOptions.csharp_umbrella_namespace");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        48, this->csharp_umbrella_namespace(), target);
+  }
+
+  // optional bool csharp_generated_code_attributes = 49 [default = false];
+  if (has_csharp_generated_code_attributes()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(49, this->csharp_generated_code_attributes(), target);
+  }
+
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned int i = 0, n = this->uninterpreted_option_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
@@ -7662,7 +8121,7 @@ int FileOptions::ByteSize() const {
     }
 
   }
-  if (_has_bits_[8 / 32] & 7936) {
+  if (_has_bits_[8 / 32] & 65280) {
     // optional bool java_generic_services = 17 [default = false];
     if (has_java_generic_services()) {
       total_size += 2 + 1;
@@ -7688,6 +8147,83 @@ int FileOptions::ByteSize() const {
       total_size += 2 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->objc_class_prefix());
+    }
+
+    // optional string csharp_namespace = 37;
+    if (has_csharp_namespace()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->csharp_namespace());
+    }
+
+    // optional string csharp_umbrella_classname = 38;
+    if (has_csharp_umbrella_classname()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->csharp_umbrella_classname());
+    }
+
+    // optional bool csharp_public_classes = 39 [default = true];
+    if (has_csharp_public_classes()) {
+      total_size += 2 + 1;
+    }
+
+  }
+  if (_has_bits_[16 / 32] & 16711680) {
+    // optional bool csharp_multiple_files = 40;
+    if (has_csharp_multiple_files()) {
+      total_size += 2 + 1;
+    }
+
+    // optional bool csharp_nest_classes = 41;
+    if (has_csharp_nest_classes()) {
+      total_size += 2 + 1;
+    }
+
+    // optional bool csharp_code_contracts = 42;
+    if (has_csharp_code_contracts()) {
+      total_size += 2 + 1;
+    }
+
+    // optional bool csharp_expand_namespace_directories = 43;
+    if (has_csharp_expand_namespace_directories()) {
+      total_size += 2 + 1;
+    }
+
+    // optional bool csharp_cls_compliance = 44 [default = true];
+    if (has_csharp_cls_compliance()) {
+      total_size += 2 + 1;
+    }
+
+    // optional bool csharp_add_serializable = 45 [default = false];
+    if (has_csharp_add_serializable()) {
+      total_size += 2 + 1;
+    }
+
+    // optional bool csharp_generate_private_ctor = 46 [default = true];
+    if (has_csharp_generate_private_ctor()) {
+      total_size += 2 + 1;
+    }
+
+    // optional string csharp_file_extension = 47 [default = ".cs"];
+    if (has_csharp_file_extension()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->csharp_file_extension());
+    }
+
+  }
+  if (_has_bits_[24 / 32] & 50331648) {
+    // optional string csharp_umbrella_namespace = 48;
+    if (has_csharp_umbrella_namespace()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->csharp_umbrella_namespace());
+    }
+
+    // optional bool csharp_generated_code_attributes = 49 [default = false];
+    if (has_csharp_generated_code_attributes()) {
+      total_size += 2 + 1;
     }
 
   }
@@ -7773,6 +8309,53 @@ void FileOptions::MergeFrom(const FileOptions& from) {
       set_has_objc_class_prefix();
       objc_class_prefix_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.objc_class_prefix_);
     }
+    if (from.has_csharp_namespace()) {
+      set_has_csharp_namespace();
+      csharp_namespace_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.csharp_namespace_);
+    }
+    if (from.has_csharp_umbrella_classname()) {
+      set_has_csharp_umbrella_classname();
+      csharp_umbrella_classname_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.csharp_umbrella_classname_);
+    }
+    if (from.has_csharp_public_classes()) {
+      set_csharp_public_classes(from.csharp_public_classes());
+    }
+  }
+  if (from._has_bits_[16 / 32] & (0xffu << (16 % 32))) {
+    if (from.has_csharp_multiple_files()) {
+      set_csharp_multiple_files(from.csharp_multiple_files());
+    }
+    if (from.has_csharp_nest_classes()) {
+      set_csharp_nest_classes(from.csharp_nest_classes());
+    }
+    if (from.has_csharp_code_contracts()) {
+      set_csharp_code_contracts(from.csharp_code_contracts());
+    }
+    if (from.has_csharp_expand_namespace_directories()) {
+      set_csharp_expand_namespace_directories(from.csharp_expand_namespace_directories());
+    }
+    if (from.has_csharp_cls_compliance()) {
+      set_csharp_cls_compliance(from.csharp_cls_compliance());
+    }
+    if (from.has_csharp_add_serializable()) {
+      set_csharp_add_serializable(from.csharp_add_serializable());
+    }
+    if (from.has_csharp_generate_private_ctor()) {
+      set_csharp_generate_private_ctor(from.csharp_generate_private_ctor());
+    }
+    if (from.has_csharp_file_extension()) {
+      set_has_csharp_file_extension();
+      csharp_file_extension_.AssignWithDefault(_default_csharp_file_extension_, from.csharp_file_extension_);
+    }
+  }
+  if (from._has_bits_[24 / 32] & (0xffu << (24 % 32))) {
+    if (from.has_csharp_umbrella_namespace()) {
+      set_has_csharp_umbrella_namespace();
+      csharp_umbrella_namespace_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.csharp_umbrella_namespace_);
+    }
+    if (from.has_csharp_generated_code_attributes()) {
+      set_csharp_generated_code_attributes(from.csharp_generated_code_attributes());
+    }
   }
   _extensions_.MergeFrom(from._extensions_);
   if (from._internal_metadata_.have_unknown_fields()) {
@@ -7817,6 +8400,19 @@ void FileOptions::InternalSwap(FileOptions* other) {
   std::swap(deprecated_, other->deprecated_);
   std::swap(cc_enable_arenas_, other->cc_enable_arenas_);
   objc_class_prefix_.Swap(&other->objc_class_prefix_);
+  csharp_namespace_.Swap(&other->csharp_namespace_);
+  csharp_umbrella_classname_.Swap(&other->csharp_umbrella_classname_);
+  std::swap(csharp_public_classes_, other->csharp_public_classes_);
+  std::swap(csharp_multiple_files_, other->csharp_multiple_files_);
+  std::swap(csharp_nest_classes_, other->csharp_nest_classes_);
+  std::swap(csharp_code_contracts_, other->csharp_code_contracts_);
+  std::swap(csharp_expand_namespace_directories_, other->csharp_expand_namespace_directories_);
+  std::swap(csharp_cls_compliance_, other->csharp_cls_compliance_);
+  std::swap(csharp_add_serializable_, other->csharp_add_serializable_);
+  std::swap(csharp_generate_private_ctor_, other->csharp_generate_private_ctor_);
+  csharp_file_extension_.Swap(&other->csharp_file_extension_);
+  csharp_umbrella_namespace_.Swap(&other->csharp_umbrella_namespace_);
+  std::swap(csharp_generated_code_attributes_, other->csharp_generated_code_attributes_);
   uninterpreted_option_.UnsafeArenaSwap(&other->uninterpreted_option_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -8262,6 +8858,434 @@ void FileOptions::InternalSwap(FileOptions* other) {
   }
   objc_class_prefix_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), objc_class_prefix);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.objc_class_prefix)
+}
+
+// optional string csharp_namespace = 37;
+ bool FileOptions::has_csharp_namespace() const {
+  return (_has_bits_[0] & 0x00002000u) != 0;
+}
+ void FileOptions::set_has_csharp_namespace() {
+  _has_bits_[0] |= 0x00002000u;
+}
+ void FileOptions::clear_has_csharp_namespace() {
+  _has_bits_[0] &= ~0x00002000u;
+}
+ void FileOptions::clear_csharp_namespace() {
+  csharp_namespace_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_csharp_namespace();
+}
+ const ::std::string& FileOptions::csharp_namespace() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.csharp_namespace)
+  return csharp_namespace_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void FileOptions::set_csharp_namespace(const ::std::string& value) {
+  set_has_csharp_namespace();
+  csharp_namespace_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_namespace)
+}
+ void FileOptions::set_csharp_namespace(const char* value) {
+  set_has_csharp_namespace();
+  csharp_namespace_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.csharp_namespace)
+}
+ void FileOptions::set_csharp_namespace(const char* value, size_t size) {
+  set_has_csharp_namespace();
+  csharp_namespace_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.csharp_namespace)
+}
+ ::std::string* FileOptions::mutable_csharp_namespace() {
+  set_has_csharp_namespace();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.csharp_namespace)
+  return csharp_namespace_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* FileOptions::release_csharp_namespace() {
+  clear_has_csharp_namespace();
+  return csharp_namespace_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void FileOptions::set_allocated_csharp_namespace(::std::string* csharp_namespace) {
+  if (csharp_namespace != NULL) {
+    set_has_csharp_namespace();
+  } else {
+    clear_has_csharp_namespace();
+  }
+  csharp_namespace_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), csharp_namespace);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.csharp_namespace)
+}
+
+// optional string csharp_umbrella_classname = 38;
+ bool FileOptions::has_csharp_umbrella_classname() const {
+  return (_has_bits_[0] & 0x00004000u) != 0;
+}
+ void FileOptions::set_has_csharp_umbrella_classname() {
+  _has_bits_[0] |= 0x00004000u;
+}
+ void FileOptions::clear_has_csharp_umbrella_classname() {
+  _has_bits_[0] &= ~0x00004000u;
+}
+ void FileOptions::clear_csharp_umbrella_classname() {
+  csharp_umbrella_classname_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_csharp_umbrella_classname();
+}
+ const ::std::string& FileOptions::csharp_umbrella_classname() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.csharp_umbrella_classname)
+  return csharp_umbrella_classname_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void FileOptions::set_csharp_umbrella_classname(const ::std::string& value) {
+  set_has_csharp_umbrella_classname();
+  csharp_umbrella_classname_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_umbrella_classname)
+}
+ void FileOptions::set_csharp_umbrella_classname(const char* value) {
+  set_has_csharp_umbrella_classname();
+  csharp_umbrella_classname_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.csharp_umbrella_classname)
+}
+ void FileOptions::set_csharp_umbrella_classname(const char* value, size_t size) {
+  set_has_csharp_umbrella_classname();
+  csharp_umbrella_classname_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.csharp_umbrella_classname)
+}
+ ::std::string* FileOptions::mutable_csharp_umbrella_classname() {
+  set_has_csharp_umbrella_classname();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.csharp_umbrella_classname)
+  return csharp_umbrella_classname_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* FileOptions::release_csharp_umbrella_classname() {
+  clear_has_csharp_umbrella_classname();
+  return csharp_umbrella_classname_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void FileOptions::set_allocated_csharp_umbrella_classname(::std::string* csharp_umbrella_classname) {
+  if (csharp_umbrella_classname != NULL) {
+    set_has_csharp_umbrella_classname();
+  } else {
+    clear_has_csharp_umbrella_classname();
+  }
+  csharp_umbrella_classname_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), csharp_umbrella_classname);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.csharp_umbrella_classname)
+}
+
+// optional bool csharp_public_classes = 39 [default = true];
+ bool FileOptions::has_csharp_public_classes() const {
+  return (_has_bits_[0] & 0x00008000u) != 0;
+}
+ void FileOptions::set_has_csharp_public_classes() {
+  _has_bits_[0] |= 0x00008000u;
+}
+ void FileOptions::clear_has_csharp_public_classes() {
+  _has_bits_[0] &= ~0x00008000u;
+}
+ void FileOptions::clear_csharp_public_classes() {
+  csharp_public_classes_ = true;
+  clear_has_csharp_public_classes();
+}
+ bool FileOptions::csharp_public_classes() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.csharp_public_classes)
+  return csharp_public_classes_;
+}
+ void FileOptions::set_csharp_public_classes(bool value) {
+  set_has_csharp_public_classes();
+  csharp_public_classes_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_public_classes)
+}
+
+// optional bool csharp_multiple_files = 40;
+ bool FileOptions::has_csharp_multiple_files() const {
+  return (_has_bits_[0] & 0x00010000u) != 0;
+}
+ void FileOptions::set_has_csharp_multiple_files() {
+  _has_bits_[0] |= 0x00010000u;
+}
+ void FileOptions::clear_has_csharp_multiple_files() {
+  _has_bits_[0] &= ~0x00010000u;
+}
+ void FileOptions::clear_csharp_multiple_files() {
+  csharp_multiple_files_ = false;
+  clear_has_csharp_multiple_files();
+}
+ bool FileOptions::csharp_multiple_files() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.csharp_multiple_files)
+  return csharp_multiple_files_;
+}
+ void FileOptions::set_csharp_multiple_files(bool value) {
+  set_has_csharp_multiple_files();
+  csharp_multiple_files_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_multiple_files)
+}
+
+// optional bool csharp_nest_classes = 41;
+ bool FileOptions::has_csharp_nest_classes() const {
+  return (_has_bits_[0] & 0x00020000u) != 0;
+}
+ void FileOptions::set_has_csharp_nest_classes() {
+  _has_bits_[0] |= 0x00020000u;
+}
+ void FileOptions::clear_has_csharp_nest_classes() {
+  _has_bits_[0] &= ~0x00020000u;
+}
+ void FileOptions::clear_csharp_nest_classes() {
+  csharp_nest_classes_ = false;
+  clear_has_csharp_nest_classes();
+}
+ bool FileOptions::csharp_nest_classes() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.csharp_nest_classes)
+  return csharp_nest_classes_;
+}
+ void FileOptions::set_csharp_nest_classes(bool value) {
+  set_has_csharp_nest_classes();
+  csharp_nest_classes_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_nest_classes)
+}
+
+// optional bool csharp_code_contracts = 42;
+ bool FileOptions::has_csharp_code_contracts() const {
+  return (_has_bits_[0] & 0x00040000u) != 0;
+}
+ void FileOptions::set_has_csharp_code_contracts() {
+  _has_bits_[0] |= 0x00040000u;
+}
+ void FileOptions::clear_has_csharp_code_contracts() {
+  _has_bits_[0] &= ~0x00040000u;
+}
+ void FileOptions::clear_csharp_code_contracts() {
+  csharp_code_contracts_ = false;
+  clear_has_csharp_code_contracts();
+}
+ bool FileOptions::csharp_code_contracts() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.csharp_code_contracts)
+  return csharp_code_contracts_;
+}
+ void FileOptions::set_csharp_code_contracts(bool value) {
+  set_has_csharp_code_contracts();
+  csharp_code_contracts_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_code_contracts)
+}
+
+// optional bool csharp_expand_namespace_directories = 43;
+ bool FileOptions::has_csharp_expand_namespace_directories() const {
+  return (_has_bits_[0] & 0x00080000u) != 0;
+}
+ void FileOptions::set_has_csharp_expand_namespace_directories() {
+  _has_bits_[0] |= 0x00080000u;
+}
+ void FileOptions::clear_has_csharp_expand_namespace_directories() {
+  _has_bits_[0] &= ~0x00080000u;
+}
+ void FileOptions::clear_csharp_expand_namespace_directories() {
+  csharp_expand_namespace_directories_ = false;
+  clear_has_csharp_expand_namespace_directories();
+}
+ bool FileOptions::csharp_expand_namespace_directories() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.csharp_expand_namespace_directories)
+  return csharp_expand_namespace_directories_;
+}
+ void FileOptions::set_csharp_expand_namespace_directories(bool value) {
+  set_has_csharp_expand_namespace_directories();
+  csharp_expand_namespace_directories_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_expand_namespace_directories)
+}
+
+// optional bool csharp_cls_compliance = 44 [default = true];
+ bool FileOptions::has_csharp_cls_compliance() const {
+  return (_has_bits_[0] & 0x00100000u) != 0;
+}
+ void FileOptions::set_has_csharp_cls_compliance() {
+  _has_bits_[0] |= 0x00100000u;
+}
+ void FileOptions::clear_has_csharp_cls_compliance() {
+  _has_bits_[0] &= ~0x00100000u;
+}
+ void FileOptions::clear_csharp_cls_compliance() {
+  csharp_cls_compliance_ = true;
+  clear_has_csharp_cls_compliance();
+}
+ bool FileOptions::csharp_cls_compliance() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.csharp_cls_compliance)
+  return csharp_cls_compliance_;
+}
+ void FileOptions::set_csharp_cls_compliance(bool value) {
+  set_has_csharp_cls_compliance();
+  csharp_cls_compliance_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_cls_compliance)
+}
+
+// optional bool csharp_add_serializable = 45 [default = false];
+ bool FileOptions::has_csharp_add_serializable() const {
+  return (_has_bits_[0] & 0x00200000u) != 0;
+}
+ void FileOptions::set_has_csharp_add_serializable() {
+  _has_bits_[0] |= 0x00200000u;
+}
+ void FileOptions::clear_has_csharp_add_serializable() {
+  _has_bits_[0] &= ~0x00200000u;
+}
+ void FileOptions::clear_csharp_add_serializable() {
+  csharp_add_serializable_ = false;
+  clear_has_csharp_add_serializable();
+}
+ bool FileOptions::csharp_add_serializable() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.csharp_add_serializable)
+  return csharp_add_serializable_;
+}
+ void FileOptions::set_csharp_add_serializable(bool value) {
+  set_has_csharp_add_serializable();
+  csharp_add_serializable_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_add_serializable)
+}
+
+// optional bool csharp_generate_private_ctor = 46 [default = true];
+ bool FileOptions::has_csharp_generate_private_ctor() const {
+  return (_has_bits_[0] & 0x00400000u) != 0;
+}
+ void FileOptions::set_has_csharp_generate_private_ctor() {
+  _has_bits_[0] |= 0x00400000u;
+}
+ void FileOptions::clear_has_csharp_generate_private_ctor() {
+  _has_bits_[0] &= ~0x00400000u;
+}
+ void FileOptions::clear_csharp_generate_private_ctor() {
+  csharp_generate_private_ctor_ = true;
+  clear_has_csharp_generate_private_ctor();
+}
+ bool FileOptions::csharp_generate_private_ctor() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.csharp_generate_private_ctor)
+  return csharp_generate_private_ctor_;
+}
+ void FileOptions::set_csharp_generate_private_ctor(bool value) {
+  set_has_csharp_generate_private_ctor();
+  csharp_generate_private_ctor_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_generate_private_ctor)
+}
+
+// optional string csharp_file_extension = 47 [default = ".cs"];
+ bool FileOptions::has_csharp_file_extension() const {
+  return (_has_bits_[0] & 0x00800000u) != 0;
+}
+ void FileOptions::set_has_csharp_file_extension() {
+  _has_bits_[0] |= 0x00800000u;
+}
+ void FileOptions::clear_has_csharp_file_extension() {
+  _has_bits_[0] &= ~0x00800000u;
+}
+ void FileOptions::clear_csharp_file_extension() {
+  csharp_file_extension_.ClearToDefaultNoArena(_default_csharp_file_extension_);
+  clear_has_csharp_file_extension();
+}
+ const ::std::string& FileOptions::csharp_file_extension() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.csharp_file_extension)
+  return csharp_file_extension_.GetNoArena(_default_csharp_file_extension_);
+}
+ void FileOptions::set_csharp_file_extension(const ::std::string& value) {
+  set_has_csharp_file_extension();
+  csharp_file_extension_.SetNoArena(_default_csharp_file_extension_, value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_file_extension)
+}
+ void FileOptions::set_csharp_file_extension(const char* value) {
+  set_has_csharp_file_extension();
+  csharp_file_extension_.SetNoArena(_default_csharp_file_extension_, ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.csharp_file_extension)
+}
+ void FileOptions::set_csharp_file_extension(const char* value, size_t size) {
+  set_has_csharp_file_extension();
+  csharp_file_extension_.SetNoArena(_default_csharp_file_extension_,
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.csharp_file_extension)
+}
+ ::std::string* FileOptions::mutable_csharp_file_extension() {
+  set_has_csharp_file_extension();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.csharp_file_extension)
+  return csharp_file_extension_.MutableNoArena(_default_csharp_file_extension_);
+}
+ ::std::string* FileOptions::release_csharp_file_extension() {
+  clear_has_csharp_file_extension();
+  return csharp_file_extension_.ReleaseNoArena(_default_csharp_file_extension_);
+}
+ void FileOptions::set_allocated_csharp_file_extension(::std::string* csharp_file_extension) {
+  if (csharp_file_extension != NULL) {
+    set_has_csharp_file_extension();
+  } else {
+    clear_has_csharp_file_extension();
+  }
+  csharp_file_extension_.SetAllocatedNoArena(_default_csharp_file_extension_, csharp_file_extension);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.csharp_file_extension)
+}
+
+// optional string csharp_umbrella_namespace = 48;
+ bool FileOptions::has_csharp_umbrella_namespace() const {
+  return (_has_bits_[0] & 0x01000000u) != 0;
+}
+ void FileOptions::set_has_csharp_umbrella_namespace() {
+  _has_bits_[0] |= 0x01000000u;
+}
+ void FileOptions::clear_has_csharp_umbrella_namespace() {
+  _has_bits_[0] &= ~0x01000000u;
+}
+ void FileOptions::clear_csharp_umbrella_namespace() {
+  csharp_umbrella_namespace_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_csharp_umbrella_namespace();
+}
+ const ::std::string& FileOptions::csharp_umbrella_namespace() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.csharp_umbrella_namespace)
+  return csharp_umbrella_namespace_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void FileOptions::set_csharp_umbrella_namespace(const ::std::string& value) {
+  set_has_csharp_umbrella_namespace();
+  csharp_umbrella_namespace_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_umbrella_namespace)
+}
+ void FileOptions::set_csharp_umbrella_namespace(const char* value) {
+  set_has_csharp_umbrella_namespace();
+  csharp_umbrella_namespace_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.csharp_umbrella_namespace)
+}
+ void FileOptions::set_csharp_umbrella_namespace(const char* value, size_t size) {
+  set_has_csharp_umbrella_namespace();
+  csharp_umbrella_namespace_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.csharp_umbrella_namespace)
+}
+ ::std::string* FileOptions::mutable_csharp_umbrella_namespace() {
+  set_has_csharp_umbrella_namespace();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.csharp_umbrella_namespace)
+  return csharp_umbrella_namespace_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* FileOptions::release_csharp_umbrella_namespace() {
+  clear_has_csharp_umbrella_namespace();
+  return csharp_umbrella_namespace_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void FileOptions::set_allocated_csharp_umbrella_namespace(::std::string* csharp_umbrella_namespace) {
+  if (csharp_umbrella_namespace != NULL) {
+    set_has_csharp_umbrella_namespace();
+  } else {
+    clear_has_csharp_umbrella_namespace();
+  }
+  csharp_umbrella_namespace_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), csharp_umbrella_namespace);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.csharp_umbrella_namespace)
+}
+
+// optional bool csharp_generated_code_attributes = 49 [default = false];
+ bool FileOptions::has_csharp_generated_code_attributes() const {
+  return (_has_bits_[0] & 0x02000000u) != 0;
+}
+ void FileOptions::set_has_csharp_generated_code_attributes() {
+  _has_bits_[0] |= 0x02000000u;
+}
+ void FileOptions::clear_has_csharp_generated_code_attributes() {
+  _has_bits_[0] &= ~0x02000000u;
+}
+ void FileOptions::clear_csharp_generated_code_attributes() {
+  csharp_generated_code_attributes_ = false;
+  clear_has_csharp_generated_code_attributes();
+}
+ bool FileOptions::csharp_generated_code_attributes() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.csharp_generated_code_attributes)
+  return csharp_generated_code_attributes_;
+}
+ void FileOptions::set_csharp_generated_code_attributes(bool value) {
+  set_has_csharp_generated_code_attributes();
+  csharp_generated_code_attributes_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_generated_code_attributes)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
