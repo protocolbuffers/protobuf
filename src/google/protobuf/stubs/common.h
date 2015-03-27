@@ -1158,6 +1158,38 @@ class LIBPROTOBUF_EXPORT MutexLockMaybe {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MutexLockMaybe);
 };
 
+#if defined(_ANDROID__) || defined(GOOGLE_PROTOBUF_OS_ANDROID)
+// Android ndk does not support the __thread keyword very well yet. Here
+// we use pthread_key_create()/pthread_getspecific()/... methods for
+// TLS support on android.
+template<typename T>
+class ThreadLocalStorage {
+ public:
+  ThreadLocalStorage() {
+    pthread_key_create(&key_, &ThreadLocalStorage::Delete);
+  }
+  ~ThreadLocalStorage() {
+    pthread_key_delete(key_);
+  }
+  T* Get() {
+    T* result = static_cast<T*>(pthread_getspecific(key_));
+    if (result == NULL) {
+      result = new T();
+      pthread_setspecific(key_, result);
+    }
+    return result;
+  }
+ private:
+  static void Delete(void* value) {
+    delete static_cast<T*>(value);
+  }
+  pthread_key_t key_;
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ThreadLocalStorage);
+};
+
+#endif
+
 }  // namespace internal
 
 // We made these internal so that they would show up as such in the docs,

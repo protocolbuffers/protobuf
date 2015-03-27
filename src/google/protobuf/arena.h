@@ -369,9 +369,10 @@ class LIBPROTOBUF_EXPORT Arena {
 
   static const size_t kHeaderSize = sizeof(Block);
   static google::protobuf::internal::SequenceNumber lifecycle_id_generator_;
-#ifdef PROTOBUF_USE_DLLS
-  // Thread local variables cannot be exposed through DLL interface but we can
-  // wrap them in static functions.
+#if defined(PROTOBUF_USE_DLLS) || defined(GOOGLE_PROTOBUF_OS_ANDROID)
+  // Thread local variables cannot be exposed through DLL interface and
+  // Android ndk does not support __thread keyword. For both cases we wrap
+  // the implementation details in the static function.
   static ThreadCache& thread_cache();
 #else
   static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_;
