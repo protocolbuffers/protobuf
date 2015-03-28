@@ -11,16 +11,14 @@ version = '3.0.0-alpha-3-pre'
 buildscript {
   repositories {
     mavenCentral()
-    mavenLocal()
   }
   dependencies {
-    classpath 'com.google.gradle:osdetector-gradle-plugin:0.1.0-SNAPSHOT'
+    classpath 'com.google.gradle:osdetector-gradle-plugin:1.2.1'
   }
 }
 
 repositories {
   mavenCentral()
-  mavenLocal()
 }
 
 signing {
@@ -53,17 +51,11 @@ uploadArchives.repositories.mavenDeployer {
   beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
   repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-    if (rootProject.hasProperty("ossrhUsername")
-        && rootProject.hasProperty("ossrhPassword")) {
-      authentication(userName: ossrhUsername, password: ossrhPassword)
-    }
+    authentication(userName: sonatypeUsername, password: sonatypePassword)
   }
 
   snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-    if (rootProject.hasProperty("ossrhUsername")
-        && rootProject.hasProperty("ossrhPassword")) {
-      authentication(userName: ossrhUsername, password: ossrhPassword)
-    }
+    authentication(userName: sonatypeUsername, password: sonatypePassword)
   }
 }
 
