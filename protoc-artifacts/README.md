@@ -4,7 +4,12 @@ for the messages and/or RPC services from ``.proto`` files.
 
 Because ``protoc`` is a native executable, the scripts under this directory
 build and publish a ``protoc`` executable (a.k.a. artifact) to Maven
-repositories.
+repositories. The artifact can be used by build automation tools so that users
+would not need to compile and install ``protoc`` for their systems.
+
+## Versioning
+The version of the ``protoc`` artifact must be the same as the version of the
+Protobuf project.
 
 ## Artifact name
 The name of a published ``protoc`` artifact is in the following format:
