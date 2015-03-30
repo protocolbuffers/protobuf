@@ -53,13 +53,13 @@ uploadArchives.repositories.mavenDeployer {
 
   repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
     if (rootProject.hasProperty("ossrhUsername") && rootProject.hasProperty("ossrhPassword")) {
-      authentication(userName: sonatypeUsername, password: sonatypePassword)
+      authentication(userName: ossrhUsername, password: ossrhPassword)
     }
   }
 
   snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
     if (rootProject.hasProperty("ossrhUsername") && rootProject.hasProperty("ossrhPassword")) {
-      authentication(userName: sonatypeUsername, password: sonatypePassword)
+      authentication(userName: ossrhUsername, password: ossrhPassword)
     }
   }
 }
