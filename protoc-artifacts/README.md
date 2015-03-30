@@ -15,6 +15,11 @@ Protobuf project.
 The name of a published ``protoc`` artifact is in the following format:
 ``protoc-<version>-<os>-<arch>.exe``, e.g., ``protoc-3.0.0-alpha-3-windows-x86_64.exe``.
 
+## System requirement
+These scripts only work under Unix-like environments, e.g., Linux, MacOSX, and
+Cygwin or MinGW for Windows. Please see ``README.md`` of the Protobuf project
+for how to set up the build environment.
+
 ## To install artifacts locally
 The following command will install the ``protoc`` artifact to your local Maven repository.
 ```
