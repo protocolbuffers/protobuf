@@ -27,6 +27,7 @@ src/Makefile
 /config.h
 config.log
 config.status
+pbconfig.h
 
 libtool
 protobuf-lite.pc
