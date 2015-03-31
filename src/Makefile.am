@@ -322,7 +322,7 @@ protoc_inputs =                                                \
   google/protobuf/unittest_preserve_unknown_enum2.proto        \
   google/protobuf/unittest_proto3_arena.proto                  \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.proto  \
-  google/protobuf/compiler/cpp/test_large_enum_value.proto
+  google/protobuf/compiler/cpp/cpp_test_large_enum_value.proto
 
 EXTRA_DIST =                                                   \
   $(protoc_inputs)                                             \
@@ -398,8 +398,8 @@ protoc_outputs =                                               \
   google/protobuf/unittest_preserve_unknown_enum2.pb.h         \
   google/protobuf/unittest_proto3_arena.pb.cc                  \
   google/protobuf/unittest_proto3_arena.pb.h                   \
-  google/protobuf/compiler/cpp/test_large_enum_value.pb.cc     \
-  google/protobuf/compiler/cpp/test_large_enum_value.pb.h      \
+  google/protobuf/compiler/cpp/cpp_test_large_enum_value.pb.cc \
+  google/protobuf/compiler/cpp/cpp_test_large_enum_value.pb.h  \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.cc  \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h
 
