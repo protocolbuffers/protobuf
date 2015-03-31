@@ -4,8 +4,9 @@
 # huge binary.
 export CXXFLAGS="-DNDEBUG"
 
-# Statically link libgcc and libstdc++
-export LDFLAGS="-static-libgcc -static-libstdc++"
+# Statically link libgcc and libstdc++.
+# -s to produce stripped binary
+export LDFLAGS="-static-libgcc -static-libstdc++ -s"
 
 # Under Cygwin we use MinGW GCC because the executable produced by Cygwin GCC
 # depends on Cygwin DLL.
@@ -15,5 +16,4 @@ if [[ "$(uname)" == CYGWIN* ]]; then
   export CXXCPP=i686-pc-mingw32-cpp
 fi
 
-cd $(dirname "$0")/.. && ./configure --disable-shared && make &&
-  cd src && (strip protoc || strip protoc.exe)
+cd $(dirname "$0")/.. && ./configure --disable-shared && make
