@@ -29,7 +29,7 @@ signing {
 def artifactFile = 'target/protoc.exe' as File
 
 task buildProtoc(type: Exec) {
-  commandLine './build-protoc.sh'
+  commandLine 'bash', 'build-protoc.sh'
 }
 
 task prepareArtifact(type: Copy, dependsOn: buildProtoc) {
