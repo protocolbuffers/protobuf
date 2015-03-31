@@ -16,4 +16,4 @@ if [[ "$(uname)" == CYGWIN* ]]; then
   export CXXCPP=i686-pc-mingw32-cpp
 fi
 
-cd $(dirname "$0")/.. && ./configure --disable-shared && make
+cd $(dirname "$0")/.. && ./configure --disable-shared && make clean && make
