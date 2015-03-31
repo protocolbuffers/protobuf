@@ -497,7 +497,7 @@ public class DescriptorsTest extends TestCase {
       .build();
     // translate and crosslink
     FileDescriptor file =
-      Descriptors.FileDescriptor.buildFrom(fileDescriptorProto, 
+      Descriptors.FileDescriptor.buildFrom(fileDescriptorProto,
           new FileDescriptor[0]);
     // verify resulting descriptors
     assertNotNull(file);
@@ -518,7 +518,7 @@ public class DescriptorsTest extends TestCase {
     }
     assertTrue(barFound);
   }
-  
+
   public void testDependencyOrder() throws Exception {
     FileDescriptorProto fooProto = FileDescriptorProto.newBuilder()
         .setName("foo.proto").build();
@@ -537,14 +537,14 @@ public class DescriptorsTest extends TestCase {
         new FileDescriptor[0]);
     FileDescriptor barFile = Descriptors.FileDescriptor.buildFrom(barProto,
         new FileDescriptor[] {fooFile});
-    
-    // Items in the FileDescriptor array can be in any order. 
+
+    // Items in the FileDescriptor array can be in any order.
     Descriptors.FileDescriptor.buildFrom(bazProto,
         new FileDescriptor[] {fooFile, barFile});
     Descriptors.FileDescriptor.buildFrom(bazProto,
         new FileDescriptor[] {barFile, fooFile});
   }
-  
+
   public void testInvalidPublicDependency() throws Exception {
     FileDescriptorProto fooProto = FileDescriptorProto.newBuilder()
         .setName("foo.proto").build();
@@ -628,7 +628,7 @@ public class DescriptorsTest extends TestCase {
     Descriptors.FileDescriptor.buildFrom(
         fooProto, new FileDescriptor[] {forwardFile});
   }
-  
+
   /**
    * Tests the translate/crosslink for an example with a more complex namespace
    * referencing.
@@ -677,7 +677,7 @@ public class DescriptorsTest extends TestCase {
       assertTrue(field.getEnumType().getFile().getName().equals("bar.proto"));
       assertTrue(field.getEnumType().getFile().getPackage().equals(
           "a.b.c.d.bar.shared"));
-    }   
+    }
   }
 
   public void testOneofDescriptor() throws Exception {

@@ -144,7 +144,7 @@ public final class CodedOutputStream {
       int bufferSize) {
     return newInstance(new ByteBufferOutputStream(byteBuffer), bufferSize);
   }
-  
+
   private static class ByteBufferOutputStream extends OutputStream {
     private final ByteBuffer byteBuffer;
     public ByteBufferOutputStream(ByteBuffer byteBuffer) {
@@ -750,7 +750,7 @@ public final class CodedOutputStream {
            computeUInt32Size(WireFormat.MESSAGE_SET_TYPE_ID, fieldNumber) +
            computeLazyFieldSize(WireFormat.MESSAGE_SET_MESSAGE, value);
   }
-  
+
   // -----------------------------------------------------------------
 
   /**

@@ -507,7 +507,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   /**
    * Internal (package private) implementation of
    * {@link #copyTo(byte[],int,int,int)}.
-   * It assumes that all error checking has already been performed and that 
+   * It assumes that all error checking has already been performed and that
    * {@code numberToCopy > 0}.
    */
   protected abstract void copyToInternal(byte[] target, int sourceOffset,
@@ -546,7 +546,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @throws IOException  if an I/O error occurs.
    */
   public abstract void writeTo(OutputStream out) throws IOException;
-  
+
   /**
    * Writes a specified part of this byte string to an output stream.
    *
@@ -572,7 +572,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     if (numberToWrite > 0) {
       writeToInternal(out, sourceOffset, numberToWrite);
     }
-    
+
   }
 
   /**
@@ -599,7 +599,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * <p>
    * By returning a list, implementations of this method may be able to avoid
    * copying even when there are multiple backing arrays.
-   * 
+   *
    * @return a list of wrapped bytes
    */
   public abstract List<ByteBuffer> asReadOnlyByteBufferList();
@@ -831,7 +831,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       flushLastBuffer();
       return ByteString.copyFrom(flushedBuffers);
     }
-    
+
     /**
      * Implement java.util.Arrays.copyOf() for jdk 1.5.
      */

@@ -863,7 +863,7 @@ public class TextFormatTest extends TestCase {
     TextFormat.merge(TextFormat.printToUnicodeString(message), builder);
     assertEquals(message.getOptionalString(), builder.getOptionalString());
   }
-  
+
   public void testPrintToUnicodeStringWithNewlines() throws Exception {
     // No newlines at start and end
     assertEquals("optional_string: \"test newlines\\n\\nin\\nstring\"\n",

@@ -35,7 +35,7 @@ import java.util.Iterator;
 
 /**
  * This class tests {@link RopeByteString#substring(int, int)} by inheriting the tests from
- * {@link LiteralByteStringTest}.  Only a couple of methods are overridden.  
+ * {@link LiteralByteStringTest}.  Only a couple of methods are overridden.
  *
  * @author carlanton@google.com (Carl Haverl)
  */
