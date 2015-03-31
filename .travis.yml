@@ -1,8 +1,16 @@
 sudo: false
-language: cpp
+language: java
+jdk:
+  - openjdk6
+  - openjdk7
+  - oraclejdk7
 os:
   - linux
   - osx
-script: ./autogen.sh && ./configure && make distcheck -j2
+script:
+  - ./autogen.sh && ./configure && make -j2
+  - cd java && mvn test && cd ..
+  - cd javanano && mvn test && cd ..
+  - make distcheck -j2
 notifications:
   email: false
