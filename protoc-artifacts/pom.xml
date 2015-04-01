@@ -77,7 +77,7 @@
               <artifacts>
                 <artifact>
                   <file>${basedir}/target/protoc.exe</file>
-                  <classifier>${os.detected.classifier}</classifier>
+                  <classifier>${os.detected.name}-${os.detected.arch}</classifier>
                   <type>exe</type>
                 </artifact>
               </artifacts>

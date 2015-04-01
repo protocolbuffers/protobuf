@@ -28,6 +28,17 @@ The following command will install the ``protoc`` artifact to your local Maven r
 $ mvn install
 ```
 
+## Cross-compilation
+The Maven script will try to detect the OS and the architecture from Java
+system properties. It's possible to build a protoc binary for an arhitecture
+that is different from what Java has detected, as long as you have the proper
+compilers installed. For example, MingGW32 only ships with 32-bit compilers,
+but you can still build 32-bit protoc under a 64-bit system, with the following
+command:
+```
+$ mvn install -Dos.detected.arch=x86_32
+```
+
 ## To push artifacts to Maven Central
 Before you can upload artifacts to Maven Central repository, make sure you have
 read [this page](http://central.sonatype.org/pages/apache-maven.html) on how to
