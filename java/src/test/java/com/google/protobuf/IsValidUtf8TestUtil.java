@@ -220,8 +220,8 @@ class IsValidUtf8TestUtil {
       }
       ByteString bs = ByteString.copyFrom(bytes);
       boolean isRoundTrippable = bs.isValidUtf8();
-      String s = new String(bytes, "UTF-8");
-      byte[] bytesReencoded = s.getBytes("UTF-8");
+      String s = new String(bytes, ByteString.UTF_8);
+      byte[] bytesReencoded = s.getBytes(ByteString.UTF_8);
       boolean bytesEqual = Arrays.equals(bytes, bytesReencoded);
 
       if (bytesEqual != isRoundTrippable) {
@@ -313,10 +313,10 @@ class IsValidUtf8TestUtil {
   void testBytesUsingByteBuffers(
       int numBytes, long expectedCount, long start, long lim)
       throws UnsupportedEncodingException {
-    CharsetDecoder decoder = Charset.forName("UTF-8").newDecoder()
+    CharsetDecoder decoder = ByteString.UTF_8.newDecoder()
         .onMalformedInput(CodingErrorAction.REPLACE)
         .onUnmappableCharacter(CodingErrorAction.REPLACE);
-    CharsetEncoder encoder = Charset.forName("UTF-8").newEncoder()
+    CharsetEncoder encoder = ByteString.UTF_8.newEncoder()
         .onMalformedInput(CodingErrorAction.REPLACE)
         .onUnmappableCharacter(CodingErrorAction.REPLACE);
     byte[] bytes = new byte[numBytes];

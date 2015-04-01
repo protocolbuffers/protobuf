@@ -276,11 +276,7 @@ public final class TestUtil {
 
   /** Helper to convert a String to ByteString. */
   static ByteString toBytes(String str) {
-    try {
-      return ByteString.copyFrom(str.getBytes("UTF-8"));
-    } catch(java.io.UnsupportedEncodingException e) {
-      throw new RuntimeException("UTF-8 not supported.", e);
-    }
+    return ByteString.copyFrom(str.getBytes(ByteString.UTF_8));
   }
 
   /**

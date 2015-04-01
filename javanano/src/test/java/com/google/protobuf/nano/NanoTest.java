@@ -458,7 +458,7 @@ public class NanoTest extends TestCase {
     assertFalse(msg.optionalBytes.length > 0);
     msg.optionalBytes = InternalNano.copyFromUtf8("hello");
     assertTrue(msg.optionalBytes.length > 0);
-    assertEquals("hello", new String(msg.optionalBytes, "UTF-8"));
+    assertEquals("hello", new String(msg.optionalBytes, InternalNano.UTF_8));
     msg.clear();
     assertFalse(msg.optionalBytes.length > 0);
     msg.clear()
@@ -476,7 +476,7 @@ public class NanoTest extends TestCase {
 
     TestAllTypesNano newMsg = TestAllTypesNano.parseFrom(result);
     assertTrue(newMsg.optionalBytes.length > 0);
-    assertEquals("bye", new String(newMsg.optionalBytes, "UTF-8"));
+    assertEquals("bye", new String(newMsg.optionalBytes, InternalNano.UTF_8));
   }
 
   public void testNanoOptionalGroup() throws Exception {
@@ -1346,14 +1346,14 @@ public class NanoTest extends TestCase {
         InternalNano.copyFromUtf8("bye"),
         InternalNano.copyFromUtf8("boo")
     };
-    assertEquals("bye", new String(msg.repeatedBytes[1], "UTF-8"));
-    assertEquals("boo", new String(msg.repeatedBytes[2], "UTF-8"));
+    assertEquals("bye", new String(msg.repeatedBytes[1], InternalNano.UTF_8));
+    assertEquals("boo", new String(msg.repeatedBytes[2], InternalNano.UTF_8));
     msg.clear();
     assertEquals(0, msg.repeatedBytes.length);
     msg.clear()
        .repeatedBytes = new byte[][] { InternalNano.copyFromUtf8("boo") };
     assertEquals(1, msg.repeatedBytes.length);
-    assertEquals("boo", new String(msg.repeatedBytes[0], "UTF-8"));
+    assertEquals("boo", new String(msg.repeatedBytes[0], InternalNano.UTF_8));
     msg.clear();
     assertEquals(0, msg.repeatedBytes.length);
 
@@ -1385,8 +1385,8 @@ public class NanoTest extends TestCase {
 
     newMsg = TestAllTypesNano.parseFrom(result);
     assertEquals(2, newMsg.repeatedBytes.length);
-    assertEquals("hello", new String(newMsg.repeatedBytes[0], "UTF-8"));
-    assertEquals("world", new String(newMsg.repeatedBytes[1], "UTF-8"));
+    assertEquals("hello", new String(newMsg.repeatedBytes[0], InternalNano.UTF_8));
+    assertEquals("world", new String(newMsg.repeatedBytes[1], InternalNano.UTF_8));
   }
 
   public void testNanoRepeatedGroup() throws Exception {
@@ -2277,9 +2277,9 @@ public class NanoTest extends TestCase {
       assertTrue(52.0e3 == msg.defaultDouble);
       assertEquals(true, msg.defaultBool);
       assertEquals("hello", msg.defaultString);
-      assertEquals("world", new String(msg.defaultBytes, "UTF-8"));
+      assertEquals("world", new String(msg.defaultBytes, InternalNano.UTF_8));
       assertEquals("dünya", msg.defaultStringNonascii);
-      assertEquals("dünyab", new String(msg.defaultBytesNonascii, "UTF-8"));
+      assertEquals("dünyab", new String(msg.defaultBytesNonascii, InternalNano.UTF_8));
       assertEquals(TestAllTypesNano.BAR, msg.defaultNestedEnum);
       assertEquals(NanoOuterClass.FOREIGN_NANO_BAR, msg.defaultForeignEnum);
       assertEquals(UnittestImportNano.IMPORT_NANO_BAR, msg.defaultImportEnum);
@@ -2385,7 +2385,7 @@ public class NanoTest extends TestCase {
     assertEquals(TestAllTypesNanoHas.FOO, newMsg.optionalNestedEnum);
     assertEquals(41, newMsg.defaultInt32);
     assertEquals("hello", newMsg.defaultString);
-    assertEquals("world", new String(newMsg.defaultBytes, "UTF-8"));
+    assertEquals("world", new String(newMsg.defaultBytes, InternalNano.UTF_8));
     assertEquals(TestAllTypesNanoHas.BAR, newMsg.defaultNestedEnum);
     assertEquals(Float.NaN, newMsg.defaultFloatNan);
     assertEquals(0, newMsg.id);
@@ -2567,7 +2567,7 @@ public class NanoTest extends TestCase {
     assertEquals(TestNanoAccessors.FOO, newMsg.getOptionalNestedEnum());
     assertEquals(41, newMsg.getDefaultInt32());
     assertEquals("hello", newMsg.getDefaultString());
-    assertEquals("world", new String(newMsg.getDefaultBytes(), "UTF-8"));
+    assertEquals("world", new String(newMsg.getDefaultBytes(), InternalNano.UTF_8));
     assertEquals(TestNanoAccessors.BAR, newMsg.getDefaultNestedEnum());
     assertEquals(Float.NaN, newMsg.getDefaultFloatNan());
     assertEquals(0, newMsg.id);

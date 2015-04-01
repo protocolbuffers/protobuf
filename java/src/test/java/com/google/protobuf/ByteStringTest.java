@@ -36,11 +36,12 @@ import junit.framework.TestCase;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -56,7 +57,7 @@ import java.util.Random;
  */
 public class ByteStringTest extends TestCase {
 
-  private static final String UTF_16 = "UTF-16";
+  private static final Charset UTF_16 = Charset.forName("UTF-16");
 
   static byte[] getTestBytes(int size, long seed) {
     Random random = new Random(seed);
@@ -139,7 +140,7 @@ public class ByteStringTest extends TestCase {
   public void testCopyFrom_Utf8() throws UnsupportedEncodingException {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString byteString = ByteString.copyFromUtf8(testString);
-    byte[] testBytes = testString.getBytes("UTF-8");
+    byte[] testBytes = testString.getBytes(ByteString.UTF_8);
     assertTrue("copyFromUtf8 string must respect the charset",
         isArrayRange(byteString.toByteArray(), testBytes, 0, testBytes.length));
   }
@@ -400,7 +401,7 @@ public class ByteStringTest extends TestCase {
 
   public void testToStringUtf8() throws UnsupportedEncodingException {
     String testString = "I love unicode \u1234\u5678 characters";
-    byte[] testBytes = testString.getBytes("UTF-8");
+    byte[] testBytes = testString.getBytes(ByteString.UTF_8);
     ByteString byteString = ByteString.copyFrom(testBytes);
     assertEquals("copyToStringUtf8 must respect the charset",
         testString, byteString.toStringUtf8());

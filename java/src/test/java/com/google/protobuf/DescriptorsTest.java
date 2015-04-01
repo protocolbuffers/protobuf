@@ -286,7 +286,7 @@ public class DescriptorsTest extends TestCase {
     d = TestExtremeDefaultValues.getDescriptor();
     assertEquals(
       ByteString.copyFrom(
-        "\0\001\007\b\f\n\r\t\013\\\'\"\u00fe".getBytes("ISO-8859-1")),
+        "\0\001\007\b\f\n\r\t\013\\\'\"\u00fe".getBytes(Internal.ISO_8859_1)),
       d.findFieldByName("escaped_bytes").getDefaultValue());
     assertEquals(-1, d.findFieldByName("large_uint32").getDefaultValue());
     assertEquals(-1L, d.findFieldByName("large_uint64").getDefaultValue());

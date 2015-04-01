@@ -373,14 +373,14 @@ public final class CodedInputStream {
     if (size <= (bufferSize - bufferPos) && size > 0) {
       // Fast path:  We already have the bytes in a contiguous buffer, so
       //   just copy directly from it.
-      final String result = new String(buffer, bufferPos, size, "UTF-8");
+      final String result = new String(buffer, bufferPos, size, ByteString.UTF_8);
       bufferPos += size;
       return result;
     } else if (size == 0) {
       return "";
     } else {
       // Slow path:  Build a byte array first then copy it.
-      return new String(readRawBytesSlowPath(size), "UTF-8");
+      return new String(readRawBytesSlowPath(size), ByteString.UTF_8);
     }
   }
 
@@ -409,7 +409,7 @@ public final class CodedInputStream {
     if (!Utf8.isValidUtf8(bytes, pos, pos + size)) {
       throw InvalidProtocolBufferException.invalidUtf8();
     }
-    return new String(bytes, pos, size, "UTF-8");
+    return new String(bytes, pos, size, ByteString.UTF_8);
   }
 
   /** Read a {@code group} field value from the stream. */

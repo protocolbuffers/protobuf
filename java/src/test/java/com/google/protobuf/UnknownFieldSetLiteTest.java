@@ -229,7 +229,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
 
   public void testMalformedBytes() throws Exception {
     try {
-      Foo.parseFrom("this is a malformed protocol buffer".getBytes("UTF-8"));
+      Foo.parseFrom("this is a malformed protocol buffer".getBytes(ByteString.UTF_8));
       fail();
     } catch (InvalidProtocolBufferException e) {
       // Expected.

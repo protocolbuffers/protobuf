@@ -33,6 +33,7 @@ package com.google.protobuf;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.AbstractList;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
@@ -51,6 +52,9 @@ import java.util.Set;
  * @author kenton@google.com (Kenton Varda)
  */
 public class Internal {
+
+  protected static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
+
   /**
    * Helper called by generated code to construct default values for string
    * fields.
@@ -80,14 +84,7 @@ public class Internal {
    * generated code calls this automatically.
    */
   public static String stringDefaultValue(String bytes) {
-    try {
-      return new String(bytes.getBytes("ISO-8859-1"), "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      // This should never happen since all JVMs are required to implement
-      // both of the above character sets.
-      throw new IllegalStateException(
-          "Java VM does not support a standard character set.", e);
-    }
+    return new String(bytes.getBytes(ISO_8859_1), ByteString.UTF_8);
   }
 
   /**
@@ -99,14 +96,7 @@ public class Internal {
    * embed raw bytes as a string literal with ISO-8859-1 encoding.
    */
   public static ByteString bytesDefaultValue(String bytes) {
-    try {
-      return ByteString.copyFrom(bytes.getBytes("ISO-8859-1"));
-    } catch (UnsupportedEncodingException e) {
-      // This should never happen since all JVMs are required to implement
-      // ISO-8859-1.
-      throw new IllegalStateException(
-          "Java VM does not support a standard character set.", e);
-    }
+    return ByteString.copyFrom(bytes.getBytes(ISO_8859_1));
   }
   /**
    * Helper called by generated code to construct default values for bytes
@@ -115,14 +105,7 @@ public class Internal {
    * This is like {@link #bytesDefaultValue}, but returns a byte array.
    */
   public static byte[] byteArrayDefaultValue(String bytes) {
-    try {
-      return bytes.getBytes("ISO-8859-1");
-    } catch (UnsupportedEncodingException e) {
-      // This should never happen since all JVMs are required to implement
-      // ISO-8859-1.
-      throw new IllegalStateException(
-          "Java VM does not support a standard character set.", e);
-    }
+    return bytes.getBytes(ISO_8859_1);
   }
 
   /**
@@ -161,7 +144,7 @@ public class Internal {
    * without loss.  More precisely, returns {@code true} whenever:
    * <pre>   {@code
    * Arrays.equals(byteString.toByteArray(),
-   *     new String(byteString.toByteArray(), "UTF-8").getBytes("UTF-8"))
+   *     new String(byteString.toByteArray(), ByteString.UTF_8).getBytes(ByteString.UTF_8))
    * }</pre>
    *
    * <p>This method rejects "overlong" byte sequences, as well as
@@ -197,22 +180,14 @@ public class Internal {
    * Helper method to get the UTF-8 bytes of a string.
    */
   public static byte[] toByteArray(String value) {
-    try {
-      return value.getBytes("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException("UTF-8 not supported?", e);
-    }
+    return value.getBytes(ByteString.UTF_8);
   }
 
   /**
    * Helper method to convert a byte array to a string using UTF-8 encoding.
    */
   public static String toStringUtf8(byte[] bytes) {
-    try {
-      return new String(bytes, "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException("UTF-8 not supported?", e);
-    }
+    return new String(bytes, ByteString.UTF_8);
   }
 
   /**

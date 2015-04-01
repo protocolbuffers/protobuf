@@ -263,6 +263,18 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   }
 
   /**
+   * Encodes {@code text} into a sequence of bytes using the named charset
+   * and returns the result as a {@code ByteString}.
+   *
+   * @param text source string
+   * @param charset encode using this charset
+   * @return new {@code ByteString}
+   */
+  public static ByteString copyFrom(String text, Charset charset) {
+    return new LiteralByteString(text.getBytes(charset));
+  }
+
+  /**
    * Encodes {@code text} into a sequence of UTF-8 bytes and returns the
    * result as a {@code ByteString}.
    *

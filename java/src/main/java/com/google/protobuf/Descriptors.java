@@ -319,12 +319,7 @@ public final class Descriptors {
       }
 
       final byte[] descriptorBytes;
-      try {
-        descriptorBytes = descriptorData.toString().getBytes("ISO-8859-1");
-      } catch (UnsupportedEncodingException e) {
-        throw new RuntimeException(
-          "Standard encoding ISO-8859-1 not supported by JVM.", e);
-      }
+      descriptorBytes = descriptorData.toString().getBytes(Internal.ISO_8859_1);
 
       FileDescriptorProto proto;
       try {

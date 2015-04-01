@@ -243,8 +243,8 @@ public class TextFormatTest extends TestCase {
    * characters.  The characters are converted directly to bytes, *not*
    * encoded using UTF-8.
    */
-  private ByteString bytes(String str) throws Exception {
-    return ByteString.copyFrom(str.getBytes("ISO-8859-1"));
+  private ByteString bytes(String str) {
+    return ByteString.copyFrom(str.getBytes(Internal.ISO_8859_1));
   }
 
   /**

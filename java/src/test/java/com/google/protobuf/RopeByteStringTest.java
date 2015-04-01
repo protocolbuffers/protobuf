@@ -149,7 +149,7 @@ public class RopeByteStringTest extends LiteralByteStringTest {
     RopeByteString ropeByteString =
         RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.EMPTY);
     assertSame(classUnderTest + " must be the same string references",
-        ByteString.EMPTY.toString(UTF_8), ropeByteString.toString(UTF_8));
+        ByteString.EMPTY.toString(ByteString.UTF_8), ropeByteString.toString(ByteString.UTF_8));
   }
 
   public void testToString_raisesException() throws UnsupportedEncodingException{

@@ -321,7 +321,7 @@ public class CodedOutputStreamTest extends TestCase {
     final int BUFFER_SIZE = 4 * 1024;
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream(BUFFER_SIZE);
     CodedOutputStream codedStream = CodedOutputStream.newInstance(outputStream);
-    byte[] value = "abcde".getBytes("UTF-8");
+    byte[] value = "abcde".getBytes(ByteString.UTF_8);
     for (int i = 0; i < 1024; ++i) {
       codedStream.writeRawBytes(value, 0, value.length);
     }
@@ -367,7 +367,7 @@ public class CodedOutputStreamTest extends TestCase {
   }
 
   public void testWriteByteBuffer() throws Exception {
-    byte[] value = "abcde".getBytes("UTF-8");
+    byte[] value = "abcde".getBytes(ByteString.UTF_8);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     CodedOutputStream codedStream = CodedOutputStream.newInstance(outputStream);
     ByteBuffer byteBuffer = ByteBuffer.wrap(value, 0, 1);

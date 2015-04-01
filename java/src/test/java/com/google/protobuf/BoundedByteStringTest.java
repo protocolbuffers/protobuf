@@ -62,7 +62,7 @@ public class BoundedByteStringTest extends LiteralByteStringTest {
   @Override
   public void testToString() throws UnsupportedEncodingException {
     String testString = "I love unicode \u1234\u5678 characters";
-    LiteralByteString unicode = new LiteralByteString(testString.getBytes(UTF_8));
+    LiteralByteString unicode = new LiteralByteString(testString.getBytes(ByteString.UTF_8));
     ByteString chopped = unicode.substring(2, unicode.size() - 6);
     assertEquals(classUnderTest + ".substring() must have the expected type",
         classUnderTest, getActualClassName(chopped));

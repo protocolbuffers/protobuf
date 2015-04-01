@@ -46,7 +46,7 @@ package com.google.protobuf;
  * <p>The byte sequences considered valid by this class are exactly
  * those that can be roundtrip converted to Strings and back to bytes
  * using the UTF-8 charset, without loss: <pre> {@code
- * Arrays.equals(bytes, new String(bytes, "UTF-8").getBytes("UTF-8"))
+ * Arrays.equals(bytes, new String(bytes, ByteString.UTF_8).getBytes(ByteString.UTF_8))
  * }</pre>
  *
  * <p>See the Unicode Standard,</br>
