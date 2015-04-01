@@ -16,33 +16,25 @@ The name of a published ``protoc`` artifact is in the following format:
 ``protoc-<version>-<os>-<arch>.exe``, e.g., ``protoc-3.0.0-alpha-3-windows-x86_64.exe``.
 
 ## System requirement
-These scripts only work under Unix-like environments, e.g., Linux, MacOSX, and
+Install [Apache Maven](http://maven.apache.org/) if you don't have it.
+
+The scripts only work under Unix-like environments, e.g., Linux, MacOSX, and
 Cygwin or MinGW for Windows. Please see ``README.md`` of the Protobuf project
 for how to set up the build environment.
 
 ## To install artifacts locally
 The following command will install the ``protoc`` artifact to your local Maven repository.
 ```
-$ ./gradlew install
+$ mvn install
 ```
 
 ## To push artifacts to Maven Central
-Before you can upload artifacts to Maven Central repository, you must have [set
-up your account with OSSRH](http://central.sonatype.org/pages/ossrh-guide.html),
-and have [generated a PGP key](http://gradle.org/docs/current/userguide/signing_plugin.html)
-for siging.  You need to put your account information and PGP key information
-in ``$HOME/.gradle/gradle.properties``, e.g.:
-```
-signing.keyId=24875D73
-signing.password=secret
-signing.secretKeyRingFile=/Users/me/.gnupg/secring.gpg
-
-ossrhUsername=your-jira-id
-ossrhPassword=your-jira-password
-```
+Before you can upload artifacts to Maven Central repository, make sure you have
+read [this page](http://central.sonatype.org/pages/apache-maven.html) on how to
+configure GPG and Sonatype account
 
 Use the following command to upload artifacts:
 ```
-$ ./gradlew uploadArchives
+$ mvn clean deploy -P release
 ```
 
