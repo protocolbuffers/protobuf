@@ -57,6 +57,8 @@
           <executable>bash</executable>
           <arguments>
             <argument>build-protoc.sh</argument>
+            <argument>${os.detected.name}</argument>
+            <argument>${os.detected.arch}</argument>
           </arguments>
         </configuration>
       </plugin>
