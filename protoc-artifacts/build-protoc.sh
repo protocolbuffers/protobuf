@@ -1,5 +1,8 @@
 #!/bin/bash
 
+cd $(dirname "$0")
+WORKING_DIR=$(pwd)
+
 # Override the default value set in configure.ac that has '-g' which produces
 # huge binary.
 export CXXFLAGS="-DNDEBUG"
@@ -16,4 +19,6 @@ if [[ "$(uname)" == CYGWIN* ]]; then
   export CXXCPP=i686-pc-mingw32-cpp
 fi
 
-cd $(dirname "$0")/.. && ./configure --disable-shared && make clean && make
+cd "$WORKING_DIR"/.. && ./configure --disable-shared && make clean && make &&
+  cd "$WORKING_DIR" && mkdir -p target &&
+  (cp ../src/protoc target/protoc.exe || cp ../src/protoc.exe target/protoc.exe)
