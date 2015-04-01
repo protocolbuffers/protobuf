@@ -33,7 +33,8 @@
 #include <unistd.h>
 #include <string>
 
-#include "google/protobuf/conformance.pb.h"
+#include "conformance.pb.h"
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/wire_format_lite.h>
 
 using conformance::ConformanceRequest;
@@ -55,15 +56,6 @@ string Escape(const string& str) {
   return str;
 }
 
-void FatalError(const char *fmt, ...) {
-  fprintf(stderr, "conformance_test: fatal error, ");
-  va_list args;
-  va_start(args, fmt);
-  vfprintf(stderr, fmt, args);
-  va_end(args);
-  exit(1);
-}
-
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 #define CHECK_SYSCALL(call) \
@@ -72,6 +64,24 @@ void FatalError(const char *fmt, ...) {
     exit(1); \
   }
 
+// TODO(haberman): make this work on Windows, instead of using these
+// UNIX-specific APIs.
+//
+// There is a platform-agnostic API in
+//    src/google/protobuf/compiler/subprocess.h
+//
+// However that API only supports sending a single message to the subprocess.
+// We really want to be able to send messages and receive responses one at a
+// time:
+//
+// 1. Spawning a new process for each test would take way too long for thousands
+//    of tests and subprocesses like java that can take 100ms or more to start
+//    up.
+//
+// 2. Sending all the tests in one big message and receiving all results in one
+//    big message would take away our visibility about which test(s) caused a
+//    crash or other fatal error.  It would also give us only a single failure
+//    instead of all of them.
 void SpawnTestProgram(char *executable) {
   int toproc_pipe_fd[2];
   int fromproc_pipe_fd[2];
@@ -125,7 +135,7 @@ void ReportFailure(const char *fmt, ...) {
 
 void CheckedWrite(int fd, const void *buf, size_t len) {
   if (write(fd, buf, len) != len) {
-    FatalError("Error writing to test program: %s\n", strerror(errno));
+    GOOGLE_LOG(FATAL) << "Error writing to test program: " << strerror(errno);
   }
 }
 
@@ -135,9 +145,9 @@ void CheckedRead(int fd, void *buf, size_t len) {
     ssize_t bytes_read = read(fd, (char*)buf + ofs, len);
 
     if (bytes_read == 0) {
-      FatalError("Unexpected EOF from test program\n");
+      GOOGLE_LOG(FATAL) << "Unexpected EOF from test program";
     } else if (bytes_read < 0) {
-      FatalError("Error reading from test program: %s\n", strerror(errno));
+      GOOGLE_LOG(FATAL) << "Error reading from test program: " << strerror(errno);
     }
 
     len -= bytes_read;
@@ -155,7 +165,7 @@ void RunTest(const ConformanceRequest& request, ConformanceResponse* response) {
   serialized.resize(len);
   CheckedRead(read_fd, (void*)serialized.c_str(), len);
   if (!response->ParseFromString(serialized)) {
-    FatalError("Could not parse response proto from tested process.\n");
+    GOOGLE_LOG(FATAL) << "Could not parse response proto from tested process.";
   }
 
   if (verbose) {
@@ -285,7 +295,7 @@ uint32_t GetFieldNumberForType(WireFormatLite::FieldType type, bool repeated) {
       return f->number();
     }
   }
-  FatalError("Couldn't find field with type %d\n", (int)type);
+  GOOGLE_LOG(FATAL) << "Couldn't find field with type " << (int)type;
   return 0;
 }
 

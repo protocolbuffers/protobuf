@@ -32,7 +32,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-#include "google/protobuf/conformance.pb.h"
+#include "conformance.pb.h"
 
 using std::string;
 using conformance::ConformanceRequest;
@@ -42,14 +42,6 @@ using conformance::TestAllTypes;
 int test_count = 0;
 bool verbose = false;
 
-void FatalError(const char *fmt, ...) {
-  va_list args;
-  va_start(args, fmt);
-  vfprintf(stderr, fmt, args);
-  va_end(args);
-  exit(1);
-}
-
 bool CheckedRead(int fd, void *buf, size_t len) {
   size_t ofs = 0;
   while (len > 0) {
@@ -58,7 +50,7 @@ bool CheckedRead(int fd, void *buf, size_t len) {
     if (bytes_read == 0) return false;
 
     if (bytes_read < 0) {
-      FatalError("Error reading from test runner: %s\n", strerror(errno));
+      GOOGLE_LOG(FATAL) << "Error reading from test runner: " <<  strerror(errno);
     }
 
     len -= bytes_read;
@@ -70,7 +62,7 @@ bool CheckedRead(int fd, void *buf, size_t len) {
 
 void CheckedWrite(int fd, const void *buf, size_t len) {
   if (write(fd, buf, len) != len) {
-    FatalError("Error writing to test runner: %s\n", strerror(errno));
+    GOOGLE_LOG(FATAL) << "Error writing to test runner: " << strerror(errno);
   }
 }
 
@@ -92,13 +84,13 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
       break;
 
     case ConformanceRequest::PAYLOAD_NOT_SET:
-      FatalError("Request didn't have payload.\n");
+      GOOGLE_LOG(FATAL) << "Request didn't have payload.";
       break;
   }
 
   switch (request.requested_output()) {
     case ConformanceRequest::UNSPECIFIED:
-      FatalError("Unspecified output format");
+      GOOGLE_LOG(FATAL) << "Unspecified output format";
       break;
 
     case ConformanceRequest::PROTOBUF:
@@ -111,7 +103,7 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
   }
 }
 
-bool DoTestIO() {
+bool DoTestIo() {
   string serialized_input;
   string serialized_output;
   ConformanceRequest request;
@@ -126,11 +118,11 @@ bool DoTestIO() {
   serialized_input.resize(bytes);
 
   if (!CheckedRead(STDIN_FILENO, (char*)serialized_input.c_str(), bytes)) {
-    perror("Unexpected EOF on stdin.");
+    GOOGLE_LOG(ERROR) << "Unexpected EOF on stdin. " << strerror(errno);
   }
 
   if (!request.ParseFromString(serialized_input)) {
-    FatalError("Parse of ConformanceRequest proto failed.\n");
+    GOOGLE_LOG(FATAL) << "Parse of ConformanceRequest proto failed.";
     return false;
   }
 
@@ -155,7 +147,7 @@ bool DoTestIO() {
 
 int main() {
   while (1) {
-    if (!DoTestIO()) {
+    if (!DoTestIo()) {
       fprintf(stderr, "conformance-protobufcc: received EOF from test runner "
                       "after %d tests, exiting\n", test_count);
       return 0;

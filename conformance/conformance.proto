@@ -179,6 +179,27 @@ message TestAllTypes {
   repeated string repeated_string_piece = 54 [ctype=STRING_PIECE];
   repeated string repeated_cord = 55 [ctype=CORD];
 
+  // Map
+  map <   int32, int32>    map_int32_int32 = 56;
+  map <   int64, int64>    map_int64_int64 = 57;
+  map <  uint32, uint32>   map_uint32_uint32 = 58;
+  map <  uint64, uint64>   map_uint64_uint64 = 59;
+  map <  sint32, sint32>   map_sint32_sint32 = 60;
+  map <  sint64, sint64>   map_sint64_sint64 = 61;
+  map < fixed32, fixed32>  map_fixed32_fixed32 = 62;
+  map < fixed64, fixed64>  map_fixed64_fixed64 = 63;
+  map <sfixed32, sfixed32> map_sfixed32_sfixed32 = 64;
+  map <sfixed64, sfixed64> map_sfixed64_sfixed64 = 65;
+  map <   int32, float>    map_int32_float = 66;
+  map <   int32, double>   map_int32_double = 67;
+  map <    bool, bool>     map_bool_bool = 68;
+  map <  string, string>   map_string_string = 69;
+  map <  string, bytes>    map_string_bytes = 70;
+  map <  string, NestedMessage>  map_string_nested_message = 71;
+  map <  string, ForeignMessage> map_string_foreign_message = 72;
+  map <  string, NestedEnum>     map_string_nested_enum = 73;
+  map <  string, ForeignEnum>    map_string_foreign_enum = 74;
+
   oneof oneof_field {
     uint32 oneof_uint32 = 111;
     NestedMessage oneof_nested_message = 112;

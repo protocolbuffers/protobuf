@@ -297,7 +297,6 @@ protoc_SOURCES = google/protobuf/compiler/main.cc
 # Tests ==============================================================
 
 protoc_inputs =                                                \
-  google/protobuf/conformance.proto                            \
   google/protobuf/map_lite_unittest.proto                      \
   google/protobuf/map_proto2_unittest.proto                    \
   google/protobuf/map_unittest.proto                           \
@@ -359,8 +358,6 @@ protoc_lite_outputs =                                          \
 
 protoc_outputs =                                               \
   $(protoc_lite_outputs)                                       \
-  google/protobuf/conformance.pb.cc                            \
-  google/protobuf/conformance.pb.h                             \
   google/protobuf/map_proto2_unittest.pb.cc                    \
   google/protobuf/map_proto2_unittest.pb.h                     \
   google/protobuf/map_unittest.pb.cc                           \
@@ -441,9 +438,7 @@ COMMON_TEST_SOURCES =                                          \
   google/protobuf/testing/file.h
 
 check_PROGRAMS = protoc protobuf-test protobuf-lazy-descriptor-test \
-                 protobuf-lite-test test_plugin conformance-test \
-                 conformance-protobufcc $(GZCHECKPROGRAMS)
-
+                 protobuf-lite-test test_plugin $(GZCHECKPROGRAMS)
 protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
                       $(top_builddir)/gtest/lib/libgtest.la       \
                       $(top_builddir)/gtest/lib/libgtest_main.la
@@ -500,14 +495,6 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/compiler/ruby/ruby_generator_unittest.cc     \
   $(COMMON_TEST_SOURCES)
 nodist_protobuf_test_SOURCES = $(protoc_outputs)
-
-conformance_test_LDADD = libprotobuf.la
-conformance_test_SOURCES = google/protobuf/conformance_test.cc
-nodist_conformance_test_SOURCES = google/protobuf/conformance.pb.cc
-
-conformance_protobufcc_LDADD = libprotobuf.la
-conformance_protobufcc_SOURCES = google/protobuf/conformance_protobufcc.cc
-nodist_conformance_protobufcc_SOURCES = google/protobuf/conformance.pb.cc
 
 # Run cpp_unittest again with PROTOBUF_TEST_NO_DESCRIPTORS defined.
 protobuf_lazy_descriptor_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la \
