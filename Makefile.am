@@ -31,6 +31,7 @@ clean-local:
 	  echo "Making clean in gtest"; \
 	  cd gtest && $(MAKE) $(AM_MAKEFLAGS) clean; \
 	fi
+	cd conformance && $(MAKE) clean
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = protobuf.pc protobuf-lite.pc
