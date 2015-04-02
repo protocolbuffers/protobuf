@@ -33,11 +33,10 @@ package com.google.protobuf.nano;
 import com.google.protobuf.nano.MapFactories.MapFactory;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Map.Entry;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * The classes contained within are used internally by the Protocol Buffer

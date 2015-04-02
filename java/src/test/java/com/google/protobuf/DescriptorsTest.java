@@ -35,32 +35,28 @@ import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
 import com.google.protobuf.DescriptorProtos.EnumValueDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
-import com.google.protobuf.Descriptors.DescriptorValidationException;
-import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.Descriptor;
-import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.Descriptors.OneofDescriptor;
+import com.google.protobuf.Descriptors.DescriptorValidationException;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
-import com.google.protobuf.Descriptors.ServiceDescriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
-
+import com.google.protobuf.Descriptors.OneofDescriptor;
+import com.google.protobuf.Descriptors.ServiceDescriptor;
 import com.google.protobuf.test.UnittestImport;
 import com.google.protobuf.test.UnittestImport.ImportEnum;
-import com.google.protobuf.test.UnittestImport.ImportMessage;
+import protobuf_unittest.TestCustomOptions;
+import protobuf_unittest.UnittestCustomOptions;
 import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.ForeignEnum;
 import protobuf_unittest.UnittestProto.ForeignMessage;
-import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
+import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestExtremeDefaultValues;
 import protobuf_unittest.UnittestProto.TestMultipleExtensionRanges;
 import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestService;
-import protobuf_unittest.UnittestCustomOptions;
-
-import protobuf_unittest.TestCustomOptions;
-
 
 import junit.framework.TestCase;
 

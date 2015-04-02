@@ -33,18 +33,17 @@ package com.google.protobuf;
 import static junit.framework.Assert.*;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
+import java.nio.charset.CodingErrorAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.Charset;
-import java.nio.charset.CodingErrorAction;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CoderResult;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 
 /**
  * Shared testing code for {@link IsValidUtf8Test} and
