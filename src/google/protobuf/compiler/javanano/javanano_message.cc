@@ -156,6 +156,17 @@ void MessageGenerator::Generate(io::Printer* printer) {
   }
   printer->Indent();
 
+  if (params_.parcelable_messages()) {
+    printer->Print(
+      "\n"
+      "// Used by Parcelable\n"
+      "@SuppressWarnings({\"unused\"})\n"
+      "public static final android.os.Parcelable.Creator<$classname$> CREATOR =\n"
+      "    new com.google.protobuf.nano.android.ParcelableMessageNanoCreator<\n"
+      "        $classname$>($classname$.class);\n",
+      "classname", descriptor_->name());
+  }
+
   // Nested types and extensions
   for (int i = 0; i < descriptor_->extension_count(); i++) {
     ExtensionGenerator(descriptor_->extension(i), params_).Generate(printer);
