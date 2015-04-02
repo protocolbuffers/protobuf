@@ -42,7 +42,7 @@ assertEq ()
 
 echo "Building protoc, OS=$OS ARCH=$ARCH"
 
-cd $(dirname "$0")
+cd "$(dirname \"$0\")"
 WORKING_DIR=$(pwd)
 CONFIGURE_ARGS="--disable-shared"
 
