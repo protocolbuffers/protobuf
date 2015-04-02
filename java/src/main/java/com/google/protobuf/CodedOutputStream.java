@@ -32,7 +32,6 @@ package com.google.protobuf;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 /**
@@ -144,7 +143,7 @@ public final class CodedOutputStream {
       int bufferSize) {
     return newInstance(new ByteBufferOutputStream(byteBuffer), bufferSize);
   }
-  
+
   private static class ByteBufferOutputStream extends OutputStream {
     private final ByteBuffer byteBuffer;
     public ByteBufferOutputStream(ByteBuffer byteBuffer) {
@@ -420,7 +419,7 @@ public final class CodedOutputStream {
     // Unfortunately there does not appear to be any way to tell Java to encode
     // UTF-8 directly into our buffer, so we have to let it create its own byte
     // array and then copy.
-    final byte[] bytes = value.getBytes("UTF-8");
+    final byte[] bytes = value.getBytes(Internal.UTF_8);
     writeRawVarint32(bytes.length);
     writeRawBytes(bytes);
   }
@@ -750,7 +749,7 @@ public final class CodedOutputStream {
            computeUInt32Size(WireFormat.MESSAGE_SET_TYPE_ID, fieldNumber) +
            computeLazyFieldSize(WireFormat.MESSAGE_SET_MESSAGE, value);
   }
-  
+
   // -----------------------------------------------------------------
 
   /**
@@ -827,13 +826,9 @@ public final class CodedOutputStream {
    * {@code string} field.
    */
   public static int computeStringSizeNoTag(final String value) {
-    try {
-      final byte[] bytes = value.getBytes("UTF-8");
-      return computeRawVarint32Size(bytes.length) +
-             bytes.length;
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException("UTF-8 not supported.", e);
-    }
+    final byte[] bytes = value.getBytes(Internal.UTF_8);
+    return computeRawVarint32Size(bytes.length) +
+           bytes.length;
   }
 
   /**

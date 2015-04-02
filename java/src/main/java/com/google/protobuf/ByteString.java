@@ -37,6 +37,8 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -75,9 +77,6 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    */
   static final int MIN_READ_FROM_CHUNK_SIZE = 0x100;  // 256b
   static final int MAX_READ_FROM_CHUNK_SIZE = 0x2000;  // 8k
-
-  // Defined by java.nio.charset.Charset
-  protected static final String UTF_8 = "UTF-8";
 
   /**
    * Empty {@code ByteString}.
@@ -262,6 +261,18 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   }
 
   /**
+   * Encodes {@code text} into a sequence of bytes using the named charset
+   * and returns the result as a {@code ByteString}.
+   *
+   * @param text source string
+   * @param charset encode using this charset
+   * @return new {@code ByteString}
+   */
+  public static ByteString copyFrom(String text, Charset charset) {
+    return new LiteralByteString(text.getBytes(charset));
+  }
+
+  /**
    * Encodes {@code text} into a sequence of UTF-8 bytes and returns the
    * result as a {@code ByteString}.
    *
@@ -269,11 +280,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return new {@code ByteString}
    */
   public static ByteString copyFromUtf8(String text) {
-    try {
-      return new LiteralByteString(text.getBytes(UTF_8));
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException("UTF-8 not supported?", e);
-    }
+    return new LiteralByteString(text.getBytes(Internal.UTF_8));
   }
 
   // =================================================================
@@ -507,7 +514,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   /**
    * Internal (package private) implementation of
    * {@link #copyTo(byte[],int,int,int)}.
-   * It assumes that all error checking has already been performed and that 
+   * It assumes that all error checking has already been performed and that
    * {@code numberToCopy > 0}.
    */
   protected abstract void copyToInternal(byte[] target, int sourceOffset,
@@ -546,7 +553,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @throws IOException  if an I/O error occurs.
    */
   public abstract void writeTo(OutputStream out) throws IOException;
-  
+
   /**
    * Writes a specified part of this byte string to an output stream.
    *
@@ -572,7 +579,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     if (numberToWrite > 0) {
       writeToInternal(out, sourceOffset, numberToWrite);
     }
-    
+
   }
 
   /**
@@ -599,7 +606,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * <p>
    * By returning a list, implementations of this method may be able to avoid
    * copying even when there are multiple backing arrays.
-   * 
+   *
    * @return a list of wrapped bytes
    */
   public abstract List<ByteBuffer> asReadOnlyByteBufferList();
@@ -612,8 +619,36 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return new string
    * @throws UnsupportedEncodingException if charset isn't recognized
    */
-  public abstract String toString(String charsetName)
-      throws UnsupportedEncodingException;
+  public String toString(String charsetName)
+      throws UnsupportedEncodingException {
+    try {
+      return toString(Charset.forName(charsetName));
+    } catch (UnsupportedCharsetException e) {
+      UnsupportedEncodingException exception = new UnsupportedEncodingException(charsetName);
+      exception.initCause(e);
+      throw exception;
+    }
+  }
+
+  /**
+   * Constructs a new {@code String} by decoding the bytes using the
+   * specified charset. Returns the same empty String if empty.
+   *
+   * @param charset encode using this charset
+   * @return new string
+   */
+  public String toString(Charset charset) {
+    return size() == 0 ? "" : toStringInternal(charset);
+  }
+
+  /**
+   * Constructs a new {@code String} by decoding the bytes using the
+   * specified charset.
+   *
+   * @param charset encode using this charset
+   * @return new string
+   */
+  protected abstract String toStringInternal(Charset charset);
 
   // =================================================================
   // UTF-8 decoding
@@ -624,11 +659,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return new string using UTF-8 encoding
    */
   public String toStringUtf8() {
-    try {
-      return toString(UTF_8);
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException("UTF-8 not supported?", e);
-    }
+    return toString(Internal.UTF_8);
   }
 
   /**
@@ -831,7 +862,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       flushLastBuffer();
       return ByteString.copyFrom(flushedBuffers);
     }
-    
+
     /**
      * Implement java.util.Arrays.copyOf() for jdk 1.5.
      */

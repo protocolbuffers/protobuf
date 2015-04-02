@@ -321,7 +321,7 @@ public class CodedOutputStreamTest extends TestCase {
     final int BUFFER_SIZE = 4 * 1024;
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream(BUFFER_SIZE);
     CodedOutputStream codedStream = CodedOutputStream.newInstance(outputStream);
-    byte[] value = "abcde".getBytes("UTF-8");
+    byte[] value = "abcde".getBytes(Internal.UTF_8);
     for (int i = 0; i < 1024; ++i) {
       codedStream.writeRawBytes(value, 0, value.length);
     }
@@ -330,7 +330,7 @@ public class CodedOutputStreamTest extends TestCase {
     assertTrue(codedStream.getTotalBytesWritten() > BUFFER_SIZE);
     assertEquals(value.length * 1024, codedStream.getTotalBytesWritten());
   }
-  
+
   public void testWriteToByteBuffer() throws Exception {
     final int bufferSize = 16 * 1024;
     ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
@@ -351,7 +351,7 @@ public class CodedOutputStreamTest extends TestCase {
       codedStream.writeRawByte((byte) 3);
     }
     codedStream.flush();
-    
+
     // Check that data is correctly written to the ByteBuffer.
     assertEquals(0, buffer.remaining());
     buffer.flip();
@@ -365,9 +365,9 @@ public class CodedOutputStreamTest extends TestCase {
       assertEquals((byte) 3, buffer.get());
     }
   }
-  
+
   public void testWriteByteBuffer() throws Exception {
-    byte[] value = "abcde".getBytes("UTF-8");
+    byte[] value = "abcde".getBytes(Internal.UTF_8);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     CodedOutputStream codedStream = CodedOutputStream.newInstance(outputStream);
     ByteBuffer byteBuffer = ByteBuffer.wrap(value, 0, 1);
@@ -377,10 +377,10 @@ public class CodedOutputStreamTest extends TestCase {
     // The above call shouldn't affect the ByteBuffer's state.
     assertEquals(0, byteBuffer.position());
     assertEquals(1, byteBuffer.limit());
-    
+
     // The correct way to write part of an array using ByteBuffer.
     codedStream.writeRawBytes(ByteBuffer.wrap(value, 2, 1).slice());
-    
+
     codedStream.flush();
     byte[] result = outputStream.toByteArray();
     assertEquals(6, result.length);

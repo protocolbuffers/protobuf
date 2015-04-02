@@ -34,8 +34,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -112,7 +112,7 @@ class LiteralByteString extends ByteString {
   // ByteString -> byte[]
 
   @Override
-  protected void copyToInternal(byte[] target, int sourceOffset, 
+  protected void copyToInternal(byte[] target, int sourceOffset,
       int targetOffset, int numberToCopy) {
     // Optimized form, not for subclasses, since we don't call
     // getOffsetIntoBytes() or check the 'numberToCopy' parameter.
@@ -152,13 +152,8 @@ class LiteralByteString extends ByteString {
   }
 
   @Override
-  public String toString(String charsetName)
-      throws UnsupportedEncodingException {
-    // Optimize for empty strings, but ensure we don't silently ignore invalid
-    // encodings.
-    return size() == 0 && UTF_8.equals(charsetName)
-        ? ""
-        : new String(bytes, getOffsetIntoBytes(), size(), charsetName);
+  protected String toStringInternal(Charset charset) {
+    return new String(bytes, getOffsetIntoBytes(), size(), charset);
   }
 
   // =================================================================
@@ -199,12 +194,12 @@ class LiteralByteString extends ByteString {
       LiteralByteString otherAsLiteral = (LiteralByteString) other;
       // If we know the hash codes and they are not equal, we know the byte
       // strings are not equal.
-      if (hash != 0 
-          && otherAsLiteral.hash != 0 
+      if (hash != 0
+          && otherAsLiteral.hash != 0
           && hash != otherAsLiteral.hash) {
         return false;
       }
-      
+
       return equalsRange((LiteralByteString) other, 0, size());
     } else if (other instanceof RopeByteString) {
       return other.equals(this);
@@ -285,14 +280,14 @@ class LiteralByteString extends ByteString {
   protected int partialHash(int h, int offset, int length) {
     return hashCode(h, bytes, getOffsetIntoBytes() + offset, length);
   }
-  
+
   static int hashCode(int h, byte[] bytes, int offset, int length) {
     for (int i = offset; i < offset + length; i++) {
       h = h * 31 + bytes[i];
     }
     return h;
   }
-  
+
   static int hashCode(byte[] bytes) {
     int h = hashCode(bytes.length, bytes, 0, bytes.length);
     return h == 0 ? 1 : h;
