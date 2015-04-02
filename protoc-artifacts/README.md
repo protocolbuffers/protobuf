@@ -32,9 +32,19 @@ $ mvn install
 The Maven script will try to detect the OS and the architecture from Java
 system properties. It's possible to build a protoc binary for an architecture
 that is different from what Java has detected, as long as you have the proper
-compilers installed. For example, MingGW32 only ships with 32-bit compilers,
-but you can still build 32-bit protoc under a 64-bit system, with the following
-command:
+compilers installed.
+
+You can override the Maven properties ``os.detected.name`` and
+``os.detected.arch`` to force the script to generate binaries for a specific OS
+and/or architecture. Valid values are defined as the return values of
+``normalizeOs()`` and ``normalizeArch()`` of ``Detector`` from
+[os-maven-plugin](https://github.com/trustin/os-maven-plugin/blob/master/src/main/java/kr/motd/maven/os/Detector.java).
+Frequently used values are:
+- ``os.detected.name``: ``linux``, ``osx``, ``windows``.
+- ``os.detected.arch``: ``x86_32``, ``x86_64``
+
+For example, MingGW32 only ships with 32-bit compilers, but you can still build
+32-bit protoc under 64-bit Windows, with the following command:
 ```
 $ mvn install -Dos.detected.arch=x86_32
 ```
@@ -48,4 +58,3 @@ Use the following command to upload artifacts:
 ```
 $ mvn clean deploy -P release
 ```
-
