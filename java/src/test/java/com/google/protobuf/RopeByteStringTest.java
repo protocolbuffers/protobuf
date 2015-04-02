@@ -135,7 +135,7 @@ public class RopeByteStringTest extends LiteralByteStringTest {
 
     assertEquals(classUnderTest + " from string must have the expected type",
         classUnderTest, getActualClassName(unicode));
-    String roundTripString = unicode.toString(ByteString.UTF_8);
+    String roundTripString = unicode.toString(Internal.UTF_8);
     assertEquals(classUnderTest + " unicode bytes must match",
         testString, roundTripString);
     ByteString flatString = ByteString.copyFromUtf8(testString);
@@ -149,7 +149,7 @@ public class RopeByteStringTest extends LiteralByteStringTest {
     RopeByteString ropeByteString =
         RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.EMPTY);
     assertSame(classUnderTest + " must be the same string references",
-        ByteString.EMPTY.toString(ByteString.UTF_8), ropeByteString.toString(ByteString.UTF_8));
+        ByteString.EMPTY.toString(Internal.UTF_8), ropeByteString.toString(Internal.UTF_8));
   }
 
   public void testToString_raisesException() throws UnsupportedEncodingException{

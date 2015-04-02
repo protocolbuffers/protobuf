@@ -116,7 +116,7 @@ public class RopeByteStringSubstringTest extends LiteralByteStringTest {
 
     assertEquals(classUnderTest + " from string must have the expected type",
         classUnderTest, getActualClassName(unicode));
-    String roundTripString = unicode.toString(ByteString.UTF_8);
+    String roundTripString = unicode.toString(Internal.UTF_8);
     assertEquals(classUnderTest + " unicode bytes must match",
         testString, roundTripString);
     ByteString flatString = ByteString.copyFromUtf8(testString);

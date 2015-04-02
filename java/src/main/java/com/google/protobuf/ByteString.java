@@ -78,8 +78,6 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   static final int MIN_READ_FROM_CHUNK_SIZE = 0x100;  // 256b
   static final int MAX_READ_FROM_CHUNK_SIZE = 0x2000;  // 8k
 
-  protected static final Charset UTF_8 = Charset.forName("UTF-8");
-
   /**
    * Empty {@code ByteString}.
    */
@@ -282,7 +280,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return new {@code ByteString}
    */
   public static ByteString copyFromUtf8(String text) {
-    return new LiteralByteString(text.getBytes(UTF_8));
+    return new LiteralByteString(text.getBytes(Internal.UTF_8));
   }
 
   // =================================================================
@@ -661,7 +659,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return new string using UTF-8 encoding
    */
   public String toStringUtf8() {
-    return toString(UTF_8);
+    return toString(Internal.UTF_8);
   }
 
   /**

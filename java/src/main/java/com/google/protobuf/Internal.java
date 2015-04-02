@@ -53,6 +53,7 @@ import java.util.Set;
  */
 public class Internal {
 
+  protected static final Charset UTF_8 = Charset.forName("UTF-8");
   protected static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
 
   /**
@@ -84,7 +85,7 @@ public class Internal {
    * generated code calls this automatically.
    */
   public static String stringDefaultValue(String bytes) {
-    return new String(bytes.getBytes(ISO_8859_1), ByteString.UTF_8);
+    return new String(bytes.getBytes(ISO_8859_1), UTF_8);
   }
 
   /**
@@ -144,7 +145,7 @@ public class Internal {
    * without loss.  More precisely, returns {@code true} whenever:
    * <pre>   {@code
    * Arrays.equals(byteString.toByteArray(),
-   *     new String(byteString.toByteArray(), ByteString.UTF_8).getBytes(ByteString.UTF_8))
+   *     new String(byteString.toByteArray(), "UTF-8").getBytes("UTF-8"))
    * }</pre>
    *
    * <p>This method rejects "overlong" byte sequences, as well as
@@ -180,14 +181,14 @@ public class Internal {
    * Helper method to get the UTF-8 bytes of a string.
    */
   public static byte[] toByteArray(String value) {
-    return value.getBytes(ByteString.UTF_8);
+    return value.getBytes(UTF_8);
   }
 
   /**
    * Helper method to convert a byte array to a string using UTF-8 encoding.
    */
   public static String toStringUtf8(byte[] bytes) {
-    return new String(bytes, ByteString.UTF_8);
+    return new String(bytes, UTF_8);
   }
 
   /**

@@ -276,7 +276,7 @@ public final class TestUtil {
 
   /** Helper to convert a String to ByteString. */
   static ByteString toBytes(String str) {
-    return ByteString.copyFrom(str.getBytes(ByteString.UTF_8));
+    return ByteString.copyFrom(str.getBytes(Internal.UTF_8));
   }
 
   /**
