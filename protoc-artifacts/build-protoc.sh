@@ -85,8 +85,11 @@ fi
 export CXXFLAGS="-DNDEBUG"
 
 # Statically link libgcc and libstdc++.
-# -s to produce stripped binary
-export LDFLAGS="-static-libgcc -static-libstdc++ -s"
+# -s to produce stripped binary.
+# And they don't work under Mac.
+if [[ "$OS" != osx ]]; then
+  export LDFLAGS="-static-libgcc -static-libstdc++ -s"
+fi
 
 cd "$WORKING_DIR"/.. && ./configure $CONFIGURE_ARGS &&
   cd src && make clean && make $MAKE_TARGET &&
