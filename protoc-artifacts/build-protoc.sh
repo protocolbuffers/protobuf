@@ -71,7 +71,13 @@ checkArch ()
     fi
   elif [[ "$OS" == osx ]]; then
     format="$(file -b "$1" | grep -o "[^ ]*$")"
-    assertEq $format "x86_64" $LINENO
+    if [[ "$ARCH" == x86_32 ]]; then
+      assertEq $format "i386" $LINENO
+    elif [[ "$ARCH" == x86_64 ]]; then
+      assertEq $format "x86_64" $LINENO
+    else
+      fail "Unsupported arch: $ARCH"
+    fi
   else
     fail "Unsupported system: $(uname)"
   fi
@@ -120,6 +126,13 @@ elif [[ "$(uname)" == Linux* ]]; then
   fi
 elif [[ "$(uname)" == Darwin* ]]; then
   assertEq "$OS" osx $LINENO
+  if [[ "$ARCH" == x86_64 ]]; then
+    CXXFLAGS="$CXXFLAGS -m64"
+  elif [[ "$ARCH" == x86_32 ]]; then
+    CXXFLAGS="$CXXFLAGS -m32"
+  else
+    fail "Unsupported arch: $ARCH"
+  fi
 else
   fail "Unsupported system: $(uname)"
 fi

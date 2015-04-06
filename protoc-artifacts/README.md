@@ -54,7 +54,62 @@ Before you can upload artifacts to Maven Central repository, make sure you have
 read [this page](http://central.sonatype.org/pages/apache-maven.html) on how to
 configure GPG and Sonatype account.
 
-Use the following command to upload artifacts:
+You need to perform the deployment for every platform that you want to
+suppport. DO NOT close the staging repository until you have done the
+deployment for all platforms.
+
+Remove any ``SNAPSHOT`` or ``pre`` suffix from the version string before
+deploying.
+
+Use the following command to deploy artifacts for the host platform to a
+staging repository.
 ```
 $ mvn clean deploy -P release
+```
+It creates a new staging repository. Go to
+https://oss.sonatype.org/#stagingRepositories and find the repository, usually
+in the name like ``comgoogle-123``.
+
+You will want to run this command on a different platform. Remember, in
+subsequent deployments you will need to provide the repository name that you
+have found in the first deployment so that all artifacts go to the same
+repository:
+```
+$ mvn clean deploy -P release -Dstaging.repository=comgoogle-123
+```
+
+A 32-bit artifact can be deployed from a 64-bit host with
+``-Dos.detected.arch=x86_32``
+
+When you have done deployment for all platforms, go to
+https://oss.sonatype.org/#stagingRepositories, verify that the staging
+repository has all the binaries, close and release this repository.
+
+### Tips for deploying on Windows
+Under Windows the following error may occur: ``gpg: cannot open tty `no tty':
+No such file or directory``. This can be fixed by configuring gpg through an
+active profile in ``.m2\settings.xml`` where also the Sonatype password is
+stored:
+```xml
+<settings>
+  <servers>
+    <server>
+      <id>ossrh</id>
+      <username>[username]</username>
+      <password>[password]</password>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <id>gpg</id>
+      <properties>
+        <gpg.executable>gpg</gpg.executable>
+        <gpg.passphrase>[password]</gpg.passphrase>
+      </properties>
+    </profile>
+  </profiles>
+  <activeProfiles>
+    <activeProfile>gpg</activeProfile>
+  </activeProfiles>
+</settings>
 ```

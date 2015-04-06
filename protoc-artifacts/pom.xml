@@ -90,6 +90,9 @@
   <profiles>
     <profile>
       <id>release</id>
+      <properties>
+        <staging.repository></staging.repository>
+      </properties>
       <build>
         <plugins>
           <plugin>
@@ -114,7 +117,9 @@
             <configuration>
                <serverId>sonatype-nexus-staging</serverId>
                <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+               <skipStagingRepositoryClose>true</skipStagingRepositoryClose>
                <autoReleaseAfterClose>false</autoReleaseAfterClose>
+               <stagingRepositoryId>${staging.repository}</stagingRepositoryId>
             </configuration>
           </plugin>
         </plugins>
