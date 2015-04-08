@@ -211,5 +211,12 @@ TARGET_FILE=target/protoc.exe
 cd "$WORKING_DIR"/.. && ./configure $CONFIGURE_ARGS &&
   cd src && make clean && make $MAKE_TARGET &&
   cd "$WORKING_DIR" && mkdir -p target &&
-  (cp ../src/protoc $TARGET_FILE || cp ../src/protoc.exe $TARGET_FILE) &&
-  checkArch $TARGET_FILE && checkDependencies $TARGET_FILE
+  (cp ../src/protoc $TARGET_FILE || cp ../src/protoc.exe $TARGET_FILE) ||
+  exit 1
+
+if [[ "$OS" == osx ]]; then
+  # Since Mac linker doesn't accept "-s", we need to run strip
+  strip $TARGET_FILE || exit 1
+fi
+
+checkArch $TARGET_FILE && checkDependencies $TARGET_FILE
