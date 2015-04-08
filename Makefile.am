@@ -9,7 +9,7 @@ AUTOMAKE_OPTIONS = foreign
 SUBDIRS = . src
 
 # Always include gtest in distributions.
-DIST_SUBDIRS = $(subdirs) src
+DIST_SUBDIRS = $(subdirs) src conformance
 
 # Build gtest before we build protobuf tests.  We don't add gtest to SUBDIRS
 # because then "make check" would also build and run all of gtest's own tests,
@@ -30,6 +30,10 @@ clean-local:
 	@if test -e gtest/Makefile; then \
 	  echo "Making clean in gtest"; \
 	  cd gtest && $(MAKE) $(AM_MAKEFLAGS) clean; \
+	fi; \
+	if test -e conformance/Makefile; then \
+	  echo "Making clean in conformance"; \
+	  cd conformance && $(MAKE) $(AM_MAKEFLAGS) clean; \
 	fi
 
 pkgconfigdir = $(libdir)/pkgconfig
