@@ -106,7 +106,7 @@ checkDependencies ()
     fi
   elif [[ "$OS" == osx ]]; then
     dump_cmd='otool -L '"$1"' | fgrep dylib'
-    white_list="libz\.1\.dylib\|libc++\.1\.dylib\|libSystem\.B\.dylib"
+    white_list="libz\.1\.dylib\|libstdc++\.6\.dylib\|libSystem\.B\.dylib"
   fi
   if [[ -z "$white_list" || -z "$dump_cmd" ]]; then
     fail "Unsupported platform $OS-$ARCH."
@@ -184,6 +184,8 @@ elif [[ "$(uname)" == Linux* ]]; then
   fi
 elif [[ "$(uname)" == Darwin* ]]; then
   assertEq "$OS" osx $LINENO
+  # Make the binary compatible with OSX 10.7 and later
+  CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.7"
   if [[ "$ARCH" == x86_64 ]]; then
     CXXFLAGS="$CXXFLAGS -m64"
   elif [[ "$ARCH" == x86_32 ]]; then
