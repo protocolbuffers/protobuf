@@ -65,7 +65,7 @@ namespace {
 
 struct FieldDescriptorCompare {
   bool operator ()(const FieldDescriptor* f1, const FieldDescriptor* f2) {
-    if(f1== NULL) {
+    if(f1 == NULL) {
       return false;
     }
     if(f2 == NULL) {

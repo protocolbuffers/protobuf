@@ -67,7 +67,11 @@ class ExtensionGenerator {
   virtual ~ExtensionGenerator() {}
 
   virtual void Generate(io::Printer* printer) = 0;
+
+  // Returns an estimate of the number of bytes the printed code will compile to
   virtual int GenerateNonNestedInitializationCode(io::Printer* printer) = 0;
+
+  // Returns an estimate of the number of bytes the printed code will compile to
   virtual int GenerateRegistrationCode(io::Printer* printer) = 0;
 
  protected:
