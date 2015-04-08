@@ -170,7 +170,6 @@ if __name__ == '__main__':
         py_modules = [
           'google.protobuf.internal.api_implementation',
           'google.protobuf.internal.containers',
-          'google.protobuf.internal.cpp_message',
           'google.protobuf.internal.decoder',
           'google.protobuf.internal.encoder',
           'google.protobuf.internal.enum_type_wrapper',
