@@ -56,7 +56,12 @@ configure GPG and Sonatype account.
 
 You need to perform the deployment for every platform that you want to
 suppport. DO NOT close the staging repository until you have done the
-deployment for all platforms.
+deployment for all platforms. Currently the following platforms are supported:
+- Linux (x86_32 and x86_64)
+- Windows (x86_32 and x86_64) with
+ - Cygwin with MinGW compilers (both x86_32 and x86_64)
+ - MSYS with MinGW32 (x86_32 only)
+- MacOSX (x86_32 and x86_64)
 
 Remove any ``SNAPSHOT`` or ``pre`` suffix from the version string before
 deploying.
