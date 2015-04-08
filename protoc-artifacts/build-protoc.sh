@@ -51,7 +51,7 @@ assertEq ()
 checkArch ()
 {
   echo
-  echo "Checking for file format ..."
+  echo "Checking file format ..."
   if [[ "$OS" == windows || "$OS" == linux ]]; then
     format="$(objdump -f "$1" | grep -o "file format .*$" | grep -o "[^ ]*$")"
     echo Format=$format
@@ -105,7 +105,7 @@ checkDependencies ()
       white_list="linux-vdso\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|ld-linux-x86-64\.so\.2"
     fi
   elif [[ "$OS" == osx ]]; then
-    dump_cmd='otool -L '"$1"
+    dump_cmd='otool -L '"$1"' | fgrep dylib'
     white_list="libz\.1\.dylib\|libc++\.1\.dylib\|libSystem\.B\.dylib"
   fi
   if [[ -z "$white_list" || -z "$dump_cmd" ]]; then
