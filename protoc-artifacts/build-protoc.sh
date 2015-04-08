@@ -25,7 +25,8 @@ E_ASSERT_FAILED=99
 # Usage:
 fail()
 {
-  echo "Error: $1"
+  echo "ERROR: $1"
+  echo
   exit $E_ASSERT_FAILED
 }
 
@@ -49,8 +50,11 @@ assertEq ()
 # Usage: checkArch <path-to-protoc>
 checkArch ()
 {
+  echo
+  echo "Checking for file format ..."
   if [[ "$OS" == windows || "$OS" == linux ]]; then
     format="$(objdump -f "$1" | grep -o "file format .*$" | grep -o "[^ ]*$")"
+    echo Format=$format
     if [[ "$OS" == linux ]]; then
       if [[ "$ARCH" == x86_32 ]]; then
         assertEq $format "elf32-i386" $LINENO
@@ -71,6 +75,7 @@ checkArch ()
     fi
   elif [[ "$OS" == osx ]]; then
     format="$(file -b "$1" | grep -o "[^ ]*$")"
+    echo Format=$format
     if [[ "$ARCH" == x86_32 ]]; then
       assertEq $format "i386" $LINENO
     elif [[ "$ARCH" == x86_64 ]]; then
@@ -79,8 +84,45 @@ checkArch ()
       fail "Unsupported arch: $ARCH"
     fi
   else
-    fail "Unsupported system: $(uname)"
+    fail "Unsupported system: $OS"
   fi
+  echo
+}
+
+# Checks the dependencies of the artifact. Artifacts should only depend on
+# system libraries.
+# Usage: checkDependencies <path-to-protoc>
+checkDependencies ()
+{
+  if [[ "$OS" == windows ]]; then
+    dump_cmd='objdump -x '"$1"' | fgrep "DLL Name"'
+    white_list="KERNEL32\.dll\|msvcrt\.dll"
+  elif [[ "$OS" == linux ]]; then
+    dump_cmd='ldd '"$1"
+    if [[ "$ARCH" == x86_32 ]]; then
+      white_list="linux-gate\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|ld-linux\.so\.2"
+    elif [[ "$ARCH" == x86_64 ]]; then
+      white_list="linux-vdso\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|ld-linux-x86-64\.so\.2"
+    fi
+  elif [[ "$OS" == osx ]]; then
+    dump_cmd='otool -L '"$1"
+    white_list="libz\.1\.dylib\|libc++\.1\.dylib\|libSystem\.B\.dylib"
+  fi
+  if [[ -z "$white_list" || -z "$dump_cmd" ]]; then
+    fail "Unsupported platform $OS-$ARCH."
+  fi
+  echo "Checking for expected dependencies ..."
+  eval $dump_cmd | grep -i "$white_list" || fail "doesn't show any expected dependencies"
+  echo "Checking for unexpected dependencies ..."
+  eval $dump_cmd | grep -i -v "$white_list"
+  ret=$?
+  if [[ $ret == 0 ]]; then
+    fail "found unexpected dependencies (listed above)."
+  elif [[ $ret != 1 ]]; then
+    fail "Error when checking dependencies."
+  fi  # grep returns 1 when "not found", which is what we expect
+  echo "Dependencies look good."
+  echo
 }
 ############################################################################
 
@@ -100,6 +142,7 @@ fi
 # Override the default value set in configure.ac that has '-g' which produces
 # huge binary.
 CXXFLAGS="-DNDEBUG"
+LDFLAGS=""
 
 if [[ "$(uname)" == CYGWIN* ]]; then
   assertEq "$OS" windows $LINENO
@@ -116,13 +159,28 @@ elif [[ "$(uname)" == MINGW32* ]]; then
   assertEq "$OS" windows $LINENO
   assertEq "$ARCH" x86_32 $LINENO
 elif [[ "$(uname)" == Linux* ]]; then
-  assertEq "$OS" linux $LINENO
-  if [[ "$ARCH" == x86_64 ]]; then
-    CXXFLAGS="$CXXFLAGS -m64"
-  elif [[ "$ARCH" == x86_32 ]]; then
-    CXXFLAGS="$CXXFLAGS -m32"
+  if [[ "$OS" == linux ]]; then
+    if [[ "$ARCH" == x86_64 ]]; then
+      CXXFLAGS="$CXXFLAGS -m64"
+    elif [[ "$ARCH" == x86_32 ]]; then
+      CXXFLAGS="$CXXFLAGS -m32"
+    else
+      fail "Unsupported arch: $ARCH"
+    fi
+  elif [[ "$OS" == windows ]]; then
+    # Cross-compilation for Windows
+    # TODO(zhangkun83) MinGW 64 always adds dependency on libwinpthread-1.dll,
+    # which is undesirable for repository deployment.
+    CONFIGURE_ARGS="$CONFIGURE_ARGS"
+    if [[ "$ARCH" == x86_64 ]]; then
+      CONFIGURE_ARGS="$CONFIGURE_ARGS --host=x86_64-w64-mingw32"
+    elif [[ "$ARCH" == x86_32 ]]; then
+      CONFIGURE_ARGS="$CONFIGURE_ARGS --host=i686-w64-mingw32"
+    else
+      fail "Unsupported arch: $ARCH"
+    fi
   else
-    fail "Unsupported arch: $ARCH"
+    fail "Cannot build $OS on $(uname)"
   fi
 elif [[ "$(uname)" == Darwin* ]]; then
   assertEq "$OS" osx $LINENO
@@ -137,14 +195,14 @@ else
   fail "Unsupported system: $(uname)"
 fi
 
-export CXXFLAGS
-
 # Statically link libgcc and libstdc++.
 # -s to produce stripped binary.
 # And they don't work under Mac.
 if [[ "$OS" != osx ]]; then
-  export LDFLAGS="-static-libgcc -static-libstdc++ -s"
+  LDFLAGS="$LDFLAGS -static-libgcc -static-libstdc++ -s"
 fi
+
+export CXXFLAGS LDFLAGS
 
 TARGET_FILE=target/protoc.exe
 
@@ -152,4 +210,4 @@ cd "$WORKING_DIR"/.. && ./configure $CONFIGURE_ARGS &&
   cd src && make clean && make $MAKE_TARGET &&
   cd "$WORKING_DIR" && mkdir -p target &&
   (cp ../src/protoc $TARGET_FILE || cp ../src/protoc.exe $TARGET_FILE) &&
-  checkArch $TARGET_FILE
+  checkArch $TARGET_FILE && checkDependencies $TARGET_FILE
