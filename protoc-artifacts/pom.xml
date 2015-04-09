@@ -90,6 +90,14 @@
   <profiles>
     <profile>
       <id>release</id>
+      <properties>
+        <!-- Specify the staging repository to deploy to. This can be left
+             empty for the first deployment, and Sonatype will create one. For
+             subsequent deployments it should be set to what Sonatype has
+             created, so that all deployments will go to the same repository.
+             -->
+        <staging.repository></staging.repository>
+      </properties>
       <build>
         <plugins>
           <plugin>
@@ -114,7 +122,9 @@
             <configuration>
                <serverId>sonatype-nexus-staging</serverId>
                <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+               <skipStagingRepositoryClose>true</skipStagingRepositoryClose>
                <autoReleaseAfterClose>false</autoReleaseAfterClose>
+               <stagingRepositoryId>${staging.repository}</stagingRepositoryId>
             </configuration>
           </plugin>
         </plugins>
