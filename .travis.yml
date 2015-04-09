@@ -11,6 +11,8 @@ script:
   - ./autogen.sh && ./configure && make -j2
   - cd java && mvn test && cd ..
   - cd javanano && mvn test && cd ..
+  - cd python && python setup.py build && python setup.py google_test
+  - LD_LIBRARY_PATH=../src/.libs cd python && python setup.py build --cpp_implementation && python setup.py google_test --cpp_implementation
   - make distcheck -j2
 notifications:
   email: false
