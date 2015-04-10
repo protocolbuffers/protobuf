@@ -155,7 +155,7 @@ if __name__ == '__main__':
           "google/protobuf/pyext/repeated_scalar_container.cc",
           "google/protobuf/pyext/repeated_composite_container.cc" ],
         define_macros=[('GOOGLE_PROTOBUF_HAS_ONEOF', '1')],
-        include_dirs = [ ".", "..", "../src"],
+        include_dirs = [ ".", "../src" ],
         libraries = [ "protobuf" ],
         library_dirs = [ '../src/.libs' ],
         ))
