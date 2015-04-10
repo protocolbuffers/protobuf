@@ -207,17 +207,14 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/descriptor_pool_test.py                    \
   python/google/protobuf/internal/descriptor_pool_test1.proto                \
   python/google/protobuf/internal/descriptor_pool_test2.proto                \
-  python/google/protobuf/internal/descriptor_python_test.py                  \
   python/google/protobuf/internal/descriptor_test.py                         \
   python/google/protobuf/internal/encoder.py                                 \
   python/google/protobuf/internal/enum_type_wrapper.py                       \
   python/google/protobuf/internal/factory_test1.proto                        \
   python/google/protobuf/internal/factory_test2.proto                        \
   python/google/protobuf/internal/generator_test.py                          \
-  python/google/protobuf/internal/message_factory_python_test.py             \
   python/google/protobuf/internal/message_factory_test.py                    \
   python/google/protobuf/internal/message_listener.py                        \
-  python/google/protobuf/internal/message_python_test.py                     \
   python/google/protobuf/internal/message_test.py                            \
   python/google/protobuf/internal/missing_enum_values.proto                  \
   python/google/protobuf/internal/more_extensions.proto                      \
