@@ -52,16 +52,34 @@ Installation
      $ python setup.py build
      $ python setup.py google_test
 
+     To build, test, and use the C++ implementation, you must first compile
+     libprotobuf.so:
+
+     $ (cd .. && make)
+
+     On OS X:
+
+      If you are running a homebrew-provided python, you must make sure another
+      version of protobuf is not already installed, as homebrew's python will
+      search /usr/local/lib for libprotobuf.so before it searches ../src/.libs
+      You can either unlink homebrew's protobuf or install the libprotobuf you
+      built earlier:
+
+      $ brew unlink protobuf
+      or
+      $ (cd .. && make install)
+
+     On other *nix:
+
+      You must make libprotobuf.so dynamically available. You can either
+      install libprotobuf you built earlier, or set LD_LIBRARY_PATH:
+
+      $ export LD_LIBRARY_PATH=../src/.libs
+      or
+      $ (cd .. && make install)
+
      To build the C++ implementation run:
      $ python setup.py build --cpp_implementation
-
-     To test and use the C++ implementation, you must make libprotobuf.so
-     from the C++ build accessible.  You can either install the C++ code
-     you built, or set LD_LIBRARY_PATH:
-
-     $ (cd .. && make install)
-     or
-     $ export LD_LIBRARY_PATH=../src/.libs
 
      Then run the tests like so:
      $ python setup.py google_test --cpp_implementation
