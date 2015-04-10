@@ -52,8 +52,18 @@ Installation
      $ python setup.py build
      $ python setup.py google_test
 
-     If you want to build/test c++ implementation, run:
+     To build the C++ implementation run:
      $ python setup.py build --cpp_implementation
+
+     To test and use the C++ implementation, you must make libprotobuf.so
+     from the C++ build accessible.  You can either install the C++ code
+     you built, or set LD_LIBRARY_PATH:
+
+     $ (cd .. && make install)
+     or
+     $ export LD_LIBRARY_PATH=../src/.libs
+
+     Then run the tests like so:
      $ python setup.py google_test --cpp_implementation
 
    If some tests fail, this library may not work correctly on your
@@ -73,12 +83,13 @@ Installation
 
   or:
 
+    $ (cd .. && make install)
     $ python setup.py install --cpp_implementation
 
    This step may require superuser privileges.
-   NOTE: To use C++ implementation, you need to install C++ protobuf runtime
-   library of the same version and export the environment variable before this
-   step. See the "C++ Implementation" section below for more details.
+   NOTE: To use C++ implementation, you need to export an environment
+   variable before running your program.  See the "C++ Implementation"
+   section below for more details.
 
 Usage
 =====
@@ -100,12 +111,7 @@ To use the C++ implementation, you need to:
 2) Export an environment variable:
 
     $ export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
-    $ export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION=2
 
-You need to export this variable before running setup.py script to build and
-install the extension.  You must also set the variable at runtime, otherwise
+You must set this variable at runtime, before running your program, otherwise
 the pure-Python implementation will be used. In a future release, we will
 change the default so that C++ implementation is used whenever it is available.
-It is strongly recommended to run `python setup.py test` after setting the
-variable to "cpp", so the tests will be against C++ implemented Python
-messages.
