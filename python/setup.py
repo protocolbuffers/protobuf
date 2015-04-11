@@ -155,7 +155,7 @@ if __name__ == '__main__':
           "google/protobuf/pyext/repeated_scalar_container.cc",
           "google/protobuf/pyext/repeated_composite_container.cc" ],
         define_macros=[('GOOGLE_PROTOBUF_HAS_ONEOF', '1')],
-        include_dirs = [ ".", "..", "../src"],
+        include_dirs = [ ".", "../src" ],
         libraries = [ "protobuf" ],
         library_dirs = [ '../src/.libs' ],
         ))
@@ -165,7 +165,7 @@ if __name__ == '__main__':
         version = GetVersion(),
         packages = [ 'google' ],
         namespace_packages = [ 'google' ],
-        google_test_dir = "google/protobuf/internal",
+        test_suite = 'google.protobuf.internal',
         # Must list modules explicitly so that we don't install tests.
         py_modules = [
           'google.protobuf.internal.api_implementation',
@@ -194,11 +194,6 @@ if __name__ == '__main__':
           'google.protobuf.text_format'],
         cmdclass = { 'clean': clean, 'build_py': build_py },
         install_requires = ['setuptools'],
-        # TODO: Restore dependency once a Python 3 compatible google-apputils
-        # is released.
-        setup_requires = (['google-apputils']
-                          if sys.version_info[0] < 3 else
-                          []),
         ext_modules = ext_module_list,
         url = 'https://developers.google.com/protocol-buffers/',
         maintainer = maintainer_email,

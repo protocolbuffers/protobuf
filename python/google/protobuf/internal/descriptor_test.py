@@ -35,8 +35,8 @@
 __author__ = 'robinson@google.com (Will Robinson)'
 
 import sys
+import unittest
 
-from google.apputils import basetest
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
@@ -52,7 +52,7 @@ name: 'TestEmptyMessage'
 """
 
 
-class DescriptorTest(basetest.TestCase):
+class DescriptorTest(unittest.TestCase):
 
   def setUp(self):
     file_proto = descriptor_pb2.FileDescriptorProto(
@@ -390,7 +390,7 @@ class DescriptorTest(basetest.TestCase):
     self.assertEqual(self.my_file.name, 'some/filename/some.proto')
     self.assertEqual(self.my_file.package, 'protobuf_unittest')
 
-  @basetest.unittest.skipIf(
+  @unittest.skipIf(
       api_implementation.Type() != 'cpp' or api_implementation.Version() != 2,
       'Immutability of descriptors is only enforced in v2 implementation')
   def testImmutableCppDescriptor(self):
@@ -403,7 +403,7 @@ class DescriptorTest(basetest.TestCase):
       message_descriptor.fields.append(None)
 
 
-class GeneratedDescriptorTest(basetest.TestCase):
+class GeneratedDescriptorTest(unittest.TestCase):
   """Tests for the properties of descriptors in generated code."""
 
   def CheckMessageDescriptor(self, message_descriptor):
@@ -493,7 +493,7 @@ class GeneratedDescriptorTest(basetest.TestCase):
     self.assertEqual('FOO', next(values_iter).name)
 
 
-class DescriptorCopyToProtoTest(basetest.TestCase):
+class DescriptorCopyToProtoTest(unittest.TestCase):
   """Tests for CopyTo functions of Descriptor."""
 
   def _AssertProtoEqual(self, actual_proto, expected_class, expected_ascii):
@@ -694,7 +694,7 @@ class DescriptorCopyToProtoTest(basetest.TestCase):
     #    TEST_SERVICE_ASCII)
 
 
-class MakeDescriptorTest(basetest.TestCase):
+class MakeDescriptorTest(unittest.TestCase):
 
   def testMakeDescriptorWithNestedFields(self):
     file_descriptor_proto = descriptor_pb2.FileDescriptorProto()
@@ -776,4 +776,4 @@ class MakeDescriptorTest(basetest.TestCase):
                       options.Extensions[unittest_custom_options_pb2.msgopt].i)
 
 if __name__ == '__main__':
-  basetest.main()
+  unittest.main()
