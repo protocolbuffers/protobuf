@@ -363,9 +363,44 @@ FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
   }
 }
 
+bool HasRequiredFields(const Descriptor* descriptor, std::set<const Descriptor*>* already_seen) {
+  if (already_seen->find(descriptor) != already_seen->end()) {
+    // The type is already in cache.  This means that either:
+    // a. The type has no required fields.
+    // b. We are in the midst of checking if the type has required fields,
+    //    somewhere up the stack.  In this case, we know that if the type
+    //    has any required fields, they'll be found when we return to it,
+    //    and the whole call to HasRequiredFields() will return true.
+    //    Therefore, we don't have to check if this type has required fields
+    //    here.
+    return false;
+  }
+  already_seen->insert(descriptor);
+
+  // If the type has extensions, an extension with message type could contain
+  // required fields, so we have to be conservative and assume such an
+  // extension exists.
+  if (descriptor->extension_count() > 0) {
+    return true;
+  }
+
+  for (int i = 0; i < descriptor->field_count(); i++) {
+    const FieldDescriptor* field = descriptor->field(i);
+    if (field->is_required()) {
+      return true;
+    }
+    if (GetCSharpType(field->type()) == CSHARPTYPE_MESSAGE) {
+      if (HasRequiredFields(field->message_type(), already_seen)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 bool HasRequiredFields(const Descriptor* descriptor) {
-  // TODO(jtattermusch): implement HasRequiredFields logic.
-  return true;
+  std::set<const Descriptor*> already_seen;
+  return HasRequiredFields(descriptor, &already_seen);
 }
 
 }  // namespace java
