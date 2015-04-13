@@ -354,54 +354,11 @@ message FileOptions {
   // Namespace for generated classes; defaults to the package.
   optional string csharp_namespace = 37;
 
-  // Name of the "umbrella" class used for metadata about all
-  // the messages within this file. Default is based on the name
-  // of the file.
-  optional string csharp_umbrella_classname = 38;
-
-  // Whether classes should be public (true) or internal (false)
-  optional bool csharp_public_classes = 39 [default = true];
-
-  // Whether to generate a single file for everything within the
-  // .proto file (false), or one file per message (true).
-  // This option is not currently honored; please log a feature
-  // request if you really want it.
-  optional bool csharp_multiple_files = 40;
-
-  // Whether to nest messages within a single umbrella class (true)
-  // or create the umbrella class as a peer, with messages as
-  // top-level classes in the namespace (false)
-  optional bool csharp_nest_classes = 41;
-
-  // Generate appropriate support for Code Contracts
-  // (Ongoing; support should improve over time)
-  optional bool csharp_code_contracts = 42;
-
-  // Create subdirectories for namespaces, e.g. namespace "Foo.Bar"
-  // would generate files within [output directory]/Foo/Bar
-  optional bool csharp_expand_namespace_directories = 43;
-
-  // Generate attributes indicating non-CLS-compliance
-  optional bool csharp_cls_compliance = 44 [default = true];
-
-  // Generate messages/builders with the [Serializable] attribute
-  optional bool csharp_add_serializable = 45 [default = false];
-
-  // Generates a private ctor for Message types
-  optional bool csharp_generate_private_ctor = 46 [default = true];
-
-  // The extension that should be appended to the umbrella_classname when creating files.
-  optional string csharp_file_extension = 47 [default = ".cs"];
-
   // A nested namespace for the umbrella class.  Helpful for name collisions caused by
   // umbrella_classname conflicting with an existing type.  This will be automatically
   // set to 'Proto' if a collision is detected with types being generated.  This value
   // is ignored when nest_classes == true
   optional string csharp_umbrella_namespace = 48;
-
-  // Used to add the System.Runtime.CompilerServices.CompilerGeneratedAttribute and
-  // System.CodeDom.Compiler.GeneratedCodeAttribute attributes to generated code.
-  optional bool csharp_generated_code_attributes = 49 [default = false];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -533,7 +490,11 @@ message FieldOptions {
   // For Google-internal migration only. Do not use.
   optional bool weak = 10 [default=false];
 
-
+  // Provides the ability to override the name of the property
+  // generated for this field. This is applied to all properties
+  // and methods to do with this field, including HasFoo, FooCount,
+  // FooList etc.
+  optional string csharp_property_name = 11;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
