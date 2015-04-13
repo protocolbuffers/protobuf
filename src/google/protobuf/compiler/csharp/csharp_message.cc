@@ -81,7 +81,6 @@ MessageGenerator::~MessageGenerator() {
 }
 
 std::string MessageGenerator::class_name() {
-  // TODO: check correctness.
   return descriptor_->name();
 }
 

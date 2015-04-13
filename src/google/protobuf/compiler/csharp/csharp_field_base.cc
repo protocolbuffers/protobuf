@@ -61,11 +61,10 @@ FieldGeneratorBase::~FieldGeneratorBase() {
 }
 
 void FieldGeneratorBase::AddDeprecatedFlag(Writer* writer) {
-  // TODO(jtattermusch):
-  //if (IsObsolete)
-  //{
-  //  writer.WriteLine("[global::System.ObsoleteAttribute()]");
-  //}
+  if (descriptor_->options().deprecated())
+  {
+    writer->WriteLine("[global::System.ObsoleteAttribute()]");
+  }
 }
 
 void FieldGeneratorBase::AddNullCheck(Writer* writer) {

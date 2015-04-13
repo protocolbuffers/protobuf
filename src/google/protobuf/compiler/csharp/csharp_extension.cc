@@ -73,7 +73,7 @@ void ExtensionGenerator::Generate(Writer* writer) {
                     SimpleItoa(descriptor_->number()));
 
   if (use_lite_runtime()) {
-    // TODO(jtattermusch): check the argument...
+    // TODO(jtattermusch): include the following check
     //if (Descriptor.MappedType == MappedType.Message && Descriptor.MessageType.Options.MessageSetWireFormat)
     //{
     //    throw new ArgumentException(
@@ -122,7 +122,7 @@ void ExtensionGenerator::GenerateStaticVariableInitializers(Writer* writer) {
       }
       writer->WriteLine("$0$,", default_val);
     }
-    // TODO(jtattermusch):
+    // TODO(jtattermusch): include following snippet
     //writer.WriteLine("{0},",
     //                 (Descriptor.MappedType == MappedType.Message) ? type + ".DefaultInstance" : "null");
     //writer.WriteLine("{0},",
