@@ -122,13 +122,17 @@ void ExtensionGenerator::GenerateStaticVariableInitializers(Writer* writer) {
       }
       writer->WriteLine("$0$,", default_val);
     }
-    // TODO(jtattermusch): include following snippet
-    //writer.WriteLine("{0},",
-    //                 (Descriptor.MappedType == MappedType.Message) ? type + ".DefaultInstance" : "null");
-    //writer.WriteLine("{0},",
-    //                 (Descriptor.MappedType == MappedType.Enum) ? "new EnumLiteMap<" + type + ">()" : "null");
-    //writer.WriteLine("{0}.{1}FieldNumber,", scope, name);
-    //writer.Write("pbd::FieldType.{0}", Descriptor.FieldType);
+    writer->WriteLine(
+        "$0$,",
+        (GetCSharpType(descriptor_->type()) == CSHARPTYPE_MESSAGE) ?
+            type_name() + ".DefaultInstance" : "null");
+    writer->WriteLine(
+        "$0$,",
+        (GetCSharpType(descriptor_->type()) == CSHARPTYPE_ENUM) ?
+            "new EnumLiteMap<" + type_name() + ">()" : "null");
+    writer->WriteLine("$0$.$1$FieldNumber,", scope_,
+                      GetPropertyName(descriptor_));
+    writer->Write("pbd::FieldType.$0$", capitalized_type_name());
     if (descriptor_->is_repeated()) {
       writer->WriteLine(",");
       writer->Write(descriptor_->is_packed() ? "true" : "false");
