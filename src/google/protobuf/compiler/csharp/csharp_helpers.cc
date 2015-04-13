@@ -364,7 +364,7 @@ FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
 }
 
 bool HasRequiredFields(const Descriptor* descriptor) {
-  // TODO(jtattermusch): implement this.
+  // TODO(jtattermusch): implement HasRequiredFields logic.
   return true;
 }
 

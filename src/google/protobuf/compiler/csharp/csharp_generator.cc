@@ -49,6 +49,11 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
+std::string GetOutputFile(const google::protobuf::FileDescriptor* file, const std::string file_extension)
+{
+  return GetFileUmbrellaClassname(file) + file_extension;
+}
+
 void GenerateFile(const google::protobuf::FileDescriptor* file,
                   Writer* writer) {
   UmbrellaClassGenerator umbrellaGenerator(file);
@@ -61,13 +66,23 @@ bool Generator::Generate(
     GeneratorContext* generator_context,
     string* error) const {
 
-  // TODO(jtattermusch): parse generator parameters:
-  // cls_compliance
-  // file_extension
+  vector<pair<string, string> > options;
+  ParseGeneratorParameter(parameter, &options);
 
-  // TODO(jtattermusch): rework output file naming logic
-  std::string filename =
-      StripDotProto(file->name()) + ".cs";
+  std::string file_extension = ".cs";
+  for (int i = 0; i < options.size(); i++) {
+    if (options[i].first == "no_cls_compliance") {
+      *error = "Turning off CLS compliance is not implemented yet.";
+      return false;
+    } else if (options[i].first == "file_extension") {
+      file_extension = options[i].second;
+    } else {
+      *error = "Unknown generator option: " + options[i].first;
+      return false;
+    }
+  }
+
+  std::string filename = GetOutputFile(file, file_extension);
   scoped_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '$');

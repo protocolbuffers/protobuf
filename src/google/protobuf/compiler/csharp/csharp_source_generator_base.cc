@@ -62,18 +62,11 @@ SourceGeneratorBase::~SourceGeneratorBase() {
 }
 
 void SourceGeneratorBase::WriteGeneratedCodeAttributes(Writer* writer) {
-  // TODO(jtattermusch):
-  //if (descriptor.File.CSharpOptions.GeneratedCodeAttributes)
-  //            {
-  //                writer.WriteLine("[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]");
-  //                writer.WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]",
-  //                                 GetType().Assembly.GetName().Name, GetType().Assembly.GetName().Version);
-  //            }
+  // This hook can be used to reintroduce generated code attributes in the future.
 }
 
 std::string SourceGeneratorBase::class_access_level() {
-  // TODO(jtattermusch): implement this
-  return "public";
+  return "public";  // public_classes is always on.
 }
 
 bool SourceGeneratorBase::cls_compliance() {
