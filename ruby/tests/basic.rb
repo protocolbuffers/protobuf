@@ -8,6 +8,19 @@ require 'test/unit'
 module BasicTest
   pool = Google::Protobuf::DescriptorPool.new
   pool.build do
+    add_message "Foo" do
+      optional :bar, :message, 1, "Bar"
+      repeated :baz, :message, 2, "Baz"
+    end
+
+    add_message "Bar" do
+      optional :msg, :string, 1
+    end
+
+    add_message "Baz" do
+      optional :msg, :string, 1
+    end
+
     add_message "TestMessage" do
       optional :optional_int32,  :int32,        1
       optional :optional_int64,  :int64,        2
@@ -84,6 +97,9 @@ module BasicTest
     end
   end
 
+  Foo = pool.lookup("Foo").msgclass
+  Bar = pool.lookup("Bar").msgclass
+  Baz = pool.lookup("Baz").msgclass
   TestMessage = pool.lookup("TestMessage").msgclass
   TestMessage2 = pool.lookup("TestMessage2").msgclass
   Recursive1 = pool.lookup("Recursive1").msgclass
@@ -992,6 +1008,14 @@ module BasicTest
       json_text = TestMessage.encode_json(m)
       m2 = TestMessage.decode_json(json_text)
       assert m == m2
+
+      # Crash case from GitHub issue 283.
+      bar = Bar.new(msg: "bar")
+      baz1 = Baz.new(msg: "baz")
+      baz2 = Baz.new(msg: "quux")
+      Foo.encode_json(Foo.new)
+      Foo.encode_json(Foo.new(bar: bar))
+      Foo.encode_json(Foo.new(bar: bar, baz: [baz1, baz2]))
     end
 
     def test_json_maps

@@ -250,7 +250,7 @@ void Descriptor_free(void* _self) {
                        &self->pb_serialize_handlers);
   }
   if (self->json_serialize_handlers) {
-    upb_handlers_unref(self->pb_serialize_handlers,
+    upb_handlers_unref(self->json_serialize_handlers,
                        &self->json_serialize_handlers);
   }
   xfree(self);
