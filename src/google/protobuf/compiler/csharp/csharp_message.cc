@@ -181,6 +181,7 @@ void MessageGenerator::Generate(Writer* writer) {
       descriptor_->extension_range_count() > 0 ? "Extendable" : "Generated",
       runtime_suffix());
   writer->Indent();
+  writer->WriteLine("private $0$() { }", class_name());  // Private ctor.
   // Must call MakeReadOnly() to make sure all lists are made read-only
   writer->WriteLine(
       "private static readonly $0$ defaultInstance = new $0$().MakeReadOnly();",
