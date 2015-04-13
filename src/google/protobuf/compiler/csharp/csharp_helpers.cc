@@ -127,26 +127,30 @@ std::string GetFileUmbrellaClassname(const FileDescriptor* descriptor) {
 }
 
 std::string GetFileUmbrellaNamespace(const FileDescriptor* descriptor) {
-  if (!descriptor->options().has_csharp_umbrella_namespace()) {
-    bool collision = false;
-    // TODO(jtattermusch): detect collisions!
-//      foreach (IDescriptor d in MessageTypes)
-//      {
-//          collision |= d.Name == builder.UmbrellaClassname;
-//      }
-//      foreach (IDescriptor d in Services)
-//      {
-//          collision |= d.Name == builder.UmbrellaClassname;
-//      }
-//      foreach (IDescriptor d in EnumTypes)
-//      {
-//          collision |= d.Name == builder.UmbrellaClassname;
-//      }
-    if (collision) {
-      return "Proto";
+  if (descriptor->options().has_csharp_umbrella_namespace()) {
+    return descriptor->options().csharp_umbrella_namespace();
+  }
+  bool collision = false;
+  std::string umbrella_classname = GetFileUmbrellaClassname(descriptor);
+  for(int i = 0; i < descriptor->message_type_count(); i++) {
+    if (descriptor->message_type(i)->name() == umbrella_classname) {
+      collision = true;
+      break;
     }
   }
-  return "";
+  for (int i = 0; i < descriptor->service_count(); i++) {
+    if (descriptor->service(i)->name() == umbrella_classname) {
+      collision = true;
+      break;
+    }
+  }
+  for (int i = 0; i < descriptor->enum_type_count(); i++) {
+    if (descriptor->enum_type(i)->name() == umbrella_classname) {
+      collision = true;
+      break;
+    }
+  }
+  return collision ? "Proto" : "";
 }
 
 // TODO(jtattermusch): can we reuse a utility function?
