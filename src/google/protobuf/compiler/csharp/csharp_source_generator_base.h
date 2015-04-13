@@ -48,6 +48,7 @@ class SourceGeneratorBase {
   virtual ~SourceGeneratorBase();
 
   std::string class_access_level();
+  bool cls_compliance();
 
   bool optimize_size() {
     return optimizeSize_;

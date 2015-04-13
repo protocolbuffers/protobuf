@@ -76,6 +76,11 @@ std::string SourceGeneratorBase::class_access_level() {
   return "public";
 }
 
+bool SourceGeneratorBase::cls_compliance() {
+  // TODO(jtattermusch): implement this based on "cls_compliance" cmdline param.
+  return true;
+}
+
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf

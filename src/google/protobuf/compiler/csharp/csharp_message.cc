@@ -118,9 +118,7 @@ void MessageGenerator::GenerateStaticVariables(Writer* writer) {
 
   if (!use_lite_runtime()) {
     // The descriptor for this type.
-    std::string access =
-        descriptor_->file()->options().csharp_nest_classes() ?
-            "private" : "internal";
+    std::string access = "internal";
     writer->WriteLine(
         "$0$ static pbd::MessageDescriptor internal__$1$__Descriptor;", access,
         identifier);
@@ -175,9 +173,6 @@ void MessageGenerator::GenerateStaticVariableInitializers(Writer* writer) {
 }
 
 void MessageGenerator::Generate(Writer* writer) {
-  if (descriptor_->file()->options().csharp_add_serializable()) {
-    writer->WriteLine("[global::System.SerializableAttribute()]");
-  }
   writer->WriteLine(
       "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]");
   WriteGeneratedCodeAttributes(writer);
@@ -187,9 +182,6 @@ void MessageGenerator::Generate(Writer* writer) {
       descriptor_->extension_range_count() > 0 ? "Extendable" : "Generated",
       runtime_suffix());
   writer->Indent();
-  if (descriptor_->file()->options().csharp_generate_private_ctor()) {
-    writer->WriteLine("private $0$() { }", class_name());
-  }
   // Must call MakeReadOnly() to make sure all lists are made read-only
   writer->WriteLine(
       "private static readonly $0$ defaultInstance = new $0$().MakeReadOnly();",
@@ -271,7 +263,7 @@ void MessageGenerator::Generate(Writer* writer) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
     // TODO(jtattermusch): same code for cls compliance is in csharp_extension
-    if (descriptor_->file()->options().csharp_cls_compliance()
+    if (cls_compliance()
         && GetFieldConstantName(fieldDescriptor)[0] == '_') {
       writer->WriteLine("[global::System.CLSCompliant(false)]");
     }
@@ -557,9 +549,6 @@ void MessageGenerator::GenerateBuilder(Writer* writer) {
   writer->WriteLine("  return new Builder(prototype);");
   writer->WriteLine("}");
   writer->WriteLine();
-  if (descriptor_->file()->options().csharp_add_serializable()) {
-    writer->WriteLine("[global::System.SerializableAttribute()]");
-  }
   writer->WriteLine(
       "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]");
   WriteGeneratedCodeAttributes(writer);

@@ -61,9 +61,11 @@ bool Generator::Generate(
     GeneratorContext* generator_context,
     string* error) const {
 
-  // TODO: parse generator parameters...
+  // TODO(jtattermusch): parse generator parameters:
+  // cls_compliance
+  // file_extension
 
-  // TODO: file output file naming logic
+  // TODO(jtattermusch): rework output file naming logic
   std::string filename =
       StripDotProto(file->name()) + ".cs";
   scoped_ptr<io::ZeroCopyOutputStream> output(

@@ -122,16 +122,12 @@ std::string GetUmbrellaClassNameInternal(const std::string& proto_file) {
 }
 
 std::string GetFileUmbrellaClassname(const FileDescriptor* descriptor) {
-  if (descriptor->options().has_csharp_umbrella_classname()) {
-    return descriptor->options().csharp_umbrella_namespace();
-  } else {
-    return GetUmbrellaClassNameInternal(descriptor->name());
-  }
+  // umbrella_classname can no longer be set using message option.
+  return GetUmbrellaClassNameInternal(descriptor->name());
 }
 
 std::string GetFileUmbrellaNamespace(const FileDescriptor* descriptor) {
-  if (!descriptor->options().csharp_nest_classes()
-      && !descriptor->options().has_csharp_umbrella_namespace()) {
+  if (!descriptor->options().has_csharp_umbrella_namespace()) {
     bool collision = false;
     // TODO(jtattermusch): detect collisions!
 //      foreach (IDescriptor d in MessageTypes)
@@ -196,12 +192,6 @@ std::string UnderscoresToPascalCase(const std::string& input) {
 
 std::string ToCSharpName(const std::string& name, const FileDescriptor* file) {
   std::string result = GetFileNamespace(file);
-  if (file->options().csharp_nest_classes()) {
-    if (result != "") {
-      result += ".";
-    }
-    result += GetFileUmbrellaClassname(file);
-  }
   if (result != "") {
     result += '.';
   }
@@ -233,8 +223,7 @@ std::string GetQualifiedUmbrellaClassName(const FileDescriptor* descriptor) {
   std::string umbrellaClassname = GetFileUmbrellaClassname(descriptor);
 
   std::string fullName = umbrellaClassname;
-  if (!descriptor->options().csharp_nest_classes()
-      && !umbrellaNamespace.empty()) {
+  if (!umbrellaNamespace.empty()) {
     fullName = umbrellaNamespace + "." + umbrellaClassname;
   }
   return fullName;

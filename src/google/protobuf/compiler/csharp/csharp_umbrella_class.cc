@@ -86,17 +86,14 @@ void UmbrellaClassGenerator::Generate(Writer* writer) {
   } else {
     WriteLiteExtensions(writer);
   }
-  // The class declaration either gets closed before or after the children are written.
-  if (!file_->options().csharp_nest_classes()) {
+  // Close the class declaration.
+  writer->Outdent();
+  writer->WriteLine("}");
+
+  // Close the namespace around the umbrella class if defined
+  if (!umbrellaNamespace_.empty()) {
     writer->Outdent();
     writer->WriteLine("}");
-
-    // Close the namespace around the umbrella class if defined
-    if (!file_->options().csharp_nest_classes()
-        && !umbrellaNamespace_.empty()) {
-      writer->Outdent();
-      writer->WriteLine("}");
-    }
   }
 
   // write children: Enums
@@ -121,12 +118,8 @@ void UmbrellaClassGenerator::Generate(Writer* writer) {
     writer->WriteLine();
   }
 
-  // TODO(jtattermusch): add support for generating services.
-  //WriteChildren(writer, "Services", Descriptor.Services);
-  if (file_->options().csharp_nest_classes()) {
-    writer->Outdent();
-    writer->WriteLine("}");
-  }
+  // TODO(jtattermusch): add insertion point for services.
+
   if (!namespace_.empty()) {
     writer->Outdent();
     writer->WriteLine("}");
@@ -155,16 +148,12 @@ void UmbrellaClassGenerator::WriteIntroduction(Writer* writer) {
   }
 
   // Add the namespace around the umbrella class if defined
-  if (!file_->options().csharp_nest_classes() && !umbrellaNamespace_.empty()) {
+  if (!umbrellaNamespace_.empty()) {
     writer->WriteLine("namespace $0$ {", umbrellaNamespace_);
     writer->Indent();
     writer->WriteLine();
   }
 
-  if (file_->options().csharp_code_contracts()) {
-    writer->WriteLine(
-        "[global::System.Diagnostics.Contracts.ContractVerificationAttribute(false)]");
-  }
   writer->WriteLine(
       "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]");
   WriteGeneratedCodeAttributes(writer);

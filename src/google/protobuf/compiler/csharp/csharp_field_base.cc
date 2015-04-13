@@ -84,7 +84,7 @@ void FieldGeneratorBase::AddPublicMemberAttributes(Writer* writer) {
 }
 
 void FieldGeneratorBase::AddClsComplianceCheck(Writer* writer) {
-  if (!is_cls_compliant() && descriptor_->file()->options().csharp_cls_compliance()) {
+  if (cls_compliance() && !is_cls_compliant()) {
     writer->WriteLine("[global::System.CLSCompliant(false)]");
   }
 }

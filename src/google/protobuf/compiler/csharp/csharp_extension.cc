@@ -63,7 +63,7 @@ ExtensionGenerator::~ExtensionGenerator() {
 }
 
 void ExtensionGenerator::Generate(Writer* writer) {
-  if (descriptor_->file()->options().csharp_cls_compliance()
+  if (cls_compliance()
       && (GetFieldConstantName(descriptor_).substr(0, 1) == "_")) {
     writer->WriteLine("[global::System.CLSCompliant(false)]");
   }
