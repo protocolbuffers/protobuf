@@ -378,7 +378,7 @@ void MessageGenerator::GenerateMessageSerializationMethods(Writer* writer) {
       "public override void WriteTo(pb::ICodedOutputStream output) {");
   writer->Indent();
   // Make sure we've computed the serialized length, so that packed fields are generated correctly.
-  writer->WriteLine("int size = SerializedSize;");
+  writer->WriteLine("CalcSerializedSize();");
   writer->WriteLine("string[] field_names = _$0$FieldNames;",
                     UnderscoresToCamelCase(class_name(), false));
   if (descriptor_->extension_range_count()) {
@@ -421,6 +421,17 @@ void MessageGenerator::GenerateMessageSerializationMethods(Writer* writer) {
   writer->Indent();
   writer->WriteLine("int size = memoizedSerializedSize;");
   writer->WriteLine("if (size != -1) return size;");
+  writer->WriteLine("return CalcSerializedSize();");
+  writer->Outdent();
+  writer->WriteLine("}");
+  writer->Outdent();
+  writer->WriteLine("}");
+  writer->WriteLine();
+
+  writer->WriteLine("private int CalcSerializedSize() {");
+  writer->Indent();
+  writer->WriteLine("int size = memoizedSerializedSize;");
+  writer->WriteLine("if (size != -1) return size;");
   writer->WriteLine();
   writer->WriteLine("size = 0;");
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -443,9 +454,6 @@ void MessageGenerator::GenerateMessageSerializationMethods(Writer* writer) {
   writer->WriteLine("return size;");
   writer->Outdent();
   writer->WriteLine("}");
-  writer->Outdent();
-  writer->WriteLine("}");
-  writer->WriteLine();
 }
 
 void MessageGenerator::GenerateSerializeOneField(
