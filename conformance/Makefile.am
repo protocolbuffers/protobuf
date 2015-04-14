@@ -7,12 +7,12 @@ protoc_outputs =                                               \
   conformance.pb.cc                                            \
   conformance.pb.h
 
-bin_PROGRAMS = conformance-test conformance-cpp
+bin_PROGRAMS = conformance-test-runner conformance-cpp
 
-conformance_test_LDADD = $(top_srcdir)/src/libprotobuf.la
-conformance_test_SOURCES = conformance_test.cc
-nodist_conformance_test_SOURCES = conformance.pb.cc
-conformance_test_CPPFLAGS = -I$(top_srcdir)/src
+conformance_test_runner_LDADD = $(top_srcdir)/src/libprotobuf.la
+conformance_test_runner_SOURCES = conformance_test.cc conformance_test_runner.cc
+nodist_conformance_test_runner_SOURCES = conformance.pb.cc
+conformance_test_runner_CPPFLAGS = -I$(top_srcdir)/src
 
 conformance_cpp_LDADD = $(top_srcdir)/src/libprotobuf.la
 conformance_cpp_SOURCES = conformance_cpp.cc
@@ -46,5 +46,5 @@ MAINTAINERCLEANFILES =   \
   Makefile.in
 
 # Targets for actually running tests.
-test_cpp: unittest_proto_middleman conformance-test conformance-cpp
-	./conformance-test ./conformance-cpp
+test_cpp: unittest_proto_middleman conformance-test-runner conformance-cpp
+	./conformance-test-runner ./conformance-cpp
