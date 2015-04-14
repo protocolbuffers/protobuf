@@ -28,13 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <errno.h>
 #include <stdarg.h>
-#include <unistd.h>
 #include <string>
 
 #include "conformance.pb.h"
+#include "conformance_test.h"
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/wire_format_lite.h>
 
 using conformance::ConformanceRequest;
@@ -45,167 +45,7 @@ using google::protobuf::FieldDescriptor;
 using google::protobuf::internal::WireFormatLite;
 using std::string;
 
-int write_fd;
-int read_fd;
-int successes;
-int failures;
-bool verbose = false;
-
-string Escape(const string& str) {
-  // TODO.
-  return str;
-}
-
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
-#define CHECK_SYSCALL(call) \
-  if (call < 0) { \
-    perror(#call " " __FILE__ ":" TOSTRING(__LINE__)); \
-    exit(1); \
-  }
-
-// TODO(haberman): make this work on Windows, instead of using these
-// UNIX-specific APIs.
-//
-// There is a platform-agnostic API in
-//    src/google/protobuf/compiler/subprocess.h
-//
-// However that API only supports sending a single message to the subprocess.
-// We really want to be able to send messages and receive responses one at a
-// time:
-//
-// 1. Spawning a new process for each test would take way too long for thousands
-//    of tests and subprocesses like java that can take 100ms or more to start
-//    up.
-//
-// 2. Sending all the tests in one big message and receiving all results in one
-//    big message would take away our visibility about which test(s) caused a
-//    crash or other fatal error.  It would also give us only a single failure
-//    instead of all of them.
-void SpawnTestProgram(char *executable) {
-  int toproc_pipe_fd[2];
-  int fromproc_pipe_fd[2];
-  if (pipe(toproc_pipe_fd) < 0 || pipe(fromproc_pipe_fd) < 0) {
-    perror("pipe");
-    exit(1);
-  }
-
-  pid_t pid = fork();
-  if (pid < 0) {
-    perror("fork");
-    exit(1);
-  }
-
-  if (pid) {
-    // Parent.
-    CHECK_SYSCALL(close(toproc_pipe_fd[0]));
-    CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
-    write_fd = toproc_pipe_fd[1];
-    read_fd = fromproc_pipe_fd[0];
-  } else {
-    // Child.
-    CHECK_SYSCALL(close(STDIN_FILENO));
-    CHECK_SYSCALL(close(STDOUT_FILENO));
-    CHECK_SYSCALL(dup2(toproc_pipe_fd[0], STDIN_FILENO));
-    CHECK_SYSCALL(dup2(fromproc_pipe_fd[1], STDOUT_FILENO));
-
-    CHECK_SYSCALL(close(toproc_pipe_fd[0]));
-    CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
-    CHECK_SYSCALL(close(toproc_pipe_fd[1]));
-    CHECK_SYSCALL(close(fromproc_pipe_fd[0]));
-
-    char *const argv[] = {executable, NULL};
-    CHECK_SYSCALL(execv(executable, argv));  // Never returns.
-  }
-}
-
-/* Invoking of tests **********************************************************/
-
-void ReportSuccess() {
-  successes++;
-}
-
-void ReportFailure(const char *fmt, ...) {
-  va_list args;
-  va_start(args, fmt);
-  vfprintf(stderr, fmt, args);
-  va_end(args);
-  failures++;
-}
-
-void CheckedWrite(int fd, const void *buf, size_t len) {
-  if (write(fd, buf, len) != len) {
-    GOOGLE_LOG(FATAL) << "Error writing to test program: " << strerror(errno);
-  }
-}
-
-void CheckedRead(int fd, void *buf, size_t len) {
-  size_t ofs = 0;
-  while (len > 0) {
-    ssize_t bytes_read = read(fd, (char*)buf + ofs, len);
-
-    if (bytes_read == 0) {
-      GOOGLE_LOG(FATAL) << "Unexpected EOF from test program";
-    } else if (bytes_read < 0) {
-      GOOGLE_LOG(FATAL) << "Error reading from test program: " << strerror(errno);
-    }
-
-    len -= bytes_read;
-    ofs += bytes_read;
-  }
-}
-
-void RunTest(const ConformanceRequest& request, ConformanceResponse* response) {
-  string serialized;
-  request.SerializeToString(&serialized);
-  uint32_t len = serialized.size();
-  CheckedWrite(write_fd, &len, sizeof(uint32_t));
-  CheckedWrite(write_fd, serialized.c_str(), serialized.size());
-  CheckedRead(read_fd, &len, sizeof(uint32_t));
-  serialized.resize(len);
-  CheckedRead(read_fd, (void*)serialized.c_str(), len);
-  if (!response->ParseFromString(serialized)) {
-    GOOGLE_LOG(FATAL) << "Could not parse response proto from tested process.";
-  }
-
-  if (verbose) {
-    fprintf(stderr, "conformance_test: request=%s, response=%s\n",
-            request.ShortDebugString().c_str(),
-            response->ShortDebugString().c_str());
-  }
-}
-
-void DoExpectParseFailureForProto(const string& proto, int line) {
-  ConformanceRequest request;
-  ConformanceResponse response;
-  request.set_protobuf_payload(proto);
-
-  // We don't expect output, but if the program erroneously accepts the protobuf
-  // we let it send its response as this.  We must not leave it unspecified.
-  request.set_requested_output(ConformanceRequest::PROTOBUF);
-
-  RunTest(request, &response);
-  if (response.result_case() == ConformanceResponse::kParseError) {
-    ReportSuccess();
-  } else {
-    ReportFailure("Should have failed, but didn't. Line: %d, Request: %s, "
-                  "response: %s\n",
-                  line,
-                  request.ShortDebugString().c_str(),
-                  response.ShortDebugString().c_str());
-  }
-}
-
-// Expect that this precise protobuf will cause a parse error.
-#define ExpectParseFailureForProto(proto) DoExpectParseFailureForProto(proto, __LINE__)
-
-// Expect that this protobuf will cause a parse error, even if it is followed
-// by valid protobuf data.  We can try running this twice: once with this
-// data verbatim and once with this data followed by some valid data.
-//
-// TODO(haberman): implement the second of these.
-#define ExpectHardParseFailureForProto(proto) DoExpectParseFailureForProto(proto, __LINE__)
-
+namespace {
 
 /* Routines for building arbitrary protos *************************************/
 
@@ -299,7 +139,78 @@ uint32_t GetFieldNumberForType(WireFormatLite::FieldType type, bool repeated) {
   return 0;
 }
 
-void TestPrematureEOFForType(WireFormatLite::FieldType type) {
+}  // anonymous namespace
+
+namespace google {
+namespace protobuf {
+
+void ConformanceTestSuite::ReportSuccess() {
+  successes_++;
+}
+
+void ConformanceTestSuite::ReportFailure(const char *fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  StringAppendV(&output_, fmt, args);
+  va_end(args);
+  failures_++;
+}
+
+void ConformanceTestSuite::RunTest(const ConformanceRequest& request,
+                                   ConformanceResponse* response) {
+  string serialized_request;
+  string serialized_response;
+  request.SerializeToString(&serialized_request);
+
+  runner_->RunTest(serialized_request, &serialized_response);
+
+  if (!response->ParseFromString(serialized_response)) {
+    response->Clear();
+    response->set_runtime_error("response proto could not be parsed.");
+  }
+
+  if (verbose_) {
+    StringAppendF(&output_, "conformance test: request=%s, response=%s\n",
+                  request.ShortDebugString().c_str(),
+                  response->ShortDebugString().c_str());
+  }
+}
+
+void ConformanceTestSuite::DoExpectParseFailureForProto(const string& proto,
+                                                        int line) {
+  ConformanceRequest request;
+  ConformanceResponse response;
+  request.set_protobuf_payload(proto);
+
+  // We don't expect output, but if the program erroneously accepts the protobuf
+  // we let it send its response as this.  We must not leave it unspecified.
+  request.set_requested_output(ConformanceRequest::PROTOBUF);
+
+  RunTest(request, &response);
+  if (response.result_case() == ConformanceResponse::kParseError) {
+    ReportSuccess();
+  } else {
+    ReportFailure("Should have failed, but didn't. Line: %d, Request: %s, "
+                  "response: %s\n",
+                  line,
+                  request.ShortDebugString().c_str(),
+                  response.ShortDebugString().c_str());
+  }
+}
+
+// Expect that this precise protobuf will cause a parse error.
+#define ExpectParseFailureForProto(proto) DoExpectParseFailureForProto(proto, __LINE__)
+
+// Expect that this protobuf will cause a parse error, even if it is followed
+// by valid protobuf data.  We can try running this twice: once with this
+// data verbatim and once with this data followed by some valid data.
+//
+// TODO(haberman): implement the second of these.
+#define ExpectHardParseFailureForProto(proto) DoExpectParseFailureForProto(proto, __LINE__)
+
+
+void ConformanceTestSuite::TestPrematureEOFForType(
+    WireFormatLite::FieldType type) {
   // Incomplete values for each wire type.
   static const string incompletes[6] = {
     string("\x80"),     // VARINT
@@ -376,20 +287,24 @@ void TestPrematureEOFForType(WireFormatLite::FieldType type) {
   }
 }
 
-
-int main(int argc, char *argv[]) {
-  if (argc < 2) {
-    fprintf(stderr, "Usage: conformance_test <test-program>\n");
-    exit(1);
-  }
-
-  SpawnTestProgram(argv[1]);
+void ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
+                                    std::string* output) {
+  runner_ = runner;
+  output_.clear();
+  successes_ = 0;
+  failures_ = 0;
 
   for (int i = 1; i <= FieldDescriptor::MAX_TYPE; i++) {
     TestPrematureEOFForType(static_cast<WireFormatLite::FieldType>(i));
   }
 
-  fprintf(stderr, "conformance_test: completed %d tests for %s, %d successes, "
-                  "%d failures.\n", successes + failures, argv[1], successes,
-                                     failures);
+  StringAppendF(&output_,
+                "CONFORMANCE SUITE FINISHED: completed %d tests, %d successes, "
+                "%d failures.\n",
+                successes_ + failures_, successes_, failures_);
+
+  output->assign(output_);
 }
+
+}  // namespace protobuf
+}  // namespace google

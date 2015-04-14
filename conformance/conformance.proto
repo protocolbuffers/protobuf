@@ -32,27 +32,23 @@ syntax = "proto3";
 package conformance;
 
 // This defines the conformance testing protocol.  This protocol exists between
-// the conformance tester process (the "tester") and the process whose protobuf
-// implemention is being tested (the "testee").  The tester forks the testee and
-// communicates with it over its stdin/stdout:
+// the conformance test suite itself and the code being tested.  For each test,
+// the suite will send a ConformanceRequest message and expect a
+// ConformanceResponse message.
 //
-//     +--------+   pipe   +----------+
-//     | tester | <------> | testee   |
-//     |        |          |          |
-//     |  C++   |          | any lang |
-//     +--------+          +----------+
+// You can either run the tests in two different ways:
 //
-// The tester contains all of the test cases and their expected output.
-// The testee is a simple program written in the target language that reads
-// each test case and attempts to produce acceptable output for it.
+//   1. in-process (using the interface in conformance_test.h).
 //
-// Every test consists of a ConformanceRequest/ConformanceResponse
-// request/reply pair.  The protocol on the pipe is simply:
+//   2. as a sub-process communicating over a pipe.  Information about how to
+//      do this is in conformance_test_runner.cc.
 //
-//   1. tester sends 4-byte length N
-//   2. tester sends N bytes representing a ConformanceRequest proto
-//   3. testee sends 4-byte length M
-//   4. testee sends M bytes representing a ConformanceResponse proto
+// Pros/cons of the two approaches:
+//
+//   - running as a sub-process is much simpler for languages other than C/C++.
+//
+//   - running as a sub-process may be more tricky in unusual environments like
+//     iOS apps, where fork/stdin/stdout are not available.
 
 // Represents a single test case's input.  The testee should:
 //
