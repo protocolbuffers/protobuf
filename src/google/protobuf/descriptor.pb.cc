@@ -679,7 +679,7 @@ void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     "\n\ndeprecated\030\027 \001(\010:\005false\022\037\n\020cc_enable_a"
     "renas\030\037 \001(\010:\005false\022\031\n\021objc_class_prefix\030"
     "$ \001(\t\022\030\n\020csharp_namespace\030% \001(\t\022!\n\031cshar"
-    "p_umbrella_namespace\0300 \001(\t\022C\n\024uninterpre"
+    "p_umbrella_namespace\030& \001(\t\022C\n\024uninterpre"
     "ted_option\030\347\007 \003(\0132$.google.protobuf.Unin"
     "terpretedOption\":\n\014OptimizeMode\022\t\n\005SPEED"
     "\020\001\022\r\n\tCODE_SIZE\020\002\022\020\n\014LITE_RUNTIME\020\003*\t\010\350\007"
@@ -7381,13 +7381,13 @@ bool FileOptions::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(386)) goto parse_csharp_umbrella_namespace;
+        if (input->ExpectTag(306)) goto parse_csharp_umbrella_namespace;
         break;
       }
 
-      // optional string csharp_umbrella_namespace = 48;
-      case 48: {
-        if (tag == 386) {
+      // optional string csharp_umbrella_namespace = 38;
+      case 38: {
+        if (tag == 306) {
          parse_csharp_umbrella_namespace:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_csharp_umbrella_namespace()));
@@ -7542,14 +7542,14 @@ void FileOptions::SerializeWithCachedSizes(
       37, this->csharp_namespace(), output);
   }
 
-  // optional string csharp_umbrella_namespace = 48;
+  // optional string csharp_umbrella_namespace = 38;
   if (has_csharp_umbrella_namespace()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->csharp_umbrella_namespace().data(), this->csharp_umbrella_namespace().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
       "google.protobuf.FileOptions.csharp_umbrella_namespace");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      48, this->csharp_umbrella_namespace(), output);
+      38, this->csharp_umbrella_namespace(), output);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -7673,7 +7673,7 @@ void FileOptions::SerializeWithCachedSizes(
         37, this->csharp_namespace(), target);
   }
 
-  // optional string csharp_umbrella_namespace = 48;
+  // optional string csharp_umbrella_namespace = 38;
   if (has_csharp_umbrella_namespace()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->csharp_umbrella_namespace().data(), this->csharp_umbrella_namespace().length(),
@@ -7681,7 +7681,7 @@ void FileOptions::SerializeWithCachedSizes(
       "google.protobuf.FileOptions.csharp_umbrella_namespace");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        48, this->csharp_umbrella_namespace(), target);
+        38, this->csharp_umbrella_namespace(), target);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -7790,7 +7790,7 @@ int FileOptions::ByteSize() const {
           this->csharp_namespace());
     }
 
-    // optional string csharp_umbrella_namespace = 48;
+    // optional string csharp_umbrella_namespace = 38;
     if (has_csharp_umbrella_namespace()) {
       total_size += 2 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -8434,7 +8434,7 @@ void FileOptions::InternalSwap(FileOptions* other) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.csharp_namespace)
 }
 
-// optional string csharp_umbrella_namespace = 48;
+// optional string csharp_umbrella_namespace = 38;
  bool FileOptions::has_csharp_umbrella_namespace() const {
   return (_has_bits_[0] & 0x00004000u) != 0;
 }

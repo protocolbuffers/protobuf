@@ -1849,10 +1849,10 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   ::std::string* release_csharp_namespace();
   void set_allocated_csharp_namespace(::std::string* csharp_namespace);
 
-  // optional string csharp_umbrella_namespace = 48;
+  // optional string csharp_umbrella_namespace = 38;
   bool has_csharp_umbrella_namespace() const;
   void clear_csharp_umbrella_namespace();
-  static const int kCsharpUmbrellaNamespaceFieldNumber = 48;
+  static const int kCsharpUmbrellaNamespaceFieldNumber = 38;
   const ::std::string& csharp_umbrella_namespace() const;
   void set_csharp_umbrella_namespace(const ::std::string& value);
   void set_csharp_umbrella_namespace(const char* value);
@@ -5600,7 +5600,7 @@ inline void FileOptions::set_allocated_csharp_namespace(::std::string* csharp_na
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.csharp_namespace)
 }
 
-// optional string csharp_umbrella_namespace = 48;
+// optional string csharp_umbrella_namespace = 38;
 inline bool FileOptions::has_csharp_umbrella_namespace() const {
   return (_has_bits_[0] & 0x00004000u) != 0;
 }
