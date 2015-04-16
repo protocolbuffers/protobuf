@@ -26,6 +26,8 @@ mono/protoc
 build_output
 build_temp
 build/msbuild*.log
+lib/Microsoft.Silverlight.Testing
+lib/NUnit
 
 #
 # 	Untracked files
@@ -38,3 +40,4 @@ mono/TestResult.xml
 mono/.libs
 mono/*.exe
 mono/*.dll
+lib/protoc.exe
