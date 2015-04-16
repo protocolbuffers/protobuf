@@ -2,12 +2,16 @@
 Welcome to the C# port of Google Protocol Buffers, written by Jon Skeet
 (skeet@pobox.com) based on the work of many talented people.
 
-For more information about this port, visit its homepage:
-http://protobuf-csharp-port.googlecode.com
+===============================================================================
+RELEASE NOTES - Code imported into Google's main protobuf repository
+===============================================================================
 
-For more information about Protocol Buffers in general, visit the project page 
-for the C++, Java and Python project:
-http://protobuf.googlecode.com
+Everything below note this represents history of protobuf-csharp-port project
+before the code was merged into csharp/ subtree of GitHub google/protobuf
+repository.
+Frozen legacy version of the original project is available in
+https://github.com/jskeet/protobuf-csharp-port.
+
 ===============================================================================
 RELEASE NOTES - Version 2.4.1.555
 ===============================================================================

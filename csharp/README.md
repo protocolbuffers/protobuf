@@ -1,12 +1,17 @@
-This repo was originally exported from http://code.google.com/p/protobuf-csharp-port,
-and represents the latest "legacy" version of protobuf-csharp-port.
+This directory contains a library that implements Protocol Buffers
+functionality in C#.
 
-This project has now been folded into the [main Google Protocol Buffers project](http://github.com/google/protobuf),
-and is being revamped to support proto3. It is not expected to be fully backwardly-compatible with
-the code in this repo - in particular, some of the C#-specific options may not be supported in the new
-codebase, and some of the generated code may differ. A new major version offers an opportunity to spring-clean,
-as it were.
+Experimental only
+-----------------
 
-This repo exists as an acknowledgement that not everyone will want to immediately use the newer codebase,
-and that they may wish to make changes to the legacy codebase. I do not expect to make any changes within this
-repo, but it can be forked for further changes.
+C# protobufs are currently under development and are not officially supported yet.
+Also, as of now, only proto2 is supported. Proto3 support for C# is currently in progress
+(both design & implementation).
+
+History of C# protobufs
+-----------------------
+
+This subtree was originally imported from https://github.com/jskeet/protobuf-csharp-port
+and represents the latest development version of C# protobufs, that will now be developed
+and maintained by Google. All the development will be done in open, under this repository
+(https://github.com/google/protobuf).
