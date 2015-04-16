@@ -1,0 +1,20 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <EnvironmentFlavor>CLIENTPROFILE</EnvironmentFlavor>
+    <EnvironmentTemplate>NET35</EnvironmentTemplate>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\NET35\Debug</OutputPath>
+    <IntermediateOutputPath>obj\NET35\Debug\</IntermediateOutputPath>
+    <DefineConstants>$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\NET35\Release</OutputPath>
+    <IntermediateOutputPath>obj\NET35\Release\</IntermediateOutputPath>
+    <DefineConstants>$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Core" />
+  </ItemGroup>
+</Project>

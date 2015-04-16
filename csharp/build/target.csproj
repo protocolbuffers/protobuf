@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+<!-- **********************************************************************************************
+High-level Targets
+*********************************************************************************************** -->
+
+  <Target Name="Clean" DependsOnTargets="_Clean" />
+  <Target Name="Build" DependsOnTargets="_Compile;_Test" />
+  <Target Name="Test" DependsOnTargets="_Test" />
+  <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
+  <Target Name="Publish" DependsOnTargets="Clean;Build;_Publish" />
+
+  <!-- **********************************************************************************************
+Properties
+*********************************************************************************************** -->
+
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">Any CPU</Platform>
+    <TargetVersion Condition=" '$(TargetVersion)' == '' ">NET20</TargetVersion>
+    <BuildParams></BuildParams>
+
+    <!--Directory Paths-->
+    <ProjectDirectory>$(MSBuildProjectDirectory)\..</ProjectDirectory>
+    <SourceDirectory>$(ProjectDirectory)\src</SourceDirectory>
+    <LibDirectory>$(ProjectDirectory)\lib</LibDirectory>
+
+    <!--File Paths-->
+    <BuildTempDirectory>$(ProjectDirectory)\build_temp\$(Configuration)\$(TargetVersion)</BuildTempDirectory>
+    <BuildOutputDirectory>$(ProjectDirectory)\build_output\$(Configuration)\$(TargetVersion)</BuildOutputDirectory>
+    <SolutionFile>$(SourceDirectory)\ProtocolBuffersLibrary.$(TargetVersion).sln</SolutionFile>
+
+    <!--Tool Paths-->
+    <NUnitExePath>$(LibDirectory)\NUnit\tools\nunit-console.exe</NUnitExePath>
+    <StatLightExePath>$(LibDirectory)\StatLight\tools\StatLight.exe</StatLightExePath>
+  </PropertyGroup>
+
+<!-- **********************************************************************************************
+Target Versions
+*********************************************************************************************** -->
+
+  <PropertyGroup Condition=" '$(TargetVersion)' == 'NET20' ">
+    <BuildTools>3.5</BuildTools>
+    <TestFramework>NUNIT</TestFramework>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetVersion)' == 'NET35' ">
+    <BuildTools>3.5</BuildTools>
+    <TestFramework>NUNIT</TestFramework>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetVersion)' == 'NET40' ">
+    <BuildTools>4.0</BuildTools>
+    <TestFramework>NUNIT</TestFramework>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetVersion)' == 'CF20' ">
+    <BuildTools>3.5</BuildTools>
+    <TestFramework>NONE</TestFramework>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetVersion)' == 'CF35' ">
+    <BuildTools>3.5</BuildTools>
+    <TestFramework>NONE</TestFramework>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetVersion)' == 'SL20' ">
+    <BuildTools>3.5</BuildTools>
+    <TestFramework>SILVERLIGHT</TestFramework>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetVersion)' == 'SL30' ">
+    <BuildTools>3.5</BuildTools>
+    <TestFramework>SILVERLIGHT</TestFramework>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetVersion)' == 'SL40' ">
+    <BuildTools>4.0</BuildTools>
+    <TestFramework>SILVERLIGHT</TestFramework>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetVersion)' == 'PL40' ">
+    <BuildTools>4.0</BuildTools>
+    <TestFramework>SILVERLIGHT</TestFramework>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <BuildOutputDirectory>$(ProjectDirectory)\build_output\$(Configuration)\portable-net40+sl4+sl5+wp7+wp8+win8</BuildOutputDirectory>
+  </PropertyGroup>
+
+<!-- **********************************************************************************************
+File Groups
+*********************************************************************************************** -->
+
+  <ItemGroup>
+    <WorkingDirectories Include="$(BuildTempDirectory)" />
+    <WorkingDirectories Include="$(BuildOutputDirectory)" />
+    
+    <TestContainer Include="$(SourceDirectory)\ProtocolBuffers.Test\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffers.Test.dll" />
+    <TestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffersLite.Test.dll" />
+    <TestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffersMixedLite.Test.dll" />
+
+    <StatLightTestContainer Include="$(SourceDirectory)\ProtocolBuffers.Test\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffers.Test.xap" />
+    <StatLightTestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffersLite.Test.xap" />
+    <StatLightTestContainer Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffersMixedLite.Test.xap" />
+
+    <PublishItem Include="$(SourceDirectory)\ProtocolBuffers\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffers.dll" />
+    <PublishItem Include="$(SourceDirectory)\ProtocolBuffers\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffers.pdb" />
+    <PublishItem Include="$(SourceDirectory)\ProtocolBuffers\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffers.xml" />
+    <PublishItem Include="$(SourceDirectory)\ProtocolBuffers\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffersLite.dll" />
+    <PublishItem Include="$(SourceDirectory)\ProtocolBuffers\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffersLite.pdb" />
+    <PublishItem Include="$(SourceDirectory)\ProtocolBuffers\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffersLite.xml" />
+    <PublishItem Include="$(SourceDirectory)\ProtocolBuffers.Serialization\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffers.Serialization.dll" />
+    <PublishItem Include="$(SourceDirectory)\ProtocolBuffers.Serialization\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffers.Serialization.pdb" />
+    <PublishItem Include="$(SourceDirectory)\ProtocolBuffers.Serialization\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffers.Serialization.xml" />
+    <PublishItem Include="$(SourceDirectory)\ProtocolBuffers.Serialization\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffersLite.Serialization.dll" />
+    <PublishItem Include="$(SourceDirectory)\ProtocolBuffers.Serialization\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffersLite.Serialization.pdb" />
+    <PublishItem Include="$(SourceDirectory)\ProtocolBuffers.Serialization\bin\$(TargetVersion)\$(Configuration)\Google.ProtocolBuffersLite.Serialization.xml" />
+  </ItemGroup>
+
+<!-- **********************************************************************************************
+Targets For Build
+*********************************************************************************************** -->
+
+  <Target Name="_Configured">
+    <Message Text="Building $(TargetVersion) for configuration $(Configuration), platform $(Platform)" Importance="normal" />
+    <Error Text="Unknown or missing value for TargetVersion=[value]" Condition=" '$(BuildTools)' == '' " />
+  </Target>
+  
+  <Target Name="_Clean" DependsOnTargets="_Configured">
+    <RemoveDir Directories="@(WorkingDirectories)" Condition="Exists(%(WorkingDirectories.Identity))" />
+    <MSBuild Targets="Clean" Projects="$(SolutionFile)" ToolsVersion="$(BuildTools)"
+             Properties="Configuration=$(Configuration);Platform=$(Platform);"
+             />
+  </Target>
+
+  <Target Name="_Compile" DependsOnTargets="_Configured">
+    <MSBuild Targets="Build" Projects="$(SolutionFile)" ToolsVersion="$(BuildTools)"
+             Properties="Configuration=$(Configuration);Platform=$(Platform);$(BuildParams)"
+             />
+  </Target>
+
+  <Target Name="_Publish" DependsOnTargets="_Configured">
+    <MakeDir Directories="$(BuildOutputDirectory)" />
+    <Copy SourceFiles="@(PublishItem)" DestinationFolder="$(BuildOutputDirectory)" />
+  </Target>
+
+<!-- **********************************************************************************************
+Targets For Test
+*********************************************************************************************** -->
+
+  <Target Name="_Test" DependsOnTargets="_Configured">
+    <MakeDir Directories="$(BuildTempDirectory)" />
+    <CallTarget Targets="_RunNunit" Condition=" '$(TestFramework)'=='NUNIT' " />
+    <CallTarget Targets="_RunStatLight" Condition=" '$(TestFramework)'=='SILVERLIGHT' " />
+  </Target>
+
+  <Target Name="_RunNunit">
+    <Copy SourceFiles="$(LibDirectory)\NUnit-config\nunit-console.$(TargetFrameworkVersion).config" DestinationFiles="$(NUnitExePath).config" />
+    <Exec Command="&quot;$(NUnitExePath)&quot; /nologo /noshadow &quot;%(TestContainer.Identity)&quot; /xml:&quot;$(BuildTempDirectory)\%(TestContainer.Filename).xml&quot;" />
+  </Target>
+
+  <Target Name="_RunStatLight">
+    <Exec
+      Command="&quot;$(StatLightExePath)&quot; -x %(StatLightTestContainer.Identity) --ReportOutputFileType=NUnit --ReportOutputFile=$(BuildTempDirectory)\%(StatLightTestContainer.Filename).xml" />
+  </Target>
+
+</Project>

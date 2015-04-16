@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Publish" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- build targets -->
+  <Target Name="Clean" DependsOnTargets="_Clean" />
+  <Target Name="Build" DependsOnTargets="_Clean;_Prerequisites;_StampVersion;_GenerateSource;_Build" />
+  <Target Name="Label" DependsOnTargets="_HgLabel" />
+  <Target Name="Package" DependsOnTargets="_HgPack;_NugetPack" />
+  <Target Name="Prepare" DependsOnTargets="Clean;Build;Label;Package" />
+  <Target Name="PushAll" DependsOnTargets="_HgPush;_NugetPush" />
+  <Target Name="Publish" DependsOnTargets="Prepare;PushAll" />
+
+  <PropertyGroup>
+    <ProjectName>Protocol Buffers</ProjectName>
+    <VersionMajor>2</VersionMajor>
+    <VersionMinor>4</VersionMinor>
+    <VersionBuild>1</VersionBuild>
+    <VersionRevision></VersionRevision>
+    <VersionLabel></VersionLabel>
+
+    <PackagePrefix>protobuf-csharp-port-</PackagePrefix>
+    <PublishDebug>false</PublishDebug>
+    
+    <GoogleUsername></GoogleUsername>
+    <GooglePassword></GooglePassword>
+    
+    <!--Directory Paths-->
+    <ProjectDirectory>$(MSBuildProjectDirectory)\..</ProjectDirectory>
+    <BuildTempDirectory>$(ProjectDirectory)\build_temp</BuildTempDirectory>
+    <BuildOutputDirectory>$(ProjectDirectory)\build_output</BuildOutputDirectory>
+    <SourceDirectory>$(ProjectDirectory)\src</SourceDirectory>
+    <LibDirectory>$(ProjectDirectory)\lib</LibDirectory>
+    
+    <!-- File Paths -->
+    <SigningKey>$(ProjectDirectory)\release-key\Google.ProtocolBuffers.snk</SigningKey>
+    
+    <!--Tool Paths-->
+    <HgTool>hg.exe</HgTool>
+    <Python>C:\Python25\python.exe</Python>
+    <SnTool>$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.0A@InstallationFolder)Bin\sn.exe</SnTool>
+    <StampVer>$(LibDirectory)\StampVersion.exe</StampVer>
+    <ZipExePath>$(LibDirectory)\7-Zip 9.20\7za.exe</ZipExePath>
+    <NuGet>$(LibDirectory)\NuGet.exe</NuGet>
+    <ProtogenExePath>$(BuildOutputDirectory)\tools\protogen.exe</ProtogenExePath>
+  </PropertyGroup>
+  
+  <!-- Import user settings -->
+  <Import Project="$(MSBuildProjectFullPath).user" Condition="Exists('$(MSBuildProjectFullPath).user')" />
+
+  <!-- Files -->
+  <ItemGroup>
+  </ItemGroup>
+  
+  <!-- Tasks -->
+
+  <Target Name="_Prerequisites" DependsOnTargets="_CheckEnvironment;_ReadVersion" />
+  
+  <Target Name="_Clean">
+    <MSBuild Properties="Configuration=Debug;" Targets="Clean" Projects="$(MSBuildProjectDirectory)\target.csproj" />
+    <MSBuild Properties="Configuration=Release;" Targets="Clean" Projects="$(MSBuildProjectDirectory)\target.csproj" />
+    <MakeDir Directories="$(BuildTempDirectory)" />
+    <MakeDir Directories="$(BuildOutputDirectory)" />
+  </Target>
+
+  <Target Name="_WriteUserConfig">
+    <ItemGroup>
+      <Lines Include="&lt;Project xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>" />
+      <Lines Include="  &lt;PropertyGroup>"/>
+      <Lines Include="    &lt;GoogleUsername> (Enter your google-code user/password here) &lt;/GoogleUsername>"/>
+      <Lines Include="    &lt;GooglePassword>&lt;/GooglePassword>"/>
+      <Lines Include="  &lt;/PropertyGroup>" />
+      <Lines Include="&lt;/Project>" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(MSBuildProjectFullPath).user" Lines="@(Lines)" Overwrite="true" Condition="!Exists('$(MSBuildProjectFullPath).user')" />
+    <Exec Command="Notepad.exe $(MSBuildProjectFullPath).user" />
+  </Target>
+  
+  <Target Name="_CheckEnvironment">
+    <!-- Require google credentials -->
+    <CallTarget Targets="_WriteUserConfig" Condition=" '$(GooglePassword)' == '' " />
+    <Error Text="Restart after you verify your credentials in $(MSBuildProjectFullPath).user" Condition=" '$(GooglePassword)' == '' " />
+    <!-- Require Win7.0A SDK to verify strong-name -->
+    <Error Text="Unable to locate Win7SDK Tools: $(SnTool)" Condition="!Exists($(SnTool))" />
+    <!-- Require Python 2.5 installed -->
+    <!-- Error Text="Unable to locate Python 2.5: $(Python)" Condition="!Exists($(Python))" / -->
+    <!-- Require production signing key -->
+    <Exec Command="$(HgTool) clone https://bitbucket.org/rknapp/protobuf-csharp-port-keyfile $(ProjectDirectory)\release-key" Condition="!Exists('$(SigningKey)')" />
+    <Error Text="Unable to locate release signing key: $(SigningKey)" Condition="!Exists($(SigningKey))" />
+  </Target>
+
+  <Target Name="_ReadVersion" Condition=" '$(VersionLabel)' == '' ">
+    <Exec Command="$(HgTool) log -l 1 --template &quot;{rev}&quot; > &quot;$(BuildTempDirectory)\revision.txt&quot;"></Exec>
+    <ReadLinesFromFile File="$(BuildTempDirectory)\revision.txt">
+      <Output TaskParameter="Lines" PropertyName="VersionRevision"/>
+    </ReadLinesFromFile>
+
+    <PropertyGroup>
+      <VersionLabel>$(VersionMajor).$(VersionMinor).$(VersionBuild).$(VersionRevision)</VersionLabel>
+    </PropertyGroup>
+    
+    <Message Text="Building version $(VersionLabel)" Importance="high" />
+  </Target>
+
+  <Target Name="_StampVersion" DependsOnTargets="_Prerequisites">
+    <Exec Command="$(StampVer) /major:$(VersionMajor) /minor:$(VersionMinor) /build:$(VersionBuild) /revision:$(VersionRevision)" WorkingDirectory="$(SourceDirectory)" />
+    <Exec Command="FIND &quot;$(VersionLabel)&quot; ProtocolBuffers\Properties\AssemblyInfo.cs" WorkingDirectory="$(SourceDirectory)" />
+  </Target>
+
+  <Target Name="_GenerateSource" DependsOnTargets="_Prerequisites">
+    <MSBuild Properties="Configuration=Release;AssemblyOriginatorKeyFile=$(SigningKey)" Targets="GenerateProjects;BuildTools;GenerateSource" Projects="$(MSBuildProjectDirectory)\build.csproj" />
+    <Exec Command="&quot;$(SnTool)&quot; -T &quot;$(ProtogenExePath)&quot; > signkey.txt" WorkingDirectory="$(BuildTempDirectory)" />
+    <!-- Make sure we are signing with the correct key -->
+    <Exec Command="FIND &quot;55f7125234beb589&quot; signkey.txt" WorkingDirectory="$(BuildTempDirectory)" />
+  </Target>
+  
+  <Target Name="_Build" DependsOnTargets="_Prerequisites">
+    <!-- Release Build -->
+    <MSBuild Properties="Configuration=Release;AssemblyOriginatorKeyFile=$(SigningKey)" Targets="_CompileAll" Projects="$(MSBuildProjectDirectory)\build.csproj" />
+    <MSBuild Properties="Configuration=Release;AssemblyOriginatorKeyFile=$(SigningKey);PackageName=$(PackagePrefix)$(VersionLabel)-release" Targets="GeneratePackage" Projects="$(MSBuildProjectDirectory)\build.csproj" />
+    <!-- Debug Build -->
+    <MSBuild Condition=" '$(PublishDebug)' == 'true' " Properties="Configuration=Debug;AssemblyOriginatorKeyFile=$(SigningKey)" Targets="_CompileAll" Projects="$(MSBuildProjectDirectory)\build.csproj" />
+    <MSBuild Condition=" '$(PublishDebug)' == 'true' " Properties="Configuration=Debug;AssemblyOriginatorKeyFile=$(SigningKey);PackageName=$(PackagePrefix)$(VersionLabel)-full" Targets="GeneratePackage" Projects="$(MSBuildProjectDirectory)\build.csproj" />
+  </Target>
+
+  <Target Name="_HgPack" DependsOnTargets="_Prerequisites">
+    <Exec Command="$(HgTool) archive $(BuildTempDirectory)\$(PackagePrefix)$(VersionLabel)-source.zip" WorkingDirectory="$(ProjectDirectory)" />
+  </Target>
+  
+  <Target Name="_HgLabel" DependsOnTargets="_Prerequisites">
+    <Exec Command="$(HgTool) commit -m &quot;version $(VersionLabel)&quot;" WorkingDirectory="$(ProjectDirectory)" />
+    <Exec Command="$(HgTool) tag $(VersionLabel)" WorkingDirectory="$(ProjectDirectory)" />
+  </Target>
+  
+  <Target Name="_HgPush" DependsOnTargets="_Prerequisites">
+    <Exec Command="$(HgTool) push" WorkingDirectory="$(ProjectDirectory)" />
+  </Target>
+
+  <Target Name="_PkgPush" DependsOnTargets="_Prerequisites">
+    <PropertyGroup>
+      <UploadPackage>$(Python) "$(MSBuildProjectDirectory)\googlecode_upload.py" --project protobuf-csharp-port --user "$(GoogleUsername)" --password "$(GooglePassword)"</UploadPackage>
+      
+      <SourcePackage>$(BuildTempDirectory)\$(PackagePrefix)$(VersionLabel)-source.zip</SourcePackage>
+      <ReleasePackageBin>$(BuildTempDirectory)\$(PackagePrefix)$(VersionLabel)-release-binaries.zip</ReleasePackageBin>
+      <ReleasePackageSyb>$(BuildTempDirectory)\$(PackagePrefix)$(VersionLabel)-release-symbols.zip</ReleasePackageSyb>
+      <DebugPackageBin>$(BuildTempDirectory)\$(PackagePrefix)$(VersionLabel)-full-binaries.zip</DebugPackageBin>
+      <DebugPackageSyb>$(BuildTempDirectory)\$(PackagePrefix)$(VersionLabel)-full-symbols.zip</DebugPackageSyb>
+    </PropertyGroup>
+
+    <Error Condition="!Exists('$(SourcePackage)')" Text="File not found: $(SourcePackage)" />
+    <Error Condition="!Exists('$(ReleasePackageBin)')" Text="File not found: $(ReleasePackageBin)" />
+    <Error Condition="!Exists('$(ReleasePackageSyb)')" Text="File not found: $(ReleasePackageSyb)" />
+    <Error Condition="'$(PublishDebug)' == 'true' And !Exists('$(DebugPackageBin)')" Text="File not found: $(DebugPackageBin)" />
+    <Error Condition="'$(PublishDebug)' == 'true' And !Exists('$(DebugPackageSyb)')" Text="File not found: $(DebugPackageSyb)" />
+
+    <Exec WorkingDirectory="$(ProjectDirectory)"
+          Command="$(UploadPackage) --labels Type-Source,Featured --summary &quot;Version $(VersionLabel) source&quot; $(SourcePackage)" />
+    
+    <Exec WorkingDirectory="$(ProjectDirectory)"
+          Command="$(UploadPackage) --labels Type-Executable,Featured --summary &quot;Version $(VersionLabel) release binaries only&quot; $(ReleasePackageBin)" />
+    <Exec WorkingDirectory="$(ProjectDirectory)"
+          Command="$(UploadPackage) --labels Type-Executable,Featured --summary &quot;Version $(VersionLabel) release binaries and symbols&quot; $(ReleasePackageSyb)" />
+
+    <Exec WorkingDirectory="$(ProjectDirectory)" Condition=" '$(PublishDebug)' == 'true' "
+          Command="$(UploadPackage) --labels Type-Executable,Featured --summary &quot;Version $(VersionLabel) all binaries&quot; $(DebugPackageBin)" />
+    <Exec WorkingDirectory="$(ProjectDirectory)" Condition=" '$(PublishDebug)' == 'true' "
+          Command="$(UploadPackage) --labels Type-Executable,Featured --summary &quot;Version $(VersionLabel) all binaries and symbols&quot; $(DebugPackageSyb)" />
+  </Target>
+
+  <Target Name="_NugetPack" DependsOnTargets="_Prerequisites">
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)"
+      Command="$(NuGet) update -self" />
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)"
+      Command="$(NuGet) pack Google.ProtocolBuffers.nuspec -Symbols -Version $(VersionLabel) -NoPackageAnalysis -OutputDirectory $(BuildTempDirectory)" />
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)"
+      Command="$(NuGet) pack Google.ProtocolBuffersLite.nuspec -Symbols -Version $(VersionLabel) -NoPackageAnalysis -OutputDirectory $(BuildTempDirectory)" />
+  </Target>
+
+  <Target Name="_NugetPush" DependsOnTargets="_Prerequisites">
+    <Exec WorkingDirectory="$(BuildTempDirectory)" Command="$(NuGet) push Google.ProtocolBuffers.$(VersionLabel).nupkg" ContinueOnError="true" />
+    <Exec WorkingDirectory="$(BuildTempDirectory)" Command="$(NuGet) push Google.ProtocolBuffersLite.$(VersionLabel).nupkg" ContinueOnError="true" />
+
+    <Exec WorkingDirectory="$(BuildTempDirectory)" Command="$(NuGet) push Google.ProtocolBuffers.$(VersionLabel).symbols.nupkg" ContinueOnError="true" />
+    <Exec WorkingDirectory="$(BuildTempDirectory)" Command="$(NuGet) push Google.ProtocolBuffersLite.$(VersionLabel).symbols.nupkg" ContinueOnError="true" />
+  </Target>
+  
+</Project>

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<manifest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <assembly>
+    <name>Microsoft.VisualStudio.QualityTools.UnitTesting.Silverlight</name>
+    <version>2.0.5.0</version>
+    <publickeytoken>31bf3856ad364e35</publickeytoken>
+    <relpath>Microsoft.VisualStudio.QualityTools.UnitTesting.Silverlight.dll</relpath>
+    <extension downloadUri="Microsoft.VisualStudio.QualityTools.UnitTesting.Silverlight.zip" />
+  </assembly>
+
+</manifest>

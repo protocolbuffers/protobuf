@@ -1,0 +1,23 @@
+syntax: glob
+
+build_output/
+build_temp/
+bin/
+obj/
+*.cache
+_ReSharper.*
+*.user
+*.suo
+*.bat
+*.zip
+*.DotSettings
+build/*.log
+BenchmarkResults.txt
+
+lib/NUnit/tools/nunit-console.exe.config
+
+syntax: regexp
+build/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,5}/
+
+# Ignore Roslyn files
+^src/.*\.sln\.ide/

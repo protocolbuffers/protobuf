@@ -1,0 +1,277 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+	<body>
+		<h1>NUnit Acceptance Tests</h1>
+		<p>
+		Developers love self-referential programs! Hence, NUnit has always run all it's 
+		own tests, even those that are not really unit tests.
+		<p>Now, beginning with NUnit 2.4, NUnit has top-level tests using Ward Cunningham's 
+			FIT framework. At this time, the tests are pretty rudimentary, but it's a start 
+			and it's a framework for doing more.
+			<h2>Running the Tests</h2>
+		<p>Open a console or shell window and navigate to the NUnit bin directory, which 
+			contains this file. To run the test under Microsoft .Net, enter the command
+			<pre>    runFile NUnitFitTests.html TestResults.html .</pre>
+			To run it under Mono, enter
+			<pre>    mono runFile.exe NUnitFitTests.html TestResults.html .</pre>
+			Note the space and dot at the end of each command. The results of your test 
+			will be in TestResults.html in the same directory.
+			<h2>Platform and CLR Version</h2>
+			<table BORDER cellSpacing="0" cellPadding="5">
+				<tr>
+					<td colspan="2">NUnit.Fixtures.PlatformInfo</td>
+				</tr>
+			</table>
+			<h2>Verify Unit Tests</h2>
+		<p>
+		Load and run the NUnit unit tests, verifying that the results are as expected. 
+		When these tests are run on different platforms, different numbers of tests may 
+		be skipped, so the values for Skipped and Run tests are informational only.
+		<p>
+		The number of tests in each assembly should be constant across all platforms - 
+		any discrepancy usually means that one of the test source files was not 
+		compiled on the platform. There should be no failures and no tests ignored.
+		<p><b>Note:</b>
+		At the moment, the nunit.extensions.tests assembly is failing because the 
+		fixture doesn't initialize addins in the test domain.
+		<p>
+			<table BORDER cellSpacing="0" cellPadding="5">
+				<tr>
+					<td colspan="6">NUnit.Fixtures.AssemblyRunner</td>
+				</tr>
+				<tr>
+					<td>Assembly</td>
+					<td>Tests()</td>
+					<td>Run()</td>
+					<td>Skipped()</td>
+					<td>Ignored()</td>
+					<td>Failures()</td>
+				</tr>
+				<tr>
+					<td>nunit.framework.tests.dll</td>
+					<td>397</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td>nunit.core.tests.dll</td>
+					<td>355</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td>nunit.util.tests.dll</td>
+					<td>238</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td>nunit.mocks.tests.dll</td>
+					<td>43</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td>nunit.extensions.tests.dll</td>
+					<td>5</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td>nunit-console.tests.dll</td>
+					<td>40</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td>nunit.uikit.tests.dll</td>
+					<td>34</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td>nunit-gui.tests.dll</td>
+					<td>15</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td>nunit.fixtures.tests.dll</td>
+					<td>6</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+			</table>
+			<h2>Code Snippet Tests</h2>
+		<p>
+		These tests create a test assembly from a snippet of code and then load and run 
+		the tests that it contains, verifying that the structure of the loaded tests is 
+		as expected and that the number of tests run, skipped, ignored or failed is 
+		correct.
+		<p>
+			<table BORDER cellSpacing="0" cellPadding="5">
+				<tr>
+					<td colspan="6">NUnit.Fixtures.SnippetRunner</td>
+				</tr>
+				<tr>
+					<td>Code</td>
+					<td>Tree()</td>
+					<td>Run()</td>
+					<td>Skipped()</td>
+					<td>Ignored()</td>
+					<td>Failures()</td>
+				</tr>
+				<tr>
+					<td><pre>public class TestClass
+{
+}</pre>
+					</td>
+					<td>EMPTY</td>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td><pre>using NUnit.Framework;
+
+[TestFixture]
+public class TestClass
+{
+}</pre>
+					</td>
+					<td>TestClass</td>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td><pre>using NUnit.Framework;
+
+[TestFixture]
+public class TestClass
+{
+    [Test]
+    public void T1() { }
+    [Test]
+    public void T2() { }
+    [Test]
+    public void T3() { }
+}</pre>
+					</td>
+					<td><pre>TestClass
+&gt;T1
+&gt;T2
+&gt;T3</pre>
+					</td>
+					<td>3</td>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td><pre>using NUnit.Framework;
+
+[TestFixture]
+public class TestClass1
+{
+    [Test]
+    public void T1() { }
+}
+
+[TestFixture]
+public class TestClass2
+{
+    [Test]
+    public void T2() { }
+    [Test]
+    public void T3() { }
+}</pre>
+					</td>
+					<td><pre>TestClass1
+&gt;T1
+TestClass2
+&gt;T2
+&gt;T3</pre>
+					</td>
+					<td>3</td>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td><pre>using NUnit.Framework;
+
+[TestFixture]
+public class TestClass
+{
+    [Test]
+    public void T1() { }
+    [Test, Ignore]
+    public void T2() { }
+    [Test]
+    public void T3() { }
+}</pre>
+					</td>
+					<td><pre>TestClass
+&gt;T1
+&gt;T2
+&gt;T3</pre>
+					</td>
+					<td>2</td>
+					<td>0</td>
+					<td>1</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td><pre>using NUnit.Framework;
+
+[TestFixture]
+public class TestClass
+{
+    [Test]
+    public void T1() { }
+    [Test, Explicit]
+    public void T2() { }
+    [Test]
+    public void T3() { }
+}</pre>
+					</td>
+					<td><pre>TestClass
+&gt;T1
+&gt;T2
+&gt;T3</pre>
+					</td>
+					<td>2</td>
+					<td>1</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+			</table>
+			<h2>Summary Information</h2>
+			<table BORDER cellSpacing="0" cellPadding="5">
+				<tr>
+					<td colspan="2">fit.Summary</td>
+				</tr>
+			</table>
+	</body>
+</html>

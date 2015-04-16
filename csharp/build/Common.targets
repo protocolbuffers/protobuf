@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+<!-- **********************************************************************************************
+Targets For Clean
+*********************************************************************************************** -->
+
+  <Target Name="_CleanFolder">
+    <Message Importance="normal" Text="Removing temporary directory '$(CleanFolderDirectory)'"/>
+    <Error Text="Can not remove empty directory name." Condition=" '$(CleanFolderDirectory)' == '' " />
+
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)" Condition="Exists($(CleanFolderDirectory))" Outputs="@(Ignore)"
+      Command="MOVE /Y &quot;$(CleanFolderDirectory)&quot; &quot;$(CleanFolderDirectory)-deleted&quot; > NUL" />
+    
+    <RemoveDir Directories="$(CleanFolderDirectory)-deleted" Condition="Exists('$(CleanFolderDirectory)-deleted')" />
+  </Target>
+
+  <Target Name="_CleanTempOutput">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="CleanFolderDirectory=%(TempBuildFolder.Identity);" Targets="_CleanFolder" />
+  </Target>
+  
+  <Target Name="_CleanAll" DependsOnTargets="_CleanTempOutput">
+    <MakeDir Directories="$(BuildTempDirectory)" />
+    <MakeDir Directories="$(BuildOutputDirectory)" />
+  </Target>
+
+<!-- **********************************************************************************************
+Targets For Build
+*********************************************************************************************** -->
+
+  <Target Name="_CompileAll">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=Rebuild;" Targets="_BuildAllConfigurations" />
+  </Target>
+
+  <Target Name="_BuildAllConfigurations">
+    <MSBuild Properties="TargetVersion=cf20;Configuration=$(Configuration);Platform=$(Platform);" Targets="$(SolutionTarget)" Projects="$(MSBuildProjectDirectory)\target.csproj" />
+    <MSBuild Properties="TargetVersion=cf35;Configuration=$(Configuration);Platform=$(Platform);" Targets="$(SolutionTarget)" Projects="$(MSBuildProjectDirectory)\target.csproj" />
+    <MSBuild Properties="TargetVersion=net20;Configuration=$(Configuration);Platform=$(Platform);" Targets="$(SolutionTarget)" Projects="$(MSBuildProjectDirectory)\target.csproj" />
+    <MSBuild Properties="TargetVersion=net35;Configuration=$(Configuration);Platform=$(Platform);" Targets="$(SolutionTarget)" Projects="$(MSBuildProjectDirectory)\target.csproj" />
+    <MSBuild Properties="TargetVersion=net40;Configuration=$(Configuration);Platform=$(Platform);" Targets="$(SolutionTarget)" Projects="$(MSBuildProjectDirectory)\target.csproj" />
+    <MSBuild Properties="TargetVersion=sl20;Configuration=$(Configuration);Platform=$(Platform);" Targets="$(SolutionTarget)" Projects="$(MSBuildProjectDirectory)\target.csproj" />
+    <MSBuild Properties="TargetVersion=sl30;Configuration=$(Configuration);Platform=$(Platform);" Targets="$(SolutionTarget)" Projects="$(MSBuildProjectDirectory)\target.csproj" />
+    <MSBuild Properties="TargetVersion=sl40;Configuration=$(Configuration);Platform=$(Platform);" Targets="$(SolutionTarget)" Projects="$(MSBuildProjectDirectory)\target.csproj" />
+    <MSBuild Properties="TargetVersion=pl40;Configuration=$(Configuration);Platform=$(Platform);" Targets="$(SolutionTarget)" Projects="$(MSBuildProjectDirectory)\target.csproj" />
+  </Target>
+
+<!-- **********************************************************************************************
+Targets For Tools
+*********************************************************************************************** -->
+
+  <Target Name="_BuildTools">
+    
+    <MSBuild Targets="Build" ToolsVersion="3.5" Projects="$(ProjectDirectory)\src\ProtocolBuffers.sln" Properties="Configuration=Release;Platform=Any CPU;" />
+    <Copy SourceFiles="%(ToolsOutputItem.Identity)" DestinationFolder="$(BuildOutputDirectory)\tools" />
+
+    <Copy SourceFiles="$(LibDirectory)\NUnit-config\nunit-console.v2.0.config" DestinationFiles="$(NUnitExePath).config" />
+    <Exec 
+      WorkingDirectory="%(ToolsTestContainer.RootDir)%(ToolsTestContainer.Directory)"
+      Command="&quot;$(NUnitExePath)&quot; /nologo /noshadow &quot;%(ToolsTestContainer.Identity)&quot; /xml:&quot;$(BuildTempDirectory)\%(ToolsTestContainer.Filename).xml&quot;" />
+    
+  </Target>
+
+<!-- **********************************************************************************************
+Targets For GenerateSource
+*********************************************************************************************** -->
+
+  <Target Name="_GenerateProjects">
+    <Exec Command="&quot;$(CsProjectProjector)&quot; csproj_templates src\ProtocolBuffersLibrary.sln" WorkingDirectory="$(ProjectDirectory)" />
+  </Target>
+  
+  <Target Name="_CleanTempSource">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="CleanFolderDirectory=$(SourceTempDirectory);" Targets="_CleanFolder" />
+    <MakeDir Directories="$(SourceTempDirectory)" />
+  </Target>
+  
+  <Target Name="_GenerateSource" DependsOnTargets="_CleanTempSource">
+    <Message Importance="high" Text="Generating source from proto files" />
+    <Exec Command="&quot;$(ProtocExePath)&quot; --proto_path=$(ProtosDirectory) --descriptor_set_out=compiled.pb @(Protos->'%(RelativeDir)%(Filename)%(Extension)', ' ')" WorkingDirectory="$(SourceTempDirectory)" />
+    <Exec Command="&quot;$(ProtogenExePath)&quot; compiled.pb" WorkingDirectory="$(SourceTempDirectory)" />
+  </Target>
+
+  <Target Name="_CopyGeneratedSource" DependsOnTargets="_GenerateSource">
+    <Copy SourceFiles="%(GeneratedSource.Identity)" DestinationFiles="%(GeneratedSource.TargetDirectory)\%(GeneratedSource.Filename)%(GeneratedSource.Extension)" />
+  </Target>
+
+<!-- **********************************************************************************************
+Targets For Package
+*********************************************************************************************** -->
+
+  <Target Name="_PackageAll">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="SolutionTarget=_Publish;" Targets="_BuildAllConfigurations" />
+  </Target>
+
+  <Target Name="_GeneratePackage">
+    <Copy SourceFiles="@(StaticPackageItem)" DestinationFolder="$(BuildOutputPackage)\%(StaticPackageItem.TargetDirectory)\%(StaticPackageItem.RecursiveDir)" />
+    <Exec Command="&quot;$(ZipExePath)&quot; a -tzip $(BuildTempDirectory)\$(PackageName)-binaries.zip * -x!*.pdb -r" WorkingDirectory="$(BuildOutputPackage)" />
+    <Exec Command="&quot;$(ZipExePath)&quot; a -tzip $(BuildTempDirectory)\$(PackageName)-symbols.zip * -r" WorkingDirectory="$(BuildOutputPackage)" />
+  </Target>
+
+<!-- **********************************************************************************************
+Targets For Benchmark
+*********************************************************************************************** -->
+
+  <Target Name="_RunBenchmarks">
+    <ItemGroup>
+      <BenchmarkParameter Include="Google.ProtocolBuffers.ProtoBench.SizeMessage1,ProtoBench" />
+      <BenchmarkParameter Include="google_message1.dat" />
+      <BenchmarkParameter Include="Google.ProtocolBuffers.ProtoBench.SpeedMessage1,ProtoBench" />
+      <BenchmarkParameter Include="google_message1.dat" />
+      <BenchmarkParameter Include="Google.ProtocolBuffers.ProtoBench.SizeMessage2,ProtoBench" />
+      <BenchmarkParameter Include="google_message2.dat" />
+      <BenchmarkParameter Include="Google.ProtocolBuffers.ProtoBench.SpeedMessage2,ProtoBench" />
+      <BenchmarkParameter Include="google_message2.dat" />
+    </ItemGroup>
+
+    <Message Text="Running ProtoBench.exe" />
+    <Exec Command="ProtoBench.exe $(BenchmarkArgs) @(BenchmarkParameter->'%(Identity)', ' ') &quot;/log:$(BenchmarkOutputFile)&quot;"
+          WorkingDirectory="$(SourceDirectory)\ProtoBench\bin\NET35\Release" />
+
+  </Target>
+
+</Project>
