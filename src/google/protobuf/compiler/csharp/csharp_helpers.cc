@@ -127,9 +127,7 @@ std::string GetFileUmbrellaClassname(const FileDescriptor* descriptor) {
 }
 
 std::string GetFileUmbrellaNamespace(const FileDescriptor* descriptor) {
-  if (descriptor->options().has_csharp_umbrella_namespace()) {
-    return descriptor->options().csharp_umbrella_namespace();
-  }
+  // TODO(jtattermusch): reintroduce csharp_umbrella_namespace option
   bool collision = false;
   std::string umbrella_classname = GetFileUmbrellaClassname(descriptor);
   for(int i = 0; i < descriptor->message_type_count(); i++) {
