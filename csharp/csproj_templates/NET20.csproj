@@ -1,0 +1,17 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <EnvironmentFlavor>CLIENTPROFILE</EnvironmentFlavor>
+    <EnvironmentTemplate>NET20</EnvironmentTemplate>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\NET20\Debug</OutputPath>
+    <IntermediateOutputPath>obj\NET20\Debug\</IntermediateOutputPath>
+    <DefineConstants>$(DefineConstants);NOEXTENSIONS</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\NET20\Release</OutputPath>
+    <IntermediateOutputPath>obj\NET20\Release\</IntermediateOutputPath>
+    <DefineConstants>$(DefineConstants);NOEXTENSIONS</DefineConstants>
+  </PropertyGroup>
+</Project>

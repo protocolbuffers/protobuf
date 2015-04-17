@@ -1,0 +1,116 @@
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" xmlns:cs="urn:schemas-csharp-project:template">
+  <PropertyGroup>
+    <EnvironmentFlavor>SILVERLIGHT</EnvironmentFlavor>
+    <EnvironmentTemplate>SL40</EnvironmentTemplate>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{6969BDCE-D925-43F3-94AC-A531E6DF2591}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Google.ProtocolBuffers</RootNamespace>
+    <AssemblyName>Google.ProtocolBuffersLite</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\keys\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <SilverlightApplication>false</SilverlightApplication>
+    <ValidateXaml>false</ValidateXaml>
+    <ThrowErrorsInValidation>false</ThrowErrorsInValidation>
+    <SilverlightVersion>v4.0</SilverlightVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\SL40\Debug</OutputPath>
+    <IntermediateOutputPath>obj\SL40\Debug\</IntermediateOutputPath>
+    <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
+    <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
+    <DefineConstants>DEBUG;TRACE;LITE;$(EnvironmentFlavor);$(EnvironmentTemplate);NOSERIALIZABLE;NOSORTEDLIST</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <NoConfig>true</NoConfig>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\SL40\Release</OutputPath>
+    <IntermediateOutputPath>obj\SL40\Release\</IntermediateOutputPath>
+    <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
+    <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
+    <DefineConstants>TRACE;LITE;$(EnvironmentFlavor);$(EnvironmentTemplate);NOSERIALIZABLE;NOSORTEDLIST</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <NoConfig>true</NoConfig>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AbstractBuilderLite.cs" />
+    <Compile Include="AbstractMessageLite.cs" />
+    <Compile Include="ByteArray.cs" />
+    <Compile Include="CodedOutputStream.ComputeSize.cs" />
+    <Compile Include="Collections\Dictionaries.cs" />
+    <Compile Include="Collections\Enumerables.cs" />
+    <Compile Include="Collections\IPopsicleList.cs" />
+    <Compile Include="Collections\Lists.cs" />
+    <Compile Include="Collections\PopsicleList.cs" />
+    <Compile Include="Collections\ReadOnlyDictionary.cs" />
+    <Compile Include="CustomSerialization.cs" />
+    <Compile Include="Descriptors\FieldMappingAttribute.cs" />
+    <Compile Include="Descriptors\FieldType.cs" />
+    <Compile Include="Descriptors\MappedType.cs" />
+    <Compile Include="EnumLite.cs" />
+    <Compile Include="ExtendableBuilderLite.cs" />
+    <Compile Include="ExtendableMessageLite.cs" />
+    <Compile Include="FieldSet.cs" />
+    <Compile Include="FrameworkPortability.cs" />
+    <Compile Include="GeneratedBuilderLite.cs" />
+    <Compile Include="GeneratedExtensionLite.cs" />
+    <Compile Include="GeneratedMessageLite.cs" />
+    <Compile Include="ICodedInputStream.cs" />
+    <Compile Include="ICodedOutputStream.cs" />
+    <Compile Include="IRpcDispatch.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ByteString.cs" />
+    <Compile Include="CodedInputStream.cs" />
+    <Compile Include="CodedOutputStream.cs" />
+    <Compile Include="ExtensionRegistryLite.cs" />
+    <Compile Include="IBuilderLite.cs" />
+    <Compile Include="IMessageLite.cs" />
+    <Compile Include="InvalidProtocolBufferException.cs" />
+    <Compile Include="SortedList.cs" />
+    <Compile Include="ThrowHelper.cs" />
+    <Compile Include="UninitializedMessageException.cs" />
+    <Compile Include="WireFormat.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
+        <SilverlightProjectProperties>
+          <StartAction>OfflineApplication</StartAction>
+        </SilverlightProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

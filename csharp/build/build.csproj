@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- build targets -->
+  <Target Name="Clean" DependsOnTargets="_CleanAll" />
+  <Target Name="BuildTools" DependsOnTargets="_BuildTools" />
+  <Target Name="GenerateProjects" DependsOnTargets="_GenerateProjects" />
+  <Target Name="GenerateSource" DependsOnTargets="_GenerateSource;_CopyGeneratedSource" />
+  <Target Name="RebuildSource" DependsOnTargets="Clean;BuildTools;GenerateSource" />
+  <Target Name="Build" DependsOnTargets="GenerateProjects;BuildTools;GenerateSource;_CompileAll" />
+  <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
+  <Target Name="GeneratePackage" DependsOnTargets="_PackageAll;_GeneratePackage" />
+  <Target Name="FullBuild" DependsOnTargets="Rebuild;GeneratePackage" />
+  <!-- misc targets -->
+  <Target Name="RunBenchmarks" DependsOnTargets="_CleanAll;_BuildTools;_RunBenchmarks" />
+
+  <PropertyGroup>
+    <ProjectName>Protocol Buffers</ProjectName>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">Any CPU</Platform>
+    
+    <!--Directory Paths-->
+    <ProjectDirectory>$(MSBuildProjectDirectory)\..</ProjectDirectory>
+    <SourceDirectory>$(ProjectDirectory)\src</SourceDirectory>
+    <LibDirectory>$(ProjectDirectory)\lib</LibDirectory>
+    <ProtosDirectory>$(ProjectDirectory)\protos</ProtosDirectory>
+
+    <SourceTempDirectory>$(ProjectDirectory)\build_temp\GeneratedSource</SourceTempDirectory>
+    <BuildTempDirectory>$(ProjectDirectory)\build_temp</BuildTempDirectory>
+    <BuildOutputDirectory>$(ProjectDirectory)\build_output</BuildOutputDirectory>
+    <BuildOutputPackage>$(BuildOutputDirectory)</BuildOutputPackage>
+
+    <BenchmarkArgs>/v2 /fast /formats</BenchmarkArgs>
+    <BenchmarkOutputFile>$(BuildTempDirectory)\..\BenchmarkResults.txt</BenchmarkOutputFile>
+    <BenchmarkProtosDirectory>$(ProjectDirectory)\benchmarks</BenchmarkProtosDirectory>
+
+    <PackageName Condition=" '$(PackageName)' == '' ">$(Configuration)</PackageName>
+    
+    <!--Tool Paths-->
+    <ProtocExePath>$(BuildOutputDirectory)\tools\protoc.exe</ProtocExePath>
+    <ProtogenExePath>$(BuildOutputDirectory)\tools\protogen.exe</ProtogenExePath>
+    <NUnitExePath>$(LibDirectory)\NUnit\tools\nunit-console.exe</NUnitExePath>
+    <CsProjectProjector>$(LibDirectory)\CsProjectProjector\CsProjectProjector.exe</CsProjectProjector>
+    <ZipExePath>$(LibDirectory)\7-Zip 9.20\7za.exe</ZipExePath>
+  
+</PropertyGroup>
+
+  <Import Project="Common.targets"/>
+
+  <!-- Proto Files -->
+  <ItemGroup>
+    <Protos Include="$(ProtosDirectory)\extest\unittest_issues.proto" />
+    <Protos Include="$(ProtosDirectory)\extest\unittest_extras.proto" />
+    <Protos Include="$(ProtosDirectory)\extest\unittest_extras_full.proto" />
+    <Protos Include="$(ProtosDirectory)\extest\unittest_extras_lite.proto" />
+    <Protos Include="$(ProtosDirectory)\extest\unittest_extras_xmltest.proto" />
+    <Protos Include="$(ProtosDirectory)\extest\unittest_generic_services.proto" />
+    <Protos Include="$(ProtosDirectory)\extest\unittest_rpc_interop.proto" />
+    <Protos Include="$(ProtosDirectory)\extest\unittest_rpc_interop_lite.proto" />
+    <Protos Include="$(ProtosDirectory)\google\protobuf\descriptor.proto" />
+    <Protos Include="$(ProtosDirectory)\google\protobuf\csharp_options.proto" />
+    <Protos Include="$(ProtosDirectory)\google\protobuf\unittest.proto" />
+    <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_csharp_options.proto" />
+    <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_custom_options.proto" />
+    <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_embed_optimize_for.proto" />
+    <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_empty.proto" />
+    <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_import.proto" />
+    <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_import_lite.proto" />
+    <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_lite.proto" />
+    <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_lite_imports_nonlite.proto" />
+    <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_mset.proto" />
+    <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_no_generic_services.proto" />
+    <Protos Include="$(ProtosDirectory)\google\protobuf\unittest_optimize_for.proto" />
+    <Protos Include="$(ProtosDirectory)\google\test\google_size.proto" />
+    <Protos Include="$(ProtosDirectory)\google\test\google_speed.proto" />
+    <Protos Include="$(ProtosDirectory)\tutorial\addressbook.proto" />
+    <!-- for benchmark -->
+    <Protos Include="$(ProtosDirectory)\benchmarks\google_size.proto" />
+    <Protos Include="$(ProtosDirectory)\benchmarks\google_speed.proto" />
+  </ItemGroup>
+  <!-- Generated Source -->
+  <ItemGroup>
+    <!-- Main protos -->
+    <GeneratedSource Include="$(SourceTempDirectory)\CSharpOptions.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers\DescriptorProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\DescriptorProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers\DescriptorProtos</TargetDirectory>
+    </GeneratedSource>
+        
+    <!-- Address book sample -->
+    <GeneratedSource Include="$(SourceTempDirectory)\AddressBookProtos.cs">
+      <TargetDirectory>$(SourceDirectory)\AddressBook</TargetDirectory>
+    </GeneratedSource>
+    <!-- Unit test -->
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestExtrasProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestExtrasIssuesProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestXmlSerializerTestProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestCSharpOptionsProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestCustomOptionsProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestEmbedOptimizeForProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestEmptyProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestImportLiteProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>  
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestImportProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestMessageSetProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestNoGenericServicesProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestOptimizeForProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestRpcInterop.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestRpcInteropLite.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestGenericServices.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <!-- Lite unit test -->
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestExtrasFullProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestExtrasLiteProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestImportLiteProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestImportProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestLiteImportNonLiteProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestLiteProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffersLite.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestGoogleSizeProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestGoogleSpeedProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtocolBuffers.Test\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\GoogleSizeProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtoBench\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\GoogleSpeedProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtoBench\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestImportProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtoBench\TestProtos</TargetDirectory>
+    </GeneratedSource>
+    <GeneratedSource Include="$(SourceTempDirectory)\UnitTestProtoFile.cs">
+      <TargetDirectory>$(SourceDirectory)\ProtoBench\TestProtos</TargetDirectory>
+    </GeneratedSource>
+  </ItemGroup>
+  <!-- Package Items -->
+  <ItemGroup>
+    <StaticPackageItem Include="$(ProjectDirectory)\CHANGES.txt" />
+    <StaticPackageItem Include="$(ProjectDirectory)\license.txt" />
+    <StaticPackageItem Include="$(ProjectDirectory)\protos\google\protobuf\descriptor.proto">
+      <TargetDirectory>\protos\google\protobuf</TargetDirectory>
+    </StaticPackageItem>
+    <StaticPackageItem Include="$(ProjectDirectory)\protos\google\protobuf\compiler\plugin.proto">
+      <TargetDirectory>\protos\google\protobuf\compiler</TargetDirectory>
+    </StaticPackageItem>
+    <StaticPackageItem Include="$(ProjectDirectory)\protos\google\protobuf\csharp_options.proto">
+      <TargetDirectory>\protos\google\protobuf</TargetDirectory>
+    </StaticPackageItem>
+    <StaticPackageItem Include="$(ProjectDirectory)\protos\tutorial\addressbook.proto">
+      <TargetDirectory>\protos\tutorial</TargetDirectory>
+    </StaticPackageItem>
+  </ItemGroup>
+  <!-- Tools -->
+  <ItemGroup>
+    <ToolsTestContainer Include="$(SourceDirectory)\ProtoGen.Test\bin\NET35\Release\Google.ProtocolBuffers.ProtoGen.Test.dll" />
+
+    <ToolsOutputItem Include="$(SourceDirectory)\ProtocolBuffers\bin\NET35\Release\Google.ProtocolBuffers.dll" />
+    <ToolsOutputItem Include="$(SourceDirectory)\ProtocolBuffers.Serialization\bin\NET35\Release\Google.ProtocolBuffers.Serialization.dll" />
+    <ToolsOutputItem Include="$(SourceDirectory)\ProtoGen\bin\NET35\Release\ProtoGen.exe" />
+    <ToolsOutputItem Include="$(SourceDirectory)\ProtoGen\bin\NET35\Release\ProtoGen.exe.config" />
+    <ToolsOutputItem Include="$(SourceDirectory)\ProtoMunge\bin\NET35\Release\ProtoMunge.exe" />
+    <ToolsOutputItem Include="$(SourceDirectory)\ProtoDump\bin\NET35\Release\ProtoDump.exe" />
+    <ToolsOutputItem Include="$(SourceDirectory)\ProtoBench\bin\NET35\Release\ProtoBench.exe" />
+    <ToolsOutputItem Include="$(LibDirectory)\protoc.exe" />
+    <ToolsOutputItem Include="$(LibDirectory)\protoc-license.txt" />
+  </ItemGroup>
+  <!-- Temporary Directories -->
+  <ItemGroup>
+    <TempBuildFolder Include="$(BuildTempDirectory)" />
+    <TempBuildFolder Include="$(BuildOutputDirectory)" />
+    <TempBuildFolder Include="$(SourceDirectory)\AddressBook\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\AddressBook\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoBench\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoBench\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtocolBuffers\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtocolBuffers\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtocolBuffers.Serialization\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtocolBuffers.Serialization\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtocolBuffers.Test\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtocolBuffers.Test\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtocolBuffersLite.Test\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtocolBuffersLite.Test\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoDump\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoDump\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoGen\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoGen\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoGen.Test\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoGen.Test\bin" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoMunge\obj" />
+    <TempBuildFolder Include="$(SourceDirectory)\ProtoMunge\bin" />
+  </ItemGroup>
+</Project>

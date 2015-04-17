@@ -1,0 +1,117 @@
+// Additional options required for C# generation. File from copyright
+// line onwards is as per original distribution.
+import "google/protobuf/csharp_options.proto";
+option (google.protobuf.csharp_file_options).namespace = "Google.ProtocolBuffers.TestProtos";
+option (google.protobuf.csharp_file_options).umbrella_classname = "UnitTestExtrasLiteProtoFile";
+option (google.protobuf.csharp_file_options).add_serializable = true;
+
+package protobuf_unittest_extra;
+
+option optimize_for = LITE_RUNTIME;
+
+option java_package = "com.google.protobuf";
+
+message TestRequiredLite {
+  required int32 d = 1;
+  required ExtraEnum en = 2 [default = DEFAULT];
+}
+
+enum ExtraEnum {
+  DEFAULT = 10;
+  EXLITE_FOO = 7;
+  EXLITE_BAR = 8;
+  EXLITE_BAZ = 9;
+}
+
+message TestInteropPersonLite {
+  required string name = 1;
+  required int32 id = 2;
+  optional string email = 3;
+  repeated int32 codes = 10 [packed=true];
+
+  enum PhoneType {
+    MOBILE = 0;
+    HOME = 1;
+    WORK = 2;
+  }
+
+  message PhoneNumber {
+    required string number = 1;
+    optional PhoneType type = 2 [default = HOME];
+  }
+
+  repeated PhoneNumber phone = 4;
+  
+  repeated group Addresses = 5 {
+    required string address = 1;
+    optional string address2 = 2;
+    required string city = 3;
+    required string state = 4;
+    required fixed32 zip = 5;
+  }
+
+  extensions 100 to 199;
+}
+
+message  TestInteropEmployeeIdLite {
+  required string number = 1;
+}
+  
+extend TestInteropPersonLite {
+  required TestInteropEmployeeIdLite employee_id_lite = 126;
+}
+
+/* Removed from unittest_lite.proto and added back here */
+
+message TestUnpackedExtensionsLite {
+  extensions 1 to max;
+}
+
+message TestUnpackedTypesLite {
+  repeated    int32 unpacked_int32    =  90;
+  repeated    int64 unpacked_int64    =  91;
+  repeated   uint32 unpacked_uint32   =  92;
+  repeated   uint64 unpacked_uint64   =  93;
+  repeated   sint32 unpacked_sint32   =  94;
+  repeated   sint64 unpacked_sint64   =  95;
+  repeated  fixed32 unpacked_fixed32  =  96;
+  repeated  fixed64 unpacked_fixed64  =  97;
+  repeated sfixed32 unpacked_sfixed32 =  98;
+  repeated sfixed64 unpacked_sfixed64 =  99;
+  repeated    float unpacked_float    = 100;
+  repeated   double unpacked_double   = 101;
+  repeated     bool unpacked_bool     = 102;
+  repeated UnpackedTypesForeignEnumLite unpacked_enum  = 103;
+}
+
+extend TestUnpackedExtensionsLite {
+  repeated    int32 unpacked_int32_extension_lite    =  90;
+  repeated    int64 unpacked_int64_extension_lite    =  91;
+  repeated   uint32 unpacked_uint32_extension_lite   =  92;
+  repeated   uint64 unpacked_uint64_extension_lite   =  93;
+  repeated   sint32 unpacked_sint32_extension_lite   =  94;
+  repeated   sint64 unpacked_sint64_extension_lite   =  95;
+  repeated  fixed32 unpacked_fixed32_extension_lite  =  96;
+  repeated  fixed64 unpacked_fixed64_extension_lite  =  97;
+  repeated sfixed32 unpacked_sfixed32_extension_lite =  98;
+  repeated sfixed64 unpacked_sfixed64_extension_lite =  99;
+  repeated    float unpacked_float_extension_lite    = 100;
+  repeated   double unpacked_double_extension_lite   = 101;
+  repeated     bool unpacked_bool_extension_lite     = 102;
+  repeated UnpackedTypesForeignEnumLite unpacked_enum_extension_lite = 103;
+}
+
+enum UnpackedTypesForeignEnumLite {
+  FOREIGN_LITE_FOO = 4;
+  FOREIGN_LITE_BAR = 5;
+  FOREIGN_LITE_BAZ = 6;
+}
+
+message BucketOfBytes {
+    optional bytes value = 1;
+    
+}
+message BucketOfBytesEx {
+    optional bytes value = 1;
+    optional bytes value2 = 255;
+}

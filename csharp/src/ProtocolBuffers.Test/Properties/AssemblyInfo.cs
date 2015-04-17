@@ -1,0 +1,35 @@
+using System;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+// General Information about an assembly is controlled through the following 
+// set of attributes. Change these attribute values to modify the information
+// associated with an assembly.
+
+[assembly: AssemblyTitle("ProtocolBuffers.Test")]
+[assembly: AssemblyDescription("")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("ProtocolBuffers.Test")]
+[assembly: AssemblyCopyright("Copyright �  2008")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+
+// Version information for an assembly consists of the following four values:
+//
+//      Major Version
+//      Minor Version 
+//      Build Number
+//      Revision
+//
+// You can specify all the values or you can default the Build and Revision Numbers 
+// by using the '*' as shown below:
+// [assembly: AssemblyVersion("2.4.1.555")]
+
+[assembly: AssemblyVersion("2.4.1.555")]
+
+// We don't really need CLSCompliance, but if the assembly builds with no warnings,
+// that means the generator is okay.
+
+[assembly: CLSCompliant(true)]

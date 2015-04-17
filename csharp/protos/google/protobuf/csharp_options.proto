@@ -1,0 +1,115 @@
+// Extra options for C# generator
+
+import "google/protobuf/descriptor.proto";
+
+package google.protobuf;
+
+message CSharpFileOptions {
+
+  // Namespace for generated classes; defaults to the package.
+  optional string namespace = 1;
+  
+  // Name of the "umbrella" class used for metadata about all
+  // the messages within this file. Default is based on the name
+  // of the file.
+  optional string umbrella_classname = 2;
+  
+  // Whether classes should be public (true) or internal (false)
+  optional bool public_classes = 3 [default = true];
+
+  // Whether to generate a single file for everything within the
+  // .proto file (false), or one file per message (true).
+  // This option is not currently honored; please log a feature
+  // request if you really want it.
+  optional bool multiple_files = 4;
+
+  // Whether to nest messages within a single umbrella class (true)
+  // or create the umbrella class as a peer, with messages as
+  // top-level classes in the namespace (false)
+  optional bool nest_classes = 5;
+  
+  // Generate appropriate support for Code Contracts
+  // (Ongoing; support should improve over time)
+  optional bool code_contracts = 6;
+  
+  // Create subdirectories for namespaces, e.g. namespace "Foo.Bar"
+  // would generate files within [output directory]/Foo/Bar
+  optional bool expand_namespace_directories = 7;
+
+  // Generate attributes indicating non-CLS-compliance
+  optional bool cls_compliance = 8 [default = true];
+  
+  // Generate messages/builders with the [Serializable] attribute
+  optional bool add_serializable = 9 [default = false];
+  
+  // Generates a private ctor for Message types
+  optional bool generate_private_ctor = 10 [default = true];
+
+  // The extension that should be appended to the umbrella_classname when creating files.
+  optional string file_extension = 221 [default = ".cs"];
+  
+  // A nested namespace for the umbrella class.  Helpful for name collisions caused by 
+  // umbrella_classname conflicting with an existing type.  This will be automatically
+  // set to 'Proto' if a collision is detected with types being generated.  This value
+  // is ignored when nest_classes == true
+  optional string umbrella_namespace = 222;
+  
+  // The output path for the source file(s) generated
+  optional string output_directory = 223 [default = "."];
+
+  // Will ignore the type generations and remove dependencies for the descriptor proto
+  // files that declare their package to be "google.protobuf"
+  optional bool ignore_google_protobuf = 224 [default = false];
+
+  // Controls how services are generated, GENERIC is the deprecated original implementation
+  // INTERFACE generates service interfaces only, RPCINTEROP generates interfaces and 
+  // implementations using the included Windows RPC interop libarary.
+  optional CSharpServiceType service_generator_type = 225 [default = NONE];
+  
+  // Used to add the System.Runtime.CompilerServices.CompilerGeneratedAttribute and 
+  // System.CodeDom.Compiler.GeneratedCodeAttribute attributes to generated code.
+  optional bool generated_code_attributes = 226 [default = false];
+}
+
+enum CSharpServiceType {
+  // Services are ignored by the generator
+  NONE = 0;
+  // Generates the original Java generic service implementations
+  GENERIC = 1;
+  // Generates an interface for the service and nothing else
+  INTERFACE = 2;
+  // Generates an interface for the service and client/server wrappers for the interface
+  IRPCDISPATCH = 3;
+}
+
+extend FileOptions {
+  optional CSharpFileOptions csharp_file_options = 1000;
+}
+
+extend FieldOptions {
+  optional CSharpFieldOptions csharp_field_options = 1000;
+}
+
+message CSharpFieldOptions {
+  // Provides the ability to override the name of the property
+  // generated for this field. This is applied to all properties
+  // and methods to do with this field, including HasFoo, FooCount,
+  // FooList etc.
+  optional string property_name = 1;
+}
+
+message CSharpServiceOptions {
+  optional string interface_id = 1;
+}
+
+extend ServiceOptions {
+  optional CSharpServiceOptions csharp_service_options = 1000;
+}
+
+message CSharpMethodOptions {
+  optional int32 dispatch_id = 1;
+}
+
+extend MethodOptions {
+  optional CSharpMethodOptions csharp_method_options = 1000;
+}

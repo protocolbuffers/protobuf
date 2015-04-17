@@ -1,0 +1,48 @@
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" 
+         xmlns="http://schemas.microsoft.com/developer/msbuild/2003"
+         xmlns:cs="urn:schemas-csharp-project:template">
+  <PropertyGroup>
+    <EnvironmentFlavor>SILVERLIGHT</EnvironmentFlavor>
+    <EnvironmentTemplate>SL40</EnvironmentTemplate>
+    <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <SilverlightApplication>false</SilverlightApplication>
+    <ValidateXaml>false</ValidateXaml>
+    <ThrowErrorsInValidation>false</ThrowErrorsInValidation>
+    <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\SL40\Debug</OutputPath>
+    <IntermediateOutputPath>obj\SL40\Debug\</IntermediateOutputPath>
+    <DefineConstants>$(DefineConstants);NOSERIALIZABLE;NOSORTEDLIST</DefineConstants>
+    <NoConfig>true</NoConfig>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\SL40\Release</OutputPath>
+    <IntermediateOutputPath>obj\SL40\Release\</IntermediateOutputPath>
+    <DefineConstants>$(DefineConstants);NOSERIALIZABLE;NOSORTEDLIST</DefineConstants>
+    <NoConfig>true</NoConfig>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <!-- Preprocess include of silverlight testing -->
+  <cs:Import Project="SLTest.targets" cs:Precondition=" '$(EnvironmentProjectType)' == 'TEST' " />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
+        <SilverlightProjectProperties>
+          <StartAction>OfflineApplication</StartAction>
+        </SilverlightProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
