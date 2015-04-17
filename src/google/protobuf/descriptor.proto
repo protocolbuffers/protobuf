@@ -355,7 +355,7 @@ message FileOptions {
   optional string csharp_namespace = 37;
 
   // A nested namespace for the umbrella class.  Helpful for name collisions caused by
-  // umbrella_classname conflicting with an existing type.  This will be automatically
+  // its name conflicting with an existing type.  This will be automatically
   // set to 'Proto' if a collision is detected with types being generated.
   optional string csharp_umbrella_namespace = 38;
 
