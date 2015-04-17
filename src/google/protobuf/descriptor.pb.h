@@ -1837,6 +1837,18 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   ::std::string* release_objc_class_prefix();
   void set_allocated_objc_class_prefix(::std::string* objc_class_prefix);
 
+  // optional string csharp_namespace = 37;
+  bool has_csharp_namespace() const;
+  void clear_csharp_namespace();
+  static const int kCsharpNamespaceFieldNumber = 37;
+  const ::std::string& csharp_namespace() const;
+  void set_csharp_namespace(const ::std::string& value);
+  void set_csharp_namespace(const char* value);
+  void set_csharp_namespace(const char* value, size_t size);
+  ::std::string* mutable_csharp_namespace();
+  ::std::string* release_csharp_namespace();
+  void set_allocated_csharp_namespace(::std::string* csharp_namespace);
+
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
   void clear_uninterpreted_option();
@@ -1878,6 +1890,8 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   inline void clear_has_cc_enable_arenas();
   inline void set_has_objc_class_prefix();
   inline void clear_has_objc_class_prefix();
+  inline void set_has_csharp_namespace();
+  inline void clear_has_csharp_namespace();
 
   ::google::protobuf::internal::ExtensionSet _extensions_;
 
@@ -1893,6 +1907,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   int optimize_for_;
   ::google::protobuf::internal::ArenaStringPtr go_package_;
   ::google::protobuf::internal::ArenaStringPtr objc_class_prefix_;
+  ::google::protobuf::internal::ArenaStringPtr csharp_namespace_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
   bool java_generic_services_;
   bool py_generic_services_;
@@ -5500,6 +5515,59 @@ inline void FileOptions::set_allocated_objc_class_prefix(::std::string* objc_cla
   }
   objc_class_prefix_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), objc_class_prefix);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.objc_class_prefix)
+}
+
+// optional string csharp_namespace = 37;
+inline bool FileOptions::has_csharp_namespace() const {
+  return (_has_bits_[0] & 0x00002000u) != 0;
+}
+inline void FileOptions::set_has_csharp_namespace() {
+  _has_bits_[0] |= 0x00002000u;
+}
+inline void FileOptions::clear_has_csharp_namespace() {
+  _has_bits_[0] &= ~0x00002000u;
+}
+inline void FileOptions::clear_csharp_namespace() {
+  csharp_namespace_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_csharp_namespace();
+}
+inline const ::std::string& FileOptions::csharp_namespace() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.csharp_namespace)
+  return csharp_namespace_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void FileOptions::set_csharp_namespace(const ::std::string& value) {
+  set_has_csharp_namespace();
+  csharp_namespace_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_namespace)
+}
+inline void FileOptions::set_csharp_namespace(const char* value) {
+  set_has_csharp_namespace();
+  csharp_namespace_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.csharp_namespace)
+}
+inline void FileOptions::set_csharp_namespace(const char* value, size_t size) {
+  set_has_csharp_namespace();
+  csharp_namespace_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.csharp_namespace)
+}
+inline ::std::string* FileOptions::mutable_csharp_namespace() {
+  set_has_csharp_namespace();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.csharp_namespace)
+  return csharp_namespace_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* FileOptions::release_csharp_namespace() {
+  clear_has_csharp_namespace();
+  return csharp_namespace_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void FileOptions::set_allocated_csharp_namespace(::std::string* csharp_namespace) {
+  if (csharp_namespace != NULL) {
+    set_has_csharp_namespace();
+  } else {
+    clear_has_csharp_namespace();
+  }
+  csharp_namespace_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), csharp_namespace);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.csharp_namespace)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
