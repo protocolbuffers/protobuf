@@ -354,9 +354,11 @@ message FileOptions {
   // Namespace for generated classes; defaults to the package.
   optional string csharp_namespace = 37;
 
-  // A nested namespace for the umbrella class.  Helpful for name collisions caused by
-  // its name conflicting with an existing type.  This will be automatically
-  // set to 'Proto' if a collision is detected with types being generated.
+  // A nested namespace for the umbrella class, which contains metadata about
+  // all the messages within the file. This option is helpful for name
+  // collisions between the umbrella class and an existing type. This will be
+  // automatically set to 'Proto' if a collision is detected with types being
+  // generated.
   optional string csharp_umbrella_namespace = 38;
 
   // The parser stores options it doesn't recognize here. See above.
