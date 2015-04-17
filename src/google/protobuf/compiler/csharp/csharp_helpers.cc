@@ -257,9 +257,7 @@ std::string GetFieldConstantName(const FieldDescriptor* field) {
 }
 
 std::string GetPropertyName(const FieldDescriptor* descriptor) {
-  if (descriptor->options().has_csharp_property_name()) {
-    return descriptor->options().csharp_property_name();
-  }
+  // TODO(jtattermusch): consider introducing csharp_property_name field option
   std::string property_name = UnderscoresToPascalCase(GetFieldName(descriptor));
   if (property_name == descriptor->containing_type()->name()) {
     property_name += "_";

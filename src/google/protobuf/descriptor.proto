@@ -491,12 +491,6 @@ message FieldOptions {
   // For Google-internal migration only. Do not use.
   optional bool weak = 10 [default=false];
 
-  // Provides the ability to override the name of the property
-  // generated for this field. This is applied to all properties
-  // and methods to do with this field, including HasFoo, FooCount,
-  // FooList etc.
-  optional string csharp_property_name = 11;
-
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
