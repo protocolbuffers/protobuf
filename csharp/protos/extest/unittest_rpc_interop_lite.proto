@@ -1,0 +1,42 @@
+// Additional options required for C# generation. File from copyright
+// line onwards is as per original distribution.
+import "google/protobuf/csharp_options.proto";
+option (google.protobuf.csharp_file_options).namespace = "Google.ProtocolBuffers.TestProtos";
+option (google.protobuf.csharp_file_options).umbrella_classname = "UnitTestRpcInteropLite";
+
+option (google.protobuf.csharp_file_options).service_generator_type = IRPCDISPATCH;
+
+option optimize_for = LITE_RUNTIME;
+package unittest_rpc_interop_lite;
+
+message SearchRequest {
+  repeated string Criteria = 1;
+}
+
+message SearchResponse {
+  message ResultItem {
+    required string url = 1;
+    optional string name = 2;
+  }
+  
+  repeated ResultItem results = 1;
+}
+
+message RefineSearchRequest {
+  repeated string Criteria = 1;
+  required SearchResponse previous_results = 2;
+}
+
+service SearchService {
+  /*
+  Add this option to specify the GuidAttribute on the service interface
+  option (google.protobuf.csharp_service_options).interface_id = "{A65F0925-FD11-4f94-B166-89AC4F027205}";
+  */
+  rpc Search (SearchRequest) returns (SearchResponse) 
+  /*
+  Add this option to specify the DispIdAttribute on the service interface
+  { option (google.protobuf.csharp_method_options).dispatch_id = 5; } 
+  */ ;
+  
+  rpc RefineSearch (RefineSearchRequest) returns (SearchResponse);
+}

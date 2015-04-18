@@ -1,0 +1,54 @@
+import "google/protobuf/csharp_options.proto";
+option (google.protobuf.csharp_file_options).namespace = "Google.ProtocolBuffers.TestProtos";
+option (google.protobuf.csharp_file_options).umbrella_classname = "UnitTestXmlSerializerTestProtoFile";
+option (google.protobuf.csharp_file_options).add_serializable = true;
+
+package protobuf_unittest_extra;
+
+option optimize_for = SPEED;
+
+enum EnumOptions {
+  ONE = 0;
+  TWO = 1;
+  THREE = 2;
+}
+
+message TestXmlChild {
+  repeated EnumOptions options = 3;
+  optional bytes binary = 4;
+}
+
+message TestXmlNoFields {
+}
+
+message TestXmlRescursive {
+  optional TestXmlRescursive child = 1;
+}
+
+message TestXmlMessage {
+
+  optional int64 number = 6;
+  repeated int32 numbers = 2;
+  optional string text = 3;
+  repeated string textlines = 700;
+  optional bool valid = 5;
+
+  optional TestXmlChild child = 1;
+  repeated group Children = 401 {
+    repeated EnumOptions options = 3;
+    optional bytes binary = 4;
+  }
+
+extensions 100 to 199;
+}
+
+message  TestXmlExtension {
+  required int32 number = 1;
+}
+
+extend TestXmlMessage {
+  optional EnumOptions extension_enum = 101;
+  optional string extension_text = 102;
+  repeated int32 extension_number = 103 [packed = true];
+  optional TestXmlExtension extension_message = 199;
+}

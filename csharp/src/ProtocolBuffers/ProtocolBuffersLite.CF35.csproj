@@ -1,0 +1,112 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <EnvironmentFlavor>COMPACT_FRAMEWORK</EnvironmentFlavor>
+    <EnvironmentTemplate>CF35</EnvironmentTemplate>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{6969BDCE-D925-43F3-94AC-A531E6DF2591}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Google.ProtocolBuffers</RootNamespace>
+    <AssemblyName>Google.ProtocolBuffersLite</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\keys\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <ProjectTypeGuids>{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <PlatformFamilyName>Smartphone</PlatformFamilyName>
+    <PlatformID>f27da329-3269-4191-98e0-c87d3d7f1db9</PlatformID>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\CF35\Debug</OutputPath>
+    <IntermediateOutputPath>obj\CF35\Debug\</IntermediateOutputPath>
+    <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
+    <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
+    <DefineConstants>DEBUG;TRACE;LITE;$(EnvironmentFlavor);$(EnvironmentTemplate);NOSERIALIZABLE;NOFILEVERSION</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <NoConfig>true</NoConfig>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\CF35\Release</OutputPath>
+    <IntermediateOutputPath>obj\CF35\Release\</IntermediateOutputPath>
+    <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
+    <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
+    <DefineConstants>TRACE;LITE;$(EnvironmentFlavor);$(EnvironmentTemplate);NOSERIALIZABLE;NOFILEVERSION</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <NoConfig>true</NoConfig>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AbstractBuilderLite.cs" />
+    <Compile Include="AbstractMessageLite.cs" />
+    <Compile Include="ByteArray.cs" />
+    <Compile Include="CodedOutputStream.ComputeSize.cs" />
+    <Compile Include="Collections\Dictionaries.cs" />
+    <Compile Include="Collections\Enumerables.cs" />
+    <Compile Include="Collections\IPopsicleList.cs" />
+    <Compile Include="Collections\Lists.cs" />
+    <Compile Include="Collections\PopsicleList.cs" />
+    <Compile Include="Collections\ReadOnlyDictionary.cs" />
+    <Compile Include="CustomSerialization.cs" />
+    <Compile Include="Descriptors\FieldMappingAttribute.cs" />
+    <Compile Include="Descriptors\FieldType.cs" />
+    <Compile Include="Descriptors\MappedType.cs" />
+    <Compile Include="EnumLite.cs" />
+    <Compile Include="ExtendableBuilderLite.cs" />
+    <Compile Include="ExtendableMessageLite.cs" />
+    <Compile Include="FieldSet.cs" />
+    <Compile Include="FrameworkPortability.cs" />
+    <Compile Include="GeneratedBuilderLite.cs" />
+    <Compile Include="GeneratedExtensionLite.cs" />
+    <Compile Include="GeneratedMessageLite.cs" />
+    <Compile Include="ICodedInputStream.cs" />
+    <Compile Include="ICodedOutputStream.cs" />
+    <Compile Include="IRpcDispatch.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ByteString.cs" />
+    <Compile Include="CodedInputStream.cs" />
+    <Compile Include="CodedOutputStream.cs" />
+    <Compile Include="ExtensionRegistryLite.cs" />
+    <Compile Include="IBuilderLite.cs" />
+    <Compile Include="IMessageLite.cs" />
+    <Compile Include="InvalidProtocolBufferException.cs" />
+    <Compile Include="SortedList.cs" />
+    <Compile Include="ThrowHelper.cs" />
+    <Compile Include="UninitializedMessageException.cs" />
+    <Compile Include="WireFormat.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}">
+        <HostingProcess disable="1" />
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

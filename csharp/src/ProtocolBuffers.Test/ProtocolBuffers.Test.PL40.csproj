@@ -1,0 +1,213 @@
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" xmlns:cs="urn:schemas-csharp-project:template">
+  <PropertyGroup>
+    <EnvironmentFlavor>PORTABLE_LIBRARY</EnvironmentFlavor>
+    <EnvironmentTemplate>PL40</EnvironmentTemplate>
+    <EnvironmentProjectType>TEST</EnvironmentProjectType>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{DD01ED24-3750-4567-9A23-1DB676A15610}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Google.ProtocolBuffers</RootNamespace>
+    <AssemblyName>Google.ProtocolBuffers.Test</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\keys\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
+    <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <TargetFrameworkProfile />
+    <ValidateXaml>false</ValidateXaml>
+    <ThrowErrorsInValidation>false</ThrowErrorsInValidation>
+    <SilverlightApplication>true</SilverlightApplication>
+    <XapOutputs>true</XapOutputs>
+    <GenerateSilverlightManifest>true</GenerateSilverlightManifest>
+    <XapFilename>Google.ProtocolBuffers.Test.xap</XapFilename>
+    <SilverlightManifestTemplate>Properties\AppManifest.xml</SilverlightManifestTemplate>
+    <SilverlightAppEntry>Google.ProtocolBuffers.App</SilverlightAppEntry>
+    <TestPageFileName>TestPage.html</TestPageFileName>
+    <CreateTestPage>true</CreateTestPage>
+    <SilverlightVersion>v4.0</SilverlightVersion>
+    <OutOfBrowserSettingsFile>Properties\OutOfBrowserSettings.xml</OutOfBrowserSettingsFile>
+    <EnableOutOfBrowser>true</EnableOutOfBrowser>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\PL40\Debug</OutputPath>
+    <IntermediateOutputPath>obj\PL40\Debug\</IntermediateOutputPath>
+    <DefineConstants>DEBUG;TRACE;$(EnvironmentFlavor);$(EnvironmentTemplate);NOSERIALIZABLE;NOSORTEDLIST</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoStdLib>true</NoStdLib>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\PL40\Release</OutputPath>
+    <IntermediateOutputPath>obj\PL40\Release\</IntermediateOutputPath>
+    <DefineConstants>TRACE;$(EnvironmentFlavor);$(EnvironmentTemplate);NOSERIALIZABLE;NOSORTEDLIST</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoStdLib>true</NoStdLib>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Windows" />
+    <Reference Include="System.Windows.Browser" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(EnvironmentFlavor)' == 'CLIENTPROFILE' ">
+    <Reference Include="nunit.framework">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\NUnit\lib\nunit.framework.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(EnvironmentFlavor)' != 'CLIENTPROFILE' ">
+    <Reference Include="Microsoft.Silverlight.Testing, Version=2.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\Microsoft.Silverlight.Testing\April2010\Microsoft.Silverlight.Testing.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTesting.Silverlight, Version=2.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\Microsoft.Silverlight.Testing\April2010\Microsoft.VisualStudio.QualityTools.UnitTesting.Silverlight.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\lib\NUnit-config\Microsoft.VisualStudio.TestTools.cs">
+      <Link>Microsoft.VisualStudio.TestTools.cs</Link>
+    </Compile>
+    <Compile Include="AbstractMessageTest.cs" />
+    <Compile Include="ByteStringTest.cs" />
+    <Compile Include="CodedInputStreamTest.cs" />
+    <Compile Include="CodedOutputStreamTest.cs" />
+    <Compile Include="Collections\PopsicleListTest.cs" />
+    <Compile Include="Compatibility\BinaryCompatibilityTests.cs" />
+    <Compile Include="Compatibility\CompatibilityTests.cs" />
+    <Compile Include="Compatibility\DictionaryCompatibilityTests.cs" />
+    <Compile Include="Compatibility\JsonCompatibilityTests.cs" />
+    <Compile Include="Compatibility\TestResources.cs" />
+    <Compile Include="Compatibility\TextCompatibilityTests.cs" />
+    <Compile Include="Compatibility\XmlCompatibilityTests.cs" />
+    <Compile Include="SerializableAttribute.cs" />
+    <Compile Include="TestProtos\UnitTestExtrasProtoFile.cs" />
+    <Compile Include="TestResources.cs" />
+    <Compile Include="TestRpcForMimeTypes.cs" />
+    <Compile Include="TestReaderForUrlEncoded.cs" />
+    <Compile Include="CSharpOptionsTest.cs" />
+    <Compile Include="DeprecatedMemberTest.cs" />
+    <Compile Include="DescriptorsTest.cs" />
+    <Compile Include="Descriptors\MessageDescriptorTest.cs" />
+    <Compile Include="DynamicMessageTest.cs" />
+    <Compile Include="ExtendableMessageTest.cs" />
+    <Compile Include="GeneratedBuilderTest.cs" />
+    <Compile Include="GeneratedMessageTest.cs" />
+    <Compile Include="IssuesTest.cs" />
+    <Compile Include="MessageStreamIteratorTest.cs" />
+    <Compile Include="MessageStreamWriterTest.cs" />
+    <Compile Include="MessageTest.cs" />
+    <Compile Include="MessageUtilTest.cs" />
+    <Compile Include="NameHelpersTest.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReflectionTester.cs" />
+    <Compile Include="ReusableBuilderTest.cs" />
+    <Compile Include="SerializableTest.cs" />
+    <Compile Include="ServiceTest.cs" />
+    <Compile Include="TestCornerCases.cs" />
+    <Compile Include="TestMimeMessageFormats.cs" />
+    <Compile Include="TestProtos\UnitTestCSharpOptionsProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestCustomOptionsProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestEmbedOptimizeForProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestEmptyProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestExtrasIssuesProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestGenericServices.cs" />
+    <Compile Include="TestProtos\UnitTestGoogleSizeProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestGoogleSpeedProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestImportProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestMessageSetProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestNoGenericServicesProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestOptimizeForProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestProtoFile.cs" />
+    <Compile Include="TestProtos\UnitTestRpcInterop.cs" />
+    <Compile Include="TestProtos\UnitTestXmlSerializerTestProtoFile.cs" />
+    <Compile Include="TestRpcGenerator.cs" />
+    <Compile Include="TestUtil.cs" />
+    <Compile Include="TestWriterFormatJson.cs" />
+    <Compile Include="TestWriterFormatXml.cs" />
+    <Compile Include="TextFormatTest.cs" />
+    <Compile Include="UnknownFieldSetTest.cs" />
+    <Compile Include="WireFormatTest.cs" />
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <None Include="Properties\AppManifest.xml" />
+    <None Include="Properties\OutOfBrowserSettings.xml" />
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ProtocolBuffers.Serialization\ProtocolBuffers.Serialization.PL40.csproj">
+      <Project>{231391AF-449C-4a39-986C-AD7F270F4750}</Project>
+      <Name>ProtocolBuffers.Serialization</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffers.PL40.csproj">
+      <Project>{6908BDCE-D925-43F3-94AC-A531E6DF2591}</Project>
+      <Name>ProtocolBuffers</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Compatibility\google_message1.dat" />
+    <EmbeddedResource Include="Compatibility\google_message2.dat" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
+        <SilverlightProjectProperties />
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup Condition=" '$(EnvironmentFlavor)' == 'CLIENTPROFILE' ">
+    <StartAction>Program</StartAction>
+    <StartProgram>$(ProjectDir)..\..\lib\NUnit\tools\nunit-console.exe</StartProgram>
+    <StartArguments>/nologo /noshadow /labels /wait $(AssemblyName).dll</StartArguments>
+    <StartWorkingDirectory>$(ProjectDir)$(OutputPath)</StartWorkingDirectory>
+  </PropertyGroup>
+</Project>

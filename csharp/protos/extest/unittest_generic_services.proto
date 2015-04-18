@@ -1,0 +1,29 @@
+// Additional options required for C# generation. File from copyright
+// line onwards is as per original distribution.
+import "google/protobuf/csharp_options.proto";
+import "google/protobuf/unittest.proto";
+import "google/protobuf/unittest_custom_options.proto";
+option (google.protobuf.csharp_file_options).namespace = "Google.ProtocolBuffers.TestProtos";
+option (google.protobuf.csharp_file_options).umbrella_classname = "UnitTestGenericServices";
+
+option (google.protobuf.csharp_file_options).service_generator_type = GENERIC;
+
+// We don't put this in a package within proto2 because we need to make sure
+// that the generated code doesn't depend on being in the proto2 namespace.
+package protobuf_unittest;
+
+option optimize_for = SPEED;
+
+service TestGenericService {
+  rpc Foo(FooRequest) returns (FooResponse);
+  rpc Bar(BarRequest) returns (BarResponse);
+}
+
+service TestGenericServiceWithCustomOptions {
+  option (service_opt1) = -9876543210;
+
+  rpc Foo(CustomOptionFooRequest) returns (CustomOptionFooResponse) {
+    option (method_opt1) = METHODOPT1_VAL2;
+  }
+}
+
