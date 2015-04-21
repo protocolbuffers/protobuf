@@ -520,5 +520,9 @@ public abstract class AbstractMessage extends AbstractMessageLite
         throws IOException {
       return super.mergeDelimitedFrom(input, extensionRegistry);
     }
+    
+    public boolean isEmpty() {
+        return !this.isInitialized();
+    }
   }
 }
