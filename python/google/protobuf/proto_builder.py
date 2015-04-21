@@ -32,6 +32,7 @@
 
 import hashlib
 import os
+import string
 
 from google.protobuf import descriptor_pb2
 from google.protobuf import message_factory
@@ -54,6 +55,16 @@ def _GetMessageFromFactory(factory, full_name):
 
 
 def MakeSimpleProtoClass(fields, full_name, pool=None):
+  #list of python's reserved keywords
+  keywords = ["and","del","from","not","while","as","elif","global","or","with","assert","else","if","pass","yield","break","except","import","print","class","exec","in","raise","continue","finally","is","return","def","for","lambda","try"]
+
+  #check if the field names are keywords.
+  for f_name, f_type in sorted(fields.items()):
+    for key in keywords:
+        if(f_name == key)
+           print "Error used a reserved word," ,f_name, ", as field name."
+           return;
+
   """Create a Protobuf class whose fields are basic types.
 
   Note: this doesn't validate field names!
@@ -77,6 +88,10 @@ def MakeSimpleProtoClass(fields, full_name, pool=None):
   # proto files.
   fields_hash = hashlib.sha1()
   for f_name, f_type in sorted(fields.items()):
+    for res in reserved:
+        if(f_name == res)
+           print "Error used a reserved word as field name"
+           keyword = True 
     fields_hash.update(f_name.encode('utf8'))
     fields_hash.update(str(f_type).encode('utf8'))
   proto_file_name = fields_hash.hexdigest() + '.proto'
