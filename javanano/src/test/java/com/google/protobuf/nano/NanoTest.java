@@ -31,6 +31,7 @@
 package com.google.protobuf.nano;
 
 import com.google.protobuf.nano.MapTestProto.TestMap;
+import com.google.protobuf.nano.CodedOutputByteBufferNano;
 import com.google.protobuf.nano.MapTestProto.TestMap.MessageValue;
 import com.google.protobuf.nano.NanoAccessorsOuterClass.TestNanoAccessors;
 import com.google.protobuf.nano.NanoHasOuterClass.TestAllTypesNanoHas;
@@ -2319,6 +2320,23 @@ public class NanoTest extends TestCase {
       testEncodingOfString('q', i);      // 1 byte per char
       testEncodingOfString('\u07FF', i); // 2 bytes per char
       testEncodingOfString('\u0981', i); // 3 bytes per char
+    }
+  }
+
+  /** Regression test for https://github.com/google/protobuf/issues/292 */
+  public void testCorrectExceptionThrowWhenEncodingStringsWithoutEnoughSpace() throws Exception {
+    String testCase = "Foooooooo";
+    assertEquals(CodedOutputByteBufferNano.computeRawVarint32Size(testCase.length()),
+            CodedOutputByteBufferNano.computeRawVarint32Size(testCase.length() * 3));
+    assertEquals(11, CodedOutputByteBufferNano.computeStringSize(1, testCase));
+    // Tag is one byte, varint describing string length is 1 byte, string length is 9 bytes.
+    // An array of size 1 will cause a failure when trying to write the varint.
+    for (int i = 0; i < 11; i++) {
+      CodedOutputByteBufferNano bufferNano = CodedOutputByteBufferNano.newInstance(new byte[i]);
+      try {
+        bufferNano.writeString(1, testCase);
+        fail("Should have thrown an out of space exception");
+      } catch (CodedOutputByteBufferNano.OutOfSpaceException expected) {}
     }
   }
 

@@ -300,6 +300,12 @@ public final class CodedOutputByteBufferNano {
       final int maxLengthVarIntSize = computeRawVarint32Size(value.length() * MAX_UTF8_EXPANSION);
       if (minLengthVarIntSize == maxLengthVarIntSize) {
         int oldPosition = buffer.position();
+        // Buffer.position, when passed a position that is past its limit, throws
+        // IllegalArgumentException, and this class is documented to throw
+        // OutOfSpaceException instead.
+        if (buffer.remaining() < minLengthVarIntSize) {
+          throw new OutOfSpaceException(oldPosition + minLengthVarIntSize, buffer.limit());
+        }
         buffer.position(oldPosition + minLengthVarIntSize);
         encode(value, buffer);
         int newPosition = buffer.position();
@@ -311,7 +317,10 @@ public final class CodedOutputByteBufferNano {
         encode(value, buffer);
       }
     } catch (BufferOverflowException e) {
-      throw new OutOfSpaceException(buffer.position(), buffer.limit());
+      final OutOfSpaceException outOfSpaceException = new OutOfSpaceException(buffer.position(),
+          buffer.limit());
+      outOfSpaceException.initCause(e);
+      throw outOfSpaceException;
     }
   }
 
