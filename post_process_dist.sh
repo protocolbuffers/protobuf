@@ -58,7 +58,6 @@ done
 todos *.txt */*.txt
 
 for LANG in $LANGUAGES; do
-  #TODO- Implement CLANG-FORMAT
   # Build the dist again in .zip
   ./configure DIST_LANG=$LANG
   make dist-zip
