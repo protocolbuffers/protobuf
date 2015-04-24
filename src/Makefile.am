@@ -33,8 +33,11 @@ clean-local:
 
 public_config = google/protobuf/stubs/pbconfig.h
 
-CLEANFILES = $(protoc_outputs) $(public_config) unittest_proto_middleman \
-             testzip.jar testzip.list testzip.proto testzip.zip
+config = google/protobuf/stubs/config.h
+
+CLEANFILES = $(protoc_outputs) $(public_config) $(config) \
+	     unittest_proto_middleman testzip.jar testzip.list \
+	     testzip.proto testzip.zip
 
 MAINTAINERCLEANFILES =   \
   Makefile.in
@@ -48,6 +51,7 @@ $(public_config): $(top_builddir)/config.h $(top_srcdir)/config.h.include
 	echo "// Note: Google Protobuf internal only. Do NOT include." > $@
 	cat $(top_builddir)/config.h | grep -f $(top_srcdir)/config.h.include | \
 	sed 's,#define , #define GOOGLE_PROTOBUF_,' >> $@
+	cat $(top_builddir)/config.h > $(config)
 
 nobase_include_HEADERS =                                        \
   google/protobuf/stubs/atomic_sequence_num.h                   \

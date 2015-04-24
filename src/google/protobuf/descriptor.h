@@ -59,6 +59,10 @@
 #include <vector>
 #include <google/protobuf/stubs/common.h>
 
+// TYPE_BOOL is defined in the MacOS's ConditionalMacros.h.
+#ifdef TYPE_BOOL
+#undef TYPE_BOOL
+#endif  // TYPE_BOOL
 
 namespace google {
 namespace protobuf {
