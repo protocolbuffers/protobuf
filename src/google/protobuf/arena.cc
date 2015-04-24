@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <google/protobuf/arena.h>
+#include <google/protobuf/stubs/common.h>
 
 #ifdef ADDRESS_SANITIZER
 #include <sanitizer/asan_interface.h>
@@ -42,6 +43,12 @@ google::protobuf::internal::SequenceNumber Arena::lifecycle_id_generator_;
 Arena::ThreadCache& Arena::thread_cache() {
   static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_ = { -1, NULL };
   return thread_cache_;
+}
+#elif defined(GOOGLE_PROTOBUF_OS_ANDROID) || defined(GOOGLE_PROTOBUF_OS_IPHONE)
+Arena::ThreadCache& Arena::thread_cache() {
+  static internal::ThreadLocalStorage<ThreadCache>* thread_cache_ =
+      new internal::ThreadLocalStorage<ThreadCache>();
+  return *thread_cache_->Get();
 }
 #else
 GOOGLE_THREAD_LOCAL Arena::ThreadCache Arena::thread_cache_ = { -1, NULL };

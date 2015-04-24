@@ -46,7 +46,7 @@
 //   "parametized tests" so that one set of tests can be used on all the
 //   implementations.
 
-#include "config.h"
+#include <google/protobuf/stubs/config.h>
 
 #ifdef _MSC_VER
 #include <io.h>
