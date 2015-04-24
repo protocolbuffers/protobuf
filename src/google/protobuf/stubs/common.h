@@ -62,6 +62,14 @@
 #include <exception>
 #endif
 
+#if defined(__APPLE__)
+#include <TargetConditionals.h>  // for TARGET_OS_IPHONE
+#endif
+
+#if defined(__ANDROID__) || defined(GOOGLE_PROTOBUF_OS_ANDROID) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) || defined(GOOGLE_PROTOBUF_OS_IPHONE)
+#include <pthread.h>
+#endif
+
 #if defined(_WIN32) && defined(GetMessage)
 // Allow GetMessage to be used as a valid method name in protobuf classes.
 // windows.h defines GetMessage() as a macro.  Let's re-define it as an inline
@@ -157,7 +165,7 @@ std::string LIBPROTOBUF_EXPORT VersionString(int version);
 typedef unsigned int uint;
 
 #ifdef _MSC_VER
-typedef __int8  int8;
+typedef signed __int8  int8;
 typedef __int16 int16;
 typedef __int32 int32;
 typedef __int64 int64;
@@ -1157,6 +1165,38 @@ class LIBPROTOBUF_EXPORT MutexLockMaybe {
   Mutex *const mu_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MutexLockMaybe);
 };
+
+#if defined(__ANDROID__) || defined(GOOGLE_PROTOBUF_OS_ANDROID) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) || defined(GOOGLE_PROTOBUF_OS_IPHONE)
+// Android ndk does not support the __thread keyword very well yet. Here
+// we use pthread_key_create()/pthread_getspecific()/... methods for
+// TLS support on android.
+// iOS also does not support the __thread keyword.
+template<typename T>
+class ThreadLocalStorage {
+ public:
+  ThreadLocalStorage() {
+    pthread_key_create(&key_, &ThreadLocalStorage::Delete);
+  }
+  ~ThreadLocalStorage() {
+    pthread_key_delete(key_);
+  }
+  T* Get() {
+    T* result = static_cast<T*>(pthread_getspecific(key_));
+    if (result == NULL) {
+      result = new T();
+      pthread_setspecific(key_, result);
+    }
+    return result;
+  }
+ private:
+  static void Delete(void* value) {
+    delete static_cast<T*>(value);
+  }
+  pthread_key_t key_;
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ThreadLocalStorage);
+};
+#endif
 
 }  // namespace internal
 
