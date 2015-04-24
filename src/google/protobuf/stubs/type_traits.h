@@ -73,6 +73,10 @@ struct is_base_of {
   typedef char (&yes)[1];
   typedef char (&no)[2];
 
+  // BEGIN GOOGLE LOCAL MODIFICATION -- check is a #define on Mac.
+  #undef check
+  // END GOOGLE LOCAL MODIFICATION
+
   static yes check(const B*);
   static no check(const void*);
 

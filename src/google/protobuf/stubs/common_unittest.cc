@@ -39,7 +39,7 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
-#include "config.h"
+#include <google/protobuf/stubs/config.h>
 
 namespace google {
 namespace protobuf {

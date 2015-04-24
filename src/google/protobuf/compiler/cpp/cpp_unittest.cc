@@ -1392,6 +1392,12 @@ class OneofTest : public testing::Test {
       case unittest::TestOneof2::kFooString:
         EXPECT_TRUE(message.has_foo_string());
         break;
+      case unittest::TestOneof2::kFooCord:
+        EXPECT_TRUE(message.has_foo_cord());
+        break;
+      case unittest::TestOneof2::kFooStringPiece:
+        EXPECT_TRUE(message.has_foo_string_piece());
+        break;
       case unittest::TestOneof2::kFooBytes:
         EXPECT_TRUE(message.has_foo_bytes());
         break;
@@ -1403,6 +1409,9 @@ class OneofTest : public testing::Test {
         break;
       case unittest::TestOneof2::kFoogroup:
         EXPECT_TRUE(message.has_foogroup());
+        break;
+      case unittest::TestOneof2::kFooLazyMessage:
+        EXPECT_TRUE(message.has_foo_lazy_message());
         break;
       case unittest::TestOneof2::FOO_NOT_SET:
         break;
