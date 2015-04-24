@@ -293,7 +293,7 @@ namespace internal {
 // arena-related "copy if on different arena" behavior if the necessary methods
 // exist on the contained type. In particular, we rely on MergeFrom() existing
 // as a general proxy for the fact that a copy will work, and we also provide a
-// specific override for string*.
+// specific override for std::string*.
 template<typename T>
 struct TypeImplementsMergeBehavior {
   typedef char HasMerge;
@@ -626,7 +626,7 @@ DEFINE_SPECIALIZATIONS_FOR_BASE_PROTO_TYPES(inline, MessageLite);
 DECLARE_SPECIALIZATIONS_FOR_BASE_PROTO_TYPES(Message);
 
 
-#undef DECLARE_SPECIALIZATIONS_FOR_BASE_CLASSES
+#undef DECLARE_SPECIALIZATIONS_FOR_BASE_PROTO_TYPES
 
 template <>
 inline const MessageLite& GenericTypeHandler<MessageLite>::default_instance() {
@@ -657,28 +657,28 @@ inline const Message& GenericTypeHandler<Message>::default_instance() {
 // TODO(kenton):  There has to be a better way.
 class LIBPROTOBUF_EXPORT StringTypeHandlerBase {
  public:
-  typedef string Type;
+  typedef std::string Type;
 
-  static inline string* New(Arena* arena) {
-    return Arena::Create<string>(arena);
+  static inline std::string* New(Arena* arena) {
+    return Arena::Create<std::string>(arena);
   }
-  static inline string* NewFromPrototype(const string*,
+  static inline std::string* NewFromPrototype(const std::string*,
                                          ::google::protobuf::Arena* arena) {
     return New(arena);
   }
-  static inline ::google::protobuf::Arena* GetArena(string*) {
+  static inline ::google::protobuf::Arena* GetArena(std::string*) {
     return NULL;
   }
-  static inline void* GetMaybeArenaPointer(string* value) {
+  static inline void* GetMaybeArenaPointer(std::string* value) {
     return NULL;
   }
-  static inline void Delete(string* value, Arena* arena) {
+  static inline void Delete(std::string* value, Arena* arena) {
     if (arena == NULL) {
       delete value;
     }
   }
-  static inline void Clear(string* value) { value->clear(); }
-  static inline void Merge(const string& from, string* to) { *to = from; }
+  static inline void Clear(std::string* value) { value->clear(); }
+  static inline void Merge(const std::string& from, std::string* to) { *to = from; }
   static inline const Type& default_instance() {
     return ::google::protobuf::internal::GetEmptyString();
   }
@@ -686,7 +686,7 @@ class LIBPROTOBUF_EXPORT StringTypeHandlerBase {
 
 class StringTypeHandler : public StringTypeHandlerBase {
  public:
-  static int SpaceUsed(const string& value)  {
+  static int SpaceUsed(const std::string& value)  {
     return sizeof(value) + StringSpaceUsedExcludingSelf(value);
   }
 };
@@ -815,7 +815,7 @@ class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
   //   (i) if this field holds submessages, the new submessage will be copied if
   //   the original is in an arena and this RepeatedPtrField is either in a
   //   different arena, or on the heap.
-  //   (ii) if this field holds strings, the passed-in string *must* be
+  //   (ii) if this field holds strings, the passed-in std::string *must* be
   //   heap-allocated, not arena-allocated. There is no way to dynamically check
   //   this at runtime, so User Beware.
   void AddAllocated(Element* value);
@@ -1732,7 +1732,7 @@ class RepeatedPtrField<Element>::TypeHandler
 };
 
 template <>
-class RepeatedPtrField<string>::TypeHandler
+class RepeatedPtrField<std::string>::TypeHandler
     : public internal::StringTypeHandler {
 };
 

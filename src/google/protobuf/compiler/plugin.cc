@@ -92,6 +92,7 @@ class GeneratorResponseContext : public GeneratorContext {
   const vector<const FileDescriptor*>& parsed_files_;
 };
 
+
 int PluginMain(int argc, char* argv[], const CodeGenerator* generator) {
 
   if (argc > 1) {

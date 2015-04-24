@@ -65,29 +65,7 @@ namespace protobuf {
 #endif
 
 string TestSourceDir() {
-#ifdef _MSC_VER
-  // Look for the "src" directory.
-  string prefix = ".";
-
-  while (!File::Exists(prefix + "/src/google/protobuf")) {
-    if (!File::Exists(prefix)) {
-      GOOGLE_LOG(FATAL)
-        << "Could not find protobuf source code.  Please run tests from "
-           "somewhere within the protobuf source package.";
-    }
-    prefix += "/..";
-  }
-  return prefix + "/src";
-#else
-  // automake sets the "srcdir" environment variable.
-  char* result = getenv("srcdir");
-  if (result == NULL) {
-    // Otherwise, the test must be run from the source directory.
-    return ".";
-  } else {
-    return result;
-  }
-#endif
+  return "third_party/protobuf/src";
 }
 
 namespace {
