@@ -101,6 +101,10 @@ FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor, int 
 
 bool HasRequiredFields(const Descriptor* descriptor);
 
+inline bool SupportFieldPresence(const FileDescriptor* file) {
+  return file->syntax() != FileDescriptor::SYNTAX_PROTO3;
+}
+
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf
