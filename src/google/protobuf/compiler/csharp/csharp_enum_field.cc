@@ -170,7 +170,7 @@ void EnumFieldGenerator::WriteHash(Writer* writer) {
   } else {
     writer->WriteLine("if ($0$ != $1$) {", property_name(), default_value());
   }
-  writer->WriteLine("  hash ^= $1$_.GetHashCode();", name());
+  writer->WriteLine("  hash ^= $0$_.GetHashCode();", name());
   writer->WriteLine("}");
 }
 void EnumFieldGenerator::WriteEquals(Writer* writer) {
