@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package field_presence_test;
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "FieldPresenceTestProto";
+option java_generate_equals_and_hash = true;
+
+message TestAllTypes {
+  enum NestedEnum {
+    FOO = 0;
+    BAR = 1;
+    BAZ = 2;
+  }
+  message NestedMessage {
+    optional int32 value = 1;
+  }
+
+  optional int32 optional_int32 = 1;
+  optional string optional_string = 2;
+  optional bytes optional_bytes = 3;
+  optional NestedEnum optional_nested_enum = 4;
+  optional NestedMessage optional_nested_message = 5;
+}

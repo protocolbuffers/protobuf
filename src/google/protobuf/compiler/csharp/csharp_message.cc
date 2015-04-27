@@ -279,7 +279,9 @@ void MessageGenerator::Generate(Writer* writer) {
   }
 
   if (optimize_speed()) {
-    GenerateIsInitialized(writer);
+    if (SupportFieldPresence(descriptor_->file())) {
+      GenerateIsInitialized(writer);
+    }
     GenerateMessageSerializationMethods(writer);
   }
   if (use_lite_runtime()) {

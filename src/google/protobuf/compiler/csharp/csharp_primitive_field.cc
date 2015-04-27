@@ -57,13 +57,17 @@ PrimitiveFieldGenerator::~PrimitiveFieldGenerator() {
 }
 
 void PrimitiveFieldGenerator::GenerateMembers(Writer* writer) {
-  writer->WriteLine("private bool has$0$;", property_name());
+  if (SupportFieldPresence(descriptor_->file())) {
+    writer->WriteLine("private bool has$0$;", property_name());
+  }
   writer->WriteLine("private $0$ $1$_$2$;", type_name(), name(),
                     has_default_value() ? " = " + default_value() : "");
   AddDeprecatedFlag(writer);
-  writer->WriteLine("public bool Has$0$ {", property_name());
-  writer->WriteLine("  get { return has$0$; }", property_name());
-  writer->WriteLine("}");
+  if (SupportFieldPresence(descriptor_->file())) {
+    writer->WriteLine("public bool Has$0$ {", property_name());
+    writer->WriteLine("  get { return has$0$; }", property_name());
+    writer->WriteLine("}");
+  }
   AddPublicMemberAttributes(writer);
   writer->WriteLine("public $0$ $1$ {", type_name(), property_name());
   writer->WriteLine("  get { return $0$_; }", name());
@@ -72,9 +76,11 @@ void PrimitiveFieldGenerator::GenerateMembers(Writer* writer) {
 
 void PrimitiveFieldGenerator::GenerateBuilderMembers(Writer* writer) {
   AddDeprecatedFlag(writer);
-  writer->WriteLine("public bool Has$0$ {", property_name());
-  writer->WriteLine("  get { return result.has$0$; }", property_name());
-  writer->WriteLine("}");
+  if (SupportFieldPresence(descriptor_->file())) {
+    writer->WriteLine("public bool Has$0$ {", property_name());
+    writer->WriteLine("  get { return result.has$0$; }", property_name());
+    writer->WriteLine("}");
+  }
   AddPublicMemberAttributes(writer);
   writer->WriteLine("public $0$ $1$ {", type_name(), property_name());
   writer->WriteLine("  get { return result.$0$; }", property_name());
@@ -85,21 +91,29 @@ void PrimitiveFieldGenerator::GenerateBuilderMembers(Writer* writer) {
                     type_name());
   AddNullCheck(writer);
   writer->WriteLine("  PrepareBuilder();");
-  writer->WriteLine("  result.has$0$ = true;", property_name());
+  if (SupportFieldPresence(descriptor_->file())) {
+    writer->WriteLine("  result.has$0$ = true;", property_name());
+  }
   writer->WriteLine("  result.$0$_ = value;", name());
   writer->WriteLine("  return this;");
   writer->WriteLine("}");
   AddDeprecatedFlag(writer);
   writer->WriteLine("public Builder Clear$0$() {", property_name());
   writer->WriteLine("  PrepareBuilder();");
-  writer->WriteLine("  result.has$0$ = false;", property_name());
+  if (SupportFieldPresence(descriptor_->file())) {
+    writer->WriteLine("  result.has$0$ = false;", property_name());
+  }
   writer->WriteLine("  result.$0$_ = $1$;", name(), default_value());
   writer->WriteLine("  return this;");
   writer->WriteLine("}");
 }
 
 void PrimitiveFieldGenerator::GenerateMergingCode(Writer* writer) {
-  writer->WriteLine("if (other.Has$0$) {", property_name());
+  if (SupportFieldPresence(descriptor_->file())) {
+    writer->WriteLine("if (other.Has$0$) {", property_name());
+  } else {
+    writer->WriteLine("if (other.$0$ != $1$) {", property_name(), default_value());
+  }
   writer->WriteLine("  $0$ = other.$0$;", property_name());
   writer->WriteLine("}");
 }
@@ -109,12 +123,21 @@ void PrimitiveFieldGenerator::GenerateBuildingCode(Writer* writer) {
 }
 
 void PrimitiveFieldGenerator::GenerateParsingCode(Writer* writer) {
-  writer->WriteLine("result.has$0$ = input.Read$1$(ref result.$2$_);",
-                    property_name(), capitalized_type_name(), name());
+  if (SupportFieldPresence(descriptor_->file())) {
+    writer->WriteLine("result.has$0$ = input.Read$1$(ref result.$2$_);",
+                      property_name(), capitalized_type_name(), name());
+  } else {
+    writer->WriteLine("input.Read$0$(ref result.$1$_);",
+                      capitalized_type_name(), name());
+  }
 }
 
 void PrimitiveFieldGenerator::GenerateSerializationCode(Writer* writer) {
-  writer->WriteLine("if (has$0$) {", property_name());
+  if (SupportFieldPresence(descriptor_->file())) {
+    writer->WriteLine("if (has$0$) {", property_name());
+  } else {
+    writer->WriteLine("if ($0$ != $1$) {", property_name(), default_value());
+  }
   writer->WriteLine("  output.Write$0$($1$, field_names[$3$], $2$);",
                     capitalized_type_name(), number(), property_name(),
                     field_ordinal());
@@ -122,24 +145,43 @@ void PrimitiveFieldGenerator::GenerateSerializationCode(Writer* writer) {
 }
 
 void PrimitiveFieldGenerator::GenerateSerializedSizeCode(Writer* writer) {
-  writer->WriteLine("if (has$0$) {", property_name());
+  if (SupportFieldPresence(descriptor_->file())) {
+    writer->WriteLine("if (has$0$) {", property_name());
+  } else {
+    writer->WriteLine("if ($0$ != $1$) {", property_name(), default_value());
+  }
   writer->WriteLine("  size += pb::CodedOutputStream.Compute$0$Size($1$, $2$);",
                     capitalized_type_name(), number(), property_name());
   writer->WriteLine("}");
 }
 
 void PrimitiveFieldGenerator::WriteHash(Writer* writer) {
-  writer->WriteLine("if (has$0$) hash ^= $1$_.GetHashCode();", property_name(),
-                    name());
+  if (SupportFieldPresence(descriptor_->file())) {
+    writer->WriteLine("if (has$0$) {", property_name());
+  } else {
+    writer->WriteLine("if ($0$ != $1$) {", property_name(), default_value());
+  }
+  writer->WriteLine("  hash ^= $1$_.GetHashCode();", name());
+  writer->WriteLine("}");
 }
 void PrimitiveFieldGenerator::WriteEquals(Writer* writer) {
-  writer->WriteLine(
-      "if (has$0$ != other.has$0$ || (has$0$ && !$1$_.Equals(other.$1$_))) return false;",
-      property_name(), name());
+  if (SupportFieldPresence(descriptor_->file())) {
+    writer->WriteLine(
+        "if (has$0$ != other.has$0$ || (has$0$ && !$1$_.Equals(other.$1$_))) return false;",
+        property_name(), name());
+  } else {
+    writer->WriteLine(
+        "if (!$0$_.Equals(other.$0$_)) return false;", name());
+  }
 }
 void PrimitiveFieldGenerator::WriteToString(Writer* writer) {
-  writer->WriteLine("PrintField(\"$0$\", has$1$, $2$_, writer);",
-                    descriptor_->name(), property_name(), name());
+  if (SupportFieldPresence(descriptor_->file())) {
+    writer->WriteLine("PrintField(\"$0$\", has$1$, $2$_, writer);",
+                      descriptor_->name(), property_name(), name());
+  } else {
+    writer->WriteLine("PrintField(\"$0$\", $1$_, writer);",
+                      descriptor_->name(), name());
+  }
 }
 
 }  // namespace csharp
