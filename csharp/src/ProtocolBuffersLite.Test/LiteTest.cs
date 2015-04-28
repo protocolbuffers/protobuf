@@ -88,11 +88,11 @@ namespace Google.ProtocolBuffers
 
             TestAllExtensionsLite message =
                 TestAllExtensionsLite.CreateBuilder()
-                    .SetExtension(UnitTestLiteProtoFile.OptionalInt32ExtensionLite, 123)
-                    .AddExtension(UnitTestLiteProtoFile.RepeatedStringExtensionLite, "hello")
-                    .SetExtension(UnitTestLiteProtoFile.OptionalNestedEnumExtensionLite,
+                    .SetExtension(UnittestLite.OptionalInt32ExtensionLite, 123)
+                    .AddExtension(UnittestLite.RepeatedStringExtensionLite, "hello")
+                    .SetExtension(UnittestLite.OptionalNestedEnumExtensionLite,
                                   TestAllTypesLite.Types.NestedEnum.BAZ)
-                    .SetExtension(UnitTestLiteProtoFile.OptionalNestedMessageExtensionLite,
+                    .SetExtension(UnittestLite.OptionalNestedMessageExtensionLite,
                                   TestAllTypesLite.Types.NestedMessage.CreateBuilder().SetBb(7).Build())
                     .Build();
 
@@ -102,17 +102,17 @@ namespace Google.ProtocolBuffers
             TestAllExtensionsLite message2 = message.ToBuilder().Build();
 
             Assert.AreEqual(123, (int) message2.GetExtension(
-                UnitTestLiteProtoFile.OptionalInt32ExtensionLite));
+                UnittestLite.OptionalInt32ExtensionLite));
             Assert.AreEqual(1, message2.GetExtensionCount(
-                UnitTestLiteProtoFile.RepeatedStringExtensionLite));
+                UnittestLite.RepeatedStringExtensionLite));
             Assert.AreEqual(1, message2.GetExtension(
-                UnitTestLiteProtoFile.RepeatedStringExtensionLite).Count);
+                UnittestLite.RepeatedStringExtensionLite).Count);
             Assert.AreEqual("hello", message2.GetExtension(
-                UnitTestLiteProtoFile.RepeatedStringExtensionLite, 0));
+                UnittestLite.RepeatedStringExtensionLite, 0));
             Assert.AreEqual(TestAllTypesLite.Types.NestedEnum.BAZ, message2.GetExtension(
-                UnitTestLiteProtoFile.OptionalNestedEnumExtensionLite));
+                UnittestLite.OptionalNestedEnumExtensionLite));
             Assert.AreEqual(7, message2.GetExtension(
-                UnitTestLiteProtoFile.OptionalNestedMessageExtensionLite).Bb);
+                UnittestLite.OptionalNestedMessageExtensionLite).Bb);
         }
     }
 }

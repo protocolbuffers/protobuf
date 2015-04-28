@@ -1,7 +1,6 @@
-import "google/protobuf/csharp_options.proto";
-option (google.protobuf.csharp_file_options).namespace = "Google.ProtocolBuffers.TestProtos";
-option (google.protobuf.csharp_file_options).umbrella_classname = "UnitTestXmlSerializerTestProtoFile";
-option (google.protobuf.csharp_file_options).add_serializable = true;
+syntax = "proto2";
+
+option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
 
 package protobuf_unittest_extra;
 

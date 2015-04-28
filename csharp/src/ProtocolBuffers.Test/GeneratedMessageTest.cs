@@ -398,24 +398,24 @@ namespace Google.ProtocolBuffers
         {
             // ClearExtension() is not actually used in TestUtil, so try it manually.
             Assert.IsFalse(TestAllExtensions.CreateBuilder()
-                               .SetExtension(UnitTestProtoFile.OptionalInt32Extension, 1)
-                               .ClearExtension(UnitTestProtoFile.OptionalInt32Extension)
-                               .HasExtension(UnitTestProtoFile.OptionalInt32Extension));
+                               .SetExtension(Unittest.OptionalInt32Extension, 1)
+                               .ClearExtension(Unittest.OptionalInt32Extension)
+                               .HasExtension(Unittest.OptionalInt32Extension));
             Assert.AreEqual(0, TestAllExtensions.CreateBuilder()
-                                   .AddExtension(UnitTestProtoFile.RepeatedInt32Extension, 1)
-                                   .ClearExtension(UnitTestProtoFile.RepeatedInt32Extension)
-                                   .GetExtensionCount(UnitTestProtoFile.RepeatedInt32Extension));
+                                   .AddExtension(Unittest.RepeatedInt32Extension, 1)
+                                   .ClearExtension(Unittest.RepeatedInt32Extension)
+                                   .GetExtensionCount(Unittest.RepeatedInt32Extension));
         }
 
         [TestMethod]
         public void ExtensionMergeFrom()
         {
             TestAllExtensions original = TestAllExtensions.CreateBuilder()
-                .SetExtension(UnitTestProtoFile.OptionalInt32Extension, 1).Build();
+                .SetExtension(Unittest.OptionalInt32Extension, 1).Build();
             TestAllExtensions merged =
                 TestAllExtensions.CreateBuilder().MergeFrom(original).Build();
-            Assert.IsTrue((merged.HasExtension(UnitTestProtoFile.OptionalInt32Extension)));
-            Assert.AreEqual(1, (int) merged.GetExtension(UnitTestProtoFile.OptionalInt32Extension));
+            Assert.IsTrue((merged.HasExtension(Unittest.OptionalInt32Extension)));
+            Assert.AreEqual(1, (int) merged.GetExtension(Unittest.OptionalInt32Extension));
         }
 
         /* Removed multiple files option for the moment
@@ -430,13 +430,13 @@ namespace Google.ProtocolBuffers
           .Build();
       Assert.AreEqual(message, MessageWithNoOuter.ParseFrom(message.ToByteString()));
 
-      Assert.AreEqual(MultiFileProto.Descriptor, MessageWithNoOuter.Descriptor.File);
+      Assert.AreEqual(MultiFileProto.DescriptorProtoFile, MessageWithNoOuter.DescriptorProtoFile.File);
 
-      FieldDescriptor field = MessageWithNoOuter.Descriptor.FindDescriptor<FieldDescriptor>("foreign_enum");
-      Assert.AreEqual(MultiFileProto.Descriptor.FindTypeByName<EnumDescriptor>("EnumWithNoOuter")
+      FieldDescriptor field = MessageWithNoOuter.DescriptorProtoFile.FindDescriptor<FieldDescriptor>("foreign_enum");
+      Assert.AreEqual(MultiFileProto.DescriptorProtoFile.FindTypeByName<EnumDescriptor>("EnumWithNoOuter")
         .FindValueByNumber((int)EnumWithNoOuter.BAR), message[field]);
 
-      Assert.AreEqual(MultiFileProto.Descriptor, ServiceWithNoOuter.Descriptor.File);
+      Assert.AreEqual(MultiFileProto.DescriptorProtoFile, ServiceWithNoOuter.DescriptorProtoFile.File);
 
       Assert.IsFalse(TestAllExtensions.DefaultInstance.HasExtension(MultiFileProto.ExtensionWithOuter));
     }*/
@@ -512,14 +512,14 @@ namespace Google.ProtocolBuffers
         {
             Assert.AreEqual(TestRequired.SingleFieldNumber, 1000);
             Assert.AreEqual(TestRequired.MultiFieldNumber, 1001);
-            Assert.AreEqual(UnitTestProtoFile.OptionalInt32ExtensionFieldNumber, 1);
-            Assert.AreEqual(UnitTestProtoFile.OptionalGroupExtensionFieldNumber, 16);
-            Assert.AreEqual(UnitTestProtoFile.OptionalNestedMessageExtensionFieldNumber, 18);
-            Assert.AreEqual(UnitTestProtoFile.OptionalNestedEnumExtensionFieldNumber, 21);
-            Assert.AreEqual(UnitTestProtoFile.RepeatedInt32ExtensionFieldNumber, 31);
-            Assert.AreEqual(UnitTestProtoFile.RepeatedGroupExtensionFieldNumber, 46);
-            Assert.AreEqual(UnitTestProtoFile.RepeatedNestedMessageExtensionFieldNumber, 48);
-            Assert.AreEqual(UnitTestProtoFile.RepeatedNestedEnumExtensionFieldNumber, 51);
+            Assert.AreEqual(Unittest.OptionalInt32ExtensionFieldNumber, 1);
+            Assert.AreEqual(Unittest.OptionalGroupExtensionFieldNumber, 16);
+            Assert.AreEqual(Unittest.OptionalNestedMessageExtensionFieldNumber, 18);
+            Assert.AreEqual(Unittest.OptionalNestedEnumExtensionFieldNumber, 21);
+            Assert.AreEqual(Unittest.RepeatedInt32ExtensionFieldNumber, 31);
+            Assert.AreEqual(Unittest.RepeatedGroupExtensionFieldNumber, 46);
+            Assert.AreEqual(Unittest.RepeatedNestedMessageExtensionFieldNumber, 48);
+            Assert.AreEqual(Unittest.RepeatedNestedEnumExtensionFieldNumber, 51);
         }
 
         [TestMethod]

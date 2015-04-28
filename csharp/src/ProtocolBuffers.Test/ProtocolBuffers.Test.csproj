@@ -82,14 +82,23 @@
     <Compile Include="Compatibility\TextCompatibilityTests.cs" />
     <Compile Include="Compatibility\XmlCompatibilityTests.cs" />
     <Compile Include="SerializableAttribute.cs" />
-    <Compile Include="TestProtos\UnitTestExtrasProtoFile.cs" />
+    <Compile Include="TestProtos\GoogleSize.cs" />
+    <Compile Include="TestProtos\GoogleSpeed.cs" />
+    <Compile Include="TestProtos\Unittest.cs" />
+    <Compile Include="TestProtos\UnittestCustomOptions.cs" />
+    <Compile Include="TestProtos\UnittestDropUnknownFields.cs" />
+    <Compile Include="TestProtos\UnittestEnormousDescriptor.cs" />
+    <Compile Include="TestProtos\UnittestExtrasXmltest.cs" />
+    <Compile Include="TestProtos\UnittestImport.cs" />
+    <Compile Include="TestProtos\UnittestImportPublic.cs" />
+    <Compile Include="TestProtos\UnittestIssues.cs" />
+    <Compile Include="TestProtos\UnittestMset.cs" />
+    <Compile Include="TestProtos\UnittestOptimizeFor.cs" />
+    <Compile Include="TestProtos\UnknownEnumTest.cs" />
     <Compile Include="TestResources.cs" />
-    <Compile Include="TestRpcForMimeTypes.cs" />
     <Compile Include="TestReaderForUrlEncoded.cs" />
-    <Compile Include="CSharpOptionsTest.cs" />
     <Compile Include="DeprecatedMemberTest.cs" />
     <Compile Include="DescriptorsTest.cs" />
-    <Compile Include="Descriptors\MessageDescriptorTest.cs" />
     <Compile Include="DynamicMessageTest.cs" />
     <Compile Include="ExtendableMessageTest.cs" />
     <Compile Include="GeneratedBuilderTest.cs" />
@@ -104,26 +113,8 @@
     <Compile Include="ReflectionTester.cs" />
     <Compile Include="ReusableBuilderTest.cs" />
     <Compile Include="SerializableTest.cs" />
-    <Compile Include="ServiceTest.cs" />
     <Compile Include="TestCornerCases.cs" />
     <Compile Include="TestMimeMessageFormats.cs" />
-    <Compile Include="TestProtos\UnitTestCSharpOptionsProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestCustomOptionsProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestEmbedOptimizeForProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestEmptyProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestExtrasIssuesProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestGenericServices.cs" />
-    <Compile Include="TestProtos\UnitTestGoogleSizeProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestGoogleSpeedProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestImportProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestMessageSetProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestNoGenericServicesProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestOptimizeForProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestRpcInterop.cs" />
-    <Compile Include="TestProtos\UnitTestXmlSerializerTestProtoFile.cs" />
-    <Compile Include="TestRpcGenerator.cs" />
     <Compile Include="TestUtil.cs" />
     <Compile Include="TestWriterFormatJson.cs" />
     <Compile Include="TestWriterFormatXml.cs" />
@@ -162,6 +153,7 @@
     <EmbeddedResource Include="Compatibility\google_message1.dat" />
     <EmbeddedResource Include="Compatibility\google_message2.dat" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

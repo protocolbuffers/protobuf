@@ -83,13 +83,15 @@
     <Compile Include="LiteTest.cs" />
     <Compile Include="MissingFieldAndExtensionTest.cs" />
     <Compile Include="TestLiteByApi.cs" />
-    <Compile Include="TestProtos\UnitTestExtrasFullProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestExtrasLiteProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestImportProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestLiteImportNonLiteProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestLiteProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestProtoFile.cs" />
+    <Compile Include="TestProtos\Unittest.cs" />
+    <Compile Include="TestProtos\UnittestExtrasFull.cs" />
+    <Compile Include="TestProtos\UnittestExtrasLite.cs" />
+    <Compile Include="TestProtos\UnittestImport.cs" />
+    <Compile Include="TestProtos\UnittestImportLite.cs" />
+    <Compile Include="TestProtos\UnittestImportPublic.cs" />
+    <Compile Include="TestProtos\UnittestImportPublicLite.cs" />
+    <Compile Include="TestProtos\UnittestLite.cs" />
+    <Compile Include="TestProtos\UnittestLiteImportsNonlite.cs" />
     <Compile Include="TestUtil.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -98,6 +100,7 @@
       <Name>ProtocolBuffers</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

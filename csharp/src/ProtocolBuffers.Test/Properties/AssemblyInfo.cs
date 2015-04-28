@@ -32,4 +32,4 @@ using System.Runtime.InteropServices;
 // We don't really need CLSCompliance, but if the assembly builds with no warnings,
 // that means the generator is okay.
 
-[assembly: CLSCompliant(true)]
+[assembly: CLSCompliant(false)]

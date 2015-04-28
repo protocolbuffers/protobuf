@@ -334,9 +334,9 @@ namespace Google.ProtocolBuffers
                 TestAllExtensions message =
                     TestAllExtensions.ParseFrom(data, TestUtil.CreateExtensionRegistry());
                 Assert.AreEqual(TestAllTypes.Types.NestedEnum.BAR,
-                                message.GetExtension(UnitTestProtoFile.OptionalNestedEnumExtension));
+                                message.GetExtension(Unittest.OptionalNestedEnumExtension));
                 TestUtil.AssertEqual(new[] {TestAllTypes.Types.NestedEnum.FOO, TestAllTypes.Types.NestedEnum.BAZ},
-                                     message.GetExtension(UnitTestProtoFile.RepeatedNestedEnumExtension));
+                                     message.GetExtension(Unittest.RepeatedNestedEnumExtension));
                 TestUtil.AssertEqual(new[] {5UL}, message.UnknownFields[singularField.FieldNumber].VarintList);
                 TestUtil.AssertEqual(new[] {4UL, 6UL}, message.UnknownFields[repeatedField.FieldNumber].VarintList);
             }

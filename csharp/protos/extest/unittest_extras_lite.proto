@@ -1,14 +1,9 @@
-// Additional options required for C# generation. File from copyright
-// line onwards is as per original distribution.
-import "google/protobuf/csharp_options.proto";
-option (google.protobuf.csharp_file_options).namespace = "Google.ProtocolBuffers.TestProtos";
-option (google.protobuf.csharp_file_options).umbrella_classname = "UnitTestExtrasLiteProtoFile";
-option (google.protobuf.csharp_file_options).add_serializable = true;
+syntax = "proto2";
 
 package protobuf_unittest_extra;
 
+option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
 option optimize_for = LITE_RUNTIME;
-
 option java_package = "com.google.protobuf";
 
 message TestRequiredLite {
@@ -58,7 +53,10 @@ message  TestInteropEmployeeIdLite {
 }
   
 extend TestInteropPersonLite {
-  required TestInteropEmployeeIdLite employee_id_lite = 126;
+  // Note: changed from required to optional, as required fields are not
+  // permitted in extensions. (The fact that this was allowed in protogen
+  // before was almost certainly a bug.)
+  optional TestInteropEmployeeIdLite employee_id_lite = 126;
 }
 
 /* Removed from unittest_lite.proto and added back here */
