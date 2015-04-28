@@ -85,6 +85,12 @@ void StringAppendV(string* dst, const char* format, va_list ap) {
       // Just an error.
       return;
     }
+
+    if(result == std::numberic_limits<int>::max()){
+      //checks for integer overflow
+      return;
+    }
+
   }
 
   // Increase the buffer size to the size requested by vsnprintf,
