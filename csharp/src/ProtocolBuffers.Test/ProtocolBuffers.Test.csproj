@@ -86,10 +86,8 @@
     <Compile Include="TestResources.cs" />
     <Compile Include="TestRpcForMimeTypes.cs" />
     <Compile Include="TestReaderForUrlEncoded.cs" />
-    <Compile Include="CSharpOptionsTest.cs" />
     <Compile Include="DeprecatedMemberTest.cs" />
     <Compile Include="DescriptorsTest.cs" />
-    <Compile Include="Descriptors\MessageDescriptorTest.cs" />
     <Compile Include="DynamicMessageTest.cs" />
     <Compile Include="ExtendableMessageTest.cs" />
     <Compile Include="GeneratedBuilderTest.cs" />

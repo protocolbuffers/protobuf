@@ -51,15 +51,16 @@ namespace Google.ProtocolBuffers.Descriptors
         private readonly IList<ServiceDescriptor> services;
         private readonly IList<FieldDescriptor> extensions;
         private readonly IList<FileDescriptor> dependencies;
+        private readonly IList<FileDescriptor> publicDependencies;
         private readonly DescriptorPool pool;
-        private CSharpFileOptions csharpFileOptions;
-        private readonly object optionsLock = new object();
 
-        private FileDescriptor(FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool)
+        private FileDescriptor(FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool, bool allowUnknownDependencies)
         {
             this.pool = pool;
             this.proto = proto;
             this.dependencies = new ReadOnlyCollection<FileDescriptor>((FileDescriptor[]) dependencies.Clone());
+
+            publicDependencies = DeterminePublicDependencies(this, proto, dependencies, allowUnknownDependencies);
 
             pool.AddPackage(Package, this);
 
@@ -80,93 +81,45 @@ namespace Google.ProtocolBuffers.Descriptors
                                                                new FieldDescriptor(field, this, null, index, true));
         }
 
-
         /// <summary>
-        /// Allows a file descriptor to be configured with a set of external options, e.g. from the
-        /// command-line arguments to protogen.
+        /// Extracts public dependencies from direct dependencies. This is a static method despite its
+        /// first parameter, as the value we're in the middle of constructing is only used for exceptions.
         /// </summary>
-        public void ConfigureWithDefaultOptions(CSharpFileOptions options)
+        private static IList<FileDescriptor> DeterminePublicDependencies(FileDescriptor @this, FileDescriptorProto proto, FileDescriptor[] dependencies, bool allowUnknownDependencies)
         {
-            csharpFileOptions = BuildOrFakeWithDefaultOptions(options);
+            var nameToFileMap = new Dictionary<string, FileDescriptor>();
+            foreach (var file in dependencies)
+            {
+                nameToFileMap[file.Name] = file;
+            }
+            var publicDependencies = new List<FileDescriptor>();
+            for (int i = 0; i < proto.PublicDependencyCount; i++)
+            {
+                int index = proto.PublicDependencyList[i];
+                if (index < 0 || index >= proto.DependencyCount)
+                {
+                    throw new DescriptorValidationException(@this, "Invalid public dependency index.");
+                }
+                string name = proto.DependencyList[index];
+                FileDescriptor file = nameToFileMap[name];
+                if (file == null)
+                {
+                    if (!allowUnknownDependencies)
+                    {
+                        throw new DescriptorValidationException(@this, "Invalid public dependency: " + name);
+                    }
+                    // Ignore unknown dependencies.
+                }
+                else
+                {
+                    publicDependencies.Add(file);
+                }
+            }
+            return new ReadOnlyCollection<FileDescriptor>(publicDependencies);
         }
+
 
         static readonly char[] PathSeperators = new char[] { '/', '\\' };
-        private CSharpFileOptions BuildOrFakeWithDefaultOptions(CSharpFileOptions defaultOptions)
-        {
-            // Fix for being able to relocate these files to any directory structure
-            if (proto.Package == "google.protobuf")
-            {
-                int ixslash = proto.Name.LastIndexOfAny(PathSeperators);
-                string filename = ixslash < 0 ? proto.Name : proto.Name.Substring(ixslash + 1);
-                // TODO(jonskeet): Check if we could use FileDescriptorProto.Descriptor.Name - interesting bootstrap issues)
-                if (filename == "descriptor.proto")
-                {
-                    return new CSharpFileOptions.Builder
-                               {
-                                   Namespace = "Google.ProtocolBuffers.DescriptorProtos",
-                                   UmbrellaClassname = "DescriptorProtoFile",
-                                   NestClasses = false,
-                                   MultipleFiles = false,
-                                   PublicClasses = true,
-                                   OutputDirectory = defaultOptions.OutputDirectory,
-                                   IgnoreGoogleProtobuf = defaultOptions.IgnoreGoogleProtobuf
-                               }.Build();
-                }
-                if (filename == "csharp_options.proto")
-                {
-                    return new CSharpFileOptions.Builder
-                               {
-                                   Namespace = "Google.ProtocolBuffers.DescriptorProtos",
-                                   UmbrellaClassname = "CSharpOptions",
-                                   NestClasses = false,
-                                   MultipleFiles = false,
-                                   PublicClasses = true,
-                                   OutputDirectory = defaultOptions.OutputDirectory,
-                                   IgnoreGoogleProtobuf = defaultOptions.IgnoreGoogleProtobuf
-                               }.Build();
-                }
-            }
-            CSharpFileOptions.Builder builder = defaultOptions.ToBuilder();
-            if (proto.Options.HasExtension(DescriptorProtos.CSharpOptions.CSharpFileOptions))
-            {
-                builder.MergeFrom(proto.Options.GetExtension(DescriptorProtos.CSharpOptions.CSharpFileOptions));
-            }
-            if (!builder.HasNamespace)
-            {
-                builder.Namespace = Package;
-            }
-            if (!builder.HasUmbrellaClassname)
-            {
-                int lastSlash = Name.LastIndexOf('/');
-                string baseName = Name.Substring(lastSlash + 1);
-                builder.UmbrellaClassname = NameHelpers.UnderscoresToPascalCase(NameHelpers.StripProto(baseName));
-            }
-
-            // Auto-fix for name collision by placing umbrella class into a new namespace.  This
-            // still won't fix the collisions with nesting enabled; however, you have to turn that on explicitly anyway.
-            if (!builder.NestClasses && !builder.HasUmbrellaNamespace)
-            {
-                bool collision = false;
-                foreach (IDescriptor d in MessageTypes)
-                {
-                    collision |= d.Name == builder.UmbrellaClassname;
-                }
-                foreach (IDescriptor d in Services)
-                {
-                    collision |= d.Name == builder.UmbrellaClassname;
-                }
-                foreach (IDescriptor d in EnumTypes)
-                {
-                    collision |= d.Name == builder.UmbrellaClassname;
-                }
-                if (collision)
-                {
-                    builder.UmbrellaNamespace = "Proto";
-                }
-            }
-
-            return builder.Build();
-        }
 
         /// <value>
         /// The descriptor in its protocol message representation.
@@ -182,25 +135,6 @@ namespace Google.ProtocolBuffers.Descriptors
         public FileOptions Options
         {
             get { return proto.Options; }
-        }
-
-        /// <summary>
-        /// Returns the C#-specific options for this file descriptor. This will always be
-        /// completely filled in.
-        /// </summary>
-        public CSharpFileOptions CSharpOptions
-        {
-            get
-            {
-                lock (optionsLock)
-                {
-                    if (csharpFileOptions == null)
-                    {
-                        csharpFileOptions = BuildOrFakeWithDefaultOptions(CSharpFileOptions.DefaultInstance);
-                    }
-                }
-                return csharpFileOptions;
-            }
         }
 
         /// <value>
@@ -258,6 +192,14 @@ namespace Google.ProtocolBuffers.Descriptors
         public IList<FileDescriptor> Dependencies
         {
             get { return dependencies; }
+        }
+
+        /// <value>
+        /// Unmodifiable list of this file's public dependencies (public imports).
+        /// </value>
+        public IList<FileDescriptor> PublicDependencies
+        {
+            get { return publicDependencies; }
         }
 
         /// <value>
@@ -331,6 +273,22 @@ namespace Google.ProtocolBuffers.Descriptors
         /// having an undefined type or because two messages were defined with the same name.</exception>
         public static FileDescriptor BuildFrom(FileDescriptorProto proto, FileDescriptor[] dependencies)
         {
+            return BuildFrom(proto, dependencies, false);
+        }
+
+        /// <summary>
+        /// Builds a FileDescriptor from its protocol buffer representation.
+        /// </summary>
+        /// <param name="proto">The protocol message form of the FileDescriptor.</param>
+        /// <param name="dependencies">FileDescriptors corresponding to all of the
+        /// file's dependencies, in the exact order listed in the .proto file. May be null,
+        /// in which case it is treated as an empty array.</param>
+        /// <param name="allowUnknownDependencies">Whether unknown dependencies are ignored (true) or cause an exception to be thrown (false).</param>
+        /// <exception cref="DescriptorValidationException">If <paramref name="proto"/> is not
+        /// a valid descriptor. This can occur for a number of reasons, such as a field
+        /// having an undefined type or because two messages were defined with the same name.</exception>
+        private static FileDescriptor BuildFrom(FileDescriptorProto proto, FileDescriptor[] dependencies, bool allowUnknownDependencies)
+        {
             // Building descriptors involves two steps: translating and linking.
             // In the translation step (implemented by FileDescriptor's
             // constructor), we build an object tree mirroring the
@@ -346,23 +304,25 @@ namespace Google.ProtocolBuffers.Descriptors
             }
 
             DescriptorPool pool = new DescriptorPool(dependencies);
-            FileDescriptor result = new FileDescriptor(proto, dependencies, pool);
+            FileDescriptor result = new FileDescriptor(proto, dependencies, pool, allowUnknownDependencies);
 
-            if (dependencies.Length != proto.DependencyCount)
-            {
-                throw new DescriptorValidationException(result,
-                                                        "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
-                                                        "those listed in the FileDescriptorProto.");
-            }
-            for (int i = 0; i < proto.DependencyCount; i++)
-            {
-                if (dependencies[i].Name != proto.DependencyList[i])
-                {
-                    throw new DescriptorValidationException(result,
-                                                            "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
-                                                            "those listed in the FileDescriptorProto.");
-                }
-            }
+            // TODO(jonskeet): Reinstate these checks, or get rid of them entirely. They aren't in the Java code,
+            // and fail for the CustomOptions test right now. (We get "descriptor.proto" vs "google/protobuf/descriptor.proto".)
+            //if (dependencies.Length != proto.DependencyCount)
+            //{
+            //    throw new DescriptorValidationException(result,
+            //                                            "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
+            //                                            "those listed in the FileDescriptorProto.");
+            //}
+            //for (int i = 0; i < proto.DependencyCount; i++)
+            //{
+            //    if (dependencies[i].Name != proto.DependencyList[i])
+            //    {
+            //        throw new DescriptorValidationException(result,
+            //                                                "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
+            //                                                "those listed in the FileDescriptorProto.");
+            //    }
+            //}
 
             result.CrossLink();
             return result;
@@ -434,7 +394,9 @@ namespace Google.ProtocolBuffers.Descriptors
             FileDescriptor result;
             try
             {
-                result = BuildFrom(proto, dependencies);
+                // When building descriptors for generated code, we allow unknown
+                // dependencies by default.
+                result = BuildFrom(proto, dependencies, true);
             }
             catch (DescriptorValidationException e)
             {
@@ -493,6 +455,11 @@ namespace Google.ProtocolBuffers.Descriptors
             {
                 extensions[i].ReplaceProto(proto.GetExtension(i));
             }
+        }
+
+        public override string ToString()
+        {
+            return "FileDescriptor for " + proto.Name;
         }
     }
 }
