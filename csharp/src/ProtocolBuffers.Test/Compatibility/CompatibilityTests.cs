@@ -7,7 +7,7 @@ namespace Google.ProtocolBuffers.Compatibility
 {
     /// <summary>
     /// This abstract base implements several tests to ensure that well-known messages can be written
-    /// and read to/from various formats without loosing data.  Implementations overload the two serailization
+    /// and read to/from various formats without losing data.  Implementations overload the two serailization
     /// methods to provide the tests with the means to read and write for a given format.
     /// </summary>
     public abstract class CompatibilityTests

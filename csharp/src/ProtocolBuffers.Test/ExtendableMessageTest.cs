@@ -48,7 +48,7 @@ namespace Google.ProtocolBuffers
         [TestMethod, ExpectedException(typeof(ArgumentException))]
         public void ExtensionWriterInvalidExtension()
         {
-            TestPackedExtensions.CreateBuilder()[UnitTestProtoFile.OptionalForeignMessageExtension.Descriptor] =
+            TestPackedExtensions.CreateBuilder()[Unittest.OptionalForeignMessageExtension.Descriptor] =
                 ForeignMessage.DefaultInstance;
         }
 
@@ -56,73 +56,73 @@ namespace Google.ProtocolBuffers
         public void ExtensionWriterTest()
         {
             TestAllExtensions.Builder builder = TestAllExtensions.CreateBuilder()
-                .SetExtension(UnitTestProtoFile.DefaultBoolExtension, true)
-                .SetExtension(UnitTestProtoFile.DefaultBytesExtension, ByteString.CopyFromUtf8("123"))
-                .SetExtension(UnitTestProtoFile.DefaultCordExtension, "123")
-                .SetExtension(UnitTestProtoFile.DefaultDoubleExtension, 123)
-                .SetExtension(UnitTestProtoFile.DefaultFixed32Extension, 123u)
-                .SetExtension(UnitTestProtoFile.DefaultFixed64Extension, 123u)
-                .SetExtension(UnitTestProtoFile.DefaultFloatExtension, 123)
-                .SetExtension(UnitTestProtoFile.DefaultForeignEnumExtension, ForeignEnum.FOREIGN_BAZ)
-                .SetExtension(UnitTestProtoFile.DefaultImportEnumExtension, ImportEnum.IMPORT_BAZ)
-                .SetExtension(UnitTestProtoFile.DefaultInt32Extension, 123)
-                .SetExtension(UnitTestProtoFile.DefaultInt64Extension, 123)
-                .SetExtension(UnitTestProtoFile.DefaultNestedEnumExtension, TestAllTypes.Types.NestedEnum.FOO)
-                .SetExtension(UnitTestProtoFile.DefaultSfixed32Extension, 123)
-                .SetExtension(UnitTestProtoFile.DefaultSfixed64Extension, 123)
-                .SetExtension(UnitTestProtoFile.DefaultSint32Extension, 123)
-                .SetExtension(UnitTestProtoFile.DefaultSint64Extension, 123)
-                .SetExtension(UnitTestProtoFile.DefaultStringExtension, "123")
-                .SetExtension(UnitTestProtoFile.DefaultStringPieceExtension, "123")
-                .SetExtension(UnitTestProtoFile.DefaultUint32Extension, 123u)
-                .SetExtension(UnitTestProtoFile.DefaultUint64Extension, 123u)
+                .SetExtension(Unittest.DefaultBoolExtension, true)
+                .SetExtension(Unittest.DefaultBytesExtension, ByteString.CopyFromUtf8("123"))
+                .SetExtension(Unittest.DefaultCordExtension, "123")
+                .SetExtension(Unittest.DefaultDoubleExtension, 123)
+                .SetExtension(Unittest.DefaultFixed32Extension, 123u)
+                .SetExtension(Unittest.DefaultFixed64Extension, 123u)
+                .SetExtension(Unittest.DefaultFloatExtension, 123)
+                .SetExtension(Unittest.DefaultForeignEnumExtension, ForeignEnum.FOREIGN_BAZ)
+                .SetExtension(Unittest.DefaultImportEnumExtension, ImportEnum.IMPORT_BAZ)
+                .SetExtension(Unittest.DefaultInt32Extension, 123)
+                .SetExtension(Unittest.DefaultInt64Extension, 123)
+                .SetExtension(Unittest.DefaultNestedEnumExtension, TestAllTypes.Types.NestedEnum.FOO)
+                .SetExtension(Unittest.DefaultSfixed32Extension, 123)
+                .SetExtension(Unittest.DefaultSfixed64Extension, 123)
+                .SetExtension(Unittest.DefaultSint32Extension, 123)
+                .SetExtension(Unittest.DefaultSint64Extension, 123)
+                .SetExtension(Unittest.DefaultStringExtension, "123")
+                .SetExtension(Unittest.DefaultStringPieceExtension, "123")
+                .SetExtension(Unittest.DefaultUint32Extension, 123u)
+                .SetExtension(Unittest.DefaultUint64Extension, 123u)
                 //Optional
-                .SetExtension(UnitTestProtoFile.OptionalBoolExtension, true)
-                .SetExtension(UnitTestProtoFile.OptionalBytesExtension, ByteString.CopyFromUtf8("123"))
-                .SetExtension(UnitTestProtoFile.OptionalCordExtension, "123")
-                .SetExtension(UnitTestProtoFile.OptionalDoubleExtension, 123)
-                .SetExtension(UnitTestProtoFile.OptionalFixed32Extension, 123u)
-                .SetExtension(UnitTestProtoFile.OptionalFixed64Extension, 123u)
-                .SetExtension(UnitTestProtoFile.OptionalFloatExtension, 123)
-                .SetExtension(UnitTestProtoFile.OptionalForeignEnumExtension, ForeignEnum.FOREIGN_BAZ)
-                .SetExtension(UnitTestProtoFile.OptionalImportEnumExtension, ImportEnum.IMPORT_BAZ)
-                .SetExtension(UnitTestProtoFile.OptionalInt32Extension, 123)
-                .SetExtension(UnitTestProtoFile.OptionalInt64Extension, 123)
-                .SetExtension(UnitTestProtoFile.OptionalNestedEnumExtension, TestAllTypes.Types.NestedEnum.FOO)
-                .SetExtension(UnitTestProtoFile.OptionalSfixed32Extension, 123)
-                .SetExtension(UnitTestProtoFile.OptionalSfixed64Extension, 123)
-                .SetExtension(UnitTestProtoFile.OptionalSint32Extension, 123)
-                .SetExtension(UnitTestProtoFile.OptionalSint64Extension, 123)
-                .SetExtension(UnitTestProtoFile.OptionalStringExtension, "123")
-                .SetExtension(UnitTestProtoFile.OptionalStringPieceExtension, "123")
-                .SetExtension(UnitTestProtoFile.OptionalUint32Extension, 123u)
-                .SetExtension(UnitTestProtoFile.OptionalUint64Extension, 123u)
+                .SetExtension(Unittest.OptionalBoolExtension, true)
+                .SetExtension(Unittest.OptionalBytesExtension, ByteString.CopyFromUtf8("123"))
+                .SetExtension(Unittest.OptionalCordExtension, "123")
+                .SetExtension(Unittest.OptionalDoubleExtension, 123)
+                .SetExtension(Unittest.OptionalFixed32Extension, 123u)
+                .SetExtension(Unittest.OptionalFixed64Extension, 123u)
+                .SetExtension(Unittest.OptionalFloatExtension, 123)
+                .SetExtension(Unittest.OptionalForeignEnumExtension, ForeignEnum.FOREIGN_BAZ)
+                .SetExtension(Unittest.OptionalImportEnumExtension, ImportEnum.IMPORT_BAZ)
+                .SetExtension(Unittest.OptionalInt32Extension, 123)
+                .SetExtension(Unittest.OptionalInt64Extension, 123)
+                .SetExtension(Unittest.OptionalNestedEnumExtension, TestAllTypes.Types.NestedEnum.FOO)
+                .SetExtension(Unittest.OptionalSfixed32Extension, 123)
+                .SetExtension(Unittest.OptionalSfixed64Extension, 123)
+                .SetExtension(Unittest.OptionalSint32Extension, 123)
+                .SetExtension(Unittest.OptionalSint64Extension, 123)
+                .SetExtension(Unittest.OptionalStringExtension, "123")
+                .SetExtension(Unittest.OptionalStringPieceExtension, "123")
+                .SetExtension(Unittest.OptionalUint32Extension, 123u)
+                .SetExtension(Unittest.OptionalUint64Extension, 123u)
                 //Repeated
-                .AddExtension(UnitTestProtoFile.RepeatedBoolExtension, true)
-                .AddExtension(UnitTestProtoFile.RepeatedBytesExtension, ByteString.CopyFromUtf8("123"))
-                .AddExtension(UnitTestProtoFile.RepeatedCordExtension, "123")
-                .AddExtension(UnitTestProtoFile.RepeatedDoubleExtension, 123)
-                .AddExtension(UnitTestProtoFile.RepeatedFixed32Extension, 123u)
-                .AddExtension(UnitTestProtoFile.RepeatedFixed64Extension, 123u)
-                .AddExtension(UnitTestProtoFile.RepeatedFloatExtension, 123)
-                .AddExtension(UnitTestProtoFile.RepeatedForeignEnumExtension, ForeignEnum.FOREIGN_BAZ)
-                .AddExtension(UnitTestProtoFile.RepeatedImportEnumExtension, ImportEnum.IMPORT_BAZ)
-                .AddExtension(UnitTestProtoFile.RepeatedInt32Extension, 123)
-                .AddExtension(UnitTestProtoFile.RepeatedInt64Extension, 123)
-                .AddExtension(UnitTestProtoFile.RepeatedNestedEnumExtension, TestAllTypes.Types.NestedEnum.FOO)
-                .AddExtension(UnitTestProtoFile.RepeatedSfixed32Extension, 123)
-                .AddExtension(UnitTestProtoFile.RepeatedSfixed64Extension, 123)
-                .AddExtension(UnitTestProtoFile.RepeatedSint32Extension, 123)
-                .AddExtension(UnitTestProtoFile.RepeatedSint64Extension, 123)
-                .AddExtension(UnitTestProtoFile.RepeatedStringExtension, "123")
-                .AddExtension(UnitTestProtoFile.RepeatedStringPieceExtension, "123")
-                .AddExtension(UnitTestProtoFile.RepeatedUint32Extension, 123u)
-                .AddExtension(UnitTestProtoFile.RepeatedUint64Extension, 123u)
+                .AddExtension(Unittest.RepeatedBoolExtension, true)
+                .AddExtension(Unittest.RepeatedBytesExtension, ByteString.CopyFromUtf8("123"))
+                .AddExtension(Unittest.RepeatedCordExtension, "123")
+                .AddExtension(Unittest.RepeatedDoubleExtension, 123)
+                .AddExtension(Unittest.RepeatedFixed32Extension, 123u)
+                .AddExtension(Unittest.RepeatedFixed64Extension, 123u)
+                .AddExtension(Unittest.RepeatedFloatExtension, 123)
+                .AddExtension(Unittest.RepeatedForeignEnumExtension, ForeignEnum.FOREIGN_BAZ)
+                .AddExtension(Unittest.RepeatedImportEnumExtension, ImportEnum.IMPORT_BAZ)
+                .AddExtension(Unittest.RepeatedInt32Extension, 123)
+                .AddExtension(Unittest.RepeatedInt64Extension, 123)
+                .AddExtension(Unittest.RepeatedNestedEnumExtension, TestAllTypes.Types.NestedEnum.FOO)
+                .AddExtension(Unittest.RepeatedSfixed32Extension, 123)
+                .AddExtension(Unittest.RepeatedSfixed64Extension, 123)
+                .AddExtension(Unittest.RepeatedSint32Extension, 123)
+                .AddExtension(Unittest.RepeatedSint64Extension, 123)
+                .AddExtension(Unittest.RepeatedStringExtension, "123")
+                .AddExtension(Unittest.RepeatedStringPieceExtension, "123")
+                .AddExtension(Unittest.RepeatedUint32Extension, 123u)
+                .AddExtension(Unittest.RepeatedUint64Extension, 123u)
                 ;
             TestAllExtensions msg = builder.Build();
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestProtoFile.RegisterAllExtensions(registry);
+            Unittest.RegisterAllExtensions(registry);
 
             TestAllExtensions.Builder copyBuilder = TestAllExtensions.CreateBuilder().MergeFrom(msg.ToByteArray(),
                                                                                                 registry);
@@ -130,73 +130,73 @@ namespace Google.ProtocolBuffers
 
             TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
 
-            Assert.AreEqual(true, copy.GetExtension(UnitTestProtoFile.DefaultBoolExtension));
-            Assert.AreEqual(ByteString.CopyFromUtf8("123"), copy.GetExtension(UnitTestProtoFile.DefaultBytesExtension));
-            Assert.AreEqual("123", copy.GetExtension(UnitTestProtoFile.DefaultCordExtension));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.DefaultDoubleExtension));
-            Assert.AreEqual(123u, copy.GetExtension(UnitTestProtoFile.DefaultFixed32Extension));
-            Assert.AreEqual(123u, copy.GetExtension(UnitTestProtoFile.DefaultFixed64Extension));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.DefaultFloatExtension));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAZ, copy.GetExtension(UnitTestProtoFile.DefaultForeignEnumExtension));
-            Assert.AreEqual(ImportEnum.IMPORT_BAZ, copy.GetExtension(UnitTestProtoFile.DefaultImportEnumExtension));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.DefaultInt32Extension));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.DefaultInt64Extension));
+            Assert.AreEqual(true, copy.GetExtension(Unittest.DefaultBoolExtension));
+            Assert.AreEqual(ByteString.CopyFromUtf8("123"), copy.GetExtension(Unittest.DefaultBytesExtension));
+            Assert.AreEqual("123", copy.GetExtension(Unittest.DefaultCordExtension));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.DefaultDoubleExtension));
+            Assert.AreEqual(123u, copy.GetExtension(Unittest.DefaultFixed32Extension));
+            Assert.AreEqual(123u, copy.GetExtension(Unittest.DefaultFixed64Extension));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.DefaultFloatExtension));
+            Assert.AreEqual(ForeignEnum.FOREIGN_BAZ, copy.GetExtension(Unittest.DefaultForeignEnumExtension));
+            Assert.AreEqual(ImportEnum.IMPORT_BAZ, copy.GetExtension(Unittest.DefaultImportEnumExtension));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.DefaultInt32Extension));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.DefaultInt64Extension));
             Assert.AreEqual(TestAllTypes.Types.NestedEnum.FOO,
-                            copy.GetExtension(UnitTestProtoFile.DefaultNestedEnumExtension));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.DefaultSfixed32Extension));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.DefaultSfixed64Extension));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.DefaultSint32Extension));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.DefaultSint64Extension));
-            Assert.AreEqual("123", copy.GetExtension(UnitTestProtoFile.DefaultStringExtension));
-            Assert.AreEqual("123", copy.GetExtension(UnitTestProtoFile.DefaultStringPieceExtension));
-            Assert.AreEqual(123u, copy.GetExtension(UnitTestProtoFile.DefaultUint32Extension));
-            Assert.AreEqual(123u, copy.GetExtension(UnitTestProtoFile.DefaultUint64Extension));
+                            copy.GetExtension(Unittest.DefaultNestedEnumExtension));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.DefaultSfixed32Extension));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.DefaultSfixed64Extension));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.DefaultSint32Extension));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.DefaultSint64Extension));
+            Assert.AreEqual("123", copy.GetExtension(Unittest.DefaultStringExtension));
+            Assert.AreEqual("123", copy.GetExtension(Unittest.DefaultStringPieceExtension));
+            Assert.AreEqual(123u, copy.GetExtension(Unittest.DefaultUint32Extension));
+            Assert.AreEqual(123u, copy.GetExtension(Unittest.DefaultUint64Extension));
 
-            Assert.AreEqual(true, copy.GetExtension(UnitTestProtoFile.OptionalBoolExtension));
-            Assert.AreEqual(ByteString.CopyFromUtf8("123"), copy.GetExtension(UnitTestProtoFile.OptionalBytesExtension));
-            Assert.AreEqual("123", copy.GetExtension(UnitTestProtoFile.OptionalCordExtension));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.OptionalDoubleExtension));
-            Assert.AreEqual(123u, copy.GetExtension(UnitTestProtoFile.OptionalFixed32Extension));
-            Assert.AreEqual(123u, copy.GetExtension(UnitTestProtoFile.OptionalFixed64Extension));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.OptionalFloatExtension));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAZ, copy.GetExtension(UnitTestProtoFile.OptionalForeignEnumExtension));
-            Assert.AreEqual(ImportEnum.IMPORT_BAZ, copy.GetExtension(UnitTestProtoFile.OptionalImportEnumExtension));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.OptionalInt32Extension));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.OptionalInt64Extension));
+            Assert.AreEqual(true, copy.GetExtension(Unittest.OptionalBoolExtension));
+            Assert.AreEqual(ByteString.CopyFromUtf8("123"), copy.GetExtension(Unittest.OptionalBytesExtension));
+            Assert.AreEqual("123", copy.GetExtension(Unittest.OptionalCordExtension));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.OptionalDoubleExtension));
+            Assert.AreEqual(123u, copy.GetExtension(Unittest.OptionalFixed32Extension));
+            Assert.AreEqual(123u, copy.GetExtension(Unittest.OptionalFixed64Extension));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.OptionalFloatExtension));
+            Assert.AreEqual(ForeignEnum.FOREIGN_BAZ, copy.GetExtension(Unittest.OptionalForeignEnumExtension));
+            Assert.AreEqual(ImportEnum.IMPORT_BAZ, copy.GetExtension(Unittest.OptionalImportEnumExtension));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.OptionalInt32Extension));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.OptionalInt64Extension));
             Assert.AreEqual(TestAllTypes.Types.NestedEnum.FOO,
-                            copy.GetExtension(UnitTestProtoFile.OptionalNestedEnumExtension));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.OptionalSfixed32Extension));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.OptionalSfixed64Extension));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.OptionalSint32Extension));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.OptionalSint64Extension));
-            Assert.AreEqual("123", copy.GetExtension(UnitTestProtoFile.OptionalStringExtension));
-            Assert.AreEqual("123", copy.GetExtension(UnitTestProtoFile.OptionalStringPieceExtension));
-            Assert.AreEqual(123u, copy.GetExtension(UnitTestProtoFile.OptionalUint32Extension));
-            Assert.AreEqual(123u, copy.GetExtension(UnitTestProtoFile.OptionalUint64Extension));
+                            copy.GetExtension(Unittest.OptionalNestedEnumExtension));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.OptionalSfixed32Extension));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.OptionalSfixed64Extension));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.OptionalSint32Extension));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.OptionalSint64Extension));
+            Assert.AreEqual("123", copy.GetExtension(Unittest.OptionalStringExtension));
+            Assert.AreEqual("123", copy.GetExtension(Unittest.OptionalStringPieceExtension));
+            Assert.AreEqual(123u, copy.GetExtension(Unittest.OptionalUint32Extension));
+            Assert.AreEqual(123u, copy.GetExtension(Unittest.OptionalUint64Extension));
 
-            Assert.AreEqual(true, copy.GetExtension(UnitTestProtoFile.RepeatedBoolExtension, 0));
+            Assert.AreEqual(true, copy.GetExtension(Unittest.RepeatedBoolExtension, 0));
             Assert.AreEqual(ByteString.CopyFromUtf8("123"),
-                            copy.GetExtension(UnitTestProtoFile.RepeatedBytesExtension, 0));
-            Assert.AreEqual("123", copy.GetExtension(UnitTestProtoFile.RepeatedCordExtension, 0));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.RepeatedDoubleExtension, 0));
-            Assert.AreEqual(123u, copy.GetExtension(UnitTestProtoFile.RepeatedFixed32Extension, 0));
-            Assert.AreEqual(123u, copy.GetExtension(UnitTestProtoFile.RepeatedFixed64Extension, 0));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.RepeatedFloatExtension, 0));
+                            copy.GetExtension(Unittest.RepeatedBytesExtension, 0));
+            Assert.AreEqual("123", copy.GetExtension(Unittest.RepeatedCordExtension, 0));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.RepeatedDoubleExtension, 0));
+            Assert.AreEqual(123u, copy.GetExtension(Unittest.RepeatedFixed32Extension, 0));
+            Assert.AreEqual(123u, copy.GetExtension(Unittest.RepeatedFixed64Extension, 0));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.RepeatedFloatExtension, 0));
             Assert.AreEqual(ForeignEnum.FOREIGN_BAZ,
-                            copy.GetExtension(UnitTestProtoFile.RepeatedForeignEnumExtension, 0));
-            Assert.AreEqual(ImportEnum.IMPORT_BAZ, copy.GetExtension(UnitTestProtoFile.RepeatedImportEnumExtension, 0));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.RepeatedInt32Extension, 0));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.RepeatedInt64Extension, 0));
+                            copy.GetExtension(Unittest.RepeatedForeignEnumExtension, 0));
+            Assert.AreEqual(ImportEnum.IMPORT_BAZ, copy.GetExtension(Unittest.RepeatedImportEnumExtension, 0));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.RepeatedInt32Extension, 0));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.RepeatedInt64Extension, 0));
             Assert.AreEqual(TestAllTypes.Types.NestedEnum.FOO,
-                            copy.GetExtension(UnitTestProtoFile.RepeatedNestedEnumExtension, 0));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.RepeatedSfixed32Extension, 0));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.RepeatedSfixed64Extension, 0));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.RepeatedSint32Extension, 0));
-            Assert.AreEqual(123, copy.GetExtension(UnitTestProtoFile.RepeatedSint64Extension, 0));
-            Assert.AreEqual("123", copy.GetExtension(UnitTestProtoFile.RepeatedStringExtension, 0));
-            Assert.AreEqual("123", copy.GetExtension(UnitTestProtoFile.RepeatedStringPieceExtension, 0));
-            Assert.AreEqual(123u, copy.GetExtension(UnitTestProtoFile.RepeatedUint32Extension, 0));
-            Assert.AreEqual(123u, copy.GetExtension(UnitTestProtoFile.RepeatedUint64Extension, 0));
+                            copy.GetExtension(Unittest.RepeatedNestedEnumExtension, 0));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.RepeatedSfixed32Extension, 0));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.RepeatedSfixed64Extension, 0));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.RepeatedSint32Extension, 0));
+            Assert.AreEqual(123, copy.GetExtension(Unittest.RepeatedSint64Extension, 0));
+            Assert.AreEqual("123", copy.GetExtension(Unittest.RepeatedStringExtension, 0));
+            Assert.AreEqual("123", copy.GetExtension(Unittest.RepeatedStringPieceExtension, 0));
+            Assert.AreEqual(123u, copy.GetExtension(Unittest.RepeatedUint32Extension, 0));
+            Assert.AreEqual(123u, copy.GetExtension(Unittest.RepeatedUint64Extension, 0));
         }
     }
 }

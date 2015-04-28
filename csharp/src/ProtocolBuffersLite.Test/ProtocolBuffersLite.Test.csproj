@@ -75,12 +75,6 @@
     <Compile Include="..\ProtocolBuffers.Test\SerializableAttribute.cs">
       <Link>SerializableAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\ProtocolBuffers.Test\TestRpcForMimeTypes.cs">
-      <Link>TestRpcForMimeTypes.cs</Link>
-    </Compile>
-    <Compile Include="..\ProtocolBuffers.Test\TestRpcGenerator.cs">
-      <Link>TestRpcGenerator.cs</Link>
-    </Compile>
     <Compile Include="AbstractBuilderLiteTest.cs" />
     <Compile Include="AbstractMessageLiteTest.cs" />
     <Compile Include="ExtendableBuilderLiteTest.cs" />
@@ -88,10 +82,10 @@
     <Compile Include="LiteTest.cs" />
     <Compile Include="SerializableLiteTest.cs" />
     <Compile Include="TestLiteByApi.cs" />
-    <Compile Include="TestProtos\UnitTestExtrasLiteProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestImportLiteProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestLiteProtoFile.cs" />
-    <Compile Include="TestProtos\UnitTestRpcInteropLite.cs" />
+    <Compile Include="TestProtos\UnittestExtrasLite.cs" />
+    <Compile Include="TestProtos\UnittestImportLite.cs" />
+    <Compile Include="TestProtos\UnittestImportPublicLite.cs" />
+    <Compile Include="TestProtos\UnittestLite.cs" />
     <Compile Include="TestUtil.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -105,6 +99,7 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

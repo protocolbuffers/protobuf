@@ -315,7 +315,7 @@ namespace Google.ProtocolBuffers
         public void TestXmlWithExtensionText()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionText, " extension text value ! ")
+                .SetExtension(UnittestExtrasXmltest.ExtensionText, " extension text value ! ")
                 .Build();
 
             StringWriter sw = new StringWriter();
@@ -324,7 +324,7 @@ namespace Google.ProtocolBuffers
             string xml = sw.ToString();
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestXmlSerializerTestProtoFile.RegisterAllExtensions(registry);
+            UnittestExtrasXmltest.RegisterAllExtensions(registry);
 
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
@@ -334,7 +334,7 @@ namespace Google.ProtocolBuffers
         public void TestXmlWithExtensionMessage()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionMessage,
+                .SetExtension(UnittestExtrasXmltest.ExtensionMessage,
                 new TestXmlExtension.Builder().SetNumber(42).Build()).Build();
 
             StringWriter sw = new StringWriter();
@@ -343,7 +343,7 @@ namespace Google.ProtocolBuffers
             string xml = sw.ToString();
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestXmlSerializerTestProtoFile.RegisterAllExtensions(registry);
+            UnittestExtrasXmltest.RegisterAllExtensions(registry);
 
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
@@ -353,9 +353,9 @@ namespace Google.ProtocolBuffers
         public void TestXmlWithExtensionArray()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 100)
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 101)
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 102)
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 100)
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 101)
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 102)
                 .Build();
 
             StringWriter sw = new StringWriter();
@@ -364,7 +364,7 @@ namespace Google.ProtocolBuffers
             string xml = sw.ToString();
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestXmlSerializerTestProtoFile.RegisterAllExtensions(registry);
+            UnittestExtrasXmltest.RegisterAllExtensions(registry);
 
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
@@ -374,7 +374,7 @@ namespace Google.ProtocolBuffers
         public void TestXmlWithExtensionEnum()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionEnum, EnumOptions.ONE)
+                .SetExtension(UnittestExtrasXmltest.ExtensionEnum, EnumOptions.ONE)
                 .Build();
 
             StringWriter sw = new StringWriter();
@@ -383,7 +383,7 @@ namespace Google.ProtocolBuffers
             string xml = sw.ToString();
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestXmlSerializerTestProtoFile.RegisterAllExtensions(registry);
+            UnittestExtrasXmltest.RegisterAllExtensions(registry);
 
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();

@@ -193,8 +193,8 @@ namespace Google.ProtocolBuffers
                     .SetMyInt(1)
                     .SetMyString("foo")
                     .SetMyFloat(1.0F)
-                    .SetExtension(UnitTestProtoFile.MyExtensionInt, 23)
-                    .SetExtension(UnitTestProtoFile.MyExtensionString, "bar")
+                    .SetExtension(Unittest.MyExtensionInt, 23)
+                    .SetExtension(Unittest.MyExtensionString, "bar")
                     .Build().ToByteString();
             AssertFieldsInOrder(data);
 
@@ -204,8 +204,8 @@ namespace Google.ProtocolBuffers
                     .SetField(descriptor.FindDescriptor<FieldDescriptor>("my_int"), 1L)
                     .SetField(descriptor.FindDescriptor<FieldDescriptor>("my_string"), "foo")
                     .SetField(descriptor.FindDescriptor<FieldDescriptor>("my_float"), 1.0F)
-                    .SetField(UnitTestProtoFile.MyExtensionInt.Descriptor, 23)
-                    .SetField(UnitTestProtoFile.MyExtensionString.Descriptor, "bar")
+                    .SetField(Unittest.MyExtensionInt.Descriptor, 23)
+                    .SetField(Unittest.MyExtensionString.Descriptor, "bar")
                     .WeakBuild().ToByteString();
             AssertFieldsInOrder(dynamic_data);
         }

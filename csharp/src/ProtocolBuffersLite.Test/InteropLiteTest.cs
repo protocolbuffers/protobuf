@@ -72,17 +72,19 @@ namespace Google.ProtocolBuffers
                 .AddAddresses(
                     TestInteropPerson.Types.Addresses.CreateBuilder().SetAddress("123 Seseme").SetCity("Wonderland").
                         SetState("NA").SetZip(12345).Build())
-                .SetExtension(UnitTestExtrasFullProtoFile.EmployeeId,
+                .SetExtension(UnittestExtrasFull.EmployeeId,
                               TestInteropEmployeeId.CreateBuilder().SetNumber("123").Build())
                 .Build();
             Assert.IsTrue(person.IsInitialized);
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestExtrasLiteProtoFile.RegisterAllExtensions(registry);
+            UnittestExtrasLite.RegisterAllExtensions(registry);
+            byte[] fullBytes = person.ToByteArray();
 
-            TestInteropPersonLite copy = TestInteropPersonLite.ParseFrom(person.ToByteArray(), registry);
+            TestInteropPersonLite copy = TestInteropPersonLite.ParseFrom(fullBytes, registry);
+            byte[] liteBytes = copy.ToByteArray();
 
-            TestUtil.AssertBytesEqual(person.ToByteArray(), copy.ToByteArray());
+            TestUtil.AssertBytesEqual(fullBytes, liteBytes);
         }
 
         [TestMethod]
@@ -112,13 +114,13 @@ namespace Google.ProtocolBuffers
                 .AddAddresses(
                     TestInteropPersonLite.Types.Addresses.CreateBuilder().SetAddress("123 Seseme").SetCity("Wonderland")
                         .SetState("NA").SetZip(12345).Build())
-                .SetExtension(UnitTestExtrasLiteProtoFile.EmployeeIdLite,
+                .SetExtension(UnittestExtrasLite.EmployeeIdLite,
                               TestInteropEmployeeIdLite.CreateBuilder().SetNumber("123").Build())
                 .Build();
             Assert.IsTrue(person.IsInitialized);
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestExtrasFullProtoFile.RegisterAllExtensions(registry);
+            UnittestExtrasFull.RegisterAllExtensions(registry);
 
             TestInteropPerson copy = TestInteropPerson.ParseFrom(person.ToByteArray(), registry);
 
@@ -151,13 +153,13 @@ namespace Google.ProtocolBuffers
                 .AddAddresses(
                     TestInteropPersonLite.Types.Addresses.CreateBuilder().SetAddress("123 Seseme").SetCity("Wonderland")
                         .SetState("NA").SetZip(12345).Build())
-                .SetExtension(UnitTestExtrasLiteProtoFile.EmployeeIdLite,
+                .SetExtension(UnittestExtrasLite.EmployeeIdLite,
                               TestInteropEmployeeIdLite.CreateBuilder().SetNumber("123").Build())
                 .Build();
             Assert.IsTrue(person.IsInitialized);
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestExtrasFullProtoFile.RegisterAllExtensions(registry);
+            UnittestExtrasFull.RegisterAllExtensions(registry);
 
             TestInteropPerson copy = TestInteropPerson.ParseFrom(person.ToByteArray(), registry);
 

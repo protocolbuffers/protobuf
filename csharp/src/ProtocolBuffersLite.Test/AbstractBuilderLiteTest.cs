@@ -113,7 +113,7 @@ namespace Google.ProtocolBuffers
         {
             TestAllExtensionsLite copy,
                                   msg = TestAllExtensionsLite.CreateBuilder()
-                                      .SetExtension(UnitTestLiteProtoFile.OptionalStringExtensionLite,
+                                      .SetExtension(UnittestLite.OptionalStringExtensionLite,
                                                     "Should be merged.").Build();
 
             copy = TestAllExtensionsLite.DefaultInstance;
@@ -124,11 +124,11 @@ namespace Google.ProtocolBuffers
             s.Position = 0;
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestLiteProtoFile.RegisterAllExtensions(registry);
+            UnittestLite.RegisterAllExtensions(registry);
 
             copy = copy.ToBuilder().MergeDelimitedFrom(s, registry).Build();
             TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
-            Assert.AreEqual("Should be merged.", copy.GetExtension(UnitTestLiteProtoFile.OptionalStringExtensionLite));
+            Assert.AreEqual("Should be merged.", copy.GetExtension(UnittestLite.OptionalStringExtensionLite));
         }
 
         [TestMethod]
@@ -152,7 +152,7 @@ namespace Google.ProtocolBuffers
         {
             TestAllExtensionsLite copy,
                                   msg = TestAllExtensionsLite.CreateBuilder()
-                                      .SetExtension(UnitTestLiteProtoFile.OptionalStringExtensionLite,
+                                      .SetExtension(UnittestLite.OptionalStringExtensionLite,
                                                     "Should be merged.").Build();
 
             copy = TestAllExtensionsLite.DefaultInstance;
@@ -163,11 +163,11 @@ namespace Google.ProtocolBuffers
             s.Position = 0;
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestLiteProtoFile.RegisterAllExtensions(registry);
+            UnittestLite.RegisterAllExtensions(registry);
 
             copy = copy.ToBuilder().MergeFrom(s, registry).Build();
             TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
-            Assert.AreEqual("Should be merged.", copy.GetExtension(UnitTestLiteProtoFile.OptionalStringExtensionLite));
+            Assert.AreEqual("Should be merged.", copy.GetExtension(UnittestLite.OptionalStringExtensionLite));
         }
 
         [TestMethod]
@@ -203,7 +203,7 @@ namespace Google.ProtocolBuffers
         {
             TestAllExtensionsLite copy,
                                   msg = TestAllExtensionsLite.CreateBuilder()
-                                      .SetExtension(UnitTestLiteProtoFile.OptionalStringExtensionLite,
+                                      .SetExtension(UnittestLite.OptionalStringExtensionLite,
                                                     "Should be merged.").Build();
 
             copy = TestAllExtensionsLite.DefaultInstance;
@@ -215,13 +215,13 @@ namespace Google.ProtocolBuffers
             Assert.AreNotEqual(msg.ToByteArray(), copy.ToByteArray());
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestLiteProtoFile.RegisterAllExtensions(registry);
+            UnittestLite.RegisterAllExtensions(registry);
 
             copy =
                 (TestAllExtensionsLite)
                 ((IBuilderLite) copy.ToBuilder()).WeakMergeFrom(msg.ToByteString(), registry).WeakBuild();
             TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
-            Assert.AreEqual("Should be merged.", copy.GetExtension(UnitTestLiteProtoFile.OptionalStringExtensionLite));
+            Assert.AreEqual("Should be merged.", copy.GetExtension(UnittestLite.OptionalStringExtensionLite));
         }
 
         [TestMethod]

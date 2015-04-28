@@ -132,8 +132,8 @@ namespace Google.ProtocolBuffers
         {
             byte[] bytes = TestUtil.GetPackedSet().ToByteArray();
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestProtoFile.RegisterAllExtensions(registry);
-            UnitTestExtrasProtoFile.RegisterAllExtensions(registry);
+            Unittest.RegisterAllExtensions(registry);
+            UnittestImport.RegisterAllExtensions(registry);
             TestUnpackedExtensions message = TestUnpackedExtensions.ParseFrom(bytes, registry);
             TestUtil.AssertUnpackedExtensionsSet(message);
         }
@@ -143,7 +143,7 @@ namespace Google.ProtocolBuffers
         {
             byte[] bytes = TestUnpackedTypes.ParseFrom(TestUtil.GetPackedSet().ToByteArray()).ToByteArray();
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestProtoFile.RegisterAllExtensions(registry);
+            Unittest.RegisterAllExtensions(registry);
             TestPackedExtensions message = TestPackedExtensions.ParseFrom(bytes, registry);
             TestUtil.AssertPackedExtensionsSet(message);
         }
@@ -250,7 +250,7 @@ namespace Google.ProtocolBuffers
             TestAllTypes d = TestAllTypes.CreateBuilder(c).AddRepeatedString("y").Build();
             TestAllExtensions e = TestUtil.GetAllExtensionsSet();
             TestAllExtensions f = TestAllExtensions.CreateBuilder(e)
-                .AddExtension(UnitTestProtoFile.RepeatedInt32Extension, 999).Build();
+                .AddExtension(Unittest.RepeatedInt32Extension, 999).Build();
 
             CheckEqualsIsConsistent(a);
             CheckEqualsIsConsistent(b);

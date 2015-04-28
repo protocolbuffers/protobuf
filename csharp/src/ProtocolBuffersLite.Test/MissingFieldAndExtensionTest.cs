@@ -49,19 +49,19 @@ namespace Google.ProtocolBuffers
         {
             const int optionalInt32 = 12345678;
             TestAllExtensions.Builder builder = TestAllExtensions.CreateBuilder();
-            builder.SetExtension(UnitTestProtoFile.OptionalInt32Extension, optionalInt32);
-            builder.AddExtension(UnitTestProtoFile.RepeatedDoubleExtension, 1.1);
-            builder.AddExtension(UnitTestProtoFile.RepeatedDoubleExtension, 1.2);
-            builder.AddExtension(UnitTestProtoFile.RepeatedDoubleExtension, 1.3);
+            builder.SetExtension(Unittest.OptionalInt32Extension, optionalInt32);
+            builder.AddExtension(Unittest.RepeatedDoubleExtension, 1.1);
+            builder.AddExtension(Unittest.RepeatedDoubleExtension, 1.2);
+            builder.AddExtension(Unittest.RepeatedDoubleExtension, 1.3);
             TestAllExtensions msg = builder.Build();
 
-            Assert.IsTrue(msg.HasExtension(UnitTestProtoFile.OptionalInt32Extension));
-            Assert.AreEqual(3, msg.GetExtensionCount(UnitTestProtoFile.RepeatedDoubleExtension));
+            Assert.IsTrue(msg.HasExtension(Unittest.OptionalInt32Extension));
+            Assert.AreEqual(3, msg.GetExtensionCount(Unittest.RepeatedDoubleExtension));
 
             byte[] bits = msg.ToByteArray();
             TestAllExtensions copy = TestAllExtensions.ParseFrom(bits);
-            Assert.IsFalse(copy.HasExtension(UnitTestProtoFile.OptionalInt32Extension));
-            Assert.AreEqual(0, copy.GetExtensionCount(UnitTestProtoFile.RepeatedDoubleExtension));
+            Assert.IsFalse(copy.HasExtension(Unittest.OptionalInt32Extension));
+            Assert.AreEqual(0, copy.GetExtensionCount(Unittest.RepeatedDoubleExtension));
             Assert.AreNotEqual(msg, copy);
 
             //Even though copy does not understand the typees they serialize correctly
@@ -69,12 +69,12 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertBytesEqual(bits, copybits);
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestProtoFile.RegisterAllExtensions(registry);
+            Unittest.RegisterAllExtensions(registry);
 
             //Now we can take those copy bits and restore the full message with extensions
             copy = TestAllExtensions.ParseFrom(copybits, registry);
-            Assert.IsTrue(copy.HasExtension(UnitTestProtoFile.OptionalInt32Extension));
-            Assert.AreEqual(3, copy.GetExtensionCount(UnitTestProtoFile.RepeatedDoubleExtension));
+            Assert.IsTrue(copy.HasExtension(Unittest.OptionalInt32Extension));
+            Assert.AreEqual(3, copy.GetExtensionCount(Unittest.RepeatedDoubleExtension));
 
             Assert.AreEqual(msg, copy);
             TestUtil.AssertBytesEqual(bits, copy.ToByteArray());
@@ -85,7 +85,7 @@ namespace Google.ProtocolBuffers
 
             //If we replace extension the object this should all continue to work as before
             copybits = copy.ToBuilder()
-                .SetExtension(UnitTestProtoFile.OptionalInt32Extension, optionalInt32)
+                .SetExtension(Unittest.OptionalInt32Extension, optionalInt32)
                 .Build().ToByteArray();
             TestUtil.AssertBytesEqual(bits, copybits);
         }
@@ -219,7 +219,7 @@ namespace Google.ProtocolBuffers
                 .AddAddresses(
                     TestInteropPerson.Types.Addresses.CreateBuilder().SetAddress("123 Seseme").SetCity("Wonderland").
                         SetState("NA").SetZip(12345).Build())
-                .SetExtension(UnitTestExtrasFullProtoFile.EmployeeId,
+                .SetExtension(UnittestExtrasFull.EmployeeId,
                               TestInteropEmployeeId.CreateBuilder().SetNumber("123").Build())
                 .Build();
             Assert.IsTrue(person.IsInitialized);
@@ -230,7 +230,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(7, temp.UnknownFields.FieldDictionary.Count);
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestExtrasFullProtoFile.RegisterAllExtensions(registry);
+            UnittestExtrasFull.RegisterAllExtensions(registry);
 
             TestInteropPerson copy = TestInteropPerson.ParseFrom(temp.ToByteArray(), registry);
             Assert.AreEqual(person, copy);
