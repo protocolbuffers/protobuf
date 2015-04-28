@@ -97,10 +97,8 @@ namespace Google.ProtocolBuffers
             this.extensionRegistry = extensionRegistry;
 
             this.file = baseDescriptor.File;
-            // TODO(jonskeet): We've got 2 dependencies, not 1 - because of the C# options. Hmm.
-            //      Assert.AreEqual(1, file.Dependencies.Count);
-            // TODO(jonskeet): Find dependency by name instead of number?
-            this.importFile = file.Dependencies[1];
+            Assert.AreEqual(1, file.Dependencies.Count);
+            this.importFile = file.Dependencies[0];
 
             MessageDescriptor testAllTypes;
             if (baseDescriptor.Name == "TestAllTypes")

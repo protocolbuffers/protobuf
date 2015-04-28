@@ -88,7 +88,7 @@ namespace Google.ProtocolBuffers
             Content = sw.ToString();
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestXmlSerializerTestProtoFile.RegisterAllExtensions(registry);
+            UnittestExtrasXmltest.RegisterAllExtensions(registry);
 
             IMessageLite copy = 
                 JsonFormatReader.CreateInstance(Content)
@@ -258,7 +258,7 @@ namespace Google.ProtocolBuffers
             FormatterAssert(
                 TestXmlMessage.CreateBuilder()
                 .SetValid(false)
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionText, " extension text value ! ")
+                .SetExtension(UnittestExtrasXmltest.ExtensionText, " extension text value ! ")
                 .Build(),
                 @"{""valid"":false,""extension_text"":"" extension text value ! ""}"
                 );
@@ -269,7 +269,7 @@ namespace Google.ProtocolBuffers
         {
             FormatterAssert(
                 TestXmlMessage.CreateBuilder()
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionMessage,
+                .SetExtension(UnittestExtrasXmltest.ExtensionMessage,
                 new TestXmlExtension.Builder().SetNumber(42).Build())
                 .Build(),
                 @"{""number"":42}"
@@ -281,9 +281,9 @@ namespace Google.ProtocolBuffers
         {
             FormatterAssert(
                 TestXmlMessage.CreateBuilder()
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 100)
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 101)
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 102)
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 100)
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 101)
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 102)
                 .Build(),
                 @"{""extension_number"":[100,101,102]}"
                 );
@@ -294,7 +294,7 @@ namespace Google.ProtocolBuffers
         {
             FormatterAssert(
                 TestXmlMessage.CreateBuilder()
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionEnum, EnumOptions.ONE)
+                .SetExtension(UnittestExtrasXmltest.ExtensionEnum, EnumOptions.ONE)
                 .Build(),
                 @"{""extension_enum"":""ONE""}"
                 );
@@ -307,12 +307,12 @@ namespace Google.ProtocolBuffers
                 TestXmlMessage.CreateBuilder()
                 .SetValid(true)
                 .SetText("text")
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionText, "extension text")
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionMessage, new TestXmlExtension.Builder().SetNumber(42).Build())
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 100)
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 101)
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 102)
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionEnum, EnumOptions.ONE)
+                .SetExtension(UnittestExtrasXmltest.ExtensionText, "extension text")
+                .SetExtension(UnittestExtrasXmltest.ExtensionMessage, new TestXmlExtension.Builder().SetNumber(42).Build())
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 100)
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 101)
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 102)
+                .SetExtension(UnittestExtrasXmltest.ExtensionEnum, EnumOptions.ONE)
                 .Build(),
                 @"""text"":""text""",
                 @"""valid"":true",
@@ -329,19 +329,19 @@ namespace Google.ProtocolBuffers
             TestXmlMessage original = TestXmlMessage.CreateBuilder()
                 .SetValid(true)
                 .SetText("text")
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionText, " extension text value ! ")
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionMessage, new TestXmlExtension.Builder().SetNumber(42).Build())
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 100)
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 101)
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 102)
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionEnum, EnumOptions.ONE)
+                .SetExtension(UnittestExtrasXmltest.ExtensionText, " extension text value ! ")
+                .SetExtension(UnittestExtrasXmltest.ExtensionMessage, new TestXmlExtension.Builder().SetNumber(42).Build())
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 100)
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 101)
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 102)
+                .SetExtension(UnittestExtrasXmltest.ExtensionEnum, EnumOptions.ONE)
                 .Build();
 
             TestXmlMessage message = original.ToBuilder()
-                .ClearExtension(UnitTestXmlSerializerTestProtoFile.ExtensionText)
-                .ClearExtension(UnitTestXmlSerializerTestProtoFile.ExtensionMessage)
-                .ClearExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber)
-                .ClearExtension(UnitTestXmlSerializerTestProtoFile.ExtensionEnum)
+                .ClearExtension(UnittestExtrasXmltest.ExtensionText)
+                .ClearExtension(UnittestExtrasXmltest.ExtensionMessage)
+                .ClearExtension(UnittestExtrasXmltest.ExtensionNumber)
+                .ClearExtension(UnittestExtrasXmltest.ExtensionEnum)
                 .Build();
 
             JsonFormatWriter writer = JsonFormatWriter.CreateInstance();

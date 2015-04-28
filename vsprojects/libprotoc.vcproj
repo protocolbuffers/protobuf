@@ -224,6 +224,66 @@
         >
       </File>
       <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_enum.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_enum_field.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_extension.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_field_base.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_generator.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_helpers.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_message.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_message_field.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_primitive_field.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_repeated_enum_field.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_repeated_message_field.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_repeated_primitive_field.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_source_generator_base.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_umbrella_class.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_writer.h"
+        >
+      </File>
+      <File
         RelativePath="..\src\google\protobuf\compiler\java\java_context.h"
         >
       </File>
@@ -389,6 +449,66 @@
       </File>
       <File
         RelativePath="..\src\google\protobuf\compiler\cpp\cpp_string_field.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_enum.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_enum_field.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_extension.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_field_base.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_generator.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_helpers.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_message.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_message_field.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_primitive_field.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_repeated_enum_field.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_repeated_message_field.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_repeated_primitive_field.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_source_generator_base.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_umbrella_class.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\csharp\csharp_writer.cc"
         >
       </File>
       <File

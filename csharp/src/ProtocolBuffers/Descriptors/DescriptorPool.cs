@@ -50,19 +50,31 @@ namespace Google.ProtocolBuffers.Descriptors
         private readonly IDictionary<DescriptorIntPair, EnumValueDescriptor> enumValuesByNumber =
             new Dictionary<DescriptorIntPair, EnumValueDescriptor>();
 
-        private readonly DescriptorPool[] dependencies;
+        private readonly HashSet<FileDescriptor> dependencies;
 
         internal DescriptorPool(FileDescriptor[] dependencyFiles)
         {
-            dependencies = new DescriptorPool[dependencyFiles.Length];
+            dependencies = new HashSet<FileDescriptor>();
             for (int i = 0; i < dependencyFiles.Length; i++)
             {
-                dependencies[i] = dependencyFiles[i].DescriptorPool;
+                dependencies.Add(dependencyFiles[i]);
+                ImportPublicDependencies(dependencyFiles[i]);
             }
 
             foreach (FileDescriptor dependency in dependencyFiles)
             {
                 AddPackage(dependency.Package, dependency);
+            }
+        }
+
+        private void ImportPublicDependencies(FileDescriptor file)
+        {
+            foreach (FileDescriptor dependency in file.PublicDependencies)
+            {
+                if (dependencies.Add(dependency))
+                {
+                    ImportPublicDependencies(dependency);
+                }
             }
         }
 
@@ -83,9 +95,9 @@ namespace Google.ProtocolBuffers.Descriptors
                 return descriptor;
             }
 
-            foreach (DescriptorPool dependency in dependencies)
+            foreach (FileDescriptor dependency in dependencies)
             {
-                dependency.descriptorsByName.TryGetValue(fullName, out result);
+                dependency.DescriptorPool.descriptorsByName.TryGetValue(fullName, out result);
                 descriptor = result as T;
                 if (descriptor != null)
                 {

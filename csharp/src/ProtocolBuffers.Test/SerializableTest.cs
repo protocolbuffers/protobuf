@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Hosting;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
@@ -20,6 +21,7 @@ namespace Google.ProtocolBuffers
         public static readonly ISerializable CompileTimeCheckSerializableBuilder = new TestXmlMessage.Builder();
 
         [TestMethod]
+        [Ignore] // Serialization hasn't been reimplemented yet
         public void TestPlainMessage()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -53,6 +55,7 @@ namespace Google.ProtocolBuffers
         }
 
         [TestMethod]
+        [Ignore] // Serialization hasn't been reimplemented yet
         public void TestMessageWithExtensions()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -74,16 +77,16 @@ namespace Google.ProtocolBuffers
                 .AddChildren(TestXmlMessage.Types.Children.CreateBuilder()
                                                           .AddOptions(EnumOptions.THREE)
                                                           .SetBinary(ByteString.CopyFrom(new byte[3])))
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionText, " extension text value ! ")
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionMessage, new TestXmlExtension.Builder().SetNumber(42).Build())
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 100)
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 101)
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 102)
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionEnum, EnumOptions.ONE)
+                .SetExtension(UnittestExtrasXmltest.ExtensionText, " extension text value ! ")
+                .SetExtension(UnittestExtrasXmltest.ExtensionMessage, new TestXmlExtension.Builder().SetNumber(42).Build())
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 100)
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 101)
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 102)
+                .SetExtension(UnittestExtrasXmltest.ExtensionEnum, EnumOptions.ONE)
                 .Build();
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestXmlSerializerTestProtoFile.RegisterAllExtensions(registry);
+            UnittestExtrasXmltest.RegisterAllExtensions(registry);
 
             MemoryStream ms = new MemoryStream();
             new BinaryFormatter().Serialize(ms, message);
@@ -98,6 +101,7 @@ namespace Google.ProtocolBuffers
         }
 
         [TestMethod]
+        [Ignore] // Serialization hasn't been reimplemented yet
         public void TestPlainBuilder()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder()
@@ -131,6 +135,7 @@ namespace Google.ProtocolBuffers
         }
 
         [TestMethod]
+        [Ignore] // Serialization hasn't been reimplemented yet
         public void TestBuilderWithExtensions()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder()
@@ -152,16 +157,16 @@ namespace Google.ProtocolBuffers
                 .AddChildren(TestXmlMessage.Types.Children.CreateBuilder()
                                                           .AddOptions(EnumOptions.THREE)
                                                           .SetBinary(ByteString.CopyFrom(new byte[3])))
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionText, " extension text value ! ")
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionMessage, new TestXmlExtension.Builder().SetNumber(42).Build())
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 100)
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 101)
-                .AddExtension(UnitTestXmlSerializerTestProtoFile.ExtensionNumber, 102)
-                .SetExtension(UnitTestXmlSerializerTestProtoFile.ExtensionEnum, EnumOptions.ONE)
+                .SetExtension(UnittestExtrasXmltest.ExtensionText, " extension text value ! ")
+                .SetExtension(UnittestExtrasXmltest.ExtensionMessage, new TestXmlExtension.Builder().SetNumber(42).Build())
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 100)
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 101)
+                .AddExtension(UnittestExtrasXmltest.ExtensionNumber, 102)
+                .SetExtension(UnittestExtrasXmltest.ExtensionEnum, EnumOptions.ONE)
                 ;
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
-            UnitTestXmlSerializerTestProtoFile.RegisterAllExtensions(registry);
+            UnittestExtrasXmltest.RegisterAllExtensions(registry);
 
             MemoryStream ms = new MemoryStream();
             new BinaryFormatter().Serialize(ms, builder);

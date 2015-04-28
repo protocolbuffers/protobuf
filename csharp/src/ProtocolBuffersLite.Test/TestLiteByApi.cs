@@ -64,10 +64,10 @@ namespace Google.ProtocolBuffers
             TestAllExtensionsLite copy = msg.ToBuilder().Build();
             Assert.AreEqual(msg.GetHashCode(), copy.GetHashCode());
             Assert.IsTrue(msg.Equals(copy));
-            msg = msg.ToBuilder().SetExtension(UnitTestLiteProtoFile.OptionalStringExtensionLite, "Hi").Build();
+            msg = msg.ToBuilder().SetExtension(UnittestLite.OptionalStringExtensionLite, "Hi").Build();
             Assert.AreNotEqual(msg.GetHashCode(), copy.GetHashCode());
             Assert.IsFalse(msg.Equals(copy));
-            copy = copy.ToBuilder().SetExtension(UnitTestLiteProtoFile.OptionalStringExtensionLite, "Hi").Build();
+            copy = copy.ToBuilder().SetExtension(UnittestLite.OptionalStringExtensionLite, "Hi").Build();
             Assert.AreEqual(msg.GetHashCode(), copy.GetHashCode());
             Assert.IsTrue(msg.Equals(copy));
         }
