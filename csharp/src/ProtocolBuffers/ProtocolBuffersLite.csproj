@@ -75,7 +75,6 @@
     <Compile Include="GeneratedMessageLite.cs" />
     <Compile Include="ICodedInputStream.cs" />
     <Compile Include="ICodedOutputStream.cs" />
-    <Compile Include="IRpcDispatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ByteString.cs" />
     <Compile Include="CodedInputStream.cs" />

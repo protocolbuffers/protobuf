@@ -123,16 +123,11 @@
     <Compile Include="IMessage.cs" />
     <Compile Include="IMessageLite.cs" />
     <Compile Include="InvalidProtocolBufferException.cs" />
-    <Compile Include="IRpcChannel.cs" />
-    <Compile Include="IRpcController.cs" />
-    <Compile Include="IRpcDispatch.cs" />
-    <Compile Include="IService.cs" />
     <Compile Include="MessageStreamIterator.cs" />
     <Compile Include="MessageStreamWriter.cs" />
     <Compile Include="MessageUtil.cs" />
     <Compile Include="NameHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RpcUtil.cs" />
     <Compile Include="SortedList.cs" />
     <Compile Include="TextFormat.cs" />
     <Compile Include="TextGenerator.cs" />
