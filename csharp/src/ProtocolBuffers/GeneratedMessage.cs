@@ -75,8 +75,8 @@ namespace Google.ProtocolBuffers
 
         internal IDictionary<FieldDescriptor, Object> GetMutableFieldMap()
         {
-            // Use a SortedList so we'll end up serializing fields in order
-            var ret = new SortedList<FieldDescriptor, object>();
+            // Use a SortedDictionary so we'll end up serializing fields in order
+            var ret = new SortedDictionary<FieldDescriptor, object>();
             MessageDescriptor descriptor = DescriptorForType;
             foreach (FieldDescriptor field in descriptor.Fields)
             {

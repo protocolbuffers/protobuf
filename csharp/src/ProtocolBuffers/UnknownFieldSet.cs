@@ -330,12 +330,12 @@ namespace Google.ProtocolBuffers
 
             internal Builder()
             {
-                fields = new SortedList<int, UnknownField>();
+                fields = new SortedDictionary<int, UnknownField>();
             }
 
             internal Builder(IDictionary<int, UnknownField> dictionary)
             {
-                fields = new SortedList<int, UnknownField>(dictionary);
+                fields = new SortedDictionary<int, UnknownField>(dictionary);
             }
 
             /// <summary>
