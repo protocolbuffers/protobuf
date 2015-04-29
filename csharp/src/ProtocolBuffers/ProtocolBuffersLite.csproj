@@ -61,7 +61,6 @@
     <Compile Include="Collections\Lists.cs" />
     <Compile Include="Collections\PopsicleList.cs" />
     <Compile Include="Collections\ReadOnlyDictionary.cs" />
-    <Compile Include="CustomSerialization.cs" />
     <Compile Include="Descriptors\FieldMappingAttribute.cs" />
     <Compile Include="Descriptors\FieldType.cs" />
     <Compile Include="Descriptors\MappedType.cs" />
@@ -75,7 +74,6 @@
     <Compile Include="GeneratedMessageLite.cs" />
     <Compile Include="ICodedInputStream.cs" />
     <Compile Include="ICodedOutputStream.cs" />
-    <Compile Include="IRpcDispatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ByteString.cs" />
     <Compile Include="CodedInputStream.cs" />

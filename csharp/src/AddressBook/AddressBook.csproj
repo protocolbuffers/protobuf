@@ -49,7 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AddPerson.cs" />
-    <Compile Include="AddressBookProtos.cs" />
+    <Compile Include="Addressbook.cs" />
     <Compile Include="SampleUsage.cs" />
     <Compile Include="ListPeople.cs" />
     <Compile Include="Program.cs" />

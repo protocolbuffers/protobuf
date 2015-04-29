@@ -28,8 +28,3 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("2.4.1.555")]
 
 [assembly: AssemblyVersion("2.4.1.555")]
-
-// We don't really need CLSCompliance, but if the assembly builds with no warnings,
-// that means the generator is okay.
-
-[assembly: CLSCompliant(false)]
