@@ -71,7 +71,6 @@ namespace Google.ProtocolBuffers
         /// Compute the number of bytes that would be needed to encode a
         /// uint64 field, including the tag.
         /// </summary>
-        [CLSCompliant(false)]
         public static int ComputeUInt64Size(int fieldNumber, ulong value)
         {
             return ComputeTagSize(fieldNumber) + ComputeRawVarint64Size(value);
@@ -107,7 +106,6 @@ namespace Google.ProtocolBuffers
         /// Compute the number of bytes that would be needed to encode a
         /// fixed64 field, including the tag.
         /// </summary>
-        [CLSCompliant(false)]
         public static int ComputeFixed64Size(int fieldNumber, ulong value)
         {
             return ComputeTagSize(fieldNumber) + LittleEndian64Size;
@@ -117,7 +115,6 @@ namespace Google.ProtocolBuffers
         /// Compute the number of bytes that would be needed to encode a
         /// fixed32 field, including the tag.
         /// </summary>
-        [CLSCompliant(false)]
         public static int ComputeFixed32Size(int fieldNumber, uint value)
         {
             return ComputeTagSize(fieldNumber) + LittleEndian32Size;
@@ -189,7 +186,6 @@ namespace Google.ProtocolBuffers
         /// Compute the number of bytes that would be needed to encode a
         /// uint32 field, including the tag.
         /// </summary>
-        [CLSCompliant(false)]
         public static int ComputeUInt32Size(int fieldNumber, uint value)
         {
             return ComputeTagSize(fieldNumber) + ComputeRawVarint32Size(value);
@@ -263,7 +259,6 @@ namespace Google.ProtocolBuffers
         /// Compute the number of bytes that would be needed to encode a
         /// uint64 field, including the tag.
         /// </summary>
-        [CLSCompliant(false)]
         public static int ComputeUInt64SizeNoTag(ulong value)
         {
             return ComputeRawVarint64Size(value);
@@ -299,7 +294,6 @@ namespace Google.ProtocolBuffers
         /// Compute the number of bytes that would be needed to encode a
         /// fixed64 field, including the tag.
         /// </summary>
-        [CLSCompliant(false)]
         public static int ComputeFixed64SizeNoTag(ulong value)
         {
             return LittleEndian64Size;
@@ -309,7 +303,6 @@ namespace Google.ProtocolBuffers
         /// Compute the number of bytes that would be needed to encode a
         /// fixed32 field, including the tag.
         /// </summary>
-        [CLSCompliant(false)]
         public static int ComputeFixed32SizeNoTag(uint value)
         {
             return LittleEndian32Size;
@@ -378,7 +371,6 @@ namespace Google.ProtocolBuffers
         /// Compute the number of bytes that would be needed to encode a
         /// uint32 field, including the tag.
         /// </summary>
-        [CLSCompliant(false)]
         public static int ComputeUInt32SizeNoTag(uint value)
         {
             return ComputeRawVarint32Size(value);
@@ -463,7 +455,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Compute the number of bytes that would be needed to encode a varint.
         /// </summary>
-        [CLSCompliant(false)]
         public static int ComputeRawVarint32Size(uint value)
         {
             if ((value & (0xffffffff << 7)) == 0)
@@ -488,7 +479,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Compute the number of bytes that would be needed to encode a varint.
         /// </summary>
-        [CLSCompliant(false)]
         public static int ComputeRawVarint64Size(ulong value)
         {
             if ((value & (0xffffffffffffffffL << 7)) == 0)

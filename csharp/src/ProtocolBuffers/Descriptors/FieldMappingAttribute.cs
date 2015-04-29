@@ -40,7 +40,6 @@ namespace Google.ProtocolBuffers.Descriptors
     /// Defined specifically for the <see cref="FieldType" /> enumeration,
     /// this allows each field type to specify the mapped type and wire type.
     /// </summary>
-    [CLSCompliant(false)]
     [AttributeUsage(AttributeTargets.Field)]
     public sealed class FieldMappingAttribute : Attribute
     {

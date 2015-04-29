@@ -186,7 +186,6 @@ namespace Google.ProtocolBuffers
         /// </summary>
         /// <exception cref="InvalidProtocolBufferException">The last
         /// tag read was not the one specified</exception>
-        [CLSCompliant(false)]
         public void CheckLastTagWas(uint value)
         {
             if (lastTag != value)
@@ -202,7 +201,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Attempt to peek at the next field tag.
         /// </summary>
-        [CLSCompliant(false)]
         public bool PeekNextTag(out uint fieldTag, out string fieldName)
         {
             if (hasNextTag)
@@ -226,7 +224,6 @@ namespace Google.ProtocolBuffers
         /// <param name="fieldTag">The 'tag' of the field (id * 8 + wire-format)</param>
         /// <param name="fieldName">Not Supported - For protobuffer streams, this parameter is always null</param>
         /// <returns>true if the next fieldTag was read</returns>
-        [CLSCompliant(false)]
         public bool ReadTag(out uint fieldTag, out string fieldName)
         {
             fieldName = null;
@@ -290,7 +287,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Read a uint64 field from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         public bool ReadUInt64(ref ulong value)
         {
             value = ReadRawVarint64();
@@ -318,7 +314,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Read a fixed64 field from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         public bool ReadFixed64(ref ulong value)
         {
             value = ReadRawLittleEndian64();
@@ -328,7 +323,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Read a fixed32 field from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         public bool ReadFixed32(ref uint value)
         {
             value = ReadRawLittleEndian32();
@@ -447,7 +441,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Reads a uint32 field value from the stream.
         /// </summary>   
-        [CLSCompliant(false)]
         public bool ReadUInt32(ref uint value)
         {
             value = ReadRawVarint32();
@@ -477,7 +470,6 @@ namespace Google.ProtocolBuffers
         /// then the ref value is set and it returns true.  Otherwise the unknown output
         /// value is set and this method returns false.
         /// </summary>   
-        [CLSCompliant(false)]
         public bool ReadEnum<T>(ref T value, out object unknown)
             where T : struct, IComparable, IFormattable
         {
@@ -593,7 +585,6 @@ namespace Google.ProtocolBuffers
             return false;
         }
 
-        [CLSCompliant(false)]
         public void ReadPrimitiveArray(FieldType fieldType, uint fieldTag, string fieldName, ICollection<object> list)
         {
             WireFormat.WireType normal = WireFormat.GetWireType(fieldType);
@@ -627,7 +618,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void ReadStringArray(uint fieldTag, string fieldName, ICollection<string> list)
         {
             string tmp = null;
@@ -638,7 +628,6 @@ namespace Google.ProtocolBuffers
             } while (ContinueArray(fieldTag));
         }
 
-        [CLSCompliant(false)]
         public void ReadBytesArray(uint fieldTag, string fieldName, ICollection<ByteString> list)
         {
             ByteString tmp = null;
@@ -649,7 +638,6 @@ namespace Google.ProtocolBuffers
             } while (ContinueArray(fieldTag));
         }
 
-        [CLSCompliant(false)]
         public void ReadBoolArray(uint fieldTag, string fieldName, ICollection<bool> list)
         {
             bool isPacked;
@@ -665,7 +653,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void ReadInt32Array(uint fieldTag, string fieldName, ICollection<int> list)
         {
             bool isPacked;
@@ -681,7 +668,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void ReadSInt32Array(uint fieldTag, string fieldName, ICollection<int> list)
         {
             bool isPacked;
@@ -697,7 +683,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void ReadUInt32Array(uint fieldTag, string fieldName, ICollection<uint> list)
         {
             bool isPacked;
@@ -713,7 +698,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void ReadFixed32Array(uint fieldTag, string fieldName, ICollection<uint> list)
         {
             bool isPacked;
@@ -729,7 +713,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void ReadSFixed32Array(uint fieldTag, string fieldName, ICollection<int> list)
         {
             bool isPacked;
@@ -745,7 +728,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void ReadInt64Array(uint fieldTag, string fieldName, ICollection<long> list)
         {
             bool isPacked;
@@ -761,7 +743,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void ReadSInt64Array(uint fieldTag, string fieldName, ICollection<long> list)
         {
             bool isPacked;
@@ -777,7 +758,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void ReadUInt64Array(uint fieldTag, string fieldName, ICollection<ulong> list)
         {
             bool isPacked;
@@ -793,7 +773,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void ReadFixed64Array(uint fieldTag, string fieldName, ICollection<ulong> list)
         {
             bool isPacked;
@@ -809,7 +788,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void ReadSFixed64Array(uint fieldTag, string fieldName, ICollection<long> list)
         {
             bool isPacked;
@@ -825,7 +803,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void ReadDoubleArray(uint fieldTag, string fieldName, ICollection<double> list)
         {
             bool isPacked;
@@ -841,7 +818,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void ReadFloatArray(uint fieldTag, string fieldName, ICollection<float> list)
         {
             bool isPacked;
@@ -857,7 +833,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void ReadEnumArray(uint fieldTag, string fieldName, ICollection<IEnumLite> list,
                                   out ICollection<object> unknown, IEnumLiteMap mapping)
         {
@@ -908,7 +883,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void ReadEnumArray<T>(uint fieldTag, string fieldName, ICollection<T> list,
                                      out ICollection<object> unknown)
             where T : struct, IComparable, IFormattable
@@ -960,7 +934,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void ReadMessageArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType,
                                         ExtensionRegistry registry) where T : IMessageLite
         {
@@ -972,7 +945,6 @@ namespace Google.ProtocolBuffers
             } while (ContinueArray(fieldTag));
         }
 
-        [CLSCompliant(false)]
         public void ReadGroupArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType,
                                       ExtensionRegistry registry) where T : IMessageLite
         {
@@ -1217,7 +1189,6 @@ namespace Google.ProtocolBuffers
         /// That means we can check the size just once, then just read directly from the buffer
         /// without constant rechecking of the buffer length.
         /// </summary>
-        [CLSCompliant(false)]
         public uint ReadRawVarint32()
         {
             if (bufferPos + 5 > bufferSize)
@@ -1283,7 +1254,6 @@ namespace Google.ProtocolBuffers
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [CLSCompliant(false)]
         public static uint ReadRawVarint32(Stream input)
         {
             int result = 0;
@@ -1320,7 +1290,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Read a raw varint from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         public ulong ReadRawVarint64()
         {
             int shift = 0;
@@ -1341,7 +1310,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Read a 32-bit little-endian integer from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         public uint ReadRawLittleEndian32()
         {
             uint b1 = ReadRawByte();
@@ -1354,7 +1322,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Read a 64-bit little-endian integer from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         public ulong ReadRawLittleEndian64()
         {
             ulong b1 = ReadRawByte();
@@ -1380,7 +1347,6 @@ namespace Google.ProtocolBuffers
         /// sign-extended to 64 bits to be varint encoded, thus always taking
         /// 10 bytes on the wire.)
         /// </remarks>
-        [CLSCompliant(false)]
         public static int DecodeZigZag32(uint n)
         {
             return (int) (n >> 1) ^ -(int) (n & 1);
@@ -1395,7 +1361,6 @@ namespace Google.ProtocolBuffers
         /// sign-extended to 64 bits to be varint encoded, thus always taking
         /// 10 bytes on the wire.)
         /// </remarks>
-        [CLSCompliant(false)]
         public static long DecodeZigZag64(ulong n)
         {
             return (long) (n >> 1) ^ -(long) (n & 1);
@@ -1732,7 +1697,6 @@ namespace Google.ProtocolBuffers
         /// </summary>
         /// <returns>false if the tag is an end-group tag, in which case
         /// nothing is skipped. Otherwise, returns true.</returns>
-        [CLSCompliant(false)]
         public bool SkipField()
         {
             uint tag = lastTag;

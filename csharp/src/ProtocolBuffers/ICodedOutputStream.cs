@@ -85,7 +85,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes an unknown field of a primitive type
         /// </summary>
-        [CLSCompliant(false)]
+
         void WriteUnknownField(int fieldNumber, WireFormat.WireType wireType, ulong value);
         /// <summary>
         /// Writes an extension as a message-set group
@@ -114,7 +114,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a uint64 field value, including tag, to the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void WriteUInt64(int fieldNumber, string fieldName, ulong value);
 
         /// <summary>
@@ -130,13 +129,11 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a fixed64 field value, including tag, to the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void WriteFixed64(int fieldNumber, string fieldName, ulong value);
 
         /// <summary>
         /// Writes a fixed32 field value, including tag, to the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void WriteFixed32(int fieldNumber, string fieldName, uint value);
 
         /// <summary>
@@ -167,7 +164,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a UInt32 field value, including tag, to the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void WriteUInt32(int fieldNumber, string fieldName, uint value);
 
         /// <summary>
@@ -290,7 +286,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a repeated enumeration value of type T, including tag(s), to the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void WriteEnumArray<T>(int fieldNumber, string fieldName, IEnumerable<T> list)
             where T : struct, IComparable, IFormattable;
 
@@ -367,7 +362,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a packed repeated enumeration of type T, including tag and length, to the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void WritePackedEnumArray<T>(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<T> list)
             where T : struct, IComparable, IFormattable;
     }

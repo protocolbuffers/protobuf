@@ -59,7 +59,6 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// Writes a UInt32 value
         /// </summary>
-        [CLSCompliant(false)]
         protected abstract void Write(string field, UInt32 value);
 
         /// <summary>
@@ -70,7 +69,6 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// Writes a UInt64 value
         /// </summary>
-        [CLSCompliant(false)]
         protected abstract void Write(string field, UInt64 value);
 
         /// <summary>
@@ -185,7 +183,6 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// Writes a numeric unknown field of wire type: Fixed32, Fixed64, or Variant
         /// </summary>
-        [CLSCompliant(false)]
         protected virtual void WriteUnknown(WireFormat.WireType wireType, int fieldNumber, ulong value)
         {
         }
@@ -193,7 +190,6 @@ namespace Google.ProtocolBuffers.Serialization
         /// <summary>
         /// Writes an unknown field, Expect WireType of GroupStart or LengthPrefix
         /// </summary>
-        [CLSCompliant(false)]
         protected virtual void WriteUnknown(WireFormat.WireType wireType, int fieldNumber, ByteString value)
         {
         }
