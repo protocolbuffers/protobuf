@@ -72,15 +72,11 @@
     <Compile Include="..\ProtocolBuffers.Test\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="..\ProtocolBuffers.Test\SerializableAttribute.cs">
-      <Link>SerializableAttribute.cs</Link>
-    </Compile>
     <Compile Include="AbstractBuilderLiteTest.cs" />
     <Compile Include="AbstractMessageLiteTest.cs" />
     <Compile Include="ExtendableBuilderLiteTest.cs" />
     <Compile Include="ExtendableMessageLiteTest.cs" />
     <Compile Include="LiteTest.cs" />
-    <Compile Include="SerializableLiteTest.cs" />
     <Compile Include="TestLiteByApi.cs" />
     <Compile Include="TestProtos\UnittestExtrasLite.cs" />
     <Compile Include="TestProtos\UnittestImportLite.cs" />

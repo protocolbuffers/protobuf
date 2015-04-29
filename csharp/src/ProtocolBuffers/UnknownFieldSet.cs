@@ -446,7 +446,6 @@ namespace Google.ProtocolBuffers
             /// <param name="tag">The field's tag number, which was already parsed.</param>
             /// <param name="input">The coded input stream containing the field</param>
             /// <returns>false if the tag is an "end group" tag, true otherwise</returns>
-            [CLSCompliant(false)]
             public bool MergeFieldFrom(uint tag, ICodedInputStream input)
             {
                 if (tag == 0)
@@ -554,7 +553,6 @@ namespace Google.ProtocolBuffers
             /// value.  This is used in particular when an unknown enum value is
             /// encountered.
             /// </summary>
-            [CLSCompliant(false)]
             public Builder MergeVarintField(int number, ulong value)
             {
                 if (number == 0)

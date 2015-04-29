@@ -159,7 +159,6 @@ namespace Google.ProtocolBuffers
             WriteBytes(fieldNumber, null /*not used*/, value);
         }
 
-        [CLSCompliant(false)]
         public void WriteUnknownField(int fieldNumber, WireFormat.WireType wireType, ulong value)
         {
             if (wireType == WireFormat.WireType.Varint)
@@ -273,7 +272,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a uint64 field value, including tag, to the stream.
         /// </summary>
-        [CLSCompliant(false)]
         public void WriteUInt64(int fieldNumber, string fieldName, ulong value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Varint);
@@ -309,7 +307,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a fixed64 field value, including tag, to the stream.
         /// </summary>
-        [CLSCompliant(false)]
         public void WriteFixed64(int fieldNumber, string fieldName, ulong value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
@@ -319,7 +316,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a fixed32 field value, including tag, to the stream.
         /// </summary>
-        [CLSCompliant(false)]
         public void WriteFixed32(int fieldNumber, string fieldName, uint value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
@@ -381,7 +377,6 @@ namespace Google.ProtocolBuffers
             value.WriteRawBytesTo(this);
         }
 
-        [CLSCompliant(false)]
         public void WriteUInt32(int fieldNumber, string fieldName, uint value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Varint);
@@ -541,7 +536,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a uint64 field value, without a tag, to the stream.
         /// </summary>
-        [CLSCompliant(false)]
         public void WriteUInt64NoTag(ulong value)
         {
             WriteRawVarint64(value);
@@ -574,7 +568,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a fixed64 field value, without a tag, to the stream.
         /// </summary>
-        [CLSCompliant(false)]
         public void WriteFixed64NoTag(ulong value)
         {
             WriteRawLittleEndian64(value);
@@ -583,7 +576,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a fixed32 field value, without a tag, to the stream.
         /// </summary>
-        [CLSCompliant(false)]
         public void WriteFixed32NoTag(uint value)
         {
             WriteRawLittleEndian32(value);
@@ -638,7 +630,6 @@ namespace Google.ProtocolBuffers
             value.WriteRawBytesTo(this);
         }
 
-        [CLSCompliant(false)]
         public void WriteUInt32NoTag(uint value)
         {
             WriteRawVarint32(value);
@@ -819,7 +810,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void WriteEnumArray<T>(int fieldNumber, string fieldName, IEnumerable<T> list)
             where T : struct, IComparable, IFormattable
         {
@@ -1041,7 +1031,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void WritePackedEnumArray<T>(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<T> list)
             where T : struct, IComparable, IFormattable
         {
@@ -1070,7 +1059,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Encodes and writes a tag.
         /// </summary>
-        [CLSCompliant(false)]
         public void WriteTag(int fieldNumber, WireFormat.WireType type)
         {
             WriteRawVarint32(WireFormat.MakeTag(fieldNumber, type));
@@ -1081,7 +1069,6 @@ namespace Google.ProtocolBuffers
         /// there's enough buffer space left to whizz through without checking
         /// for each byte; otherwise, we resort to calling WriteRawByte each time.
         /// </summary>
-        [CLSCompliant(false)]
         public void WriteRawVarint32(uint value)
         {
             while (value > 127 && position < limit)
@@ -1104,7 +1091,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void WriteRawVarint64(ulong value)
         {
             while (value > 127 && position < limit)
@@ -1127,7 +1113,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void WriteRawLittleEndian32(uint value)
         {
             if (position + 4 > limit)
@@ -1146,7 +1131,6 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [CLSCompliant(false)]
         public void WriteRawLittleEndian64(ulong value)
         {
             if (position + 8 > limit)
@@ -1183,7 +1167,6 @@ namespace Google.ProtocolBuffers
             buffer[position++] = value;
         }
 
-        [CLSCompliant(false)]
         public void WriteRawByte(uint value)
         {
             WriteRawByte((byte) value);
@@ -1247,7 +1230,6 @@ namespace Google.ProtocolBuffers
         /// sign-extended to 64 bits to be varint encoded, thus always taking
         /// 10 bytes on the wire.)
         /// </remarks>
-        [CLSCompliant(false)]
         public static uint EncodeZigZag32(int n)
         {
             // Note:  the right-shift must be arithmetic
@@ -1263,7 +1245,6 @@ namespace Google.ProtocolBuffers
         /// sign-extended to 64 bits to be varint encoded, thus always taking
         /// 10 bytes on the wire.)
         /// </remarks>
-        [CLSCompliant(false)]
         public static ulong EncodeZigZag64(long n)
         {
             return (ulong) ((n << 1) ^ (n >> 63));

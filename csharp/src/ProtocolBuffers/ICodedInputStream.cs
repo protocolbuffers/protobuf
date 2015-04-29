@@ -78,7 +78,6 @@ namespace Google.ProtocolBuffers
         /// builders will always prefer the fieldTag over fieldName.
         /// </para>
         /// </remarks>
-        [CLSCompliant(false)]
         bool ReadTag(out uint fieldTag, out string fieldName);
 
         /// <summary>
@@ -94,7 +93,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Read a uint64 field from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         bool ReadUInt64(ref ulong value);
 
         /// <summary>
@@ -110,13 +108,11 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Read a fixed64 field from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         bool ReadFixed64(ref ulong value);
 
         /// <summary>
         /// Read a fixed32 field from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         bool ReadFixed32(ref uint value);
 
         /// <summary>
@@ -155,7 +151,6 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Reads a uint32 field value from the stream.
         /// </summary>   
-        [CLSCompliant(false)]
         bool ReadUInt32(ref uint value);
 
         /// <summary>
@@ -169,7 +164,6 @@ namespace Google.ProtocolBuffers
         /// then the ref value is set and it returns true.  Otherwise the unkown output
         /// value is set and this method returns false.
         /// </summary>   
-        [CLSCompliant(false)]
         bool ReadEnum<T>(ref T value, out object unknown)
             where T : struct, IComparable, IFormattable;
 
@@ -197,14 +191,12 @@ namespace Google.ProtocolBuffers
         /// Reads an array of primitive values into the list, if the wire-type of fieldTag is length-prefixed and the 
         /// type is numeric, it will read a packed array.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadPrimitiveArray(FieldType fieldType, uint fieldTag, string fieldName, ICollection<object> list);
 
         /// <summary>
         /// Reads an array of primitive values into the list, if the wire-type of fieldTag is length-prefixed, it will
         /// read a packed array.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadEnumArray(uint fieldTag, string fieldName, ICollection<IEnumLite> list, out ICollection<object> unknown,
                            IEnumLiteMap mapping);
 
@@ -212,7 +204,6 @@ namespace Google.ProtocolBuffers
         /// Reads an array of primitive values into the list, if the wire-type of fieldTag is length-prefixed, it will
         /// read a packed array.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadEnumArray<T>(uint fieldTag, string fieldName, ICollection<T> list, out ICollection<object> unknown)
             where T : struct, IComparable, IFormattable;
 
@@ -220,14 +211,12 @@ namespace Google.ProtocolBuffers
         /// Reads a set of messages using the <paramref name="messageType"/> as a template.  T is not guaranteed to be 
         /// the most derived type, it is only the type specifier for the collection.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadMessageArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType,
                                  ExtensionRegistry registry) where T : IMessageLite;
 
         /// <summary>
         /// Reads a set of messages using the <paramref name="messageType"/> as a template.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadGroupArray<T>(uint fieldTag, string fieldName, ICollection<T> list, T messageType,
                                ExtensionRegistry registry) where T : IMessageLite;
 
@@ -249,97 +238,81 @@ namespace Google.ProtocolBuffers
         /// </summary>
         /// <returns>false if the tag is an end-group tag, in which case
         /// nothing is skipped. Otherwise, returns true.</returns>
-        [CLSCompliant(false)]
         bool SkipField();
 
         /// <summary>
         /// Reads one or more repeated string field values from the stream.
         /// </summary>   
-        [CLSCompliant(false)]
         void ReadStringArray(uint fieldTag, string fieldName, ICollection<string> list);
 
         /// <summary>
         /// Reads one or more repeated ByteString field values from the stream.
         /// </summary>   
-        [CLSCompliant(false)]
         void ReadBytesArray(uint fieldTag, string fieldName, ICollection<ByteString> list);
 
         /// <summary>
         /// Reads one or more repeated boolean field values from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadBoolArray(uint fieldTag, string fieldName, ICollection<bool> list);
 
         /// <summary>
         /// Reads one or more repeated Int32 field values from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadInt32Array(uint fieldTag, string fieldName, ICollection<int> list);
 
         /// <summary>
         /// Reads one or more repeated SInt32 field values from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadSInt32Array(uint fieldTag, string fieldName, ICollection<int> list);
 
         /// <summary>
         /// Reads one or more repeated UInt32 field values from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadUInt32Array(uint fieldTag, string fieldName, ICollection<uint> list);
 
         /// <summary>
         /// Reads one or more repeated Fixed32 field values from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadFixed32Array(uint fieldTag, string fieldName, ICollection<uint> list);
 
         /// <summary>
         /// Reads one or more repeated SFixed32 field values from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadSFixed32Array(uint fieldTag, string fieldName, ICollection<int> list);
 
         /// <summary>
         /// Reads one or more repeated Int64 field values from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadInt64Array(uint fieldTag, string fieldName, ICollection<long> list);
 
         /// <summary>
         /// Reads one or more repeated SInt64 field values from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadSInt64Array(uint fieldTag, string fieldName, ICollection<long> list);
 
         /// <summary>
         /// Reads one or more repeated UInt64 field values from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadUInt64Array(uint fieldTag, string fieldName, ICollection<ulong> list);
 
         /// <summary>
         /// Reads one or more repeated Fixed64 field values from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadFixed64Array(uint fieldTag, string fieldName, ICollection<ulong> list);
 
         /// <summary>
         /// Reads one or more repeated SFixed64 field values from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadSFixed64Array(uint fieldTag, string fieldName, ICollection<long> list);
 
         /// <summary>
         /// Reads one or more repeated Double field values from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadDoubleArray(uint fieldTag, string fieldName, ICollection<double> list);
 
         /// <summary>
         /// Reads one or more repeated Float field values from the stream.
         /// </summary>
-        [CLSCompliant(false)]
         void ReadFloatArray(uint fieldTag, string fieldName, ICollection<float> list);
     }
 }
