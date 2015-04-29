@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package field_presence_test;
+package Google.ProtocolBuffers.TestProtos.FieldPresence;
 
 option java_package = "com.google.protobuf";
 option java_outer_classname = "FieldPresenceTestProto";
