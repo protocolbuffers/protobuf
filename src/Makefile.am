@@ -24,7 +24,17 @@ AM_LDFLAGS = $(PTHREAD_CFLAGS)
 # If I say "dist_include_DATA", automake complains that $(includedir) is not
 # a "legitimate" directory for DATA.  Screw you, automake.
 protodir = $(includedir)
-nobase_dist_proto_DATA = google/protobuf/descriptor.proto \
+nobase_dist_proto_DATA = google/protobuf/descriptor.proto     \
+                         google/protobuf/any.proto            \
+                         google/protobuf/api.proto            \
+                         google/protobuf/duration.proto       \
+                         google/protobuf/empty.proto          \
+                         google/protobuf/field_mask.proto     \
+                         google/protobuf/source_context.proto \
+                         google/protobuf/struct.proto         \
+                         google/protobuf/timestamp.proto      \
+                         google/protobuf/type.proto           \
+                         google/protobuf/wrappers.proto       \
                          google/protobuf/compiler/plugin.proto
 
 # Not sure why these don't get cleaned automatically.
