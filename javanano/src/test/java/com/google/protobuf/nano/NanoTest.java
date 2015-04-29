@@ -31,11 +31,13 @@
 package com.google.protobuf.nano;
 
 import com.google.protobuf.nano.MapTestProto.TestMap;
+import com.google.protobuf.nano.CodedOutputByteBufferNano;
 import com.google.protobuf.nano.MapTestProto.TestMap.MessageValue;
 import com.google.protobuf.nano.NanoAccessorsOuterClass.TestNanoAccessors;
 import com.google.protobuf.nano.NanoHasOuterClass.TestAllTypesNanoHas;
 import com.google.protobuf.nano.NanoOuterClass.TestAllTypesNano;
 import com.google.protobuf.nano.UnittestRecursiveNano.RecursiveMessageNano;
+import com.google.protobuf.nano.NanoReferenceTypesCompat;
 import com.google.protobuf.nano.UnittestSimpleNano.SimpleMessageNano;
 import com.google.protobuf.nano.UnittestSingleNano.SingleMessageNano;
 import com.google.protobuf.nano.testext.Extensions;
@@ -2300,6 +2302,59 @@ public class NanoTest extends TestCase {
     }
   }
 
+  public void testDifferentStringLengthsNano() throws Exception {
+    // Test string serialization roundtrip using strings of the following lengths,
+    // with ASCII and Unicode characters requiring different UTF-8 byte counts per
+    // char, hence causing the length delimiter varint to sometimes require more
+    // bytes for the Unicode strings than the ASCII string of the same length.
+    int[] lengths = new int[] {
+            0,
+            1,
+            (1 << 4) - 1,  // 1 byte for ASCII and Unicode
+            (1 << 7) - 1,  // 1 byte for ASCII, 2 bytes for Unicode
+            (1 << 11) - 1, // 2 bytes for ASCII and Unicode
+            (1 << 14) - 1, // 2 bytes for ASCII, 3 bytes for Unicode
+            (1 << 17) - 1, // 3 bytes for ASCII and Unicode
+    };
+    for (int i : lengths) {
+      testEncodingOfString('q', i);      // 1 byte per char
+      testEncodingOfString('\u07FF', i); // 2 bytes per char
+      testEncodingOfString('\u0981', i); // 3 bytes per char
+    }
+  }
+
+  /** Regression test for https://github.com/google/protobuf/issues/292 */
+  public void testCorrectExceptionThrowWhenEncodingStringsWithoutEnoughSpace() throws Exception {
+    String testCase = "Foooooooo";
+    assertEquals(CodedOutputByteBufferNano.computeRawVarint32Size(testCase.length()),
+            CodedOutputByteBufferNano.computeRawVarint32Size(testCase.length() * 3));
+    assertEquals(11, CodedOutputByteBufferNano.computeStringSize(1, testCase));
+    // Tag is one byte, varint describing string length is 1 byte, string length is 9 bytes.
+    // An array of size 1 will cause a failure when trying to write the varint.
+    for (int i = 0; i < 11; i++) {
+      CodedOutputByteBufferNano bufferNano = CodedOutputByteBufferNano.newInstance(new byte[i]);
+      try {
+        bufferNano.writeString(1, testCase);
+        fail("Should have thrown an out of space exception");
+      } catch (CodedOutputByteBufferNano.OutOfSpaceException expected) {}
+    }
+  }
+
+  private void testEncodingOfString(char c, int length) throws InvalidProtocolBufferNanoException {
+    TestAllTypesNano testAllTypesNano = new TestAllTypesNano();
+    final String fullString = fullString(c, length);
+    testAllTypesNano.optionalString = fullString;
+    final TestAllTypesNano resultNano = new TestAllTypesNano();
+    MessageNano.mergeFrom(resultNano, MessageNano.toByteArray(testAllTypesNano));
+    assertEquals(fullString, resultNano.optionalString);
+  }
+
+  private String fullString(char c, int length) {
+    char[] result = new char[length];
+    Arrays.fill(result, c);
+    return new String(result);
+  }
+
   public void testNanoWithHasParseFrom() throws Exception {
     TestAllTypesNanoHas msg = null;
     // Test false on creation, after clear and upon empty parse.
@@ -2986,6 +3041,10 @@ public class NanoTest extends TestCase {
     assertTrue(Arrays.equals(floats, message.getExtension(RepeatedExtensions.repeatedFloat)));
     assertTrue(Arrays.equals(doubles, message.getExtension(RepeatedExtensions.repeatedDouble)));
     assertTrue(Arrays.equals(enums, message.getExtension(RepeatedExtensions.repeatedEnum)));
+
+    // Clone the message and ensure it's still equal.
+    Extensions.ExtendableMessage clone = message.clone();
+    assertEquals(clone, message);
   }
 
   public void testNullExtensions() throws Exception {
@@ -4345,6 +4404,11 @@ public class NanoTest extends TestCase {
     assertMapSet(testMap.sfixed64ToSfixed64Field, int64Values, int64Values);
   }
 
+  public void testRepeatedFieldInitializedInReftypesCompatMode() {
+    NanoReferenceTypesCompat.TestAllTypesNano proto = new NanoReferenceTypesCompat.TestAllTypesNano();
+    assertNotNull(proto.repeatedString);
+  }
+
   private void assertRepeatedPackablesEqual(
       NanoRepeatedPackables.NonPacked nonPacked, NanoRepeatedPackables.Packed packed) {
     // Not using MessageNano.equals() -- that belongs to a separate test.
@@ -4362,6 +4426,22 @@ public class NanoTest extends TestCase {
     assertTrue(Arrays.equals(nonPacked.doubles, packed.doubles));
     assertTrue(Arrays.equals(nonPacked.bools, packed.bools));
     assertTrue(Arrays.equals(nonPacked.enums, packed.enums));
+  }
+
+  public void testClone() throws Exception {
+    // A simple message.
+    AnotherMessage anotherMessage = new AnotherMessage();
+    anotherMessage.string = "Hello";
+    anotherMessage.value = true;
+    anotherMessage.integers = new int[] { 1, 2, 3 };
+
+    AnotherMessage clone = anotherMessage.clone();
+    assertEquals(clone, anotherMessage);
+
+    // Verify it was a deep clone - changes to the clone shouldn't affect the
+    // original.
+    clone.integers[1] = 100;
+    assertFalse(clone.equals(anotherMessage));
   }
 
   private void assertHasWireData(MessageNano message, boolean expected) {

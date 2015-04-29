@@ -97,19 +97,19 @@
                   <arg value="src/test/java/com/google/protobuf/nano/map_test.proto" />
                 </exec>
                 <exec executable="../src/protoc">
-                  <arg value="--javanano_out=store_unknown_fields=true,generate_equals=true:target/generated-test-sources" />
+                  <arg value="--javanano_out=store_unknown_fields=true,generate_equals=true,generate_clone=true:target/generated-test-sources" />
                   <arg value="--proto_path=src/test/java/com" />
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_extension_nano.proto" />
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_extension_singular_nano.proto" />
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_extension_repeated_nano.proto" />
                 </exec>
                 <exec executable="../src/protoc">
-                  <arg value="--javanano_out=store_unknown_fields=true:target/generated-test-sources" />
+                  <arg value="--javanano_out=store_unknown_fields=true,generate_clone=true:target/generated-test-sources" />
                   <arg value="--proto_path=src/test/java/com" />
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_extension_packed_nano.proto" />
                 </exec>
                 <exec executable="../src/protoc">
-                  <arg value="--javanano_out=java_nano_generate_has=true,generate_equals=true:target/generated-test-sources" />
+                  <arg value="--javanano_out=java_nano_generate_has=true,generate_equals=true,generate_clone=true:target/generated-test-sources" />
                   <arg value="--proto_path=src/test/java/com" />
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_has_nano.proto" />
                 </exec>
@@ -136,6 +136,15 @@
                 </exec>
                 <exec executable="../src/protoc">
                   <arg value="--javanano_out=optional_field_style=reftypes,generate_equals=true:target/generated-test-sources" />
+                  <arg value="--proto_path=src/test/java/com" />
+                  <arg value="src/test/java/com/google/protobuf/nano/unittest_reference_types_nano.proto" />
+                </exec>
+                <exec executable="../src/protoc">
+                  <arg value="--javanano_out=
+                                  optional_field_style=reftypes_compat_mode,
+                                  generate_equals=true,
+                                  java_outer_classname=google/protobuf/nano/unittest_reference_types_nano.proto|NanoReferenceTypesCompat
+                                  :target/generated-test-sources" />
                   <arg value="--proto_path=src/test/java/com" />
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_reference_types_nano.proto" />
                 </exec>
