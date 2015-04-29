@@ -61,7 +61,6 @@
     <Compile Include="Collections\IPopsicleList.cs" />
     <Compile Include="Collections\PopsicleList.cs" />
     <Compile Include="CodedOutputStream.ComputeSize.cs" />
-    <Compile Include="CustomSerialization.cs" />
     <Compile Include="Delegates.cs" />
     <Compile Include="CodedInputStream.cs" />
     <Compile Include="CodedOutputStream.cs" />
