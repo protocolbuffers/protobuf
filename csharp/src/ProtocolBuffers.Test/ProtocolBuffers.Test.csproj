@@ -71,6 +71,7 @@
     </Compile>
     <Compile Include="AbstractMessageTest.cs" />
     <Compile Include="ByteStringTest.cs" />
+    <Compile Include="FieldPresenceTest.cs" />
     <Compile Include="CodedInputStreamTest.cs" />
     <Compile Include="CodedOutputStreamTest.cs" />
     <Compile Include="Collections\PopsicleListTest.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="Compatibility\TextCompatibilityTests.cs" />
     <Compile Include="Compatibility\XmlCompatibilityTests.cs" />
     <Compile Include="SerializableAttribute.cs" />
+    <Compile Include="TestProtos\FieldPresense.cs" />
     <Compile Include="TestProtos\GoogleSize.cs" />
     <Compile Include="TestProtos\GoogleSpeed.cs" />
     <Compile Include="TestProtos\Unittest.cs" />

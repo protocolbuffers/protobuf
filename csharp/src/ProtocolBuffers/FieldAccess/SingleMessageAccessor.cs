@@ -48,7 +48,7 @@ namespace Google.ProtocolBuffers.FieldAccess
         /// </summary>
         private readonly Func<IBuilder> createBuilderDelegate;
 
-        internal SingleMessageAccessor(string name) : base(name)
+        internal SingleMessageAccessor(string name) : base(null, name, true)
         {
             MethodInfo createBuilderMethod = ClrType.GetMethod("CreateBuilder", ReflectionUtil.EmptyTypes);
             if (createBuilderMethod == null)

@@ -42,7 +42,7 @@ namespace Google.ProtocolBuffers.FieldAccess
     {
         private readonly EnumDescriptor enumDescriptor;
 
-        internal SingleEnumAccessor(FieldDescriptor field, string name) : base(name)
+        internal SingleEnumAccessor(FieldDescriptor field, string name, bool supportFieldPresence) : base(field, name, supportFieldPresence)
         {
             enumDescriptor = field.EnumType;
         }

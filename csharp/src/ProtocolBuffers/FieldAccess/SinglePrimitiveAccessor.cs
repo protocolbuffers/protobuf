@@ -31,6 +31,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
 using System.Reflection;
+using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.FieldAccess
 {
@@ -42,6 +43,7 @@ namespace Google.ProtocolBuffers.FieldAccess
         where TBuilder : IBuilder<TMessage, TBuilder>
     {
         private readonly Type clrType;
+        private readonly FieldDescriptor field;
         private readonly Func<TMessage, object> getValueDelegate;
         private readonly Action<TBuilder, object> setValueDelegate;
         private readonly Func<TMessage, bool> hasDelegate;
@@ -56,18 +58,28 @@ namespace Google.ProtocolBuffers.FieldAccess
             get { return clrType; }
         }
 
-        internal SinglePrimitiveAccessor(string name)
+        internal SinglePrimitiveAccessor(FieldDescriptor fieldDesriptor, string name, bool supportFieldPresence)
         {
+            field = fieldDesriptor;
             PropertyInfo messageProperty = typeof(TMessage).GetProperty(name, null, ReflectionUtil.EmptyTypes);
             PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name, null, ReflectionUtil.EmptyTypes);
-            PropertyInfo hasProperty = typeof(TMessage).GetProperty("Has" + name);
             MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name);
-            if (messageProperty == null || builderProperty == null || hasProperty == null || clearMethod == null)
+            if (messageProperty == null || builderProperty == null || clearMethod == null)
             {
                 throw new ArgumentException("Not all required properties/methods available");
             }
+
+            if (supportFieldPresence)
+            {
+                PropertyInfo hasProperty = typeof(TMessage).GetProperty("Has" + name);
+                if (hasProperty == null)
+                {
+                    throw new ArgumentException("Has properties not available");
+                }
+                hasDelegate = ReflectionUtil.CreateDelegateFunc<TMessage, bool>(hasProperty.GetGetMethod());
+            }
+            
             clrType = messageProperty.PropertyType;
-            hasDelegate = ReflectionUtil.CreateDelegateFunc<TMessage, bool>(hasProperty.GetGetMethod());
             clearDelegate = ReflectionUtil.CreateDelegateFunc<TBuilder, IBuilder>(clearMethod);
             getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
             setValueDelegate = ReflectionUtil.CreateDowncastDelegate<TBuilder>(builderProperty.GetSetMethod());
@@ -75,6 +87,10 @@ namespace Google.ProtocolBuffers.FieldAccess
 
         public bool Has(TMessage message)
         {
+            if (hasDelegate == null)
+            {
+                return !GetValue(message).Equals(field.DefaultValue);
+            }
             return hasDelegate(message);
         }
 
