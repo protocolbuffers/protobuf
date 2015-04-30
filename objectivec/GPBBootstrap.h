@@ -44,6 +44,14 @@
 #define GPBOBJC_INCLUDE_FIELD_OPTIONS 0
 #endif
 
+// This file is also included into the Objective C protoc plugin sources, so
+// following the suggestion on:
+//   http://clang.llvm.org/docs/LanguageExtensions.html
+// for __has_feature usage.
+#ifndef __has_feature
+  #define __has_feature(x) 0
+#endif
+
 // Used in the generated code to give sizes to enums. int32_t was chosen based
 // on the fact that Protocol Buffers enums are limited to this range.
 // The complexity and double definition here are so we get the nice name
@@ -66,7 +74,7 @@
 
 // For use in public headers that might need to deal with ARC.
 #ifndef GPB_UNSAFE_UNRETAINED
-#if defined(__has_feature) && __has_feature(objc_arc)
+#if __has_feature(objc_arc)
 #define GPB_UNSAFE_UNRETAINED __unsafe_unretained
 #else
 #define GPB_UNSAFE_UNRETAINED
