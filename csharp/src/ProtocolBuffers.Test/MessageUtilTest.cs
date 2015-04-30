@@ -36,52 +36,47 @@
 
 using System;
 using Google.ProtocolBuffers.TestProtos;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Google.ProtocolBuffers
 {
-    [TestClass]
     public class MessageUtilTest
     {
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [Fact]
         public void NullTypeName()
         {
-            MessageUtil.GetDefaultMessage((string) null);
+            Assert.Throws<ArgumentNullException>(() => MessageUtil.GetDefaultMessage((string) null));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Fact]
         public void InvalidTypeName()
         {
-            MessageUtil.GetDefaultMessage("invalidtypename");
+            Assert.Throws<ArgumentException>(() => MessageUtil.GetDefaultMessage("invalidtypename"));
         }
 
-        [TestMethod]
+        [Fact]
         public void ValidTypeName()
         {
-            Assert.AreSame(TestAllTypes.DefaultInstance,
+            Assert.Same(TestAllTypes.DefaultInstance,
                            MessageUtil.GetDefaultMessage(typeof(TestAllTypes).AssemblyQualifiedName));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [Fact]
         public void NullType()
         {
-            MessageUtil.GetDefaultMessage((Type) null);
+            Assert.Throws<ArgumentNullException>(() => MessageUtil.GetDefaultMessage((Type)null));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Fact]
         public void NonMessageType()
         {
-            MessageUtil.GetDefaultMessage(typeof(string));
+            Assert.Throws<ArgumentException>(() => MessageUtil.GetDefaultMessage(typeof(string)));
         }
 
-        [TestMethod]
+        [Fact]
         public void ValidType()
         {
-            Assert.AreSame(TestAllTypes.DefaultInstance, MessageUtil.GetDefaultMessage(typeof(TestAllTypes)));
+            Assert.Same(TestAllTypes.DefaultInstance, MessageUtil.GetDefaultMessage(typeof(TestAllTypes)));
         }
     }
 }

@@ -41,7 +41,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using Google.ProtocolBuffers.TestProtos;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Google.ProtocolBuffers
 {
@@ -324,343 +324,343 @@ namespace Google.ProtocolBuffers
         /// </summary>
         internal static void AssertAllFieldsSet(TestAllTypes message)
         {
-            Assert.IsTrue(message.HasOptionalInt32);
-            Assert.IsTrue(message.HasOptionalInt64);
-            Assert.IsTrue(message.HasOptionalUint32);
-            Assert.IsTrue(message.HasOptionalUint64);
-            Assert.IsTrue(message.HasOptionalSint32);
-            Assert.IsTrue(message.HasOptionalSint64);
-            Assert.IsTrue(message.HasOptionalFixed32);
-            Assert.IsTrue(message.HasOptionalFixed64);
-            Assert.IsTrue(message.HasOptionalSfixed32);
-            Assert.IsTrue(message.HasOptionalSfixed64);
-            Assert.IsTrue(message.HasOptionalFloat);
-            Assert.IsTrue(message.HasOptionalDouble);
-            Assert.IsTrue(message.HasOptionalBool);
-            Assert.IsTrue(message.HasOptionalString);
-            Assert.IsTrue(message.HasOptionalBytes);
+            Assert.True(message.HasOptionalInt32);
+            Assert.True(message.HasOptionalInt64);
+            Assert.True(message.HasOptionalUint32);
+            Assert.True(message.HasOptionalUint64);
+            Assert.True(message.HasOptionalSint32);
+            Assert.True(message.HasOptionalSint64);
+            Assert.True(message.HasOptionalFixed32);
+            Assert.True(message.HasOptionalFixed64);
+            Assert.True(message.HasOptionalSfixed32);
+            Assert.True(message.HasOptionalSfixed64);
+            Assert.True(message.HasOptionalFloat);
+            Assert.True(message.HasOptionalDouble);
+            Assert.True(message.HasOptionalBool);
+            Assert.True(message.HasOptionalString);
+            Assert.True(message.HasOptionalBytes);
 
-            Assert.IsTrue(message.HasOptionalGroup);
-            Assert.IsTrue(message.HasOptionalNestedMessage);
-            Assert.IsTrue(message.HasOptionalForeignMessage);
-            Assert.IsTrue(message.HasOptionalImportMessage);
+            Assert.True(message.HasOptionalGroup);
+            Assert.True(message.HasOptionalNestedMessage);
+            Assert.True(message.HasOptionalForeignMessage);
+            Assert.True(message.HasOptionalImportMessage);
 
-            Assert.IsTrue(message.OptionalGroup.HasA);
-            Assert.IsTrue(message.OptionalNestedMessage.HasBb);
-            Assert.IsTrue(message.OptionalForeignMessage.HasC);
-            Assert.IsTrue(message.OptionalImportMessage.HasD);
+            Assert.True(message.OptionalGroup.HasA);
+            Assert.True(message.OptionalNestedMessage.HasBb);
+            Assert.True(message.OptionalForeignMessage.HasC);
+            Assert.True(message.OptionalImportMessage.HasD);
 
-            Assert.IsTrue(message.HasOptionalNestedEnum);
-            Assert.IsTrue(message.HasOptionalForeignEnum);
-            Assert.IsTrue(message.HasOptionalImportEnum);
+            Assert.True(message.HasOptionalNestedEnum);
+            Assert.True(message.HasOptionalForeignEnum);
+            Assert.True(message.HasOptionalImportEnum);
 
-            Assert.IsTrue(message.HasOptionalStringPiece);
-            Assert.IsTrue(message.HasOptionalCord);
+            Assert.True(message.HasOptionalStringPiece);
+            Assert.True(message.HasOptionalCord);
 
-            Assert.AreEqual(101, message.OptionalInt32);
-            Assert.AreEqual(102, message.OptionalInt64);
-            Assert.AreEqual(103u, message.OptionalUint32);
-            Assert.AreEqual(104u, message.OptionalUint64);
-            Assert.AreEqual(105, message.OptionalSint32);
-            Assert.AreEqual(106, message.OptionalSint64);
-            Assert.AreEqual(107u, message.OptionalFixed32);
-            Assert.AreEqual(108u, message.OptionalFixed64);
-            Assert.AreEqual(109, message.OptionalSfixed32);
-            Assert.AreEqual(110, message.OptionalSfixed64);
-            Assert.AreEqual(111, message.OptionalFloat);
-            Assert.AreEqual(112, message.OptionalDouble);
-            Assert.AreEqual(true, message.OptionalBool);
-            Assert.AreEqual("115", message.OptionalString);
-            Assert.AreEqual(ToBytes("116"), message.OptionalBytes);
+            Assert.Equal(101, message.OptionalInt32);
+            Assert.Equal(102, message.OptionalInt64);
+            Assert.Equal(103u, message.OptionalUint32);
+            Assert.Equal(104u, message.OptionalUint64);
+            Assert.Equal(105, message.OptionalSint32);
+            Assert.Equal(106, message.OptionalSint64);
+            Assert.Equal(107u, message.OptionalFixed32);
+            Assert.Equal(108u, message.OptionalFixed64);
+            Assert.Equal(109, message.OptionalSfixed32);
+            Assert.Equal(110, message.OptionalSfixed64);
+            Assert.Equal(111, message.OptionalFloat);
+            Assert.Equal(112, message.OptionalDouble);
+            Assert.Equal(true, message.OptionalBool);
+            Assert.Equal("115", message.OptionalString);
+            Assert.Equal(ToBytes("116"), message.OptionalBytes);
 
-            Assert.AreEqual(117, message.OptionalGroup.A);
-            Assert.AreEqual(118, message.OptionalNestedMessage.Bb);
-            Assert.AreEqual(119, message.OptionalForeignMessage.C);
-            Assert.AreEqual(120, message.OptionalImportMessage.D);
+            Assert.Equal(117, message.OptionalGroup.A);
+            Assert.Equal(118, message.OptionalNestedMessage.Bb);
+            Assert.Equal(119, message.OptionalForeignMessage.C);
+            Assert.Equal(120, message.OptionalImportMessage.D);
 
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.BAZ, message.OptionalNestedEnum);
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAZ, message.OptionalForeignEnum);
-            Assert.AreEqual(ImportEnum.IMPORT_BAZ, message.OptionalImportEnum);
+            Assert.Equal(TestAllTypes.Types.NestedEnum.BAZ, message.OptionalNestedEnum);
+            Assert.Equal(ForeignEnum.FOREIGN_BAZ, message.OptionalForeignEnum);
+            Assert.Equal(ImportEnum.IMPORT_BAZ, message.OptionalImportEnum);
 
-            Assert.AreEqual("124", message.OptionalStringPiece);
-            Assert.AreEqual("125", message.OptionalCord);
-
-            // -----------------------------------------------------------------
-
-            Assert.AreEqual(2, message.RepeatedInt32Count);
-            Assert.AreEqual(2, message.RepeatedInt64Count);
-            Assert.AreEqual(2, message.RepeatedUint32Count);
-            Assert.AreEqual(2, message.RepeatedUint64Count);
-            Assert.AreEqual(2, message.RepeatedSint32Count);
-            Assert.AreEqual(2, message.RepeatedSint64Count);
-            Assert.AreEqual(2, message.RepeatedFixed32Count);
-            Assert.AreEqual(2, message.RepeatedFixed64Count);
-            Assert.AreEqual(2, message.RepeatedSfixed32Count);
-            Assert.AreEqual(2, message.RepeatedSfixed64Count);
-            Assert.AreEqual(2, message.RepeatedFloatCount);
-            Assert.AreEqual(2, message.RepeatedDoubleCount);
-            Assert.AreEqual(2, message.RepeatedBoolCount);
-            Assert.AreEqual(2, message.RepeatedStringCount);
-            Assert.AreEqual(2, message.RepeatedBytesCount);
-
-            Assert.AreEqual(2, message.RepeatedGroupCount);
-            Assert.AreEqual(2, message.RepeatedNestedMessageCount);
-            Assert.AreEqual(2, message.RepeatedForeignMessageCount);
-            Assert.AreEqual(2, message.RepeatedImportMessageCount);
-            Assert.AreEqual(2, message.RepeatedNestedEnumCount);
-            Assert.AreEqual(2, message.RepeatedForeignEnumCount);
-            Assert.AreEqual(2, message.RepeatedImportEnumCount);
-
-            Assert.AreEqual(2, message.RepeatedStringPieceCount);
-            Assert.AreEqual(2, message.RepeatedCordCount);
-
-            Assert.AreEqual(201, message.GetRepeatedInt32(0));
-            Assert.AreEqual(202, message.GetRepeatedInt64(0));
-            Assert.AreEqual(203u, message.GetRepeatedUint32(0));
-            Assert.AreEqual(204u, message.GetRepeatedUint64(0));
-            Assert.AreEqual(205, message.GetRepeatedSint32(0));
-            Assert.AreEqual(206, message.GetRepeatedSint64(0));
-            Assert.AreEqual(207u, message.GetRepeatedFixed32(0));
-            Assert.AreEqual(208u, message.GetRepeatedFixed64(0));
-            Assert.AreEqual(209, message.GetRepeatedSfixed32(0));
-            Assert.AreEqual(210, message.GetRepeatedSfixed64(0));
-            Assert.AreEqual(211, message.GetRepeatedFloat(0));
-            Assert.AreEqual(212, message.GetRepeatedDouble(0));
-            Assert.AreEqual(true, message.GetRepeatedBool(0));
-            Assert.AreEqual("215", message.GetRepeatedString(0));
-            Assert.AreEqual(ToBytes("216"), message.GetRepeatedBytes(0));
-
-            Assert.AreEqual(217, message.GetRepeatedGroup(0).A);
-            Assert.AreEqual(218, message.GetRepeatedNestedMessage(0).Bb);
-            Assert.AreEqual(219, message.GetRepeatedForeignMessage(0).C);
-            Assert.AreEqual(220, message.GetRepeatedImportMessage(0).D);
-
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.BAR, message.GetRepeatedNestedEnum(0));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAR, message.GetRepeatedForeignEnum(0));
-            Assert.AreEqual(ImportEnum.IMPORT_BAR, message.GetRepeatedImportEnum(0));
-
-            Assert.AreEqual("224", message.GetRepeatedStringPiece(0));
-            Assert.AreEqual("225", message.GetRepeatedCord(0));
-
-            Assert.AreEqual(301, message.GetRepeatedInt32(1));
-            Assert.AreEqual(302, message.GetRepeatedInt64(1));
-            Assert.AreEqual(303u, message.GetRepeatedUint32(1));
-            Assert.AreEqual(304u, message.GetRepeatedUint64(1));
-            Assert.AreEqual(305, message.GetRepeatedSint32(1));
-            Assert.AreEqual(306, message.GetRepeatedSint64(1));
-            Assert.AreEqual(307u, message.GetRepeatedFixed32(1));
-            Assert.AreEqual(308u, message.GetRepeatedFixed64(1));
-            Assert.AreEqual(309, message.GetRepeatedSfixed32(1));
-            Assert.AreEqual(310, message.GetRepeatedSfixed64(1));
-            Assert.AreEqual(311, message.GetRepeatedFloat(1), 0.0);
-            Assert.AreEqual(312, message.GetRepeatedDouble(1), 0.0);
-            Assert.AreEqual(false, message.GetRepeatedBool(1));
-            Assert.AreEqual("315", message.GetRepeatedString(1));
-            Assert.AreEqual(ToBytes("316"), message.GetRepeatedBytes(1));
-
-            Assert.AreEqual(317, message.GetRepeatedGroup(1).A);
-            Assert.AreEqual(318, message.GetRepeatedNestedMessage(1).Bb);
-            Assert.AreEqual(319, message.GetRepeatedForeignMessage(1).C);
-            Assert.AreEqual(320, message.GetRepeatedImportMessage(1).D);
-
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.BAZ, message.GetRepeatedNestedEnum(1));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAZ, message.GetRepeatedForeignEnum(1));
-            Assert.AreEqual(ImportEnum.IMPORT_BAZ, message.GetRepeatedImportEnum(1));
-
-            Assert.AreEqual("324", message.GetRepeatedStringPiece(1));
-            Assert.AreEqual("325", message.GetRepeatedCord(1));
+            Assert.Equal("124", message.OptionalStringPiece);
+            Assert.Equal("125", message.OptionalCord);
 
             // -----------------------------------------------------------------
 
-            Assert.IsTrue(message.HasDefaultInt32);
-            Assert.IsTrue(message.HasDefaultInt64);
-            Assert.IsTrue(message.HasDefaultUint32);
-            Assert.IsTrue(message.HasDefaultUint64);
-            Assert.IsTrue(message.HasDefaultSint32);
-            Assert.IsTrue(message.HasDefaultSint64);
-            Assert.IsTrue(message.HasDefaultFixed32);
-            Assert.IsTrue(message.HasDefaultFixed64);
-            Assert.IsTrue(message.HasDefaultSfixed32);
-            Assert.IsTrue(message.HasDefaultSfixed64);
-            Assert.IsTrue(message.HasDefaultFloat);
-            Assert.IsTrue(message.HasDefaultDouble);
-            Assert.IsTrue(message.HasDefaultBool);
-            Assert.IsTrue(message.HasDefaultString);
-            Assert.IsTrue(message.HasDefaultBytes);
+            Assert.Equal(2, message.RepeatedInt32Count);
+            Assert.Equal(2, message.RepeatedInt64Count);
+            Assert.Equal(2, message.RepeatedUint32Count);
+            Assert.Equal(2, message.RepeatedUint64Count);
+            Assert.Equal(2, message.RepeatedSint32Count);
+            Assert.Equal(2, message.RepeatedSint64Count);
+            Assert.Equal(2, message.RepeatedFixed32Count);
+            Assert.Equal(2, message.RepeatedFixed64Count);
+            Assert.Equal(2, message.RepeatedSfixed32Count);
+            Assert.Equal(2, message.RepeatedSfixed64Count);
+            Assert.Equal(2, message.RepeatedFloatCount);
+            Assert.Equal(2, message.RepeatedDoubleCount);
+            Assert.Equal(2, message.RepeatedBoolCount);
+            Assert.Equal(2, message.RepeatedStringCount);
+            Assert.Equal(2, message.RepeatedBytesCount);
 
-            Assert.IsTrue(message.HasDefaultNestedEnum);
-            Assert.IsTrue(message.HasDefaultForeignEnum);
-            Assert.IsTrue(message.HasDefaultImportEnum);
+            Assert.Equal(2, message.RepeatedGroupCount);
+            Assert.Equal(2, message.RepeatedNestedMessageCount);
+            Assert.Equal(2, message.RepeatedForeignMessageCount);
+            Assert.Equal(2, message.RepeatedImportMessageCount);
+            Assert.Equal(2, message.RepeatedNestedEnumCount);
+            Assert.Equal(2, message.RepeatedForeignEnumCount);
+            Assert.Equal(2, message.RepeatedImportEnumCount);
 
-            Assert.IsTrue(message.HasDefaultStringPiece);
-            Assert.IsTrue(message.HasDefaultCord);
+            Assert.Equal(2, message.RepeatedStringPieceCount);
+            Assert.Equal(2, message.RepeatedCordCount);
 
-            Assert.AreEqual(401, message.DefaultInt32);
-            Assert.AreEqual(402, message.DefaultInt64);
-            Assert.AreEqual(403u, message.DefaultUint32);
-            Assert.AreEqual(404u, message.DefaultUint64);
-            Assert.AreEqual(405, message.DefaultSint32);
-            Assert.AreEqual(406, message.DefaultSint64);
-            Assert.AreEqual(407u, message.DefaultFixed32);
-            Assert.AreEqual(408u, message.DefaultFixed64);
-            Assert.AreEqual(409, message.DefaultSfixed32);
-            Assert.AreEqual(410, message.DefaultSfixed64);
-            Assert.AreEqual(411, message.DefaultFloat);
-            Assert.AreEqual(412, message.DefaultDouble);
-            Assert.AreEqual(false, message.DefaultBool);
-            Assert.AreEqual("415", message.DefaultString);
-            Assert.AreEqual(ToBytes("416"), message.DefaultBytes);
+            Assert.Equal(201, message.GetRepeatedInt32(0));
+            Assert.Equal(202, message.GetRepeatedInt64(0));
+            Assert.Equal(203u, message.GetRepeatedUint32(0));
+            Assert.Equal(204u, message.GetRepeatedUint64(0));
+            Assert.Equal(205, message.GetRepeatedSint32(0));
+            Assert.Equal(206, message.GetRepeatedSint64(0));
+            Assert.Equal(207u, message.GetRepeatedFixed32(0));
+            Assert.Equal(208u, message.GetRepeatedFixed64(0));
+            Assert.Equal(209, message.GetRepeatedSfixed32(0));
+            Assert.Equal(210, message.GetRepeatedSfixed64(0));
+            Assert.Equal(211, message.GetRepeatedFloat(0));
+            Assert.Equal(212, message.GetRepeatedDouble(0));
+            Assert.Equal(true, message.GetRepeatedBool(0));
+            Assert.Equal("215", message.GetRepeatedString(0));
+            Assert.Equal(ToBytes("216"), message.GetRepeatedBytes(0));
 
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.FOO, message.DefaultNestedEnum);
-            Assert.AreEqual(ForeignEnum.FOREIGN_FOO, message.DefaultForeignEnum);
-            Assert.AreEqual(ImportEnum.IMPORT_FOO, message.DefaultImportEnum);
+            Assert.Equal(217, message.GetRepeatedGroup(0).A);
+            Assert.Equal(218, message.GetRepeatedNestedMessage(0).Bb);
+            Assert.Equal(219, message.GetRepeatedForeignMessage(0).C);
+            Assert.Equal(220, message.GetRepeatedImportMessage(0).D);
 
-            Assert.AreEqual("424", message.DefaultStringPiece);
-            Assert.AreEqual("425", message.DefaultCord);
+            Assert.Equal(TestAllTypes.Types.NestedEnum.BAR, message.GetRepeatedNestedEnum(0));
+            Assert.Equal(ForeignEnum.FOREIGN_BAR, message.GetRepeatedForeignEnum(0));
+            Assert.Equal(ImportEnum.IMPORT_BAR, message.GetRepeatedImportEnum(0));
+
+            Assert.Equal("224", message.GetRepeatedStringPiece(0));
+            Assert.Equal("225", message.GetRepeatedCord(0));
+
+            Assert.Equal(301, message.GetRepeatedInt32(1));
+            Assert.Equal(302, message.GetRepeatedInt64(1));
+            Assert.Equal(303u, message.GetRepeatedUint32(1));
+            Assert.Equal(304u, message.GetRepeatedUint64(1));
+            Assert.Equal(305, message.GetRepeatedSint32(1));
+            Assert.Equal(306, message.GetRepeatedSint64(1));
+            Assert.Equal(307u, message.GetRepeatedFixed32(1));
+            Assert.Equal(308u, message.GetRepeatedFixed64(1));
+            Assert.Equal(309, message.GetRepeatedSfixed32(1));
+            Assert.Equal(310, message.GetRepeatedSfixed64(1));
+            Assert.Equal(311f, message.GetRepeatedFloat(1));
+            Assert.Equal(312d, message.GetRepeatedDouble(1));
+            Assert.Equal(false, message.GetRepeatedBool(1));
+            Assert.Equal("315", message.GetRepeatedString(1));
+            Assert.Equal(ToBytes("316"), message.GetRepeatedBytes(1));
+
+            Assert.Equal(317, message.GetRepeatedGroup(1).A);
+            Assert.Equal(318, message.GetRepeatedNestedMessage(1).Bb);
+            Assert.Equal(319, message.GetRepeatedForeignMessage(1).C);
+            Assert.Equal(320, message.GetRepeatedImportMessage(1).D);
+
+            Assert.Equal(TestAllTypes.Types.NestedEnum.BAZ, message.GetRepeatedNestedEnum(1));
+            Assert.Equal(ForeignEnum.FOREIGN_BAZ, message.GetRepeatedForeignEnum(1));
+            Assert.Equal(ImportEnum.IMPORT_BAZ, message.GetRepeatedImportEnum(1));
+
+            Assert.Equal("324", message.GetRepeatedStringPiece(1));
+            Assert.Equal("325", message.GetRepeatedCord(1));
+
+            // -----------------------------------------------------------------
+
+            Assert.True(message.HasDefaultInt32);
+            Assert.True(message.HasDefaultInt64);
+            Assert.True(message.HasDefaultUint32);
+            Assert.True(message.HasDefaultUint64);
+            Assert.True(message.HasDefaultSint32);
+            Assert.True(message.HasDefaultSint64);
+            Assert.True(message.HasDefaultFixed32);
+            Assert.True(message.HasDefaultFixed64);
+            Assert.True(message.HasDefaultSfixed32);
+            Assert.True(message.HasDefaultSfixed64);
+            Assert.True(message.HasDefaultFloat);
+            Assert.True(message.HasDefaultDouble);
+            Assert.True(message.HasDefaultBool);
+            Assert.True(message.HasDefaultString);
+            Assert.True(message.HasDefaultBytes);
+
+            Assert.True(message.HasDefaultNestedEnum);
+            Assert.True(message.HasDefaultForeignEnum);
+            Assert.True(message.HasDefaultImportEnum);
+
+            Assert.True(message.HasDefaultStringPiece);
+            Assert.True(message.HasDefaultCord);
+
+            Assert.Equal(401, message.DefaultInt32);
+            Assert.Equal(402, message.DefaultInt64);
+            Assert.Equal(403u, message.DefaultUint32);
+            Assert.Equal(404u, message.DefaultUint64);
+            Assert.Equal(405, message.DefaultSint32);
+            Assert.Equal(406, message.DefaultSint64);
+            Assert.Equal(407u, message.DefaultFixed32);
+            Assert.Equal(408u, message.DefaultFixed64);
+            Assert.Equal(409, message.DefaultSfixed32);
+            Assert.Equal(410, message.DefaultSfixed64);
+            Assert.Equal(411, message.DefaultFloat);
+            Assert.Equal(412, message.DefaultDouble);
+            Assert.Equal(false, message.DefaultBool);
+            Assert.Equal("415", message.DefaultString);
+            Assert.Equal(ToBytes("416"), message.DefaultBytes);
+
+            Assert.Equal(TestAllTypes.Types.NestedEnum.FOO, message.DefaultNestedEnum);
+            Assert.Equal(ForeignEnum.FOREIGN_FOO, message.DefaultForeignEnum);
+            Assert.Equal(ImportEnum.IMPORT_FOO, message.DefaultImportEnum);
+
+            Assert.Equal("424", message.DefaultStringPiece);
+            Assert.Equal("425", message.DefaultCord);
         }
 
         internal static void AssertClear(TestAllTypes message)
         {
             // HasBlah() should initially be false for all optional fields.
-            Assert.IsFalse(message.HasOptionalInt32);
-            Assert.IsFalse(message.HasOptionalInt64);
-            Assert.IsFalse(message.HasOptionalUint32);
-            Assert.IsFalse(message.HasOptionalUint64);
-            Assert.IsFalse(message.HasOptionalSint32);
-            Assert.IsFalse(message.HasOptionalSint64);
-            Assert.IsFalse(message.HasOptionalFixed32);
-            Assert.IsFalse(message.HasOptionalFixed64);
-            Assert.IsFalse(message.HasOptionalSfixed32);
-            Assert.IsFalse(message.HasOptionalSfixed64);
-            Assert.IsFalse(message.HasOptionalFloat);
-            Assert.IsFalse(message.HasOptionalDouble);
-            Assert.IsFalse(message.HasOptionalBool);
-            Assert.IsFalse(message.HasOptionalString);
-            Assert.IsFalse(message.HasOptionalBytes);
+            Assert.False(message.HasOptionalInt32);
+            Assert.False(message.HasOptionalInt64);
+            Assert.False(message.HasOptionalUint32);
+            Assert.False(message.HasOptionalUint64);
+            Assert.False(message.HasOptionalSint32);
+            Assert.False(message.HasOptionalSint64);
+            Assert.False(message.HasOptionalFixed32);
+            Assert.False(message.HasOptionalFixed64);
+            Assert.False(message.HasOptionalSfixed32);
+            Assert.False(message.HasOptionalSfixed64);
+            Assert.False(message.HasOptionalFloat);
+            Assert.False(message.HasOptionalDouble);
+            Assert.False(message.HasOptionalBool);
+            Assert.False(message.HasOptionalString);
+            Assert.False(message.HasOptionalBytes);
 
-            Assert.IsFalse(message.HasOptionalGroup);
-            Assert.IsFalse(message.HasOptionalNestedMessage);
-            Assert.IsFalse(message.HasOptionalForeignMessage);
-            Assert.IsFalse(message.HasOptionalImportMessage);
+            Assert.False(message.HasOptionalGroup);
+            Assert.False(message.HasOptionalNestedMessage);
+            Assert.False(message.HasOptionalForeignMessage);
+            Assert.False(message.HasOptionalImportMessage);
 
-            Assert.IsFalse(message.HasOptionalNestedEnum);
-            Assert.IsFalse(message.HasOptionalForeignEnum);
-            Assert.IsFalse(message.HasOptionalImportEnum);
+            Assert.False(message.HasOptionalNestedEnum);
+            Assert.False(message.HasOptionalForeignEnum);
+            Assert.False(message.HasOptionalImportEnum);
 
-            Assert.IsFalse(message.HasOptionalStringPiece);
-            Assert.IsFalse(message.HasOptionalCord);
+            Assert.False(message.HasOptionalStringPiece);
+            Assert.False(message.HasOptionalCord);
 
             // Optional fields without defaults are set to zero or something like it.
-            Assert.AreEqual(0, message.OptionalInt32);
-            Assert.AreEqual(0, message.OptionalInt64);
-            Assert.AreEqual(0u, message.OptionalUint32);
-            Assert.AreEqual(0u, message.OptionalUint64);
-            Assert.AreEqual(0, message.OptionalSint32);
-            Assert.AreEqual(0, message.OptionalSint64);
-            Assert.AreEqual(0u, message.OptionalFixed32);
-            Assert.AreEqual(0u, message.OptionalFixed64);
-            Assert.AreEqual(0, message.OptionalSfixed32);
-            Assert.AreEqual(0, message.OptionalSfixed64);
-            Assert.AreEqual(0, message.OptionalFloat);
-            Assert.AreEqual(0, message.OptionalDouble);
-            Assert.AreEqual(false, message.OptionalBool);
-            Assert.AreEqual("", message.OptionalString);
-            Assert.AreEqual(ByteString.Empty, message.OptionalBytes);
+            Assert.Equal(0, message.OptionalInt32);
+            Assert.Equal(0, message.OptionalInt64);
+            Assert.Equal(0u, message.OptionalUint32);
+            Assert.Equal(0u, message.OptionalUint64);
+            Assert.Equal(0, message.OptionalSint32);
+            Assert.Equal(0, message.OptionalSint64);
+            Assert.Equal(0u, message.OptionalFixed32);
+            Assert.Equal(0u, message.OptionalFixed64);
+            Assert.Equal(0, message.OptionalSfixed32);
+            Assert.Equal(0, message.OptionalSfixed64);
+            Assert.Equal(0, message.OptionalFloat);
+            Assert.Equal(0, message.OptionalDouble);
+            Assert.Equal(false, message.OptionalBool);
+            Assert.Equal("", message.OptionalString);
+            Assert.Equal(ByteString.Empty, message.OptionalBytes);
 
             // Embedded messages should also be clear.
-            Assert.IsFalse(message.OptionalGroup.HasA);
-            Assert.IsFalse(message.OptionalNestedMessage.HasBb);
-            Assert.IsFalse(message.OptionalForeignMessage.HasC);
-            Assert.IsFalse(message.OptionalImportMessage.HasD);
+            Assert.False(message.OptionalGroup.HasA);
+            Assert.False(message.OptionalNestedMessage.HasBb);
+            Assert.False(message.OptionalForeignMessage.HasC);
+            Assert.False(message.OptionalImportMessage.HasD);
 
-            Assert.AreEqual(0, message.OptionalGroup.A);
-            Assert.AreEqual(0, message.OptionalNestedMessage.Bb);
-            Assert.AreEqual(0, message.OptionalForeignMessage.C);
-            Assert.AreEqual(0, message.OptionalImportMessage.D);
+            Assert.Equal(0, message.OptionalGroup.A);
+            Assert.Equal(0, message.OptionalNestedMessage.Bb);
+            Assert.Equal(0, message.OptionalForeignMessage.C);
+            Assert.Equal(0, message.OptionalImportMessage.D);
 
             // Enums without defaults are set to the first value in the enum.
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.FOO, message.OptionalNestedEnum);
-            Assert.AreEqual(ForeignEnum.FOREIGN_FOO, message.OptionalForeignEnum);
-            Assert.AreEqual(ImportEnum.IMPORT_FOO, message.OptionalImportEnum);
+            Assert.Equal(TestAllTypes.Types.NestedEnum.FOO, message.OptionalNestedEnum);
+            Assert.Equal(ForeignEnum.FOREIGN_FOO, message.OptionalForeignEnum);
+            Assert.Equal(ImportEnum.IMPORT_FOO, message.OptionalImportEnum);
 
-            Assert.AreEqual("", message.OptionalStringPiece);
-            Assert.AreEqual("", message.OptionalCord);
+            Assert.Equal("", message.OptionalStringPiece);
+            Assert.Equal("", message.OptionalCord);
 
             // Repeated fields are empty.
-            Assert.AreEqual(0, message.RepeatedInt32Count);
-            Assert.AreEqual(0, message.RepeatedInt64Count);
-            Assert.AreEqual(0, message.RepeatedUint32Count);
-            Assert.AreEqual(0, message.RepeatedUint64Count);
-            Assert.AreEqual(0, message.RepeatedSint32Count);
-            Assert.AreEqual(0, message.RepeatedSint64Count);
-            Assert.AreEqual(0, message.RepeatedFixed32Count);
-            Assert.AreEqual(0, message.RepeatedFixed64Count);
-            Assert.AreEqual(0, message.RepeatedSfixed32Count);
-            Assert.AreEqual(0, message.RepeatedSfixed64Count);
-            Assert.AreEqual(0, message.RepeatedFloatCount);
-            Assert.AreEqual(0, message.RepeatedDoubleCount);
-            Assert.AreEqual(0, message.RepeatedBoolCount);
-            Assert.AreEqual(0, message.RepeatedStringCount);
-            Assert.AreEqual(0, message.RepeatedBytesCount);
+            Assert.Equal(0, message.RepeatedInt32Count);
+            Assert.Equal(0, message.RepeatedInt64Count);
+            Assert.Equal(0, message.RepeatedUint32Count);
+            Assert.Equal(0, message.RepeatedUint64Count);
+            Assert.Equal(0, message.RepeatedSint32Count);
+            Assert.Equal(0, message.RepeatedSint64Count);
+            Assert.Equal(0, message.RepeatedFixed32Count);
+            Assert.Equal(0, message.RepeatedFixed64Count);
+            Assert.Equal(0, message.RepeatedSfixed32Count);
+            Assert.Equal(0, message.RepeatedSfixed64Count);
+            Assert.Equal(0, message.RepeatedFloatCount);
+            Assert.Equal(0, message.RepeatedDoubleCount);
+            Assert.Equal(0, message.RepeatedBoolCount);
+            Assert.Equal(0, message.RepeatedStringCount);
+            Assert.Equal(0, message.RepeatedBytesCount);
 
-            Assert.AreEqual(0, message.RepeatedGroupCount);
-            Assert.AreEqual(0, message.RepeatedNestedMessageCount);
-            Assert.AreEqual(0, message.RepeatedForeignMessageCount);
-            Assert.AreEqual(0, message.RepeatedImportMessageCount);
-            Assert.AreEqual(0, message.RepeatedNestedEnumCount);
-            Assert.AreEqual(0, message.RepeatedForeignEnumCount);
-            Assert.AreEqual(0, message.RepeatedImportEnumCount);
+            Assert.Equal(0, message.RepeatedGroupCount);
+            Assert.Equal(0, message.RepeatedNestedMessageCount);
+            Assert.Equal(0, message.RepeatedForeignMessageCount);
+            Assert.Equal(0, message.RepeatedImportMessageCount);
+            Assert.Equal(0, message.RepeatedNestedEnumCount);
+            Assert.Equal(0, message.RepeatedForeignEnumCount);
+            Assert.Equal(0, message.RepeatedImportEnumCount);
 
-            Assert.AreEqual(0, message.RepeatedStringPieceCount);
-            Assert.AreEqual(0, message.RepeatedCordCount);
+            Assert.Equal(0, message.RepeatedStringPieceCount);
+            Assert.Equal(0, message.RepeatedCordCount);
 
             // HasBlah() should also be false for all default fields.
-            Assert.IsFalse(message.HasDefaultInt32);
-            Assert.IsFalse(message.HasDefaultInt64);
-            Assert.IsFalse(message.HasDefaultUint32);
-            Assert.IsFalse(message.HasDefaultUint64);
-            Assert.IsFalse(message.HasDefaultSint32);
-            Assert.IsFalse(message.HasDefaultSint64);
-            Assert.IsFalse(message.HasDefaultFixed32);
-            Assert.IsFalse(message.HasDefaultFixed64);
-            Assert.IsFalse(message.HasDefaultSfixed32);
-            Assert.IsFalse(message.HasDefaultSfixed64);
-            Assert.IsFalse(message.HasDefaultFloat);
-            Assert.IsFalse(message.HasDefaultDouble);
-            Assert.IsFalse(message.HasDefaultBool);
-            Assert.IsFalse(message.HasDefaultString);
-            Assert.IsFalse(message.HasDefaultBytes);
+            Assert.False(message.HasDefaultInt32);
+            Assert.False(message.HasDefaultInt64);
+            Assert.False(message.HasDefaultUint32);
+            Assert.False(message.HasDefaultUint64);
+            Assert.False(message.HasDefaultSint32);
+            Assert.False(message.HasDefaultSint64);
+            Assert.False(message.HasDefaultFixed32);
+            Assert.False(message.HasDefaultFixed64);
+            Assert.False(message.HasDefaultSfixed32);
+            Assert.False(message.HasDefaultSfixed64);
+            Assert.False(message.HasDefaultFloat);
+            Assert.False(message.HasDefaultDouble);
+            Assert.False(message.HasDefaultBool);
+            Assert.False(message.HasDefaultString);
+            Assert.False(message.HasDefaultBytes);
 
-            Assert.IsFalse(message.HasDefaultNestedEnum);
-            Assert.IsFalse(message.HasDefaultForeignEnum);
-            Assert.IsFalse(message.HasDefaultImportEnum);
+            Assert.False(message.HasDefaultNestedEnum);
+            Assert.False(message.HasDefaultForeignEnum);
+            Assert.False(message.HasDefaultImportEnum);
 
-            Assert.IsFalse(message.HasDefaultStringPiece);
-            Assert.IsFalse(message.HasDefaultCord);
+            Assert.False(message.HasDefaultStringPiece);
+            Assert.False(message.HasDefaultCord);
 
             // Fields with defaults have their default values (duh).
-            Assert.AreEqual(41, message.DefaultInt32);
-            Assert.AreEqual(42, message.DefaultInt64);
-            Assert.AreEqual(43u, message.DefaultUint32);
-            Assert.AreEqual(44u, message.DefaultUint64);
-            Assert.AreEqual(-45, message.DefaultSint32);
-            Assert.AreEqual(46, message.DefaultSint64);
-            Assert.AreEqual(47u, message.DefaultFixed32);
-            Assert.AreEqual(48u, message.DefaultFixed64);
-            Assert.AreEqual(49, message.DefaultSfixed32);
-            Assert.AreEqual(-50, message.DefaultSfixed64);
-            Assert.AreEqual(51.5, message.DefaultFloat, 0.0);
-            Assert.AreEqual(52e3, message.DefaultDouble, 0.0);
-            Assert.AreEqual(true, message.DefaultBool);
-            Assert.AreEqual("hello", message.DefaultString);
-            Assert.AreEqual(ToBytes("world"), message.DefaultBytes);
+            Assert.Equal(41, message.DefaultInt32);
+            Assert.Equal(42, message.DefaultInt64);
+            Assert.Equal(43u, message.DefaultUint32);
+            Assert.Equal(44u, message.DefaultUint64);
+            Assert.Equal(-45, message.DefaultSint32);
+            Assert.Equal(46, message.DefaultSint64);
+            Assert.Equal(47u, message.DefaultFixed32);
+            Assert.Equal(48u, message.DefaultFixed64);
+            Assert.Equal(49, message.DefaultSfixed32);
+            Assert.Equal(-50, message.DefaultSfixed64);
+            Assert.Equal(51.5f, message.DefaultFloat);
+            Assert.Equal(52e3d, message.DefaultDouble);
+            Assert.Equal(true, message.DefaultBool);
+            Assert.Equal("hello", message.DefaultString);
+            Assert.Equal(ToBytes("world"), message.DefaultBytes);
 
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.BAR, message.DefaultNestedEnum);
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAR, message.DefaultForeignEnum);
-            Assert.AreEqual(ImportEnum.IMPORT_BAR, message.DefaultImportEnum);
+            Assert.Equal(TestAllTypes.Types.NestedEnum.BAR, message.DefaultNestedEnum);
+            Assert.Equal(ForeignEnum.FOREIGN_BAR, message.DefaultForeignEnum);
+            Assert.Equal(ImportEnum.IMPORT_BAR, message.DefaultImportEnum);
 
-            Assert.AreEqual("abc", message.DefaultStringPiece);
-            Assert.AreEqual("123", message.DefaultCord);
+            Assert.Equal("abc", message.DefaultStringPiece);
+            Assert.Equal("123", message.DefaultCord);
         }
 
         /// <summary>
@@ -855,89 +855,89 @@ namespace Google.ProtocolBuffers
             // ModifyRepeatedFields only sets the second repeated element of each
             // field.  In addition to verifying this, we also verify that the first
             // element and size were *not* modified.
-            Assert.AreEqual(2, message.RepeatedInt32Count);
-            Assert.AreEqual(2, message.RepeatedInt64Count);
-            Assert.AreEqual(2, message.RepeatedUint32Count);
-            Assert.AreEqual(2, message.RepeatedUint64Count);
-            Assert.AreEqual(2, message.RepeatedSint32Count);
-            Assert.AreEqual(2, message.RepeatedSint64Count);
-            Assert.AreEqual(2, message.RepeatedFixed32Count);
-            Assert.AreEqual(2, message.RepeatedFixed64Count);
-            Assert.AreEqual(2, message.RepeatedSfixed32Count);
-            Assert.AreEqual(2, message.RepeatedSfixed64Count);
-            Assert.AreEqual(2, message.RepeatedFloatCount);
-            Assert.AreEqual(2, message.RepeatedDoubleCount);
-            Assert.AreEqual(2, message.RepeatedBoolCount);
-            Assert.AreEqual(2, message.RepeatedStringCount);
-            Assert.AreEqual(2, message.RepeatedBytesCount);
+            Assert.Equal(2, message.RepeatedInt32Count);
+            Assert.Equal(2, message.RepeatedInt64Count);
+            Assert.Equal(2, message.RepeatedUint32Count);
+            Assert.Equal(2, message.RepeatedUint64Count);
+            Assert.Equal(2, message.RepeatedSint32Count);
+            Assert.Equal(2, message.RepeatedSint64Count);
+            Assert.Equal(2, message.RepeatedFixed32Count);
+            Assert.Equal(2, message.RepeatedFixed64Count);
+            Assert.Equal(2, message.RepeatedSfixed32Count);
+            Assert.Equal(2, message.RepeatedSfixed64Count);
+            Assert.Equal(2, message.RepeatedFloatCount);
+            Assert.Equal(2, message.RepeatedDoubleCount);
+            Assert.Equal(2, message.RepeatedBoolCount);
+            Assert.Equal(2, message.RepeatedStringCount);
+            Assert.Equal(2, message.RepeatedBytesCount);
 
-            Assert.AreEqual(2, message.RepeatedGroupCount);
-            Assert.AreEqual(2, message.RepeatedNestedMessageCount);
-            Assert.AreEqual(2, message.RepeatedForeignMessageCount);
-            Assert.AreEqual(2, message.RepeatedImportMessageCount);
-            Assert.AreEqual(2, message.RepeatedNestedEnumCount);
-            Assert.AreEqual(2, message.RepeatedForeignEnumCount);
-            Assert.AreEqual(2, message.RepeatedImportEnumCount);
+            Assert.Equal(2, message.RepeatedGroupCount);
+            Assert.Equal(2, message.RepeatedNestedMessageCount);
+            Assert.Equal(2, message.RepeatedForeignMessageCount);
+            Assert.Equal(2, message.RepeatedImportMessageCount);
+            Assert.Equal(2, message.RepeatedNestedEnumCount);
+            Assert.Equal(2, message.RepeatedForeignEnumCount);
+            Assert.Equal(2, message.RepeatedImportEnumCount);
 
-            Assert.AreEqual(2, message.RepeatedStringPieceCount);
-            Assert.AreEqual(2, message.RepeatedCordCount);
+            Assert.Equal(2, message.RepeatedStringPieceCount);
+            Assert.Equal(2, message.RepeatedCordCount);
 
-            Assert.AreEqual(201, message.GetRepeatedInt32(0));
-            Assert.AreEqual(202L, message.GetRepeatedInt64(0));
-            Assert.AreEqual(203U, message.GetRepeatedUint32(0));
-            Assert.AreEqual(204UL, message.GetRepeatedUint64(0));
-            Assert.AreEqual(205, message.GetRepeatedSint32(0));
-            Assert.AreEqual(206L, message.GetRepeatedSint64(0));
-            Assert.AreEqual(207U, message.GetRepeatedFixed32(0));
-            Assert.AreEqual(208UL, message.GetRepeatedFixed64(0));
-            Assert.AreEqual(209, message.GetRepeatedSfixed32(0));
-            Assert.AreEqual(210L, message.GetRepeatedSfixed64(0));
-            Assert.AreEqual(211F, message.GetRepeatedFloat(0));
-            Assert.AreEqual(212D, message.GetRepeatedDouble(0));
-            Assert.AreEqual(true, message.GetRepeatedBool(0));
-            Assert.AreEqual("215", message.GetRepeatedString(0));
-            Assert.AreEqual(ToBytes("216"), message.GetRepeatedBytes(0));
+            Assert.Equal(201, message.GetRepeatedInt32(0));
+            Assert.Equal(202L, message.GetRepeatedInt64(0));
+            Assert.Equal(203U, message.GetRepeatedUint32(0));
+            Assert.Equal(204UL, message.GetRepeatedUint64(0));
+            Assert.Equal(205, message.GetRepeatedSint32(0));
+            Assert.Equal(206L, message.GetRepeatedSint64(0));
+            Assert.Equal(207U, message.GetRepeatedFixed32(0));
+            Assert.Equal(208UL, message.GetRepeatedFixed64(0));
+            Assert.Equal(209, message.GetRepeatedSfixed32(0));
+            Assert.Equal(210L, message.GetRepeatedSfixed64(0));
+            Assert.Equal(211F, message.GetRepeatedFloat(0));
+            Assert.Equal(212D, message.GetRepeatedDouble(0));
+            Assert.Equal(true, message.GetRepeatedBool(0));
+            Assert.Equal("215", message.GetRepeatedString(0));
+            Assert.Equal(ToBytes("216"), message.GetRepeatedBytes(0));
 
-            Assert.AreEqual(217, message.GetRepeatedGroup(0).A);
-            Assert.AreEqual(218, message.GetRepeatedNestedMessage(0).Bb);
-            Assert.AreEqual(219, message.GetRepeatedForeignMessage(0).C);
-            Assert.AreEqual(220, message.GetRepeatedImportMessage(0).D);
+            Assert.Equal(217, message.GetRepeatedGroup(0).A);
+            Assert.Equal(218, message.GetRepeatedNestedMessage(0).Bb);
+            Assert.Equal(219, message.GetRepeatedForeignMessage(0).C);
+            Assert.Equal(220, message.GetRepeatedImportMessage(0).D);
 
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.BAR, message.GetRepeatedNestedEnum(0));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAR, message.GetRepeatedForeignEnum(0));
-            Assert.AreEqual(ImportEnum.IMPORT_BAR, message.GetRepeatedImportEnum(0));
+            Assert.Equal(TestAllTypes.Types.NestedEnum.BAR, message.GetRepeatedNestedEnum(0));
+            Assert.Equal(ForeignEnum.FOREIGN_BAR, message.GetRepeatedForeignEnum(0));
+            Assert.Equal(ImportEnum.IMPORT_BAR, message.GetRepeatedImportEnum(0));
 
-            Assert.AreEqual("224", message.GetRepeatedStringPiece(0));
-            Assert.AreEqual("225", message.GetRepeatedCord(0));
+            Assert.Equal("224", message.GetRepeatedStringPiece(0));
+            Assert.Equal("225", message.GetRepeatedCord(0));
 
             // Actually verify the second (modified) elements now.
-            Assert.AreEqual(501, message.GetRepeatedInt32(1));
-            Assert.AreEqual(502L, message.GetRepeatedInt64(1));
-            Assert.AreEqual(503U, message.GetRepeatedUint32(1));
-            Assert.AreEqual(504UL, message.GetRepeatedUint64(1));
-            Assert.AreEqual(505, message.GetRepeatedSint32(1));
-            Assert.AreEqual(506L, message.GetRepeatedSint64(1));
-            Assert.AreEqual(507U, message.GetRepeatedFixed32(1));
-            Assert.AreEqual(508UL, message.GetRepeatedFixed64(1));
-            Assert.AreEqual(509, message.GetRepeatedSfixed32(1));
-            Assert.AreEqual(510L, message.GetRepeatedSfixed64(1));
-            Assert.AreEqual(511F, message.GetRepeatedFloat(1));
-            Assert.AreEqual(512D, message.GetRepeatedDouble(1));
-            Assert.AreEqual(true, message.GetRepeatedBool(1));
-            Assert.AreEqual("515", message.GetRepeatedString(1));
-            Assert.AreEqual(ToBytes("516"), message.GetRepeatedBytes(1));
+            Assert.Equal(501, message.GetRepeatedInt32(1));
+            Assert.Equal(502L, message.GetRepeatedInt64(1));
+            Assert.Equal(503U, message.GetRepeatedUint32(1));
+            Assert.Equal(504UL, message.GetRepeatedUint64(1));
+            Assert.Equal(505, message.GetRepeatedSint32(1));
+            Assert.Equal(506L, message.GetRepeatedSint64(1));
+            Assert.Equal(507U, message.GetRepeatedFixed32(1));
+            Assert.Equal(508UL, message.GetRepeatedFixed64(1));
+            Assert.Equal(509, message.GetRepeatedSfixed32(1));
+            Assert.Equal(510L, message.GetRepeatedSfixed64(1));
+            Assert.Equal(511F, message.GetRepeatedFloat(1));
+            Assert.Equal(512D, message.GetRepeatedDouble(1));
+            Assert.Equal(true, message.GetRepeatedBool(1));
+            Assert.Equal("515", message.GetRepeatedString(1));
+            Assert.Equal(ToBytes("516"), message.GetRepeatedBytes(1));
 
-            Assert.AreEqual(517, message.GetRepeatedGroup(1).A);
-            Assert.AreEqual(518, message.GetRepeatedNestedMessage(1).Bb);
-            Assert.AreEqual(519, message.GetRepeatedForeignMessage(1).C);
-            Assert.AreEqual(520, message.GetRepeatedImportMessage(1).D);
+            Assert.Equal(517, message.GetRepeatedGroup(1).A);
+            Assert.Equal(518, message.GetRepeatedNestedMessage(1).Bb);
+            Assert.Equal(519, message.GetRepeatedForeignMessage(1).C);
+            Assert.Equal(520, message.GetRepeatedImportMessage(1).D);
 
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.FOO, message.GetRepeatedNestedEnum(1));
-            Assert.AreEqual(ForeignEnum.FOREIGN_FOO, message.GetRepeatedForeignEnum(1));
-            Assert.AreEqual(ImportEnum.IMPORT_FOO, message.GetRepeatedImportEnum(1));
+            Assert.Equal(TestAllTypes.Types.NestedEnum.FOO, message.GetRepeatedNestedEnum(1));
+            Assert.Equal(ForeignEnum.FOREIGN_FOO, message.GetRepeatedForeignEnum(1));
+            Assert.Equal(ImportEnum.IMPORT_FOO, message.GetRepeatedImportEnum(1));
 
-            Assert.AreEqual("524", message.GetRepeatedStringPiece(1));
-            Assert.AreEqual("525", message.GetRepeatedCord(1));
+            Assert.Equal("524", message.GetRepeatedStringPiece(1));
+            Assert.Equal("525", message.GetRepeatedCord(1));
         }
 
         /// <summary>
@@ -949,222 +949,222 @@ namespace Google.ProtocolBuffers
             {
                 foreach (T secondElement in second)
                 {
-                    Assert.IsTrue(firstEnumerator.MoveNext(), "First enumerator ran out of elements too early.");
-                    Assert.AreEqual(firstEnumerator.Current, secondElement);
+                    Assert.True(firstEnumerator.MoveNext(), "First enumerator ran out of elements too early.");
+                    Assert.Equal(firstEnumerator.Current, secondElement);
                 }
-                Assert.IsFalse(firstEnumerator.MoveNext(), "Second enumerator ran out of elements too early.");
+                Assert.False(firstEnumerator.MoveNext(), "Second enumerator ran out of elements too early.");
             }
         }
 
         internal static void AssertEqualBytes(byte[] expected, byte[] actual)
         {
-            Assert.AreEqual(ByteString.CopyFrom(expected), ByteString.CopyFrom(actual));
+            Assert.Equal(ByteString.CopyFrom(expected), ByteString.CopyFrom(actual));
         }
 
         internal static void AssertAllExtensionsSet(TestAllExtensions message)
         {
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalInt32Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalInt64Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalUint32Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalUint64Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalSint32Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalSint64Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalFixed32Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalFixed64Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalSfixed32Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalSfixed64Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalFloatExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalDoubleExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalBoolExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalStringExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalBytesExtension));
+            Assert.True(message.HasExtension(Unittest.OptionalInt32Extension));
+            Assert.True(message.HasExtension(Unittest.OptionalInt64Extension));
+            Assert.True(message.HasExtension(Unittest.OptionalUint32Extension));
+            Assert.True(message.HasExtension(Unittest.OptionalUint64Extension));
+            Assert.True(message.HasExtension(Unittest.OptionalSint32Extension));
+            Assert.True(message.HasExtension(Unittest.OptionalSint64Extension));
+            Assert.True(message.HasExtension(Unittest.OptionalFixed32Extension));
+            Assert.True(message.HasExtension(Unittest.OptionalFixed64Extension));
+            Assert.True(message.HasExtension(Unittest.OptionalSfixed32Extension));
+            Assert.True(message.HasExtension(Unittest.OptionalSfixed64Extension));
+            Assert.True(message.HasExtension(Unittest.OptionalFloatExtension));
+            Assert.True(message.HasExtension(Unittest.OptionalDoubleExtension));
+            Assert.True(message.HasExtension(Unittest.OptionalBoolExtension));
+            Assert.True(message.HasExtension(Unittest.OptionalStringExtension));
+            Assert.True(message.HasExtension(Unittest.OptionalBytesExtension));
 
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalGroupExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalNestedMessageExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalForeignMessageExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalImportMessageExtension));
+            Assert.True(message.HasExtension(Unittest.OptionalGroupExtension));
+            Assert.True(message.HasExtension(Unittest.OptionalNestedMessageExtension));
+            Assert.True(message.HasExtension(Unittest.OptionalForeignMessageExtension));
+            Assert.True(message.HasExtension(Unittest.OptionalImportMessageExtension));
 
-            Assert.IsTrue(message.GetExtension(Unittest.OptionalGroupExtension).HasA);
-            Assert.IsTrue(message.GetExtension(Unittest.OptionalNestedMessageExtension).HasBb);
-            Assert.IsTrue(message.GetExtension(Unittest.OptionalForeignMessageExtension).HasC);
-            Assert.IsTrue(message.GetExtension(Unittest.OptionalImportMessageExtension).HasD);
+            Assert.True(message.GetExtension(Unittest.OptionalGroupExtension).HasA);
+            Assert.True(message.GetExtension(Unittest.OptionalNestedMessageExtension).HasBb);
+            Assert.True(message.GetExtension(Unittest.OptionalForeignMessageExtension).HasC);
+            Assert.True(message.GetExtension(Unittest.OptionalImportMessageExtension).HasD);
 
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalNestedEnumExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalForeignEnumExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalImportEnumExtension));
+            Assert.True(message.HasExtension(Unittest.OptionalNestedEnumExtension));
+            Assert.True(message.HasExtension(Unittest.OptionalForeignEnumExtension));
+            Assert.True(message.HasExtension(Unittest.OptionalImportEnumExtension));
 
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalStringPieceExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.OptionalCordExtension));
+            Assert.True(message.HasExtension(Unittest.OptionalStringPieceExtension));
+            Assert.True(message.HasExtension(Unittest.OptionalCordExtension));
 
-            Assert.AreEqual(101, message.GetExtension(Unittest.OptionalInt32Extension));
-            Assert.AreEqual(102L, message.GetExtension(Unittest.OptionalInt64Extension));
-            Assert.AreEqual(103U, message.GetExtension(Unittest.OptionalUint32Extension));
-            Assert.AreEqual(104UL, message.GetExtension(Unittest.OptionalUint64Extension));
-            Assert.AreEqual(105, message.GetExtension(Unittest.OptionalSint32Extension));
-            Assert.AreEqual(106L, message.GetExtension(Unittest.OptionalSint64Extension));
-            Assert.AreEqual(107U, message.GetExtension(Unittest.OptionalFixed32Extension));
-            Assert.AreEqual(108UL, message.GetExtension(Unittest.OptionalFixed64Extension));
-            Assert.AreEqual(109, message.GetExtension(Unittest.OptionalSfixed32Extension));
-            Assert.AreEqual(110L, message.GetExtension(Unittest.OptionalSfixed64Extension));
-            Assert.AreEqual(111F, message.GetExtension(Unittest.OptionalFloatExtension));
-            Assert.AreEqual(112D, message.GetExtension(Unittest.OptionalDoubleExtension));
-            Assert.AreEqual(true, message.GetExtension(Unittest.OptionalBoolExtension));
-            Assert.AreEqual("115", message.GetExtension(Unittest.OptionalStringExtension));
-            Assert.AreEqual(ToBytes("116"), message.GetExtension(Unittest.OptionalBytesExtension));
+            Assert.Equal(101, message.GetExtension(Unittest.OptionalInt32Extension));
+            Assert.Equal(102L, message.GetExtension(Unittest.OptionalInt64Extension));
+            Assert.Equal(103U, message.GetExtension(Unittest.OptionalUint32Extension));
+            Assert.Equal(104UL, message.GetExtension(Unittest.OptionalUint64Extension));
+            Assert.Equal(105, message.GetExtension(Unittest.OptionalSint32Extension));
+            Assert.Equal(106L, message.GetExtension(Unittest.OptionalSint64Extension));
+            Assert.Equal(107U, message.GetExtension(Unittest.OptionalFixed32Extension));
+            Assert.Equal(108UL, message.GetExtension(Unittest.OptionalFixed64Extension));
+            Assert.Equal(109, message.GetExtension(Unittest.OptionalSfixed32Extension));
+            Assert.Equal(110L, message.GetExtension(Unittest.OptionalSfixed64Extension));
+            Assert.Equal(111F, message.GetExtension(Unittest.OptionalFloatExtension));
+            Assert.Equal(112D, message.GetExtension(Unittest.OptionalDoubleExtension));
+            Assert.Equal(true, message.GetExtension(Unittest.OptionalBoolExtension));
+            Assert.Equal("115", message.GetExtension(Unittest.OptionalStringExtension));
+            Assert.Equal(ToBytes("116"), message.GetExtension(Unittest.OptionalBytesExtension));
 
-            Assert.AreEqual(117, message.GetExtension(Unittest.OptionalGroupExtension).A);
-            Assert.AreEqual(118, message.GetExtension(Unittest.OptionalNestedMessageExtension).Bb);
-            Assert.AreEqual(119, message.GetExtension(Unittest.OptionalForeignMessageExtension).C);
-            Assert.AreEqual(120, message.GetExtension(Unittest.OptionalImportMessageExtension).D);
+            Assert.Equal(117, message.GetExtension(Unittest.OptionalGroupExtension).A);
+            Assert.Equal(118, message.GetExtension(Unittest.OptionalNestedMessageExtension).Bb);
+            Assert.Equal(119, message.GetExtension(Unittest.OptionalForeignMessageExtension).C);
+            Assert.Equal(120, message.GetExtension(Unittest.OptionalImportMessageExtension).D);
 
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.BAZ,
+            Assert.Equal(TestAllTypes.Types.NestedEnum.BAZ,
                             message.GetExtension(Unittest.OptionalNestedEnumExtension));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAZ,
+            Assert.Equal(ForeignEnum.FOREIGN_BAZ,
                             message.GetExtension(Unittest.OptionalForeignEnumExtension));
-            Assert.AreEqual(ImportEnum.IMPORT_BAZ, message.GetExtension(Unittest.OptionalImportEnumExtension));
+            Assert.Equal(ImportEnum.IMPORT_BAZ, message.GetExtension(Unittest.OptionalImportEnumExtension));
 
-            Assert.AreEqual("124", message.GetExtension(Unittest.OptionalStringPieceExtension));
-            Assert.AreEqual("125", message.GetExtension(Unittest.OptionalCordExtension));
+            Assert.Equal("124", message.GetExtension(Unittest.OptionalStringPieceExtension));
+            Assert.Equal("125", message.GetExtension(Unittest.OptionalCordExtension));
 
             // -----------------------------------------------------------------
 
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedInt32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedInt64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedUint32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedUint64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedSint32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedSint64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedFixed32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedFixed64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedSfixed32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedSfixed64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedFloatExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedDoubleExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedBoolExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedStringExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedBytesExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedInt32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedInt64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedUint32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedUint64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedSint32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedSint64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedFixed32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedFixed64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedSfixed32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedSfixed64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedFloatExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedDoubleExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedBoolExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedStringExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedBytesExtension));
 
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedGroupExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedNestedMessageExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedForeignMessageExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedImportMessageExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedNestedEnumExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedForeignEnumExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedImportEnumExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedGroupExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedNestedMessageExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedForeignMessageExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedImportMessageExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedNestedEnumExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedForeignEnumExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedImportEnumExtension));
 
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedStringPieceExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedCordExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedStringPieceExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedCordExtension));
 
-            Assert.AreEqual(201, message.GetExtension(Unittest.RepeatedInt32Extension, 0));
-            Assert.AreEqual(202L, message.GetExtension(Unittest.RepeatedInt64Extension, 0));
-            Assert.AreEqual(203U, message.GetExtension(Unittest.RepeatedUint32Extension, 0));
-            Assert.AreEqual(204UL, message.GetExtension(Unittest.RepeatedUint64Extension, 0));
-            Assert.AreEqual(205, message.GetExtension(Unittest.RepeatedSint32Extension, 0));
-            Assert.AreEqual(206L, message.GetExtension(Unittest.RepeatedSint64Extension, 0));
-            Assert.AreEqual(207U, message.GetExtension(Unittest.RepeatedFixed32Extension, 0));
-            Assert.AreEqual(208UL, message.GetExtension(Unittest.RepeatedFixed64Extension, 0));
-            Assert.AreEqual(209, message.GetExtension(Unittest.RepeatedSfixed32Extension, 0));
-            Assert.AreEqual(210L, message.GetExtension(Unittest.RepeatedSfixed64Extension, 0));
-            Assert.AreEqual(211F, message.GetExtension(Unittest.RepeatedFloatExtension, 0));
-            Assert.AreEqual(212D, message.GetExtension(Unittest.RepeatedDoubleExtension, 0));
-            Assert.AreEqual(true, message.GetExtension(Unittest.RepeatedBoolExtension, 0));
-            Assert.AreEqual("215", message.GetExtension(Unittest.RepeatedStringExtension, 0));
-            Assert.AreEqual(ToBytes("216"), message.GetExtension(Unittest.RepeatedBytesExtension, 0));
+            Assert.Equal(201, message.GetExtension(Unittest.RepeatedInt32Extension, 0));
+            Assert.Equal(202L, message.GetExtension(Unittest.RepeatedInt64Extension, 0));
+            Assert.Equal(203U, message.GetExtension(Unittest.RepeatedUint32Extension, 0));
+            Assert.Equal(204UL, message.GetExtension(Unittest.RepeatedUint64Extension, 0));
+            Assert.Equal(205, message.GetExtension(Unittest.RepeatedSint32Extension, 0));
+            Assert.Equal(206L, message.GetExtension(Unittest.RepeatedSint64Extension, 0));
+            Assert.Equal(207U, message.GetExtension(Unittest.RepeatedFixed32Extension, 0));
+            Assert.Equal(208UL, message.GetExtension(Unittest.RepeatedFixed64Extension, 0));
+            Assert.Equal(209, message.GetExtension(Unittest.RepeatedSfixed32Extension, 0));
+            Assert.Equal(210L, message.GetExtension(Unittest.RepeatedSfixed64Extension, 0));
+            Assert.Equal(211F, message.GetExtension(Unittest.RepeatedFloatExtension, 0));
+            Assert.Equal(212D, message.GetExtension(Unittest.RepeatedDoubleExtension, 0));
+            Assert.Equal(true, message.GetExtension(Unittest.RepeatedBoolExtension, 0));
+            Assert.Equal("215", message.GetExtension(Unittest.RepeatedStringExtension, 0));
+            Assert.Equal(ToBytes("216"), message.GetExtension(Unittest.RepeatedBytesExtension, 0));
 
-            Assert.AreEqual(217, message.GetExtension(Unittest.RepeatedGroupExtension, 0).A);
-            Assert.AreEqual(218, message.GetExtension(Unittest.RepeatedNestedMessageExtension, 0).Bb);
-            Assert.AreEqual(219, message.GetExtension(Unittest.RepeatedForeignMessageExtension, 0).C);
-            Assert.AreEqual(220, message.GetExtension(Unittest.RepeatedImportMessageExtension, 0).D);
+            Assert.Equal(217, message.GetExtension(Unittest.RepeatedGroupExtension, 0).A);
+            Assert.Equal(218, message.GetExtension(Unittest.RepeatedNestedMessageExtension, 0).Bb);
+            Assert.Equal(219, message.GetExtension(Unittest.RepeatedForeignMessageExtension, 0).C);
+            Assert.Equal(220, message.GetExtension(Unittest.RepeatedImportMessageExtension, 0).D);
 
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.BAR,
+            Assert.Equal(TestAllTypes.Types.NestedEnum.BAR,
                             message.GetExtension(Unittest.RepeatedNestedEnumExtension, 0));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAR,
+            Assert.Equal(ForeignEnum.FOREIGN_BAR,
                             message.GetExtension(Unittest.RepeatedForeignEnumExtension, 0));
-            Assert.AreEqual(ImportEnum.IMPORT_BAR,
+            Assert.Equal(ImportEnum.IMPORT_BAR,
                             message.GetExtension(Unittest.RepeatedImportEnumExtension, 0));
 
-            Assert.AreEqual("224", message.GetExtension(Unittest.RepeatedStringPieceExtension, 0));
-            Assert.AreEqual("225", message.GetExtension(Unittest.RepeatedCordExtension, 0));
+            Assert.Equal("224", message.GetExtension(Unittest.RepeatedStringPieceExtension, 0));
+            Assert.Equal("225", message.GetExtension(Unittest.RepeatedCordExtension, 0));
 
-            Assert.AreEqual(301, message.GetExtension(Unittest.RepeatedInt32Extension, 1));
-            Assert.AreEqual(302L, message.GetExtension(Unittest.RepeatedInt64Extension, 1));
-            Assert.AreEqual(303U, message.GetExtension(Unittest.RepeatedUint32Extension, 1));
-            Assert.AreEqual(304UL, message.GetExtension(Unittest.RepeatedUint64Extension, 1));
-            Assert.AreEqual(305, message.GetExtension(Unittest.RepeatedSint32Extension, 1));
-            Assert.AreEqual(306L, message.GetExtension(Unittest.RepeatedSint64Extension, 1));
-            Assert.AreEqual(307U, message.GetExtension(Unittest.RepeatedFixed32Extension, 1));
-            Assert.AreEqual(308UL, message.GetExtension(Unittest.RepeatedFixed64Extension, 1));
-            Assert.AreEqual(309, message.GetExtension(Unittest.RepeatedSfixed32Extension, 1));
-            Assert.AreEqual(310L, message.GetExtension(Unittest.RepeatedSfixed64Extension, 1));
-            Assert.AreEqual(311F, message.GetExtension(Unittest.RepeatedFloatExtension, 1));
-            Assert.AreEqual(312D, message.GetExtension(Unittest.RepeatedDoubleExtension, 1));
-            Assert.AreEqual(false, message.GetExtension(Unittest.RepeatedBoolExtension, 1));
-            Assert.AreEqual("315", message.GetExtension(Unittest.RepeatedStringExtension, 1));
-            Assert.AreEqual(ToBytes("316"), message.GetExtension(Unittest.RepeatedBytesExtension, 1));
+            Assert.Equal(301, message.GetExtension(Unittest.RepeatedInt32Extension, 1));
+            Assert.Equal(302L, message.GetExtension(Unittest.RepeatedInt64Extension, 1));
+            Assert.Equal(303U, message.GetExtension(Unittest.RepeatedUint32Extension, 1));
+            Assert.Equal(304UL, message.GetExtension(Unittest.RepeatedUint64Extension, 1));
+            Assert.Equal(305, message.GetExtension(Unittest.RepeatedSint32Extension, 1));
+            Assert.Equal(306L, message.GetExtension(Unittest.RepeatedSint64Extension, 1));
+            Assert.Equal(307U, message.GetExtension(Unittest.RepeatedFixed32Extension, 1));
+            Assert.Equal(308UL, message.GetExtension(Unittest.RepeatedFixed64Extension, 1));
+            Assert.Equal(309, message.GetExtension(Unittest.RepeatedSfixed32Extension, 1));
+            Assert.Equal(310L, message.GetExtension(Unittest.RepeatedSfixed64Extension, 1));
+            Assert.Equal(311F, message.GetExtension(Unittest.RepeatedFloatExtension, 1));
+            Assert.Equal(312D, message.GetExtension(Unittest.RepeatedDoubleExtension, 1));
+            Assert.Equal(false, message.GetExtension(Unittest.RepeatedBoolExtension, 1));
+            Assert.Equal("315", message.GetExtension(Unittest.RepeatedStringExtension, 1));
+            Assert.Equal(ToBytes("316"), message.GetExtension(Unittest.RepeatedBytesExtension, 1));
 
-            Assert.AreEqual(317, message.GetExtension(Unittest.RepeatedGroupExtension, 1).A);
-            Assert.AreEqual(318, message.GetExtension(Unittest.RepeatedNestedMessageExtension, 1).Bb);
-            Assert.AreEqual(319, message.GetExtension(Unittest.RepeatedForeignMessageExtension, 1).C);
-            Assert.AreEqual(320, message.GetExtension(Unittest.RepeatedImportMessageExtension, 1).D);
+            Assert.Equal(317, message.GetExtension(Unittest.RepeatedGroupExtension, 1).A);
+            Assert.Equal(318, message.GetExtension(Unittest.RepeatedNestedMessageExtension, 1).Bb);
+            Assert.Equal(319, message.GetExtension(Unittest.RepeatedForeignMessageExtension, 1).C);
+            Assert.Equal(320, message.GetExtension(Unittest.RepeatedImportMessageExtension, 1).D);
 
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.BAZ,
+            Assert.Equal(TestAllTypes.Types.NestedEnum.BAZ,
                             message.GetExtension(Unittest.RepeatedNestedEnumExtension, 1));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAZ,
+            Assert.Equal(ForeignEnum.FOREIGN_BAZ,
                             message.GetExtension(Unittest.RepeatedForeignEnumExtension, 1));
-            Assert.AreEqual(ImportEnum.IMPORT_BAZ,
+            Assert.Equal(ImportEnum.IMPORT_BAZ,
                             message.GetExtension(Unittest.RepeatedImportEnumExtension, 1));
 
-            Assert.AreEqual("324", message.GetExtension(Unittest.RepeatedStringPieceExtension, 1));
-            Assert.AreEqual("325", message.GetExtension(Unittest.RepeatedCordExtension, 1));
+            Assert.Equal("324", message.GetExtension(Unittest.RepeatedStringPieceExtension, 1));
+            Assert.Equal("325", message.GetExtension(Unittest.RepeatedCordExtension, 1));
 
             // -----------------------------------------------------------------
 
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultInt32Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultInt64Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultUint32Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultUint64Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultSint32Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultSint64Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultFixed32Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultFixed64Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultSfixed32Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultSfixed64Extension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultFloatExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultDoubleExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultBoolExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultStringExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultBytesExtension));
+            Assert.True(message.HasExtension(Unittest.DefaultInt32Extension));
+            Assert.True(message.HasExtension(Unittest.DefaultInt64Extension));
+            Assert.True(message.HasExtension(Unittest.DefaultUint32Extension));
+            Assert.True(message.HasExtension(Unittest.DefaultUint64Extension));
+            Assert.True(message.HasExtension(Unittest.DefaultSint32Extension));
+            Assert.True(message.HasExtension(Unittest.DefaultSint64Extension));
+            Assert.True(message.HasExtension(Unittest.DefaultFixed32Extension));
+            Assert.True(message.HasExtension(Unittest.DefaultFixed64Extension));
+            Assert.True(message.HasExtension(Unittest.DefaultSfixed32Extension));
+            Assert.True(message.HasExtension(Unittest.DefaultSfixed64Extension));
+            Assert.True(message.HasExtension(Unittest.DefaultFloatExtension));
+            Assert.True(message.HasExtension(Unittest.DefaultDoubleExtension));
+            Assert.True(message.HasExtension(Unittest.DefaultBoolExtension));
+            Assert.True(message.HasExtension(Unittest.DefaultStringExtension));
+            Assert.True(message.HasExtension(Unittest.DefaultBytesExtension));
 
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultNestedEnumExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultForeignEnumExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultImportEnumExtension));
+            Assert.True(message.HasExtension(Unittest.DefaultNestedEnumExtension));
+            Assert.True(message.HasExtension(Unittest.DefaultForeignEnumExtension));
+            Assert.True(message.HasExtension(Unittest.DefaultImportEnumExtension));
 
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultStringPieceExtension));
-            Assert.IsTrue(message.HasExtension(Unittest.DefaultCordExtension));
+            Assert.True(message.HasExtension(Unittest.DefaultStringPieceExtension));
+            Assert.True(message.HasExtension(Unittest.DefaultCordExtension));
 
-            Assert.AreEqual(401, message.GetExtension(Unittest.DefaultInt32Extension));
-            Assert.AreEqual(402L, message.GetExtension(Unittest.DefaultInt64Extension));
-            Assert.AreEqual(403U, message.GetExtension(Unittest.DefaultUint32Extension));
-            Assert.AreEqual(404UL, message.GetExtension(Unittest.DefaultUint64Extension));
-            Assert.AreEqual(405, message.GetExtension(Unittest.DefaultSint32Extension));
-            Assert.AreEqual(406L, message.GetExtension(Unittest.DefaultSint64Extension));
-            Assert.AreEqual(407U, message.GetExtension(Unittest.DefaultFixed32Extension));
-            Assert.AreEqual(408UL, message.GetExtension(Unittest.DefaultFixed64Extension));
-            Assert.AreEqual(409, message.GetExtension(Unittest.DefaultSfixed32Extension));
-            Assert.AreEqual(410L, message.GetExtension(Unittest.DefaultSfixed64Extension));
-            Assert.AreEqual(411F, message.GetExtension(Unittest.DefaultFloatExtension));
-            Assert.AreEqual(412D, message.GetExtension(Unittest.DefaultDoubleExtension));
-            Assert.AreEqual(false, message.GetExtension(Unittest.DefaultBoolExtension));
-            Assert.AreEqual("415", message.GetExtension(Unittest.DefaultStringExtension));
-            Assert.AreEqual(ToBytes("416"), message.GetExtension(Unittest.DefaultBytesExtension));
+            Assert.Equal(401, message.GetExtension(Unittest.DefaultInt32Extension));
+            Assert.Equal(402L, message.GetExtension(Unittest.DefaultInt64Extension));
+            Assert.Equal(403U, message.GetExtension(Unittest.DefaultUint32Extension));
+            Assert.Equal(404UL, message.GetExtension(Unittest.DefaultUint64Extension));
+            Assert.Equal(405, message.GetExtension(Unittest.DefaultSint32Extension));
+            Assert.Equal(406L, message.GetExtension(Unittest.DefaultSint64Extension));
+            Assert.Equal(407U, message.GetExtension(Unittest.DefaultFixed32Extension));
+            Assert.Equal(408UL, message.GetExtension(Unittest.DefaultFixed64Extension));
+            Assert.Equal(409, message.GetExtension(Unittest.DefaultSfixed32Extension));
+            Assert.Equal(410L, message.GetExtension(Unittest.DefaultSfixed64Extension));
+            Assert.Equal(411F, message.GetExtension(Unittest.DefaultFloatExtension));
+            Assert.Equal(412D, message.GetExtension(Unittest.DefaultDoubleExtension));
+            Assert.Equal(false, message.GetExtension(Unittest.DefaultBoolExtension));
+            Assert.Equal("415", message.GetExtension(Unittest.DefaultStringExtension));
+            Assert.Equal(ToBytes("416"), message.GetExtension(Unittest.DefaultBytesExtension));
 
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.FOO,
+            Assert.Equal(TestAllTypes.Types.NestedEnum.FOO,
                             message.GetExtension(Unittest.DefaultNestedEnumExtension));
-            Assert.AreEqual(ForeignEnum.FOREIGN_FOO, message.GetExtension(Unittest.DefaultForeignEnumExtension));
-            Assert.AreEqual(ImportEnum.IMPORT_FOO, message.GetExtension(Unittest.DefaultImportEnumExtension));
+            Assert.Equal(ForeignEnum.FOREIGN_FOO, message.GetExtension(Unittest.DefaultForeignEnumExtension));
+            Assert.Equal(ImportEnum.IMPORT_FOO, message.GetExtension(Unittest.DefaultImportEnumExtension));
 
-            Assert.AreEqual("424", message.GetExtension(Unittest.DefaultStringPieceExtension));
-            Assert.AreEqual("425", message.GetExtension(Unittest.DefaultCordExtension));
+            Assert.Equal("424", message.GetExtension(Unittest.DefaultStringPieceExtension));
+            Assert.Equal("425", message.GetExtension(Unittest.DefaultCordExtension));
         }
 
         /// <summary>
@@ -1215,242 +1215,242 @@ namespace Google.ProtocolBuffers
             // ModifyRepeatedFields only sets the second repeated element of each
             // field.  In addition to verifying this, we also verify that the first
             // element and size were *not* modified.
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedInt32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedInt64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedUint32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedUint64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedSint32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedSint64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedFixed32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedFixed64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedSfixed32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedSfixed64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedFloatExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedDoubleExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedBoolExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedStringExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedBytesExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedInt32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedInt64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedUint32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedUint64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedSint32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedSint64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedFixed32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedFixed64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedSfixed32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedSfixed64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedFloatExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedDoubleExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedBoolExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedStringExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedBytesExtension));
 
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedGroupExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedNestedMessageExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedForeignMessageExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedImportMessageExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedNestedEnumExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedForeignEnumExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedImportEnumExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedGroupExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedNestedMessageExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedForeignMessageExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedImportMessageExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedNestedEnumExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedForeignEnumExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedImportEnumExtension));
 
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedStringPieceExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.RepeatedCordExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedStringPieceExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.RepeatedCordExtension));
 
-            Assert.AreEqual(201, message.GetExtension(Unittest.RepeatedInt32Extension, 0));
-            Assert.AreEqual(202L, message.GetExtension(Unittest.RepeatedInt64Extension, 0));
-            Assert.AreEqual(203U, message.GetExtension(Unittest.RepeatedUint32Extension, 0));
-            Assert.AreEqual(204UL, message.GetExtension(Unittest.RepeatedUint64Extension, 0));
-            Assert.AreEqual(205, message.GetExtension(Unittest.RepeatedSint32Extension, 0));
-            Assert.AreEqual(206L, message.GetExtension(Unittest.RepeatedSint64Extension, 0));
-            Assert.AreEqual(207U, message.GetExtension(Unittest.RepeatedFixed32Extension, 0));
-            Assert.AreEqual(208UL, message.GetExtension(Unittest.RepeatedFixed64Extension, 0));
-            Assert.AreEqual(209, message.GetExtension(Unittest.RepeatedSfixed32Extension, 0));
-            Assert.AreEqual(210L, message.GetExtension(Unittest.RepeatedSfixed64Extension, 0));
-            Assert.AreEqual(211F, message.GetExtension(Unittest.RepeatedFloatExtension, 0));
-            Assert.AreEqual(212D, message.GetExtension(Unittest.RepeatedDoubleExtension, 0));
-            Assert.AreEqual(true, message.GetExtension(Unittest.RepeatedBoolExtension, 0));
-            Assert.AreEqual("215", message.GetExtension(Unittest.RepeatedStringExtension, 0));
-            Assert.AreEqual(ToBytes("216"), message.GetExtension(Unittest.RepeatedBytesExtension, 0));
+            Assert.Equal(201, message.GetExtension(Unittest.RepeatedInt32Extension, 0));
+            Assert.Equal(202L, message.GetExtension(Unittest.RepeatedInt64Extension, 0));
+            Assert.Equal(203U, message.GetExtension(Unittest.RepeatedUint32Extension, 0));
+            Assert.Equal(204UL, message.GetExtension(Unittest.RepeatedUint64Extension, 0));
+            Assert.Equal(205, message.GetExtension(Unittest.RepeatedSint32Extension, 0));
+            Assert.Equal(206L, message.GetExtension(Unittest.RepeatedSint64Extension, 0));
+            Assert.Equal(207U, message.GetExtension(Unittest.RepeatedFixed32Extension, 0));
+            Assert.Equal(208UL, message.GetExtension(Unittest.RepeatedFixed64Extension, 0));
+            Assert.Equal(209, message.GetExtension(Unittest.RepeatedSfixed32Extension, 0));
+            Assert.Equal(210L, message.GetExtension(Unittest.RepeatedSfixed64Extension, 0));
+            Assert.Equal(211F, message.GetExtension(Unittest.RepeatedFloatExtension, 0));
+            Assert.Equal(212D, message.GetExtension(Unittest.RepeatedDoubleExtension, 0));
+            Assert.Equal(true, message.GetExtension(Unittest.RepeatedBoolExtension, 0));
+            Assert.Equal("215", message.GetExtension(Unittest.RepeatedStringExtension, 0));
+            Assert.Equal(ToBytes("216"), message.GetExtension(Unittest.RepeatedBytesExtension, 0));
 
-            Assert.AreEqual(217, message.GetExtension(Unittest.RepeatedGroupExtension, 0).A);
-            Assert.AreEqual(218, message.GetExtension(Unittest.RepeatedNestedMessageExtension, 0).Bb);
-            Assert.AreEqual(219, message.GetExtension(Unittest.RepeatedForeignMessageExtension, 0).C);
-            Assert.AreEqual(220, message.GetExtension(Unittest.RepeatedImportMessageExtension, 0).D);
+            Assert.Equal(217, message.GetExtension(Unittest.RepeatedGroupExtension, 0).A);
+            Assert.Equal(218, message.GetExtension(Unittest.RepeatedNestedMessageExtension, 0).Bb);
+            Assert.Equal(219, message.GetExtension(Unittest.RepeatedForeignMessageExtension, 0).C);
+            Assert.Equal(220, message.GetExtension(Unittest.RepeatedImportMessageExtension, 0).D);
 
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.BAR,
+            Assert.Equal(TestAllTypes.Types.NestedEnum.BAR,
                             message.GetExtension(Unittest.RepeatedNestedEnumExtension, 0));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAR,
+            Assert.Equal(ForeignEnum.FOREIGN_BAR,
                             message.GetExtension(Unittest.RepeatedForeignEnumExtension, 0));
-            Assert.AreEqual(ImportEnum.IMPORT_BAR,
+            Assert.Equal(ImportEnum.IMPORT_BAR,
                             message.GetExtension(Unittest.RepeatedImportEnumExtension, 0));
 
-            Assert.AreEqual("224", message.GetExtension(Unittest.RepeatedStringPieceExtension, 0));
-            Assert.AreEqual("225", message.GetExtension(Unittest.RepeatedCordExtension, 0));
+            Assert.Equal("224", message.GetExtension(Unittest.RepeatedStringPieceExtension, 0));
+            Assert.Equal("225", message.GetExtension(Unittest.RepeatedCordExtension, 0));
 
             // Actually verify the second (modified) elements now.
-            Assert.AreEqual(501, message.GetExtension(Unittest.RepeatedInt32Extension, 1));
-            Assert.AreEqual(502L, message.GetExtension(Unittest.RepeatedInt64Extension, 1));
-            Assert.AreEqual(503U, message.GetExtension(Unittest.RepeatedUint32Extension, 1));
-            Assert.AreEqual(504UL, message.GetExtension(Unittest.RepeatedUint64Extension, 1));
-            Assert.AreEqual(505, message.GetExtension(Unittest.RepeatedSint32Extension, 1));
-            Assert.AreEqual(506L, message.GetExtension(Unittest.RepeatedSint64Extension, 1));
-            Assert.AreEqual(507U, message.GetExtension(Unittest.RepeatedFixed32Extension, 1));
-            Assert.AreEqual(508UL, message.GetExtension(Unittest.RepeatedFixed64Extension, 1));
-            Assert.AreEqual(509, message.GetExtension(Unittest.RepeatedSfixed32Extension, 1));
-            Assert.AreEqual(510L, message.GetExtension(Unittest.RepeatedSfixed64Extension, 1));
-            Assert.AreEqual(511F, message.GetExtension(Unittest.RepeatedFloatExtension, 1));
-            Assert.AreEqual(512D, message.GetExtension(Unittest.RepeatedDoubleExtension, 1));
-            Assert.AreEqual(true, message.GetExtension(Unittest.RepeatedBoolExtension, 1));
-            Assert.AreEqual("515", message.GetExtension(Unittest.RepeatedStringExtension, 1));
-            Assert.AreEqual(ToBytes("516"), message.GetExtension(Unittest.RepeatedBytesExtension, 1));
+            Assert.Equal(501, message.GetExtension(Unittest.RepeatedInt32Extension, 1));
+            Assert.Equal(502L, message.GetExtension(Unittest.RepeatedInt64Extension, 1));
+            Assert.Equal(503U, message.GetExtension(Unittest.RepeatedUint32Extension, 1));
+            Assert.Equal(504UL, message.GetExtension(Unittest.RepeatedUint64Extension, 1));
+            Assert.Equal(505, message.GetExtension(Unittest.RepeatedSint32Extension, 1));
+            Assert.Equal(506L, message.GetExtension(Unittest.RepeatedSint64Extension, 1));
+            Assert.Equal(507U, message.GetExtension(Unittest.RepeatedFixed32Extension, 1));
+            Assert.Equal(508UL, message.GetExtension(Unittest.RepeatedFixed64Extension, 1));
+            Assert.Equal(509, message.GetExtension(Unittest.RepeatedSfixed32Extension, 1));
+            Assert.Equal(510L, message.GetExtension(Unittest.RepeatedSfixed64Extension, 1));
+            Assert.Equal(511F, message.GetExtension(Unittest.RepeatedFloatExtension, 1));
+            Assert.Equal(512D, message.GetExtension(Unittest.RepeatedDoubleExtension, 1));
+            Assert.Equal(true, message.GetExtension(Unittest.RepeatedBoolExtension, 1));
+            Assert.Equal("515", message.GetExtension(Unittest.RepeatedStringExtension, 1));
+            Assert.Equal(ToBytes("516"), message.GetExtension(Unittest.RepeatedBytesExtension, 1));
 
-            Assert.AreEqual(517, message.GetExtension(Unittest.RepeatedGroupExtension, 1).A);
-            Assert.AreEqual(518, message.GetExtension(Unittest.RepeatedNestedMessageExtension, 1).Bb);
-            Assert.AreEqual(519, message.GetExtension(Unittest.RepeatedForeignMessageExtension, 1).C);
-            Assert.AreEqual(520, message.GetExtension(Unittest.RepeatedImportMessageExtension, 1).D);
+            Assert.Equal(517, message.GetExtension(Unittest.RepeatedGroupExtension, 1).A);
+            Assert.Equal(518, message.GetExtension(Unittest.RepeatedNestedMessageExtension, 1).Bb);
+            Assert.Equal(519, message.GetExtension(Unittest.RepeatedForeignMessageExtension, 1).C);
+            Assert.Equal(520, message.GetExtension(Unittest.RepeatedImportMessageExtension, 1).D);
 
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.FOO,
+            Assert.Equal(TestAllTypes.Types.NestedEnum.FOO,
                             message.GetExtension(Unittest.RepeatedNestedEnumExtension, 1));
-            Assert.AreEqual(ForeignEnum.FOREIGN_FOO,
+            Assert.Equal(ForeignEnum.FOREIGN_FOO,
                             message.GetExtension(Unittest.RepeatedForeignEnumExtension, 1));
-            Assert.AreEqual(ImportEnum.IMPORT_FOO,
+            Assert.Equal(ImportEnum.IMPORT_FOO,
                             message.GetExtension(Unittest.RepeatedImportEnumExtension, 1));
 
-            Assert.AreEqual("524", message.GetExtension(Unittest.RepeatedStringPieceExtension, 1));
-            Assert.AreEqual("525", message.GetExtension(Unittest.RepeatedCordExtension, 1));
+            Assert.Equal("524", message.GetExtension(Unittest.RepeatedStringPieceExtension, 1));
+            Assert.Equal("525", message.GetExtension(Unittest.RepeatedCordExtension, 1));
         }
 
         internal static void AssertExtensionsClear(TestAllExtensions message)
         {
             // HasBlah() should initially be false for all optional fields.
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalInt32Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalInt64Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalUint32Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalUint64Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalSint32Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalSint64Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalFixed32Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalFixed64Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalSfixed32Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalSfixed64Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalFloatExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalDoubleExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalBoolExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalStringExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalBytesExtension));
+            Assert.False(message.HasExtension(Unittest.OptionalInt32Extension));
+            Assert.False(message.HasExtension(Unittest.OptionalInt64Extension));
+            Assert.False(message.HasExtension(Unittest.OptionalUint32Extension));
+            Assert.False(message.HasExtension(Unittest.OptionalUint64Extension));
+            Assert.False(message.HasExtension(Unittest.OptionalSint32Extension));
+            Assert.False(message.HasExtension(Unittest.OptionalSint64Extension));
+            Assert.False(message.HasExtension(Unittest.OptionalFixed32Extension));
+            Assert.False(message.HasExtension(Unittest.OptionalFixed64Extension));
+            Assert.False(message.HasExtension(Unittest.OptionalSfixed32Extension));
+            Assert.False(message.HasExtension(Unittest.OptionalSfixed64Extension));
+            Assert.False(message.HasExtension(Unittest.OptionalFloatExtension));
+            Assert.False(message.HasExtension(Unittest.OptionalDoubleExtension));
+            Assert.False(message.HasExtension(Unittest.OptionalBoolExtension));
+            Assert.False(message.HasExtension(Unittest.OptionalStringExtension));
+            Assert.False(message.HasExtension(Unittest.OptionalBytesExtension));
 
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalGroupExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalNestedMessageExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalForeignMessageExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalImportMessageExtension));
+            Assert.False(message.HasExtension(Unittest.OptionalGroupExtension));
+            Assert.False(message.HasExtension(Unittest.OptionalNestedMessageExtension));
+            Assert.False(message.HasExtension(Unittest.OptionalForeignMessageExtension));
+            Assert.False(message.HasExtension(Unittest.OptionalImportMessageExtension));
 
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalNestedEnumExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalForeignEnumExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalImportEnumExtension));
+            Assert.False(message.HasExtension(Unittest.OptionalNestedEnumExtension));
+            Assert.False(message.HasExtension(Unittest.OptionalForeignEnumExtension));
+            Assert.False(message.HasExtension(Unittest.OptionalImportEnumExtension));
 
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalStringPieceExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.OptionalCordExtension));
+            Assert.False(message.HasExtension(Unittest.OptionalStringPieceExtension));
+            Assert.False(message.HasExtension(Unittest.OptionalCordExtension));
 
             // Optional fields without defaults are set to zero or something like it.
-            Assert.AreEqual(0, message.GetExtension(Unittest.OptionalInt32Extension));
-            Assert.AreEqual(0L, message.GetExtension(Unittest.OptionalInt64Extension));
-            Assert.AreEqual(0U, message.GetExtension(Unittest.OptionalUint32Extension));
-            Assert.AreEqual(0UL, message.GetExtension(Unittest.OptionalUint64Extension));
-            Assert.AreEqual(0, message.GetExtension(Unittest.OptionalSint32Extension));
-            Assert.AreEqual(0L, message.GetExtension(Unittest.OptionalSint64Extension));
-            Assert.AreEqual(0U, message.GetExtension(Unittest.OptionalFixed32Extension));
-            Assert.AreEqual(0UL, message.GetExtension(Unittest.OptionalFixed64Extension));
-            Assert.AreEqual(0, message.GetExtension(Unittest.OptionalSfixed32Extension));
-            Assert.AreEqual(0L, message.GetExtension(Unittest.OptionalSfixed64Extension));
-            Assert.AreEqual(0F, message.GetExtension(Unittest.OptionalFloatExtension));
-            Assert.AreEqual(0D, message.GetExtension(Unittest.OptionalDoubleExtension));
-            Assert.AreEqual(false, message.GetExtension(Unittest.OptionalBoolExtension));
-            Assert.AreEqual("", message.GetExtension(Unittest.OptionalStringExtension));
-            Assert.AreEqual(ByteString.Empty, message.GetExtension(Unittest.OptionalBytesExtension));
+            Assert.Equal(0, message.GetExtension(Unittest.OptionalInt32Extension));
+            Assert.Equal(0L, message.GetExtension(Unittest.OptionalInt64Extension));
+            Assert.Equal(0U, message.GetExtension(Unittest.OptionalUint32Extension));
+            Assert.Equal(0UL, message.GetExtension(Unittest.OptionalUint64Extension));
+            Assert.Equal(0, message.GetExtension(Unittest.OptionalSint32Extension));
+            Assert.Equal(0L, message.GetExtension(Unittest.OptionalSint64Extension));
+            Assert.Equal(0U, message.GetExtension(Unittest.OptionalFixed32Extension));
+            Assert.Equal(0UL, message.GetExtension(Unittest.OptionalFixed64Extension));
+            Assert.Equal(0, message.GetExtension(Unittest.OptionalSfixed32Extension));
+            Assert.Equal(0L, message.GetExtension(Unittest.OptionalSfixed64Extension));
+            Assert.Equal(0F, message.GetExtension(Unittest.OptionalFloatExtension));
+            Assert.Equal(0D, message.GetExtension(Unittest.OptionalDoubleExtension));
+            Assert.Equal(false, message.GetExtension(Unittest.OptionalBoolExtension));
+            Assert.Equal("", message.GetExtension(Unittest.OptionalStringExtension));
+            Assert.Equal(ByteString.Empty, message.GetExtension(Unittest.OptionalBytesExtension));
 
             // Embedded messages should also be clear.
-            Assert.IsFalse(message.GetExtension(Unittest.OptionalGroupExtension).HasA);
-            Assert.IsFalse(message.GetExtension(Unittest.OptionalNestedMessageExtension).HasBb);
-            Assert.IsFalse(message.GetExtension(Unittest.OptionalForeignMessageExtension).HasC);
-            Assert.IsFalse(message.GetExtension(Unittest.OptionalImportMessageExtension).HasD);
+            Assert.False(message.GetExtension(Unittest.OptionalGroupExtension).HasA);
+            Assert.False(message.GetExtension(Unittest.OptionalNestedMessageExtension).HasBb);
+            Assert.False(message.GetExtension(Unittest.OptionalForeignMessageExtension).HasC);
+            Assert.False(message.GetExtension(Unittest.OptionalImportMessageExtension).HasD);
 
-            Assert.AreEqual(0, message.GetExtension(Unittest.OptionalGroupExtension).A);
-            Assert.AreEqual(0, message.GetExtension(Unittest.OptionalNestedMessageExtension).Bb);
-            Assert.AreEqual(0, message.GetExtension(Unittest.OptionalForeignMessageExtension).C);
-            Assert.AreEqual(0, message.GetExtension(Unittest.OptionalImportMessageExtension).D);
+            Assert.Equal(0, message.GetExtension(Unittest.OptionalGroupExtension).A);
+            Assert.Equal(0, message.GetExtension(Unittest.OptionalNestedMessageExtension).Bb);
+            Assert.Equal(0, message.GetExtension(Unittest.OptionalForeignMessageExtension).C);
+            Assert.Equal(0, message.GetExtension(Unittest.OptionalImportMessageExtension).D);
 
             // Enums without defaults are set to the first value in the enum.
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.FOO,
+            Assert.Equal(TestAllTypes.Types.NestedEnum.FOO,
                             message.GetExtension(Unittest.OptionalNestedEnumExtension));
-            Assert.AreEqual(ForeignEnum.FOREIGN_FOO,
+            Assert.Equal(ForeignEnum.FOREIGN_FOO,
                             message.GetExtension(Unittest.OptionalForeignEnumExtension));
-            Assert.AreEqual(ImportEnum.IMPORT_FOO, message.GetExtension(Unittest.OptionalImportEnumExtension));
+            Assert.Equal(ImportEnum.IMPORT_FOO, message.GetExtension(Unittest.OptionalImportEnumExtension));
 
-            Assert.AreEqual("", message.GetExtension(Unittest.OptionalStringPieceExtension));
-            Assert.AreEqual("", message.GetExtension(Unittest.OptionalCordExtension));
+            Assert.Equal("", message.GetExtension(Unittest.OptionalStringPieceExtension));
+            Assert.Equal("", message.GetExtension(Unittest.OptionalCordExtension));
 
             // Repeated fields are empty.
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedInt32Extension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedInt64Extension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedUint32Extension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedUint64Extension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedSint32Extension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedSint64Extension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedFixed32Extension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedFixed64Extension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedSfixed32Extension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedSfixed64Extension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedFloatExtension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedDoubleExtension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedBoolExtension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedStringExtension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedBytesExtension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedInt32Extension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedInt64Extension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedUint32Extension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedUint64Extension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedSint32Extension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedSint64Extension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedFixed32Extension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedFixed64Extension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedSfixed32Extension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedSfixed64Extension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedFloatExtension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedDoubleExtension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedBoolExtension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedStringExtension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedBytesExtension));
 
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedGroupExtension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedNestedMessageExtension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedForeignMessageExtension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedImportMessageExtension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedNestedEnumExtension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedForeignEnumExtension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedImportEnumExtension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedGroupExtension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedNestedMessageExtension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedForeignMessageExtension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedImportMessageExtension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedNestedEnumExtension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedForeignEnumExtension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedImportEnumExtension));
 
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedStringPieceExtension));
-            Assert.AreEqual(0, message.GetExtensionCount(Unittest.RepeatedCordExtension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedStringPieceExtension));
+            Assert.Equal(0, message.GetExtensionCount(Unittest.RepeatedCordExtension));
 
             // HasBlah() should also be false for all default fields.
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultInt32Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultInt64Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultUint32Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultUint64Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultSint32Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultSint64Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultFixed32Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultFixed64Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultSfixed32Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultSfixed64Extension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultFloatExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultDoubleExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultBoolExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultStringExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultBytesExtension));
+            Assert.False(message.HasExtension(Unittest.DefaultInt32Extension));
+            Assert.False(message.HasExtension(Unittest.DefaultInt64Extension));
+            Assert.False(message.HasExtension(Unittest.DefaultUint32Extension));
+            Assert.False(message.HasExtension(Unittest.DefaultUint64Extension));
+            Assert.False(message.HasExtension(Unittest.DefaultSint32Extension));
+            Assert.False(message.HasExtension(Unittest.DefaultSint64Extension));
+            Assert.False(message.HasExtension(Unittest.DefaultFixed32Extension));
+            Assert.False(message.HasExtension(Unittest.DefaultFixed64Extension));
+            Assert.False(message.HasExtension(Unittest.DefaultSfixed32Extension));
+            Assert.False(message.HasExtension(Unittest.DefaultSfixed64Extension));
+            Assert.False(message.HasExtension(Unittest.DefaultFloatExtension));
+            Assert.False(message.HasExtension(Unittest.DefaultDoubleExtension));
+            Assert.False(message.HasExtension(Unittest.DefaultBoolExtension));
+            Assert.False(message.HasExtension(Unittest.DefaultStringExtension));
+            Assert.False(message.HasExtension(Unittest.DefaultBytesExtension));
 
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultNestedEnumExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultForeignEnumExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultImportEnumExtension));
+            Assert.False(message.HasExtension(Unittest.DefaultNestedEnumExtension));
+            Assert.False(message.HasExtension(Unittest.DefaultForeignEnumExtension));
+            Assert.False(message.HasExtension(Unittest.DefaultImportEnumExtension));
 
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultStringPieceExtension));
-            Assert.IsFalse(message.HasExtension(Unittest.DefaultCordExtension));
+            Assert.False(message.HasExtension(Unittest.DefaultStringPieceExtension));
+            Assert.False(message.HasExtension(Unittest.DefaultCordExtension));
 
             // Fields with defaults have their default values (duh).
-            Assert.AreEqual(41, message.GetExtension(Unittest.DefaultInt32Extension));
-            Assert.AreEqual(42L, message.GetExtension(Unittest.DefaultInt64Extension));
-            Assert.AreEqual(43U, message.GetExtension(Unittest.DefaultUint32Extension));
-            Assert.AreEqual(44UL, message.GetExtension(Unittest.DefaultUint64Extension));
-            Assert.AreEqual(-45, message.GetExtension(Unittest.DefaultSint32Extension));
-            Assert.AreEqual(46L, message.GetExtension(Unittest.DefaultSint64Extension));
-            Assert.AreEqual(47U, message.GetExtension(Unittest.DefaultFixed32Extension));
-            Assert.AreEqual(48UL, message.GetExtension(Unittest.DefaultFixed64Extension));
-            Assert.AreEqual(49, message.GetExtension(Unittest.DefaultSfixed32Extension));
-            Assert.AreEqual(-50L, message.GetExtension(Unittest.DefaultSfixed64Extension));
-            Assert.AreEqual(51.5F, message.GetExtension(Unittest.DefaultFloatExtension));
-            Assert.AreEqual(52e3D, message.GetExtension(Unittest.DefaultDoubleExtension));
-            Assert.AreEqual(true, message.GetExtension(Unittest.DefaultBoolExtension));
-            Assert.AreEqual("hello", message.GetExtension(Unittest.DefaultStringExtension));
-            Assert.AreEqual(ToBytes("world"), message.GetExtension(Unittest.DefaultBytesExtension));
+            Assert.Equal(41, message.GetExtension(Unittest.DefaultInt32Extension));
+            Assert.Equal(42L, message.GetExtension(Unittest.DefaultInt64Extension));
+            Assert.Equal(43U, message.GetExtension(Unittest.DefaultUint32Extension));
+            Assert.Equal(44UL, message.GetExtension(Unittest.DefaultUint64Extension));
+            Assert.Equal(-45, message.GetExtension(Unittest.DefaultSint32Extension));
+            Assert.Equal(46L, message.GetExtension(Unittest.DefaultSint64Extension));
+            Assert.Equal(47U, message.GetExtension(Unittest.DefaultFixed32Extension));
+            Assert.Equal(48UL, message.GetExtension(Unittest.DefaultFixed64Extension));
+            Assert.Equal(49, message.GetExtension(Unittest.DefaultSfixed32Extension));
+            Assert.Equal(-50L, message.GetExtension(Unittest.DefaultSfixed64Extension));
+            Assert.Equal(51.5F, message.GetExtension(Unittest.DefaultFloatExtension));
+            Assert.Equal(52e3D, message.GetExtension(Unittest.DefaultDoubleExtension));
+            Assert.Equal(true, message.GetExtension(Unittest.DefaultBoolExtension));
+            Assert.Equal("hello", message.GetExtension(Unittest.DefaultStringExtension));
+            Assert.Equal(ToBytes("world"), message.GetExtension(Unittest.DefaultBytesExtension));
 
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.BAR,
+            Assert.Equal(TestAllTypes.Types.NestedEnum.BAR,
                             message.GetExtension(Unittest.DefaultNestedEnumExtension));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAR, message.GetExtension(Unittest.DefaultForeignEnumExtension));
-            Assert.AreEqual(ImportEnum.IMPORT_BAR, message.GetExtension(Unittest.DefaultImportEnumExtension));
+            Assert.Equal(ForeignEnum.FOREIGN_BAR, message.GetExtension(Unittest.DefaultForeignEnumExtension));
+            Assert.Equal(ImportEnum.IMPORT_BAR, message.GetExtension(Unittest.DefaultImportEnumExtension));
 
-            Assert.AreEqual("abc", message.GetExtension(Unittest.DefaultStringPieceExtension));
-            Assert.AreEqual("123", message.GetExtension(Unittest.DefaultCordExtension));
+            Assert.Equal("abc", message.GetExtension(Unittest.DefaultStringPieceExtension));
+            Assert.Equal("123", message.GetExtension(Unittest.DefaultCordExtension));
         }
 
         /// <summary>
@@ -1495,48 +1495,48 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public static void AssertPackedFieldsSet(TestPackedTypes message)
         {
-            Assert.AreEqual(2, message.PackedInt32Count);
-            Assert.AreEqual(2, message.PackedInt64Count);
-            Assert.AreEqual(2, message.PackedUint32Count);
-            Assert.AreEqual(2, message.PackedUint64Count);
-            Assert.AreEqual(2, message.PackedSint32Count);
-            Assert.AreEqual(2, message.PackedSint64Count);
-            Assert.AreEqual(2, message.PackedFixed32Count);
-            Assert.AreEqual(2, message.PackedFixed64Count);
-            Assert.AreEqual(2, message.PackedSfixed32Count);
-            Assert.AreEqual(2, message.PackedSfixed64Count);
-            Assert.AreEqual(2, message.PackedFloatCount);
-            Assert.AreEqual(2, message.PackedDoubleCount);
-            Assert.AreEqual(2, message.PackedBoolCount);
-            Assert.AreEqual(2, message.PackedEnumCount);
-            Assert.AreEqual(601, message.GetPackedInt32(0));
-            Assert.AreEqual(602, message.GetPackedInt64(0));
-            Assert.AreEqual(603u, message.GetPackedUint32(0));
-            Assert.AreEqual(604u, message.GetPackedUint64(0));
-            Assert.AreEqual(605, message.GetPackedSint32(0));
-            Assert.AreEqual(606, message.GetPackedSint64(0));
-            Assert.AreEqual(607u, message.GetPackedFixed32(0));
-            Assert.AreEqual(608u, message.GetPackedFixed64(0));
-            Assert.AreEqual(609, message.GetPackedSfixed32(0));
-            Assert.AreEqual(610, message.GetPackedSfixed64(0));
-            Assert.AreEqual(611, message.GetPackedFloat(0), 0.0);
-            Assert.AreEqual(612, message.GetPackedDouble(0), 0.0);
-            Assert.AreEqual(true, message.GetPackedBool(0));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAR, message.GetPackedEnum(0));
-            Assert.AreEqual(701, message.GetPackedInt32(1));
-            Assert.AreEqual(702, message.GetPackedInt64(1));
-            Assert.AreEqual(703u, message.GetPackedUint32(1));
-            Assert.AreEqual(704u, message.GetPackedUint64(1));
-            Assert.AreEqual(705, message.GetPackedSint32(1));
-            Assert.AreEqual(706, message.GetPackedSint64(1));
-            Assert.AreEqual(707u, message.GetPackedFixed32(1));
-            Assert.AreEqual(708u, message.GetPackedFixed64(1));
-            Assert.AreEqual(709, message.GetPackedSfixed32(1));
-            Assert.AreEqual(710, message.GetPackedSfixed64(1));
-            Assert.AreEqual(711, message.GetPackedFloat(1), 0.0);
-            Assert.AreEqual(712, message.GetPackedDouble(1), 0.0);
-            Assert.AreEqual(false, message.GetPackedBool(1));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAZ, message.GetPackedEnum(1));
+            Assert.Equal(2, message.PackedInt32Count);
+            Assert.Equal(2, message.PackedInt64Count);
+            Assert.Equal(2, message.PackedUint32Count);
+            Assert.Equal(2, message.PackedUint64Count);
+            Assert.Equal(2, message.PackedSint32Count);
+            Assert.Equal(2, message.PackedSint64Count);
+            Assert.Equal(2, message.PackedFixed32Count);
+            Assert.Equal(2, message.PackedFixed64Count);
+            Assert.Equal(2, message.PackedSfixed32Count);
+            Assert.Equal(2, message.PackedSfixed64Count);
+            Assert.Equal(2, message.PackedFloatCount);
+            Assert.Equal(2, message.PackedDoubleCount);
+            Assert.Equal(2, message.PackedBoolCount);
+            Assert.Equal(2, message.PackedEnumCount);
+            Assert.Equal(601, message.GetPackedInt32(0));
+            Assert.Equal(602, message.GetPackedInt64(0));
+            Assert.Equal(603u, message.GetPackedUint32(0));
+            Assert.Equal(604u, message.GetPackedUint64(0));
+            Assert.Equal(605, message.GetPackedSint32(0));
+            Assert.Equal(606, message.GetPackedSint64(0));
+            Assert.Equal(607u, message.GetPackedFixed32(0));
+            Assert.Equal(608u, message.GetPackedFixed64(0));
+            Assert.Equal(609, message.GetPackedSfixed32(0));
+            Assert.Equal(610, message.GetPackedSfixed64(0));
+            Assert.Equal(611f, message.GetPackedFloat(0));
+            Assert.Equal(612d, message.GetPackedDouble(0));
+            Assert.Equal(true, message.GetPackedBool(0));
+            Assert.Equal(ForeignEnum.FOREIGN_BAR, message.GetPackedEnum(0));
+            Assert.Equal(701, message.GetPackedInt32(1));
+            Assert.Equal(702, message.GetPackedInt64(1));
+            Assert.Equal(703u, message.GetPackedUint32(1));
+            Assert.Equal(704u, message.GetPackedUint64(1));
+            Assert.Equal(705, message.GetPackedSint32(1));
+            Assert.Equal(706, message.GetPackedSint64(1));
+            Assert.Equal(707u, message.GetPackedFixed32(1));
+            Assert.Equal(708u, message.GetPackedFixed64(1));
+            Assert.Equal(709, message.GetPackedSfixed32(1));
+            Assert.Equal(710, message.GetPackedSfixed64(1));
+            Assert.Equal(711f, message.GetPackedFloat(1));
+            Assert.Equal(712d, message.GetPackedDouble(1));
+            Assert.Equal(false, message.GetPackedBool(1));
+            Assert.Equal(ForeignEnum.FOREIGN_BAZ, message.GetPackedEnum(1));
         }
         /// <summary>
         /// Asserts that all the fields of the specified message are set to the values assigned
@@ -1544,48 +1544,48 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public static void AssertUnpackedFieldsSet(TestUnpackedTypes message)
         {
-            Assert.AreEqual(2, message.UnpackedInt32Count);
-            Assert.AreEqual(2, message.UnpackedInt64Count);
-            Assert.AreEqual(2, message.UnpackedUint32Count);
-            Assert.AreEqual(2, message.UnpackedUint64Count);
-            Assert.AreEqual(2, message.UnpackedSint32Count);
-            Assert.AreEqual(2, message.UnpackedSint64Count);
-            Assert.AreEqual(2, message.UnpackedFixed32Count);
-            Assert.AreEqual(2, message.UnpackedFixed64Count);
-            Assert.AreEqual(2, message.UnpackedSfixed32Count);
-            Assert.AreEqual(2, message.UnpackedSfixed64Count);
-            Assert.AreEqual(2, message.UnpackedFloatCount);
-            Assert.AreEqual(2, message.UnpackedDoubleCount);
-            Assert.AreEqual(2, message.UnpackedBoolCount);
-            Assert.AreEqual(2, message.UnpackedEnumCount);
-            Assert.AreEqual(601, message.GetUnpackedInt32(0));
-            Assert.AreEqual(602, message.GetUnpackedInt64(0));
-            Assert.AreEqual(603u, message.GetUnpackedUint32(0));
-            Assert.AreEqual(604u, message.GetUnpackedUint64(0));
-            Assert.AreEqual(605, message.GetUnpackedSint32(0));
-            Assert.AreEqual(606, message.GetUnpackedSint64(0));
-            Assert.AreEqual(607u, message.GetUnpackedFixed32(0));
-            Assert.AreEqual(608u, message.GetUnpackedFixed64(0));
-            Assert.AreEqual(609, message.GetUnpackedSfixed32(0));
-            Assert.AreEqual(610, message.GetUnpackedSfixed64(0));
-            Assert.AreEqual(611, message.GetUnpackedFloat(0), 0.0);
-            Assert.AreEqual(612, message.GetUnpackedDouble(0), 0.0);
-            Assert.AreEqual(true, message.GetUnpackedBool(0));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAR, message.GetUnpackedEnum(0));
-            Assert.AreEqual(701, message.GetUnpackedInt32(1));
-            Assert.AreEqual(702, message.GetUnpackedInt64(1));
-            Assert.AreEqual(703u, message.GetUnpackedUint32(1));
-            Assert.AreEqual(704u, message.GetUnpackedUint64(1));
-            Assert.AreEqual(705, message.GetUnpackedSint32(1));
-            Assert.AreEqual(706, message.GetUnpackedSint64(1));
-            Assert.AreEqual(707u, message.GetUnpackedFixed32(1));
-            Assert.AreEqual(708u, message.GetUnpackedFixed64(1));
-            Assert.AreEqual(709, message.GetUnpackedSfixed32(1));
-            Assert.AreEqual(710, message.GetUnpackedSfixed64(1));
-            Assert.AreEqual(711, message.GetUnpackedFloat(1), 0.0);
-            Assert.AreEqual(712, message.GetUnpackedDouble(1), 0.0);
-            Assert.AreEqual(false, message.GetUnpackedBool(1));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAZ, message.GetUnpackedEnum(1));
+            Assert.Equal(2, message.UnpackedInt32Count);
+            Assert.Equal(2, message.UnpackedInt64Count);
+            Assert.Equal(2, message.UnpackedUint32Count);
+            Assert.Equal(2, message.UnpackedUint64Count);
+            Assert.Equal(2, message.UnpackedSint32Count);
+            Assert.Equal(2, message.UnpackedSint64Count);
+            Assert.Equal(2, message.UnpackedFixed32Count);
+            Assert.Equal(2, message.UnpackedFixed64Count);
+            Assert.Equal(2, message.UnpackedSfixed32Count);
+            Assert.Equal(2, message.UnpackedSfixed64Count);
+            Assert.Equal(2, message.UnpackedFloatCount);
+            Assert.Equal(2, message.UnpackedDoubleCount);
+            Assert.Equal(2, message.UnpackedBoolCount);
+            Assert.Equal(2, message.UnpackedEnumCount);
+            Assert.Equal(601, message.GetUnpackedInt32(0));
+            Assert.Equal(602, message.GetUnpackedInt64(0));
+            Assert.Equal(603u, message.GetUnpackedUint32(0));
+            Assert.Equal(604u, message.GetUnpackedUint64(0));
+            Assert.Equal(605, message.GetUnpackedSint32(0));
+            Assert.Equal(606, message.GetUnpackedSint64(0));
+            Assert.Equal(607u, message.GetUnpackedFixed32(0));
+            Assert.Equal(608u, message.GetUnpackedFixed64(0));
+            Assert.Equal(609, message.GetUnpackedSfixed32(0));
+            Assert.Equal(610, message.GetUnpackedSfixed64(0));
+            Assert.Equal(611f, message.GetUnpackedFloat(0));
+            Assert.Equal(612d, message.GetUnpackedDouble(0));
+            Assert.Equal(true, message.GetUnpackedBool(0));
+            Assert.Equal(ForeignEnum.FOREIGN_BAR, message.GetUnpackedEnum(0));
+            Assert.Equal(701, message.GetUnpackedInt32(1));
+            Assert.Equal(702, message.GetUnpackedInt64(1));
+            Assert.Equal(703u, message.GetUnpackedUint32(1));
+            Assert.Equal(704u, message.GetUnpackedUint64(1));
+            Assert.Equal(705, message.GetUnpackedSint32(1));
+            Assert.Equal(706, message.GetUnpackedSint64(1));
+            Assert.Equal(707u, message.GetUnpackedFixed32(1));
+            Assert.Equal(708u, message.GetUnpackedFixed64(1));
+            Assert.Equal(709, message.GetUnpackedSfixed32(1));
+            Assert.Equal(710, message.GetUnpackedSfixed64(1));
+            Assert.Equal(711f, message.GetUnpackedFloat(1));
+            Assert.Equal(712d, message.GetUnpackedDouble(1));
+            Assert.Equal(false, message.GetUnpackedBool(1));
+            Assert.Equal(ForeignEnum.FOREIGN_BAZ, message.GetUnpackedEnum(1));
         }
 
         public static void SetPackedExtensions(TestPackedExtensions.Builder message)
@@ -1623,95 +1623,95 @@ namespace Google.ProtocolBuffers
 
         public static void AssertPackedExtensionsSet(TestPackedExtensions message)
         {
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.PackedInt32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.PackedInt64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.PackedUint32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.PackedUint64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.PackedSint32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.PackedSint64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.PackedFixed32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.PackedFixed64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.PackedSfixed32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.PackedSfixed64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.PackedFloatExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.PackedDoubleExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.PackedBoolExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.PackedEnumExtension));
-            Assert.AreEqual(601, message.GetExtension(Unittest.PackedInt32Extension, 0));
-            Assert.AreEqual(602L, message.GetExtension(Unittest.PackedInt64Extension, 0));
-            Assert.AreEqual(603u, message.GetExtension(Unittest.PackedUint32Extension, 0));
-            Assert.AreEqual(604uL, message.GetExtension(Unittest.PackedUint64Extension, 0));
-            Assert.AreEqual(605, message.GetExtension(Unittest.PackedSint32Extension, 0));
-            Assert.AreEqual(606L, message.GetExtension(Unittest.PackedSint64Extension, 0));
-            Assert.AreEqual(607u, message.GetExtension(Unittest.PackedFixed32Extension, 0));
-            Assert.AreEqual(608uL, message.GetExtension(Unittest.PackedFixed64Extension, 0));
-            Assert.AreEqual(609, message.GetExtension(Unittest.PackedSfixed32Extension, 0));
-            Assert.AreEqual(610L, message.GetExtension(Unittest.PackedSfixed64Extension, 0));
-            Assert.AreEqual(611F, message.GetExtension(Unittest.PackedFloatExtension, 0));
-            Assert.AreEqual(612D, message.GetExtension(Unittest.PackedDoubleExtension, 0));
-            Assert.AreEqual(true, message.GetExtension(Unittest.PackedBoolExtension, 0));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAR,
+            Assert.Equal(2, message.GetExtensionCount(Unittest.PackedInt32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.PackedInt64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.PackedUint32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.PackedUint64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.PackedSint32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.PackedSint64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.PackedFixed32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.PackedFixed64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.PackedSfixed32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.PackedSfixed64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.PackedFloatExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.PackedDoubleExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.PackedBoolExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.PackedEnumExtension));
+            Assert.Equal(601, message.GetExtension(Unittest.PackedInt32Extension, 0));
+            Assert.Equal(602L, message.GetExtension(Unittest.PackedInt64Extension, 0));
+            Assert.Equal(603u, message.GetExtension(Unittest.PackedUint32Extension, 0));
+            Assert.Equal(604uL, message.GetExtension(Unittest.PackedUint64Extension, 0));
+            Assert.Equal(605, message.GetExtension(Unittest.PackedSint32Extension, 0));
+            Assert.Equal(606L, message.GetExtension(Unittest.PackedSint64Extension, 0));
+            Assert.Equal(607u, message.GetExtension(Unittest.PackedFixed32Extension, 0));
+            Assert.Equal(608uL, message.GetExtension(Unittest.PackedFixed64Extension, 0));
+            Assert.Equal(609, message.GetExtension(Unittest.PackedSfixed32Extension, 0));
+            Assert.Equal(610L, message.GetExtension(Unittest.PackedSfixed64Extension, 0));
+            Assert.Equal(611F, message.GetExtension(Unittest.PackedFloatExtension, 0));
+            Assert.Equal(612D, message.GetExtension(Unittest.PackedDoubleExtension, 0));
+            Assert.Equal(true, message.GetExtension(Unittest.PackedBoolExtension, 0));
+            Assert.Equal(ForeignEnum.FOREIGN_BAR,
                             message.GetExtension(Unittest.PackedEnumExtension, 0));
-            Assert.AreEqual(701, message.GetExtension(Unittest.PackedInt32Extension, 1));
-            Assert.AreEqual(702L, message.GetExtension(Unittest.PackedInt64Extension, 1));
-            Assert.AreEqual(703u, message.GetExtension(Unittest.PackedUint32Extension, 1));
-            Assert.AreEqual(704uL, message.GetExtension(Unittest.PackedUint64Extension, 1));
-            Assert.AreEqual(705, message.GetExtension(Unittest.PackedSint32Extension, 1));
-            Assert.AreEqual(706L, message.GetExtension(Unittest.PackedSint64Extension, 1));
-            Assert.AreEqual(707u, message.GetExtension(Unittest.PackedFixed32Extension, 1));
-            Assert.AreEqual(708uL, message.GetExtension(Unittest.PackedFixed64Extension, 1));
-            Assert.AreEqual(709, message.GetExtension(Unittest.PackedSfixed32Extension, 1));
-            Assert.AreEqual(710L, message.GetExtension(Unittest.PackedSfixed64Extension, 1));
-            Assert.AreEqual(711F, message.GetExtension(Unittest.PackedFloatExtension, 1));
-            Assert.AreEqual(712D, message.GetExtension(Unittest.PackedDoubleExtension, 1));
-            Assert.AreEqual(false, message.GetExtension(Unittest.PackedBoolExtension, 1));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAZ, message.GetExtension(Unittest.PackedEnumExtension, 1));
+            Assert.Equal(701, message.GetExtension(Unittest.PackedInt32Extension, 1));
+            Assert.Equal(702L, message.GetExtension(Unittest.PackedInt64Extension, 1));
+            Assert.Equal(703u, message.GetExtension(Unittest.PackedUint32Extension, 1));
+            Assert.Equal(704uL, message.GetExtension(Unittest.PackedUint64Extension, 1));
+            Assert.Equal(705, message.GetExtension(Unittest.PackedSint32Extension, 1));
+            Assert.Equal(706L, message.GetExtension(Unittest.PackedSint64Extension, 1));
+            Assert.Equal(707u, message.GetExtension(Unittest.PackedFixed32Extension, 1));
+            Assert.Equal(708uL, message.GetExtension(Unittest.PackedFixed64Extension, 1));
+            Assert.Equal(709, message.GetExtension(Unittest.PackedSfixed32Extension, 1));
+            Assert.Equal(710L, message.GetExtension(Unittest.PackedSfixed64Extension, 1));
+            Assert.Equal(711F, message.GetExtension(Unittest.PackedFloatExtension, 1));
+            Assert.Equal(712D, message.GetExtension(Unittest.PackedDoubleExtension, 1));
+            Assert.Equal(false, message.GetExtension(Unittest.PackedBoolExtension, 1));
+            Assert.Equal(ForeignEnum.FOREIGN_BAZ, message.GetExtension(Unittest.PackedEnumExtension, 1));
         }
 
         public static void AssertUnpackedExtensionsSet(TestUnpackedExtensions message)
         {
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.UnpackedInt32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.UnpackedInt64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.UnpackedUint32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.UnpackedUint64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.UnpackedSint32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.UnpackedSint64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.UnpackedFixed32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.UnpackedFixed64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.UnpackedSfixed32Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.UnpackedSfixed64Extension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.UnpackedFloatExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.UnpackedDoubleExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.UnpackedBoolExtension));
-            Assert.AreEqual(2, message.GetExtensionCount(Unittest.UnpackedEnumExtension));
-            Assert.AreEqual(601, message.GetExtension(Unittest.UnpackedInt32Extension, 0));
-            Assert.AreEqual(602L, message.GetExtension(Unittest.UnpackedInt64Extension, 0));
-            Assert.AreEqual(603u, message.GetExtension(Unittest.UnpackedUint32Extension, 0));
-            Assert.AreEqual(604uL, message.GetExtension(Unittest.UnpackedUint64Extension, 0));
-            Assert.AreEqual(605, message.GetExtension(Unittest.UnpackedSint32Extension, 0));
-            Assert.AreEqual(606L, message.GetExtension(Unittest.UnpackedSint64Extension, 0));
-            Assert.AreEqual(607u, message.GetExtension(Unittest.UnpackedFixed32Extension, 0));
-            Assert.AreEqual(608uL, message.GetExtension(Unittest.UnpackedFixed64Extension, 0));
-            Assert.AreEqual(609, message.GetExtension(Unittest.UnpackedSfixed32Extension, 0));
-            Assert.AreEqual(610L, message.GetExtension(Unittest.UnpackedSfixed64Extension, 0));
-            Assert.AreEqual(611F, message.GetExtension(Unittest.UnpackedFloatExtension, 0));
-            Assert.AreEqual(612D, message.GetExtension(Unittest.UnpackedDoubleExtension, 0));
-            Assert.AreEqual(true, message.GetExtension(Unittest.UnpackedBoolExtension, 0));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAR, message.GetExtension(Unittest.UnpackedEnumExtension, 0));
-            Assert.AreEqual(701, message.GetExtension(Unittest.UnpackedInt32Extension, 1));
-            Assert.AreEqual(702L, message.GetExtension(Unittest.UnpackedInt64Extension, 1));
-            Assert.AreEqual(703u, message.GetExtension(Unittest.UnpackedUint32Extension, 1));
-            Assert.AreEqual(704uL, message.GetExtension(Unittest.UnpackedUint64Extension, 1));
-            Assert.AreEqual(705, message.GetExtension(Unittest.UnpackedSint32Extension, 1));
-            Assert.AreEqual(706L, message.GetExtension(Unittest.UnpackedSint64Extension, 1));
-            Assert.AreEqual(707u, message.GetExtension(Unittest.UnpackedFixed32Extension, 1));
-            Assert.AreEqual(708uL, message.GetExtension(Unittest.UnpackedFixed64Extension, 1));
-            Assert.AreEqual(709, message.GetExtension(Unittest.UnpackedSfixed32Extension, 1));
-            Assert.AreEqual(710L, message.GetExtension(Unittest.UnpackedSfixed64Extension, 1));
-            Assert.AreEqual(711F, message.GetExtension(Unittest.UnpackedFloatExtension, 1));
-            Assert.AreEqual(712D, message.GetExtension(Unittest.UnpackedDoubleExtension, 1));
-            Assert.AreEqual(false, message.GetExtension(Unittest.UnpackedBoolExtension, 1));
-            Assert.AreEqual(ForeignEnum.FOREIGN_BAZ, message.GetExtension(Unittest.UnpackedEnumExtension, 1));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.UnpackedInt32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.UnpackedInt64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.UnpackedUint32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.UnpackedUint64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.UnpackedSint32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.UnpackedSint64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.UnpackedFixed32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.UnpackedFixed64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.UnpackedSfixed32Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.UnpackedSfixed64Extension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.UnpackedFloatExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.UnpackedDoubleExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.UnpackedBoolExtension));
+            Assert.Equal(2, message.GetExtensionCount(Unittest.UnpackedEnumExtension));
+            Assert.Equal(601, message.GetExtension(Unittest.UnpackedInt32Extension, 0));
+            Assert.Equal(602L, message.GetExtension(Unittest.UnpackedInt64Extension, 0));
+            Assert.Equal(603u, message.GetExtension(Unittest.UnpackedUint32Extension, 0));
+            Assert.Equal(604uL, message.GetExtension(Unittest.UnpackedUint64Extension, 0));
+            Assert.Equal(605, message.GetExtension(Unittest.UnpackedSint32Extension, 0));
+            Assert.Equal(606L, message.GetExtension(Unittest.UnpackedSint64Extension, 0));
+            Assert.Equal(607u, message.GetExtension(Unittest.UnpackedFixed32Extension, 0));
+            Assert.Equal(608uL, message.GetExtension(Unittest.UnpackedFixed64Extension, 0));
+            Assert.Equal(609, message.GetExtension(Unittest.UnpackedSfixed32Extension, 0));
+            Assert.Equal(610L, message.GetExtension(Unittest.UnpackedSfixed64Extension, 0));
+            Assert.Equal(611F, message.GetExtension(Unittest.UnpackedFloatExtension, 0));
+            Assert.Equal(612D, message.GetExtension(Unittest.UnpackedDoubleExtension, 0));
+            Assert.Equal(true, message.GetExtension(Unittest.UnpackedBoolExtension, 0));
+            Assert.Equal(ForeignEnum.FOREIGN_BAR, message.GetExtension(Unittest.UnpackedEnumExtension, 0));
+            Assert.Equal(701, message.GetExtension(Unittest.UnpackedInt32Extension, 1));
+            Assert.Equal(702L, message.GetExtension(Unittest.UnpackedInt64Extension, 1));
+            Assert.Equal(703u, message.GetExtension(Unittest.UnpackedUint32Extension, 1));
+            Assert.Equal(704uL, message.GetExtension(Unittest.UnpackedUint64Extension, 1));
+            Assert.Equal(705, message.GetExtension(Unittest.UnpackedSint32Extension, 1));
+            Assert.Equal(706L, message.GetExtension(Unittest.UnpackedSint64Extension, 1));
+            Assert.Equal(707u, message.GetExtension(Unittest.UnpackedFixed32Extension, 1));
+            Assert.Equal(708uL, message.GetExtension(Unittest.UnpackedFixed64Extension, 1));
+            Assert.Equal(709, message.GetExtension(Unittest.UnpackedSfixed32Extension, 1));
+            Assert.Equal(710L, message.GetExtension(Unittest.UnpackedSfixed64Extension, 1));
+            Assert.Equal(711F, message.GetExtension(Unittest.UnpackedFloatExtension, 1));
+            Assert.Equal(712D, message.GetExtension(Unittest.UnpackedDoubleExtension, 1));
+            Assert.Equal(false, message.GetExtension(Unittest.UnpackedBoolExtension, 1));
+            Assert.Equal(ForeignEnum.FOREIGN_BAZ, message.GetExtension(Unittest.UnpackedEnumExtension, 1));
         }
 
         private static readonly string[] TestCultures = {"en-US", "en-GB", "fr-FR", "de-DE"};
@@ -1750,62 +1750,6 @@ namespace Google.ProtocolBuffers
                 bytes[i] = (byte) bytesAsInts[i];
             }
             return bytes;
-        }
-
-
-        internal delegate void Action();
-
-        internal static void AssertNotSupported(Action action)
-        {
-            try
-            {
-                action();
-                Assert.Fail("Expected NotSupportedException");
-            }
-            catch (NotSupportedException)
-            {
-                // Expected
-            }
-        }
-
-        internal static void AssertArgumentNullException(Action action)
-        {
-            try
-            {
-                action();
-                Assert.Fail("Exception was not thrown");
-            }
-            // Not a general case, however, Compact Framework v2 does use Invoke
-            catch (System.Reflection.TargetInvocationException te)
-            {
-                if (te.InnerException.GetType() != typeof(ArgumentNullException))
-                    throw;
-            }
-            // Normally expected exception
-            catch (ArgumentNullException)
-            {
-                // We expect this exception.
-            }
-        }
-
-        internal static void AssertBytesEqual(byte[] a, byte[]b)
-        {
-            if (a == null || b == null)
-            {
-                Assert.AreEqual<object>(a, b);
-            }
-            else
-            {
-                Assert.AreEqual(a.Length, b.Length, "The byte[] is not of the expected length.");
-
-                for (int i = 0; i < a.Length; i++)
-                {
-                    if (a[i] != b[i])
-                    {
-                        Assert.AreEqual(a[i], b[i], "Byte[] differs at index " + i);
-                    }
-                }
-            }
         }
     }
 }

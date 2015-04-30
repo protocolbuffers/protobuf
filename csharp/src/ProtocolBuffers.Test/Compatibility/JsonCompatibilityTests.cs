@@ -1,11 +1,8 @@
 using System.IO;
-using System.Text;
 using Google.ProtocolBuffers.Serialization;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Google.ProtocolBuffers.Compatibility
 {
-    [TestClass]
     public class JsonCompatibilityTests : CompatibilityTests
     {
         protected override object SerializeMessage<TMessage, TBuilder>(TMessage message)
@@ -23,7 +20,6 @@ namespace Google.ProtocolBuffers.Compatibility
         }
     }
 
-    [TestClass]
     public class JsonCompatibilityFormattedTests : CompatibilityTests
     {
         protected override object SerializeMessage<TMessage, TBuilder>(TMessage message)

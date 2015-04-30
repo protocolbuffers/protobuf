@@ -36,113 +36,112 @@
 
 using System;
 using System.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Google.ProtocolBuffers
 {
-    [TestClass]
     public class ByteStringTest
     {
-        [TestMethod]
+        [Fact]
         public void EmptyByteStringHasZeroSize()
         {
-            Assert.AreEqual(0, ByteString.Empty.Length);
+            Assert.Equal(0, ByteString.Empty.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public void CopyFromStringWithExplicitEncoding()
         {
             ByteString bs = ByteString.CopyFrom("AB", Encoding.Unicode);
-            Assert.AreEqual(4, bs.Length);
-            Assert.AreEqual(65, bs[0]);
-            Assert.AreEqual(0, bs[1]);
-            Assert.AreEqual(66, bs[2]);
-            Assert.AreEqual(0, bs[3]);
+            Assert.Equal(4, bs.Length);
+            Assert.Equal(65, bs[0]);
+            Assert.Equal(0, bs[1]);
+            Assert.Equal(66, bs[2]);
+            Assert.Equal(0, bs[3]);
         }
 
-        [TestMethod]
+        [Fact]
         public void IsEmptyWhenEmpty()
         {
-            Assert.IsTrue(ByteString.CopyFromUtf8("").IsEmpty);
+            Assert.True(ByteString.CopyFromUtf8("").IsEmpty);
         }
 
-        [TestMethod]
+        [Fact]
         public void IsEmptyWhenNotEmpty()
         {
-            Assert.IsFalse(ByteString.CopyFromUtf8("X").IsEmpty);
+            Assert.False(ByteString.CopyFromUtf8("X").IsEmpty);
         }
 
-        [TestMethod]
+        [Fact]
         public void CopyFromByteArrayCopiesContents()
         {
             byte[] data = new byte[1];
             data[0] = 10;
             ByteString bs = ByteString.CopyFrom(data);
-            Assert.AreEqual(10, bs[0]);
+            Assert.Equal(10, bs[0]);
             data[0] = 5;
-            Assert.AreEqual(10, bs[0]);
+            Assert.Equal(10, bs[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void ToByteArrayCopiesContents()
         {
             ByteString bs = ByteString.CopyFromUtf8("Hello");
             byte[] data = bs.ToByteArray();
-            Assert.AreEqual((byte)'H', data[0]);
-            Assert.AreEqual((byte)'H', bs[0]);
+            Assert.Equal((byte)'H', data[0]);
+            Assert.Equal((byte)'H', bs[0]);
             data[0] = 0;
-            Assert.AreEqual(0, data[0]);
-            Assert.AreEqual((byte)'H', bs[0]);
+            Assert.Equal(0, data[0]);
+            Assert.Equal((byte)'H', bs[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void CopyFromUtf8UsesUtf8()
         {
             ByteString bs = ByteString.CopyFromUtf8("\u20ac");
-            Assert.AreEqual(3, bs.Length);
-            Assert.AreEqual(0xe2, bs[0]);
-            Assert.AreEqual(0x82, bs[1]);
-            Assert.AreEqual(0xac, bs[2]);
+            Assert.Equal(3, bs.Length);
+            Assert.Equal(0xe2, bs[0]);
+            Assert.Equal(0x82, bs[1]);
+            Assert.Equal(0xac, bs[2]);
         }
 
-        [TestMethod]
+        [Fact]
         public void CopyFromPortion()
         {
             byte[] data = new byte[] {0, 1, 2, 3, 4, 5, 6};
             ByteString bs = ByteString.CopyFrom(data, 2, 3);
-            Assert.AreEqual(3, bs.Length);
-            Assert.AreEqual(2, bs[0]);
-            Assert.AreEqual(3, bs[1]);
+            Assert.Equal(3, bs.Length);
+            Assert.Equal(2, bs[0]);
+            Assert.Equal(3, bs[1]);
         }
 
-        [TestMethod]
+        [Fact]
         public void ToStringUtf8()
         {
             ByteString bs = ByteString.CopyFromUtf8("\u20ac");
-            Assert.AreEqual("\u20ac", bs.ToStringUtf8());
+            Assert.Equal("\u20ac", bs.ToStringUtf8());
         }
 
-        [TestMethod]
+        [Fact]
         public void ToStringWithExplicitEncoding()
         {
             ByteString bs = ByteString.CopyFrom("\u20ac", Encoding.Unicode);
-            Assert.AreEqual("\u20ac", bs.ToString(Encoding.Unicode));
+            Assert.Equal("\u20ac", bs.ToString(Encoding.Unicode));
         }
 
-        [TestMethod]
+        [Fact]
         public void FromBase64_WithText()
         {
             byte[] data = new byte[] {0, 1, 2, 3, 4, 5, 6};
             string base64 = Convert.ToBase64String(data);
             ByteString bs = ByteString.FromBase64(base64);
-            TestUtil.AssertBytesEqual(data, bs.ToByteArray());
+            Assert.Equal(data, bs.ToByteArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void FromBase64_Empty()
         {
             // Optimization which also fixes issue 61.
-            Assert.AreSame(ByteString.Empty, ByteString.FromBase64(""));
+            Assert.Same(ByteString.Empty, ByteString.FromBase64(""));
         }
     }
 }

@@ -36,15 +36,11 @@
 
 using System;
 using System.IO;
-using System.Text;
 using Google.ProtocolBuffers.TestProtos;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Globalization;
-using System.Threading;
+using Xunit;
 
 namespace Google.ProtocolBuffers
 {
-    [TestClass]
     public class TextFormatTest
     {
         private static readonly string AllFieldsSetText = TestResources.text_format_unittest_data;
@@ -88,46 +84,46 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Print TestAllTypes and compare with golden file. 
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void PrintMessage()
         {
             TestUtil.TestInMultipleCultures(() =>
-                                                {
-                                                    string text = TextFormat.PrintToString(TestUtil.GetAllSet());
-                                                    Assert.AreEqual(AllFieldsSetText.Replace("\r\n", "\n").Trim(),
-                                                                    text.Replace("\r\n", "\n").Trim());
-                                                });
+            {
+                string text = TextFormat.PrintToString(TestUtil.GetAllSet());
+                Assert.Equal(AllFieldsSetText.Replace("\r\n", "\n").Trim(),
+                                text.Replace("\r\n", "\n").Trim());
+            });
         }
 
         /// <summary>
         /// Tests that a builder prints the same way as a message.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void PrintBuilder()
         {
             TestUtil.TestInMultipleCultures(() =>
             {
                 string messageText = TextFormat.PrintToString(TestUtil.GetAllSet());
                 string builderText = TextFormat.PrintToString(TestUtil.GetAllSet().ToBuilder());
-                Assert.AreEqual(messageText, builderText);
+                Assert.Equal(messageText, builderText);
             });
         }
 
         /// <summary>
         /// Print TestAllExtensions and compare with golden file.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void PrintExtensions()
         {
             string text = TextFormat.PrintToString(TestUtil.GetAllExtensionsSet());
 
-            Assert.AreEqual(AllExtensionsSetText.Replace("\r\n", "\n").Trim(), text.Replace("\r\n", "\n").Trim());
+            Assert.Equal(AllExtensionsSetText.Replace("\r\n", "\n").Trim(), text.Replace("\r\n", "\n").Trim());
         }
 
         /// <summary>
         /// Test printing of unknown fields in a message.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void PrintUnknownFields()
         {
             TestEmptyMessage message =
@@ -163,7 +159,7 @@ namespace Google.ProtocolBuffers
                             .Build())
                     .Build();
 
-            Assert.AreEqual(
+            Assert.Equal(
                 "5: 1\n" +
                 "5: 0x00000002\n" +
                 "5: 0x0000000000000003\n" +
@@ -193,7 +189,7 @@ namespace Google.ProtocolBuffers
             return ByteString.CopyFrom(bytes);
         }
 
-        [TestMethod]
+        [Fact]
         public void PrintExotic()
         {
             IMessage message = TestAllTypes.CreateBuilder()
@@ -224,10 +220,10 @@ namespace Google.ProtocolBuffers
                 .AddRepeatedBytes(Bytes("\0\u0001\u0007\b\f\n\r\t\v\\\'\"\u00fe"))
                 .Build();
 
-            Assert.AreEqual(ExoticText, message.ToString());
+            Assert.Equal(ExoticText, message.ToString());
         }
 
-        [TestMethod]
+        [Fact]
         public void PrintMessageSet()
         {
             TestMessageSet messageSet =
@@ -240,12 +236,12 @@ namespace Google.ProtocolBuffers
                         TestMessageSetExtension2.CreateBuilder().SetStr("foo").Build())
                     .Build();
 
-            Assert.AreEqual(MessageSetText, messageSet.ToString());
+            Assert.Equal(MessageSetText, messageSet.ToString());
         }
 
         // =================================================================
 
-        [TestMethod]
+        [Fact]
         public void Parse()
         {
             TestUtil.TestInMultipleCultures(() =>
@@ -256,7 +252,7 @@ namespace Google.ProtocolBuffers
                                                 });
         }
 
-        [TestMethod]
+        [Fact]
         public void ParseReader()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
@@ -264,7 +260,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertAllFieldsSet(builder.Build());
         }
 
-        [TestMethod]
+        [Fact]
         public void ParseExtensions()
         {
             TestAllExtensions.Builder builder = TestAllExtensions.CreateBuilder();
@@ -274,7 +270,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertAllExtensionsSet(builder.Build());
         }
 
-        [TestMethod]
+        [Fact]
         public void ParseCompatibility()
         {
             string original = "repeated_float: inf\n" +
@@ -303,10 +299,10 @@ namespace Google.ProtocolBuffers
                                "repeated_double: NaN\n";
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
             TextFormat.Merge(original, builder);
-            Assert.AreEqual(canonical, builder.Build().ToString());
+            Assert.Equal(canonical, builder.Build().ToString());
         }
 
-        [TestMethod]
+        [Fact]
         public void ParseExotic()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
@@ -314,10 +310,10 @@ namespace Google.ProtocolBuffers
 
             // Too lazy to check things individually.  Don't try to debug this
             // if testPrintExotic() is Assert.Failing.
-            Assert.AreEqual(ExoticText, builder.Build().ToString());
+            Assert.Equal(ExoticText, builder.Build().ToString());
         }
 
-        [TestMethod]
+        [Fact]
         public void ParseMessageSet()
         {
             ExtensionRegistry extensionRegistry = ExtensionRegistry.CreateInstance();
@@ -328,30 +324,30 @@ namespace Google.ProtocolBuffers
             TextFormat.Merge(MessageSetText, extensionRegistry, builder);
             TestMessageSet messageSet = builder.Build();
 
-            Assert.IsTrue(messageSet.HasExtension(TestMessageSetExtension1.MessageSetExtension));
-            Assert.AreEqual(123, messageSet.GetExtension(TestMessageSetExtension1.MessageSetExtension).I);
-            Assert.IsTrue(messageSet.HasExtension(TestMessageSetExtension2.MessageSetExtension));
-            Assert.AreEqual("foo", messageSet.GetExtension(TestMessageSetExtension2.MessageSetExtension).Str);
+            Assert.True(messageSet.HasExtension(TestMessageSetExtension1.MessageSetExtension));
+            Assert.Equal(123, messageSet.GetExtension(TestMessageSetExtension1.MessageSetExtension).I);
+            Assert.True(messageSet.HasExtension(TestMessageSetExtension2.MessageSetExtension));
+            Assert.Equal("foo", messageSet.GetExtension(TestMessageSetExtension2.MessageSetExtension).Str);
         }
 
-        [TestMethod]
+        [Fact]
         public void ParseNumericEnum()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
             TextFormat.Merge("optional_nested_enum: 2", builder);
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.BAR, builder.OptionalNestedEnum);
+            Assert.Equal(TestAllTypes.Types.NestedEnum.BAR, builder.OptionalNestedEnum);
         }
 
-        [TestMethod]
+        [Fact]
         public void ParseAngleBrackets()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
             TextFormat.Merge("OptionalGroup: < a: 1 >", builder);
-            Assert.IsTrue(builder.HasOptionalGroup);
-            Assert.AreEqual(1, builder.OptionalGroup.A);
+            Assert.True(builder.HasOptionalGroup);
+            Assert.Equal(1, builder.OptionalGroup.A);
         }
 
-        [TestMethod]
+        [Fact]
         public void ParseComment()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
@@ -360,26 +356,19 @@ namespace Google.ProtocolBuffers
                 "optional_int32: 1  # another comment\n" +
                 "optional_int64: 2\n" +
                 "# EOF comment", builder);
-            Assert.AreEqual(1, builder.OptionalInt32);
-            Assert.AreEqual(2, builder.OptionalInt64);
+            Assert.Equal(1, builder.OptionalInt32);
+            Assert.Equal(2, builder.OptionalInt64);
         }
 
 
         private static void AssertParseError(string error, string text)
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
-            try
-            {
-                TextFormat.Merge(text, TestUtil.CreateExtensionRegistry(), builder);
-                Assert.Fail("Expected parse exception.");
-            }
-            catch (FormatException e)
-            {
-                Assert.AreEqual(error, e.Message);
-            }
+            Exception exception = Assert.Throws<FormatException>(() => TextFormat.Merge(text, TestUtil.CreateExtensionRegistry(), builder));
+            Assert.Equal(error, exception.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public void ParseErrors()
         {
             AssertParseError(
@@ -454,111 +443,96 @@ namespace Google.ProtocolBuffers
             return ByteString.CopyFrom(bytes);
         }
 
-        private delegate void FormattingAction();
-
-        private static void AssertFormatException(FormattingAction action)
-        {
-            try
-            {
-                action();
-                Assert.Fail("Should have thrown an exception.");
-            }
-            catch (FormatException)
-            {
-                // success
-            }
-        }
-
-        [TestMethod]
+        [Fact]
         public void Escape()
         {
             // Escape sequences.
-            Assert.AreEqual("\\000\\001\\a\\b\\f\\n\\r\\t\\v\\\\\\'\\\"",
+            Assert.Equal("\\000\\001\\a\\b\\f\\n\\r\\t\\v\\\\\\'\\\"",
                             TextFormat.EscapeBytes(Bytes("\0\u0001\u0007\b\f\n\r\t\v\\\'\"")));
-            Assert.AreEqual("\\000\\001\\a\\b\\f\\n\\r\\t\\v\\\\\\'\\\"",
+            Assert.Equal("\\000\\001\\a\\b\\f\\n\\r\\t\\v\\\\\\'\\\"",
                             TextFormat.EscapeText("\0\u0001\u0007\b\f\n\r\t\v\\\'\""));
-            Assert.AreEqual(Bytes("\0\u0001\u0007\b\f\n\r\t\v\\\'\""),
+            Assert.Equal(Bytes("\0\u0001\u0007\b\f\n\r\t\v\\\'\""),
                             TextFormat.UnescapeBytes("\\000\\001\\a\\b\\f\\n\\r\\t\\v\\\\\\'\\\""));
-            Assert.AreEqual("\0\u0001\u0007\b\f\n\r\t\v\\\'\"",
+            Assert.Equal("\0\u0001\u0007\b\f\n\r\t\v\\\'\"",
                             TextFormat.UnescapeText("\\000\\001\\a\\b\\f\\n\\r\\t\\v\\\\\\'\\\""));
 
             // Unicode handling.
-            Assert.AreEqual("\\341\\210\\264", TextFormat.EscapeText("\u1234"));
-            Assert.AreEqual("\\341\\210\\264", TextFormat.EscapeBytes(Bytes(0xe1, 0x88, 0xb4)));
-            Assert.AreEqual("\u1234", TextFormat.UnescapeText("\\341\\210\\264"));
-            Assert.AreEqual(Bytes(0xe1, 0x88, 0xb4), TextFormat.UnescapeBytes("\\341\\210\\264"));
-            Assert.AreEqual("\u1234", TextFormat.UnescapeText("\\xe1\\x88\\xb4"));
-            Assert.AreEqual(Bytes(0xe1, 0x88, 0xb4), TextFormat.UnescapeBytes("\\xe1\\x88\\xb4"));
+            Assert.Equal("\\341\\210\\264", TextFormat.EscapeText("\u1234"));
+            Assert.Equal("\\341\\210\\264", TextFormat.EscapeBytes(Bytes(0xe1, 0x88, 0xb4)));
+            Assert.Equal("\u1234", TextFormat.UnescapeText("\\341\\210\\264"));
+            Assert.Equal(Bytes(0xe1, 0x88, 0xb4), TextFormat.UnescapeBytes("\\341\\210\\264"));
+            Assert.Equal("\u1234", TextFormat.UnescapeText("\\xe1\\x88\\xb4"));
+            Assert.Equal(Bytes(0xe1, 0x88, 0xb4), TextFormat.UnescapeBytes("\\xe1\\x88\\xb4"));
 
             // Errors.
-            AssertFormatException(() => TextFormat.UnescapeText("\\x"));
-            AssertFormatException(() => TextFormat.UnescapeText("\\z"));
-            AssertFormatException(() => TextFormat.UnescapeText("\\"));
+            Assert.Throws<FormatException>(() => TextFormat.UnescapeText("\\x"));
+            Assert.Throws<FormatException>(() => TextFormat.UnescapeText("\\z"));
+            Assert.Throws<FormatException>(() => TextFormat.UnescapeText("\\"));
         }
 
-        [TestMethod]
+        [Fact]
         public void ParseInteger()
         {
-            Assert.AreEqual(0, TextFormat.ParseInt32("0"));
-            Assert.AreEqual(1, TextFormat.ParseInt32("1"));
-            Assert.AreEqual(-1, TextFormat.ParseInt32("-1"));
-            Assert.AreEqual(12345, TextFormat.ParseInt32("12345"));
-            Assert.AreEqual(-12345, TextFormat.ParseInt32("-12345"));
-            Assert.AreEqual(2147483647, TextFormat.ParseInt32("2147483647"));
-            Assert.AreEqual(-2147483648, TextFormat.ParseInt32("-2147483648"));
+            Assert.Equal(0, TextFormat.ParseInt32("0"));
+            Assert.Equal(1, TextFormat.ParseInt32("1"));
+            Assert.Equal(-1, TextFormat.ParseInt32("-1"));
+            Assert.Equal(12345, TextFormat.ParseInt32("12345"));
+            Assert.Equal(-12345, TextFormat.ParseInt32("-12345"));
+            Assert.Equal(2147483647, TextFormat.ParseInt32("2147483647"));
+            Assert.Equal(-2147483648, TextFormat.ParseInt32("-2147483648"));
 
-            Assert.AreEqual(0u, TextFormat.ParseUInt32("0"));
-            Assert.AreEqual(1u, TextFormat.ParseUInt32("1"));
-            Assert.AreEqual(12345u, TextFormat.ParseUInt32("12345"));
-            Assert.AreEqual(2147483647u, TextFormat.ParseUInt32("2147483647"));
-            Assert.AreEqual(2147483648U, TextFormat.ParseUInt32("2147483648"));
-            Assert.AreEqual(4294967295U, TextFormat.ParseUInt32("4294967295"));
+            Assert.Equal(0u, TextFormat.ParseUInt32("0"));
+            Assert.Equal(1u, TextFormat.ParseUInt32("1"));
+            Assert.Equal(12345u, TextFormat.ParseUInt32("12345"));
+            Assert.Equal(2147483647u, TextFormat.ParseUInt32("2147483647"));
+            Assert.Equal(2147483648U, TextFormat.ParseUInt32("2147483648"));
+            Assert.Equal(4294967295U, TextFormat.ParseUInt32("4294967295"));
 
-            Assert.AreEqual(0L, TextFormat.ParseInt64("0"));
-            Assert.AreEqual(1L, TextFormat.ParseInt64("1"));
-            Assert.AreEqual(-1L, TextFormat.ParseInt64("-1"));
-            Assert.AreEqual(12345L, TextFormat.ParseInt64("12345"));
-            Assert.AreEqual(-12345L, TextFormat.ParseInt64("-12345"));
-            Assert.AreEqual(2147483647L, TextFormat.ParseInt64("2147483647"));
-            Assert.AreEqual(-2147483648L, TextFormat.ParseInt64("-2147483648"));
-            Assert.AreEqual(4294967295L, TextFormat.ParseInt64("4294967295"));
-            Assert.AreEqual(4294967296L, TextFormat.ParseInt64("4294967296"));
-            Assert.AreEqual(9223372036854775807L, TextFormat.ParseInt64("9223372036854775807"));
-            Assert.AreEqual(-9223372036854775808L, TextFormat.ParseInt64("-9223372036854775808"));
+            Assert.Equal(0L, TextFormat.ParseInt64("0"));
+            Assert.Equal(1L, TextFormat.ParseInt64("1"));
+            Assert.Equal(-1L, TextFormat.ParseInt64("-1"));
+            Assert.Equal(12345L, TextFormat.ParseInt64("12345"));
+            Assert.Equal(-12345L, TextFormat.ParseInt64("-12345"));
+            Assert.Equal(2147483647L, TextFormat.ParseInt64("2147483647"));
+            Assert.Equal(-2147483648L, TextFormat.ParseInt64("-2147483648"));
+            Assert.Equal(4294967295L, TextFormat.ParseInt64("4294967295"));
+            Assert.Equal(4294967296L, TextFormat.ParseInt64("4294967296"));
+            Assert.Equal(9223372036854775807L, TextFormat.ParseInt64("9223372036854775807"));
+            Assert.Equal(-9223372036854775808L, TextFormat.ParseInt64("-9223372036854775808"));
 
-            Assert.AreEqual(0uL, TextFormat.ParseUInt64("0"));
-            Assert.AreEqual(1uL, TextFormat.ParseUInt64("1"));
-            Assert.AreEqual(12345uL, TextFormat.ParseUInt64("12345"));
-            Assert.AreEqual(2147483647uL, TextFormat.ParseUInt64("2147483647"));
-            Assert.AreEqual(4294967295uL, TextFormat.ParseUInt64("4294967295"));
-            Assert.AreEqual(4294967296uL, TextFormat.ParseUInt64("4294967296"));
-            Assert.AreEqual(9223372036854775807UL, TextFormat.ParseUInt64("9223372036854775807"));
-            Assert.AreEqual(9223372036854775808UL, TextFormat.ParseUInt64("9223372036854775808"));
-            Assert.AreEqual(18446744073709551615UL, TextFormat.ParseUInt64("18446744073709551615"));
+            Assert.Equal(0uL, TextFormat.ParseUInt64("0"));
+            Assert.Equal(1uL, TextFormat.ParseUInt64("1"));
+            Assert.Equal(12345uL, TextFormat.ParseUInt64("12345"));
+            Assert.Equal(2147483647uL, TextFormat.ParseUInt64("2147483647"));
+            Assert.Equal(4294967295uL, TextFormat.ParseUInt64("4294967295"));
+            Assert.Equal(4294967296uL, TextFormat.ParseUInt64("4294967296"));
+            Assert.Equal(9223372036854775807UL, TextFormat.ParseUInt64("9223372036854775807"));
+            Assert.Equal(9223372036854775808UL, TextFormat.ParseUInt64("9223372036854775808"));
+            Assert.Equal(18446744073709551615UL, TextFormat.ParseUInt64("18446744073709551615"));
 
             // Hex
-            Assert.AreEqual(0x1234abcd, TextFormat.ParseInt32("0x1234abcd"));
-            Assert.AreEqual(-0x1234abcd, TextFormat.ParseInt32("-0x1234abcd"));
-            Assert.AreEqual(0xffffffffffffffffUL, TextFormat.ParseUInt64("0xffffffffffffffff"));
-            Assert.AreEqual(0x7fffffffffffffffL,
+            Assert.Equal(0x1234abcd, TextFormat.ParseInt32("0x1234abcd"));
+            Assert.Equal(-0x1234abcd, TextFormat.ParseInt32("-0x1234abcd"));
+            Assert.Equal(0xffffffffffffffffUL, TextFormat.ParseUInt64("0xffffffffffffffff"));
+            Assert.Equal(0x7fffffffffffffffL,
                             TextFormat.ParseInt64("0x7fffffffffffffff"));
 
             // Octal
-            Assert.AreEqual(342391, TextFormat.ParseInt32("01234567"));
+            Assert.Equal(342391, TextFormat.ParseInt32("01234567"));
 
             // Out-of-range
-            AssertFormatException(() => TextFormat.ParseInt32("2147483648"));
-            AssertFormatException(() => TextFormat.ParseInt32("-2147483649"));
-            AssertFormatException(() => TextFormat.ParseUInt32("4294967296"));
-            AssertFormatException(() => TextFormat.ParseUInt32("-1"));
-            AssertFormatException(() => TextFormat.ParseInt64("9223372036854775808"));
-            AssertFormatException(() => TextFormat.ParseInt64("-9223372036854775809"));
-            AssertFormatException(() => TextFormat.ParseUInt64("18446744073709551616"));
-            AssertFormatException(() => TextFormat.ParseUInt64("-1"));
-            AssertFormatException(() => TextFormat.ParseInt32("abcd"));
+            Assert.Throws<FormatException>(() => TextFormat.ParseInt32("2147483648"));
+            Assert.Throws<FormatException>(() => TextFormat.ParseInt32("-2147483649"));
+            Assert.Throws<FormatException>(() => TextFormat.ParseUInt32("4294967296"));
+            Assert.Throws<FormatException>(() => TextFormat.ParseUInt32("-1"));
+            Assert.Throws<FormatException>(() => TextFormat.ParseInt64("9223372036854775808"));
+            Assert.Throws<FormatException>(() => TextFormat.ParseInt64("-9223372036854775809"));
+            Assert.Throws<FormatException>(() => TextFormat.ParseUInt64("18446744073709551616"));
+            Assert.Throws<FormatException>(() => TextFormat.ParseUInt64("-1"));
+            Assert.Throws<FormatException>(() => TextFormat.ParseInt32("abcd"));
         }
 
-        [TestMethod]
+        [Fact]
         public void ParseLongString()
         {
             string longText =
@@ -580,7 +554,7 @@ namespace Google.ProtocolBuffers
                 "123456789012345678901234567890123456789012345678901234567890";
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
             TextFormat.Merge("optional_string: \"" + longText + "\"", builder);
-            Assert.AreEqual(longText, builder.OptionalString);
+            Assert.Equal(longText, builder.OptionalString);
         }
     }
 }

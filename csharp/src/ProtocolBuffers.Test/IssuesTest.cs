@@ -35,13 +35,9 @@
 #endregion
 
 
-using System;
-using System.Collections.Generic;
-using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.Descriptors;
-using Google.ProtocolBuffers.TestProtos;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UnitTest.Issues.TestProtos;
+using Xunit;
 
 
 namespace Google.ProtocolBuffers
@@ -49,17 +45,16 @@ namespace Google.ProtocolBuffers
     /// <summary>
     /// Tests for issues which aren't easily compartmentalized into other unit tests.
     /// </summary>
-    [TestClass]
     public class IssuesTest
     {
         // Issue 45
-        [TestMethod]
+        [Fact]
         public void FieldCalledItem()
         {
             ItemField message = new ItemField.Builder { Item = 3 }.Build();
             FieldDescriptor field = ItemField.Descriptor.FindFieldByName("item");
-            Assert.IsNotNull(field);
-            Assert.AreEqual(3, (int)message[field]);
+            Assert.NotNull(field);
+            Assert.Equal(3, (int)message[field]);
         }
     }
 }

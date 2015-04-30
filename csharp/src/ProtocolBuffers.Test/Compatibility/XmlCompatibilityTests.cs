@@ -1,12 +1,9 @@
 using System.IO;
 using System.Xml;
 using Google.ProtocolBuffers.Serialization;
-using Google.ProtocolBuffers.TestProtos;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Google.ProtocolBuffers.Compatibility
 {
-    [TestClass]
     public class XmlCompatibilityTests : CompatibilityTests
     {
         protected override object SerializeMessage<TMessage, TBuilder>(TMessage message)
@@ -24,7 +21,6 @@ namespace Google.ProtocolBuffers.Compatibility
         }
     }
 
-    [TestClass]
     public class XmlCompatibilityFormattedTests : CompatibilityTests
     {
         protected override object SerializeMessage<TMessage, TBuilder>(TMessage message)

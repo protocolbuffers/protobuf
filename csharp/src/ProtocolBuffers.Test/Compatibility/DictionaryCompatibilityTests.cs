@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using Google.ProtocolBuffers.Serialization;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Google.ProtocolBuffers.Compatibility
 {
-    [TestClass]
     public class DictionaryCompatibilityTests : CompatibilityTests
     {
         protected override object SerializeMessage<TMessage, TBuilder>(TMessage message)
@@ -28,7 +25,7 @@ namespace Google.ProtocolBuffers.Compatibility
             IDictionary<string, object> left = (IDictionary<string, object>)lhs;
             IDictionary<string, object> right = (IDictionary<string, object>)rhs;
 
-            Assert.AreEqual(
+            Assert.Equal(
                 String.Join(",", new List<string>(left.Keys).ToArray()),
                 String.Join(",", new List<string>(right.Keys).ToArray())
             );
