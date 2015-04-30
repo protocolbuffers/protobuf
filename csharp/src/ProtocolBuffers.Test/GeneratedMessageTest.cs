@@ -38,31 +38,29 @@ using System;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.TestProtos;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Google.ProtocolBuffers
 {
-    [TestClass]
     public class GeneratedMessageTest
     {
-        private ReflectionTester reflectionTester;
-        private ReflectionTester extensionsReflectionTester;
+        private readonly ReflectionTester reflectionTester;
+        private readonly ReflectionTester extensionsReflectionTester;
 
-        [TestInitialize]
-        public void SetUp()
+        public GeneratedMessageTest()
         {
             reflectionTester = ReflectionTester.CreateTestAllTypesInstance();
             extensionsReflectionTester = ReflectionTester.CreateTestAllExtensionsInstance();
         }
 
-        [TestMethod]
+        [Fact]
         public void RepeatedAddPrimitiveBeforeBuild()
         {
             TestAllTypes message = new TestAllTypes.Builder {RepeatedInt32List = {1, 2, 3}}.Build();
             TestUtil.AssertEqual(new int[] {1, 2, 3}, message.RepeatedInt32List);
         }
 
-        [TestMethod]
+        [Fact]
         public void AddPrimitiveFailsAfterBuild()
         {
             TestAllTypes.Builder builder = new TestAllTypes.Builder();
@@ -70,18 +68,10 @@ namespace Google.ProtocolBuffers
             list.Add(1); // Fine
             builder.Build();
 
-            try
-            {
-                list.Add(2);
-                Assert.Fail("List should be frozen");
-            }
-            catch (NotSupportedException)
-            {
-                // Expected
-            }
+            Assert.Throws<NotSupportedException>(() => list.Add(2));
         }
 
-        [TestMethod]
+        [Fact]
         public void RepeatedAddMessageBeforeBuild()
         {
             TestAllTypes message = new TestAllTypes.Builder
@@ -89,36 +79,28 @@ namespace Google.ProtocolBuffers
                                            RepeatedNestedMessageList =
                                                {new TestAllTypes.Types.NestedMessage.Builder {Bb = 10}.Build()}
                                        }.Build();
-            Assert.AreEqual(1, message.RepeatedNestedMessageCount);
-            Assert.AreEqual(10, message.RepeatedNestedMessageList[0].Bb);
+            Assert.Equal(1, message.RepeatedNestedMessageCount);
+            Assert.Equal(10, message.RepeatedNestedMessageList[0].Bb);
         }
 
-        [TestMethod]
+        [Fact]
         public void AddMessageFailsAfterBuild()
         {
             TestAllTypes.Builder builder = new TestAllTypes.Builder();
             IList<TestAllTypes.Types.NestedMessage> list = builder.RepeatedNestedMessageList;
             builder.Build();
 
-            try
-            {
-                list.Add(new TestAllTypes.Types.NestedMessage.Builder {Bb = 10}.Build());
-                Assert.Fail("List should be frozen");
-            }
-            catch (NotSupportedException)
-            {
-                // Expected
-            }
+            Assert.Throws<NotSupportedException>(() => list.Add(new TestAllTypes.Types.NestedMessage.Builder { Bb = 10 }.Build()));
         }
 
-        [TestMethod]
+        [Fact]
         public void DefaultInstance()
         {
-            Assert.AreSame(TestAllTypes.DefaultInstance, TestAllTypes.DefaultInstance.DefaultInstanceForType);
-            Assert.AreSame(TestAllTypes.DefaultInstance, TestAllTypes.CreateBuilder().DefaultInstanceForType);
+            Assert.Same(TestAllTypes.DefaultInstance, TestAllTypes.DefaultInstance.DefaultInstanceForType);
+            Assert.Same(TestAllTypes.DefaultInstance, TestAllTypes.CreateBuilder().DefaultInstanceForType);
         }
 
-        [TestMethod]
+        [Fact]
         public void Accessors()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
@@ -127,25 +109,25 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertAllFieldsSet(message);
         }
 
-        [TestMethod]
+        [Fact]
         public void SettersRejectNull()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
-            TestUtil.AssertArgumentNullException(() => builder.SetOptionalString(null));
-            TestUtil.AssertArgumentNullException(() => builder.SetOptionalBytes(null));
-            TestUtil.AssertArgumentNullException(
+            Assert.Throws<ArgumentNullException>(() => builder.SetOptionalString(null));
+            Assert.Throws<ArgumentNullException>(() => builder.SetOptionalBytes(null));
+            Assert.Throws<ArgumentNullException>(
                 () => builder.SetOptionalNestedMessage((TestAllTypes.Types.NestedMessage) null));
-            TestUtil.AssertArgumentNullException(
+            Assert.Throws<ArgumentNullException>(
                 () => builder.SetOptionalNestedMessage((TestAllTypes.Types.NestedMessage.Builder) null));
-            TestUtil.AssertArgumentNullException(() => builder.AddRepeatedString(null));
-            TestUtil.AssertArgumentNullException(() => builder.AddRepeatedBytes(null));
-            TestUtil.AssertArgumentNullException(
+            Assert.Throws<ArgumentNullException>(() => builder.AddRepeatedString(null));
+            Assert.Throws<ArgumentNullException>(() => builder.AddRepeatedBytes(null));
+            Assert.Throws<ArgumentNullException>(
                 () => builder.AddRepeatedNestedMessage((TestAllTypes.Types.NestedMessage) null));
-            TestUtil.AssertArgumentNullException(
+            Assert.Throws<ArgumentNullException>(
                 () => builder.AddRepeatedNestedMessage((TestAllTypes.Types.NestedMessage.Builder) null));
         }
 
-        [TestMethod]
+        [Fact]
         public void RepeatedSetters()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
@@ -155,7 +137,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertRepeatedFieldsModified(message);
         }
 
-        [TestMethod]
+        [Fact]
         public void RepeatedAppend()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
@@ -169,26 +151,26 @@ namespace Google.ProtocolBuffers
             TestAllTypes message = builder.Build();
             TestUtil.AssertEqual(message.RepeatedInt32List, new int[] {1, 2, 3, 4});
             TestUtil.AssertEqual(message.RepeatedForeignEnumList, new ForeignEnum[] {ForeignEnum.FOREIGN_BAZ});
-            Assert.AreEqual(1, message.RepeatedForeignMessageCount);
-            Assert.AreEqual(12, message.GetRepeatedForeignMessage(0).C);
+            Assert.Equal(1, message.RepeatedForeignMessageCount);
+            Assert.Equal(12, message.GetRepeatedForeignMessage(0).C);
         }
 
-        [TestMethod]
+        [Fact]
         public void RepeatedAppendRejectsNull()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
 
             ForeignMessage foreignMessage = ForeignMessage.CreateBuilder().SetC(12).Build();
-            TestUtil.AssertArgumentNullException(
+            Assert.Throws<ArgumentNullException>(
                 () => builder.AddRangeRepeatedForeignMessage(new[] {foreignMessage, null}));
-            TestUtil.AssertArgumentNullException(() => builder.AddRangeRepeatedForeignMessage(null));
-            TestUtil.AssertArgumentNullException(() => builder.AddRangeRepeatedForeignEnum(null));
-            TestUtil.AssertArgumentNullException(() => builder.AddRangeRepeatedString(new[] {"one", null}));
-            TestUtil.AssertArgumentNullException(
+            Assert.Throws<ArgumentNullException>(() => builder.AddRangeRepeatedForeignMessage(null));
+            Assert.Throws<ArgumentNullException>(() => builder.AddRangeRepeatedForeignEnum(null));
+            Assert.Throws<ArgumentNullException>(() => builder.AddRangeRepeatedString(new[] {"one", null}));
+            Assert.Throws<ArgumentNullException>(
                 () => builder.AddRangeRepeatedBytes(new[] {TestUtil.ToBytes("one"), null}));
         }
 
-        [TestMethod]
+        [Fact]
         public void SettingForeignMessageUsingBuilder()
         {
             TestAllTypes message = TestAllTypes.CreateBuilder()
@@ -199,10 +181,10 @@ namespace Google.ProtocolBuffers
                 // Create expected version passing foreign message instance explicitly.
                 .SetOptionalForeignMessage(ForeignMessage.CreateBuilder().SetC(123).Build())
                 .Build();
-            Assert.AreEqual(expectedMessage, message);
+            Assert.Equal(expectedMessage, message);
         }
 
-        [TestMethod]
+        [Fact]
         public void SettingRepeatedForeignMessageUsingBuilder()
         {
             TestAllTypes message = TestAllTypes.CreateBuilder()
@@ -213,10 +195,10 @@ namespace Google.ProtocolBuffers
                 // Create expected version passing foreign message instance explicitly.
                 .AddRepeatedForeignMessage(ForeignMessage.CreateBuilder().SetC(456).Build())
                 .Build();
-            Assert.AreEqual(expectedMessage, message);
+            Assert.Equal(expectedMessage, message);
         }
 
-        [TestMethod]
+        [Fact]
         public void SettingRepeatedValuesUsingRangeInCollectionInitializer()
         {
             int[] values = {1, 2, 3};
@@ -224,29 +206,29 @@ namespace Google.ProtocolBuffers
                                        {
                                            RepeatedSint32List = {values}
                                        }.Build();
-            Assert.IsTrue(Lists.Equals(values, message.RepeatedSint32List));
+            Assert.True(Lists.Equals(values, message.RepeatedSint32List));
         }
 
-        [TestMethod]
+        [Fact]
         public void SettingRepeatedValuesUsingIndividualValuesInCollectionInitializer()
         {
             TestAllTypes message = new TestAllTypes.Builder
                                        {
                                            RepeatedSint32List = {6, 7}
                                        }.Build();
-            Assert.IsTrue(Lists.Equals(new int[] {6, 7}, message.RepeatedSint32List));
+            Assert.True(Lists.Equals(new int[] {6, 7}, message.RepeatedSint32List));
         }
 
-        [TestMethod]
+        [Fact]
         public void Defaults()
         {
             TestUtil.AssertClear(TestAllTypes.DefaultInstance);
             TestUtil.AssertClear(TestAllTypes.CreateBuilder().Build());
 
-            Assert.AreEqual("\u1234", TestExtremeDefaultValues.DefaultInstance.Utf8String);
+            Assert.Equal("\u1234", TestExtremeDefaultValues.DefaultInstance.Utf8String);
         }
 
-        [TestMethod]
+        [Fact]
         public void ReflectionGetters()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
@@ -255,7 +237,7 @@ namespace Google.ProtocolBuffers
             reflectionTester.AssertAllFieldsSetViaReflection(message);
         }
 
-        [TestMethod]
+        [Fact]
         public void ReflectionSetters()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
@@ -264,7 +246,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertAllFieldsSet(message);
         }
 
-        [TestMethod]
+        [Fact]
         public void ReflectionClear()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
@@ -274,14 +256,14 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertClear(message);
         }
 
-        [TestMethod]
+        [Fact]
         public void ReflectionSettersRejectNull()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
             reflectionTester.AssertReflectionSettersRejectNull(builder);
         }
 
-        [TestMethod]
+        [Fact]
         public void ReflectionRepeatedSetters()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
@@ -291,14 +273,14 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertRepeatedFieldsModified(message);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestReflectionRepeatedSettersRejectNull()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
             reflectionTester.AssertReflectionRepeatedSettersRejectNull(builder);
         }
 
-        [TestMethod]
+        [Fact]
         public void ReflectionDefaults()
         {
             TestUtil.TestInMultipleCultures(() =>
@@ -313,7 +295,7 @@ namespace Google.ProtocolBuffers
         // =================================================================
         // Extensions.
 
-        [TestMethod]
+        [Fact]
         public void ExtensionAccessors()
         {
             TestAllExtensions.Builder builder = TestAllExtensions.CreateBuilder();
@@ -322,7 +304,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertAllExtensionsSet(message);
         }
 
-        [TestMethod]
+        [Fact]
         public void ExtensionRepeatedSetters()
         {
             TestAllExtensions.Builder builder = TestAllExtensions.CreateBuilder();
@@ -332,14 +314,14 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertRepeatedExtensionsModified(message);
         }
 
-        [TestMethod]
+        [Fact]
         public void ExtensionDefaults()
         {
             TestUtil.AssertExtensionsClear(TestAllExtensions.DefaultInstance);
             TestUtil.AssertExtensionsClear(TestAllExtensions.CreateBuilder().Build());
         }
 
-        [TestMethod]
+        [Fact]
         public void ExtensionReflectionGetters()
         {
             TestAllExtensions.Builder builder = TestAllExtensions.CreateBuilder();
@@ -348,7 +330,7 @@ namespace Google.ProtocolBuffers
             extensionsReflectionTester.AssertAllFieldsSetViaReflection(message);
         }
 
-        [TestMethod]
+        [Fact]
         public void ExtensionReflectionSetters()
         {
             TestAllExtensions.Builder builder = TestAllExtensions.CreateBuilder();
@@ -357,14 +339,14 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertAllExtensionsSet(message);
         }
 
-        [TestMethod]
+        [Fact]
         public void ExtensionReflectionSettersRejectNull()
         {
             TestAllExtensions.Builder builder = TestAllExtensions.CreateBuilder();
             extensionsReflectionTester.AssertReflectionSettersRejectNull(builder);
         }
 
-        [TestMethod]
+        [Fact]
         public void ExtensionReflectionRepeatedSetters()
         {
             TestAllExtensions.Builder builder = TestAllExtensions.CreateBuilder();
@@ -374,14 +356,14 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertRepeatedExtensionsModified(message);
         }
 
-        [TestMethod]
+        [Fact]
         public void ExtensionReflectionRepeatedSettersRejectNull()
         {
             TestAllExtensions.Builder builder = TestAllExtensions.CreateBuilder();
             extensionsReflectionTester.AssertReflectionRepeatedSettersRejectNull(builder);
         }
 
-        [TestMethod]
+        [Fact]
         public void ExtensionReflectionDefaults()
         {
             TestUtil.TestInMultipleCultures(() =>
@@ -393,33 +375,33 @@ namespace Google.ProtocolBuffers
                                                 });
         }
 
-        [TestMethod]
+        [Fact]
         public void ClearExtension()
         {
             // ClearExtension() is not actually used in TestUtil, so try it manually.
-            Assert.IsFalse(TestAllExtensions.CreateBuilder()
+            Assert.False(TestAllExtensions.CreateBuilder()
                                .SetExtension(Unittest.OptionalInt32Extension, 1)
                                .ClearExtension(Unittest.OptionalInt32Extension)
                                .HasExtension(Unittest.OptionalInt32Extension));
-            Assert.AreEqual(0, TestAllExtensions.CreateBuilder()
+            Assert.Equal(0, TestAllExtensions.CreateBuilder()
                                    .AddExtension(Unittest.RepeatedInt32Extension, 1)
                                    .ClearExtension(Unittest.RepeatedInt32Extension)
                                    .GetExtensionCount(Unittest.RepeatedInt32Extension));
         }
 
-        [TestMethod]
+        [Fact]
         public void ExtensionMergeFrom()
         {
             TestAllExtensions original = TestAllExtensions.CreateBuilder()
                 .SetExtension(Unittest.OptionalInt32Extension, 1).Build();
             TestAllExtensions merged =
                 TestAllExtensions.CreateBuilder().MergeFrom(original).Build();
-            Assert.IsTrue((merged.HasExtension(Unittest.OptionalInt32Extension)));
-            Assert.AreEqual(1, (int) merged.GetExtension(Unittest.OptionalInt32Extension));
+            Assert.True((merged.HasExtension(Unittest.OptionalInt32Extension)));
+            Assert.Equal(1, (int) merged.GetExtension(Unittest.OptionalInt32Extension));
         }
 
         /* Removed multiple files option for the moment
-    [TestMethod]
+    [Fact]
     public void MultipleFilesOption() {
       // We mostly just want to check that things compile.
       MessageWithNoOuter message = MessageWithNoOuter.CreateBuilder()
@@ -428,63 +410,63 @@ namespace Google.ProtocolBuffers
           .SetNestedEnum(MessageWithNoOuter.Types.NestedEnum.BAZ)
           .SetForeignEnum(EnumWithNoOuter.BAR)
           .Build();
-      Assert.AreEqual(message, MessageWithNoOuter.ParseFrom(message.ToByteString()));
+      Assert.Equal(message, MessageWithNoOuter.ParseFrom(message.ToByteString()));
 
-      Assert.AreEqual(MultiFileProto.DescriptorProtoFile, MessageWithNoOuter.DescriptorProtoFile.File);
+      Assert.Equal(MultiFileProto.DescriptorProtoFile, MessageWithNoOuter.DescriptorProtoFile.File);
 
       FieldDescriptor field = MessageWithNoOuter.DescriptorProtoFile.FindDescriptor<FieldDescriptor>("foreign_enum");
-      Assert.AreEqual(MultiFileProto.DescriptorProtoFile.FindTypeByName<EnumDescriptor>("EnumWithNoOuter")
+      Assert.Equal(MultiFileProto.DescriptorProtoFile.FindTypeByName<EnumDescriptor>("EnumWithNoOuter")
         .FindValueByNumber((int)EnumWithNoOuter.BAR), message[field]);
 
-      Assert.AreEqual(MultiFileProto.DescriptorProtoFile, ServiceWithNoOuter.DescriptorProtoFile.File);
+      Assert.Equal(MultiFileProto.DescriptorProtoFile, ServiceWithNoOuter.DescriptorProtoFile.File);
 
-      Assert.IsFalse(TestAllExtensions.DefaultInstance.HasExtension(MultiFileProto.ExtensionWithOuter));
+      Assert.False(TestAllExtensions.DefaultInstance.HasExtension(MultiFileProto.ExtensionWithOuter));
     }*/
 
-        [TestMethod]
+        [Fact]
         public void OptionalFieldWithRequiredSubfieldsOptimizedForSize()
         {
             TestOptionalOptimizedForSize message = TestOptionalOptimizedForSize.DefaultInstance;
-            Assert.IsTrue(message.IsInitialized);
+            Assert.True(message.IsInitialized);
 
             message = TestOptionalOptimizedForSize.CreateBuilder().SetO(
                 TestRequiredOptimizedForSize.CreateBuilder().BuildPartial()
                 ).BuildPartial();
-            Assert.IsFalse(message.IsInitialized);
+            Assert.False(message.IsInitialized);
 
             message = TestOptionalOptimizedForSize.CreateBuilder().SetO(
                 TestRequiredOptimizedForSize.CreateBuilder().SetX(5).BuildPartial()
                 ).BuildPartial();
-            Assert.IsTrue(message.IsInitialized);
+            Assert.True(message.IsInitialized);
         }
 
-        [TestMethod]
+        [Fact]
         public void OptimizedForSizeMergeUsesAllFieldsFromTarget()
         {
             TestOptimizedForSize withFieldSet = new TestOptimizedForSize.Builder {I = 10}.Build();
             TestOptimizedForSize.Builder builder = new TestOptimizedForSize.Builder();
             builder.MergeFrom(withFieldSet);
             TestOptimizedForSize built = builder.Build();
-            Assert.AreEqual(10, built.I);
+            Assert.Equal(10, built.I);
         }
 
-        [TestMethod]
+        [Fact]
         public void UninitializedExtensionInOptimizedForSizeMakesMessageUninitialized()
         {
             TestOptimizedForSize.Builder builder = new TestOptimizedForSize.Builder();
             builder.SetExtension(TestOptimizedForSize.TestExtension2,
                                  new TestRequiredOptimizedForSize.Builder().BuildPartial());
-            Assert.IsFalse(builder.IsInitialized);
-            Assert.IsFalse(builder.BuildPartial().IsInitialized);
+            Assert.False(builder.IsInitialized);
+            Assert.False(builder.BuildPartial().IsInitialized);
 
             builder = new TestOptimizedForSize.Builder();
             builder.SetExtension(TestOptimizedForSize.TestExtension2,
                                  new TestRequiredOptimizedForSize.Builder {X = 10}.BuildPartial());
-            Assert.IsTrue(builder.IsInitialized);
-            Assert.IsTrue(builder.BuildPartial().IsInitialized);
+            Assert.True(builder.IsInitialized);
+            Assert.True(builder.BuildPartial().IsInitialized);
         }
 
-        [TestMethod]
+        [Fact]
         public void ToBuilder()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
@@ -493,40 +475,40 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertAllFieldsSet(message.ToBuilder().Build());
         }
 
-        [TestMethod]
+        [Fact]
         public void FieldConstantValues()
         {
-            Assert.AreEqual(TestAllTypes.Types.NestedMessage.BbFieldNumber, 1);
-            Assert.AreEqual(TestAllTypes.OptionalInt32FieldNumber, 1);
-            Assert.AreEqual(TestAllTypes.OptionalGroupFieldNumber, 16);
-            Assert.AreEqual(TestAllTypes.OptionalNestedMessageFieldNumber, 18);
-            Assert.AreEqual(TestAllTypes.OptionalNestedEnumFieldNumber, 21);
-            Assert.AreEqual(TestAllTypes.RepeatedInt32FieldNumber, 31);
-            Assert.AreEqual(TestAllTypes.RepeatedGroupFieldNumber, 46);
-            Assert.AreEqual(TestAllTypes.RepeatedNestedMessageFieldNumber, 48);
-            Assert.AreEqual(TestAllTypes.RepeatedNestedEnumFieldNumber, 51);
+            Assert.Equal(TestAllTypes.Types.NestedMessage.BbFieldNumber, 1);
+            Assert.Equal(TestAllTypes.OptionalInt32FieldNumber, 1);
+            Assert.Equal(TestAllTypes.OptionalGroupFieldNumber, 16);
+            Assert.Equal(TestAllTypes.OptionalNestedMessageFieldNumber, 18);
+            Assert.Equal(TestAllTypes.OptionalNestedEnumFieldNumber, 21);
+            Assert.Equal(TestAllTypes.RepeatedInt32FieldNumber, 31);
+            Assert.Equal(TestAllTypes.RepeatedGroupFieldNumber, 46);
+            Assert.Equal(TestAllTypes.RepeatedNestedMessageFieldNumber, 48);
+            Assert.Equal(TestAllTypes.RepeatedNestedEnumFieldNumber, 51);
         }
 
-        [TestMethod]
+        [Fact]
         public void ExtensionConstantValues()
         {
-            Assert.AreEqual(TestRequired.SingleFieldNumber, 1000);
-            Assert.AreEqual(TestRequired.MultiFieldNumber, 1001);
-            Assert.AreEqual(Unittest.OptionalInt32ExtensionFieldNumber, 1);
-            Assert.AreEqual(Unittest.OptionalGroupExtensionFieldNumber, 16);
-            Assert.AreEqual(Unittest.OptionalNestedMessageExtensionFieldNumber, 18);
-            Assert.AreEqual(Unittest.OptionalNestedEnumExtensionFieldNumber, 21);
-            Assert.AreEqual(Unittest.RepeatedInt32ExtensionFieldNumber, 31);
-            Assert.AreEqual(Unittest.RepeatedGroupExtensionFieldNumber, 46);
-            Assert.AreEqual(Unittest.RepeatedNestedMessageExtensionFieldNumber, 48);
-            Assert.AreEqual(Unittest.RepeatedNestedEnumExtensionFieldNumber, 51);
+            Assert.Equal(TestRequired.SingleFieldNumber, 1000);
+            Assert.Equal(TestRequired.MultiFieldNumber, 1001);
+            Assert.Equal(Unittest.OptionalInt32ExtensionFieldNumber, 1);
+            Assert.Equal(Unittest.OptionalGroupExtensionFieldNumber, 16);
+            Assert.Equal(Unittest.OptionalNestedMessageExtensionFieldNumber, 18);
+            Assert.Equal(Unittest.OptionalNestedEnumExtensionFieldNumber, 21);
+            Assert.Equal(Unittest.RepeatedInt32ExtensionFieldNumber, 31);
+            Assert.Equal(Unittest.RepeatedGroupExtensionFieldNumber, 46);
+            Assert.Equal(Unittest.RepeatedNestedMessageExtensionFieldNumber, 48);
+            Assert.Equal(Unittest.RepeatedNestedEnumExtensionFieldNumber, 51);
         }
 
-        [TestMethod]
+        [Fact]
         public void EmptyPackedValue()
         {
             TestPackedTypes empty = new TestPackedTypes.Builder().Build();
-            Assert.AreEqual(0, empty.SerializedSize);
+            Assert.Equal(0, empty.SerializedSize);
         }
     }
 }

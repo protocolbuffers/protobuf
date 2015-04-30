@@ -36,40 +36,39 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Google.ProtocolBuffers.Collections
 {
-    [TestClass]
     public class PopsicleListTest
     {
-        [TestMethod]
+        [Fact]
         public void MutatingOperationsOnFrozenList()
         {
             PopsicleList<string> list = new PopsicleList<string>();
             list.MakeReadOnly();
-            TestUtil.AssertNotSupported(() => list.Add(""));
-            TestUtil.AssertNotSupported(() => list.Clear());
-            TestUtil.AssertNotSupported(() => list.Insert(0, ""));
-            TestUtil.AssertNotSupported(() => list.Remove(""));
-            TestUtil.AssertNotSupported(() => list.RemoveAt(0));
-            TestUtil.AssertNotSupported(() => list.Add(new[] { "", "" }));
+            Assert.Throws<NotSupportedException>(() => list.Add(""));
+            Assert.Throws<NotSupportedException>(() => list.Clear());
+            Assert.Throws<NotSupportedException>(() => list.Insert(0, ""));
+            Assert.Throws<NotSupportedException>(() => list.Remove(""));
+            Assert.Throws<NotSupportedException>(() => list.RemoveAt(0));
+            Assert.Throws<NotSupportedException>(() => list.Add(new[] { "", "" }));
         }
 
-        [TestMethod]
+        [Fact]
         public void NonMutatingOperationsOnFrozenList()
         {
             PopsicleList<string> list = new PopsicleList<string>();
             list.MakeReadOnly();
-            Assert.IsFalse(list.Contains(""));
-            Assert.AreEqual(0, list.Count);
+            Assert.False(list.Contains(""));
+            Assert.Equal(0, list.Count);
             list.CopyTo(new string[5], 0);
             list.GetEnumerator();
-            Assert.AreEqual(-1, list.IndexOf(""));
-            Assert.IsTrue(list.IsReadOnly);
+            Assert.Equal(-1, list.IndexOf(""));
+            Assert.True(list.IsReadOnly);
         }
 
-        [TestMethod]
+        [Fact]
         public void MutatingOperationsOnFluidList()
         {
             PopsicleList<string> list = new PopsicleList<string>();
@@ -81,73 +80,46 @@ namespace Google.ProtocolBuffers.Collections
             list.RemoveAt(0);
         }
 
-        [TestMethod]
+        [Fact]
         public void NonMutatingOperationsOnFluidList()
         {
             PopsicleList<string> list = new PopsicleList<string>();
-            Assert.IsFalse(list.Contains(""));
-            Assert.AreEqual(0, list.Count);
+            Assert.False(list.Contains(""));
+            Assert.Equal(0, list.Count);
             list.CopyTo(new string[5], 0);
             list.GetEnumerator();
-            Assert.AreEqual(-1, list.IndexOf(""));
-            Assert.IsFalse(list.IsReadOnly);
+            Assert.Equal(-1, list.IndexOf(""));
+            Assert.False(list.IsReadOnly);
         }
 
-        [TestMethod]
+        [Fact]
         public void DoesNotAddNullEnumerable()
         {
             PopsicleList<string> list = new PopsicleList<string>();
-            try
-            {
-                list.Add((IEnumerable<string>)null);
-            }
-            catch (ArgumentNullException)
-            { return; }
-
-            Assert.Fail("List should not allow nulls.");
+            Assert.Throws<ArgumentNullException>(() => list.Add((IEnumerable<string>) null));
         }
 
-        [TestMethod]
+        [Fact]
         public void DoesNotAddRangeWithNull()
         {
             PopsicleList<string> list = new PopsicleList<string>();
-            try
-            {
-                list.Add(new[] { "a", "b", null });
-            }
-            catch (ArgumentNullException)
-            { return; }
-
-            Assert.Fail("List should not allow nulls.");
+            // TODO(jonskeet): Change to ArgumentException? The argument isn't null...
+            Assert.Throws<ArgumentNullException>(() => list.Add(new[] {"a", "b", null}));
         }
 
-        [TestMethod]
+        [Fact]
         public void DoesNotAddNull()
         {
             PopsicleList<string> list = new PopsicleList<string>();
-            try
-            {
-                list.Add((string)null);
-            }
-            catch (ArgumentNullException)
-            { return; }
-
-            Assert.Fail("List should not allow nulls.");
+            Assert.Throws<ArgumentNullException>(() => list.Add((string) null));
         }
 
-        [TestMethod]
+        [Fact]
         public void DoesNotSetNull()
         {
             PopsicleList<string> list = new PopsicleList<string>();
             list.Add("a");
-            try
-            {
-                list[0] = null;
-            }
-            catch (ArgumentNullException)
-            { return; }
-
-            Assert.Fail("List should not allow nulls.");
+            Assert.Throws<ArgumentNullException>(() => list[0] = null);
         }
     }
 }

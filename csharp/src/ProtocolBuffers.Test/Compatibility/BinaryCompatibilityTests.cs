@@ -1,9 +1,7 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Google.ProtocolBuffers.Compatibility
 {
-    [TestClass]
     public class BinaryCompatibilityTests : CompatibilityTests
     {
         protected override object SerializeMessage<TMessage, TBuilder>(TMessage message)

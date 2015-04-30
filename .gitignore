@@ -79,3 +79,6 @@ javanano/target
 vsprojects/Debug
 vsprojects/Release
 
+# NuGet packages: we want the repository configuration, but not the
+# packages themselves.
+/csharp/src/packages/*/

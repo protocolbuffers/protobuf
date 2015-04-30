@@ -37,7 +37,7 @@
 using System.IO;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Google.ProtocolBuffers
 {
@@ -45,7 +45,6 @@ namespace Google.ProtocolBuffers
     /// Miscellaneous tests for message operations that apply to both
     /// generated and dynamic messages.
     /// </summary>
-    [TestClass]
     public class MessageTest
     {
         // =================================================================
@@ -77,12 +76,12 @@ namespace Google.ProtocolBuffers
             "repeated_string: \"qux\"\n" +
             "repeated_string: \"bar\"\n";
 
-        [TestMethod]
+        [Fact]
         public void MergeFrom()
         {
             TestAllTypes result = TestAllTypes.CreateBuilder(MergeDest).MergeFrom(MergeSource).Build();
 
-            Assert.AreEqual(MergeResultText, result.ToString());
+            Assert.Equal(MergeResultText, result.ToString());
         }
 
         /// <summary>
@@ -90,20 +89,20 @@ namespace Google.ProtocolBuffers
         /// As long as they have the same descriptor, this should work, but it is an
         /// entirely different code path.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void MergeFromDynamic()
         {
             TestAllTypes result = (TestAllTypes) TestAllTypes.CreateBuilder(MergeDest)
                                                      .MergeFrom(DynamicMessage.CreateBuilder(MergeSource).Build())
                                                      .Build();
 
-            Assert.AreEqual(MergeResultText, result.ToString());
+            Assert.Equal(MergeResultText, result.ToString());
         }
 
         /// <summary>
         /// Test merging two DynamicMessages.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void DynamicMergeFrom()
         {
             DynamicMessage result = (DynamicMessage) DynamicMessage.CreateBuilder(MergeDest)
@@ -112,7 +111,7 @@ namespace Google.ProtocolBuffers
                                                              DynamicMessage.CreateBuilder(MergeSource).Build())
                                                          .Build();
 
-            Assert.AreEqual(MergeResultText, result.ToString());
+            Assert.Equal(MergeResultText, result.ToString());
         }
 
         // =================================================================
@@ -127,157 +126,143 @@ namespace Google.ProtocolBuffers
                                                                                C = 3
                                                                            }.Build();
 
-        [TestMethod]
+        [Fact]
         public void Initialization()
         {
             TestRequired.Builder builder = TestRequired.CreateBuilder();
 
-            Assert.IsFalse(builder.IsInitialized);
+            Assert.False(builder.IsInitialized);
             builder.A = 1;
-            Assert.IsFalse(builder.IsInitialized);
+            Assert.False(builder.IsInitialized);
             builder.B = 1;
-            Assert.IsFalse(builder.IsInitialized);
+            Assert.False(builder.IsInitialized);
             builder.C = 1;
-            Assert.IsTrue(builder.IsInitialized);
+            Assert.True(builder.IsInitialized);
         }
 
-        [TestMethod]
+        [Fact]
         public void UninitializedBuilderToString()
         {
             TestRequired.Builder builder = TestRequired.CreateBuilder().SetA(1);
-            Assert.AreEqual("a: 1\n", builder.ToString());
+            Assert.Equal("a: 1\n", builder.ToString());
         }
 
-        [TestMethod]
+        [Fact]
         public void RequiredForeign()
         {
             TestRequiredForeign.Builder builder = TestRequiredForeign.CreateBuilder();
 
-            Assert.IsTrue(builder.IsInitialized);
+            Assert.True(builder.IsInitialized);
 
             builder.SetOptionalMessage(TestRequiredUninitialized);
-            Assert.IsFalse(builder.IsInitialized);
+            Assert.False(builder.IsInitialized);
 
             builder.SetOptionalMessage(TestRequiredInitialized);
-            Assert.IsTrue(builder.IsInitialized);
+            Assert.True(builder.IsInitialized);
 
             builder.AddRepeatedMessage(TestRequiredUninitialized);
-            Assert.IsFalse(builder.IsInitialized);
+            Assert.False(builder.IsInitialized);
 
             builder.SetRepeatedMessage(0, TestRequiredInitialized);
-            Assert.IsTrue(builder.IsInitialized);
+            Assert.True(builder.IsInitialized);
         }
 
-        [TestMethod]
+        [Fact]
         public void RequiredExtension()
         {
             TestAllExtensions.Builder builder = TestAllExtensions.CreateBuilder();
 
-            Assert.IsTrue(builder.IsInitialized);
+            Assert.True(builder.IsInitialized);
 
             builder.SetExtension(TestRequired.Single, TestRequiredUninitialized);
-            Assert.IsFalse(builder.IsInitialized);
+            Assert.False(builder.IsInitialized);
 
             builder.SetExtension(TestRequired.Single, TestRequiredInitialized);
-            Assert.IsTrue(builder.IsInitialized);
+            Assert.True(builder.IsInitialized);
 
             builder.AddExtension(TestRequired.Multi, TestRequiredUninitialized);
-            Assert.IsFalse(builder.IsInitialized);
+            Assert.False(builder.IsInitialized);
 
             builder.SetExtension(TestRequired.Multi, 0, TestRequiredInitialized);
-            Assert.IsTrue(builder.IsInitialized);
+            Assert.True(builder.IsInitialized);
         }
 
-        [TestMethod]
+        [Fact]
         public void RequiredDynamic()
         {
             MessageDescriptor descriptor = TestRequired.Descriptor;
             DynamicMessage.Builder builder = DynamicMessage.CreateBuilder(descriptor);
 
-            Assert.IsFalse(builder.IsInitialized);
+            Assert.False(builder.IsInitialized);
             builder[descriptor.FindDescriptor<FieldDescriptor>("a")] = 1;
-            Assert.IsFalse(builder.IsInitialized);
+            Assert.False(builder.IsInitialized);
             builder[descriptor.FindDescriptor<FieldDescriptor>("b")] = 1;
-            Assert.IsFalse(builder.IsInitialized);
+            Assert.False(builder.IsInitialized);
             builder[descriptor.FindDescriptor<FieldDescriptor>("c")] = 1;
-            Assert.IsTrue(builder.IsInitialized);
+            Assert.True(builder.IsInitialized);
         }
 
-        [TestMethod]
+        [Fact]
         public void RequiredDynamicForeign()
         {
             MessageDescriptor descriptor = TestRequiredForeign.Descriptor;
             DynamicMessage.Builder builder = DynamicMessage.CreateBuilder(descriptor);
 
-            Assert.IsTrue(builder.IsInitialized);
+            Assert.True(builder.IsInitialized);
 
             builder[descriptor.FindDescriptor<FieldDescriptor>("optional_message")] = TestRequiredUninitialized;
-            Assert.IsFalse(builder.IsInitialized);
+            Assert.False(builder.IsInitialized);
 
             builder[descriptor.FindDescriptor<FieldDescriptor>("optional_message")] = TestRequiredInitialized;
-            Assert.IsTrue(builder.IsInitialized);
+            Assert.True(builder.IsInitialized);
 
             builder.AddRepeatedField(descriptor.FindDescriptor<FieldDescriptor>("repeated_message"),
                                      TestRequiredUninitialized);
-            Assert.IsFalse(builder.IsInitialized);
+            Assert.False(builder.IsInitialized);
 
             builder.SetRepeatedField(descriptor.FindDescriptor<FieldDescriptor>("repeated_message"), 0,
                                      TestRequiredInitialized);
-            Assert.IsTrue(builder.IsInitialized);
+            Assert.True(builder.IsInitialized);
         }
 
-        [TestMethod]
+        [Fact]
         public void UninitializedException()
         {
-            try
-            {
-                TestRequired.CreateBuilder().Build();
-                Assert.Fail("Should have thrown an exception.");
-            }
-            catch (UninitializedMessageException e)
-            {
-                Assert.AreEqual("Message missing required fields: a, b, c", e.Message);
-            }
+            var e = Assert.Throws<UninitializedMessageException>(() => TestRequired.CreateBuilder().Build());
+            Assert.Equal("Message missing required fields: a, b, c", e.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public void BuildPartial()
         {
             // We're mostly testing that no exception is thrown.
             TestRequired message = TestRequired.CreateBuilder().BuildPartial();
-            Assert.IsFalse(message.IsInitialized);
+            Assert.False(message.IsInitialized);
         }
 
-        [TestMethod]
+        [Fact]
         public void NestedUninitializedException()
         {
-            try
-            {
-                TestRequiredForeign.CreateBuilder()
+            var e = Assert.Throws<UninitializedMessageException>(() => TestRequiredForeign.CreateBuilder()
                     .SetOptionalMessage(TestRequiredUninitialized)
                     .AddRepeatedMessage(TestRequiredUninitialized)
                     .AddRepeatedMessage(TestRequiredUninitialized)
-                    .Build();
-                Assert.Fail("Should have thrown an exception.");
-            }
-            catch (UninitializedMessageException e)
-            {
-                Assert.AreEqual(
-                    "Message missing required fields: " +
-                    "optional_message.a, " +
-                    "optional_message.b, " +
-                    "optional_message.c, " +
-                    "repeated_message[0].a, " +
-                    "repeated_message[0].b, " +
-                    "repeated_message[0].c, " +
-                    "repeated_message[1].a, " +
-                    "repeated_message[1].b, " +
-                    "repeated_message[1].c",
-                    e.Message);
-            }
+                    .Build());
+            Assert.Equal(
+                "Message missing required fields: " +
+                "optional_message.a, " +
+                "optional_message.b, " +
+                "optional_message.c, " +
+                "repeated_message[0].a, " +
+                "repeated_message[0].b, " +
+                "repeated_message[0].c, " +
+                "repeated_message[1].a, " +
+                "repeated_message[1].b, " +
+                "repeated_message[1].c",
+                e.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public void BuildNestedPartial()
         {
             // We're mostly testing that no exception is thrown.
@@ -287,24 +272,17 @@ namespace Google.ProtocolBuffers
                     .AddRepeatedMessage(TestRequiredUninitialized)
                     .AddRepeatedMessage(TestRequiredUninitialized)
                     .BuildPartial();
-            Assert.IsFalse(message.IsInitialized);
+            Assert.False(message.IsInitialized);
         }
 
-        [TestMethod]
-        public void ParseUnititialized()
+        [Fact]
+        public void ParseUninitialized()
         {
-            try
-            {
-                TestRequired.ParseFrom(ByteString.Empty);
-                Assert.Fail("Should have thrown an exception.");
-            }
-            catch (InvalidProtocolBufferException e)
-            {
-                Assert.AreEqual("Message missing required fields: a, b, c", e.Message);
-            }
+            var e = Assert.Throws<InvalidProtocolBufferException>(() => TestRequired.ParseFrom(ByteString.Empty));
+            Assert.Equal("Message missing required fields: a, b, c", e.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public void ParseNestedUnititialized()
         {
             ByteString data =
@@ -314,66 +292,45 @@ namespace Google.ProtocolBuffers
                     .AddRepeatedMessage(TestRequiredUninitialized)
                     .BuildPartial().ToByteString();
 
-            try
-            {
-                TestRequiredForeign.ParseFrom(data);
-                Assert.Fail("Should have thrown an exception.");
-            }
-            catch (InvalidProtocolBufferException e)
-            {
-                Assert.AreEqual(
-                    "Message missing required fields: " +
-                    "optional_message.a, " +
-                    "optional_message.b, " +
-                    "optional_message.c, " +
-                    "repeated_message[0].a, " +
-                    "repeated_message[0].b, " +
-                    "repeated_message[0].c, " +
-                    "repeated_message[1].a, " +
-                    "repeated_message[1].b, " +
-                    "repeated_message[1].c",
-                    e.Message);
-            }
+            var e = Assert.Throws<InvalidProtocolBufferException>(() => TestRequiredForeign.ParseFrom(data));
+            Assert.Equal(
+                "Message missing required fields: " +
+                "optional_message.a, " +
+                "optional_message.b, " +
+                "optional_message.c, " +
+                "repeated_message[0].a, " +
+                "repeated_message[0].b, " +
+                "repeated_message[0].c, " +
+                "repeated_message[1].a, " +
+                "repeated_message[1].b, " +
+                "repeated_message[1].c",
+                e.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public void DynamicUninitializedException()
         {
-            try
-            {
-                DynamicMessage.CreateBuilder(TestRequired.Descriptor).Build();
-                Assert.Fail("Should have thrown an exception.");
-            }
-            catch (UninitializedMessageException e)
-            {
-                Assert.AreEqual("Message missing required fields: a, b, c", e.Message);
-            }
+            var e = Assert.Throws<UninitializedMessageException>(() => DynamicMessage.CreateBuilder(TestRequired.Descriptor).Build());
+            Assert.Equal("Message missing required fields: a, b, c", e.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public void DynamicBuildPartial()
         {
             // We're mostly testing that no exception is thrown.
             DynamicMessage message = DynamicMessage.CreateBuilder(TestRequired.Descriptor).BuildPartial();
-            Assert.IsFalse(message.Initialized);
+            Assert.False(message.Initialized);
         }
 
-        [TestMethod]
+        [Fact]
         public void DynamicParseUnititialized()
         {
-            try
-            {
-                MessageDescriptor descriptor = TestRequired.Descriptor;
-                DynamicMessage.ParseFrom(descriptor, ByteString.Empty);
-                Assert.Fail("Should have thrown an exception.");
-            }
-            catch (InvalidProtocolBufferException e)
-            {
-                Assert.AreEqual("Message missing required fields: a, b, c", e.Message);
-            }
+            MessageDescriptor descriptor = TestRequired.Descriptor;
+            var e = Assert.Throws<InvalidProtocolBufferException>(() => DynamicMessage.ParseFrom(descriptor, ByteString.Empty));
+            Assert.Equal("Message missing required fields: a, b, c", e.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public void PackedTypesWrittenDirectlyToStream()
         {
             TestPackedTypes message = new TestPackedTypes.Builder {PackedInt32List = {0, 1, 2}}.Build();
@@ -381,7 +338,7 @@ namespace Google.ProtocolBuffers
             message.WriteTo(stream);
             stream.Position = 0;
             TestPackedTypes readMessage = TestPackedTypes.ParseFrom(stream);
-            Assert.AreEqual(message, readMessage);
+            Assert.Equal(message, readMessage);
         }
     }
 }

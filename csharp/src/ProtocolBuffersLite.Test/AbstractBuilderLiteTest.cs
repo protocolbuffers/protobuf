@@ -34,19 +34,15 @@
 
 #endregion
 
-using System;
-using System.Collections.Generic;
 using System.IO;
-using Google.ProtocolBuffers;
 using Google.ProtocolBuffers.TestProtos;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Google.ProtocolBuffers
 {
-    [TestClass]
     public class AbstractBuilderLiteTest
     {
-        [TestMethod]
+        [Fact]
         public void TestMergeFromCodedInputStream()
         {
             TestAllTypesLite copy,
@@ -54,7 +50,7 @@ namespace Google.ProtocolBuffers
                                  .SetOptionalUint32(uint.MaxValue).Build();
 
             copy = TestAllTypesLite.DefaultInstance;
-            Assert.AreNotEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.NotEqual(msg.ToByteArray(), copy.ToByteArray());
 
             using (MemoryStream ms = new MemoryStream(msg.ToByteArray()))
             {
@@ -62,22 +58,22 @@ namespace Google.ProtocolBuffers
                 copy = copy.ToBuilder().MergeFrom(ci).Build();
             }
 
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void TestIBuilderLiteWeakClear()
         {
             TestAllTypesLite copy, msg = TestAllTypesLite.DefaultInstance;
 
             copy = msg.ToBuilder().SetOptionalString("Should be removed.").Build();
-            Assert.AreNotEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.NotEqual(msg.ToByteArray(), copy.ToByteArray());
 
             copy = (TestAllTypesLite) ((IBuilderLite) copy.ToBuilder()).WeakClear().WeakBuild();
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void TestBuilderLiteMergeFromCodedInputStream()
         {
             TestAllTypesLite copy,
@@ -85,14 +81,14 @@ namespace Google.ProtocolBuffers
                                  .SetOptionalString("Should be merged.").Build();
 
             copy = TestAllTypesLite.DefaultInstance;
-            Assert.AreNotEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.NotEqual(msg.ToByteArray(), copy.ToByteArray());
 
             copy =
                 copy.ToBuilder().MergeFrom(CodedInputStream.CreateInstance(new MemoryStream(msg.ToByteArray()))).Build();
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void TestBuilderLiteMergeDelimitedFrom()
         {
             TestAllTypesLite copy,
@@ -100,15 +96,15 @@ namespace Google.ProtocolBuffers
                                  .SetOptionalString("Should be merged.").Build();
 
             copy = TestAllTypesLite.DefaultInstance;
-            Assert.AreNotEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.NotEqual(msg.ToByteArray(), copy.ToByteArray());
             Stream s = new MemoryStream();
             msg.WriteDelimitedTo(s);
             s.Position = 0;
             copy = copy.ToBuilder().MergeDelimitedFrom(s).Build();
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void TestBuilderLiteMergeDelimitedFromExtensions()
         {
             TestAllExtensionsLite copy,
@@ -117,7 +113,7 @@ namespace Google.ProtocolBuffers
                                                     "Should be merged.").Build();
 
             copy = TestAllExtensionsLite.DefaultInstance;
-            Assert.AreNotEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.NotEqual(msg.ToByteArray(), copy.ToByteArray());
 
             Stream s = new MemoryStream();
             msg.WriteDelimitedTo(s);
@@ -127,11 +123,11 @@ namespace Google.ProtocolBuffers
             UnittestLite.RegisterAllExtensions(registry);
 
             copy = copy.ToBuilder().MergeDelimitedFrom(s, registry).Build();
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
-            Assert.AreEqual("Should be merged.", copy.GetExtension(UnittestLite.OptionalStringExtensionLite));
+            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
+            Assert.Equal("Should be merged.", copy.GetExtension(UnittestLite.OptionalStringExtensionLite));
         }
 
-        [TestMethod]
+        [Fact]
         public void TestBuilderLiteMergeFromStream()
         {
             TestAllTypesLite copy,
@@ -139,15 +135,15 @@ namespace Google.ProtocolBuffers
                                  .SetOptionalString("Should be merged.").Build();
 
             copy = TestAllTypesLite.DefaultInstance;
-            Assert.AreNotEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.NotEqual(msg.ToByteArray(), copy.ToByteArray());
             Stream s = new MemoryStream();
             msg.WriteTo(s);
             s.Position = 0;
             copy = copy.ToBuilder().MergeFrom(s).Build();
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void TestBuilderLiteMergeFromStreamExtensions()
         {
             TestAllExtensionsLite copy,
@@ -156,7 +152,7 @@ namespace Google.ProtocolBuffers
                                                     "Should be merged.").Build();
 
             copy = TestAllExtensionsLite.DefaultInstance;
-            Assert.AreNotEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.NotEqual(msg.ToByteArray(), copy.ToByteArray());
 
             Stream s = new MemoryStream();
             msg.WriteTo(s);
@@ -166,11 +162,11 @@ namespace Google.ProtocolBuffers
             UnittestLite.RegisterAllExtensions(registry);
 
             copy = copy.ToBuilder().MergeFrom(s, registry).Build();
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
-            Assert.AreEqual("Should be merged.", copy.GetExtension(UnittestLite.OptionalStringExtensionLite));
+            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
+            Assert.Equal("Should be merged.", copy.GetExtension(UnittestLite.OptionalStringExtensionLite));
         }
 
-        [TestMethod]
+        [Fact]
         public void TestIBuilderLiteWeakMergeFromIMessageLite()
         {
             TestAllTypesLite copy,
@@ -178,13 +174,13 @@ namespace Google.ProtocolBuffers
                                  .SetOptionalString("Should be merged.").Build();
 
             copy = TestAllTypesLite.DefaultInstance;
-            Assert.AreNotEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.NotEqual(msg.ToByteArray(), copy.ToByteArray());
 
             copy = (TestAllTypesLite) ((IBuilderLite) copy.ToBuilder()).WeakMergeFrom((IMessageLite) msg).WeakBuild();
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void TestIBuilderLiteWeakMergeFromByteString()
         {
             TestAllTypesLite copy,
@@ -192,13 +188,13 @@ namespace Google.ProtocolBuffers
                                  .SetOptionalString("Should be merged.").Build();
 
             copy = TestAllTypesLite.DefaultInstance;
-            Assert.AreNotEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.NotEqual(msg.ToByteArray(), copy.ToByteArray());
 
             copy = (TestAllTypesLite) ((IBuilderLite) copy.ToBuilder()).WeakMergeFrom(msg.ToByteString()).WeakBuild();
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void TestIBuilderLiteWeakMergeFromByteStringExtensions()
         {
             TestAllExtensionsLite copy,
@@ -207,12 +203,12 @@ namespace Google.ProtocolBuffers
                                                     "Should be merged.").Build();
 
             copy = TestAllExtensionsLite.DefaultInstance;
-            Assert.AreNotEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.NotEqual(msg.ToByteArray(), copy.ToByteArray());
 
             copy =
                 (TestAllExtensionsLite)
                 ((IBuilderLite) copy.ToBuilder()).WeakMergeFrom(msg.ToByteString(), ExtensionRegistry.Empty).WeakBuild();
-            Assert.AreNotEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.NotEqual(msg.ToByteArray(), copy.ToByteArray());
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
             UnittestLite.RegisterAllExtensions(registry);
@@ -220,11 +216,11 @@ namespace Google.ProtocolBuffers
             copy =
                 (TestAllExtensionsLite)
                 ((IBuilderLite) copy.ToBuilder()).WeakMergeFrom(msg.ToByteString(), registry).WeakBuild();
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
-            Assert.AreEqual("Should be merged.", copy.GetExtension(UnittestLite.OptionalStringExtensionLite));
+            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
+            Assert.Equal("Should be merged.", copy.GetExtension(UnittestLite.OptionalStringExtensionLite));
         }
 
-        [TestMethod]
+        [Fact]
         public void TestIBuilderLiteWeakMergeFromCodedInputStream()
         {
             TestAllTypesLite copy,
@@ -232,7 +228,7 @@ namespace Google.ProtocolBuffers
                                  .SetOptionalUint32(uint.MaxValue).Build();
 
             copy = TestAllTypesLite.DefaultInstance;
-            Assert.AreNotEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.NotEqual(msg.ToByteArray(), copy.ToByteArray());
 
             using (MemoryStream ms = new MemoryStream(msg.ToByteArray()))
             {
@@ -240,58 +236,58 @@ namespace Google.ProtocolBuffers
                 copy = (TestAllTypesLite) ((IBuilderLite) copy.ToBuilder()).WeakMergeFrom(ci).WeakBuild();
             }
 
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void TestIBuilderLiteWeakBuildPartial()
         {
             IBuilderLite builder = TestRequiredLite.CreateBuilder();
-            Assert.IsFalse(builder.IsInitialized);
+            Assert.False(builder.IsInitialized);
 
             IMessageLite msg = builder.WeakBuildPartial();
-            Assert.IsFalse(msg.IsInitialized);
+            Assert.False(msg.IsInitialized);
 
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), TestRequiredLite.DefaultInstance.ToByteArray());
+            Assert.Equal(msg.ToByteArray(), TestRequiredLite.DefaultInstance.ToByteArray());
         }
 
-        [TestMethod, ExpectedException(typeof(UninitializedMessageException))]
+        [Fact]
         public void TestIBuilderLiteWeakBuildUninitialized()
         {
             IBuilderLite builder = TestRequiredLite.CreateBuilder();
-            Assert.IsFalse(builder.IsInitialized);
-            builder.WeakBuild();
+            Assert.False(builder.IsInitialized);
+            Assert.Throws<UninitializedMessageException>(() => builder.WeakBuild());
         }
 
-        [TestMethod]
+        [Fact]
         public void TestIBuilderLiteWeakBuild()
         {
             IBuilderLite builder = TestRequiredLite.CreateBuilder()
                 .SetD(0)
                 .SetEn(ExtraEnum.EXLITE_BAZ);
-            Assert.IsTrue(builder.IsInitialized);
+            Assert.True(builder.IsInitialized);
             builder.WeakBuild();
         }
 
-        [TestMethod]
+        [Fact]
         public void TestIBuilderLiteWeakClone()
         {
             TestRequiredLite msg = TestRequiredLite.CreateBuilder()
                 .SetD(1).SetEn(ExtraEnum.EXLITE_BAR).Build();
-            Assert.IsTrue(msg.IsInitialized);
+            Assert.True(msg.IsInitialized);
 
             IMessageLite copy = ((IBuilderLite) msg.ToBuilder()).WeakClone().WeakBuild();
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void TestIBuilderLiteWeakDefaultInstance()
         {
-            Assert.IsTrue(ReferenceEquals(TestRequiredLite.DefaultInstance,
+            Assert.True(ReferenceEquals(TestRequiredLite.DefaultInstance,
                                           ((IBuilderLite) TestRequiredLite.CreateBuilder()).WeakDefaultInstanceForType));
         }
 
-        [TestMethod]
+        [Fact]
         public void TestGeneratedBuilderLiteAddRange()
         {
             TestAllTypesLite copy,
@@ -303,11 +299,11 @@ namespace Google.ProtocolBuffers
                                  .Build();
 
             copy = msg.DefaultInstanceForType.ToBuilder().MergeFrom(msg).Build();
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
         }
 
         // ROK 5/7/2013 Issue #54: should retire all bytes in buffer (bufferSize)
-        [TestMethod]
+        [Fact]
         public void TestBufferRefillIssue()
         {
             var ms = new MemoryStream();
@@ -326,15 +322,15 @@ namespace Google.ProtocolBuffers
             var input = CodedInputStream.CreateInstance(ms);
             var builder = BucketOfBytes.CreateBuilder();
             input.ReadMessage(builder, ExtensionRegistry.Empty);
-            Assert.AreEqual(3005L, input.Position);
-            Assert.AreEqual(3000, builder.Value.Length);
+            Assert.Equal(3005L, input.Position);
+            Assert.Equal(3000, builder.Value.Length);
             input.ReadMessage(builder, ExtensionRegistry.Empty);
-            Assert.AreEqual(5114, input.Position);
-            Assert.AreEqual(1000, builder.Value.Length);
+            Assert.Equal(5114, input.Position);
+            Assert.Equal(1000, builder.Value.Length);
             input.ReadMessage(builder, ExtensionRegistry.Empty);
-            Assert.AreEqual(5217L, input.Position);
-            Assert.AreEqual(input.Position, ms.Length);
-            Assert.AreEqual(100, builder.Value.Length);
+            Assert.Equal(5217L, input.Position);
+            Assert.Equal(input.Position, ms.Length);
+            Assert.Equal(100, builder.Value.Length);
         }
     }
 }

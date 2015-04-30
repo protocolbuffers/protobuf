@@ -35,18 +35,15 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using Google.ProtocolBuffers;
 using Google.ProtocolBuffers.TestProtos;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Google.ProtocolBuffers
 {
-    [TestClass]
     public class AbstractMessageLiteTest
     {
-        [TestMethod]
+        [Fact]
         public void TestMessageLiteToByteString()
         {
             TestRequiredLite msg = TestRequiredLite.CreateBuilder()
@@ -55,14 +52,14 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             ByteString b = msg.ToByteString();
-            Assert.AreEqual(4, b.Length);
-            Assert.AreEqual(TestRequiredLite.DFieldNumber << 3, b[0]);
-            Assert.AreEqual(42, b[1]);
-            Assert.AreEqual(TestRequiredLite.EnFieldNumber << 3, b[2]);
-            Assert.AreEqual((int) ExtraEnum.EXLITE_BAZ, b[3]);
+            Assert.Equal(4, b.Length);
+            Assert.Equal(TestRequiredLite.DFieldNumber << 3, b[0]);
+            Assert.Equal(42, b[1]);
+            Assert.Equal(TestRequiredLite.EnFieldNumber << 3, b[2]);
+            Assert.Equal((int) ExtraEnum.EXLITE_BAZ, b[3]);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestMessageLiteToByteArray()
         {
             TestRequiredLite msg = TestRequiredLite.CreateBuilder()
@@ -72,10 +69,10 @@ namespace Google.ProtocolBuffers
 
             ByteString b = msg.ToByteString();
             ByteString copy = ByteString.CopyFrom(msg.ToByteArray());
-            Assert.AreEqual(b, copy);
+            Assert.Equal(b, copy);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestMessageLiteWriteTo()
         {
             TestRequiredLite msg = TestRequiredLite.CreateBuilder()
@@ -85,10 +82,10 @@ namespace Google.ProtocolBuffers
 
             MemoryStream ms = new MemoryStream();
             msg.WriteTo(ms);
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), ms.ToArray());
+            Assert.Equal(msg.ToByteArray(), ms.ToArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void TestMessageLiteWriteDelimitedTo()
         {
             TestRequiredLite msg = TestRequiredLite.CreateBuilder()
@@ -100,21 +97,21 @@ namespace Google.ProtocolBuffers
             msg.WriteDelimitedTo(ms);
             byte[] buffer = ms.ToArray();
 
-            Assert.AreEqual(5, buffer.Length);
-            Assert.AreEqual(4, buffer[0]);
+            Assert.Equal(5, buffer.Length);
+            Assert.Equal(4, buffer[0]);
             byte[] msgBytes = new byte[4];
             Array.Copy(buffer, 1, msgBytes, 0, 4);
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), msgBytes);
+            Assert.Equal(msg.ToByteArray(), msgBytes);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestIMessageLiteWeakCreateBuilderForType()
         {
             IMessageLite msg = TestRequiredLite.DefaultInstance;
-            Assert.AreEqual(typeof(TestRequiredLite.Builder), msg.WeakCreateBuilderForType().GetType());
+            Assert.Equal(typeof(TestRequiredLite.Builder), msg.WeakCreateBuilderForType().GetType());
         }
 
-        [TestMethod]
+        [Fact]
         public void TestMessageLiteWeakToBuilder()
         {
             IMessageLite msg = TestRequiredLite.CreateBuilder()
@@ -123,14 +120,14 @@ namespace Google.ProtocolBuffers
                 .Build();
 
             IMessageLite copy = msg.WeakToBuilder().WeakBuild();
-            TestUtil.AssertBytesEqual(msg.ToByteArray(), copy.ToByteArray());
+            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void TestMessageLiteWeakDefaultInstanceForType()
         {
             IMessageLite msg = TestRequiredLite.DefaultInstance;
-            Assert.IsTrue(Object.ReferenceEquals(TestRequiredLite.DefaultInstance, msg.WeakDefaultInstanceForType));
+            Assert.True(Object.ReferenceEquals(TestRequiredLite.DefaultInstance, msg.WeakDefaultInstanceForType));
         }
     }
 }
