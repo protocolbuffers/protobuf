@@ -65,6 +65,3 @@ using System.Security;
 [assembly: AssemblyFileVersion("2.4.1.555")]
 #endif
 
-#if CLIENTPROFILE // ROK - not defined in SL, CF, or PL
-[assembly: AllowPartiallyTrustedCallers]
-#endif
