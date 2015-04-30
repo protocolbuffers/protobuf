@@ -66,7 +66,7 @@
 
 // For use in public headers that might need to deal with ARC.
 #ifndef GPB_UNSAFE_UNRETAINED
-#if __has_feature(objc_arc)
+#if defined(__has_feature) && __has_feature(objc_arc)
 #define GPB_UNSAFE_UNRETAINED __unsafe_unretained
 #else
 #define GPB_UNSAFE_UNRETAINED
