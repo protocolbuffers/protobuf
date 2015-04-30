@@ -35,31 +35,28 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using Google.ProtocolBuffers;
 using Google.ProtocolBuffers.TestProtos;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Google.ProtocolBuffers
 {
-    [TestClass]
     public class InteropLiteTest
     {
-        [TestMethod]
+        [Fact]
         public void TestConvertFromFullMinimal()
         {
             TestInteropPerson person = TestInteropPerson.CreateBuilder()
                 .SetId(123)
                 .SetName("abc")
                 .Build();
-            Assert.IsTrue(person.IsInitialized);
+            Assert.True(person.IsInitialized);
 
             TestInteropPersonLite copy = TestInteropPersonLite.ParseFrom(person.ToByteArray());
 
-            TestUtil.AssertBytesEqual(person.ToByteArray(), copy.ToByteArray());
+            Assert.Equal(person.ToByteArray(), copy.ToByteArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void TestConvertFromFullComplete()
         {
             TestInteropPerson person = TestInteropPerson.CreateBuilder()
@@ -75,7 +72,7 @@ namespace Google.ProtocolBuffers
                 .SetExtension(UnittestExtrasFull.EmployeeId,
                               TestInteropEmployeeId.CreateBuilder().SetNumber("123").Build())
                 .Build();
-            Assert.IsTrue(person.IsInitialized);
+            Assert.True(person.IsInitialized);
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
             UnittestExtrasLite.RegisterAllExtensions(registry);
@@ -84,24 +81,24 @@ namespace Google.ProtocolBuffers
             TestInteropPersonLite copy = TestInteropPersonLite.ParseFrom(fullBytes, registry);
             byte[] liteBytes = copy.ToByteArray();
 
-            TestUtil.AssertBytesEqual(fullBytes, liteBytes);
+            Assert.Equal(fullBytes, liteBytes);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestConvertFromLiteMinimal()
         {
             TestInteropPersonLite person = TestInteropPersonLite.CreateBuilder()
                 .SetId(123)
                 .SetName("abc")
                 .Build();
-            Assert.IsTrue(person.IsInitialized);
+            Assert.True(person.IsInitialized);
 
             TestInteropPerson copy = TestInteropPerson.ParseFrom(person.ToByteArray());
 
-            TestUtil.AssertBytesEqual(person.ToByteArray(), copy.ToByteArray());
+            Assert.Equal(person.ToByteArray(), copy.ToByteArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void TestConvertFromLiteComplete()
         {
             TestInteropPersonLite person = TestInteropPersonLite.CreateBuilder()
@@ -117,14 +114,14 @@ namespace Google.ProtocolBuffers
                 .SetExtension(UnittestExtrasLite.EmployeeIdLite,
                               TestInteropEmployeeIdLite.CreateBuilder().SetNumber("123").Build())
                 .Build();
-            Assert.IsTrue(person.IsInitialized);
+            Assert.True(person.IsInitialized);
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
             UnittestExtrasFull.RegisterAllExtensions(registry);
 
             TestInteropPerson copy = TestInteropPerson.ParseFrom(person.ToByteArray(), registry);
 
-            TestUtil.AssertBytesEqual(person.ToByteArray(), copy.ToByteArray());
+            Assert.Equal(person.ToByteArray(), copy.ToByteArray());
         }
 
         public ByteString AllBytes
@@ -138,7 +135,7 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestCompareStringValues()
         {
             TestInteropPersonLite person = TestInteropPersonLite.CreateBuilder()
@@ -156,14 +153,14 @@ namespace Google.ProtocolBuffers
                 .SetExtension(UnittestExtrasLite.EmployeeIdLite,
                               TestInteropEmployeeIdLite.CreateBuilder().SetNumber("123").Build())
                 .Build();
-            Assert.IsTrue(person.IsInitialized);
+            Assert.True(person.IsInitialized);
 
             ExtensionRegistry registry = ExtensionRegistry.CreateInstance();
             UnittestExtrasFull.RegisterAllExtensions(registry);
 
             TestInteropPerson copy = TestInteropPerson.ParseFrom(person.ToByteArray(), registry);
 
-            TestUtil.AssertBytesEqual(person.ToByteArray(), copy.ToByteArray());
+            Assert.Equal(person.ToByteArray(), copy.ToByteArray());
 
             TestInteropPerson.Builder copyBuilder = TestInteropPerson.CreateBuilder();
             TextFormat.Merge(
@@ -171,7 +168,7 @@ namespace Google.ProtocolBuffers
                                           "[protobuf_unittest_extra.employee_id]"), registry, copyBuilder);
 
             copy = copyBuilder.Build();
-            TestUtil.AssertBytesEqual(person.ToByteArray(), copy.ToByteArray());
+            Assert.Equal(person.ToByteArray(), copy.ToByteArray());
 
             string liteText = person.ToString().TrimEnd().Replace("\r", "");
             string fullText = copy.ToString().TrimEnd().Replace("\r", "");
@@ -179,10 +176,10 @@ namespace Google.ProtocolBuffers
             liteText = liteText.Replace("[protobuf_unittest_extra.employee_id_lite]",
                                         "[protobuf_unittest_extra.employee_id]");
             //lite version does not indent
-            while (fullText.IndexOf("\n ") >= 0)
+            while (fullText.IndexOf("\n ", StringComparison.Ordinal) >= 0)
                 fullText = fullText.Replace("\n ", "\n");
 
-            Assert.AreEqual(fullText, liteText);
+            Assert.Equal(fullText, liteText);
         }
     }
 }

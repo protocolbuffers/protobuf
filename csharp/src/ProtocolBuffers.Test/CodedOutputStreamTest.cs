@@ -38,11 +38,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Google.ProtocolBuffers.TestProtos;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Google.ProtocolBuffers
 {
-    [TestClass]
     public class CodedOutputStreamTest
     {
         /// <summary>
@@ -58,9 +57,9 @@ namespace Google.ProtocolBuffers
                 CodedOutputStream output = CodedOutputStream.CreateInstance(rawOutput);
                 output.WriteRawVarint32((uint) value);
                 output.Flush();
-                TestUtil.AssertBytesEqual(data, rawOutput.ToArray());
+                Assert.Equal(data, rawOutput.ToArray());
                 // Also try computing size.
-                Assert.AreEqual(data.Length, CodedOutputStream.ComputeRawVarint32Size((uint) value));
+                Assert.Equal(data.Length, CodedOutputStream.ComputeRawVarint32Size((uint) value));
             }
 
             {
@@ -68,10 +67,10 @@ namespace Google.ProtocolBuffers
                 CodedOutputStream output = CodedOutputStream.CreateInstance(rawOutput);
                 output.WriteRawVarint64(value);
                 output.Flush();
-                TestUtil.AssertBytesEqual(data, rawOutput.ToArray());
+                Assert.Equal(data, rawOutput.ToArray());
 
                 // Also try computing size.
-                Assert.AreEqual(data.Length, CodedOutputStream.ComputeRawVarint64Size(value));
+                Assert.Equal(data.Length, CodedOutputStream.ComputeRawVarint64Size(value));
             }
 
             // Try different buffer sizes.
@@ -85,7 +84,7 @@ namespace Google.ProtocolBuffers
                         CodedOutputStream.CreateInstance(rawOutput, bufferSize);
                     output.WriteRawVarint32((uint) value);
                     output.Flush();
-                    TestUtil.AssertBytesEqual(data, rawOutput.ToArray());
+                    Assert.Equal(data, rawOutput.ToArray());
                 }
 
                 {
@@ -93,7 +92,7 @@ namespace Google.ProtocolBuffers
                     CodedOutputStream output = CodedOutputStream.CreateInstance(rawOutput, bufferSize);
                     output.WriteRawVarint64(value);
                     output.Flush();
-                    TestUtil.AssertBytesEqual(data, rawOutput.ToArray());
+                    Assert.Equal(data, rawOutput.ToArray());
                 }
             }
         }
@@ -101,7 +100,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Tests WriteRawVarint32() and WriteRawVarint64()
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void WriteVarint()
         {
             AssertWriteVarint(new byte[] {0x00}, 0);
@@ -143,7 +142,7 @@ namespace Google.ProtocolBuffers
             CodedOutputStream output = CodedOutputStream.CreateInstance(rawOutput);
             output.WriteRawLittleEndian32(value);
             output.Flush();
-            TestUtil.AssertBytesEqual(data, rawOutput.ToArray());
+            Assert.Equal(data, rawOutput.ToArray());
 
             // Try different buffer sizes.
             for (int bufferSize = 1; bufferSize <= 16; bufferSize *= 2)
@@ -152,7 +151,7 @@ namespace Google.ProtocolBuffers
                 output = CodedOutputStream.CreateInstance(rawOutput, bufferSize);
                 output.WriteRawLittleEndian32(value);
                 output.Flush();
-                TestUtil.AssertBytesEqual(data, rawOutput.ToArray());
+                Assert.Equal(data, rawOutput.ToArray());
             }
         }
 
@@ -166,7 +165,7 @@ namespace Google.ProtocolBuffers
             CodedOutputStream output = CodedOutputStream.CreateInstance(rawOutput);
             output.WriteRawLittleEndian64(value);
             output.Flush();
-            TestUtil.AssertBytesEqual(data, rawOutput.ToArray());
+            Assert.Equal(data, rawOutput.ToArray());
 
             // Try different block sizes.
             for (int blockSize = 1; blockSize <= 16; blockSize *= 2)
@@ -175,14 +174,14 @@ namespace Google.ProtocolBuffers
                 output = CodedOutputStream.CreateInstance(rawOutput, blockSize);
                 output.WriteRawLittleEndian64(value);
                 output.Flush();
-                TestUtil.AssertBytesEqual(data, rawOutput.ToArray());
+                Assert.Equal(data, rawOutput.ToArray());
             }
         }
 
         /// <summary>
         /// Tests writeRawLittleEndian32() and writeRawLittleEndian64().
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void WriteLittleEndian()
         {
             AssertWriteLittleEndian32(new byte[] {0x78, 0x56, 0x34, 0x12}, 0x12345678);
@@ -196,7 +195,7 @@ namespace Google.ProtocolBuffers
                 0x9abcdef012345678UL);
         }
 
-        [TestMethod]
+        [Fact]
         public void WriteWholeMessage()
         {
             TestAllTypes message = TestUtil.GetAllSet();
@@ -220,7 +219,7 @@ namespace Google.ProtocolBuffers
         /// Tests writing a whole message with every packed field type. Ensures the
         /// wire format of packed fields is compatible with C++.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void WriteWholePackedFieldsMessage()
         {
             TestPackedTypes message = TestUtil.GetPackedSet();
@@ -230,97 +229,97 @@ namespace Google.ProtocolBuffers
                                       rawBytes);
         }
 
-        [TestMethod]
+        [Fact]
         public void EncodeZigZag32()
         {
-            Assert.AreEqual(0u, CodedOutputStream.EncodeZigZag32(0));
-            Assert.AreEqual(1u, CodedOutputStream.EncodeZigZag32(-1));
-            Assert.AreEqual(2u, CodedOutputStream.EncodeZigZag32(1));
-            Assert.AreEqual(3u, CodedOutputStream.EncodeZigZag32(-2));
-            Assert.AreEqual(0x7FFFFFFEu, CodedOutputStream.EncodeZigZag32(0x3FFFFFFF));
-            Assert.AreEqual(0x7FFFFFFFu, CodedOutputStream.EncodeZigZag32(unchecked((int) 0xC0000000)));
-            Assert.AreEqual(0xFFFFFFFEu, CodedOutputStream.EncodeZigZag32(0x7FFFFFFF));
-            Assert.AreEqual(0xFFFFFFFFu, CodedOutputStream.EncodeZigZag32(unchecked((int) 0x80000000)));
+            Assert.Equal(0u, CodedOutputStream.EncodeZigZag32(0));
+            Assert.Equal(1u, CodedOutputStream.EncodeZigZag32(-1));
+            Assert.Equal(2u, CodedOutputStream.EncodeZigZag32(1));
+            Assert.Equal(3u, CodedOutputStream.EncodeZigZag32(-2));
+            Assert.Equal(0x7FFFFFFEu, CodedOutputStream.EncodeZigZag32(0x3FFFFFFF));
+            Assert.Equal(0x7FFFFFFFu, CodedOutputStream.EncodeZigZag32(unchecked((int) 0xC0000000)));
+            Assert.Equal(0xFFFFFFFEu, CodedOutputStream.EncodeZigZag32(0x7FFFFFFF));
+            Assert.Equal(0xFFFFFFFFu, CodedOutputStream.EncodeZigZag32(unchecked((int) 0x80000000)));
         }
 
-        [TestMethod]
+        [Fact]
         public void EncodeZigZag64()
         {
-            Assert.AreEqual(0u, CodedOutputStream.EncodeZigZag64(0));
-            Assert.AreEqual(1u, CodedOutputStream.EncodeZigZag64(-1));
-            Assert.AreEqual(2u, CodedOutputStream.EncodeZigZag64(1));
-            Assert.AreEqual(3u, CodedOutputStream.EncodeZigZag64(-2));
-            Assert.AreEqual(0x000000007FFFFFFEuL,
+            Assert.Equal(0u, CodedOutputStream.EncodeZigZag64(0));
+            Assert.Equal(1u, CodedOutputStream.EncodeZigZag64(-1));
+            Assert.Equal(2u, CodedOutputStream.EncodeZigZag64(1));
+            Assert.Equal(3u, CodedOutputStream.EncodeZigZag64(-2));
+            Assert.Equal(0x000000007FFFFFFEuL,
                             CodedOutputStream.EncodeZigZag64(unchecked((long) 0x000000003FFFFFFFUL)));
-            Assert.AreEqual(0x000000007FFFFFFFuL,
+            Assert.Equal(0x000000007FFFFFFFuL,
                             CodedOutputStream.EncodeZigZag64(unchecked((long) 0xFFFFFFFFC0000000UL)));
-            Assert.AreEqual(0x00000000FFFFFFFEuL,
+            Assert.Equal(0x00000000FFFFFFFEuL,
                             CodedOutputStream.EncodeZigZag64(unchecked((long) 0x000000007FFFFFFFUL)));
-            Assert.AreEqual(0x00000000FFFFFFFFuL,
+            Assert.Equal(0x00000000FFFFFFFFuL,
                             CodedOutputStream.EncodeZigZag64(unchecked((long) 0xFFFFFFFF80000000UL)));
-            Assert.AreEqual(0xFFFFFFFFFFFFFFFEL,
+            Assert.Equal(0xFFFFFFFFFFFFFFFEL,
                             CodedOutputStream.EncodeZigZag64(unchecked((long) 0x7FFFFFFFFFFFFFFFUL)));
-            Assert.AreEqual(0xFFFFFFFFFFFFFFFFL,
+            Assert.Equal(0xFFFFFFFFFFFFFFFFL,
                             CodedOutputStream.EncodeZigZag64(unchecked((long) 0x8000000000000000UL)));
         }
 
-        [TestMethod]
+        [Fact]
         public void RoundTripZigZag32()
         {
             // Some easier-to-verify round-trip tests.  The inputs (other than 0, 1, -1)
             // were chosen semi-randomly via keyboard bashing.
-            Assert.AreEqual(0, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(0)));
-            Assert.AreEqual(1, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(1)));
-            Assert.AreEqual(-1, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(-1)));
-            Assert.AreEqual(14927, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(14927)));
-            Assert.AreEqual(-3612, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(-3612)));
+            Assert.Equal(0, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(0)));
+            Assert.Equal(1, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(1)));
+            Assert.Equal(-1, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(-1)));
+            Assert.Equal(14927, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(14927)));
+            Assert.Equal(-3612, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(-3612)));
         }
 
-        [TestMethod]
+        [Fact]
         public void RoundTripZigZag64()
         {
-            Assert.AreEqual(0, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(0)));
-            Assert.AreEqual(1, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(1)));
-            Assert.AreEqual(-1, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-1)));
-            Assert.AreEqual(14927, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(14927)));
-            Assert.AreEqual(-3612, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-3612)));
+            Assert.Equal(0, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(0)));
+            Assert.Equal(1, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(1)));
+            Assert.Equal(-1, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-1)));
+            Assert.Equal(14927, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(14927)));
+            Assert.Equal(-3612, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-3612)));
 
-            Assert.AreEqual(856912304801416L,
+            Assert.Equal(856912304801416L,
                             CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(856912304801416L)));
-            Assert.AreEqual(-75123905439571256L,
+            Assert.Equal(-75123905439571256L,
                             CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-75123905439571256L)));
         }
 
-        [TestMethod]
+        [Fact]
         public void TestNegativeEnumNoTag()
         {
-            Assert.AreEqual(10, CodedOutputStream.ComputeInt32SizeNoTag(-2));
-            Assert.AreEqual(10, CodedOutputStream.ComputeEnumSizeNoTag(-2));
+            Assert.Equal(10, CodedOutputStream.ComputeInt32SizeNoTag(-2));
+            Assert.Equal(10, CodedOutputStream.ComputeEnumSizeNoTag(-2));
 
             byte[] bytes = new byte[10];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
             output.WriteEnumNoTag(-2);
 
-            Assert.AreEqual(0, output.SpaceLeft);
-            Assert.AreEqual("FE-FF-FF-FF-FF-FF-FF-FF-FF-01", BitConverter.ToString(bytes));
+            Assert.Equal(0, output.SpaceLeft);
+            Assert.Equal("FE-FF-FF-FF-FF-FF-FF-FF-FF-01", BitConverter.ToString(bytes));
         }
 
-        [TestMethod]
+        [Fact]
         public void TestNegativeEnumWithTag()
         {
-            Assert.AreEqual(11, CodedOutputStream.ComputeInt32Size(8, -2));
-            Assert.AreEqual(11, CodedOutputStream.ComputeEnumSize(8, -2));
+            Assert.Equal(11, CodedOutputStream.ComputeInt32Size(8, -2));
+            Assert.Equal(11, CodedOutputStream.ComputeEnumSize(8, -2));
 
             byte[] bytes = new byte[11];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
             output.WriteEnum(8, "", -2, -2);
 
-            Assert.AreEqual(0, output.SpaceLeft);
+            Assert.Equal(0, output.SpaceLeft);
             //fyi, 0x40 == 0x08 << 3 + 0, field num + wire format shift
-            Assert.AreEqual("40-FE-FF-FF-FF-FF-FF-FF-FF-FF-01", BitConverter.ToString(bytes));
+            Assert.Equal("40-FE-FF-FF-FF-FF-FF-FF-FF-FF-01", BitConverter.ToString(bytes));
         }
 
-        [TestMethod]
+        [Fact]
         public void TestNegativeEnumArrayPacked()
         {
             int arraySize = 1 + (10 * 5);
@@ -329,22 +328,22 @@ namespace Google.ProtocolBuffers
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
             output.WritePackedEnumArray(8, "", arraySize, new int[] { 0, -1, -2, -3, -4, -5 });
 
-            Assert.AreEqual(0, output.SpaceLeft);
+            Assert.Equal(0, output.SpaceLeft);
 
             CodedInputStream input = CodedInputStream.CreateInstance(bytes);
             uint tag;
             string name;
-            Assert.IsTrue(input.ReadTag(out tag, out name));
+            Assert.True(input.ReadTag(out tag, out name));
 
             List<int> values = new List<int>();
             input.ReadInt32Array(tag, name, values);
 
-            Assert.AreEqual(6, values.Count);
+            Assert.Equal(6, values.Count);
             for (int i = 0; i > -6; i--)
-                Assert.AreEqual(i, values[Math.Abs(i)]);
+                Assert.Equal(i, values[Math.Abs(i)]);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestNegativeEnumArray()
         {
             int arraySize = 1 + 1 + (11 * 5);
@@ -353,22 +352,22 @@ namespace Google.ProtocolBuffers
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
             output.WriteEnumArray(8, "", new int[] { 0, -1, -2, -3, -4, -5 });
 
-            Assert.AreEqual(0, output.SpaceLeft);
+            Assert.Equal(0, output.SpaceLeft);
 
             CodedInputStream input = CodedInputStream.CreateInstance(bytes);
             uint tag;
             string name;
-            Assert.IsTrue(input.ReadTag(out tag, out name));
+            Assert.True(input.ReadTag(out tag, out name));
 
             List<int> values = new List<int>();
             input.ReadInt32Array(tag, name, values);
 
-            Assert.AreEqual(6, values.Count);
+            Assert.Equal(6, values.Count);
             for (int i = 0; i > -6; i--)
-                Assert.AreEqual(i, values[Math.Abs(i)]);
+                Assert.Equal(i, values[Math.Abs(i)]);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestCodedInputOutputPosition()
         {
             byte[] content = new byte[110];
@@ -381,19 +380,19 @@ namespace Google.ProtocolBuffers
                 CodedOutputStream cout = CodedOutputStream.CreateInstance(ms, 20);
                 // Field 11: numeric value: 500
                 cout.WriteTag(11, WireFormat.WireType.Varint);
-                Assert.AreEqual(1, cout.Position);
+                Assert.Equal(1, cout.Position);
                 cout.WriteInt32NoTag(500);
-                Assert.AreEqual(3, cout.Position);
+                Assert.Equal(3, cout.Position);
                 //Field 12: length delimited 120 bytes
                 cout.WriteTag(12, WireFormat.WireType.LengthDelimited);
-                Assert.AreEqual(4, cout.Position);
+                Assert.Equal(4, cout.Position);
                 cout.WriteBytesNoTag(ByteString.CopyFrom(content));
-                Assert.AreEqual(115, cout.Position);
+                Assert.Equal(115, cout.Position);
                 // Field 13: fixed numeric value: 501
                 cout.WriteTag(13, WireFormat.WireType.Fixed32);
-                Assert.AreEqual(116, cout.Position);
+                Assert.Equal(116, cout.Position);
                 cout.WriteSFixed32NoTag(501);
-                Assert.AreEqual(120, cout.Position);
+                Assert.Equal(120, cout.Position);
                 cout.Flush();
             }
 
@@ -402,19 +401,19 @@ namespace Google.ProtocolBuffers
                 CodedOutputStream cout = CodedOutputStream.CreateInstance(bytes);
                 // Field 1: numeric value: 500
                 cout.WriteTag(1, WireFormat.WireType.Varint);
-                Assert.AreEqual(1, cout.Position);
+                Assert.Equal(1, cout.Position);
                 cout.WriteInt32NoTag(500);
-                Assert.AreEqual(3, cout.Position);
+                Assert.Equal(3, cout.Position);
                 //Field 2: length delimited 120 bytes
                 cout.WriteTag(2, WireFormat.WireType.LengthDelimited);
-                Assert.AreEqual(4, cout.Position);
+                Assert.Equal(4, cout.Position);
                 cout.WriteBytesNoTag(ByteString.CopyFrom(child));
-                Assert.AreEqual(125, cout.Position);
+                Assert.Equal(125, cout.Position);
                 // Field 3: fixed numeric value: 500
                 cout.WriteTag(3, WireFormat.WireType.Fixed32);
-                Assert.AreEqual(126, cout.Position);
+                Assert.Equal(126, cout.Position);
                 cout.WriteSFixed32NoTag(501);
-                Assert.AreEqual(130, cout.Position);
+                Assert.Equal(130, cout.Position);
                 cout.Flush();
             }
             //Now test Input stream:
@@ -423,49 +422,49 @@ namespace Google.ProtocolBuffers
                 uint tag;
                 int intValue = 0;
                 string ignore;
-                Assert.AreEqual(0, cin.Position);
+                Assert.Equal(0, cin.Position);
                 // Field 1:
-                Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 1);
-                Assert.AreEqual(1, cin.Position);
-                Assert.IsTrue(cin.ReadInt32(ref intValue) && intValue == 500);
-                Assert.AreEqual(3, cin.Position);
+                Assert.True(cin.ReadTag(out tag, out ignore) && tag >> 3 == 1);
+                Assert.Equal(1, cin.Position);
+                Assert.True(cin.ReadInt32(ref intValue) && intValue == 500);
+                Assert.Equal(3, cin.Position);
                 //Field 2:
-                Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 2);
-                Assert.AreEqual(4, cin.Position);
+                Assert.True(cin.ReadTag(out tag, out ignore) && tag >> 3 == 2);
+                Assert.Equal(4, cin.Position);
                 uint childlen = cin.ReadRawVarint32();
-                Assert.AreEqual(120u, childlen);
-                Assert.AreEqual(5, cin.Position);
+                Assert.Equal(120u, childlen);
+                Assert.Equal(5, cin.Position);
                 int oldlimit = cin.PushLimit((int)childlen);
-                Assert.AreEqual(5, cin.Position);
+                Assert.Equal(5, cin.Position);
                 // Now we are reading child message
                 {
                     // Field 11: numeric value: 500
-                    Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 11);
-                    Assert.AreEqual(6, cin.Position);
-                    Assert.IsTrue(cin.ReadInt32(ref intValue) && intValue == 500);
-                    Assert.AreEqual(8, cin.Position);
+                    Assert.True(cin.ReadTag(out tag, out ignore) && tag >> 3 == 11);
+                    Assert.Equal(6, cin.Position);
+                    Assert.True(cin.ReadInt32(ref intValue) && intValue == 500);
+                    Assert.Equal(8, cin.Position);
                     //Field 12: length delimited 120 bytes
-                    Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 12);
-                    Assert.AreEqual(9, cin.Position);
+                    Assert.True(cin.ReadTag(out tag, out ignore) && tag >> 3 == 12);
+                    Assert.Equal(9, cin.Position);
                     ByteString bstr = null;
-                    Assert.IsTrue(cin.ReadBytes(ref bstr) && bstr.Length == 110 && bstr.ToByteArray()[109] == 109);
-                    Assert.AreEqual(120, cin.Position);
+                    Assert.True(cin.ReadBytes(ref bstr) && bstr.Length == 110 && bstr.ToByteArray()[109] == 109);
+                    Assert.Equal(120, cin.Position);
                     // Field 13: fixed numeric value: 501
-                    Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 13);
+                    Assert.True(cin.ReadTag(out tag, out ignore) && tag >> 3 == 13);
                     // ROK - Previously broken here, this returned 126 failing to account for bufferSizeAfterLimit
-                    Assert.AreEqual(121, cin.Position);
-                    Assert.IsTrue(cin.ReadSFixed32(ref intValue) && intValue == 501);
-                    Assert.AreEqual(125, cin.Position);
-                    Assert.IsTrue(cin.IsAtEnd);
+                    Assert.Equal(121, cin.Position);
+                    Assert.True(cin.ReadSFixed32(ref intValue) && intValue == 501);
+                    Assert.Equal(125, cin.Position);
+                    Assert.True(cin.IsAtEnd);
                 }
                 cin.PopLimit(oldlimit);
-                Assert.AreEqual(125, cin.Position);
+                Assert.Equal(125, cin.Position);
                 // Field 3: fixed numeric value: 501
-                Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 3);
-                Assert.AreEqual(126, cin.Position);
-                Assert.IsTrue(cin.ReadSFixed32(ref intValue) && intValue == 501);
-                Assert.AreEqual(130, cin.Position);
-                Assert.IsTrue(cin.IsAtEnd);
+                Assert.True(cin.ReadTag(out tag, out ignore) && tag >> 3 == 3);
+                Assert.Equal(126, cin.Position);
+                Assert.True(cin.ReadSFixed32(ref intValue) && intValue == 501);
+                Assert.Equal(130, cin.Position);
+                Assert.True(cin.IsAtEnd);
             }
         }
     }

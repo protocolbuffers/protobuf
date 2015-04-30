@@ -35,12 +35,11 @@
 #endregion
 
 using System.IO;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using NestedMessage = Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage;
 
 namespace Google.ProtocolBuffers
 {
-    [TestClass]
     public class MessageStreamWriterTest
     {
         internal static readonly byte[] ThreeMessageData = new byte[]
@@ -55,7 +54,7 @@ namespace Google.ProtocolBuffers
                                                                    (1 << 3) | 2, 0, // Field 1, no data (third message)
                                                                };
 
-        [TestMethod]
+        [Fact]
         public void ThreeMessages()
         {
             NestedMessage message1 = new NestedMessage.Builder {Bb = 5}.Build();

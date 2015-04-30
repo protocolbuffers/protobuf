@@ -1,16 +1,15 @@
 using System;
 using System.IO;
 using System.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Google.ProtocolBuffers.TestProtos;
 using Google.ProtocolBuffers.Serialization.Http;
+using Xunit;
 
 namespace Google.ProtocolBuffers
 {
-    [TestClass]
     public class TestReaderForUrlEncoded
     {
-        [TestMethod]
+        [Fact]
         public void Example_FromQueryString()
         {
             Uri sampleUri = new Uri("http://sample.com/Path/File.ext?text=two+three%20four&valid=true&numbers=1&numbers=2", UriKind.Absolute);
@@ -21,14 +20,14 @@ namespace Google.ProtocolBuffers
             builder.MergeFrom(input);
             
             TestXmlMessage message = builder.Build();
-            Assert.AreEqual(true, message.Valid);
-            Assert.AreEqual("two three four", message.Text);
-            Assert.AreEqual(2, message.NumbersCount);
-            Assert.AreEqual(1, message.NumbersList[0]);
-            Assert.AreEqual(2, message.NumbersList[1]);
+            Assert.Equal(true, message.Valid);
+            Assert.Equal("two three four", message.Text);
+            Assert.Equal(2, message.NumbersCount);
+            Assert.Equal(1, message.NumbersList[0]);
+            Assert.Equal(2, message.NumbersList[1]);
         }
 
-        [TestMethod]
+        [Fact]
         public void Example_FromFormData()
         {
             Stream rawPost = new MemoryStream(Encoding.UTF8.GetBytes("text=two+three%20four&valid=true&numbers=1&numbers=2"), false);
@@ -39,46 +38,46 @@ namespace Google.ProtocolBuffers
             builder.MergeFrom(input);
 
             TestXmlMessage message = builder.Build();
-            Assert.AreEqual(true, message.Valid);
-            Assert.AreEqual("two three four", message.Text);
-            Assert.AreEqual(2, message.NumbersCount);
-            Assert.AreEqual(1, message.NumbersList[0]);
-            Assert.AreEqual(2, message.NumbersList[1]);
+            Assert.Equal(true, message.Valid);
+            Assert.Equal("two three four", message.Text);
+            Assert.Equal(2, message.NumbersCount);
+            Assert.Equal(1, message.NumbersList[0]);
+            Assert.Equal(2, message.NumbersList[1]);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestEmptyValues()
         {
             ICodedInputStream input = FormUrlEncodedReader.CreateInstance("valid=true&text=&numbers=1");
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
             builder.MergeFrom(input);
 
-            Assert.IsTrue(builder.Valid);
-            Assert.IsTrue(builder.HasText);
-            Assert.AreEqual("", builder.Text);
-            Assert.AreEqual(1, builder.NumbersCount);
-            Assert.AreEqual(1, builder.NumbersList[0]);
+            Assert.True(builder.Valid);
+            Assert.True(builder.HasText);
+            Assert.Equal("", builder.Text);
+            Assert.Equal(1, builder.NumbersCount);
+            Assert.Equal(1, builder.NumbersList[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestNoValue()
         {
             ICodedInputStream input = FormUrlEncodedReader.CreateInstance("valid=true&text&numbers=1");
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
             builder.MergeFrom(input);
 
-            Assert.IsTrue(builder.Valid);
-            Assert.IsTrue(builder.HasText);
-            Assert.AreEqual("", builder.Text);
-            Assert.AreEqual(1, builder.NumbersCount);
-            Assert.AreEqual(1, builder.NumbersList[0]);
+            Assert.True(builder.Valid);
+            Assert.True(builder.HasText);
+            Assert.Equal("", builder.Text);
+            Assert.Equal(1, builder.NumbersCount);
+            Assert.Equal(1, builder.NumbersList[0]);
         }
 
-        [TestMethod, ExpectedException(typeof(NotSupportedException))]
+        [Fact]
         public void FormUrlEncodedReaderDoesNotSupportChildren()
         {
             ICodedInputStream input = FormUrlEncodedReader.CreateInstance("child=uh0");
-            TestXmlMessage.CreateBuilder().MergeFrom(input);
+            Assert.Throws<NotSupportedException>(() => TestXmlMessage.CreateBuilder().MergeFrom(input));
         }
     }
 }

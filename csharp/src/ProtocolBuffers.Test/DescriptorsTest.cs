@@ -34,10 +34,9 @@
 
 #endregion
 
-using System.Text;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Google.ProtocolBuffers
 {
@@ -45,106 +44,105 @@ namespace Google.ProtocolBuffers
     /// Tests for descriptors. (Not in its own namespace or broken up into individual classes as the
     /// size doesn't warrant it. On the other hand, this makes me feel a bit dirty...)
     /// </summary>
-    [TestClass]
     public class DescriptorsTest
     {
-        [TestMethod]
+        [Fact]
         public void FileDescriptor()
         {
             FileDescriptor file = Unittest.Descriptor;
 
-            Assert.AreEqual("google/protobuf/unittest.proto", file.Name);
-            Assert.AreEqual("protobuf_unittest", file.Package);
+            Assert.Equal("google/protobuf/unittest.proto", file.Name);
+            Assert.Equal("protobuf_unittest", file.Package);
 
-            Assert.AreEqual("UnittestProto", file.Options.JavaOuterClassname);
-            Assert.AreEqual("google/protobuf/unittest.proto", file.Proto.Name);
+            Assert.Equal("UnittestProto", file.Options.JavaOuterClassname);
+            Assert.Equal("google/protobuf/unittest.proto", file.Proto.Name);
 
             // unittest.proto doesn't have any public imports, but unittest_import.proto does.
-            Assert.AreEqual(0, file.PublicDependencies.Count);
-            Assert.AreEqual(1, UnittestImport.Descriptor.PublicDependencies.Count);
-            Assert.AreEqual(UnittestImportPublic.Descriptor, UnittestImport.Descriptor.PublicDependencies[0]);
+            Assert.Equal(0, file.PublicDependencies.Count);
+            Assert.Equal(1, UnittestImport.Descriptor.PublicDependencies.Count);
+            Assert.Equal(UnittestImportPublic.Descriptor, UnittestImport.Descriptor.PublicDependencies[0]);
 
-            Assert.AreEqual(1, file.Dependencies.Count);
-            Assert.AreEqual(UnittestImport.Descriptor, file.Dependencies[0]);
+            Assert.Equal(1, file.Dependencies.Count);
+            Assert.Equal(UnittestImport.Descriptor, file.Dependencies[0]);
 
             MessageDescriptor messageType = TestAllTypes.Descriptor;
-            Assert.AreEqual(messageType, file.MessageTypes[0]);
-            Assert.AreEqual(messageType, file.FindTypeByName<MessageDescriptor>("TestAllTypes"));
-            Assert.IsNull(file.FindTypeByName<MessageDescriptor>("NoSuchType"));
-            Assert.IsNull(file.FindTypeByName<MessageDescriptor>("protobuf_unittest.TestAllTypes"));
+            Assert.Equal(messageType, file.MessageTypes[0]);
+            Assert.Equal(messageType, file.FindTypeByName<MessageDescriptor>("TestAllTypes"));
+            Assert.Null(file.FindTypeByName<MessageDescriptor>("NoSuchType"));
+            Assert.Null(file.FindTypeByName<MessageDescriptor>("protobuf_unittest.TestAllTypes"));
             for (int i = 0; i < file.MessageTypes.Count; i++)
             {
-                Assert.AreEqual(i, file.MessageTypes[i].Index);
+                Assert.Equal(i, file.MessageTypes[i].Index);
             }
 
-            Assert.AreEqual(file.EnumTypes[0], file.FindTypeByName<EnumDescriptor>("ForeignEnum"));
-            Assert.IsNull(file.FindTypeByName<EnumDescriptor>("NoSuchType"));
-            Assert.IsNull(file.FindTypeByName<EnumDescriptor>("protobuf_unittest.ForeignEnum"));
-            Assert.AreEqual(1, UnittestImport.Descriptor.EnumTypes.Count);
-            Assert.AreEqual("ImportEnum", UnittestImport.Descriptor.EnumTypes[0].Name);
+            Assert.Equal(file.EnumTypes[0], file.FindTypeByName<EnumDescriptor>("ForeignEnum"));
+            Assert.Null(file.FindTypeByName<EnumDescriptor>("NoSuchType"));
+            Assert.Null(file.FindTypeByName<EnumDescriptor>("protobuf_unittest.ForeignEnum"));
+            Assert.Equal(1, UnittestImport.Descriptor.EnumTypes.Count);
+            Assert.Equal("ImportEnum", UnittestImport.Descriptor.EnumTypes[0].Name);
             for (int i = 0; i < file.EnumTypes.Count; i++)
             {
-                Assert.AreEqual(i, file.EnumTypes[i].Index);
+                Assert.Equal(i, file.EnumTypes[i].Index);
             }
 
             FieldDescriptor extension = Unittest.OptionalInt32Extension.Descriptor;
-            Assert.AreEqual(extension, file.Extensions[0]);
-            Assert.AreEqual(extension, file.FindTypeByName<FieldDescriptor>("optional_int32_extension"));
-            Assert.IsNull(file.FindTypeByName<FieldDescriptor>("no_such_ext"));
-            Assert.IsNull(file.FindTypeByName<FieldDescriptor>("protobuf_unittest.optional_int32_extension"));
-            Assert.AreEqual(0, UnittestImport.Descriptor.Extensions.Count);
+            Assert.Equal(extension, file.Extensions[0]);
+            Assert.Equal(extension, file.FindTypeByName<FieldDescriptor>("optional_int32_extension"));
+            Assert.Null(file.FindTypeByName<FieldDescriptor>("no_such_ext"));
+            Assert.Null(file.FindTypeByName<FieldDescriptor>("protobuf_unittest.optional_int32_extension"));
+            Assert.Equal(0, UnittestImport.Descriptor.Extensions.Count);
             for (int i = 0; i < file.Extensions.Count; i++)
             {
-                Assert.AreEqual(i, file.Extensions[i].Index);
+                Assert.Equal(i, file.Extensions[i].Index);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void MessageDescriptor()
         {
             MessageDescriptor messageType = TestAllTypes.Descriptor;
             MessageDescriptor nestedType = TestAllTypes.Types.NestedMessage.Descriptor;
 
-            Assert.AreEqual("TestAllTypes", messageType.Name);
-            Assert.AreEqual("protobuf_unittest.TestAllTypes", messageType.FullName);
-            Assert.AreEqual(Unittest.Descriptor, messageType.File);
-            Assert.IsNull(messageType.ContainingType);
-            Assert.AreEqual(DescriptorProtos.MessageOptions.DefaultInstance, messageType.Options);
-            Assert.AreEqual("TestAllTypes", messageType.Proto.Name);
+            Assert.Equal("TestAllTypes", messageType.Name);
+            Assert.Equal("protobuf_unittest.TestAllTypes", messageType.FullName);
+            Assert.Equal(Unittest.Descriptor, messageType.File);
+            Assert.Null(messageType.ContainingType);
+            Assert.Equal(DescriptorProtos.MessageOptions.DefaultInstance, messageType.Options);
+            Assert.Equal("TestAllTypes", messageType.Proto.Name);
 
-            Assert.AreEqual("NestedMessage", nestedType.Name);
-            Assert.AreEqual("protobuf_unittest.TestAllTypes.NestedMessage", nestedType.FullName);
-            Assert.AreEqual(Unittest.Descriptor, nestedType.File);
-            Assert.AreEqual(messageType, nestedType.ContainingType);
+            Assert.Equal("NestedMessage", nestedType.Name);
+            Assert.Equal("protobuf_unittest.TestAllTypes.NestedMessage", nestedType.FullName);
+            Assert.Equal(Unittest.Descriptor, nestedType.File);
+            Assert.Equal(messageType, nestedType.ContainingType);
 
             FieldDescriptor field = messageType.Fields[0];
-            Assert.AreEqual("optional_int32", field.Name);
-            Assert.AreEqual(field, messageType.FindDescriptor<FieldDescriptor>("optional_int32"));
-            Assert.IsNull(messageType.FindDescriptor<FieldDescriptor>("no_such_field"));
-            Assert.AreEqual(field, messageType.FindFieldByNumber(1));
-            Assert.IsNull(messageType.FindFieldByNumber(571283));
+            Assert.Equal("optional_int32", field.Name);
+            Assert.Equal(field, messageType.FindDescriptor<FieldDescriptor>("optional_int32"));
+            Assert.Null(messageType.FindDescriptor<FieldDescriptor>("no_such_field"));
+            Assert.Equal(field, messageType.FindFieldByNumber(1));
+            Assert.Null(messageType.FindFieldByNumber(571283));
             for (int i = 0; i < messageType.Fields.Count; i++)
             {
-                Assert.AreEqual(i, messageType.Fields[i].Index);
+                Assert.Equal(i, messageType.Fields[i].Index);
             }
 
-            Assert.AreEqual(nestedType, messageType.NestedTypes[0]);
-            Assert.AreEqual(nestedType, messageType.FindDescriptor<MessageDescriptor>("NestedMessage"));
-            Assert.IsNull(messageType.FindDescriptor<MessageDescriptor>("NoSuchType"));
+            Assert.Equal(nestedType, messageType.NestedTypes[0]);
+            Assert.Equal(nestedType, messageType.FindDescriptor<MessageDescriptor>("NestedMessage"));
+            Assert.Null(messageType.FindDescriptor<MessageDescriptor>("NoSuchType"));
             for (int i = 0; i < messageType.NestedTypes.Count; i++)
             {
-                Assert.AreEqual(i, messageType.NestedTypes[i].Index);
+                Assert.Equal(i, messageType.NestedTypes[i].Index);
             }
 
-            Assert.AreEqual(messageType.EnumTypes[0], messageType.FindDescriptor<EnumDescriptor>("NestedEnum"));
-            Assert.IsNull(messageType.FindDescriptor<EnumDescriptor>("NoSuchType"));
+            Assert.Equal(messageType.EnumTypes[0], messageType.FindDescriptor<EnumDescriptor>("NestedEnum"));
+            Assert.Null(messageType.FindDescriptor<EnumDescriptor>("NoSuchType"));
             for (int i = 0; i < messageType.EnumTypes.Count; i++)
             {
-                Assert.AreEqual(i, messageType.EnumTypes[i].Index);
+                Assert.Equal(i, messageType.EnumTypes[i].Index);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void FieldDescriptor()
         {
             MessageDescriptor messageType = TestAllTypes.Descriptor;
@@ -155,54 +153,54 @@ namespace Google.ProtocolBuffers
             FieldDescriptor extension = Unittest.OptionalInt32Extension.Descriptor;
             FieldDescriptor nestedExtension = TestRequired.Single.Descriptor;
 
-            Assert.AreEqual("optional_int32", primitiveField.Name);
-            Assert.AreEqual("protobuf_unittest.TestAllTypes.optional_int32",
+            Assert.Equal("optional_int32", primitiveField.Name);
+            Assert.Equal("protobuf_unittest.TestAllTypes.optional_int32",
                             primitiveField.FullName);
-            Assert.AreEqual(1, primitiveField.FieldNumber);
-            Assert.AreEqual(messageType, primitiveField.ContainingType);
-            Assert.AreEqual(Unittest.Descriptor, primitiveField.File);
-            Assert.AreEqual(FieldType.Int32, primitiveField.FieldType);
-            Assert.AreEqual(MappedType.Int32, primitiveField.MappedType);
-            Assert.AreEqual(DescriptorProtos.FieldOptions.DefaultInstance, primitiveField.Options);
-            Assert.IsFalse(primitiveField.IsExtension);
-            Assert.AreEqual("optional_int32", primitiveField.Proto.Name);
+            Assert.Equal(1, primitiveField.FieldNumber);
+            Assert.Equal(messageType, primitiveField.ContainingType);
+            Assert.Equal(Unittest.Descriptor, primitiveField.File);
+            Assert.Equal(FieldType.Int32, primitiveField.FieldType);
+            Assert.Equal(MappedType.Int32, primitiveField.MappedType);
+            Assert.Equal(DescriptorProtos.FieldOptions.DefaultInstance, primitiveField.Options);
+            Assert.False(primitiveField.IsExtension);
+            Assert.Equal("optional_int32", primitiveField.Proto.Name);
 
-            Assert.AreEqual("optional_nested_enum", enumField.Name);
-            Assert.AreEqual(FieldType.Enum, enumField.FieldType);
-            Assert.AreEqual(MappedType.Enum, enumField.MappedType);
-            // Assert.AreEqual(TestAllTypes.Types.NestedEnum.DescriptorProtoFile, enumField.EnumType);
+            Assert.Equal("optional_nested_enum", enumField.Name);
+            Assert.Equal(FieldType.Enum, enumField.FieldType);
+            Assert.Equal(MappedType.Enum, enumField.MappedType);
+            // Assert.Equal(TestAllTypes.Types.NestedEnum.DescriptorProtoFile, enumField.EnumType);
 
-            Assert.AreEqual("optional_foreign_message", messageField.Name);
-            Assert.AreEqual(FieldType.Message, messageField.FieldType);
-            Assert.AreEqual(MappedType.Message, messageField.MappedType);
-            Assert.AreEqual(ForeignMessage.Descriptor, messageField.MessageType);
+            Assert.Equal("optional_foreign_message", messageField.Name);
+            Assert.Equal(FieldType.Message, messageField.FieldType);
+            Assert.Equal(MappedType.Message, messageField.MappedType);
+            Assert.Equal(ForeignMessage.Descriptor, messageField.MessageType);
 
-            Assert.AreEqual("optional_cord", cordField.Name);
-            Assert.AreEqual(FieldType.String, cordField.FieldType);
-            Assert.AreEqual(MappedType.String, cordField.MappedType);
-            Assert.AreEqual(DescriptorProtos.FieldOptions.Types.CType.CORD, cordField.Options.Ctype);
+            Assert.Equal("optional_cord", cordField.Name);
+            Assert.Equal(FieldType.String, cordField.FieldType);
+            Assert.Equal(MappedType.String, cordField.MappedType);
+            Assert.Equal(DescriptorProtos.FieldOptions.Types.CType.CORD, cordField.Options.Ctype);
 
-            Assert.AreEqual("optional_int32_extension", extension.Name);
-            Assert.AreEqual("protobuf_unittest.optional_int32_extension", extension.FullName);
-            Assert.AreEqual(1, extension.FieldNumber);
-            Assert.AreEqual(TestAllExtensions.Descriptor, extension.ContainingType);
-            Assert.AreEqual(Unittest.Descriptor, extension.File);
-            Assert.AreEqual(FieldType.Int32, extension.FieldType);
-            Assert.AreEqual(MappedType.Int32, extension.MappedType);
-            Assert.AreEqual(DescriptorProtos.FieldOptions.DefaultInstance,
+            Assert.Equal("optional_int32_extension", extension.Name);
+            Assert.Equal("protobuf_unittest.optional_int32_extension", extension.FullName);
+            Assert.Equal(1, extension.FieldNumber);
+            Assert.Equal(TestAllExtensions.Descriptor, extension.ContainingType);
+            Assert.Equal(Unittest.Descriptor, extension.File);
+            Assert.Equal(FieldType.Int32, extension.FieldType);
+            Assert.Equal(MappedType.Int32, extension.MappedType);
+            Assert.Equal(DescriptorProtos.FieldOptions.DefaultInstance,
                             extension.Options);
-            Assert.IsTrue(extension.IsExtension);
-            Assert.AreEqual(null, extension.ExtensionScope);
-            Assert.AreEqual("optional_int32_extension", extension.Proto.Name);
+            Assert.True(extension.IsExtension);
+            Assert.Equal(null, extension.ExtensionScope);
+            Assert.Equal("optional_int32_extension", extension.Proto.Name);
 
-            Assert.AreEqual("single", nestedExtension.Name);
-            Assert.AreEqual("protobuf_unittest.TestRequired.single",
+            Assert.Equal("single", nestedExtension.Name);
+            Assert.Equal("protobuf_unittest.TestRequired.single",
                             nestedExtension.FullName);
-            Assert.AreEqual(TestRequired.Descriptor,
+            Assert.Equal(TestRequired.Descriptor,
                             nestedExtension.ExtensionScope);
         }
 
-        [TestMethod]
+        [Fact]
         public void FieldDescriptorLabel()
         {
             FieldDescriptor requiredField =
@@ -212,76 +210,76 @@ namespace Google.ProtocolBuffers
             FieldDescriptor repeatedField =
                 TestAllTypes.Descriptor.FindDescriptor<FieldDescriptor>("repeated_int32");
 
-            Assert.IsTrue(requiredField.IsRequired);
-            Assert.IsFalse(requiredField.IsRepeated);
-            Assert.IsFalse(optionalField.IsRequired);
-            Assert.IsFalse(optionalField.IsRepeated);
-            Assert.IsFalse(repeatedField.IsRequired);
-            Assert.IsTrue(repeatedField.IsRepeated);
+            Assert.True(requiredField.IsRequired);
+            Assert.False(requiredField.IsRepeated);
+            Assert.False(optionalField.IsRequired);
+            Assert.False(optionalField.IsRepeated);
+            Assert.False(repeatedField.IsRequired);
+            Assert.True(repeatedField.IsRepeated);
         }
-        [TestMethod]
+        [Fact]
         public void FieldDescriptorDefault()
         {
             MessageDescriptor d = TestAllTypes.Descriptor;
-            Assert.IsFalse(d.FindDescriptor<FieldDescriptor>("optional_int32").HasDefaultValue);
-            Assert.AreEqual<object>(0, d.FindDescriptor<FieldDescriptor>("optional_int32").DefaultValue);
-            Assert.IsTrue(d.FindDescriptor<FieldDescriptor>("default_int32").HasDefaultValue);
-            Assert.AreEqual<object>(41, d.FindDescriptor<FieldDescriptor>("default_int32").DefaultValue);
+            Assert.False(d.FindDescriptor<FieldDescriptor>("optional_int32").HasDefaultValue);
+            Assert.Equal<object>(0, d.FindDescriptor<FieldDescriptor>("optional_int32").DefaultValue);
+            Assert.True(d.FindDescriptor<FieldDescriptor>("default_int32").HasDefaultValue);
+            Assert.Equal<object>(41, d.FindDescriptor<FieldDescriptor>("default_int32").DefaultValue);
 
             d = TestExtremeDefaultValues.Descriptor;
-            Assert.AreEqual<object>(TestExtremeDefaultValues.DefaultInstance.EscapedBytes,
+            Assert.Equal<object>(TestExtremeDefaultValues.DefaultInstance.EscapedBytes,
                 d.FindDescriptor<FieldDescriptor>("escaped_bytes").DefaultValue);
 
-            Assert.AreEqual<object>(uint.MaxValue, d.FindDescriptor<FieldDescriptor>("large_uint32").DefaultValue);
-            Assert.AreEqual<object>(ulong.MaxValue, d.FindDescriptor<FieldDescriptor>("large_uint64").DefaultValue);
+            Assert.Equal<object>(uint.MaxValue, d.FindDescriptor<FieldDescriptor>("large_uint32").DefaultValue);
+            Assert.Equal<object>(ulong.MaxValue, d.FindDescriptor<FieldDescriptor>("large_uint64").DefaultValue);
         }
-        [TestMethod]
+        [Fact]
         public void EnumDescriptor()
         {
             // Note: this test is a bit different to the Java version because there's no static way of getting to the descriptor
             EnumDescriptor enumType = Unittest.Descriptor.FindTypeByName<EnumDescriptor>("ForeignEnum");
             EnumDescriptor nestedType = TestAllTypes.Descriptor.FindDescriptor<EnumDescriptor>("NestedEnum");
 
-            Assert.AreEqual("ForeignEnum", enumType.Name);
-            Assert.AreEqual("protobuf_unittest.ForeignEnum", enumType.FullName);
-            Assert.AreEqual(Unittest.Descriptor, enumType.File);
-            Assert.IsNull(enumType.ContainingType);
-            Assert.AreEqual(DescriptorProtos.EnumOptions.DefaultInstance,
+            Assert.Equal("ForeignEnum", enumType.Name);
+            Assert.Equal("protobuf_unittest.ForeignEnum", enumType.FullName);
+            Assert.Equal(Unittest.Descriptor, enumType.File);
+            Assert.Null(enumType.ContainingType);
+            Assert.Equal(DescriptorProtos.EnumOptions.DefaultInstance,
                             enumType.Options);
 
-            Assert.AreEqual("NestedEnum", nestedType.Name);
-            Assert.AreEqual("protobuf_unittest.TestAllTypes.NestedEnum",
+            Assert.Equal("NestedEnum", nestedType.Name);
+            Assert.Equal("protobuf_unittest.TestAllTypes.NestedEnum",
                             nestedType.FullName);
-            Assert.AreEqual(Unittest.Descriptor, nestedType.File);
-            Assert.AreEqual(TestAllTypes.Descriptor, nestedType.ContainingType);
+            Assert.Equal(Unittest.Descriptor, nestedType.File);
+            Assert.Equal(TestAllTypes.Descriptor, nestedType.ContainingType);
 
             EnumValueDescriptor value = enumType.FindValueByName("FOREIGN_FOO");
-            Assert.AreEqual(value, enumType.Values[0]);
-            Assert.AreEqual("FOREIGN_FOO", value.Name);
-            Assert.AreEqual(4, value.Number);
-            Assert.AreEqual((int) ForeignEnum.FOREIGN_FOO, value.Number);
-            Assert.AreEqual(value, enumType.FindValueByNumber(4));
-            Assert.IsNull(enumType.FindValueByName("NO_SUCH_VALUE"));
+            Assert.Equal(value, enumType.Values[0]);
+            Assert.Equal("FOREIGN_FOO", value.Name);
+            Assert.Equal(4, value.Number);
+            Assert.Equal((int) ForeignEnum.FOREIGN_FOO, value.Number);
+            Assert.Equal(value, enumType.FindValueByNumber(4));
+            Assert.Null(enumType.FindValueByName("NO_SUCH_VALUE"));
             for (int i = 0; i < enumType.Values.Count; i++)
             {
-                Assert.AreEqual(i, enumType.Values[i].Index);
+                Assert.Equal(i, enumType.Values[i].Index);
             }
         }
         
 
-        [TestMethod]
+        [Fact]
         public void CustomOptions()
         {
             MessageDescriptor descriptor = TestMessageWithCustomOptions.Descriptor;
-            Assert.IsTrue(descriptor.Options.HasExtension(UnittestCustomOptions.MessageOpt1));
-            Assert.AreEqual(-56, descriptor.Options.GetExtension(UnittestCustomOptions.MessageOpt1));
+            Assert.True(descriptor.Options.HasExtension(UnittestCustomOptions.MessageOpt1));
+            Assert.Equal(-56, descriptor.Options.GetExtension(UnittestCustomOptions.MessageOpt1));
 
 
             FieldDescriptor field = descriptor.FindFieldByName("field1");
-            Assert.IsNotNull(field);
+            Assert.NotNull(field);
 
-            Assert.IsTrue(field.Options.HasExtension(UnittestCustomOptions.FieldOpt1));
-            Assert.AreEqual(8765432109uL, field.Options.GetExtension(UnittestCustomOptions.FieldOpt1));
+            Assert.True(field.Options.HasExtension(UnittestCustomOptions.FieldOpt1));
+            Assert.Equal(8765432109uL, field.Options.GetExtension(UnittestCustomOptions.FieldOpt1));
             
         }
     }

@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using UnitTest.Issues.TestProtos;
+﻿using UnitTest.Issues.TestProtos;
+using Xunit;
 
 namespace Google.ProtocolBuffers
 {
-    [TestClass]
     public class TestCornerCases
     {
-        [TestMethod]
+        [Fact]
         public void TestRoundTripNegativeEnums()
         {
             NegativeEnumMessage msg = NegativeEnumMessage.CreateBuilder()
@@ -23,16 +19,16 @@ namespace Google.ProtocolBuffers
                 .AddPackedValues(NegativeEnum.FiveBelow) //10
                 .Build();
 
-            Assert.AreEqual(58, msg.SerializedSize);
+            Assert.Equal(58, msg.SerializedSize);
 
             byte[] bytes = new byte[58];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
 
             msg.WriteTo(output);
-            Assert.AreEqual(0, output.SpaceLeft);
+            Assert.Equal(0, output.SpaceLeft);
 
             NegativeEnumMessage copy = NegativeEnumMessage.ParseFrom(bytes);
-            Assert.AreEqual(msg, copy);
+            Assert.Equal(msg, copy);
         }
     }
 }
