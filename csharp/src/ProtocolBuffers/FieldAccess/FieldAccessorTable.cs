@@ -68,11 +68,7 @@ namespace Google.ProtocolBuffers.FieldAccess
         {
             this.descriptor = descriptor;
             accessors = new IFieldAccessor<TMessage, TBuilder>[descriptor.Fields.Count];
-            bool supportFieldPresence = false;
-            if (descriptor.File.GetSyntax() == FileDescriptor.Syntax.PROTO2)
-            {
-                supportFieldPresence = true;
-            }
+            bool supportFieldPresence = descriptor.File.Syntax == FileDescriptor.ProtoSyntax.PROTO2;
             for (int i = 0; i < accessors.Length; i++)
             {
                 accessors[i] = CreateAccessor(descriptor.Fields[i], propertyNames[i], supportFieldPresence);

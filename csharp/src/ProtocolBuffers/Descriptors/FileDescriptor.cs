@@ -54,20 +54,15 @@ namespace Google.ProtocolBuffers.Descriptors
         private readonly IList<FileDescriptor> publicDependencies;
         private readonly DescriptorPool pool;
 
-        public enum Syntax
+        public enum ProtoSyntax
         {
-            UNKNOWN,
             PROTO2,
             PROTO3
         }
 
-        public Syntax GetSyntax()
+        public ProtoSyntax Syntax
         {
-            if (proto.Syntax == "proto3")
-            {
-                return Syntax.PROTO3;
-            }
-            return Syntax.PROTO2;
+            get { return proto.Syntax == "proto3" ? ProtoSyntax.PROTO3 : ProtoSyntax.PROTO2; }
         }
 
         private FileDescriptor(FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool, bool allowUnknownDependencies)

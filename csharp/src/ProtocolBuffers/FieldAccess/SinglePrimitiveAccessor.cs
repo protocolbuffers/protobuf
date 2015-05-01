@@ -58,9 +58,8 @@ namespace Google.ProtocolBuffers.FieldAccess
             get { return clrType; }
         }
 
-        internal SinglePrimitiveAccessor(FieldDescriptor fieldDesriptor, string name, bool supportFieldPresence)
+        internal SinglePrimitiveAccessor(FieldDescriptor fieldDescriptor, string name, bool supportFieldPresence)
         {
-            field = fieldDesriptor;
             PropertyInfo messageProperty = typeof(TMessage).GetProperty(name, null, ReflectionUtil.EmptyTypes);
             PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name, null, ReflectionUtil.EmptyTypes);
             MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name);
@@ -77,8 +76,11 @@ namespace Google.ProtocolBuffers.FieldAccess
                     throw new ArgumentException("Has properties not available");
                 }
                 hasDelegate = ReflectionUtil.CreateDelegateFunc<TMessage, bool>(hasProperty.GetGetMethod());
+            } else
+            {
+                hasDelegate = message => !GetValue(message).Equals(fieldDescriptor.DefaultValue);
             }
-            
+
             clrType = messageProperty.PropertyType;
             clearDelegate = ReflectionUtil.CreateDelegateFunc<TBuilder, IBuilder>(clearMethod);
             getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
@@ -87,10 +89,6 @@ namespace Google.ProtocolBuffers.FieldAccess
 
         public bool Has(TMessage message)
         {
-            if (hasDelegate == null)
-            {
-                return !GetValue(message).Equals(field.DefaultValue);
-            }
             return hasDelegate(message);
         }
 
