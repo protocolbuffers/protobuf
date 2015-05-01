@@ -40,9 +40,19 @@
 #include <google/protobuf/stubs/pbconfig.h>
 
 #if defined(GOOGLE_PROTOBUF_HAVE_HASH_MAP) && \
-    defined(GOOGLE_PROTOBUF_HAVE_HASH_SET)
+        defined(GOOGLE_PROTOBUF_HAVE_HASH_SET)
+#if defined(GOOGLE_PROTOBUF_THIRD_PARTY_BUILD)
+#if defined(FORGEONMAC)
+#include <unordered_map>
+#include <unordered_set>
+#else
+#include <hash_map>
+#include <hash_set>
+#endif
+#else
 #include GOOGLE_PROTOBUF_HASH_MAP_H
 #include GOOGLE_PROTOBUF_HASH_SET_H
+#endif
 #else
 #define GOOGLE_PROTOBUF_MISSING_HASH
 #include <map>

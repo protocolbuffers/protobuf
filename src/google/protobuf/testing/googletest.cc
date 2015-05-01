@@ -65,7 +65,7 @@ namespace protobuf {
 #endif
 
 string TestSourceDir() {
-#ifndef GOOGLE_THIRD_PARTY_PROTOBUF
+#ifndef GOOGLE_PROTOBUF_THIRD_PARTY_BUILD
 #ifdef _MSC_VER
   // Look for the "src" directory.
   string prefix = ".";
@@ -91,7 +91,7 @@ string TestSourceDir() {
 #endif
 #else
   return "third_party/protobuf/src";
-#endif  // GOOGLE_THIRD_PARTY_PROTOBUF
+#endif  // GOOGLE_PROTOBUF_THIRD_PARTY_BUILD
 }
 
 namespace {
