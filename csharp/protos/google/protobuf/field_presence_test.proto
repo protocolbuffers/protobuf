@@ -2,10 +2,7 @@ syntax = "proto3";
 
 package Google.ProtocolBuffers.TestProtos.FieldPresence;
 
-option java_package = "com.google.protobuf";
-option java_outer_classname = "FieldPresenceTestProto";
-option java_generate_equals_and_hash = true;
-
+// TODO(jieluo): Add repeated fields, oneof, maps to TestAllTypes 
 message TestAllTypes {
   enum NestedEnum {
     FOO = 0;

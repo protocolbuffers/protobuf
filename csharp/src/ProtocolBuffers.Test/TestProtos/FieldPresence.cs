@@ -41,8 +41,7 @@ namespace Google.ProtocolBuffers.TestProtos.FieldPresence {
             "c3NhZ2UYBSABKAsySy5Hb29nbGUuUHJvdG9jb2xCdWZmZXJzLlRlc3RQcm90", 
             "b3MuRmllbGRQcmVzZW5jZS5UZXN0QWxsVHlwZXMuTmVzdGVkTWVzc2FnZRoe", 
             "Cg1OZXN0ZWRNZXNzYWdlEg0KBXZhbHVlGAEgASgFIicKCk5lc3RlZEVudW0S", 
-            "BwoDRk9PEAASBwoDQkFSEAESBwoDQkFaEAJCMAoTY29tLmdvb2dsZS5wcm90", 
-          "b2J1ZkIWRmllbGRQcmVzZW5jZVRlc3RQcm90b6ABAWIGcHJvdG8z"));
+          "BwoDRk9PEAASBwoDQkFSEAESBwoDQkFaEAJiBnByb3RvMw=="));
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_Google_ProtocolBuffers_TestProtos_FieldPresence_TestAllTypes__Descriptor = Descriptor.MessageTypes[0];
