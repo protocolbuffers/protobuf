@@ -28,11 +28,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-if RUBY_PLATFORM == "java"
-  require 'json'
-  require 'google/protobuf_java'
-else
-  require 'google/protobuf_c'
-end
+# add syntatic sugar on top of the core library
+module Google
+  module Protobuf
+    class RepeatedField
 
-require 'google/protobuf/repeated_field'
+      alias_method :size, :length
+
+    end
+  end
+end
