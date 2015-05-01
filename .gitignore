@@ -74,3 +74,9 @@ src/**/*.trs
 # JavaBuild output.
 java/target
 javanano/target
+
+# Directories created by opening the Objective C Xcode projects.
+objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcuserdata/
+objectivec/ProtocolBuffers_OSX.xcodeproj/xcuserdata/
+objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcuserdata/
+objectivec/ProtocolBuffers_iOS.xcodeproj/xcuserdata/
