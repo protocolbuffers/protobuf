@@ -67,6 +67,6 @@ done
 cd ..
 
 #Add clang-format file to directory
-cp protobuf/.clang-format dist
+cp protobuf/editors/.clang_format dist
 
 rm -rf $BASENAME
