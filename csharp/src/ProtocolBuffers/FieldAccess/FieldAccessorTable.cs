@@ -68,16 +68,17 @@ namespace Google.ProtocolBuffers.FieldAccess
         {
             this.descriptor = descriptor;
             accessors = new IFieldAccessor<TMessage, TBuilder>[descriptor.Fields.Count];
+            bool supportFieldPresence = descriptor.File.Syntax == FileDescriptor.ProtoSyntax.Proto2;
             for (int i = 0; i < accessors.Length; i++)
             {
-                accessors[i] = CreateAccessor(descriptor.Fields[i], propertyNames[i]);
+                accessors[i] = CreateAccessor(descriptor.Fields[i], propertyNames[i], supportFieldPresence);
             }
         }
 
         /// <summary>
         /// Creates an accessor for a single field
         /// </summary>   
-        private static IFieldAccessor<TMessage, TBuilder> CreateAccessor(FieldDescriptor field, string name)
+        private static IFieldAccessor<TMessage, TBuilder> CreateAccessor(FieldDescriptor field, string name, bool supportFieldPresence)
         {
             if (field.IsRepeated)
             {
@@ -98,9 +99,9 @@ namespace Google.ProtocolBuffers.FieldAccess
                     case MappedType.Message:
                         return new SingleMessageAccessor<TMessage, TBuilder>(name);
                     case MappedType.Enum:
-                        return new SingleEnumAccessor<TMessage, TBuilder>(field, name);
+                        return new SingleEnumAccessor<TMessage, TBuilder>(field, name, supportFieldPresence);
                     default:
-                        return new SinglePrimitiveAccessor<TMessage, TBuilder>(name);
+                        return new SinglePrimitiveAccessor<TMessage, TBuilder>(field, name, supportFieldPresence);
                 }
             }
         }

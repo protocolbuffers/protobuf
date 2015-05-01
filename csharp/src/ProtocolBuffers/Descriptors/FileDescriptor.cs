@@ -54,6 +54,17 @@ namespace Google.ProtocolBuffers.Descriptors
         private readonly IList<FileDescriptor> publicDependencies;
         private readonly DescriptorPool pool;
 
+        public enum ProtoSyntax
+        {
+            Proto2,
+            Proto3
+        }
+
+        public ProtoSyntax Syntax
+        {
+            get { return proto.Syntax == "proto3" ? ProtoSyntax.Proto3 : ProtoSyntax.Proto2; }
+        }
+
         private FileDescriptor(FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool, bool allowUnknownDependencies)
         {
             this.pool = pool;

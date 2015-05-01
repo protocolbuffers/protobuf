@@ -31,6 +31,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
 using System.Reflection;
+using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.FieldAccess
 {
@@ -56,18 +57,30 @@ namespace Google.ProtocolBuffers.FieldAccess
             get { return clrType; }
         }
 
-        internal SinglePrimitiveAccessor(string name)
+        internal SinglePrimitiveAccessor(FieldDescriptor fieldDescriptor, string name, bool supportFieldPresence)
         {
             PropertyInfo messageProperty = typeof(TMessage).GetProperty(name, null, ReflectionUtil.EmptyTypes);
             PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name, null, ReflectionUtil.EmptyTypes);
-            PropertyInfo hasProperty = typeof(TMessage).GetProperty("Has" + name);
             MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name);
-            if (messageProperty == null || builderProperty == null || hasProperty == null || clearMethod == null)
+            if (messageProperty == null || builderProperty == null || clearMethod == null)
             {
                 throw new ArgumentException("Not all required properties/methods available");
             }
+
+            if (supportFieldPresence)
+            {
+                PropertyInfo hasProperty = typeof(TMessage).GetProperty("Has" + name);
+                if (hasProperty == null)
+                {
+                    throw new ArgumentException("Has properties not available");
+                }
+                hasDelegate = ReflectionUtil.CreateDelegateFunc<TMessage, bool>(hasProperty.GetGetMethod());
+            } else
+            {
+                hasDelegate = message => !GetValue(message).Equals(fieldDescriptor.DefaultValue);
+            }
+
             clrType = messageProperty.PropertyType;
-            hasDelegate = ReflectionUtil.CreateDelegateFunc<TMessage, bool>(hasProperty.GetGetMethod());
             clearDelegate = ReflectionUtil.CreateDelegateFunc<TBuilder, IBuilder>(clearMethod);
             getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
             setValueDelegate = ReflectionUtil.CreateDowncastDelegate<TBuilder>(builderProperty.GetSetMethod());
