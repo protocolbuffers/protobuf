@@ -79,13 +79,6 @@ void FieldGeneratorBase::AddNullCheck(Writer* writer, const std::string& name) {
 
 void FieldGeneratorBase::AddPublicMemberAttributes(Writer* writer) {
   AddDeprecatedFlag(writer);
-  AddClsComplianceCheck(writer);
-}
-
-void FieldGeneratorBase::AddClsComplianceCheck(Writer* writer) {
-  if (cls_compliance() && !is_cls_compliant()) {
-    writer->WriteLine("[global::System.CLSCompliant(false)]");
-  }
 }
 
 std::string FieldGeneratorBase::property_name() {
@@ -209,12 +202,6 @@ bool FieldGeneratorBase::is_nullable_type() {
       GOOGLE_LOG(FATAL)<< "Unknown field type.";
       return true;
   }
-}
-
-bool FieldGeneratorBase::is_cls_compliant() {
-  CSharpType type = GetCSharpType(descriptor_->type());
-  return (type != CSHARPTYPE_UINT32) && (type != CSHARPTYPE_UINT64)
-      && (UnderscoresToPascalCase(name()).substr(0, 1) != "_");
 }
 
 inline bool IsNaN(double value) {

@@ -70,14 +70,12 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   void AddNullCheck(Writer* writer, const std::string& name);
 
   void AddPublicMemberAttributes(Writer* writer);
-  void AddClsComplianceCheck(Writer* writer);
 
   std::string property_name();
   std::string name();
   std::string type_name();
   bool has_default_value();
   bool is_nullable_type();
-  bool is_cls_compliant();
   std::string default_value();
   std::string number();
   std::string message_or_group();

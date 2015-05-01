@@ -262,11 +262,6 @@ void MessageGenerator::Generate(Writer* writer) {
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
-    // TODO(jtattermusch): same code for cls compliance is in csharp_extension
-    if (cls_compliance()
-        && GetFieldConstantName(fieldDescriptor)[0] == '_') {
-      writer->WriteLine("[global::System.CLSCompliant(false)]");
-    }
 
     // Rats: we lose the debug comment here :(
     writer->WriteLine("public const int $0$ = $1$;",
