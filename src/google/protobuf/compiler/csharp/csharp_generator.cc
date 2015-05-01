@@ -71,10 +71,7 @@ bool Generator::Generate(
 
   std::string file_extension = ".cs";
   for (int i = 0; i < options.size(); i++) {
-    if (options[i].first == "no_cls_compliance") {
-      *error = "Turning off CLS compliance is not implemented yet.";
-      return false;
-    } else if (options[i].first == "file_extension") {
+    if (options[i].first == "file_extension") {
       file_extension = options[i].second;
     } else {
       *error = "Unknown generator option: " + options[i].first;

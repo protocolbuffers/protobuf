@@ -63,11 +63,6 @@ ExtensionGenerator::~ExtensionGenerator() {
 }
 
 void ExtensionGenerator::Generate(Writer* writer) {
-  if (cls_compliance()
-      && (GetFieldConstantName(descriptor_).substr(0, 1) == "_")) {
-    writer->WriteLine("[global::System.CLSCompliant(false)]");
-  }
-
   writer->WriteLine("public const int $0$ = $1$;",
                     GetFieldConstantName(descriptor_),
                     SimpleItoa(descriptor_->number()));
@@ -80,7 +75,6 @@ void ExtensionGenerator::Generate(Writer* writer) {
     //        "option message_set_wire_format = true; is not supported in Lite runtime extensions.");
     //}
 
-    AddClsComplianceCheck(writer);
     writer->Write("$0$ ", class_access_level());
     writer->WriteLine(
         "static pb::$3$<$0$, $1$> $2$;",
@@ -90,12 +84,10 @@ void ExtensionGenerator::Generate(Writer* writer) {
         descriptor_->is_repeated() ?
             "GeneratedRepeatExtensionLite" : "GeneratedExtensionLite");
   } else if (descriptor_->is_repeated()) {
-    AddClsComplianceCheck(writer);
     writer->WriteLine(
         "$0$ static pb::GeneratedExtensionBase<scg::IList<$1$>> $2$;",
         class_access_level(), type_name(), property_name());
   } else {
-    AddClsComplianceCheck(writer);
     writer->WriteLine("$0$ static pb::GeneratedExtensionBase<$1$> $2$;",
                       class_access_level(), type_name(), property_name());
   }
