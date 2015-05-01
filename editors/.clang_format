@@ -1,0 +1,16 @@
+BasedOnStyle: Google
+AccessModifierOffset: 0
+AlignAfterOpenBracket: true
+AlignEscapedNewlinesLeft: false
+AlignOperands: true
+AlignTrailingComments: true
+BinPackArguments: true
+BinPackParameters: false
+ColumnLimit: 80
+ContinuationIndentWidth: 8
+IndentCaseLabels: true
+IndentWidth: 4
+#Language: $LANG
+NamespaceIndentation: NI_Inner
+TabWidth: 4
+UseTab: UT_ALWAYS

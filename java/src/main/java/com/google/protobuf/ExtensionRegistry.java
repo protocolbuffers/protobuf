@@ -280,6 +280,10 @@ public class ExtensionRegistry extends ExtensionRegistryLite {
       add(new ExtensionInfo(type, defaultInstance),
           Extension.ExtensionType.IMMUTABLE);
   }
+  
+  public boolean isEmpty() {
+    return this.equals(EMPTY);
+  }
 
   // =================================================================
   // Private stuff.

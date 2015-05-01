@@ -96,6 +96,10 @@ void StringAppendV(string* dst, const char* format, va_list ap) {
   // Increase the buffer size to the size requested by vsnprintf,
   // plus one for the closing \0.
   int length = result+1;
+  if(length < 0) {
+    // Just an error  
+    return;
+  }
   char* buf = new char[length];
 
   // Restore the va_list before we use it again
