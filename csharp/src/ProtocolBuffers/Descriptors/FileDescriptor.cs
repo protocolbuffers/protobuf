@@ -56,13 +56,13 @@ namespace Google.ProtocolBuffers.Descriptors
 
         public enum ProtoSyntax
         {
-            PROTO2,
-            PROTO3
+            Proto2,
+            Proto3
         }
 
         public ProtoSyntax Syntax
         {
-            get { return proto.Syntax == "proto3" ? ProtoSyntax.PROTO3 : ProtoSyntax.PROTO2; }
+            get { return proto.Syntax == "proto3" ? ProtoSyntax.Proto3 : ProtoSyntax.Proto2; }
         }
 
         private FileDescriptor(FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool, bool allowUnknownDependencies)

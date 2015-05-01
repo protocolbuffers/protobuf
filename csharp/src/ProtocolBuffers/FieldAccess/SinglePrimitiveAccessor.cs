@@ -43,7 +43,6 @@ namespace Google.ProtocolBuffers.FieldAccess
         where TBuilder : IBuilder<TMessage, TBuilder>
     {
         private readonly Type clrType;
-        private readonly FieldDescriptor field;
         private readonly Func<TMessage, object> getValueDelegate;
         private readonly Action<TBuilder, object> setValueDelegate;
         private readonly Func<TMessage, bool> hasDelegate;

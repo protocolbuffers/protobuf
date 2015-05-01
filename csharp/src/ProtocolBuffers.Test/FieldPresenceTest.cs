@@ -163,7 +163,7 @@ namespace Google.ProtocolBuffers
         }
 
         [Fact]
-        public void TestSeralizeAndParse()
+        public void TestSerializeAndParse()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
             builder.SetOptionalInt32(1234);
