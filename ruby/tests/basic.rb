@@ -314,6 +314,17 @@ module BasicTest
       assert l4 == [0, 0, 0, 0, 0, 42, 100, 101, 102]
     end
 
+    def test_parent_rptfield
+      #make sure we set the RepeatedField and can add to it
+      m = TestMessage.new
+      assert m.repeated_string == []
+      m.repeated_string << 'ok'
+      m.repeated_string.push('ok2')
+      assert m.repeated_string == ['ok', 'ok2']
+      m.repeated_string += ['ok3']
+      assert m.repeated_string == ['ok', 'ok2', 'ok3']
+    end
+
     def test_rptfield_msg
       l = Google::Protobuf::RepeatedField.new(:message, TestMessage)
       l.push TestMessage.new
@@ -383,10 +394,31 @@ module BasicTest
       length_methods.each do |lm|
         assert l.send(lm)  == 0
       end
+      # out of bounds returns a nil
+      assert l[0] == nil
+      assert l[1] == nil
+      assert l[-1] == nil
       l.push 4
       length_methods.each do |lm|
-        assert l.send(lm)  == 1
+        assert l.send(lm) == 1
       end
+      assert l[0] == 4
+      assert l[1] == nil
+      assert l[-1] == 4
+      assert l[-2] == nil
+
+      l.push 2
+      length_methods.each do |lm|
+        assert l.send(lm) == 2
+      end
+      assert l[0] == 4
+      assert l[1] == 2
+      assert l[2] == nil
+      assert l[-1] == 2
+      assert l[-2] == 4
+      assert l[-3] == nil
+
+      #adding out of scope will backfill with empty objects
     end
 
     def test_map_basic
@@ -724,9 +756,12 @@ module BasicTest
       m = TestMessage.new
       m.optional_string = "hello"
       m.optional_int32 = 42
-      m.repeated_msg.push TestMessage2.new(:foo => 100)
-      m.repeated_msg.push TestMessage2.new(:foo => 200)
-
+      tm1 = TestMessage2.new(:foo => 100)
+      tm2 = TestMessage2.new(:foo => 200)
+      m.repeated_msg.push tm1
+      assert m.repeated_msg[-1] == tm1
+      m.repeated_msg.push tm2
+      assert m.repeated_msg[-1] == tm2
       m2 = m.dup
       assert m == m2
       m.optional_int32 += 1
