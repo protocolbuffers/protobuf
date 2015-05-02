@@ -659,14 +659,14 @@ public class RubyMessage extends RubyObject {
             } else {
                 Descriptors.FieldDescriptor.Type fieldType = fieldDescriptor.getType();
                 IRubyObject typeClass = context.runtime.getObject();
+                boolean addValue = true;
                 if (fieldType == Descriptors.FieldDescriptor.Type.MESSAGE) {
                     typeClass = ((RubyDescriptor) getDescriptorForField(context, fieldDescriptor)).msgclass(context);
+                    if (value.isNil()){
+                        addValue = false;
+                    }
                 } else if (fieldType == Descriptors.FieldDescriptor.Type.ENUM) {
                     typeClass = ((RubyEnumDescriptor) getDescriptorForField(context, fieldDescriptor)).enummodule(context);
-                }
-                Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
-                // Convert integer enum to symbol
-                if (fieldType == Descriptors.FieldDescriptor.Type.ENUM) {
                     Descriptors.EnumDescriptor enumDescriptor = fieldDescriptor.getEnumType();
                     if (Utils.isRubyNum(value)) {
                         Descriptors.EnumValueDescriptor val =
@@ -674,7 +674,12 @@ public class RubyMessage extends RubyObject {
                         if (val.getIndex() != -1) value = context.runtime.newSymbol(val.getName());
                     }
                 }
-                this.fields.put(fieldDescriptor, value);
+                if (addValue) {
+                    Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
+                    this.fields.put(fieldDescriptor, value);
+                } else {
+                    this.fields.remove(fieldDescriptor);
+                }
             }
         }
         return context.runtime.getNil();

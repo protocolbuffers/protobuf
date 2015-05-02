@@ -154,6 +154,8 @@ module BasicTest
       assert m.optional_bytes == "world"
       m.optional_msg = TestMessage2.new(:foo => 42)
       assert m.optional_msg == TestMessage2.new(:foo => 42)
+      m.optional_msg = nil
+      assert m.optional_msg == nil
     end
 
     def test_ctor_args
