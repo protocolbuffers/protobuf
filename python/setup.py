@@ -52,8 +52,14 @@ def GetVersion():
 
   """
   with open(os.path.join('google', 'protobuf', '__init__.py')) as version_file:
-    exec(version_file.read())
-    return __version__
+    inifile = version_file.read()
+    if sys.version_info[0] >= 3:  # exec Can't reliably modify locals in python3
+        nsp = {}
+        exec(inifile, nsp, nsp)
+        return nsp['__version__']
+    else:
+        exec(inifile)
+        return __version__
 
 
 def generate_proto(source):
