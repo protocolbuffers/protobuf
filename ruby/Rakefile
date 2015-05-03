@@ -6,6 +6,9 @@ require "rake/testtask"
 spec = Gem::Specification.load("google-protobuf.gemspec")
 
 if RUBY_PLATFORM == "java"
+  if `which mvn` == ''
+    raise ArgumentError, "maven needs to be installed"
+  end
   task :clean do
     system("mvn clean")
   end

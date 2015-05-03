@@ -246,15 +246,14 @@ public class RubyMessage extends RubyObject {
     public IRubyObject dup(ThreadContext context) {
         RubyMessage dup = (RubyMessage) metaClass.newInstance(context, Block.NULL_BLOCK);
         IRubyObject value;
-        for (Descriptors.FieldDescriptor fieldDescriptor : builder.getAllFields().keySet()) {
+        for (Descriptors.FieldDescriptor fieldDescriptor : this.descriptor.getFields()) {
             if (fieldDescriptor.isRepeated()) {
-                dup.repeatedFields.put(fieldDescriptor, getRepeatedField(context, fieldDescriptor));
-            } else if (builder.hasField(fieldDescriptor)) {
-                dup.fields.put(fieldDescriptor, wrapField(context, fieldDescriptor, builder.getField(fieldDescriptor)));
+                dup.addRepeatedField(fieldDescriptor, this.getRepeatedField(context, fieldDescriptor));
+            } else if (fields.containsKey(fieldDescriptor)) {
+                dup.fields.put(fieldDescriptor, fields.get(fieldDescriptor));
+            } else if (this.builder.hasField(fieldDescriptor)) {
+                dup.fields.put(fieldDescriptor, wrapField(context, fieldDescriptor, this.builder.getField(fieldDescriptor)));
             }
-        }
-        for (Descriptors.FieldDescriptor fieldDescriptor : fields.keySet()) {
-            dup.fields.put(fieldDescriptor, fields.get(fieldDescriptor));
         }
         for (Descriptors.FieldDescriptor fieldDescriptor : maps.keySet()) {
             dup.maps.put(fieldDescriptor, maps.get(fieldDescriptor));
@@ -411,6 +410,7 @@ public class RubyMessage extends RubyObject {
         for (int i = 0; i < count; i++) {
             ret.push(context, wrapField(context, fieldDescriptor, this.builder.getRepeatedField(fieldDescriptor, i)));
         }
+        addRepeatedField(fieldDescriptor, ret);
         return ret;
     }
 
