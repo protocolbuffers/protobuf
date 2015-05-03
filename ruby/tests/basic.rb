@@ -822,6 +822,67 @@ module BasicTest
       assert m == m2
     end
 
+    def test_encode_decode_helpers
+      m = TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+      json = m.to_json
+      m2 = TestMessage.decode_json(json)
+      assert m2.optional_string == 'foo'
+      assert m2.repeated_string == ['bar1', 'bar2']
+
+      proto = m.to_proto
+      m2 = TestMessage.decode(proto)
+      assert m2.optional_string == 'foo'
+      assert m2.repeated_string == ['bar1', 'bar2']
+    end
+
+    def test_protobuf_encode_decode_helpers
+      m = TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+      encoded_msg = Google::Protobuf.encode(m)
+      assert_equal m.to_proto, encoded_msg
+
+      decoded_msg = Google::Protobuf.decode(TestMessage, encoded_msg)
+      assert_equal TestMessage.decode(m.to_proto), decoded_msg
+    end
+
+    def test_protobuf_encode_decode_json_helpers
+      m = TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+      encoded_msg = Google::Protobuf.encode_json(m)
+      assert_equal m.to_json, encoded_msg
+
+      decoded_msg = Google::Protobuf.decode_json(TestMessage, encoded_msg)
+      assert_equal TestMessage.decode_json(m.to_json), decoded_msg
+    end
+
+    def test_to_h
+      m = TestMessage.new(:optional_bool => true, :optional_double => -10.100001, :optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+      expected_result = {
+        :optional_bool=>true,
+        :optional_bytes=>"",
+        :optional_double=>-10.100001,
+        :optional_enum=>:Default,
+        :optional_float=>0.0,
+        :optional_int32=>0,
+        :optional_int64=>0,
+        :optional_msg=>nil,
+        :optional_string=>"foo",
+        :optional_uint32=>0,
+        :optional_uint64=>0,
+        :repeated_bool=>[],
+        :repeated_bytes=>[],
+        :repeated_double=>[],
+        :repeated_enum=>[],
+        :repeated_float=>[],
+        :repeated_int32=>[],
+        :repeated_int64=>[],
+        :repeated_msg=>[],
+        :repeated_string=>["bar1", "bar2"],
+        :repeated_uint32=>[],
+        :repeated_uint64=>[]
+      }
+      assert_equal expected_result, m.to_h
+    end
+
+
     def test_def_errors
       s = Google::Protobuf::DescriptorPool.new
       assert_raise TypeError do

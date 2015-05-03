@@ -338,16 +338,20 @@ public class RubyMessage extends RubyObject {
         return ret;
     }
 
-    @JRubyMethod(name = "to_h")
+    @JRubyMethod(name = {"to_h", "to_hash"})
     public IRubyObject toHash(ThreadContext context) {
         Ruby runtime = context.runtime;
         RubyHash ret = RubyHash.newHash(runtime);
         for (Descriptors.FieldDescriptor fdef : this.descriptor.getFields()) {
             IRubyObject value = getField(context, fdef);
-            if (value.respondsTo("to_h")) {
-                value = Helpers.invoke(context, value, "to_h");
+            if (!value.isNil()) {
+                if (value.respondsTo("to_h")) {
+                    value = Helpers.invoke(context, value, "to_h");
+                } else if (value.respondsTo("to_a")) {
+                    value = Helpers.invoke(context, value, "to_a");
+                }
             }
-            ret.fastASet(runtime.newString(fdef.getName()), value);
+            ret.fastASet(runtime.newSymbol(fdef.getName()), value);
         }
         return ret;
     }
