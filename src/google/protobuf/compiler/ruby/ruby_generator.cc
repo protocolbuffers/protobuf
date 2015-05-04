@@ -337,7 +337,7 @@ void GenerateFile(const google::protobuf::FileDescriptor* file,
   for (int i = 0; i < file->dependency_count(); i++) {
     const std::string& name = file->dependency(i)->name();
     printer->Print(
-      "require '$name$'\n", "name", StripDotProto(name));
+      "require_relative './$name$'\n", "name", StripDotProto(name));
   }
 
   printer->Print(
