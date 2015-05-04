@@ -53,6 +53,7 @@ namespace google {
 namespace protobuf {
 
 #ifdef GOOGLE_PROTOBUF_MISSING_HASH
+#undef GOOGLE_PROTOBUF_MISSING_HASH
 
 // This system doesn't have hash_map or hash_set.  Emulate them using map and
 // set.
@@ -193,7 +194,6 @@ class hash_set
   hash_set(int = 0) {}
 };
 
-#undef GOOGLE_PROTOBUF_MISSING_HASH
 #endif  // !GOOGLE_PROTOBUF_MISSING_HASH
 
 template <>
