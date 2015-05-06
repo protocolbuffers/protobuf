@@ -33,12 +33,14 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
 // A proto file that has an extremely large descriptor.  Used to test that
-// descriptors over 64k don't break the string literal length limit in Java.
+// descriptors over 64k don't break language-specific limits in generated code,
+// such as the string literal length limit in Java.
 
 syntax = "proto2";
 
 package google.protobuf;
 option java_package = "com.google.protobuf";
+option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
 
 // Avoid generating insanely long methods.
 option optimize_for = CODE_SIZE;
