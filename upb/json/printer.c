@@ -162,7 +162,7 @@ static bool putkey(void *closure, const void *handler_data) {
   return true;
 }
 
-#define CHKFMT(val) if ((val) == -1) return false;
+#define CHKFMT(val) if ((val) == (size_t)-1) return false;
 #define CHK(val)    if (!(val)) return false;
 
 #define TYPE_HANDLERS(type, fmt_func)                                        \

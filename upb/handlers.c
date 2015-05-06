@@ -574,7 +574,7 @@ bool upb_handlers_getselector(const upb_fielddef *f, upb_handlertype_t type,
       *s = f->selector_base;
       break;
   }
-  assert(*s < upb_fielddef_containingtype(f)->selector_count);
+  assert((size_t)*s < upb_fielddef_containingtype(f)->selector_count);
   return true;
 }
 

@@ -542,7 +542,7 @@ void upb_inttable_compact(upb_inttable *t) {
     counts[log2ceil(key)]++;
   }
 
-  int arr_size;
+  size_t arr_size = 1;
   int arr_count = upb_inttable_count(t);
 
   if (upb_inttable_count(t) >= max_key * MIN_DENSITY) {

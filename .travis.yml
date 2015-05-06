@@ -10,3 +10,4 @@ env:
   - UPB_TRAVIS_BUILD=withprotobuf
   - UPB_TRAVIS_BUILD=lua
   - UPB_TRAVIS_BUILD=coverage
+  - UPB_TRAVIS_BUILD=warnings
