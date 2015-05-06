@@ -14,6 +14,7 @@ script:
   - cd python && python setup.py build && python setup.py test && cd ..
   - export LD_LIBRARY_PATH=../src/.libs
   - cd python && python setup.py build --cpp_implementation && python setup.py test --cpp_implementation && cd ..
+  - cd conformance && make test_java && cd ..
   - make distcheck -j2
 notifications:
   email: false
