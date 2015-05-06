@@ -32,6 +32,7 @@ syntax = "proto2";
 
 option cc_enable_arenas = true;
 option optimize_for = LITE_RUNTIME;
+option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
 
 import "google/protobuf/unittest_lite.proto";
 
