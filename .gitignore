@@ -51,6 +51,7 @@ cpp_test*.pb.*
 *.pyc
 *.egg-info
 *_pb2.py
+python/*.egg
 python/.eggs/
 python/build/
 python/google/protobuf/compiler/
