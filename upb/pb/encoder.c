@@ -79,7 +79,7 @@ static upb_pb_encoder_segment *top(upb_pb_encoder *e) {
 // Call to ensure that at least "bytes" bytes are available for writing at
 // e->ptr.  Returns false if the bytes could not be allocated.
 static bool reserve(upb_pb_encoder *e, size_t bytes) {
-  if ((e->limit - e->ptr) < bytes) {
+  if ((size_t)(e->limit - e->ptr) < bytes) {
     size_t needed = bytes + (e->ptr - e->buf);
     size_t old_size = e->limit - e->buf;
     size_t new_size = old_size;
@@ -110,7 +110,7 @@ static bool reserve(upb_pb_encoder *e, size_t bytes) {
 // Call when "bytes" bytes have been writte at e->ptr.  The caller *must* have
 // previously called reserve() with at least this many bytes.
 static void encoder_advance(upb_pb_encoder *e, size_t bytes) {
-  assert((e->limit - e->ptr) >= bytes);
+  assert((size_t)(e->limit - e->ptr) >= bytes);
   e->ptr += bytes;
 }
 

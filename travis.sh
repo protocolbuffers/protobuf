@@ -28,6 +28,16 @@ withprotobuf_script() {
   make test
 }
 
+# Build with strict warnings.
+warnings_install() {
+  :
+}
+warnings_script() {
+  make -j12 default WITH_MAX_WARNINGS=yes
+  make -j12 tests WITH_MAX_WARNINGS=yes
+  make test
+}
+
 # A 32-bit build.  Can only test the core because any dependencies
 # need to be available as 32-bit libs also, which gets hairy fast.
 # Can't enable the JIT because it only supports x64.
