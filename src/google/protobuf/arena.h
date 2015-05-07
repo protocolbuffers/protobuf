@@ -373,6 +373,11 @@ class LIBPROTOBUF_EXPORT Arena {
   // Thread local variables cannot be exposed through DLL interface but we can
   // wrap them in static functions.
   static ThreadCache& thread_cache();
+#elif defined(GOOGLE_PROTOBUF_OS_ANDROID) || defined(GOOGLE_PROTOBUF_OS_IPHONE)
+  // Android ndk does not support __thread keyword so we use a custom thread
+  // local storage class we implemented.
+  // iOS also does not support the __thread keyword.
+  static ThreadCache& thread_cache();
 #else
   static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_;
   static ThreadCache& thread_cache() { return thread_cache_; }
