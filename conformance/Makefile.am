@@ -46,13 +46,13 @@ MAINTAINERCLEANFILES =   \
   Makefile.in
 
 javac_middleman: ConformanceJava.java protoc_middleman
-	javac ConformanceJava.java com/google/protobuf/conformance/Conformance.java
+	javac -classpath ../java/target/classes ConformanceJava.java com/google/protobuf/conformance/Conformance.java
 	@touch javac_middleman
 
 conformance-java: javac_middleman
 	@echo "Writing shortcut script conformance-java..."
 	@echo '#! /bin/sh' > conformance-java
-	@echo 'java -classpath .:$$CLASSPATH ConformanceJava "$$@"' >> conformance-java
+	@echo 'java -classpath .:../java/target/classes ConformanceJava "$$@"' >> conformance-java
 	@chmod +x conformance-java
 
 # Targets for actually running tests.
