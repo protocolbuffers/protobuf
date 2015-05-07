@@ -135,6 +135,7 @@ nobase_include_HEADERS =                                        \
   google/protobuf/compiler/java/java_generator.h                \
   google/protobuf/compiler/java/java_names.h                    \
   google/protobuf/compiler/javanano/javanano_generator.h        \
+  google/protobuf/compiler/objectivec/objectivec_generator.h    \
   google/protobuf/compiler/python/python_generator.h            \
   google/protobuf/compiler/ruby/ruby_generator.h
 
@@ -297,6 +298,29 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/javanano/javanano_params.h          \
   google/protobuf/compiler/javanano/javanano_primitive_field.cc \
   google/protobuf/compiler/javanano/javanano_primitive_field.h \
+  google/protobuf/compiler/objectivec/objectivec_enum.cc       \
+  google/protobuf/compiler/objectivec/objectivec_enum.h        \
+  google/protobuf/compiler/objectivec/objectivec_enum_field.cc \
+  google/protobuf/compiler/objectivec/objectivec_enum_field.h  \
+  google/protobuf/compiler/objectivec/objectivec_extension.cc  \
+  google/protobuf/compiler/objectivec/objectivec_extension.h   \
+  google/protobuf/compiler/objectivec/objectivec_field.cc      \
+  google/protobuf/compiler/objectivec/objectivec_field.h       \
+  google/protobuf/compiler/objectivec/objectivec_file.cc       \
+  google/protobuf/compiler/objectivec/objectivec_file.h        \
+  google/protobuf/compiler/objectivec/objectivec_generator.cc  \
+  google/protobuf/compiler/objectivec/objectivec_helpers.cc    \
+  google/protobuf/compiler/objectivec/objectivec_helpers.h     \
+  google/protobuf/compiler/objectivec/objectivec_map_field.cc  \
+  google/protobuf/compiler/objectivec/objectivec_map_field.h   \
+  google/protobuf/compiler/objectivec/objectivec_message.cc    \
+  google/protobuf/compiler/objectivec/objectivec_message.h     \
+  google/protobuf/compiler/objectivec/objectivec_message_field.cc \
+  google/protobuf/compiler/objectivec/objectivec_message_field.h \
+  google/protobuf/compiler/objectivec/objectivec_oneof.cc      \
+  google/protobuf/compiler/objectivec/objectivec_oneof.h       \
+  google/protobuf/compiler/objectivec/objectivec_primitive_field.cc \
+  google/protobuf/compiler/objectivec/objectivec_primitive_field.h \
   google/protobuf/compiler/python/python_generator.cc          \
   google/protobuf/compiler/ruby/ruby_generator.cc
 
@@ -501,6 +525,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/compiler/cpp/cpp_plugin_unittest.cc          \
   google/protobuf/compiler/java/java_plugin_unittest.cc        \
   google/protobuf/compiler/java/java_doc_comment_unittest.cc   \
+  google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc \
   google/protobuf/compiler/python/python_plugin_unittest.cc    \
   google/protobuf/compiler/ruby/ruby_generator_unittest.cc     \
   $(COMMON_TEST_SOURCES)

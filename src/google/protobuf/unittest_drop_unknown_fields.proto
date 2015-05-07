@@ -31,6 +31,7 @@
 syntax = "proto3";
 
 package unittest_drop_unknown_fields;
+option objc_class_prefix = "DropUnknowns";
 
 message Foo {
   enum NestedEnum {

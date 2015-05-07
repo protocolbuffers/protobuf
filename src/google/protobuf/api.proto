@@ -37,6 +37,7 @@ import "google/protobuf/type.proto";
 option java_multiple_files = true;
 option java_outer_classname = "ApiProto";
 option java_package = "com.google.protobuf";
+option objc_class_prefix = "GPB";
 
 
 // Api is a light-weight descriptor for a protocol buffer service.

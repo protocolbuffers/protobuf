@@ -34,6 +34,7 @@ package google.protobuf;
 option java_multiple_files = true;
 option java_outer_classname = "SourceContextProto";
 option java_package = "com.google.protobuf";
+option objc_class_prefix = "GPB";
 
 
 // `SourceContext` represents information about the source of a
