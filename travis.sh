@@ -95,6 +95,8 @@ build_python() {
   cd python
   python setup.py build
   python setup.py test
+  python setup.py sdist
+  sudo pip install virtualenv && virtualenv /tmp/protoenv && /tmp/protoenv/bin/pip install dist/*
   cd ..
 }
 
@@ -107,6 +109,8 @@ build_python_cpp() {
   cd python
   python setup.py build --cpp_implementation
   python setup.py test --cpp_implementation
+  python setup.py sdist --cpp_implementation
+  sudo pip install virtualenv && virtualenv /tmp/protoenv && /tmp/protoenv/bin/pip install dist/*
   cd ..
 }
 

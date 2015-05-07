@@ -87,6 +87,10 @@ def generate_proto(source):
 
 
 def GenerateUnittestProtos():
+  # Unittest protos are only needed for development.
+  if not os.path.exists("../.git"):
+    return
+
   generate_proto("../src/google/protobuf/unittest.proto")
   generate_proto("../src/google/protobuf/unittest_custom_options.proto")
   generate_proto("../src/google/protobuf/unittest_import.proto")
