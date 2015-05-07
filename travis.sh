@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 build_cpp() {
   ./autogen.sh
