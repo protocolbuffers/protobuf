@@ -1,9 +1,10 @@
 #! /usr/bin/env python
 #
 # See README for usage instructions.
-import sys
+import glob
 import os
 import subprocess
+import sys
 
 # We must use setuptools, not distutils, because we need to use the
 # namespace_packages option for the "google" package.
@@ -153,15 +154,7 @@ if __name__ == '__main__':
     ext_module_list.append(
         Extension(
             "google.protobuf.pyext._message",
-            [
-                "google/protobuf/pyext/descriptor.cc",
-                "google/protobuf/pyext/descriptor_containers.cc",
-                "google/protobuf/pyext/descriptor_pool.cc",
-                "google/protobuf/pyext/extension_dict.cc",
-                "google/protobuf/pyext/message.cc",
-                "google/protobuf/pyext/repeated_composite_container.cc",
-                "google/protobuf/pyext/repeated_scalar_container.cc",
-            ],
+            glob.glob('google/protobuf/pyext/*.cc'),
             define_macros=[('GOOGLE_PROTOBUF_HAS_ONEOF', '1')],
             include_dirs=[".", "../src"],
             libraries=['protobuf'],
