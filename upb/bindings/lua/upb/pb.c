@@ -41,6 +41,13 @@ static int lupb_pbdecodermethod_new(lua_State *L) {
   return 1;  // The DecoderMethod wrapper.
 }
 
+// We implement upb's allocation function by allocating a Lua userdata.
+// This is a raw hunk of memory that will be GC'd by Lua.
+static void *lua_alloc(void *ud, size_t size) {
+  lua_State *L = ud;
+  return lua_newuserdata(L, size);
+}
+
 // Unlike most of our exposed Lua functions, this does not correspond to an
 // actual method on the underlying DecoderMethod.  But it's convenient, and
 // important to implement in C because we can do stack allocation and
@@ -61,19 +68,22 @@ static int lupb_pbdecodermethod_parse(lua_State *L) {
   // Handlers need this.
   lua_getuservalue(L, -1);
 
-  upb_pbdecoder decoder;
   upb_status status = UPB_STATUS_INIT;
-  upb_pbdecoder_init(&decoder, method, &status);
+  upb_env env;
+  upb_env_init(&env);
+  upb_env_reporterrorsto(&env, &status);
   upb_sink sink;
   upb_sink_reset(&sink, handlers, msg);
-  upb_pbdecoder_resetoutput(&decoder, &sink);
-  upb_bufsrc_putbuf(pb, len, upb_pbdecoder_input(&decoder));
-  // TODO: Our need to call uninit isn't longjmp-safe; what if the decode
-  // triggers a Lua error?  uninit is only needed if the decoder
-  // dynamically-allocated a growing stack -- ditch this feature and live with
-  // the compile-time limit?  Or have a custom allocation function that
-  // allocates Lua GC-rooted memory?
-  upb_pbdecoder_uninit(&decoder);
+  upb_pbdecoder *decoder = upb_pbdecoder_create(&env, method, &sink);
+  upb_bufsrc_putbuf(pb, len, upb_pbdecoder_input(decoder));
+
+  // This won't get called in the error case, which longjmp's across us.  But
+  // since we made our alloc function allocate only GC-able memory, that
+  // shouldn't matter.  It *would* matter if the environment had references to
+  // any non-memory resources (ie.  filehandles).  As an alternative to this we
+  // could make the environment itself a userdata.
+  upb_env_uninit(&env);
+
   lupb_checkstatus(L, &status);
 
   lua_pop(L, 1);  // Uservalue.

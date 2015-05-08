@@ -147,12 +147,17 @@ template <class T> struct disable_if_same<T, T> {};
 template <class T> void DeletePointer(void *p) { delete static_cast<T>(p); }
 
 template <class T1, class T2>
-struct FirstUnlessVoid {
+struct FirstUnlessVoidOrBool {
   typedef T1 value;
 };
 
 template <class T2>
-struct FirstUnlessVoid<void, T2> {
+struct FirstUnlessVoidOrBool<void, T2> {
+  typedef T2 value;
+};
+
+template <class T2>
+struct FirstUnlessVoidOrBool<bool, T2> {
   typedef T2 value;
 };
 
@@ -534,10 +539,14 @@ inline MethodSig4<R, C, P1, P2, P3, P4> MatchFunc(R (C::*f)(P1, P2, P3, P4)) {
 //
 //   1. If the function returns void, make it return the expected type and with
 //      a value that always indicates success.
-//   2. If the function is expected to return void* but doesn't, wrap it so it
-//      does (either by returning the closure param if the wrapped function
-//      returns void or by casting a different pointer type to void* for
-//      return).
+//   2. If the function returns bool, make it return the expected type with a
+//      value that indicates success or failure.
+//
+// The "expected type" for return is:
+//   1. void* for start handlers.  If the closure parameter has a different type
+//      we will cast it to void* for the return in the success case.
+//   2. size_t for string buffer handlers.
+//   3. bool for everything else.
 
 // Template parameters are FuncN type and desired return type.
 template <class F, class R, class Enable = void>
@@ -926,10 +935,13 @@ inline Handler<T>::Handler(F func)
   attr_.SetClosureType(UniquePtrForType<typename F::FuncInfo::Closure>());
 
   // We use the closure type (from the first parameter) if the return type is
-  // void.  This is all nonsense for non START* handlers, but it doesn't matter
-  // because in that case the value will be ignored.
-  typedef typename FirstUnlessVoid<typename F::FuncInfo::Return,
-                                   typename F::FuncInfo::Closure>::value
+  // void or bool, since these are the two cases we wrap to return the closure's
+  // type anyway.
+  //
+  // This is all nonsense for non START* handlers, but it doesn't matter because
+  // in that case the value will be ignored.
+  typedef typename FirstUnlessVoidOrBool<typename F::FuncInfo::Return,
+                                         typename F::FuncInfo::Closure>::value
       EffectiveReturn;
   attr_.SetReturnClosureType(UniquePtrForType<EffectiveReturn>());
 }
@@ -1124,9 +1136,7 @@ inline BytesHandler::BytesHandler() {
   upb_byteshandler_init(this);
 }
 
-inline BytesHandler::~BytesHandler() {
-  upb_byteshandler_uninit(this);
-}
+inline BytesHandler::~BytesHandler() {}
 
 }  // namespace upb
 

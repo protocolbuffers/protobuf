@@ -34,27 +34,6 @@ UPB_DECLARE_TYPE(upb::BufferSource, upb_bufsrc);
 UPB_DECLARE_TYPE(upb::BytesSink, upb_bytessink);
 UPB_DECLARE_TYPE(upb::Sink, upb_sink);
 
-// Internal-only struct for the sink.
-struct upb_sinkframe {
- UPB_PRIVATE_FOR_CPP
-  const upb_handlers *h;
-  void *closure;
-
-  // For any frames besides the top, this is the END* callback that will run
-  // when the subframe is popped (for example, for a "sequence" frame the frame
-  // above it will be a UPB_HANDLER_ENDSEQ handler).  But this is only
-  // necessary for assertion checking inside upb_sink and can be omitted if the
-  // sink has only one caller.
-  //
-  // TODO(haberman): have a mechanism for ensuring that a sink only has one
-  // caller.
-  upb_selector_t selector;
-};
-
-// The maximum nesting depth that upb::Sink will allow.  Matches proto2's limit.
-// TODO: make this a runtime-settable property of Sink.
-#define UPB_SINK_MAX_NESTING 64
-
 // A upb::Sink is an object that binds a upb::Handlers object to some runtime
 // state.  It represents an endpoint to which data can be sent.
 //

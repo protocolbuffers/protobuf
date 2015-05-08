@@ -85,6 +85,33 @@ static TestCase kTestRoundtripMessages[] = {
     TEST("{\"optional_string\":\"\\uFFFF\"}"),
     EXPECT("{\"optional_string\":\"\xEF\xBF\xBF\"}")
   },
+  // map-field tests
+  {
+    TEST("{\"map_string_string\":{\"a\":\"value1\",\"b\":\"value2\","
+         "\"c\":\"value3\"}}"),
+    EXPECT_SAME
+  },
+  {
+    TEST("{\"map_int32_string\":{\"1\":\"value1\",\"-1\":\"value2\","
+         "\"1234\":\"value3\"}}"),
+    EXPECT_SAME
+  },
+  {
+    TEST("{\"map_bool_string\":{\"false\":\"value1\",\"true\":\"value2\"}}"),
+    EXPECT_SAME
+  },
+  {
+    TEST("{\"map_string_int32\":{\"asdf\":1234,\"jkl;\":-1}}"),
+    EXPECT_SAME
+  },
+  {
+    TEST("{\"map_string_bool\":{\"asdf\":true,\"jkl;\":false}}"),
+    EXPECT_SAME
+  },
+  {
+    TEST("{\"map_string_msg\":{\"asdf\":{\"foo\":42},\"jkl;\":{\"foo\":84}}}"),
+    EXPECT_SAME
+  },
   TEST_SENTINEL
 };
 
@@ -114,6 +141,53 @@ static const upb::MessageDef* BuildTestMessage(
   upb::reffed_ptr<upb::MessageDef> submsg(upb::MessageDef::New());
   submsg->set_full_name("SubMessage", &st);
   AddField(submsg.get(), 1, "foo", UPB_TYPE_INT32, false);
+
+  // Create MapEntryStringString.
+  upb::reffed_ptr<upb::MessageDef> mapentry_string_string(
+      upb::MessageDef::New());
+  mapentry_string_string->set_full_name("MapEntry_String_String", &st);
+  mapentry_string_string->setmapentry(true);
+  AddField(mapentry_string_string.get(), 1, "key", UPB_TYPE_STRING, false);
+  AddField(mapentry_string_string.get(), 2, "value", UPB_TYPE_STRING, false);
+
+  // Create MapEntryInt32String.
+  upb::reffed_ptr<upb::MessageDef> mapentry_int32_string(
+      upb::MessageDef::New());
+  mapentry_int32_string->set_full_name("MapEntry_Int32_String", &st);
+  mapentry_int32_string->setmapentry(true);
+  AddField(mapentry_int32_string.get(), 1, "key", UPB_TYPE_INT32, false);
+  AddField(mapentry_int32_string.get(), 2, "value", UPB_TYPE_STRING, false);
+
+  // Create MapEntryBoolString.
+  upb::reffed_ptr<upb::MessageDef> mapentry_bool_string(
+      upb::MessageDef::New());
+  mapentry_bool_string->set_full_name("MapEntry_Bool_String", &st);
+  mapentry_bool_string->setmapentry(true);
+  AddField(mapentry_bool_string.get(), 1, "key", UPB_TYPE_BOOL, false);
+  AddField(mapentry_bool_string.get(), 2, "value", UPB_TYPE_STRING, false);
+
+  // Create MapEntryStringInt32.
+  upb::reffed_ptr<upb::MessageDef> mapentry_string_int32(
+      upb::MessageDef::New());
+  mapentry_string_int32->set_full_name("MapEntry_String_Int32", &st);
+  mapentry_string_int32->setmapentry(true);
+  AddField(mapentry_string_int32.get(), 1, "key", UPB_TYPE_STRING, false);
+  AddField(mapentry_string_int32.get(), 2, "value", UPB_TYPE_INT32, false);
+
+  // Create MapEntryStringBool.
+  upb::reffed_ptr<upb::MessageDef> mapentry_string_bool(upb::MessageDef::New());
+  mapentry_string_bool->set_full_name("MapEntry_String_Bool", &st);
+  mapentry_string_bool->setmapentry(true);
+  AddField(mapentry_string_bool.get(), 1, "key", UPB_TYPE_STRING, false);
+  AddField(mapentry_string_bool.get(), 2, "value", UPB_TYPE_BOOL, false);
+
+  // Create MapEntryStringMessage.
+  upb::reffed_ptr<upb::MessageDef> mapentry_string_msg(upb::MessageDef::New());
+  mapentry_string_msg->set_full_name("MapEntry_String_Message", &st);
+  mapentry_string_msg->setmapentry(true);
+  AddField(mapentry_string_msg.get(), 1, "key", UPB_TYPE_STRING, false);
+  AddField(mapentry_string_msg.get(), 2, "value", UPB_TYPE_MESSAGE, false,
+           upb::upcast(submsg.get()));
 
   // Create MyEnum.
   upb::reffed_ptr<upb::EnumDef> myenum(upb::EnumDef::New());
@@ -150,13 +224,33 @@ static const upb::MessageDef* BuildTestMessage(
   AddField(md.get(), 19, "optional_enum",   UPB_TYPE_ENUM, true,
            upb::upcast(myenum.get()));
 
+  AddField(md.get(), 20, "map_string_string", UPB_TYPE_MESSAGE, true,
+           upb::upcast(mapentry_string_string.get()));
+  AddField(md.get(), 21, "map_int32_string", UPB_TYPE_MESSAGE, true,
+           upb::upcast(mapentry_int32_string.get()));
+  AddField(md.get(), 22, "map_bool_string", UPB_TYPE_MESSAGE, true,
+           upb::upcast(mapentry_bool_string.get()));
+  AddField(md.get(), 23, "map_string_int32", UPB_TYPE_MESSAGE, true,
+           upb::upcast(mapentry_string_int32.get()));
+  AddField(md.get(), 24, "map_string_bool", UPB_TYPE_MESSAGE, true,
+           upb::upcast(mapentry_string_bool.get()));
+  AddField(md.get(), 25, "map_string_msg", UPB_TYPE_MESSAGE, true,
+           upb::upcast(mapentry_string_msg.get()));
+
   // Add both to our symtab.
-  upb::Def* defs[3] = {
+  upb::Def* defs[9] = {
     upb::upcast(submsg.ReleaseTo(&defs)),
     upb::upcast(myenum.ReleaseTo(&defs)),
     upb::upcast(md.ReleaseTo(&defs)),
+    upb::upcast(mapentry_string_string.ReleaseTo(&defs)),
+    upb::upcast(mapentry_int32_string.ReleaseTo(&defs)),
+    upb::upcast(mapentry_bool_string.ReleaseTo(&defs)),
+    upb::upcast(mapentry_string_int32.ReleaseTo(&defs)),
+    upb::upcast(mapentry_string_bool.ReleaseTo(&defs)),
+    upb::upcast(mapentry_string_msg.ReleaseTo(&defs)),
   };
-  symtab->Add(defs, 3, &defs, &st);
+  symtab->Add(defs, 9, &defs, &st);
+  ASSERT(st.ok());
 
   // Return TestMessage.
   return symtab->LookupMessage("TestMessage");
@@ -198,14 +292,14 @@ void test_json_roundtrip_message(const char* json_src,
                                  const upb::Handlers* serialize_handlers,
                                  int seam) {
   upb::Status st;
-  upb::json::Parser parser(&st);
-  upb::json::Printer printer(serialize_handlers);
+  upb::Environment env;
+  env.ReportErrorsTo(&st);
   StringSink data_sink;
+  upb::json::Printer* printer =
+      upb::json::Printer::Create(&env, serialize_handlers, data_sink.Sink());
+  upb::json::Parser* parser = upb::json::Parser::Create(&env, printer->input());
 
-  parser.ResetOutput(printer.input());
-  printer.ResetOutput(data_sink.Sink());
-
-  upb::BytesSink* input = parser.input();
+  upb::BytesSink* input = parser->input();
   void *sub;
   size_t len = strlen(json_src);
   size_t ofs = 0;

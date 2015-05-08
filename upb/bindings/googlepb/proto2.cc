@@ -946,14 +946,14 @@ case goog::FieldDescriptor::cpptype:                                           \
    public:
     typedef goog::Message Type;
 #ifdef GOOGLE_PROTOBUF_HAS_ARENAS
-    static ::proto2::Arena* GetArena(Type* t) {
+    static goog::Arena* GetArena(Type* t) {
       return t->GetArena();
     }
     static void* GetMaybeArenaPointer(Type* t) {
       return t->GetMaybeArenaPointer();
     }
     static inline Type* NewFromPrototype(
-        const Type* prototype, ::proto2::Arena* arena = NULL) {
+        const Type* prototype, goog::Arena* arena = NULL) {
       return prototype->New(arena);
     }
     static void Delete(Type* t, goog::Arena* arena = NULL) {
@@ -1275,6 +1275,11 @@ case goog::FieldDescriptor::cpptype:                                           \
 
     virtual void SetAllocatedMessage(proto2::MessageLite* message) {
       return lazy_field_.SetAllocated(static_cast<proto2::Message*>(message));
+    }
+
+    virtual void UnsafeArenaSetAllocatedMessage(proto2::MessageLite* message) {
+      return lazy_field_.UnsafeArenaSetAllocated(
+          static_cast<proto2::Message*>(message));
     }
 
     virtual proto2::MessageLite* ReleaseMessage(

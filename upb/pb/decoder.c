@@ -19,10 +19,7 @@
  */
 
 #include <inttypes.h>
-#include <setjmp.h>
-#include <stdarg.h>
 #include <stddef.h>
-#include <stdlib.h>
 #include "upb/pb/decoder.int.h"
 #include "upb/pb/varint.int.h"
 
@@ -70,18 +67,17 @@ static bool consumes_input(opcode op) {
 
 static bool in_residual_buf(const upb_pbdecoder *d, const char *p);
 
-// It's unfortunate that we have to micro-manage the compiler this way,
-// especially since this tuning is necessarily specific to one hardware
-// configuration.  But emperically on a Core i7, performance increases 30-50%
-// with these annotations.  Every instance where these appear, gcc 4.2.1 made
-// the wrong decision and degraded performance in benchmarks.
-#define FORCEINLINE static inline __attribute__((always_inline))
-#define NOINLINE __attribute__((noinline))
+// It's unfortunate that we have to micro-manage the compiler with
+// UPB_FORCEINLINE and UPB_NOINLINE, especially since this tuning is necessarily
+// specific to one hardware configuration.  But empirically on a Core i7,
+// performance increases 30-50% with these annotations.  Every instance where
+// these appear, gcc 4.2.1 made the wrong decision and degraded performance in
+// benchmarks.
 
 static void seterr(upb_pbdecoder *d, const char *msg) {
-  // TODO(haberman): encapsulate this access to pipeline->status, but not sure
-  // exactly what that interface should look like.
-  upb_status_seterrmsg(d->status, msg);
+  upb_status status = UPB_STATUS_INIT;
+  upb_status_seterrmsg(&status, msg);
+  upb_env_reporterror(d->env, &status);
 }
 
 void upb_pbdecoder_seterr(upb_pbdecoder *d, const char *msg) {
@@ -249,7 +245,8 @@ static int32_t skip(upb_pbdecoder *d, size_t bytes) {
 
 // Copies the next "bytes" bytes into "buf" and advances the stream.
 // Requires that this many bytes are available in the current buffer.
-FORCEINLINE void consumebytes(upb_pbdecoder *d, void *buf, size_t bytes) {
+UPB_FORCEINLINE static void consumebytes(upb_pbdecoder *d, void *buf,
+                                         size_t bytes) {
   assert(bytes <= curbufleft(d));
   memcpy(buf, d->ptr, bytes);
   advance(d, bytes);
@@ -258,8 +255,8 @@ FORCEINLINE void consumebytes(upb_pbdecoder *d, void *buf, size_t bytes) {
 // Slow path for getting the next "bytes" bytes, regardless of whether they are
 // available in the current buffer or not.  Returns a status code as described
 // in decoder.int.h.
-static NOINLINE int32_t getbytes_slow(upb_pbdecoder *d, void *buf,
-                                      size_t bytes) {
+UPB_NOINLINE static int32_t getbytes_slow(upb_pbdecoder *d, void *buf,
+                                          size_t bytes) {
   const size_t avail = curbufleft(d);
   consumebytes(d, buf, avail);
   bytes -= avail;
@@ -280,7 +277,8 @@ static NOINLINE int32_t getbytes_slow(upb_pbdecoder *d, void *buf,
 
 // Gets the next "bytes" bytes, regardless of whether they are available in the
 // current buffer or not.  Returns a status code as described in decoder.int.h.
-FORCEINLINE int32_t getbytes(upb_pbdecoder *d, void *buf, size_t bytes) {
+UPB_FORCEINLINE static int32_t getbytes(upb_pbdecoder *d, void *buf,
+                                        size_t bytes) {
   if (curbufleft(d) >= bytes) {
     // Buffer has enough data to satisfy.
     consumebytes(d, buf, bytes);
@@ -290,8 +288,8 @@ FORCEINLINE int32_t getbytes(upb_pbdecoder *d, void *buf, size_t bytes) {
   }
 }
 
-static NOINLINE size_t peekbytes_slow(upb_pbdecoder *d, void *buf,
-                                      size_t bytes) {
+UPB_NOINLINE static size_t peekbytes_slow(upb_pbdecoder *d, void *buf,
+                                          size_t bytes) {
   size_t ret = curbufleft(d);
   memcpy(buf, d->ptr, ret);
   if (in_residual_buf(d, d->ptr)) {
@@ -302,7 +300,8 @@ static NOINLINE size_t peekbytes_slow(upb_pbdecoder *d, void *buf,
   return ret;
 }
 
-FORCEINLINE size_t peekbytes(upb_pbdecoder *d, void *buf, size_t bytes) {
+UPB_FORCEINLINE static size_t peekbytes(upb_pbdecoder *d, void *buf,
+                                        size_t bytes) {
   if (curbufleft(d) >= bytes) {
     memcpy(buf, d->ptr, bytes);
     return bytes;
@@ -316,8 +315,8 @@ FORCEINLINE size_t peekbytes(upb_pbdecoder *d, void *buf, size_t bytes) {
 
 // Slow path for decoding a varint from the current buffer position.
 // Returns a status code as described in decoder.int.h.
-NOINLINE int32_t upb_pbdecoder_decode_varint_slow(upb_pbdecoder *d,
-                                                  uint64_t *u64) {
+UPB_NOINLINE int32_t upb_pbdecoder_decode_varint_slow(upb_pbdecoder *d,
+                                                      uint64_t *u64) {
   *u64 = 0;
   uint8_t byte = 0x80;
   int bitpos;
@@ -335,7 +334,7 @@ NOINLINE int32_t upb_pbdecoder_decode_varint_slow(upb_pbdecoder *d,
 
 // Decodes a varint from the current buffer position.
 // Returns a status code as described in decoder.int.h.
-FORCEINLINE int32_t decode_varint(upb_pbdecoder *d, uint64_t *u64) {
+UPB_FORCEINLINE static int32_t decode_varint(upb_pbdecoder *d, uint64_t *u64) {
   if (curbufleft(d) > 0 && !(*d->ptr & 0x80)) {
     *u64 = *d->ptr;
     advance(d, 1);
@@ -358,7 +357,7 @@ FORCEINLINE int32_t decode_varint(upb_pbdecoder *d, uint64_t *u64) {
 
 // Decodes a 32-bit varint from the current buffer position.
 // Returns a status code as described in decoder.int.h.
-FORCEINLINE int32_t decode_v32(upb_pbdecoder *d, uint32_t *u32) {
+UPB_FORCEINLINE static int32_t decode_v32(upb_pbdecoder *d, uint32_t *u32) {
   uint64_t u64;
   int32_t ret = decode_varint(d, &u64);
   if (ret >= 0) return ret;
@@ -377,14 +376,14 @@ FORCEINLINE int32_t decode_v32(upb_pbdecoder *d, uint32_t *u32) {
 // Decodes a fixed32 from the current buffer position.
 // Returns a status code as described in decoder.int.h.
 // TODO: proper byte swapping for big-endian machines.
-FORCEINLINE int32_t decode_fixed32(upb_pbdecoder *d, uint32_t *u32) {
+UPB_FORCEINLINE static int32_t decode_fixed32(upb_pbdecoder *d, uint32_t *u32) {
   return getbytes(d, u32, 4);
 }
 
 // Decodes a fixed64 from the current buffer position.
 // Returns a status code as described in decoder.int.h.
 // TODO: proper byte swapping for big-endian machines.
-FORCEINLINE int32_t decode_fixed64(upb_pbdecoder *d, uint64_t *u64) {
+UPB_FORCEINLINE static int32_t decode_fixed64(upb_pbdecoder *d, uint64_t *u64) {
   return getbytes(d, u64, 8);
 }
 
@@ -408,7 +407,7 @@ static bool decoder_push(upb_pbdecoder *d, uint64_t end) {
   if (end > fr->end_ofs) {
     seterr(d, "Submessage end extends past enclosing submessage.");
     return false;
-  } else if ((fr + 1) == d->limit) {
+  } else if (fr == d->limit) {
     seterr(d, kPbDecoderStackOverflow);
     return false;
   }
@@ -435,8 +434,8 @@ static bool pushtagdelim(upb_pbdecoder *d, uint32_t arg) {
 // Pops a frame from the decoder stack.
 static void decoder_pop(upb_pbdecoder *d) { d->top--; }
 
-NOINLINE int32_t upb_pbdecoder_checktag_slow(upb_pbdecoder *d,
-                                             uint64_t expected) {
+UPB_NOINLINE int32_t upb_pbdecoder_checktag_slow(upb_pbdecoder *d,
+                                                 uint64_t expected) {
   uint64_t data = 0;
   size_t bytes = upb_value_size(expected);
   size_t read = peekbytes(d, &data, bytes);
@@ -814,7 +813,10 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
 void *upb_pbdecoder_startbc(void *closure, const void *pc, size_t size_hint) {
   upb_pbdecoder *d = closure;
   UPB_UNUSED(size_hint);
+  d->top->end_ofs = UINT64_MAX;
+  d->bufstart_ofs = 0;
   d->call_len = 1;
+  d->callstack[0] = &halt;
   d->pc = pc;
   return d;
 }
@@ -823,6 +825,8 @@ void *upb_pbdecoder_startjit(void *closure, const void *hd, size_t size_hint) {
   UPB_UNUSED(hd);
   UPB_UNUSED(size_hint);
   upb_pbdecoder *d = closure;
+  d->top->end_ofs = UINT64_MAX;
+  d->bufstart_ofs = 0;
   d->call_len = 0;
   return d;
 }
@@ -879,55 +883,115 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
   return true;
 }
 
-void upb_pbdecoder_init(upb_pbdecoder *d, const upb_pbdecodermethod *m,
-                        upb_status *s) {
-  d->limit = &d->stack[UPB_DECODER_MAX_NESTING];
-  upb_bytessink_reset(&d->input_, &m->input_handler_, d);
-  d->method_ = m;
-  d->callstack[0] = &halt;
-  d->status = s;
-  upb_pbdecoder_reset(d);
-}
-
 void upb_pbdecoder_reset(upb_pbdecoder *d) {
   d->top = d->stack;
-  d->top->end_ofs = UINT64_MAX;
   d->top->groupnum = 0;
-  d->bufstart_ofs = 0;
   d->ptr = d->residual;
   d->buf = d->residual;
   d->end = d->residual;
   d->residual_end = d->residual;
-  d->call_len = 1;
+}
+
+static size_t stacksize(upb_pbdecoder *d, size_t entries) {
+  UPB_UNUSED(d);
+  return entries * sizeof(upb_pbdecoder_frame);
+}
+
+static size_t callstacksize(upb_pbdecoder *d, size_t entries) {
+  UPB_UNUSED(d);
+
+#ifdef UPB_USE_JIT_X64
+  if (d->method_->is_native_) {
+    // Each native stack frame needs two pointers, plus we need a few frames for
+    // the enter/exit trampolines.
+    size_t ret = entries * sizeof(void*) * 2;
+    ret += sizeof(void*) * 10;
+    return ret;
+  }
+#endif
+
+  return entries * sizeof(uint32_t*);
+}
+
+upb_pbdecoder *upb_pbdecoder_create(upb_env *e, const upb_pbdecodermethod *m,
+                                    upb_sink *sink) {
+  const size_t default_max_nesting = 64;
+#ifndef NDEBUG
+  size_t size_before = upb_env_bytesallocated(e);
+#endif
+
+  upb_pbdecoder *d = upb_env_malloc(e, sizeof(upb_pbdecoder));
+  if (!d) return NULL;
+
+  d->method_ = m;
+  d->callstack = upb_env_malloc(e, callstacksize(d, default_max_nesting));
+  d->stack = upb_env_malloc(e, stacksize(d, default_max_nesting));
+  if (!d->stack || !d->callstack) {
+    return NULL;
+  }
+
+  d->env = e;
+  d->limit = d->stack + default_max_nesting - 1;
+  d->stack_size = default_max_nesting;
+
+  upb_pbdecoder_reset(d);
+  upb_bytessink_reset(&d->input_, &m->input_handler_, d);
+
+  assert(sink);
+  if (d->method_->dest_handlers_) {
+    if (sink->handlers != d->method_->dest_handlers_)
+      return NULL;
+  }
+  upb_sink_reset(&d->top->sink, sink->handlers, sink->closure);
+
+  // If this fails, increase the value in decoder.h.
+  assert(upb_env_bytesallocated(e) - size_before <= UPB_PB_DECODER_SIZE);
+  return d;
 }
 
 uint64_t upb_pbdecoder_bytesparsed(const upb_pbdecoder *d) {
   return offset(d);
 }
 
-// Not currently required, but to support outgrowing the static stack we need
-// this.
-void upb_pbdecoder_uninit(upb_pbdecoder *d) {
-  UPB_UNUSED(d);
-}
-
 const upb_pbdecodermethod *upb_pbdecoder_method(const upb_pbdecoder *d) {
   return d->method_;
 }
 
-bool upb_pbdecoder_resetoutput(upb_pbdecoder *d, upb_sink* sink) {
-  // TODO(haberman): do we need to test whether the decoder is already on the
-  // stack (like calling this from within a callback)?  Should we support
-  // rebinding the output at all?
-  assert(sink);
-  if (d->method_->dest_handlers_) {
-    if (sink->handlers != d->method_->dest_handlers_)
-      return false;
-  }
-  upb_sink_reset(&d->top->sink, sink->handlers, sink->closure);
-  return true;
-}
-
 upb_bytessink *upb_pbdecoder_input(upb_pbdecoder *d) {
   return &d->input_;
+}
+
+size_t upb_pbdecoder_maxnesting(const upb_pbdecoder *d) {
+  return d->stack_size;
+}
+
+bool upb_pbdecoder_setmaxnesting(upb_pbdecoder *d, size_t max) {
+  if (max < d->top - d->stack) {
+    // Can't set a limit smaller than what we are currently at.
+    return false;
+  }
+
+  if (max > d->stack_size) {
+    // Need to reallocate stack and callstack to accommodate.
+    size_t old_size = stacksize(d, d->stack_size);
+    size_t new_size = stacksize(d, max);
+    void *p = upb_env_realloc(d->env, d->stack, old_size, new_size);
+    if (!p) {
+      return false;
+    }
+    d->stack = p;
+
+    old_size = callstacksize(d, d->stack_size);
+    new_size = callstacksize(d, max);
+    p = upb_env_realloc(d->env, d->callstack, old_size, new_size);
+    if (!p) {
+      return false;
+    }
+    d->callstack = p;
+
+    d->stack_size = max;
+  }
+
+  d->limit = d->stack + max - 1;
+  return true;
 }

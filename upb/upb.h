@@ -25,6 +25,15 @@
 #define UPB_INLINE static inline
 #endif
 
+// For use in C/C++ source files (not headers), forces inlining within the file.
+#ifdef __GNUC__
+#define UPB_FORCEINLINE inline __attribute__((always_inline))
+#define UPB_NOINLINE __attribute__((noinline))
+#else
+#define UPB_FORCEINLINE
+#define UPB_NOINLINE
+#endif
+
 #if __STDC_VERSION__ >= 199901L
 #define UPB_C99
 #endif

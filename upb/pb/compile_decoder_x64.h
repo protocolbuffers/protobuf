@@ -28,8 +28,8 @@ static const unsigned char upb_jit_actionlist[2162] = {
   73,139,159,233,77,139,167,233,77,139,174,233,73,139,174,233,73,43,175,233,
   73,3,175,233,73,139,151,233,72,133,210,15,133,244,248,252,255,208,73,139,
   135,233,73,199,135,233,0,0,0,0,248,1,255,91,65,92,65,93,65,94,65,95,93,195,
-  248,2,73,141,183,233,72,41,212,72,137,231,72,184,237,237,65,84,73,137,228,
-  72,129,228,239,252,255,208,76,137,228,65,92,195,255,248,11,73,141,191,233,
+  248,2,73,139,183,233,72,41,212,72,137,231,72,184,237,237,65,84,73,137,228,
+  72,129,228,239,252,255,208,76,137,228,65,92,195,255,248,11,73,139,191,233,
   72,137,230,73,139,151,233,72,41,226,73,137,151,233,137,195,72,184,237,237,
   65,84,73,137,228,72,129,228,239,252,255,208,76,137,228,65,92,137,216,73,139,
   167,233,91,65,92,65,93,65,94,65,95,93,195,255,248,12,73,57,159,233,15,132,
@@ -40,7 +40,7 @@ static const unsigned char upb_jit_actionlist[2162] = {
   255,76,57,227,15,132,244,253,255,76,137,225,72,41,217,72,131,252,249,1,15,
   130,244,253,255,15,182,19,132,210,15,137,244,254,248,7,232,244,14,248,8,72,
   131,195,1,72,137,252,233,72,41,217,72,41,209,15,130,244,15,73,137,142,233,
-  73,129,198,239,72,137,221,72,1,213,77,59,183,233,15,132,244,249,65,199,134,
+  77,59,183,233,15,132,244,249,73,129,198,239,72,137,221,72,1,213,65,199,134,
   233,0,0,0,0,72,133,201,15,132,244,248,77,139,167,233,72,57,252,235,15,135,
   244,248,76,57,229,15,135,244,248,255,73,137,252,236,248,2,195,248,3,73,139,
   159,233,76,137,252,255,255,72,190,237,237,255,190,237,255,49,252,246,255,
@@ -122,8 +122,8 @@ static const unsigned char upb_jit_actionlist[2162] = {
   1,248,2,255,72,137,218,76,137,225,72,41,217,77,139,135,233,72,184,237,237,
   65,84,73,137,228,72,129,228,239,252,255,208,76,137,228,65,92,72,1,195,255,
   76,57,227,15,132,244,249,232,244,29,248,3,255,76,137,227,255,72,57,252,235,
-  15,133,244,1,248,4,255,77,137,174,233,73,199,134,233,0,0,0,0,73,129,198,239,
-  77,59,183,233,15,132,244,15,65,199,134,233,237,255,232,244,13,255,73,129,
+  15,133,244,1,248,4,255,77,137,174,233,73,199,134,233,0,0,0,0,77,59,183,233,
+  15,132,244,15,73,129,198,239,65,199,134,233,237,255,232,244,13,255,73,129,
   252,238,239,77,139,174,233,255,77,139,167,233,73,3,174,233,73,59,175,233,
   15,130,244,247,76,57,229,15,135,244,247,73,137,252,236,248,1,255,72,57,221,
   15,132,245,255,232,245,255,248,9,72,131,196,8,195,255
@@ -419,7 +419,7 @@ static void emit_static_asm(jitcompiler *jc) {
   //|
   //|2:
   //|  // Resume decoder.
-  //|  lea   ARG2_64, DECODER->callstack
+  //|  mov   ARG2_64, DECODER->callstack
   //|  sub   rsp, ARG3_64
   //|  mov   ARG1_64, rsp
   //|  callp memcpy  // Restore stack.
@@ -434,7 +434,7 @@ static void emit_static_asm(jitcompiler *jc) {
   asmlabel(jc, "exitjit");
   //|->exitjit:
   //|  // Save the stack into DECODER->callstack.
-  //|  lea   ARG1_64, DECODER->callstack
+  //|  mov   ARG1_64, DECODER->callstack
   //|  mov   ARG2_64, rsp
   //|  mov   ARG3_64, DECODER->saved_rsp
   //|  sub   ARG3_64, rsp
@@ -490,11 +490,11 @@ static void emit_static_asm(jitcompiler *jc) {
   //|  sub   rcx, rdx
   //|  jb    ->err  // Len is greater than enclosing message.
   //|  mov   FRAME->end_ofs, rcx
+  //|  cmp   FRAME, DECODER->limit
+  //|  je    >3   // Stack overflow
   //|  add   FRAME, sizeof(upb_pbdecoder_frame)
   //|  mov   DELIMEND, PTR
   //|  add   DELIMEND, rdx
-  //|  cmp   FRAME, DECODER->limit
-  //|  je    >3   // Stack overflow
   //|  mov   dword FRAME->groupnum, 0
   //|  test  rcx, rcx
   //|  jz    >2
@@ -504,7 +504,7 @@ static void emit_static_asm(jitcompiler *jc) {
   //|  cmp   DELIMEND, DATAEND
   //|  ja    >2
   //|  mov   DATAEND, DELIMEND  // If DELIMEND >= PTR && DELIMEND < DATAEND
-  dasm_put(Dst, 337, Dt1(->end_ofs), sizeof(upb_pbdecoder_frame), Dt2(->limit), Dt1(->groupnum), Dt2(->end));
+  dasm_put(Dst, 337, Dt1(->end_ofs), Dt2(->limit), sizeof(upb_pbdecoder_frame), Dt1(->groupnum), Dt2(->end));
 # 317 "upb/pb/compile_decoder_x64.dasc"
   //|2:
   //|  ret
@@ -1609,11 +1609,11 @@ static void jitbytecode(jitcompiler *jc) {
       //|  // code with the packed code-path.  If this is changed later, this
       //|  // store can be removed.
       //|  mov   qword FRAME->end_ofs, 0
-      //|  add   FRAME, sizeof(upb_pbdecoder_frame)
       //|  cmp   FRAME, DECODER->limit
       //|  je    ->err
+      //|  add   FRAME, sizeof(upb_pbdecoder_frame)
       //|  mov   dword FRAME->groupnum, arg
-      dasm_put(Dst, 2070, Dt1(->sink.closure), Dt1(->end_ofs), sizeof(upb_pbdecoder_frame), Dt2(->limit), Dt1(->groupnum), arg);
+      dasm_put(Dst, 2070, Dt1(->sink.closure), Dt1(->end_ofs), Dt2(->limit), sizeof(upb_pbdecoder_frame), Dt1(->groupnum), arg);
 # 1078 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_PUSHLENDELIM:

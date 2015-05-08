@@ -20,6 +20,54 @@
 #include "upb/sink.h"
 #include "upb/descriptor/descriptor.upb.h"
 
+// upb_deflist is an internal-only dynamic array for storing a growing list of
+// upb_defs.
+typedef struct {
+  upb_def **defs;
+  size_t len;
+  size_t size;
+  bool owned;
+} upb_deflist;
+
+// We keep a stack of all the messages scopes we are currently in, as well as
+// the top-level file scope.  This is necessary to correctly qualify the
+// definitions that are contained inside.  "name" tracks the name of the
+// message or package (a bare name -- not qualified by any enclosing scopes).
+typedef struct {
+  char *name;
+  // Index of the first def that is under this scope.  For msgdefs, the
+  // msgdef itself is at start-1.
+  int start;
+} upb_descreader_frame;
+
+// The maximum number of nested declarations that are allowed, ie.
+// message Foo {
+//   message Bar {
+//     message Baz {
+//     }
+//   }
+// }
+//
+// This is a resource limit that affects how big our runtime stack can grow.
+// TODO: make this a runtime-settable property of the Reader instance.
+#define UPB_MAX_MESSAGE_NESTING 64
+
+struct upb_descreader {
+  upb_sink sink;
+  upb_deflist defs;
+  upb_descreader_frame stack[UPB_MAX_MESSAGE_NESTING];
+  int stack_len;
+
+  uint32_t number;
+  char *name;
+  bool saw_number;
+  bool saw_name;
+
+  char *default_string;
+
+  upb_fielddef *f;
+};
+
 static char *upb_strndup(const char *buf, size_t n) {
   char *ret = malloc(n + 1);
   if (!ret) return NULL;
@@ -98,36 +146,6 @@ static void upb_deflist_qualify(upb_deflist *l, char *str, int32_t start) {
 
 
 /* upb_descreader  ************************************************************/
-
-void upb_descreader_init(upb_descreader *r, const upb_handlers *handlers,
-                         upb_status *status) {
-  UPB_UNUSED(status);
-  upb_deflist_init(&r->defs);
-  upb_sink_reset(upb_descreader_input(r), handlers, r);
-  r->stack_len = 0;
-  r->name = NULL;
-  r->default_string = NULL;
-}
-
-void upb_descreader_uninit(upb_descreader *r) {
-  free(r->name);
-  upb_deflist_uninit(&r->defs);
-  free(r->default_string);
-  while (r->stack_len > 0) {
-    upb_descreader_frame *f = &r->stack[--r->stack_len];
-    free(f->name);
-  }
-}
-
-upb_def **upb_descreader_getdefs(upb_descreader *r, void *owner, int *n) {
-  *n = r->defs.len;
-  upb_deflist_donaterefs(&r->defs, owner);
-  return r->defs.defs;
-}
-
-upb_sink *upb_descreader_input(upb_descreader *r) {
-  return &r->sink;
-}
 
 static upb_msgdef *upb_descreader_top(upb_descreader *r) {
   assert(r->stack_len > 1);
@@ -567,6 +585,45 @@ static void reghandlers(const void *closure, upb_handlers *h) {
 }
 
 #undef D
+
+void descreader_cleanup(void *_r) {
+  upb_descreader *r = _r;
+  free(r->name);
+  upb_deflist_uninit(&r->defs);
+  free(r->default_string);
+  while (r->stack_len > 0) {
+    upb_descreader_frame *f = &r->stack[--r->stack_len];
+    free(f->name);
+  }
+}
+
+
+/* Public API  ****************************************************************/
+
+upb_descreader *upb_descreader_create(upb_env *e, const upb_handlers *h) {
+  upb_descreader *r = upb_env_malloc(e, sizeof(upb_descreader));
+  if (!r || !upb_env_addcleanup(e, descreader_cleanup, r)) {
+    return NULL;
+  }
+
+  upb_deflist_init(&r->defs);
+  upb_sink_reset(upb_descreader_input(r), h, r);
+  r->stack_len = 0;
+  r->name = NULL;
+  r->default_string = NULL;
+
+  return r;
+}
+
+upb_def **upb_descreader_getdefs(upb_descreader *r, void *owner, int *n) {
+  *n = r->defs.len;
+  upb_deflist_donaterefs(&r->defs, owner);
+  return r->defs.defs;
+}
+
+upb_sink *upb_descreader_input(upb_descreader *r) {
+  return &r->sink;
+}
 
 const upb_handlers *upb_descreader_newhandlers(const void *owner) {
   const upb_symtab *s = upbdefs_google_protobuf_descriptor(&s);

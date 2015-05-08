@@ -12,8 +12,10 @@
 
 #include <iostream>
 #include <set>
+#include <sstream>
 
 #include "upb/def.h"
+#include "upb/env.h"
 #include "upb/descriptor/reader.h"
 #include "upb/handlers.h"
 #include "upb/pb/decoder.h"
@@ -164,7 +166,7 @@ static void TestSymbolTable(const char *descriptor_file) {
 #ifdef UPB_CXX11
   // Test range-based for.
   std::set<const upb::FieldDef*> fielddefs;
-  for (const upb::FieldDef* f : *md.get()) {
+  for (const upb::FieldDef* f : md.get()->fields()) {
     AssertInsert(&fielddefs, f);
     ASSERT(f->containing_type() == md.get());
   }
@@ -1117,6 +1119,103 @@ void TestHandlerDataDestruction() {
   ASSERT(x == 0);
 }
 
+void TestOneofs() {
+  upb::Status status;
+  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
+  upb::reffed_ptr<upb::OneofDef> o(upb::OneofDef::New());
+
+  o->set_name("test_oneof", &status);
+  ASSERT(status.ok());
+
+  for (int i = 0; i < 5; i++) {
+    std::ostringstream fieldname;
+    fieldname << "field_" << i;
+    upb::reffed_ptr<upb::FieldDef> f(upb::FieldDef::New());
+    f->set_name(fieldname.str(), &status);
+    ASSERT(status.ok());
+    f->set_type(UPB_TYPE_INT32);
+    f->set_number(i + 1, &status);
+    ASSERT(status.ok());
+    f->set_label(UPB_LABEL_OPTIONAL);
+
+    o->AddField(f.get(), &status);
+    ASSERT(status.ok());
+  }
+
+  md->AddOneof(o.get(), &status);
+  ASSERT(status.ok());
+
+  int field_count = 0;
+  for (upb::OneofDef::iterator it = o->begin(); it != o->end(); ++it) {
+    upb::FieldDef* f = *it;
+    ASSERT(f->type() == UPB_TYPE_INT32);
+    field_count++;
+  }
+  ASSERT(field_count == 5);
+
+  upb::MessageDef::oneof_iterator msg_it = md->oneof_begin();
+  ASSERT(msg_it != md->oneof_end());
+  ASSERT((*msg_it) == o.get());
+
+#ifdef UPB_CXX11
+  // Test range-based for on both fields and oneofs (with the iterator adaptor).
+  field_count = 0;
+  for (auto* field : md->fields()) {
+    UPB_UNUSED(field);
+    field_count++;
+  }
+  ASSERT(field_count == 5);
+
+  int oneof_count = 0;
+  for (auto* oneof : md->oneofs()) {
+    UPB_UNUSED(oneof);
+    oneof_count++;
+  }
+  ASSERT(oneof_count == 1);
+#endif  //  UPB_CXX11
+
+  // Test that we can add a new field to the oneof and that it becomes a member
+  // of the msgdef as well.
+  upb::reffed_ptr<upb::FieldDef> newf(upb::FieldDef::New());
+  newf->set_name("new_field_10", &status);
+  ASSERT(status.ok());
+  newf->set_number(10, &status);
+  ASSERT(status.ok());
+  newf->set_label(UPB_LABEL_OPTIONAL);
+  newf->set_type(UPB_TYPE_INT32);
+  o->AddField(newf.get(), &status);
+  ASSERT(status.ok());
+  ASSERT(newf->containing_type() == md.get());
+
+  // Test that we can add a new field to the msgdef first and then to the oneof.
+  upb::reffed_ptr<upb::FieldDef> newf2(upb::FieldDef::New());
+  newf2->set_name("new_field_11", &status);
+  ASSERT(status.ok());
+  newf2->set_number(11, &status);
+  ASSERT(status.ok());
+  newf2->set_label(UPB_LABEL_OPTIONAL);
+  newf2->set_type(UPB_TYPE_INT32);
+  md->AddField(newf2.get(), &status);
+  ASSERT(status.ok());
+  o->AddField(newf2.get(), &status);
+  ASSERT(status.ok());
+  ASSERT(newf2->containing_oneof() == o.get());
+
+  // Test that we cannot add REQUIRED or REPEATED fields to the oneof.
+  upb::reffed_ptr<upb::FieldDef> newf3(upb::FieldDef::New());
+  newf3->set_name("new_field_12", &status);
+  ASSERT(status.ok());
+  newf3->set_number(12, &status);
+  ASSERT(status.ok());
+  newf3->set_label(UPB_LABEL_REQUIRED);
+  newf3->set_type(UPB_TYPE_INT32);
+  o->AddField(newf3.get(), &status);
+  ASSERT(!status.ok());
+  newf->set_label(UPB_LABEL_REPEATED);
+  o->AddField(newf3.get(), &status);
+  ASSERT(!status.ok());
+}
+
 extern "C" {
 
 int run_tests(int argc, char *argv[]) {
@@ -1172,6 +1271,8 @@ int run_tests(int argc, char *argv[]) {
   TestMismatchedTypes();
 
   TestHandlerDataDestruction();
+
+  TestOneofs();
 
   return 0;
 }

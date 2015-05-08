@@ -189,7 +189,9 @@ static upb_fielddef *newfield(
   ASSERT(upb_fielddef_setnumber(f, num, NULL));
   upb_fielddef_settype(f, type);
   upb_fielddef_setlabel(f, label);
-  ASSERT(upb_fielddef_setsubdefname(f, type_name, NULL));
+  if (type_name) {
+    ASSERT(upb_fielddef_setsubdefname(f, type_name, NULL));
+  }
   return f;
 }
 
@@ -342,6 +344,91 @@ static void test_descriptor_flags() {
   upb_msgdef_unref(m2, &m2);
 }
 
+static void test_mapentry_check() {
+  upb_status s = UPB_STATUS_INIT;
+
+  upb_msgdef *m = upb_msgdef_new(&m);
+  upb_msgdef_setfullname(m, "TestMessage", &s);
+  upb_fielddef *f = upb_fielddef_new(&f);
+  upb_fielddef_setname(f, "field1", &s);
+  upb_fielddef_setnumber(f, 1, &s);
+  upb_fielddef_setlabel(f, UPB_LABEL_OPTIONAL);
+  upb_fielddef_settype(f, UPB_TYPE_MESSAGE);
+  upb_fielddef_setsubdefname(f, ".MapEntry", &s);
+  upb_msgdef_addfield(m, f, &f, &s);
+  ASSERT(upb_ok(&s));
+
+  upb_msgdef *subm = upb_msgdef_new(&subm);
+  upb_msgdef_setfullname(subm, "MapEntry", &s);
+  upb_msgdef_setmapentry(subm, true);
+
+  upb_symtab *symtab = upb_symtab_new(&symtab);
+  upb_def *defs[] = {UPB_UPCAST(m), UPB_UPCAST(subm)};
+  upb_symtab_add(symtab, defs, 2, NULL, &s);
+  // Should not have succeeded: non-repeated field pointing to a MapEntry.
+  ASSERT(!upb_ok(&s));
+
+  upb_fielddef_setlabel(f, UPB_LABEL_REPEATED);
+  upb_symtab_add(symtab, defs, 2, NULL, &s);
+  ASSERT(upb_ok(&s));
+
+  upb_symtab_unref(symtab, &symtab);
+  upb_msgdef_unref(subm, &subm);
+  upb_msgdef_unref(m, &m);
+}
+
+static void test_oneofs() {
+  upb_status s = UPB_STATUS_INIT;
+  bool ok = true;
+
+  upb_symtab *symtab = upb_symtab_new(&symtab);
+  ASSERT(symtab != NULL);
+
+  // Create a test message for fields to refer to.
+  upb_msgdef *subm = upb_msgdef_newnamed("SubMessage", &symtab);
+  upb_msgdef_addfield(subm, newfield("field1", 1, UPB_TYPE_INT32,
+                                     UPB_LABEL_OPTIONAL, NULL, &symtab),
+                      &symtab, NULL);
+  upb_def *subm_defs[] = {UPB_UPCAST(subm)};
+  ASSERT_STATUS(upb_symtab_add(symtab, subm_defs, 1, &symtab, &s), &s);
+
+  upb_msgdef *m = upb_msgdef_newnamed("TestMessage", &symtab);
+  ASSERT(upb_msgdef_numoneofs(m) == 0);
+
+  upb_oneofdef *o = upb_oneofdef_new(&o);
+  ASSERT(upb_oneofdef_numfields(o) == 0);
+  ASSERT(upb_oneofdef_name(o) == NULL);
+
+  ok = upb_oneofdef_setname(o, "test_oneof", &s);
+  ASSERT_STATUS(ok, &s);
+
+  ok = upb_oneofdef_addfield(o, newfield("field1", 1, UPB_TYPE_INT32,
+                                         UPB_LABEL_OPTIONAL, NULL, &symtab),
+                             &symtab, NULL);
+  ASSERT_STATUS(ok, &s);
+  ok = upb_oneofdef_addfield(o, newfield("field2", 2, UPB_TYPE_MESSAGE,
+                                         UPB_LABEL_OPTIONAL, ".SubMessage",
+                                         &symtab),
+                             &symtab, NULL);
+  ASSERT_STATUS(ok, &s);
+
+  ok = upb_msgdef_addoneof(m, o, NULL, &s);
+  ASSERT_STATUS(ok, &s);
+
+  upb_def *defs[] = {UPB_UPCAST(m)};
+  ASSERT_STATUS(upb_symtab_add(symtab, defs, 1, &symtab, &s), &s);
+
+  ASSERT(upb_msgdef_numoneofs(m) == 1);
+  const upb_oneofdef *lookup_o = upb_msgdef_ntooz(m, "test_oneof");
+  ASSERT(lookup_o == o);
+
+  const upb_fielddef *lookup_field = upb_oneofdef_ntofz(o, "field1");
+  ASSERT(lookup_field != NULL && upb_fielddef_number(lookup_field) == 1);
+
+  upb_symtab_unref(symtab, &symtab);
+  upb_oneofdef_unref(o, &o);
+}
+
 int run_tests(int argc, char *argv[]) {
   if (argc < 2) {
     fprintf(stderr, "Usage: test_def <test.proto.pb>\n");
@@ -358,5 +445,7 @@ int run_tests(int argc, char *argv[]) {
   test_partial_freeze();
   test_noreftracking();
   test_descriptor_flags();
+  test_mapentry_check();
+  test_oneofs();
   return 0;
 }

@@ -64,7 +64,6 @@ mgroup *newgroup(const void *owner) {
 
 static void freemethod(upb_refcounted *r) {
   upb_pbdecodermethod *method = (upb_pbdecodermethod*)r;
-  upb_byteshandler_uninit(&method->input_handler_);
 
   if (method->dest_handlers_) {
     upb_handlers_unref(method->dest_handlers_, method);
@@ -762,8 +761,10 @@ static void compile_method(compiler *c, upb_pbdecodermethod *method) {
   putsel(c, OP_STARTMSG, UPB_STARTMSG_SELECTOR, h);
  label(c, LABEL_FIELD);
   uint32_t* start_pc = c->pc;
-  upb_msg_iter i;
-  for(upb_msg_begin(&i, md); !upb_msg_done(&i); upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  for(upb_msg_field_begin(&i, md);
+      !upb_msg_field_done(&i);
+      upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
     upb_fieldtype_t type = upb_fielddef_type(f);
 
@@ -813,9 +814,11 @@ static void find_methods(compiler *c, const upb_handlers *h) {
   newmethod(h, c->group);
 
   // Find submethods.
-  upb_msg_iter i;
+  upb_msg_field_iter i;
   const upb_msgdef *md = upb_handlers_msgdef(h);
-  for(upb_msg_begin(&i, md); !upb_msg_done(&i); upb_msg_next(&i)) {
+  for(upb_msg_field_begin(&i, md);
+      !upb_msg_field_done(&i);
+      upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
     const upb_handlers *sub_h;
     if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE &&
@@ -857,7 +860,7 @@ static void set_bytecode_handlers(mgroup *g) {
 }
 
 
-/* JIT setup. ******************************************************************/
+/* JIT setup. *****************************************************************/
 
 #ifdef UPB_USE_JIT_X64
 

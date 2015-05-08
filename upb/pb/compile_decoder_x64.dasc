@@ -242,7 +242,7 @@ static void emit_static_asm(jitcompiler *jc) {
   |
   |2:
   |  // Resume decoder.
-  |  lea   ARG2_64, DECODER->callstack
+  |  mov   ARG2_64, DECODER->callstack
   |  sub   rsp, ARG3_64
   |  mov   ARG1_64, rsp
   |  callp memcpy  // Restore stack.
@@ -255,7 +255,7 @@ static void emit_static_asm(jitcompiler *jc) {
   asmlabel(jc, "exitjit");
   |->exitjit:
   |  // Save the stack into DECODER->callstack.
-  |  lea   ARG1_64, DECODER->callstack
+  |  mov   ARG1_64, DECODER->callstack
   |  mov   ARG2_64, rsp
   |  mov   ARG3_64, DECODER->saved_rsp
   |  sub   ARG3_64, rsp
@@ -300,11 +300,11 @@ static void emit_static_asm(jitcompiler *jc) {
   |  sub   rcx, rdx
   |  jb    ->err  // Len is greater than enclosing message.
   |  mov   FRAME->end_ofs, rcx
+  |  cmp   FRAME, DECODER->limit
+  |  je    >3   // Stack overflow
   |  add   FRAME, sizeof(upb_pbdecoder_frame)
   |  mov   DELIMEND, PTR
   |  add   DELIMEND, rdx
-  |  cmp   FRAME, DECODER->limit
-  |  je    >3   // Stack overflow
   |  mov   dword FRAME->groupnum, 0
   |  test  rcx, rcx
   |  jz    >2
@@ -1071,9 +1071,9 @@ static void jitbytecode(jitcompiler *jc) {
       |  // code with the packed code-path.  If this is changed later, this
       |  // store can be removed.
       |  mov   qword FRAME->end_ofs, 0
-      |  add   FRAME, sizeof(upb_pbdecoder_frame)
       |  cmp   FRAME, DECODER->limit
       |  je    ->err
+      |  add   FRAME, sizeof(upb_pbdecoder_frame)
       |  mov   dword FRAME->groupnum, arg
       break;
     case OP_PUSHLENDELIM:

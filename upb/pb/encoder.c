@@ -62,6 +62,68 @@
 
 #include <stdlib.h>
 
+// The output buffer is divided into segments; a segment is a string of data
+// that is "ready to go" -- it does not need any varint lengths inserted into
+// the middle.  The seams between segments are where varints will be inserted
+// once they are known.
+//
+// We also use the concept of a "run", which is a range of encoded bytes that
+// occur at a single submessage level.  Every segment contains one or more runs.
+//
+// A segment can span messages.  Consider:
+//
+//                  .--Submessage lengths---------.
+//                  |       |                     |
+//                  |       V                     V
+//                  V      | |---------------    | |-----------------
+// Submessages:    | |-----------------------------------------------
+// Top-level msg: ------------------------------------------------------------
+//
+// Segments:          -----   -------------------   -----------------
+// Runs:              *----   *--------------*---   *----------------
+// (* marks the start)
+//
+// Note that the top-level menssage is not in any segment because it does not
+// have any length preceding it.
+//
+// A segment is only interrupted when another length needs to be inserted.  So
+// observe how the second segment spans both the inner submessage and part of
+// the next enclosing message.
+typedef struct {
+  uint32_t msglen;  // The length to varint-encode before this segment.
+  uint32_t seglen;  // Length of the segment.
+} upb_pb_encoder_segment;
+
+struct upb_pb_encoder {
+  upb_env *env;
+
+  // Our input and output.
+  upb_sink input_;
+  upb_bytessink *output_;
+
+  // The "subclosure" -- used as the inner closure as part of the bytessink
+  // protocol.
+  void *subc;
+
+  // The output buffer and limit, and our current write position.  "buf"
+  // initially points to "initbuf", but is dynamically allocated if we need to
+  // grow beyond the initial size.
+  char *buf, *ptr, *limit;
+
+  // The beginning of the current run, or undefined if we are at the top level.
+  char *runbegin;
+
+  // The list of segments we are accumulating.
+  upb_pb_encoder_segment *segbuf, *segptr, *seglimit;
+
+  // The stack of enclosing submessages.  Each entry in the stack points to the
+  // segment where this submessage's length is being accumulated.
+  int *stack, *top, *stacklimit;
+
+  // Depth of startmsg/endmsg calls.
+  int depth;
+};
+
 /* low-level buffering ********************************************************/
 
 // Low-level functions for interacting with the output buffer.
@@ -80,22 +142,20 @@ static upb_pb_encoder_segment *top(upb_pb_encoder *e) {
 // e->ptr.  Returns false if the bytes could not be allocated.
 static bool reserve(upb_pb_encoder *e, size_t bytes) {
   if ((e->limit - e->ptr) < bytes) {
+    // Grow buffer.
     size_t needed = bytes + (e->ptr - e->buf);
     size_t old_size = e->limit - e->buf;
+
     size_t new_size = old_size;
+
     while (new_size < needed) {
       new_size *= 2;
     }
 
-    char *realloc_from = (e->buf == e->initbuf) ? NULL : e->buf;
-    char *new_buf = realloc(realloc_from, new_size);
+    char *new_buf = upb_env_realloc(e->env, e->buf, old_size, new_size);
 
     if (new_buf == NULL) {
       return false;
-    }
-
-    if (realloc_from == NULL) {
-      memcpy(new_buf, e->initbuf, old_size);
     }
 
     e->ptr = new_buf + (e->ptr - e->buf);
@@ -166,19 +226,15 @@ static bool start_delim(upb_pb_encoder *e) {
     }
 
     if (++e->segptr == e->seglimit) {
-      upb_pb_encoder_segment *realloc_from =
-          (e->segbuf == e->seginitbuf) ? NULL : e->segbuf;
+      // Grow segment buffer.
       size_t old_size =
           (e->seglimit - e->segbuf) * sizeof(upb_pb_encoder_segment);
       size_t new_size = old_size * 2;
-      upb_pb_encoder_segment *new_buf = realloc(realloc_from, new_size);
+      upb_pb_encoder_segment *new_buf =
+          upb_env_realloc(e->env, e->segbuf, old_size, new_size);
 
       if (new_buf == NULL) {
         return false;
-      }
-
-      if (realloc_from == NULL) {
-        memcpy(new_buf, e->seginitbuf, old_size);
       }
 
       e->segptr = new_buf + (e->segptr - e->segbuf);
@@ -378,8 +434,10 @@ static void newhandlers_callback(const void *closure, upb_handlers *h) {
   upb_handlers_setendmsg(h, endmsg, NULL);
 
   const upb_msgdef *m = upb_handlers_msgdef(h);
-  upb_msg_iter i;
-  for(upb_msg_begin(&i, m); !upb_msg_done(&i); upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  for(upb_msg_field_begin(&i, m);
+      !upb_msg_field_done(&i);
+      upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
     bool packed = upb_fielddef_isseq(f) && upb_fielddef_isprimitive(f) &&
                   upb_fielddef_packed(f);
@@ -449,6 +507,12 @@ static void newhandlers_callback(const void *closure, upb_handlers *h) {
   }
 }
 
+void upb_pb_encoder_reset(upb_pb_encoder *e) {
+  e->segptr = NULL;
+  e->top = NULL;
+  e->depth = 0;
+}
+
 
 /* public API *****************************************************************/
 
@@ -457,40 +521,42 @@ const upb_handlers *upb_pb_encoder_newhandlers(const upb_msgdef *m,
   return upb_handlers_newfrozen(m, owner, newhandlers_callback, NULL);
 }
 
-#define ARRAYSIZE(x) (sizeof(x) / sizeof(x[0]))
+upb_pb_encoder *upb_pb_encoder_create(upb_env *env, const upb_handlers *h,
+                                      upb_bytessink *output) {
+  const size_t initial_bufsize = 256;
+  const size_t initial_segbufsize = 16;
+  // TODO(haberman): make this configurable.
+  const size_t stack_size = 64;
+#ifndef NDEBUG
+  const size_t size_before = upb_env_bytesallocated(env);
+#endif
 
-void upb_pb_encoder_init(upb_pb_encoder *e, const upb_handlers *h) {
-  e->output_ = NULL;
-  e->subc = NULL;
-  e->buf = e->initbuf;
-  e->ptr = e->buf;
-  e->limit = e->buf + ARRAYSIZE(e->initbuf);
-  e->segbuf = e->seginitbuf;
-  e->seglimit = e->segbuf + ARRAYSIZE(e->seginitbuf);
-  e->stacklimit = e->stack + ARRAYSIZE(e->stack);
-  upb_sink_reset(&e->input_, h, e);
-}
+  upb_pb_encoder *e = upb_env_malloc(env, sizeof(upb_pb_encoder));
+  if (!e) return NULL;
 
-void upb_pb_encoder_uninit(upb_pb_encoder *e) {
-  if (e->buf != e->initbuf) {
-    free(e->buf);
+  e->buf = upb_env_malloc(env, initial_bufsize);
+  e->segbuf = upb_env_malloc(env, initial_segbufsize * sizeof(*e->segbuf));
+  e->stack = upb_env_malloc(env, stack_size * sizeof(*e->stack));
+
+  if (!e->buf || !e->segbuf || !e->stack) {
+    return NULL;
   }
 
-  if (e->segbuf != e->seginitbuf) {
-    free(e->segbuf);
-  }
-}
+  e->limit = e->buf + initial_bufsize;
+  e->seglimit = e->segbuf + initial_segbufsize;
+  e->stacklimit = e->stack + stack_size;
 
-void upb_pb_encoder_resetoutput(upb_pb_encoder *e, upb_bytessink *output) {
   upb_pb_encoder_reset(e);
+  upb_sink_reset(&e->input_, h, e);
+
+  e->env = env;
   e->output_ = output;
   e->subc = output->closure;
-}
+  e->ptr = e->buf;
 
-void upb_pb_encoder_reset(upb_pb_encoder *e) {
-  e->segptr = NULL;
-  e->top = NULL;
-  e->depth = 0;
+  // If this fails, increase the value in encoder.h.
+  assert(upb_env_bytesallocated(env) - size_before <= UPB_PB_ENCODER_SIZE);
+  return e;
 }
 
 upb_sink *upb_pb_encoder_input(upb_pb_encoder *e) { return &e->input_; }
