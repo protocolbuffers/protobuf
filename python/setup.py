@@ -53,7 +53,7 @@ def GetVersion():
   protobuf library may be loaded instead."""
 
   with open(os.path.join('google', 'protobuf', '__init__.py')) as version_file:
-    exec(version_file.read())
+    exec(version_file.read(), globals())
     return __version__
 
 
