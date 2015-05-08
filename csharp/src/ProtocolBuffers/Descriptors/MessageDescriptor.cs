@@ -45,12 +45,17 @@ namespace Google.ProtocolBuffers.Descriptors
         private readonly IList<EnumDescriptor> enumTypes;
         private readonly IList<FieldDescriptor> fields;
         private readonly IList<FieldDescriptor> extensions;
+        private readonly IList<OneofDescriptor> oneofs;
         private bool hasRequiredFields;
 
         internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex)
             : base(proto, file, ComputeFullName(file, parent, proto.Name), typeIndex)
         {
             containingType = parent;
+
+            oneofs = DescriptorUtil.ConvertAndMakeReadOnly(proto.OneofDeclList,
+                                                               (oneof, index) =>
+                                                               new OneofDescriptor(oneof, file, this, index));
 
             nestedTypes = DescriptorUtil.ConvertAndMakeReadOnly(proto.NestedTypeList,
                                                                 (type, index) =>
@@ -69,6 +74,19 @@ namespace Google.ProtocolBuffers.Descriptors
                                                                (field, index) =>
                                                                new FieldDescriptor(field, file, this, index, true));
 
+            for (int i = 0; i < proto.OneofDeclCount; i++)
+            {
+                oneofs[i].fields = new FieldDescriptor[oneofs[i].FieldCount];
+                oneofs[i].fieldCount = 0;
+            }
+            for (int i = 0; i< proto.FieldCount; i++)
+            {
+                OneofDescriptor oneofDescriptor = fields[i].ContainingOneof;
+                if (oneofDescriptor != null)
+                {
+                    oneofDescriptor.fields[oneofDescriptor.fieldCount++] = fields[i];
+                }
+            }
             file.DescriptorPool.AddSymbol(this);
         }
 
@@ -110,6 +128,11 @@ namespace Google.ProtocolBuffers.Descriptors
         public IList<EnumDescriptor> EnumTypes
         {
             get { return enumTypes; }
+        }
+
+        public IList<OneofDescriptor> Oneofs
+        {
+            get { return oneofs; }
         }
 
         /// <summary>
@@ -188,6 +211,11 @@ namespace Google.ProtocolBuffers.Descriptors
             foreach (FieldDescriptor extension in extensions)
             {
                 extension.CrossLink();
+            }
+
+            foreach (OneofDescriptor oneof in oneofs)
+            {
+               // oneof.C
             }
         }
 

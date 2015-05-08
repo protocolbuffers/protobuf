@@ -45,6 +45,7 @@ namespace Google.ProtocolBuffers.FieldAccess
         where TBuilder : IBuilder<TMessage, TBuilder>
     {
         private readonly IFieldAccessor<TMessage, TBuilder>[] accessors;
+        private readonly OneofAccessor<TMessage, TBuilder>[] oneofs;
 
         private readonly MessageDescriptor descriptor;
 
@@ -68,10 +69,15 @@ namespace Google.ProtocolBuffers.FieldAccess
         {
             this.descriptor = descriptor;
             accessors = new IFieldAccessor<TMessage, TBuilder>[descriptor.Fields.Count];
+            oneofs = new OneofAccessor<TMessage, TBuilder>[descriptor.Oneofs.Count];
             bool supportFieldPresence = descriptor.File.Syntax == FileDescriptor.ProtoSyntax.Proto2;
             for (int i = 0; i < accessors.Length; i++)
             {
                 accessors[i] = CreateAccessor(descriptor.Fields[i], propertyNames[i], supportFieldPresence);
+            }
+            for (int i = 0; i < oneofs.Length; i++)
+            {
+                oneofs[i] = new OneofAccessor<TMessage, TBuilder>(descriptor, propertyNames[i + accessors.Length]);
             }
         }
 
@@ -122,6 +128,15 @@ namespace Google.ProtocolBuffers.FieldAccess
                 }
                 return accessors[field.Index];
             }
+        }
+
+        internal OneofAccessor<TMessage, TBuilder> Oneof(OneofDescriptor oneof)
+        {
+            if (oneof.ContainingType != descriptor)
+            {
+                throw new ArgumentException("OneofDescriptor does not match message type");
+            }
+            return oneofs[oneof.Index];
         }
     }
 }

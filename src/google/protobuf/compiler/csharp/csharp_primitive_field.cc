@@ -50,6 +50,11 @@ namespace csharp {
 PrimitiveFieldGenerator::PrimitiveFieldGenerator(
     const FieldDescriptor* descriptor, int fieldOrdinal)
     : FieldGeneratorBase(descriptor, fieldOrdinal) {
+  if (SupportFieldPresence(descriptor_->file())) {
+    has_property_name = "has" + property_name();
+  } else {
+    has_property_name = property_name() + " != " + default_value();
+  }
 }
 
 PrimitiveFieldGenerator::~PrimitiveFieldGenerator() {
@@ -133,11 +138,7 @@ void PrimitiveFieldGenerator::GenerateParsingCode(Writer* writer) {
 }
 
 void PrimitiveFieldGenerator::GenerateSerializationCode(Writer* writer) {
-  if (SupportFieldPresence(descriptor_->file())) {
-    writer->WriteLine("if (has$0$) {", property_name());
-  } else {
-    writer->WriteLine("if ($0$ != $1$) {", property_name(), default_value());
-  }
+  writer->WriteLine("if ($0$) {", has_property_name);
   writer->WriteLine("  output.Write$0$($1$, field_names[$3$], $2$);",
                     capitalized_type_name(), number(), property_name(),
                     field_ordinal());
@@ -145,22 +146,14 @@ void PrimitiveFieldGenerator::GenerateSerializationCode(Writer* writer) {
 }
 
 void PrimitiveFieldGenerator::GenerateSerializedSizeCode(Writer* writer) {
-  if (SupportFieldPresence(descriptor_->file())) {
-    writer->WriteLine("if (has$0$) {", property_name());
-  } else {
-    writer->WriteLine("if ($0$ != $1$) {", property_name(), default_value());
-  }
+  writer->WriteLine("if ($0$) {", has_property_name);
   writer->WriteLine("  size += pb::CodedOutputStream.Compute$0$Size($1$, $2$);",
                     capitalized_type_name(), number(), property_name());
   writer->WriteLine("}");
 }
 
 void PrimitiveFieldGenerator::WriteHash(Writer* writer) {
-  if (SupportFieldPresence(descriptor_->file())) {
-    writer->WriteLine("if (has$0$) {", property_name());
-  } else {
-    writer->WriteLine("if ($0$ != $1$) {", property_name(), default_value());
-  }
+  writer->WriteLine("if ($0$) {", has_property_name);
   writer->WriteLine("  hash ^= $0$_.GetHashCode();", name());
   writer->WriteLine("}");
 }
@@ -184,6 +177,98 @@ void PrimitiveFieldGenerator::WriteToString(Writer* writer) {
   }
 }
 
+PrimitiveOneofFieldGenerator::PrimitiveOneofFieldGenerator(
+    const FieldDescriptor* descriptor, int fieldOrdinal)
+    : PrimitiveFieldGenerator(descriptor, fieldOrdinal) {
+  oneof_name =
+    UnderscoresToCamelCase(descriptor->containing_oneof()->name(), false);
+  oneof_property_name =
+    UnderscoresToCamelCase(descriptor->containing_oneof()->name(), true);
+
+  has_property_name = oneof_name + "Case_ == " + oneof_property_name +
+    "OneofCase." + property_name();
+}
+
+PrimitiveOneofFieldGenerator::~PrimitiveOneofFieldGenerator() {
+}
+
+void PrimitiveOneofFieldGenerator::GenerateMembers(Writer* writer) {
+  AddDeprecatedFlag(writer);
+  if (SupportFieldPresence(descriptor_->file())) {
+    writer->WriteLine("public bool Has$0$ {", property_name());
+    writer->WriteLine("  get { return $0$; }", has_property_name);
+    writer->WriteLine("}");
+  }
+  AddPublicMemberAttributes(writer);
+  writer->WriteLine("public $0$ $1$ {", type_name(), property_name());
+  writer->WriteLine("  get {");
+  writer->WriteLine("    if ($0$) {", has_property_name);
+  writer->WriteLine("      return ($0$) $1$_;", type_name(), oneof_name);
+  writer->WriteLine("    }");
+  writer->WriteLine("    return $0$;", default_value());
+  writer->WriteLine("  }");
+  writer->WriteLine("}");
+}
+
+void PrimitiveOneofFieldGenerator::GenerateBuilderMembers(Writer* writer) {
+  AddDeprecatedFlag(writer);
+  if (SupportFieldPresence(descriptor_->file())) {
+    writer->WriteLine("public bool Has$0$ {", property_name());
+    writer->WriteLine("  get { return result.$0$; }", has_property_name);
+    writer->WriteLine("}");
+  }
+  AddPublicMemberAttributes(writer);
+  writer->WriteLine("public $0$ $1$ {", type_name(), property_name());
+  writer->WriteLine("  get {");
+  writer->WriteLine("    if (result.$0$) {", has_property_name);
+  writer->WriteLine("      return ($0$) result.$1$_;", type_name(), oneof_name);
+  writer->WriteLine("    } else {");
+  writer->WriteLine("      return $0$;", default_value());
+  writer->WriteLine("    }");
+  writer->WriteLine("  }");
+  writer->WriteLine("  set { Set$0$(value); }", property_name());
+  writer->WriteLine("}");
+  AddPublicMemberAttributes(writer);
+  writer->WriteLine("public Builder Set$0$($1$ value) {", property_name(),
+                    type_name());
+  AddNullCheck(writer);
+  writer->WriteLine("  PrepareBuilder();");
+  writer->WriteLine("  result.$0$_ = value;", oneof_name);
+  writer->WriteLine("  result.$0$Case_ = $1$OneofCase.$2$;",
+                    oneof_name, oneof_property_name, property_name());
+  writer->WriteLine("  return this;");
+  writer->WriteLine("}");
+  AddDeprecatedFlag(writer);
+  writer->WriteLine("public Builder Clear$0$() {", property_name());
+  writer->WriteLine("  PrepareBuilder();");
+  writer->WriteLine("  if (result.$0$) {", has_property_name);
+  writer->WriteLine("    result.$0$Case_ = $1$OneofCase.$1$NotSet;",
+                    oneof_name, oneof_property_name);
+  writer->WriteLine("  }");
+  writer->WriteLine("  return this;");
+  writer->WriteLine("}");
+}
+
+void PrimitiveOneofFieldGenerator::WriteEquals(Writer* writer) {
+  writer->WriteLine("if (!$0$.Equals(other.$0$)) return false;", property_name());
+}
+
+void PrimitiveOneofFieldGenerator::GenerateParsingCode(Writer* writer) {
+  writer->WriteLine("$0$ value = $1$;", type_name(), default_value());
+  writer->WriteLine("if (input.Read$0$(ref value)) {",
+		    capitalized_type_name());
+  writer->WriteLine("  result.$0$_ = value;", oneof_name);
+  writer->WriteLine("  result.$0$Case_ = $1$OneofCase.$2$;",
+		    oneof_name, oneof_property_name, property_name());
+  writer->WriteLine("}");
+}
+  /*
+void PrimitiveOneofFieldGenerator::GenerateMergingCode(Writer* writer) {
+  writer->WriteLine("if (other.$0$) {", has_property_name);
+  writer->WriteLine("  $0$ = other.$0$;", property_name());
+  writer->WriteLine("}");
+}
+  */
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf

@@ -62,6 +62,8 @@ namespace Google.ProtocolBuffers
         public abstract MessageDescriptor DescriptorForType { get; }
         public abstract IDictionary<FieldDescriptor, object> AllFields { get; }
         public abstract bool HasField(FieldDescriptor field);
+        public abstract bool HasOneof(OneofDescriptor oneof);
+        public abstract FieldDescriptor OneofFieldDescriptor(OneofDescriptor oneof);
         public abstract object this[FieldDescriptor field] { get; }
         public abstract int GetRepeatedFieldCount(FieldDescriptor field);
         public abstract object this[FieldDescriptor field, int index] { get; }

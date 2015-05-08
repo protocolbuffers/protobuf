@@ -33,21 +33,28 @@ namespace Google.ProtocolBuffers.TestProtos.FieldPresence {
           string.Concat(
             "CjBwcm90b3MvZ29vZ2xlL3Byb3RvYnVmL2ZpZWxkX3ByZXNlbmNlX3Rlc3Qu", 
             "cHJvdG8SL0dvb2dsZS5Qcm90b2NvbEJ1ZmZlcnMuVGVzdFByb3Rvcy5GaWVs", 
-            "ZFByZXNlbmNlIvYCCgxUZXN0QWxsVHlwZXMSFgoOb3B0aW9uYWxfaW50MzIY", 
+            "ZFByZXNlbmNlIq8FCgxUZXN0QWxsVHlwZXMSFgoOb3B0aW9uYWxfaW50MzIY", 
             "ASABKAUSFwoPb3B0aW9uYWxfc3RyaW5nGAIgASgJEhYKDm9wdGlvbmFsX2J5", 
             "dGVzGAMgASgMEmYKFG9wdGlvbmFsX25lc3RlZF9lbnVtGAQgASgOMkguR29v", 
             "Z2xlLlByb3RvY29sQnVmZmVycy5UZXN0UHJvdG9zLkZpZWxkUHJlc2VuY2Uu", 
             "VGVzdEFsbFR5cGVzLk5lc3RlZEVudW0SbAoXb3B0aW9uYWxfbmVzdGVkX21l", 
             "c3NhZ2UYBSABKAsySy5Hb29nbGUuUHJvdG9jb2xCdWZmZXJzLlRlc3RQcm90", 
-            "b3MuRmllbGRQcmVzZW5jZS5UZXN0QWxsVHlwZXMuTmVzdGVkTWVzc2FnZRoe", 
-            "Cg1OZXN0ZWRNZXNzYWdlEg0KBXZhbHVlGAEgASgFIicKCk5lc3RlZEVudW0S", 
-          "BwoDRk9PEAASBwoDQkFSEAESBwoDQkFaEAJiBnByb3RvMw=="));
+            "b3MuRmllbGRQcmVzZW5jZS5UZXN0QWxsVHlwZXMuTmVzdGVkTWVzc2FnZRIV", 
+            "CgtvbmVvZl9pbnQzMhgLIAEoBUgAEhYKDG9uZW9mX3VpbnQzMhgMIAEoDUgA", 
+            "EhYKDG9uZW9mX3N0cmluZxgNIAEoCUgAEhUKC29uZW9mX2J5dGVzGA4gASgM", 
+            "SAASXQoJb25lb2ZFbnVtGA8gASgOMkguR29vZ2xlLlByb3RvY29sQnVmZmVy", 
+            "cy5UZXN0UHJvdG9zLkZpZWxkUHJlc2VuY2UuVGVzdEFsbFR5cGVzLk5lc3Rl", 
+            "ZEVudW1IABJrChRvbmVvZl9uZXN0ZWRfbWVzc2FnZRgQIAEoCzJLLkdvb2ds", 
+            "ZS5Qcm90b2NvbEJ1ZmZlcnMuVGVzdFByb3Rvcy5GaWVsZFByZXNlbmNlLlRl", 
+            "c3RBbGxUeXBlcy5OZXN0ZWRNZXNzYWdlSAAaHgoNTmVzdGVkTWVzc2FnZRIN", 
+            "CgV2YWx1ZRgBIAEoBSInCgpOZXN0ZWRFbnVtEgcKA0ZPTxAAEgcKA0JBUhAB", 
+          "EgcKA0JBWhACQg0KC29uZW9mX2ZpZWxkYgZwcm90bzM="));
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_Google_ProtocolBuffers_TestProtos_FieldPresence_TestAllTypes__Descriptor = Descriptor.MessageTypes[0];
         internal__static_Google_ProtocolBuffers_TestProtos_FieldPresence_TestAllTypes__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes, global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Builder>(internal__static_Google_ProtocolBuffers_TestProtos_FieldPresence_TestAllTypes__Descriptor,
-                new string[] { "OptionalInt32", "OptionalString", "OptionalBytes", "OptionalNestedEnum", "OptionalNestedMessage", });
+                new string[] { "OptionalInt32", "OptionalString", "OptionalBytes", "OptionalNestedEnum", "OptionalNestedMessage", "OneofInt32", "OneofUint32", "OneofString", "OneofBytes", "OneofEnum", "OneofNestedMessage", "OneofField", });
         internal__static_Google_ProtocolBuffers_TestProtos_FieldPresence_TestAllTypes_NestedMessage__Descriptor = internal__static_Google_ProtocolBuffers_TestProtos_FieldPresence_TestAllTypes__Descriptor.NestedTypes[0];
         internal__static_Google_ProtocolBuffers_TestProtos_FieldPresence_TestAllTypes_NestedMessage__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedMessage, global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedMessage.Builder>(internal__static_Google_ProtocolBuffers_TestProtos_FieldPresence_TestAllTypes_NestedMessage__Descriptor,
@@ -68,8 +75,8 @@ namespace Google.ProtocolBuffers.TestProtos.FieldPresence {
   public sealed partial class TestAllTypes : pb::GeneratedMessage<TestAllTypes, TestAllTypes.Builder> {
     private TestAllTypes() { }
     private static readonly TestAllTypes defaultInstance = new TestAllTypes().MakeReadOnly();
-    private static readonly string[] _testAllTypesFieldNames = new string[] { "optional_bytes", "optional_int32", "optional_nested_enum", "optional_nested_message", "optional_string" };
-    private static readonly uint[] _testAllTypesFieldTags = new uint[] { 26, 8, 32, 42, 18 };
+    private static readonly string[] _testAllTypesFieldNames = new string[] { "oneofEnum", "oneof_bytes", "oneof_int32", "oneof_nested_message", "oneof_string", "oneof_uint32", "optional_bytes", "optional_int32", "optional_nested_enum", "optional_nested_message", "optional_string" };
+    private static readonly uint[] _testAllTypesFieldTags = new uint[] { 120, 114, 88, 130, 106, 96, 26, 8, 32, 42, 18 };
     public static TestAllTypes DefaultInstance {
       get { return defaultInstance; }
     }
@@ -362,6 +369,21 @@ namespace Google.ProtocolBuffers.TestProtos.FieldPresence {
     }
     #endregion
 
+    private object oneofField_;
+    public enum OneofFieldOneofCase {
+      OneofInt32 = 11,
+      OneofUint32 = 12,
+      OneofString = 13,
+      OneofBytes = 14,
+      OneofEnum = 15,
+      OneofNestedMessage = 16,
+      OneofFieldNotSet = 0,
+    }
+    private OneofFieldOneofCase oneofFieldCase_ = OneofFieldOneofCase.OneofFieldNotSet;
+    public OneofFieldOneofCase OneofFieldCase {
+      get { return oneofFieldCase_; }
+    }
+
     public const int OptionalInt32FieldNumber = 1;
     private int optionalInt32_;
     public int OptionalInt32 {
@@ -396,23 +418,99 @@ namespace Google.ProtocolBuffers.TestProtos.FieldPresence {
       get { return optionalNestedMessage_ ?? global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedMessage.DefaultInstance; }
     }
 
+    public const int OneofInt32FieldNumber = 11;
+    public int OneofInt32 {
+      get {
+        if (oneofFieldCase_ == OneofFieldOneofCase.OneofInt32) {
+          return (int) oneofField_;
+        }
+        return 0;
+      }
+    }
+
+    public const int OneofUint32FieldNumber = 12;
+    public uint OneofUint32 {
+      get {
+        if (oneofFieldCase_ == OneofFieldOneofCase.OneofUint32) {
+          return (uint) oneofField_;
+        }
+        return 0;
+      }
+    }
+
+    public const int OneofStringFieldNumber = 13;
+    public string OneofString {
+      get {
+        if (oneofFieldCase_ == OneofFieldOneofCase.OneofString) {
+          return (string) oneofField_;
+        }
+        return "";
+      }
+    }
+
+    public const int OneofBytesFieldNumber = 14;
+    public pb::ByteString OneofBytes {
+      get {
+        if (oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) {
+          return (pb::ByteString) oneofField_;
+        }
+        return pb::ByteString.Empty;
+      }
+    }
+
+    public const int OneofEnumFieldNumber = 15;
+    public global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedEnum OneofEnum {
+      get {
+        if (oneofFieldCase_ == OneofFieldOneofCase.OneofEnum) {
+          return (global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedEnum) oneofField_;
+        }
+        return global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedEnum.FOO;
+      }
+    }
+
+    public const int OneofNestedMessageFieldNumber = 16;
+    public bool HasOneofNestedMessage {
+      get { return oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage; }
+    }
+    public global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedMessage OneofNestedMessage {
+      get { return oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage ? (global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedMessage) oneofField_ : global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedMessage.DefaultInstance; }
+    }
+
     public override void WriteTo(pb::ICodedOutputStream output) {
       CalcSerializedSize();
       string[] field_names = _testAllTypesFieldNames;
       if (OptionalInt32 != 0) {
-        output.WriteInt32(1, field_names[1], OptionalInt32);
+        output.WriteInt32(1, field_names[7], OptionalInt32);
       }
       if (OptionalString != "") {
-        output.WriteString(2, field_names[4], OptionalString);
+        output.WriteString(2, field_names[10], OptionalString);
       }
       if (OptionalBytes != pb::ByteString.Empty) {
-        output.WriteBytes(3, field_names[0], OptionalBytes);
+        output.WriteBytes(3, field_names[6], OptionalBytes);
       }
       if (OptionalNestedEnum != global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedEnum.FOO) {
-        output.WriteEnum(4, field_names[2], (int) OptionalNestedEnum, OptionalNestedEnum);
+        output.WriteEnum(4, field_names[8], (int) OptionalNestedEnum, OptionalNestedEnum);
       }
       if (hasOptionalNestedMessage) {
-        output.WriteMessage(5, field_names[3], OptionalNestedMessage);
+        output.WriteMessage(5, field_names[9], OptionalNestedMessage);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofInt32) {
+        output.WriteInt32(11, field_names[2], OneofInt32);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofUint32) {
+        output.WriteUInt32(12, field_names[5], OneofUint32);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofString) {
+        output.WriteString(13, field_names[4], OneofString);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) {
+        output.WriteBytes(14, field_names[1], OneofBytes);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofEnum) {
+        output.WriteEnum(15, field_names[0], (int) OneofEnum, OneofEnum);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
+        output.WriteMessage(16, field_names[3], OneofNestedMessage);
       }
       UnknownFields.WriteTo(output);
     }
@@ -445,6 +543,24 @@ namespace Google.ProtocolBuffers.TestProtos.FieldPresence {
       }
       if (hasOptionalNestedMessage) {
         size += pb::CodedOutputStream.ComputeMessageSize(5, OptionalNestedMessage);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofInt32) {
+        size += pb::CodedOutputStream.ComputeInt32Size(11, OneofInt32);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofUint32) {
+        size += pb::CodedOutputStream.ComputeUInt32Size(12, OneofUint32);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofString) {
+        size += pb::CodedOutputStream.ComputeStringSize(13, OneofString);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) {
+        size += pb::CodedOutputStream.ComputeBytesSize(14, OneofBytes);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofEnum) {
+        size += pb::CodedOutputStream.ComputeEnumSize(15, (int) OneofEnum);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
+        size += pb::CodedOutputStream.ComputeMessageSize(16, OneofNestedMessage);
       }
       size += UnknownFields.SerializedSize;
       memoizedSerializedSize = size;
@@ -583,6 +699,33 @@ namespace Google.ProtocolBuffers.TestProtos.FieldPresence {
         if (other.HasOptionalNestedMessage) {
           MergeOptionalNestedMessage(other.OptionalNestedMessage);
         }
+        switch (other.OneofFieldCase) {
+          case OneofFieldOneofCase.OneofInt32: {
+            SetOneofInt32(other.OneofInt32);
+            break;
+          }
+          case OneofFieldOneofCase.OneofUint32: {
+            SetOneofUint32(other.OneofUint32);
+            break;
+          }
+          case OneofFieldOneofCase.OneofString: {
+            SetOneofString(other.OneofString);
+            break;
+          }
+          case OneofFieldOneofCase.OneofBytes: {
+            SetOneofBytes(other.OneofBytes);
+            break;
+          }
+          case OneofFieldOneofCase.OneofEnum: {
+            SetOneofEnum(other.OneofEnum);
+            break;
+          }
+          case OneofFieldOneofCase.OneofNestedMessage: {
+            MergeOneofNestedMessage(other.OneofNestedMessage);
+            break;
+          }
+          case OneofFieldOneofCase.OneofFieldNotSet: { break; }
+        }
         this.MergeUnknownFields(other.UnknownFields);
         return this;
       }
@@ -656,6 +799,62 @@ namespace Google.ProtocolBuffers.TestProtos.FieldPresence {
               }
               input.ReadMessage(subBuilder, extensionRegistry);
               OptionalNestedMessage = subBuilder.BuildPartial();
+              break;
+            }
+            case 88: {
+              int value = 0;
+              if (input.ReadInt32(ref value)) {
+                result.oneofField_ = value;
+                result.oneofFieldCase_ = OneofFieldOneofCase.OneofInt32;
+              }
+              break;
+            }
+            case 96: {
+              uint value = 0;
+              if (input.ReadUInt32(ref value)) {
+                result.oneofField_ = value;
+                result.oneofFieldCase_ = OneofFieldOneofCase.OneofUint32;
+              }
+              break;
+            }
+            case 106: {
+              string value = "";
+              if (input.ReadString(ref value)) {
+                result.oneofField_ = value;
+                result.oneofFieldCase_ = OneofFieldOneofCase.OneofString;
+              }
+              break;
+            }
+            case 114: {
+              pb::ByteString value = pb::ByteString.Empty;
+              if (input.ReadBytes(ref value)) {
+                result.oneofField_ = value;
+                result.oneofFieldCase_ = OneofFieldOneofCase.OneofBytes;
+              }
+              break;
+            }
+            case 120: {
+              object unknown;
+              global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedEnum enumValue = global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedEnum.FOO;
+              if(input.ReadEnum(ref enumValue, out unknown)) {
+                result.oneofField_ = enumValue;
+                result.oneofFieldCase_ = OneofFieldOneofCase.OneofEnum;
+              } else if(unknown is int) {
+                if (unknownFields == null) {
+                  unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
+                }
+                unknownFields.MergeVarintField(15, (ulong)(int)unknown);
+              }
+              break;
+            }
+            case 130: {
+              global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedMessage.CreateBuilder();
+              if (result.oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
+                subBuilder.MergeFrom(OneofNestedMessage);
+              }
+              input.ReadMessage(subBuilder, extensionRegistry);
+              result.oneofField_ = subBuilder.BuildPartial();
+              result.oneofFieldCase_ = OneofFieldOneofCase.OneofNestedMessage;
               break;
             }
           }
@@ -767,6 +966,180 @@ namespace Google.ProtocolBuffers.TestProtos.FieldPresence {
         PrepareBuilder();
         result.hasOptionalNestedMessage = false;
         result.optionalNestedMessage_ = null;
+        return this;
+      }
+
+      public int OneofInt32 {
+        get {
+          if (result.oneofFieldCase_ == OneofFieldOneofCase.OneofInt32) {
+            return (int) result.oneofField_;
+          } else {
+            return 0;
+          }
+        }
+        set { SetOneofInt32(value); }
+      }
+      public Builder SetOneofInt32(int value) {
+        PrepareBuilder();
+        result.oneofField_ = value;
+        result.oneofFieldCase_ = OneofFieldOneofCase.OneofInt32;
+        return this;
+      }
+      public Builder ClearOneofInt32() {
+        PrepareBuilder();
+        if (result.oneofFieldCase_ == OneofFieldOneofCase.OneofInt32) {
+          result.oneofFieldCase_ = OneofFieldOneofCase.OneofFieldNotSet;
+        }
+        return this;
+      }
+
+      public uint OneofUint32 {
+        get {
+          if (result.oneofFieldCase_ == OneofFieldOneofCase.OneofUint32) {
+            return (uint) result.oneofField_;
+          } else {
+            return 0;
+          }
+        }
+        set { SetOneofUint32(value); }
+      }
+      public Builder SetOneofUint32(uint value) {
+        PrepareBuilder();
+        result.oneofField_ = value;
+        result.oneofFieldCase_ = OneofFieldOneofCase.OneofUint32;
+        return this;
+      }
+      public Builder ClearOneofUint32() {
+        PrepareBuilder();
+        if (result.oneofFieldCase_ == OneofFieldOneofCase.OneofUint32) {
+          result.oneofFieldCase_ = OneofFieldOneofCase.OneofFieldNotSet;
+        }
+        return this;
+      }
+
+      public string OneofString {
+        get {
+          if (result.oneofFieldCase_ == OneofFieldOneofCase.OneofString) {
+            return (string) result.oneofField_;
+          } else {
+            return "";
+          }
+        }
+        set { SetOneofString(value); }
+      }
+      public Builder SetOneofString(string value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        result.oneofField_ = value;
+        result.oneofFieldCase_ = OneofFieldOneofCase.OneofString;
+        return this;
+      }
+      public Builder ClearOneofString() {
+        PrepareBuilder();
+        if (result.oneofFieldCase_ == OneofFieldOneofCase.OneofString) {
+          result.oneofFieldCase_ = OneofFieldOneofCase.OneofFieldNotSet;
+        }
+        return this;
+      }
+
+      public pb::ByteString OneofBytes {
+        get {
+          if (result.oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) {
+            return (pb::ByteString) result.oneofField_;
+          } else {
+            return pb::ByteString.Empty;
+          }
+        }
+        set { SetOneofBytes(value); }
+      }
+      public Builder SetOneofBytes(pb::ByteString value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        result.oneofField_ = value;
+        result.oneofFieldCase_ = OneofFieldOneofCase.OneofBytes;
+        return this;
+      }
+      public Builder ClearOneofBytes() {
+        PrepareBuilder();
+        if (result.oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) {
+          result.oneofFieldCase_ = OneofFieldOneofCase.OneofFieldNotSet;
+        }
+        return this;
+      }
+
+      public global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedEnum OneofEnum {
+        get {
+          if (result.oneofFieldCase_ == OneofFieldOneofCase.OneofEnum) {
+            return (global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedEnum) result.oneofField_;
+          } else {
+            return global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedEnum.FOO;
+          }
+        }
+        set { SetOneofEnum(value); }
+      }
+      public Builder SetOneofEnum(global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedEnum value) {
+        PrepareBuilder();
+        result.oneofField_ = value;
+        result.oneofFieldCase_ = OneofFieldOneofCase.OneofEnum;
+        return this;
+      }
+      public Builder ClearOneofEnum() {
+        PrepareBuilder();
+        if (result.oneofFieldCase_ == OneofFieldOneofCase.OneofEnum) {
+          result.oneofFieldCase_ = OneofFieldOneofCase.OneofFieldNotSet;
+        }
+        return this;
+      }
+
+      public bool HasOneofNestedMessage {
+       get { return result.oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage; }
+      }
+      public global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedMessage OneofNestedMessage {
+        get { return result.oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage ? (global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedMessage) result.oneofField_ : global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedMessage.DefaultInstance; }
+        set { SetOneofNestedMessage(value); }
+      }
+      public Builder SetOneofNestedMessage(global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        result.oneofFieldCase_ = OneofFieldOneofCase.OneofNestedMessage;
+        result.oneofField_ = value;
+        return this;
+      }
+      public Builder SetOneofNestedMessage(global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
+        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
+        PrepareBuilder();
+        result.oneofFieldCase_ = OneofFieldOneofCase.OneofNestedMessage;
+        result.oneofField_ = builderForValue.Build();
+        return this;
+      }
+      public Builder MergeOneofNestedMessage(global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedMessage value) {
+        pb::ThrowHelper.ThrowIfNull(value, "value");
+        PrepareBuilder();
+        if (result.oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage &&
+            result.OneofNestedMessage != global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedMessage.DefaultInstance) {
+          result.oneofField_ = global::Google.ProtocolBuffers.TestProtos.FieldPresence.TestAllTypes.Types.NestedMessage.CreateBuilder(result.OneofNestedMessage).MergeFrom(value).BuildPartial();
+        } else {
+          result.oneofField_ = value;
+        }
+        result.oneofFieldCase_ = OneofFieldOneofCase.OneofNestedMessage;
+        return this;
+      }
+      public Builder ClearOneofNestedMessage() {
+        if (result.oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
+          PrepareBuilder();
+          result.oneofFieldCase_ = OneofFieldOneofCase.OneofFieldNotSet;
+          result.oneofField_ = null;
+        }
+        return this;
+      }
+
+      public OneofFieldOneofCase OneofFieldCase {
+        get { return result.oneofFieldCase_; }
+      }
+      public Builder ClearOneofField() {
+        PrepareBuilder();
+        result.oneofField_ = null;
+        result.oneofFieldCase_ = OneofFieldOneofCase.OneofFieldNotSet;
         return this;
       }
     }

@@ -18,4 +18,13 @@ message TestAllTypes {
   optional bytes optional_bytes = 3;
   optional NestedEnum optional_nested_enum = 4;
   optional NestedMessage optional_nested_message = 5;
+
+  oneof oneof_field {
+    int32 oneof_int32 = 11;
+    uint32 oneof_uint32 = 12;
+    string oneof_string = 13;
+    bytes oneof_bytes = 14;    
+    NestedEnum oneofEnum = 15;
+    NestedMessage oneof_nested_message = 16;
+  }
 }

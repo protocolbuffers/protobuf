@@ -50,6 +50,7 @@ namespace csharp {
 MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
                                              int fieldOrdinal)
     : FieldGeneratorBase(descriptor, fieldOrdinal) {
+  has_property_name = "has" + property_name();
 }
 
 MessageFieldGenerator::~MessageFieldGenerator() {
@@ -149,7 +150,7 @@ void MessageFieldGenerator::GenerateParsingCode(Writer* writer) {
 }
 
 void MessageFieldGenerator::GenerateSerializationCode(Writer* writer) {
-  writer->WriteLine("if (has$0$) {", property_name());
+  writer->WriteLine("if ($0$) {", has_property_name);
   writer->WriteLine("  output.Write$0$($1$, field_names[$3$], $2$);",
                     message_or_group(), number(), property_name(),
                     field_ordinal());
@@ -157,7 +158,7 @@ void MessageFieldGenerator::GenerateSerializationCode(Writer* writer) {
 }
 
 void MessageFieldGenerator::GenerateSerializedSizeCode(Writer* writer) {
-  writer->WriteLine("if (has$0$) {", property_name());
+  writer->WriteLine("if ($0$) {", has_property_name);
   writer->WriteLine("  size += pb::CodedOutputStream.Compute$0$Size($1$, $2$);",
                     message_or_group(), number(), property_name());
   writer->WriteLine("}");
@@ -175,6 +176,122 @@ void MessageFieldGenerator::WriteEquals(Writer* writer) {
 void MessageFieldGenerator::WriteToString(Writer* writer) {
   writer->WriteLine("PrintField(\"$2$\", has$0$, $1$_, writer);",
                     property_name(), name(), GetFieldName(descriptor_));
+}
+
+MessageOneofFieldGenerator::MessageOneofFieldGenerator(const FieldDescriptor* descriptor,
+						       int fieldOrdinal)
+    : MessageFieldGenerator(descriptor, fieldOrdinal) {
+  oneof_name =
+    UnderscoresToCamelCase(descriptor->containing_oneof()->name(), false);
+  oneof_property_name =
+    UnderscoresToCamelCase(descriptor->containing_oneof()->name(), true);
+
+  has_property_name = oneof_name + "Case_ == " + oneof_property_name +
+    "OneofCase." + property_name();
+}
+
+MessageOneofFieldGenerator::~MessageOneofFieldGenerator() {
+
+}
+
+void MessageOneofFieldGenerator::GenerateMembers(Writer* writer) {
+  AddDeprecatedFlag(writer);
+  writer->WriteLine("public bool Has$0$ {", property_name());
+  writer->WriteLine("  get { return $0$; }", has_property_name);
+  writer->WriteLine("}");
+  AddDeprecatedFlag(writer);
+  writer->WriteLine("public $0$ $1$ {", type_name(), property_name());
+  writer->WriteLine("  get { return $0$ ? ($1$) $2$_ : $3$; }",
+		    has_property_name, type_name(), oneof_name, default_value());
+  writer->WriteLine("}");
+}
+
+void MessageOneofFieldGenerator::GenerateBuilderMembers(Writer* writer) {
+  AddDeprecatedFlag(writer);
+  writer->WriteLine("public bool Has$0$ {", property_name());
+  writer->WriteLine(" get { return result.$0$; }", has_property_name);
+  writer->WriteLine("}");
+  AddDeprecatedFlag(writer);
+  writer->WriteLine("public $0$ $1$ {", type_name(), property_name());
+  writer->WriteLine("  get { return result.$0$ ? ($1$) result.$2$_ : $3$; }",
+		    has_property_name, type_name(), oneof_name, default_value());
+  writer->WriteLine("  set { Set$0$(value); }", property_name());
+  writer->WriteLine("}");
+  AddDeprecatedFlag(writer);
+  writer->WriteLine("public Builder Set$0$($1$ value) {", property_name(),
+                    type_name());
+  AddNullCheck(writer);
+  writer->WriteLine("  PrepareBuilder();");
+  writer->WriteLine("  result.$0$Case_ = $1$OneofCase.$2$;",
+		    oneof_name, oneof_property_name, property_name());
+  writer->WriteLine("  result.$0$_ = value;", oneof_name);
+  writer->WriteLine("  return this;");
+  writer->WriteLine("}");
+  AddDeprecatedFlag(writer);
+  writer->WriteLine("public Builder Set$0$($1$.Builder builderForValue) {",
+                    property_name(), type_name());
+  AddNullCheck(writer, "builderForValue");
+  writer->WriteLine("  PrepareBuilder();");
+  writer->WriteLine("  result.$0$Case_ = $1$OneofCase.$2$;",
+		    oneof_name, oneof_property_name, property_name());
+  writer->WriteLine("  result.$0$_ = builderForValue.Build();", oneof_name);
+  writer->WriteLine("  return this;");
+  writer->WriteLine("}");
+  AddDeprecatedFlag(writer);
+  writer->WriteLine("public Builder Merge$0$($1$ value) {", property_name(),
+                    type_name());
+  AddNullCheck(writer);
+  writer->WriteLine("  PrepareBuilder();");
+  writer->WriteLine("  if (result.$0$ &&", has_property_name);
+  writer->WriteLine("      result.$0$ != $1$) {", property_name(), default_value());
+  writer->WriteLine(
+      "    result.$0$_ = $1$.CreateBuilder(result.$2$).MergeFrom(value).BuildPartial();",
+      oneof_name, type_name(), property_name());
+  writer->WriteLine("  } else {");
+  writer->WriteLine("    result.$0$_ = value;", oneof_name);
+  writer->WriteLine("  }");
+  writer->WriteLine("  result.$0$Case_ = $1$OneofCase.$2$;",
+		    oneof_name, oneof_property_name, property_name());
+  writer->WriteLine("  return this;");
+  writer->WriteLine("}");
+  AddDeprecatedFlag(writer);
+  writer->WriteLine("public Builder Clear$0$() {", property_name());
+  writer->WriteLine("  if (result.$0$) {", has_property_name);
+  writer->WriteLine("    PrepareBuilder();");
+  writer->WriteLine("    result.$0$Case_ = $1$OneofCase.$1$NotSet;",
+		    oneof_name, oneof_property_name);
+  writer->WriteLine("    result.$0$_ = null;", oneof_name);
+  writer->WriteLine("  }");
+  writer->WriteLine("  return this;");
+  writer->WriteLine("}");
+}
+  /*
+void MessageOneofFieldGenerator::GenerateMergingCode(Writer* writer) {
+  writer->WriteLine("if (other.$0$) {", has_property_name);
+  writer->WriteLine("  Merge$0$(other.$0$);", property_name());
+  writer->WriteLine("}");
+}
+  */
+void MessageOneofFieldGenerator::GenerateParsingCode(Writer* writer) {
+  writer->WriteLine("$0$.Builder subBuilder = $0$.CreateBuilder();",
+                    type_name());
+  writer->WriteLine("if (result.$0$) {", has_property_name);
+  writer->WriteLine("  subBuilder.MergeFrom($0$);", property_name());
+  writer->WriteLine("}");
+
+  if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
+    writer->WriteLine("input.ReadGroup($0$, subBuilder, extensionRegistry);",
+                      number());
+  } else {
+    writer->WriteLine("input.ReadMessage(subBuilder, extensionRegistry);");
+  }
+  writer->WriteLine("result.$0$_ = subBuilder.BuildPartial();", oneof_name);
+  writer->WriteLine("result.$0$Case_ = $1$OneofCase.$2$;",
+		    oneof_name, oneof_property_name, property_name());
+}
+
+void MessageOneofFieldGenerator::WriteEquals(Writer* writer) {
+  writer->WriteLine("if (!$0$.Equals(other.$0$)) return false;", property_name());
 }
 
 }  // namespace csharp

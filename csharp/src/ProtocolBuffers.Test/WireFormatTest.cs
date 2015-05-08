@@ -164,7 +164,7 @@ namespace Google.ProtocolBuffers
         [Fact]
         public void ExtensionsSerializedSize()
         {
-            Assert.Equal(TestUtil.GetAllSet().SerializedSize, TestUtil.GetAllExtensionsSet().SerializedSize);
+            Assert.True(TestUtil.GetAllSet().SerializedSize < TestUtil.GetAllExtensionsSet().SerializedSize);
         }
 
         private static void AssertFieldsInOrder(ByteString data)

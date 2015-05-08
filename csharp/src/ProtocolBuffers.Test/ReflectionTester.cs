@@ -380,6 +380,12 @@ namespace Google.ProtocolBuffers
 
             message[f("default_string_piece")] = "424";
             message[f("default_cord")] = "425";
+
+            message[f("oneof_uint32")] = 601U;
+            message[f("oneof_nested_message")] =
+                CreateBuilderForField(message, f("optional_nested_message")).SetField(nestedB, 602).WeakBuild();
+            message[f("oneof_string")] = "603";
+            message[f("oneof_bytes")] = TestUtil.ToBytes("604");
         }
 
         /// <summary>
@@ -642,6 +648,23 @@ namespace Google.ProtocolBuffers
 
             Assert.Equal("424", message[f("default_string_piece")]);
             Assert.Equal("425", message[f("default_cord")]);
+
+            Assert.True(message.HasField(f("oneof_bytes")));
+            Assert.Equal(TestUtil.ToBytes("604"), message[f("oneof_bytes")]);
+            if (extensionRegistry == null)
+            {
+                Assert.False(message.HasField(f("oneof_uint32")));
+                Assert.False(message.HasField(f("oneof_nested_message")));
+                Assert.False(message.HasField(f("oneof_string")));
+            } else
+            {
+                Assert.True(message.HasField(f("oneof_uint32")));
+                Assert.True(message.HasField(f("oneof_nested_message")));
+                Assert.True(message.HasField(f("oneof_string")));
+                Assert.Equal(601U, message[f("oneof_uint32")]);
+                Assert.Equal(602, ((IMessage)message[f("oneof_nested_message")])[nestedB]);
+                Assert.Equal("603", message[f("oneof_string")]);
+            }
         }
 
         /// <summary>
@@ -793,6 +816,15 @@ namespace Google.ProtocolBuffers
 
             Assert.Equal("abc", message[f("default_string_piece")]);
             Assert.Equal("123", message[f("default_cord")]);
+
+            Assert.False(message.HasField(f("oneof_uint32")));
+            Assert.False(message.HasField(f("oneof_nested_message")));
+            Assert.False(message.HasField(f("oneof_string")));
+            Assert.False(message.HasField(f("oneof_bytes")));
+
+            Assert.Equal(0U, message[f("oneof_uint32")]);
+            Assert.Equal("", message[f("oneof_string")]);
+            Assert.Equal(TestUtil.ToBytes(""), message[f("oneof_bytes")]);
         }
 
         // ---------------------------------------------------------------

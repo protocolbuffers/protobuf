@@ -60,8 +60,27 @@ class EnumFieldGenerator : public FieldGeneratorBase {
   virtual void WriteEquals(Writer* writer);
   virtual void WriteToString(Writer* writer);
 
+ protected:
+  string has_property_name;
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumFieldGenerator);
+};
+
+class EnumOneofFieldGenerator : public EnumFieldGenerator {
+ public:
+  EnumOneofFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
+  ~EnumOneofFieldGenerator();
+
+  virtual void GenerateMembers(Writer* writer);
+  virtual void GenerateBuilderMembers(Writer* writer);
+  virtual void WriteEquals(Writer* writer);
+  virtual void GenerateParsingCode(Writer* writer);
+
+ private:
+  string oneof_name;
+  string oneof_property_name;
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumOneofFieldGenerator);
 };
 
 }  // namespace csharp

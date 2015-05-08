@@ -36,6 +36,7 @@
 
 using System;
 using System.Collections.Generic;
+using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.TestProtos;
 using Xunit;
@@ -292,6 +293,31 @@ namespace Google.ProtocolBuffers
                                                 });
         }
 
+        [Fact]
+        public void ReflectionGetOneof()
+        {
+            TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
+            reflectionTester.SetAllFieldsViaReflection(builder);
+            Descriptors.OneofDescriptor oneof = TestAllTypes.Descriptor.Oneofs[0];
+            Descriptors.FieldDescriptor field = TestAllTypes.Descriptor.FindFieldByName("oneof_bytes");
+            Assert.Same(field, builder.OneofFieldDescriptor(oneof));
+        }
+
+        [Fact]
+        public void ReflectionClearOneof()
+        {
+            TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
+            reflectionTester.SetAllFieldsViaReflection(builder);
+            OneofDescriptor oneof = TestAllTypes.Descriptor.Oneofs[0];
+            FieldDescriptor field = TestAllTypes.Descriptor.FindFieldByName("oneof_bytes");
+
+            Assert.True(builder.HasOneof(oneof));
+            Assert.True(builder.HasField(field));
+            builder.ClearOneof(oneof);
+            Assert.False(builder.HasOneof(oneof));
+            Assert.False(builder.HasField(field));
+        }
+
         // =================================================================
         // Extensions.
 
@@ -509,6 +535,222 @@ namespace Google.ProtocolBuffers
         {
             TestPackedTypes empty = new TestPackedTypes.Builder().Build();
             Assert.Equal(0, empty.SerializedSize);
+        }
+
+        // oneof tests
+        [Fact]
+        public void TestOneofEmumCase()
+        {
+            TestOneof2 message = TestOneof2.CreateBuilder()
+                .SetFooInt(123).SetFooString("foo").SetFooCord("bar").Build();
+            TestUtil.AssertAtMostOneFieldSetOneof(message);
+        }
+
+        [Fact]
+        public void TestClearOneof()
+        {
+            TestOneof2.Builder builder = TestOneof2.CreateBuilder().SetFooInt(123);
+            Assert.Equal(TestOneof2.FooOneofCase.FooInt, builder.FooCase);
+            builder.ClearFoo();
+            Assert.Equal(TestOneof2.FooOneofCase.FooNotSet, builder.FooCase);
+        }
+
+        [Fact]
+        public void TestSetOneofClearsOthers()
+        {
+            TestOneof2.Builder builder = TestOneof2.CreateBuilder();
+            TestOneof2 message =
+                builder.SetFooInt(123).SetFooString("foo").BuildPartial();
+            Assert.True(message.HasFooString);
+            TestUtil.AssertAtMostOneFieldSetOneof(message);
+
+            message = builder.SetFooCord("bar").BuildPartial();
+            Assert.True(message.HasFooCord);
+            TestUtil.AssertAtMostOneFieldSetOneof(message);
+
+            message = builder.SetFooStringPiece("baz").BuildPartial();
+            Assert.True(message.HasFooStringPiece);
+            TestUtil.AssertAtMostOneFieldSetOneof(message);
+
+            message = builder.SetFooBytes(TestUtil.ToBytes("qux")).BuildPartial();
+            Assert.True(message.HasFooBytes);
+            TestUtil.AssertAtMostOneFieldSetOneof(message);
+
+            message = builder.SetFooEnum(TestOneof2.Types.NestedEnum.FOO).BuildPartial();
+            Assert.True(message.HasFooEnum);
+            TestUtil.AssertAtMostOneFieldSetOneof(message);
+
+            message = builder.SetFooMessage(
+                TestOneof2.Types.NestedMessage.CreateBuilder().SetQuxInt(234).Build()).BuildPartial();
+            Assert.True(message.HasFooMessage);
+            TestUtil.AssertAtMostOneFieldSetOneof(message);
+
+            message = builder.SetFooInt(123).BuildPartial();
+            Assert.True(message.HasFooInt);
+            TestUtil.AssertAtMostOneFieldSetOneof(message);
+        }
+
+        [Fact]
+        public void TestOneofTypes()
+        {   
+            // Primitive
+            {
+                TestOneof2.Builder builder = TestOneof2.CreateBuilder();
+                Assert.Equal(builder.FooInt, 0);
+                Assert.False(builder.HasFooInt);
+                Assert.True(builder.SetFooInt(123).HasFooInt);
+                Assert.Equal(builder.FooInt, 123);
+                TestOneof2 message = builder.BuildPartial();
+                Assert.True(message.HasFooInt);
+                Assert.Equal(message.FooInt, 123);
+
+                Assert.False(builder.ClearFooInt().HasFooInt);
+                TestOneof2 message2 = builder.Build();
+                Assert.False(message2.HasFooInt);
+                Assert.Equal(message2.FooInt, 0);
+            }
+            // Enum
+            {
+                TestOneof2.Builder builder = TestOneof2.CreateBuilder();
+                Assert.Equal(builder.FooEnum, TestOneof2.Types.NestedEnum.FOO);
+                Assert.True(builder.SetFooEnum(TestOneof2.Types.NestedEnum.BAR).HasFooEnum);
+                Assert.Equal(builder.FooEnum, TestOneof2.Types.NestedEnum.BAR);
+                TestOneof2 message = builder.BuildPartial();
+                Assert.True(message.HasFooEnum);
+                Assert.Equal(message.FooEnum, TestOneof2.Types.NestedEnum.BAR);
+
+                Assert.False(builder.ClearFooEnum().HasFooEnum);
+                TestOneof2 message2 = builder.Build();
+                Assert.False(message2.HasFooEnum);
+                Assert.Equal(message2.FooEnum, TestOneof2.Types.NestedEnum.FOO);
+            }
+            // String
+            {
+                TestOneof2.Builder builder = TestOneof2.CreateBuilder();
+                Assert.Equal(builder.FooString, "");
+                Assert.True(builder.SetFooString("foo").HasFooString);
+                Assert.Equal(builder.FooString, "foo");
+                TestOneof2 message = builder.BuildPartial();
+                Assert.True(message.HasFooString);
+                Assert.Equal(message.FooString, "foo");
+
+                Assert.False(builder.ClearFooString().HasFooString);
+                TestOneof2 message2 = builder.Build();
+                Assert.False(message2.HasFooString);
+                Assert.Equal(message2.FooString, "");
+
+                builder.SetFooInt(123);
+                Assert.Equal(builder.FooString, "");
+                Assert.Equal(builder.FooInt, 123);
+                message = builder.Build();
+                Assert.Equal(message.FooString, "");
+                Assert.Equal(message.FooInt, 123);
+            }
+            // Message
+            {
+                TestOneof2.Builder builder = TestOneof2.CreateBuilder();
+                Assert.Equal(builder.FooMessage.QuxInt, 0);
+                builder.SetFooMessage(TestOneof2.Types.NestedMessage.CreateBuilder().SetQuxInt(234).Build());
+                Assert.True(builder.HasFooMessage);
+                Assert.Equal(builder.FooMessage.QuxInt, 234);
+                TestOneof2 message = builder.BuildPartial();
+                Assert.True(message.HasFooMessage);
+                Assert.Equal(message.FooMessage.QuxInt, 234);
+
+                Assert.False(builder.ClearFooMessage().HasFooMessage);
+                message = builder.Build();
+                Assert.False(message.HasFooMessage);
+                Assert.Equal(message.FooMessage.QuxInt, 0);
+
+                builder = TestOneof2.CreateBuilder();
+                Assert.False(builder.HasFooMessage);
+                builder.SetFooMessage(TestOneof2.Types.NestedMessage.CreateBuilder().SetQuxInt(123));
+                Assert.True(builder.HasFooMessage);
+                Assert.Equal(builder.FooMessage.QuxInt, 123);
+                message = builder.BuildPartial();
+                Assert.True(message.HasFooMessage);
+                Assert.Equal(message.FooMessage.QuxInt, 123);
+            }
+        }
+
+        [Fact]
+        public void TestOneofMerge()
+        {
+            {
+                // Primitive Type
+                TestOneof2.Builder builder = TestOneof2.CreateBuilder();
+                TestOneof2 message = builder.SetFooInt(123).Build();
+                TestOneof2 message2 = TestOneof2.CreateBuilder().MergeFrom(message).Build();
+                Assert.True(message2.HasFooInt);
+                Assert.Equal(message2.FooInt, 123);
+            }
+            {
+                // String
+                TestOneof2.Builder builder = TestOneof2.CreateBuilder();
+                TestOneof2 message = builder.SetFooString("foo").Build();
+                TestOneof2 message2 = TestOneof2.CreateBuilder().MergeFrom(message).Build();
+                Assert.True(message2.HasFooString);
+                Assert.Equal(message2.FooString, "foo");
+            }
+            {
+                // Enum
+                TestOneof2.Builder builder = TestOneof2.CreateBuilder();
+                TestOneof2 message = builder.SetFooEnum(TestOneof2.Types.NestedEnum.BAR).Build();
+                TestOneof2 message2 = TestOneof2.CreateBuilder().MergeFrom(message).Build();
+                Assert.True(message2.HasFooEnum);
+                Assert.Equal(message2.FooEnum, TestOneof2.Types.NestedEnum.BAR);
+            }
+            {
+                // message
+                TestOneof2.Builder builder = TestOneof2.CreateBuilder();
+                TestOneof2 message = builder.SetFooMessage(
+                    TestOneof2.Types.NestedMessage.CreateBuilder().SetQuxInt(234).Build()).Build();
+                TestOneof2 message2 = TestOneof2.CreateBuilder().MergeFrom(message).Build();
+                Assert.True(message2.HasFooMessage);
+                Assert.Equal(message2.FooMessage.QuxInt, 234);
+            }
+        }
+
+        [Fact]
+        public void TestOneofSerialization()
+        {
+            {
+                // Primisive
+                TestOneof2.Builder builder = TestOneof2.CreateBuilder();
+                TestOneof2 message = builder.SetFooInt(123).Build();
+                ByteString serialized = message.ToByteString();
+                TestOneof2 message2 = TestOneof2.ParseFrom(serialized);
+                Assert.True(message2.HasFooInt);
+                Assert.Equal(message2.FooInt, 123);
+            }
+            {
+                // String
+                TestOneof2.Builder builder = TestOneof2.CreateBuilder();
+                TestOneof2 message = builder.SetFooString("foo").Build();
+                ByteString serialized = message.ToByteString();
+                TestOneof2 message2 = TestOneof2.ParseFrom(serialized);
+                Assert.True(message2.HasFooString);
+                Assert.Equal(message2.FooString, "foo");
+            }
+            {
+                // Enum
+                TestOneof2.Builder builder = TestOneof2.CreateBuilder();
+                TestOneof2 message = builder.SetFooEnum(TestOneof2.Types.NestedEnum.BAR).Build();
+                ByteString serialized = message.ToByteString();
+                TestOneof2 message2 = TestOneof2.ParseFrom(serialized);
+                Assert.True(message2.HasFooEnum);
+                Assert.Equal(message2.FooEnum, TestOneof2.Types.NestedEnum.BAR);
+            }
+            {
+                // message
+                TestOneof2.Builder builder = TestOneof2.CreateBuilder();
+                TestOneof2 message = builder.SetFooMessage(
+                    TestOneof2.Types.NestedMessage.CreateBuilder().SetQuxInt(234).Build()).Build();
+                ByteString serialized = message.ToByteString();
+                TestOneof2 message2 = TestOneof2.ParseFrom(serialized);
+                Assert.True(message2.HasFooMessage);
+                Assert.Equal(message2.FooMessage.QuxInt, 234);
+            }
         }
     }
 }

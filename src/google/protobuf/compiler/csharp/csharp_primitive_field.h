@@ -60,8 +60,28 @@ class PrimitiveFieldGenerator : public FieldGeneratorBase {
   virtual void WriteEquals(Writer* writer);
   virtual void WriteToString(Writer* writer);
 
+ protected:
+  string has_property_name;
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(PrimitiveFieldGenerator);
+};
+
+class PrimitiveOneofFieldGenerator : public PrimitiveFieldGenerator {
+ public:
+  PrimitiveOneofFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
+  ~PrimitiveOneofFieldGenerator();
+
+  virtual void GenerateMembers(Writer* writer);
+  virtual void GenerateBuilderMembers(Writer* writer);
+  //  virtual void GenerateMergingCode(Writer* writer);
+  virtual void WriteEquals(Writer* writer);
+  virtual void GenerateParsingCode(Writer* writer);
+
+ private:
+  string oneof_name;
+  string oneof_property_name;
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(PrimitiveOneofFieldGenerator);
 };
 
 }  // namespace csharp
