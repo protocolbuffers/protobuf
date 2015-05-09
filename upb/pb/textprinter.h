@@ -8,6 +8,7 @@
 #ifndef UPB_TEXT_H_
 #define UPB_TEXT_H_
 
+#include "upb/env.h"
 #include "upb/sink.h"
 
 #ifdef __cplusplus
@@ -20,57 +21,50 @@ class TextPrinter;
 
 UPB_DECLARE_TYPE(upb::pb::TextPrinter, upb_textprinter);
 
-UPB_DEFINE_CLASS0(upb::pb::TextPrinter,
+#ifdef __cplusplus
+
+class upb::pb::TextPrinter {
  public:
   // The given handlers must have come from NewHandlers().  It must outlive the
   // TextPrinter.
-  explicit TextPrinter(const upb::Handlers* handlers);
+  static TextPrinter *Create(Environment *env, const upb::Handlers *handlers,
+                             BytesSink *output);
 
   void SetSingleLineMode(bool single_line);
 
-  bool ResetOutput(BytesSink* output);
   Sink* input();
 
   // If handler caching becomes a requirement we can add a code cache as in
   // decoder.h
   static reffed_ptr<const Handlers> NewHandlers(const MessageDef* md);
+};
 
- private:
-,
-UPB_DEFINE_STRUCT0(upb_textprinter,
-  upb_sink input_;
-  upb_bytessink *output_;
-  int indent_depth_;
-  bool single_line_;
-  void *subc;
-));
+#endif
 
-UPB_BEGIN_EXTERN_C  // {
+UPB_BEGIN_EXTERN_C
 
 // C API.
-void upb_textprinter_init(upb_textprinter *p, const upb_handlers *h);
-void upb_textprinter_uninit(upb_textprinter *p);
-bool upb_textprinter_resetoutput(upb_textprinter *p, upb_bytessink *output);
+upb_textprinter *upb_textprinter_create(upb_env *env, const upb_handlers *h,
+                                        upb_bytessink *output);
 void upb_textprinter_setsingleline(upb_textprinter *p, bool single_line);
 upb_sink *upb_textprinter_input(upb_textprinter *p);
 
 const upb_handlers *upb_textprinter_newhandlers(const upb_msgdef *m,
                                                 const void *owner);
 
-UPB_END_EXTERN_C  // }
+UPB_END_EXTERN_C
 
 #ifdef __cplusplus
 
 namespace upb {
 namespace pb {
-inline TextPrinter::TextPrinter(const upb::Handlers* handlers) {
-  upb_textprinter_init(this, handlers);
+inline TextPrinter *TextPrinter::Create(Environment *env,
+                                        const upb::Handlers *handlers,
+                                        BytesSink *output) {
+  return upb_textprinter_create(env, handlers, output);
 }
 inline void TextPrinter::SetSingleLineMode(bool single_line) {
   upb_textprinter_setsingleline(this, single_line);
-}
-inline bool TextPrinter::ResetOutput(BytesSink* output) {
-  return upb_textprinter_resetoutput(this, output);
 }
 inline Sink* TextPrinter::input() {
   return upb_textprinter_input(this);

@@ -292,14 +292,14 @@ void test_json_roundtrip_message(const char* json_src,
                                  const upb::Handlers* serialize_handlers,
                                  int seam) {
   upb::Status st;
-  upb::json::Parser parser(&st);
-  upb::json::Printer printer(serialize_handlers);
+  upb::Environment env;
+  env.ReportErrorsTo(&st);
   StringSink data_sink;
+  upb::json::Printer* printer =
+      upb::json::Printer::Create(&env, serialize_handlers, data_sink.Sink());
+  upb::json::Parser* parser = upb::json::Parser::Create(&env, printer->input());
 
-  parser.ResetOutput(printer.input());
-  printer.ResetOutput(data_sink.Sink());
-
-  upb::BytesSink* input = parser.input();
+  upb::BytesSink* input = parser->input();
   void *sub;
   size_t len = strlen(json_src);
   size_t ofs = 0;

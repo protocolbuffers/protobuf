@@ -18,7 +18,7 @@
 #ifndef UPB_DECODER_H_
 #define UPB_DECODER_H_
 
-#include "upb/table.int.h"
+#include "upb/env.h"
 #include "upb/sink.h"
 
 #ifdef __cplusplus
@@ -36,44 +36,6 @@ UPB_DECLARE_TYPE(upb::pb::CodeCache, upb_pbcodecache);
 UPB_DECLARE_TYPE(upb::pb::Decoder, upb_pbdecoder);
 UPB_DECLARE_TYPE(upb::pb::DecoderMethod, upb_pbdecodermethod);
 UPB_DECLARE_TYPE(upb::pb::DecoderMethodOptions, upb_pbdecodermethodopts);
-
-// The maximum that any submessages can be nested.  Matches proto2's limit.
-// This specifies the size of the decoder's statically-sized array and therefore
-// setting it high will cause the upb::pb::Decoder object to be larger.
-//
-// If necessary we can add a runtime-settable property to Decoder that allow
-// this to be larger than the compile-time setting, but this would add
-// complexity, particularly since we would have to decide how/if to give users
-// the ability to set a custom memory allocation function.
-#define UPB_DECODER_MAX_NESTING 64
-
-// Internal-only struct used by the decoder.
-typedef struct {
- UPB_PRIVATE_FOR_CPP
-  // Space optimization note: we store two pointers here that the JIT
-  // doesn't need at all; the upb_handlers* inside the sink and
-  // the dispatch table pointer.  We can optimze so that the JIT uses
-  // smaller stack frames than the interpreter.  The only thing we need
-  // to guarantee is that the fallback routines can find end_ofs.
-  upb_sink sink;
-
-  // The absolute stream offset of the end-of-frame delimiter.
-  // Non-delimited frames (groups and non-packed repeated fields) reuse the
-  // delimiter of their parent, even though the frame may not end there.
-  //
-  // NOTE: the JIT stores a slightly different value here for non-top frames.
-  // It stores the value relative to the end of the enclosed message.  But the
-  // top frame is still stored the same way, which is important for ensuring
-  // that calls from the JIT into C work correctly.
-  uint64_t end_ofs;
-  const uint32_t *base;
-
-  // 0 indicates a length-delimited field.
-  // A positive number indicates a known group.
-  // A negative number indicates an unknown group.
-  int32_t groupnum;
-  upb_inttable *dispatch;  // Not used by the JIT.
-} upb_pbdecoder_frame;
 
 // The parameters one uses to construct a DecoderMethod.
 // TODO(haberman): move allowjit here?  Seems more convenient for users.
@@ -152,22 +114,31 @@ UPB_DEFINE_STRUCT(upb_pbdecodermethod, upb_refcounted,
   upb_inttable dispatch;
 ));
 
+// Preallocation hint: decoder won't allocate more bytes than this when first
+// constructed.  This hint may be an overestimate for some build configurations.
+// But if the decoder library is upgraded without recompiling the application,
+// it may be an underestimate.
+#define UPB_PB_DECODER_SIZE 4400
+
+#ifdef __cplusplus
+
 // A Decoder receives binary protobuf data on its input sink and pushes the
 // decoded data to its output sink.
-UPB_DEFINE_CLASS0(upb::pb::Decoder,
+class upb::pb::Decoder {
  public:
   // Constructs a decoder instance for the given method, which must outlive this
   // decoder.  Any errors during parsing will be set on the given status, which
   // must also outlive this decoder.
-  Decoder(const DecoderMethod* method, Status* status);
-  ~Decoder();
+  //
+  // The sink must match the given method.
+  static Decoder* Create(Environment* env, const DecoderMethod* method,
+                         Sink* output);
 
   // Returns the DecoderMethod this decoder is parsing from.
-  // TODO(haberman): Do users need to be able to rebind this?
   const DecoderMethod* method() const;
 
-  // Resets the state of the decoder.
-  void Reset();
+  // The sink on which this decoder receives input.
+  BytesSink* input();
 
   // Returns number of bytes successfully parsed.
   //
@@ -178,76 +149,25 @@ UPB_DEFINE_CLASS0(upb::pb::Decoder,
   // callback.
   uint64_t BytesParsed() const;
 
-  // Resets the output sink of the Decoder.
-  // The given sink must match method()->dest_handlers().
+  // Gets/sets the parsing nexting limit.  If the total number of nested
+  // submessages and repeated fields hits this limit, parsing will fail.  This
+  // is a resource limit that controls the amount of memory used by the parsing
+  // stack.
   //
-  // This must be called at least once before the decoder can be used.  It may
-  // only be called with the decoder is in a state where it was just created or
-  // reset with pipeline.Reset().  The given sink must be from the same pipeline
-  // as this decoder.
-  bool ResetOutput(Sink* sink);
+  // Setting the limit will fail if the parser is currently suspended at a depth
+  // greater than this, or if memory allocation of the stack fails.
+  size_t max_nesting() const;
+  bool set_max_nesting(size_t max);
 
-  // The sink on which this decoder receives input.
-  BytesSink* input();
+  void Reset();
+
+  static const size_t kSize = UPB_PB_DECODER_SIZE;
 
  private:
-  UPB_DISALLOW_COPY_AND_ASSIGN(Decoder);
-,
-UPB_DEFINE_STRUCT0(upb_pbdecoder, UPB_QUOTE(
-  // Our input sink.
-  upb_bytessink input_;
+  UPB_DISALLOW_POD_OPS(Decoder, upb::pb::Decoder);
+};
 
-  // The decoder method we are parsing with (owned).
-  const upb_pbdecodermethod *method_;
-
-  size_t call_len;
-  const uint32_t *pc, *last;
-
-  // Current input buffer and its stream offset.
-  const char *buf, *ptr, *end, *checkpoint;
-
-  // End of the delimited region, relative to ptr, or NULL if not in this buf.
-  const char *delim_end;
-
-  // End of the delimited region, relative to ptr, or end if not in this buf.
-  const char *data_end;
-
-  // Overall stream offset of "buf."
-  uint64_t bufstart_ofs;
-
-  // Buffer for residual bytes not parsed from the previous buffer.
-  // The maximum number of residual bytes we require is 12; a five-byte
-  // unknown tag plus an eight-byte value, less one because the value
-  // is only a partial value.
-  char residual[12];
-  char *residual_end;
-
-  // Stores the user buffer passed to our decode function.
-  const char *buf_param;
-  size_t size_param;
-  const upb_bufhandle *handle;
-
-#ifdef UPB_USE_JIT_X64
-  // Used momentarily by the generated code to store a value while a user
-  // function is called.
-  uint32_t tmp_len;
-
-  const void *saved_rsp;
-#endif
-
-  upb_status *status;
-
-  // Our internal stack.
-  upb_pbdecoder_frame *top, *limit;
-  upb_pbdecoder_frame stack[UPB_DECODER_MAX_NESTING];
-#ifdef UPB_USE_JIT_X64
-  // Each native stack frame needs two pointers, plus we need a few frames for
-  // the enter/exit trampolines.
-  const uint32_t *callstack[(UPB_DECODER_MAX_NESTING * 2) + 10];
-#else
-  const uint32_t *callstack[UPB_DECODER_MAX_NESTING];
-#endif
-)));
+#endif  // __cplusplus
 
 // A class for caching protobuf processing code, whether bytecode for the
 // interpreted decoder or machine code for the JIT.
@@ -296,14 +216,15 @@ UPB_DEFINE_STRUCT0(upb_pbcodecache,
 
 UPB_BEGIN_EXTERN_C  // {
 
-void upb_pbdecoder_init(upb_pbdecoder *d, const upb_pbdecodermethod *method,
-                        upb_status *status);
-void upb_pbdecoder_uninit(upb_pbdecoder *d);
-void upb_pbdecoder_reset(upb_pbdecoder *d);
+upb_pbdecoder *upb_pbdecoder_create(upb_env *e,
+                                    const upb_pbdecodermethod *method,
+                                    upb_sink *output);
 const upb_pbdecodermethod *upb_pbdecoder_method(const upb_pbdecoder *d);
-bool upb_pbdecoder_resetoutput(upb_pbdecoder *d, upb_sink *sink);
 upb_bytessink *upb_pbdecoder_input(upb_pbdecoder *d);
 uint64_t upb_pbdecoder_bytesparsed(const upb_pbdecoder *d);
+size_t upb_pbdecoder_maxnesting(const upb_pbdecoder *d);
+bool upb_pbdecoder_setmaxnesting(upb_pbdecoder *d, size_t max);
+void upb_pbdecoder_reset(upb_pbdecoder *d);
 
 void upb_pbdecodermethodopts_init(upb_pbdecodermethodopts *opts,
                                   const upb_handlers *h);
@@ -338,27 +259,27 @@ namespace upb {
 
 namespace pb {
 
-inline Decoder::Decoder(const DecoderMethod* m, Status* s) {
-  upb_pbdecoder_init(this, m, s);
-}
-inline Decoder::~Decoder() {
-  upb_pbdecoder_uninit(this);
+// static
+inline Decoder* Decoder::Create(Environment* env, const DecoderMethod* m,
+                                Sink* sink) {
+  return upb_pbdecoder_create(env, m, sink);
 }
 inline const DecoderMethod* Decoder::method() const {
   return upb_pbdecoder_method(this);
 }
-inline void Decoder::Reset() {
-  upb_pbdecoder_reset(this);
+inline BytesSink* Decoder::input() {
+  return upb_pbdecoder_input(this);
 }
 inline uint64_t Decoder::BytesParsed() const {
   return upb_pbdecoder_bytesparsed(this);
 }
-inline bool Decoder::ResetOutput(Sink* sink) {
-  return upb_pbdecoder_resetoutput(this, sink);
+inline size_t Decoder::max_nesting() const {
+  return upb_pbdecoder_maxnesting(this);
 }
-inline BytesSink* Decoder::input() {
-  return upb_pbdecoder_input(this);
+inline bool Decoder::set_max_nesting(size_t max) {
+  return upb_pbdecoder_setmaxnesting(this, max);
 }
+inline void Decoder::Reset() { upb_pbdecoder_reset(this); }
 
 inline DecoderMethodOptions::DecoderMethodOptions(const Handlers* h) {
   upb_pbdecodermethodopts_init(this, h);

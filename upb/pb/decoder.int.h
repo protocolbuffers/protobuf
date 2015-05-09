@@ -13,8 +13,9 @@
 #include <stdlib.h>
 #include "upb/def.h"
 #include "upb/handlers.h"
-#include "upb/sink.h"
 #include "upb/pb/decoder.h"
+#include "upb/sink.h"
+#include "upb/table.int.h"
 
 // Opcode definitions.  The canonical meaning of each opcode is its
 // implementation in the interpreter (the JIT is written to match this).
@@ -111,6 +112,95 @@ typedef struct {
   void *dl;
 #endif
 } mgroup;
+
+// The maximum that any submessages can be nested.  Matches proto2's limit.
+// This specifies the size of the decoder's statically-sized array and therefore
+// setting it high will cause the upb::pb::Decoder object to be larger.
+//
+// If necessary we can add a runtime-settable property to Decoder that allow
+// this to be larger than the compile-time setting, but this would add
+// complexity, particularly since we would have to decide how/if to give users
+// the ability to set a custom memory allocation function.
+#define UPB_DECODER_MAX_NESTING 64
+
+// Internal-only struct used by the decoder.
+typedef struct {
+  // Space optimization note: we store two pointers here that the JIT
+  // doesn't need at all; the upb_handlers* inside the sink and
+  // the dispatch table pointer.  We can optimze so that the JIT uses
+  // smaller stack frames than the interpreter.  The only thing we need
+  // to guarantee is that the fallback routines can find end_ofs.
+  upb_sink sink;
+
+  // The absolute stream offset of the end-of-frame delimiter.
+  // Non-delimited frames (groups and non-packed repeated fields) reuse the
+  // delimiter of their parent, even though the frame may not end there.
+  //
+  // NOTE: the JIT stores a slightly different value here for non-top frames.
+  // It stores the value relative to the end of the enclosed message.  But the
+  // top frame is still stored the same way, which is important for ensuring
+  // that calls from the JIT into C work correctly.
+  uint64_t end_ofs;
+  const uint32_t *base;
+
+  // 0 indicates a length-delimited field.
+  // A positive number indicates a known group.
+  // A negative number indicates an unknown group.
+  int32_t groupnum;
+  upb_inttable *dispatch;  // Not used by the JIT.
+} upb_pbdecoder_frame;
+
+struct upb_pbdecoder {
+  upb_env *env;
+
+  // Our input sink.
+  upb_bytessink input_;
+
+  // The decoder method we are parsing with (owned).
+  const upb_pbdecodermethod *method_;
+
+  size_t call_len;
+  const uint32_t *pc, *last;
+
+  // Current input buffer and its stream offset.
+  const char *buf, *ptr, *end, *checkpoint;
+
+  // End of the delimited region, relative to ptr, or NULL if not in this buf.
+  const char *delim_end;
+
+  // End of the delimited region, relative to ptr, or end if not in this buf.
+  const char *data_end;
+
+  // Overall stream offset of "buf."
+  uint64_t bufstart_ofs;
+
+  // Buffer for residual bytes not parsed from the previous buffer.
+  // The maximum number of residual bytes we require is 12; a five-byte
+  // unknown tag plus an eight-byte value, less one because the value
+  // is only a partial value.
+  char residual[12];
+  char *residual_end;
+
+  // Stores the user buffer passed to our decode function.
+  const char *buf_param;
+  size_t size_param;
+  const upb_bufhandle *handle;
+
+  // Our internal stack.
+  upb_pbdecoder_frame *stack, *top, *limit;
+  const uint32_t **callstack;
+  size_t stack_size;
+
+  upb_status *status;
+
+#ifdef UPB_USE_JIT_X64
+  // Used momentarily by the generated code to store a value while a user
+  // function is called.
+  uint32_t tmp_len;
+
+  const void *saved_rsp;
+#endif
+};
 
 // Decoder entry points; used as handlers.
 void *upb_pbdecoder_startbc(void *closure, const void *pc, size_t size_hint);

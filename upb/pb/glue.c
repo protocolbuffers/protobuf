@@ -22,26 +22,26 @@ upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
   const upb_pbdecodermethod *decoder_m =
       upb_pbdecodermethod_new(&opts, &decoder_m);
 
-  upb_pbdecoder decoder;
-  upb_descreader reader;
+  upb_env env;
+  upb_env_init(&env);
+  upb_env_reporterrorsto(&env, status);
 
-  upb_pbdecoder_init(&decoder, decoder_m, status);
-  upb_descreader_init(&reader, reader_h, status);
-  upb_pbdecoder_resetoutput(&decoder, upb_descreader_input(&reader));
+  upb_descreader *reader = upb_descreader_create(&env, reader_h);
+  upb_pbdecoder *decoder =
+      upb_pbdecoder_create(&env, decoder_m, upb_descreader_input(reader));
 
   // Push input data.
-  bool ok = upb_bufsrc_putbuf(str, len, upb_pbdecoder_input(&decoder));
+  bool ok = upb_bufsrc_putbuf(str, len, upb_pbdecoder_input(decoder));
 
   upb_def **ret = NULL;
 
   if (!ok) goto cleanup;
-  upb_def **defs = upb_descreader_getdefs(&reader, owner, n);
+  upb_def **defs = upb_descreader_getdefs(reader, owner, n);
   ret = malloc(sizeof(upb_def*) * (*n));
   memcpy(ret, defs, sizeof(upb_def*) * (*n));
 
 cleanup:
-  upb_pbdecoder_uninit(&decoder);
-  upb_descreader_uninit(&reader);
+  upb_env_uninit(&env);
   upb_handlers_unref(reader_h, &reader_h);
   upb_pbdecodermethod_unref(decoder_m, &decoder_m);
   return ret;

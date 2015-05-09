@@ -11,6 +11,7 @@
 #ifndef UPB_JSON_TYPED_PRINTER_H_
 #define UPB_JSON_TYPED_PRINTER_H_
 
+#include "upb/env.h"
 #include "upb/sink.h"
 
 #ifdef __cplusplus
@@ -26,71 +27,48 @@ UPB_DECLARE_TYPE(upb::json::Printer, upb_json_printer);
 
 /* upb::json::Printer *********************************************************/
 
+#define UPB_JSON_PRINTER_SIZE 168
+
+#ifdef __cplusplus
+
 // Prints an incoming stream of data to a BytesSink in JSON format.
-UPB_DEFINE_CLASS0(upb::json::Printer,
+class upb::json::Printer {
  public:
-  Printer(const upb::Handlers* handlers);
-  ~Printer();
-
-  // Resets the state of the printer, so that it will expect to begin a new
-  // document.
-  void Reset();
-
-  // Resets the output pointer which will serve as our closure.  Implies
-  // Reset().
-  void ResetOutput(BytesSink* output);
+  static Printer* Create(Environment* env, const upb::Handlers* handlers,
+                         BytesSink* output);
 
   // The input to the printer.
   Sink* input();
 
   // Returns handlers for printing according to the specified schema.
   static reffed_ptr<const Handlers> NewHandlers(const upb::MessageDef* md);
-,
-UPB_DEFINE_STRUCT0(upb_json_printer,
-  upb_sink input_;
-  // BytesSink closure.
-  void *subc_;
-  upb_bytessink *output_;
 
-  // We track the depth so that we know when to emit startstr/endstr on the
-  // output.
-  int depth_;
-  // Have we emitted the first element? This state is necessary to emit commas
-  // without leaving a trailing comma in arrays/maps. We keep this state per
-  // frame depth.
-  //
-  // Why max_depth * 2? UPB_MAX_HANDLER_DEPTH counts depth as nested messages.
-  // We count frames (contexts in which we separate elements by commas) as both
-  // repeated fields and messages (maps), and the worst case is a
-  // message->repeated field->submessage->repeated field->... nesting.
-  bool first_elem_[UPB_MAX_HANDLER_DEPTH * 2];
-));
+  static const size_t kSize = UPB_JSON_PRINTER_SIZE;
 
-UPB_BEGIN_EXTERN_C  // {
+ private:
+  UPB_DISALLOW_POD_OPS(Printer, upb::json::Printer);
+};
+
+#endif
+
+UPB_BEGIN_EXTERN_C
 
 // Native C API.
-
-void upb_json_printer_init(upb_json_printer *p, const upb_handlers *h);
-void upb_json_printer_uninit(upb_json_printer *p);
-void upb_json_printer_reset(upb_json_printer *p);
-void upb_json_printer_resetoutput(upb_json_printer *p, upb_bytessink *output);
+upb_json_printer *upb_json_printer_create(upb_env *e, const upb_handlers *h,
+                                          upb_bytessink *output);
 upb_sink *upb_json_printer_input(upb_json_printer *p);
 const upb_handlers *upb_json_printer_newhandlers(const upb_msgdef *md,
                                                  const void *owner);
 
-UPB_END_EXTERN_C  // }
+UPB_END_EXTERN_C
 
 #ifdef __cplusplus
 
 namespace upb {
 namespace json {
-inline Printer::Printer(const upb::Handlers* handlers) {
-  upb_json_printer_init(this, handlers);
-}
-inline Printer::~Printer() { upb_json_printer_uninit(this); }
-inline void Printer::Reset() { upb_json_printer_reset(this); }
-inline void Printer::ResetOutput(BytesSink* output) {
-  upb_json_printer_resetoutput(this, output);
+inline Printer* Printer::Create(Environment* env, const upb::Handlers* handlers,
+                                BytesSink* output) {
+  return upb_json_printer_create(env, handlers, output);
 }
 inline Sink* Printer::input() { return upb_json_printer_input(this); }
 inline reffed_ptr<const Handlers> Printer::NewHandlers(

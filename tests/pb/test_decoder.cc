@@ -64,6 +64,8 @@
             (float)completed * 100 / total);                          \
   }
 
+#define MAX_NESTING 64
+
 uint32_t filter_hash = 0;
 double completed;
 double total;
@@ -210,7 +212,7 @@ string submsg(uint32_t fn, const string& buf) {
 // using the closure depth to test that the stack of closures is properly
 // handled.
 
-int closures[UPB_DECODER_MAX_NESTING];
+int closures[MAX_NESTING];
 string output;
 
 void indentbuf(string *buf, int depth) {
@@ -508,6 +510,15 @@ upb::reffed_ptr<const upb::Handlers> NewHandlers(TestMode mode) {
 const upb::Handlers *global_handlers;
 const upb::pb::DecoderMethod *global_method;
 
+upb::pb::Decoder* CreateDecoder(upb::Environment* env,
+                                const upb::pb::DecoderMethod* method,
+                                upb::Sink* sink) {
+  upb::pb::Decoder *ret = upb::pb::Decoder::Create(env, method, sink);
+  ASSERT(ret != NULL);
+  ret->set_max_nesting(MAX_NESTING);
+  return ret;
+}
+
 uint32_t Hash(const string& proto, const string* expected_output, size_t seam1,
               size_t seam2) {
   uint32_t hash = MurmurHash2(proto.c_str(), proto.size(), 0);
@@ -545,19 +556,21 @@ static bool parse(upb::pb::Decoder* decoder, void* subc, const char* buf,
 #define LINE(x) x "\n"
 void run_decoder(const string& proto, const string* expected_output) {
   upb::Status status;
-  upb::pb::Decoder decoder(global_method, &status);
   upb::Sink sink(global_handlers, &closures[0]);
-  decoder.ResetOutput(&sink);
   for (size_t i = 0; i < proto.size(); i++) {
     for (size_t j = i; j < UPB_MIN(proto.size(), i + 5); j++) {
+      // TODO(haberman): hoist this again once the environment supports reset.
+      upb::Environment env;
+      env.ReportErrorsTo(&status);
+      upb::pb::Decoder *decoder = CreateDecoder(&env, global_method, &sink);
+
       testhash = Hash(proto, expected_output, i, j);
       if (filter_hash && testhash != filter_hash) continue;
       if (test_mode != COUNT_ONLY) {
-        decoder.Reset();
         output.clear();
         status.Clear();
         size_t ofs = 0;
-        upb::BytesSink* input = decoder.input();
+        upb::BytesSink* input = decoder->input();
         void *sub;
 
         if (filter_hash) {
@@ -576,9 +589,9 @@ void run_decoder(const string& proto, const string* expected_output) {
         }
 
         bool ok = input->Start(proto.size(), &sub) &&
-                  parse(&decoder, sub, proto.c_str(), 0, i, &ofs, &status) &&
-                  parse(&decoder, sub, proto.c_str(), i, j, &ofs, &status) &&
-                  parse(&decoder, sub, proto.c_str(), j, proto.size(), &ofs,
+                  parse(decoder, sub, proto.c_str(), 0, i, &ofs, &status) &&
+                  parse(decoder, sub, proto.c_str(), i, j, &ofs, &status) &&
+                  parse(decoder, sub, proto.c_str(), j, proto.size(), &ofs,
                         &status) &&
                   ofs == proto.size();
 
@@ -852,7 +865,7 @@ void test_invalid() {
 
   // Test exceeding the resource limit of stack depth.
   string buf;
-  for (int i = 0; i <= UPB_DECODER_MAX_NESTING; i++) {
+  for (int i = 0; i <= MAX_NESTING; i++) {
     buf.assign(submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, buf));
   }
   assert_does_not_parse(buf);
@@ -871,11 +884,12 @@ void test_valid() {
   if (!filter_hash || filter_hash == testhash) {
     testhash = emptyhash;
     upb::Status status;
-    upb::pb::Decoder decoder(global_method, &status);
+    upb::Environment env;
+    env.ReportErrorsTo(&status);
     upb::Sink sink(global_handlers, &closures[0]);
-    decoder.ResetOutput(&sink);
+    upb::pb::Decoder* decoder = CreateDecoder(&env, global_method, &sink);
     output.clear();
-    bool ok = upb::BufferSource::PutBuffer("", 0, decoder.input());
+    bool ok = upb::BufferSource::PutBuffer("", 0, decoder->input());
     ASSERT(ok);
     ASSERT(status.ok());
     if (test_mode == ALL_HANDLERS) {
@@ -1076,7 +1090,7 @@ void test_valid() {
   // Staying within the stack limit should work properly.
   string buf;
   string textbuf;
-  int total = UPB_DECODER_MAX_NESTING - 1;
+  int total = MAX_NESTING - 1;
   for (int i = 0; i < total; i++) {
     buf.assign(submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, buf));
     indentbuf(&textbuf, i);
@@ -1135,11 +1149,12 @@ upb::reffed_ptr<const upb::pb::DecoderMethod> method =
     { NULL, 0 },
   };
   for (int i = 0; testdata[i].data; i++) {
+    upb::Environment env;
     upb::Status status;
-    upb::pb::Decoder decoder(method.get(), &status);
-    upb::Sink sink(global_handlers, &closures[0]);
-    decoder.ResetOutput(&sink);
-    upb::BytesSink* input = decoder.input();
+    env.ReportErrorsTo(&status);
+    upb::Sink sink(method->dest_handlers(), &closures[0]);
+    upb::pb::Decoder* decoder = CreateDecoder(&env, method.get(), &sink);
+    upb::BytesSink* input = decoder->input();
     void* subc;
     ASSERT(input->Start(0, &subc));
     size_t ofs = 0;
@@ -1182,7 +1197,7 @@ extern "C" {
 int run_tests(int argc, char *argv[]) {
   if (argc > 1)
     filter_hash = strtol(argv[1], NULL, 16);
-  for (int i = 0; i < UPB_DECODER_MAX_NESTING; i++) {
+  for (int i = 0; i < MAX_NESTING; i++) {
     closures[i] = i;
   }
 

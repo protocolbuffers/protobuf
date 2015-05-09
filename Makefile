@@ -131,6 +131,7 @@ make_objs_cc = $$(patsubst upb/$$(pc).cc,obj/upb/$$(pc).$(1),$$($$(call to_srcs,
 
 upb_SRCS = \
   upb/def.c \
+  upb/env.c \
   upb/handlers.c \
   upb/refcounted.c \
   upb/shim/shim.c \

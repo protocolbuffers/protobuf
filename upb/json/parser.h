@@ -11,6 +11,7 @@
 #ifndef UPB_JSON_PARSER_H_
 #define UPB_JSON_PARSER_H_
 
+#include "upb/env.h"
 #include "upb/sink.h"
 
 #ifdef __cplusplus
@@ -23,96 +24,32 @@ class Parser;
 
 UPB_DECLARE_TYPE(upb::json::Parser, upb_json_parser);
 
-// Internal-only struct used by the parser. A parser frame corresponds
-// one-to-one with a handler (sink) frame.
-typedef struct {
- UPB_PRIVATE_FOR_CPP
-  upb_sink sink;
-  // The current message in which we're parsing, and the field whose value we're
-  // expecting next.
-  const upb_msgdef *m;
-  const upb_fielddef *f;
-
-  // We are in a repeated-field context, ready to emit mapentries as
-  // submessages. This flag alters the start-of-object (open-brace) behavior to
-  // begin a sequence of mapentry messages rather than a single submessage.
-  bool is_map;
-  // We are in a map-entry message context. This flag is set when parsing the
-  // value field of a single map entry and indicates to all value-field parsers
-  // (subobjects, strings, numbers, and bools) that the map-entry submessage
-  // should end as soon as the value is parsed.
-  bool is_mapentry;
-  // If |is_map| or |is_mapentry| is true, |mapfield| refers to the parent
-  // message's map field that we're currently parsing. This differs from |f|
-  // because |f| is the field in the *current* message (i.e., the map-entry
-  // message itself), not the parent's field that leads to this map.
-  const upb_fielddef *mapfield;
-} upb_jsonparser_frame;
-
-
 /* upb::json::Parser **********************************************************/
 
-#define UPB_JSON_MAX_DEPTH 64
+// Preallocation hint: parser won't allocate more bytes than this when first
+// constructed.  This hint may be an overestimate for some build configurations.
+// But if the parser library is upgraded without recompiling the application,
+// it may be an underestimate.
+#define UPB_JSON_PARSER_SIZE 3568
+
+#ifdef __cplusplus
 
 // Parses an incoming BytesStream, pushing the results to the destination sink.
-UPB_DEFINE_CLASS0(upb::json::Parser,
+class upb::json::Parser {
  public:
-  Parser(Status* status);
-  ~Parser();
+  static Parser* Create(Environment* env, Sink* output);
 
-  // Resets the state of the printer, so that it will expect to begin a new
-  // document.
-  void Reset();
-
-  // Resets the output pointer which will serve as our closure.  Implies
-  // Reset().
-  void ResetOutput(Sink* output);
-
-  // The input to the printer.
   BytesSink* input();
-,
-UPB_DEFINE_STRUCT0(upb_json_parser,
-  upb_byteshandler input_handler_;
-  upb_bytessink input_;
 
-  // Stack to track the JSON scopes we are in.
-  upb_jsonparser_frame stack[UPB_JSON_MAX_DEPTH];
-  upb_jsonparser_frame *top;
-  upb_jsonparser_frame *limit;
+ private:
+  UPB_DISALLOW_POD_OPS(Parser, upb::json::Parser);
+};
 
-  upb_status *status;
-
-  // Ragel's internal parsing stack for the parsing state machine.
-  int current_state;
-  int parser_stack[UPB_JSON_MAX_DEPTH];
-  int parser_top;
-
-  // The handle for the current buffer.
-  const upb_bufhandle *handle;
-
-  // Accumulate buffer.  See details in parser.rl.
-  const char *accumulated;
-  size_t accumulated_len;
-  char *accumulate_buf;
-  size_t accumulate_buf_size;
-
-  // Multi-part text data.  See details in parser.rl.
-  int multipart_state;
-  upb_selector_t string_selector;
-
-  // Input capture.  See details in parser.rl.
-  const char *capture;
-
-  // Intermediate result of parsing a unicode escape sequence.
-  uint32_t digit;
-));
+#endif
 
 UPB_BEGIN_EXTERN_C
 
-void upb_json_parser_init(upb_json_parser *p, upb_status *status);
-void upb_json_parser_uninit(upb_json_parser *p);
-void upb_json_parser_reset(upb_json_parser *p);
-void upb_json_parser_resetoutput(upb_json_parser *p, upb_sink *output);
+upb_json_parser *upb_json_parser_create(upb_env *e, upb_sink *output);
 upb_bytessink *upb_json_parser_input(upb_json_parser *p);
 
 UPB_END_EXTERN_C
@@ -121,11 +58,8 @@ UPB_END_EXTERN_C
 
 namespace upb {
 namespace json {
-inline Parser::Parser(Status* status) { upb_json_parser_init(this, status); }
-inline Parser::~Parser() { upb_json_parser_uninit(this); }
-inline void Parser::Reset() { upb_json_parser_reset(this); }
-inline void Parser::ResetOutput(Sink* output) {
-  upb_json_parser_resetoutput(this, output);
+inline Parser* Parser::Create(Environment* env, Sink* output) {
+  return upb_json_parser_create(env, output);
 }
 inline BytesSink* Parser::input() {
   return upb_json_parser_input(this);

@@ -33,6 +33,71 @@
 
 #include "upb/json/parser.h"
 
+#define UPB_JSON_MAX_DEPTH 64
+
+typedef struct {
+  upb_sink sink;
+
+  // The current message in which we're parsing, and the field whose value we're
+  // expecting next.
+  const upb_msgdef *m;
+  const upb_fielddef *f;
+
+  // We are in a repeated-field context, ready to emit mapentries as
+  // submessages. This flag alters the start-of-object (open-brace) behavior to
+  // begin a sequence of mapentry messages rather than a single submessage.
+  bool is_map;
+
+  // We are in a map-entry message context. This flag is set when parsing the
+  // value field of a single map entry and indicates to all value-field parsers
+  // (subobjects, strings, numbers, and bools) that the map-entry submessage
+  // should end as soon as the value is parsed.
+  bool is_mapentry;
+
+  // If |is_map| or |is_mapentry| is true, |mapfield| refers to the parent
+  // message's map field that we're currently parsing. This differs from |f|
+  // because |f| is the field in the *current* message (i.e., the map-entry
+  // message itself), not the parent's field that leads to this map.
+  const upb_fielddef *mapfield;
+} upb_jsonparser_frame;
+
+struct upb_json_parser {
+  upb_env *env;
+  upb_byteshandler input_handler_;
+  upb_bytessink input_;
+
+  // Stack to track the JSON scopes we are in.
+  upb_jsonparser_frame stack[UPB_JSON_MAX_DEPTH];
+  upb_jsonparser_frame *top;
+  upb_jsonparser_frame *limit;
+
+  upb_status *status;
+
+  // Ragel's internal parsing stack for the parsing state machine.
+  int current_state;
+  int parser_stack[UPB_JSON_MAX_DEPTH];
+  int parser_top;
+
+  // The handle for the current buffer.
+  const upb_bufhandle *handle;
+
+  // Accumulate buffer.  See details in parser.rl.
+  const char *accumulated;
+  size_t accumulated_len;
+  char *accumulate_buf;
+  size_t accumulate_buf_size;
+
+  // Multi-part text data.  See details in parser.rl.
+  int multipart_state;
+  upb_selector_t string_selector;
+
+  // Input capture.  See details in parser.rl.
+  const char *capture;
+
+  // Intermediate result of parsing a unicode escape sequence.
+  uint32_t digit;
+};
+
 #define PARSER_CHECK_RETURN(x) if (!(x)) return false
 
 // Used to signal that a capture has been suspended.
@@ -235,12 +300,13 @@ static void accumulate_clear(upb_json_parser *p) {
 
 // Used internally by accumulate_append().
 static bool accumulate_realloc(upb_json_parser *p, size_t need) {
-  size_t new_size = UPB_MAX(p->accumulate_buf_size, 128);
+  size_t old_size = p->accumulate_buf_size;
+  size_t new_size = UPB_MAX(old_size, 128);
   while (new_size < need) {
     new_size = saturating_multiply(new_size, 2);
   }
 
-  void *mem = realloc(p->accumulate_buf, new_size);
+  void *mem = upb_env_realloc(p->env, p->accumulate_buf, old_size, new_size);
   if (!mem) {
     upb_status_seterrmsg(p->status, "Out of memory allocating buffer.");
     return false;
@@ -989,11 +1055,11 @@ static void end_object(upb_json_parser *p) {
 // final state once, when the closing '"' is seen.
 
 
-#line 1085 "upb/json/parser.rl"
+#line 1151 "upb/json/parser.rl"
 
 
 
-#line 997 "upb/json/parser.c"
+#line 1063 "upb/json/parser.c"
 static const char _json_actions[] = {
 	0, 1, 0, 1, 2, 1, 3, 1, 
 	5, 1, 6, 1, 7, 1, 8, 1, 
@@ -1142,7 +1208,7 @@ static const int json_en_value_machine = 27;
 static const int json_en_main = 1;
 
 
-#line 1088 "upb/json/parser.rl"
+#line 1154 "upb/json/parser.rl"
 
 size_t parse(void *closure, const void *hd, const char *buf, size_t size,
              const upb_bufhandle *handle) {
@@ -1162,7 +1228,7 @@ size_t parse(void *closure, const void *hd, const char *buf, size_t size,
   capture_resume(parser, buf);
 
   
-#line 1166 "upb/json/parser.c"
+#line 1232 "upb/json/parser.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -1237,118 +1303,118 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 0:
-#line 1000 "upb/json/parser.rl"
+#line 1066 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 1:
-#line 1001 "upb/json/parser.rl"
+#line 1067 "upb/json/parser.rl"
 	{ p--; {stack[top++] = cs; cs = 10; goto _again;} }
 	break;
 	case 2:
-#line 1005 "upb/json/parser.rl"
+#line 1071 "upb/json/parser.rl"
 	{ start_text(parser, p); }
 	break;
 	case 3:
-#line 1006 "upb/json/parser.rl"
+#line 1072 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_text(parser, p)); }
 	break;
 	case 4:
-#line 1012 "upb/json/parser.rl"
+#line 1078 "upb/json/parser.rl"
 	{ start_hex(parser); }
 	break;
 	case 5:
-#line 1013 "upb/json/parser.rl"
+#line 1079 "upb/json/parser.rl"
 	{ hexdigit(parser, p); }
 	break;
 	case 6:
-#line 1014 "upb/json/parser.rl"
+#line 1080 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_hex(parser)); }
 	break;
 	case 7:
-#line 1020 "upb/json/parser.rl"
+#line 1086 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(escape(parser, p)); }
 	break;
 	case 8:
-#line 1026 "upb/json/parser.rl"
+#line 1092 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 9:
-#line 1029 "upb/json/parser.rl"
+#line 1095 "upb/json/parser.rl"
 	{ {stack[top++] = cs; cs = 19; goto _again;} }
 	break;
 	case 10:
-#line 1031 "upb/json/parser.rl"
+#line 1097 "upb/json/parser.rl"
 	{ p--; {stack[top++] = cs; cs = 27; goto _again;} }
 	break;
 	case 11:
-#line 1036 "upb/json/parser.rl"
+#line 1102 "upb/json/parser.rl"
 	{ start_member(parser); }
 	break;
 	case 12:
-#line 1037 "upb/json/parser.rl"
+#line 1103 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_membername(parser)); }
 	break;
 	case 13:
-#line 1040 "upb/json/parser.rl"
+#line 1106 "upb/json/parser.rl"
 	{ end_member(parser); }
 	break;
 	case 14:
-#line 1046 "upb/json/parser.rl"
+#line 1112 "upb/json/parser.rl"
 	{ start_object(parser); }
 	break;
 	case 15:
-#line 1049 "upb/json/parser.rl"
+#line 1115 "upb/json/parser.rl"
 	{ end_object(parser); }
 	break;
 	case 16:
-#line 1055 "upb/json/parser.rl"
+#line 1121 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_array(parser)); }
 	break;
 	case 17:
-#line 1059 "upb/json/parser.rl"
+#line 1125 "upb/json/parser.rl"
 	{ end_array(parser); }
 	break;
 	case 18:
-#line 1064 "upb/json/parser.rl"
+#line 1130 "upb/json/parser.rl"
 	{ start_number(parser, p); }
 	break;
 	case 19:
-#line 1065 "upb/json/parser.rl"
+#line 1131 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_number(parser, p)); }
 	break;
 	case 20:
-#line 1067 "upb/json/parser.rl"
+#line 1133 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_stringval(parser)); }
 	break;
 	case 21:
-#line 1068 "upb/json/parser.rl"
+#line 1134 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_stringval(parser)); }
 	break;
 	case 22:
-#line 1070 "upb/json/parser.rl"
+#line 1136 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(parser_putbool(parser, true)); }
 	break;
 	case 23:
-#line 1072 "upb/json/parser.rl"
+#line 1138 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(parser_putbool(parser, false)); }
 	break;
 	case 24:
-#line 1074 "upb/json/parser.rl"
+#line 1140 "upb/json/parser.rl"
 	{ /* null value */ }
 	break;
 	case 25:
-#line 1076 "upb/json/parser.rl"
+#line 1142 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_subobject(parser)); }
 	break;
 	case 26:
-#line 1077 "upb/json/parser.rl"
+#line 1143 "upb/json/parser.rl"
 	{ end_subobject(parser); }
 	break;
 	case 27:
-#line 1082 "upb/json/parser.rl"
+#line 1148 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
-#line 1352 "upb/json/parser.c"
+#line 1418 "upb/json/parser.c"
 		}
 	}
 
@@ -1361,7 +1427,7 @@ _again:
 	_out: {}
 	}
 
-#line 1107 "upb/json/parser.rl"
+#line 1173 "upb/json/parser.rl"
 
   if (p != pe) {
     upb_status_seterrf(parser->status, "Parse error at %s\n", p);
@@ -1390,26 +1456,7 @@ bool end(void *closure, const void *hd) {
   return true;
 }
 
-
-/* Public API *****************************************************************/
-
-void upb_json_parser_init(upb_json_parser *p, upb_status *status) {
-  p->limit = p->stack + UPB_JSON_MAX_DEPTH;
-  p->accumulate_buf = NULL;
-  p->accumulate_buf_size = 0;
-  upb_byteshandler_init(&p->input_handler_);
-  upb_byteshandler_setstring(&p->input_handler_, parse, NULL);
-  upb_byteshandler_setendstr(&p->input_handler_, end, NULL);
-  upb_bytessink_reset(&p->input_, &p->input_handler_, p);
-  p->status = status;
-}
-
-void upb_json_parser_uninit(upb_json_parser *p) {
-  upb_byteshandler_uninit(&p->input_handler_);
-  free(p->accumulate_buf);
-}
-
-void upb_json_parser_reset(upb_json_parser *p) {
+static void json_parser_reset(upb_json_parser *p) {
   p->top = p->stack;
   p->top->f = NULL;
   p->top->is_map = false;
@@ -1419,25 +1466,48 @@ void upb_json_parser_reset(upb_json_parser *p) {
   int top;
   // Emit Ragel initialization of the parser.
   
-#line 1423 "upb/json/parser.c"
+#line 1470 "upb/json/parser.c"
 	{
 	cs = json_start;
 	top = 0;
 	}
 
-#line 1164 "upb/json/parser.rl"
+#line 1211 "upb/json/parser.rl"
   p->current_state = cs;
   p->parser_top = top;
   accumulate_clear(p);
   p->multipart_state = MULTIPART_INACTIVE;
   p->capture = NULL;
+  p->accumulated = NULL;
 }
 
-void upb_json_parser_resetoutput(upb_json_parser *p, upb_sink *sink) {
-  upb_json_parser_reset(p);
-  upb_sink_reset(&p->top->sink, sink->handlers, sink->closure);
-  p->top->m = upb_handlers_msgdef(sink->handlers);
-  p->accumulated = NULL;
+
+/* Public API *****************************************************************/
+
+upb_json_parser *upb_json_parser_create(upb_env *env, upb_sink *output) {
+#ifndef NDEBUG
+  const size_t size_before = upb_env_bytesallocated(env);
+#endif
+  upb_json_parser *p = upb_env_malloc(env, sizeof(upb_json_parser));
+  if (!p) return false;
+
+  p->env = env;
+  p->limit = p->stack + UPB_JSON_MAX_DEPTH;
+  p->accumulate_buf = NULL;
+  p->accumulate_buf_size = 0;
+  upb_byteshandler_init(&p->input_handler_);
+  upb_byteshandler_setstring(&p->input_handler_, parse, NULL);
+  upb_byteshandler_setendstr(&p->input_handler_, end, NULL);
+  upb_bytessink_reset(&p->input_, &p->input_handler_, p);
+
+  json_parser_reset(p);
+  upb_sink_reset(&p->top->sink, output->handlers, output->closure);
+  p->top->m = upb_handlers_msgdef(output->handlers);
+
+  // If this fails, uncomment and increase the value in parser.h.
+  // fprintf(stderr, "%zd\n", upb_env_bytesallocated(env) - size_before);
+  assert(upb_env_bytesallocated(env) - size_before <= UPB_JSON_PARSER_SIZE);
+  return p;
 }
 
 upb_bytessink *upb_json_parser_input(upb_json_parser *p) {

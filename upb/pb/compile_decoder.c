@@ -64,7 +64,6 @@ mgroup *newgroup(const void *owner) {
 
 static void freemethod(upb_refcounted *r) {
   upb_pbdecodermethod *method = (upb_pbdecodermethod*)r;
-  upb_byteshandler_uninit(&method->input_handler_);
 
   if (method->dest_handlers_) {
     upb_handlers_unref(method->dest_handlers_, method);

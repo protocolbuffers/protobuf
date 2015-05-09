@@ -19,6 +19,14 @@
 
 #include "upb/sink.h"
 
+struct upb_textprinter {
+  upb_sink input_;
+  upb_bytessink *output_;
+  int indent_depth_;
+  bool single_line_;
+  void *subc;
+};
+
 #define CHECK(x) if ((x) < 0) goto err;
 
 static const char *shortname(const char *longname) {
@@ -236,24 +244,6 @@ err:
   return false;
 }
 
-
-/* Public API *****************************************************************/
-
-void upb_textprinter_init(upb_textprinter *p, const upb_handlers *h) {
-  p->single_line_ = false;
-  p->indent_depth_ = 0;
-  upb_sink_reset(&p->input_, h, p);
-}
-
-void upb_textprinter_uninit(upb_textprinter *p) {
-  UPB_UNUSED(p);
-}
-
-void upb_textprinter_reset(upb_textprinter *p, bool single_line) {
-  p->single_line_ = single_line;
-  p->indent_depth_ = 0;
-}
-
 static void onmreg(const void *c, upb_handlers *h) {
   UPB_UNUSED(c);
   const upb_msgdef *m = upb_handlers_msgdef(h);
@@ -313,17 +303,32 @@ static void onmreg(const void *c, upb_handlers *h) {
   }
 }
 
+static void textprinter_reset(upb_textprinter *p, bool single_line) {
+  p->single_line_ = single_line;
+  p->indent_depth_ = 0;
+}
+
+
+/* Public API *****************************************************************/
+
+upb_textprinter *upb_textprinter_create(upb_env *env, const upb_handlers *h,
+                                        upb_bytessink *output) {
+  upb_textprinter *p = upb_env_malloc(env, sizeof(upb_textprinter));
+  if (!p) return NULL;
+
+  p->output_ = output;
+  upb_sink_reset(&p->input_, h, p);
+  textprinter_reset(p, false);
+
+  return p;
+}
+
 const upb_handlers *upb_textprinter_newhandlers(const upb_msgdef *m,
                                                 const void *owner) {
   return upb_handlers_newfrozen(m, owner, &onmreg, NULL);
 }
 
 upb_sink *upb_textprinter_input(upb_textprinter *p) { return &p->input_; }
-
-bool upb_textprinter_resetoutput(upb_textprinter *p, upb_bytessink *output) {
-  p->output_ = output;
-  return true;
-}
 
 void upb_textprinter_setsingleline(upb_textprinter *p, bool single_line) {
   p->single_line_ = single_line;

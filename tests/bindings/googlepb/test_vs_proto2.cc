@@ -77,13 +77,14 @@ void parse_and_compare(google::protobuf::Message *msg1,
       cache.GetDecoderMethod(upb::pb::DecoderMethodOptions(protomsg_handlers)));
 
   upb::Status status;
-  upb::pb::Decoder decoder(decoder_method.get(), &status);
+  upb::Environment env;
+  env.ReportErrorsTo(&status);
   upb::Sink protomsg_sink(protomsg_handlers, msg2);
-
-  decoder.ResetOutput(&protomsg_sink);
+  upb::pb::Decoder* decoder =
+      upb::pb::Decoder::Create(&env, decoder_method.get(), &protomsg_sink);
 
   msg2->Clear();
-  bool ok = upb::BufferSource::PutBuffer(str, len, decoder.input());
+  bool ok = upb::BufferSource::PutBuffer(str, len, decoder->input());
   if (!ok) {
     fprintf(stderr, "error parsing: %s\n", status.error_message());
     print_diff(*msg1, *msg2);

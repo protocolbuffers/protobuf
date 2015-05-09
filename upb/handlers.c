@@ -176,7 +176,14 @@ static bool doset(upb_handlers *h, int32_t sel, const upb_fielddef *f,
   if (closure_type && *context_closure_type &&
       closure_type != *context_closure_type) {
     // TODO(haberman): better message for debugging.
-    upb_status_seterrmsg(&h->status_, "closure type does not match");
+    if (f) {
+      upb_status_seterrf(&h->status_,
+                         "closure type does not match for field %s",
+                         upb_fielddef_name(f));
+    } else {
+      upb_status_seterrmsg(
+          &h->status_, "closure type does not match for message-level handler");
+    }
     return false;
   }
 

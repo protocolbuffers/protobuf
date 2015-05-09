@@ -755,10 +755,8 @@ UPB_DEFINE_STRUCT0(upb_byteshandler,
 ));
 
 void upb_byteshandler_init(upb_byteshandler *h);
-void upb_byteshandler_uninit(upb_byteshandler *h);
 
 // Caller must ensure that "d" outlives the handlers.
-// TODO(haberman): support handlerfree function for the data.
 // TODO(haberman): should this have a "freeze" operation?  It's not necessary
 // for memory management, but could be useful to force immutability and provide
 // a convenient moment to verify that all registration succeeded.

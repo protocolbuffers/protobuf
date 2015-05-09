@@ -61,19 +61,20 @@ static int lupb_pbdecodermethod_parse(lua_State *L) {
   // Handlers need this.
   lua_getuservalue(L, -1);
 
-  upb_pbdecoder decoder;
   upb_status status = UPB_STATUS_INIT;
-  upb_pbdecoder_init(&decoder, method, &status);
+  upb_env env;
+  upb_env_init(&env);
+  upb_env_reporterrorsto(&env, &status);
   upb_sink sink;
   upb_sink_reset(&sink, handlers, msg);
-  upb_pbdecoder_resetoutput(&decoder, &sink);
-  upb_bufsrc_putbuf(pb, len, upb_pbdecoder_input(&decoder));
-  // TODO: Our need to call uninit isn't longjmp-safe; what if the decode
-  // triggers a Lua error?  uninit is only needed if the decoder
-  // dynamically-allocated a growing stack -- ditch this feature and live with
-  // the compile-time limit?  Or have a custom allocation function that
-  // allocates Lua GC-rooted memory?
-  upb_pbdecoder_uninit(&decoder);
+  upb_pbdecoder *decoder = upb_pbdecoder_create(&env, method, &sink);
+  upb_bufsrc_putbuf(pb, len, upb_pbdecoder_input(decoder));
+
+  // TODO: This won't get called in the error case, which longjmp's across us.
+  // This will cause the memory to leak.  To remedy this, we should make the
+  // upb_env wrapped in a userdata that guarantees this will get called.
+  upb_env_uninit(&env);
+
   lupb_checkstatus(L, &status);
 
   lua_pop(L, 1);  // Uservalue.
