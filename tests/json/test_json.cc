@@ -347,7 +347,7 @@ void test_json_roundtrip() {
         test_case->input :
         test_case->expected;
 
-    for (int i = 0; i < strlen(test_case->input); i++) {
+    for (size_t i = 0; i < strlen(test_case->input); i++) {
       test_json_roundtrip_message(test_case->input, expected,
                                   serialize_handlers.get(), i);
     }

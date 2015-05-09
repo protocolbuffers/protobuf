@@ -1201,8 +1201,6 @@ static const char _json_trans_actions[] = {
 };
 
 static const int json_start = 1;
-static const int json_first_final = 56;
-static const int json_error = 0;
 
 static const int json_en_number_machine = 10;
 static const int json_en_string_machine = 19;
@@ -1230,7 +1228,7 @@ size_t parse(void *closure, const void *hd, const char *buf, size_t size,
   capture_resume(parser, buf);
 
   
-#line 1234 "upb/json/parser.c"
+#line 1232 "upb/json/parser.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -1416,7 +1414,7 @@ _match:
 #line 1148 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
-#line 1420 "upb/json/parser.c"
+#line 1418 "upb/json/parser.c"
 		}
 	}
 
@@ -1448,6 +1446,13 @@ error:
 bool end(void *closure, const void *hd) {
   UPB_UNUSED(closure);
   UPB_UNUSED(hd);
+
+  // Prevent compile warning on unused static constants.
+  UPB_UNUSED(json_start);
+  UPB_UNUSED(json_en_number_machine);
+  UPB_UNUSED(json_en_string_machine);
+  UPB_UNUSED(json_en_value_machine);
+  UPB_UNUSED(json_en_main);
   return true;
 }
 
@@ -1461,13 +1466,13 @@ static void json_parser_reset(upb_json_parser *p) {
   int top;
   // Emit Ragel initialization of the parser.
   
-#line 1465 "upb/json/parser.c"
+#line 1470 "upb/json/parser.c"
 	{
 	cs = json_start;
 	top = 0;
 	}
 
-#line 1204 "upb/json/parser.rl"
+#line 1211 "upb/json/parser.rl"
   p->current_state = cs;
   p->parser_top = top;
   accumulate_clear(p);

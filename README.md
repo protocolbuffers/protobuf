@@ -2,6 +2,7 @@
 # Unleaded - small, fast parsers for the 21st century
 
 [![Build Status](https://travis-ci.org/haberman/upb.svg?branch=master)](https://travis-ci.org/haberman/upb)
+[![Coverage Status](https://img.shields.io/coveralls/haberman/upb.svg)](https://coveralls.io/r/haberman/upb?branch=master)
 
 Unleaded is a library of fast parsers and serializers.  These
 parsers/serializers are written in C and use every available

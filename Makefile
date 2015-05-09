@@ -38,6 +38,10 @@ USER_CPPFLAGS=
 # Build with "make WITH_JIT=yes" (or anything besides "no") to enable the JIT.
 WITH_JIT=no
 
+# Build with "make WITH_MAX_WARNINGS=yes" (or anything besides "no") to enable
+# with strict warnings and treat warnings as errors.
+WITH_MAX_WARNINGS=no
+
 # Basic compiler/flag setup.
 CC=cc
 CXX=c++
@@ -51,6 +55,10 @@ LUA=lua  # 5.1 and 5.2 should both be supported
 ifneq ($(WITH_JIT), no)
   USE_JIT=true
   CPPFLAGS += -DUPB_USE_JIT_X64
+endif
+
+ifneq ($(WITH_MAX_WARNINGS), no)
+  WARNFLAGS=-Wall -Wextra -Wpointer-arith -Werror
 endif
 
 # Build with "make Q=" to see all commands that are being executed.
@@ -85,7 +93,7 @@ dep:
 
 clean_leave_profile:
 	@rm -rf obj lib
-	@rm -f tests/*.pb* tests/google_message?.h
+	@rm -f tests/google_message?.h
 	@rm -f $(TESTS) tests/testmain.o tests/t.*
 	@rm -f upb/descriptor.pb
 	@rm -rf tools/upbc deps
@@ -115,8 +123,8 @@ clean: clean_leave_profile
 .SECONDEXPANSION:
 to_srcs = $(subst .,_,$(1)_SRCS)
 pc = %
-make_objs = $$(patsubst upb/$$(pc).c,obj/$$(pc).$(1),$$($$(call to_srcs,$$*)))
-make_objs_cc = $$(patsubst upb/$$(pc).cc,obj/$$(pc).$(1),$$($$(call to_srcs,$$*)))
+make_objs = $$(patsubst upb/$$(pc).c,obj/upb/$$(pc).$(1),$$($$(call to_srcs,$$*)))
+make_objs_cc = $$(patsubst upb/$$(pc).cc,obj/upb/$$(pc).$(1),$$($$(call to_srcs,$$*)))
 
 
 # Core libraries (ie. not bindings). ###############################################################
@@ -146,8 +154,7 @@ upb_pb_SRCS = \
 # If Lua is present we can use DynASM to regenerate the .h file.
 ifdef USE_JIT
 upb_pb_SRCS += upb/pb/compile_decoder_x64.c
-obj/pb/compile_decoder_x64.o obj/pb/compile_decoder_x64.lo: upb/pb/compile_decoder_x64.h
-obj/pb/compile_decoder_x64.o: CFLAGS=-std=gnu99
+obj/upb/pb/compile_decoder_x64.o obj/upb/pb/compile_decoder_x64.lo: upb/pb/compile_decoder_x64.h
 
 upb/pb/compile_decoder_x64.h: upb/pb/compile_decoder_x64.dasc
 	$(E) DYNASM $<
@@ -168,11 +175,11 @@ ifeq (, $(findstring -O, $(USER_CPPFLAGS)))
 OPT = -O3
 lib/libupb.a : OPT = -Os
 lib/libupb.descriptor.a : OPT = -Os
-obj/pb/compile_decoder.o : OPT = -Os
-obj/pb/compile_decoder_64.o : OPT = -Os
+obj/upb/pb/compile_decoder.o : OPT = -Os
+obj/upb/pb/compile_decoder_64.o : OPT = -Os
 
 ifdef USE_JIT
-obj/pb/compile_decoder_x64.o: OPT=-Os
+obj/upb/pb/compile_decoder_x64.o: OPT=-Os
 endif
 
 endif
@@ -186,19 +193,19 @@ $(UPB_LIBS): lib/lib%.a: $(call make_objs,o)
 	$(Q) mkdir -p lib && ar rcs $@ $^
 
 
-obj/%.o: upb/%.c | $$(@D)/.
+obj/upb/%.o: upb/%.c | $$(@D)/.
 	$(E) CC $<
 	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
-obj/%.o: upb/%.cc | $$(@D)/.
+obj/upb/%.o: upb/%.cc | $$(@D)/.
 	$(E) CXX $<
 	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 
-obj/%.lo: upb/%.c | $$(@D)/.
+obj/upb/%.lo: upb/%.c | $$(@D)/.
 	$(E) 'CC -fPIC' $<
 	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $< -fPIC
 
-obj/%.lo: upb/%.cc | $$(@D)/.
+obj/upb/%.lo: upb/%.cc | $$(@D)/.
 	$(E) CXX $<
 	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $< -fPIC
 
@@ -315,7 +322,7 @@ clean_googlepb:
 googlepb: default $(GOOGLEPB_LIB)
 googlepbtests: googlepb $(GOOGLEPB_TESTS)
 
-lib/libupb.bindings.googlepb.a: $(upb_bindings_googlepb_SRCS:upb/%.cc=obj/%.o)
+lib/libupb.bindings.googlepb.a: $(upb_bindings_googlepb_SRCS:upb/%.cc=obj/upb/%.o)
 	$(E) AR $@
 	$(Q) mkdir -p lib && ar rcs $@ $^
 

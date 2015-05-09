@@ -120,7 +120,7 @@ static bool in_residual_buf(const upb_pbdecoder *d, const char *p) {
 // and the parsing stack, so must be called whenever either is updated.
 static void set_delim_end(upb_pbdecoder *d) {
   size_t delim_ofs = d->top->end_ofs - d->bufstart_ofs;
-  if (delim_ofs <= (d->end - d->buf)) {
+  if (delim_ofs <= (size_t)(d->end - d->buf)) {
     d->delim_end = d->buf + delim_ofs;
     d->data_end = d->delim_end;
   } else {
@@ -265,7 +265,7 @@ UPB_NOINLINE static int32_t getbytes_slow(upb_pbdecoder *d, void *buf,
     advancetobuf(d, d->buf_param, d->size_param);
   }
   if (curbufleft(d) >= bytes) {
-    consumebytes(d, buf + avail, bytes);
+    consumebytes(d, (char *)buf + avail, bytes);
     return DECODE_OK;
   } else if (d->data_end == d->delim_end) {
     seterr(d, "Submessage ended in the middle of a value or group");
@@ -294,7 +294,7 @@ UPB_NOINLINE static size_t peekbytes_slow(upb_pbdecoder *d, void *buf,
   memcpy(buf, d->ptr, ret);
   if (in_residual_buf(d, d->ptr)) {
     size_t copy = UPB_MIN(bytes - ret, d->size_param);
-    memcpy(buf + ret, d->buf_param, copy);
+    memcpy((char *)buf + ret, d->buf_param, copy);
     ret += copy;
   }
   return ret;

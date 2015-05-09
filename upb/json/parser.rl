@@ -1150,7 +1150,7 @@ static void end_object(upb_json_parser *p) {
   main := ws object ws;
 }%%
 
-%% write data;
+%% write data noerror nofinal;
 
 size_t parse(void *closure, const void *hd, const char *buf, size_t size,
              const upb_bufhandle *handle) {
@@ -1188,6 +1188,13 @@ error:
 bool end(void *closure, const void *hd) {
   UPB_UNUSED(closure);
   UPB_UNUSED(hd);
+
+  // Prevent compile warning on unused static constants.
+  UPB_UNUSED(json_start);
+  UPB_UNUSED(json_en_number_machine);
+  UPB_UNUSED(json_en_string_machine);
+  UPB_UNUSED(json_en_value_machine);
+  UPB_UNUSED(json_en_main);
   return true;
 }
 
