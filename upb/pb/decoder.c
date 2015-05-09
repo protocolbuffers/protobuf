@@ -966,7 +966,9 @@ size_t upb_pbdecoder_maxnesting(const upb_pbdecoder *d) {
 }
 
 bool upb_pbdecoder_setmaxnesting(upb_pbdecoder *d, size_t max) {
-  if (max < d->top - d->stack) {
+  assert(d->top >= d->stack);
+
+  if (max < (size_t)(d->top - d->stack)) {
     // Can't set a limit smaller than what we are currently at.
     return false;
   }

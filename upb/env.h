@@ -177,9 +177,9 @@ UPB_DEFINE_STRUCT0(upb_seededalloc,
   void *default_alloc_ud;
 
   // Pointers for the initial memory region.
-  void *mem_base;
-  void *mem_ptr;
-  void *mem_limit;
+  char *mem_base;
+  char *mem_ptr;
+  char *mem_limit;
 
   // For future expansion, since the size of this struct is exposed to users.
   void *future1;

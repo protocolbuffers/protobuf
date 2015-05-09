@@ -43,7 +43,7 @@ static void *default_alloc(void *_ud, void *ptr, size_t oldsize, size_t size) {
   UPB_UNUSED(oldsize);
   default_alloc_ud *ud = _ud;
 
-  mem_block *from = ptr ? ptr - sizeof(mem_block) : NULL;
+  mem_block *from = ptr ? (void*)((char*)ptr - sizeof(mem_block)) : NULL;
 
 #ifndef NDEBUG
   if (from) {
@@ -214,7 +214,9 @@ UPB_FORCEINLINE static void *seeded_alloc(void *ud, void *ptr, size_t oldsize,
   upb_seededalloc *a = ud;
   size = align_up(size);
 
-  if (oldsize == 0 && size <= a->mem_limit - a->mem_ptr) {
+  assert(a->mem_limit >= a->mem_ptr);
+
+  if (oldsize == 0 && size <= (size_t)(a->mem_limit - a->mem_ptr)) {
     // Fast path: we can satisfy from the initial allocation.
     void *ret = a->mem_ptr;
     a->mem_ptr += size;
@@ -229,7 +231,7 @@ UPB_FORCEINLINE static void *seeded_alloc(void *ud, void *ptr, size_t oldsize,
 void upb_seededalloc_init(upb_seededalloc *a, void *mem, size_t len) {
   a->mem_base = mem;
   a->mem_ptr = mem;
-  a->mem_limit = mem + len;
+  a->mem_limit = (char*)mem + len;
   a->need_cleanup = false;
   a->returned_allocfunc = false;
 

@@ -41,13 +41,6 @@ static int lupb_pbdecodermethod_new(lua_State *L) {
   return 1;  // The DecoderMethod wrapper.
 }
 
-// We implement upb's allocation function by allocating a Lua userdata.
-// This is a raw hunk of memory that will be GC'd by Lua.
-static void *lua_alloc(void *ud, size_t size) {
-  lua_State *L = ud;
-  return lua_newuserdata(L, size);
-}
-
 // Unlike most of our exposed Lua functions, this does not correspond to an
 // actual method on the underlying DecoderMethod.  But it's convenient, and
 // important to implement in C because we can do stack allocation and
@@ -77,11 +70,9 @@ static int lupb_pbdecodermethod_parse(lua_State *L) {
   upb_pbdecoder *decoder = upb_pbdecoder_create(&env, method, &sink);
   upb_bufsrc_putbuf(pb, len, upb_pbdecoder_input(decoder));
 
-  // This won't get called in the error case, which longjmp's across us.  But
-  // since we made our alloc function allocate only GC-able memory, that
-  // shouldn't matter.  It *would* matter if the environment had references to
-  // any non-memory resources (ie.  filehandles).  As an alternative to this we
-  // could make the environment itself a userdata.
+  // TODO: This won't get called in the error case, which longjmp's across us.
+  // This will cause the memory to leak.  To remedy this, we should make the
+  // upb_env wrapped in a userdata that guarantees this will get called.
   upb_env_uninit(&env);
 
   lupb_checkstatus(L, &status);

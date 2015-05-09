@@ -1358,7 +1358,7 @@ static size_t align_up(size_t val, size_t align) {
 
 // If we always read/write as a consistent type to each value, this shouldn't
 // violate aliasing.
-#define DEREF(msg, ofs, type) *(type*)(&msg->data[ofs])
+#define DEREF(msg, ofs, type) *(type*)((char*)msg + sizeof(lupb_msg) + ofs)
 
 lupb_msg *lupb_msg_check(lua_State *L, int narg) {
   lupb_msg *msg = luaL_checkudata(L, narg, LUPB_MSG);
