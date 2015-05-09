@@ -77,7 +77,7 @@ this.
 
 For a more detailed description of the scheme we use to
 provide both C and C++ APIs, see:
-[https://github.com/haberman/upb/wiki/CAndCPlusPlusAPI](CAndCPlusPlusAPI).
+[CAndCPlusPlusAPI](https://github.com/haberman/upb/wiki/CAndCPlusPlusAPI).
 
 All of the code that is under `upb/` but *not* under
 `upb/bindings/` forms the namespace of upb's cross-language
@@ -92,7 +92,7 @@ be exposed as follows:
 ## Google protobuf bindings
 
 Unleaded supports integration with the
-[https://github.com/google/protobuf](Google protobuf library).
+[Google protobuf library](https://github.com/google/protobuf).
 These bindings let you:
 
 * convert protobuf schema objects (`Descriptor`, `FieldDescriptor`, etc).
