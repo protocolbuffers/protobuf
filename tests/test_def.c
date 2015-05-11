@@ -153,29 +153,9 @@ static void test_fielddef_unref() {
   upb_fielddef_unref(f, &f);
 }
 
-static void test_fielddef_accessors() {
-  upb_fielddef *f1 = upb_fielddef_new(&f1);
-  upb_fielddef *f2 = upb_fielddef_new(&f2);
-
-  ASSERT(!upb_fielddef_isfrozen(f1));
-  ASSERT(upb_fielddef_setname(f1, "f1", NULL));
-  ASSERT(upb_fielddef_setnumber(f1, 1937, NULL));
-  upb_fielddef_settype(f1, UPB_TYPE_INT64);
-  upb_fielddef_setlabel(f1, UPB_LABEL_REPEATED);
-  ASSERT(upb_fielddef_number(f1) == 1937);
-
-  ASSERT(!upb_fielddef_isfrozen(f2));
-  ASSERT(upb_fielddef_setname(f2, "f2", NULL));
-  ASSERT(upb_fielddef_setnumber(f2, 123456789, NULL));
-  upb_fielddef_settype(f2, UPB_TYPE_BYTES);
-  upb_fielddef_setlabel(f2, UPB_LABEL_REPEATED);
-  ASSERT(upb_fielddef_number(f2) == 123456789);
-
-  upb_fielddef_unref(f1, &f1);
-  upb_fielddef_unref(f2, &f2);
-
+static void test_fielddef() {
   // Test that we don't leak an unresolved subdef name.
-  f1 = upb_fielddef_new(&f1);
+  upb_fielddef *f1 = upb_fielddef_new(&f1);
   upb_fielddef_settype(f1, UPB_TYPE_MESSAGE);
   ASSERT(upb_fielddef_setsubdefname(f1, "YO", NULL));
   upb_fielddef_unref(f1, &f1);
@@ -438,7 +418,7 @@ int run_tests(int argc, char *argv[]) {
   test_empty_symtab();
   test_cycles();
   test_symbol_resolution();
-  test_fielddef_accessors();
+  test_fielddef();
   test_fielddef_unref();
   test_replacement();
   test_freeze_free();
