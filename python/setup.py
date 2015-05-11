@@ -22,6 +22,7 @@ except ImportError:
     raise
 
 from distutils.command.clean import clean as _clean
+from distutils.core import Command
 
 if sys.version_info[0] == 3:
   # Python 3
@@ -121,7 +122,10 @@ class clean(_clean):
     _clean.run(self)
 
 
-class build_py(_build_py):
+class GenerateProtos(Command):
+  user_options = []
+  def initialize_options(self): pass
+  def finalize_options(self): pass
   def run(self):
     # Generate necessary .proto file if it doesn't exist.
     generate_proto("../src/google/protobuf/descriptor.proto")
@@ -134,8 +138,9 @@ class build_py(_build_py):
         open('google/protobuf/%s__init__.py' % path, 'a').close()
       except EnvironmentError:
         pass
-    # _build_py is an old-style class, so super() doesn't work.
-    _build_py.run(self)
+    builder = _build_py(self.distribution)
+    builder.finalize_options()
+    builder.run()
   # TODO(mrovner): Subclass to run 2to3 on some files only.
   # Tracing what https://wiki.python.org/moin/PortingPythonToPy3k's
   # "Approach 2" section on how to get 2to3 to run on source files during
@@ -191,7 +196,7 @@ if __name__ == '__main__':
       test_suite='google.protobuf.internal',
       cmdclass={
           'clean': clean,
-          'build_py': build_py,
+          'gen_protos': GenerateProtos,
       },
       install_requires=['setuptools'],
       ext_modules=ext_module_list,
