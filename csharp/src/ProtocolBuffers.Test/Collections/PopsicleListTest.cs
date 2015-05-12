@@ -36,13 +36,13 @@
 
 using System;
 using System.Collections.Generic;
-using Xunit;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers.Collections
 {
     public class PopsicleListTest
     {
-        [Fact]
+        [Test]
         public void MutatingOperationsOnFrozenList()
         {
             PopsicleList<string> list = new PopsicleList<string>();
@@ -55,20 +55,20 @@ namespace Google.ProtocolBuffers.Collections
             Assert.Throws<NotSupportedException>(() => list.Add(new[] { "", "" }));
         }
 
-        [Fact]
+        [Test]
         public void NonMutatingOperationsOnFrozenList()
         {
             PopsicleList<string> list = new PopsicleList<string>();
             list.MakeReadOnly();
-            Assert.False(list.Contains(""));
-            Assert.Equal(0, list.Count);
+            Assert.IsFalse(list.Contains(""));
+            Assert.AreEqual(0, list.Count);
             list.CopyTo(new string[5], 0);
             list.GetEnumerator();
-            Assert.Equal(-1, list.IndexOf(""));
-            Assert.True(list.IsReadOnly);
+            Assert.AreEqual(-1, list.IndexOf(""));
+            Assert.IsTrue(list.IsReadOnly);
         }
 
-        [Fact]
+        [Test]
         public void MutatingOperationsOnFluidList()
         {
             PopsicleList<string> list = new PopsicleList<string>();
@@ -80,26 +80,26 @@ namespace Google.ProtocolBuffers.Collections
             list.RemoveAt(0);
         }
 
-        [Fact]
+        [Test]
         public void NonMutatingOperationsOnFluidList()
         {
             PopsicleList<string> list = new PopsicleList<string>();
-            Assert.False(list.Contains(""));
-            Assert.Equal(0, list.Count);
+            Assert.IsFalse(list.Contains(""));
+            Assert.AreEqual(0, list.Count);
             list.CopyTo(new string[5], 0);
             list.GetEnumerator();
-            Assert.Equal(-1, list.IndexOf(""));
-            Assert.False(list.IsReadOnly);
+            Assert.AreEqual(-1, list.IndexOf(""));
+            Assert.IsFalse(list.IsReadOnly);
         }
 
-        [Fact]
+        [Test]
         public void DoesNotAddNullEnumerable()
         {
             PopsicleList<string> list = new PopsicleList<string>();
             Assert.Throws<ArgumentNullException>(() => list.Add((IEnumerable<string>) null));
         }
 
-        [Fact]
+        [Test]
         public void DoesNotAddRangeWithNull()
         {
             PopsicleList<string> list = new PopsicleList<string>();
@@ -107,14 +107,14 @@ namespace Google.ProtocolBuffers.Collections
             Assert.Throws<ArgumentNullException>(() => list.Add(new[] {"a", "b", null}));
         }
 
-        [Fact]
+        [Test]
         public void DoesNotAddNull()
         {
             PopsicleList<string> list = new PopsicleList<string>();
             Assert.Throws<ArgumentNullException>(() => list.Add((string) null));
         }
 
-        [Fact]
+        [Test]
         public void DoesNotSetNull()
         {
             PopsicleList<string> list = new PopsicleList<string>();

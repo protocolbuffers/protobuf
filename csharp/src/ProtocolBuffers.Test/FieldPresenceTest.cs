@@ -34,7 +34,7 @@
 using System;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos.FieldPresence;
-using Xunit;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers
 {
@@ -48,7 +48,7 @@ namespace Google.ProtocolBuffers
             Assert.Null(proto3Type.GetProperty("Has" + name));
         }
 
-        [Fact]
+        [Test]
         public void TestHasMethod()
         {
             // Optional non-message fields don't have HasFoo method generated
@@ -67,11 +67,11 @@ namespace Google.ProtocolBuffers
             CheckHasMethodRemoved(proto2Type, proto3Type, "OptionalNestedEnum");
 
             // message fields still have the HasFoo method generated
-            Assert.False(TestAllTypes.CreateBuilder().Build().HasOptionalNestedMessage);
-            Assert.False(TestAllTypes.CreateBuilder().HasOptionalNestedMessage);
+            Assert.IsFalse(TestAllTypes.CreateBuilder().Build().HasOptionalNestedMessage);
+            Assert.IsFalse(TestAllTypes.CreateBuilder().HasOptionalNestedMessage);
         }
 
-        [Fact]
+        [Test]
         public void TestFieldPresence()
         {
             // Optional non-message fields set to their default value are treated the same
@@ -84,7 +84,7 @@ namespace Google.ProtocolBuffers
             builder.SetOptionalBytes(ByteString.Empty);
             builder.SetOptionalNestedEnum(TestAllTypes.Types.NestedEnum.FOO);
             TestAllTypes message = builder.Build();
-            Assert.Equal(0, message.SerializedSize);
+            Assert.AreEqual(0, message.SerializedSize);
 
             // Test merge
             TestAllTypes.Builder a = TestAllTypes.CreateBuilder();
@@ -94,19 +94,19 @@ namespace Google.ProtocolBuffers
             a.SetOptionalNestedEnum(TestAllTypes.Types.NestedEnum.BAR);
             a.MergeFrom(message);
             TestAllTypes messageA = a.Build();
-            Assert.Equal(1, messageA.OptionalInt32);
-            Assert.Equal("x", messageA.OptionalString);
-            Assert.Equal(ByteString.CopyFromUtf8("y"), messageA.OptionalBytes);
-            Assert.Equal(TestAllTypes.Types.NestedEnum.BAR, messageA.OptionalNestedEnum);
+            Assert.AreEqual(1, messageA.OptionalInt32);
+            Assert.AreEqual("x", messageA.OptionalString);
+            Assert.AreEqual(ByteString.CopyFromUtf8("y"), messageA.OptionalBytes);
+            Assert.AreEqual(TestAllTypes.Types.NestedEnum.BAR, messageA.OptionalNestedEnum);
 
             // equals/hashCode should produce the same results
             TestAllTypes empty = TestAllTypes.CreateBuilder().Build();
-            Assert.True(empty.Equals(message));
-            Assert.True(message.Equals(empty));
-            Assert.Equal(empty.GetHashCode(), message.GetHashCode());
+            Assert.IsTrue(empty.Equals(message));
+            Assert.IsTrue(message.Equals(empty));
+            Assert.AreEqual(empty.GetHashCode(), message.GetHashCode());
         }
 
-        [Fact]
+        [Test]
         public void TestFieldPresenceReflection()
         {
             MessageDescriptor descriptor = TestAllTypes.Descriptor;
@@ -116,10 +116,10 @@ namespace Google.ProtocolBuffers
             FieldDescriptor optionalNestedEnumField = descriptor.FindFieldByName("optional_nested_enum");
 
             TestAllTypes message = TestAllTypes.CreateBuilder().Build();
-            Assert.False(message.HasField(optionalInt32Field));
-            Assert.False(message.HasField(optionalStringField));
-            Assert.False(message.HasField(optionalBytesField));
-            Assert.False(message.HasField(optionalNestedEnumField));
+            Assert.IsFalse(message.HasField(optionalInt32Field));
+            Assert.IsFalse(message.HasField(optionalStringField));
+            Assert.IsFalse(message.HasField(optionalBytesField));
+            Assert.IsFalse(message.HasField(optionalNestedEnumField));
 
             // Set to default value is seen as not present
             message = TestAllTypes.CreateBuilder()
@@ -128,11 +128,11 @@ namespace Google.ProtocolBuffers
                 .SetOptionalBytes(ByteString.Empty)
                 .SetOptionalNestedEnum(TestAllTypes.Types.NestedEnum.FOO)
                 .Build();
-            Assert.False(message.HasField(optionalInt32Field));
-            Assert.False(message.HasField(optionalStringField));
-            Assert.False(message.HasField(optionalBytesField));
-            Assert.False(message.HasField(optionalNestedEnumField));
-            Assert.Equal(0, message.AllFields.Count);
+            Assert.IsFalse(message.HasField(optionalInt32Field));
+            Assert.IsFalse(message.HasField(optionalStringField));
+            Assert.IsFalse(message.HasField(optionalBytesField));
+            Assert.IsFalse(message.HasField(optionalNestedEnumField));
+            Assert.AreEqual(0, message.AllFields.Count);
             
             // Set t0 non-defalut value is seen as present
             message = TestAllTypes.CreateBuilder()
@@ -141,28 +141,28 @@ namespace Google.ProtocolBuffers
                 .SetOptionalBytes(ByteString.CopyFromUtf8("y"))
                 .SetOptionalNestedEnum(TestAllTypes.Types.NestedEnum.BAR)
                 .Build();
-            Assert.True(message.HasField(optionalInt32Field));
-            Assert.True(message.HasField(optionalStringField));
-            Assert.True(message.HasField(optionalBytesField));
-            Assert.True(message.HasField(optionalNestedEnumField));
-            Assert.Equal(4, message.AllFields.Count);
+            Assert.IsTrue(message.HasField(optionalInt32Field));
+            Assert.IsTrue(message.HasField(optionalStringField));
+            Assert.IsTrue(message.HasField(optionalBytesField));
+            Assert.IsTrue(message.HasField(optionalNestedEnumField));
+            Assert.AreEqual(4, message.AllFields.Count);
         }
 
-        [Fact]
+        [Test]
         public void TestMessageField()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
-            Assert.False(builder.HasOptionalNestedMessage);
-            Assert.False(builder.Build().HasOptionalNestedMessage);
+            Assert.IsFalse(builder.HasOptionalNestedMessage);
+            Assert.IsFalse(builder.Build().HasOptionalNestedMessage);
 
             // Unlike non-message fields, if we set default value to message field, the field
             // shoule be seem as present.
             builder.SetOptionalNestedMessage(TestAllTypes.Types.NestedMessage.DefaultInstance);
-            Assert.True(builder.HasOptionalNestedMessage);
-            Assert.True(builder.Build().HasOptionalNestedMessage);
+            Assert.IsTrue(builder.HasOptionalNestedMessage);
+            Assert.IsTrue(builder.Build().HasOptionalNestedMessage);
         }
 
-        [Fact]
+        [Test]
         public void TestSerializeAndParse()
         {
             TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
@@ -172,12 +172,12 @@ namespace Google.ProtocolBuffers
             ByteString data = builder.Build().ToByteString();
 
             TestAllTypes message = TestAllTypes.ParseFrom(data);
-            Assert.Equal(1234, message.OptionalInt32);
-            Assert.Equal("hello", message.OptionalString);
-            Assert.Equal(ByteString.Empty, message.OptionalBytes);
-            Assert.Equal(TestAllTypes.Types.NestedEnum.FOO, message.OptionalNestedEnum);
-            Assert.True(message.HasOptionalNestedMessage);
-            Assert.Equal(0, message.OptionalNestedMessage.Value);
+            Assert.AreEqual(1234, message.OptionalInt32);
+            Assert.AreEqual("hello", message.OptionalString);
+            Assert.AreEqual(ByteString.Empty, message.OptionalBytes);
+            Assert.AreEqual(TestAllTypes.Types.NestedEnum.FOO, message.OptionalNestedEnum);
+            Assert.IsTrue(message.HasOptionalNestedMessage);
+            Assert.AreEqual(0, message.OptionalNestedMessage.Value);
         }
     }
 }

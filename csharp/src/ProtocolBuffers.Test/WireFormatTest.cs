@@ -38,7 +38,7 @@ using System.IO;
 using System.Reflection;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
-using Xunit;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers
 {
@@ -47,7 +47,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Keeps the attributes on FieldType and the switch statement in WireFormat in sync.
         /// </summary>
-        [Fact]
+        [Test]
         public void FieldTypeToWireTypeMapping()
         {
             foreach (FieldInfo field in typeof(FieldType).GetFields(BindingFlags.Static | BindingFlags.Public))
@@ -55,34 +55,34 @@ namespace Google.ProtocolBuffers
                 FieldType fieldType = (FieldType) field.GetValue(null);
                 FieldMappingAttribute mapping =
                     (FieldMappingAttribute) field.GetCustomAttributes(typeof(FieldMappingAttribute), false)[0];
-                Assert.Equal(mapping.WireType, WireFormat.GetWireType(fieldType));
+                Assert.AreEqual(mapping.WireType, WireFormat.GetWireType(fieldType));
             }
         }
 
-        [Fact]
+        [Test]
         public void Serialization()
         {
             TestAllTypes message = TestUtil.GetAllSet();
 
             ByteString rawBytes = message.ToByteString();
-            Assert.Equal(rawBytes.Length, message.SerializedSize);
+            Assert.AreEqual(rawBytes.Length, message.SerializedSize);
 
             TestAllTypes message2 = TestAllTypes.ParseFrom(rawBytes);
 
             TestUtil.AssertAllFieldsSet(message2);
         }
 
-        [Fact]
+        [Test]
         public void SerializationPacked()
         {
             TestPackedTypes message = TestUtil.GetPackedSet();
             ByteString rawBytes = message.ToByteString();
-            Assert.Equal(rawBytes.Length, message.SerializedSize);
+            Assert.AreEqual(rawBytes.Length, message.SerializedSize);
             TestPackedTypes message2 = TestPackedTypes.ParseFrom(rawBytes);
             TestUtil.AssertPackedFieldsSet(message2);
         }
 
-        [Fact]
+        [Test]
         public void SerializeExtensions()
         {
             // TestAllTypes and TestAllExtensions should have compatible wire formats,
@@ -90,14 +90,14 @@ namespace Google.ProtocolBuffers
             // it should work.
             TestAllExtensions message = TestUtil.GetAllExtensionsSet();
             ByteString rawBytes = message.ToByteString();
-            Assert.Equal(rawBytes.Length, message.SerializedSize);
+            Assert.AreEqual(rawBytes.Length, message.SerializedSize);
 
             TestAllTypes message2 = TestAllTypes.ParseFrom(rawBytes);
 
             TestUtil.AssertAllFieldsSet(message2);
         }
 
-        [Fact]
+        [Test]
         public void SerializePackedExtensions()
         {
             // TestPackedTypes and TestPackedExtensions should have compatible wire
@@ -108,10 +108,10 @@ namespace Google.ProtocolBuffers
             TestPackedTypes message2 = TestUtil.GetPackedSet();
             ByteString rawBytes2 = message2.ToByteString();
 
-            Assert.Equal(rawBytes, rawBytes2);
+            Assert.AreEqual(rawBytes, rawBytes2);
         }
 
-        [Fact]
+        [Test]
         public void SerializeDelimited()
         {
             MemoryStream stream = new MemoryStream();
@@ -123,13 +123,13 @@ namespace Google.ProtocolBuffers
             stream.Position = 0;
 
             TestUtil.AssertAllFieldsSet(TestAllTypes.ParseDelimitedFrom(stream));
-            Assert.Equal(12, stream.ReadByte());
+            Assert.AreEqual(12, stream.ReadByte());
             TestUtil.AssertPackedFieldsSet(TestPackedTypes.ParseDelimitedFrom(stream));
-            Assert.Equal(34, stream.ReadByte());
-            Assert.Equal(-1, stream.ReadByte());
+            Assert.AreEqual(34, stream.ReadByte());
+            Assert.AreEqual(-1, stream.ReadByte());
         }
 
-        [Fact]
+        [Test]
         public void ParseExtensions()
         {
             // TestAllTypes and TestAllExtensions should have compatible wire formats,
@@ -148,7 +148,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertAllExtensionsSet(message2);
         }
 
-        [Fact]
+        [Test]
         public void ParsePackedExtensions()
         {
             // Ensure that packed extensions can be properly parsed.
@@ -161,10 +161,10 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertPackedExtensionsSet(message2);
         }
 
-        [Fact]
+        [Test]
         public void ExtensionsSerializedSize()
         {
-            Assert.Equal(TestUtil.GetAllSet().SerializedSize, TestUtil.GetAllExtensionsSet().SerializedSize);
+            Assert.AreEqual(TestUtil.GetAllSet().SerializedSize, TestUtil.GetAllExtensionsSet().SerializedSize);
         }
 
         private static void AssertFieldsInOrder(ByteString data)
@@ -176,13 +176,13 @@ namespace Google.ProtocolBuffers
             string name;
             while (input.ReadTag(out tag, out name))
             {
-                Assert.True(tag > previousTag);
+                Assert.IsTrue(tag > previousTag);
                 previousTag = tag;
                 input.SkipField();
             }
         }
 
-        [Fact]
+        [Test]
         public void InterleavedFieldsAndExtensions()
         {
             // Tests that fields are written in order even when extension ranges
@@ -213,7 +213,7 @@ namespace Google.ProtocolBuffers
         private static readonly int TypeId1 = TestMessageSetExtension1.Descriptor.Extensions[0].FieldNumber;
         private static readonly int TypeId2 = TestMessageSetExtension2.Descriptor.Extensions[0].FieldNumber;
 
-        [Fact]
+        [Test]
         public void SerializeMessageSet()
         {
             // Set up a TestMessageSet with two known messages and an unknown one.
@@ -239,23 +239,23 @@ namespace Google.ProtocolBuffers
             // Parse back using RawMessageSet and check the contents.
             RawMessageSet raw = RawMessageSet.ParseFrom(data);
 
-            Assert.Equal(0, raw.UnknownFields.FieldDictionary.Count);
+            Assert.AreEqual(0, raw.UnknownFields.FieldDictionary.Count);
 
-            Assert.Equal(3, raw.ItemCount);
-            Assert.Equal(TypeId1, raw.ItemList[0].TypeId);
-            Assert.Equal(TypeId2, raw.ItemList[1].TypeId);
-            Assert.Equal(UnknownTypeId, raw.ItemList[2].TypeId);
+            Assert.AreEqual(3, raw.ItemCount);
+            Assert.AreEqual(TypeId1, raw.ItemList[0].TypeId);
+            Assert.AreEqual(TypeId2, raw.ItemList[1].TypeId);
+            Assert.AreEqual(UnknownTypeId, raw.ItemList[2].TypeId);
 
             TestMessageSetExtension1 message1 = TestMessageSetExtension1.ParseFrom(raw.GetItem(0).Message.ToByteArray());
-            Assert.Equal(123, message1.I);
+            Assert.AreEqual(123, message1.I);
 
             TestMessageSetExtension2 message2 = TestMessageSetExtension2.ParseFrom(raw.GetItem(1).Message.ToByteArray());
-            Assert.Equal("foo", message2.Str);
+            Assert.AreEqual("foo", message2.Str);
 
-            Assert.Equal("bar", raw.GetItem(2).Message.ToStringUtf8());
+            Assert.AreEqual("bar", raw.GetItem(2).Message.ToStringUtf8());
         }
 
-        [Fact]
+        [Test]
         public void ParseMessageSet()
         {
             ExtensionRegistry extensionRegistry = ExtensionRegistry.CreateInstance();
@@ -294,18 +294,18 @@ namespace Google.ProtocolBuffers
             TestMessageSet messageSet =
                 TestMessageSet.ParseFrom(data, extensionRegistry);
 
-            Assert.Equal(123, messageSet.GetExtension(TestMessageSetExtension1.MessageSetExtension).I);
-            Assert.Equal("foo", messageSet.GetExtension(TestMessageSetExtension2.MessageSetExtension).Str);
+            Assert.AreEqual(123, messageSet.GetExtension(TestMessageSetExtension1.MessageSetExtension).I);
+            Assert.AreEqual("foo", messageSet.GetExtension(TestMessageSetExtension2.MessageSetExtension).Str);
 
             // Check for unknown field with type LENGTH_DELIMITED,
             //   number UNKNOWN_TYPE_ID, and contents "bar".
             UnknownFieldSet unknownFields = messageSet.UnknownFields;
-            Assert.Equal(1, unknownFields.FieldDictionary.Count);
-            Assert.True(unknownFields.HasField(UnknownTypeId));
+            Assert.AreEqual(1, unknownFields.FieldDictionary.Count);
+            Assert.IsTrue(unknownFields.HasField(UnknownTypeId));
 
             UnknownField field = unknownFields[UnknownTypeId];
-            Assert.Equal(1, field.LengthDelimitedList.Count);
-            Assert.Equal("bar", field.LengthDelimitedList[0].ToStringUtf8());
+            Assert.AreEqual(1, field.LengthDelimitedList.Count);
+            Assert.AreEqual("bar", field.LengthDelimitedList[0].ToStringUtf8());
         }
     }
 }

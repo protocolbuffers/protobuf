@@ -35,66 +35,66 @@
 #endregion
 
 using Google.ProtocolBuffers.TestProtos;
-using Xunit;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers
 {
     public class TestLiteByApi
     {
-        [Fact]
+        [Test]
         public void TestAllTypesEquality()
         {
             TestAllTypesLite msg = TestAllTypesLite.DefaultInstance;
             TestAllTypesLite copy = msg.ToBuilder().Build();
-            Assert.Equal(msg.GetHashCode(), copy.GetHashCode());
-            Assert.True(msg.Equals(copy));
+            Assert.AreEqual(msg.GetHashCode(), copy.GetHashCode());
+            Assert.IsTrue(msg.Equals(copy));
             msg = msg.ToBuilder().SetOptionalString("Hi").Build();
-            Assert.NotEqual(msg.GetHashCode(), copy.GetHashCode());
-            Assert.False(msg.Equals(copy));
+            Assert.AreNotEqual(msg.GetHashCode(), copy.GetHashCode());
+            Assert.IsFalse(msg.Equals(copy));
             copy = copy.ToBuilder().SetOptionalString("Hi").Build();
-            Assert.Equal(msg.GetHashCode(), copy.GetHashCode());
-            Assert.True(msg.Equals(copy));
+            Assert.AreEqual(msg.GetHashCode(), copy.GetHashCode());
+            Assert.IsTrue(msg.Equals(copy));
         }
 
-        [Fact]
+        [Test]
         public void TestEqualityOnExtensions()
         {
             TestAllExtensionsLite msg = TestAllExtensionsLite.DefaultInstance;
             TestAllExtensionsLite copy = msg.ToBuilder().Build();
-            Assert.Equal(msg.GetHashCode(), copy.GetHashCode());
-            Assert.True(msg.Equals(copy));
+            Assert.AreEqual(msg.GetHashCode(), copy.GetHashCode());
+            Assert.IsTrue(msg.Equals(copy));
             msg = msg.ToBuilder().SetExtension(UnittestLite.OptionalStringExtensionLite, "Hi").Build();
-            Assert.NotEqual(msg.GetHashCode(), copy.GetHashCode());
-            Assert.False(msg.Equals(copy));
+            Assert.AreNotEqual(msg.GetHashCode(), copy.GetHashCode());
+            Assert.IsFalse(msg.Equals(copy));
             copy = copy.ToBuilder().SetExtension(UnittestLite.OptionalStringExtensionLite, "Hi").Build();
-            Assert.Equal(msg.GetHashCode(), copy.GetHashCode());
-            Assert.True(msg.Equals(copy));
+            Assert.AreEqual(msg.GetHashCode(), copy.GetHashCode());
+            Assert.IsTrue(msg.Equals(copy));
         }
 
-        [Fact]
+        [Test]
         public void TestAllTypesToString()
         {
             TestAllTypesLite msg = TestAllTypesLite.DefaultInstance;
             TestAllTypesLite copy = msg.ToBuilder().Build();
-            Assert.Equal(msg.ToString(), copy.ToString());
-            Assert.Equal(0, msg.ToString().Length);
+            Assert.AreEqual(msg.ToString(), copy.ToString());
+            Assert.AreEqual(0, msg.ToString().Length);
             msg = msg.ToBuilder().SetOptionalInt32(-1).Build();
-            Assert.Equal("optional_int32: -1", msg.ToString().TrimEnd());
+            Assert.AreEqual("optional_int32: -1", msg.ToString().TrimEnd());
             msg = msg.ToBuilder().SetOptionalString("abc123").Build();
-            Assert.Equal("optional_int32: -1\noptional_string: \"abc123\"",
+            Assert.AreEqual("optional_int32: -1\noptional_string: \"abc123\"",
                             msg.ToString().Replace("\r", "").TrimEnd());
         }
 
-        [Fact]
+        [Test]
         public void TestAllTypesDefaultedRoundTrip()
         {
             TestAllTypesLite msg = TestAllTypesLite.DefaultInstance;
-            Assert.True(msg.IsInitialized);
+            Assert.IsTrue(msg.IsInitialized);
             TestAllTypesLite copy = TestAllTypesLite.CreateBuilder().MergeFrom(msg.ToByteArray()).Build();
-            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
+            Assert.AreEqual(msg.ToByteArray(), copy.ToByteArray());
         }
 
-        [Fact]
+        [Test]
         public void TestAllTypesModifiedRoundTrip()
         {
             TestAllTypesLite msg = TestAllTypesLite.DefaultInstance;
@@ -114,7 +114,7 @@ namespace Google.ProtocolBuffers
                 .AddRepeatedGroup(TestAllTypesLite.Types.RepeatedGroup.CreateBuilder().SetA('A').Build())
                 ;
             TestAllTypesLite copy = TestAllTypesLite.CreateBuilder().MergeFrom(msg.ToByteArray()).Build();
-            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
+            Assert.AreEqual(msg.ToByteArray(), copy.ToByteArray());
         }
     }
 }

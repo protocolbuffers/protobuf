@@ -34,48 +34,48 @@
 
 #endregion
 
-using Xunit;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers
 {
     public class NameHelpersTest
     {
-        [Fact]
+        [Test]
         public void UnderscoresToPascalCase()
         {
-            Assert.Equal("FooBar", NameHelpers.UnderscoresToPascalCase("Foo_bar"));
-            Assert.Equal("FooBar", NameHelpers.UnderscoresToPascalCase("foo_bar"));
-            Assert.Equal("Foo0Bar", NameHelpers.UnderscoresToPascalCase("Foo0bar"));
-            Assert.Equal("FooBar", NameHelpers.UnderscoresToPascalCase("Foo_+_Bar"));
+            Assert.AreEqual("FooBar", NameHelpers.UnderscoresToPascalCase("Foo_bar"));
+            Assert.AreEqual("FooBar", NameHelpers.UnderscoresToPascalCase("foo_bar"));
+            Assert.AreEqual("Foo0Bar", NameHelpers.UnderscoresToPascalCase("Foo0bar"));
+            Assert.AreEqual("FooBar", NameHelpers.UnderscoresToPascalCase("Foo_+_Bar"));
 
-            Assert.Equal("Bar", NameHelpers.UnderscoresToPascalCase("__+bar"));
-            Assert.Equal("Bar", NameHelpers.UnderscoresToPascalCase("bar_"));
-            Assert.Equal("_0Bar", NameHelpers.UnderscoresToPascalCase("_0bar"));
-            Assert.Equal("_1Bar", NameHelpers.UnderscoresToPascalCase("_1_bar"));
+            Assert.AreEqual("Bar", NameHelpers.UnderscoresToPascalCase("__+bar"));
+            Assert.AreEqual("Bar", NameHelpers.UnderscoresToPascalCase("bar_"));
+            Assert.AreEqual("_0Bar", NameHelpers.UnderscoresToPascalCase("_0bar"));
+            Assert.AreEqual("_1Bar", NameHelpers.UnderscoresToPascalCase("_1_bar"));
         }
 
-        [Fact]
+        [Test]
         public void UnderscoresToCamelCase()
         {
-            Assert.Equal("fooBar", NameHelpers.UnderscoresToCamelCase("Foo_bar"));
-            Assert.Equal("fooBar", NameHelpers.UnderscoresToCamelCase("foo_bar"));
-            Assert.Equal("foo0Bar", NameHelpers.UnderscoresToCamelCase("Foo0bar"));
-            Assert.Equal("fooBar", NameHelpers.UnderscoresToCamelCase("Foo_+_Bar"));
+            Assert.AreEqual("fooBar", NameHelpers.UnderscoresToCamelCase("Foo_bar"));
+            Assert.AreEqual("fooBar", NameHelpers.UnderscoresToCamelCase("foo_bar"));
+            Assert.AreEqual("foo0Bar", NameHelpers.UnderscoresToCamelCase("Foo0bar"));
+            Assert.AreEqual("fooBar", NameHelpers.UnderscoresToCamelCase("Foo_+_Bar"));
 
-            Assert.Equal("bar", NameHelpers.UnderscoresToCamelCase("__+bar"));
-            Assert.Equal("bar", NameHelpers.UnderscoresToCamelCase("bar_"));
-            Assert.Equal("_0Bar", NameHelpers.UnderscoresToCamelCase("_0bar"));
-            Assert.Equal("_1Bar", NameHelpers.UnderscoresToCamelCase("_1_bar"));
+            Assert.AreEqual("bar", NameHelpers.UnderscoresToCamelCase("__+bar"));
+            Assert.AreEqual("bar", NameHelpers.UnderscoresToCamelCase("bar_"));
+            Assert.AreEqual("_0Bar", NameHelpers.UnderscoresToCamelCase("_0bar"));
+            Assert.AreEqual("_1Bar", NameHelpers.UnderscoresToCamelCase("_1_bar"));
         }
 
-        [Fact]
+        [Test]
         public void StripSuffix()
         {
             string text = "FooBar";
-            Assert.False(NameHelpers.StripSuffix(ref text, "Foo"));
-            Assert.Equal("FooBar", text);
-            Assert.True(NameHelpers.StripSuffix(ref text, "Bar"));
-            Assert.Equal("Foo", text);
+            Assert.IsFalse(NameHelpers.StripSuffix(ref text, "Foo"));
+            Assert.AreEqual("FooBar", text);
+            Assert.IsTrue(NameHelpers.StripSuffix(ref text, "Bar"));
+            Assert.AreEqual("Foo", text);
         }
     }
 }
