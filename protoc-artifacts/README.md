@@ -87,6 +87,23 @@ When you have done deployment for all platforms, go to
 https://oss.sonatype.org/#stagingRepositories, verify that the staging
 repository has all the binaries, close and release this repository.
 
+### Tips for deploying on Linux
+We build on Centos 6.6 to provide a good compatibility for not very new
+systems. We have provided a ``Dockerfile`` under this directory to build the
+environment. It has been tested with Docker 1.6.1.
+
+To build a image:
+```
+$ docker build -t protoc-artifacts .
+```
+
+To run the image:
+```
+$ docker run -it --rm=true protoc-artifacts
+```
+
+The Protobuf repository has been cloned into ``/protobuf``.
+
 ### Tips for deploying on Windows
 Under Windows the following error may occur: ``gpg: cannot open tty `no tty':
 No such file or directory``. This can be fixed by configuring gpg through an
@@ -118,7 +135,9 @@ stored:
 
 ### Tested build environments
 We have succesfully built artifacts on the following environments:
-- Linux x86_32 and x86_64: Ubuntu 14.04.2 64-bit
+- Linux x86_32 and x86_64:
+ - Centos 6.6 (within Docker 1.6.1)
+ - Ubuntu 14.04.2 64-bit
 - Windows x86_32: MSYS with ``mingw32-gcc-g++ 4.8.1-4`` on Windows 7 64-bit
 - Windows x86_64: Cygwin64 with ``mingw64-x86_64-gcc-g++ 4.8.3-1`` on Windows 7 64-bit
 - Mac OS X x86_32 and x86_64: Mac OS X 10.9.5
