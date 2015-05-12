@@ -221,7 +221,8 @@ namespace Google.ProtocolBuffers
             Extensions.WriteTo(TestXmlMessage.CreateBuilder().SetText("a").SetNumber(1).Build(),
                 new MessageFormatOptions() { FormattedOutput = true }, "application/json", ms);
 
-            Assert.AreEqual("{\r\n    \"text\": \"a\",\r\n    \"number\": 1\r\n}", Encoding.UTF8.GetString(ms.ToArray(), 0, (int)ms.Length));
+            string expected = string.Format("{{{0}    \"text\": \"a\",{0}    \"number\": 1{0}}}", System.Environment.NewLine);
+            Assert.AreEqual(expected, Encoding.UTF8.GetString(ms.ToArray(), 0, (int)ms.Length));
         }
 
         [Test]
