@@ -37,27 +37,27 @@
 using System.Collections.Generic;
 using System.IO;
 using Google.ProtocolBuffers.TestProtos;
-using Xunit;
+using NUnit.Framework;
 using NestedMessage = Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage;
 
 namespace Google.ProtocolBuffers
 {
     public class MessageStreamIteratorTest
     {
-        [Fact]
+        [Test]
         public void ThreeMessagesInMemory()
         {
             MemoryStream stream = new MemoryStream(MessageStreamWriterTest.ThreeMessageData);
             IEnumerable<NestedMessage> iterator = MessageStreamIterator<NestedMessage>.FromStreamProvider(() => stream);
             List<NestedMessage> messages = new List<NestedMessage>(iterator);
 
-            Assert.Equal(3, messages.Count);
-            Assert.Equal(5, messages[0].Bb);
-            Assert.Equal(1500, messages[1].Bb);
-            Assert.False(messages[2].HasBb);
+            Assert.AreEqual(3, messages.Count);
+            Assert.AreEqual(5, messages[0].Bb);
+            Assert.AreEqual(1500, messages[1].Bb);
+            Assert.IsFalse(messages[2].HasBb);
         }
 
-        [Fact]
+        [Test]
         public void ManyMessagesShouldNotTriggerSizeAlert()
         {
             int messageSize = TestUtil.GetAllSet().SerializedSize;
@@ -83,7 +83,7 @@ namespace Google.ProtocolBuffers
                     count++;
                     TestUtil.AssertAllFieldsSet(message);
                 }
-                Assert.Equal(correctCount, count);
+                Assert.AreEqual(correctCount, count);
             }
         }
     }

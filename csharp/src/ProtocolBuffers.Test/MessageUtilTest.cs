@@ -36,47 +36,47 @@
 
 using System;
 using Google.ProtocolBuffers.TestProtos;
-using Xunit;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers
 {
     public class MessageUtilTest
     {
-        [Fact]
+        [Test]
         public void NullTypeName()
         {
             Assert.Throws<ArgumentNullException>(() => MessageUtil.GetDefaultMessage((string) null));
         }
 
-        [Fact]
+        [Test]
         public void InvalidTypeName()
         {
             Assert.Throws<ArgumentException>(() => MessageUtil.GetDefaultMessage("invalidtypename"));
         }
 
-        [Fact]
+        [Test]
         public void ValidTypeName()
         {
-            Assert.Same(TestAllTypes.DefaultInstance,
+            Assert.AreSame(TestAllTypes.DefaultInstance,
                            MessageUtil.GetDefaultMessage(typeof(TestAllTypes).AssemblyQualifiedName));
         }
 
-        [Fact]
+        [Test]
         public void NullType()
         {
             Assert.Throws<ArgumentNullException>(() => MessageUtil.GetDefaultMessage((Type)null));
         }
 
-        [Fact]
+        [Test]
         public void NonMessageType()
         {
             Assert.Throws<ArgumentException>(() => MessageUtil.GetDefaultMessage(typeof(string)));
         }
 
-        [Fact]
+        [Test]
         public void ValidType()
         {
-            Assert.Same(TestAllTypes.DefaultInstance, MessageUtil.GetDefaultMessage(typeof(TestAllTypes)));
+            Assert.AreSame(TestAllTypes.DefaultInstance, MessageUtil.GetDefaultMessage(typeof(TestAllTypes)));
         }
     }
 }

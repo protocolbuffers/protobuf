@@ -2,14 +2,14 @@
 using Google.ProtocolBuffers.Collections;
 using Google.ProtocolBuffers.TestProtos;
 using UnitTest.Issues.TestProtos;
-using Xunit;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers
 {
     public class ReusableBuilderTest
     {
         //Issue 28: Circular message dependencies result in null defaults for DefaultInstance
-        [Fact]
+        [Test]
         public void EnsureStaticCicularReference()
         {
             MyMessageAReferenceB ab = MyMessageAReferenceB.DefaultInstance;
@@ -20,24 +20,24 @@ namespace Google.ProtocolBuffers
             Assert.NotNull(ba.Value);
         }
 
-        [Fact]
+        [Test]
         public void TestModifyDefaultInstance()
         {
             //verify that the default instance has correctly been marked as read-only
-            Assert.Equal(typeof(PopsicleList<bool>), TestAllTypes.DefaultInstance.RepeatedBoolList.GetType());
+            Assert.AreEqual(typeof(PopsicleList<bool>), TestAllTypes.DefaultInstance.RepeatedBoolList.GetType());
             PopsicleList<bool> list = (PopsicleList<bool>)TestAllTypes.DefaultInstance.RepeatedBoolList;
-            Assert.True(list.IsReadOnly);
+            Assert.IsTrue(list.IsReadOnly);
         }
 
-        [Fact]
+        [Test]
         public void TestUnmodifiedDefaultInstance()
         {
             //Simply calling ToBuilder().Build() no longer creates a copy of the message
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
-            Assert.True(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Fact]
+        [Test]
         public void BuildMultipleWithoutChange()
         {
             //Calling Build() or BuildPartial() does not require a copy of the message
@@ -46,31 +46,31 @@ namespace Google.ProtocolBuffers
 
             TestAllTypes first = builder.BuildPartial();
             //Still the same instance?
-            Assert.True(ReferenceEquals(first, builder.Build()));
+            Assert.IsTrue(ReferenceEquals(first, builder.Build()));
             //Still the same instance?
-            Assert.True(ReferenceEquals(first, builder.BuildPartial().ToBuilder().Build()));
+            Assert.IsTrue(ReferenceEquals(first, builder.BuildPartial().ToBuilder().Build()));
         }
 
-        [Fact]
+        [Test]
         public void MergeFromDefaultInstance()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
-            Assert.True(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
             builder.MergeFrom(TestAllTypes.DefaultInstance);
-            Assert.True(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Fact]
+        [Test]
         public void BuildNewBuilderIsDefaultInstance()
         {
-            Assert.True(ReferenceEquals(TestAllTypes.DefaultInstance, new TestAllTypes.Builder().Build()));
-            Assert.True(ReferenceEquals(TestAllTypes.DefaultInstance, TestAllTypes.CreateBuilder().Build()));
+            Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, new TestAllTypes.Builder().Build()));
+            Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, TestAllTypes.CreateBuilder().Build()));
             //last test, if you clear a builder it reverts to default instance
-            Assert.True(ReferenceEquals(TestAllTypes.DefaultInstance,
+            Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance,
                 TestAllTypes.CreateBuilder().SetOptionalBool(true).Build().ToBuilder().Clear().Build()));
         }
 
-        [Fact]
+        [Test]
         public void BuildModifyAndRebuild()
         {
             TestAllTypes.Builder b1 = new TestAllTypes.Builder();
@@ -86,80 +86,80 @@ namespace Google.ProtocolBuffers
 
             TestAllTypes m2 = b1.Build();
             
-            Assert.Equal("{\"optional_foreign_message\":{},\"repeated_int32\":[2],\"default_int32\":1}", Extensions.ToJson(m1));
-            Assert.Equal("{\"optional_foreign_message\":{\"c\":7},\"repeated_int32\":[2,6],\"default_int32\":5}", Extensions.ToJson(m2));
+            Assert.AreEqual("{\"optional_foreign_message\":{},\"repeated_int32\":[2],\"default_int32\":1}", Extensions.ToJson(m1));
+            Assert.AreEqual("{\"optional_foreign_message\":{\"c\":7},\"repeated_int32\":[2,6],\"default_int32\":5}", Extensions.ToJson(m2));
         }
 
-        [Fact]
+        [Test]
         public void CloneOnChangePrimitive()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
-            Assert.True(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
             builder.SetDefaultBool(true);
-            Assert.False(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Fact]
+        [Test]
         public void CloneOnAddRepeatedBool()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
-            Assert.True(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
             builder.AddRepeatedBool(true);
-            Assert.False(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Fact]
+        [Test]
         public void CloneOnGetRepeatedBoolList()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
-            Assert.True(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
             GC.KeepAlive(builder.RepeatedBoolList);
-            Assert.False(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Fact]
+        [Test]
         public void CloneOnChangeMessage()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
-            Assert.True(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
             builder.SetOptionalForeignMessage(new ForeignMessage.Builder());
-            Assert.False(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Fact]
+        [Test]
         public void CloneOnClearMessage()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
-            Assert.True(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
             builder.ClearOptionalForeignMessage();
-            Assert.False(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Fact]
+        [Test]
         public void CloneOnGetRepeatedForeignMessageList()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
-            Assert.True(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
             GC.KeepAlive(builder.RepeatedForeignMessageList);
-            Assert.False(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Fact]
+        [Test]
         public void CloneOnChangeEnumValue()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
-            Assert.True(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
             builder.SetOptionalForeignEnum(ForeignEnum.FOREIGN_BAR);
-            Assert.False(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
-        [Fact]
+        [Test]
         public void CloneOnGetRepeatedForeignEnumList()
         {
             TestAllTypes.Builder builder = TestAllTypes.DefaultInstance.ToBuilder();
-            Assert.True(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsTrue(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
             GC.KeepAlive(builder.RepeatedForeignEnumList);
-            Assert.False(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
+            Assert.IsFalse(ReferenceEquals(TestAllTypes.DefaultInstance, builder.Build()));
         }
 
     }

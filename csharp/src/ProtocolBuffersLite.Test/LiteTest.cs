@@ -35,7 +35,7 @@
 #endregion
 
 using Google.ProtocolBuffers.TestProtos;
-using Xunit;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers
 {
@@ -45,7 +45,7 @@ namespace Google.ProtocolBuffers
     /// </summary>
     public class LiteTest
     {
-        [Fact]
+        [Test]
         public void TestLite()
         {
             // Since lite messages are a subset of regular messages, we can mostly
@@ -68,13 +68,13 @@ namespace Google.ProtocolBuffers
 
             TestAllTypesLite message2 = TestAllTypesLite.ParseFrom(data);
 
-            Assert.Equal(123, message2.OptionalInt32);
-            Assert.Equal(1, message2.RepeatedStringCount);
-            Assert.Equal("hello", message2.RepeatedStringList[0]);
-            Assert.Equal(7, message2.OptionalNestedMessage.Bb);
+            Assert.AreEqual(123, message2.OptionalInt32);
+            Assert.AreEqual(1, message2.RepeatedStringCount);
+            Assert.AreEqual("hello", message2.RepeatedStringList[0]);
+            Assert.AreEqual(7, message2.OptionalNestedMessage.Bb);
         }
 
-        [Fact]
+        [Test]
         public void TestLiteExtensions()
         {
             // TODO(kenton):  Unlike other features of the lite library, extensions are
@@ -96,17 +96,17 @@ namespace Google.ProtocolBuffers
             // writing, parsing hasn't been implemented yet.
             TestAllExtensionsLite message2 = message.ToBuilder().Build();
 
-            Assert.Equal(123, (int) message2.GetExtension(
+            Assert.AreEqual(123, (int) message2.GetExtension(
                 UnittestLite.OptionalInt32ExtensionLite));
-            Assert.Equal(1, message2.GetExtensionCount(
+            Assert.AreEqual(1, message2.GetExtensionCount(
                 UnittestLite.RepeatedStringExtensionLite));
-            Assert.Equal(1, message2.GetExtension(
+            Assert.AreEqual(1, message2.GetExtension(
                 UnittestLite.RepeatedStringExtensionLite).Count);
-            Assert.Equal("hello", message2.GetExtension(
+            Assert.AreEqual("hello", message2.GetExtension(
                 UnittestLite.RepeatedStringExtensionLite, 0));
-            Assert.Equal(TestAllTypesLite.Types.NestedEnum.BAZ, message2.GetExtension(
+            Assert.AreEqual(TestAllTypesLite.Types.NestedEnum.BAZ, message2.GetExtension(
                 UnittestLite.OptionalNestedEnumExtensionLite));
-            Assert.Equal(7, message2.GetExtension(
+            Assert.AreEqual(7, message2.GetExtension(
                 UnittestLite.OptionalNestedMessageExtensionLite).Bb);
         }
     }

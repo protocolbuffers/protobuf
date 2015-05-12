@@ -37,7 +37,7 @@
 
 using Google.ProtocolBuffers.Descriptors;
 using UnitTest.Issues.TestProtos;
-using Xunit;
+using NUnit.Framework;
 
 
 namespace Google.ProtocolBuffers
@@ -48,13 +48,13 @@ namespace Google.ProtocolBuffers
     public class IssuesTest
     {
         // Issue 45
-        [Fact]
+        [Test]
         public void FieldCalledItem()
         {
             ItemField message = new ItemField.Builder { Item = 3 }.Build();
             FieldDescriptor field = ItemField.Descriptor.FindFieldByName("item");
             Assert.NotNull(field);
-            Assert.Equal(3, (int)message[field]);
+            Assert.AreEqual(3, (int)message[field]);
         }
     }
 }

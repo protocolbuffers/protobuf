@@ -39,13 +39,13 @@ using System.Collections.Generic;
 using System.IO;
 using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
-using Xunit;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers
 {
     public class AbstractMessageTest
     {
-        [Fact]
+        [Test]
         public void Clear()
         {
             AbstractMessageWrapper message =
@@ -53,7 +53,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertClear((TestAllTypes) message.WrappedMessage);
         }
 
-        [Fact]
+        [Test]
         public void Copy()
         {
             AbstractMessageWrapper message =
@@ -61,31 +61,31 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertAllFieldsSet((TestAllTypes) message.WrappedMessage);
         }
 
-        [Fact]
+        [Test]
         public void CreateAndBuild()
         {
             TestAllTypes.CreateBuilder()
                 .Build();
         }
 
-        [Fact]
+        [Test]
         public void SerializedSize()
         {
             TestAllTypes message = TestUtil.GetAllSet();
             IMessage abstractMessage = new AbstractMessageWrapper(TestUtil.GetAllSet());
 
-            Assert.Equal(message.SerializedSize, abstractMessage.SerializedSize);
+            Assert.AreEqual(message.SerializedSize, abstractMessage.SerializedSize);
         }
 
-        [Fact]
+        [Test]
         public void Serialization()
         {
             IMessage abstractMessage = new AbstractMessageWrapper(TestUtil.GetAllSet());
             TestUtil.AssertAllFieldsSet(TestAllTypes.ParseFrom(abstractMessage.ToByteString()));
-            Assert.Equal(TestUtil.GetAllSet().ToByteString(), abstractMessage.ToByteString());
+            Assert.AreEqual(TestUtil.GetAllSet().ToByteString(), abstractMessage.ToByteString());
         }
 
-        [Fact]
+        [Test]
         public void Parsing()
         {
             IBuilder builder = new AbstractMessageWrapper.Builder(TestAllTypes.CreateBuilder());
@@ -94,15 +94,15 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertAllFieldsSet((TestAllTypes) message.WrappedMessage);
         }
 
-        [Fact]
+        [Test]
         public void PackedSerialization()
         {
             IMessage abstractMessage = new AbstractMessageWrapper(TestUtil.GetPackedSet());
             TestUtil.AssertPackedFieldsSet(TestPackedTypes.ParseFrom(abstractMessage.ToByteString()));
-            Assert.Equal(TestUtil.GetPackedSet().ToByteString(), abstractMessage.ToByteString());
+            Assert.AreEqual(TestUtil.GetPackedSet().ToByteString(), abstractMessage.ToByteString());
         }
 
-        [Fact]
+        [Test]
         public void PackedParsing()
         {
             AbstractMessageWrapper.Builder builder = new AbstractMessageWrapper.Builder(TestPackedTypes.CreateBuilder());
@@ -110,7 +110,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertPackedFieldsSet((TestPackedTypes)message.WrappedMessage);
         }
 
-        [Fact]
+        [Test]
         public void UnpackedParsingOfPackedInput()
         {
             byte[] bytes = TestUtil.GetPackedSet().ToByteArray();
@@ -118,7 +118,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertUnpackedFieldsSet(message);
         }
 
-        [Fact]
+        [Test]
         public void PackedParsingOfUnpackedInput()
         {
             byte[] bytes = TestUnpackedTypes.ParseFrom(TestUtil.GetPackedSet().ToByteArray()).ToByteArray();
@@ -126,7 +126,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertPackedFieldsSet(message);
         }
 
-        [Fact]
+        [Test]
         public void UnpackedParsingOfPackedInputExtensions()
         {
             byte[] bytes = TestUtil.GetPackedSet().ToByteArray();
@@ -137,7 +137,7 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertUnpackedExtensionsSet(message);
         }
 
-        [Fact]
+        [Test]
         public void PackedParsingOfUnpackedInputExtensions()
         {
             byte[] bytes = TestUnpackedTypes.ParseFrom(TestUtil.GetPackedSet().ToByteArray()).ToByteArray();
@@ -147,13 +147,13 @@ namespace Google.ProtocolBuffers
             TestUtil.AssertPackedExtensionsSet(message);
         }
 
-        [Fact]
+        [Test]
         public void OptimizedForSize()
         {
             // We're mostly only Checking that this class was compiled successfully.
             TestOptimizedForSize message = TestOptimizedForSize.CreateBuilder().SetI(1).Build();
             message = TestOptimizedForSize.ParseFrom(message.ToByteString());
-            Assert.Equal(2, message.SerializedSize);
+            Assert.AreEqual(2, message.SerializedSize);
         }
 
         // -----------------------------------------------------------------
@@ -164,40 +164,40 @@ namespace Google.ProtocolBuffers
         private static readonly TestRequired TestRequiredInitialized =
             TestRequired.CreateBuilder().SetA(1).SetB(2).SetC(3).Build();
 
-        [Fact]
+        [Test]
         public void IsInitialized()
         {
             TestRequired.Builder builder = TestRequired.CreateBuilder();
             AbstractMessageWrapper.Builder abstractBuilder = new AbstractMessageWrapper.Builder(builder);
 
-            Assert.False(abstractBuilder.IsInitialized);
+            Assert.IsFalse(abstractBuilder.IsInitialized);
             builder.A = 1;
-            Assert.False(abstractBuilder.IsInitialized);
+            Assert.IsFalse(abstractBuilder.IsInitialized);
             builder.B = 1;
-            Assert.False(abstractBuilder.IsInitialized);
+            Assert.IsFalse(abstractBuilder.IsInitialized);
             builder.C = 1;
-            Assert.True(abstractBuilder.IsInitialized);
+            Assert.IsTrue(abstractBuilder.IsInitialized);
         }
 
-        [Fact]
+        [Test]
         public void ForeignIsInitialized()
         {
             TestRequiredForeign.Builder builder = TestRequiredForeign.CreateBuilder();
             AbstractMessageWrapper.Builder abstractBuilder = new AbstractMessageWrapper.Builder(builder);
 
-            Assert.True(abstractBuilder.IsInitialized);
+            Assert.IsTrue(abstractBuilder.IsInitialized);
 
             builder.SetOptionalMessage(TestRequiredUninitialized);
-            Assert.False(abstractBuilder.IsInitialized);
+            Assert.IsFalse(abstractBuilder.IsInitialized);
 
             builder.SetOptionalMessage(TestRequiredInitialized);
-            Assert.True(abstractBuilder.IsInitialized);
+            Assert.IsTrue(abstractBuilder.IsInitialized);
 
             builder.AddRepeatedMessage(TestRequiredUninitialized);
-            Assert.False(abstractBuilder.IsInitialized);
+            Assert.IsFalse(abstractBuilder.IsInitialized);
 
             builder.SetRepeatedMessage(0, TestRequiredInitialized);
-            Assert.True(abstractBuilder.IsInitialized);
+            Assert.IsTrue(abstractBuilder.IsInitialized);
         }
 
         // -----------------------------------------------------------------
@@ -226,7 +226,7 @@ namespace Google.ProtocolBuffers
                                                "repeated_string: \"qux\"\n" +
                                                "repeated_string: \"bar\"\n";
 
-        [Fact]
+        [Test]
         public void MergeFrom()
         {
             AbstractMessageWrapper result = (AbstractMessageWrapper)
@@ -234,13 +234,13 @@ namespace Google.ProtocolBuffers
                                                 .MergeFrom(MergeSource)
                                                 .Build();
 
-            Assert.Equal(MergeResultText, result.ToString());
+            Assert.AreEqual(MergeResultText, result.ToString());
         }
 
         // -----------------------------------------------------------------
         // Tests for equals and hashCode
 
-        [Fact]
+        [Test]
         public void EqualsAndHashCode()
         {
             TestAllTypes a = TestUtil.GetAllSet();
@@ -296,7 +296,7 @@ namespace Google.ProtocolBuffers
         private static void CheckEqualsIsConsistent(IMessage message)
         {
             // Object should be equal to itself.
-            Assert.Equal(message, message);
+            Assert.AreEqual(message, message);
 
             // Object should be equal to a dynamic copy of itself.
             DynamicMessage dynamic = DynamicMessage.CreateBuilder(message).Build();
@@ -310,9 +310,9 @@ namespace Google.ProtocolBuffers
         {
             // Not using Assert.AreEqual as that checks for type equality, which isn't
             // what we want bearing in mind the dynamic message checks.
-            Assert.True(message1.Equals(message2));
-            Assert.True(message2.Equals(message1));
-            Assert.Equal(message2.GetHashCode(), message1.GetHashCode());
+            Assert.IsTrue(message1.Equals(message2));
+            Assert.IsTrue(message2.Equals(message1));
+            Assert.AreEqual(message2.GetHashCode(), message1.GetHashCode());
         }
 
         /// <summary>
@@ -326,10 +326,10 @@ namespace Google.ProtocolBuffers
         private static void CheckNotEqual(IMessage m1, IMessage m2)
         {
             String equalsError = string.Format("{0} should not be equal to {1}", m1, m2);
-            Assert.False(m1.Equals(m2), equalsError);
-            Assert.False(m2.Equals(m1), equalsError);
+            Assert.IsFalse(m1.Equals(m2), equalsError);
+            Assert.IsFalse(m2.Equals(m1), equalsError);
 
-            Assert.False(m1.GetHashCode() == m2.GetHashCode(),
+            Assert.IsFalse(m1.GetHashCode() == m2.GetHashCode(),
                            string.Format("{0} should have a different hash code from {1}", m1, m2));
         }
 

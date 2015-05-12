@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using Xunit;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers.Compatibility
 {
@@ -16,7 +16,7 @@ namespace Google.ProtocolBuffers.Compatibility
 
                 byte[] bytes = new byte[resource.Length];
                 int amtRead = resource.Read(bytes, 0, bytes.Length);
-                Assert.Equal(bytes.Length, amtRead);
+                Assert.AreEqual(bytes.Length, amtRead);
                 return bytes;
             }
         }
@@ -30,7 +30,7 @@ namespace Google.ProtocolBuffers.Compatibility
                 Assert.NotNull(resource);
                 byte[] bytes = new byte[resource.Length];
                 int amtRead = resource.Read(bytes, 0, bytes.Length);
-                Assert.Equal(bytes.Length, amtRead);
+                Assert.AreEqual(bytes.Length, amtRead);
                 return bytes;
             }
         }

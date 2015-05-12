@@ -39,7 +39,7 @@ using System.Collections.Generic;
 using System.Text;
 using Google.ProtocolBuffers;
 using Google.ProtocolBuffers.TestProtos;
-using Xunit;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers
 {
@@ -54,7 +54,7 @@ namespace Google.ProtocolBuffers
         //        ForeignMessageLite.DefaultInstance;
         //}
 
-        [Fact]
+        [Test]
         public void ExtensionWriterTestMessages()
         {
             TestAllExtensionsLite.Builder b = TestAllExtensionsLite.CreateBuilder().SetExtension(
@@ -66,20 +66,20 @@ namespace Google.ProtocolBuffers
             UnittestLite.RegisterAllExtensions(registry);
 
             copy = TestAllExtensionsLite.ParseFrom(msg.ToByteArray(), registry);
-            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
+            Assert.AreEqual(msg.ToByteArray(), copy.ToByteArray());
         }
 
-        [Fact]
+        [Test]
         public void ExtensionWriterIsInitialized()
         {
-            Assert.True(ForeignMessageLite.DefaultInstance.IsInitialized);
-            Assert.True(TestPackedExtensionsLite.CreateBuilder().IsInitialized);
-            Assert.True(TestAllExtensionsLite.CreateBuilder().SetExtension(
+            Assert.IsTrue(ForeignMessageLite.DefaultInstance.IsInitialized);
+            Assert.IsTrue(TestPackedExtensionsLite.CreateBuilder().IsInitialized);
+            Assert.IsTrue(TestAllExtensionsLite.CreateBuilder().SetExtension(
                 UnittestLite.OptionalForeignMessageExtensionLite, ForeignMessageLite.DefaultInstance)
                               .IsInitialized);
         }
 
-        [Fact]
+        [Test]
         public void ExtensionWriterTestSetExtensionLists()
         {
             TestAllExtensionsLite msg, copy;
@@ -95,13 +95,13 @@ namespace Google.ProtocolBuffers
             UnittestLite.RegisterAllExtensions(registry);
 
             copy = TestAllExtensionsLite.ParseFrom(msg.ToByteArray(), registry);
-            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
+            Assert.AreEqual(msg.ToByteArray(), copy.ToByteArray());
 
-            Assert.Equal(ForeignEnumLite.FOREIGN_LITE_FOO,
+            Assert.AreEqual(ForeignEnumLite.FOREIGN_LITE_FOO,
                             copy.GetExtension(UnittestLite.RepeatedForeignEnumExtensionLite, 1));
         }
 
-        [Fact]
+        [Test]
         public void ExtensionWriterTest()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder()
@@ -180,82 +180,82 @@ namespace Google.ProtocolBuffers
                 TestAllExtensionsLite.CreateBuilder().MergeFrom(msg.ToByteArray(), registry);
             TestAllExtensionsLite copy = copyBuilder.Build();
 
-            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
+            Assert.AreEqual(msg.ToByteArray(), copy.ToByteArray());
 
-            Assert.Equal(true, copy.GetExtension(UnittestLite.DefaultBoolExtensionLite));
-            Assert.Equal(ByteString.CopyFromUtf8("123"),
+            Assert.AreEqual(true, copy.GetExtension(UnittestLite.DefaultBoolExtensionLite));
+            Assert.AreEqual(ByteString.CopyFromUtf8("123"),
                             copy.GetExtension(UnittestLite.DefaultBytesExtensionLite));
-            Assert.Equal("123", copy.GetExtension(UnittestLite.DefaultCordExtensionLite));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.DefaultDoubleExtensionLite));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.DefaultFixed32ExtensionLite));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.DefaultFixed64ExtensionLite));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.DefaultFloatExtensionLite));
-            Assert.Equal(ForeignEnumLite.FOREIGN_LITE_BAZ,
+            Assert.AreEqual("123", copy.GetExtension(UnittestLite.DefaultCordExtensionLite));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.DefaultDoubleExtensionLite));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.DefaultFixed32ExtensionLite));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.DefaultFixed64ExtensionLite));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.DefaultFloatExtensionLite));
+            Assert.AreEqual(ForeignEnumLite.FOREIGN_LITE_BAZ,
                             copy.GetExtension(UnittestLite.DefaultForeignEnumExtensionLite));
-            Assert.Equal(ImportEnumLite.IMPORT_LITE_BAZ,
+            Assert.AreEqual(ImportEnumLite.IMPORT_LITE_BAZ,
                             copy.GetExtension(UnittestLite.DefaultImportEnumExtensionLite));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.DefaultInt32ExtensionLite));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.DefaultInt64ExtensionLite));
-            Assert.Equal(TestAllTypesLite.Types.NestedEnum.FOO,
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.DefaultInt32ExtensionLite));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.DefaultInt64ExtensionLite));
+            Assert.AreEqual(TestAllTypesLite.Types.NestedEnum.FOO,
                             copy.GetExtension(UnittestLite.DefaultNestedEnumExtensionLite));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.DefaultSfixed32ExtensionLite));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.DefaultSfixed64ExtensionLite));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.DefaultSint32ExtensionLite));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.DefaultSint64ExtensionLite));
-            Assert.Equal("123", copy.GetExtension(UnittestLite.DefaultStringExtensionLite));
-            Assert.Equal("123", copy.GetExtension(UnittestLite.DefaultStringPieceExtensionLite));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.DefaultUint32ExtensionLite));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.DefaultUint64ExtensionLite));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.DefaultSfixed32ExtensionLite));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.DefaultSfixed64ExtensionLite));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.DefaultSint32ExtensionLite));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.DefaultSint64ExtensionLite));
+            Assert.AreEqual("123", copy.GetExtension(UnittestLite.DefaultStringExtensionLite));
+            Assert.AreEqual("123", copy.GetExtension(UnittestLite.DefaultStringPieceExtensionLite));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.DefaultUint32ExtensionLite));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.DefaultUint64ExtensionLite));
 
-            Assert.Equal(true, copy.GetExtension(UnittestLite.OptionalBoolExtensionLite));
-            Assert.Equal(ByteString.CopyFromUtf8("123"),
+            Assert.AreEqual(true, copy.GetExtension(UnittestLite.OptionalBoolExtensionLite));
+            Assert.AreEqual(ByteString.CopyFromUtf8("123"),
                             copy.GetExtension(UnittestLite.OptionalBytesExtensionLite));
-            Assert.Equal("123", copy.GetExtension(UnittestLite.OptionalCordExtensionLite));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.OptionalDoubleExtensionLite));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.OptionalFixed32ExtensionLite));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.OptionalFixed64ExtensionLite));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.OptionalFloatExtensionLite));
-            Assert.Equal(ForeignEnumLite.FOREIGN_LITE_BAZ,
+            Assert.AreEqual("123", copy.GetExtension(UnittestLite.OptionalCordExtensionLite));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.OptionalDoubleExtensionLite));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.OptionalFixed32ExtensionLite));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.OptionalFixed64ExtensionLite));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.OptionalFloatExtensionLite));
+            Assert.AreEqual(ForeignEnumLite.FOREIGN_LITE_BAZ,
                             copy.GetExtension(UnittestLite.OptionalForeignEnumExtensionLite));
-            Assert.Equal(ImportEnumLite.IMPORT_LITE_BAZ,
+            Assert.AreEqual(ImportEnumLite.IMPORT_LITE_BAZ,
                             copy.GetExtension(UnittestLite.OptionalImportEnumExtensionLite));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.OptionalInt32ExtensionLite));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.OptionalInt64ExtensionLite));
-            Assert.Equal(TestAllTypesLite.Types.NestedEnum.FOO,
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.OptionalInt32ExtensionLite));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.OptionalInt64ExtensionLite));
+            Assert.AreEqual(TestAllTypesLite.Types.NestedEnum.FOO,
                             copy.GetExtension(UnittestLite.OptionalNestedEnumExtensionLite));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.OptionalSfixed32ExtensionLite));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.OptionalSfixed64ExtensionLite));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.OptionalSint32ExtensionLite));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.OptionalSint64ExtensionLite));
-            Assert.Equal("123", copy.GetExtension(UnittestLite.OptionalStringExtensionLite));
-            Assert.Equal("123", copy.GetExtension(UnittestLite.OptionalStringPieceExtensionLite));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.OptionalUint32ExtensionLite));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.OptionalUint64ExtensionLite));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.OptionalSfixed32ExtensionLite));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.OptionalSfixed64ExtensionLite));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.OptionalSint32ExtensionLite));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.OptionalSint64ExtensionLite));
+            Assert.AreEqual("123", copy.GetExtension(UnittestLite.OptionalStringExtensionLite));
+            Assert.AreEqual("123", copy.GetExtension(UnittestLite.OptionalStringPieceExtensionLite));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.OptionalUint32ExtensionLite));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.OptionalUint64ExtensionLite));
 
-            Assert.Equal(true, copy.GetExtension(UnittestLite.RepeatedBoolExtensionLite, 0));
-            Assert.Equal(ByteString.CopyFromUtf8("123"),
+            Assert.AreEqual(true, copy.GetExtension(UnittestLite.RepeatedBoolExtensionLite, 0));
+            Assert.AreEqual(ByteString.CopyFromUtf8("123"),
                             copy.GetExtension(UnittestLite.RepeatedBytesExtensionLite, 0));
-            Assert.Equal("123", copy.GetExtension(UnittestLite.RepeatedCordExtensionLite, 0));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.RepeatedDoubleExtensionLite, 0));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.RepeatedFixed32ExtensionLite, 0));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.RepeatedFixed64ExtensionLite, 0));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.RepeatedFloatExtensionLite, 0));
-            Assert.Equal(ForeignEnumLite.FOREIGN_LITE_BAZ,
+            Assert.AreEqual("123", copy.GetExtension(UnittestLite.RepeatedCordExtensionLite, 0));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.RepeatedDoubleExtensionLite, 0));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.RepeatedFixed32ExtensionLite, 0));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.RepeatedFixed64ExtensionLite, 0));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.RepeatedFloatExtensionLite, 0));
+            Assert.AreEqual(ForeignEnumLite.FOREIGN_LITE_BAZ,
                             copy.GetExtension(UnittestLite.RepeatedForeignEnumExtensionLite, 0));
-            Assert.Equal(ImportEnumLite.IMPORT_LITE_BAZ,
+            Assert.AreEqual(ImportEnumLite.IMPORT_LITE_BAZ,
                             copy.GetExtension(UnittestLite.RepeatedImportEnumExtensionLite, 0));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.RepeatedInt32ExtensionLite, 0));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.RepeatedInt64ExtensionLite, 0));
-            Assert.Equal(TestAllTypesLite.Types.NestedEnum.FOO,
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.RepeatedInt32ExtensionLite, 0));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.RepeatedInt64ExtensionLite, 0));
+            Assert.AreEqual(TestAllTypesLite.Types.NestedEnum.FOO,
                             copy.GetExtension(UnittestLite.RepeatedNestedEnumExtensionLite, 0));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.RepeatedSfixed32ExtensionLite, 0));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.RepeatedSfixed64ExtensionLite, 0));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.RepeatedSint32ExtensionLite, 0));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.RepeatedSint64ExtensionLite, 0));
-            Assert.Equal("123", copy.GetExtension(UnittestLite.RepeatedStringExtensionLite, 0));
-            Assert.Equal("123", copy.GetExtension(UnittestLite.RepeatedStringPieceExtensionLite, 0));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.RepeatedUint32ExtensionLite, 0));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.RepeatedUint64ExtensionLite, 0));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.RepeatedSfixed32ExtensionLite, 0));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.RepeatedSfixed64ExtensionLite, 0));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.RepeatedSint32ExtensionLite, 0));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.RepeatedSint64ExtensionLite, 0));
+            Assert.AreEqual("123", copy.GetExtension(UnittestLite.RepeatedStringExtensionLite, 0));
+            Assert.AreEqual("123", copy.GetExtension(UnittestLite.RepeatedStringPieceExtensionLite, 0));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.RepeatedUint32ExtensionLite, 0));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.RepeatedUint64ExtensionLite, 0));
         }
 
         private TestPackedExtensionsLite BuildPackedExtensions()
@@ -294,36 +294,36 @@ namespace Google.ProtocolBuffers
 
         private void AssertPackedExtensions(TestPackedExtensionsLite copy)
         {
-            Assert.Equal(true, copy.GetExtension(UnittestLite.PackedBoolExtensionLite, 0));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.PackedDoubleExtensionLite, 0));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.PackedFixed32ExtensionLite, 0));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.PackedFixed64ExtensionLite, 0));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.PackedFloatExtensionLite, 0));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.PackedInt32ExtensionLite, 0));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.PackedInt64ExtensionLite, 0));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.PackedSfixed32ExtensionLite, 0));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.PackedSfixed64ExtensionLite, 0));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.PackedSint32ExtensionLite, 0));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.PackedSint64ExtensionLite, 0));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.PackedUint32ExtensionLite, 0));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.PackedUint64ExtensionLite, 0));
+            Assert.AreEqual(true, copy.GetExtension(UnittestLite.PackedBoolExtensionLite, 0));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.PackedDoubleExtensionLite, 0));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.PackedFixed32ExtensionLite, 0));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.PackedFixed64ExtensionLite, 0));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.PackedFloatExtensionLite, 0));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.PackedInt32ExtensionLite, 0));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.PackedInt64ExtensionLite, 0));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.PackedSfixed32ExtensionLite, 0));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.PackedSfixed64ExtensionLite, 0));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.PackedSint32ExtensionLite, 0));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.PackedSint64ExtensionLite, 0));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.PackedUint32ExtensionLite, 0));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.PackedUint64ExtensionLite, 0));
 
-            Assert.Equal(true, copy.GetExtension(UnittestLite.PackedBoolExtensionLite, 1));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.PackedDoubleExtensionLite, 1));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.PackedFixed32ExtensionLite, 1));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.PackedFixed64ExtensionLite, 1));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.PackedFloatExtensionLite, 1));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.PackedInt32ExtensionLite, 1));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.PackedInt64ExtensionLite, 1));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.PackedSfixed32ExtensionLite, 1));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.PackedSfixed64ExtensionLite, 1));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.PackedSint32ExtensionLite, 1));
-            Assert.Equal(123, copy.GetExtension(UnittestLite.PackedSint64ExtensionLite, 1));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.PackedUint32ExtensionLite, 1));
-            Assert.Equal(123u, copy.GetExtension(UnittestLite.PackedUint64ExtensionLite, 1));
+            Assert.AreEqual(true, copy.GetExtension(UnittestLite.PackedBoolExtensionLite, 1));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.PackedDoubleExtensionLite, 1));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.PackedFixed32ExtensionLite, 1));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.PackedFixed64ExtensionLite, 1));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.PackedFloatExtensionLite, 1));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.PackedInt32ExtensionLite, 1));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.PackedInt64ExtensionLite, 1));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.PackedSfixed32ExtensionLite, 1));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.PackedSfixed64ExtensionLite, 1));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.PackedSint32ExtensionLite, 1));
+            Assert.AreEqual(123, copy.GetExtension(UnittestLite.PackedSint64ExtensionLite, 1));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.PackedUint32ExtensionLite, 1));
+            Assert.AreEqual(123u, copy.GetExtension(UnittestLite.PackedUint64ExtensionLite, 1));
         }
 
-        [Fact]
+        [Test]
         public void ExtensionWriterTestPacked()
         {
             TestPackedExtensionsLite msg = BuildPackedExtensions();
@@ -335,12 +335,12 @@ namespace Google.ProtocolBuffers
                 TestPackedExtensionsLite.CreateBuilder().MergeFrom(msg.ToByteArray(), registry);
             TestPackedExtensionsLite copy = copyBuilder.Build();
 
-            Assert.Equal(msg.ToByteArray(), copy.ToByteArray());
+            Assert.AreEqual(msg.ToByteArray(), copy.ToByteArray());
 
             AssertPackedExtensions(copy);
         }
 
-        [Fact]
+        [Test]
         public void TestUnpackedAndPackedExtensions()
         {
             TestPackedExtensionsLite original = BuildPackedExtensions();
@@ -354,19 +354,19 @@ namespace Google.ProtocolBuffers
 
             TestPackedExtensionsLite packed = TestPackedExtensionsLite.ParseFrom(unpacked.ToByteArray(), registry);
 
-            Assert.Equal(original, packed);
-            Assert.Equal(original.ToByteArray(), packed.ToByteArray());
+            Assert.AreEqual(original, packed);
+            Assert.AreEqual(original.ToByteArray(), packed.ToByteArray());
             AssertPackedExtensions(packed);
         }
 
-        [Fact]
+        [Test]
         public void TestUnpackedFromPackedInput()
         {
             byte[] packedData = BuildPackedExtensions().ToByteArray();
 
             TestUnpackedTypesLite unpacked = TestUnpackedTypesLite.ParseFrom(packedData);
             TestPackedTypesLite packed = TestPackedTypesLite.ParseFrom(unpacked.ToByteArray());
-            Assert.Equal(packedData, packed.ToByteArray());
+            Assert.AreEqual(packedData, packed.ToByteArray());
             
             unpacked = TestUnpackedTypesLite.ParseFrom(packed.ToByteArray());
 
