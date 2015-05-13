@@ -10,7 +10,7 @@
 
 --]]
 
-local upbtable = require "upbtable"
+local upbtable = require "upb.table"
 local upb = require "upb"
 local export = {}
 

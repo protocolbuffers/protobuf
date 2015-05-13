@@ -19,6 +19,12 @@ local upb = require "upb"
 local src = arg[1]
 local outbase = arg[2]
 local basename = arg[3]
+
+if not (src and outbase and basename) then
+  print("Usage: upbc <binary descriptor> <output filename base> <symbol prefix>")
+  return 1
+end
+
 local hfilename = outbase .. ".upb.h"
 local cfilename = outbase .. ".upb.c"
 

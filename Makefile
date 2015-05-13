@@ -95,16 +95,19 @@ clean_leave_profile:
 	@rm -rf obj lib
 	@rm -f tests/google_message?.h
 	@rm -f $(TESTS) tests/testmain.o tests/t.*
-	@rm -f upb/descriptor.pb
+	@rm -f upb/descriptor/descriptor.pb
 	@rm -rf tools/upbc deps
 	@rm -rf upb/bindings/python/build
 	@rm -f upb/bindings/ruby/Makefile
 	@rm -f upb/bindings/ruby/upb.o
 	@rm -f upb/bindings/ruby/upb.so
 	@rm -f upb/bindings/ruby/mkmf.log
+	@rm -f tests/google_messages.pb.*
+	@rm -f tests/google_messages.proto.pb
+	@rm -f upb.c upb.h
 	@find . | grep dSYM | xargs rm -rf
 
-clean: clean_leave_profile
+clean: clean_leave_profile clean_lua
 	@rm -rf $(call rwildcard,,*.gcno) $(call rwildcard,,*.gcda)
 
 # A little bit of Make voodoo: you can call this from the deps of a patterned
@@ -166,8 +169,20 @@ upb_json_SRCS = \
   upb/json/parser.c \
   upb/json/printer.c \
 
-upb/json/parser.c: upb/json/parser.rl
-	$(E) RAGEL $<
+# Ideally we could keep this uncommented, but Git apparently sometimes skews
+# timestamps slightly at "clone" time, which makes "Make" think that it needs
+# to rebuild upb/json/parser.c when it actually doesn't.  This would be harmless
+# except that the user might not have Ragel installed.
+#
+# So instead we require an excplicit "make ragel" to rebuild this (for now).
+# More pain for people developing upb/json/parser.rl, but less pain for everyone
+# else.
+#
+# upb/json/parser.c: upb/json/parser.rl
+# 	$(E) RAGEL $<
+# 	$(Q) ragel -C -o upb/json/parser.c upb/json/parser.rl
+ragel:
+	$(E) RAGEL upb/json/parser.rl
 	$(Q) ragel -C -o upb/json/parser.c upb/json/parser.rl
 
 # If the user doesn't specify an -O setting, we use -O3 for critical-path
@@ -219,13 +234,24 @@ upb/descriptor/descriptor.pb: upb/descriptor/descriptor.proto
 	@# TODO: replace with upbc
 	protoc upb/descriptor/descriptor.proto -oupb/descriptor/descriptor.pb
 
-descriptorgen: upb/descriptor/descriptor.pb tools/upbc
-	@# Regenerate descriptor_const.h
-	./tools/upbc -o upb/descriptor/descriptor upb/descriptor/descriptor.pb
+genfiles: upb/descriptor/descriptor.pb tools/upbc
+	./tools/upbc upb/descriptor/descriptor.pb upb/descriptor/descriptor google_protobuf_descriptor
+	lua dynasm/dynasm.lua upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
 
-tools/upbc: tools/upbc.c $(LIBUPB)
-	$(E) CC $<
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $< $(LIBUPB)
+# upbc depends on these Lua extensions.
+UPBC_LUA_EXTS = \
+  upb/bindings/lua/upb_c.so \
+  upb/bindings/lua/upb/pb_c.so \
+  upb/bindings/lua/upb/table_c.so \
+
+tools/upbc: $(UPBC_LUA_EXTS) Makefile
+	$(E) ECHO tools/upbc
+	$(Q) echo "#!/bin/sh" > tools/upbc
+	$(Q) echo 'BASE=`dirname "$$0"`' >> tools/upbc
+	$(Q) echo 'export LUA_CPATH="$$BASE/../upb/bindings/lua/?.so"' >> tools/upbc
+	$(Q) echo 'export LUA_PATH="$$BASE/?.lua;$$BASE/../upb/bindings/lua/?.lua"' >> tools/upbc
+	$(Q) echo 'lua $$BASE/upbc.lua "$$@"' >> tools/upbc
+	$(Q) chmod a+x tools/upbc
 
 examples/msg: examples/msg.c $(LIBUPB)
 	$(E) CC $<
@@ -379,14 +405,14 @@ tests/bindings/googlepb/test_vs_proto2.googlemessage2: $(GOOGLEPB_TEST_DEPS) \
 # Lua extension ##################################################################
 
 ifeq ($(shell uname), Darwin)
-  LUA_LDFLAGS = -undefined dynamic_lookup
+  LUA_LDFLAGS = -undefined dynamic_lookup -flat_namespace
 else
   LUA_LDFLAGS =
 endif
 
 LUAEXTS = \
-  upb/bindings/lua/upb.so \
-  upb/bindings/lua/upb/pb.so \
+  upb/bindings/lua/upb_c.so \
+  upb/bindings/lua/upb/pb_c.so \
 
 LUATESTS = \
   tests/bindings/lua/test_upb.lua \
@@ -398,22 +424,18 @@ testlua: lua
 	@set -e  # Abort on error.
 	@for test in $(LUATESTS) ; do \
 	  echo LUA $$test; \
-	  LUA_PATH="tests/bindings/lua/lunit/?.lua" \
+	  LUA_PATH="tests/bindings/lua/lunit/?.lua;upb/bindings/lua/?.lua" \
 	    LUA_CPATH=upb/bindings/lua/?.so \
 	    lua $$test; \
 	done
 
 clean: clean_lua
 clean_lua:
-	@rm -f upb/bindings/lua/upb.lua.h
-	@rm -f upb/bindings/lua/upb.so
-	@rm -f upb/bindings/lua/upb/pb.so
+	@rm -f upb/bindings/lua/upb_c.so
+	@rm -f upb/bindings/lua/upb/pb_c.so
+	@rm -f upb/bindings/lua/upb/table_c.so
 
 lua: $(LUAEXTS)
-
-upb/bindings/lua/upb.lua.h:
-	$(E) XXD upb/bindings/lua/upb.lua
-	$(Q) xxd -i < upb/bindings/lua/upb.lua > upb/bindings/lua/upb.lua.h
 
 # Right now the core upb module depends on all of these.
 # It's a TODO to factor this more cleanly in the code.
@@ -422,22 +444,17 @@ LUA_LIB_DEPS = \
   lib/libupb.descriptor_pic.a \
   lib/libupb_pic.a \
 
-upb/bindings/lua/upb.so: upb/bindings/lua/upb.c upb/bindings/lua/upb.lua.h $(LUA_LIB_DEPS)
+upb/bindings/lua/upb_c.so: upb/bindings/lua/upb.c $(LUA_LIB_DEPS)
 	$(E) CC upb/bindings/lua/upb.c
 	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS) $(LUA_LIB_DEPS)
 
-# TODO: the dependency between upb/pb.so and upb.so is expressed at the
-# .so level, which means that the OS will try to load upb.so when upb/pb.so
-# is loaded.  This is what we want, but getting the paths right is tricky.
-# Basically the dynamic linker needs to be able to find upb.so at:
-#   $(LD_LIBRARY_PATH)/upb/bindings/lua/upb.so
-# So the user has to set both LD_LIBRARY_PATH and LUA_CPATH correctly.
-# Another option would be to require the Lua program to always require
-# "upb" before requiring eg. "upb.pb", and then the dependency would not
-# be expressed at the .so level.
-upb/bindings/lua/upb/pb.so: upb/bindings/lua/upb/pb.c upb/bindings/lua/upb.so
-	$(E) CC upb/bindings/lua/upb.pb.c
-	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< upb/bindings/lua/upb.so $(LUA_LDFLAGS)
+upb/bindings/lua/upb/table_c.so: upb/bindings/lua/upb/table.c lib/libupb_pic.a
+	$(E) CC upb/bindings/lua/upb/table.c
+	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS)
+
+upb/bindings/lua/upb/pb_c.so: upb/bindings/lua/upb/pb.c $(LUA_LIB_DEPS)
+	$(E) CC upb/bindings/lua/upb/pb.c
+	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS)
 
 
 # Python extension #############################################################

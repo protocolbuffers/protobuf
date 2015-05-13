@@ -1,6 +1,8 @@
 
-local upb = require "upb"
+-- Require "pb" first to ensure that the transitive require of "upb" is
+-- handled properly by the "pb" module.
 local pb = require "upb.pb"
+local upb = require "upb"
 local lunit = require "lunit"
 
 if _VERSION >= 'Lua 5.2' then

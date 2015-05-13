@@ -92,11 +92,9 @@ static const struct luaL_Reg toplevel_m[] = {
   {NULL, NULL}
 };
 
-int luaopen_upb_pb(lua_State *L) {
-  luaopen_upb(L);
-
+int luaopen_upb_pb_c(lua_State *L) {
   static char module_key;
-  if (lupb_openlib(L, &module_key, "upb.pb", toplevel_m)) {
+  if (lupb_openlib(L, &module_key, "upb.pb_c", toplevel_m)) {
     return 1;
   }
 

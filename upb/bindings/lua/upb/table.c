@@ -162,7 +162,7 @@ static const struct luaL_Reg lupbtable_toplevel_m[] = {
   {NULL, NULL}
 };
 
-int luaopen_upbtable(lua_State *L) {
+int luaopen_upb_table_c(lua_State *L) {
   static char module_key;
   if (lupb_openlib(L, &module_key, "upb.table", lupbtable_toplevel_m)) {
     return 1;

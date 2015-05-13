@@ -59,6 +59,21 @@ lua_script() {
   make -j12 testlua USER_CPPFLAGS=`pkg-config lua5.2 --cflags`
 }
 
+# Test that generated files don't need to be regenerated.
+#
+# We would include the Ragel output here too, but we can't really guarantee
+# that its output will be stable for multiple versions of the tool, and we
+# don't want the test to be brittle.
+genfiles_install() {
+  sudo apt-get update -qq
+  sudo apt-get install lua5.2 liblua5.2-dev protobuf-compiler
+}
+genfiles_script() {
+  make -j12 genfiles USER_CPPFLAGS=`pkg-config lua5.2 --cflags`
+  # Will fail if any differences were observed.
+  git diff --exit-code
+}
+
 # A run that executes with coverage support and uploads to coveralls.io
 coverage_install() {
   sudo apt-get update -qq

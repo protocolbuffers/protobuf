@@ -33,10 +33,6 @@
 #include "upb/pb/glue.h"
 #include "upb/shim/shim.h"
 
-static const char upb_lua[] = {
-#include "upb/bindings/lua/upb.lua.h"
-};
-
 // Lua metatable types.
 #define LUPB_MSG "lupb.msg"
 #define LUPB_ARRAY "lupb.array"
@@ -1771,9 +1767,9 @@ static void lupb_setfieldi(lua_State *L, const char *field, int i) {
   lua_setfield(L, -2, field);
 }
 
-int luaopen_upb(lua_State *L) {
+int luaopen_upb_c(lua_State *L) {
   static char module_key;
-  if (lupb_openlib(L, &module_key, "upb", lupb_toplevel_m)) {
+  if (lupb_openlib(L, &module_key, "upb_c", lupb_toplevel_m)) {
     return 1;
   }
 
@@ -1857,15 +1853,6 @@ int luaopen_upb(lua_State *L) {
   lupb_setfieldi(L, "HANDLER_ENDSUBMSG",   UPB_HANDLER_ENDSUBMSG);
   lupb_setfieldi(L, "HANDLER_STARTSEQ",    UPB_HANDLER_STARTSEQ);
   lupb_setfieldi(L, "HANDLER_ENDSEQ",      UPB_HANDLER_ENDSEQ);
-
-  // Call the chunk that will define the extra functions on upb, passing our
-  // package dictionary as the argument.
-  if (luaL_loadbuffer(L, upb_lua, sizeof(upb_lua), "upb.lua") ||
-      lua_pcall(L, 0, LUA_MULTRET, 0)) {
-    lua_error(L);
-  }
-  lua_pushvalue(L, -2);
-  lua_call(L, 1, 0);
 
   return 1;  // Return package table.
 }
