@@ -38,17 +38,18 @@ USER_CPPFLAGS=
 # Build with "make WITH_JIT=yes" (or anything besides "no") to enable the JIT.
 WITH_JIT=no
 
-# Build with "make WITH_MAX_WARNINGS=yes" (or anything besides "no") to enable
-# with strict warnings and treat warnings as errors.
-WITH_MAX_WARNINGS=no
+# Build with "make UPB_FAIL_WARNINGS=yes" (or anything besides "no") to turn
+# warnings into errors.
+UPB_FAIL_WARNINGS?=no
 
 # Basic compiler/flag setup.
-CC=cc
-CXX=c++
+CC?=cc
+CXX?=c++
 CFLAGS=-std=c99
 CXXFLAGS=-Wno-unused-private-field
 INCLUDE=-I.
-WARNFLAGS=-Wall -Wextra -Wno-sign-compare 
+WARNFLAGS=-Wall -Wextra -Wpointer-arith
+WARNFLAGS_CXX=-Wall -Wextra -Wpointer-arith
 CPPFLAGS=$(INCLUDE) -DNDEBUG $(USER_CPPFLAGS)
 LUA=lua  # 5.1 and 5.2 should both be supported
 
@@ -57,8 +58,17 @@ ifneq ($(WITH_JIT), no)
   CPPFLAGS += -DUPB_USE_JIT_X64
 endif
 
-ifneq ($(WITH_MAX_WARNINGS), no)
-  WARNFLAGS=-Wall -Wextra -Wpointer-arith -Werror
+ifeq ($(CC), clang)
+  WARNFLAGS += -Wconditional-uninitialized
+endif
+
+ifeq ($(CXX), clang++)
+  WARNFLAGS_CXX += -Wconditional-uninitialized
+endif
+
+ifneq ($(UPB_FAIL_WARNINGS), no)
+  WARNFLAGS += -Werror
+  WARNFLAGS_CXX += -Werror
 endif
 
 # Build with "make Q=" to see all commands that are being executed.
@@ -215,15 +225,15 @@ obj/upb/%.o: upb/%.c | $$(@D)/.
 
 obj/upb/%.o: upb/%.cc | $$(@D)/.
 	$(E) CXX $<
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+	$(Q) $(CXX) $(OPT) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 
 obj/upb/%.lo: upb/%.c | $$(@D)/.
 	$(E) 'CC -fPIC' $<
 	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $< -fPIC
 
 obj/upb/%.lo: upb/%.cc | $$(@D)/.
-	$(E) CXX $<
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $< -fPIC
+	$(E) CXX -fPIC $<
+	$(Q) $(CXX) $(OPT) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $< -fPIC
 
 # Note: mkdir -p is technically susceptible to races when used with make -j.
 %/.:
@@ -278,7 +288,7 @@ tests: $(TESTS)
 
 tests/testmain.o: tests/testmain.cc
 	$(E) CXX $<
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(Q) $(CXX) $(OPT) $(WARNFLAGS_CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 $(C_TESTS): % : %.c tests/testmain.o $$(LIBS)
 	$(E) CC $<
@@ -286,7 +296,7 @@ $(C_TESTS): % : %.c tests/testmain.o $$(LIBS)
 
 $(CC_TESTS): % : %.cc tests/testmain.o $$(LIBS)
 	$(E) CXX $<
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -Wno-deprecated -o $@ tests/testmain.o $< $(LIBS)
+	$(Q) $(CXX) $(OPT) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -Wno-deprecated -o $@ tests/testmain.o $< $(LIBS)
 
 # Several of these tests don't actually test these libs, but use them
 # incidentally to load a descriptor
@@ -385,7 +395,7 @@ tests/bindings/googlepb/test_vs_proto2.googlemessage1: $(GOOGLEPB_TEST_DEPS) \
     tests/google_message1.h \
     tests/google_message2.h
 	$(E) CXX $< '(benchmarks::SpeedMessage1)'
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
+	$(Q) $(CXX) $(OPT) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
 	  -DMESSAGE_DATA_IDENT=message1_data \
 	  tests/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread \
@@ -395,7 +405,7 @@ tests/bindings/googlepb/test_vs_proto2.googlemessage2: $(GOOGLEPB_TEST_DEPS) \
     tests/google_message1.h \
     tests/google_message2.h
 	$(E) CXX $< '(benchmarks::SpeedMessage2)'
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
+	$(Q) $(CXX) $(OPT) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage2" \
 	  -DMESSAGE_DATA_IDENT=message2_data \
 	  tests/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread \

@@ -88,7 +88,7 @@ static void lupbtable_pushtable(lua_State *L, const upb_table *t, bool inttab) {
   lupbtable_setnum(L, -1, "size_lg2",  t->size_lg2);
 
   lua_newtable(L);
-  for (int i = 0; i < upb_table_size(t); i++) {
+  for (size_t i = 0; i < upb_table_size(t); i++) {
     lupbtable_pushent(L, &t->entries[i], inttab, t->ctype);
     lua_rawseti(L, -2, i + 1);
   }
@@ -102,7 +102,7 @@ static void lupbtable_pushinttable(lua_State *L, const upb_inttable *t) {
   lupbtable_setnum(L, -1, "array_count", t->array_count);
 
   lua_newtable(L);
-  for (int i = 0; i < t->array_size; i++) {
+  for (size_t i = 0; i < t->array_size; i++) {
     lua_newtable(L);
     if (upb_arrhas(t->array[i])) {
       lupbtable_pushval(L, t->array[i], t->t.ctype);

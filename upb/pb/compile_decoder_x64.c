@@ -330,7 +330,7 @@ static void patchdispatch(jitcompiler *jc) {
         // Secondary slot.  Since we have 64 bits for the value, we use an
         // absolute offset.
         int mcofs = machine_code_ofs2(jc, method, val);
-        newval = (uint64_t)(jc->group->jit_code + mcofs);
+        newval = (uint64_t)((char*)jc->group->jit_code + mcofs);
       }
       bool ok = upb_inttable_replace(dispatch, key, upb_value_uint64(newval));
       UPB_ASSERT_VAR(ok, ok);
@@ -339,7 +339,7 @@ static void patchdispatch(jitcompiler *jc) {
     // Update entry point for this method to point at mc base instead of bc
     // base.  Set this only *after* we have patched the offsets
     // (machine_code_ofs2() uses this).
-    method->code_base.ptr = jc->group->jit_code + machine_code_ofs(jc, method);
+    method->code_base.ptr = (char*)jc->group->jit_code + machine_code_ofs(jc, method);
 
     upb_byteshandler *h = &method->input_handler_;
     upb_byteshandler_setstartstr(h, upb_pbdecoder_startjit, NULL);

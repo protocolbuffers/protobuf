@@ -94,6 +94,15 @@ if [ "$1" == "after_success" ] && [ "$UPB_TRAVIS_BUILD" != "coverage" ]; then
   exit
 fi
 
+if [ "$CC" != "gcc" ] && [ "$UPB_TRAVIS_BUILD" == "coverage" ]; then
+  # coverage build only works for GCC.
+  exit
+fi
+
 set -e
 set -x
+
+# Make any compiler warning fail the build.
+export UPB_FAIL_WARNINGS=true
+
 eval ${UPB_TRAVIS_BUILD}_${1}

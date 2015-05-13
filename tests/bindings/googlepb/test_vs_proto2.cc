@@ -47,7 +47,7 @@ void compare_metadata(const google::protobuf::Descriptor* d,
         d->FindFieldByNumber(upb_f->number());
     ASSERT(upb_f);
     ASSERT(proto2_f);
-    ASSERT(upb_f->number() == proto2_f->number());
+    ASSERT(upb_f->number() == (uint32_t)proto2_f->number());
     ASSERT(std::string(upb_f->name()) == proto2_f->name());
     ASSERT(upb_f->descriptor_type() ==
            static_cast<upb::FieldDef::DescriptorType>(proto2_f->type()));
@@ -124,6 +124,8 @@ extern "C" {
 int run_tests(int argc, char *argv[]) {
   UPB_UNUSED(argc);
   UPB_UNUSED(argv);
+  UPB_UNUSED(message1_data);
+  UPB_UNUSED(message2_data);
   size_t len = sizeof(MESSAGE_DATA_IDENT);
   const char *str = (const char*)MESSAGE_DATA_IDENT;
 

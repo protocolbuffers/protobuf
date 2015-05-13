@@ -319,7 +319,7 @@ static bool parse_default(char *str, upb_fielddef *f) {
       break;
     }
     case UPB_TYPE_UINT32: {
-      long val = strtoul(str, &end, 0);
+      unsigned long val = strtoul(str, &end, 0);
       if (val > UINT32_MAX || errno == ERANGE || *end)
         success = false;
       else
