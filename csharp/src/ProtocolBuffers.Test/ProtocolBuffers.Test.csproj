@@ -84,7 +84,6 @@
     <Compile Include="Compatibility\TestResources.cs" />
     <Compile Include="Compatibility\TextCompatibilityTests.cs" />
     <Compile Include="Compatibility\XmlCompatibilityTests.cs" />
-    <Compile Include="TestProtos\FieldPresenceTest.cs" />
     <Compile Include="TestProtos\GoogleSize.cs" />
     <Compile Include="TestProtos\GoogleSpeed.cs" />
     <Compile Include="TestProtos\Unittest.cs" />
@@ -96,6 +95,7 @@
     <Compile Include="TestProtos\UnittestImportPublic.cs" />
     <Compile Include="TestProtos\UnittestIssues.cs" />
     <Compile Include="TestProtos\UnittestMset.cs" />
+    <Compile Include="TestProtos\UnittestNoFieldPresence.cs" />
     <Compile Include="TestProtos\UnittestOptimizeFor.cs" />
     <Compile Include="TestProtos\UnknownEnumTest.cs" />
     <Compile Include="TestResources.cs" />

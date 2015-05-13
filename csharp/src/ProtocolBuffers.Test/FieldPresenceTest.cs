@@ -33,7 +33,7 @@
 
 using System;
 using Google.ProtocolBuffers.Descriptors;
-using Google.ProtocolBuffers.TestProtos.FieldPresence;
+using Google.ProtocolBuffers.TestProtos.Proto3;
 using NUnit.Framework;
 
 namespace Google.ProtocolBuffers
@@ -177,7 +177,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(ByteString.Empty, message.OptionalBytes);
             Assert.AreEqual(TestAllTypes.Types.NestedEnum.FOO, message.OptionalNestedEnum);
             Assert.IsTrue(message.HasOptionalNestedMessage);
-            Assert.AreEqual(0, message.OptionalNestedMessage.Value);
+            Assert.AreEqual(0, message.OptionalNestedMessage.Bb);
         }
     }
 }
