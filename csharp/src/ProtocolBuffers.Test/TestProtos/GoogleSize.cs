@@ -265,14 +265,12 @@ namespace Google.ProtocolBuffers.TestProtos {
 
     public const int Field5FieldNumber = 5;
     private pbc::PopsicleList<ulong> field5_ = new pbc::PopsicleList<ulong>();
-    [global::System.CLSCompliant(false)]
     public scg::IList<ulong> Field5List {
       get { return pbc::Lists.AsReadOnly(field5_); }
     }
     public int Field5Count {
       get { return field5_.Count; }
     }
-    [global::System.CLSCompliant(false)]
     public ulong GetField5(int index) {
       return field5_[index];
     }
@@ -899,30 +897,25 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
 
-      [global::System.CLSCompliant(false)]
       public pbc::IPopsicleList<ulong> Field5List {
         get { return PrepareBuilder().field5_; }
       }
       public int Field5Count {
         get { return result.Field5Count; }
       }
-      [global::System.CLSCompliant(false)]
       public ulong GetField5(int index) {
         return result.GetField5(index);
       }
-      [global::System.CLSCompliant(false)]
       public Builder SetField5(int index, ulong value) {
         PrepareBuilder();
         result.field5_[index] = value;
         return this;
       }
-      [global::System.CLSCompliant(false)]
       public Builder AddField5(ulong value) {
         PrepareBuilder();
         result.field5_.Add(value);
         return this;
       }
-      [global::System.CLSCompliant(false)]
       public Builder AddRangeField5(scg::IEnumerable<ulong> values) {
         PrepareBuilder();
         result.field5_.Add(values);
@@ -1683,7 +1676,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     public bool HasField21 {
       get { return hasField21; }
     }
-    [global::System.CLSCompliant(false)]
     public ulong Field21 {
       get { return field21_; }
     }
@@ -1724,7 +1716,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     public bool HasField203 {
       get { return hasField203; }
     }
-    [global::System.CLSCompliant(false)]
     public uint Field203 {
       get { return field203_; }
     }
@@ -1755,7 +1746,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     public bool HasField207 {
       get { return hasField207; }
     }
-    [global::System.CLSCompliant(false)]
     public ulong Field207 {
       get { return field207_; }
     }
@@ -1766,7 +1756,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     public bool HasField300 {
       get { return hasField300; }
     }
-    [global::System.CLSCompliant(false)]
     public ulong Field300 {
       get { return field300_; }
     }
@@ -2102,12 +2091,10 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasField21 {
         get { return result.hasField21; }
       }
-      [global::System.CLSCompliant(false)]
       public ulong Field21 {
         get { return result.Field21; }
         set { SetField21(value); }
       }
-      [global::System.CLSCompliant(false)]
       public Builder SetField21(ulong value) {
         PrepareBuilder();
         result.hasField21 = true;
@@ -2184,12 +2171,10 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasField203 {
         get { return result.hasField203; }
       }
-      [global::System.CLSCompliant(false)]
       public uint Field203 {
         get { return result.Field203; }
         set { SetField203(value); }
       }
-      [global::System.CLSCompliant(false)]
       public Builder SetField203(uint value) {
         PrepareBuilder();
         result.hasField203 = true;
@@ -2247,12 +2232,10 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasField207 {
         get { return result.hasField207; }
       }
-      [global::System.CLSCompliant(false)]
       public ulong Field207 {
         get { return result.Field207; }
         set { SetField207(value); }
       }
-      [global::System.CLSCompliant(false)]
       public Builder SetField207(ulong value) {
         PrepareBuilder();
         result.hasField207 = true;
@@ -2269,12 +2252,10 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasField300 {
         get { return result.hasField300; }
       }
-      [global::System.CLSCompliant(false)]
       public ulong Field300 {
         get { return result.Field300; }
         set { SetField300(value); }
       }
-      [global::System.CLSCompliant(false)]
       public Builder SetField300(ulong value) {
         PrepareBuilder();
         result.hasField300 = true;
@@ -2402,7 +2383,6 @@ namespace Google.ProtocolBuffers.TestProtos {
         public bool HasField15 {
           get { return hasField15; }
         }
-        [global::System.CLSCompliant(false)]
         public ulong Field15 {
           get { return field15_; }
         }
@@ -2738,12 +2718,10 @@ namespace Google.ProtocolBuffers.TestProtos {
           public bool HasField15 {
             get { return result.hasField15; }
           }
-          [global::System.CLSCompliant(false)]
           public ulong Field15 {
             get { return result.Field15; }
             set { SetField15(value); }
           }
-          [global::System.CLSCompliant(false)]
           public Builder SetField15(ulong value) {
             PrepareBuilder();
             result.hasField15 = true;

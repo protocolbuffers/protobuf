@@ -103,38 +103,24 @@ namespace Google.ProtocolBuffers.TestProtos {
     #endregion
 
     public const int Int32ValueFieldNumber = 1;
-    private bool hasInt32Value;
     private int int32Value_;
-    public bool HasInt32Value {
-      get { return hasInt32Value; }
-    }
     public int Int32Value {
       get { return int32Value_; }
     }
 
     public const int EnumValueFieldNumber = 2;
-    private bool hasEnumValue;
     private global::Google.ProtocolBuffers.TestProtos.Foo.Types.NestedEnum enumValue_ = global::Google.ProtocolBuffers.TestProtos.Foo.Types.NestedEnum.FOO;
-    public bool HasEnumValue {
-      get { return hasEnumValue; }
-    }
     public global::Google.ProtocolBuffers.TestProtos.Foo.Types.NestedEnum EnumValue {
       get { return enumValue_; }
-    }
-
-    public override bool IsInitialized {
-      get {
-        return true;
-      }
     }
 
     public override void WriteTo(pb::ICodedOutputStream output) {
       CalcSerializedSize();
       string[] field_names = _fooFieldNames;
-      if (hasInt32Value) {
+      if (Int32Value != 0) {
         output.WriteInt32(1, field_names[1], Int32Value);
       }
-      if (hasEnumValue) {
+      if (EnumValue != global::Google.ProtocolBuffers.TestProtos.Foo.Types.NestedEnum.FOO) {
         output.WriteEnum(2, field_names[0], (int) EnumValue, EnumValue);
       }
       UnknownFields.WriteTo(output);
@@ -154,10 +140,10 @@ namespace Google.ProtocolBuffers.TestProtos {
       if (size != -1) return size;
 
       size = 0;
-      if (hasInt32Value) {
+      if (Int32Value != 0) {
         size += pb::CodedOutputStream.ComputeInt32Size(1, Int32Value);
       }
-      if (hasEnumValue) {
+      if (EnumValue != global::Google.ProtocolBuffers.TestProtos.Foo.Types.NestedEnum.FOO) {
         size += pb::CodedOutputStream.ComputeEnumSize(2, (int) EnumValue);
       }
       size += UnknownFields.SerializedSize;
@@ -282,10 +268,10 @@ namespace Google.ProtocolBuffers.TestProtos {
       public override Builder MergeFrom(Foo other) {
         if (other == global::Google.ProtocolBuffers.TestProtos.Foo.DefaultInstance) return this;
         PrepareBuilder();
-        if (other.HasInt32Value) {
+        if (other.Int32Value != 0) {
           Int32Value = other.Int32Value;
         }
-        if (other.HasEnumValue) {
+        if (other.EnumValue != global::Google.ProtocolBuffers.TestProtos.Foo.Types.NestedEnum.FOO) {
           EnumValue = other.EnumValue;
         }
         this.MergeUnknownFields(other.UnknownFields);
@@ -332,13 +318,12 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 8: {
-              result.hasInt32Value = input.ReadInt32(ref result.int32Value_);
+              input.ReadInt32(ref result.int32Value_);
               break;
             }
             case 16: {
               object unknown;
               if(input.ReadEnum(ref result.enumValue_, out unknown)) {
-                result.hasEnumValue = true;
               } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
@@ -357,42 +342,32 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
 
-      public bool HasInt32Value {
-        get { return result.hasInt32Value; }
-      }
       public int Int32Value {
         get { return result.Int32Value; }
         set { SetInt32Value(value); }
       }
       public Builder SetInt32Value(int value) {
         PrepareBuilder();
-        result.hasInt32Value = true;
         result.int32Value_ = value;
         return this;
       }
       public Builder ClearInt32Value() {
         PrepareBuilder();
-        result.hasInt32Value = false;
         result.int32Value_ = 0;
         return this;
       }
 
-      public bool HasEnumValue {
-       get { return result.hasEnumValue; }
-      }
       public global::Google.ProtocolBuffers.TestProtos.Foo.Types.NestedEnum EnumValue {
         get { return result.EnumValue; }
         set { SetEnumValue(value); }
       }
       public Builder SetEnumValue(global::Google.ProtocolBuffers.TestProtos.Foo.Types.NestedEnum value) {
         PrepareBuilder();
-        result.hasEnumValue = true;
         result.enumValue_ = value;
         return this;
       }
       public Builder ClearEnumValue() {
         PrepareBuilder();
-        result.hasEnumValue = false;
         result.enumValue_ = global::Google.ProtocolBuffers.TestProtos.Foo.Types.NestedEnum.FOO;
         return this;
       }
@@ -442,51 +417,33 @@ namespace Google.ProtocolBuffers.TestProtos {
     #endregion
 
     public const int Int32ValueFieldNumber = 1;
-    private bool hasInt32Value;
     private int int32Value_;
-    public bool HasInt32Value {
-      get { return hasInt32Value; }
-    }
     public int Int32Value {
       get { return int32Value_; }
     }
 
     public const int EnumValueFieldNumber = 2;
-    private bool hasEnumValue;
     private global::Google.ProtocolBuffers.TestProtos.FooWithExtraFields.Types.NestedEnum enumValue_ = global::Google.ProtocolBuffers.TestProtos.FooWithExtraFields.Types.NestedEnum.FOO;
-    public bool HasEnumValue {
-      get { return hasEnumValue; }
-    }
     public global::Google.ProtocolBuffers.TestProtos.FooWithExtraFields.Types.NestedEnum EnumValue {
       get { return enumValue_; }
     }
 
     public const int ExtraInt32ValueFieldNumber = 3;
-    private bool hasExtraInt32Value;
     private int extraInt32Value_;
-    public bool HasExtraInt32Value {
-      get { return hasExtraInt32Value; }
-    }
     public int ExtraInt32Value {
       get { return extraInt32Value_; }
-    }
-
-    public override bool IsInitialized {
-      get {
-        return true;
-      }
     }
 
     public override void WriteTo(pb::ICodedOutputStream output) {
       CalcSerializedSize();
       string[] field_names = _fooWithExtraFieldsFieldNames;
-      if (hasInt32Value) {
+      if (Int32Value != 0) {
         output.WriteInt32(1, field_names[2], Int32Value);
       }
-      if (hasEnumValue) {
+      if (EnumValue != global::Google.ProtocolBuffers.TestProtos.FooWithExtraFields.Types.NestedEnum.FOO) {
         output.WriteEnum(2, field_names[0], (int) EnumValue, EnumValue);
       }
-      if (hasExtraInt32Value) {
+      if (ExtraInt32Value != 0) {
         output.WriteInt32(3, field_names[1], ExtraInt32Value);
       }
       UnknownFields.WriteTo(output);
@@ -506,13 +463,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       if (size != -1) return size;
 
       size = 0;
-      if (hasInt32Value) {
+      if (Int32Value != 0) {
         size += pb::CodedOutputStream.ComputeInt32Size(1, Int32Value);
       }
-      if (hasEnumValue) {
+      if (EnumValue != global::Google.ProtocolBuffers.TestProtos.FooWithExtraFields.Types.NestedEnum.FOO) {
         size += pb::CodedOutputStream.ComputeEnumSize(2, (int) EnumValue);
       }
-      if (hasExtraInt32Value) {
+      if (ExtraInt32Value != 0) {
         size += pb::CodedOutputStream.ComputeInt32Size(3, ExtraInt32Value);
       }
       size += UnknownFields.SerializedSize;
@@ -637,13 +594,13 @@ namespace Google.ProtocolBuffers.TestProtos {
       public override Builder MergeFrom(FooWithExtraFields other) {
         if (other == global::Google.ProtocolBuffers.TestProtos.FooWithExtraFields.DefaultInstance) return this;
         PrepareBuilder();
-        if (other.HasInt32Value) {
+        if (other.Int32Value != 0) {
           Int32Value = other.Int32Value;
         }
-        if (other.HasEnumValue) {
+        if (other.EnumValue != global::Google.ProtocolBuffers.TestProtos.FooWithExtraFields.Types.NestedEnum.FOO) {
           EnumValue = other.EnumValue;
         }
-        if (other.HasExtraInt32Value) {
+        if (other.ExtraInt32Value != 0) {
           ExtraInt32Value = other.ExtraInt32Value;
         }
         this.MergeUnknownFields(other.UnknownFields);
@@ -690,13 +647,12 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 8: {
-              result.hasInt32Value = input.ReadInt32(ref result.int32Value_);
+              input.ReadInt32(ref result.int32Value_);
               break;
             }
             case 16: {
               object unknown;
               if(input.ReadEnum(ref result.enumValue_, out unknown)) {
-                result.hasEnumValue = true;
               } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
@@ -706,7 +662,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 24: {
-              result.hasExtraInt32Value = input.ReadInt32(ref result.extraInt32Value_);
+              input.ReadInt32(ref result.extraInt32Value_);
               break;
             }
           }
@@ -719,62 +675,47 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
 
-      public bool HasInt32Value {
-        get { return result.hasInt32Value; }
-      }
       public int Int32Value {
         get { return result.Int32Value; }
         set { SetInt32Value(value); }
       }
       public Builder SetInt32Value(int value) {
         PrepareBuilder();
-        result.hasInt32Value = true;
         result.int32Value_ = value;
         return this;
       }
       public Builder ClearInt32Value() {
         PrepareBuilder();
-        result.hasInt32Value = false;
         result.int32Value_ = 0;
         return this;
       }
 
-      public bool HasEnumValue {
-       get { return result.hasEnumValue; }
-      }
       public global::Google.ProtocolBuffers.TestProtos.FooWithExtraFields.Types.NestedEnum EnumValue {
         get { return result.EnumValue; }
         set { SetEnumValue(value); }
       }
       public Builder SetEnumValue(global::Google.ProtocolBuffers.TestProtos.FooWithExtraFields.Types.NestedEnum value) {
         PrepareBuilder();
-        result.hasEnumValue = true;
         result.enumValue_ = value;
         return this;
       }
       public Builder ClearEnumValue() {
         PrepareBuilder();
-        result.hasEnumValue = false;
         result.enumValue_ = global::Google.ProtocolBuffers.TestProtos.FooWithExtraFields.Types.NestedEnum.FOO;
         return this;
       }
 
-      public bool HasExtraInt32Value {
-        get { return result.hasExtraInt32Value; }
-      }
       public int ExtraInt32Value {
         get { return result.ExtraInt32Value; }
         set { SetExtraInt32Value(value); }
       }
       public Builder SetExtraInt32Value(int value) {
         PrepareBuilder();
-        result.hasExtraInt32Value = true;
         result.extraInt32Value_ = value;
         return this;
       }
       public Builder ClearExtraInt32Value() {
         PrepareBuilder();
-        result.hasExtraInt32Value = false;
         result.extraInt32Value_ = 0;
         return this;
       }
