@@ -35,6 +35,7 @@
 #include <google/protobuf/compiler/java/java_file.h>
 
 #include <memory>
+#include <set>
 #ifndef _SHARED_PTR_H
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
@@ -62,6 +63,19 @@ namespace java {
 
 namespace {
 
+struct FieldDescriptorCompare {
+  bool operator ()(const FieldDescriptor* f1, const FieldDescriptor* f2) {
+    if(f1 == NULL) {
+      return false;
+    }
+    if(f2 == NULL) {
+      return true;
+    }
+    return f1->full_name() < f2->full_name();
+  }
+};
+
+typedef std::set<const FieldDescriptor*, FieldDescriptorCompare> FieldDescriptorSet;
 
 // Recursively searches the given message to collect extensions.
 // Returns true if all the extensions can be recognized. The extensions will be
@@ -69,7 +83,7 @@ namespace {
 // Returns false when there are unknown fields, in which case the data in the
 // extensions output parameter is not reliable and should be discarded.
 bool CollectExtensions(const Message& message,
-                       vector<const FieldDescriptor*>* extensions) {
+                       FieldDescriptorSet* extensions) {
   const Reflection* reflection = message.GetReflection();
 
   // There are unknown fields that could be extensions, thus this call fails.
@@ -79,7 +93,7 @@ bool CollectExtensions(const Message& message,
   reflection->ListFields(message, &fields);
 
   for (int i = 0; i < fields.size(); i++) {
-    if (fields[i]->is_extension()) extensions->push_back(fields[i]);
+    if (fields[i]->is_extension()) extensions->insert(fields[i]);
 
     if (GetJavaType(fields[i]) == JAVATYPE_MESSAGE) {
       if (fields[i]->is_repeated()) {
@@ -106,7 +120,7 @@ bool CollectExtensions(const Message& message,
 // in order to handle this case.
 void CollectExtensions(const FileDescriptorProto& file_proto,
                        const DescriptorPool& alternate_pool,
-                       vector<const FieldDescriptor*>* extensions,
+                       FieldDescriptorSet* extensions,
                        const string& file_data) {
   if (!CollectExtensions(file_proto, extensions)) {
     // There are unknown fields in the file_proto, which are probably
@@ -139,6 +153,36 @@ void CollectExtensions(const FileDescriptorProto& file_proto,
   }
 }
 
+// Our static initialization methods can become very, very large.
+// So large that if we aren't careful we end up blowing the JVM's
+// 64K bytes of bytecode/method. Fortunately, since these static
+// methods are executed only once near the beginning of a program,
+// there's usually plenty of stack space available and we can
+// extend our methods by simply chaining them to another method
+// with a tail call. This inserts the sequence call-next-method,
+// end this one, begin-next-method as needed.
+void MaybeRestartJavaMethod(io::Printer* printer,
+                            int *bytecode_estimate,
+                            int *method_num,
+                            const char *chain_statement,
+                            const char *method_decl) {
+ 
+  // The goal here is to stay under 64K bytes of jvm bytecode/method,
+  // since otherwise we hit a hardcoded limit in the jvm and javac will
+  // then fail with the error "code too large". This limit lets our
+  // estimates be off by a factor of two and still we're okay.
+  static const int bytesPerMethod = 1<<15;  // aka 32K
+
+  if ((*bytecode_estimate) > bytesPerMethod) {
+    ++(*method_num);
+    printer->Print(chain_statement, "method_num", SimpleItoa(*method_num));
+    printer->Outdent();
+    printer->Print("}\n");
+    printer->Print(method_decl, "method_num", SimpleItoa(*method_num));
+    printer->Indent();
+    *bytecode_estimate = 0;
+  }
+}
 
 }  // namespace
 
@@ -270,9 +314,16 @@ void FileGenerator::Generate(io::Printer* printer) {
     printer->Print(
       "static {\n");
     printer->Indent();
+    int bytecode_estimate = 0;
+    int method_num = 0;
 
     for (int i = 0; i < file_->message_type_count(); i++) {
-      message_generators_[i]->GenerateStaticVariableInitializers(printer);
+      bytecode_estimate += message_generators_[i]->GenerateStaticVariableInitializers(printer);
+      MaybeRestartJavaMethod(
+        printer,
+        &bytecode_estimate, &method_num,
+        "_clinit_autosplit_$method_num$();\n",
+        "private static void _clinit_autosplit_$method_num$() {\n");
     }
 
     printer->Outdent();
@@ -303,12 +354,24 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   SharedCodeGenerator shared_code_generator(file_);
   shared_code_generator.GenerateDescriptors(printer);
 
+  int bytecode_estimate = 0;
+  int method_num = 0;
 
   for (int i = 0; i < file_->message_type_count(); i++) {
-    message_generators_[i]->GenerateStaticVariableInitializers(printer);
+    bytecode_estimate += message_generators_[i]->GenerateStaticVariableInitializers(printer);
+    MaybeRestartJavaMethod(
+      printer,
+      &bytecode_estimate, &method_num,
+      "_clinit_autosplit_dinit_$method_num$();\n",
+      "private static void _clinit_autosplit_dinit_$method_num$() {\n");
   }
   for (int i = 0; i < file_->extension_count(); i++) {
-    extension_generators_[i]->GenerateNonNestedInitializationCode(printer);
+    bytecode_estimate += extension_generators_[i]->GenerateNonNestedInitializationCode(printer);
+    MaybeRestartJavaMethod(
+      printer,
+      &bytecode_estimate, &method_num,
+      "_clinit_autosplit_dinit_$method_num$();\n",
+      "private static void _clinit_autosplit_dinit_$method_num$() {\n");
   }
 
   // Proto compiler builds a DescriptorPool, which holds all the descriptors to
@@ -330,7 +393,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   file_->CopyTo(&file_proto);
   string file_data;
   file_proto.SerializeToString(&file_data);
-  vector<const FieldDescriptor*> extensions;
+  FieldDescriptorSet extensions;
   CollectExtensions(file_proto, *file_->pool(), &extensions, file_data);
 
   if (extensions.size() > 0) {
@@ -339,10 +402,17 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
     printer->Print(
       "com.google.protobuf.ExtensionRegistry registry =\n"
       "    com.google.protobuf.ExtensionRegistry.newInstance();\n");
-    for (int i = 0; i < extensions.size(); i++) {
+    FieldDescriptorSet::iterator it;
+    for (it = extensions.begin(); it != extensions.end(); it++) {
       google::protobuf::scoped_ptr<ExtensionGenerator> generator(
-          generator_factory_->NewExtensionGenerator(extensions[i]));
-      generator->GenerateRegistrationCode(printer);
+          generator_factory_->NewExtensionGenerator(*it));
+      bytecode_estimate += generator->GenerateRegistrationCode(printer);
+      MaybeRestartJavaMethod(
+        printer,
+        &bytecode_estimate, &method_num,
+        "_clinit_autosplit_dinit_$method_num$(registry);\n",
+        "private static void _clinit_autosplit_dinit_$method_num$(\n"
+        "    com.google.protobuf.ExtensionRegistry registry) {\n");
     }
     printer->Print(
       "com.google.protobuf.Descriptors.FileDescriptor\n"
@@ -394,7 +464,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(io::Printer* 
   file_->CopyTo(&file_proto);
   string file_data;
   file_proto.SerializeToString(&file_data);
-  vector<const FieldDescriptor*> extensions;
+  FieldDescriptorSet extensions;
   CollectExtensions(file_proto, *file_->pool(), &extensions, file_data);
 
   if (extensions.size() > 0) {

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>classNames</key>
+	<dict>
+		<key>PerfTests</key>
+		<dict>
+			<key>testExtensionsPerformance</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>0.9</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>Feb 5, 2015, 9:42:41 AM</string>
+				</dict>
+			</dict>
+			<key>testHas</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>0.09</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>Feb 5, 2015, 9:42:35 AM</string>
+				</dict>
+			</dict>
+			<key>testMessagePerformance</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>0.57</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>Feb 5, 2015, 9:42:47 AM</string>
+				</dict>
+			</dict>
+			<key>testPackedExtensionsPerformance</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>0.75</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>Feb 5, 2015, 9:42:51 AM</string>
+				</dict>
+			</dict>
+			<key>testPackedTypesPerformance</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>0.26</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>Feb 5, 2015, 9:42:55 AM</string>
+				</dict>
+			</dict>
+		</dict>
+	</dict>
+</dict>
+</plist>

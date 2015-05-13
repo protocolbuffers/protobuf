@@ -145,6 +145,7 @@ optional_field_style   -> default or accessors
 enum_style             -> c or java
 ignore_services        -> true or false
 parcelable_messages    -> true or false
+generate_intdefs       -> true or false
 ```
 
 **java_package=\<file-name\>|\<package-name\>** (no default)
@@ -301,6 +302,28 @@ parcelable_messages    -> true or false
 **parcelable_messages={true,false}** (default: false)
 
   Android-specific option to generate Parcelable messages.
+
+**generate_intdefs={true,false}** (default: false)
+  Android-specific option to generate @IntDef annotations for enums.
+
+  If turned on, an '@IntDef' annotation (a public @interface) will be
+  generated for each enum, and every integer parameter and return
+  value in the generated code meant for this enum will be annotated
+  with it. This interface is generated with the same name and at the
+  same place as the enum members' container interfaces described
+  above under 'enum_style=java', regardless of the enum_style option
+  used. When this is combined with enum_style=java, the interface
+  will be both the '@IntDef' annotation and the container of the enum
+  members; otherwise the interface has an empty body.
+
+  Your app must declare a compile-time dependency on the
+  android-support-annotations library.
+
+  For more information on how these @IntDef annotations help with
+  compile-time type safety, see:
+  https://sites.google.com/a/android.com/tools/tech-docs/support-annotations
+  and
+  https://developer.android.com/reference/android/support/annotation/IntDef.html
 
 
 To use nano protobufs within the Android repo:

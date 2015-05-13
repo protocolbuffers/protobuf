@@ -63,7 +63,7 @@ To build this Ruby extension, you will need:
 To Build the JRuby extension, you will need:
 
 * Maven
-* The latest version of the protobuf java library
+* The latest version of the protobuf java library (see ../java/README.md)
 * Install JRuby via rbenv or RVM
 
 First switch to the desired platform with rbenv or RVM.
@@ -75,8 +75,9 @@ Then install the required Ruby gems:
 
 Then build the Gem:
 
-    $ rake gem
-    $ gem install pkg/protobuf-$VERSION.gem
+    $ rake
+    $ rake clobber_package gem
+    $ gem install `ls pkg/google-protobuf-*.gem`
 
 To run the specs:
 

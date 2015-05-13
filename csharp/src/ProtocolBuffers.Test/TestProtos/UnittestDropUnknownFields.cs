@@ -40,8 +40,8 @@ namespace Google.ProtocolBuffers.TestProtos {
             "X3ZhbHVlGAIgASgOMjsudW5pdHRlc3RfZHJvcF91bmtub3duX2ZpZWxkcy5G", 
             "b29XaXRoRXh0cmFGaWVsZHMuTmVzdGVkRW51bRIZChFleHRyYV9pbnQzMl92", 
             "YWx1ZRgDIAEoBSIwCgpOZXN0ZWRFbnVtEgcKA0ZPTxAAEgcKA0JBUhABEgcK", 
-            "A0JBWhACEgcKA1FVWBADQiSqAiFHb29nbGUuUHJvdG9jb2xCdWZmZXJzLlRl", 
-          "c3RQcm90b3NiBnByb3RvMw=="));
+            "A0JBWhACEgcKA1FVWBADQjOiAgxEcm9wVW5rbm93bnOqAiFHb29nbGUuUHJv", 
+          "dG9jb2xCdWZmZXJzLlRlc3RQcm90b3NiBnByb3RvMw=="));
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_unittest_drop_unknown_fields_Foo__Descriptor = Descriptor.MessageTypes[0];

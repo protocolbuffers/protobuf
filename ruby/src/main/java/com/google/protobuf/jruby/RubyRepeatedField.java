@@ -108,8 +108,9 @@ public class RubyRepeatedField extends RubyObject {
      */
     @JRubyMethod(name = "[]=")
     public IRubyObject indexSet(ThreadContext context, IRubyObject index, IRubyObject value) {
+        int arrIndex = normalizeArrayIndex(index);
         Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
-        this.storage.set(RubyNumeric.num2int(index), value);
+        this.storage.set(arrIndex, value);
         return context.runtime.getNil();
     }
 
@@ -117,12 +118,15 @@ public class RubyRepeatedField extends RubyObject {
      * call-seq:
      *     RepeatedField.[](index) => value
      *
-     * Accesses the element at the given index. Throws an exception on out-of-bounds
-     * errors.
+     * Accesses the element at the given index. Returns nil on out-of-bounds
      */
     @JRubyMethod(name = "[]")
     public IRubyObject index(ThreadContext context, IRubyObject index) {
-        return this.storage.eltInternal(RubyNumeric.num2int(index));
+        int arrIndex = normalizeArrayIndex(index);
+        if (arrIndex < 0 || arrIndex >= this.storage.size()) {
+            return context.runtime.getNil();
+        }
+        return this.storage.eltInternal(arrIndex);
     }
 
     /*
@@ -134,8 +138,7 @@ public class RubyRepeatedField extends RubyObject {
     @JRubyMethod(rest = true)
     public IRubyObject insert(ThreadContext context, IRubyObject[] args) {
         for (int i = 0; i < args.length; i++) {
-            Utils.checkType(context, fieldType, args[i], (RubyModule) typeClass);
-            this.storage.add(args[i]);
+            push(context, args[i]);
         }
         return context.runtime.getNil();
     }
@@ -383,6 +386,15 @@ public class RubyRepeatedField extends RubyObject {
         for (int i = 0; i < arr.getLength(); i++) {
             Utils.checkType(context, fieldType, arr.eltInternal(i), (RubyModule) typeClass);
         }
+    }
+
+    private int normalizeArrayIndex(IRubyObject index) {
+        int arrIndex = RubyNumeric.num2int(index);
+        int arrSize = this.storage.size();
+        if (arrIndex < 0 && arrSize > 0) {
+            arrIndex = arrSize + arrIndex;
+        }
+        return arrIndex;
     }
 
     private RubyArray storage;
