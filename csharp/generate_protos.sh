@@ -24,14 +24,12 @@ $PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
     src/google/protobuf/unittest_import_public.proto \
     src/google/protobuf/unittest_mset.proto \
     src/google/protobuf/unittest_optimize_for.proto \
+    src/google/protobuf/unittest_no_field_presence.proto \
     src/google/protobuf/unknown_enum_test.proto
 
 $PROTOC -Icsharp/protos/extest --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
     csharp/protos/extest/unittest_extras_xmltest.proto \
     csharp/protos/extest/unittest_issues.proto
-
-$PROTOC -Icsharp --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
-    csharp/protos/google/protobuf/field_presence_test.proto
 
 $PROTOC -Ibenchmarks --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
     benchmarks/google_size.proto \
