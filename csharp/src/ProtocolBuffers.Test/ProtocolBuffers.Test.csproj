@@ -84,7 +84,7 @@
     <Compile Include="Compatibility\TestResources.cs" />
     <Compile Include="Compatibility\TextCompatibilityTests.cs" />
     <Compile Include="Compatibility\XmlCompatibilityTests.cs" />
-    <Compile Include="TestProtos\FieldPresence.cs" />
+    <Compile Include="TestProtos\FieldPresenceTest.cs" />
     <Compile Include="TestProtos\GoogleSize.cs" />
     <Compile Include="TestProtos\GoogleSpeed.cs" />
     <Compile Include="TestProtos\Unittest.cs" />
