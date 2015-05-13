@@ -1,21 +1,25 @@
-sudo: false
-language: java
-jdk:
-  - openjdk6
-  - openjdk7
-  - oraclejdk7
+sudo: required
+language: cpp
 os:
   - linux
   - osx
 script:
-  - ./autogen.sh && ./configure && make -j2
-  - cd java && mvn test && cd ..
-  - cd javanano && mvn test && cd ..
-  - cd python && python setup.py build && python setup.py test && cd ..
-  - export LD_LIBRARY_PATH=../src/.libs
-  - cd python && python setup.py build --cpp_implementation && python setup.py test --cpp_implementation && cd ..
-  - cd ruby && sh travis-test.sh && cd ..
-  - cd conformance && make test_java && cd ..
-  - make distcheck -j2
+  - ./travis.sh $CONFIG
+env:
+  - CONFIG=cpp
+  - CONFIG=cpp_distcheck
+  - CONFIG=java_jdk6
+  - CONFIG=java_jdk7
+  - CONFIG=java_oracle7
+  - CONFIG=javanano_jdk6
+  - CONFIG=javanano_jdk7
+  - CONFIG=javanano_oracle7
+  - CONFIG=python
+  - CONFIG=python_cpp
+  - CONFIG=ruby19
+  - CONFIG=ruby20
+  - CONFIG=ruby21
+  - CONFIG=ruby22
+  - CONFIG=jruby
 notifications:
   email: false
