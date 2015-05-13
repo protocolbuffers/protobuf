@@ -36,11 +36,14 @@ option java_multiple_files = true;
 option java_outer_classname = "AnyProto";
 option java_package = "com.google.protobuf";
 option csharp_namespace = "Google.ProtocolBuffers";
+option objc_class_prefix = "GPB";
+
 
 // `Any` contains an arbitrary serialized message along with a URL
 // that describes the type of the serialized message.
 //
-//
+// The proto runtimes and/or compiler will eventually
+//  provide utilities to pack/unpack Any values (projected Q1/15).
 //
 // # JSON
 // The JSON representation of an `Any` value uses the regular
@@ -76,21 +79,24 @@ message Any {
   // For URLs which use the schema `http`, `https`, or no schema, the
   // following restrictions and interpretations apply:
   //
-  // * If no schema is provided, https is assumed.
+  // * If no schema is provided, `https` is assumed.
   // * The last segment of the URL's path must represent the fully
   //   qualified name of the type (as in `path/google.protobuf.Duration`).
   // * An HTTP GET on the URL must yield a [google.protobuf.Type][google.protobuf.Type]
   //   value in binary format, or produce an error.
   // * Applications are allowed to cache lookup results based on the
   //   URL, or have them precompiled into a binary to avoid any
-  //   lookup. Therefore, binary compatibility need to be preserved
+  //   lookup. Therefore, binary compatibility needs to be preserved
   //   on changes to types. (Use versioned type names to manage
   //   breaking changes.)
   //
   // Schemas other than `http`, `https` (or the empty schema) might be
   // used with implementation specific semantics.
   //
-  //
+  // Types originating from the `google.*` package
+  // namespace should use `type.googleapis.com/full.type.name` (without
+  // schema and path). A type service will eventually become available which
+  // serves those URLs (projected Q2/15).
   string type_url = 1;
 
   // Must be valid serialized data of the above specified type.

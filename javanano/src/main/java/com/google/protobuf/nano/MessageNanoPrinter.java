@@ -109,6 +109,10 @@ public final class MessageNanoPrinter {
             for (Field field : clazz.getFields()) {
                 int modifiers = field.getModifiers();
                 String fieldName = field.getName();
+                if ("cachedSize".equals(fieldName)) {
+                    // TODO(bduff): perhaps cachedSize should have a more obscure name.
+                    continue;
+                }
 
                 if ((modifiers & Modifier.PUBLIC) == Modifier.PUBLIC
                         && (modifiers & Modifier.STATIC) != Modifier.STATIC

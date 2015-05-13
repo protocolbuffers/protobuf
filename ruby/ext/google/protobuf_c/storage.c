@@ -155,7 +155,9 @@ void native_slot_set_value_and_case(upb_fieldtype_t type, VALUE type_class,
       break;
     }
     case UPB_TYPE_MESSAGE: {
-      if (CLASS_OF(value) != type_class) {
+      if (CLASS_OF(value) == CLASS_OF(Qnil)) {
+        value = Qnil;
+      } else if (CLASS_OF(value) != type_class) {
         rb_raise(rb_eTypeError,
                  "Invalid type %s to assign to submessage field.",
                  rb_class2name(CLASS_OF(value)));

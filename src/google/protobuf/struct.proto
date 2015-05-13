@@ -36,6 +36,8 @@ option java_multiple_files = true;
 option java_outer_classname = "StructProto";
 option java_package = "com.google.protobuf";
 option csharp_namespace = "Google.ProtocolBuffers";
+option objc_class_prefix = "GPB";
+
 
 // `Struct` represents a structured data value, consisting of fields
 // which map to dynamically typed values. In some languages, `Struct`
@@ -56,17 +58,28 @@ message Value {
   oneof kind {
     // Represents a null value.
     NullValue null_value = 1;
+
     // Represents a double value.
     double number_value = 2;
+
     // Represents a string value.
     string string_value = 3;
+
     // Represents a boolean value.
     bool bool_value = 4;
+
     // Represents a structured value.
     Struct struct_value = 5;
+
     // Represents a repeated `Value`.
     ListValue list_value = 6;
   }
+}
+
+// `ListValue` is a wrapper around a repeated field of values.
+message ListValue {
+  // Repeated field of dynamically typed values.
+  repeated Value values = 1;
 }
 
 // `NullValue` is a singleton enumeration to represent the null
@@ -74,10 +87,4 @@ message Value {
 enum NullValue {
   // Null value.
   NULL_VALUE = 0;
-}
-
-// `ListValue` is a wrapper around a repeated field of values.
-message ListValue {
-  // Repeated field of dynamically typed values.
-  repeated Value values = 1;
 }

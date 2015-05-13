@@ -95,12 +95,18 @@ GOOGLE_PROTOBUF_PLATFORM_ERROR
 
 #if defined(__APPLE__)
 #define GOOGLE_PROTOBUF_OS_APPLE
+#include <TargetConditionals.h>
+#if TARGET_OS_IPHONE
+#define GOOGLE_PROTOBUF_OS_IPHONE
+#endif
 #elif defined(__native_client__)
 #define GOOGLE_PROTOBUF_OS_NACL
 #elif defined(sun)
 #define GOOGLE_PROTOBUF_OS_SOLARIS
 #elif defined(_AIX)
 #define GOOGLE_PROTOBUF_OS_AIX
+#elif defined(__ANDROID__)
+#define GOOGLE_PROTOBUF_OS_ANDROID
 #endif
 
 #undef GOOGLE_PROTOBUF_PLATFORM_ERROR

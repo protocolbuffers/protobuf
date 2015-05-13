@@ -83,6 +83,7 @@ class FieldGenerator {
   virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
   virtual void GenerateEqualsCode(io::Printer* printer) const = 0;
   virtual void GenerateHashCodeCode(io::Printer* printer) const = 0;
+  virtual void GenerateFixClonedCode(io::Printer* printer) const {}
 
  protected:
   const Params& params_;

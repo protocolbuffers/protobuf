@@ -719,9 +719,9 @@ void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     "path\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020lead"
     "ing_comments\030\003 \001(\t\022\031\n\021trailing_comments\030"
     "\004 \001(\t\022!\n\031leading_detached_comments\030\006 \003(\t"
-    "BS\n\023com.google.protobufB\020DescriptorProto"
-    "sH\001\252\002\'Google.ProtocolBuffers.DescriptorP"
-    "rotos", 4685);
+    "BY\n\023com.google.protobufB\020DescriptorProto"
+    "sH\001\242\002\003GPB\252\002\'Google.ProtocolBuffers.Descr"
+    "iptorProtos", 4691);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/descriptor.proto", &protobuf_RegisterTypes);
   FileDescriptorSet::default_instance_ = new FileDescriptorSet();

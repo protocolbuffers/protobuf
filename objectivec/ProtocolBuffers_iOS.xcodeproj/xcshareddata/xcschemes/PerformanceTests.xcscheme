@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "0610"
+   version = "1.3">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "7461B52D0F94FAF800A0C422"
+               BuildableName = "libProtocolBuffers.a"
+               BlueprintName = "ProtocolBuffers"
+               ReferencedContainer = "container:ProtocolBuffers_iOS.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      buildConfiguration = "Release">
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8BBEA4A5147C727100C4ADB7"
+               BuildableName = "UnitTests.xctest"
+               BlueprintName = "UnitTests"
+               ReferencedContainer = "container:ProtocolBuffers_iOS.xcodeproj">
+            </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "ArrayTests">
+               </Test>
+               <Test
+                  Identifier = "CodedInputStreamTests">
+               </Test>
+               <Test
+                  Identifier = "CodedOutputStreamTests">
+               </Test>
+               <Test
+                  Identifier = "ConcurrencyTests">
+               </Test>
+               <Test
+                  Identifier = "FilteredMessageTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringTests">
+               </Test>
+               <Test
+                  Identifier = "GPBTestCase">
+               </Test>
+               <Test
+                  Identifier = "GeneratedMessageTests">
+               </Test>
+               <Test
+                  Identifier = "MessageTests">
+               </Test>
+               <Test
+                  Identifier = "UnknownFieldSetTest">
+               </Test>
+               <Test
+                  Identifier = "UtilitiesTests">
+               </Test>
+               <Test
+                  Identifier = "WireFormatTests">
+               </Test>
+            </SkippedTests>
+         </TestableReference>
+      </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "8B9A5EA41831993600A9D33B"
+            BuildableName = "iOSTestHarness.app"
+            BlueprintName = "iOSTestHarness"
+            ReferencedContainer = "container:ProtocolBuffers_iOS.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+   </TestAction>
+   <LaunchAction
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      buildConfiguration = "Release"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      allowLocationSimulation = "YES">
+      <BuildableProductRunnable>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "8B9A5EA41831993600A9D33B"
+            BuildableName = "iOSTestHarness.app"
+            BlueprintName = "iOSTestHarness"
+            ReferencedContainer = "container:ProtocolBuffers_iOS.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+      <AdditionalOptions>
+      </AdditionalOptions>
+   </LaunchAction>
+   <ProfileAction
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      buildConfiguration = "Release"
+      debugDocumentVersioning = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "7461B52D0F94FAF800A0C422"
+            BuildableName = "libProtocolBuffers.a"
+            BlueprintName = "ProtocolBuffers"
+            ReferencedContainer = "container:ProtocolBuffers_iOS.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Release">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>

@@ -246,8 +246,6 @@ TEST(PreserveUnknownEnumTest, Proto2CatchesUnknownValues) {
   protobuf_unittest::TestAllTypes message;  // proto2 message
   const google::protobuf::Reflection* r = message.GetReflection();
   const google::protobuf::Descriptor* d = message.GetDescriptor();
-  const google::protobuf::FieldDescriptor* singular_field =
-      d->FindFieldByName("optional_nested_enum");
   const google::protobuf::FieldDescriptor* repeated_field =
       d->FindFieldByName("repeated_nested_enum");
   // Add one element to the repeated field so that we can test
@@ -258,6 +256,8 @@ TEST(PreserveUnknownEnumTest, Proto2CatchesUnknownValues) {
   r->AddEnum(&message, repeated_field, enum_value);
 
 #ifdef PROTOBUF_HAS_DEATH_TEST
+  const google::protobuf::FieldDescriptor* singular_field =
+      d->FindFieldByName("optional_nested_enum");
   // Enum-field integer-based setters GOOGLE_DCHECK-fail on invalid values, in order to
   // remain consistent with proto2 generated code.
   EXPECT_DEBUG_DEATH({
