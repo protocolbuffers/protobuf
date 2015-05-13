@@ -28,27 +28,48 @@ fi
 
 cd src
 make $@ google/protobuf/stubs/pbconfig.h
+
+declare -a RUNTIME_PROTO_FILES=(\
+  google/protobuf/any.proto \
+  google/protobuf/api.proto \
+  google/protobuf/descriptor.proto \
+  google/protobuf/duration.proto \
+  google/protobuf/empty.proto \
+  google/protobuf/field_mask.proto \
+  google/protobuf/source_context.proto \
+  google/protobuf/struct.proto \
+  google/protobuf/timestamp.proto \
+  google/protobuf/type.proto \
+  google/protobuf/wrappers.proto)
+
 CORE_PROTO_IS_CORRECT=0
 while [ $CORE_PROTO_IS_CORRECT -ne 1 ]
 do
   CORE_PROTO_IS_CORRECT=1
-  cp google/protobuf/descriptor.pb.h google/protobuf/descriptor.pb.h.tmp
-  cp google/protobuf/descriptor.pb.cc google/protobuf/descriptor.pb.cc.tmp
+  for PROTO_FILE in ${RUNTIME_PROTO_FILES[@]}; do
+    BASE_NAME=${PROTO_FILE%.*}
+    cp ${BASE_NAME}.pb.h ${BASE_NAME}.pb.h.tmp
+    cp ${BASE_NAME}.pb.cc ${BASE_NAME}.pb.cc.tmp
+  done
   cp google/protobuf/compiler/plugin.pb.h google/protobuf/compiler/plugin.pb.h.tmp
   cp google/protobuf/compiler/plugin.pb.cc google/protobuf/compiler/plugin.pb.cc.tmp
 
   make $@ protoc &&
-    ./protoc --cpp_out=dllexport_decl=LIBPROTOBUF_EXPORT:. google/protobuf/descriptor.proto && \
+    ./protoc --cpp_out=dllexport_decl=LIBPROTOBUF_EXPORT:. ${RUNTIME_PROTO_FILES[@]} && \
     ./protoc --cpp_out=dllexport_decl=LIBPROTOC_EXPORT:. google/protobuf/compiler/plugin.proto
 
-  diff google/protobuf/descriptor.pb.h google/protobuf/descriptor.pb.h.tmp > /dev/null
-  if test $? -ne 0; then
-    CORE_PROTO_IS_CORRECT=0
-  fi
-  diff google/protobuf/descriptor.pb.cc google/protobuf/descriptor.pb.cc.tmp > /dev/null
-  if test $? -ne 0; then
-    CORE_PROTO_IS_CORRECT=0
-  fi
+  for PROTO_FILE in ${RUNTIME_PROTO_FILES[@]}; do
+    BASE_NAME=${PROTO_FILE%.*}
+    diff ${BASE_NAME}.pb.h ${BASE_NAME}.pb.h.tmp > /dev/null
+    if test $? -ne 0; then
+      CORE_PROTO_IS_CORRECT=0
+    fi
+    diff ${BASE_NAME}.pb.cc ${BASE_NAME}.pb.cc.tmp > /dev/null
+    if test $? -ne 0; then
+      CORE_PROTO_IS_CORRECT=0
+    fi
+  done
+
   diff google/protobuf/compiler/plugin.pb.h google/protobuf/compiler/plugin.pb.h.tmp > /dev/null
   if test $? -ne 0; then
     CORE_PROTO_IS_CORRECT=0
@@ -58,8 +79,11 @@ do
     CORE_PROTO_IS_CORRECT=0
   fi
 
-  rm google/protobuf/descriptor.pb.h.tmp
-  rm google/protobuf/descriptor.pb.cc.tmp
+  for PROTO_FILE in ${RUNTIME_PROTO_FILES[@]}; do
+    BASE_NAME=${PROTO_FILE%.*}
+    rm ${BASE_NAME}.pb.h.tmp
+    rm ${BASE_NAME}.pb.cc.tmp
+  done
   rm google/protobuf/compiler/plugin.pb.h.tmp
   rm google/protobuf/compiler/plugin.pb.cc.tmp
 done

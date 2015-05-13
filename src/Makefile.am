@@ -86,13 +86,18 @@ nobase_include_HEADERS =                                        \
   google/protobuf/stubs/stl_util.h                              \
   google/protobuf/stubs/template_util.h                         \
   google/protobuf/stubs/type_traits.h                           \
+  google/protobuf/any.pb.h                                      \
+  google/protobuf/api.pb.h                                      \
   google/protobuf/arena.h                                       \
   google/protobuf/arenastring.h                                 \
   google/protobuf/descriptor_database.h                         \
   google/protobuf/descriptor.h                                  \
   google/protobuf/descriptor.pb.h                               \
+  google/protobuf/duration.pb.h                                 \
   google/protobuf/dynamic_message.h                             \
+  google/protobuf/empty.pb.h                                    \
   google/protobuf/extension_set.h                               \
+  google/protobuf/field_mask.pb.h                               \
   google/protobuf/generated_enum_reflection.h                   \
   google/protobuf/generated_enum_util.h                         \
   google/protobuf/generated_message_reflection.h                \
@@ -100,8 +105,8 @@ nobase_include_HEADERS =                                        \
   google/protobuf/map_entry.h                                   \
   google/protobuf/map_entry_lite.h                              \
   google/protobuf/map_field.h                                   \
-  google/protobuf/map_field_lite.h                              \
   google/protobuf/map_field_inl.h                               \
+  google/protobuf/map_field_lite.h                              \
   google/protobuf/map.h                                         \
   google/protobuf/map_type_handler.h                            \
   google/protobuf/message.h                                     \
@@ -112,11 +117,16 @@ nobase_include_HEADERS =                                        \
   google/protobuf/repeated_field.h                              \
   google/protobuf/repeated_field_reflection.h                   \
   google/protobuf/service.h                                     \
+  google/protobuf/source_context.pb.h                           \
+  google/protobuf/struct.pb.h                                   \
   google/protobuf/text_format.h                                 \
+  google/protobuf/timestamp.pb.h                                \
+  google/protobuf/type.pb.h                                     \
   google/protobuf/unknown_field_set.h                           \
   google/protobuf/wire_format.h                                 \
   google/protobuf/wire_format_lite.h                            \
   google/protobuf/wire_format_lite_inl.h                        \
+  google/protobuf/wrappers.pb.h                                 \
   google/protobuf/io/coded_stream.h                             \
   $(GZHEADERS)                                                  \
   google/protobuf/io/printer.h                                  \
@@ -173,25 +183,35 @@ libprotobuf_la_LIBADD = $(PTHREAD_LIBS)
 libprotobuf_la_LDFLAGS = -version-info 10:0:0 -export-dynamic -no-undefined
 libprotobuf_la_SOURCES =                                       \
   $(libprotobuf_lite_la_SOURCES)                               \
-  google/protobuf/stubs/strutil.cc                             \
-  google/protobuf/stubs/strutil.h                              \
-  google/protobuf/stubs/substitute.cc                          \
-  google/protobuf/stubs/substitute.h                           \
-  google/protobuf/stubs/structurally_valid.cc                  \
+  google/protobuf/any.pb.cc                                    \
+  google/protobuf/api.pb.cc                                    \
   google/protobuf/descriptor.cc                                \
   google/protobuf/descriptor_database.cc                       \
   google/protobuf/descriptor.pb.cc                             \
+  google/protobuf/duration.pb.cc                               \
   google/protobuf/dynamic_message.cc                           \
+  google/protobuf/empty.pb.cc                                  \
   google/protobuf/extension_set_heavy.cc                       \
+  google/protobuf/field_mask.pb.cc                             \
   google/protobuf/generated_message_reflection.cc              \
   google/protobuf/map_field.cc                                 \
   google/protobuf/message.cc                                   \
   google/protobuf/reflection_internal.h                        \
   google/protobuf/reflection_ops.cc                            \
   google/protobuf/service.cc                                   \
+  google/protobuf/source_context.pb.cc                         \
+  google/protobuf/struct.pb.cc                                 \
+  google/protobuf/stubs/structurally_valid.cc                  \
+  google/protobuf/stubs/strutil.cc                             \
+  google/protobuf/stubs/strutil.h                              \
+  google/protobuf/stubs/substitute.cc                          \
+  google/protobuf/stubs/substitute.h                           \
   google/protobuf/text_format.cc                               \
+  google/protobuf/timestamp.pb.cc                              \
+  google/protobuf/type.pb.cc                                   \
   google/protobuf/unknown_field_set.cc                         \
   google/protobuf/wire_format.cc                               \
+  google/protobuf/wrappers.pb.cc                               \
   google/protobuf/io/gzip_stream.cc                            \
   google/protobuf/io/printer.cc                                \
   google/protobuf/io/strtod.cc                                 \
@@ -355,6 +375,7 @@ protoc_inputs =                                                \
   google/protobuf/unittest_preserve_unknown_enum.proto         \
   google/protobuf/unittest_preserve_unknown_enum2.proto        \
   google/protobuf/unittest_proto3_arena.proto                  \
+  google/protobuf/unittest_well_known_types.proto              \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.proto  \
   google/protobuf/compiler/cpp/cpp_test_large_enum_value.proto
 
@@ -432,6 +453,8 @@ protoc_outputs =                                               \
   google/protobuf/unittest_preserve_unknown_enum2.pb.h         \
   google/protobuf/unittest_proto3_arena.pb.cc                  \
   google/protobuf/unittest_proto3_arena.pb.h                   \
+  google/protobuf/unittest_well_known_types.pb.cc              \
+  google/protobuf/unittest_well_known_types.pb.h               \
   google/protobuf/compiler/cpp/cpp_test_large_enum_value.pb.cc \
   google/protobuf/compiler/cpp/cpp_test_large_enum_value.pb.h  \
   google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.cc  \
@@ -509,6 +532,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/repeated_field_unittest.cc                   \
   google/protobuf/text_format_unittest.cc                      \
   google/protobuf/unknown_field_set_unittest.cc                \
+  google/protobuf/well_known_types_unittest.cc                 \
   google/protobuf/wire_format_unittest.cc                      \
   google/protobuf/io/coded_stream_unittest.cc                  \
   google/protobuf/io/printer_unittest.cc                       \
