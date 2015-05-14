@@ -1,9 +1,12 @@
 // See README.txt for information and build instructions.
 
+syntax = "proto2";
+
 package tutorial;
 
 option java_package = "com.example.tutorial";
 option java_outer_classname = "AddressBookProtos";
+option csharp_namespace = "Google.ProtocolBuffers.Examples.AddressBook";
 
 message Person {
   required string name = 1;

@@ -8,8 +8,22 @@ set -ex
 # cd to repository root
 cd $(dirname $0)/..
 
-# protocol buffer compiler to use
-PROTOC=src/protoc
+# Protocol buffer compiler to use. If the PROTOC variable is set,
+# use that. Otherwise, probe for expected locations under both
+# Windows and Unix.
+if [ -z "$PROTOC" ]; then
+  # TODO(jonskeet): Use an array and a for loop instead?
+  if [ -x vsprojects/Debug/protoc.exe ]; then
+    PROTOC=vsprojects/Debug/protoc.exe
+  elif [ -x vsprojects/Release/protoc.exe ]; then
+    PROTOC=vsprojects/Release/protoc.exe
+  elif [ -x src/protoc ]; then
+    PROTOC=src/protoc
+  else
+    echo "Unable to find protocol buffer compiler."
+    exit 1
+  fi
+fi
 
 # Descriptor proto
 #TODO(jtattermusch): generate descriptor.proto
@@ -48,3 +62,7 @@ $PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffersLite.Test/TestProtos \
 $PROTOC -Icsharp/protos/extest --csharp_out=csharp/src/ProtocolBuffersLite.Test/TestProtos \
     csharp/protos/extest/unittest_extras_full.proto \
     csharp/protos/extest/unittest_extras_lite.proto
+
+# AddressBook sample protos
+$PROTOC -Iexamples --csharp_out=csharp/src/AddressBook \
+    examples/addressbook.proto
