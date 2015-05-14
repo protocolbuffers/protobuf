@@ -7,7 +7,6 @@ Pod::Spec.new do |s|
   s.authors  = { 'The Protocol Buffers contributors' => 'protobuf@googlegroups.com' }
 
   s.source_files = 'objectivec/*.{h,m}', 'objectivec/google/protobuf/*.pbobjc.h', 'objectivec/google/protobuf/Descriptor.pbobjc.m'
-  s.public_header_files = 'objectivec/GPBProtocolBuffers.h', 'objectivec/GPBProtocolBuffers_RuntimeSupport.h'
   # The following is a .m umbrella file, and would cause duplicate symbol
   # definitions:
   s.exclude_files = 'objectivec/GPBProtocolBuffers.m'
