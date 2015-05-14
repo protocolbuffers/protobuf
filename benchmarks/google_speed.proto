@@ -1,3 +1,4 @@
+syntax = "proto2";
 package benchmarks;
 
 option java_outer_classname = "GoogleSpeed";
