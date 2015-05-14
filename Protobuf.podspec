@@ -4,10 +4,10 @@ Pod::Spec.new do |s|
   s.summary  = 'Protocol Buffers v.3 runtime library for Objective-C.'
   s.homepage = 'https://github.com/google/protobuf'
   s.license  = 'New BSD'
-  s.authors  = { 'The Protocol Buffers contributors'   => 'protobuf@googlegroups.com' }
+  s.authors  = { 'The Protocol Buffers contributors' => 'protobuf@googlegroups.com' }
 
   s.source_files = 'objectivec/*.{h,m}', 'objectivec/google/protobuf/*.pbobjc.h', 'objectivec/google/protobuf/Descriptor.pbobjc.m'
-  s.public_header_files = 'objectivec/*.h', 'objectivec/google/protobuf/*.pbobjc.h'
+  s.private_header_files = 'objectivec/*_PackagePrivate.h'
   # The following is a .m umbrella file, and would cause duplicate symbol
   # definitions:
   s.exclude_files = 'objectivec/GPBProtocolBuffers.m'
