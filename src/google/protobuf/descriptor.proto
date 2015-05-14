@@ -42,6 +42,7 @@ syntax = "proto2";
 package google.protobuf;
 option java_package = "com.google.protobuf";
 option java_outer_classname = "DescriptorProtos";
+option csharp_namespace = "Google.ProtocolBuffers.DescriptorProtos";
 option objc_class_prefix = "GPB";
 
 // descriptor.proto must be optimized for speed because reflection-based
@@ -352,6 +353,9 @@ message FileOptions {
   // generated classes from this .proto. There is no default.
   optional string objc_class_prefix = 36;
 
+  // Namespace for generated classes; defaults to the package.
+  optional string csharp_namespace = 37;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -481,8 +485,6 @@ message FieldOptions {
 
   // For Google-internal migration only. Do not use.
   optional bool weak = 10 [default=false];
-
-
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;

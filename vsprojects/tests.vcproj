@@ -274,6 +274,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\google\protobuf\compiler\csharp\csharp_generator_unittest.cc"
+				>
+			</File>
+			<File
 				RelativePath="..\src\google\protobuf\compiler\importer_unittest.cc"
 				>
 			</File>

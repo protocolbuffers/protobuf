@@ -76,6 +76,14 @@ src/**/*.trs
 java/target
 javanano/target
 
+# Windows native output.
+vsprojects/Debug
+vsprojects/Release
+
+# NuGet packages: we want the repository configuration, but not the
+# packages themselves.
+/csharp/src/packages/*/
+
 # Directories created by opening the Objective C Xcode projects.
 objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcuserdata/
 objectivec/ProtocolBuffers_OSX.xcodeproj/xcuserdata/
