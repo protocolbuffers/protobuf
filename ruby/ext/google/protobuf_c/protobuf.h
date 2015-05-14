@@ -361,13 +361,13 @@ extern VALUE cRepeatedField;
 RepeatedField* ruby_to_RepeatedField(VALUE value);
 
 VALUE RepeatedField_each(VALUE _self);
-VALUE RepeatedField_index(VALUE _self, VALUE _index);
+VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self);
 void* RepeatedField_index_native(VALUE _self, int index);
 VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val);
 void RepeatedField_reserve(RepeatedField* self, int new_size);
 VALUE RepeatedField_push(VALUE _self, VALUE val);
 void RepeatedField_push_native(VALUE _self, void* data);
-VALUE RepeatedField_pop(VALUE _self);
+VALUE RepeatedField_pop_one(VALUE _self);
 VALUE RepeatedField_insert(int argc, VALUE* argv, VALUE _self);
 VALUE RepeatedField_replace(VALUE _self, VALUE list);
 VALUE RepeatedField_clear(VALUE _self);

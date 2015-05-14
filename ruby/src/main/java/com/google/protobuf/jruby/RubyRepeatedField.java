@@ -40,6 +40,7 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import java.util.Arrays;
 
 @JRubyClass(name = "RepeatedClass", include = "Enumerable")
 public class RubyRepeatedField extends RubyObject {
@@ -110,6 +111,10 @@ public class RubyRepeatedField extends RubyObject {
     public IRubyObject indexSet(ThreadContext context, IRubyObject index, IRubyObject value) {
         int arrIndex = normalizeArrayIndex(index);
         Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
+        IRubyObject defaultValue = defaultValue(context);
+        for (int i = this.storage.size(); i < arrIndex; i++) {
+            this.storage.set(i, defaultValue);
+        }
         this.storage.set(arrIndex, value);
         return context.runtime.getNil();
     }
@@ -120,27 +125,35 @@ public class RubyRepeatedField extends RubyObject {
      *
      * Accesses the element at the given index. Returns nil on out-of-bounds
      */
-    @JRubyMethod(name = "[]")
-    public IRubyObject index(ThreadContext context, IRubyObject index) {
-        int arrIndex = normalizeArrayIndex(index);
-        if (arrIndex < 0 || arrIndex >= this.storage.size()) {
+    @JRubyMethod(required=1, optional=1, name = {"at", "[]"})
+    public IRubyObject index(ThreadContext context, IRubyObject[] args) {
+        if (args.length == 1){
+            IRubyObject arg = args[0];
+            if (Utils.isRubyNum(arg)) {
+                /* standard case */
+                int arrIndex = normalizeArrayIndex(arg);
+                if (arrIndex < 0 || arrIndex >= this.storage.size()) {
+                    return context.runtime.getNil();
+                }
+                return this.storage.eltInternal(arrIndex);
+            } else if (arg instanceof RubyRange) {
+                RubyRange range = ((RubyRange) arg);
+                int beg = RubyNumeric.num2int(range.first(context));
+                int to = RubyNumeric.num2int(range.last(context));
+                int len = to - beg + 1;
+                return this.storage.subseq(beg, len);
+            }
+        }
+        /* assume 2 arguments */
+        int beg = RubyNumeric.num2int(args[0]);
+        int len = RubyNumeric.num2int(args[1]);
+        if (beg < 0) {
+            beg += this.storage.size();
+        }
+        if (beg >= this.storage.size()) {
             return context.runtime.getNil();
         }
-        return this.storage.eltInternal(arrIndex);
-    }
-
-    /*
-     * call-seq:
-     *     RepeatedField.insert(*args)
-     *
-     * Pushes each arg in turn onto the end of the repeated field.
-     */
-    @JRubyMethod(rest = true)
-    public IRubyObject insert(ThreadContext context, IRubyObject[] args) {
-        for (int i = 0; i < args.length; i++) {
-            push(context, args[i]);
-        }
-        return context.runtime.getNil();
+        return this.storage.subseq(beg, len);
     }
 
     /*
@@ -151,20 +164,19 @@ public class RubyRepeatedField extends RubyObject {
      */
     @JRubyMethod(name = {"push", "<<"})
     public IRubyObject push(ThreadContext context, IRubyObject value) {
-        Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
+        if (!(fieldType == Descriptors.FieldDescriptor.Type.MESSAGE &&
+            value == context.runtime.getNil())) {
+            Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
+        }
         this.storage.add(value);
-        return this;
+        return this.storage;
     }
 
     /*
-     * call-seq:
-     *     RepeatedField.pop => value
-     *
-     * Removes the last element and returns it. Throws an exception if the repeated
-     * field is empty.
+     * private Ruby method used by RepeatedField.pop
      */
-    @JRubyMethod
-    public IRubyObject pop(ThreadContext context) {
+    @JRubyMethod(visibility = org.jruby.runtime.Visibility.PRIVATE)
+    public IRubyObject pop_one(ThreadContext context) {
         IRubyObject ret = this.storage.last();
         this.storage.remove(ret);
         return ret;
@@ -181,7 +193,7 @@ public class RubyRepeatedField extends RubyObject {
         RubyArray arr = (RubyArray) list;
         checkArrayElementType(context, arr);
         this.storage = arr;
-        return context.runtime.getNil();
+        return this.storage;
     }
 
     /*
@@ -193,7 +205,7 @@ public class RubyRepeatedField extends RubyObject {
     @JRubyMethod
     public IRubyObject clear(ThreadContext context) {
         this.storage.clear();
-        return context.runtime.getNil();
+        return this.storage;
     }
 
     /*
@@ -202,7 +214,7 @@ public class RubyRepeatedField extends RubyObject {
      *
      * Returns the length of this repeated field.
      */
-    @JRubyMethod(name = {"count", "length"})
+    @JRubyMethod(name = {"length", "size"})
     public IRubyObject length(ThreadContext context) {
         return context.runtime.newFixnum(this.storage.size());
     }
@@ -215,7 +227,7 @@ public class RubyRepeatedField extends RubyObject {
      * repeated field's elements and other's elements. The other (second) list may
      * be either another repeated field or a Ruby array.
      */
-    @JRubyMethod(name = "+")
+    @JRubyMethod(name = {"+"})
     public IRubyObject plus(ThreadContext context, IRubyObject list) {
         RubyRepeatedField dup = (RubyRepeatedField) dup(context);
         if (list instanceof RubyArray) {
@@ -233,13 +245,34 @@ public class RubyRepeatedField extends RubyObject {
 
     /*
      * call-seq:
+     *     RepeatedField.concat(other) => self
+     *
+     * concats the passed in array to self.  Returns a Ruby array.
+     */
+    @JRubyMethod
+    public IRubyObject concat(ThreadContext context, IRubyObject list) {
+        if (list instanceof RubyArray) {
+            checkArrayElementType(context, (RubyArray) list);
+            this.storage.addAll((RubyArray) list);
+        } else {
+            RubyRepeatedField repeatedField = (RubyRepeatedField) list;
+            if (! fieldType.equals(repeatedField.fieldType) || (typeClass != null && !
+                    typeClass.equals(repeatedField.typeClass)))
+                throw context.runtime.newArgumentError("Attempt to append RepeatedField with different element type.");
+            this.storage.addAll((RubyArray) repeatedField.toArray(context));
+        }
+        return this.storage;
+    }
+
+    /*
+     * call-seq:
      *     RepeatedField.hash => hash_value
      *
      * Returns a hash value computed from this repeated field's elements.
      */
     @JRubyMethod
     public IRubyObject hash(ThreadContext context) {
-        int hashCode = System.identityHashCode(this.storage);
+        int hashCode = this.storage.hashCode();
         return context.runtime.newFixnum(hashCode);
     }
 
@@ -268,17 +301,12 @@ public class RubyRepeatedField extends RubyObject {
     @JRubyMethod
     public IRubyObject each(ThreadContext context, Block block) {
         this.storage.each(context, block);
-        return context.runtime.getNil();
+        return this.storage;
     }
+
 
     @JRubyMethod(name = {"to_ary", "to_a"})
     public IRubyObject toArray(ThreadContext context) {
-        for (int i = 0; i < this.storage.size(); i++) {
-            IRubyObject defaultValue = defaultValue(context);
-            if (storage.eltInternal(i).isNil()) {
-                storage.set(i, defaultValue);
-            }
-        }
         return this.storage;
     }
 
@@ -296,31 +324,6 @@ public class RubyRepeatedField extends RubyObject {
             dup.push(context, this.storage.eltInternal(i));
         }
         return dup;
-    }
-
-    /*
-     * call-seq:
-     *     RepeatedField.inspect => string
-     *
-     * Returns a string representing this repeated field's elements. It will be
-     * formated as "[<element>, <element>, ...]", with each element's string
-     * representation computed by its own #inspect method.
-     */
-    @JRubyMethod
-    public IRubyObject inspect() {
-        StringBuilder str = new StringBuilder("[");
-        for (int i = 0; i < this.storage.size(); i++) {
-            str.append(storage.eltInternal(i).inspect());
-            str.append(", ");
-        }
-
-        if (str.length() > 1) {
-            str.replace(str.length() - 2, str.length(), "]");
-        } else {
-            str.append("]");
-        }
-
-        return getRuntime().newString(str.toString());
     }
 
     // Java API
@@ -376,6 +379,9 @@ public class RubyRepeatedField extends RubyObject {
             case STRING:
                 value = sentinel.getDefaultString();
                 break;
+            case ENUM:
+                IRubyObject defaultEnumLoc = context.runtime.newFixnum(0);
+                return RubyEnum.lookup(context, typeClass, defaultEnumLoc);
             default:
                 return context.runtime.getNil();
         }

@@ -178,7 +178,7 @@ module BasicTest
                           :optional_msg => TestMessage2.new,
                           :repeated_string => ["hello", "there", "world"])
       expected = '<BasicTest::TestMessage: optional_int32: -42, optional_int64: 0, optional_uint32: 0, optional_uint64: 0, optional_bool: false, optional_float: 0.0, optional_double: 0.0, optional_string: "", optional_bytes: "", optional_msg: <BasicTest::TestMessage2: foo: 0>, optional_enum: :A, repeated_int32: [], repeated_int64: [], repeated_uint32: [], repeated_uint64: [], repeated_bool: [], repeated_float: [], repeated_double: [], repeated_string: ["hello", "there", "world"], repeated_bytes: [], repeated_msg: [], repeated_enum: []>'
-      assert m.inspect == expected
+      assert_equal expected, m.inspect
     end
 
     def test_hash
@@ -276,7 +276,7 @@ module BasicTest
 
       assert l.inspect == '[5, 2, 3, 4]'
 
-      l.insert(7, 8, 9)
+      l.concat([7, 8, 9])
       assert l == [5, 2, 3, 4, 7, 8, 9]
       assert l.pop == 9
       assert l == [5, 2, 3, 4, 7, 8]
