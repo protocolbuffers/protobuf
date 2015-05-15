@@ -338,7 +338,7 @@ public class RubyMap extends RubyObject {
         return newMap;
     }
 
-    @JRubyMethod(name = "to_h")
+    @JRubyMethod(name = {"to_h", "to_hash"})
     public RubyHash toHash(ThreadContext context) {
         return RubyHash.newHash(context.runtime, table, context.runtime.getNil());
     }
