@@ -102,7 +102,8 @@ build_python_cpp() {
   ./autogen.sh
   ./configure
   make -j2
-  export LD_LIBRARY_PATH=../src/.libs
+  export   LD_LIBRARY_PATH=../src/.libs # for Linux
+  export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
   python setup.py build --cpp_implementation
   python setup.py test --cpp_implementation
