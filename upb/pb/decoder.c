@@ -587,10 +587,17 @@ static int32_t dispatch(upb_pbdecoder *d) {
   if (ret == DECODE_ENDGROUP) {
     goto_endmsg(d);
     return DECODE_OK;
-  } else {
-    d->pc = d->last - 1;  // Rewind to CHECKDELIM.
-    return ret;
+  } else if (ret == DECODE_OK) {
+    // We just consumed some input, so we might now have consumed all the data
+    // in the delmited region.  Since every opcode that can trigger dispatch is
+    // directly preceded by OP_CHECKDELIM, rewind to it now to re-check the
+    // delimited end.
+    d->pc = d->last - 1;
+    assert(getop(*d->pc) == OP_CHECKDELIM);
+    return DECODE_OK;
   }
+
+  return ret;
 }
 
 // Callers know that the stack is more than one deep because the opcodes that
