@@ -94,9 +94,10 @@ namespace Google.ProtocolBuffers
     /// </remarks>
     public sealed partial class ExtensionRegistry
     {
+
         private static readonly ExtensionRegistry empty = new ExtensionRegistry(
             new ExtensionByNameMap(),
-            new ExtensionByIdMap(),
+            new ExtensionByIdMap(new ExtensionIntPairEqualityComparer()),
             true);
 
         private readonly ExtensionByNameMap extensionsByName;
@@ -116,7 +117,7 @@ namespace Google.ProtocolBuffers
         /// </summary>
         public static ExtensionRegistry CreateInstance()
         {
-            return new ExtensionRegistry(new ExtensionByNameMap(), new ExtensionByIdMap(), false);
+            return new ExtensionRegistry(new ExtensionByNameMap(), new ExtensionByIdMap(new ExtensionIntPairEqualityComparer()), false);
         }
 
         public ExtensionRegistry AsReadOnly()
@@ -214,6 +215,18 @@ namespace Google.ProtocolBuffers
             public bool Equals(ExtensionIntPair other)
             {
                 return msgType.Equals(other.msgType) && number == other.number;
+            }
+        }
+
+        internal class ExtensionIntPairEqualityComparer : IEqualityComparer<ExtensionIntPair>
+        {
+            public bool Equals (ExtensionIntPair x, ExtensionIntPair y)
+            {
+                return x.Equals (y);
+            }
+            public int GetHashCode (ExtensionIntPair obj)
+            {
+                return obj.GetHashCode ();
             }
         }
     }
