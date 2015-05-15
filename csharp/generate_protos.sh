@@ -26,7 +26,12 @@ if [ -z "$PROTOC" ]; then
 fi
 
 # Descriptor proto
-#TODO(jtattermusch): generate descriptor.proto
+# Temporary manual fixup...
+cp src/google/protobuf/descriptor.proto src/google/protobuf/descriptor_proto_file.proto
+$PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers/DescriptorProtos \
+    src/google/protobuf/descriptor_proto_file.proto
+rm src/google/protobuf/descriptor_proto_file.proto
+
 
 # ProtocolBuffers.Test protos
 $PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
@@ -62,6 +67,15 @@ $PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffersLite.Test/TestProtos \
 $PROTOC -Icsharp/protos/extest --csharp_out=csharp/src/ProtocolBuffersLite.Test/TestProtos \
     csharp/protos/extest/unittest_extras_full.proto \
     csharp/protos/extest/unittest_extras_lite.proto
+
+# Temporary fixup of test protos
+sed -i -e 's/RepeatedFieldsGenerator\.Group/RepeatedFieldsGenerator.Types.Group/g' \
+    csharp/src/ProtocolBuffers.Test/TestProtos/Unittest.cs \
+    csharp/src/ProtocolBuffersLite.Test/TestProtos/Unittest.cs \
+    csharp/src/ProtocolBuffersLite.Test/TestProtos/UnittestLite.cs
+
+sed -i -e 's/DescriptorProtos\.Descriptor\./DescriptorProtos.DescriptorProtoFile./g' \
+    csharp/src/ProtocolBuffers.Test/TestProtos/UnittestCustomOptions.cs
 
 # AddressBook sample protos
 $PROTOC -Iexamples --csharp_out=csharp/src/AddressBook \
