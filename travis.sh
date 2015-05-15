@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 build_cpp() {
   ./autogen.sh
@@ -95,6 +95,8 @@ build_python() {
   cd python
   python setup.py build
   python setup.py test
+  python setup.py sdist
+  sudo pip install virtualenv && virtualenv /tmp/protoenv && /tmp/protoenv/bin/pip install dist/*
   cd ..
 }
 
@@ -102,10 +104,13 @@ build_python_cpp() {
   ./autogen.sh
   ./configure
   make -j2
-  export LD_LIBRARY_PATH=../src/.libs
+  export   LD_LIBRARY_PATH=../src/.libs # for Linux
+  export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
   python setup.py build --cpp_implementation
   python setup.py test --cpp_implementation
+  python setup.py sdist --cpp_implementation
+  sudo pip install virtualenv && virtualenv /tmp/protoenv && /tmp/protoenv/bin/pip install dist/*
   cd ..
 }
 
