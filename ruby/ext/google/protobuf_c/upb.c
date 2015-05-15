@@ -1782,6 +1782,275 @@ void upb_oneof_iter_setdone(upb_oneof_iter *iter) {
 /*
  * upb - a minimalist implementation of protocol buffers.
  *
+ * Copyright (c) 2014 Google Inc.  See LICENSE for details.
+ * Author: Josh Haberman <jhaberman@gmail.com>
+ */
+
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct cleanup_ent {
+  upb_cleanup_func *cleanup;
+  void *ud;
+  struct cleanup_ent *next;
+} cleanup_ent;
+
+static void *seeded_alloc(void *ud, void *ptr, size_t oldsize, size_t size);
+
+/* Default allocator **********************************************************/
+
+// Just use realloc, keeping all allocated blocks in a linked list to destroy at
+// the end.
+
+typedef struct mem_block {
+  // List is doubly-linked, because in cases where realloc() moves an existing
+  // block, we need to be able to remove the old pointer from the list
+  // efficiently.
+  struct mem_block *prev, *next;
+#ifndef NDEBUG
+  size_t size;  // Doesn't include mem_block structure.
+#endif
+  char data[];
+} mem_block;
+
+typedef struct {
+  mem_block *head;
+} default_alloc_ud;
+
+static void *default_alloc(void *_ud, void *ptr, size_t oldsize, size_t size) {
+  UPB_UNUSED(oldsize);
+  default_alloc_ud *ud = _ud;
+
+  mem_block *from = ptr ? (void*)((char*)ptr - sizeof(mem_block)) : NULL;
+
+#ifndef NDEBUG
+  if (from) {
+    assert(oldsize <= from->size);
+  }
+#endif
+
+  mem_block *block = realloc(from, size + sizeof(mem_block));
+  if (!block) return NULL;
+
+#ifndef NDEBUG
+  block->size = size;
+#endif
+
+  if (from) {
+    if (block != from) {
+      // The block was moved, so pointers in next and prev blocks must be
+      // updated to its new location.
+      if (block->next) block->next->prev = block;
+      if (block->prev) block->prev->next = block;
+    }
+  } else {
+    // Insert at head of linked list.
+    block->prev = NULL;
+    block->next = ud->head;
+    if (block->next) block->next->prev = block;
+    ud->head = block;
+  }
+
+  return &block->data;
+}
+
+static void default_alloc_cleanup(void *_ud) {
+  default_alloc_ud *ud = _ud;
+  mem_block *block = ud->head;
+
+  while (block) {
+    void *to_free = block;
+    block = block->next;
+    free(to_free);
+  }
+}
+
+
+/* Standard error functions ***************************************************/
+
+static bool default_err(void *ud, const upb_status *status) {
+  UPB_UNUSED(ud);
+  fprintf(stderr, "upb error: %s\n", upb_status_errmsg(status));
+  return false;
+}
+
+static bool write_err_to(void *ud, const upb_status *status) {
+  upb_status *copy_to = ud;
+  upb_status_copy(copy_to, status);
+  return false;
+}
+
+
+/* upb_env ********************************************************************/
+
+void upb_env_init(upb_env *e) {
+  e->ok_ = true;
+  e->bytes_allocated = 0;
+  e->cleanup_head = NULL;
+
+  default_alloc_ud *ud = (default_alloc_ud*)&e->default_alloc_ud;
+  ud->head = NULL;
+
+  // Set default functions.
+  upb_env_setallocfunc(e, default_alloc, ud);
+  upb_env_seterrorfunc(e, default_err, NULL);
+}
+
+void upb_env_uninit(upb_env *e) {
+  cleanup_ent *ent = e->cleanup_head;
+
+  while (ent) {
+    ent->cleanup(ent->ud);
+    ent = ent->next;
+  }
+
+  // Must do this after running cleanup functions, because this will delete
+  // the memory we store our cleanup entries in!
+  if (e->alloc == default_alloc) {
+    default_alloc_cleanup(e->alloc_ud);
+  }
+}
+
+UPB_FORCEINLINE void upb_env_setallocfunc(upb_env *e, upb_alloc_func *alloc,
+                                          void *ud) {
+  e->alloc = alloc;
+  e->alloc_ud = ud;
+}
+
+UPB_FORCEINLINE void upb_env_seterrorfunc(upb_env *e, upb_error_func *func,
+                                          void *ud) {
+  e->err = func;
+  e->err_ud = ud;
+}
+
+void upb_env_reporterrorsto(upb_env *e, upb_status *status) {
+  e->err = write_err_to;
+  e->err_ud = status;
+}
+
+bool upb_env_ok(const upb_env *e) {
+  return e->ok_;
+}
+
+bool upb_env_reporterror(upb_env *e, const upb_status *status) {
+  e->ok_ = false;
+  return e->err(e->err_ud, status);
+}
+
+bool upb_env_addcleanup(upb_env *e, upb_cleanup_func *func, void *ud) {
+  cleanup_ent *ent = upb_env_malloc(e, sizeof(cleanup_ent));
+  if (!ent) return false;
+
+  ent->cleanup = func;
+  ent->ud = ud;
+  ent->next = e->cleanup_head;
+  e->cleanup_head = ent;
+
+  return true;
+}
+
+void *upb_env_malloc(upb_env *e, size_t size) {
+  e->bytes_allocated += size;
+  if (e->alloc == seeded_alloc) {
+    // This is equivalent to the next branch, but allows inlining for a
+    // measurable perf benefit.
+    return seeded_alloc(e->alloc_ud, NULL, 0, size);
+  } else {
+    return e->alloc(e->alloc_ud, NULL, 0, size);
+  }
+}
+
+void *upb_env_realloc(upb_env *e, void *ptr, size_t oldsize, size_t size) {
+  assert(oldsize <= size);
+  char *ret = e->alloc(e->alloc_ud, ptr, oldsize, size);
+
+#ifndef NDEBUG
+  // Overwrite non-preserved memory to ensure callers are passing the oldsize
+  // that they truly require.
+  memset(ret + oldsize, 0xff, size - oldsize);
+#endif
+
+  return ret;
+}
+
+size_t upb_env_bytesallocated(const upb_env *e) {
+  return e->bytes_allocated;
+}
+
+
+/* upb_seededalloc ************************************************************/
+
+// Be conservative and choose 16 in case anyone is using SSE.
+static const size_t maxalign = 16;
+
+static size_t align_up(size_t size) {
+  return ((size + maxalign - 1) / maxalign) * maxalign;
+}
+
+UPB_FORCEINLINE static void *seeded_alloc(void *ud, void *ptr, size_t oldsize,
+                                          size_t size) {
+  UPB_UNUSED(ptr);
+
+  upb_seededalloc *a = ud;
+  size = align_up(size);
+
+  assert(a->mem_limit >= a->mem_ptr);
+
+  if (oldsize == 0 && size <= (size_t)(a->mem_limit - a->mem_ptr)) {
+    // Fast path: we can satisfy from the initial allocation.
+    void *ret = a->mem_ptr;
+    a->mem_ptr += size;
+    return ret;
+  } else {
+    // Slow path: fallback to other allocator.
+    a->need_cleanup = true;
+    // Is `ptr` part of the user-provided initial block? Don't pass it to the
+    // default allocator if so; otherwise, it may try to realloc() the block.
+    char *chptr = ptr;
+    if (chptr >= a->mem_base && chptr < a->mem_limit) {
+      return a->alloc(a->alloc_ud, NULL, 0, size);
+    } else {
+      return a->alloc(a->alloc_ud, ptr, oldsize, size);
+    }
+  }
+}
+
+void upb_seededalloc_init(upb_seededalloc *a, void *mem, size_t len) {
+  a->mem_base = mem;
+  a->mem_ptr = mem;
+  a->mem_limit = (char*)mem + len;
+  a->need_cleanup = false;
+  a->returned_allocfunc = false;
+
+  default_alloc_ud *ud = (default_alloc_ud*)&a->default_alloc_ud;
+  ud->head = NULL;
+
+  upb_seededalloc_setfallbackalloc(a, default_alloc, ud);
+}
+
+void upb_seededalloc_uninit(upb_seededalloc *a) {
+  if (a->alloc == default_alloc && a->need_cleanup) {
+    default_alloc_cleanup(a->alloc_ud);
+  }
+}
+
+UPB_FORCEINLINE void upb_seededalloc_setfallbackalloc(upb_seededalloc *a,
+                                                      upb_alloc_func *alloc,
+                                                      void *ud) {
+  assert(!a->returned_allocfunc);
+  a->alloc = alloc;
+  a->alloc_ud = ud;
+}
+
+upb_alloc_func *upb_seededalloc_getallocfunc(upb_seededalloc *a) {
+  a->returned_allocfunc = true;
+  return seeded_alloc;
+}
+/*
+ * upb - a minimalist implementation of protocol buffers.
+ *
  * Copyright (c) 2011-2012 Google Inc.  See LICENSE for details.
  * Author: Josh Haberman <jhaberman@gmail.com>
  *
@@ -1955,7 +2224,14 @@ static bool doset(upb_handlers *h, int32_t sel, const upb_fielddef *f,
   if (closure_type && *context_closure_type &&
       closure_type != *context_closure_type) {
     // TODO(haberman): better message for debugging.
-    upb_status_seterrmsg(&h->status_, "closure type does not match");
+    if (f) {
+      upb_status_seterrf(&h->status_,
+                         "closure type does not match for field %s",
+                         upb_fielddef_name(f));
+    } else {
+      upb_status_seterrmsg(
+          &h->status_, "closure type does not match for message-level handler");
+    }
     return false;
   }
 
@@ -2353,7 +2629,7 @@ bool upb_handlers_getselector(const upb_fielddef *f, upb_handlertype_t type,
       *s = f->selector_base;
       break;
   }
-  assert(*s < upb_fielddef_containingtype(f)->selector_count);
+  assert((size_t)*s < upb_fielddef_containingtype(f)->selector_count);
   return true;
 }
 
@@ -4295,7 +4571,7 @@ void upb_inttable_compact(upb_inttable *t) {
     counts[log2ceil(key)]++;
   }
 
-  int arr_size;
+  size_t arr_size = 1;
   int arr_count = upb_inttable_count(t);
 
   if (upb_inttable_count(t) >= max_key * MIN_DENSITY) {
@@ -5522,6 +5798,54 @@ static upb_inttable reftables[212] = {
 #include <stdlib.h>
 #include <string.h>
 
+// upb_deflist is an internal-only dynamic array for storing a growing list of
+// upb_defs.
+typedef struct {
+  upb_def **defs;
+  size_t len;
+  size_t size;
+  bool owned;
+} upb_deflist;
+
+// We keep a stack of all the messages scopes we are currently in, as well as
+// the top-level file scope.  This is necessary to correctly qualify the
+// definitions that are contained inside.  "name" tracks the name of the
+// message or package (a bare name -- not qualified by any enclosing scopes).
+typedef struct {
+  char *name;
+  // Index of the first def that is under this scope.  For msgdefs, the
+  // msgdef itself is at start-1.
+  int start;
+} upb_descreader_frame;
+
+// The maximum number of nested declarations that are allowed, ie.
+// message Foo {
+//   message Bar {
+//     message Baz {
+//     }
+//   }
+// }
+//
+// This is a resource limit that affects how big our runtime stack can grow.
+// TODO: make this a runtime-settable property of the Reader instance.
+#define UPB_MAX_MESSAGE_NESTING 64
+
+struct upb_descreader {
+  upb_sink sink;
+  upb_deflist defs;
+  upb_descreader_frame stack[UPB_MAX_MESSAGE_NESTING];
+  int stack_len;
+
+  uint32_t number;
+  char *name;
+  bool saw_number;
+  bool saw_name;
+
+  char *default_string;
+
+  upb_fielddef *f;
+};
+
 static char *upb_strndup(const char *buf, size_t n) {
   char *ret = malloc(n + 1);
   if (!ret) return NULL;
@@ -5600,36 +5924,6 @@ static void upb_deflist_qualify(upb_deflist *l, char *str, int32_t start) {
 
 
 /* upb_descreader  ************************************************************/
-
-void upb_descreader_init(upb_descreader *r, const upb_handlers *handlers,
-                         upb_status *status) {
-  UPB_UNUSED(status);
-  upb_deflist_init(&r->defs);
-  upb_sink_reset(upb_descreader_input(r), handlers, r);
-  r->stack_len = 0;
-  r->name = NULL;
-  r->default_string = NULL;
-}
-
-void upb_descreader_uninit(upb_descreader *r) {
-  free(r->name);
-  upb_deflist_uninit(&r->defs);
-  free(r->default_string);
-  while (r->stack_len > 0) {
-    upb_descreader_frame *f = &r->stack[--r->stack_len];
-    free(f->name);
-  }
-}
-
-upb_def **upb_descreader_getdefs(upb_descreader *r, void *owner, int *n) {
-  *n = r->defs.len;
-  upb_deflist_donaterefs(&r->defs, owner);
-  return r->defs.defs;
-}
-
-upb_sink *upb_descreader_input(upb_descreader *r) {
-  return &r->sink;
-}
 
 static upb_msgdef *upb_descreader_top(upb_descreader *r) {
   assert(r->stack_len > 1);
@@ -5803,7 +6097,7 @@ static bool parse_default(char *str, upb_fielddef *f) {
       break;
     }
     case UPB_TYPE_UINT32: {
-      long val = strtoul(str, &end, 0);
+      unsigned long val = strtoul(str, &end, 0);
       if (val > UINT32_MAX || errno == ERANGE || *end)
         success = false;
       else
@@ -6070,6 +6364,45 @@ static void reghandlers(const void *closure, upb_handlers *h) {
 
 #undef D
 
+void descreader_cleanup(void *_r) {
+  upb_descreader *r = _r;
+  free(r->name);
+  upb_deflist_uninit(&r->defs);
+  free(r->default_string);
+  while (r->stack_len > 0) {
+    upb_descreader_frame *f = &r->stack[--r->stack_len];
+    free(f->name);
+  }
+}
+
+
+/* Public API  ****************************************************************/
+
+upb_descreader *upb_descreader_create(upb_env *e, const upb_handlers *h) {
+  upb_descreader *r = upb_env_malloc(e, sizeof(upb_descreader));
+  if (!r || !upb_env_addcleanup(e, descreader_cleanup, r)) {
+    return NULL;
+  }
+
+  upb_deflist_init(&r->defs);
+  upb_sink_reset(upb_descreader_input(r), h, r);
+  r->stack_len = 0;
+  r->name = NULL;
+  r->default_string = NULL;
+
+  return r;
+}
+
+upb_def **upb_descreader_getdefs(upb_descreader *r, void *owner, int *n) {
+  *n = r->defs.len;
+  upb_deflist_donaterefs(&r->defs, owner);
+  return r->defs.defs;
+}
+
+upb_sink *upb_descreader_input(upb_descreader *r) {
+  return &r->sink;
+}
+
 const upb_handlers *upb_descreader_newhandlers(const void *owner) {
   const upb_symtab *s = upbdefs_google_protobuf_descriptor(&s);
   const upb_handlers *h = upb_handlers_newfrozen(
@@ -6141,7 +6474,6 @@ mgroup *newgroup(const void *owner) {
 
 static void freemethod(upb_refcounted *r) {
   upb_pbdecodermethod *method = (upb_pbdecodermethod*)r;
-  upb_byteshandler_uninit(&method->input_handler_);
 
   if (method->dest_handlers_) {
     upb_handlers_unref(method->dest_handlers_, method);
@@ -7073,10 +7405,7 @@ void upb_pbdecodermethodopts_setlazy(upb_pbdecodermethodopts *opts, bool lazy) {
  */
 
 #include <inttypes.h>
-#include <setjmp.h>
-#include <stdarg.h>
 #include <stddef.h>
-#include <stdlib.h>
 
 #ifdef UPB_DUMP_BYTECODE
 #include <stdio.h>
@@ -7122,18 +7451,17 @@ static bool consumes_input(opcode op) {
 
 static bool in_residual_buf(const upb_pbdecoder *d, const char *p);
 
-// It's unfortunate that we have to micro-manage the compiler this way,
-// especially since this tuning is necessarily specific to one hardware
-// configuration.  But emperically on a Core i7, performance increases 30-50%
-// with these annotations.  Every instance where these appear, gcc 4.2.1 made
-// the wrong decision and degraded performance in benchmarks.
-#define FORCEINLINE static inline __attribute__((always_inline))
-#define NOINLINE __attribute__((noinline))
+// It's unfortunate that we have to micro-manage the compiler with
+// UPB_FORCEINLINE and UPB_NOINLINE, especially since this tuning is necessarily
+// specific to one hardware configuration.  But empirically on a Core i7,
+// performance increases 30-50% with these annotations.  Every instance where
+// these appear, gcc 4.2.1 made the wrong decision and degraded performance in
+// benchmarks.
 
 static void seterr(upb_pbdecoder *d, const char *msg) {
-  // TODO(haberman): encapsulate this access to pipeline->status, but not sure
-  // exactly what that interface should look like.
-  upb_status_seterrmsg(d->status, msg);
+  upb_status status = UPB_STATUS_INIT;
+  upb_status_seterrmsg(&status, msg);
+  upb_env_reporterror(d->env, &status);
 }
 
 void upb_pbdecoder_seterr(upb_pbdecoder *d, const char *msg) {
@@ -7176,7 +7504,7 @@ static bool in_residual_buf(const upb_pbdecoder *d, const char *p) {
 // and the parsing stack, so must be called whenever either is updated.
 static void set_delim_end(upb_pbdecoder *d) {
   size_t delim_ofs = d->top->end_ofs - d->bufstart_ofs;
-  if (delim_ofs <= (d->end - d->buf)) {
+  if (delim_ofs <= (size_t)(d->end - d->buf)) {
     d->delim_end = d->buf + delim_ofs;
     d->data_end = d->delim_end;
   } else {
@@ -7301,7 +7629,8 @@ static int32_t skip(upb_pbdecoder *d, size_t bytes) {
 
 // Copies the next "bytes" bytes into "buf" and advances the stream.
 // Requires that this many bytes are available in the current buffer.
-FORCEINLINE void consumebytes(upb_pbdecoder *d, void *buf, size_t bytes) {
+UPB_FORCEINLINE static void consumebytes(upb_pbdecoder *d, void *buf,
+                                         size_t bytes) {
   assert(bytes <= curbufleft(d));
   memcpy(buf, d->ptr, bytes);
   advance(d, bytes);
@@ -7310,8 +7639,8 @@ FORCEINLINE void consumebytes(upb_pbdecoder *d, void *buf, size_t bytes) {
 // Slow path for getting the next "bytes" bytes, regardless of whether they are
 // available in the current buffer or not.  Returns a status code as described
 // in decoder.int.h.
-static NOINLINE int32_t getbytes_slow(upb_pbdecoder *d, void *buf,
-                                      size_t bytes) {
+UPB_NOINLINE static int32_t getbytes_slow(upb_pbdecoder *d, void *buf,
+                                          size_t bytes) {
   const size_t avail = curbufleft(d);
   consumebytes(d, buf, avail);
   bytes -= avail;
@@ -7320,7 +7649,7 @@ static NOINLINE int32_t getbytes_slow(upb_pbdecoder *d, void *buf,
     advancetobuf(d, d->buf_param, d->size_param);
   }
   if (curbufleft(d) >= bytes) {
-    consumebytes(d, buf + avail, bytes);
+    consumebytes(d, (char *)buf + avail, bytes);
     return DECODE_OK;
   } else if (d->data_end == d->delim_end) {
     seterr(d, "Submessage ended in the middle of a value or group");
@@ -7332,7 +7661,8 @@ static NOINLINE int32_t getbytes_slow(upb_pbdecoder *d, void *buf,
 
 // Gets the next "bytes" bytes, regardless of whether they are available in the
 // current buffer or not.  Returns a status code as described in decoder.int.h.
-FORCEINLINE int32_t getbytes(upb_pbdecoder *d, void *buf, size_t bytes) {
+UPB_FORCEINLINE static int32_t getbytes(upb_pbdecoder *d, void *buf,
+                                        size_t bytes) {
   if (curbufleft(d) >= bytes) {
     // Buffer has enough data to satisfy.
     consumebytes(d, buf, bytes);
@@ -7342,19 +7672,20 @@ FORCEINLINE int32_t getbytes(upb_pbdecoder *d, void *buf, size_t bytes) {
   }
 }
 
-static NOINLINE size_t peekbytes_slow(upb_pbdecoder *d, void *buf,
-                                      size_t bytes) {
+UPB_NOINLINE static size_t peekbytes_slow(upb_pbdecoder *d, void *buf,
+                                          size_t bytes) {
   size_t ret = curbufleft(d);
   memcpy(buf, d->ptr, ret);
   if (in_residual_buf(d, d->ptr)) {
     size_t copy = UPB_MIN(bytes - ret, d->size_param);
-    memcpy(buf + ret, d->buf_param, copy);
+    memcpy((char *)buf + ret, d->buf_param, copy);
     ret += copy;
   }
   return ret;
 }
 
-FORCEINLINE size_t peekbytes(upb_pbdecoder *d, void *buf, size_t bytes) {
+UPB_FORCEINLINE static size_t peekbytes(upb_pbdecoder *d, void *buf,
+                                        size_t bytes) {
   if (curbufleft(d) >= bytes) {
     memcpy(buf, d->ptr, bytes);
     return bytes;
@@ -7368,8 +7699,8 @@ FORCEINLINE size_t peekbytes(upb_pbdecoder *d, void *buf, size_t bytes) {
 
 // Slow path for decoding a varint from the current buffer position.
 // Returns a status code as described in decoder.int.h.
-NOINLINE int32_t upb_pbdecoder_decode_varint_slow(upb_pbdecoder *d,
-                                                  uint64_t *u64) {
+UPB_NOINLINE int32_t upb_pbdecoder_decode_varint_slow(upb_pbdecoder *d,
+                                                      uint64_t *u64) {
   *u64 = 0;
   uint8_t byte = 0x80;
   int bitpos;
@@ -7387,7 +7718,7 @@ NOINLINE int32_t upb_pbdecoder_decode_varint_slow(upb_pbdecoder *d,
 
 // Decodes a varint from the current buffer position.
 // Returns a status code as described in decoder.int.h.
-FORCEINLINE int32_t decode_varint(upb_pbdecoder *d, uint64_t *u64) {
+UPB_FORCEINLINE static int32_t decode_varint(upb_pbdecoder *d, uint64_t *u64) {
   if (curbufleft(d) > 0 && !(*d->ptr & 0x80)) {
     *u64 = *d->ptr;
     advance(d, 1);
@@ -7410,7 +7741,7 @@ FORCEINLINE int32_t decode_varint(upb_pbdecoder *d, uint64_t *u64) {
 
 // Decodes a 32-bit varint from the current buffer position.
 // Returns a status code as described in decoder.int.h.
-FORCEINLINE int32_t decode_v32(upb_pbdecoder *d, uint32_t *u32) {
+UPB_FORCEINLINE static int32_t decode_v32(upb_pbdecoder *d, uint32_t *u32) {
   uint64_t u64;
   int32_t ret = decode_varint(d, &u64);
   if (ret >= 0) return ret;
@@ -7429,14 +7760,14 @@ FORCEINLINE int32_t decode_v32(upb_pbdecoder *d, uint32_t *u32) {
 // Decodes a fixed32 from the current buffer position.
 // Returns a status code as described in decoder.int.h.
 // TODO: proper byte swapping for big-endian machines.
-FORCEINLINE int32_t decode_fixed32(upb_pbdecoder *d, uint32_t *u32) {
+UPB_FORCEINLINE static int32_t decode_fixed32(upb_pbdecoder *d, uint32_t *u32) {
   return getbytes(d, u32, 4);
 }
 
 // Decodes a fixed64 from the current buffer position.
 // Returns a status code as described in decoder.int.h.
 // TODO: proper byte swapping for big-endian machines.
-FORCEINLINE int32_t decode_fixed64(upb_pbdecoder *d, uint64_t *u64) {
+UPB_FORCEINLINE static int32_t decode_fixed64(upb_pbdecoder *d, uint64_t *u64) {
   return getbytes(d, u64, 8);
 }
 
@@ -7460,7 +7791,7 @@ static bool decoder_push(upb_pbdecoder *d, uint64_t end) {
   if (end > fr->end_ofs) {
     seterr(d, "Submessage end extends past enclosing submessage.");
     return false;
-  } else if ((fr + 1) == d->limit) {
+  } else if (fr == d->limit) {
     seterr(d, kPbDecoderStackOverflow);
     return false;
   }
@@ -7487,8 +7818,8 @@ static bool pushtagdelim(upb_pbdecoder *d, uint32_t arg) {
 // Pops a frame from the decoder stack.
 static void decoder_pop(upb_pbdecoder *d) { d->top--; }
 
-NOINLINE int32_t upb_pbdecoder_checktag_slow(upb_pbdecoder *d,
-                                             uint64_t expected) {
+UPB_NOINLINE int32_t upb_pbdecoder_checktag_slow(upb_pbdecoder *d,
+                                                 uint64_t expected) {
   uint64_t data = 0;
   size_t bytes = upb_value_size(expected);
   size_t read = peekbytes(d, &data, bytes);
@@ -7640,10 +7971,17 @@ static int32_t dispatch(upb_pbdecoder *d) {
   if (ret == DECODE_ENDGROUP) {
     goto_endmsg(d);
     return DECODE_OK;
-  } else {
-    d->pc = d->last - 1;  // Rewind to CHECKDELIM.
-    return ret;
+  } else if (ret == DECODE_OK) {
+    // We just consumed some input, so we might now have consumed all the data
+    // in the delmited region.  Since every opcode that can trigger dispatch is
+    // directly preceded by OP_CHECKDELIM, rewind to it now to re-check the
+    // delimited end.
+    d->pc = d->last - 1;
+    assert(getop(*d->pc) == OP_CHECKDELIM);
+    return DECODE_OK;
   }
+
+  return ret;
 }
 
 // Callers know that the stack is more than one deep because the opcodes that
@@ -7866,7 +8204,10 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
 void *upb_pbdecoder_startbc(void *closure, const void *pc, size_t size_hint) {
   upb_pbdecoder *d = closure;
   UPB_UNUSED(size_hint);
+  d->top->end_ofs = UINT64_MAX;
+  d->bufstart_ofs = 0;
   d->call_len = 1;
+  d->callstack[0] = &halt;
   d->pc = pc;
   return d;
 }
@@ -7875,6 +8216,8 @@ void *upb_pbdecoder_startjit(void *closure, const void *hd, size_t size_hint) {
   UPB_UNUSED(hd);
   UPB_UNUSED(size_hint);
   upb_pbdecoder *d = closure;
+  d->top->end_ofs = UINT64_MAX;
+  d->bufstart_ofs = 0;
   d->call_len = 0;
   return d;
 }
@@ -7931,57 +8274,119 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
   return true;
 }
 
-void upb_pbdecoder_init(upb_pbdecoder *d, const upb_pbdecodermethod *m,
-                        upb_status *s) {
-  d->limit = &d->stack[UPB_DECODER_MAX_NESTING];
-  upb_bytessink_reset(&d->input_, &m->input_handler_, d);
-  d->method_ = m;
-  d->callstack[0] = &halt;
-  d->status = s;
-  upb_pbdecoder_reset(d);
-}
-
 void upb_pbdecoder_reset(upb_pbdecoder *d) {
   d->top = d->stack;
-  d->top->end_ofs = UINT64_MAX;
   d->top->groupnum = 0;
-  d->bufstart_ofs = 0;
   d->ptr = d->residual;
   d->buf = d->residual;
   d->end = d->residual;
   d->residual_end = d->residual;
-  d->call_len = 1;
+}
+
+static size_t stacksize(upb_pbdecoder *d, size_t entries) {
+  UPB_UNUSED(d);
+  return entries * sizeof(upb_pbdecoder_frame);
+}
+
+static size_t callstacksize(upb_pbdecoder *d, size_t entries) {
+  UPB_UNUSED(d);
+
+#ifdef UPB_USE_JIT_X64
+  if (d->method_->is_native_) {
+    // Each native stack frame needs two pointers, plus we need a few frames for
+    // the enter/exit trampolines.
+    size_t ret = entries * sizeof(void*) * 2;
+    ret += sizeof(void*) * 10;
+    return ret;
+  }
+#endif
+
+  return entries * sizeof(uint32_t*);
+}
+
+upb_pbdecoder *upb_pbdecoder_create(upb_env *e, const upb_pbdecodermethod *m,
+                                    upb_sink *sink) {
+  const size_t default_max_nesting = 64;
+#ifndef NDEBUG
+  size_t size_before = upb_env_bytesallocated(e);
+#endif
+
+  upb_pbdecoder *d = upb_env_malloc(e, sizeof(upb_pbdecoder));
+  if (!d) return NULL;
+
+  d->method_ = m;
+  d->callstack = upb_env_malloc(e, callstacksize(d, default_max_nesting));
+  d->stack = upb_env_malloc(e, stacksize(d, default_max_nesting));
+  if (!d->stack || !d->callstack) {
+    return NULL;
+  }
+
+  d->env = e;
+  d->limit = d->stack + default_max_nesting - 1;
+  d->stack_size = default_max_nesting;
+
+  upb_pbdecoder_reset(d);
+  upb_bytessink_reset(&d->input_, &m->input_handler_, d);
+
+  assert(sink);
+  if (d->method_->dest_handlers_) {
+    if (sink->handlers != d->method_->dest_handlers_)
+      return NULL;
+  }
+  upb_sink_reset(&d->top->sink, sink->handlers, sink->closure);
+
+  // If this fails, increase the value in decoder.h.
+  assert(upb_env_bytesallocated(e) - size_before <= UPB_PB_DECODER_SIZE);
+  return d;
 }
 
 uint64_t upb_pbdecoder_bytesparsed(const upb_pbdecoder *d) {
   return offset(d);
 }
 
-// Not currently required, but to support outgrowing the static stack we need
-// this.
-void upb_pbdecoder_uninit(upb_pbdecoder *d) {
-  UPB_UNUSED(d);
-}
-
 const upb_pbdecodermethod *upb_pbdecoder_method(const upb_pbdecoder *d) {
   return d->method_;
 }
 
-bool upb_pbdecoder_resetoutput(upb_pbdecoder *d, upb_sink* sink) {
-  // TODO(haberman): do we need to test whether the decoder is already on the
-  // stack (like calling this from within a callback)?  Should we support
-  // rebinding the output at all?
-  assert(sink);
-  if (d->method_->dest_handlers_) {
-    if (sink->handlers != d->method_->dest_handlers_)
-      return false;
-  }
-  upb_sink_reset(&d->top->sink, sink->handlers, sink->closure);
-  return true;
-}
-
 upb_bytessink *upb_pbdecoder_input(upb_pbdecoder *d) {
   return &d->input_;
+}
+
+size_t upb_pbdecoder_maxnesting(const upb_pbdecoder *d) {
+  return d->stack_size;
+}
+
+bool upb_pbdecoder_setmaxnesting(upb_pbdecoder *d, size_t max) {
+  assert(d->top >= d->stack);
+
+  if (max < (size_t)(d->top - d->stack)) {
+    // Can't set a limit smaller than what we are currently at.
+    return false;
+  }
+
+  if (max > d->stack_size) {
+    // Need to reallocate stack and callstack to accommodate.
+    size_t old_size = stacksize(d, d->stack_size);
+    size_t new_size = stacksize(d, max);
+    void *p = upb_env_realloc(d->env, d->stack, old_size, new_size);
+    if (!p) {
+      return false;
+    }
+    d->stack = p;
+
+    old_size = callstacksize(d, d->stack_size);
+    new_size = callstacksize(d, max);
+    p = upb_env_realloc(d->env, d->callstack, old_size, new_size);
+    if (!p) {
+      return false;
+    }
+    d->callstack = p;
+
+    d->stack_size = max;
+  }
+
+  d->limit = d->stack + max - 1;
+  return true;
 }
 /*
  * upb - a minimalist implementation of protocol buffers.
@@ -8045,6 +8450,68 @@ upb_bytessink *upb_pbdecoder_input(upb_pbdecoder *d) {
 
 #include <stdlib.h>
 
+// The output buffer is divided into segments; a segment is a string of data
+// that is "ready to go" -- it does not need any varint lengths inserted into
+// the middle.  The seams between segments are where varints will be inserted
+// once they are known.
+//
+// We also use the concept of a "run", which is a range of encoded bytes that
+// occur at a single submessage level.  Every segment contains one or more runs.
+//
+// A segment can span messages.  Consider:
+//
+//                  .--Submessage lengths---------.
+//                  |       |                     |
+//                  |       V                     V
+//                  V      | |---------------    | |-----------------
+// Submessages:    | |-----------------------------------------------
+// Top-level msg: ------------------------------------------------------------
+//
+// Segments:          -----   -------------------   -----------------
+// Runs:              *----   *--------------*---   *----------------
+// (* marks the start)
+//
+// Note that the top-level menssage is not in any segment because it does not
+// have any length preceding it.
+//
+// A segment is only interrupted when another length needs to be inserted.  So
+// observe how the second segment spans both the inner submessage and part of
+// the next enclosing message.
+typedef struct {
+  uint32_t msglen;  // The length to varint-encode before this segment.
+  uint32_t seglen;  // Length of the segment.
+} upb_pb_encoder_segment;
+
+struct upb_pb_encoder {
+  upb_env *env;
+
+  // Our input and output.
+  upb_sink input_;
+  upb_bytessink *output_;
+
+  // The "subclosure" -- used as the inner closure as part of the bytessink
+  // protocol.
+  void *subc;
+
+  // The output buffer and limit, and our current write position.  "buf"
+  // initially points to "initbuf", but is dynamically allocated if we need to
+  // grow beyond the initial size.
+  char *buf, *ptr, *limit;
+
+  // The beginning of the current run, or undefined if we are at the top level.
+  char *runbegin;
+
+  // The list of segments we are accumulating.
+  upb_pb_encoder_segment *segbuf, *segptr, *seglimit;
+
+  // The stack of enclosing submessages.  Each entry in the stack points to the
+  // segment where this submessage's length is being accumulated.
+  int *stack, *top, *stacklimit;
+
+  // Depth of startmsg/endmsg calls.
+  int depth;
+};
+
 /* low-level buffering ********************************************************/
 
 // Low-level functions for interacting with the output buffer.
@@ -8062,23 +8529,21 @@ static upb_pb_encoder_segment *top(upb_pb_encoder *e) {
 // Call to ensure that at least "bytes" bytes are available for writing at
 // e->ptr.  Returns false if the bytes could not be allocated.
 static bool reserve(upb_pb_encoder *e, size_t bytes) {
-  if ((e->limit - e->ptr) < bytes) {
+  if ((size_t)(e->limit - e->ptr) < bytes) {
+    // Grow buffer.
     size_t needed = bytes + (e->ptr - e->buf);
     size_t old_size = e->limit - e->buf;
+
     size_t new_size = old_size;
+
     while (new_size < needed) {
       new_size *= 2;
     }
 
-    char *realloc_from = (e->buf == e->initbuf) ? NULL : e->buf;
-    char *new_buf = realloc(realloc_from, new_size);
+    char *new_buf = upb_env_realloc(e->env, e->buf, old_size, new_size);
 
     if (new_buf == NULL) {
       return false;
-    }
-
-    if (realloc_from == NULL) {
-      memcpy(new_buf, e->initbuf, old_size);
     }
 
     e->ptr = new_buf + (e->ptr - e->buf);
@@ -8093,7 +8558,7 @@ static bool reserve(upb_pb_encoder *e, size_t bytes) {
 // Call when "bytes" bytes have been writte at e->ptr.  The caller *must* have
 // previously called reserve() with at least this many bytes.
 static void encoder_advance(upb_pb_encoder *e, size_t bytes) {
-  assert((e->limit - e->ptr) >= bytes);
+  assert((size_t)(e->limit - e->ptr) >= bytes);
   e->ptr += bytes;
 }
 
@@ -8149,19 +8614,15 @@ static bool start_delim(upb_pb_encoder *e) {
     }
 
     if (++e->segptr == e->seglimit) {
-      upb_pb_encoder_segment *realloc_from =
-          (e->segbuf == e->seginitbuf) ? NULL : e->segbuf;
+      // Grow segment buffer.
       size_t old_size =
           (e->seglimit - e->segbuf) * sizeof(upb_pb_encoder_segment);
       size_t new_size = old_size * 2;
-      upb_pb_encoder_segment *new_buf = realloc(realloc_from, new_size);
+      upb_pb_encoder_segment *new_buf =
+          upb_env_realloc(e->env, e->segbuf, old_size, new_size);
 
       if (new_buf == NULL) {
         return false;
-      }
-
-      if (realloc_from == NULL) {
-        memcpy(new_buf, e->seginitbuf, old_size);
       }
 
       e->segptr = new_buf + (e->segptr - e->segbuf);
@@ -8434,6 +8895,12 @@ static void newhandlers_callback(const void *closure, upb_handlers *h) {
   }
 }
 
+void upb_pb_encoder_reset(upb_pb_encoder *e) {
+  e->segptr = NULL;
+  e->top = NULL;
+  e->depth = 0;
+}
+
 
 /* public API *****************************************************************/
 
@@ -8442,40 +8909,42 @@ const upb_handlers *upb_pb_encoder_newhandlers(const upb_msgdef *m,
   return upb_handlers_newfrozen(m, owner, newhandlers_callback, NULL);
 }
 
-#define ARRAYSIZE(x) (sizeof(x) / sizeof(x[0]))
+upb_pb_encoder *upb_pb_encoder_create(upb_env *env, const upb_handlers *h,
+                                      upb_bytessink *output) {
+  const size_t initial_bufsize = 256;
+  const size_t initial_segbufsize = 16;
+  // TODO(haberman): make this configurable.
+  const size_t stack_size = 64;
+#ifndef NDEBUG
+  const size_t size_before = upb_env_bytesallocated(env);
+#endif
 
-void upb_pb_encoder_init(upb_pb_encoder *e, const upb_handlers *h) {
-  e->output_ = NULL;
-  e->subc = NULL;
-  e->buf = e->initbuf;
-  e->ptr = e->buf;
-  e->limit = e->buf + ARRAYSIZE(e->initbuf);
-  e->segbuf = e->seginitbuf;
-  e->seglimit = e->segbuf + ARRAYSIZE(e->seginitbuf);
-  e->stacklimit = e->stack + ARRAYSIZE(e->stack);
-  upb_sink_reset(&e->input_, h, e);
-}
+  upb_pb_encoder *e = upb_env_malloc(env, sizeof(upb_pb_encoder));
+  if (!e) return NULL;
 
-void upb_pb_encoder_uninit(upb_pb_encoder *e) {
-  if (e->buf != e->initbuf) {
-    free(e->buf);
+  e->buf = upb_env_malloc(env, initial_bufsize);
+  e->segbuf = upb_env_malloc(env, initial_segbufsize * sizeof(*e->segbuf));
+  e->stack = upb_env_malloc(env, stack_size * sizeof(*e->stack));
+
+  if (!e->buf || !e->segbuf || !e->stack) {
+    return NULL;
   }
 
-  if (e->segbuf != e->seginitbuf) {
-    free(e->segbuf);
-  }
-}
+  e->limit = e->buf + initial_bufsize;
+  e->seglimit = e->segbuf + initial_segbufsize;
+  e->stacklimit = e->stack + stack_size;
 
-void upb_pb_encoder_resetoutput(upb_pb_encoder *e, upb_bytessink *output) {
   upb_pb_encoder_reset(e);
+  upb_sink_reset(&e->input_, h, e);
+
+  e->env = env;
   e->output_ = output;
   e->subc = output->closure;
-}
+  e->ptr = e->buf;
 
-void upb_pb_encoder_reset(upb_pb_encoder *e) {
-  e->segptr = NULL;
-  e->top = NULL;
-  e->depth = 0;
+  // If this fails, increase the value in encoder.h.
+  assert(upb_env_bytesallocated(env) - size_before <= UPB_PB_ENCODER_SIZE);
+  return e;
 }
 
 upb_sink *upb_pb_encoder_input(upb_pb_encoder *e) { return &e->input_; }
@@ -8500,26 +8969,26 @@ upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
   const upb_pbdecodermethod *decoder_m =
       upb_pbdecodermethod_new(&opts, &decoder_m);
 
-  upb_pbdecoder decoder;
-  upb_descreader reader;
+  upb_env env;
+  upb_env_init(&env);
+  upb_env_reporterrorsto(&env, status);
 
-  upb_pbdecoder_init(&decoder, decoder_m, status);
-  upb_descreader_init(&reader, reader_h, status);
-  upb_pbdecoder_resetoutput(&decoder, upb_descreader_input(&reader));
+  upb_descreader *reader = upb_descreader_create(&env, reader_h);
+  upb_pbdecoder *decoder =
+      upb_pbdecoder_create(&env, decoder_m, upb_descreader_input(reader));
 
   // Push input data.
-  bool ok = upb_bufsrc_putbuf(str, len, upb_pbdecoder_input(&decoder));
+  bool ok = upb_bufsrc_putbuf(str, len, upb_pbdecoder_input(decoder));
 
   upb_def **ret = NULL;
 
   if (!ok) goto cleanup;
-  upb_def **defs = upb_descreader_getdefs(&reader, owner, n);
+  upb_def **defs = upb_descreader_getdefs(reader, owner, n);
   ret = malloc(sizeof(upb_def*) * (*n));
   memcpy(ret, defs, sizeof(upb_def*) * (*n));
 
 cleanup:
-  upb_pbdecoder_uninit(&decoder);
-  upb_descreader_uninit(&reader);
+  upb_env_uninit(&env);
   upb_handlers_unref(reader_h, &reader_h);
   upb_pbdecodermethod_unref(decoder_m, &decoder_m);
   return ret;
@@ -8583,6 +9052,14 @@ bool upb_load_descriptor_file_into_symtab(upb_symtab *symtab, const char *fname,
 #include <stdlib.h>
 #include <string.h>
 
+
+struct upb_textprinter {
+  upb_sink input_;
+  upb_bytessink *output_;
+  int indent_depth_;
+  bool single_line_;
+  void *subc;
+};
 
 #define CHECK(x) if ((x) < 0) goto err;
 
@@ -8801,24 +9278,6 @@ err:
   return false;
 }
 
-
-/* Public API *****************************************************************/
-
-void upb_textprinter_init(upb_textprinter *p, const upb_handlers *h) {
-  p->single_line_ = false;
-  p->indent_depth_ = 0;
-  upb_sink_reset(&p->input_, h, p);
-}
-
-void upb_textprinter_uninit(upb_textprinter *p) {
-  UPB_UNUSED(p);
-}
-
-void upb_textprinter_reset(upb_textprinter *p, bool single_line) {
-  p->single_line_ = single_line;
-  p->indent_depth_ = 0;
-}
-
 static void onmreg(const void *c, upb_handlers *h) {
   UPB_UNUSED(c);
   const upb_msgdef *m = upb_handlers_msgdef(h);
@@ -8878,17 +9337,32 @@ static void onmreg(const void *c, upb_handlers *h) {
   }
 }
 
+static void textprinter_reset(upb_textprinter *p, bool single_line) {
+  p->single_line_ = single_line;
+  p->indent_depth_ = 0;
+}
+
+
+/* Public API *****************************************************************/
+
+upb_textprinter *upb_textprinter_create(upb_env *env, const upb_handlers *h,
+                                        upb_bytessink *output) {
+  upb_textprinter *p = upb_env_malloc(env, sizeof(upb_textprinter));
+  if (!p) return NULL;
+
+  p->output_ = output;
+  upb_sink_reset(&p->input_, h, p);
+  textprinter_reset(p, false);
+
+  return p;
+}
+
 const upb_handlers *upb_textprinter_newhandlers(const upb_msgdef *m,
                                                 const void *owner) {
   return upb_handlers_newfrozen(m, owner, &onmreg, NULL);
 }
 
 upb_sink *upb_textprinter_input(upb_textprinter *p) { return &p->input_; }
-
-bool upb_textprinter_resetoutput(upb_textprinter *p, upb_bytessink *output) {
-  p->output_ = output;
-  return true;
-}
 
 void upb_textprinter_setsingleline(upb_textprinter *p, bool single_line) {
   p->single_line_ = single_line;
@@ -9051,6 +9525,71 @@ upb_decoderet upb_vdecode_max8_wright(upb_decoderet r) {
 #include <stdlib.h>
 #include <errno.h>
 
+
+#define UPB_JSON_MAX_DEPTH 64
+
+typedef struct {
+  upb_sink sink;
+
+  // The current message in which we're parsing, and the field whose value we're
+  // expecting next.
+  const upb_msgdef *m;
+  const upb_fielddef *f;
+
+  // We are in a repeated-field context, ready to emit mapentries as
+  // submessages. This flag alters the start-of-object (open-brace) behavior to
+  // begin a sequence of mapentry messages rather than a single submessage.
+  bool is_map;
+
+  // We are in a map-entry message context. This flag is set when parsing the
+  // value field of a single map entry and indicates to all value-field parsers
+  // (subobjects, strings, numbers, and bools) that the map-entry submessage
+  // should end as soon as the value is parsed.
+  bool is_mapentry;
+
+  // If |is_map| or |is_mapentry| is true, |mapfield| refers to the parent
+  // message's map field that we're currently parsing. This differs from |f|
+  // because |f| is the field in the *current* message (i.e., the map-entry
+  // message itself), not the parent's field that leads to this map.
+  const upb_fielddef *mapfield;
+} upb_jsonparser_frame;
+
+struct upb_json_parser {
+  upb_env *env;
+  upb_byteshandler input_handler_;
+  upb_bytessink input_;
+
+  // Stack to track the JSON scopes we are in.
+  upb_jsonparser_frame stack[UPB_JSON_MAX_DEPTH];
+  upb_jsonparser_frame *top;
+  upb_jsonparser_frame *limit;
+
+  upb_status *status;
+
+  // Ragel's internal parsing stack for the parsing state machine.
+  int current_state;
+  int parser_stack[UPB_JSON_MAX_DEPTH];
+  int parser_top;
+
+  // The handle for the current buffer.
+  const upb_bufhandle *handle;
+
+  // Accumulate buffer.  See details in parser.rl.
+  const char *accumulated;
+  size_t accumulated_len;
+  char *accumulate_buf;
+  size_t accumulate_buf_size;
+
+  // Multi-part text data.  See details in parser.rl.
+  int multipart_state;
+  upb_selector_t string_selector;
+
+  // Input capture.  See details in parser.rl.
+  const char *capture;
+
+  // Intermediate result of parsing a unicode escape sequence.
+  uint32_t digit;
+};
 
 #define PARSER_CHECK_RETURN(x) if (!(x)) return false
 
@@ -9254,12 +9793,13 @@ static void accumulate_clear(upb_json_parser *p) {
 
 // Used internally by accumulate_append().
 static bool accumulate_realloc(upb_json_parser *p, size_t need) {
-  size_t new_size = UPB_MAX(p->accumulate_buf_size, 128);
+  size_t old_size = p->accumulate_buf_size;
+  size_t new_size = UPB_MAX(old_size, 128);
   while (new_size < need) {
     new_size = saturating_multiply(new_size, 2);
   }
 
-  void *mem = realloc(p->accumulate_buf, new_size);
+  void *mem = upb_env_realloc(p->env, p->accumulate_buf, old_size, new_size);
   if (!mem) {
     upb_status_seterrmsg(p->status, "Out of memory allocating buffer.");
     return false;
@@ -10008,11 +10548,11 @@ static void end_object(upb_json_parser *p) {
 // final state once, when the closing '"' is seen.
 
 
-#line 1085 "upb/json/parser.rl"
+#line 1151 "upb/json/parser.rl"
 
 
 
-#line 997 "upb/json/parser.c"
+#line 1063 "upb/json/parser.c"
 static const char _json_actions[] = {
 	0, 1, 0, 1, 2, 1, 3, 1, 
 	5, 1, 6, 1, 7, 1, 8, 1, 
@@ -10154,8 +10694,6 @@ static const char _json_trans_actions[] = {
 };
 
 static const int json_start = 1;
-static const int json_first_final = 56;
-static const int json_error = 0;
 
 static const int json_en_number_machine = 10;
 static const int json_en_string_machine = 19;
@@ -10163,7 +10701,7 @@ static const int json_en_value_machine = 27;
 static const int json_en_main = 1;
 
 
-#line 1088 "upb/json/parser.rl"
+#line 1154 "upb/json/parser.rl"
 
 size_t parse(void *closure, const void *hd, const char *buf, size_t size,
              const upb_bufhandle *handle) {
@@ -10183,7 +10721,7 @@ size_t parse(void *closure, const void *hd, const char *buf, size_t size,
   capture_resume(parser, buf);
 
   
-#line 1168 "upb/json/parser.c"
+#line 1232 "upb/json/parser.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -10258,118 +10796,118 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 0:
-#line 1000 "upb/json/parser.rl"
+#line 1066 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 1:
-#line 1001 "upb/json/parser.rl"
+#line 1067 "upb/json/parser.rl"
 	{ p--; {stack[top++] = cs; cs = 10; goto _again;} }
 	break;
 	case 2:
-#line 1005 "upb/json/parser.rl"
+#line 1071 "upb/json/parser.rl"
 	{ start_text(parser, p); }
 	break;
 	case 3:
-#line 1006 "upb/json/parser.rl"
+#line 1072 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_text(parser, p)); }
 	break;
 	case 4:
-#line 1012 "upb/json/parser.rl"
+#line 1078 "upb/json/parser.rl"
 	{ start_hex(parser); }
 	break;
 	case 5:
-#line 1013 "upb/json/parser.rl"
+#line 1079 "upb/json/parser.rl"
 	{ hexdigit(parser, p); }
 	break;
 	case 6:
-#line 1014 "upb/json/parser.rl"
+#line 1080 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_hex(parser)); }
 	break;
 	case 7:
-#line 1020 "upb/json/parser.rl"
+#line 1086 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(escape(parser, p)); }
 	break;
 	case 8:
-#line 1026 "upb/json/parser.rl"
+#line 1092 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 9:
-#line 1029 "upb/json/parser.rl"
+#line 1095 "upb/json/parser.rl"
 	{ {stack[top++] = cs; cs = 19; goto _again;} }
 	break;
 	case 10:
-#line 1031 "upb/json/parser.rl"
+#line 1097 "upb/json/parser.rl"
 	{ p--; {stack[top++] = cs; cs = 27; goto _again;} }
 	break;
 	case 11:
-#line 1036 "upb/json/parser.rl"
+#line 1102 "upb/json/parser.rl"
 	{ start_member(parser); }
 	break;
 	case 12:
-#line 1037 "upb/json/parser.rl"
+#line 1103 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_membername(parser)); }
 	break;
 	case 13:
-#line 1040 "upb/json/parser.rl"
+#line 1106 "upb/json/parser.rl"
 	{ end_member(parser); }
 	break;
 	case 14:
-#line 1046 "upb/json/parser.rl"
+#line 1112 "upb/json/parser.rl"
 	{ start_object(parser); }
 	break;
 	case 15:
-#line 1049 "upb/json/parser.rl"
+#line 1115 "upb/json/parser.rl"
 	{ end_object(parser); }
 	break;
 	case 16:
-#line 1055 "upb/json/parser.rl"
+#line 1121 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_array(parser)); }
 	break;
 	case 17:
-#line 1059 "upb/json/parser.rl"
+#line 1125 "upb/json/parser.rl"
 	{ end_array(parser); }
 	break;
 	case 18:
-#line 1064 "upb/json/parser.rl"
+#line 1130 "upb/json/parser.rl"
 	{ start_number(parser, p); }
 	break;
 	case 19:
-#line 1065 "upb/json/parser.rl"
+#line 1131 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_number(parser, p)); }
 	break;
 	case 20:
-#line 1067 "upb/json/parser.rl"
+#line 1133 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_stringval(parser)); }
 	break;
 	case 21:
-#line 1068 "upb/json/parser.rl"
+#line 1134 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_stringval(parser)); }
 	break;
 	case 22:
-#line 1070 "upb/json/parser.rl"
+#line 1136 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(parser_putbool(parser, true)); }
 	break;
 	case 23:
-#line 1072 "upb/json/parser.rl"
+#line 1138 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(parser_putbool(parser, false)); }
 	break;
 	case 24:
-#line 1074 "upb/json/parser.rl"
+#line 1140 "upb/json/parser.rl"
 	{ /* null value */ }
 	break;
 	case 25:
-#line 1076 "upb/json/parser.rl"
+#line 1142 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_subobject(parser)); }
 	break;
 	case 26:
-#line 1077 "upb/json/parser.rl"
+#line 1143 "upb/json/parser.rl"
 	{ end_subobject(parser); }
 	break;
 	case 27:
-#line 1082 "upb/json/parser.rl"
+#line 1148 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
-#line 1354 "upb/json/parser.c"
+#line 1418 "upb/json/parser.c"
 		}
 	}
 
@@ -10382,7 +10920,7 @@ _again:
 	_out: {}
 	}
 
-#line 1107 "upb/json/parser.rl"
+#line 1173 "upb/json/parser.rl"
 
   if (p != pe) {
     upb_status_seterrf(parser->status, "Parse error at %s\n", p);
@@ -10401,29 +10939,17 @@ error:
 bool end(void *closure, const void *hd) {
   UPB_UNUSED(closure);
   UPB_UNUSED(hd);
+
+  // Prevent compile warning on unused static constants.
+  UPB_UNUSED(json_start);
+  UPB_UNUSED(json_en_number_machine);
+  UPB_UNUSED(json_en_string_machine);
+  UPB_UNUSED(json_en_value_machine);
+  UPB_UNUSED(json_en_main);
   return true;
 }
 
-
-/* Public API *****************************************************************/
-
-void upb_json_parser_init(upb_json_parser *p, upb_status *status) {
-  p->limit = p->stack + UPB_JSON_MAX_DEPTH;
-  p->accumulate_buf = NULL;
-  p->accumulate_buf_size = 0;
-  upb_byteshandler_init(&p->input_handler_);
-  upb_byteshandler_setstring(&p->input_handler_, parse, NULL);
-  upb_byteshandler_setendstr(&p->input_handler_, end, NULL);
-  upb_bytessink_reset(&p->input_, &p->input_handler_, p);
-  p->status = status;
-}
-
-void upb_json_parser_uninit(upb_json_parser *p) {
-  upb_byteshandler_uninit(&p->input_handler_);
-  free(p->accumulate_buf);
-}
-
-void upb_json_parser_reset(upb_json_parser *p) {
+static void json_parser_reset(upb_json_parser *p) {
   p->top = p->stack;
   p->top->f = NULL;
   p->top->is_map = false;
@@ -10433,25 +10959,48 @@ void upb_json_parser_reset(upb_json_parser *p) {
   int top;
   // Emit Ragel initialization of the parser.
   
-#line 1418 "upb/json/parser.c"
+#line 1470 "upb/json/parser.c"
 	{
 	cs = json_start;
 	top = 0;
 	}
 
-#line 1157 "upb/json/parser.rl"
+#line 1211 "upb/json/parser.rl"
   p->current_state = cs;
   p->parser_top = top;
   accumulate_clear(p);
   p->multipart_state = MULTIPART_INACTIVE;
   p->capture = NULL;
+  p->accumulated = NULL;
 }
 
-void upb_json_parser_resetoutput(upb_json_parser *p, upb_sink *sink) {
-  upb_json_parser_reset(p);
-  upb_sink_reset(&p->top->sink, sink->handlers, sink->closure);
-  p->top->m = upb_handlers_msgdef(sink->handlers);
-  p->accumulated = NULL;
+
+/* Public API *****************************************************************/
+
+upb_json_parser *upb_json_parser_create(upb_env *env, upb_sink *output) {
+#ifndef NDEBUG
+  const size_t size_before = upb_env_bytesallocated(env);
+#endif
+  upb_json_parser *p = upb_env_malloc(env, sizeof(upb_json_parser));
+  if (!p) return false;
+
+  p->env = env;
+  p->limit = p->stack + UPB_JSON_MAX_DEPTH;
+  p->accumulate_buf = NULL;
+  p->accumulate_buf_size = 0;
+  upb_byteshandler_init(&p->input_handler_);
+  upb_byteshandler_setstring(&p->input_handler_, parse, NULL);
+  upb_byteshandler_setendstr(&p->input_handler_, end, NULL);
+  upb_bytessink_reset(&p->input_, &p->input_handler_, p);
+
+  json_parser_reset(p);
+  upb_sink_reset(&p->top->sink, output->handlers, output->closure);
+  p->top->m = upb_handlers_msgdef(output->handlers);
+
+  // If this fails, uncomment and increase the value in parser.h.
+  // fprintf(stderr, "%zd\n", upb_env_bytesallocated(env) - size_before);
+  assert(upb_env_bytesallocated(env) - size_before <= UPB_JSON_PARSER_SIZE);
+  return p;
 }
 
 upb_bytessink *upb_json_parser_input(upb_json_parser *p) {
@@ -10472,6 +11021,27 @@ upb_bytessink *upb_json_parser_input(upb_json_parser *p) {
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+
+struct upb_json_printer {
+  upb_sink input_;
+  // BytesSink closure.
+  void *subc_;
+  upb_bytessink *output_;
+
+  // We track the depth so that we know when to emit startstr/endstr on the
+  // output.
+  int depth_;
+
+  // Have we emitted the first element? This state is necessary to emit commas
+  // without leaving a trailing comma in arrays/maps. We keep this state per
+  // frame depth.
+  //
+  // Why max_depth * 2? UPB_MAX_HANDLER_DEPTH counts depth as nested messages.
+  // We count frames (contexts in which we separate elements by commas) as both
+  // repeated fields and messages (maps), and the worst case is a
+  // message->repeated field->submessage->repeated field->... nesting.
+  bool first_elem_[UPB_MAX_HANDLER_DEPTH * 2];
+};
 
 // StringPiece; a pointer plus a length.
 typedef struct {
@@ -10620,7 +11190,7 @@ static bool putkey(void *closure, const void *handler_data) {
   return true;
 }
 
-#define CHKFMT(val) if ((val) == -1) return false;
+#define CHKFMT(val) if ((val) == (size_t)-1) return false;
 #define CHK(val)    if (!(val)) return false;
 
 #define TYPE_HANDLERS(type, fmt_func)                                        \
@@ -11189,25 +11759,29 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
 #undef TYPE
 }
 
+static void json_printer_reset(upb_json_printer *p) {
+  p->depth_ = 0;
+}
+
+
 /* Public API *****************************************************************/
 
-void upb_json_printer_init(upb_json_printer *p, const upb_handlers *h) {
-  p->output_ = NULL;
-  p->depth_ = 0;
-  upb_sink_reset(&p->input_, h, p);
-}
+upb_json_printer *upb_json_printer_create(upb_env *e, const upb_handlers *h,
+                                          upb_bytessink *output) {
+#ifndef NDEBUG
+  size_t size_before = upb_env_bytesallocated(e);
+#endif
 
-void upb_json_printer_uninit(upb_json_printer *p) {
-  UPB_UNUSED(p);
-}
+  upb_json_printer *p = upb_env_malloc(e, sizeof(upb_json_printer));
+  if (!p) return NULL;
 
-void upb_json_printer_reset(upb_json_printer *p) {
-  p->depth_ = 0;
-}
-
-void upb_json_printer_resetoutput(upb_json_printer *p, upb_bytessink *output) {
-  upb_json_printer_reset(p);
   p->output_ = output;
+  json_printer_reset(p);
+  upb_sink_reset(&p->input_, h, p);
+
+  // If this fails, increase the value in printer.h.
+  assert(upb_env_bytesallocated(e) - size_before <= UPB_JSON_PRINTER_SIZE);
+  return p;
 }
 
 upb_sink *upb_json_printer_input(upb_json_printer *p) {

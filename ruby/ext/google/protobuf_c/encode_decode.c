@@ -622,6 +622,48 @@ static const upb_pbdecodermethod *msgdef_decodermethod(Descriptor* desc) {
   return desc->fill_method;
 }
 
+
+// Stack-allocated context during an encode/decode operation. Contains the upb
+// environment and its stack-based allocator, an initial buffer for allocations
+// to avoid malloc() when possible, and a template for Ruby exception messages
+// if any error occurs.
+#define STACK_ENV_STACKBYTES 4096
+typedef struct {
+  upb_env env;
+  upb_seededalloc alloc;
+  const char* ruby_error_template;
+  char allocbuf[STACK_ENV_STACKBYTES];
+} stackenv;
+
+static void stackenv_init(stackenv* se, const char* errmsg);
+static void stackenv_uninit(stackenv* se);
+
+// Callback invoked by upb if any error occurs during parsing or serialization.
+static bool env_error_func(void* ud, const upb_status* status) {
+  stackenv* se = ud;
+  // Free the env -- rb_raise will longjmp up the stack past the encode/decode
+  // function so it would not otherwise have been freed.
+  stackenv_uninit(se);
+  rb_raise(rb_eRuntimeError, se->ruby_error_template, upb_status_errmsg(status));
+  // Never reached: rb_raise() always longjmp()s up the stack, past all of our
+  // code, back to Ruby.
+  return false;
+}
+
+static void stackenv_init(stackenv* se, const char* errmsg) {
+  se->ruby_error_template = errmsg;
+  upb_env_init(&se->env);
+  upb_seededalloc_init(&se->alloc, &se->allocbuf, STACK_ENV_STACKBYTES);
+  upb_env_setallocfunc(
+      &se->env, upb_seededalloc_getallocfunc(&se->alloc), &se->alloc);
+  upb_env_seterrorfunc(&se->env, env_error_func, se);
+}
+
+static void stackenv_uninit(stackenv* se) {
+  upb_env_uninit(&se->env);
+  upb_seededalloc_uninit(&se->alloc);
+}
+
 /*
  * call-seq:
  *     MessageClass.decode(data) => message
@@ -645,21 +687,17 @@ VALUE Message_decode(VALUE klass, VALUE data) {
 
   const upb_pbdecodermethod* method = msgdef_decodermethod(desc);
   const upb_handlers* h = upb_pbdecodermethod_desthandlers(method);
-  upb_pbdecoder decoder;
+  stackenv se;
+  stackenv_init(&se, "Error occurred during parsing: %s");
+
   upb_sink sink;
-  upb_status status = UPB_STATUS_INIT;
-
-  upb_pbdecoder_init(&decoder, method, &status);
   upb_sink_reset(&sink, h, msg);
-  upb_pbdecoder_resetoutput(&decoder, &sink);
+  upb_pbdecoder* decoder =
+      upb_pbdecoder_create(&se.env, method, &sink);
   upb_bufsrc_putbuf(RSTRING_PTR(data), RSTRING_LEN(data),
-                    upb_pbdecoder_input(&decoder));
+                    upb_pbdecoder_input(decoder));
 
-  upb_pbdecoder_uninit(&decoder);
-  if (!upb_ok(&status)) {
-    rb_raise(rb_eRuntimeError, "Error occurred during parsing: %s.",
-             upb_status_errmsg(&status));
-  }
+  stackenv_uninit(&se);
 
   return msg_rb;
 }
@@ -688,21 +726,16 @@ VALUE Message_decode_json(VALUE klass, VALUE data) {
   MessageHeader* msg;
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
 
-  upb_status status = UPB_STATUS_INIT;
-  upb_json_parser parser;
-  upb_json_parser_init(&parser, &status);
+  stackenv se;
+  stackenv_init(&se, "Error occurred during parsing: %s");
 
   upb_sink sink;
   upb_sink_reset(&sink, get_fill_handlers(desc), msg);
-  upb_json_parser_resetoutput(&parser, &sink);
+  upb_json_parser* parser = upb_json_parser_create(&se.env, &sink);
   upb_bufsrc_putbuf(RSTRING_PTR(data), RSTRING_LEN(data),
-                    upb_json_parser_input(&parser));
+                    upb_json_parser_input(parser));
 
-  upb_json_parser_uninit(&parser);
-  if (!upb_ok(&status)) {
-    rb_raise(rb_eRuntimeError, "Error occurred during parsing: %s.",
-             upb_status_errmsg(&status));
-  }
+  stackenv_uninit(&se);
 
   return msg_rb;
 }
@@ -956,7 +989,7 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
 
   // Protect against cycles (possible because users may freely reassign message
   // and repeated fields) by imposing a maximum recursion depth.
-  if (depth > UPB_SINK_MAX_NESTING) {
+  if (depth > ENCODE_MAX_NESTING) {
     rb_raise(rb_eRuntimeError,
              "Maximum recursion depth exceeded during encoding.");
   }
@@ -1074,15 +1107,16 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb) {
   const upb_handlers* serialize_handlers =
       msgdef_pb_serialize_handlers(desc);
 
-  upb_pb_encoder encoder;
-  upb_pb_encoder_init(&encoder, serialize_handlers);
-  upb_pb_encoder_resetoutput(&encoder, &sink.sink);
+  stackenv se;
+  stackenv_init(&se, "Error occurred during encoding: %s");
+  upb_pb_encoder* encoder =
+      upb_pb_encoder_create(&se.env, serialize_handlers, &sink.sink);
 
-  putmsg(msg_rb, desc, upb_pb_encoder_input(&encoder), 0);
+  putmsg(msg_rb, desc, upb_pb_encoder_input(encoder), 0);
 
   VALUE ret = rb_str_new(sink.ptr, sink.len);
 
-  upb_pb_encoder_uninit(&encoder);
+  stackenv_uninit(&se);
   stringsink_uninit(&sink);
 
   return ret;
@@ -1104,15 +1138,16 @@ VALUE Message_encode_json(VALUE klass, VALUE msg_rb) {
   const upb_handlers* serialize_handlers =
       msgdef_json_serialize_handlers(desc);
 
-  upb_json_printer printer;
-  upb_json_printer_init(&printer, serialize_handlers);
-  upb_json_printer_resetoutput(&printer, &sink.sink);
+  stackenv se;
+  stackenv_init(&se, "Error occurred during encoding: %s");
+  upb_json_printer* printer =
+      upb_json_printer_create(&se.env, serialize_handlers, &sink.sink);
 
-  putmsg(msg_rb, desc, upb_json_printer_input(&printer), 0);
+  putmsg(msg_rb, desc, upb_json_printer_input(printer), 0);
 
   VALUE ret = rb_str_new(sink.ptr, sink.len);
 
-  upb_json_printer_uninit(&printer);
+  stackenv_uninit(&se);
   stringsink_uninit(&sink);
 
   return ret;

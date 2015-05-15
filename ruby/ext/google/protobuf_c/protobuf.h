@@ -511,6 +511,10 @@ VALUE enum_resolve(VALUE self, VALUE sym);
 const upb_pbdecodermethod *new_fillmsg_decodermethod(
     Descriptor* descriptor, const void *owner);
 
+// Maximum depth allowed during encoding, to avoid stack overflows due to
+// cycles.
+#define ENCODE_MAX_NESTING 63
+
 // -----------------------------------------------------------------------------
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
 // instances.
